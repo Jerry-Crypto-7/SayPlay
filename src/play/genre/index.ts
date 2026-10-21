@@ -1,6 +1,6 @@
 /** Legacy genre reader; named control genres compile through recipe assemblies. */
 import type { GameSpecV1 } from '../spec';
-import { type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, legacyCast } from './contract';
+import { type GenreModule, type GenreSpec, type ParamBounds, boundCounts, genreSpecSchema, legacyCast } from './contract';
 import { GENRE_MODULES } from './modules';
 import { compileRecipe, DEPTH_PARAM_BOUNDS } from '../compose/compile';
 import { presetOf } from '../compose/presets';
@@ -11,7 +11,7 @@ export const paramBoundsOf = (module: GenreModule): ParamBounds => ({ ...module.
 
 export type GenreSpecResult = { readonly ok: true; readonly value: GenreSpec } | { readonly ok: false; readonly issues: readonly string[] };
 
-/** Tvar podle `genreSpecSchema`, pak parametry proti mezím modulu žánru. */
+/** Tvar podle `genreSpecSchema`, pak parametry proti mezím modulu žánru; počty se do mezí jen oříznou. */
 export function readGenreSpec(input: unknown): GenreSpecResult {
   const parsed = genreSpecSchema.safeParse(legacyCast(input));
   if (!parsed.success) return { ok: false, issues: parsed.error.issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`) };
@@ -21,8 +21,7 @@ export function readGenreSpec(input: unknown): GenreSpecResult {
     if (range === undefined) return [`/params/${key}: ${parsed.data.genre} has no such parameter (known: ${Object.keys(bounds).join(', ') || 'none'})`];
     return value < range.min || value > range.max ? [`/params/${key}: ${String(value)} is outside ${String(range.min)}–${String(range.max)}`] : [];
   });
-  issues.push(...countIssues(parsed.data, bounds));
-  return issues.length > 0 ? { ok: false, issues } : { ok: true, value: parsed.data };
+  return issues.length > 0 ? { ok: false, issues } : { ok: true, value: boundCounts(parsed.data, bounds) };
 }
 
 export function compileGenre(spec: GenreSpec): GameSpecV1 {

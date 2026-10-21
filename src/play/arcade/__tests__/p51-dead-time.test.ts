@@ -177,9 +177,12 @@ describe('P51 T7: runner games get the field heartbeat', () => {
   }
 });
 
-/** Věty chytání z dev sady P51 (`evals/play/p51/dev.json`). */
+/**
+ * Věty chytání z dev sady P51 (`evals/play/p51/dev.json`). P54C T13: k01 „a kid catches raindrops in a bucket on the porch“
+ * chytá do kbelíku, co padá – hraje žánr chytání v pruzích; honičku za kapkou drží táž věta bez kbelíku.
+ */
 const CATCHES = [
-  { id: 'k01', text: 'a kid catches raindrops in a bucket on the porch' },
+  { id: 'k01', text: 'a kid catches raindrops on the porch' },
   { id: 'k02', text: 'a dog catches frisbees in the park' },
   { id: 'k03', text: 'a puppy catches soap bubbles in the backyard' },
 ] as const;

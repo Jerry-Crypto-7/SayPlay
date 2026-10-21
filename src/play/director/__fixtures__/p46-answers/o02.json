@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:35.042Z",
- "ms": 8684,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:11:49.519Z",
+ "ms": 8514,
  "answer": {
-  "plan": "Create an arena‑style game where Amanita mushrooms battle, evade, and shoot bulls in a forest trail.",
+  "plan": "Arena fight with Amanita mushrooms vs bulls, featuring chase, escape, and shooting mechanics.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -18,37 +18,53 @@
      "label": "bull",
      "does": "fight",
      "verb": "fight",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "chase_me",
      "verb": "chase",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "shoot_at",
      "verb": "shoot",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "acorn",
      "does": "collect",
      "verb": "collect",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
    "heroAction": "fix",
    "setting": "forest trail",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "entryDistance": 12000,
+    "chaseLead": 60,
+    "seconds": 60,
+    "items": 10,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 2,
+    "chaserSpeed": 70,
+    "enemies": 2,
+    "enemyHp": 5,
+    "enemySpeed": 80,
+    "playerHp": 5,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
    "counts": {
-    "enemy": 3,
+    "enemy": 2,
     "collectible": 1
    },
    "ruleRoles": [
@@ -56,7 +72,7 @@
      "id": "bull",
      "kind": "chaser",
      "label": "bull",
-     "count": 3
+     "count": 2
     },
     {
      "id": "acorn",
@@ -65,69 +81,71 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "bull",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "acorn",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
    "rules": [
     {
-     "id": "bull_fight",
-     "verb": "fight",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "startTimer": {
+        "timer": "phase1",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "bull_chase",
-     "verb": "chase",
+     "id": "phase1to2",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "timer": "phase1"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "bull",
+        "count": 2,
+        "at": "edge"
+       }
       }
      ]
     },
     {
-     "id": "bull_shoot",
-     "verb": "shoot",
+     "id": "phase2action",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      }
-     ]
-    },
-    {
-     "id": "acorn_collect",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "acorn"
-      ]
-     },
-     "if": null,
-     "do": [
+       "toggle": "acorn"
+      },
       {
-       "grab": "other"
+       "spawn": {
+        "role": "acorn",
+        "at": "player"
+       }
       }
      ]
     }
@@ -151,7 +169,7 @@
    },
    "boss": {
     "role": "bull",
-    "name": "Rampaging Bull",
+    "name": "Charging Bull",
     "attack": "charge"
    },
    "abilities": [

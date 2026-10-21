@@ -31,6 +31,14 @@ it('preserves player subjects and distinguishes moving noun modifiers', () => {
   expect(rows[7].hero).toBe('car');
 });
 
+// P54C: chytání a krájení – co hrdina chytá nebo krájí, je jeho cíl; padá a letí to, ne hrdina, a hrozba to není.
+it('reads what the hero catches or slices as its target, not a hazard or the hero flying', () => {
+  const triples = (sentence: string) => extractIntent(sentence).items.map(({ actor, verb, object }) => `${actor} ${verb} ${object}`);
+  expect(triples('a ninja slices flying fruit')).toEqual(['ninja slice fruit']);
+  expect(triples('a monkey catches falling bananas')).toEqual(['monkey catch banana']);
+  expect(triples('a knight dodges falling rocks')).toEqual(['rock hazard knight']);
+});
+
 it('never takes existential "there" for the actor', () => {
   for (const sentence of ['Game where there is shooting animals in a car while racing', 'there are zombies and you shoot them']) {
     const intent = extractIntent(sentence);

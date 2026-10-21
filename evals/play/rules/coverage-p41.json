@@ -1,17 +1,18 @@
 {
  "total": 200,
  "before": {
-  "piece": 87,
-  "none": 113
+  "piece": 85,
+  "none": 115
  },
  "after": {
-  "piece": 87,
-  "template": 36,
-  "none": 77
+  "piece": 85,
+  "template": 37,
+  "none": 78
  },
  "byTemplate": {
   "collect_unlock": 1,
   "escape_countdown": 4,
+  "defend_base": 4,
   "boss_finale": 6,
   "race_clock": 3,
   "push": 3,
@@ -19,7 +20,6 @@
   "throw": 4,
   "stack": 2,
   "build_floors": 2,
-  "defend_base": 3,
   "carry": 2,
   "waves_survive": 2,
   "catch_count": 1
@@ -227,8 +227,8 @@
   {
    "id": "s016",
    "verbClass": "runner",
-   "drafted": "runner",
-   "cover": "piece",
+   "drafted": "crowd",
+   "cover": "none",
    "template": null,
    "verbs": []
   },
@@ -409,7 +409,7 @@
   {
    "id": "s036",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "hop",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -514,8 +514,8 @@
   {
    "id": "s047",
    "verbClass": "aim_shoot",
-   "drafted": "shooter",
-   "cover": "piece",
+   "drafted": "lanes",
+   "cover": "template",
    "template": "defend_base",
    "verbs": [
     "defend"
@@ -1148,7 +1148,7 @@
   {
    "id": "s113",
    "verbClass": "move_free",
-   "drafted": "platform",
+   "drafted": "push",
    "cover": "template",
    "template": "push",
    "verbs": [
@@ -1273,7 +1273,7 @@
   {
    "id": "s126",
    "verbClass": "timing",
-   "drafted": "move_free",
+   "drafted": "merge",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -1539,7 +1539,7 @@
   {
    "id": "s154",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "template",
    "template": "defend_base",
    "verbs": [
@@ -1549,7 +1549,7 @@
   {
    "id": "s155",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "template",
    "template": "defend_base",
    "verbs": [
@@ -1559,7 +1559,7 @@
   {
    "id": "s156",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -1569,7 +1569,7 @@
   {
    "id": "s157",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -1588,7 +1588,7 @@
   {
    "id": "s159",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "template",
    "template": "defend_base",
    "verbs": [

@@ -19,7 +19,8 @@ import { draftGameSpec } from '../draft';
 import { type GameSpecV1, readGameSpec } from '../spec';
 
 const SQUIRREL = 'A squirrel runs and dodges falling acorns';
-const SUMO = 'a sumo bear shoves rivals out of the ring';
+// „shoves rivals out of the ring“ hraje od P54C T13b vytlačování z ringu; „around the ring“ zůstává duelem se stejnými díly.
+const SUMO = 'a sumo bear shoves rivals around the ring';
 /** „attacks“ seznam nemá: tlačítko i nápověda zůstávají obecné. */
 const GENERIC = 'A knight runs through a castle and attacks goblins';
 

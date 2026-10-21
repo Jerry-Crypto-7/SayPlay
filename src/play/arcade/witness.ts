@@ -5,6 +5,13 @@ import type { IntentTriple } from '@/play/intent/contract';
 import type { GameRole, GameSpecV1 } from '@/play/spec';
 
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
+import { axisOfLane, laneOfX } from './pieces/lanes';
+import { CATCH } from './pieces/catch-fall';
+import { WHACK, holeOpen } from './pieces/whack';
+import { SLICE, heightAt } from './pieces/slice';
+import { type HopBotParams, hopProbeInput } from './pieces/hop-bot';
+import { crowdProbeInput } from './pieces/crowd-bot';
+import { nearestRival } from './pieces/push-ring';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
@@ -44,10 +51,14 @@ const roleAt = (state: ArrayLike<number>, body: number): number => state[FIRST_B
 const live = (state: ArrayLike<number>, body: number): boolean => (state[FIRST_BODY + body * STRIDE + FLAGS_SLOT]! & ALIVE) !== 0;
 const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[FIRST_BODY + body * STRIDE + KIND_SLOT]!] ?? '';
 
-/** Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. */
+/**
+ * Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. Kandidáti stejného druhu
+ * a popisku hádání nejsou (P54C T14r1): role pravidel odpovědi „bomb“ vedle `hazard` bomby žánru pruhů je
+ * totéž jméno, vazba bere první – roli modulu, která v `spec.roles` stojí před rolemi pravidel.
+ */
 export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBinding[] {
   const out: RoleBinding[] = [];
-  const unique = (roles: readonly GameRole[]): GameRole | undefined => roles.length === 1 ? roles[0] : undefined;
+  const unique = (roles: readonly GameRole[]): GameRole | undefined => roles.length === 1 || (roles.length > 1 && roles.every(role => role.kind === roles[0]!.kind && role.label === roles[0]!.label)) ? roles[0] : undefined;
   for (let body = 0; body < world.initial[HEADER.bodyCount]!; body += 1) {
     const code = roleAt(world.initial, body);
     const kind = kindAt(world, world.initial, body);
@@ -162,6 +173,21 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
       return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
     }
   }
+  // Přeskákání (P54C T9): sonda hraje jako robot, dokud by ji skok vpřed neposlal pod viděné vozidlo; pak skočí.
+  if (control === 'hop' && roleAt(state, target) === ROLE.obstacle) return hopProbeInput(observation, world.bot.params as HopBotParams, normal);
+  // Dav a brány (P54C T10): sonda hraje jako robot, dokud překážka není těsně před ní; pak zahne do jejího pruhu.
+  if (control === 'crowd' && roleAt(state, target) === ROLE.obstacle) return crowdProbeInput(observation, target, normal);
+  // Obrana pruhů (P54C T7): sonda nestřílí ani nestaví – nepřítel dojde k hradbě a vezme život.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.chaser && world.rules.some((ref) => ref.id === 'defense_hit')) return NO_INPUT;
+  // Krájení (P54C T8): sonda hraje jako robot, dokud bomba nevyletí do výšky řezu; pak švihne do jejího pruhu.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.hazard && world.rules.some((ref) => ref.id === 'slice_cut')) {
+    const now = observation.tick + observation.recent.length;
+    return heightAt(state[t + BODY.y]!, state[t + BODY.vy]!, observation.tick, now) >= SLICE.cutY && (state[t + BODY.flags]! & FLAG.grounded) === 0 ? { buttons: BUTTON.TAP, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) } : normal;
+  }
+  // Bouchání (P54C T6): sonda hraje jako robot, dokud hodný cíl nevykoukne z díry; pak do ní bouchne.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.hazard && world.rules.some((ref) => ref.id === 'whack_hit')) return holeOpen(state, target) ? { buttons: BUTTON.TAP, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) } : normal;
+  // Chytání (P54C T5): sonda hraje jako robot, dokud bomba visí nad obrazem; pak stojí v jejím pruhu, ať do koše spadne právě ona.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.hazard) return state[t + BODY.y]! > CATCH.viewTop ? normal : { buttons: 0, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) };
   if (control === 'move_free' || control === 'fight') return { buttons: 0, axis: axisOfDirection(directionToward(dx, dz)) };
   if (control === 'steer' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.DOWN, axis: 0 };
   if (control === 'glide' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.HOLD, axis: 0 };
@@ -246,6 +272,12 @@ export class WitnessRecorder {
   private readonly teamShots = new Set<string>();
   private readonly namedAmmunition: boolean;
   private readonly launched = new Map<number, { x: number; y: number; z: number; tick: number }>();
+  /** Hodné cíle bouchání (P54C T6) zasažené v tomhle tiku; zranily, jen když tik opravdu ubral život. */
+  private readonly struckGood: number[] = [];
+  /** Nepřátelé obrany pruhů (P54C T7), kteří v tomhle tiku prošli hradbou; zranili, jen když tik opravdu ubral život. */
+  private readonly breached: number[] = [];
+  /** Bomby krájení (P54C T8) rozseknuté v tomhle tiku; zranily, jen když tik opravdu ubral život. */
+  private readonly slicedBombs: number[] = [];
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = { ...world, rules: world.rules.map(underlyingRule) };
@@ -260,7 +292,7 @@ export class WitnessRecorder {
     this.race = this.control === 'steer' && this.world.rules.some(rule => rule.id === 'rival_finish' && !('land' in rule.params)) ||
       this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
     this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes', hop: 'hop', crowd: 'crowd', push: 'roam' };
     this.movementVerb = this.control === 'steer' && baseControlOf(this.world.control).params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
     for (const binding of this.bindings.values()) {
@@ -424,6 +456,59 @@ export class WitnessRecorder {
     }
     // Akce Grab (P46A) bere věc v dosahu bez dotyku: věc hry je sebraná stejně jako dotykem.
     if (ref.id === 'ability_grab' && effect.kind === 'despawn' && (roleAt(state, effect.body) === ROLE.collectible || this.binding(effect.body, state)?.roleKind === 'collectible')) this.add('collect', player, effect.body, tick, 'grabbed-ability', state);
+    // Chytání (P54C T5): věc, kterou pravidlo dopadu odebere nad zemí, padla hrdinovi do koše – ovoce je chycené,
+    // bomba ho zranila. Co propadlo, zmizí až na zemi a nedokazuje nic.
+    if (ref.id === 'catch_fall' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! > 0) {
+      const code = roleAt(state, effect.body);
+      // Záměr čte „catches falling apples“ jako `catch` (P54C T13) – chycená věc ho dokazuje stejně jako sběr.
+      if (code === ROLE.collectible) for (const verb of ['collect', 'catch']) this.add(verb, player, effect.body, tick, 'caught-in-lane', state);
+      else if (code === ROLE.hazard) this.harm(effect.body, player, tick, 'falling-bomb-caught', state);
+    }
+    // Bouchání (P54C T6): cíl, který pravidlo úderu odebere ještě v okně, dostal ránu – krtek je rozbitý; hodný
+    // cíl hráče zranil, ubral-li tik život (`afterTick`). Co se po okně schovalo samo, nedokazuje nic.
+    if (ref.id === 'whack_hit' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! < WHACK.band) {
+      const code = roleAt(state, effect.body);
+      if (code === ROLE.target) {
+        this.add('whack', player, effect.body, tick, 'whacked-in-hole', state);
+        this.add('defeat', player, effect.body, tick, 'target-whacked', state);
+        // Záměr čte hit, pop a smash jako `interact` (úder do věci, P54C T13) – rána do cíle v díře ho dokazuje.
+        this.add('interact', player, effect.body, tick, 'whacked-in-hole', state);
+      } else if (code === ROLE.hazard) this.struckGood.push(effect.body);
+    }
+    // Krájení (P54C T8): věc, kterou pravidlo švihu odebere ve výšce řezu (ne na zemi), byla rozseknutá – ovoce je
+    // dokázané krájení, bomba hráče zranila, ubral-li tik život (`afterTick`). Co dopadlo na zem, nedokazuje nic.
+    if (ref.id === 'slice_cut' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! >= SLICE.cutY && (state[bodyBase(effect.body) + BODY.flags]! & FLAG.grounded) === 0) {
+      const code = roleAt(state, effect.body);
+      if (code === ROLE.collectible) this.add('slice', player, effect.body, tick, 'sliced-at-cut-height', state);
+      else if (code === ROLE.hazard) this.slicedBombs.push(effect.body);
+    }
+    // Obrana pruhů (P54C T7): zásah, jehož útočník je šíp z luku hrdiny (druh `bolt`), dokazuje střelbu; nepřítel, kterého
+    // pravidlo zásahu odebere na nule HP, padl. Kdo odejde s HP, prošel hradbou – zranil, ubral-li tik život (`afterTick`).
+    if (ref.id === 'defense_hit') {
+      if (effect.kind === 'hit' && kindAt(this.world, state, effect.by) === 'bolt') this.add('shoot', player, effect.body, tick, 'bolt-hit-in-lane', state);
+      if (effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.chaser) {
+        if (bodyHp(state, effect.body) === 0) this.add('defeat', player, effect.body, tick, 'enemy-stopped-in-lane', state);
+        else this.breached.push(effect.body);
+      }
+    }
+    // Slučování (P54C T11): předmět, který vypustil pust hráče, je puštěný (kámen po trpělivosti nedokazuje nic);
+    // předmět, který vytvořilo pravidlo sloučení ze dvou stejných předmětů v kontaktu, dokazuje sloučení.
+    if (ref.id === 'merge_drop' && effect.kind === 'spawn' && roleAt(state, effect.template) === ROLE.collectible) this.add('drop', player, effect.template, tick, 'item-dropped', state);
+    if (ref.id === 'merge_join' && effect.kind === 'spawn') this.add('merge', player, effect.template, tick, 'equal-items-merged', state);
+    // Vytlačování (P54C T12): soupeř, kterému pravidlo pádu vzalo HP, je za okrajem ringu po výpadu hrdiny – vystrčený.
+    // Pád hrdiny z ringu (ztracený život) způsobil soupeř, který u něj stojí nejblíž – ten hrdinu vystrčil (sonda hrozby).
+    // Záměr čte push a shove jako `kick` (šablona `push` slovníku, `vocab/anchors.ts`) – vystrčení z ringu ho dokazuje stejně.
+    if (ref.id === 'push_out' && effect.kind === 'hit' && roleAt(state, effect.body) === ROLE.enemy) for (const verb of ['push', 'kick']) this.add(verb, player, effect.body, tick, 'pushed-out-of-ring', state);
+    if (ref.id === 'push_out' && effect.kind === 'damage') {
+      const shover = nearestRival(state);
+      if (shover >= 0) this.harm(shover, player, tick, 'pushed-hero-out-of-ring', state);
+    }
+    // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
+    if (ref.id === 'defense_goal' && effect.kind === 'win') {
+      const keep = [...this.bindings.values()].find((binding) => binding.roleId === 'castle');
+      // „protect the tower from monsters“ (P54C T13): záměr čte „protect“ jako vlastní sloveso, ubráněná hradba ho dokazuje stejně.
+      for (const verb of ['defend', 'protect']) this.add(verb, player, keep?.body ?? null, tick, 'held-every-wave', state);
+    }
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {
       if (effect.by === player) {
@@ -524,6 +609,8 @@ export class WitnessRecorder {
     const spike = bodyBase(body);
     if (this.control === 'platform' && code === ROLE.hazard && kindAt(this.world, state, body) === 'spikes' &&
         (state[spike + BODY.flags]! & FLAG.kinematic) === 0 && state[spike + BODY.vx] === 0 && state[spike + BODY.vy] === 0 && state[spike + BODY.vz] === 0) this.add('obstacle', body, player, tick, evidence, state);
+    // Bomba chytání, která sondě padla do koše, je i to, čemu se věta vyhýbá („dodges a wolf“ čte záměr jako `obstacle`).
+    if (evidence === 'falling-bomb-caught') this.add('obstacle', body, player, tick, evidence, state);
     // Hlídka arény používá skutečný dohled; pouhý popisek „guard“ nestačí.
     const control = baseControlOf(this.world.control);
     const sight = (control.params.chase as { patrol?: number } | undefined)?.patrol;
@@ -562,6 +649,18 @@ export class WitnessRecorder {
     }
     if (state[HEADER.runState] === RUN_STATE.lost) for (const loss of this.pendingLosses) this.harm(loss.body, player, tick, loss.evidence, state);
     this.pendingLosses.length = 0;
+    if (this.struckGood.length > 0 && state[HEADER.counters + COUNTER.health]! < before[HEADER.counters + COUNTER.health]!) {
+      for (const body of this.struckGood) this.harm(body, player, tick, 'good-target-whacked', state);
+    }
+    this.struckGood.length = 0;
+    if (this.breached.length > 0 && state[HEADER.counters + COUNTER.health]! < before[HEADER.counters + COUNTER.health]!) {
+      for (const body of this.breached) this.harm(body, player, tick, 'enemy-broke-through', state);
+    }
+    this.breached.length = 0;
+    if (this.slicedBombs.length > 0 && state[HEADER.counters + COUNTER.health]! < before[HEADER.counters + COUNTER.health]!) {
+      for (const body of this.slicedBombs) this.harm(body, player, tick, 'bomb-sliced', state);
+    }
+    this.slicedBombs.length = 0;
     const p = bodyBase(player);
     for (let body = 0; body < state[BODY_COUNT]!; body += 1) {
       const binding = this.binding(body, state);
@@ -603,7 +702,13 @@ export class WitnessRecorder {
     // gravity and thrust. Its airborne translation is not driving on a road.
     const verb = this.movementVerb;
     const hero = this.binding(player, state);
-    if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) this.add(verb, player, null, tick, 'player-moved', state);
+    if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) {
+      this.add(verb, player, null, tick, 'player-moved', state);
+      // Záměr čte „crosses the road“ (lexikon `ROAD`) jako běh, „leads a crowd of foxes“ jako `lead` s davem hrdinů:
+      // skok přes silnici a dav, který hrdina vede, je dokazují stejně.
+      if (verb === 'hop') this.add('run', player, null, tick, 'player-moved', state);
+      if (verb === 'crowd') this.add('lead', player, player, tick, 'player-moved', state);
+    }
     if (this.race) {
       for (const b of this.bindings.values()) {
         if (roleAt(state, b.body) !== ROLE.enemy || !live(state, b.body)) continue;

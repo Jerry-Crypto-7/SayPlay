@@ -5,7 +5,7 @@
  */
 
 import { CAPABILITIES } from '../capabilities';
-import { CONTROLS } from '../spec';
+import { READ_CONTROLS } from '../spec';
 import { ROLE_KINDS, VERB_CLASSES } from './schema';
 
 const VERB_HINTS: Record<(typeof VERB_CLASSES)[number], string> = {
@@ -30,7 +30,7 @@ export function readerSystemPrompt(): string {
   return [
     'Read one game idea sentence and answer one JSON object. Never add words that are not implied by the sentence.',
     'control: the playable control that fits the main verb best:',
-    ...CONTROLS.map((id) => `- ${id}: ${CAPABILITIES[id].cues}`),
+    ...READ_CONTROLS.map((id) => `- ${id}: ${CAPABILITIES[id].cues}`),
     'verbs: up to 4 verbs of the sentence, main verb first; word = the verb as written, class = one of:',
     ...VERB_CLASSES.map((id) => `- ${id}: ${VERB_HINTS[id]}`),
     'hero: who the player is, 1-3 words from the sentence, or null.',

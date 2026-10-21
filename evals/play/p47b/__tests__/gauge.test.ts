@@ -38,7 +38,8 @@ describe('P47B action gauge', () => {
 
   it('counts a duel’s punch and dodge as the sentence’s strike and shield from params.verb (T8)', async () => {
     const text = 'a sumo bear shoves rivals and blocks their slaps';
-    const meta = draftGameSpecWithMeta('a sumo bear shoves rivals out of the ring', 1);
+    // „out of the ring“ hraje od P54C T13b vytlačování z ringu; „around the ring“ je týž duel.
+    const meta = draftGameSpecWithMeta('a sumo bear shoves rivals around the ring', 1);
     const row = await verbRowOf({ id: 't', text, wants: ['strike', 'shield'] }, { ...meta, spec: { ...meta.spec, abilities: ['strike', 'shield'] } }, 5);
     expect(row.control).toBe('duel');
     expect([row.hasAction, row.botUsed, row.verbFired]).toEqual([true, true, true]);

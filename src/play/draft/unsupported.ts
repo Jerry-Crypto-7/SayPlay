@@ -124,6 +124,11 @@ const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
   timing: 'a timing game',
   rhythm: 'a rhythm game',
   duel: 'a duel',
+  lanes: 'a lane game',
+  hop: 'a road-crossing game',
+  crowd: 'a crowd runner',
+  merge: 'a merge game',
+  push: 'a sumo game',
 };
 
 /** Hra žánru (P32B T2) se jmenuje podle žánru a režimu – ovládání pahýlu je jen dnešní náhrada. */
@@ -150,7 +155,10 @@ function closestOf(draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): 
 /** Věta a hotový návrh → hláška, nebo `null`, když hra splní, co věta chtěla. */
 export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): Honesty | null {
   const text = sentence.toLowerCase();
-  const match = CLASSES.find((entry) => entry.cues.some((cue) => cue.test(text)));
+  // Obranu před vlnami hraje od P54C T13 obrana pruhů (držení postaví obránce) – hláška „neumíme“ by u ní lhala.
+  // Slučování („merge watermelons like suika game“) hraje od P54C T13b žánr slučování – tentýž důvod.
+  const played = (kind: UnsupportedKind): boolean => (kind === 'build_place' && draft.genre?.id === 'defense') || (kind === 'idle' && draft.genre?.id === 'merge');
+  const match = CLASSES.find((entry) => !played(entry.kind) && entry.cues.some((cue) => cue.test(text)));
   if (match === undefined) {
     // Jen dokud hra je návrh věty bez slovesa – od P36A T11 sběr v Aréně, uložené hry dřív běžec; AI verze s jinou hrou hlášku nepotřebuje.
     const plain = draft.control === 'runner' || (draft.genre?.id === 'arena' && draft.genre.mode === 'collect');

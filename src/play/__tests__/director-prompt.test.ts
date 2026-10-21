@@ -18,9 +18,9 @@ import { EMISSION_MODEL } from '@/model/prompt';
 import { goldenPrompts } from '../../../evals/play/golden';
 import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
-import { GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes, recipeAnswerSchema } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
-import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
+import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_PITCH, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
@@ -92,7 +92,9 @@ describe('director prompt', () => {
         expect(line, module.id).toBeUndefined();
         continue;
       }
-      expect(line, module.id).toContain(`modes ${ready.join('|')};`);
+      // P54C T14b: jediný režim `default` řádek nevypisuje – záhlaví říká „mode default unless listed“.
+      if (ready.join() === 'default') expect(line, module.id).not.toContain('modes ');
+      else expect(line, module.id).toContain(`modes ${ready.join('|')};`);
       expect(line, module.id).toContain(`hero ${module.heroClasses.join('/')}`);
       for (const [key, range] of Object.entries(module.paramBounds)) expect(line, module.id).toContain(`${key} ${String(range.min)}..${String(range.max)}`);
     }
@@ -101,8 +103,55 @@ describe('director prompt', () => {
   it('offers live recipe movement names without exposing low-level control specs', () => {
     for (const system of [directorSystemPrompt(), buildCompactRequest('x', null).system]) {
       expect(system).not.toMatch(/tap_go|CONTROLS|controlParams/);
-      for (const cell of liveCells()) expect(system).toContain(`- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`);
+      // P54C T14: tabulka po pohybech – řádek `- <pohyb>: akce/cíl/hrozby, …`, víc kusů spojuje `+`.
+      // T14b: pohyby se stejnými kombinacemi sdílejí řádek (`- run, jump: …`).
+      const rows = system.split('\n').slice(system.split('\n').findIndex((line) => line.startsWith('LIVE COMBINATIONS')) + 1, system.split('\n').findIndex((line) => line.startsWith('LEGACY GENRES')));
+      const entriesOf = (move: string) => {
+        const row = rows.find((line) => line.slice(2, line.indexOf(': ')).split(', ').includes(move));
+        return row?.slice(row.indexOf(': ') + 2).split(', ') ?? [];
+      };
+      // Každý pohyb stojí v tabulce právě jednou.
+      expect(rows.flatMap((line) => line.slice(2, line.indexOf(': ')).split(', ')).sort()).toEqual([...new Set(liveCells().filter((cell) => !DIRECTOR_PENDING.has(cell.preset.genre)).map((cell) => cell.recipe.move))].sort());
+      for (const cell of liveCells()) {
+        const entry = `${cell.recipe.actions.join('+') || '-'}/${cell.recipe.objective}/${cell.recipe.threats.join('+') || '-'}`;
+        // P54C T5: živý žánr, který režisér ještě nenabízí (`DIRECTOR_PENDING`), v promptu není – ani buňkou, ani řádkem žánru.
+        if (DIRECTOR_PENDING.has(cell.preset.genre)) expect(entriesOf(cell.recipe.move), cell.id).not.toContain(entry);
+        else expect(entriesOf(cell.recipe.move), cell.id).toContain(entry);
+      }
+      for (const genre of DIRECTOR_PENDING) expect(system).not.toMatch(new RegExp(`^- ${genre} \\(`, 'm'));
       expect(system).toContain('unmet');
+    }
+  });
+
+  // P54C T14: žánr bez narážek (žánry pruhů) by v nabídce stál jako „- catch ()“ – model by nevěděl, co hraje.
+  it('describes every offered genre: its cues or one sentence with one example sentence (P54C T14)', () => {
+    const system = directorSystemPrompt();
+    for (const module of MODULES.filter((each) => readyModes(each).length > 0)) {
+      const about = system.split('\n').find((text) => text.startsWith(`- ${module.id} (`))?.match(/^- \S+ \((.*)\): (?:modes|hero) /)?.[1];
+      expect(about, module.id).toBeTruthy();
+      if (module.cues.length === 0) {
+        expect(GENRE_PITCH[module.id], module.id).toBeDefined();
+        expect(about, module.id).toMatch(/^[^;"]+; "[^"]+"$/);
+      }
+    }
+    // T14: čtyři žánry pruhů, T14b: čtyři žánry fáze 3.
+    for (const genre of ['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const) {
+      expect(readyModes(GENRE_MODULES[genre] as GenreModule), genre).toEqual(['default']);
+      expect(system, genre).toContain(`- ${genre} (${GENRE_PITCH[genre]!}): hero `);
+    }
+  });
+
+  // P54C T14: odpověď smí jmenovat živé žánry pruhů oběma tvary. T14b: i žánry fáze 3 – kostra už žádná nezbyla.
+  it('accepts the eight new genres as a recipe and as a legacy GenreSpec', () => {
+    expect(DIRECTOR_PENDING.size).toBe(0);
+    const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
+    const genres = variants.flatMap((variant) => variant.properties.genre?.enum ?? []);
+    const content = { hero: 'fox', setting: 'forest', unmet: [] };
+    for (const genre of ['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push']) {
+      expect(genres, genre).toContain(genre);
+      const cell = liveCells().find((live) => live.preset.genre === genre);
+      expect(cell, genre).toBeDefined();
+      expect(recipeAnswerSchema.safeParse({ ...content, recipe: cell!.recipe }).success, cell!.id).toBe(true);
     }
   });
 
@@ -130,6 +179,10 @@ describe('director prompt', () => {
   // P39 T11: 10 082 B – obsazení místo `enemy`/`enemyMoves`/`collectible`/`target`: tvar položky a řádek na každé `does`.
   // P45B T10: +1 500 B na průběh hry (`logic`) – řádek gramatiky a příklad s fází, časovačem a vlnou; strop 14 200 B.
   // P46E T3: řádek novinek AI verze (boss, akce, úseky) s příkladem na každý hlavní žánr – 14 964 B; strop 15 000 B.
+  // P54C T14: čtyři žánry pruhů (řádek s větou a příkladem, buňky v tabulce, +828 B) by daly ~15 800 B; tabulka živých
+  // kombinací po pohybech a zkrácené duplicitní věty pokynů – 14 968 B, strop beze změny.
+  // P54C T14b: čtyři žánry fáze 3 (+853 B) – jediný režim `default` v záhlaví, run a jump jedním řádkem tabulky, zapojení
+  // průběhu jen v řádku Course, sloučené věty pokynů, příklady pravidel bez null – 14 970 B, strop beze změny.
   it('stays under 15 000 bytes for all forty golden sentences, with examples and the complete intent', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {

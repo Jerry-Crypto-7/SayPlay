@@ -75,10 +75,14 @@ describe('P51 T5: a new game boss comes in past a full actor cap', () => {
   });
 });
 
-/** Věty dev sady P51 (`evals/play/p51/dev.json`): aréna se sbíráním, díly z padající kořisti, soupeře a překážky. */
+/**
+ * Věty dev sady P51 (`evals/play/p51/dev.json`): aréna se sbíráním, díly z padající kořisti, soupeře a překážky.
+ * P54C T13: a01 a a03 („catches falling eggs / stars“) hrají žánr chytání v pruzích; tytéž díly dávají věty, kde padá
+ * jen nástraha a kořist ne.
+ */
 const SENTENCES = [
-  { id: 'a01', text: 'a farmer catches falling eggs with a basket in the henhouse', parts: ['catch', 'hazard'] },
-  { id: 'a03', text: 'a goalkeeper catches falling stars in a magic meadow', parts: ['rival', 'catch', 'hazard'] },
+  { id: 'a01', text: 'a farmer catches eggs in the henhouse while hailstones fall', parts: ['catch', 'hazard'] },
+  { id: 'a03', text: 'a goalkeeper catches stars in a magic meadow while meteors fall', parts: ['rival', 'catch', 'hazard'] },
 ];
 
 const worldOf = (spec: GameSpecV1, seed: number): ArcadeWorld => {

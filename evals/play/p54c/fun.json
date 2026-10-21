@@ -1,0 +1,211 @@
+{
+ "schema": "p54c-fun.v1",
+ "task": "P54C T17",
+ "a": {
+  "base": "http://127.0.0.1:3411",
+  "run": "p54c-t17-a",
+  "commit": "1476989e",
+  "side": "old game, main before P54C"
+ },
+ "b": {
+  "base": "http://127.0.0.1:3412",
+  "run": "p54c-t17-b",
+  "commit": "ee57477b",
+  "side": "new genre, HEAD"
+ },
+ "pick": "pure-rand xoroshiro128plus(54017): one uniformInt per genre in order catch, whack, defense, slice, hop, crowd, merge, push, then 2 more from the remaining dev targets",
+ "target": "new genre wins >= 6/10",
+ "skipped": false,
+ "calls": 10,
+ "summary": {
+  "n": 10,
+  "newWins": 5,
+  "oldWins": 5,
+  "ties": 0,
+  "newShare": 0.5,
+  "leftWinShare": 0.5
+ },
+ "met": false,
+ "pairs": [
+  {
+   "id": "c01",
+   "text": "a bear catches falling honey jars in a basket",
+   "genre": "catch.default",
+   "old": {
+    "genre": "arena",
+    "generator": "arena_collect",
+    "title": "Bear Hunt"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Bear Catch"
+   },
+   "left": "a",
+   "winner": "old",
+   "why": "Game A shows movement around a broad arena, glowing projectiles, and enemies that build up to a large foe close to the player near the end. Game B has a few falling objects above a small platform, with less variety and little visible escalation before it ends."
+  },
+  {
+   "id": "c07",
+   "text": "catch raindrops in a cup but not the lightning bolts",
+   "genre": "catch.default",
+   "old": {
+    "genre": "arena",
+    "generator": "arena_catch",
+    "title": "fox chases raindrop"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B keeps drops, coins, and black hazards close to the player on a small platform, creating more immediate action and danger before it ends. Game A shows scattered glowing objects across a large grassy field, with the player often out of view and little visible buildup."
+  },
+  {
+   "id": "f05",
+   "text": "place cannons to hold the lanes against invading crabs on the beach",
+   "genre": "defense.default",
+   "old": {
+    "genre": "shooter",
+    "generator": null,
+    "title": "Cannons Shootout"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "lane_defense",
+    "title": "Turtle Defense"
+   },
+   "left": "b",
+   "winner": "old",
+   "why": "Game B shows a cannon tracking several crabs across the beach, with crabs moving closer and visible shots and health bars adding action toward the end. Game A mostly repeats the same sparse lanes with an occasional distant crab and a turtle shifting along the bottom, showing less danger or buildup."
+  },
+  {
+   "id": "m03",
+   "text": "merge the same animals into bigger ones without filling the box",
+   "genre": "merge.default",
+   "old": {
+    "genre": "quest",
+    "generator": "quest_station",
+    "title": "Fox Quest"
+   },
+   "new": {
+    "genre": "merge",
+    "generator": "merge_box",
+    "title": "Fox Merge"
+   },
+   "left": "b",
+   "winner": "old",
+   "why": "Game B keeps threats close to the orange player, with marked figures, particle bursts, and a growing crowd that builds to large orange obstacles across the walkway. Game A shows falling figures and accumulating yellow balls, but most activity stays far below the player on the top platform, making it feel less immediate and varied."
+  },
+  {
+   "id": "o04",
+   "text": "a bunny hops across train tracks and busy streets to get home",
+   "genre": "hop.default",
+   "old": {
+    "genre": "platformer",
+    "generator": null,
+    "title": "Bunny Jump"
+   },
+   "new": {
+    "genre": "hop",
+    "generator": "hop_rows",
+    "title": "Bunny Crossing"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A repeatedly surrounds the player with dense moving traffic, with rivers, logs, and a railway adding variety and sustained danger through the final scenes. Game B has jumps across gaps and occasional spikes, but its spacious platforms and sparse hazards make the action look less intense and the ending less built up."
+  },
+  {
+   "id": "p07",
+   "text": "push the crabs off a shrinking island",
+   "genre": "push.default",
+   "old": {
+    "genre": "arena",
+    "generator": "arena_collect",
+    "title": "Turtle Hunt"
+   },
+   "new": {
+    "genre": "push",
+    "generator": "push_ring",
+    "title": "Turtle Push"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B keeps the green player close to several red enemies in a small arena, with a thick red boundary and more clustered threats building tension later. Game A has a richer desert scene, but much of the play appears spread across empty ground with distant threats and only a late close encounter."
+  },
+  {
+   "id": "r05",
+   "text": "gather more soldiers at gates and fight the boss at the end of the bridge",
+   "genre": "crowd.default",
+   "old": {
+    "genre": "arena",
+    "generator": "arena_collect",
+    "title": "Fox Hunt"
+   },
+   "new": {
+    "genre": "crowd",
+    "generator": "crowd_track",
+    "title": "Fox Army"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A offers frequent gate choices, a visibly growing crowd, and a large enemy near the finish followed by a sharp loss of runners. Game B has scattered glowing objects and later enemies, including a large pursuer, but much of the play takes place in a mostly empty arena with threats farther apart."
+  },
+  {
+   "id": "s07",
+   "text": "slash the bouncing slimes before they fall back down",
+   "genre": "slice.default",
+   "old": {
+    "genre": "arena",
+    "generator": "fight",
+    "title": "Fox Duel"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "slice_arcs",
+    "title": "Fox Slice"
+   },
+   "left": "a",
+   "winner": "old",
+   "why": "Game A shows close enemies, repeated bright attack effects, and a much larger enemy appearing later, giving the fight variety and escalation. Game B mostly shows the fox moving between five platforms in an otherwise empty field, with only occasional small objects and little visible buildup."
+  },
+  {
+   "id": "s08",
+   "text": "cut the flying donuts with a laser sword in space",
+   "genre": "slice.default",
+   "old": {
+    "genre": "glide",
+    "generator": "glide_course",
+    "title": "rocket reach"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "slice_arcs",
+    "title": "Astronaut Slice"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A shows the player moving across platforms as rings, glowing balls, and flying objects appear nearby, with more airborne action toward the end. Game B spends most of its time pressed against a large blank wall that obscures the action, then briefly reveals rocky terrain before ending."
+  },
+  {
+   "id": "w01",
+   "text": "whack the moles popping out of the garden holes",
+   "genre": "whack.default",
+   "old": {
+    "genre": "quest",
+    "generator": "quest_spatial",
+    "title": "Fox Quest"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "whack_holes",
+    "title": "Fox Whack"
+   },
+   "left": "b",
+   "winner": "old",
+   "why": "Game B shows movement among scattered creatures and obstacles, with a large enemy close to the player and a shrinking health bar creating a late fight. Game A mostly repeats movement beside five holes and a mallet, with little visible escalation before it ends."
+  }
+ ]
+}

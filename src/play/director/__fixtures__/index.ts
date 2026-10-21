@@ -34,11 +34,21 @@ export function genreAnswer(spec: Partial<GenreSpec> = {}): { readonly plan: str
  */
 const wolfDoes = (genre: GenreId, mode: string): CastRole => (genre === 'arena' && mode === 'fight' ? 'fight' : genre === 'throw' ? 'throw_at' : FOE_DOES[genre]);
 
+/**
+ * Co věta žánru jmenuje a dobrá odpověď obsadí (P54C): bráněné místo obrany jako `reach` (prompt: „at the reach place“,
+ * „defends its den“) – jinak hra brání výchozí hrad; provoz silnice („crosses a busy road“ záměr čte jako `traffic`)
+ * jako to, čemu se hrdina vyhýbá – jinak auta jezdí pod jménem vlka. Bez nich hra sloveso věty nedokáže.
+ */
+const KEPT: Partial<Record<GenreId, readonly { readonly label: string; readonly does: CastRole }[]>> = {
+  defense: [{ label: 'den', does: 'reach' }],
+  hop: [{ label: 'traffic', does: 'avoid' }],
+};
+
 /** Jedna dobrá odpověď na každý režim `ready` – náhrada `GOOD_ANSWERS` pro testy, které projdou všechny tvary hry. */
 export const GENRE_ANSWERS: readonly { readonly name: string; readonly answer: ReturnType<typeof genreAnswer> }[] = (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) =>
   readyModes(module).map((mode) => ({
     name: `${module.id}.${mode}`,
-    answer: genreAnswer({ genre: module.id, mode, cast: [{ label: 'wolf', does: wolfDoes(module.id, mode) }, { label: 'acorn', does: 'collect' }] } as Partial<GenreSpec>),
+    answer: genreAnswer({ genre: module.id, mode, cast: [...(KEPT[module.id] ?? []), { label: 'wolf', does: wolfDoes(module.id, mode) }, { label: 'acorn', does: 'collect' }] } as Partial<GenreSpec>),
   })),
 );
 

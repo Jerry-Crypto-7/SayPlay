@@ -3,202 +3,185 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:51.115Z",
- "ms": 11507,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:45.507Z",
+ "ms": 7803,
  "answer": {
-  "plan": "Create a voyage‑race game where a shopping cart races through a supermarket, avoiding obstacles and collecting items while a timer drives the progression of phases.",
+  "plan": "Create a supermarket‑race voyage where the player drives a shopping cart through aisles, avoiding obstacles and collecting items while a timer counts down.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "shopping cart",
-   "cast": [],
+   "cast": [
+    {
+     "label": "checkout counter",
+     "does": "reach",
+     "verb": "reach",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shelf",
+     "does": "avoid",
+     "verb": "avoid",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "price tag",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "conveyor belt",
+     "does": "avoid",
+     "verb": "avoid",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "cashier",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    }
+   ],
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
-   "params": null,
-   "ruleRoles": [],
-   "things": [],
+   "params": {
+    "hazards": 1,
+    "turbo": 0,
+    "roadWidth": 5000,
+    "roadEntryWidth": 5000,
+    "crashBudget": 3,
+    "namedLandingTarget": 0,
+    "touchdownSpeed": 30,
+    "gravityRisePct": 10,
+    "lengthM": 400,
+    "topSpeed": 250,
+    "gravity": 800,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
+   "ruleRoles": [
+    {
+     "id": "checkout",
+     "kind": "destination",
+     "label": "checkout counter",
+     "count": 1
+    },
+    {
+     "id": "shelf",
+     "kind": "hazard",
+     "label": "shelf",
+     "count": 1
+    },
+    {
+     "id": "tag",
+     "kind": "collectible",
+     "label": "price tag",
+     "count": 5
+    },
+    {
+     "id": "belt",
+     "kind": "hazard",
+     "label": "conveyor belt",
+     "count": 1
+    },
+    {
+     "id": "cashier",
+     "kind": "chaser",
+     "label": "cashier",
+     "count": 1
+    }
+   ],
+   "things": [
+    {
+     "role": "checkout",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "shelf",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "tag",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "belt",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "cashier",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
-        "timer": "phase1",
-        "ticks": 60
+        "timer": "race",
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "phase1Timer",
+     "id": "raceTimer",
      "verb": "wait",
      "when": {
-      "timer": "phase1"
+      "timer": "race"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "phase2"
-      },
+       "goPhase": "second"
+      }
+     ]
+    },
+    {
+     "id": "spawnCashier",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
       {
-       "wave": {
-        "role": "obstacle",
-        "count": 3,
-        "at": "edge"
+       "spawn": {
+        "role": "cashier",
+        "at": "other"
        }
       }
      ]
     },
     {
-     "id": "phase2",
-     "verb": "wait",
+     "id": "reachCheckout",
+     "verb": "reach",
      "when": {
-      "phase": "phase2"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase2",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase2Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase2"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "phase3"
-      },
-      {
-       "wave": {
-        "role": "collectible",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase3",
-     "verb": "wait",
-     "when": {
-      "phase": "phase3"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase3",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase3Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase3"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "phase4"
-      },
-      {
-       "wave": {
-        "role": "obstacle",
-        "count": 4,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase4",
-     "verb": "wait",
-     "when": {
-      "phase": "phase4"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase4",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase4Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase4"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "phase5"
-      },
-      {
-       "wave": {
-        "role": "collectible",
-        "count": 6,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase5",
-     "verb": "wait",
-     "when": {
-      "phase": "phase5"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase5",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase5Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase5"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "end"
-      }
-     ]
-    },
-    {
-     "id": "end",
-     "verb": "wait",
-     "when": {
-      "phase": "end"
+      "contact": [
+       "player",
+       "checkout"
+      ]
      },
      "if": null,
      "do": [
@@ -212,37 +195,32 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
-     },
-     {
-      "id": "phase2"
-     },
-     {
-      "id": "phase3"
-     },
-     {
-      "id": "phase4"
+      "id": "race"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "phase2"
-     },
-     {
-      "id": "phase3"
-     },
-     {
-      "id": "phase4"
+      "id": "second"
      }
     ],
     "events": null
    },
-   "boss": null,
-   "abilities": [],
-   "segments": null
+   "boss": {
+    "role": "cashier",
+    "name": "Cashier Chase",
+    "attack": "charge"
+   },
+   "abilities": [
+    "dash"
+   ],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
   }
  },
  "failure": null

@@ -30,12 +30,15 @@ const DUELS: readonly (readonly [string, string, AbilityId, string])[] = [
   ['v67', "a pickpocket duels another thief to swipe the king's crown", 'grab', 'swipe'],
 ];
 
-/** Duely bez střelby a krádeže: P47B T8 a P36A (duel), P47A dev (buňka duel), P47B dev v02, v07 (úder). */
+/**
+ * Duely bez střelby a krádeže: P47B T8 a P36A (duel), P47A dev (buňka duel), P47B dev v02, v07 (úder). Věta v07
+ * („shoves rivals out of a shrinking ring“) hraje od P54C T13b vytlačování z ringu – tady stojí duel se stejnými díly.
+ */
 const KEPT: readonly (readonly [string, string])[] = [
   ['p36a', 'cowboy duel at high noon, first to shoot wins'],
   ...p47a.sentences.filter((sentence) => sentence.cell === 'duel').map((sentence) => [sentence.id, sentence.text] as const),
   ['v02', 'A kangaroo boxer punches a robot opponent in a neon ring.'],
-  ['v07', 'a sumo wrestler shoves rivals out of a shrinking ring'],
+  ['v07', 'a sumo wrestler shoves rivals around a shrinking ring'],
 ];
 
 describe('P52 T8: a duel the hero shoots or grabs in keeps the duel and plays the action on its hit', () => {

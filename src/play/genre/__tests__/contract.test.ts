@@ -8,12 +8,16 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { compileArcade } from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { readGameSpec } from '@/play/spec';
 
-import { GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreSpec, genreSpecSchema } from '../contract';
+import { ALLOWED, liveCells } from '@/play/compose/allowed';
+
+import { classifyGenre } from '../classify';
+import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreId, type GenreSpec, genreSpecSchema } from '../contract';
 import penguin from '../__fixtures__/penguin.json';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 
@@ -36,6 +40,22 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'rhythm', mode: 'default', hero: 'drummer frog', cast: [{ label: 'lily pad', does: 'collect' }], setting: 'pond at night' },
   { genre: 'duel', mode: 'default', hero: 'cowboy', cast: [{ label: 'outlaw', does: 'fight' }], setting: 'dusty town' },
   { genre: 'flap', mode: 'default', hero: 'fish', cast: [{ label: 'pearl', does: 'collect' }], setting: 'underwater reef' },
+  // P54C T5: chytání v pěti pruzích.
+  { genre: 'catch', mode: 'default', hero: 'bear', cast: [{ label: 'apple', does: 'collect' }, { label: 'bomb', does: 'avoid' }], setting: 'orchard' },
+  // P54C T6: bouchání do pěti děr.
+  { genre: 'whack', mode: 'default', hero: 'farmer', cast: [{ label: 'mole', does: 'shoot_at' }, { label: 'bunny', does: 'avoid' }], setting: 'garden' },
+  // P54C T7: obrana pěti pruhů.
+  { genre: 'defense', mode: 'default', hero: 'knight', cast: [{ label: 'goblin', does: 'chase_me' }, { label: 'castle', does: 'reach' }], setting: 'castle walls' },
+  // P54C T8: krájení v pěti pruzích.
+  { genre: 'slice', mode: 'default', hero: 'ninja', cast: [{ label: 'watermelon', does: 'collect' }, { label: 'bomb', does: 'avoid' }], setting: 'dojo' },
+  // P54C T9: přeskákání silnice.
+  { genre: 'hop', mode: 'default', hero: 'chicken', cast: [{ label: 'taxi', does: 'avoid' }, { label: 'barn', does: 'reach' }], setting: 'farm road' },
+  // P54C T10: dav a brány.
+  { genre: 'crowd', mode: 'default', hero: 'penguin', cast: [{ label: 'saw', does: 'avoid' }, { label: 'giant', does: 'fight' }], setting: 'icy road' },
+  // P54C T11: pouštění a slučování (Rapier – načtený v `beforeAll`).
+  { genre: 'merge', mode: 'default', hero: 'cat', cast: [{ label: 'planet', does: 'collect' }], setting: 'outer space' },
+  // P54C T12: vytlačování z ringu (Rapier).
+  { genre: 'push', mode: 'default', hero: 'sumo wrestler', cast: [{ label: 'bull', does: 'fight' }], setting: 'bouncy ring' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -49,6 +69,11 @@ function firstWinningSeed(spec: Parameters<typeof compileArcade>[0]): ReturnType
 }
 
 describe('genre contract (P32-0 T3)', () => {
+  // Slučování (P54C T11) hraje na Rapieru; dveře publikace ho čekají vždy (`preloadPhysics`).
+  beforeAll(async () => {
+    await loadRapier();
+  });
+
   it('registers exactly the genres with the modes of the contract', () => {
     expect(Object.keys(GENRE_MODULES).sort()).toEqual([...GENRES].sort());
     for (const genre of GENRES) {
@@ -57,9 +82,9 @@ describe('genre contract (P32-0 T3)', () => {
     }
   });
 
-  it('has a sample for every genre and mode', () => {
+  it('has a sample for every genre and mode that plays', () => {
     const covered = SAMPLES.map((sample) => `${sample.genre}.${sample.mode}`);
-    const expected = GENRES.flatMap((genre) => GENRE_MODES[genre].map((mode) => `${genre}.${mode}`));
+    const expected = GENRES.flatMap((genre) => GENRE_MODES[genre].filter((mode) => GENRE_MODULES[genre].availability(mode as never) !== 'staged').map((mode) => `${genre}.${mode}`));
     expect(covered.sort()).toEqual(expected.sort());
   });
 
@@ -117,6 +142,46 @@ describe('genre contract (P32-0 T3)', () => {
     const fill = GENRE_MODULES.arena.draftFill('A cat collects glowing fish on a frozen lake while a polar bear chases it', null);
     expect(fill.genre).toBe('arena');
     expect(fill.hero).toBe('cat');
+  });
+});
+
+/**
+ * Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku.
+ * T5 přepnulo chytání (`catch`), T6 bouchání (`whack`), T7 obranu pruhů (`defense`), T8 krájení (`slice`),
+ * T9 přeskákání silnice (`hop`), T10 dav a brány (`crowd`), T11 pouštění a slučování (`merge`), T12 vytlačování
+ * (`push`) – kostra už žádný žánr nedrží; brány níž hlídají, kdyby se úloha žánru musela vrátit na kostru.
+ */
+const STAGED: readonly GenreId[] = [];
+
+describe('staged genres (P54C T4)', () => {
+  it('registers the remaining new genres with one default mode, staged, and a compile that refuses', () => {
+    for (const genre of STAGED) {
+      expect(GENRES).toContain(genre);
+      expect(GENRE_MODES[genre]).toEqual(['default']);
+      const module = GENRE_MODULES[genre];
+      expect(module.availability('default' as never)).toBe('staged');
+      expect(module.cues).toEqual([]);
+      expect(() => module.compile({ genre, mode: 'default', hero: 'fox', setting: 'forest' } as never)).toThrow(/not live/);
+      expect(FOE_DOES[genre]).toBeDefined();
+      expect(COUNT_PARAMS[genre]).toBeDefined();
+      expect(genreSpecSchema.safeParse({ genre, mode: 'default', hero: 'fox', setting: 'forest' }).success).toBe(true);
+    }
+  });
+
+  it('the classifier never ranks a staged genre, even when the sentence names it', () => {
+    const sentences = ['whack the moles before they hide', 'slice the flying fruit but not the bombs', 'catch the falling apples', 'defend the castle from waves of goblins', 'merge the fruits in a jar', 'a crowd runs through gates', 'hop across the busy road', 'push rivals out of the ring', 'a cozy game'];
+    for (const sentence of sentences) {
+      const ranked = classifyGenre(sentence, null).ranked;
+      expect(ranked.filter((choice) => (STAGED as readonly string[]).includes(choice.genre)), sentence).toEqual([]);
+    }
+  });
+
+  it('every staged genre has a staged cell and no live one', () => {
+    for (const genre of STAGED) {
+      const cell = ALLOWED.find((entry) => entry.id === `${genre}.default`);
+      expect(cell?.status, genre).toBe('staged');
+      expect(liveCells().some((entry) => entry.preset.genre === genre)).toBe(false);
+    }
   });
 });
 

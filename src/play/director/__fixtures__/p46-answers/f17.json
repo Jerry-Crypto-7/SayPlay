@@ -3,72 +3,93 @@
  "sentence": "a phoenix rises from the ashes over a burning desert",
  "axis": "flap",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:45.355Z",
- "ms": 5269,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:54.357Z",
+ "ms": 5525,
  "answer": {
-  "plan": "Create a flap‑style game where a phoenix soars over a burning desert, collecting glowing gems while avoiding falling embers and rising sandstorms.",
+  "plan": "Create a flap‑style game where a phoenix soars over a burning desert, collecting ashes and avoiding fire hazards while a timer triggers a wave of embers.",
   "spec": {
    "genre": "flap",
    "mode": "default",
    "hero": "phoenix",
    "cast": [
     {
-     "label": "gem",
+     "label": "ash",
      "does": "collect",
-     "verb": "grab",
-     "states": null,
+     "verb": "rise",
+     "states": 2,
      "patrol": false
     },
     {
      "label": "ember",
      "does": "avoid",
-     "verb": "dodge",
-     "states": null,
-     "patrol": false
+     "verb": "fly",
+     "states": 2,
+     "patrol": true
     },
     {
-     "label": "sandstorm",
+     "label": "fire",
      "does": "avoid",
-     "verb": "dodge",
-     "states": null,
+     "verb": "burst",
+     "states": 2,
      "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "desert",
    "palette": "desert",
-   "params": null,
+   "params": {
+    "lengthM": 200,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 90
+   },
    "ruleRoles": [
     {
-     "id": "gem",
+     "id": "ash",
      "kind": "collectible",
-     "label": "gem",
-     "count": null
+     "label": "ash",
+     "count": 5
     },
     {
      "id": "ember",
      "kind": "hazard",
      "label": "ember",
-     "count": null
+     "count": 10
     },
     {
-     "id": "sandstorm",
+     "id": "fire",
      "kind": "hazard",
-     "label": "sandstorm",
-     "count": null
+     "label": "fire",
+     "count": 3
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "ash",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "ember",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "fire",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
    "rules": [
     {
-     "id": "collect_gem",
-     "verb": "grab",
+     "id": "collect_ash",
+     "verb": "rise",
      "when": {
       "contact": [
        "player",
-       "gem"
+       "ash"
       ]
      },
      "if": [
@@ -82,6 +103,43 @@
       },
       {
        "score": 10
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "ember_wave",
+     "verb": "wait",
+     "when": {
+      "timer": "ember_wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "ember",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "fire_wave",
+     "verb": "wait",
+     "when": {
+      "timer": "fire_wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "fire",
+        "count": 1,
+        "at": "edge"
+       }
       }
      ]
     }
@@ -90,15 +148,18 @@
     "vars": null,
     "timers": [
      {
-      "id": "storm_timer"
+      "id": "ember_wave_timer"
+     },
+     {
+      "id": "fire_wave_timer"
      }
     ],
     "phases": [
      {
-      "id": "day"
+      "id": "first"
      },
      {
-      "id": "night"
+      "id": "second"
      }
     ],
     "events": null

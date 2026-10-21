@@ -24,6 +24,19 @@ export type ActionId = (typeof ACTIONS)[number];
 export const OBJECTIVES = ['race', 'reach', 'collect', 'survive', 'escape', 'defeat', 'catch', 'score', 'land', 'build'] as const;
 export type ObjectiveId = (typeof OBJECTIVES)[number];
 
+/**
+ * Kusy os nových žánrů P54C (T4). Zná je zatím jen recept (`compose/recipe.ts`), aby buňky `staged` měly tvar:
+ * věta je nevyčte (`extract.ts`), slovník je nekotví (`vocab/anchors.ts`) a podnět akce je nemá. Od T13 věty
+ * k žánrům vede klasifikátor a skladba hraje recept žánru celý (`genreSource` v `compose/assemble.ts`), takže
+ * do hlavních `MOVES` / `ACTIONS` / `OBJECTIVES` se nepřidávají.
+ * - pohyb: `lanes` = přeskok mezi pěti pruhy, `hop` = skok po polích, `crowd` = dav dvěma pruhy, `drop` = dávkovač nad nádobou;
+ * - akce: `whack` = úder do vyskočeného cíle, `slice` = švih přes letící věci, `merge` = sloučit dvě stejné, `push` = vytlačit soupeře;
+ * - cíl: `defend` = nepustit vlny k hradu.
+ */
+export const GENRE_MOVES = ['lanes', 'hop', 'crowd', 'drop'] as const;
+export const GENRE_ACTIONS = ['whack', 'slice', 'merge', 'push'] as const;
+export const GENRE_OBJECTIVES = ['defend'] as const;
+
 /** Co jde proti hrdinovi. `guard` = hlídka, která chytí, když vidí; `rival` = soupeř, který závodí nebo hraje proti. */
 export const THREATS = ['chaser', 'guard', 'hazard', 'obstacle', 'rival'] as const;
 export type ThreatId = (typeof THREATS)[number];

@@ -48,7 +48,17 @@ interface Entry {
   readonly dynamic: boolean;
   /** Co fáze do stavu naposledy zapsala (u překážky poloha, kterou Rapieru předala). */
   readonly last: Int32Array;
+  /** Tvar, ze kterého vznikl collider: w h d a příznak koule (P54C T11, `fits`). */
+  readonly shape: readonly [number, number, number, number];
 }
+
+/** Tvar tělesa ve stavu, jak ho zná collider: rozměry a koule/kvádr. */
+const shapeOf = (state: ArcadeState, base: number): [number, number, number, number] => [
+  state[base + BODY.w] as number,
+  state[base + BODY.h] as number,
+  state[base + BODY.d] as number,
+  (state[base + BODY.flags] as number) & FLAG.ball,
+];
 
 class PhysicsSession {
   private readonly world: RapierModule.World;
@@ -82,7 +92,7 @@ class PhysicsSession {
       .setRestitution(((flags >> RESTITUTION_SHIFT) & RESTITUTION_MASK) / 1000)
       .setRestitutionCombineRule(rapier.CoefficientCombineRule.Max);
     this.world.createCollider(collider, rigid);
-    const entry: Entry = { rigid, dynamic, last: new Int32Array(SYNCED.length) };
+    const entry: Entry = { rigid, dynamic, last: new Int32Array(SYNCED.length), shape: shapeOf(state, base) };
     this.teleport(state, base, entry, true);
     return entry;
   }
@@ -114,6 +124,19 @@ class PhysicsSession {
     return false;
   }
 
+  /**
+   * Sedí collider slotu ještě na těleso ve stavu (P54C T11)? `spawn` jádra bere první mrtvý slot, takže
+   * sloučený předmět jiné velikosti dostane slot menšího – starý collider by mu zůstal. Nový collider dostane
+   * jen těleso, se kterým hýbe Rapier; pevná překážka si slot drží jako dřív. Hry, které do slotu vrací jen
+   * těleso téhož tvaru (míč P41), sem nikdy nedojdou a Rapier v nich dělá totéž co dřív.
+   */
+  private fits(state: ArcadeState, base: number, entry: Entry, dynamic: boolean): boolean {
+    if (!dynamic) return true;
+    if (!entry.dynamic) return false;
+    const shape = shapeOf(state, base);
+    return shape.every((value, k) => value === entry.shape[k]);
+  }
+
   /** Jeden krok: předat Rapieru, co změnilo jádro, krok, zapsat kvantovaný výsledek. */
   step(state: ArcadeState): void {
     const count = state[HEADER.bodyCount] as number;
@@ -128,15 +151,21 @@ class PhysicsSession {
       const active = (flags & FLAG.alive) !== 0 && i !== held && (dynamic || ((flags & FLAG.solid) !== 0 && state[base + BODY.role] !== ROLE.projectile));
       let entry = this.entries.get(i);
       if (!active) {
-        if (entry?.rigid.isEnabled() === true) entry.rigid.setEnabled(false);
+        // Rapier 0.19: vypnuté těleso (`setEnabled(false)`) vyřadí ze simulace i těleso, které se ho dotýká –
+        // koule na zmizelé kouli visí bez gravitace (P54C T12r1). Odebrané těleso ne; vrácený slot dostane nové.
+        if (entry !== undefined) {
+          this.world.removeRigidBody(entry.rigid);
+          this.entries.delete(i);
+        }
         continue;
+      }
+      if (entry !== undefined && !this.fits(state, base, entry, dynamic)) {
+        this.world.removeRigidBody(entry.rigid);
+        entry = undefined;
       }
       if (entry === undefined) {
         entry = this.create(state, base, dynamic);
         this.entries.set(i, entry);
-      } else if (!entry.rigid.isEnabled()) {
-        entry.rigid.setEnabled(true);
-        this.teleport(state, base, entry, true);
       } else if (this.changed(state, base, entry)) this.teleport(state, base, entry);
     }
     for (let k = 0; k < PHYSICS_SUBSTEPS; k += 1) this.world.step();

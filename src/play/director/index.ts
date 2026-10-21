@@ -308,7 +308,8 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
       const plain = readComposedAnswer(withoutAnswerRules(outcome.body), intent, deps.seed ?? 1, reading);
       if (plain.ok) { ruleBlocks = ruleInvalidIssues(selected.detail, written); selected = plain; }
     }
-    if (!selected.ok) return fallback('MALFORMED', { stage: 'read', reason: selected.reason, detail: selected.detail, raw: outcome.body });
+    // Recept bez živé buňky (T14br2) je čitelný, jen neprošel tabulkou – ne „rozbitá odpověď“.
+    if (!selected.ok) return fallback(selected.reason === 'RECIPE_NOT_LIVE' ? 'UNREPAIRED' : 'MALFORMED', { stage: 'read', reason: selected.reason, detail: selected.detail, raw: outcome.body });
     const originalRuleIssues = [...ruleBlocks];
     let nativeSpec = selected.spec;
     const deterministic = repairDeterministically(nativeSpec, blockingIssues(critique(nativeSpec)));

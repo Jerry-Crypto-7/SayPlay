@@ -10,7 +10,7 @@ import { BALL_PLAYER, DEFAULT_LABELS, defaultCollectible, defaultFoe } from '../
 import { essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
-import { assemble, sourceFor, unplayed, type AssemblySource } from './assemble';
+import { assemble, genreSource, sourceFor, unplayed, wholeGame, type AssemblySource } from './assemble';
 import type { TemplateName } from '../arcade/rules/templates';
 import { compileTemplated, withoutPartNames } from './compile';
 import { namedProjectiles } from './projectiles';
@@ -54,6 +54,13 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre, item.does).label };
     return item;
   });
+  if (wholeGame(cell.recipe)) {
+    // P54C T13: a lanes genre (T13b: every whole-game genre) reads its own roles (`draftFill`: what falls, pops up,
+    // marches or flies); the intent's verbs name another game's roles there – its `catch` is a chase prey, a bear
+    // catching jars would turn into a hazard.
+    const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
+    return { ...draft, setting, ...(palette === undefined ? {} : { palette }), cast: cast.slice(0, 8) };
+  }
   const spoken: string[] = [];
   const sentenceHeads = (intent.sentence.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map(singular);
   const head = (label: string): string => singular(label.toLowerCase()).split(' ').at(-1) ?? label;
@@ -201,7 +208,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   // A reading whose movement cannot play a requested action yields to a later reading
   // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
   const sources = ranking.map((choice, rank) => {
-    const source = sourceFor(intent, { genre: choice.genre, mode: choice.mode, hero: intent.hero ?? 'fox', setting: intent.setting ?? 'forest' } as GenreSpec);
+    const fallback = { genre: choice.genre, mode: choice.mode, hero: intent.hero ?? 'fox', setting: intent.setting ?? 'forest' } as GenreSpec;
+    // P54C T13: a lanes genre the classifier heard and put first plays its own recipe; anywhere else it is read as before.
+    const source = (rank === 0 && choice.score > 0 ? genreSource(fallback) : null) ?? sourceFor(intent, fallback);
     return { source, rank, missing: unplayed(source) };
   }).sort((a, b) => a.missing - b.missing || a.rank - b.rank);
   for (const { source } of sources) {

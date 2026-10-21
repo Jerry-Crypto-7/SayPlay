@@ -14,6 +14,14 @@ export const STAGES = {
   timing: { scene: 'timing', input: 'tap' },
   rhythm: { scene: 'rhythm', input: 'tap' },
   duel: { scene: 'duel', input: 'duel' },
+  // P54C T4: ovládání nových žánrů. Scénu `lanes` kreslí `genres/lanes/LaneScene`; scény hop, crowd, merge a push
+  // přidá úloha žánru – do té doby je nevybere žádná živá buňka.
+  lanes: { scene: 'lanes', input: 'lanes' },
+  hop: { scene: 'hop', input: 'hop' },
+  crowd: { scene: 'crowd', input: 'lanes' },
+  // P54C T11: vstup slučování (tah posouvá dávkovač, puštění prstu pustí předmět) si zapíná scéna sama.
+  merge: { scene: 'merge', input: 'merge' },
+  push: { scene: 'push', input: 'arena' },
 } as const;
 export type Stage = (typeof STAGES)[keyof typeof STAGES];
 export function stageOf(control: string): Stage | null {

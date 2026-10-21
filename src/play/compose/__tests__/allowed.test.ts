@@ -21,7 +21,9 @@ describe('allowed recipes', () => {
     }
   });
   it('has a live assembly for every existing genre and mode', () => {
+    // Kostry P54C (T4, `staged`) živou buňku nemají – dostane ji úloha žánru.
     for (const genre of GENRES) for (const mode of GENRE_MODES[genre]) {
+      if (ALLOWED.some(cell => cell.id === `${genre}.${mode}` && cell.status === 'staged')) continue;
       expect(liveCells().some(cell => cell.preset.genre === genre && cell.preset.mode === mode), `${genre}.${mode}`).toBe(true);
     }
   });

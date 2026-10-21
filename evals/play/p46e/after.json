@@ -3,18 +3,20 @@
  "answers": "src/play/director/__fixtures__/p46-answers",
  "summary": {
   "n": 25,
-  "authored": 25,
-  "ready": 25,
-  "readyShare": 1,
+  "authored": 21,
+  "ready": 24,
+  "readyShare": 0.96,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.28,
-  "onlyCharacters": 10,
+  "adds": 0.333,
+  "onlyCharacters": 8,
   "boss": 7,
   "action": 2,
-  "segments": 0,
+  "segments": 1,
   "actionLost": 0,
-  "reasons": {}
+  "reasons": {
+   "MALFORMED": 1
+  }
  },
  "rows": [
   {
@@ -38,8 +40,8 @@
   {
    "id": "d04",
    "sentence": "shoot down paper planes over a school playground",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -64,9 +66,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -102,6 +102,7 @@
    "keptLogic": true,
    "adds": [
     "boss",
+    "action",
     "characters"
    ],
    "actionLost": false
@@ -127,8 +128,8 @@
   {
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -137,7 +138,10 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss",
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -154,7 +158,8 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss"
+    "boss",
+    "characters"
    ],
    "actionLost": false
   },
@@ -171,23 +176,19 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "boss",
-    "action",
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
    "id": "m01",
    "sentence": "toaster tornado",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
     2,
-    3
+    2
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -197,8 +198,8 @@
   {
    "id": "m03",
    "sentence": "Grandma kart",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -225,9 +226,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -257,7 +256,7 @@
    "reason": null,
    "rules": [
     0,
-    4
+    0
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -340,6 +339,38 @@
   {
    "id": "o04",
    "sentence": "racing car escapes police and shoots enemies",
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
+   "rules": [
+    3,
+    null
+   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "o05",
+   "sentence": "Hamster escapes a supermarket Roomba",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "o06",
+   "sentence": "Jumping arcade game in the forest",
    "directed": "authored",
    "directedReason": "VERB_UNPROVED",
    "status": "ready",
@@ -356,42 +387,10 @@
    "actionLost": false
   },
   {
-   "id": "o05",
-   "sentence": "Hamster escapes a supermarket Roomba",
-   "directed": "authored",
-   "directedReason": null,
-   "status": "ready",
-   "reason": null,
-   "rules": [
-    3,
-    4
-   ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [],
-   "actionLost": false
-  },
-  {
-   "id": "o06",
-   "sentence": "Jumping arcade game in the forest",
-   "directed": "authored",
-   "directedReason": null,
-   "status": "ready",
-   "reason": null,
-   "rules": [
-    3,
-    3
-   ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [],
-   "actionLost": false
-  },
-  {
    "id": "o07",
    "sentence": "A ninja frog jumps across lily pads in a swamp",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -430,28 +429,30 @@
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
    "id": "s021",
    "sentence": "obby game with lava and spinning bars",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
+    "segments",
     "characters"
    ],
    "actionLost": false

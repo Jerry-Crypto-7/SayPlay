@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { goldenPrompts } from '../../../../evals/play/golden';
 import sentenceSet from '../../../../evals/play/p32/sentences.json';
+import { T13_MOVED } from '../../../../evals/play/p54c/rows';
 import type { Reading } from '../../read/schema';
 import { readGameSpec } from '../../spec';
 import { classifyGenre, verbPlayedBy } from '../classify';
@@ -32,6 +33,12 @@ describe('verbPlayedBy', () => {
     expect(verbPlayedBy(['fight'], 'arena', 'fight', false)).toBe(true);
     expect(verbPlayedBy(['fight'], 'arena', 'escape', false)).toBe(false);
     expect(verbPlayedBy(['escape'], 'arena', 'escape', false)).toBe(true);
+  });
+
+  it('a base form with several rows is played by each of them: defend is the arena fight and the lane defense (P54C T13)', () => {
+    expect(verbPlayedBy(['defend'], 'arena', 'fight', false)).toBe(true);
+    expect(verbPlayedBy(['defend'], 'defense', 'default', false)).toBe(true);
+    expect(verbPlayedBy(['defend'], 'arena', 'escape', false)).toBe(false);
   });
 });
 
@@ -104,7 +111,9 @@ describe('classifyGenre', () => {
 
   it('ranks every mode of every genre once and gives a sentence with no cue the arena collect, the runner last', () => {
     const result = classifyGenre('A key inside a glass box on a pedestal behind a locked gate.', null, genreDoubles());
-    const modes = GENRES.flatMap((genre) => GENRE_MODES[genre]).length;
+    // Kostry P54C (T4, `staged`) v pořadí nejsou vůbec.
+    const doubles = genreDoubles();
+    const modes = GENRES.flatMap((genre) => GENRE_MODES[genre].filter((mode) => doubles[genre].availability(mode as never) !== 'staged')).length;
     expect(result.ranked).toHaveLength(modes);
     expect(new Set(result.ranked.map((choice) => `${choice.genre}.${choice.mode}`)).size).toBe(modes);
     expect(result.ranked[0]).toMatchObject({ genre: 'arena', mode: 'collect', score: 0 });
@@ -118,7 +127,8 @@ describe('classifyGenre', () => {
     ['a song about the sea with drums and lights', 'rhythm.default'],
     ['my rival from school at high noon', 'duel.default'],
     ['like flappy bird but underwater', 'flap.default'],
-    ['a sloth tries to cross a busy jungle highway', 'runner.default'],
+    // Přejít rušnou silnici je od P54C T13b sloveso přeskákání (P30 d05, `T13_MOVED`); jméno běhu dál rozhodne jinde.
+    ['a sloth tries to cross a frozen lake', 'runner.default'],
   ])('plays the verbless "%s" as %s', (sentence, mode) => {
     const first = classifyGenre(sentence, null, GENRE_MODULES).ranked[0];
     expect(`${first.genre}.${first.mode}`).toBe(mode);
@@ -158,6 +168,35 @@ describe('classifyGenre', () => {
   // P32B T5b: karta nápadu „The floor is lava“ je hra na přežití, ne běžec přes lávu (narážka `lava`).
   it('reads "the floor is lava" as a survival escape', () => {
     expect(top('The floor is lava, for 60 seconds', GENRE_MODULES)).toMatchObject({ genre: 'arena', mode: 'escape' });
+  });
+
+  // P54C T13: klasifikátor, který by do nových žánrů přetáhl staré věty, dá zelené testy a jiné hry – pin nad P30 dev
+  // proti startu P54C (`start.json`) a nad dev sadou P54C (živé žánry hrají svůj žánr, pasti zůstanou, kde byly v T2).
+  it('moves no P30 dev sentence off its P54C starting genre except the three defense sentences (T13), the road crossing and the sumo ring (T13b)', () => {
+    const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; text: string; classify: string }[] };
+    const was = new Map(json('p54c/start.json').sentences.map((row) => [row.id, row.classify]));
+    const moved = Object.fromEntries(json('p30/dev.json').sentences.flatMap(({ id, text }) => {
+      const first = classifyGenre(text, null, GENRE_MODULES).ranked[0];
+      const now = `${first.genre}.${first.mode}`;
+      return now === was.get(id) ? [] : [[id, now]];
+    }));
+    expect(moved).toEqual(Object.fromEntries(Object.entries(T13_MOVED).map(([id, row]) => [id, row.classify])));
+  });
+
+  it('puts every P54C dev sentence of a routed genre in its genre and leaves the traps where T2 found them', () => {
+    const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/p54c/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; family: string; expect: string; text: string; classify: string }[] };
+    const baseline = new Map(json('baseline.json').sentences.map((row) => [row.id, row.classify]));
+    // Žánry MVP, které klasifikátor zná od T13, a žánry fáze 3 od T13b (přeskákání, dav, slučování, vytlačování).
+    const routed = new Set(['catch.default', 'whack.default', 'defense.default', 'slice.default', 'hop.default', 'crowd.default', 'merge.default', 'push.default']);
+    const sentences = json('dev.json').sentences;
+    for (const row of sentences) {
+      const first = classifyGenre(row.text, null, GENRE_MODULES).ranked[0];
+      const now = `${first.genre}.${first.mode}`;
+      if (row.family === 'trap') expect(now, row.id).toBe(baseline.get(row.id));
+      else if (routed.has(row.expect)) expect(now, row.id).toBe(row.expect);
+      else expect(routed.has(now), row.id).toBe(false);
+    }
+    expect(sentences.filter((row) => routed.has(row.expect))).toHaveLength(64);
   });
 
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {

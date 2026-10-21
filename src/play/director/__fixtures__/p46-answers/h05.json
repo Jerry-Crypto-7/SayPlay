@@ -3,33 +3,29 @@
  "sentence": "boxing a kangaroo in the australian outback",
  "axis": "duel",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:56.410Z",
- "ms": 5294,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:50.642Z",
+ "ms": 5134,
  "answer": {
-  "plan": "arena fight with a kangaroo in the Australian outback",
+  "plan": "Create a duel‑style arena where the player boxes a kangaroo in the Australian outback, using a simple 2‑phase timer to spawn the opponent and trigger a win condition.",
   "spec": {
-   "genre": "arena",
-   "mode": "fight",
-   "hero": "fox",
+   "genre": "duel",
+   "mode": "default",
+   "hero": "boxer",
    "cast": [
     {
      "label": "kangaroo",
      "does": "fight",
-     "verb": "duel",
-     "states": null,
+     "verb": "box",
+     "states": 2,
      "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": "throw",
    "setting": "australian outback",
    "palette": "desert",
    "params": null,
-   "counts": {
-    "enemy": 1,
-    "collectible": null
-   },
    "ruleRoles": [
     {
      "id": "kangaroo",
@@ -38,13 +34,35 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "kangaroo",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "spawn_kangaroo",
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "spawn",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnKangaroo",
      "verb": "spawn",
      "when": {
-      "phase": "start"
+      "timer": "spawn"
      },
      "if": null,
      "do": [
@@ -57,35 +75,22 @@
      ]
     },
     {
-     "id": "kangaroo_wave",
-     "verb": "wave",
-     "when": {
-      "phase": "fight"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "kangaroo",
-        "count": 1,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "kangaroo_chase",
-     "verb": "chase",
+     "id": "winFight",
+     "verb": "fight",
      "when": {
       "contact": [
        "player",
        "kangaroo"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "holding": "kangaroo"
+      }
+     ],
      "do": [
       {
-       "damage": 1
+       "win": true
       }
      ]
     }
@@ -94,15 +99,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "fight_timer"
+      "id": "spawn"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "fight"
+      "id": "second"
      }
     ],
     "events": null
@@ -112,12 +117,11 @@
     "name": "Roo Rumble",
     "attack": "charge"
    },
-   "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "abilities": [
+    "strike",
+    "dash"
+   ],
+   "segments": null
   }
  },
  "failure": null

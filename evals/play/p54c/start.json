@@ -1,0 +1,507 @@
+{
+ "schema": "p54c-start.v1",
+ "originMain": "1476989e",
+ "replayGate": {
+  "passed": 80,
+  "failed": 0,
+  "files": 7,
+  "success": true
+ },
+ "determinismGrep": [
+  "src/play/arcade/__tests__/kernel-logic.test.ts:101",
+  "src/play/arcade/__tests__/kernel-logic.test.ts:102",
+  "src/play/arcade/physics/__tests__/determinism.test.ts:18",
+  "src/play/arcade/physics/__tests__/determinism.test.ts:20",
+  "src/play/arcade/pieces/behaviours/__tests__/swarm.test.ts:101",
+  "src/play/arcade/pieces/behaviours/__tests__/swarm.test.ts:103"
+ ],
+ "liveCells": {
+  "count": 62,
+  "ids": [
+   "roam.catch",
+   "run.escape",
+   "jump.escape",
+   "flap.collect",
+   "drive.race",
+   "drive.race+shoot",
+   "drive.reach",
+   "drive.reach+shoot",
+   "drive.escape",
+   "drive.escape+shoot",
+   "drive.reach+deliver",
+   "drive.reach+shoot+collect",
+   "runner.default",
+   "platformer.default",
+   "flap.default",
+   "shooter.default",
+   "throw.default",
+   "timing.stack",
+   "timing.precision",
+   "timing.bridge",
+   "rhythm.default",
+   "duel.default",
+   "arena.escape",
+   "arena.collect",
+   "arena.fight",
+   "voyage.race",
+   "voyage.land",
+   "quest.spatial",
+   "quest.station",
+   "catch.default",
+   "whack.default",
+   "defense.default",
+   "slice.default",
+   "hop.default",
+   "crowd.default",
+   "merge.default",
+   "push.default",
+   "runner.default+shoot_at",
+   "runner.default+chase_me",
+   "runner.default+chase_me+shoot_at",
+   "platformer.default+shoot_at",
+   "platformer.default+chase_me",
+   "platformer.default+chase_me+shoot_at",
+   "arena.escape+collect",
+   "glide.reach",
+   "glide.reach+shoot",
+   "glide.collect",
+   "glide.collect+shoot",
+   "glide.race",
+   "glide.race+shoot",
+   "glide.escape",
+   "glide.escape+shoot",
+   "walk.reach",
+   "walk.collect",
+   "walk.reach+guard",
+   "walk.collect+guard",
+   "walk.escape",
+   "walk.escape+collect",
+   "walk.escape+collect+guard",
+   "ball.defeat",
+   "ball.score",
+   "ball.score+rival"
+  ]
+ },
+ "sentences": [
+  {
+   "id": "s039",
+   "classify": "shooter.default",
+   "fallback": false,
+   "draft": "shooter.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s037",
+   "classify": "shooter.default",
+   "fallback": false,
+   "draft": "shooter.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s002",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "arena.escape",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "s003",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "s006",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "s008",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "s022",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "id": "s021",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "id": "s035",
+   "classify": "flap.default",
+   "fallback": false,
+   "draft": "flap.default",
+   "cell": "assembled.flap"
+  },
+  {
+   "id": "s050",
+   "classify": "throw.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s088",
+   "classify": "throw.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s069",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s056",
+   "classify": "quest.spatial",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "id": "s058",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "id": "s111",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "s095",
+   "classify": "throw.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s188",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "arena.fight",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "s144",
+   "classify": "rhythm.default",
+   "fallback": false,
+   "draft": "rhythm.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "s155",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "arena.fight",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "s099",
+   "classify": "timing.stack",
+   "fallback": false,
+   "draft": "timing.stack",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "h01",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "arena.escape",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "h02",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "id": "h03",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "h04",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "h05",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "duel.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "h06",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "arena.escape",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "h07",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.escape",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "h08",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "h09",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "h10",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "j01",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "j02",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "j03",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "j04",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "quest.spatial",
+   "cell": "assembled.walk"
+  },
+  {
+   "id": "j05",
+   "classify": "quest.spatial",
+   "fallback": false,
+   "draft": "quest.spatial",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "j06",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "j07",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "j08",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "arena.fight",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "j09",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "j10",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "d01",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.ball"
+  },
+  {
+   "id": "d02",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "d03",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d04",
+   "classify": "shooter.default",
+   "fallback": false,
+   "draft": "shooter.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d05",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "id": "d06",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "id": "d07",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d08",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "arena.escape",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "d09",
+   "classify": "timing.stack",
+   "fallback": false,
+   "draft": "timing.stack",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d10",
+   "classify": "duel.default",
+   "fallback": false,
+   "draft": "duel.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d11",
+   "classify": "rhythm.default",
+   "fallback": false,
+   "draft": "rhythm.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d12",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.glide"
+  },
+  {
+   "id": "d13",
+   "classify": "timing.stack",
+   "fallback": false,
+   "draft": "timing.stack",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d14",
+   "classify": "arena.escape",
+   "fallback": false,
+   "draft": "quest.spatial",
+   "cell": "assembled.walk"
+  },
+  {
+   "id": "d15",
+   "classify": "throw.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d16",
+   "classify": "quest.spatial",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "d17",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "d18",
+   "classify": "duel.default",
+   "fallback": false,
+   "draft": "duel.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "id": "d19",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "id": "d20",
+   "classify": "quest.spatial",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  }
+ ]
+}

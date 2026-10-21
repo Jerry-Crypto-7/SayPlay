@@ -95,10 +95,18 @@ describe('progress toward the goal', () => {
 
 describe('rng streams', () => {
   it('adds pacing at the end, so the four old streams draw what they drew before', () => {
-    expect(SUBSYSTEMS.at(-1)).toBe('pacing');
+    // Za `pacing` přibyl jen stream fronty slučování (P54C T11); pacing zůstal pátý.
+    expect(SUBSYSTEMS.slice(0, 5)).toEqual(['spawn', 'ai', 'effect', 'layout', 'pacing']);
     const rows: Record<string, number[][]> = {};
     for (const s of ['spawn', 'ai', 'effect', 'layout'] as const) rows[s] = Array.from({ length: 20 }, (_, i) => { const stream = createStreams(i + 1)[s]; return [0, 1, 2, 3].map(() => nextInt(stream, 0, 999_999)); });
     // Otisk prvních 4 hodnot semínek 1–20 změřený na `origin/main` 0714a352 před přidáním streamu.
     expect(createHash('sha256').update(JSON.stringify(rows)).digest('hex')).toBe('2be94f14d8a9983fe3e997c45f826cf7f56c9d4b3e38edf68fdf21aab886c638');
+  });
+
+  it('adds the merge queue stream after pacing, so pacing draws what it drew before (P54C T11)', () => {
+    expect(SUBSYSTEMS.at(-1)).toBe('merge');
+    const rows = Array.from({ length: 20 }, (_, i) => { const stream = createStreams(i + 1).pacing; return [0, 1, 2, 3].map(() => nextInt(stream, 0, 999_999)); });
+    // Otisk změřený na HEAD 6d5bfce9 před přidáním streamu `merge`.
+    expect(createHash('sha256').update(JSON.stringify(rows)).digest('hex')).toBe('6a3094b06729daeb255c0e77151541ce2bd7b7079a73c646ffc9428a91e18666');
   });
 });

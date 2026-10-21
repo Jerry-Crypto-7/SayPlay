@@ -3,12 +3,12 @@
  "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:40.086Z",
- "ms": 7575,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:48.832Z",
+ "ms": 6990,
  "answer": {
-  "plan": "arena fight with stone golem vs grave robbers in an ancient desert temple",
+  "plan": "Arena‑fight template for a stone golem vs. grave robbers in a desert temple",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -18,14 +18,14 @@
      "label": "grave robber",
      "does": "fight",
      "verb": "crush",
-     "states": null,
-     "patrol": false
+     "states": 2,
+     "patrol": true
     },
     {
      "label": "gem",
      "does": "collect",
      "verb": "grab",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
@@ -36,7 +36,7 @@
     "entryDistance": 12000,
     "chaseLead": 60,
     "seconds": 60,
-    "items": 3,
+    "items": 5,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 2,
@@ -44,14 +44,14 @@
     "enemies": 2,
     "enemyHp": 5,
     "enemySpeed": 80,
-    "playerHp": 7,
+    "playerHp": 9,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 60
    },
    "counts": {
     "enemy": 2,
-    "collectible": 3
+    "collectible": 5
    },
    "ruleRoles": [
     {
@@ -64,100 +64,100 @@
      "id": "gem",
      "kind": "collectible",
      "label": "gem",
-     "count": 3
+     "count": 5
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "robber",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "gem",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
    "rules": [
     {
      "id": "spawnRobbers",
-     "verb": "spawn",
+     "verb": "wait",
      "when": {
       "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
+       "wave": {
         "role": "robber",
-        "at": "player"
+        "count": 2,
+        "at": "edge"
        }
       }
      ]
     },
     {
      "id": "spawnGems",
-     "verb": "spawn",
+     "verb": "wait",
      "when": {
       "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
+       "wave": {
         "role": "gem",
-        "at": "other"
+        "count": 5,
+        "at": "edge"
        }
       }
      ]
     },
     {
      "id": "robberChase",
-     "verb": "chase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "robber"
-      ]
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "set": {
+        "var": "chase",
+        "value": 1
+       }
       }
      ]
     },
     {
-     "id": "gemCollect",
-     "verb": "collect",
+     "id": "robberAttack",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "gem"
-      ]
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "score": 100
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "robberDefeat",
-     "verb": "defeat",
-     "when": {
-      "contact": [
-       "player",
-       "robber"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "despawn": "self"
-      },
-      {
-       "score": 50
+       "set": {
+        "var": "attack",
+        "value": 1
+       }
       }
      ]
     }
    ],
    "logic": {
-    "vars": null,
+    "vars": [
+     {
+      "id": "chase",
+      "start": 0
+     },
+     {
+      "id": "attack",
+      "start": 0
+     }
+    ],
     "timers": [
      {
       "id": "phase1"
@@ -168,17 +168,23 @@
       "id": "start"
      },
      {
-      "id": "battle"
+      "id": "mid"
+     },
+     {
+      "id": "end"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "grave robber",
-    "name": "Ancient Tomb Guardian",
+    "name": "Dread Tomb Keeper",
     "attack": "charge"
    },
-   "abilities": [],
+   "abilities": [
+    "dash",
+    "strike"
+   ],
    "segments": [
     "newFoe",
     "moving",

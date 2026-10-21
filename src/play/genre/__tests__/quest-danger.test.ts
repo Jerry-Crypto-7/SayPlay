@@ -112,7 +112,7 @@ describe('quest danger – an idle player loses a life before the clock runs out
       for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) if (state[bodyBase(body) + BODY.role] === ROLE.chaser) chasers += 1;
       expect(chasers).toBe(DEFAULT_CHASERS);
     }
-    expect(gameOf(bare).objective.description).toBe('Light all 5 candle in each of 3 rounds before the hunter catches you.');
+    expect(gameOf(bare).objective.description).toBe('Light all 5 candles in each of 3 rounds before the hunter catches you.');
   });
 
   it('station: the robot never lets it boil over – it wins with every life', () => {

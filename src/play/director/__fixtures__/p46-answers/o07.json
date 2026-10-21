@@ -3,38 +3,146 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:11.968Z",
- "ms": 4758,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:24.015Z",
+ "ms": 5668,
  "answer": {
-  "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, with a simple two‑phase timer logic that spawns a wave of lily pads and then ends the level.",
+  "plan": "Create a platform‑style jump game where a ninja frog hops over lily pads in a swamp, with timed waves of lily‑pad obstacles that appear after each second.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
    "hero": "ninja frog",
-   "cast": [],
+   "cast": [
+    {
+     "label": "lily pad",
+     "does": "reach",
+     "verb": "jump",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "frog",
+     "does": "reach",
+     "verb": "jump",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "swamp",
+     "does": "scenery",
+     "verb": "none",
+     "states": null,
+     "patrol": false
+    }
+   ],
    "heroAction": "none",
    "setting": "swamp",
    "palette": "forest",
-   "params": null,
-   "counts": null,
-   "ruleRoles": [],
-   "things": [],
-   "rules": [],
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
+   "counts": {
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "pad",
+     "kind": "destination",
+     "label": "lily pad",
+     "count": null
+    },
+    {
+     "id": "frog",
+     "kind": "exit",
+     "label": "ninja frog",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "pad",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "frog",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "padwave",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "wavePads",
+     "verb": "wait",
+     "when": {
+      "timer": "padwave"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "pad",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "resetWave",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "padwave",
+        "ticks": 60
+       }
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "spawn_timer"
+      "id": "padwave"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "mid"
+      "id": "second"
      }
     ],
     "events": null

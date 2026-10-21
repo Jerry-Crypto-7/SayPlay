@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:18.780Z",
- "ms": 6811,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:30.518Z",
+ "ms": 6502,
  "answer": {
-  "plan": "Create a spatial quest where the bee collects honey while avoiding a looming storm in a windy meadow, using a simple phase‑based timer to trigger the storm’s arrival.",
+  "plan": "Create a spatial quest where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple timer‑driven phase change to trigger the storm’s arrival.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -18,21 +18,29 @@
      "label": "honey",
      "does": "collect",
      "verb": "gather",
-     "states": null,
-     "patrol": null
+     "states": 2,
+     "patrol": false
     },
     {
      "label": "storm",
      "does": "avoid",
      "verb": "hit",
-     "states": null,
-     "patrol": null
+     "states": 2,
+     "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "windy meadow",
    "palette": "meadow",
-   "params": null,
+   "params": {
+    "seconds": 60,
+    "paceBudgetPct": 80,
+    "count": 1,
+    "chasers": 0,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
    "counts": {
     "enemy": 0,
     "target": 1
@@ -42,22 +50,33 @@
      "id": "honey",
      "kind": "collectible",
      "label": "honey",
-     "count": null
+     "count": 1
     },
     {
      "id": "storm",
      "kind": "hazard",
      "label": "storm",
-     "count": null
+     "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "honey",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "storm",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "startStormTimer",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
@@ -78,23 +97,55 @@
      "if": null,
      "do": [
       {
-       "toggle": "storm"
+       "goPhase": "second"
       },
       {
-       "goPhase": "storm"
+       "toggle": "storm"
       }
      ]
     },
     {
-     "id": "stormEffect",
-     "verb": "wait",
+     "id": "collectHoney",
+     "verb": "collect",
      "when": {
-      "phase": "storm"
+      "contact": [
+       "player",
+       "honey"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "score": 10
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "avoidStorm",
+     "verb": "avoid",
+     "when": {
+      "contact": [
+       "player",
+       "storm"
+      ]
      },
      "if": null,
      "do": [
       {
        "damage": 1
+      },
+      {
+       "lose": true
       }
      ]
     }
@@ -108,25 +159,17 @@
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "storm"
+      "id": "second"
      }
     ],
     "events": null
    },
-   "boss": {
-    "role": "storm",
-    "name": "Tempest",
-    "attack": "drop"
-   },
+   "boss": null,
    "abilities": [],
-   "segments": [
-    "moving",
-    "faster",
-    "trap"
-   ]
+   "segments": null
   }
  },
  "failure": null

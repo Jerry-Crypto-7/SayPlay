@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:38:10.786Z",
- "ms": 6391,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:14:02.199Z",
+ "ms": 6697,
  "answer": {
-  "plan": "Create an arena‑escape game where a knight collects three keys while ghosts chase him in a haunted castle.",
+  "plan": "Create an arena‑escape game where the knight collects keys while ghosts chase him.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -18,7 +18,7 @@
      "label": "key",
      "does": "collect",
      "verb": "collect",
-     "states": null,
+     "states": 3,
      "patrol": false
     },
     {
@@ -32,97 +32,104 @@
    "heroAction": "none",
    "setting": "haunted castle",
    "palette": "castle",
-   "params": null,
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 60,
+    "seconds": 60,
+    "items": 3,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 2,
+    "chaserSpeed": 70,
+    "enemies": 2,
+    "enemyHp": 3,
+    "enemySpeed": 60,
+    "playerHp": 5,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
    "counts": {
-    "enemy": 1,
+    "enemy": 2,
     "collectible": 3
    },
    "ruleRoles": [
     {
-     "id": "key1",
-     "kind": "collectible",
-     "label": "key",
-     "count": null
-    },
-    {
-     "id": "key2",
-     "kind": "collectible",
-     "label": "key",
-     "count": null
-    },
-    {
-     "id": "key3",
-     "kind": "collectible",
-     "label": "key",
-     "count": null
-    },
-    {
-     "id": "ghost1",
+     "id": "ghost",
      "kind": "chaser",
      "label": "ghost",
-     "count": null
+     "count": 2
+    },
+    {
+     "id": "key",
+     "kind": "collectible",
+     "label": "key",
+     "count": 3
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "ghost",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "key",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
    "rules": [
     {
-     "id": "spawn_keys",
-     "verb": "spawn",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "key1",
-        "at": "player"
-       }
-      },
-      {
-       "spawn": {
-        "role": "key2",
-        "at": "player"
-       }
-      },
-      {
-       "spawn": {
-        "role": "key3",
-        "at": "player"
+       "startTimer": {
+        "timer": "phase1",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "ghost_wave",
-     "verb": "wave",
+     "id": "phase1to2",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "phase1"
      },
      "if": null,
      "do": [
       {
+       "goPhase": "second"
+      },
+      {
        "wave": {
-        "role": "ghost1",
-        "count": 1,
+        "role": "ghost",
+        "count": 2,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "ghost_chase",
-     "verb": "chase",
+     "id": "phase2",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "ghost1"
-      ]
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "wave": {
+        "role": "key",
+        "count": 3,
+        "at": "edge"
+       }
       }
      ]
     }
@@ -131,29 +138,31 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "mid"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "ghost",
-    "name": "Haunted Specter",
+    "name": "Spectral Warden",
     "attack": "charge"
    },
-   "abilities": [],
+   "abilities": [
+    "dash"
+   ],
    "segments": [
-    "newFoe",
     "moving",
-    "faster"
+    "faster",
+    "newFoe"
    ]
   }
  },

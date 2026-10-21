@@ -31,6 +31,11 @@ const DEV_CELLS = {
   'arena.collect': 4, runner: 3, shooter: 2, rhythm: 3,
 };
 const HOLDOUT_GROUPS = { threat: 24, everyday: 15, fantasy: 12, 'non-game': 9 };
+/**
+ * Věty, které od P54C T13 hrají žánr chytání v pruzích: chytá se, co padá, nebo do kbelíku („catches falling eggs“,
+ * „raindrops in a bucket“). Štítek sady zůstává, jak byl při měření P51.
+ */
+const P54C_CATCH: ReadonlySet<string> = new Set(['k01', 'a01', 'a03', 'a04']);
 
 /**
  * Věty všech ostatních sad `evals/play/**`: `sentences[].text|sentence` a `groups.*[].sentence` (vzor `p47a/__tests__/sets.test.ts`).
@@ -77,9 +82,10 @@ describe('P51 sets', () => {
     expect(counts).toEqual(DEV_CELLS);
     for (const sentence of DEV.sentences) {
       const { spec } = draftGameSpecWithMeta(sentence.text, 1);
-      expect(genreOfSpec(spec), sentence.id).toBe(sentence.cell);
+      const moved = P54C_CATCH.has(sentence.id);
+      expect(genreOfSpec(spec), sentence.id).toBe(moved ? 'catch' : sentence.cell);
       // Aréna se sbíráním je v dev sadě jen ta s díly P42 – o tu jde T5.
-      if (sentence.cell === 'arena.collect') expect(spec.assemblyParts, sentence.id).toBeDefined();
+      if (sentence.cell === 'arena.collect' && !moved) expect(spec.assemblyParts, sentence.id).toBeDefined();
     }
   });
 

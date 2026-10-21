@@ -56,8 +56,10 @@ import {
 } from '../genre/contract';
 import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
+import { wholeGame } from '../compose/assemble';
 import { compose, type Composition } from '../compose/compose';
 import { compileRecipe } from '../compose/compile';
+import { PRESETS } from '../compose/presets';
 import { extractIntent } from '../intent/extract';
 import type { Intent } from '../intent/contract';
 import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
@@ -1089,6 +1091,14 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   rhythm: 'neon stage',
   duel: 'dusty town',
   flap: 'bright sky',
+  catch: 'orchard',
+  whack: 'garden',
+  defense: 'castle walls',
+  slice: 'dojo',
+  hop: 'busy road',
+  crowd: 'race track',
+  merge: 'candy shop',
+  push: 'sumo ring',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 
@@ -1269,8 +1279,6 @@ function draftGenre(
   const own = paramsOf(module, fill.params, seconds);
   const depth = depthOf(sentence);
   const params = Object.keys(depth).length === 0 ? own : { ...own, ...depth };
-  // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
-  const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
   // Co věc dělá: sloveso u ní ve větě, pak doplněk modulu (čtení modelem), pak role, kterou žánr hraje sám.
   const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
   // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
@@ -1280,7 +1288,13 @@ function draftGenre(
   // Co hod hází, je náboj (projektil = `scenery` se slovesem hodu, P39 T14), ne věc ke sběru – ta zůstane, jak ji věta říká.
   const item: CastItem | null =
     itemLabel === null || goalItem ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
-  const cast = castOf([
+  // P54C T13: žánr pruhů čte role sám (`draftFill`: co padá, vykukuje, jde k hradbě nebo letí, koho šetřit, co bránit);
+  // obecné role výš znají jen jednoho protivníka a jednu věc ke sběru – hodný cíl a bráněný hrad by zahodily.
+  // Předmět hlavního slovesa klasifikátoru („tap the ghosts…“) přibude, jen když ho modul nečetl. Od T13b totéž
+  // žánry fáze 3 (přeskákání, dav, slučování, vytlačování): role jim dá jejich `draftFill`.
+  const recipe = PRESETS[`${choice.genre}.${choice.mode}`];
+  const lanes = recipe !== undefined && wholeGame(recipe);
+  const cast = lanes ? castOf(fill.cast ?? [], verbThing) : castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
     ...(shotAt === null || shotAt === foeLabel ? [] : [{ label: shotAt, does: 'shoot_at' as const }]),
     ...(item === null ? [] : [item]),
@@ -1299,6 +1313,11 @@ function draftGenre(
     ...(place === null ? {} : { palette: place }),
     ...(params === null ? {} : { params }),
   };
+  // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
+  // Žánr pruhů má role z `draftFill`: počet věty patří jim („catches 5 falling bananas“, „shoves 2 seals off“, P54C).
+  const counts = countsOf(sentence, reading, lanes
+    ? { enemy: cast.find((entry) => entry.does === FOE_DOES[choice.genre])?.label ?? null, collectible: cast.find((entry) => entry.does === 'collect')?.label ?? null, target: null }
+    : { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
   if (!read.ok) return null;
@@ -1505,10 +1524,10 @@ export function draftChoiceOrder(sentence: string, ranking: GenreRanking, readin
  */
 export function draftForControl(sentence: string, control: ControlId, seed = 1): GameSpecV1 | null {
   if (control === 'tap_go') return draftGrid(sentence, seed, scoreArchetypes(sentence)).spec;
-  // Native recipe controls do not have a legacy single-control template.
-  if (control === 'glide' || control === 'walker' || control === 'ball') return null;
+  // Native recipe controls and the P54C genre controls do not have a legacy single-control template.
+  if (!Object.hasOwn(DEFAULT_CHOICE, control)) return null;
   const pick = pickControl(sentence.toLowerCase());
-  return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control]);
+  return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control as ControlChoice['control']]);
 }
 
 /** Věta → validní `GameSpecV1`, nikdy `null`, nikdy výjimka. */

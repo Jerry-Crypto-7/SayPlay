@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:32.510Z",
- "ms": 6478,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:41.841Z",
+ "ms": 5893,
  "answer": {
-  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, with timed waves and a simple phase‑based logic system.",
+  "plan": "Create a shooter game where an elf archer fires arrows at goblins perched on treetops, with a simple wave‑based timing mechanic.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -25,7 +25,16 @@
    "heroAction": "none",
    "setting": "forest clearing",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "targetWidthPct": 50,
+    "movingTargets": 0,
+    "waves": null,
+    "enemies": null,
+    "targets": null,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": null
+   },
    "counts": {
     "enemy": null,
     "target": null
@@ -38,7 +47,13 @@
      "count": null
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "goblin",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "start_wave",
@@ -67,22 +82,22 @@
       {
        "wave": {
         "role": "goblin",
-        "count": 3,
+        "count": 1,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "next_phase",
+     "id": "wave_end",
      "verb": "wait",
      "when": {
-      "timer": "wave_timer"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "second"
+       "goPhase": "first"
       }
      ]
     }
@@ -106,7 +121,7 @@
    },
    "boss": {
     "role": "goblin",
-    "name": "Goblin Horde",
+    "name": "Goblin Scout",
     "attack": "shoot"
    },
    "abilities": [

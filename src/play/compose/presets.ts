@@ -23,7 +23,30 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'voyage.land': { move: 'glide', actions: [], objective: 'land', threats: [] },
   'quest.spatial': { move: 'roam', actions: ['interact'], objective: 'interact', threats: ['chaser'] },
   'quest.station': { move: 'stationary', actions: ['interact'], objective: 'interact', threats: [] },
+  // P54C T5: chytání je živé – jeho buňka se z `STAGED_PRESETS` přesunula sem.
+  'catch.default': { move: 'lanes', actions: ['collect'], objective: 'collect', threats: ['hazard'] },
+  // P54C T6: bouchání je živé.
+  'whack.default': { move: 'lanes', actions: ['whack'], objective: 'defeat', threats: [] },
+  // P54C T7: obrana pruhů je živá.
+  'defense.default': { move: 'lanes', actions: ['shoot'], objective: 'defend', threats: ['chaser'] },
+  // P54C T8: krájení je živé.
+  'slice.default': { move: 'lanes', actions: ['slice'], objective: 'score', threats: ['hazard'] },
+  // P54C T9: přeskákání silnice je živé (vlastní ovládání `hop`, ne pruhy).
+  'hop.default': { move: 'hop', actions: [], objective: 'reach', threats: ['obstacle'] },
+  // P54C T10: dav a brány je živý (vlastní ovládání `crowd`).
+  'crowd.default': { move: 'crowd', actions: [], objective: 'defeat', threats: ['obstacle'] },
+  // P54C T11: pouštění a slučování je živé (vlastní ovládání `merge`, Rapier).
+  'merge.default': { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
+  // P54C T12: vytlačování z ringu je živé (vlastní ovládání `push`, Rapier).
+  'push.default': { move: 'roam', actions: ['push'], objective: 'defeat', threats: ['rival'] },
 };
+
+/**
+ * Recipes of the eight P54C genres (T4). They stay out of `PRESETS` – every PRESETS entry is a
+ * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
+ * P54C T12 made the last one live; the table stays for a genre whose own task has to fall back.
+ */
+export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {};
 
 /**
  * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested

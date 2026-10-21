@@ -1,4 +1,4 @@
-import type { GenreSpec } from '../genre/contract';
+import { FOE_DOES, type GenreSpec } from '../genre/contract';
 import { liveCells, assemblyOfCell } from '../compose/allowed';
 import { compileRecipe } from '../compose/compile';
 /**
@@ -15,10 +15,14 @@ import { compileRecipe } from '../compose/compile';
 
 import { isDeepStrictEqual } from 'node:util';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { memoryAnswerStore } from '@/server/answer-cache';
 
+import { arcadeWorldOf } from '../arcade/compile';
+import { sentenceSky } from '../arcade/look';
+import { loadRapier } from '../arcade/physics/world';
+import { verifyArcade } from '../arcade/verify';
 import { GENRE_ANSWERS, answerFixture, genreAnswer } from '../director/__fixtures__';
 import { answered, failed, fakeBranch, type FakeBranch } from '../director/__fixtures__/branch';
 import { GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
@@ -50,7 +54,12 @@ function compiled(answer = genreAnswer(), sentence?: string): GameSpecV1 {
   return compileRecipe(assemblyOfCell(cell, { ...read.genre, genre: cell.preset.genre, mode: cell.preset.mode } as GenreSpec));
 }
 
-const KEYPOINT: RepairIssue = { code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed: the robot never won', repairHint: 'fix the game or the claim' };
+/** Hra, jak ji `direct` vrátí: světlo z věty (P54B T11, `sentenceSky`) přidá až po ověření, robot soudí `compiled()` bez něj. */
+function lit(spec: GameSpecV1, sentence = SENTENCE): GameSpecV1 {
+  return { ...spec, theme: { ...spec.theme, ...sentenceSky(sentence, spec.theme) } };
+}
+
+const KEYPOINT: RepairIssue ={ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed: the robot never won', repairHint: 'fix the game or the claim' };
 
 /** Robot, který neprojde hru přesně tak, jak ji z `answer` složil modul žánru; projde cokoli, co záplata změnila. */
 const checkFor =
@@ -99,6 +108,16 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'rhythm.default': 'rhythm',
   'duel.default': 'duel',
   'flap.default': 'flap',
+  // P54C T14: čtyři žánry pruhů režisér nabízí – všechny na ovládání `lanes`.
+  'catch.default': 'lanes',
+  'whack.default': 'lanes',
+  'defense.default': 'lanes',
+  'slice.default': 'lanes',
+  // P54C T14b: čtyři žánry fáze 3, každý na svém ovládání.
+  'hop.default': 'hop',
+  'crowd.default': 'crowd',
+  'merge.default': 'merge',
+  'push.default': 'push',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -120,7 +139,23 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'rhythm.default': 'A fox dances in a dark forest while a wolf prowls',
   'duel.default': 'A fox duels a wolf in a dark forest',
   'flap.default': 'A fox flaps through a dark forest past a wolf',
+  'catch.default': 'A fox catches falling acorns in a dark forest and dodges a wolf',
+  'whack.default': 'A fox whacks wolves popping out of holes in a dark forest',
+  'defense.default': 'A fox defends its den from waves of wolves in a dark forest',
+  'slice.default': 'A fox slices flying acorns in a dark forest but not the wolf',
+  // Provoz věta jmenuje: „crosses a busy road“ sám čte záměr jako nejmenovaný `traffic`, který žádná role nedokáže (content.test).
+  'hop.default': 'A fox crosses a busy road full of traffic in a dark forest past a wolf',
+  'crowd.default': 'A fox leads a crowd of foxes through gates in a dark forest past a wolf',
+  'merge.default': 'A fox drops acorns into a jar in a dark forest and merges matching ones',
+  'push.default': 'A fox pushes wolves out of a ring in a dark forest',
 };
+
+/** Věta, ve které klíčová slova žádný nový žánr nečtou – žánr hry tu může dát jedině odpověď režiséra. */
+const NEUTRAL = 'A fox in a dark forest';
+
+// P54C T14b: slučování a vytlačování běží na Rapieru – návrh je bez něj nesloží (a návrh věty se pamatuje), takže
+// se načte před prvním testem, jako v route `games`.
+beforeAll(() => loadRapier());
 
 function clock(): () => number {
   let tick = 0;
@@ -139,7 +174,7 @@ describe('direct – the model answers', () => {
     const branch = fakeBranch([answered(genreAnswer())]);
     const game = await run(branch);
     expect(game).toMatchObject({ ok: true, source: 'authored', repairRounds: 0, fallbackReason: null, calls: 1 });
-    expect(game.spec).toEqual(compiled());
+    expect(game.spec).toEqual(lit(compiled()));
     expect(game.spec).toMatchObject({ control: 'move_free', genre: { id: 'arena', mode: 'collect' } });
     expect(branch.calls).toHaveLength(1);
     const request = branch.calls[0]!.request;
@@ -184,7 +219,7 @@ describe('direct – the model answers', () => {
     ]);
     const game = await run(branch, { check });
     expect(game).toMatchObject({ source: 'authored', repairRounds: 1, fallbackReason: null, calls: 2 });
-    expect(game.spec).toEqual({ ...compiled(), title: 'Fox Night Escape' });
+    expect(game.spec).toEqual(lit({ ...compiled(), title: 'Fox Night Escape' }));
     expect(branch.calls).toHaveLength(2);
   });
 
@@ -196,6 +231,57 @@ describe('direct – the model answers', () => {
     expect(critique(compiled()).map((issue) => issue.code)).not.toContain('GOAL_UNCLEAR');
     expect(game.warnings.map((issue) => issue.code)).toContain('GOAL_UNCLEAR');
   });
+});
+
+// P54C T14 (pin): režisér, který nový žánr jen jmenuje a pak ho nepostaví, vypadá jako fungující – hra by byla
+// rychlá verze nebo jiný žánr se jménem z odpovědi. Odpověď s novým žánrem musí dát hru toho žánru na jeho ovládání
+// (pruhy T14, fáze 3 T14b) a robot ji musí vyhrát.
+describe('direct – an answer naming a new genre builds that genre and the bot wins it (P54C T14, T14b)', () => {
+  const NEW_GENRES = ['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
+
+  const botWins = (spec: GameSpecV1) => {
+    const made = arcadeWorldOf(spec, 1);
+    return made.ok && verifyArcade(made.world, undefined, made.roleBindings).bot.outcome === 'won';
+  };
+
+  it.each(NEW_GENRES)('%s: the recipe answer builds it even where the keyword reader plays another game', async (genre) => {
+    const cell = liveCells().find((live) => live.preset.genre === genre)!;
+    expect(draftGameSpec(NEUTRAL).genre?.id).not.toBe(genre);
+    const answer = { plan: 'play the sentence', spec: { recipe: cell.recipe, unmet: [], hero: 'fox', cast: [{ label: 'acorn', does: 'collect' }, { label: 'wolf', does: FOE_DOES[genre] }], setting: 'dark forest' } };
+    const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, NEUTRAL);
+    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: CONTROL_OF_MODE[`${genre}.default`], genre: { id: genre, mode: 'default' } } });
+    expect(game.spec.roles.find((role) => role.kind === 'player')?.label).toBe('fox');
+    expect(game.fallbackReason, game.failure?.detail).toBeNull();
+    expect(game.failure).toBeUndefined();
+    expect(botWins(game.spec), genre).toBe(true);
+  }, 60_000);
+
+  it.each(NEW_GENRES)('%s: the legacy GenreSpec answer builds it for a sentence of the genre', async (genre) => {
+    const { answer } = GENRE_ANSWERS.find(({ name }) => name === `${genre}.default`)!;
+    const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, SENTENCE_OF_MODE[`${genre}.default`]);
+    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: CONTROL_OF_MODE[`${genre}.default`], genre: { id: genre, mode: 'default' } } });
+    expect(game.fallbackReason, game.failure?.detail).toBeNull();
+    expect(game.failure).toBeUndefined();
+    expect(botWins(game.spec), genre).toBe(true);
+  }, 60_000);
+});
+
+// P54C: číslo ve větě pod minimem žánru (chytání 13 kusů, vytlačování 7 soupeřů, f02c7913) žánr neshodí – návrh ani
+// odpověď s tím počtem nejsou aréna ani MALFORMED, počet se ořízne na minimum.
+describe('a count under the genre minimum is clamped to it and the genre stays (P54C)', () => {
+  const CASES = [
+    { sentence: 'a monkey catches 5 falling bananas', genre: 'catch', role: 'coin', min: 13, answer: { hero: 'monkey', cast: [{ label: 'banana', does: 'collect' }], counts: { collectible: 5 } } },
+    { sentence: 'a walrus shoves 2 seals off the iceberg', genre: 'push', role: 'rival', min: 7, answer: { hero: 'walrus', cast: [{ label: 'seal', does: 'fight' }], counts: { enemy: 2 } } },
+  ] as const;
+
+  it.each(CASES)('$sentence', async ({ sentence, genre, role, min, answer }) => {
+    const draft = draftGameSpec(sentence);
+    expect(draft.genre?.id).toBe(genre);
+    expect(draft.roles.find((entry) => entry.id === role)?.count).toBe(min);
+    const game = await run(fakeBranch([answered(genreAnswer({ genre, mode: 'default', setting: 'iceberg', ...answer } as unknown as Partial<GenreSpec>))]), { maxRepairRounds: 0 }, sentence);
+    expect(game, game.failure?.detail).toMatchObject({ source: 'authored', spec: { genre: { id: genre } } });
+    expect(game.spec.roles.find((entry) => entry.id === role)?.count).toBe(min);
+  }, 60_000);
 });
 
 describe('direct – failure paths fall back to the draft, never throw', () => {
@@ -262,7 +348,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
     const game = await run(branch, { check, cache });
     // Hru, kterou kritik pustil, soudí až publikace (NOT_PLAYABLE); do cache nejde, příští pokus dostane novou šanci.
     expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', repairRounds: 2, calls: 3 });
-    expect(game.spec).toEqual(compiled());
+    expect(game.spec).toEqual(lit(compiled()));
     expect(branch.calls).toHaveLength(3);
     expect(writes).toEqual([]);
   });
@@ -315,7 +401,7 @@ describe('direct – cache', () => {
     const branch = fakeBranch([answered(genreAnswer())]);
     const game = await run(branch, { cache });
     expect(game).toMatchObject({ source: 'authored', calls: 1 });
-    expect(game.spec).toEqual(compiled());
+    expect(game.spec).toEqual(lit(compiled()));
   });
 
   it('an unrepaired game played as the draft genre is never written – the next direct calls the model again', async () => {

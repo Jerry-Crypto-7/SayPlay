@@ -18,9 +18,10 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { logicSchema, rulesSchema, withPhaseEntries, withStartedTimers } from '../arcade/rules/schema';
-import { liveCells } from '../compose/allowed';
+import { type LiveCell, liveCells } from '../compose/allowed';
 import { recipeKey } from '../compose/recipe';
 import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
+import { recipeEntry } from './prompt';
 // Cyklus s `repair.ts` je bezpečný: `fitDirectorExtras` se volá jen ve funkci, ne při načtení.
 import { fitDirectorExtras } from './repair';
 
@@ -130,9 +131,32 @@ export function readLegacyRecipeContent(cell: RecipeContentCell, content: GenreS
   return readRecipeContent(cell, { ...content, params });
 }
 
-export type RecipeRead = { readonly ok: true; readonly value: RecipeAnswer } | Extract<DirectorRead, { ok: false }>;
+/** `RECIPE_NOT_LIVE` (P54C T14br2): odpověď je čitelná, jen tabulka nemá buňku s jejím pohybem a cílem; `detail` nese nápovědu. */
+export type RecipeRead = { readonly ok: true; readonly value: RecipeAnswer } | Extract<DirectorRead, { ok: false }> | { readonly ok: false; readonly reason: 'RECIPE_NOT_LIVE'; readonly detail: string };
 
-/** Recipe answers are selections, not proof. Composition must verify full Intent. */
+type RecipePieces = Pick<LiveCell['recipe'], 'move' | 'actions' | 'objective' | 'threats'>;
+
+/**
+ * Nejbližší živý recept k neživé odpovědi (P54C T14br2): týž pohyb a cíl, z akcí a hrozeb jen ty, které odpověď
+ * chtěla, a z nich co nejvíc. gpt-oss-20b skládal kusy z různých řádků tabulky (`drive/push+shoot/escape/chaser`);
+ * pohyb a cíl říkají, co hráč dělá a jak vyhraje, takže se nemění. `null` = taková buňka není.
+ */
+function nearestLive(recipe: RecipePieces): RecipePieces | null {
+  const fits = liveCells().map(cell => cell.recipe).filter(live => live.move === recipe.move && live.objective === recipe.objective && live.actions.every(action => recipe.actions.includes(action)) && live.threats.every(threat => recipe.threats.includes(threat)));
+  return fits.reduce<RecipePieces | null>((best, live) => (best === null || live.actions.length + live.threats.length > best.actions.length + best.threats.length ? live : best), null);
+}
+
+/** Živé kombinace s týmž pohybem a s týmž cílem – nápověda u odmítnutého receptu. */
+function liveHint(recipe: RecipePieces): string {
+  const recipes = liveCells().map(cell => cell.recipe);
+  const list = (pick: (live: RecipePieces) => boolean, entry: (live: RecipePieces) => string) => [...new Set(recipes.filter(pick).map(entry))].join(', ') || 'none';
+  return `live with move ${recipe.move}: ${list(live => live.move === recipe.move, recipeEntry)}; live with objective ${recipe.objective}: ${list(live => live.objective === recipe.objective, live => `${live.move}: ${recipeEntry(live)}`)}`;
+}
+
+/**
+ * Recipe answers are selections, not proof. Composition must verify full Intent.
+ * Neživý recept se převede na nejbližší živý (`nearestLive`); akce a hrozby, které tím vypadly, jdou do `unmet`.
+ */
 export function readRecipeAnswer(body: unknown): RecipeRead {
   if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
   const raw = answerSpec(body);
@@ -141,8 +165,21 @@ export function readRecipeAnswer(body: unknown): RecipeRead {
   if (Array.isArray(raw.unmet)) cleaned.unmet = raw.unmet.map(triple => isRecord(triple) ? { ...triple } : triple);
   const parsed = recipeAnswerSchema.safeParse(cleaned);
   if (!parsed.success) return { ok: false, reason: 'MALFORMED_SPEC', detail: parsed.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ') };
-  if (!liveCells().some(cell => recipeKey(cell.recipe) === recipeKey(parsed.data.recipe))) return { ok: false, reason: 'MALFORMED_SPEC', detail: `recipe is not a live combination: ${recipeKey(parsed.data.recipe)}` };
-  return { ok: true, value: { ...parsed.data, hero: singular(parsed.data.hero), ...(parsed.data.cast === undefined ? {} : { cast: parsed.data.cast.map(item => ({ ...item, label: singular(item.label) })) }) } };
+  const answer = parsed.data;
+  const live = liveCells().some(cell => recipeKey(cell.recipe) === recipeKey(answer.recipe)) ? answer.recipe : nearestLive(answer.recipe);
+  if (live === null) return { ok: false, reason: 'RECIPE_NOT_LIVE', detail: `recipe is not a live combination: ${recipeKey(answer.recipe)}; ${liveHint(answer.recipe)}` };
+  const hero = singular(answer.hero);
+  const lost = [...answer.recipe.actions.filter(action => !live.actions.includes(action)), ...answer.recipe.threats.filter(threat => !live.threats.includes(threat))];
+  return {
+    ok: true,
+    value: {
+      ...answer,
+      recipe: { ...answer.recipe, actions: [...live.actions], threats: [...live.threats] },
+      unmet: [...answer.unmet, ...lost.map(verb => ({ actor: hero, verb, object: null }))],
+      hero,
+      ...(answer.cast === undefined ? {} : { cast: answer.cast.map(item => ({ ...item, label: singular(item.label) })) }),
+    },
+  };
 }
 
 export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly genre: GenreSpec } | Extract<DirectorRead, { ok: false }>;

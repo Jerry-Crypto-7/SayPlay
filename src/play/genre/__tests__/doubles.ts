@@ -9,9 +9,9 @@
  * P32B T6.
  */
 
-import { GENRE_MODES, type GenreId, type GenreModule, type GenreMode, type GenreSpec, type GenreSpecOf, type LegacyGame, type ModelClass, castFor, draftRoles, legacySpec, titleCase } from '../contract';
+import { GENRE_MODES, type GenreId, type GenreModule, type GenreMode, type GenreSpec, type GenreSpecOf, type LegacyGame, type ModelClass, castFor, draftRoles, legacySpec, stagedGenre, titleCase } from '../contract';
 
-const CUES: { readonly [G in GenreId]: readonly string[] } = {
+const CUES: Readonly<Partial<Record<GenreId, readonly string[]>>> = {
   runner: ['run', 'dash', 'slide', 'ski', 'sled'],
   platformer: ['jump', 'climb', 'hop', 'leap'],
   arena: ['chase', 'catch', 'escape', 'collect', 'gather', 'fight', 'duel', 'battle'],
@@ -25,7 +25,7 @@ const CUES: { readonly [G in GenreId]: readonly string[] } = {
   flap: ['flap', 'flappy', 'wing'],
 };
 
-const HERO_CLASSES: { readonly [G in GenreId]: readonly ModelClass[] } = {
+const HERO_CLASSES: Readonly<Partial<Record<GenreId, readonly ModelClass[]>>> = {
   runner: ['animal', 'bird', 'humanoid', 'robot', 'vehicle'],
   platformer: ['animal', 'bird', 'humanoid', 'robot', 'monster'],
   arena: ['animal', 'bird', 'robot', 'vehicle', 'humanoid', 'monster'],
@@ -106,8 +106,8 @@ function double<G extends GenreId>(id: G, fallback: ReadonlySet<string>): GenreM
   return {
     id,
     modes: GENRE_MODES[id] as readonly GenreMode<G>[],
-    cues: CUES[id],
-    heroClasses: HERO_CLASSES[id],
+    cues: CUES[id] ?? [],
+    heroClasses: HERO_CLASSES[id] ?? [],
     paramBounds: {},
     availability: (mode) => (fallback.has(`${id}.${mode}`) ? 'fallback' : 'ready'),
     compile: (spec) => compileDouble(spec),
@@ -130,5 +130,14 @@ export function genreDoubles(fallback: readonly string[] = []): { readonly [G in
     rhythm: double('rhythm', set),
     duel: double('duel', set),
     flap: double('flap', set),
+    // Kostry P54C (T4) nehrají ani tady: klasifikátor je nevidí, dvojník by je vidět nechal.
+    catch: stagedGenre('catch', []),
+    whack: stagedGenre('whack', []),
+    defense: stagedGenre('defense', []),
+    slice: stagedGenre('slice', []),
+    hop: stagedGenre('hop', []),
+    crowd: stagedGenre('crowd', []),
+    merge: stagedGenre('merge', []),
+    push: stagedGenre('push', []),
   };
 }

@@ -1,0 +1,8971 @@
+{
+ "model": "gpt-oss-20b",
+ "endpoint": "llamacpp:http://127.0.0.1:8792",
+ "promptVersion": "33df2757",
+ "answers": {
+  "c01": {
+   "id": "c01",
+   "sentence": "a bear catches falling honey jars in a basket",
+   "recordedAt": "2026-10-20T20:07:13.111Z",
+   "ms": 5919,
+   "usage": {
+    "inputTokens": 3741,
+    "outputTokens": 395
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a catch‑style game where a bear collects falling honey jars into a basket, with a simple timed wave mechanic.",
+     "spec": {
+      "genre": "catch",
+      "mode": "default",
+      "hero": "bear",
+      "cast": [
+       {
+        "label": "honey jar",
+        "does": "collect",
+        "verb": "catch",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "falling honey",
+        "does": "collect",
+        "verb": "catch",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "basket",
+      "palette": "forest",
+      "params": null,
+      "counts": {
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "jar",
+        "kind": "collectible",
+        "label": "honey jar",
+        "count": null
+       },
+       {
+        "id": "honey",
+        "kind": "collectible",
+        "label": "falling honey",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "jar",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "honey",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "jar",
+           "count": 3,
+           "at": "edge"
+          }
+         },
+         {
+          "wave": {
+           "role": "honey",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_end",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "c05": {
+   "id": "c05",
+   "sentence": "a chef catches eggs dropping into the kitchen while avoiding bombs",
+   "recordedAt": "2026-10-20T20:07:19.007Z",
+   "ms": 5587,
+   "usage": {
+    "inputTokens": 3751,
+    "outputTokens": 424
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a catch‑style kitchen game where the chef collects falling eggs while dodging bombs, with a simple timed wave system.",
+     "spec": {
+      "genre": "catch",
+      "mode": "default",
+      "hero": "chef",
+      "cast": [
+       {
+        "label": "egg",
+        "does": "collect",
+        "verb": "fall",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "bomb",
+        "does": "avoid",
+        "verb": "drop",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "kitchen",
+      "palette": "cave",
+      "params": {
+       "items": null,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "egg",
+        "kind": "collectible",
+        "label": "egg",
+        "count": null
+       },
+       {
+        "id": "bomb",
+        "kind": "hazard",
+        "label": "bomb",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "egg",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "bomb",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "egg",
+           "count": 5,
+           "at": "edge"
+          }
+         },
+         {
+          "wave": {
+           "role": "bomb",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase_second",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "bomb",
+       "name": "Explosive Bomb",
+       "attack": "drop"
+      },
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "c08": {
+   "id": "c08",
+   "sentence": "a kid on a skateboard catches presents dropping from santa's sleigh",
+   "recordedAt": "2026-10-20T20:07:25.254Z",
+   "ms": 5863,
+   "usage": {
+    "inputTokens": 3744,
+    "outputTokens": 496
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a catch‑style game where a kid on a skateboard collects falling presents from Santa’s sleigh while avoiding hazards.",
+     "spec": {
+      "genre": "catch",
+      "mode": "default",
+      "hero": "kid",
+      "cast": [
+       {
+        "label": "present",
+        "does": "collect",
+        "verb": "catch",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "santa",
+        "does": "shoot_at",
+        "verb": "drop",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "sleigh",
+        "does": "reach",
+        "verb": "drop",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "skateboard catches presents",
+      "palette": "snow",
+      "params": {
+       "items": null,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "present",
+        "kind": "collectible",
+        "label": "present",
+        "count": null
+       },
+       {
+        "id": "santa",
+        "kind": "chaser",
+        "label": "Santa",
+        "count": null
+       },
+       {
+        "id": "sleigh",
+        "kind": "prop",
+        "label": "Sleigh",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "present",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "santa",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "sleigh",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "catch_present",
+        "verb": "catch",
+        "when": {
+         "contact": [
+          "player",
+          "present"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         },
+         {
+          "score": 1
+         }
+        ]
+       },
+       {
+        "id": "drop_present",
+        "verb": "drop",
+        "when": {
+         "contact": [
+          "player",
+          "sleigh"
+         ]
+        },
+        "if": [
+         {
+          "holding": "present"
+         }
+        ],
+        "do": [
+         {
+          "release": true
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "santa_hazard",
+        "verb": "hazard",
+        "when": {
+         "contact": [
+          "player",
+          "santa"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "lose": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "drop_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "santa",
+       "name": "Santa Claus",
+       "attack": "drop"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "w01": {
+   "id": "w01",
+   "sentence": "whack the moles popping out of the garden holes",
+   "recordedAt": "2026-10-20T20:07:30.986Z",
+   "ms": 5293,
+   "usage": {
+    "inputTokens": 3714,
+    "outputTokens": 402
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a whack‑the‑mole style garden game where the player (a fox) slaps moles popping from holes, with timed waves and a simple win condition.",
+     "spec": {
+      "genre": "whack",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "mole",
+        "does": "shoot_at",
+        "verb": "whack",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "hole",
+        "does": "scenery",
+        "verb": "none",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "garden",
+      "palette": "forest",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "mole",
+        "kind": "chaser",
+        "label": "mole",
+        "count": null
+       },
+       {
+        "id": "hole",
+        "kind": "prop",
+        "label": "hole",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "mole",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "hole",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "mole",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "mole_whack",
+        "verb": "whack",
+        "when": {
+         "contact": [
+          "player",
+          "mole"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "w04": {
+   "id": "w04",
+   "sentence": "bonk the gophers before they hide back in the field",
+   "recordedAt": "2026-10-20T20:07:36.704Z",
+   "ms": 5464,
+   "usage": {
+    "inputTokens": 3731,
+    "outputTokens": 395
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "whack",
+     "spec": {
+      "genre": "whack",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "gopher",
+        "does": "shoot_at",
+        "verb": "bonk",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "field",
+        "does": "scenery",
+        "verb": "none",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "field",
+      "palette": "forest",
+      "params": null,
+      "counts": {
+       "enemy": 20
+      },
+      "ruleRoles": [
+       {
+        "id": "gopher",
+        "kind": "chaser",
+        "label": "gopher",
+        "count": 20
+       },
+       {
+        "id": "field",
+        "kind": "zone",
+        "label": "field",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "gopher",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "field",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_gophers",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "gopher",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "hide_gophers",
+        "verb": "wait",
+        "when": {
+         "timer": "hide_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "field"
+         },
+         {
+          "despawn": "other"
+         }
+        ]
+       },
+       {
+        "id": "reset",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         },
+         {
+          "startTimer": {
+           "timer": "hide_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "hide_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "gopher",
+       "name": "Sneaky Gopher",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "w08": {
+   "id": "w08",
+   "sentence": "pop the balloons rising from the circus tents but spare the clowns",
+   "recordedAt": "2026-10-20T20:07:43.352Z",
+   "ms": 6462,
+   "usage": {
+    "inputTokens": 3729,
+    "outputTokens": 518
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a whack‑style game where the player shoots rising balloons while avoiding clowns.",
+     "spec": {
+      "genre": "whack",
+      "mode": "default",
+      "hero": "acrobat",
+      "cast": [
+       {
+        "label": "balloon",
+        "does": "shoot_at",
+        "verb": "pop",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "clown",
+        "does": "avoid",
+        "verb": "jump",
+        "states": 2,
+        "patrol": true
+       }
+      ],
+      "heroAction": "throw",
+      "setting": "circus tent",
+      "palette": "cave",
+      "params": {
+       "targets": null,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "enemy": 10
+      },
+      "ruleRoles": [
+       {
+        "id": "balloon",
+        "kind": "target",
+        "label": "balloon",
+        "count": 10
+       },
+       {
+        "id": "clown",
+        "kind": "hazard",
+        "label": "clown",
+        "count": 5
+       }
+      ],
+      "things": [
+       {
+        "role": "balloon",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "clown",
+        "start": "hidden",
+        "physics": true
+       }
+      ],
+      "rules": [
+       {
+        "id": "pop_balloon",
+        "verb": "shoot",
+        "when": {
+         "contact": [
+          "player",
+          "balloon"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "score": 10
+         },
+         {
+          "despawn": "other"
+         }
+        ]
+       },
+       {
+        "id": "avoid_clown",
+        "verb": "jump",
+        "when": {
+         "contact": [
+          "player",
+          "clown"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "other"
+         }
+        ]
+       },
+       {
+        "id": "spawn_balloon",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "spawn",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "timer": "spawn"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "balloon",
+           "count": 5,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_clown",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "clown",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "spawn"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [
+       "shoot",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "f01": {
+   "id": "f01",
+   "sentence": "defend the castle from waves of orcs marching down the road",
+   "recordedAt": "2026-10-20T20:07:49.484Z",
+   "ms": 5673,
+   "usage": {
+    "inputTokens": 3724,
+    "outputTokens": 463
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a defense game where a knight protects a castle from successive waves of orcs marching down a road.",
+     "spec": {
+      "genre": "defense",
+      "mode": "default",
+      "hero": "knight",
+      "cast": [
+       {
+        "label": "orc",
+        "does": "shoot_at",
+        "verb": "march",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "castle",
+        "does": "reach",
+        "verb": "defend",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "castle",
+      "palette": "castle",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "orc",
+        "kind": "chaser",
+        "label": "orc",
+        "count": null
+       },
+       {
+        "id": "castle",
+        "kind": "destination",
+        "label": "castle",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "orc",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "castle",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "start_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_spawn",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "orc",
+           "count": 5,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "next_wave",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "reset_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "end_wave",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "orc",
+       "name": "Orc Horde",
+       "attack": "shoot"
+      },
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "f04": {
+   "id": "f04",
+   "sentence": "protect the village gate from waves of skeletons",
+   "recordedAt": "2026-10-20T20:07:56.163Z",
+   "ms": 6112,
+   "usage": {
+    "inputTokens": 3722,
+    "outputTokens": 446
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "defense",
+     "spec": {
+      "genre": "defense",
+      "mode": "default",
+      "hero": "knight",
+      "cast": [
+       {
+        "label": "skeleton",
+        "does": "shoot_at",
+        "verb": "shoot",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "village gate",
+        "does": "reach",
+        "verb": "protect",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "village",
+      "palette": "castle",
+      "params": {
+       "enemies": null,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "skeleton",
+        "kind": "chaser",
+        "label": "skeleton",
+        "count": null
+       },
+       {
+        "id": "gate",
+        "kind": "door",
+        "label": "village gate",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "gate",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "skeleton",
+           "count": 5,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "gate_damage",
+        "verb": "shoot",
+        "when": {
+         "contact": [
+          "player",
+          "gate"
+         ]
+        },
+        "if": [
+         {
+          "holding": "skeleton"
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "gate_destroyed",
+        "verb": "destroy",
+        "when": {
+         "contact": [
+          "player",
+          "gate"
+         ]
+        },
+        "if": [
+         {
+          "counter": {
+           "name": "health",
+           "atLeast": 0,
+           "below": 1
+          }
+         }
+        ],
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "skeleton",
+       "name": "Skeleton Horde",
+       "attack": "shoot"
+      },
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "f08": {
+   "id": "f08",
+   "sentence": "keep the aliens from breaching the space station base",
+   "recordedAt": "2026-10-20T20:08:01.810Z",
+   "ms": 5098,
+   "usage": {
+    "inputTokens": 3696,
+    "outputTokens": 350
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a defense game where an astronaut protects a space station from alien attackers that shoot at the base.",
+     "spec": {
+      "genre": "defense",
+      "mode": "default",
+      "hero": "astronaut",
+      "cast": [
+       {
+        "label": "alien",
+        "does": "shoot_at",
+        "verb": "shoot",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "space station base",
+        "does": "reach",
+        "verb": "breach",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "space",
+      "palette": "space",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "alien",
+        "kind": "chaser",
+        "label": "alien",
+        "count": null
+       },
+       {
+        "id": "base",
+        "kind": "destination",
+        "label": "space station base",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "alien",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "base",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "alien_wave",
+        "verb": "spawn",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "alien",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "alien_shoot",
+        "verb": "shoot",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "damage": 1
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "alien",
+       "name": "Space Invader",
+       "attack": "shoot"
+      },
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "s01": {
+   "id": "s01",
+   "sentence": "slice flying watermelons in half with a katana",
+   "recordedAt": "2026-10-20T20:08:07.815Z",
+   "ms": 5777,
+   "usage": {
+    "inputTokens": 3710,
+    "outputTokens": 413
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Slice flying watermelons with a katana in a timed wave‑based slice game",
+     "spec": {
+      "genre": "slice",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "watermelon",
+        "does": "reach",
+        "verb": "slice",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "sweep",
+      "setting": "sky",
+      "palette": "forest",
+      "params": {
+       "items": 10,
+       "lives": 3,
+       "targetScore": 2000,
+       "timeLimit": 30
+      },
+      "counts": {
+       "collectible": 10
+      },
+      "ruleRoles": [
+       {
+        "id": "watermelon",
+        "kind": "collectible",
+        "label": "watermelon",
+        "count": 10
+       }
+      ],
+      "things": [
+       {
+        "role": "watermelon",
+        "start": "hidden",
+        "physics": true
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "watermelon",
+           "count": 5,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_end",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "none",
+       "name": "none",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "shoot",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "s02": {
+   "id": "s02",
+   "sentence": "a ninja slices fruit tossed in the air but avoids the bombs",
+   "recordedAt": "2026-10-20T20:08:14.590Z",
+   "ms": 6653,
+   "usage": {
+    "inputTokens": 3746,
+    "outputTokens": 489
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a slice‑style fruit‑tossing game where a ninja slices airborne fruit while dodging bombs.",
+     "spec": {
+      "genre": "slice",
+      "mode": "default",
+      "hero": "ninja",
+      "cast": [
+       {
+        "label": "fruit",
+        "does": "collect",
+        "verb": "slice",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "bomb",
+        "does": "avoid",
+        "verb": "hazard",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "sweep",
+      "setting": "air",
+      "palette": "space",
+      "params": {
+       "items": 10,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 90
+      },
+      "counts": {
+       "collectible": 10
+      },
+      "ruleRoles": [
+       {
+        "id": "fruit",
+        "kind": "collectible",
+        "label": "fruit",
+        "count": 10
+       },
+       {
+        "id": "bomb",
+        "kind": "hazard",
+        "label": "bomb",
+        "count": 5
+       }
+      ],
+      "things": [
+       {
+        "role": "fruit",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "bomb",
+        "start": "hidden",
+        "physics": true
+       }
+      ],
+      "rules": [
+       {
+        "id": "slice_fruit",
+        "verb": "slice",
+        "when": {
+         "contact": [
+          "player",
+          "fruit"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         },
+         {
+          "score": 10
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "avoid_bomb",
+        "verb": "avoid",
+        "when": {
+         "contact": [
+          "player",
+          "bomb"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "spawn_fruit",
+        "verb": "spawn",
+        "when": {
+         "timer": "spawn_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "fruit",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_bomb",
+        "verb": "spawn",
+        "when": {
+         "timer": "spawn_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "bomb",
+           "at": "player"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "spawn_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [
+       "shoot"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "trap"
+      ]
+     }
+    }
+   }
+  },
+  "s08": {
+   "id": "s08",
+   "sentence": "cut the flying donuts with a laser sword in space",
+   "recordedAt": "2026-10-20T20:08:20.830Z",
+   "ms": 6115,
+   "usage": {
+    "inputTokens": 3721,
+    "outputTokens": 494
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a slice‑style game where the player, an astronaut wielding a laser sword, slices flying donuts in space while avoiding laser fire.",
+     "spec": {
+      "genre": "slice",
+      "mode": "default",
+      "hero": "astronaut",
+      "cast": [
+       {
+        "label": "donut",
+        "does": "collect",
+        "verb": "slice",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "laser",
+        "does": "shoot_at",
+        "verb": "laser",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "sweep",
+      "setting": "space",
+      "palette": "space",
+      "params": null,
+      "counts": {
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "donut",
+        "kind": "collectible",
+        "label": "donut",
+        "count": null
+       },
+       {
+        "id": "laser",
+        "kind": "hazard",
+        "label": "laser",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "donut",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "laser",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "slice_donut",
+        "verb": "slice",
+        "when": {
+         "contact": [
+          "player",
+          "donut"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         },
+         {
+          "score": 10
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "laser_hit",
+        "verb": "shoot",
+        "when": {
+         "contact": [
+          "player",
+          "laser"
+         ]
+        },
+        "if": [
+         {
+          "holding": "laser"
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "laser_spawn",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "laser_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "laser_wave",
+        "verb": "wait",
+        "when": {
+         "timer": "laser_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "laser",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "laser_reset",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "laser_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "laser_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [
+       "shoot",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "o01": {
+   "id": "o01",
+   "sentence": "a chicken crosses a busy road full of cars",
+   "recordedAt": "2026-10-20T20:08:27.566Z",
+   "ms": 4637,
+   "usage": {
+    "inputTokens": 3724,
+    "outputTokens": 290
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "hop",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "chicken",
+      "cast": [
+       {
+        "label": "car",
+        "does": "avoid",
+        "verb": "obstacle",
+        "states": null,
+        "patrol": true
+       }
+      ],
+      "heroAction": "none",
+      "setting": "road",
+      "palette": "city",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "car",
+        "kind": "hazard",
+        "label": "car",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "car",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "cross",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseSwitch",
+        "verb": "wait",
+        "when": {
+         "timer": "cross"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "spawnCars",
+        "verb": "spawn",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "car",
+           "at": "other"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "cross"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "o02": {
+   "id": "o02",
+   "sentence": "crossy road with a frog hopping over traffic and river logs",
+   "recordedAt": "2026-10-20T20:08:35.227Z",
+   "ms": 5775,
+   "usage": {
+    "inputTokens": 3725,
+    "outputTokens": 434
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a hop‑style game where a frog must cross a river by hopping over moving traffic and floating logs, using a simple phase‑based timer logic to spawn traffic waves and log platforms.",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "frog",
+      "cast": [
+       {
+        "label": "traffic",
+        "does": "avoid",
+        "verb": "move",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "log",
+        "does": "reach",
+        "verb": "float",
+        "states": null,
+        "patrol": true
+       }
+      ],
+      "heroAction": "none",
+      "setting": "river",
+      "palette": "forest",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "traffic",
+        "kind": "hazard",
+        "label": "traffic",
+        "count": null
+       },
+       {
+        "id": "log",
+        "kind": "prop",
+        "label": "log",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "traffic",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "log",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "spawn",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawnTraffic",
+        "verb": "wait",
+        "when": {
+         "timer": "spawn"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "traffic",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawnLogs",
+        "verb": "wait",
+        "when": {
+         "timer": "spawn"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "log",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "resetTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "spawn",
+           "ticks": 60
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "spawn"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": null,
+      "segments": null
+     }
+    }
+   }
+  },
+  "o03": {
+   "id": "o03",
+   "sentence": "help the duck cross the highway and the river",
+   "recordedAt": "2026-10-20T20:08:41.136Z",
+   "ms": 4516,
+   "usage": {
+    "inputTokens": 3707,
+    "outputTokens": 453
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a hop‑style game where a duck must jump over traffic on a highway and then over a river, using timed phases to spawn cars and waves of fish.",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "duck",
+      "cast": [
+       {
+        "label": "car",
+        "does": "avoid",
+        "verb": "drive",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "fish",
+        "does": "avoid",
+        "verb": "swim",
+        "states": null,
+        "patrol": true
+       }
+      ],
+      "heroAction": "none",
+      "setting": "river",
+      "palette": "city",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "car",
+        "kind": "hazard",
+        "label": "car",
+        "count": null
+       },
+       {
+        "id": "fish",
+        "kind": "hazard",
+        "label": "fish",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "car",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "fish",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "traffic",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "trafficWave",
+        "verb": "wait",
+        "when": {
+         "timer": "traffic"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "car",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "riverPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "river",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "riverWave",
+        "verb": "wait",
+        "when": {
+         "timer": "river"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "fish",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "traffic"
+        },
+        {
+         "id": "river"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "o04": {
+   "id": "o04",
+   "sentence": "a bunny hops across train tracks and busy streets to get home",
+   "recordedAt": "2026-10-20T20:08:47.338Z",
+   "ms": 5655,
+   "usage": {
+    "inputTokens": 3716,
+    "outputTokens": 551
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a hop‑style game where a bunny must jump over obstacles on train tracks and busy streets to reach home, with a simple timed phase that spawns moving cars.",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "bunny",
+      "cast": [
+       {
+        "label": "train track",
+        "does": "scenery",
+        "verb": "none",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "street",
+        "does": "scenery",
+        "verb": "none",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "car",
+        "does": "avoid",
+        "verb": "move",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "rail guard",
+        "does": "chase_me",
+        "verb": "patrol",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "home",
+        "does": "reach",
+        "verb": "reach",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "train tracks",
+      "palette": "city",
+      "params": {
+       "rows": 10,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 90
+      },
+      "ruleRoles": [
+       {
+        "id": "car",
+        "kind": "hazard",
+        "label": "car",
+        "count": null
+       },
+       {
+        "id": "railGuard",
+        "kind": "chaser",
+        "label": "rail guard",
+        "count": null
+       },
+       {
+        "id": "home",
+        "kind": "destination",
+        "label": "home",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "car",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "railGuard",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "home",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "carSpawn",
+        "verb": "spawn",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "car",
+           "at": "other"
+          }
+         }
+        ]
+       },
+       {
+        "id": "guardSpawn",
+        "verb": "spawn",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "railGuard",
+           "at": "other"
+          }
+         }
+        ]
+       },
+       {
+        "id": "carMove",
+        "verb": "move",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "car"
+         }
+        ]
+       },
+       {
+        "id": "guardMove",
+        "verb": "move",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "railGuard"
+         }
+        ]
+       },
+       {
+        "id": "reachHome",
+        "verb": "reach",
+        "when": {
+         "contact": [
+          "player",
+          "home"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "o05": {
+   "id": "o05",
+   "sentence": "frogger in a neon city with flying cars",
+   "recordedAt": "2026-10-20T20:08:54.405Z",
+   "ms": 5681,
+   "usage": {
+    "inputTokens": 3732,
+    "outputTokens": 548
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a hop‑style neon‑city Frogger where the player must jump across lanes of flying cars that glide and drive through the streets.",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "frog",
+      "cast": [
+       {
+        "label": "car",
+        "does": "chase_me",
+        "verb": "run",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "flying car",
+        "does": "chase_me",
+        "verb": "glide",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "traffic",
+        "does": "avoid",
+        "verb": "obstacle",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "neon city",
+      "palette": "city",
+      "params": {
+       "rows": 50,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "ruleRoles": [
+       {
+        "id": "car",
+        "kind": "chaser",
+        "label": "car",
+        "count": null
+       },
+       {
+        "id": "flyingCar",
+        "kind": "chaser",
+        "label": "flying car",
+        "count": null
+       },
+       {
+        "id": "traffic",
+        "kind": "hazard",
+        "label": "traffic",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "car",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "flyingCar",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "traffic",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawnCars",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "car",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawnFlyingCars",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "flyingCar",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawnTraffic",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "traffic",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseTransition",
+        "verb": "wait",
+        "when": {
+         "timer": "phase1"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "phaseSecond",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "traffic"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "o06": {
+   "id": "o06",
+   "sentence": "hop the hedgehog across the farm roads without getting run over",
+   "recordedAt": "2026-10-20T20:09:00.910Z",
+   "ms": 4730,
+   "usage": {
+    "inputTokens": 3709,
+    "outputTokens": 418
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a hop‑style game where a hedgehog must jump over farm road cars within a timed phase.",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "hedgehog",
+      "cast": [
+       {
+        "label": "car",
+        "does": "avoid",
+        "verb": "run",
+        "states": null,
+        "patrol": true
+       }
+      ],
+      "heroAction": "none",
+      "setting": "farm roads",
+      "palette": "cave",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "car",
+        "kind": "hazard",
+        "label": "car",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "car",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "road",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseSwitch",
+        "verb": "wait",
+        "when": {
+         "timer": "road"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "carSpawn",
+        "verb": "spawn",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "car",
+           "at": "other"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "road"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "o07": {
+   "id": "o07",
+   "sentence": "a squirrel crosses country lanes full of tractors",
+   "recordedAt": "2026-10-20T20:09:07.044Z",
+   "ms": 4636,
+   "usage": {
+    "inputTokens": 3705,
+    "outputTokens": 358
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a hop‑style game where a squirrel must jump over tractors on country lanes, using a simple phase‑based timer to spawn tractor waves.",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "squirrel",
+      "cast": [
+       {
+        "label": "tractor",
+        "does": "avoid",
+        "verb": "cross",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "country lane",
+      "palette": "cave",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "tractor",
+        "kind": "hazard",
+        "label": "tractor",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "tractor",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "waveSpawn",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "tractor",
+           "at": "other"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseSecond",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "third"
+         }
+        ]
+       },
+       {
+        "id": "phaseThird",
+        "verb": "wait",
+        "when": {
+         "phase": "third"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        },
+        {
+         "id": "third"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": null,
+      "segments": null
+     }
+    }
+   }
+  },
+  "o08": {
+   "id": "o08",
+   "sentence": "cross the river by jumping on floating logs and turtles",
+   "recordedAt": "2026-10-20T20:09:13.644Z",
+   "ms": 5204,
+   "usage": {
+    "inputTokens": 3693,
+    "outputTokens": 412
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "hop",
+     "spec": {
+      "genre": "hop",
+      "mode": "default",
+      "hero": "pirate",
+      "cast": [
+       {
+        "label": "log",
+        "does": "reach",
+        "verb": "jump",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "turtle",
+        "does": "reach",
+        "verb": "jump",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "river",
+      "palette": "forest",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "log",
+        "kind": "destination",
+        "label": "log",
+        "count": null
+       },
+       {
+        "id": "turtle",
+        "kind": "destination",
+        "label": "turtle",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "log",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "turtle",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_log",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "log",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_turtle",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "turtle",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase_transition",
+        "verb": "wait",
+        "when": {
+         "timer": "river_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "log_reach",
+        "verb": "jump",
+        "when": {
+         "contact": [
+          "player",
+          "log"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "score": 10
+         }
+        ]
+       },
+       {
+        "id": "turtle_reach",
+        "verb": "jump",
+        "when": {
+         "contact": [
+          "player",
+          "turtle"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "score": 10
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "river_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "r01": {
+   "id": "r01",
+   "sentence": "grow your army through gates and smash the enemy castle",
+   "recordedAt": "2026-10-20T20:09:19.034Z",
+   "ms": 5211,
+   "usage": {
+    "inputTokens": 3707,
+    "outputTokens": 456
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "crowd",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "knight",
+      "cast": [
+       {
+        "label": "gate",
+        "does": "reach",
+        "verb": "open",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "enemy castle",
+        "does": "reach",
+        "verb": "smash",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "soldier",
+        "does": "collect",
+        "verb": "recruit",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "castle",
+      "palette": "castle",
+      "params": {
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 0
+      },
+      "ruleRoles": [
+       {
+        "id": "gate",
+        "kind": "door",
+        "label": "gate",
+        "count": 1
+       },
+       {
+        "id": "castle",
+        "kind": "exit",
+        "label": "enemy castle",
+        "count": 1
+       },
+       {
+        "id": "soldier",
+        "kind": "item",
+        "label": "soldier",
+        "count": 10
+       }
+      ],
+      "things": [
+       {
+        "role": "gate",
+        "start": "hidden",
+        "physics": false
+       },
+       {
+        "role": "castle",
+        "start": "hidden",
+        "physics": false
+       },
+       {
+        "role": "soldier",
+        "start": "hidden",
+        "physics": false
+       }
+      ],
+      "rules": [
+       {
+        "id": "open_gate",
+        "verb": "reach",
+        "when": {
+         "contact": [
+          "player",
+          "gate"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "toggle": "gate"
+         },
+         {
+          "despawn": "held"
+         }
+        ]
+       },
+       {
+        "id": "recruit_soldier",
+        "verb": "reach",
+        "when": {
+         "contact": [
+          "player",
+          "soldier"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         },
+         {
+          "count": {
+           "counter": "items",
+           "amount": 1
+          }
+         }
+        ]
+       },
+       {
+        "id": "smash_castle",
+        "verb": "reach",
+        "when": {
+         "contact": [
+          "player",
+          "castle"
+         ]
+        },
+        "if": [
+         {
+          "holding": "soldier"
+         }
+        ],
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": [
+        {
+         "id": "wave",
+         "start": 0
+        }
+       ],
+       "timers": [
+        {
+         "id": "wave_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "r02": {
+   "id": "r02",
+   "sentence": "a crowd of stickmen runs through plus and times gates to beat the giant",
+   "recordedAt": "2026-10-20T20:09:23.147Z",
+   "ms": 4032,
+   "usage": {
+    "inputTokens": 3739,
+    "outputTokens": 328
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "crowd",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "stickmen",
+      "cast": [
+       {
+        "label": "giant",
+        "does": "fight",
+        "verb": "beat",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "plus",
+      "palette": "city",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "giant",
+        "kind": "chaser",
+        "label": "giant",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "giant",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "start"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "gate",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "gateWave",
+        "verb": "wait",
+        "when": {
+         "timer": "gate"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "gate"
+         },
+         {
+          "wave": {
+           "role": "giant",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "gateEnd",
+        "verb": "wait",
+        "when": {
+         "phase": "gate"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "end"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "gate"
+        }
+       ],
+       "phases": [
+        {
+         "id": "start"
+        },
+        {
+         "id": "gate"
+        },
+        {
+         "id": "end"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "giant",
+       "name": "Giant",
+       "attack": "charge"
+      },
+      "abilities": [],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "r03": {
+   "id": "r03",
+   "sentence": "count masters style run where you multiply your crowd",
+   "recordedAt": "2026-10-20T20:09:30.674Z",
+   "ms": 7438,
+   "usage": {
+    "inputTokens": 3703,
+    "outputTokens": 861
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a crowd‑style game where the hero Count multiplies a crowd while evading a Master foe on a race track.",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "count",
+      "cast": [
+       {
+        "label": "master",
+        "does": "chase_me",
+        "verb": "chase",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "style",
+        "does": "avoid",
+        "verb": "avoid",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "crowd",
+        "does": "reach",
+        "verb": "grow",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "race track",
+      "palette": "city",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "master",
+        "kind": "chaser",
+        "label": "master",
+        "count": 1
+       },
+       {
+        "id": "crowd",
+        "kind": "target",
+        "label": "crowd",
+        "count": 1
+       }
+      ],
+      "things": [],
+      "rules": [
+       {
+        "id": "start_timer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "phase_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase_transition",
+        "verb": "wait",
+        "when": {
+         "timer": "phase_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "master",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase_second",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "master",
+       "name": "Master of the Crowd",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "grab",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "r04": {
+   "id": "r04",
+   "sentence": "lead a mob of penguins through doubling gates to the ice fortress",
+   "recordedAt": "2026-10-20T20:09:38.284Z",
+   "ms": 7526,
+   "usage": {
+    "inputTokens": 3720,
+    "outputTokens": 857
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a crowd‑style game where a penguin leads a growing flock through gates that double the flock size, ending at an ice fortress.",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "penguin",
+      "cast": [
+       {
+        "label": "gate",
+        "does": "reach",
+        "verb": "double",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "fortress",
+        "does": "reach",
+        "verb": "reach",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "penguin",
+        "does": "collect",
+        "verb": "lead",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "ice fortress",
+      "palette": "snow",
+      "params": null,
+      "ruleRoles": null,
+      "things": null,
+      "rules": null,
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "r05": {
+   "id": "r05",
+   "sentence": "gather more soldiers at gates and fight the boss at the end of the bridge",
+   "recordedAt": "2026-10-20T20:09:42.915Z",
+   "ms": 4551,
+   "usage": {
+    "inputTokens": 3739,
+    "outputTokens": 422
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "crowd",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "soldier",
+      "cast": [
+       {
+        "label": "soldier",
+        "does": "collect",
+        "verb": "gather",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "boss",
+        "does": "fight",
+        "verb": "duel",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "gates",
+      "palette": "castle",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "soldier",
+        "kind": "collectible",
+        "label": "soldier",
+        "count": null
+       },
+       {
+        "id": "boss",
+        "kind": "chaser",
+        "label": "boss",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "soldier",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "boss",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "gather_soldiers",
+        "verb": "collect",
+        "when": {
+         "contact": [
+          "player",
+          "soldier"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "spawn_soldiers",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "soldier",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_boss",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "boss",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "fight_boss",
+        "verb": "duel",
+        "when": {
+         "contact": [
+          "player",
+          "boss"
+         ]
+        },
+        "if": [
+         {
+          "holding": "soldier"
+         }
+        ],
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "boss",
+       "name": "Bridge Overlord",
+       "attack": "charge"
+      },
+      "abilities": [
+       "grab",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "r06": {
+   "id": "r06",
+   "sentence": "a swarm of bees grows through flower gates and attacks the bear",
+   "recordedAt": "2026-10-20T20:09:47.074Z",
+   "ms": 4073,
+   "usage": {
+    "inputTokens": 3717,
+    "outputTokens": 322
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "crowd",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "bee",
+      "cast": [
+       {
+        "label": "bear",
+        "does": "fight",
+        "verb": "attack",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "flower gates",
+      "palette": "forest",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "bear",
+        "kind": "chaser",
+        "label": "bear",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "bear",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "grow",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "growPhase",
+        "verb": "wait",
+        "when": {
+         "timer": "grow"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "bear",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "secondPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "bear"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "grow"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "bear",
+       "name": "Grizzly Bear",
+       "attack": "charge"
+      },
+      "abilities": [],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "r07": {
+   "id": "r07",
+   "sentence": "pick the right gates to make your zombie horde bigger and break the wall",
+   "recordedAt": "2026-10-20T20:09:51.739Z",
+   "ms": 4545,
+   "usage": {
+    "inputTokens": 3724,
+    "outputTokens": 353
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "crowd",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "zombie",
+      "cast": [
+       {
+        "label": "gate",
+        "does": "reach",
+        "verb": "pick",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "wall",
+        "does": "reach",
+        "verb": "break",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "race track",
+      "palette": "graveyard",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "gate",
+        "kind": "destination",
+        "label": "gate",
+        "count": null
+       },
+       {
+        "id": "wall",
+        "kind": "hazard",
+        "label": "wall",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "gate",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "wall",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "pick_gate",
+        "verb": "pick",
+        "when": {
+         "contact": [
+          "player",
+          "gate"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "break_wall",
+        "verb": "break",
+        "when": {
+         "contact": [
+          "player",
+          "wall"
+         ]
+        },
+        "if": [
+         {
+          "holding": "gate"
+         }
+        ],
+        "do": [
+         {
+          "despawn": "self"
+         },
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "r08": {
+   "id": "r08",
+   "sentence": "run with a growing crowd of kids through gates to beat the teacher",
+   "recordedAt": "2026-10-20T20:09:56.420Z",
+   "ms": 4590,
+   "usage": {
+    "inputTokens": 3731,
+    "outputTokens": 317
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "crowd",
+     "spec": {
+      "genre": "crowd",
+      "mode": "default",
+      "hero": "kid",
+      "cast": [
+       {
+        "label": "teacher",
+        "does": "fight",
+        "verb": "defeat",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "gates",
+      "palette": "city",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "teacher",
+        "kind": "chaser",
+        "label": "teacher",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "teacher",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "start",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "teacher",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "teacherWave",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "third"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        },
+        {
+         "id": "third"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "teacher",
+       "name": "Teacher",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "m01": {
+   "id": "m01",
+   "sentence": "drop fruits into a jar and merge matching ones into a watermelon",
+   "recordedAt": "2026-10-20T20:10:06.395Z",
+   "ms": 5101,
+   "usage": {
+    "inputTokens": 3696,
+    "outputTokens": 378
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style game where the player drops fruit into a jar, collects them, and merges matching pairs to form a watermelon.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "fruit",
+        "does": "collect",
+        "verb": "drop",
+        "states": null,
+        "patrol": null
+       },
+       {
+        "label": "watermelon",
+        "does": "reach",
+        "verb": "merge",
+        "states": 2,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "jar",
+      "palette": "cave",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "fruit",
+        "kind": "item",
+        "label": "fruit",
+        "count": null
+       },
+       {
+        "id": "watermelon",
+        "kind": "target",
+        "label": "watermelon",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "fruit",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "watermelon",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "drop_fruit",
+        "verb": "drop",
+        "when": {
+         "contact": [
+          "player",
+          "fruit"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "merge_fruit",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "fruit"
+         ]
+        },
+        "if": [
+         {
+          "holding": "fruit"
+         }
+        ],
+        "do": [
+         {
+          "spawn": {
+           "role": "watermelon",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "win",
+        "verb": "reach",
+        "when": {
+         "contact": [
+          "player",
+          "watermelon"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "phase1"
+        },
+        {
+         "id": "phase2"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "m02": {
+   "id": "m02",
+   "sentence": "suika game with planets merging into the sun",
+   "recordedAt": "2026-10-20T20:10:17.723Z",
+   "ms": 5536,
+   "usage": {
+    "inputTokens": 3694,
+    "outputTokens": 444
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style space game where the player collects and merges floating planets into a central sun, with timed waves of new planets appearing.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "astronaut",
+      "cast": [
+       {
+        "label": "planet",
+        "does": "collect",
+        "verb": "merge",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "sun",
+        "does": "reach",
+        "verb": "merge",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "sun",
+      "palette": "space",
+      "params": {
+       "lives": 3,
+       "targetScore": 9999,
+       "timeLimit": null
+      },
+      "ruleRoles": [
+       {
+        "id": "planet",
+        "kind": "collectible",
+        "label": "planet",
+        "count": null
+       },
+       {
+        "id": "sun",
+        "kind": "destination",
+        "label": "sun",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "planet",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "sun",
+        "start": "hidden",
+        "physics": false
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_planet",
+        "verb": "spawn",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "planet",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "timer_start",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "planet",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "merge_sun",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "sun"
+         ]
+        },
+        "if": [
+         {
+          "holding": "planet"
+         }
+        ],
+        "do": [
+         {
+          "score": 100
+         },
+         {
+          "grab": "self"
+         },
+         {
+          "release": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "m03": {
+   "id": "m03",
+   "sentence": "merge the same animals into bigger ones without filling the box",
+   "recordedAt": "2026-10-20T20:10:27.080Z",
+   "ms": 4333,
+   "usage": {
+    "inputTokens": 3711,
+    "outputTokens": 334
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style game where the player (a fox) collects identical animals, merges them into larger ones, and avoids filling the play area.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "animal",
+        "does": "collect",
+        "verb": "merge",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "bigger ones",
+      "palette": "forest",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "animal",
+        "kind": "item",
+        "label": "animal",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "animal",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "collect_animal",
+        "verb": "collect",
+        "when": {
+         "contact": [
+          "player",
+          "animal"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "merge_animals",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "animal"
+         ]
+        },
+        "if": [
+         {
+          "holding": "animal"
+         }
+        ],
+        "do": [
+         {
+          "spawn": {
+           "role": "animal",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_wave",
+        "verb": "spawn",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "animal",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "first"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "m04": {
+   "id": "m04",
+   "sentence": "drop numbered blocks and combine equal ones like 2048",
+   "recordedAt": "2026-10-20T20:10:35.835Z",
+   "ms": 5641,
+   "usage": {
+    "inputTokens": 3696,
+    "outputTokens": 368
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style 2048 clone with falling numbered blocks.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "numbered block",
+        "does": "collect",
+        "verb": "merge",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "candy shop",
+      "palette": "cave",
+      "params": {
+       "lives": 1,
+       "targetScore": 2048,
+       "timeLimit": null
+      },
+      "ruleRoles": [
+       {
+        "id": "block",
+        "kind": "item",
+        "label": "numbered block",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "block",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_block",
+        "verb": "drop",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "block",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "merge_blocks",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "block"
+         ]
+        },
+        "if": [
+         {
+          "holding": "block"
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         },
+         {
+          "release": true
+         },
+         {
+          "spawn": {
+           "role": "block",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "next_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "block",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "tick"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "m05": {
+   "id": "m05",
+   "sentence": "drop kittens into a basket and two identical cats merge into a bigger cat",
+   "recordedAt": "2026-10-20T20:10:44.284Z",
+   "ms": 4706,
+   "usage": {
+    "inputTokens": 3702,
+    "outputTokens": 466
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style game where kittens are dropped into a basket and identical cats combine into a larger cat, with a simple timed wave mechanic.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "cat",
+      "cast": [
+       {
+        "label": "kitten",
+        "does": "collect",
+        "verb": "drop",
+        "states": null,
+        "patrol": null
+       },
+       {
+        "label": "cat",
+        "does": "collect",
+        "verb": "merge",
+        "states": null,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "basket",
+      "palette": "cave",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "kitten",
+        "kind": "collectible",
+        "label": "kitten",
+        "count": null
+       },
+       {
+        "id": "cat",
+        "kind": "collectible",
+        "label": "cat",
+        "count": null
+       },
+       {
+        "id": "bigCat",
+        "kind": "prop",
+        "label": "big cat",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "bigCat",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "dropKitten",
+        "verb": "drop",
+        "when": {
+         "contact": [
+          "player",
+          "kitten"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "mergeCats",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "cat",
+          "cat"
+         ]
+        },
+        "if": [
+         {
+          "holding": "cat"
+         }
+        ],
+        "do": [
+         {
+          "despawn": "other"
+         },
+         {
+          "spawn": {
+           "role": "bigCat",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "waveTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "waveTrigger",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "cat",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseSecond",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "bigCat"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": null,
+      "segments": null
+     }
+    }
+   }
+  },
+  "m06": {
+   "id": "m06",
+   "sentence": "drop candies in a jar and merge matching candies",
+   "recordedAt": "2026-10-20T20:10:52.623Z",
+   "ms": 4783,
+   "usage": {
+    "inputTokens": 3692,
+    "outputTokens": 445
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style candy‑jar game where the player drops candies into a jar and matching candies automatically merge into higher‑value candies. The game runs in a single phase with a timer that periodically spawns new candies, but the win condition is simply to keep merging candies without a time limit.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "candy",
+        "does": "collect",
+        "verb": "drop",
+        "states": null,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "jar",
+      "palette": "cave",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "candy",
+        "kind": "item",
+        "label": "candy",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "candy",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "drop_candy",
+        "verb": "drop",
+        "when": {
+         "contact": [
+          "player",
+          "candy"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "merge_candies",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "candy"
+         ]
+        },
+        "if": [
+         {
+          "holding": "candy"
+         }
+        ],
+        "do": [
+         {
+          "spawn": {
+           "role": "candy",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawn_candy",
+        "verb": "spawn",
+        "when": {
+         "timer": "spawn_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "candy",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "start_timer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "spawn_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase_transition",
+        "verb": "wait",
+        "when": {
+         "timer": "spawn_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "spawn_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": null,
+      "segments": null
+     }
+    }
+   }
+  },
+  "m07": {
+   "id": "m07",
+   "sentence": "drop gems into the bowl and fuse matching gems into crowns",
+   "recordedAt": "2026-10-20T20:11:02.614Z",
+   "ms": 5547,
+   "usage": {
+    "inputTokens": 3696,
+    "outputTokens": 532
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style puzzle where gems fall into a bowl, the player collects them, and matching gems automatically fuse into crowns. The game runs in two phases: a short “drop” phase where gems appear, followed by a “fuse” phase where the player can trigger fusion by matching. The goal is to collect as many crowns as possible before the timer ends.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "gem",
+        "does": "collect",
+        "verb": "drop",
+        "states": null,
+        "patrol": null
+       },
+       {
+        "label": "crowns",
+        "does": "collect",
+        "verb": "fuse",
+        "states": null,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "bowl",
+      "palette": "cave",
+      "params": null,
+      "ruleRoles": [
+       {
+        "id": "gem",
+        "kind": "item",
+        "label": "gem",
+        "count": null
+       },
+       {
+        "id": "crowns",
+        "kind": "item",
+        "label": "crowns",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "gem",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "crowns",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "drop_gems",
+        "verb": "drop",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "gem",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "start_fuse",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "fuse",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "go_fuse_phase",
+        "verb": "wait",
+        "when": {
+         "timer": "fuse"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "gem",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "fuse_gems",
+        "verb": "fuse",
+        "when": {
+         "phase": "second"
+        },
+        "if": [
+         {
+          "counter": {
+           "name": "items",
+           "atLeast": 2,
+           "below": null
+          }
+         }
+        ],
+        "do": [
+         {
+          "spawn": {
+           "role": "crowns",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "collect_crowns",
+        "verb": "collect",
+        "when": {
+         "contact": [
+          "player",
+          "crowns"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "score": 10
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "fuse"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "m08": {
+   "id": "m08",
+   "sentence": "merge bubbles of the same color before they overflow the cup",
+   "recordedAt": "2026-10-20T20:11:12.007Z",
+   "ms": 5181,
+   "usage": {
+    "inputTokens": 3692,
+    "outputTokens": 419
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a merge‑style bubble‑popping game where bubbles of the same color combine before the cup overflows.",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "bubble‑catcher",
+      "cast": [
+       {
+        "label": "bubble",
+        "does": "collect",
+        "verb": "merge",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "cup",
+        "does": "reach",
+        "verb": "overflow",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "bubble laboratory",
+      "palette": "cave",
+      "params": {
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 0
+      },
+      "ruleRoles": [
+       {
+        "id": "bubble",
+        "kind": "item",
+        "label": "bubble",
+        "count": null
+       },
+       {
+        "id": "cup",
+        "kind": "destination",
+        "label": "cup",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "bubble",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "cup",
+        "start": "hidden",
+        "physics": false
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_bubble",
+        "verb": "spawn",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "bubble",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "merge_bubbles",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "bubble"
+         ]
+        },
+        "if": [
+         {
+          "counter": {
+           "name": "items",
+           "atLeast": 2,
+           "below": null
+          }
+         }
+        ],
+        "do": [
+         {
+          "count": {
+           "counter": "items",
+           "amount": -1
+          }
+         }
+        ]
+       },
+       {
+        "id": "overflow_cup",
+        "verb": "overflow",
+        "when": {
+         "contact": [
+          "player",
+          "cup"
+         ]
+        },
+        "if": [
+         {
+          "counter": {
+           "name": "items",
+           "atLeast": 1,
+           "below": null
+          }
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "overflow_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "p01": {
+   "id": "p01",
+   "sentence": "sumo wrestlers push each other out of a ring",
+   "recordedAt": "2026-10-20T20:11:18.918Z",
+   "ms": 4887,
+   "usage": {
+    "inputTokens": 3706,
+    "outputTokens": 365
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑style arena where two sumo wrestlers fight to push each other out of a ring, with a simple phase‑based timer that triggers a wave of additional wrestlers.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "sumo wrestler",
+      "cast": [
+       {
+        "label": "other",
+        "does": "fight",
+        "verb": "push",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "sumo ring",
+      "palette": "castle",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "other",
+        "kind": "chaser",
+        "label": "other wrestler",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "other",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "start_phase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "phase1",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase1_timer",
+        "verb": "wait",
+        "when": {
+         "timer": "phase1"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "other",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "second_phase",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "other"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "other",
+       "name": "Opponent",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "p02": {
+   "id": "p02",
+   "sentence": "shove the penguins off the ice floe",
+   "recordedAt": "2026-10-20T20:11:25.401Z",
+   "ms": 4659,
+   "usage": {
+    "inputTokens": 3725,
+    "outputTokens": 391
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑based arena where a fox shoves penguins off an ice floe, with timed waves of penguins appearing and a simple win condition when all penguins are off the floe.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "penguin",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "ice floe",
+      "palette": "snow",
+      "params": {
+       "rivals": 3,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "enemy": 3
+      },
+      "ruleRoles": [
+       {
+        "id": "penguin",
+        "kind": "chaser",
+        "label": "penguin",
+        "count": 3
+       }
+      ],
+      "things": [
+       {
+        "role": "penguin",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "penguin",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_end",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "penguin",
+       "name": "Penguin King",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "dash",
+       "grab"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "p03": {
+   "id": "p03",
+   "sentence": "bumper cars knocking rivals off the platform",
+   "recordedAt": "2026-10-20T20:11:32.102Z",
+   "ms": 5099,
+   "usage": {
+    "inputTokens": 3723,
+    "outputTokens": 402
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑style bumper‑car arena where the player’s car pushes rival cars off a platform, with timed waves of new rivals appearing.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "bumper car",
+      "cast": [
+       {
+        "label": "rival",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "sumo ring",
+      "palette": "city",
+      "params": {
+       "rivals": 3,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "enemy": 3
+      },
+      "ruleRoles": [
+       {
+        "id": "rival",
+        "kind": "chaser",
+        "label": "rival car",
+        "count": 3
+       },
+       {
+        "id": "platform",
+        "kind": "zone",
+        "label": "platform",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "platform",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "rival",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "push_rival",
+        "verb": "push",
+        "when": {
+         "contact": [
+          "player",
+          "rival"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "other"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "rival",
+       "name": "Rival Car",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "p04": {
+   "id": "p04",
+   "sentence": "push the other robots out of the arena ring",
+   "recordedAt": "2026-10-20T20:11:38.925Z",
+   "ms": 4858,
+   "usage": {
+    "inputTokens": 3721,
+    "outputTokens": 406
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑arena game where the player, a robot, shoves other robots out of a sumo ring while waves of enemies appear and the arena resets each second.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "robot",
+      "cast": [
+       {
+        "label": "robot",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "robot",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "robot",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "sumo ring",
+      "palette": "cave",
+      "params": null,
+      "counts": {
+       "enemy": 3
+      },
+      "ruleRoles": [
+       {
+        "id": "robot",
+        "kind": "chaser",
+        "label": "robot",
+        "count": 3
+       }
+      ],
+      "things": [
+       {
+        "role": "robot",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "spawn_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_start",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "robot",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "reset",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         },
+         {
+          "despawn": "other"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "robot",
+       "name": "Arena Bot",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "dash",
+       "grab"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "p05": {
+   "id": "p05",
+   "sentence": "a hippo bumps rivals off a floating raft",
+   "recordedAt": "2026-10-20T20:11:46.125Z",
+   "ms": 4541,
+   "usage": {
+    "inputTokens": 3727,
+    "outputTokens": 362
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑style arena where a hippo shoves rival animals off a raft, with timed waves of rivals appearing.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "hippo",
+      "cast": [
+       {
+        "label": "rival",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "floating raft in a shallow lagoon",
+      "palette": "ocean",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "rival",
+        "kind": "chaser",
+        "label": "rival animal",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "raft",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "start_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_spawn",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "rival",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "reset_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "first"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "rival",
+       "name": "Rival Hippo",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash",
+       "grab"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "p06": {
+   "id": "p06",
+   "sentence": "knock the knights off the round table platform",
+   "recordedAt": "2026-10-20T20:11:53.352Z",
+   "ms": 6311,
+   "usage": {
+    "inputTokens": 3705,
+    "outputTokens": 470
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "push",
+     "spec": {
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "knight",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "knit",
+      "setting": "round table platform",
+      "palette": "castle",
+      "counts": {
+       "enemy": 1,
+       "collectible": null,
+       "target": null
+      },
+      "ruleRoles": [
+       {
+        "id": "knight",
+        "kind": "chaser",
+        "label": "knight",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "knight",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "phase1",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase1Timer",
+        "verb": "wait",
+        "when": {
+         "timer": "phase1"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "knight",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "secondPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "knight"
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "knight",
+       "name": "Sir Bump",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ],
+      "recipe": {
+       "phases": [
+        {
+         "start": 0,
+         "speedPercent": 100,
+         "add": null
+        }
+       ],
+       "dependsOn": null,
+       "move": "jump",
+       "actions": [
+        "push"
+       ],
+       "objective": "defeat",
+       "threats": [
+        "chaser"
+       ]
+      },
+      "params": null,
+      "unmet": []
+     }
+    }
+   }
+  },
+  "p07": {
+   "id": "p07",
+   "sentence": "push the crabs off a shrinking island",
+   "recordedAt": "2026-10-20T20:12:00.663Z",
+   "ms": 4650,
+   "usage": {
+    "inputTokens": 3721,
+    "outputTokens": 399
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑style game where a turtle pushes crabs off a shrinking island, using timed phases to shrink the island and spawn waves of crabs.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "turtle",
+      "cast": [
+       {
+        "label": "crab",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "island",
+      "palette": "beach",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "crab",
+        "kind": "chaser",
+        "label": "crab",
+        "count": null
+       },
+       {
+        "id": "island",
+        "kind": "zone",
+        "label": "island",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "island",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "start",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "shrink",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "shrink",
+        "verb": "wait",
+        "when": {
+         "timer": "shrink"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "toggle": "island"
+         },
+         {
+          "spawn": {
+           "role": "crab",
+           "at": "other"
+          }
+         }
+        ]
+       },
+       {
+        "id": "push",
+        "verb": "push",
+        "when": {
+         "contact": [
+          "player",
+          "crab"
+         ]
+        },
+        "if": [
+         {
+          "holding": "crab"
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "shrink"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "crab",
+       "name": "Crab King",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "dash",
+       "grab"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "p08": {
+   "id": "p08",
+   "sentence": "a bull shoves cowboys out of the rodeo ring",
+   "recordedAt": "2026-10-20T20:12:08.095Z",
+   "ms": 4955,
+   "usage": {
+    "inputTokens": 3735,
+    "outputTokens": 420
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a push‑style arena where a bull forces cowboys out of a rodeo ring, using a simple two‑phase timer to spawn waves of cowboys.",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "bull",
+      "cast": [
+       {
+        "label": "cowboy",
+        "does": "fight",
+        "verb": "push",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "sumo ring",
+      "palette": "cave",
+      "params": null,
+      "counts": {
+       "enemy": null
+      },
+      "ruleRoles": [
+       {
+        "id": "cowboy",
+        "kind": "chaser",
+        "label": "cowboy",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "cowboy",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "start_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "wave_spawn",
+        "verb": "wait",
+        "when": {
+         "timer": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "cowboy",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase_two",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "third"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        },
+        {
+         "id": "third"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "cowboy",
+       "name": "Cowboy",
+       "attack": "shoot"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x01": {
+   "id": "x01",
+   "sentence": "the police try to catch the thief running through the city",
+   "recordedAt": "2026-10-20T20:12:16.867Z",
+   "ms": 4838,
+   "usage": {
+    "inputTokens": 3740,
+    "outputTokens": 443
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "runner",
+     "spec": {
+      "genre": "runner",
+      "mode": "default",
+      "hero": "police",
+      "cast": [
+       {
+        "label": "thief",
+        "does": "fight",
+        "verb": "catch",
+        "states": 2,
+        "patrol": true
+       },
+       {
+        "label": "traffic barrier",
+        "does": "avoid",
+        "verb": "run",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "city",
+      "palette": "city",
+      "params": null,
+      "counts": {
+       "enemy": 1,
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "thief",
+        "kind": "chaser",
+        "label": "thief",
+        "count": 1
+       },
+       {
+        "id": "barrier",
+        "kind": "hazard",
+        "label": "traffic barrier",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "thief",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "barrier",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "run",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseTransition",
+        "verb": "wait",
+        "when": {
+         "timer": "run"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "thief",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "thiefSpawn",
+        "verb": "spawn",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "spawn": {
+           "role": "thief",
+           "at": "player"
+          }
+         }
+        ]
+       },
+       {
+        "id": "thiefCatch",
+        "verb": "catch",
+        "when": {
+         "contact": [
+          "player",
+          "thief"
+         ]
+        },
+        "if": [
+         {
+          "holding": "thief"
+         }
+        ],
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "run"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "thief",
+       "name": "Sneaky Thief",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x02": {
+   "id": "x02",
+   "sentence": "a knight defends himself in a sword duel",
+   "recordedAt": "2026-10-20T20:12:22.153Z",
+   "ms": 5190,
+   "usage": {
+    "inputTokens": 3731,
+    "outputTokens": 511
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create an arena sword‑duel game where the knight fights a rival, with timed phases that spawn a second challenger and then end the duel.",
+     "spec": {
+      "genre": "arena",
+      "mode": "fight",
+      "hero": "knight",
+      "cast": [
+       {
+        "label": "rival",
+        "does": "fight",
+        "verb": "duel",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "second rival",
+        "does": "fight",
+        "verb": "duel",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "sweep",
+      "setting": "sword duel",
+      "palette": "castle",
+      "params": {
+       "entryDistance": 8000,
+       "chaseLead": 0,
+       "seconds": 30,
+       "items": 1,
+       "pursuitCeiling": 120,
+       "itemSizePct": 120,
+       "chasers": 1,
+       "chaserSpeed": 70,
+       "enemies": 1,
+       "enemyHp": 5,
+       "enemySpeed": 80,
+       "playerHp": 5,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 30
+      },
+      "counts": {
+       "enemy": 2,
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "rival",
+        "kind": "chaser",
+        "label": "rival knight",
+        "count": 1
+       },
+       {
+        "id": "second",
+        "kind": "chaser",
+        "label": "second rival",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "rival",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "second",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "duel",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "duelTimer",
+        "verb": "wait",
+        "when": {
+         "timer": "duel"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "second",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "secondPhase",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "duel"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "rival",
+       "name": "Rival Knight",
+       "attack": "charge"
+      },
+      "abilities": [
+       "shoot",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x03": {
+   "id": "x03",
+   "sentence": "chop wood and build a cabin in the forest",
+   "recordedAt": "2026-10-20T20:12:28.516Z",
+   "ms": 5443,
+   "usage": {
+    "inputTokens": 3755,
+    "outputTokens": 550
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a spatial quest where a hero chops wood and builds a cabin in a forest, collecting wood and avoiding a wolf that chases the hero.",
+     "spec": {
+      "genre": "quest",
+      "mode": "spatial",
+      "hero": "woodcutter",
+      "cast": [
+       {
+        "label": "wolf",
+        "does": "chase_me",
+        "verb": "hunt",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "wood",
+        "does": "collect",
+        "verb": "chop",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "cabin",
+        "does": "reach",
+        "verb": "build",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "chop",
+      "setting": "forest",
+      "palette": "forest",
+      "params": {
+       "seconds": 60,
+       "paceBudgetPct": 80,
+       "count": 3,
+       "chasers": 1,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 60
+      },
+      "counts": {
+       "enemy": 1,
+       "target": 1
+      },
+      "ruleRoles": [
+       {
+        "id": "wolf",
+        "kind": "chaser",
+        "label": "wolf",
+        "count": 1
+       },
+       {
+        "id": "wood",
+        "kind": "item",
+        "label": "wood",
+        "count": 3
+       },
+       {
+        "id": "cabin",
+        "kind": "destination",
+        "label": "cabin",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "wolf",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "wood",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "cabin",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "build",
+           "ticks": 600
+          }
+         }
+        ]
+       },
+       {
+        "id": "spawnWood",
+        "verb": "wait",
+        "when": {
+         "timer": "build"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "wood",
+           "count": 3,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "wolfChase",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "wolf",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "reachCabin",
+        "verb": "build",
+        "when": {
+         "contact": [
+          "player",
+          "cabin"
+         ]
+        },
+        "if": [
+         {
+          "holding": "wood"
+         }
+        ],
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "build"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "wolf",
+       "name": "Forest Wolf",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash",
+       "grab"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x04": {
+   "id": "x04",
+   "sentence": "a frog hops between lily pads to reach the island",
+   "recordedAt": "2026-10-20T20:12:32.632Z",
+   "ms": 3146,
+   "usage": {
+    "inputTokens": 3739,
+    "outputTokens": 241
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a platformer where a frog hops across lily pads to reach an island, with a simple timed phase system that triggers a wave of lily pads but does not affect win/lose conditions.",
+     "spec": {
+      "genre": "platformer",
+      "mode": "default",
+      "hero": "frog",
+      "cast": [
+       {
+        "label": "lily pad",
+        "does": "collect",
+        "verb": "jump",
+        "states": null,
+        "patrol": null
+       },
+       {
+        "label": "island",
+        "does": "reach",
+        "verb": "reach",
+        "states": 2,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "floating islands",
+      "palette": "forest",
+      "params": null,
+      "counts": {
+       "collectible": null
+      },
+      "ruleRoles": [],
+      "things": [],
+      "rules": [],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x05": {
+   "id": "x05",
+   "sentence": "a race car speeds through checkpoint gates",
+   "recordedAt": "2026-10-20T20:12:35.961Z",
+   "ms": 2564,
+   "usage": {
+    "inputTokens": 3719,
+    "outputTokens": 189
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "voyage race",
+     "spec": {
+      "genre": "voyage",
+      "mode": "race",
+      "hero": "race car",
+      "cast": [],
+      "heroAction": "none",
+      "setting": "checkpoint gates",
+      "palette": "city",
+      "params": null,
+      "ruleRoles": [],
+      "things": [],
+      "rules": [],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x06": {
+   "id": "x06",
+   "sentence": "push crates onto switches to open the door",
+   "recordedAt": "2026-10-20T20:12:42.684Z",
+   "ms": 5250,
+   "usage": {
+    "inputTokens": 3763,
+    "outputTokens": 502
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "push",
+     "spec": {
+      "genre": "push",
+      "mode": "default",
+      "hero": "human",
+      "cast": [
+       {
+        "label": "crate",
+        "does": "collect",
+        "verb": "push",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "switch",
+        "does": "reach",
+        "verb": "activate",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "door",
+        "does": "reach",
+        "verb": "open",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "paint",
+      "setting": "warehouse",
+      "palette": "factory",
+      "params": {
+       "rivals": 3,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 0
+      },
+      "counts": {
+       "enemy": 3
+      },
+      "ruleRoles": [
+       {
+        "id": "crate",
+        "kind": "item",
+        "label": "crate",
+        "count": 3
+       },
+       {
+        "id": "switch",
+        "kind": "switch",
+        "label": "switch",
+        "count": 1
+       },
+       {
+        "id": "door",
+        "kind": "door",
+        "label": "door",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "crate",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "switch",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "door",
+        "start": "hidden",
+        "physics": true
+       }
+      ],
+      "rules": [
+       {
+        "id": "push_crate",
+        "verb": "push",
+        "when": {
+         "contact": [
+          "player",
+          "crate"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "activate_switch",
+        "verb": "activate",
+        "when": {
+         "contact": [
+          "player",
+          "switch"
+         ]
+        },
+        "if": [
+         {
+          "holding": "crate"
+         }
+        ],
+        "do": [
+         {
+          "toggle": "switch"
+         },
+         {
+          "despawn": "held"
+         }
+        ]
+       },
+       {
+        "id": "open_door",
+        "verb": "open",
+        "when": {
+         "contact": [
+          "player",
+          "door"
+         ]
+        },
+        "if": [
+         {
+          "holding": "switch"
+         }
+        ],
+        "do": [
+         {
+          "toggle": "door"
+         },
+         {
+          "despawn": "held"
+         }
+        ]
+       },
+       {
+        "id": "win",
+        "verb": "reach",
+        "when": {
+         "contact": [
+          "player",
+          "door"
+         ]
+        },
+        "if": [
+         {
+          "holding": "door"
+         }
+        ],
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [
+       "dash",
+       "grab"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x07": {
+   "id": "x07",
+   "sentence": "throw a ball for the dog to catch",
+   "recordedAt": "2026-10-20T20:12:47.505Z",
+   "ms": 4448,
+   "usage": {
+    "inputTokens": 3728,
+    "outputTokens": 487
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a throw‑style game where a hero throws a ball that a dog must catch, with a simple one‑second timer that switches phases but does not win or lose the game.",
+     "spec": {
+      "genre": "throw",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "ball",
+        "does": "throw_at",
+        "verb": "throw",
+        "states": null,
+        "patrol": null
+       },
+       {
+        "label": "dog",
+        "does": "reach",
+        "verb": "catch",
+        "states": null,
+        "patrol": null
+       }
+      ],
+      "heroAction": "throw",
+      "setting": "park",
+      "palette": "forest",
+      "params": null,
+      "ruleRoles": null,
+      "things": null,
+      "rules": null,
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [
+       "shoot"
+      ],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x08": {
+   "id": "x08",
+   "sentence": "shoot the aliens invading earth",
+   "recordedAt": "2026-10-20T20:12:53.670Z",
+   "ms": 5196,
+   "usage": {
+    "inputTokens": 3696,
+    "outputTokens": 570
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a shooter where a fox battles waves of invading aliens on a desert outpost, shooting them down while surviving a timed wave cycle.",
+     "spec": {
+      "genre": "shooter",
+      "mode": "default",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "alien",
+        "does": "shoot_at",
+        "verb": "shoot",
+        "states": null,
+        "patrol": false
+       },
+       {
+        "label": "ground",
+        "does": "scenery",
+        "verb": "none",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "desert outpost",
+      "palette": "desert",
+      "params": {
+       "targetWidthPct": 50,
+       "movingTargets": 1,
+       "waves": 5,
+       "enemies": 6,
+       "targets": 8,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 90
+      },
+      "counts": {
+       "enemy": 6,
+       "target": 8
+      },
+      "ruleRoles": [
+       {
+        "id": "alien",
+        "kind": "chaser",
+        "label": "alien",
+        "count": 6
+       },
+       {
+        "id": "ground",
+        "kind": "prop",
+        "label": "ground",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "alien",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "ground",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "shoot_alien",
+        "verb": "shoot",
+        "when": {
+         "contact": [
+          "player",
+          "alien"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "damage": 1
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       },
+       {
+        "id": "alien_wave",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "alien",
+           "count": 6,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "start_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "start"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "wave_timer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "next_wave",
+        "verb": "wait",
+        "when": {
+         "timer": "wave_timer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "wave"
+         }
+        ]
+       },
+       {
+        "id": "wave_phase",
+        "verb": "wait",
+        "when": {
+         "phase": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "alien",
+           "count": 6,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "reset_wave",
+        "verb": "wait",
+        "when": {
+         "phase": "wave"
+        },
+        "if": null,
+        "do": [
+         {
+          "stopTimer": "wave_timer"
+         },
+         {
+          "goPhase": "start"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "wave_timer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "start"
+        },
+        {
+         "id": "wave"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "alien",
+       "name": "Invading Alien",
+       "attack": "shoot"
+      },
+      "abilities": [
+       "shoot"
+      ],
+      "segments": [
+       "moving",
+       "newFoe",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x09": {
+   "id": "x09",
+   "sentence": "collect coins while the crowd cheers in the stadium",
+   "recordedAt": "2026-10-20T20:12:59.991Z",
+   "ms": 4937,
+   "usage": {
+    "inputTokens": 3732,
+    "outputTokens": 456
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Arena collect in a stadium where the hero gathers coins while the crowd cheers, with a simple two‑phase timer that keeps the game running but never ends it.",
+     "spec": {
+      "genre": "arena",
+      "mode": "collect",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "coin",
+        "does": "collect",
+        "verb": "collect",
+        "states": null,
+        "patrol": null
+       },
+       {
+        "label": "crowd",
+        "does": "chase_me",
+        "verb": "cheer",
+        "states": null,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "stadium",
+      "palette": "city",
+      "params": null,
+      "counts": {
+       "enemy": null,
+       "collectible": null
+      },
+      "ruleRoles": [
+       {
+        "id": "coin",
+        "kind": "collectible",
+        "label": "coin",
+        "count": null
+       },
+       {
+        "id": "crowd",
+        "kind": "chaser",
+        "label": "crowd",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "coin",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "crowd",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "cheer",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "cheerPhase",
+        "verb": "wait",
+        "when": {
+         "timer": "cheer"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "cheerWave",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "wave": {
+           "role": "crowd",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "cheer"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x10": {
+   "id": "x10",
+   "sentence": "a cat catches mice running around the barn",
+   "recordedAt": "2026-10-20T20:13:08.213Z",
+   "ms": 5116,
+   "usage": {
+    "inputTokens": 3725,
+    "outputTokens": 510
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a runner‑style game where a cat chases and catches mice around a barn, with a simple two‑phase timer that does nothing but keeps the game alive.",
+     "spec": {
+      "genre": "runner",
+      "mode": "default",
+      "hero": "cat",
+      "cast": [
+       {
+        "label": "mouse",
+        "does": "fight",
+        "verb": "catch",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "barn",
+        "does": "scenery",
+        "verb": "none",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "barn",
+      "palette": "forest",
+      "params": {
+       "lengthM": null,
+       "speed": null,
+       "density": null,
+       "fullRowPct": null,
+       "ride": null,
+       "items": null,
+       "obstacles": null,
+       "lives": 1,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "counts": {
+       "enemy": 1,
+       "collectible": null
+      },
+      "ruleRoles": [],
+      "things": [],
+      "rules": [],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x11": {
+   "id": "x11",
+   "sentence": "a boxer fights his rival in the ring",
+   "recordedAt": "2026-10-20T20:13:13.601Z",
+   "ms": 5132,
+   "usage": {
+    "inputTokens": 3722,
+    "outputTokens": 490
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Arena fight in a boxing ring with a rival opponent, timed rounds and a simple win condition.",
+     "spec": {
+      "genre": "arena",
+      "mode": "fight",
+      "hero": "boxer",
+      "cast": [
+       {
+        "label": "rival",
+        "does": "fight",
+        "verb": "fight",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "coin",
+        "does": "collect",
+        "verb": "collect",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "ring",
+      "palette": "cave",
+      "params": {
+       "entryDistance": 8000,
+       "chaseLead": 0,
+       "seconds": 60,
+       "items": 1,
+       "pursuitCeiling": 120,
+       "itemSizePct": 120,
+       "chasers": 1,
+       "chaserSpeed": 70,
+       "enemies": 1,
+       "enemyHp": 5,
+       "enemySpeed": 60,
+       "playerHp": 5,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 60
+      },
+      "counts": {
+       "enemy": 1,
+       "collectible": 1
+      },
+      "ruleRoles": [
+       {
+        "id": "rival",
+        "kind": "chaser",
+        "label": "rival",
+        "count": 1
+       },
+       {
+        "id": "coin",
+        "kind": "collectible",
+        "label": "coin",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "rival",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "coin",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "enterRing",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "round",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "startRound",
+        "verb": "wait",
+        "when": {
+         "timer": "round"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "rival",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "endRound",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "round"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "rival",
+       "name": "Rival Boxer",
+       "attack": "charge"
+      },
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x12": {
+   "id": "x12",
+   "sentence": "slice through the jungle with a machete to find the temple",
+   "recordedAt": "2026-10-20T20:13:18.846Z",
+   "ms": 4712,
+   "usage": {
+    "inputTokens": 3727,
+    "outputTokens": 483
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Arena collect: a monkey slices through jungle vines with a machete, hunting snakes while hunting for the hidden temple.",
+     "spec": {
+      "genre": "arena",
+      "mode": "collect",
+      "hero": "monkey",
+      "cast": [
+       {
+        "label": "snake",
+        "does": "chase_me",
+        "verb": "chase",
+        "states": null,
+        "patrol": true
+       },
+       {
+        "label": "temple",
+        "does": "collect",
+        "verb": "collect",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "sweep",
+      "setting": "jungle",
+      "palette": "jungle",
+      "params": {
+       "entryDistance": 12000,
+       "chaseLead": 60,
+       "seconds": 60,
+       "items": 10,
+       "pursuitCeiling": 120,
+       "itemSizePct": 120,
+       "chasers": 2,
+       "chaserSpeed": 70,
+       "enemies": 1,
+       "enemyHp": 3,
+       "enemySpeed": 80,
+       "playerHp": 5,
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 60
+      },
+      "counts": {
+       "enemy": 2,
+       "collectible": 10
+      },
+      "ruleRoles": [
+       {
+        "id": "snake",
+        "kind": "chaser",
+        "label": "snake",
+        "count": 2
+       },
+       {
+        "id": "temple",
+        "kind": "destination",
+        "label": "temple",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "temple",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "hunt",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "huntPhase",
+        "verb": "wait",
+        "when": {
+         "timer": "hunt"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "wave": {
+           "role": "snake",
+           "count": 2,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "collectTemple",
+        "verb": "collect",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "hunt"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": {
+       "role": "snake",
+       "name": "Venomous Viper",
+       "attack": "stomp"
+      },
+      "abilities": [
+       "shoot",
+       "dash"
+      ],
+      "segments": [
+       "newFoe",
+       "moving",
+       "faster"
+      ]
+     }
+    }
+   }
+  },
+  "x13": {
+   "id": "x13",
+   "sentence": "a rabbit hops over fences on a long meadow run",
+   "recordedAt": "2026-10-20T20:13:24.719Z",
+   "ms": 5131,
+   "usage": {
+    "inputTokens": 3751,
+    "outputTokens": 591
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a platformer where the rabbit hops over fences while running across a meadow, with a simple two‑phase timer that triggers a harmless state change.",
+     "spec": {
+      "genre": "platformer",
+      "mode": "default",
+      "hero": "rabbit",
+      "cast": [
+       {
+        "label": "fence",
+        "does": "avoid",
+        "verb": "jump",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "long meadow run",
+      "palette": "meadow",
+      "params": null,
+      "counts": null,
+      "ruleRoles": [
+       {
+        "id": "fence",
+        "kind": "hazard",
+        "label": "fence",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "fence",
+        "start": "hidden",
+        "physics": true
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "run",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseSwitch",
+        "verb": "wait",
+        "when": {
+         "timer": "run"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         },
+         {
+          "toggle": "fence"
+         }
+        ]
+       },
+       {
+        "id": "phaseSecond",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "run"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x14": {
+   "id": "x14",
+   "sentence": "merge into traffic and race to the finish",
+   "recordedAt": "2026-10-20T20:13:33.058Z",
+   "ms": 4535,
+   "usage": {
+    "inputTokens": 3735,
+    "outputTokens": 433
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Merge matching cars while racing to the finish line in a busy traffic lane",
+     "spec": {
+      "genre": "merge",
+      "mode": "default",
+      "hero": "racing car",
+      "cast": [
+       {
+        "label": "traffic",
+        "does": "avoid",
+        "verb": "merge",
+        "states": 2,
+        "patrol": true
+       },
+       {
+        "label": "car",
+        "does": "collect",
+        "verb": "merge",
+        "states": 2,
+        "patrol": true
+       },
+       {
+        "label": "finish line",
+        "does": "reach",
+        "verb": "race",
+        "states": 2,
+        "patrol": false
+       }
+      ],
+      "heroAction": "none",
+      "setting": "traffic",
+      "palette": "city",
+      "params": {
+       "lives": 3,
+       "targetScore": 0,
+       "timeLimit": 90
+      },
+      "ruleRoles": [
+       {
+        "id": "car",
+        "kind": "collectible",
+        "label": "car",
+        "count": null
+       },
+       {
+        "id": "traffic",
+        "kind": "hazard",
+        "label": "traffic",
+        "count": null
+       },
+       {
+        "id": "finish",
+        "kind": "destination",
+        "label": "finish line",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "car",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "traffic",
+        "start": "hidden",
+        "physics": true
+       },
+       {
+        "role": "finish",
+        "start": "hidden",
+        "physics": false
+       }
+      ],
+      "rules": [
+       {
+        "id": "merge_car",
+        "verb": "merge",
+        "when": {
+         "contact": [
+          "player",
+          "car"
+         ]
+        },
+        "if": [
+         {
+          "notHolding": true
+         }
+        ],
+        "do": [
+         {
+          "grab": "other"
+         }
+        ]
+       },
+       {
+        "id": "reach_finish",
+        "verb": "race",
+        "when": {
+         "contact": [
+          "player",
+          "finish"
+         ]
+        },
+        "if": null,
+        "do": [
+         {
+          "win": true
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x15": {
+   "id": "x15",
+   "sentence": "hit the drum to the beat of the song",
+   "recordedAt": "2026-10-20T20:13:38.624Z",
+   "ms": 5257,
+   "usage": {
+    "inputTokens": 3708,
+    "outputTokens": 569
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a rhythm‑style game where the player hits a drum in sync with a beat that starts after a short countdown.",
+     "spec": {
+      "genre": "rhythm",
+      "mode": "default",
+      "hero": "kid",
+      "cast": [
+       {
+        "label": "drum",
+        "does": "scenery",
+        "verb": null,
+        "states": null,
+        "patrol": null
+       }
+      ],
+      "heroAction": "none",
+      "setting": "neon stage",
+      "palette": "city",
+      "params": {
+       "bpm": 120,
+       "seconds": null,
+       "lives": null,
+       "targetScore": null,
+       "timeLimit": null
+      },
+      "ruleRoles": [
+       {
+        "id": "drum",
+        "kind": "prop",
+        "label": "drum",
+        "count": 1
+       }
+      ],
+      "things": [
+       {
+        "role": "drum",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "first"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "beat",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phaseChange",
+        "verb": "wait",
+        "when": {
+         "timer": "beat"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "second"
+         }
+        ]
+       },
+       {
+        "id": "beatIndicator",
+        "verb": "wait",
+        "when": {
+         "phase": "second"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "drum"
+         },
+         {
+          "despawn": "self"
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "beat"
+        }
+       ],
+       "phases": [
+        {
+         "id": "first"
+        },
+        {
+         "id": "second"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [],
+      "segments": null
+     }
+    }
+   }
+  },
+  "x16": {
+   "id": "x16",
+   "sentence": "stack the boxes as high as you can",
+   "recordedAt": "2026-10-20T20:13:43.798Z",
+   "ms": 5076,
+   "usage": {
+    "inputTokens": 3730,
+    "outputTokens": 463
+   },
+   "outcome": {
+    "ok": true,
+    "body": {
+     "plan": "Create a timing‑stack game where the player stacks boxes as high as possible, with a single timer that triggers a phase change but never ends the game.",
+     "spec": {
+      "genre": "timing",
+      "mode": "stack",
+      "hero": "fox",
+      "cast": [
+       {
+        "label": "box",
+        "does": "collect",
+        "verb": "stack",
+        "states": 2,
+        "patrol": false
+       },
+       {
+        "label": "bee",
+        "does": "scenery",
+        "verb": "fly",
+        "states": null,
+        "patrol": false
+       }
+      ],
+      "heroAction": "stack",
+      "setting": "windy hilltop",
+      "palette": "forest",
+      "params": {
+       "rounds": 34,
+       "lives": 1,
+       "targetScore": 0,
+       "timeLimit": null
+      },
+      "ruleRoles": [
+       {
+        "id": "box",
+        "kind": "collectible",
+        "label": "box",
+        "count": null
+       },
+       {
+        "id": "bee",
+        "kind": "prop",
+        "label": "bee",
+        "count": null
+       }
+      ],
+      "things": [
+       {
+        "role": "box",
+        "start": "hidden",
+        "physics": null
+       },
+       {
+        "role": "bee",
+        "start": "hidden",
+        "physics": null
+       }
+      ],
+      "rules": [
+       {
+        "id": "startTimer",
+        "verb": "wait",
+        "when": {
+         "phase": "start"
+        },
+        "if": null,
+        "do": [
+         {
+          "startTimer": {
+           "timer": "phase1",
+           "ticks": 60
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase1",
+        "verb": "wait",
+        "when": {
+         "timer": "phase1"
+        },
+        "if": null,
+        "do": [
+         {
+          "goPhase": "phase2"
+         },
+         {
+          "wave": {
+           "role": "box",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       },
+       {
+        "id": "phase2",
+        "verb": "wait",
+        "when": {
+         "phase": "phase2"
+        },
+        "if": null,
+        "do": [
+         {
+          "toggle": "bee"
+         },
+         {
+          "wave": {
+           "role": "box",
+           "count": 1,
+           "at": "edge"
+          }
+         }
+        ]
+       }
+      ],
+      "logic": {
+       "vars": null,
+       "timers": [
+        {
+         "id": "phase1"
+        }
+       ],
+       "phases": [
+        {
+         "id": "start"
+        },
+        {
+         "id": "phase2"
+        }
+       ],
+       "events": null
+      },
+      "boss": null,
+      "abilities": [
+       "dash"
+      ],
+      "segments": [
+       "moving",
+       "newFoe",
+       "faster"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

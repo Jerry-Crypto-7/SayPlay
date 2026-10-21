@@ -3,12 +3,12 @@
  "sentence": "obby game with lava and spinning bars",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:38:17.876Z",
- "ms": 7089,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:14:08.252Z",
+ "ms": 6052,
  "answer": {
-  "plan": "Create a platformer where the hero must jump over lava and avoid spinning bars, with timed phases that spawn new bars.",
+  "plan": "Create a platformer where the hero must jump over lava and avoid rotating bars, with timed waves of new hazards.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -24,49 +24,54 @@
     {
      "label": "spinning bar",
      "does": "avoid",
-     "verb": "hazard",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "shell",
-     "does": "collect",
-     "verb": "grab",
+     "verb": "rotate",
      "states": null,
      "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "floating islands",
-   "palette": "forest",
-   "params": null,
+   "palette": "cave",
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 2,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
    "counts": {
-    "collectible": 1
+    "collectible": null
    },
    "ruleRoles": [
     {
      "id": "lava",
      "kind": "hazard",
      "label": "lava",
-     "count": null
+     "count": 1
     },
     {
      "id": "bar",
      "kind": "hazard",
      "label": "spinning bar",
-     "count": null
-    },
-    {
-     "id": "shell",
-     "kind": "collectible",
-     "label": "shell",
-     "count": null
+     "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "lava",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "bar",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "lava_wave",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -75,39 +80,57 @@
      "do": [
       {
        "startTimer": {
-        "timer": "spawn",
+        "timer": "lava_wave",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "spawnBars",
+     "id": "lava_spawn",
      "verb": "wait",
      "when": {
-      "timer": "spawn"
+      "timer": "lava_wave"
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "bar",
-        "count": 1,
-        "at": "edge"
+       "spawn": {
+        "role": "lava",
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "resetPhase",
+     "id": "bar_wave",
      "verb": "wait",
      "when": {
-      "phase": "second"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "first"
+       "startTimer": {
+        "timer": "bar_wave",
+        "ticks": 120
+       }
+      }
+     ]
+    },
+    {
+     "id": "bar_spawn",
+     "verb": "wait",
+     "when": {
+      "timer": "bar_wave"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "bar",
+        "at": "player"
+       }
       }
      ]
     }
@@ -116,7 +139,10 @@
     "vars": null,
     "timers": [
      {
-      "id": "spawn"
+      "id": "lava_wave"
+     },
+     {
+      "id": "bar_wave"
      }
     ],
     "phases": [
@@ -129,17 +155,9 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "lava",
-    "name": "Molten Pit",
-    "attack": "stomp"
-   },
+   "boss": null,
    "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "trap"
-   ]
+   "segments": null
   }
  },
  "failure": null

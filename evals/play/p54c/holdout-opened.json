@@ -1,0 +1,8 @@
+{
+ "schema": "p54c-holdout-opened.v1",
+ "sha256": "c3d545c53a59d8569f264466818bf3172fbba49a9914928d1efd7b6e650eca68",
+ "openedAt": "2026-10-20T21:19:22.459Z",
+ "commit": "c6431250",
+ "by": "P54C T16 (holdout.measure.ts)",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}

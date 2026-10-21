@@ -3,10 +3,10 @@
  "sentence": "A rabbit steals carrots and runs from a fox",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:26.354Z",
- "ms": 22270,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:11:41.004Z",
+ "ms": 12782,
  "answer": {
   "plan": "Create an arena‑escape game where a rabbit collects carrots while evading a fox.",
   "spec": {
@@ -18,31 +18,47 @@
      "label": "carrot",
      "does": "collect",
      "verb": "steal",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "fox",
      "does": "chase_me",
      "verb": "chase",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "forest trail",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 60,
+    "seconds": 30,
+    "items": 5,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 3,
+    "enemySpeed": 60,
+    "playerHp": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
    "counts": {
     "enemy": 1,
-    "collectible": 1
+    "collectible": 5
    },
    "ruleRoles": [
     {
      "id": "carrot",
      "kind": "collectible",
      "label": "carrot",
-     "count": 1
+     "count": 5
     },
     {
      "id": "fox",
@@ -51,10 +67,21 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "carrot",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "fox",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "grab_carrot",
+     "id": "collect_carrot",
      "verb": "collect",
      "when": {
       "contact": [
@@ -70,6 +97,12 @@
      "do": [
       {
        "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
       }
      ]
     },
@@ -82,7 +115,11 @@
        "fox"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "holding": "carrot"
+      }
+     ],
      "do": [
       {
        "damage": 1
@@ -91,18 +128,23 @@
     }
    ],
    "logic": {
-    "vars": null,
+    "vars": [
+     {
+      "id": "items",
+      "start": 0
+     }
+    ],
     "timers": [
      {
-      "id": "escape_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "escape"
+      "id": "second"
      }
     ],
     "events": null
@@ -113,7 +155,8 @@
     "attack": "charge"
    },
    "abilities": [
-    "dash"
+    "dash",
+    "grab"
    ],
    "segments": [
     "newFoe",

@@ -1,0 +1,13 @@
+{
+ "schema": "p54c-ball-path.v1",
+ "about": "P54C T3: six ball sentences through POST /api/play/games on next start (webpack build of 1476989e), stored game read back via GET. The first was posted twice (200 = already published). keypoints = the server's own verification report. Verdict: all play; the 19. 10. probe error came only from drafting without loadRapier().",
+ "measuredAt": "2026-10-19",
+ "rows": [
+  { "sentence": "golf mini putt on a pirate ship", "source": "probe 19. 10.", "status": 200, "playable": true, "control": "ball", "keypoints": { "bot_wins": true, "idle_loses": true, "replay_equal": true, "within_limits": true }, "error": null, "honesty": "Driving isn't here yet – here's a ball game." },
+  { "sentence": "basketball free throws", "source": "probe 19. 10.", "status": 201, "playable": true, "control": "ball", "keypoints": { "bot_wins": true, "idle_loses": true, "replay_equal": true, "within_limits": true }, "error": null, "honesty": null },
+  { "sentence": "a hedgehog rolls down a mushroom hill", "source": "probe 19. 10.", "status": 201, "playable": true, "control": "ball", "keypoints": { "bot_wins": true, "idle_loses": true, "replay_equal": true, "within_limits": true }, "error": null, "honesty": null },
+  { "sentence": "golf mini game", "source": "p41/sentences.json si-026", "status": 201, "playable": true, "control": "ball", "keypoints": { "bot_wins": true, "idle_loses": true, "replay_equal": true, "within_limits": true }, "error": null, "honesty": null },
+  { "sentence": "play football and score goals", "source": "p41/sentences.json pa-025", "status": 201, "playable": true, "control": "ball", "keypoints": { "bot_wins": true, "idle_loses": true, "replay_equal": true, "within_limits": true }, "error": null, "honesty": null },
+  { "sentence": "golf on the moon with craters as obstacles", "source": "p41/sentences.json ma-026", "status": 201, "playable": true, "control": "ball", "keypoints": { "bot_wins": true, "idle_loses": true, "replay_equal": true, "within_limits": true }, "error": null, "honesty": "The obstacles isn't here yet – here's a ball game." }
+ ]
+}

@@ -513,7 +513,8 @@ function gerundBase(word: string): string {
  * rozkaz na začátku („knit a scarf“) a sloveso se členem za „and“ nebo „who“ („and bakes a cake“).
  * Kandidát padne, když za ním v téže klauzi stojí sloveso z tabulky („plays football“, „helps a dog find bones“).
  */
-function unknownHits(text: string, clauses: readonly (readonly [number, number])[], taken: readonly Hit[]): Hit[] {
+/** `modifies(hit, end)`: table hit that only describes the object of a candidate ending at `end`; it does not outrank the candidate. */
+function unknownHits(text: string, clauses: readonly (readonly [number, number])[], taken: readonly Hit[], modifies: (hit: Hit, end: number) => boolean): Hit[] {
   const covered = (at: number, end: number): boolean => taken.some((hit) => at < hit.end && hit.at < end);
   const found: { at: number; said: string; verb: string; meta: boolean }[] = [];
   for (const [clauseFrom, to] of clauses) {
@@ -562,7 +563,7 @@ function unknownHits(text: string, clauses: readonly (readonly [number, number])
     .filter(({ at, said, verb, meta }) => {
       const end = at + said.length;
       if (seen.has(at) || LIGHT_VERBS.has(said) || LIGHT_VERBS.has(verb) || (meta && META_VERBS.has(verb)) || verb.length < 2 || covered(at, end)) return false;
-      if (verbHits.some((hit) => hit.at >= end && hit.at < clauseEnd(at))) return false;
+      if (verbHits.some((hit) => hit.at >= end && hit.at < clauseEnd(at) && !modifies(hit, end))) return false;
       seen.add(at);
       return true;
     })
@@ -639,16 +640,23 @@ export function extractIntent(sentence: string): Intent {
   // A movement participle before an opponent noun describes that noun, not
   // a second player command: 'fights flying skeletons', 'from swimming sharks'.
   // Keep it covered for unknown-verb detection and inside the preceding object.
-  const nounModifier = (hit: Hit): boolean => {
+  const participle = (hit: Hit): boolean => {
     if (!/ing$/.test(hit.said) || !hit.row.emits.some(emit => emit.axis === 'move')) return false;
     const following = /^ ([a-z-]+)\b/.exec(text.slice(hit.end))?.[1];
-    if (following === undefined || /^(?:a|an|the|through|over|across|around|away|up|down|to|in|on|with|from|and|while)$/.test(following)) return false;
+    return following !== undefined && !/^(?:a|an|the|through|over|across|around|away|up|down|to|in|on|with|from|and|while)$/.test(following);
+  };
+  // Directly after an unknown verb too: 'slices flying acorns' cuts acorns, the fox does not fly (P54C).
+  const objectModifier = (hit: Hit, verbEnd: number): boolean => hit.at >= verbEnd && participle(hit) && /^\s*(?:(?:a|an|the|some)\s+)?$/.test(text.slice(verbEnd, hit.at));
+  const unknown = unknownHits(text, clauses, tableHits, objectModifier);
+  const nounModifier = (hit: Hit): boolean => {
+    if (!participle(hit)) return false;
+    if (unknown.some(verb => objectModifier(hit, verb.end))) return true;
     const prior = tableHits.filter(candidate => candidate.end <= hit.at && !isNounRow(candidate.row)).at(-1);
     if (prior === undefined || boundaries.some(boundary => boundary.at >= prior.end && boundary.end <= hit.at)) return false;
     return /\b(?:from|against|at|past)\s+(?:(?:a|an|the|some)\s+)?$/.test(text.slice(prior.end, hit.at))
       || prior.row.emits.some(emit => emit.who === 'doer' && emit.axis !== 'move') && /^\s*(?:(?:a|an|the|some)\s+)?$/.test(text.slice(prior.end, hit.at));
   };
-  const verbHits = [...tableHits.filter((hit) => !isNounRow(hit.row) && !nounModifier(hit)), ...unknownHits(text, clauses, tableHits)].sort(order);
+  const verbHits = [...tableHits.filter((hit) => !isNounRow(hit.row) && !nounModifier(hit)), ...unknown].sort(order);
   const nounHits = tableHits.filter((hit) => isNounRow(hit.row));
 
   // Kdo a komu: podmět je text od hranice klauze (nebo od předchozího slovesa a jeho předmětu) po sloveso,
@@ -832,6 +840,8 @@ export function extractIntent(sentence: string): Intent {
   ];
   for (const match of incoming.flatMap(pattern => [...text.matchAll(pattern)])) {
     if (verbHits.some(hit => hit.at === match.index)) continue;
+    // 'catches falling acorns', 'slices flying fruit': what the hero catches or cuts is its target, not a hazard (P54C).
+    if (/\b(?:catch(?:es|ing)?|collect(?:s|ing)?|grab(?:s|bing)?|slic(?:e|es|ing))\s+(?:(?:the|all|some|\d+)\s+)?$/.test(text.slice(0, match.index))) continue;
     const actor = headOf(match[1]);
     if (phraseIn(actor) === null || /^(?:asleep|apart|behind|down|off|over)$/.test(actor) || actor === heroName || PLAYER_WORDS.has(actor) || NOT_A_THING.has(actor) || inScope(match.index)) continue;
     for (let i = drafts.length - 1; i >= 0; i--) if (drafts[i].axis === 'threat' && drafts[i].actor === actor) drafts.splice(i, 1);

@@ -4,7 +4,7 @@ import type { Recipe } from '../../compose/recipe';
 import type { GenreSpec } from '../../genre/contract';
 import { describe, expect, it } from 'vitest';
 import { ALLOWED, liveCells } from '../../compose/allowed';
-import { GENRE_ANSWER_SCHEMA, recipeAnswerSchema } from '../answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, recipeAnswerSchema } from '../answer-schema';
 import { GENRE_RULES, genrePromptLines } from '../prompt';
 import { readGenreAnswer, readRecipeAnswer, readRecipeContent, readModelSpec } from '../read';
 
@@ -55,7 +55,10 @@ describe('P41 recipe answers', () => {
   });
   it('offers exactly current live recipes and requires honest unmet without nearest-action claims', () => {
     const prompt = genrePromptLines();
-    for (const cell of liveCells()) expect(prompt).toContain(`- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`);
+    // P54C T5: buňky žánru, který režisér ještě nenabízí (`DIRECTOR_PENDING`), v tabulce nejsou. T14: tabulka po pohybech.
+    // T14b: pohyby se stejnými kombinacemi sdílejí řádek (`- run, jump: …`).
+    const row = (move: string) => prompt.split('\n').find((line) => line.startsWith('- ') && line.slice(2, line.indexOf(': ')).split(', ').includes(move))?.split(': ')[1]?.split(', ') ?? [];
+    for (const cell of liveCells().filter((live) => !DIRECTOR_PENDING.has(live.preset.genre))) expect(row(cell.recipe.move), cell.id).toContain(`${cell.recipe.actions.join('+') || '-'}/${cell.recipe.objective}/${cell.recipe.threats.join('+') || '-'}`);
     expect(prompt).not.toContain('nearest one for the rest');
     expect(prompt).not.toContain('Every action the player does in the sentence must be playable');
     expect(GENRE_RULES).toContain('listed explicitly in unmet');

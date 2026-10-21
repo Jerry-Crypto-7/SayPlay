@@ -3,12 +3,12 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:32.777Z",
- "ms": 5750,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:32.613Z",
+ "ms": 6296,
  "answer": {
-  "plan": "Create a rolling‑hill platformer where the hedgehog rolls downhill while dodging foxes that appear as moving obstacles.",
+  "plan": "Create a platformer where a hedgehog rolls down a mushroom hill while avoiding foxes that appear as obstacles. The game will use a simple two‑phase timer logic to spawn foxes and reset the level.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,12 +19,12 @@
      "does": "avoid",
      "verb": "obstacle",
      "states": null,
-     "patrol": true
+     "patrol": false
     },
     {
      "label": "mushroom hill",
      "does": "scenery",
-     "verb": "terrain",
+     "verb": "land",
      "states": null,
      "patrol": false
     }
@@ -32,7 +32,14 @@
    "heroAction": "none",
    "setting": "mushroom hill",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": null
+   },
    "counts": {
     "collectible": null
    },
@@ -50,35 +57,62 @@
      "count": null
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "fox",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "hill",
+     "start": "hidden",
+     "physics": false
+    }
+   ],
    "rules": [
     {
-     "id": "fox_spawn",
-     "verb": "spawn",
+     "id": "startPhase",
+     "verb": "wait",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
+       "startTimer": {
+        "timer": "spawn",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnFox",
+     "verb": "wait",
+     "when": {
+      "timer": "spawn"
+     },
+     "if": null,
+     "do": [
+      {
        "wave": {
         "role": "fox",
-        "count": 3,
+        "count": 1,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "fox_move",
-     "verb": "move",
+     "id": "resetPhase",
+     "verb": "wait",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "toggle": "fox"
+       "goPhase": "first"
       }
      ]
     }
@@ -87,7 +121,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "spawn"
      }
     ],
     "phases": [
@@ -106,11 +140,7 @@
     "attack": "stomp"
    },
    "abilities": [],
-   "segments": [
-    "moving",
-    "trap",
-    "newFoe"
-   ]
+   "segments": null
   }
  },
  "failure": null

@@ -24,6 +24,14 @@ const CONTROL: Readonly<Record<GenreId, string>> = {
   rhythm: 'rhythm',
   duel: 'duel',
   flap: 'flap',
+  catch: 'lanes',
+  whack: 'lanes',
+  defense: 'lanes',
+  slice: 'lanes',
+  hop: 'hop',
+  crowd: 'crowd',
+  merge: 'merge',
+  push: 'push',
 };
 
 /** Slovo věty → model, který to zvíře zobrazuje; `clips` = hýbe se klipy z GLB. */

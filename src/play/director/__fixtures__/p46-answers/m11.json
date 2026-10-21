@@ -3,12 +3,12 @@
  "sentence": "my dog chasing the mailman,around the backyard lol",
  "axis": "control:move_free",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:18.248Z",
- "ms": 6095,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:19.481Z",
+ "ms": 4962,
  "answer": {
-  "plan": "Create an arena escape game where a dog chases a mailman around a backyard, using a simple two‑phase timer logic.",
+  "plan": "Create an arena‑escape game where a dog chases a mailman around a backyard, with a simple timed phase change that spawns a new mailman after 1 second.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -38,67 +38,56 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "mailman",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "start",
+     "id": "start_phase",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
-        "timer": "chase",
+        "timer": "spawn",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "chaseTimer",
+     "id": "spawn_mailman",
      "verb": "wait",
      "when": {
-      "timer": "chase"
+      "timer": "spawn"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "chase"
-      }
-     ]
-    },
-    {
-     "id": "chasePhase",
-     "verb": "wait",
-     "when": {
-      "phase": "chase"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
+       "spawn": {
         "role": "mailman",
-        "count": 1,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "reset",
+     "id": "reset_phase",
      "verb": "wait",
      "when": {
-      "phase": "chase"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "chase",
-        "ticks": 60
-       }
+       "goPhase": "first"
       }
      ]
     }
@@ -107,15 +96,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "chase"
+      "id": "spawn"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "chase"
+      "id": "second"
      }
     ],
     "events": null

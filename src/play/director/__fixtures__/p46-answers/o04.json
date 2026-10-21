@@ -3,15 +3,15 @@
  "sentence": "racing car escapes police and shoots enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:52.916Z",
- "ms": 9065,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:03.815Z",
+ "ms": 6666,
  "answer": {
-  "plan": "Create a racing‑shooting car game set on an open country road where police chase the player and the player can shoot enemy cars.",
+  "plan": "Create a racing‑shooting car game where the player evades police chasers while blasting enemy vehicles on an open highway.",
   "spec": {
-   "genre": "voyage",
-   "mode": "race",
+   "genre": "shooter",
+   "mode": "default",
    "hero": "car",
    "cast": [
     {
@@ -32,22 +32,46 @@
    "heroAction": "none",
    "setting": "open country",
    "palette": "desert",
-   "params": null,
+   "params": {
+    "targetWidthPct": 80,
+    "movingTargets": 1,
+    "waves": 5,
+    "enemies": 6,
+    "targets": 8,
+    "lives": 3,
+    "targetScore": 2000,
+    "timeLimit": 60
+   },
+   "counts": {
+    "enemy": 6,
+    "target": 8
+   },
    "ruleRoles": [
     {
      "id": "police",
      "kind": "chaser",
      "label": "police car",
-     "count": null
+     "count": 1
     },
     {
      "id": "enemy",
-     "kind": "hazard",
+     "kind": "target",
      "label": "enemy car",
-     "count": null
+     "count": 6
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "police",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "enemy",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "police_chase",
@@ -58,58 +82,14 @@
        "police"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
-      }
-     ]
-    },
-    {
-     "id": "enemy_shoot",
-     "verb": "shoot",
-     "when": {
-      "contact": [
-       "player",
-       "enemy"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "damage": 2
-      }
-     ]
-    },
-    {
-     "id": "player_shoot",
-     "verb": "shoot",
-     "when": {
-      "press": "action"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "enemy",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "win_condition",
-     "verb": "reach",
-     "when": {
-      "contact": [
-       "player",
-       "finish_line"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
       }
      ]
     }
@@ -118,18 +98,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "race_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "phase1"
      },
      {
-      "id": "mid"
-     },
-     {
-      "id": "end"
+      "id": "phase2"
      }
     ],
     "events": null
@@ -140,8 +117,8 @@
     "attack": "charge"
    },
    "abilities": [
-    "shoot",
-    "dash"
+    "dash",
+    "shoot"
    ],
    "segments": [
     "newFoe",
