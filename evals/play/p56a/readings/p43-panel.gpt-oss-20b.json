@@ -3,38 +3,43 @@
   "set": "evals/play/p43/panel.json",
   "model": "gpt-oss-20b",
   "transport": "llamacpp:http://127.0.0.1:8792",
-  "promptVersion": "40c586b23d947975",
+  "promptVersion": "beda31d4ee60c875",
   "budgetMs": 60000,
-  "commit": "07444a46",
-  "readAt": "2026-10-21T13:40:11.962Z",
+  "commit": "1b1cf43e",
+  "readAt": "2026-10-21T15:31:11.811Z",
   "summary": {
     "n": 30,
-    "valid": 30,
-    "genreAndHero": 23,
-    "withFoe": 9,
-    "withTitle": 30,
-    "p50Ms": 2293,
-    "p95Ms": 4210,
-    "maxMs": 4576
+    "valid": 29,
+    "genreAndHero": 22,
+    "withFoe": 12,
+    "withTitle": 28,
+    "p50Ms": 2340,
+    "p95Ms": 6435,
+    "maxMs": 6550
   },
   "cache": {
-    "rereads": 30,
-    "sameAgain": 30,
+    "rereads": 29,
+    "sameAgain": 29,
     "extraCalls": 0
   },
   "readings": [
     {
       "id": "f01",
       "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
-      "ms": 4125,
+      "ms": 2448,
       "reading": {
         "control": "move_free",
-        "verbs": [],
+        "verbs": [
+          {
+            "word": "guards",
+            "class": "idle"
+          }
+        ],
         "hero": "dragon",
         "roles": [
           {
             "noun": "gold hoard",
-            "kind": "collectible",
+            "kind": "item",
             "count": null
           },
           {
@@ -44,14 +49,14 @@
           }
         ],
         "setting": "volcano",
-        "mood": "dangerous",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "defense",
+          "mode": "default"
         },
         "foe": "knights",
         "item": "gold hoard",
@@ -62,9 +67,9 @@
     {
       "id": "f02",
       "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
-      "ms": 2065,
+      "ms": 4328,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
             "word": "arm wrestles",
@@ -76,7 +81,7 @@
           {
             "noun": "frost giant",
             "kind": "threat",
-            "count": null
+            "count": 1
           }
         ],
         "setting": "smoky mountain tavern",
@@ -86,19 +91,19 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "duel",
+          "mode": "default"
         },
         "foe": "frost giant",
         "item": null,
-        "world": "cave",
-        "title": "Ogre vs Frost Giant"
+        "world": null,
+        "title": "Ogri Arm Wrestles Frost Giant"
       }
     },
     {
       "id": "f03",
       "text": "An elf archer shoots goblins from the treetops.",
-      "ms": 1764,
+      "ms": 1912,
       "reading": {
         "control": "shooter",
         "verbs": [
@@ -126,7 +131,7 @@
           "mode": "default"
         },
         "foe": "goblins",
-        "item": null,
+        "item": "arrows",
         "world": "forest",
         "title": "Elf Archer Shoots Goblins"
       }
@@ -134,13 +139,13 @@
     {
       "id": "f04",
       "text": "a troll collects toll coins from travelers crossing his bridge",
-      "ms": 1959,
+      "ms": 6435,
       "reading": {
-        "control": "move_free",
+        "control": "tap_go",
         "verbs": [
           {
-            "word": "collect",
-            "class": "move_free"
+            "word": "idle",
+            "class": "idle"
           }
         ],
         "hero": "troll",
@@ -149,15 +154,10 @@
             "noun": "travelers",
             "kind": "target",
             "count": null
-          },
-          {
-            "noun": "coins",
-            "kind": "item",
-            "count": null
           }
         ],
         "setting": "bridge",
-        "mood": null,
+        "mood": "toll",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -167,15 +167,15 @@
           "mode": "collect"
         },
         "foe": null,
-        "item": "coins",
-        "world": "cave",
+        "item": "toll coins",
+        "world": null,
         "title": "Troll Toll"
       }
     },
     {
       "id": "f05",
       "text": "a fairy lights lanterns along a moonlit forest path",
-      "ms": 3508,
+      "ms": 3143,
       "reading": {
         "control": "tap_go",
         "verbs": [
@@ -188,12 +188,12 @@
         "roles": [
           {
             "noun": "lanterns",
-            "kind": "collectible",
+            "kind": "target",
             "count": null
           }
         ],
         "setting": "moonlit forest path",
-        "mood": "mysterious",
+        "mood": "moonlit",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -211,7 +211,7 @@
     {
       "id": "f08",
       "text": "a unicorn gallops across a rainbow to reach a castle in the clouds",
-      "ms": 2205,
+      "ms": 1939,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -241,19 +241,19 @@
         "foe": null,
         "item": null,
         "world": "castle",
-        "title": "Unicorn Gallops to Castle"
+        "title": "Unicorn Gallops Across Rainbow"
       }
     },
     {
       "id": "f11",
       "text": "a necromancer raises a skeleton army in a foggy graveyard",
-      "ms": 3057,
+      "ms": 3637,
       "reading": {
-        "control": "move_free",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "raises",
-            "class": "build_place"
+            "class": "idle"
           }
         ],
         "hero": "necromancer",
@@ -265,37 +265,43 @@
           }
         ],
         "setting": "foggy graveyard",
-        "mood": "mysterious",
+        "mood": "foggy",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
           "genre": "arena",
-          "mode": "collect"
+          "mode": "fight"
         },
         "foe": null,
-        "item": "skeleton army",
-        "world": "graveyard",
+        "item": null,
+        "world": null,
         "title": "Necromancer Raises Skeletons"
       }
     },
     {
       "id": "f12",
       "text": "a baby dragon learns to fly over a medieval town",
-      "ms": 1708,
+      "ms": 2727,
       "reading": {
         "control": "flap",
         "verbs": [
           {
-            "word": "flap",
+            "word": "fly",
             "class": "flap"
           }
         ],
         "hero": "baby dragon",
-        "roles": [],
+        "roles": [
+          {
+            "noun": "town",
+            "kind": "destination",
+            "count": null
+          }
+        ],
         "setting": "medieval town",
-        "mood": "cute",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
@@ -306,16 +312,16 @@
         },
         "foe": null,
         "item": null,
-        "world": "castle",
-        "title": "Baby Dragon Fly"
+        "world": "city",
+        "title": "Baby Dragon Flies"
       }
     },
     {
       "id": "f17",
       "text": "a phoenix rises from the ashes over a burning desert",
-      "ms": 2380,
+      "ms": 3831,
       "reading": {
-        "control": "move_free",
+        "control": "flap",
         "verbs": [
           {
             "word": "rises",
@@ -323,16 +329,25 @@
           }
         ],
         "hero": "phoenix",
-        "roles": [],
+        "roles": [
+          {
+            "noun": "ashes",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
         "setting": "burning desert",
         "mood": "fiery",
         "numbers": {
           "seconds": null,
           "counts": []
         },
-        "genre": null,
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
         "foe": null,
-        "item": null,
+        "item": "ashes",
         "world": "desert",
         "title": "Phoenix Rises"
       }
@@ -340,7 +355,7 @@
     {
       "id": "f22",
       "text": "A knight fights a three-headed hydra at the castle gates.",
-      "ms": 2131,
+      "ms": 2336,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -354,6 +369,11 @@
           {
             "noun": "hydra",
             "kind": "threat",
+            "count": 1
+          },
+          {
+            "noun": "castle gates",
+            "kind": "destination",
             "count": null
           }
         ],
@@ -364,8 +384,8 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "duel",
+          "mode": "default"
         },
         "foe": "hydra",
         "item": null,
@@ -376,7 +396,7 @@
     {
       "id": "f24",
       "text": "a cyclops hurls boulders at passing ships from a seaside cliff",
-      "ms": 2327,
+      "ms": 3468,
       "reading": {
         "control": "throw",
         "verbs": [
@@ -387,6 +407,11 @@
         ],
         "hero": "cyclops",
         "roles": [
+          {
+            "noun": "boulders",
+            "kind": "item",
+            "count": null
+          },
           {
             "noun": "ships",
             "kind": "target",
@@ -403,16 +428,16 @@
           "genre": "throw",
           "mode": "default"
         },
-        "foe": null,
-        "item": null,
+        "foe": "ships",
+        "item": "boulders",
         "world": "beach",
-        "title": "Cyclops Boulders"
+        "title": "Cyclops Hurls Boulders"
       }
     },
     {
       "id": "f26",
       "text": "an enchanted broom escapes from the wizard's castle",
-      "ms": 2701,
+      "ms": 2753,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -421,8 +446,14 @@
             "class": "runner"
           }
         ],
-        "hero": "enchanted broom",
-        "roles": [],
+        "hero": "broom",
+        "roles": [
+          {
+            "noun": "wizard",
+            "kind": "threat",
+            "count": null
+          }
+        ],
         "setting": "wizard's castle",
         "mood": null,
         "numbers": {
@@ -433,21 +464,21 @@
           "genre": "runner",
           "mode": "default"
         },
-        "foe": null,
+        "foe": "wizard",
         "item": null,
-        "world": null,
+        "world": "castle",
         "title": "Enchanted Broom Escape"
       }
     },
     {
       "id": "m02",
       "text": "cat lasers",
-      "ms": 1405,
+      "ms": 1389,
       "reading": {
         "control": "shooter",
         "verbs": [
           {
-            "word": "shoot",
+            "word": "aim_shoot",
             "class": "aim_shoot"
           }
         ],
@@ -463,8 +494,8 @@
           "genre": "shooter",
           "mode": "default"
         },
-        "foe": null,
-        "item": "lasers",
+        "foe": "lasers",
+        "item": null,
         "world": null,
         "title": "cat lasers"
       }
@@ -472,7 +503,7 @@
     {
       "id": "m06",
       "text": "dragon taxi",
-      "ms": 2125,
+      "ms": 1819,
       "reading": {
         "control": "steer",
         "verbs": [
@@ -502,7 +533,7 @@
     {
       "id": "m09",
       "text": "ninja cat jumpin on rooftops plz",
-      "ms": 1699,
+      "ms": 1726,
       "reading": {
         "control": "platform",
         "verbs": [
@@ -513,7 +544,7 @@
         ],
         "hero": "ninja cat",
         "roles": [],
-        "setting": "city",
+        "setting": "rooftops",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -532,13 +563,13 @@
     {
       "id": "m16",
       "text": "a kangaroo jumps over cars then collects coins on the highway",
-      "ms": 4210,
+      "ms": 2926,
       "reading": {
-        "control": "runner",
+        "control": "platform",
         "verbs": [
           {
             "word": "jumps",
-            "class": "runner"
+            "class": "platform"
           },
           {
             "word": "collects",
@@ -554,7 +585,7 @@
           },
           {
             "noun": "coins",
-            "kind": "item",
+            "kind": "collectible",
             "count": null
           }
         ],
@@ -565,19 +596,19 @@
           "counts": []
         },
         "genre": {
-          "genre": "runner",
+          "genre": "platformer",
           "mode": "default"
         },
         "foe": null,
         "item": "coins",
-        "world": "city",
+        "world": null,
         "title": "Kangaroo Highway Coins"
       }
     },
     {
       "id": "m17",
       "text": "grandma knits a sweater while her cat unravels it",
-      "ms": 4576,
+      "ms": 4373,
       "reading": {
         "control": "timing",
         "verbs": [
@@ -593,26 +624,18 @@
         "hero": "grandma",
         "roles": [
           {
-            "noun": "sweater",
-            "kind": "item",
-            "count": null
-          },
-          {
             "noun": "cat",
             "kind": "threat",
             "count": null
           }
         ],
         "setting": "living_room",
-        "mood": "cozy chaos",
+        "mood": "cozy",
         "numbers": {
           "seconds": null,
           "counts": []
         },
-        "genre": {
-          "genre": "timing",
-          "mode": "precision"
-        },
+        "genre": null,
         "foe": "cat",
         "item": "sweater",
         "world": "living_room",
@@ -622,16 +645,16 @@
     {
       "id": "n01",
       "text": "file my expense report with a pile of crumpled receipts",
-      "ms": 3570,
+      "ms": 2259,
       "reading": {
-        "control": "move_free",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "file",
             "class": "idle"
           }
         ],
-        "hero": null,
+        "hero": "my expense report",
         "roles": [
           {
             "noun": "pile of crumpled receipts",
@@ -645,12 +668,9 @@
           "seconds": null,
           "counts": []
         },
-        "genre": {
-          "genre": "quest",
-          "mode": "station"
-        },
+        "genre": null,
         "foe": null,
-        "item": "receipts",
+        "item": null,
         "world": null,
         "title": "Expense Report"
       }
@@ -658,14 +678,14 @@
     {
       "id": "n03",
       "text": "monday morning standup meeting with the sales team",
-      "ms": 1666,
+      "ms": 1524,
       "reading": {
         "control": "tap_go",
         "verbs": [],
         "hero": null,
         "roles": [],
         "setting": null,
-        "mood": "meeting",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
@@ -674,25 +694,25 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Monday Morning Standup"
+        "title": null
       }
     },
     {
       "id": "u08",
       "text": "a mole digs tunnels under the farm looking for lost carrots",
-      "ms": 2105,
+      "ms": 2340,
       "reading": {
-        "control": "tap_go",
+        "control": "move_free",
         "verbs": [
           {
-            "word": "digs",
-            "class": "tap_go"
+            "word": "dig",
+            "class": "move_free"
           }
         ],
         "hero": "mole",
         "roles": [
           {
-            "noun": "carrot",
+            "noun": "carrots",
             "kind": "collectible",
             "count": null
           }
@@ -704,11 +724,11 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "collect"
+          "genre": "quest",
+          "mode": "spatial"
         },
         "foe": null,
-        "item": "carrot",
+        "item": "carrots",
         "world": "meadow",
         "title": "Mole Carrot Hunt"
       }
@@ -716,13 +736,17 @@
     {
       "id": "d01",
       "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
-      "ms": 3372,
+      "ms": 3736,
       "reading": {
-        "control": "move_free",
+        "control": "runner",
         "verbs": [
           {
             "word": "rolls",
             "class": "runner"
+          },
+          {
+            "word": "avoiding",
+            "class": "move_free"
           }
         ],
         "hero": "hedgehog",
@@ -734,14 +758,14 @@
           }
         ],
         "setting": "mushroom hill",
-        "mood": null,
+        "mood": "fast",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "escape"
+          "genre": "runner",
+          "mode": "default"
         },
         "foe": "foxes",
         "item": null,
@@ -752,16 +776,16 @@
     {
       "id": "d02",
       "text": "teach my little brother the multiplication table",
-      "ms": 2997,
+      "ms": 2722,
       "reading": {
-        "control": "timing",
+        "control": "move_free",
         "verbs": [
           {
-            "word": "idle",
+            "word": "teach",
             "class": "idle"
           }
         ],
-        "hero": "little brother",
+        "hero": "my little brother",
         "roles": [],
         "setting": null,
         "mood": null,
@@ -771,7 +795,7 @@
         },
         "genre": null,
         "foe": null,
-        "item": "multiplication table",
+        "item": null,
         "world": null,
         "title": "Teach My Little Brother"
       }
@@ -779,49 +803,19 @@
     {
       "id": "d03",
       "text": "a witch brews potions in a crooked tower during a thunderstorm",
-      "ms": 2323,
-      "reading": {
-        "control": "timing",
-        "verbs": [
-          {
-            "word": "brews",
-            "class": "timing"
-          }
-        ],
-        "hero": "witch",
-        "roles": [
-          {
-            "noun": "potions",
-            "kind": "collectible",
-            "count": null
-          }
-        ],
-        "setting": "crooked tower",
-        "mood": "thunderstorm",
-        "numbers": {
-          "seconds": null,
-          "counts": []
-        },
-        "genre": {
-          "genre": "arena",
-          "mode": "collect"
-        },
-        "foe": null,
-        "item": "potions",
-        "world": "castle",
-        "title": "Witch Potion Tower"
-      }
+      "ms": 6550,
+      "reading": null
     },
     {
       "id": "d08",
       "text": "a mermaid collects pearls while avoiding jellyfish",
-      "ms": 1799,
+      "ms": 3612,
       "reading": {
-        "control": "platform",
+        "control": "move_free",
         "verbs": [
           {
-            "word": "collect",
-            "class": "platform"
+            "word": "collects",
+            "class": "move_free"
           }
         ],
         "hero": "mermaid",
@@ -837,44 +831,38 @@
             "count": null
           }
         ],
-        "setting": "underwater",
+        "setting": null,
         "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "platformer",
-          "mode": "default"
+          "genre": "arena",
+          "mode": "collect"
         },
         "foe": "jellyfish",
         "item": "pearls",
-        "world": "underwater",
-        "title": "Mermaid Pearl Collection"
+        "world": "ocean",
+        "title": "Mermaid Collects Pearls"
       }
     },
     {
       "id": "d10",
       "text": "a pirate duels a skeleton captain on a sinking ship",
-      "ms": 2398,
+      "ms": 1611,
       "reading": {
         "control": "duel",
         "verbs": [
           {
-            "word": "duels",
+            "word": "duel",
             "class": "melee"
           }
         ],
         "hero": "pirate",
-        "roles": [
-          {
-            "noun": "skeleton captain",
-            "kind": "threat",
-            "count": null
-          }
-        ],
+        "roles": [],
         "setting": "sinking ship",
-        "mood": "tension",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
@@ -886,13 +874,13 @@
         "foe": "skeleton captain",
         "item": null,
         "world": null,
-        "title": "Pirate Duel"
+        "title": "Pirate vs Skeleton"
       }
     },
     {
       "id": "d11",
       "text": "tap along to the drums at a jungle festival",
-      "ms": 2293,
+      "ms": 2138,
       "reading": {
         "control": "tap_go",
         "verbs": [
@@ -909,7 +897,7 @@
             "count": null
           }
         ],
-        "setting": "jungle",
+        "setting": "jungle festival",
         "mood": "rhythmic",
         "numbers": {
           "seconds": null,
@@ -922,19 +910,19 @@
         "foe": null,
         "item": null,
         "world": "jungle",
-        "title": "Jungle Festival Drums"
+        "title": "Jungle Festival Rhythm"
       }
     },
     {
       "id": "d12",
       "text": "a goldfish swims through a sunken city dodging sharks",
-      "ms": 2704,
+      "ms": 1991,
       "reading": {
-        "control": "glide",
+        "control": "move_free",
         "verbs": [
           {
-            "word": "swims",
-            "class": "flap"
+            "word": "swim",
+            "class": "move_free"
           }
         ],
         "hero": "goldfish",
@@ -958,30 +946,30 @@
         "foe": "sharks",
         "item": null,
         "world": "underwater",
-        "title": "Goldfish City"
+        "title": "Goldfish City Escape"
       }
     },
     {
       "id": "d14",
       "text": "a bear sneaks into a campsite to steal honey",
-      "ms": 2424,
+      "ms": 2276,
       "reading": {
-        "control": "tap_go",
+        "control": "move_free",
         "verbs": [
           {
             "word": "sneaks",
-            "class": "tap_go"
+            "class": "move_free"
           },
           {
             "word": "steal",
-            "class": "tap_go"
+            "class": "move_free"
           }
         ],
         "hero": "bear",
         "roles": [
           {
             "noun": "honey",
-            "kind": "collectible",
+            "kind": "target",
             "count": null
           }
         ],
@@ -992,19 +980,19 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "collect"
+          "genre": "quest",
+          "mode": "spatial"
         },
         "foe": null,
         "item": "honey",
         "world": "forest",
-        "title": "Bear Steals Honey"
+        "title": "Bear Campsite Honey"
       }
     },
     {
       "id": "s021",
       "text": "obby game with lava and spinning bars",
-      "ms": 2229,
+      "ms": 1868,
       "reading": {
         "control": "platform",
         "verbs": [
@@ -1016,12 +1004,12 @@
         "hero": null,
         "roles": [
           {
-            "noun": "lava",
-            "kind": "hazard",
+            "noun": "spinning bars",
+            "kind": "obstacle",
             "count": null
           },
           {
-            "noun": "spinning bars",
+            "noun": "lava",
             "kind": "obstacle",
             "count": null
           }
@@ -1045,7 +1033,7 @@
     {
       "id": "s035",
       "text": "like flappy bird but underwater",
-      "ms": 1325,
+      "ms": 1850,
       "reading": {
         "control": "flap",
         "verbs": [
@@ -1056,7 +1044,7 @@
         ],
         "hero": null,
         "roles": [],
-        "setting": null,
+        "setting": "underwater",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -1068,8 +1056,8 @@
         },
         "foe": null,
         "item": null,
-        "world": null,
-        "title": "Flappy Underwater"
+        "world": "underwater",
+        "title": "Underwater Flappy"
       }
     }
   ]

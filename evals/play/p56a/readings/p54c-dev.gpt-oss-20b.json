@@ -3,32 +3,32 @@
   "set": "evals/play/p54c/dev.json",
   "model": "gpt-oss-20b",
   "transport": "llamacpp:http://127.0.0.1:8792",
-  "promptVersion": "40c586b23d947975",
+  "promptVersion": "beda31d4ee60c875",
   "budgetMs": 60000,
-  "commit": "07444a46",
-  "readAt": "2026-10-21T13:32:43.854Z",
+  "commit": "1b1cf43e",
+  "readAt": "2026-10-21T15:21:06.381Z",
   "summary": {
     "n": 80,
-    "valid": 78,
-    "genreAndHero": 31,
-    "withFoe": 34,
-    "withTitle": 78,
-    "p50Ms": 2103,
-    "p95Ms": 4235,
-    "maxMs": 6932
+    "valid": 79,
+    "genreAndHero": 27,
+    "withFoe": 35,
+    "withTitle": 79,
+    "p50Ms": 3032,
+    "p95Ms": 4282,
+    "maxMs": 6652
   },
   "cache": {
-    "rereads": 78,
-    "sameAgain": 78,
+    "rereads": 79,
+    "sameAgain": 79,
     "extraCalls": 0
   },
   "readings": [
     {
       "id": "c01",
       "text": "a bear catches falling honey jars in a basket",
-      "ms": 1740,
+      "ms": 3551,
       "reading": {
-        "control": "tap_go",
+        "control": "move_free",
         "verbs": [
           {
             "word": "catches",
@@ -55,16 +55,16 @@
         },
         "foe": null,
         "item": "honey jars",
-        "world": null,
+        "world": "forest",
         "title": "Bear Honey Catch"
       }
     },
     {
       "id": "c02",
       "text": "catch the falling apples but dodge the rotten ones",
-      "ms": 1496,
+      "ms": 3032,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
             "word": "catch",
@@ -83,7 +83,7 @@
             "count": null
           },
           {
-            "noun": "rotten apples",
+            "noun": "rotten ones",
             "kind": "threat",
             "count": null
           }
@@ -98,7 +98,7 @@
           "genre": "catch",
           "mode": "default"
         },
-        "foe": null,
+        "foe": "rotten ones",
         "item": "apples",
         "world": null,
         "title": "Catch the Falling Apples"
@@ -107,9 +107,9 @@
     {
       "id": "c03",
       "text": "a penguin catches fish raining from the sky on an iceberg",
-      "ms": 1843,
+      "ms": 4267,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
             "word": "catches",
@@ -125,7 +125,7 @@
           }
         ],
         "setting": "iceberg",
-        "mood": null,
+        "mood": "wintry",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -136,16 +136,16 @@
         },
         "foe": null,
         "item": "fish",
-        "world": null,
+        "world": "ocean",
         "title": "Penguin Fish Catch"
       }
     },
     {
       "id": "c04",
       "text": "catch falling stars with a bucket before they hit the ground",
-      "ms": 1670,
+      "ms": 3410,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
             "word": "catch",
@@ -156,6 +156,87 @@
         "roles": [
           {
             "noun": "stars",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "star",
+        "world": null,
+        "title": "Catch Falling Stars"
+      }
+    },
+    {
+      "id": "c05",
+      "text": "a chef catches eggs dropping into the kitchen while avoiding bombs",
+      "ms": 3778,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "chef",
+        "roles": [
+          {
+            "noun": "eggs",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "bombs",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "kitchen",
+        "mood": "busy",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "eggs",
+        "world": null,
+        "title": "Chef Egg Catch"
+      }
+    },
+    {
+      "id": "c06",
+      "text": "move the mine cart to catch gold nuggets falling from the ceiling",
+      "ms": 2057,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move",
+            "class": "move_free"
+          },
+          {
+            "word": "catch",
+            "class": "timing"
+          }
+        ],
+        "hero": "mine cart",
+        "roles": [
+          {
+            "noun": "gold nuggets",
             "kind": "collectible",
             "count": null
           }
@@ -171,96 +252,15 @@
           "mode": "default"
         },
         "foe": null,
-        "item": "stars",
-        "world": null,
-        "title": "Catch Falling Stars"
-      }
-    },
-    {
-      "id": "c05",
-      "text": "a chef catches eggs dropping into the kitchen while avoiding bombs",
-      "ms": 2390,
-      "reading": {
-        "control": "tap_go",
-        "verbs": [
-          {
-            "word": "catches",
-            "class": "timing"
-          },
-          {
-            "word": "avoiding",
-            "class": "timing"
-          }
-        ],
-        "hero": "chef",
-        "roles": [
-          {
-            "noun": "eggs",
-            "kind": "collectible",
-            "count": null
-          },
-          {
-            "noun": "bombs",
-            "kind": "hazard",
-            "count": null
-          }
-        ],
-        "setting": "kitchen",
-        "mood": null,
-        "numbers": {
-          "seconds": null,
-          "counts": []
-        },
-        "genre": {
-          "genre": "catch",
-          "mode": "default"
-        },
-        "foe": "bombs",
-        "item": "eggs",
-        "world": "living_room",
-        "title": "Chef Egg Catch"
-      }
-    },
-    {
-      "id": "c06",
-      "text": "move the mine cart to catch gold nuggets falling from the ceiling",
-      "ms": 2164,
-      "reading": {
-        "control": "move_free",
-        "verbs": [
-          {
-            "word": "move",
-            "class": "move_free"
-          }
-        ],
-        "hero": "mine cart",
-        "roles": [
-          {
-            "noun": "gold nuggets",
-            "kind": "collectible",
-            "count": null
-          }
-        ],
-        "setting": "mine",
-        "mood": null,
-        "numbers": {
-          "seconds": null,
-          "counts": []
-        },
-        "genre": {
-          "genre": "catch",
-          "mode": "default"
-        },
-        "foe": null,
         "item": "gold nuggets",
         "world": null,
-        "title": "Mine Cart Gold Catch"
+        "title": "Mine Cart Catch"
       }
     },
     {
       "id": "c07",
       "text": "catch raindrops in a cup but not the lightning bolts",
-      "ms": 2055,
+      "ms": 1915,
       "reading": {
         "control": "tap_go",
         "verbs": [
@@ -278,7 +278,7 @@
           },
           {
             "noun": "lightning bolts",
-            "kind": "threat",
+            "kind": "hazard",
             "count": null
           }
         ],
@@ -292,8 +292,8 @@
           "genre": "catch",
           "mode": "default"
         },
-        "foe": "lightning bolts",
-        "item": "raindrops",
+        "foe": null,
+        "item": "cup",
         "world": null,
         "title": "Catch Raindrops"
       }
@@ -301,9 +301,9 @@
     {
       "id": "c08",
       "text": "a kid on a skateboard catches presents dropping from santa's sleigh",
-      "ms": 2278,
+      "ms": 3117,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
             "word": "catches",
@@ -318,39 +318,39 @@
             "count": null
           }
         ],
-        "setting": "santa's sleigh",
-        "mood": null,
+        "setting": null,
+        "mood": "festive",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "timing",
-          "mode": "precision"
+          "genre": "catch",
+          "mode": "default"
         },
         "foe": null,
         "item": "presents",
-        "world": "snow",
+        "world": null,
         "title": "Kid Skate Presents"
       }
     },
     {
       "id": "w01",
       "text": "whack the moles popping out of the garden holes",
-      "ms": 1670,
+      "ms": 1662,
       "reading": {
-        "control": "walker",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "whack",
-            "class": "melee"
+            "class": "tap_go"
           }
         ],
         "hero": null,
         "roles": [
           {
             "noun": "moles",
-            "kind": "target",
+            "kind": "threat",
             "count": null
           }
         ],
@@ -364,7 +364,7 @@
           "genre": "whack",
           "mode": "default"
         },
-        "foe": null,
+        "foe": "moles",
         "item": null,
         "world": "meadow",
         "title": "Whack the Moles"
@@ -373,9 +373,9 @@
     {
       "id": "w02",
       "text": "smash the aliens that pop out of craters on the moon",
-      "ms": 1873,
+      "ms": 3116,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
             "word": "smash",
@@ -385,8 +385,8 @@
         "hero": null,
         "roles": [
           {
-            "noun": "aliens",
-            "kind": "target",
+            "noun": "alien",
+            "kind": "threat",
             "count": null
           }
         ],
@@ -397,10 +397,10 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "timing",
+          "mode": "precision"
         },
-        "foe": "aliens",
+        "foe": "alien",
         "item": null,
         "world": "space",
         "title": "Smash the Aliens"
@@ -409,48 +409,48 @@
     {
       "id": "w03",
       "text": "hit the zombies popping out of graves but not the bunnies",
-      "ms": 2094,
+      "ms": 4163,
       "reading": {
-        "control": "shooter",
+        "control": "move_free",
         "verbs": [
           {
             "word": "hit",
-            "class": "aim_shoot"
+            "class": "melee"
           }
         ],
         "hero": null,
         "roles": [
           {
-            "noun": "zombie",
-            "kind": "target",
+            "noun": "zombies",
+            "kind": "threat",
             "count": null
           },
           {
-            "noun": "bunny",
+            "noun": "bunnies",
             "kind": "threat",
             "count": null
           }
         ],
-        "setting": "graveyard",
-        "mood": null,
+        "setting": "cemetery",
+        "mood": "tense",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "shooter",
-          "mode": "default"
+          "genre": "arena",
+          "mode": "fight"
         },
-        "foe": "zombie",
+        "foe": "zombies",
         "item": null,
         "world": "graveyard",
-        "title": "Zombie Graveyard Shooter"
+        "title": "Zombie Graveyard Hit"
       }
     },
     {
       "id": "w04",
       "text": "bonk the gophers before they hide back in the field",
-      "ms": 2699,
+      "ms": 2726,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -463,12 +463,12 @@
         "roles": [
           {
             "noun": "gophers",
-            "kind": "target",
+            "kind": "threat",
             "count": null
           }
         ],
         "setting": "field",
-        "mood": "playful",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
@@ -486,36 +486,32 @@
     {
       "id": "w05",
       "text": "squash the bugs that pop up from the kitchen drains",
-      "ms": 2836,
+      "ms": 4032,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
             "word": "squash",
-            "class": "tap_go"
-          },
-          {
-            "word": "pop",
-            "class": "tap_go"
+            "class": "timing"
           }
         ],
         "hero": null,
         "roles": [
           {
             "noun": "bugs",
-            "kind": "target",
+            "kind": "threat",
             "count": null
           }
         ],
         "setting": "kitchen",
-        "mood": "frantic",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "whack",
+          "mode": "default"
         },
         "foe": "bugs",
         "item": null,
@@ -526,13 +522,13 @@
     {
       "id": "w06",
       "text": "a hammer game where goblins peek out of barrels and you whack them",
-      "ms": 1872,
+      "ms": 1799,
       "reading": {
         "control": "glide",
         "verbs": [
           {
             "word": "whack",
-            "class": "melee"
+            "class": "rhythm"
           }
         ],
         "hero": null,
@@ -561,13 +557,13 @@
         "foe": "goblins",
         "item": null,
         "world": null,
-        "title": "Hammer Goblin Whack"
+        "title": "Hammer Game"
       }
     },
     {
       "id": "w07",
       "text": "tap the ghosts that appear in the haunted house windows",
-      "ms": 2113,
+      "ms": 2838,
       "reading": {
         "control": "tap_go",
         "verbs": [
@@ -584,32 +580,32 @@
             "count": null
           }
         ],
-        "setting": "haunted house windows",
-        "mood": null,
+        "setting": "haunted house",
+        "mood": "spooky",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "collect"
+          "genre": "whack",
+          "mode": "default"
         },
-        "foe": null,
+        "foe": "ghosts",
         "item": null,
-        "world": null,
+        "world": "castle",
         "title": "Tap the Ghosts"
       }
     },
     {
       "id": "w08",
       "text": "pop the balloons rising from the circus tents but spare the clowns",
-      "ms": 3017,
+      "ms": 4290,
       "reading": {
-        "control": "shooter",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "pop",
-            "class": "aim_shoot"
+            "class": "tap_go"
           }
         ],
         "hero": null,
@@ -626,13 +622,13 @@
           }
         ],
         "setting": "circus tents",
-        "mood": "playful",
+        "mood": "circus",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "shooter",
+          "genre": "whack",
           "mode": "default"
         },
         "foe": "clowns",
@@ -644,7 +640,7 @@
     {
       "id": "f01",
       "text": "defend the castle from waves of orcs marching down the road",
-      "ms": 2414,
+      "ms": 2508,
       "reading": {
         "control": "shooter",
         "verbs": [
@@ -661,7 +657,7 @@
             "count": null
           }
         ],
-        "setting": "castle",
+        "setting": "road",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -672,7 +668,7 @@
           "mode": "default"
         },
         "foe": "orcs",
-        "item": null,
+        "item": "castle",
         "world": "castle",
         "title": "Defend the Castle"
       }
@@ -680,13 +676,13 @@
     {
       "id": "f02",
       "text": "tower defense against robots attacking the city wall",
-      "ms": 2946,
+      "ms": 3316,
       "reading": {
-        "control": "shooter",
+        "control": "timing",
         "verbs": [
           {
-            "word": "defend",
-            "class": "idle"
+            "word": "attacking",
+            "class": "timing"
           }
         ],
         "hero": null,
@@ -698,7 +694,7 @@
           }
         ],
         "setting": "city wall",
-        "mood": null,
+        "mood": "defensive",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -710,13 +706,13 @@
         "foe": "robots",
         "item": null,
         "world": "city",
-        "title": "Tower Defense Against Robots Att"
+        "title": "Tower Defense Robots"
       }
     },
     {
       "id": "f03",
       "text": "stop the skeletons before they break into the barn",
-      "ms": 4235,
+      "ms": 2056,
       "reading": {
         "control": "timing",
         "verbs": [
@@ -734,42 +730,6 @@
           }
         ],
         "setting": "barn",
-        "mood": "urgent",
-        "numbers": {
-          "seconds": null,
-          "counts": []
-        },
-        "genre": {
-          "genre": "arena",
-          "mode": "escape"
-        },
-        "foe": "skeletons",
-        "item": null,
-        "world": "meadow",
-        "title": "Stop the Skeletons"
-      }
-    },
-    {
-      "id": "f04",
-      "text": "protect the village gate from waves of skeletons",
-      "ms": 1882,
-      "reading": {
-        "control": "shooter",
-        "verbs": [
-          {
-            "word": "protect",
-            "class": "aim_shoot"
-          }
-        ],
-        "hero": null,
-        "roles": [
-          {
-            "noun": "skeletons",
-            "kind": "threat",
-            "count": null
-          }
-        ],
-        "setting": null,
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -782,13 +742,54 @@
         "foe": "skeletons",
         "item": null,
         "world": null,
+        "title": "Stop the Skeletons"
+      }
+    },
+    {
+      "id": "f04",
+      "text": "protect the village gate from waves of skeletons",
+      "ms": 3156,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "protect",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "gate",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "skeletons",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "village",
+        "mood": "defensive",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "foe": "skeletons",
+        "item": "gate",
+        "world": "castle",
         "title": "Protect the Village Gate"
       }
     },
     {
       "id": "f05",
       "text": "place cannons to hold the lanes against invading crabs on the beach",
-      "ms": 2398,
+      "ms": 4151,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -805,13 +806,13 @@
             "count": null
           },
           {
-            "noun": "crabs",
-            "kind": "threat",
+            "noun": "lanes",
+            "kind": "obstacle",
             "count": null
           },
           {
-            "noun": "lanes",
-            "kind": "obstacle",
+            "noun": "crabs",
+            "kind": "threat",
             "count": null
           }
         ],
@@ -828,30 +829,35 @@
         "foe": "crabs",
         "item": "cannons",
         "world": "beach",
-        "title": "Cannons on the Beach"
+        "title": "Cannons to Hold the Lanes"
       }
     },
     {
       "id": "f06",
       "text": "guard the candy shop from hungry ants coming in waves",
-      "ms": 3088,
+      "ms": 4267,
       "reading": {
         "control": "move_free",
         "verbs": [
           {
-            "word": "guard",
-            "class": "move_free"
+            "word": "idle",
+            "class": "idle"
           }
         ],
         "hero": null,
         "roles": [
           {
-            "noun": "ants",
+            "noun": "hungry ants",
             "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "candy shop",
+            "kind": "destination",
             "count": null
           }
         ],
-        "setting": "candy shop",
+        "setting": null,
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -862,7 +868,7 @@
           "mode": "default"
         },
         "foe": "hungry ants",
-        "item": null,
+        "item": "candy",
         "world": null,
         "title": "Guard the Candy Shop"
       }
@@ -870,13 +876,13 @@
     {
       "id": "f07",
       "text": "a wizard defends his tower from goblin hordes",
-      "ms": 2867,
+      "ms": 3479,
       "reading": {
-        "control": "shooter",
+        "control": "steer",
         "verbs": [
           {
-            "word": "defend",
-            "class": "aim_shoot"
+            "word": "defends",
+            "class": "idle"
           }
         ],
         "hero": "wizard",
@@ -887,18 +893,18 @@
             "count": null
           }
         ],
-        "setting": null,
+        "setting": "tower",
         "mood": "defensive",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "shooter",
+          "genre": "defense",
           "mode": "default"
         },
         "foe": "goblin hordes",
-        "item": null,
+        "item": "tower",
         "world": "castle",
         "title": "Wizard Tower Defense"
       }
@@ -906,16 +912,16 @@
     {
       "id": "f08",
       "text": "keep the aliens from breaching the space station base",
-      "ms": 2225,
+      "ms": 1662,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
             "word": "keep",
-            "class": "move_free"
+            "class": "timing"
           }
         ],
-        "hero": "you",
+        "hero": null,
         "roles": [
           {
             "noun": "aliens",
@@ -924,7 +930,7 @@
           }
         ],
         "setting": "space station base",
-        "mood": "tense",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
@@ -942,13 +948,13 @@
     {
       "id": "s01",
       "text": "slice flying watermelons in half with a katana",
-      "ms": 1978,
+      "ms": 3259,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
             "word": "slice",
-            "class": "melee"
+            "class": "timing"
           }
         ],
         "hero": null,
@@ -970,7 +976,7 @@
           "mode": "default"
         },
         "foe": null,
-        "item": null,
+        "item": "katana",
         "world": null,
         "title": "Slice Flying Watermelons"
       }
@@ -978,21 +984,17 @@
     {
       "id": "s02",
       "text": "a ninja slices fruit tossed in the air but avoids the bombs",
-      "ms": 4045,
+      "ms": 3336,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
             "word": "slices",
-            "class": "melee"
-          },
-          {
-            "word": "tossed",
             "class": "timing"
           },
           {
             "word": "avoids",
-            "class": "timing"
+            "class": "move_free"
           }
         ],
         "hero": "ninja",
@@ -1018,7 +1020,7 @@
           "genre": "slice",
           "mode": "default"
         },
-        "foe": "bombs",
+        "foe": null,
         "item": "fruit",
         "world": null,
         "title": "Ninja Fruit Slice"
@@ -1027,13 +1029,13 @@
     {
       "id": "s03",
       "text": "swipe to cut vegetables flying across the kitchen",
-      "ms": 1761,
+      "ms": 2310,
       "reading": {
-        "control": "move_free",
+        "control": "runner",
         "verbs": [
           {
-            "word": "cut",
-            "class": "melee"
+            "word": "swipe",
+            "class": "runner"
           }
         ],
         "hero": null,
@@ -1055,7 +1057,7 @@
           "mode": "default"
         },
         "foe": null,
-        "item": null,
+        "item": "vegetables",
         "world": null,
         "title": "Swipe to Cut Vegetables"
       }
@@ -1063,7 +1065,7 @@
     {
       "id": "s04",
       "text": "chop the flying pumpkins with a sword at the halloween fair",
-      "ms": 2029,
+      "ms": 2559,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -1075,13 +1077,13 @@
         "hero": null,
         "roles": [
           {
-            "noun": "pumpkins",
-            "kind": "threat",
+            "noun": "pumpkin",
+            "kind": "target",
             "count": null
           }
         ],
         "setting": "halloween fair",
-        "mood": "spooky",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
@@ -1090,29 +1092,29 @@
           "genre": "arena",
           "mode": "fight"
         },
-        "foe": "pumpkins",
+        "foe": "pumpkin",
         "item": "sword",
         "world": null,
-        "title": "Halloween Pumpkin Chop"
+        "title": "Halloween Fair Chop"
       }
     },
     {
       "id": "s05",
       "text": "fruit ninja style game in a jungle with coconuts",
-      "ms": 2199,
+      "ms": 1692,
       "reading": {
-        "control": "shooter",
+        "control": "glide",
         "verbs": [
           {
             "word": "slice",
-            "class": "sandbox"
+            "class": "melee"
           }
         ],
         "hero": null,
         "roles": [
           {
             "noun": "coconut",
-            "kind": "collectible",
+            "kind": "target",
             "count": null
           }
         ],
@@ -1122,9 +1124,12 @@
           "seconds": null,
           "counts": []
         },
-        "genre": null,
+        "genre": {
+          "genre": "slice",
+          "mode": "default"
+        },
         "foe": null,
-        "item": "coconut",
+        "item": null,
         "world": "jungle",
         "title": "Fruit Ninja Jungle"
       }
@@ -1132,7 +1137,7 @@
     {
       "id": "s06",
       "text": "a samurai cuts paper lanterns thrown into the night sky",
-      "ms": 2312,
+      "ms": 2518,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -1156,19 +1161,19 @@
           "counts": []
         },
         "genre": {
-          "genre": "quest",
-          "mode": "spatial"
+          "genre": "slice",
+          "mode": "default"
         },
         "foe": null,
         "item": "paper lanterns",
-        "world": null,
+        "world": "space",
         "title": "Samurai Lantern Cut"
       }
     },
     {
       "id": "s07",
       "text": "slash the bouncing slimes before they fall back down",
-      "ms": 1777,
+      "ms": 2102,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -1204,7 +1209,7 @@
     {
       "id": "s08",
       "text": "cut the flying donuts with a laser sword in space",
-      "ms": 1945,
+      "ms": 1894,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -1228,19 +1233,19 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "slice",
+          "mode": "default"
         },
         "foe": null,
         "item": "laser sword",
         "world": "space",
-        "title": "Flying Donut Cut"
+        "title": "Flying Donuts Laser Sword"
       }
     },
     {
       "id": "o01",
       "text": "a chicken crosses a busy road full of cars",
-      "ms": 1792,
+      "ms": 1536,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -1267,7 +1272,7 @@
           "genre": "runner",
           "mode": "default"
         },
-        "foe": null,
+        "foe": "cars",
         "item": null,
         "world": null,
         "title": "Chicken Road Crossing"
@@ -1276,13 +1281,13 @@
     {
       "id": "o02",
       "text": "crossy road with a frog hopping over traffic and river logs",
-      "ms": 2180,
+      "ms": 3576,
       "reading": {
-        "control": "runner",
+        "control": "tap_go",
         "verbs": [
           {
-            "word": "hopping",
-            "class": "runner"
+            "word": "timing",
+            "class": "timing"
           }
         ],
         "hero": "frog",
@@ -1298,7 +1303,7 @@
             "count": null
           }
         ],
-        "setting": null,
+        "setting": "road",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -1310,20 +1315,20 @@
         },
         "foe": null,
         "item": null,
-        "world": null,
+        "world": "city",
         "title": "Crossy Frog"
       }
     },
     {
       "id": "o03",
       "text": "help the duck cross the highway and the river",
-      "ms": 2103,
+      "ms": 3758,
       "reading": {
-        "control": "platform",
+        "control": "runner",
         "verbs": [
           {
             "word": "cross",
-            "class": "platform"
+            "class": "move_free"
           }
         ],
         "hero": "duck",
@@ -1339,14 +1344,14 @@
             "count": null
           }
         ],
-        "setting": "highway and river",
-        "mood": "crossing",
+        "setting": null,
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "platformer",
+          "genre": "runner",
           "mode": "default"
         },
         "foe": null,
@@ -1358,13 +1363,17 @@
     {
       "id": "o04",
       "text": "a bunny hops across train tracks and busy streets to get home",
-      "ms": 2521,
+      "ms": 2465,
       "reading": {
-        "control": "tap_go",
+        "control": "runner",
         "verbs": [
           {
             "word": "hops",
-            "class": "tap_go"
+            "class": "runner"
+          },
+          {
+            "word": "get",
+            "class": "move_free"
           }
         ],
         "hero": "bunny",
@@ -1372,27 +1381,24 @@
           {
             "noun": "train tracks",
             "kind": "obstacle",
-            "count": null
+            "count": 1
           },
           {
             "noun": "busy streets",
             "kind": "obstacle",
-            "count": null
-          },
-          {
-            "noun": "home",
-            "kind": "destination",
-            "count": null
+            "count": 1
           }
         ],
-        "setting": "city",
+        "setting": "train tracks and busy streets",
         "mood": null,
         "numbers": {
           "seconds": null,
-          "counts": []
+          "counts": [
+            2
+          ]
         },
         "genre": {
-          "genre": "hop",
+          "genre": "runner",
           "mode": "default"
         },
         "foe": null,
@@ -1404,34 +1410,29 @@
     {
       "id": "o05",
       "text": "frogger in a neon city with flying cars",
-      "ms": 2634,
+      "ms": 3896,
       "reading": {
         "control": "runner",
-        "verbs": [
-          {
-            "word": "runner",
-            "class": "runner"
-          }
-        ],
-        "hero": "frog",
+        "verbs": [],
+        "hero": null,
         "roles": [
           {
-            "noun": "cars",
-            "kind": "threat",
+            "noun": "flying cars",
+            "kind": "hazard",
             "count": null
           }
         ],
-        "setting": "neon city",
+        "setting": "city",
         "mood": "neon",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "runner",
+          "genre": "platformer",
           "mode": "default"
         },
-        "foe": "cars",
+        "foe": null,
         "item": null,
         "world": "city",
         "title": "Frogger Neon City"
@@ -1440,24 +1441,24 @@
     {
       "id": "o06",
       "text": "hop the hedgehog across the farm roads without getting run over",
-      "ms": 1775,
+      "ms": 3355,
       "reading": {
-        "control": "move_free",
+        "control": "platform",
         "verbs": [
           {
             "word": "hop",
-            "class": "move_free"
+            "class": "platform"
           }
         ],
         "hero": "hedgehog",
         "roles": [
           {
-            "noun": "roads",
-            "kind": "obstacle",
+            "noun": "run over",
+            "kind": "threat",
             "count": null
           }
         ],
-        "setting": "farm",
+        "setting": "farm roads",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -1470,13 +1471,13 @@
         "foe": null,
         "item": null,
         "world": "meadow",
-        "title": "Hedgehog Hop"
+        "title": "Hop the Hedgehog"
       }
     },
     {
       "id": "o07",
       "text": "a squirrel crosses country lanes full of tractors",
-      "ms": 1994,
+      "ms": 1821,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -1505,23 +1506,19 @@
         },
         "foe": null,
         "item": null,
-        "world": null,
-        "title": "Squirrel Crosses Country Lanes"
+        "world": "meadow",
+        "title": "Squirrel Crosses Lanes"
       }
     },
     {
       "id": "o08",
       "text": "cross the river by jumping on floating logs and turtles",
-      "ms": 2321,
+      "ms": 2170,
       "reading": {
         "control": "platform",
         "verbs": [
           {
-            "word": "cross",
-            "class": "platform"
-          },
-          {
-            "word": "jump",
+            "word": "jumping",
             "class": "platform"
           }
         ],
@@ -1551,35 +1548,35 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "River Log Jump"
+        "title": "Cross the River"
       }
     },
     {
       "id": "r01",
       "text": "grow your army through gates and smash the enemy castle",
-      "ms": 3471,
+      "ms": 2935,
       "reading": {
-        "control": "move_free",
+        "control": "runner",
         "verbs": [
           {
             "word": "grow",
-            "class": "move_free"
+            "class": "runner"
           },
           {
             "word": "smash",
-            "class": "move_free"
+            "class": "runner"
           }
         ],
-        "hero": "you",
+        "hero": "your army",
         "roles": [
           {
             "noun": "gates",
-            "kind": "obstacle",
+            "kind": "destination",
             "count": null
           },
           {
             "noun": "enemy castle",
-            "kind": "target",
+            "kind": "threat",
             "count": null
           }
         ],
@@ -1602,24 +1599,20 @@
     {
       "id": "r02",
       "text": "a crowd of stickmen runs through plus and times gates to beat the giant",
-      "ms": 1767,
+      "ms": 2178,
       "reading": {
         "control": "runner",
         "verbs": [
           {
             "word": "runs",
             "class": "runner"
-          },
-          {
-            "word": "beat",
-            "class": "timing"
           }
         ],
         "hero": null,
         "roles": [
           {
-            "noun": "giant",
-            "kind": "threat",
+            "noun": "stickmen",
+            "kind": "collectible",
             "count": null
           }
         ],
@@ -1636,13 +1629,13 @@
         "foe": "giant",
         "item": null,
         "world": null,
-        "title": "Stickmen Crowd Beat Giant"
+        "title": "Stickmen Run Through Gates"
       }
     },
     {
       "id": "r03",
       "text": "count masters style run where you multiply your crowd",
-      "ms": 1376,
+      "ms": 2747,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -1651,11 +1644,11 @@
             "class": "runner"
           }
         ],
-        "hero": "you",
+        "hero": null,
         "roles": [
           {
             "noun": "crowd",
-            "kind": "ally",
+            "kind": "target",
             "count": null
           }
         ],
@@ -1670,7 +1663,7 @@
           "mode": "default"
         },
         "foe": null,
-        "item": "crowd",
+        "item": null,
         "world": null,
         "title": "Count Masters Style Run"
       }
@@ -1678,13 +1671,13 @@
     {
       "id": "r04",
       "text": "lead a mob of penguins through doubling gates to the ice fortress",
-      "ms": 4423,
+      "ms": 3399,
       "reading": {
-        "control": "move_free",
+        "control": "steer",
         "verbs": [
           {
             "word": "lead",
-            "class": "move_free"
+            "class": "steer"
           }
         ],
         "hero": "penguins",
@@ -1707,25 +1700,25 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "escape"
+          "genre": "merge",
+          "mode": "default"
         },
         "foe": null,
         "item": null,
-        "world": "snow",
-        "title": "Lead Penguins to Fortress"
+        "world": null,
+        "title": "Lead Penguins to Ice Fortress"
       }
     },
     {
       "id": "r05",
       "text": "gather more soldiers at gates and fight the boss at the end of the bridge",
-      "ms": 2422,
+      "ms": 2242,
       "reading": {
-        "control": "runner",
+        "control": "move_free",
         "verbs": [
           {
             "word": "gather",
-            "class": "runner"
+            "class": "move_free"
           },
           {
             "word": "fight",
@@ -1737,11 +1730,6 @@
           {
             "noun": "soldiers",
             "kind": "collectible",
-            "count": null
-          },
-          {
-            "noun": "gates",
-            "kind": "obstacle",
             "count": null
           },
           {
@@ -1757,60 +1745,55 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "crowd",
+          "mode": "default"
         },
         "foe": "boss",
-        "item": null,
-        "world": null,
-        "title": "Gather Soldiers Bridge Boss"
+        "item": "soldiers",
+        "world": "cave",
+        "title": "Gather Soldiers"
       }
     },
     {
       "id": "r06",
       "text": "a swarm of bees grows through flower gates and attacks the bear",
-      "ms": 5205,
+      "ms": 5084,
       "reading": {
-        "control": "timing",
+        "control": "runner",
         "verbs": [
           {
             "word": "grows",
-            "class": "timing"
+            "class": "move_free"
           },
           {
             "word": "attacks",
             "class": "melee"
           }
         ],
-        "hero": "swarm",
+        "hero": "bear",
         "roles": [
           {
             "noun": "bees",
-            "kind": "collectible",
+            "kind": "threat",
             "count": null
           },
           {
             "noun": "flower gates",
             "kind": "obstacle",
             "count": null
-          },
-          {
-            "noun": "bear",
-            "kind": "target",
-            "count": null
           }
         ],
-        "setting": "meadow",
-        "mood": "chaotic",
+        "setting": null,
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "crowd",
+          "mode": "default"
         },
-        "foe": "bear",
+        "foe": "bees",
         "item": null,
         "world": "meadow",
         "title": "Swarm of Bees"
@@ -1819,16 +1802,24 @@
     {
       "id": "r07",
       "text": "pick the right gates to make your zombie horde bigger and break the wall",
-      "ms": 3544,
+      "ms": 4382,
       "reading": {
         "control": "tap_go",
         "verbs": [
           {
             "word": "pick",
             "class": "tap_go"
+          },
+          {
+            "word": "make",
+            "class": "manipulate"
+          },
+          {
+            "word": "break",
+            "class": "timing"
           }
         ],
-        "hero": null,
+        "hero": "zombie horde",
         "roles": [
           {
             "noun": "gates",
@@ -1848,19 +1839,19 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "collect"
+          "genre": "crowd",
+          "mode": "default"
         },
         "foe": null,
-        "item": "zombie horde",
+        "item": null,
         "world": null,
-        "title": "Zombie Gate Picker"
+        "title": "Zombie Horde Gates"
       }
     },
     {
       "id": "r08",
       "text": "run with a growing crowd of kids through gates to beat the teacher",
-      "ms": 2332,
+      "ms": 2569,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -1874,6 +1865,11 @@
           {
             "noun": "kids",
             "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "gates",
+            "kind": "obstacle",
             "count": null
           },
           {
@@ -1895,25 +1891,99 @@
         "foe": "teacher",
         "item": null,
         "world": null,
-        "title": "Run with a Growing Crowd"
+        "title": "Crowd Run to Beat Teacher"
       }
     },
     {
       "id": "m01",
       "text": "drop fruits into a jar and merge matching ones into a watermelon",
-      "ms": 6932,
-      "reading": null
+      "ms": 2227,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "drop",
+            "class": "timing"
+          },
+          {
+            "word": "merge",
+            "class": "timing"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "fruit",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "watermelon",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "watermelon",
+        "world": null,
+        "title": "Fruit Merge"
+      }
     },
     {
       "id": "m02",
       "text": "suika game with planets merging into the sun",
-      "ms": 6883,
-      "reading": null
+      "ms": 3347,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "merge",
+            "class": "tap_go"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "planets",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "sun",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "space",
+        "mood": "cosmic",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": "space",
+        "title": "Suika Planet Merge"
+      }
     },
     {
       "id": "m03",
       "text": "merge the same animals into bigger ones without filling the box",
-      "ms": 1547,
+      "ms": 1711,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -1923,13 +1993,7 @@
           }
         ],
         "hero": null,
-        "roles": [
-          {
-            "noun": "animals",
-            "kind": "collectible",
-            "count": null
-          }
-        ],
+        "roles": [],
         "setting": null,
         "mood": null,
         "numbers": {
@@ -1943,29 +2007,25 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Merge Animals"
+        "title": "Merge the Same Animals"
       }
     },
     {
       "id": "m04",
       "text": "drop numbered blocks and combine equal ones like 2048",
-      "ms": 1759,
+      "ms": 3477,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
             "word": "drop",
             "class": "timing"
-          },
-          {
-            "word": "combine",
-            "class": "manipulate"
           }
         ],
         "hero": null,
         "roles": [
           {
-            "noun": "blocks",
+            "noun": "numbered blocks",
             "kind": "collectible",
             "count": null
           }
@@ -1983,48 +2043,35 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Drop and Combine 2048"
+        "title": "Drop 2048"
       }
     },
     {
       "id": "m05",
       "text": "drop kittens into a basket and two identical cats merge into a bigger cat",
-      "ms": 2417,
+      "ms": 1473,
       "reading": {
-        "control": "throw",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "drop",
-            "class": "throw"
+            "class": "tap_go"
           }
         ],
         "hero": null,
-        "roles": [
-          {
-            "noun": "kitten",
-            "kind": "collectible",
-            "count": null
-          },
-          {
-            "noun": "cat",
-            "kind": "target",
-            "count": 2
-          }
-        ],
+        "roles": [],
         "setting": null,
         "mood": null,
         "numbers": {
           "seconds": null,
-          "counts": [
-            2
-          ]
+          "counts": []
         },
         "genre": {
           "genre": "merge",
           "mode": "default"
         },
         "foe": null,
-        "item": "kitten",
+        "item": null,
         "world": null,
         "title": "Drop Kittens"
       }
@@ -2032,13 +2079,17 @@
     {
       "id": "m06",
       "text": "drop candies in a jar and merge matching candies",
-      "ms": 1448,
+      "ms": 3799,
       "reading": {
-        "control": "move_free",
+        "control": "tap_go",
         "verbs": [
           {
+            "word": "drop",
+            "class": "tap_go"
+          },
+          {
             "word": "merge",
-            "class": "manipulate"
+            "class": "move_free"
           }
         ],
         "hero": null,
@@ -2062,19 +2113,19 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Candy Merge Jar"
+        "title": "Drop Candies Merge"
       }
     },
     {
       "id": "m07",
       "text": "drop gems into the bowl and fuse matching gems into crowns",
-      "ms": 3858,
+      "ms": 3458,
       "reading": {
-        "control": "timing",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "drop",
-            "class": "timing"
+            "class": "tap_go"
           },
           {
             "word": "fuse",
@@ -2101,36 +2152,36 @@
           "counts": []
         },
         "genre": {
-          "genre": "timing",
-          "mode": "stack"
+          "genre": "merge",
+          "mode": "default"
         },
         "foe": null,
-        "item": "gem",
+        "item": "crown",
         "world": null,
-        "title": "Drop Gems into Bowl"
+        "title": "Drop Gems into the Bowl"
       }
     },
     {
       "id": "m08",
       "text": "merge bubbles of the same color before they overflow the cup",
-      "ms": 1563,
+      "ms": 3883,
       "reading": {
-        "control": "move_free",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "merge",
-            "class": "move_free"
+            "class": "timing"
           }
         ],
         "hero": null,
         "roles": [
           {
-            "noun": "bubbles",
+            "noun": "bubble",
             "kind": "collectible",
             "count": null
           }
         ],
-        "setting": null,
+        "setting": "cup",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -2141,7 +2192,7 @@
           "mode": "default"
         },
         "foe": null,
-        "item": null,
+        "item": "bubble",
         "world": null,
         "title": "Merge Bubbles"
       }
@@ -2149,7 +2200,7 @@
     {
       "id": "p01",
       "text": "sumo wrestlers push each other out of a ring",
-      "ms": 1711,
+      "ms": 4282,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -2158,15 +2209,15 @@
             "class": "move_free"
           }
         ],
-        "hero": "sumo wrestlers",
+        "hero": null,
         "roles": [
           {
-            "noun": "ring",
-            "kind": "obstacle",
-            "count": 1
+            "noun": "sumo wrestler",
+            "kind": "threat",
+            "count": null
           }
         ],
-        "setting": null,
+        "setting": "ring",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -2179,19 +2230,19 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Sumo Wrestlers Push"
+        "title": "Sumo Push Ring"
       }
     },
     {
       "id": "p02",
       "text": "shove the penguins off the ice floe",
-      "ms": 2173,
+      "ms": 4145,
       "reading": {
-        "control": "throw",
+        "control": "move_free",
         "verbs": [
           {
             "word": "shove",
-            "class": "throw"
+            "class": "move_free"
           }
         ],
         "hero": null,
@@ -2203,31 +2254,31 @@
           }
         ],
         "setting": "ice floe",
-        "mood": null,
+        "mood": "cold",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "throw",
+          "genre": "push",
           "mode": "default"
         },
-        "foe": null,
+        "foe": "penguins",
         "item": null,
         "world": null,
-        "title": "Shove the Penguins Off the Ice F"
+        "title": "Shove the Penguins"
       }
     },
     {
       "id": "p03",
       "text": "bumper cars knocking rivals off the platform",
-      "ms": 3815,
+      "ms": 3459,
       "reading": {
         "control": "steer",
         "verbs": [
           {
             "word": "knocking",
-            "class": "steer"
+            "class": "melee"
           }
         ],
         "hero": "car",
@@ -2238,15 +2289,15 @@
             "count": null
           }
         ],
-        "setting": "arena",
+        "setting": "platform",
         "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "push",
+          "mode": "default"
         },
         "foe": "rivals",
         "item": null,
@@ -2257,7 +2308,7 @@
     {
       "id": "p04",
       "text": "push the other robots out of the arena ring",
-      "ms": 2066,
+      "ms": 2262,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -2287,19 +2338,19 @@
         "foe": "robots",
         "item": null,
         "world": null,
-        "title": "Push the Other Robots Out of the"
+        "title": "Push the other robots out of the"
       }
     },
     {
       "id": "p05",
       "text": "a hippo bumps rivals off a floating raft",
-      "ms": 2642,
+      "ms": 2735,
       "reading": {
-        "control": "move_free",
+        "control": "tap_go",
         "verbs": [
           {
             "word": "bumps",
-            "class": "melee"
+            "class": "timing"
           }
         ],
         "hero": "hippo",
@@ -2311,30 +2362,30 @@
           }
         ],
         "setting": "floating raft",
-        "mood": null,
+        "mood": "competitive",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "push",
+          "mode": "default"
         },
         "foe": "rivals",
         "item": null,
-        "world": "ocean",
-        "title": "Hippo Bumps"
+        "world": null,
+        "title": "Hippo Bumps Rivals"
       }
     },
     {
       "id": "p06",
       "text": "knock the knights off the round table platform",
-      "ms": 3498,
+      "ms": 2780,
       "reading": {
         "control": "throw",
         "verbs": [
           {
-            "word": "throw",
+            "word": "knock",
             "class": "throw"
           }
         ],
@@ -2342,36 +2393,36 @@
         "roles": [
           {
             "noun": "knights",
-            "kind": "target",
+            "kind": "threat",
             "count": null
           }
         ],
-        "setting": null,
+        "setting": "round table platform",
         "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "throw",
+          "mode": "default"
         },
         "foe": "knights",
         "item": null,
         "world": "castle",
-        "title": "Knock the Knights Off"
+        "title": "Knock the Knights"
       }
     },
     {
       "id": "p07",
       "text": "push the crabs off a shrinking island",
-      "ms": 1832,
+      "ms": 4192,
       "reading": {
-        "control": "throw",
+        "control": "move_free",
         "verbs": [
           {
             "word": "push",
-            "class": "throw"
+            "class": "move_free"
           }
         ],
         "hero": null,
@@ -2383,7 +2434,7 @@
           }
         ],
         "setting": "shrinking island",
-        "mood": null,
+        "mood": "danger",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -2392,77 +2443,81 @@
           "genre": "push",
           "mode": "default"
         },
-        "foe": null,
+        "foe": "crabs",
         "item": null,
         "world": null,
-        "title": "Push the Crabs"
+        "title": "Push Crabs Off Island"
       }
     },
     {
       "id": "p08",
       "text": "a bull shoves cowboys out of the rodeo ring",
-      "ms": 1343,
+      "ms": 4149,
       "reading": {
         "control": "move_free",
         "verbs": [
           {
-            "word": "shove",
+            "word": "shoves",
             "class": "move_free"
           }
         ],
         "hero": "bull",
         "roles": [
           {
-            "noun": "cowboy",
-            "kind": "threat",
+            "noun": "cowboys",
+            "kind": "target",
             "count": null
           }
         ],
         "setting": "rodeo ring",
-        "mood": null,
+        "mood": "wild",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "push",
+          "mode": "default"
         },
-        "foe": "cowboy",
+        "foe": "cowboys",
         "item": null,
-        "world": "cave",
+        "world": null,
         "title": "Bull Shoves Cowboys"
       }
     },
     {
       "id": "x01",
       "text": "the police try to catch the thief running through the city",
-      "ms": 2410,
+      "ms": 2344,
       "reading": {
         "control": "runner",
         "verbs": [
           {
+            "word": "catch",
+            "class": "timing"
+          },
+          {
             "word": "run",
-            "class": "runner"
+            "class": "move_free"
           }
         ],
         "hero": "thief",
         "roles": [
           {
             "noun": "police",
-            "kind": "chaser",
+            "kind": "threat",
             "count": null
           }
         ],
         "setting": "city",
-        "mood": "chase",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "escape"
+          "genre": "runner",
+          "mode": "default"
         },
         "foe": "police",
         "item": null,
@@ -2473,53 +2528,23 @@
     {
       "id": "x02",
       "text": "a knight defends himself in a sword duel",
-      "ms": 2205,
-      "reading": {
-        "control": "move_free",
-        "verbs": [
-          {
-            "word": "defends",
-            "class": "melee"
-          }
-        ],
-        "hero": "knight",
-        "roles": [
-          {
-            "noun": "duel",
-            "kind": "threat",
-            "count": null
-          }
-        ],
-        "setting": null,
-        "mood": null,
-        "numbers": {
-          "seconds": null,
-          "counts": []
-        },
-        "genre": {
-          "genre": "duel",
-          "mode": "default"
-        },
-        "foe": "duel",
-        "item": null,
-        "world": null,
-        "title": "Knight Duel"
-      }
+      "ms": 6652,
+      "reading": null
     },
     {
       "id": "x03",
       "text": "chop wood and build a cabin in the forest",
-      "ms": 2028,
+      "ms": 3406,
       "reading": {
-        "control": "platform",
+        "control": "timing",
         "verbs": [
           {
             "word": "chop",
-            "class": "platform"
+            "class": "timing"
           },
           {
             "word": "build",
-            "class": "platform"
+            "class": "build_place"
           }
         ],
         "hero": null,
@@ -2536,72 +2561,68 @@
           "seconds": null,
           "counts": []
         },
-        "genre": {
-          "genre": "arena",
-          "mode": "collect"
-        },
+        "genre": null,
         "foe": null,
         "item": "wood",
         "world": "forest",
-        "title": "Chop Wood Cabin"
+        "title": "Chop Wood and Build a Cabin"
       }
     },
     {
       "id": "x04",
       "text": "a frog hops between lily pads to reach the island",
-      "ms": 2379,
+      "ms": 2761,
       "reading": {
-        "control": "walker",
+        "control": "platform",
         "verbs": [
           {
-            "word": "hop",
-            "class": "tap_go"
+            "word": "hops",
+            "class": "platform"
           }
         ],
         "hero": "frog",
         "roles": [
           {
-            "noun": "lily pad",
+            "noun": "lily pads",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "island",
             "kind": "destination",
             "count": null
           }
         ],
-        "setting": "island",
+        "setting": null,
         "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "hop",
+          "genre": "platformer",
           "mode": "default"
         },
         "foe": null,
         "item": null,
-        "world": "underwater",
-        "title": "Frog Pad Hop"
+        "world": null,
+        "title": "Frog Lily Pad Hop"
       }
     },
     {
       "id": "x05",
       "text": "a race car speeds through checkpoint gates",
-      "ms": 2016,
+      "ms": 1912,
       "reading": {
-        "control": "steer",
+        "control": "runner",
         "verbs": [
           {
             "word": "speeds",
-            "class": "steer"
+            "class": "runner"
           }
         ],
         "hero": "race car",
-        "roles": [
-          {
-            "noun": "checkpoint gates",
-            "kind": "destination",
-            "count": null
-          }
-        ],
+        "roles": [],
         "setting": null,
         "mood": null,
         "numbers": {
@@ -2615,21 +2636,26 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Race Car Speeds"
+        "title": "Race Car Through Gates"
       }
     },
     {
       "id": "x06",
       "text": "push crates onto switches to open the door",
-      "ms": 2978,
+      "ms": 4114,
       "reading": {
         "control": "move_free",
-        "verbs": [],
+        "verbs": [
+          {
+            "word": "push",
+            "class": "move_free"
+          }
+        ],
         "hero": null,
         "roles": [
           {
             "noun": "crate",
-            "kind": "obstacle",
+            "kind": "collectible",
             "count": null
           },
           {
@@ -2639,7 +2665,7 @@
           },
           {
             "noun": "door",
-            "kind": "destination",
+            "kind": "target",
             "count": null
           }
         ],
@@ -2654,15 +2680,15 @@
           "mode": "default"
         },
         "foe": null,
-        "item": null,
+        "item": "crate",
         "world": null,
-        "title": "Push Crates"
+        "title": "Push Crates onto Switches"
       }
     },
     {
       "id": "x07",
       "text": "throw a ball for the dog to catch",
-      "ms": 1621,
+      "ms": 2147,
       "reading": {
         "control": "throw",
         "verbs": [
@@ -2673,11 +2699,6 @@
         ],
         "hero": null,
         "roles": [
-          {
-            "noun": "ball",
-            "kind": "item",
-            "count": null
-          },
           {
             "noun": "dog",
             "kind": "target",
@@ -2697,13 +2718,13 @@
         "foe": null,
         "item": "ball",
         "world": null,
-        "title": "Throw a Ball"
+        "title": "Throw a Ball for the Dog"
       }
     },
     {
       "id": "x08",
       "text": "shoot the aliens invading earth",
-      "ms": 1792,
+      "ms": 1698,
       "reading": {
         "control": "shooter",
         "verbs": [
@@ -2732,20 +2753,20 @@
         },
         "foe": "aliens",
         "item": null,
-        "world": null,
+        "world": "city",
         "title": "Shoot the Aliens"
       }
     },
     {
       "id": "x09",
       "text": "collect coins while the crowd cheers in the stadium",
-      "ms": 1617,
+      "ms": 3757,
       "reading": {
-        "control": "platform",
+        "control": "move_free",
         "verbs": [
           {
             "word": "collect",
-            "class": "platform"
+            "class": "move_free"
           }
         ],
         "hero": null,
@@ -2754,10 +2775,15 @@
             "noun": "coins",
             "kind": "collectible",
             "count": null
+          },
+          {
+            "noun": "crowd",
+            "kind": "ally",
+            "count": null
           }
         ],
         "setting": "stadium",
-        "mood": "cheering",
+        "mood": "cheerful",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -2769,26 +2795,26 @@
         "foe": null,
         "item": "coins",
         "world": null,
-        "title": "Collect Coins in Stadium"
+        "title": "Collect Coins"
       }
     },
     {
       "id": "x10",
       "text": "a cat catches mice running around the barn",
-      "ms": 2165,
+      "ms": 3132,
       "reading": {
-        "control": "tap_go",
+        "control": "move_free",
         "verbs": [
           {
             "word": "catches",
-            "class": "timing"
+            "class": "move_free"
           }
         ],
         "hero": "cat",
         "roles": [
           {
             "noun": "mice",
-            "kind": "target",
+            "kind": "collectible",
             "count": null
           }
         ],
@@ -2799,11 +2825,11 @@
           "counts": []
         },
         "genre": {
-          "genre": "catch",
-          "mode": "default"
+          "genre": "quest",
+          "mode": "spatial"
         },
         "foe": null,
-        "item": null,
+        "item": "mice",
         "world": "meadow",
         "title": "Cat Catches Mice"
       }
@@ -2811,7 +2837,7 @@
     {
       "id": "x11",
       "text": "a boxer fights his rival in the ring",
-      "ms": 2075,
+      "ms": 2274,
       "reading": {
         "control": "move_free",
         "verbs": [
@@ -2828,7 +2854,7 @@
             "count": null
           }
         ],
-        "setting": "the ring",
+        "setting": "ring",
         "mood": null,
         "numbers": {
           "seconds": null,
@@ -2847,19 +2873,25 @@
     {
       "id": "x12",
       "text": "slice through the jungle with a machete to find the temple",
-      "ms": 1724,
+      "ms": 3820,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
             "word": "slice",
-            "class": "melee"
+            "class": "timing"
           }
         ],
         "hero": null,
-        "roles": [],
+        "roles": [
+          {
+            "noun": "temple",
+            "kind": "destination",
+            "count": null
+          }
+        ],
         "setting": "jungle",
-        "mood": null,
+        "mood": "adventurous",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -2871,13 +2903,13 @@
         "foe": null,
         "item": "machete",
         "world": "jungle",
-        "title": "Machete Jungle Slice"
+        "title": "Slice Through the Jungle"
       }
     },
     {
       "id": "x13",
       "text": "a rabbit hops over fences on a long meadow run",
-      "ms": 1920,
+      "ms": 2918,
       "reading": {
         "control": "runner",
         "verbs": [
@@ -2913,17 +2945,17 @@
     {
       "id": "x14",
       "text": "merge into traffic and race to the finish",
-      "ms": 1726,
+      "ms": 2263,
       "reading": {
-        "control": "move_free",
+        "control": "runner",
         "verbs": [
           {
             "word": "merge",
-            "class": "move_free"
+            "class": "manipulate"
           },
           {
             "word": "race",
-            "class": "move_free"
+            "class": "runner"
           }
         ],
         "hero": null,
@@ -2947,7 +2979,7 @@
     {
       "id": "x15",
       "text": "hit the drum to the beat of the song",
-      "ms": 1692,
+      "ms": 1784,
       "reading": {
         "control": "rhythm",
         "verbs": [
@@ -2983,20 +3015,20 @@
     {
       "id": "x16",
       "text": "stack the boxes as high as you can",
-      "ms": 1642,
+      "ms": 4022,
       "reading": {
         "control": "timing",
         "verbs": [
           {
             "word": "stack",
-            "class": "timing"
+            "class": "build_place"
           }
         ],
         "hero": null,
         "roles": [
           {
             "noun": "boxes",
-            "kind": "collectible",
+            "kind": "item",
             "count": null
           }
         ],
@@ -3011,7 +3043,7 @@
           "mode": "stack"
         },
         "foe": null,
-        "item": null,
+        "item": "boxes",
         "world": null,
         "title": "Stack the Boxes"
       }

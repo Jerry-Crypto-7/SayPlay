@@ -3,19 +3,19 @@
   "set": "evals/play/p56a/audit-12.json",
   "model": "gpt-oss-20b",
   "transport": "llamacpp:http://127.0.0.1:8792",
-  "promptVersion": "40c586b23d947975",
+  "promptVersion": "beda31d4ee60c875",
   "budgetMs": 60000,
-  "commit": "44ec04c3",
-  "readAt": "2026-10-21T13:25:25.778Z",
+  "commit": "1b1cf43e",
+  "readAt": "2026-10-21T15:22:28.194Z",
   "summary": {
     "n": 12,
     "valid": 12,
-    "genreAndHero": 8,
-    "withFoe": 4,
+    "genreAndHero": 6,
+    "withFoe": 5,
     "withTitle": 12,
-    "p50Ms": 2047,
-    "p95Ms": 3837,
-    "maxMs": 3837
+    "p50Ms": 3233,
+    "p95Ms": 4442,
+    "maxMs": 4442
   },
   "cache": {
     "rereads": 12,
@@ -26,20 +26,20 @@
     {
       "id": "a01",
       "text": "a frog catching flies on a lily pad",
-      "ms": 3345,
+      "ms": 3394,
       "reading": {
-        "control": "tap_go",
+        "control": "timing",
         "verbs": [
           {
-            "word": "catch",
-            "class": "tap_go"
+            "word": "catching",
+            "class": "timing"
           }
         ],
         "hero": "frog",
         "roles": [
           {
             "noun": "flies",
-            "kind": "collectible",
+            "kind": "target",
             "count": null
           }
         ],
@@ -62,20 +62,16 @@
     {
       "id": "a02",
       "text": "zombies attack my farm at night",
-      "ms": 1861,
+      "ms": 3204,
       "reading": {
         "control": "move_free",
         "verbs": [
           {
             "word": "attack",
-            "class": "timing"
-          },
-          {
-            "word": "farm",
-            "class": "idle"
+            "class": "melee"
           }
         ],
-        "hero": "farm",
+        "hero": null,
         "roles": [
           {
             "noun": "zombies",
@@ -90,11 +86,11 @@
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "escape"
+          "genre": "defense",
+          "mode": "default"
         },
         "foe": "zombies",
-        "item": null,
+        "item": "farm",
         "world": "meadow",
         "title": "Zombies Attack My Farm"
       }
@@ -102,20 +98,20 @@
     {
       "id": "a03",
       "text": "a ninja slicing fruit",
-      "ms": 2221,
+      "ms": 3233,
       "reading": {
-        "control": "move_free",
+        "control": "timing",
         "verbs": [
           {
-            "word": "slicing",
-            "class": "melee"
+            "word": "slice",
+            "class": "timing"
           }
         ],
         "hero": "ninja",
         "roles": [
           {
             "noun": "fruit",
-            "kind": "item",
+            "kind": "target",
             "count": null
           }
         ],
@@ -138,7 +134,7 @@
     {
       "id": "a04",
       "text": "racing a shark through a coral reef",
-      "ms": 2047,
+      "ms": 4442,
       "reading": {
         "control": "steer",
         "verbs": [
@@ -148,9 +144,20 @@
           }
         ],
         "hero": null,
-        "roles": [],
+        "roles": [
+          {
+            "noun": "shark",
+            "kind": "threat",
+            "count": 1
+          },
+          {
+            "noun": "coral reef",
+            "kind": "obstacle",
+            "count": 1
+          }
+        ],
         "setting": "coral reef",
-        "mood": null,
+        "mood": "fast",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -159,7 +166,7 @@
           "genre": "voyage",
           "mode": "race"
         },
-        "foe": null,
+        "foe": "shark",
         "item": null,
         "world": "underwater",
         "title": "Racing a Shark"
@@ -168,20 +175,20 @@
     {
       "id": "a05",
       "text": "stack pizzas as high as the moon",
-      "ms": 1431,
+      "ms": 3390,
       "reading": {
-        "control": "timing",
+        "control": "move_free",
         "verbs": [
           {
             "word": "stack",
-            "class": "timing"
+            "class": "build_place"
           }
         ],
         "hero": null,
         "roles": [
           {
             "noun": "pizza",
-            "kind": "collectible",
+            "kind": "item",
             "count": null
           }
         ],
@@ -192,29 +199,34 @@
           "counts": []
         },
         "genre": {
-          "genre": "timing",
-          "mode": "stack"
+          "genre": "merge",
+          "mode": "default"
         },
         "foe": null,
         "item": "pizza",
         "world": null,
-        "title": "Stack Pizzas"
+        "title": "Stack Pizzas as High as the Moon"
       }
     },
     {
       "id": "a06",
       "text": "my cat defends the couch from vacuum robots",
-      "ms": 1829,
+      "ms": 2381,
       "reading": {
         "control": "move_free",
         "verbs": [
           {
             "word": "defends",
-            "class": "move_free"
+            "class": "melee"
           }
         ],
         "hero": "cat",
         "roles": [
+          {
+            "noun": "couch",
+            "kind": "destination",
+            "count": null
+          },
           {
             "noun": "vacuum robots",
             "kind": "threat",
@@ -222,17 +234,17 @@
           }
         ],
         "setting": "couch",
-        "mood": "defensive",
+        "mood": null,
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "arena",
-          "mode": "fight"
+          "genre": "defense",
+          "mode": "default"
         },
         "foe": "vacuum robots",
-        "item": null,
+        "item": "couch",
         "world": "living_room",
         "title": "Cat Defends Couch"
       }
@@ -240,7 +252,7 @@
     {
       "id": "a07",
       "text": "a goalkeeper saves penalty kicks in a packed stadium",
-      "ms": 3837,
+      "ms": 3535,
       "reading": {
         "control": "timing",
         "verbs": [
@@ -264,10 +276,10 @@
           "counts": []
         },
         "genre": {
-          "genre": "duel",
+          "genre": "defense",
           "mode": "default"
         },
-        "foe": "penalty kicker",
+        "foe": null,
         "item": null,
         "world": null,
         "title": "Goalkeeper Saves"
@@ -276,9 +288,9 @@
     {
       "id": "a08",
       "text": "match three glowing gems to unlock a treasure chest",
-      "ms": 1711,
+      "ms": 1647,
       "reading": {
-        "control": "steer",
+        "control": "move_free",
         "verbs": [
           {
             "word": "match",
@@ -290,23 +302,26 @@
           {
             "noun": "gems",
             "kind": "collectible",
-            "count": 3
+            "count": null
+          },
+          {
+            "noun": "treasure chest",
+            "kind": "destination",
+            "count": null
           }
         ],
         "setting": null,
         "mood": null,
         "numbers": {
           "seconds": null,
-          "counts": [
-            3
-          ]
+          "counts": []
         },
         "genre": {
           "genre": "merge",
           "mode": "default"
         },
         "foe": null,
-        "item": "treasure chest",
+        "item": "gems",
         "world": null,
         "title": "Match Three Gems"
       }
@@ -314,13 +329,13 @@
     {
       "id": "a09",
       "text": "an astronaut dodges asteroids to reach the space station",
-      "ms": 2955,
+      "ms": 3274,
       "reading": {
-        "control": "steer",
+        "control": "move_free",
         "verbs": [
           {
             "word": "dodges",
-            "class": "steer"
+            "class": "melee"
           }
         ],
         "hero": "astronaut",
@@ -332,7 +347,7 @@
           }
         ],
         "setting": "space",
-        "mood": null,
+        "mood": "dangerous",
         "numbers": {
           "seconds": null,
           "counts": []
@@ -341,7 +356,7 @@
           "genre": "arena",
           "mode": "escape"
         },
-        "foe": null,
+        "foe": "asteroids",
         "item": null,
         "world": "space",
         "title": "Astronaut Dodges Asteroids"
@@ -350,7 +365,7 @@
     {
       "id": "a10",
       "text": "a chef flips pancakes for a line of hungry customers",
-      "ms": 2616,
+      "ms": 3341,
       "reading": {
         "control": "timing",
         "verbs": [
@@ -368,14 +383,14 @@
           }
         ],
         "setting": null,
-        "mood": null,
+        "mood": "busy",
         "numbers": {
           "seconds": null,
           "counts": []
         },
         "genre": {
-          "genre": "quest",
-          "mode": "spatial"
+          "genre": "timing",
+          "mode": "precision"
         },
         "foe": null,
         "item": "pancakes",
@@ -386,7 +401,7 @@
     {
       "id": "a11",
       "text": "drum to the beat at a rock concert",
-      "ms": 1541,
+      "ms": 1979,
       "reading": {
         "control": "rhythm",
         "verbs": [
@@ -410,26 +425,22 @@
         "foe": null,
         "item": null,
         "world": null,
-        "title": "Rock Beat"
+        "title": "Drum to the Beat"
       }
     },
     {
       "id": "a12",
       "text": "escape a haunted mansion while a ghost chases you",
-      "ms": 2839,
+      "ms": 2361,
       "reading": {
         "control": "move_free",
         "verbs": [
           {
             "word": "escape",
             "class": "move_free"
-          },
-          {
-            "word": "chases",
-            "class": "move_free"
           }
         ],
-        "hero": "you",
+        "hero": null,
         "roles": [
           {
             "noun": "ghost",
@@ -438,7 +449,7 @@
           }
         ],
         "setting": "haunted mansion",
-        "mood": "haunted",
+        "mood": "spooky",
         "numbers": {
           "seconds": null,
           "counts": []
