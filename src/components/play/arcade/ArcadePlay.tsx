@@ -16,6 +16,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
+import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
 import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
@@ -417,6 +418,7 @@ function ArcadePlayGame({
     const bossModel = spec.boss === undefined ? undefined : (riggedModelOf(spec.boss.role) ?? sceneModelOf(spec.boss.role, true));
     const prey = preyModel(spec);
     return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props, ...(prey === undefined ? {} : { prey }),
+    kit: obstacleKits.kits[lookOf(spec.theme)],
     ...(bossKind === null || bossModel === undefined ? {} : { boss: { kind: bossKind, model: bossModel } }),
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];

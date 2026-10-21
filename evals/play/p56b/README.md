@@ -93,6 +93,22 @@ Medián všech šesti běhů klesl o víc než 20 %. **Odchylka od AC:** 08-gems
 - **Úrovně na konci oken:** B na `medium` ve všech třech oknech v 10 z 30 scén, aspoň jednou na `high` v 5 (03, 05, 06, g-timing, g-lander), na `low` ve všech třech oknech v 5 (g-arena, g-fight, g-quest, g-ball, g-shooter). A (start `low`) v 15 scénách aspoň jednou vystoupal na `medium`, na `high` nikdy. Emulace brzdí CPU, ne GPU – skutečný telefon rozhodne HALT po T13.
 - Měřeno na méně vytíženém stroji než šum T1 (medián A 56,9 FPS, v T1 bylo pod 40 osm scén).
 
+## Šedé kvádry a desky (T10)
+
+**Inventura na `72665fdc`** (výpis z kódu – sonda `data-fallback` tam ještě není):
+
+- `StaticModel` (`World.tsx`) kreslí kvádr během načítání a natrvalo, když model chybí (404 → `loadModel` vrátí `null`). Barva z `FALLBACK_COLOR` podle druhu těla, jinak šedá `#94a3b8`. Na základu to byly 4× 404 z T1 (`player` v 09, 12 a g-runner, `pad` v g-lander), opravené v T3.
+- **08-gems:** plot arény (`StyledWorld`, tělo bez věci pravidel) je kvádr `FENCE_COLOR` `#78716c` – 6 šedých kvádrů na louce. Totéž v g-arena.
+- **12-ghost:** „deska“ na konci cesty je zeď rozcestí běžce (`divider`, 1,6 × 1,5 × 8–14 m), tedy `RunnerStructure` z kamene `look.block ?? ['#78716c', '#a8a29e']`. Hřbitov ani sídlo `block` nemají.
+- Překážky běžce bez popisku z věty jsou ve všech 18 sadách tytéž stavební zábrany z `game/` (`hurdle`, `slide-bar`, `cone`, `crate`).
+- Náhradní barvy postav v `ArcadeStage.tsx` byly surové hexy, soupeř šedý `#64748b`.
+
+**Oprava:** `src/play/arcade/look/obstacle-kits.json` – každá sada má díl pro `hurdle`, `slide-bar`, `crate`, `cone` a `block` (plot arény a zeď rozcestí). Model z popisku věty má dál přednost. Laťka sady a plot vyplní celé tělo, tvar se kryje se srážkou. Zeď rozcestí je řada dílů po křivce trati (hřbitov železný plot, louka živý plot). Náhradní díl je zaoblený, v hlavní barvě rekvizit sady; postavy mají barvy kitu. Licence všech 90 dílů z `disclosure.json`: CC0 nebo vlastní generované, žádná CC BY-ND (v `disclosure.json` žádná není).
+
+**Po T10** (build HEAD, `e2e/p56b-look.spec.ts`, 30 scén): `data-fallback` = 0 ve všech 23 scénách se sondou, 0× 404. Sondu nemá 7 scén, které žádný model nevepisují (11-drum, g-ball, g-shooter, g-throw, g-timing, g-rhythm, g-duel). Druhý test sondu ověřuje naopak: když díly sad vrátí 404, 12-ghost hlásí `data-fallback` > 0 a jen jejich id. Snímky `after-t10/` (08, 12, 06, g-runner, g-arena) jsou mimo git jako `before/`.
+
+**Mimo T10 zůstává:** překážky agaru (`AgarWorld`, g-agar) jsou dál kvádr `FENCE_COLOR`, věc pravidel bez modelu je barevný kvádr `thingColor` a tunel a plošiny mají barvu z `look.block`, jinak výchozí kámen.
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.

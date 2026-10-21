@@ -17,6 +17,7 @@ import { addAfterEffect, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
+import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
@@ -713,17 +714,17 @@ const StageCanvas = memo(function StageCanvas({
   const rivalModel: RivalModel | undefined =
     rival === undefined
       ? undefined
-      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" rim />);
+      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback={brand['tomato-deep']} /> : <FittedModel id={rival} w={w} h={h} d={d} fallback={brand['tomato-deep']} rim />);
   // P43 T14b: hrdina souboje a rytmu z popisku (rytíř, pirát, babička); výchozí průzkumník zůstává postavou z kvádrů.
   const heroRig = riggedCharacter(cast.player);
   const castHero: RivalModel | undefined =
     cast.player === 'explorer'
       ? undefined
-      : (w, h, d) => (heroRig !== undefined ? <RiggedModel character={heroRig} h={h} clip={() => 'idle'} fallback="#2563eb" /> : <FittedModel id={cast.player} w={w} h={h} d={d} fallback="#2563eb" character rim />);
+      : (w, h, d) => (heroRig !== undefined ? <RiggedModel character={heroRig} h={h} clip={() => 'idle'} fallback={brand['sky-deep']} /> : <FittedModel id={cast.player} w={w} h={h} d={d} fallback={brand['sky-deep']} character rim />);
   // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
   const { note, block } = cast.props;
-  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
-  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
+  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback={look.tint[0]} />;
+  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback={look.tint[0]} fill />;
   const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
