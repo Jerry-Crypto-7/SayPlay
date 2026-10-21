@@ -5,11 +5,14 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { ARCADE_HZ, ARCADE_LIMITS } from '@/play/arcade/contract';
+import { replay } from '@/play/arcade/kernel';
+import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { draftGenreFor } from '@/play/draft/draft';
 
 import type { ChainWorld } from '../contract';
 import { MICRO, type MicroEntry, genreModeOf, microSpec } from '../micro';
-import { chainFromSpecs, replayChain } from '../run';
+import { chainFromSpecs, chainMaxTicks, replayChain, roundClock } from '../run';
 import { chainLengthSec, verifyChain } from '../verify';
 
 const entryOf = (key: string): MicroEntry => MICRO.find((entry) => entry.key === key)!;
@@ -71,5 +74,54 @@ describe('verifyChain', () => {
 
   it('chainLengthSec divides round ticks by the rate and adds a card between rounds', () => {
     expect(chainLengthSec(good, [600, 600, 600, 600])).toBeCloseTo(10 + 10 / 1.075 + 10 / 1.15 + 10 / 1.225 + 3, 6);
+  });
+});
+
+/** Kolo `index` s pravidly, která vybere `edit` – řetěz jinak týž. */
+const withRules = (chain: ChainWorld, index: number, edit: (rules: ChainWorld['rounds'][number]['world']['rules']) => ChainWorld['rounds'][number]['world']['rules']): ChainWorld => ({
+  ...chain,
+  rounds: chain.rounds.map((round, at) => (at === index ? { ...round, world: { ...round.world, rules: edit(round.world.rules) } } : round)),
+});
+
+describe('clock gate (debate T9: a dare record holds at most ARCADE_LIMITS.maxTicks)', () => {
+  const good = chainOf(GOOD);
+
+  it('a round ends at its clock: an idle achieve round loses on the clock tick, a survive round wins on it', () => {
+    // Jen hodiny, bez kusů, které kolo ukončí dřív (nečinný na chytání prohraje propadlými kusy v ~400. tiku).
+    const onlyClock = (index: number) => withRules(good, index, (rules) => rules.filter((rule) => rule.id === 'time_limit' || rule.id === 'rule_tick')).rounds[index]!.world;
+    const catchClock = onlyClock(0);
+    expect(roundClock(catchClock)).toBe(10 * ARCADE_HZ + 1);
+    expect(replay(catchClock, [], ARCADE_LIBRARY)).toMatchObject({ outcome: 'lost', tick: 10 * ARCADE_HZ + 1 });
+    const hopClock = onlyClock(1);
+    expect(roundClock(hopClock)).toBe(7 * ARCADE_HZ);
+    expect(replay(hopClock, [], ARCADE_LIBRARY)).toMatchObject({ outcome: 'won', tick: 7 * ARCADE_HZ });
+    const bot = verifyChain(good).rounds[1]!.bot;
+    expect(bot).toMatchObject({ outcome: 'won', tick: roundClock(good.rounds[1]!.world) });
+  });
+
+  it('chainMaxTicks is the sum of the round clocks plus the cards, and no run of the chain outlasts it', () => {
+    const clocks = good.rounds.map((round) => roundClock(round.world)!);
+    expect(chainMaxTicks(good)).toBe(clocks.reduce((sum, ticks) => sum + ticks, 0) + 3 * good.cardTicks);
+    expect(replayChain(good, []).tick).toBeLessThanOrEqual(chainMaxTicks(good)!);
+    expect(replayChain(good, verifyChain(good).inputs).tick).toBeLessThanOrEqual(chainMaxTicks(good)!);
+  });
+
+  it('fails chain_clock when a round has no clock', () => {
+    const unclocked = withRules(good, 1, (rules) => rules.filter((rule) => rule.id !== 'rule_tick' && rule.id !== 'time_limit'));
+    expect(roundClock(unclocked.rounds[1]!.world)).toBeNull();
+    expect(chainMaxTicks(unclocked)).toBeNull();
+    expect(codes(unclocked)).toContain('chain_clock');
+  });
+
+  it('a conditional rule tick is not a clock', () => {
+    const conditional = withRules(good, 1, (rules) => rules.map((rule) => (rule.id === 'rule_tick' ? { ...rule, params: { ...rule.params, if: [{ counter: 'score', atLeast: 1 }] } } : rule)));
+    expect(roundClock(conditional.rounds[1]!.world)).toBeNull();
+  });
+
+  it('fails chain_ticks when the longest run is over ARCADE_LIMITS.maxTicks', () => {
+    const slow = withRules(good, 0, (rules) => rules.map((rule) => (rule.id === 'time_limit' ? { ...rule, params: { seconds: ARCADE_LIMITS.maxTicks / ARCADE_HZ } } : rule)));
+    expect(chainMaxTicks(slow)).toBeGreaterThan(ARCADE_LIMITS.maxTicks);
+    expect(codes(slow)).toContain('chain_ticks');
+    expect(codes(good)).not.toContain('chain_ticks');
   });
 });

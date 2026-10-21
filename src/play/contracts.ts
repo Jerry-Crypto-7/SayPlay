@@ -18,6 +18,7 @@ import { RUNTIME_VERSION } from '@/sim/interpreter';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { ArcadeWorld } from './arcade/contract';
+import type { CHAIN_RUNTIME_VERSION } from './chain/contract';
 
 import type { GameSpecV1 } from './spec';
 
@@ -126,7 +127,8 @@ export interface GameVersion {
   readonly seed: number;
   readonly schemaVersion: 'gamespec.v1';
   readonly compilerVersion: string;
-  readonly runtimeVersion: typeof RUNTIME_VERSION;
+  /** `chain-v1` u řetězu mikroher (P56C T10) – ten se hraje přehrávačem řetězu, ne interpretem. */
+  readonly runtimeVersion: typeof RUNTIME_VERSION | typeof CHAIN_RUNTIME_VERSION;
   readonly parentId: string | null;
   readonly createdAt: string;
 }

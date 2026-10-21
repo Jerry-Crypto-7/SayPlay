@@ -19,10 +19,14 @@ import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
 import { PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { arcadeReport } from '@/play/arcade/verify';
+import type { ChainWorld } from '@/play/chain/contract';
+import { verifyChain } from '@/play/chain/verify';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
+import { type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealChainVersion, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
 import { BUILTIN_IDS } from '@/play/version/builtin';
+import { previewOf } from '@/play/version/preview';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
@@ -291,7 +295,40 @@ export async function publishReadSpec(
     ...(relation === undefined ? {} : { relation }),
     ...(extras.timings === undefined ? {} : { timings: { ...extras.timings, compileMs, verifyMs } }),
   };
+  return storePublished(versions, game);
+}
 
+/**
+ * Řetěz mikroher (P56C T10, kontrakt z debaty T9): projde `verifyChain` (každé kolo `verifyArcade`, celý řetěz
+ * robotem, 30–90 s, ≥ 3 ovládání, hodiny každého kola do stropu záznamu Dare) a uloží se jako hra s `chain` bez
+ * `arcade`. Zpráva o kvalitě je zpráva kola 1 s parem celého řetězu; náhled ve feedu je robot kola 1.
+ */
+export async function publishChain(versions: VersionStore, chain: ChainWorld, parentId: string | null, extras: Pick<PublishExtras, 'origin'> = {}): Promise<PublishResult> {
+  const blocked = chain.rounds.map((round) => blockedText(round.spec)).find((text) => text !== null);
+  if (blocked !== undefined) return { ok: false, response: fail(422, 'CONTENT_REJECTED', SENTENCE_BLOCKED), issues: ['CONTENT_REJECTED', blocked.slice(0, 120)] };
+
+  const verdict = verifyChain(chain);
+  if (verdict.failures.length > 0 || verdict.par === null) {
+    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks'), issues: ['NOT_PUBLISHABLE', ...verdict.failures] };
+  }
+  const first = chain.rounds[0]!;
+  const version = sealChainVersion(chain, parentId, Date.now);
+  const report = arcadeReport(verdict.rounds[0]!, first.world, { specHash: version.specHash, worldHash: version.worldHash });
+  const game: PublishedGame = {
+    version,
+    spec: first.spec,
+    blueprint: null,
+    chain,
+    report: { ...report, witness: { certified: true, winsAtTick: verdict.par.ticks }, par: verdict.par },
+    preview: previewOf(first.world, verdict.rounds[0]!.bot),
+    ...(extras.origin === undefined ? {} : { origin: extras.origin }),
+  };
+  return storePublished(versions, game);
+}
+
+/** Zápis hotové hry: táž hra podruhé je `200` z úložiště, nová `201`; kvóta, konflikt a výpadek úložiště jako odpověď. */
+async function storePublished(versions: VersionStore, game: PublishedGame): Promise<PublishResult> {
+  const { version, spec } = game;
   const existing = await versions.get(version.versionId);
   if (existing !== null) {
     // Táž hra podruhé: hlas mohl minule spadnout se službou – služba má cache, zeptat se znovu nic nestojí.

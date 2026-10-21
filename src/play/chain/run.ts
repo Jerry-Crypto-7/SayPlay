@@ -8,7 +8,7 @@
  */
 
 import { arcadeWorldOf } from '../arcade/compile';
-import { ARCADE_LIMITS, type ArcadeInput, type ArcadeState, COUNTER, HEADER, type InputEvent, NO_INPUT } from '../arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, underlyingRule } from '../arcade/contract';
 import { type ArcadeLibrary, type ArcadeOutcome, type ArcadeProgram, hashArcade, instantiate, loadProgram, outcomeOf, step } from '../arcade/kernel';
 import { ARCADE_LIBRARY } from '../arcade/library';
 import { hashHex } from '../../sim/hash';
@@ -133,6 +133,28 @@ export interface ChainReplay {
 
 /** Nejdelší možný řetěz: každé kolo do stropu jádra a karta za ním. */
 export const chainHorizon = (chain: ChainWorld): number => chain.rounds.length * (ARCADE_LIMITS.maxTicks + chain.cardTicks);
+
+/**
+ * Hodiny kola v tikách: prohrávací `time_limit`, nebo bezpodmínečné pravidlo `every`, které kolo vyhraje či prohraje
+ * (`micro_clock` u přežití). Více hodin = ty nejkratší; `null` = kolo bez hodin, jeho běh může trvat do stropu jádra.
+ */
+export function roundClock(world: ArcadeWorld): number | null {
+  const clocks = world.rules.map(underlyingRule).flatMap((ref) => {
+    // Prohra `time_limit` padne až tik po vypršení (`replay`: 10 s → tik 601).
+    if (ref.id === 'time_limit') return [(ref.params as { readonly seconds: number }).seconds * ARCADE_HZ + 1];
+    const rule = ref.params as { readonly when?: { readonly every?: number }; readonly if?: readonly unknown[]; readonly do?: readonly { readonly win?: boolean; readonly lose?: boolean }[] };
+    const ends = rule.do?.some((action) => action.win === true || action.lose === true) === true;
+    return ref.id === 'rule_tick' && rule.when?.every !== undefined && (rule.if ?? []).length === 0 && ends ? [rule.when.every] : [];
+  });
+  return clocks.length === 0 ? null : Math.min(...clocks);
+}
+
+/** Nejdelší možný běh řetězu: hodiny všech kol a karty mezi nimi; `null`, když některé kolo hodiny nemá. */
+export function chainMaxTicks(chain: ChainWorld): number | null {
+  const clocks = chain.rounds.map((round) => roundClock(round.world));
+  if (clocks.includes(null)) return null;
+  return clocks.reduce<number>((sum, ticks) => sum + ticks!, 0) + (chain.rounds.length - 1) * chain.cardTicks;
+}
 
 /** Přehraje řídký záznam s globálními tiky (seřazený) od tiku 0 do konce řetězu nebo horizontu. */
 export function replayChain(chain: ChainWorld, inputs: readonly InputEvent[], library: ArcadeLibrary = ARCADE_LIBRARY, horizon: number = chainHorizon(chain)): ChainReplay {

@@ -12,7 +12,7 @@
  * ne `snapshots` – vypínač publikací zastaví i upgrade.
  */
 
-import { notFound, VERSION_ID_PATTERN } from '../../../_errors';
+import { fail, notFound, VERSION_ID_PATTERN } from '../../../_errors';
 import { admit, directorCallerOf, store } from '../../../_publish';
 import { knownUpgrade, pendingSince, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
 
@@ -39,6 +39,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const versions = store();
   const draft = await versions.get(id);
   if (draft === null) return notFound();
+  // Řetěz mikroher AI verzi nemá (P56C T10, debata T9): režisér by z věty postavil jednu hru jen podle kola 1.
+  if (draft.chain !== undefined) return fail(422, 'SPEC_REJECTED', 'a chain of microgames has no full-detail version');
   // Hra z hotového specu, remix nebo sama autorská verze: není co vylepšit.
   if (draft.origin === undefined || draft.relation !== undefined) return answer({ status: 'draft-final', reason: 'NOT_FROM_SENTENCE' });
 

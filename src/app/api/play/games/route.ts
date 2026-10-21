@@ -10,19 +10,25 @@
  * kde se klient ptá na autorskou verzi, kterou režisér dopočítá na pozadí
  * (`_upgrade.ts`, P23-D T2). Věta, kterou knihovna ovládání neumí, dostane
  * navíc `honesty: { reason, closest }` (P25E T2) – hra se publikuje i tak.
+ * Věta, kterou `chainOrSingle` pošle do řetězu mikroher (P56C T10), dostane hru
+ * s `chain` a odpověď bez `upgrade` – řetěz AI verzi nemá.
  */
 
 import { z } from 'zod';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { buildChain } from '@/play/chain/build';
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain } from '@/play/chain/read';
 import { honestyOf } from '@/play/draft/unsupported';
+import { classifyGenre } from '@/play/genre/classify';
 import { readBeforeDraft } from '@/play/read/client';
 import { beatOf, decodeCursor, feedPage, hiddenFromEnv, keptFromEnv, RECENT_CAP, remixParents } from '@/play/version';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody, refuseSentence } from '../_errors';
-import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishChain, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
@@ -135,13 +141,25 @@ export async function POST(request: Request): Promise<Response> {
     if (refused !== null && refused.status !== 429) return refused;
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
-    // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
+    const reading = await readBeforeDraft(sentence);
+    // P56C T10: věta bez jednoho jasného slovesa hraje řetěz mikroher – bez AI verze a remixu (debata T9).
+    // Řetěz, který stavba nebo brána nepustí, hraje dnešní cesta jako jedna hra; zakázaný text a úložiště ne.
+    const read = readForChain(sentence, reading);
+    if (chainOrSingle(sentence, read, classifyGenre(sentence, reading)) === 'chain') {
+      const built = buildChain(sentence, read, seeds[0]!);
+      if (built.ok) {
+        const chained = await publishChain(versions, built.chain, parentId, { origin: { sentence, seed: seed ?? null, ...(reading === null ? {} : { readBy: 'model' as const }) } });
+        if (chained.ok) return publishedResponse(chained.value);
+        if (chained.response.status !== 422 || chained.issues?.[0] === 'CONTENT_REJECTED') return chained.response;
+      }
+    }
+    // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     // Ball composition verifies a real physics run before returning a draft.
     // Await the cold engine here; background preloading alone is a race. Always, not only
     // when the sentence says ball: the model reader may pick a ball game the words missed.
     await loadRapier();
-    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) });
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });

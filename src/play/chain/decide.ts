@@ -12,8 +12,8 @@ import type { SentenceRead } from './read';
 /** Buňky, ve kterých klasifikátor končí, když z věty neslyší nic určitého. */
 export const GENERIC_CELLS: ReadonlySet<string> = new Set(['arena.collect', 'arena.escape', 'runner.default', 'voyage.race']);
 
-/** Věta, která o víc her výslovně žádá. */
-export const CHAIN_CUES = /\b(?:levels|rounds|mini-?games|challenges|party)\b/;
+/** Věta, která o víc her výslovně žádá. „party“ jako přívlastek věci („to a party table“, startovní věta) ne. */
+export const CHAIN_CUES = /\b(?:levels|rounds|mini-?games|challenges|party(?!\s+(?:tables?|hats?|food|guests?|dress)\b))\b/;
 
 /** Náskok obecné buňky před druhou, pod kterým věta hraje řetěz (dev: „skateboard“ 2 → řetěz, „steer a balloon“ 4 → jedna hra). */
 export const GENERIC_MARGIN = 3;

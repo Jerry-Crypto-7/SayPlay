@@ -19,6 +19,10 @@ import { resetRateWindows } from '@/server/rate-limit';
 
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
 
+// Poctivá hláška patří jedné hře: větu „shooting and racing“ P56C posílá do řetězu mikroher, který hlášku nemá.
+// Tady se zkouší hláška jedné hry, proto rozhodnutí vždy `single`.
+vi.mock('@/play/chain/decide', async (original) => ({ ...(await original<typeof import('@/play/chain/decide')>()), chainOrSingle: () => 'single' }));
+
 const MATCH3 = 'a match 3 game with fruits';
 
 function puzzle(required: readonly string[]) {

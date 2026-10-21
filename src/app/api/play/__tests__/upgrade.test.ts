@@ -21,6 +21,10 @@ import { resetRateWindows } from '@/server/rate-limit';
 
 import { recordUpgradeFailure, upgradeAttemptLine } from '../_upgrade';
 
+// AI verze je jen pro jednu hru: věty těchto testů (útěk s pronásledovatelem) P56C posílá do řetězu mikroher,
+// který AI verzi nemá (`chain-publish.test.ts`). Tady se zkouší vylepšení jedné hry, proto rozhodnutí vždy `single`.
+vi.mock('@/play/chain/decide', async (original) => ({ ...(await original<typeof import('@/play/chain/decide')>()), chainOrSingle: () => 'single' }));
+
 const director = vi.hoisted(() => ({
   script: [] as unknown[],
   calls: 0,

@@ -1,17 +1,18 @@
 /**
  * Publikační brána řetězu (P56C T6): každé kolo projde `verifyArcade` (robot, nečinný, dvojí přehrání,
  * svědci, důkaz sloves), robotovy záznamy kol složené na globální tiky vyhrají celý řetěz a jejich dvě
- * přehrání dají týž hash. Řetěz má 30–90 s a aspoň 3 různá ovládání. Par řetězu = robotův běh.
+ * přehrání dají týž hash. Řetěz má 30–90 s, aspoň 3 různá ovládání a každé kolo hodiny, takže nejdelší možný běh
+ * se vejde do záznamu Dare (T10). Par řetězu = robotův běh.
  */
 
-import { ARCADE_HZ, type InputEvent } from '../arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type InputEvent } from '../arcade/contract';
 import type { ArcadeLibrary } from '../arcade/kernel';
 import { ARCADE_LIBRARY } from '../arcade/library';
 import { type ArcadeVerdict, verifyArcade } from '../arcade/verify';
 import { bindRoles } from '../arcade/witness';
 import type { Par } from '../score/stars';
 import type { ChainWorld } from './contract';
-import { replayChain } from './run';
+import { chainMaxTicks, replayChain, roundClock } from './run';
 
 export const CHAIN_SECONDS = { min: 30, max: 90 } as const;
 export const CHAIN_MIN_CONTROLS = 3;
@@ -68,5 +69,11 @@ export function verifyChain(chain: ChainWorld, library: ArcadeLibrary = ARCADE_L
   }
   const controls = new Set(chain.rounds.map((round) => round.spec.control)).size;
   if (controls < CHAIN_MIN_CONTROLS) failures.push(`chain_controls: ${controls} different controls, the chain needs at least ${CHAIN_MIN_CONTROLS}`);
+  // Záznam Dare unese nejvýš `maxTicks` tiků (`unpackInputs`): každý běh řetězu, i s prohranými koly, musí skončit dřív (debata T9).
+  chain.rounds.forEach((round, index) => {
+    if (roundClock(round.world) === null) failures.push(`chain_clock: round ${index + 1} (${round.key}) has no clock, so a run of it may never end`);
+  });
+  const longest = chainMaxTicks(chain);
+  if (longest !== null && longest > ARCADE_LIMITS.maxTicks) failures.push(`chain_ticks: the longest run of the chain is ${longest} ticks, over the ${ARCADE_LIMITS.maxTicks} a dare record holds`);
   return { rounds, inputs, hash: first.hash, lengthSec, controls, par: first.outcome === 'won' ? { score: first.score, ticks: first.tick } : null, failures };
 }

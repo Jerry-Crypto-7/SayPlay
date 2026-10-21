@@ -16,6 +16,10 @@ import { honestyForSpec } from '@/play/draft/unsupported';
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
+// Poctivá hláška patří jedné hře: větu bez hratelného slovesa („stabs“) P56C posílá do řetězu mikroher, který hlášku nemá.
+// Tady se zkouší hláška jedné hry, proto rozhodnutí vždy `single`.
+vi.mock('@/play/chain/decide', async (original) => ({ ...(await original<typeof import('@/play/chain/decide')>()), chainOrSingle: () => 'single' }));
+
 const STAB = 'a knight stabs the goblins';
 
 beforeAll(async () => {

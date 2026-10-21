@@ -27,6 +27,8 @@ describe('chainOrSingle', () => {
   it('c) asking for rounds, levels, minigames, challenges or a party makes a chain', () => {
     expect(reasons('three rounds: catch falling apples')).toEqual(['cue']);
     expect(decide('a party for my cat')).toBe('chain');
+    // „party“ jako přívlastek věci o víc her nežádá – startovní věta zůstane jednou hrou (T10).
+    expect(reasons('Carry a fragile cake across a kitchen to a party table.')).toEqual([]);
   });
 
   it('one clear verb with its own genre stays a single game', () => {
