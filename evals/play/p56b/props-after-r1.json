@@ -1,0 +1,28 @@
+{
+ "profile": "desktop",
+ "rects": "evals/play/p56b/prop-rects.json",
+ "before": "evals/play/p56b/before",
+ "after": "evals/play/p56b/after-r1",
+ "rows": [
+  {
+   "id": "02-zombie",
+   "before": 0.124,
+   "after": 0.12,
+   "ratio": 0.97,
+   "gate": 0.161,
+   "pass": true,
+   "p90Before": 0.176,
+   "p90After": 0.192
+  },
+  {
+   "id": "12-ghost",
+   "before": 0.131,
+   "after": 0.149,
+   "ratio": 1.133,
+   "gate": 0.171,
+   "pass": true,
+   "p90Before": 0.209,
+   "p90After": 0.228
+  }
+ ]
+}

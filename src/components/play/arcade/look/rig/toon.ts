@@ -25,8 +25,12 @@ export const PALETTE_SIZE = 6;
 export const PALETTE_MIX = 0.3;
 /** Síla okraje ve dne. */
 export const TOON_RIM_DAY = 0.15;
-/** Síla okraje pod tmavým obzorem (noc, vesmír, jeskyně): v noci nese kontury okraj (P56B T7). */
-export const TOON_RIM_NIGHT = 0.5;
+/**
+ * Síla okraje pod tmavým obzorem (noc, vesmír, jeskyně). T7 ho v noci zesílil na 0,5 kvůli konturám, jenže drobná
+ * výplň s mnoha plochami bokem k pohledu tím zbělela jako led (T13-R1, slepý soud) – v noci okraj mizí,
+ * obrys postav nese jejich svit (`setCharacterRim`).
+ */
+export const TOON_RIM_NIGHT = 0;
 /**
  * Lineární jas obzoru, pod kterým je scéna noční: noc `#172c45` ~0,024, strašidelný hřbitov ~0,03, vesmír a jeskyně
  * pod 0,03; podmořský svět (0,14), sopka (0,12) a strašidelný hrad (0,14) už ne.

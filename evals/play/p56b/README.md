@@ -162,3 +162,28 @@ Brána T13: `anchor-after` ≥ 0 + 0,15.
 - **Příčina noci (pozorování):** na snímku 12-ghost jsou náhrobky, lavička a keře s texturou bílé s tmavými pruhy, na `72665fdc` tlumeně modré; velké skály bez textury vypadají v obou podobně. **Odvozeno:** světlý kámen textury × expozice noci 2,4× (T7 `NIGHT_EXPOSURE`) se v ACES přepálí do bílé, tmavé barvy palety ne.
 - **Vyvrácená hypotéza:** toon kopie texturovaných modelů bez tří stupňů světla (jen paleta a okraj) – přestavěno a vyfoceno, 12-ghost ani 07-goalkeeper se viditelně nezměnily; změna vrácena, necommitnutá.
 - Kotva, `perf --vs` a e2e brány v pokusu 1 neběžely – měří se až na vzhledu, který soud projde.
+
+## Noc bez přepálené výplně (T13-R1)
+
+**Příčina (měřeno):** bílé náhrobky, urny, lavičky a keře nejsou kulisy z `loadFlatModel`, ale výplň prostředí (`GRAVEYARD_FILL` aj.) kreslená jako instancované rostliny – `plantMaterial`, který od T6 nese toon. Dočasné přepínače v buildu (necommitnuté) a ořezy kulis na 02 a 12 (desktop, pokus 1 = 0,336 / 0,401 proti 0,124 / 0,131 na `72665fdc`):
+
+| Zásah (jinak stav pokusu 1) | kulisy 02 | kulisy 12 |
+|---|---|---|
+| expozice noci 1,0 místo 2,4 | 0,228 | 0,278 |
+| měsíc 0,35 místo 0,9 (expozice 1,5) | 0,264 | 0,309 |
+| okraj toonu v noci 0,15 místo 0,5 | 0,257 | 0,320 |
+| stupně světla vypnuté / paleta vypnutá | 0,330 / 0,335 | 0,394 / 0,400 |
+| toon vypnutý, měsíc 0,35, expozice 1,0 | 0,104 | 0,127 |
+
+- Kandidát (1) z plánu („expozici nahradit měsícem“) vyvrácen: síla měsíce kulisy noční farmy skoro nemění, a u strašidelných sad měsíc přes mez nálad (`withMood` počítá z jasu `NIGHT`) zvedá polokouli na 1,40 a výplň bělí. Hlavní podíl má okraj toonu – drobná výplň má mnoho ploch bokem k pohledu a Fresnel okraj barvy `#92b9df` ji pokryje „ledem“; expozice ho jen zesílí.
+- **Oprava:** okraj toonu v noci mizí (`TOON_RIM_NIGHT` 0,5 → 0), expozice noci 2,4× → 1,3× (`NIGHT_EXPOSURE`), měsíc zpět na 0,35 (`NIGHT.sun`, směr shora a zezadu z T7 zůstává). Obrys postav nese dál jejich svit (`setCharacterRim`). Mez tmavých sad (`lightFloor`) při měsíci 0,35 na hřbitov ani jeskyni nedosáhne – obě jsou jasnější než noc.
+- **Sonda:** střední luma pixelů v ořezech stejných kulis (`prop-rects.json`; u 02 se záběr po T9 posunul, ořezy jsou na snímek), snímky `after-r1/`, `after-r1-phone/` mimo git; výsledky `props-after-r1.json`, `props-after-r1-phone.json`, jas plátna `luma-after-r1.json`, `luma-after-r1-phone.json`.
+
+| Scéna | kulisy desktop (brána ≤ ×1,3) | kulisy telefon | jas plátna desktop / telefon (brána ≥ T1) |
+|---|---|---|---|
+| 02-zombie | 0,124 → 0,120 (×0,97) | 0,094 → 0,082 (×0,87) | 0,133 / 0,134 (0,122 / 0,111) |
+| 12-ghost | 0,131 → 0,149 (×1,13) | 0,110 → 0,131 (×1,19) | 0,192 / 0,254 (0,165 / 0,208) |
+| 09-astro (kontrola) | – | – | 0,271 / 0,347 (T1 0,269 / 0,342) |
+
+- Noc je proti T7 tmavší (02 desktop 0,227 → 0,133), pořád nad `72665fdc` a bez černých ploch (pod 0,04 nejvýš 0,9 %). Brána T7 (0,220) tím padá vědomě: soud dal přednost tlumené noci před jasnou s bílou výplní.
+- `night.test` pinuje model světlé kulisy (albedo 0,6, plocha 70° od pohledu, ACES three): ≤ ×1,3 proti `72665fdc`; každá ze tří pák T7 (okraj 0,5, expozice 2,4, měsíc 0,9) by ho sama shodila (ručně spočteno ×1,54–1,65).

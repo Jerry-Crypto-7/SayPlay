@@ -1,0 +1,28 @@
+{
+ "profile": "phone",
+ "rects": "evals/play/p56b/prop-rects.json",
+ "before": "evals/play/p56b/before-phone",
+ "after": "evals/play/p56b/after-r1-phone",
+ "rows": [
+  {
+   "id": "02-zombie",
+   "before": 0.094,
+   "after": 0.082,
+   "ratio": 0.874,
+   "gate": 0.122,
+   "pass": true,
+   "p90Before": 0.16,
+   "p90After": 0.145
+  },
+  {
+   "id": "12-ghost",
+   "before": 0.11,
+   "after": 0.131,
+   "ratio": 1.189,
+   "gate": 0.143,
+   "pass": true,
+   "p90Before": 0.137,
+   "p90After": 0.161
+  }
+ ]
+}

@@ -144,8 +144,11 @@ export function lightFloor(look: Look): Pick<Look, 'light' | 'sun'> {
   return lift <= 1 ? look : { light: [look.light[0], look.light[1], look.light[2] * lift], sun: look.sun * lift };
 }
 
-/** Kolikrát noc zvedne expozici (P56B T7): oko přivyklé tmě, jinak je noc skoro černá (audit 21. 10.). */
-export const NIGHT_EXPOSURE = 2.4;
+/**
+ * Kolikrát noc zvedne expozici (P56B T7): oko přivyklé tmě, jinak je noc skoro černá (audit 21. 10.).
+ * 2,4× přepálilo světlou výplň (náhrobky, lavičky, keře) do bílé a slepý soud to označil (T13-R1); 1,3× drží noc nad dneškem.
+ */
+export const NIGHT_EXPOSURE = 1.3;
 
 /**
  * Expozice sady se světlem po `lightFloor`: tmavá obloha (`darkness`) a světlo u noční meze ji zvednou až na
