@@ -20,6 +20,7 @@ import os
 import re
 import subprocess
 import time
+import urllib.error
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
@@ -209,6 +210,10 @@ def run_batch(
                     result = cache.store(noun, {**made, **used}, cache_root)
                     record.update(used)
                     break
+                except (ConnectionError, urllib.error.URLError):
+                    # ComfyUI nedostupné je chyba prostředí, ne slova: zapsané „failed“ by se už
+                    # nikdy nezopakovalo (P57 T6: pád ComfyUI otrávil 19 slov dávky). Dávka stojí.
+                    raise
                 except Exception as error:  # noqa: BLE001 – slovo se zapíše jako failed a dávka jede dál
                     record["reason"] = f"{type(error).__name__}: {error}"[:500]
                     record.setdefault("attempts", []).append(

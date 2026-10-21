@@ -123,6 +123,22 @@ def test_attempts_go_a0_b0_a1_and_record_the_prompt_that_worked(tmp_path):
     assert (record["variant"], record["seed"], record["prompt"]) == ("a", 1, a)
 
 
+def test_unreachable_comfy_stops_the_batch_without_recording_the_noun(tmp_path):
+    # Zapsané „failed“ se už nikdy nezopakuje; výpadek ComfyUI není vlastnost slova.
+    def generate(noun, out_dir, seed, prompt):
+        raise ConnectionRefusedError("[WinError 10061] connection refused")
+
+    with pytest.raises(ConnectionRefusedError):
+        batch.run_batch(
+            ["hippo"],
+            limit=1,
+            generate=generate,
+            record_path=tmp_path / "batch.json",
+            cache_root=tmp_path / "cache",
+        )
+    assert not (tmp_path / "batch.json").exists()
+
+
 def test_provenance_names_the_prompt_and_seed_actually_used(tmp_path):
     def generate(noun, out_dir, seed, prompt):
         if prompt == batch.prompt_for(noun, "quadruped", "a"):  # A neprojde nikdy
