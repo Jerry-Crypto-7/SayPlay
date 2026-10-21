@@ -1,0 +1,8310 @@
+{
+ "about": "P57 T2 model usage: dev sentences through the scene census (fast version, no director). scenes = sentences whose scene shows the model, uses = role slots it fills there (hero, enemy, cast, scenery, flora). Ranked by scenes, then uses, then id. unknown = ids outside src/assets/catalog.json (rigged characters, primitives). sample100 = pure-rand seed 57 over catalog ids outside top300.",
+ "sets": [
+  {
+   "set": "evals/play/p30/dev.json",
+   "measured": 59,
+   "skipped": 1
+  },
+  {
+   "set": "evals/play/p54c/dev.json",
+   "measured": 80,
+   "skipped": 0
+  },
+  {
+   "set": "evals/play/p55/holdout.json",
+   "measured": 77,
+   "skipped": 3
+  },
+  {
+   "set": "evals/play/p57/audit-12.json",
+   "measured": 11,
+   "skipped": 1
+  }
+ ],
+ "scenes": 227,
+ "catalog": 1766,
+ "used": 402,
+ "top300": [
+  "cc0-bush",
+  "cc0-grass",
+  "oak-tree",
+  "gen3d-poplar-tree",
+  "gen3d-tall-grass-tuft",
+  "gen3d-wildflower-patch",
+  "cc0-birch-tree",
+  "cc0-rock-moss",
+  "gen3d-apple-tree",
+  "gen3d-buttercup",
+  "gen3d-olive-tree",
+  "gen3d-picnic-table",
+  "gen3d-poppy-flower",
+  "gen3d-sunflower",
+  "gen3d-willow-tree",
+  "gen3d-wooden-gate",
+  "gen3d-windmill",
+  "gen3d-wooden-stile",
+  "gen3d-river-boulder",
+  "gen3d-rock-pillar",
+  "gen3d-basalt-column-rock",
+  "gen3d-street-trash-can",
+  "gen3d-park-bench",
+  "gen3d-sea-rock",
+  "gen3d-street-tree",
+  "gen3d-cardboard-box",
+  "gen3d-lighthouse",
+  "potted-plant",
+  "cc0-bomb",
+  "gen3d-concrete-planter-with-tree",
+  "gen3d-mossy-boulder",
+  "gen3d-planter-box",
+  "gen3d-thorn-bush",
+  "cc0-car-taxi",
+  "cc0-fire-hydrant",
+  "gen3d-flower-box",
+  "gen3d-flower-stall",
+  "gen3d-mossy-rock-cluster",
+  "gen3d-street-bollard",
+  "gen3d-street-lamp",
+  "gen3d-traffic-light",
+  "cc0-boat-row",
+  "race-car",
+  "cc0-palm-tree",
+  "gen3d-crystal-cluster",
+  "gen3d-sandstone-rock",
+  "gen3d-scree-rock-pile",
+  "townhouse",
+  "gen3d-bus-stop",
+  "gen3d-finish-banner",
+  "gen3d-monstera-plant",
+  "gen3d-telephone-pole",
+  "gen3d-bare-winter-tree",
+  "gen3d-energy-crystal",
+  "gen3d-power-crystal",
+  "stepping-stone",
+  "gen3d-moon-rock",
+  "gen3d-beech-tree",
+  "gen3d-crater-rock",
+  "gen3d-fuel-silo",
+  "gen3d-meteorite",
+  "gen3d-moon-flag",
+  "gen3d-rock-arch",
+  "gen3d-satellite-radar-dish",
+  "gen3d-stone-gatehouse",
+  "gen3d-stone-water-well",
+  "stone-wall",
+  "cc0-asteroid",
+  "rocket",
+  "cc0-torch-lit",
+  "gen3d-dead-desert-tree",
+  "gen3d-moon-lander",
+  "gen3d-sandcastle",
+  "gen3d-seaweed",
+  "gen3d-space-colony-dome",
+  "gen3d-beach-chair",
+  "gen3d-birdhouse",
+  "gen3d-castle-tower",
+  "gen3d-dandelion",
+  "gen3d-drawbridge",
+  "gen3d-dune-grass-clump",
+  "gen3d-leaning-palm-tree",
+  "gen3d-pandanus-tree",
+  "gen3d-picnic-basket",
+  "gen3d-wooden-fence",
+  "shopping-cart",
+  "gen3d-barnacle-rock",
+  "gen3d-bread-basket",
+  "gen3d-bread-rack",
+  "gen3d-cash-register",
+  "gen3d-flour-sack",
+  "gen3d-fruit-crate",
+  "gen3d-potato-sack",
+  "gen3d-vegetable-basket",
+  "gen3d-wine-barrel",
+  "cc0-flower",
+  "gen3d-floating-dock",
+  "gen3d-navigation-buoy",
+  "gen3d-sailboat",
+  "gen3d-wooden-signpost",
+  "gen3d-snowman-with-hat",
+  "cc0-hazard-saw",
+  "cc0-sled",
+  "gen3d-frozen-dead-tree",
+  "gen3d-frozen-shrub",
+  "gen3d-ice-block-pile",
+  "gen3d-snowy-fir-tree",
+  "gen3d-snowy-rock",
+  "penguin",
+  "gen3d-surf-rack",
+  "turtle",
+  "cc0-cabinet-shelves",
+  "cc0-can-fridge",
+  "gen3d-fruit-stand",
+  "gen3d-ice-igloo",
+  "gen3d-mushroom-cluster",
+  "astronaut",
+  "cc0-barrel-stack",
+  "cc0-log-stack",
+  "cc0-pine-tree",
+  "cc0-tree-pine",
+  "gen3d-broken-gravestone",
+  "gen3d-cemetery-bench",
+  "gen3d-container",
+  "gen3d-fern",
+  "gen3d-fir-tree",
+  "gen3d-funeral-urn",
+  "gen3d-gift-box",
+  "gen3d-grave-lantern",
+  "gen3d-haunted-tree",
+  "gen3d-industrial-fan",
+  "gen3d-larch-tree",
+  "gen3d-log-cabin",
+  "gen3d-mossy-fallen-log",
+  "gen3d-mossy-stump",
+  "gen3d-oil-barrel",
+  "gen3d-oil-drum",
+  "gen3d-park-fountain",
+  "gen3d-rooftop-water-tank",
+  "gen3d-standing-stone",
+  "gen3d-tire-pile",
+  "gen3d-toolbox",
+  "gen3d-toxic-barrel",
+  "gen3d-traffic-cone",
+  "gen3d-wild-strawberry-plant",
+  "gen3d-cactus",
+  "cc0-bamboo",
+  "cc0-bee",
+  "cc0-bush-berries",
+  "cc0-cactus-flowers",
+  "cc0-pumpkin",
+  "gen3d-abandoned-mine-entrance",
+  "gen3d-acorn",
+  "gen3d-aloe-plant",
+  "gen3d-bamboo-cluster",
+  "gen3d-banana-plant",
+  "gen3d-beach-hut",
+  "gen3d-beach-umbrella",
+  "gen3d-buried-statue-head",
+  "gen3d-castle-ruin-wall",
+  "gen3d-cholla-cactus",
+  "gen3d-cycad-palm",
+  "gen3d-desert-shrub",
+  "gen3d-flower-pot",
+  "gen3d-gravestone",
+  "gen3d-heliconia",
+  "gen3d-ice-arch",
+  "gen3d-jungle-waterfall",
+  "gen3d-kapok-tree",
+  "gen3d-layered-canyon-rock",
+  "gen3d-lifeguard-tower",
+  "gen3d-mangrove-tree",
+  "gen3d-mesquite-tree",
+  "gen3d-pitcher-plant",
+  "gen3d-prickly-pear-cactus",
+  "gen3d-rafflesia",
+  "gen3d-rubber-tree",
+  "gen3d-ruin",
+  "gen3d-ruined-stone-tower",
+  "gen3d-saguaro-cactus",
+  "gen3d-snowy-bench",
+  "gen3d-stone-idol-head",
+  "gen3d-strangler-fig-tree",
+  "gen3d-suika",
+  "gen3d-treehouse",
+  "gen3d-tribal-totem-pole",
+  "gen3d-vine-covered-rock-wall",
+  "gen3d-wooden-pier",
+  "gen3d-wooden-rope-bridge",
+  "gen3d-wooden-watchtower",
+  "gen3d-yucca-plant",
+  "hamster",
+  "cc0-armchair",
+  "cc0-couch",
+  "cc0-lamp-standing",
+  "cc0-monkey",
+  "cc0-wood-log",
+  "crystal",
+  "gen3d-agave-plant",
+  "gen3d-bookshelf",
+  "gen3d-cat-tree",
+  "gen3d-clay-pot",
+  "gen3d-crane",
+  "gen3d-gramophone",
+  "gen3d-iron-fence",
+  "gen3d-jellyfish",
+  "gen3d-pitchfork",
+  "gen3d-red-barn",
+  "gen3d-smokestack",
+  "gen3d-television",
+  "gen3d-white-picket-fence",
+  "ghost",
+  "steam-machine",
+  "cc0-apple",
+  "cc0-clownfish",
+  "cc0-fruit",
+  "cc0-goldfish",
+  "cc0-tang",
+  "cc0-traffic",
+  "gen3d-adobe-house",
+  "gen3d-bear",
+  "gen3d-bedouin-tent",
+  "gen3d-checkout-counter",
+  "gen3d-coral",
+  "gen3d-coral-rock",
+  "gen3d-frog",
+  "gen3d-frozen-waterfall",
+  "gen3d-oasis-well",
+  "gen3d-octopus",
+  "gen3d-sea-anemone",
+  "gen3d-sea-sponge",
+  "gen3d-shopping-basket",
+  "gen3d-stone-obelisk",
+  "hoop",
+  "iron-gate",
+  "roomba",
+  "slime",
+  "star",
+  "cc0-tractor",
+  "cc0-traffic-barrier",
+  "cc0-water",
+  "crate",
+  "gen3d-balloon",
+  "gen3d-brown-owl",
+  "gen3d-burnt-tree",
+  "gen3d-candelabra",
+  "gen3d-cheese",
+  "gen3d-cog-gear",
+  "gen3d-fishing",
+  "gen3d-highway-sign",
+  "gen3d-iceberg",
+  "gen3d-magma-crystal",
+  "gen3d-magma-rock",
+  "gen3d-mine-cart",
+  "gen3d-obsidian-shard",
+  "gen3d-pearl",
+  "gen3d-raindrop",
+  "gen3d-ski-lift-tower",
+  "gen3d-smoldering-stump",
+  "gen3d-snowy-log-cabin",
+  "gen3d-squirrel",
+  "gen3d-steam-vent",
+  "gen3d-toll-booth",
+  "gen3d-volcanic-rock",
+  "gen3d-volcano",
+  "goblin",
+  "pizza",
+  "plane",
+  "ball",
+  "cc0-alien",
+  "cc0-barrel",
+  "cc0-bench",
+  "cc0-bowl",
+  "cc0-candle",
+  "cc0-corgi",
+  "cc0-cupcake",
+  "cc0-dinner",
+  "cc0-donut",
+  "cc0-elephant",
+  "cc0-lily-pad",
+  "cc0-pancake",
+  "cc0-pigeon",
+  "cc0-pillow",
+  "cc0-pipe-bump",
+  "cc0-police",
+  "cc0-present",
+  "cc0-sausage",
+  "cc0-ship-ghost",
+  "cc0-tank",
+  "cc0-train",
+  "cc0-zombie",
+  "dog",
+  "egg",
+  "exit-door",
+  "gen3d-alien-bug",
+  "gen3d-apartment-block",
+  "gen3d-baby",
+  "gen3d-baguette",
+  "gen3d-banana",
+  "gen3d-battery"
+ ],
+ "sample100": [
+  "cc0-velociraptor",
+  "gen3d-wagon-wheel",
+  "cc0-koi",
+  "gen3d-egg-tray",
+  "gen3d-holy-grail",
+  "gen3d-ancient-vase",
+  "gen3d-gold-trophy",
+  "gen3d-canopic-jar",
+  "gen3d-joystick",
+  "gen3d-throwing-knife",
+  "cc0-bear-trap",
+  "cc0-pipe-cross",
+  "gen3d-kraken",
+  "cc0-tree-decorated",
+  "cc0-cabinet-doors",
+  "gen3d-kayak",
+  "gen3d-maze",
+  "cc0-avocado",
+  "gen3d-magnet",
+  "gen3d-stone-lantern",
+  "cc0-candle-triple",
+  "gen3d-eraser",
+  "gen3d-firework",
+  "gen3d-tesla-coil",
+  "gen3d-lobster",
+  "gen3d-sugar-bowl",
+  "gen3d-old-stone-bridge",
+  "gen3d-fairy-door",
+  "gen3d-mermaid",
+  "gen3d-scorpion",
+  "gen3d-gumball-machine",
+  "gen3d-manticore",
+  "gen3d-slingshot",
+  "gen3d-chameleon",
+  "gen3d-rainbow",
+  "gen3d-mesa",
+  "gen3d-toucan",
+  "gen3d-manta-ray",
+  "gen3d-fossil",
+  "gen3d-post-box",
+  "gen3d-pet-carrier",
+  "cc0-anglerfish",
+  "gen3d-coconut-stall",
+  "gen3d-red-crab",
+  "cc0-sniper-rifle",
+  "gen3d-giant-leaf",
+  "gen3d-cowboy",
+  "gen3d-stair",
+  "gen3d-planet-rover",
+  "cc0-mustard-bottle",
+  "gen3d-wand",
+  "gen3d-statue-head",
+  "gen3d-date-palm-tree",
+  "gen3d-wooden-pergola",
+  "gen3d-greenhouse",
+  "gen3d-blender",
+  "gen3d-sleigh",
+  "gen3d-fighter-jet",
+  "cc0-bed-single",
+  "cc0-menu",
+  "gen3d-fountain",
+  "cc0-turbot",
+  "cc0-tree-stump",
+  "gen3d-trident-statue",
+  "gen3d-tripwire",
+  "gen3d-mummy",
+  "gen3d-star-trophy",
+  "cc0-smg",
+  "cc0-worm",
+  "gen3d-net",
+  "cc0-armabee-evolved",
+  "cc0-heart",
+  "gen3d-donkey",
+  "cc0-lantern-candle",
+  "gen3d-santa",
+  "gen3d-nurse",
+  "gen3d-harbor-crane",
+  "gen3d-roadblock",
+  "gen3d-shop-sign",
+  "gen3d-vending-machine",
+  "gen3d-bromeliad",
+  "gen3d-maraca",
+  "gen3d-restaurant-table",
+  "gen3d-frost-giant",
+  "cc0-rocket-launcher",
+  "push-button",
+  "gen3d-magic-bean",
+  "gen3d-grindstone",
+  "gen3d-iguana",
+  "gen3d-ride",
+  "gen3d-gang",
+  "gen3d-golden-statue",
+  "gen3d-battery-pack",
+  "gen3d-milk-can",
+  "gen3d-water-gun",
+  "gen3d-ammo",
+  "gen3d-suitcase",
+  "gen3d-atm-machine",
+  "cc0-bed-frame",
+  "gen3d-notice-board"
+ ],
+ "settings": [
+  {
+   "setting": "meadow",
+   "scenes": 11,
+   "looks": {
+    "meadow": 11
+   },
+   "kit": 4
+  },
+  {
+   "setting": "castle",
+   "scenes": 6,
+   "looks": {
+    "castle": 6
+   },
+   "kit": 0
+  },
+  {
+   "setting": "city",
+   "scenes": 5,
+   "looks": {
+    "city": 5
+   },
+   "kit": 0
+  },
+  {
+   "setting": "jungle",
+   "scenes": 5,
+   "looks": {
+    "jungle": 5
+   },
+   "kit": 5
+  },
+  {
+   "setting": "kitchen",
+   "scenes": 5,
+   "looks": {
+    "supermarket": 5
+   },
+   "kit": 0
+  },
+  {
+   "setting": "park",
+   "scenes": 5,
+   "looks": {
+    "meadow": 5
+   },
+   "kit": 4
+  },
+  {
+   "setting": "village",
+   "scenes": 5,
+   "looks": {
+    "meadow": 5
+   },
+   "kit": 0
+  },
+  {
+   "setting": "beach",
+   "scenes": 4,
+   "looks": {
+    "snow": 1,
+    "beach": 3
+   },
+   "kit": 4
+  },
+  {
+   "setting": "dojo",
+   "scenes": 4,
+   "looks": {
+    "meadow": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "floating islands",
+   "scenes": 4,
+   "looks": {
+    "beach": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "forest trail",
+   "scenes": 4,
+   "looks": {
+    "forest": 4
+   },
+   "kit": 6
+  },
+  {
+   "setting": "garden",
+   "scenes": 4,
+   "looks": {
+    "meadow": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "orchard",
+   "scenes": 4,
+   "looks": {
+    "meadow": 2,
+    "space": 1,
+    "snow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "river",
+   "scenes": 4,
+   "looks": {
+    "ocean": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "road",
+   "scenes": 4,
+   "looks": {
+    "city": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "space",
+   "scenes": 4,
+   "looks": {
+    "space": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "tower",
+   "scenes": 4,
+   "looks": {
+    "castle": 4
+   },
+   "kit": 0
+  },
+  {
+   "setting": "air",
+   "scenes": 3,
+   "looks": {
+    "meadow": 2,
+    "volcano": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "basket",
+   "scenes": 3,
+   "looks": {
+    "meadow": 3
+   },
+   "kit": 0
+  },
+  {
+   "setting": "farm",
+   "scenes": 3,
+   "looks": {
+    "meadow": 3
+   },
+   "kit": 4
+  },
+  {
+   "setting": "gates",
+   "scenes": 3,
+   "looks": {
+    "meadow": 3
+   },
+   "kit": 0
+  },
+  {
+   "setting": "jar",
+   "scenes": 3,
+   "looks": {
+    "meadow": 3
+   },
+   "kit": 0
+  },
+  {
+   "setting": "moon",
+   "scenes": 3,
+   "looks": {
+    "space": 3
+   },
+   "kit": 0
+  },
+  {
+   "setting": "supermarket",
+   "scenes": 3,
+   "looks": {
+    "supermarket": 3
+   },
+   "kit": 2
+  },
+  {
+   "setting": "barn",
+   "scenes": 2,
+   "looks": {
+    "meadow": 2
+   },
+   "kit": 0
+  },
+  {
+   "setting": "desert",
+   "scenes": 2,
+   "looks": {
+    "desert": 2
+   },
+   "kit": 4
+  },
+  {
+   "setting": "dusty town",
+   "scenes": 2,
+   "looks": {
+    "city": 2
+   },
+   "kit": 0
+  },
+  {
+   "setting": "flower gates",
+   "scenes": 2,
+   "looks": {
+    "meadow": 2
+   },
+   "kit": 0
+  },
+  {
+   "setting": "house",
+   "scenes": 2,
+   "looks": {
+    "living_room": 2
+   },
+   "kit": 0
+  },
+  {
+   "setting": "iceberg",
+   "scenes": 2,
+   "looks": {
+    "meadow": 1,
+    "ocean": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "open country",
+   "scenes": 2,
+   "looks": {
+    "city": 1,
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "race track",
+   "scenes": 2,
+   "looks": {
+    "meadow": 1,
+    "graveyard": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "snow",
+   "scenes": 2,
+   "looks": {
+    "snow": 2
+   },
+   "kit": 4
+  },
+  {
+   "setting": "time",
+   "scenes": 2,
+   "looks": {
+    "meadow": 2
+   },
+   "kit": 0
+  },
+  {
+   "setting": "windy hilltop",
+   "scenes": 2,
+   "looks": {
+    "meadow": 2
+   },
+   "kit": 0
+  },
+  {
+   "setting": "asteroid belt",
+   "scenes": 1,
+   "looks": {
+    "space": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "australian outback",
+   "scenes": 1,
+   "looks": {
+    "desert": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "bakery",
+   "scenes": 1,
+   "looks": {
+    "supermarket": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "base",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "bigger coin",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "bigger ones",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "birthday party",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 3
+  },
+  {
+   "setting": "boxing match",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "bucket",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "busy kitchen",
+   "scenes": 1,
+   "looks": {
+    "supermarket": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "busy road",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "calm lake",
+   "scenes": 1,
+   "looks": {
+    "ocean": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "campsite",
+   "scenes": 1,
+   "looks": {
+    "forest": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "canyon",
+   "scenes": 1,
+   "looks": {
+    "desert": 1
+   },
+   "kit": 2
+  },
+  {
+   "setting": "castle walls",
+   "scenes": 1,
+   "looks": {
+    "castle": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "cave",
+   "scenes": 1,
+   "looks": {
+    "cave": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "checkpoint gates",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "circle",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "colony",
+   "scenes": 1,
+   "looks": {
+    "factory": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "coral reef",
+   "scenes": 1,
+   "looks": {
+    "underwater": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "cozy rainy caf",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "crooked tower",
+   "scenes": 1,
+   "looks": {
+    "castle": 1
+   },
+   "kit": 3
+  },
+  {
+   "setting": "cup",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "deck",
+   "scenes": 1,
+   "looks": {
+    "ocean": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "desert outpost",
+   "scenes": 1,
+   "looks": {
+    "desert": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "edge",
+   "scenes": 1,
+   "looks": {
+    "snow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "end we crash",
+   "scenes": 1,
+   "looks": {
+    "graveyard": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "factory",
+   "scenes": 1,
+   "looks": {
+    "factory": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "fair",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "farm at night",
+   "scenes": 1,
+   "looks": {
+    "graveyard": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "field",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "forest",
+   "scenes": 1,
+   "looks": {
+    "forest": 1
+   },
+   "kit": 6
+  },
+  {
+   "setting": "garage",
+   "scenes": 1,
+   "looks": {
+    "factory": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "glacier",
+   "scenes": 1,
+   "looks": {
+    "snow": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "glass skyscraper",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 6
+  },
+  {
+   "setting": "glass tank",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "good",
+   "scenes": 1,
+   "looks": {
+    "ocean": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "half",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "halloween fair",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "haunted castle",
+   "scenes": 1,
+   "looks": {
+    "castle": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "haunted hall",
+   "scenes": 1,
+   "looks": {
+    "graveyard": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "haunted hospital",
+   "scenes": 1,
+   "looks": {
+    "graveyard": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "hawaii",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "head",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "highway",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 2
+  },
+  {
+   "setting": "his sack",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "home",
+   "scenes": 1,
+   "looks": {
+    "living_room": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "ice fortress",
+   "scenes": 1,
+   "looks": {
+    "snow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "icy moon",
+   "scenes": 1,
+   "looks": {
+    "space": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "island",
+   "scenes": 1,
+   "looks": {
+    "beach": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "islands",
+   "scenes": 1,
+   "looks": {
+    "beach": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "kingdom",
+   "scenes": 1,
+   "looks": {
+    "castle": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "lane",
+   "scenes": 1,
+   "looks": {
+    "snow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "lane highway",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 2
+  },
+  {
+   "setting": "lily pad",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "log",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "long meadow run",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "mall",
+   "scenes": 1,
+   "looks": {
+    "mall": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "mansion",
+   "scenes": 1,
+   "looks": {
+    "graveyard": 1
+   },
+   "kit": 3
+  },
+  {
+   "setting": "market",
+   "scenes": 1,
+   "looks": {
+    "supermarket": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "mars",
+   "scenes": 1,
+   "looks": {
+    "space": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "mine",
+   "scenes": 1,
+   "looks": {
+    "factory": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "mine tracks",
+   "scenes": 1,
+   "looks": {
+    "factory": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "mining colony",
+   "scenes": 1,
+   "looks": {
+    "factory": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "mountain",
+   "scenes": 1,
+   "looks": {
+    "snow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "neon city",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "neon stage",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "night sky",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "open park",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "path",
+   "scenes": 1,
+   "looks": {
+    "ocean": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "picnic blanket at dusk",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "planets",
+   "scenes": 1,
+   "looks": {
+    "space": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "plate",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "plus",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "pond",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 3
+  },
+  {
+   "setting": "pot",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "quest",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "ring",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "rock concert",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "rooftops",
+   "scenes": 1,
+   "looks": {
+    "city": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "row",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "sawmill",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "school",
+   "scenes": 1,
+   "looks": {
+    "living_room": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "sinking ship",
+   "scenes": 1,
+   "looks": {
+    "ocean": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "skateboard catches presents",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "skatepark",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "sky at night",
+   "scenes": 1,
+   "looks": {
+    "space": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "spaceship",
+   "scenes": 1,
+   "looks": {
+    "space": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "stadium",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "steamer",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "sunken city",
+   "scenes": 1,
+   "looks": {
+    "underwater": 1
+   },
+   "kit": 3
+  },
+  {
+   "setting": "sunny beach",
+   "scenes": 1,
+   "looks": {
+    "beach": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "sword duel",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "table",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "temple",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "tiny island",
+   "scenes": 1,
+   "looks": {
+    "beach": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "toward",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "underwater",
+   "scenes": 1,
+   "looks": {
+    "underwater": 1
+   },
+   "kit": 4
+  },
+  {
+   "setting": "vacation",
+   "scenes": 1,
+   "looks": {
+    "beach": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "vegetable patch",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "volcano",
+   "scenes": 1,
+   "looks": {
+    "volcano": 1
+   },
+   "kit": 0
+  },
+  {
+   "setting": "waves",
+   "scenes": 1,
+   "looks": {
+    "meadow": 1
+   },
+   "kit": 0
+  }
+ ],
+ "unknown": {
+  "bird": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "building": {
+   "scenes": 16,
+   "uses": 16
+  },
+  "rigged:blocky-robot": {
+   "scenes": 216,
+   "uses": 223
+  },
+  "rigged:boy-a": {
+   "scenes": 14,
+   "uses": 14
+  },
+  "rigged:graveyard-ghost": {
+   "scenes": 2,
+   "uses": 2
+  },
+  "rigged:knight": {
+   "scenes": 13,
+   "uses": 13
+  },
+  "rigged:mage": {
+   "scenes": 3,
+   "uses": 3
+  },
+  "rigged:pet-bunny": {
+   "scenes": 12,
+   "uses": 12
+  },
+  "rigged:pet-cat": {
+   "scenes": 6,
+   "uses": 6
+  },
+  "rigged:pet-dog": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:pet-penguin": {
+   "scenes": 6,
+   "uses": 6
+  },
+  "rigged:q-big-orc": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-bull": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-casual-man": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-chef": {
+   "scenes": 4,
+   "uses": 4
+  },
+  "rigged:q-cowboy-hair": {
+   "scenes": 5,
+   "uses": 5
+  },
+  "rigged:q-cute-alien-tall": {
+   "scenes": 2,
+   "uses": 2
+  },
+  "rigged:q-cute-chicken": {
+   "scenes": 2,
+   "uses": 2
+  },
+  "rigged:q-cute-crab": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-flying-dragon": {
+   "scenes": 2,
+   "uses": 2
+  },
+  "rigged:q-fox": {
+   "scenes": 70,
+   "uses": 71
+  },
+  "rigged:q-goblin": {
+   "scenes": 4,
+   "uses": 4
+  },
+  "rigged:q-grandma": {
+   "scenes": 2,
+   "uses": 2
+  },
+  "rigged:q-grandpa": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-pirate": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-samurai": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "rigged:q-wolf": {
+   "scenes": 3,
+   "uses": 3
+  },
+  "rigged:q-zombie": {
+   "scenes": 5,
+   "uses": 5
+  },
+  "rigged:rogue": {
+   "scenes": 4,
+   "uses": 4
+  },
+  "rigged:rogue-hooded": {
+   "scenes": 3,
+   "uses": 3
+  },
+  "rigged:skeleton-warrior": {
+   "scenes": 3,
+   "uses": 3
+  },
+  "shelf": {
+   "scenes": 1,
+   "uses": 1
+  },
+  "volcano": {
+   "scenes": 2,
+   "uses": 2
+  }
+ },
+ "models": [
+  {
+   "id": "cc0-bush",
+   "scenes": 144,
+   "uses": 144,
+   "roles": {
+    "flora": 144
+   },
+   "settings": {
+    "haunted castle": 1,
+    "park": 5,
+    "temple": 1,
+    "tower": 4,
+    "open country": 2,
+    "city": 5,
+    "log": 1,
+    "pond": 1,
+    "castle": 6,
+    "haunted hospital": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "glass skyscraper": 1,
+    "birthday party": 1,
+    "village": 5,
+    "crooked tower": 1,
+    "farm": 3,
+    "windy hilltop": 2,
+    "campsite": 1,
+    "dusty town": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "road": 4,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "plus": 1,
+    "race track": 2,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "sword duel": 1,
+    "forest": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "forest trail": 4,
+    "neon stage": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "kingdom": 1,
+    "haunted hall": 1,
+    "sawmill": 1,
+    "table": 1,
+    "lane highway": 1,
+    "time": 2,
+    "end we crash": 1,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "rooftops": 1,
+    "quest": 1,
+    "highway": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "farm at night": 1,
+    "castle walls": 1,
+    "rock concert": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "cc0-grass",
+   "scenes": 135,
+   "uses": 135,
+   "roles": {
+    "flora": 135
+   },
+   "settings": {
+    "haunted castle": 1,
+    "park": 5,
+    "temple": 1,
+    "tower": 4,
+    "jungle": 5,
+    "log": 1,
+    "pond": 1,
+    "castle": 6,
+    "australian outback": 1,
+    "haunted hospital": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "crooked tower": 1,
+    "desert": 2,
+    "farm": 3,
+    "windy hilltop": 2,
+    "campsite": 1,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 2,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "forest": 1,
+    "checkpoint gates": 1,
+    "desert outpost": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "forest trail": 4,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "kingdom": 1,
+    "haunted hall": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "end we crash": 1,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "canyon": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "farm at night": 1,
+    "castle walls": 1,
+    "rock concert": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "oak-tree",
+   "scenes": 119,
+   "uses": 119,
+   "roles": {
+    "flora": 119
+   },
+   "settings": {
+    "haunted castle": 1,
+    "park": 5,
+    "temple": 1,
+    "tower": 4,
+    "log": 1,
+    "pond": 1,
+    "castle": 6,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "crooked tower": 1,
+    "farm": 3,
+    "windy hilltop": 2,
+    "campsite": 1,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "forest": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "forest trail": 4,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "kingdom": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "castle walls": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-poplar-tree",
+   "scenes": 113,
+   "uses": 113,
+   "roles": {
+    "flora": 113
+   },
+   "settings": {
+    "haunted castle": 1,
+    "park": 5,
+    "temple": 1,
+    "tower": 4,
+    "log": 1,
+    "pond": 1,
+    "castle": 6,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "crooked tower": 1,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "kingdom": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "castle walls": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-tall-grass-tuft",
+   "scenes": 113,
+   "uses": 113,
+   "roles": {
+    "flora": 113
+   },
+   "settings": {
+    "haunted castle": 1,
+    "park": 5,
+    "temple": 1,
+    "tower": 4,
+    "log": 1,
+    "pond": 1,
+    "castle": 6,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "crooked tower": 1,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "kingdom": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "castle walls": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-wildflower-patch",
+   "scenes": 113,
+   "uses": 113,
+   "roles": {
+    "flora": 113
+   },
+   "settings": {
+    "haunted castle": 1,
+    "park": 5,
+    "temple": 1,
+    "tower": 4,
+    "log": 1,
+    "pond": 1,
+    "castle": 6,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "crooked tower": 1,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "kingdom": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "castle walls": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "cc0-birch-tree",
+   "scenes": 105,
+   "uses": 105,
+   "roles": {
+    "flora": 105
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "campsite": 1,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "forest": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "forest trail": 4,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "cc0-rock-moss",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "flora": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-apple-tree",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "flora": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-buttercup",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "flora": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-olive-tree",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "flora": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-picnic-table",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "scenery": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-poppy-flower",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "flora": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-sunflower",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "scenery": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-willow-tree",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "flora": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-wooden-gate",
+   "scenes": 99,
+   "uses": 99,
+   "roles": {
+    "scenery": 99
+   },
+   "settings": {
+    "park": 5,
+    "temple": 1,
+    "log": 1,
+    "pond": 1,
+    "meadow": 11,
+    "cozy rainy caf": 1,
+    "birthday party": 1,
+    "village": 5,
+    "farm": 3,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "long meadow run": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "open park": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-windmill",
+   "scenes": 76,
+   "uses": 76,
+   "roles": {
+    "scenery": 76
+   },
+   "settings": {
+    "temple": 1,
+    "log": 1,
+    "cozy rainy caf": 1,
+    "village": 5,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-wooden-stile",
+   "scenes": 76,
+   "uses": 76,
+   "roles": {
+    "scenery": 76
+   },
+   "settings": {
+    "temple": 1,
+    "log": 1,
+    "cozy rainy caf": 1,
+    "village": 5,
+    "windy hilltop": 2,
+    "basket": 3,
+    "orchard": 2,
+    "iceberg": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "garden": 4,
+    "field": 1,
+    "barn": 2,
+    "waves": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "night sky": 1,
+    "dojo": 4,
+    "plus": 1,
+    "race track": 1,
+    "gates": 3,
+    "flower gates": 2,
+    "jar": 3,
+    "bigger ones": 1,
+    "open country": 1,
+    "sword duel": 1,
+    "checkpoint gates": 1,
+    "stadium": 1,
+    "ring": 1,
+    "pot": 1,
+    "his sack": 1,
+    "head": 1,
+    "vegetable patch": 1,
+    "row": 1,
+    "toward": 1,
+    "base": 1,
+    "picnic blanket at dusk": 1,
+    "sawmill": 1,
+    "table": 1,
+    "time": 2,
+    "steamer": 1,
+    "bigger coin": 1,
+    "glass tank": 1,
+    "bucket": 1,
+    "circle": 1,
+    "plate": 1,
+    "boxing match": 1,
+    "hawaii": 1,
+    "fair": 1,
+    "quest": 1,
+    "skatepark": 1,
+    "lily pad": 1,
+    "rock concert": 1
+   }
+  },
+  {
+   "id": "gen3d-river-boulder",
+   "scenes": 33,
+   "uses": 33,
+   "roles": {
+    "flora": 33
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "snow": 2,
+    "castle": 6,
+    "glacier": 1,
+    "beach": 1,
+    "crooked tower": 1,
+    "sinking ship": 1,
+    "mountain": 1,
+    "river": 4,
+    "ice fortress": 1,
+    "orchard": 1,
+    "deck": 1,
+    "lane": 1,
+    "kingdom": 1,
+    "path": 1,
+    "good": 1,
+    "edge": 1,
+    "iceberg": 1,
+    "calm lake": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-rock-pillar",
+   "scenes": 28,
+   "uses": 28,
+   "roles": {
+    "flora": 28
+   },
+   "settings": {
+    "underwater": 1,
+    "cave": 1,
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "sinking ship": 1,
+    "sunken city": 1,
+    "orchard": 1,
+    "space": 4,
+    "river": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1,
+    "asteroid belt": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-basalt-column-rock",
+   "scenes": 26,
+   "uses": 26,
+   "roles": {
+    "flora": 26
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "volcano": 1,
+    "moon": 3,
+    "sinking ship": 1,
+    "orchard": 1,
+    "space": 4,
+    "river": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "deck": 1,
+    "air": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-street-trash-can",
+   "scenes": 26,
+   "uses": 26,
+   "roles": {
+    "flora": 20,
+    "scenery": 6
+   },
+   "settings": {
+    "mall": 1,
+    "park": 5,
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1,
+    "open park": 1
+   }
+  },
+  {
+   "id": "gen3d-park-bench",
+   "scenes": 25,
+   "uses": 25,
+   "roles": {
+    "scenery": 6,
+    "flora": 19
+   },
+   "settings": {
+    "park": 5,
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1,
+    "open park": 1
+   }
+  },
+  {
+   "id": "gen3d-sea-rock",
+   "scenes": 25,
+   "uses": 25,
+   "roles": {
+    "flora": 25
+   },
+   "settings": {
+    "floating islands": 4,
+    "underwater": 1,
+    "sinking ship": 1,
+    "sunken city": 1,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "river": 4,
+    "island": 1,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "tiny island": 1,
+    "iceberg": 1,
+    "islands": 1,
+    "calm lake": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-street-tree",
+   "scenes": 25,
+   "uses": 25,
+   "roles": {
+    "scenery": 6,
+    "flora": 19
+   },
+   "settings": {
+    "park": 5,
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1,
+    "open park": 1
+   }
+  },
+  {
+   "id": "gen3d-cardboard-box",
+   "scenes": 23,
+   "uses": 23,
+   "roles": {
+    "flora": 22,
+    "cast": 1
+   },
+   "settings": {
+    "mall": 1,
+    "mining colony": 1,
+    "supermarket": 3,
+    "park": 1,
+    "market": 1,
+    "busy kitchen": 1,
+    "school": 1,
+    "garage": 1,
+    "house": 2,
+    "kitchen": 5,
+    "mine": 1,
+    "home": 1,
+    "bakery": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-lighthouse",
+   "scenes": 22,
+   "uses": 22,
+   "roles": {
+    "scenery": 22
+   },
+   "settings": {
+    "floating islands": 4,
+    "sinking ship": 1,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "river": 4,
+    "island": 1,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "tiny island": 1,
+    "iceberg": 1,
+    "islands": 1,
+    "calm lake": 1
+   }
+  },
+  {
+   "id": "potted-plant",
+   "scenes": 21,
+   "uses": 21,
+   "roles": {
+    "flora": 21
+   },
+   "settings": {
+    "mining colony": 1,
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "school": 1,
+    "garage": 1,
+    "house": 2,
+    "kitchen": 5,
+    "mine": 1,
+    "home": 1,
+    "bakery": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "cc0-bomb",
+   "scenes": 20,
+   "uses": 20,
+   "roles": {
+    "cast": 20
+   },
+   "settings": {
+    "basket": 1,
+    "iceberg": 1,
+    "orchard": 3,
+    "kitchen": 3,
+    "mine": 1,
+    "cup": 1,
+    "skateboard catches presents": 1,
+    "half": 1,
+    "air": 2,
+    "halloween fair": 1,
+    "jungle": 1,
+    "night sky": 1,
+    "dojo": 2,
+    "sky at night": 1
+   }
+  },
+  {
+   "id": "gen3d-concrete-planter-with-tree",
+   "scenes": 20,
+   "uses": 20,
+   "roles": {
+    "flora": 20
+   },
+   "settings": {
+    "mall": 1,
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-mossy-boulder",
+   "scenes": 20,
+   "uses": 20,
+   "roles": {
+    "flora": 20
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "castle": 6,
+    "crooked tower": 1,
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-planter-box",
+   "scenes": 20,
+   "uses": 20,
+   "roles": {
+    "flora": 20
+   },
+   "settings": {
+    "mall": 1,
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-thorn-bush",
+   "scenes": 20,
+   "uses": 20,
+   "roles": {
+    "flora": 20
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "castle": 6,
+    "haunted hospital": 1,
+    "crooked tower": 1,
+    "race track": 1,
+    "kingdom": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "farm at night": 1,
+    "castle walls": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "cc0-car-taxi",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "scenery": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "cc0-fire-hydrant",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "scenery": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-flower-box",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "flora": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-flower-stall",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "scenery": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-mossy-rock-cluster",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "flora": 19
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "jungle": 5,
+    "castle": 6,
+    "crooked tower": 1,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-street-bollard",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "flora": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-street-lamp",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "flora": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-traffic-light",
+   "scenes": 19,
+   "uses": 19,
+   "roles": {
+    "scenery": 19
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "glass skyscraper": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "lane highway": 1,
+    "rooftops": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "cc0-boat-row",
+   "scenes": 18,
+   "uses": 18,
+   "roles": {
+    "scenery": 18
+   },
+   "settings": {
+    "floating islands": 4,
+    "sinking ship": 1,
+    "vacation": 1,
+    "river": 4,
+    "island": 1,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "tiny island": 1,
+    "iceberg": 1,
+    "islands": 1,
+    "calm lake": 1
+   }
+  },
+  {
+   "id": "race-car",
+   "scenes": 18,
+   "uses": 18,
+   "roles": {
+    "cast": 11,
+    "hero": 7
+   },
+   "settings": {
+    "jungle": 1,
+    "castle": 1,
+    "road": 1,
+    "river": 4,
+    "home": 1,
+    "neon city": 1,
+    "farm": 1,
+    "open country": 1,
+    "city": 1,
+    "path": 1,
+    "good": 1,
+    "edge": 1,
+    "desert": 1,
+    "skatepark": 1,
+    "lily pad": 1
+   }
+  },
+  {
+   "id": "cc0-palm-tree",
+   "scenes": 17,
+   "uses": 17,
+   "roles": {
+    "flora": 17
+   },
+   "settings": {
+    "floating islands": 4,
+    "jungle": 5,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "gen3d-crystal-cluster",
+   "scenes": 17,
+   "uses": 17,
+   "roles": {
+    "scenery": 3,
+    "flora": 14
+   },
+   "settings": {
+    "cave": 1,
+    "mars": 1,
+    "icy moon": 1,
+    "volcano": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "air": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-sandstone-rock",
+   "scenes": 17,
+   "uses": 17,
+   "roles": {
+    "flora": 17
+   },
+   "settings": {
+    "floating islands": 4,
+    "australian outback": 1,
+    "desert": 2,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "island": 1,
+    "desert outpost": 1,
+    "tiny island": 1,
+    "islands": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-scree-rock-pile",
+   "scenes": 17,
+   "uses": 17,
+   "roles": {
+    "flora": 17
+   },
+   "settings": {
+    "cave": 1,
+    "mars": 1,
+    "icy moon": 1,
+    "volcano": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "air": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "townhouse",
+   "scenes": 17,
+   "uses": 17,
+   "roles": {
+    "scenery": 16,
+    "cast": 1
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "house": 1,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "rooftops": 1
+   }
+  },
+  {
+   "id": "gen3d-bus-stop",
+   "scenes": 16,
+   "uses": 16,
+   "roles": {
+    "scenery": 16
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "rooftops": 1
+   }
+  },
+  {
+   "id": "gen3d-finish-banner",
+   "scenes": 16,
+   "uses": 16,
+   "roles": {
+    "cast": 16
+   },
+   "settings": {
+    "open country": 2,
+    "jungle": 1,
+    "supermarket": 1,
+    "desert": 2,
+    "castle": 1,
+    "checkpoint gates": 1,
+    "haunted hall": 1,
+    "time": 1,
+    "farm": 1,
+    "good": 1,
+    "glass tank": 1,
+    "edge": 1,
+    "lily pad": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-monstera-plant",
+   "scenes": 16,
+   "uses": 16,
+   "roles": {
+    "flora": 16
+   },
+   "settings": {
+    "mall": 1,
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "school": 1,
+    "house": 2,
+    "kitchen": 5,
+    "home": 1,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-telephone-pole",
+   "scenes": 16,
+   "uses": 16,
+   "roles": {
+    "scenery": 16
+   },
+   "settings": {
+    "open country": 1,
+    "city": 5,
+    "dusty town": 2,
+    "road": 4,
+    "neon city": 1,
+    "busy road": 1,
+    "neon stage": 1,
+    "rooftops": 1
+   }
+  },
+  {
+   "id": "gen3d-bare-winter-tree",
+   "scenes": 15,
+   "uses": 15,
+   "roles": {
+    "flora": 15
+   },
+   "settings": {
+    "snow": 2,
+    "haunted hospital": 1,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "race track": 1,
+    "orchard": 1,
+    "lane": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "edge": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-energy-crystal",
+   "scenes": 15,
+   "uses": 15,
+   "roles": {
+    "flora": 15
+   },
+   "settings": {
+    "cave": 1,
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-power-crystal",
+   "scenes": 15,
+   "uses": 15,
+   "roles": {
+    "flora": 15
+   },
+   "settings": {
+    "cave": 1,
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "stepping-stone",
+   "scenes": 15,
+   "uses": 15,
+   "roles": {
+    "cast": 15
+   },
+   "settings": {
+    "temple": 1,
+    "village": 1,
+    "open country": 1,
+    "checkpoint gates": 1,
+    "barn": 1,
+    "lane": 1,
+    "time": 1,
+    "path": 1,
+    "mine tracks": 1,
+    "good": 1,
+    "glass tank": 1,
+    "edge": 1,
+    "hawaii": 1,
+    "lily pad": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-moon-rock",
+   "scenes": 14,
+   "uses": 15,
+   "roles": {
+    "flora": 14,
+    "hero": 1
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-beech-tree",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "flora": 14
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "castle": 6,
+    "crooked tower": 1,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-crater-rock",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "flora": 14
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-fuel-silo",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "scenery": 14
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-meteorite",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "flora": 14
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-moon-flag",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "scenery": 14
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-rock-arch",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "flora": 13,
+    "scenery": 1
+   },
+   "settings": {
+    "underwater": 1,
+    "sinking ship": 1,
+    "sunken city": 1,
+    "river": 4,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1,
+    "canyon": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-satellite-radar-dish",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "scenery": 14
+   },
+   "settings": {
+    "mars": 1,
+    "icy moon": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-stone-gatehouse",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "scenery": 14
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "castle": 6,
+    "crooked tower": 1,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-stone-water-well",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "scenery": 14
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "castle": 6,
+    "crooked tower": 1,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "stone-wall",
+   "scenes": 14,
+   "uses": 14,
+   "roles": {
+    "scenery": 14
+   },
+   "settings": {
+    "haunted castle": 1,
+    "tower": 4,
+    "castle": 6,
+    "crooked tower": 1,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "cc0-asteroid",
+   "scenes": 13,
+   "uses": 14,
+   "roles": {
+    "scenery": 13,
+    "cast": 1
+   },
+   "settings": {
+    "mars": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "rocket",
+   "scenes": 13,
+   "uses": 14,
+   "roles": {
+    "scenery": 13,
+    "hero": 1
+   },
+   "settings": {
+    "mars": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "cc0-torch-lit",
+   "scenes": 13,
+   "uses": 13,
+   "roles": {
+    "scenery": 13
+   },
+   "settings": {
+    "tower": 4,
+    "cave": 1,
+    "castle": 6,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-dead-desert-tree",
+   "scenes": 13,
+   "uses": 13,
+   "roles": {
+    "flora": 13
+   },
+   "settings": {
+    "australian outback": 1,
+    "volcano": 1,
+    "haunted hospital": 1,
+    "desert": 2,
+    "race track": 1,
+    "desert outpost": 1,
+    "haunted hall": 1,
+    "air": 1,
+    "end we crash": 1,
+    "canyon": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-moon-lander",
+   "scenes": 13,
+   "uses": 13,
+   "roles": {
+    "scenery": 13
+   },
+   "settings": {
+    "mars": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-sandcastle",
+   "scenes": 13,
+   "uses": 13,
+   "roles": {
+    "scenery": 12,
+    "hero": 1
+   },
+   "settings": {
+    "floating islands": 4,
+    "beach": 4,
+    "sunny beach": 1,
+    "vacation": 1,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "gen3d-seaweed",
+   "scenes": 13,
+   "uses": 13,
+   "roles": {
+    "flora": 13
+   },
+   "settings": {
+    "underwater": 1,
+    "sinking ship": 1,
+    "sunken city": 1,
+    "river": 4,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-space-colony-dome",
+   "scenes": 13,
+   "uses": 13,
+   "roles": {
+    "scenery": 13
+   },
+   "settings": {
+    "mars": 1,
+    "moon": 3,
+    "orchard": 1,
+    "space": 4,
+    "planets": 1,
+    "sky at night": 1,
+    "spaceship": 1,
+    "asteroid belt": 1
+   }
+  },
+  {
+   "id": "gen3d-beach-chair",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "floating islands": 4,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "gen3d-birdhouse",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "meadow": 11,
+    "long meadow run": 1
+   }
+  },
+  {
+   "id": "gen3d-castle-tower",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "tower": 4,
+    "castle": 6,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-dandelion",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "meadow": 11,
+    "long meadow run": 1
+   }
+  },
+  {
+   "id": "gen3d-drawbridge",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "tower": 4,
+    "castle": 6,
+    "kingdom": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "gen3d-dune-grass-clump",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "flora": 12
+   },
+   "settings": {
+    "floating islands": 4,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "gen3d-leaning-palm-tree",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "flora": 12
+   },
+   "settings": {
+    "floating islands": 4,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "gen3d-pandanus-tree",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "flora": 12
+   },
+   "settings": {
+    "floating islands": 4,
+    "sunny beach": 1,
+    "vacation": 1,
+    "beach": 3,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "gen3d-picnic-basket",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "meadow": 11,
+    "long meadow run": 1
+   }
+  },
+  {
+   "id": "gen3d-wooden-fence",
+   "scenes": 12,
+   "uses": 12,
+   "roles": {
+    "scenery": 12
+   },
+   "settings": {
+    "meadow": 11,
+    "long meadow run": 1
+   }
+  },
+  {
+   "id": "shopping-cart",
+   "scenes": 11,
+   "uses": 13,
+   "roles": {
+    "cast": 1,
+    "scenery": 11,
+    "hero": 1
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-barnacle-rock",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 10,
+    "scenery": 1
+   },
+   "settings": {
+    "sinking ship": 1,
+    "river": 4,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-bread-basket",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-bread-rack",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "scenery": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-cash-register",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "scenery": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-flour-sack",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-fruit-crate",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-potato-sack",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-vegetable-basket",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-wine-barrel",
+   "scenes": 11,
+   "uses": 11,
+   "roles": {
+    "flora": 11
+   },
+   "settings": {
+    "supermarket": 3,
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5,
+    "bakery": 1
+   }
+  },
+  {
+   "id": "cc0-flower",
+   "scenes": 10,
+   "uses": 10,
+   "roles": {
+    "cast": 10
+   },
+   "settings": {
+    "meadow": 9,
+    "long meadow run": 1
+   }
+  },
+  {
+   "id": "gen3d-floating-dock",
+   "scenes": 10,
+   "uses": 10,
+   "roles": {
+    "scenery": 10
+   },
+   "settings": {
+    "sinking ship": 1,
+    "river": 4,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1
+   }
+  },
+  {
+   "id": "gen3d-navigation-buoy",
+   "scenes": 10,
+   "uses": 10,
+   "roles": {
+    "scenery": 10
+   },
+   "settings": {
+    "sinking ship": 1,
+    "river": 4,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1
+   }
+  },
+  {
+   "id": "gen3d-sailboat",
+   "scenes": 10,
+   "uses": 10,
+   "roles": {
+    "scenery": 10
+   },
+   "settings": {
+    "sinking ship": 1,
+    "river": 4,
+    "deck": 1,
+    "path": 1,
+    "good": 1,
+    "iceberg": 1,
+    "calm lake": 1
+   }
+  },
+  {
+   "id": "gen3d-wooden-signpost",
+   "scenes": 10,
+   "uses": 10,
+   "roles": {
+    "scenery": 10
+   },
+   "settings": {
+    "farm": 3,
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4,
+    "farm at night": 1
+   }
+  },
+  {
+   "id": "gen3d-snowman-with-hat",
+   "scenes": 9,
+   "uses": 10,
+   "roles": {
+    "scenery": 9,
+    "hero": 1
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "cc0-hazard-saw",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "cast": 9
+   },
+   "settings": {
+    "castle": 1,
+    "plus": 1,
+    "race track": 2,
+    "gates": 3,
+    "flower gates": 2
+   }
+  },
+  {
+   "id": "cc0-sled",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "scenery": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-frozen-dead-tree",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "flora": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-frozen-shrub",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "flora": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-ice-block-pile",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "flora": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-snowy-fir-tree",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "flora": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-snowy-rock",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "flora": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "penguin",
+   "scenes": 9,
+   "uses": 9,
+   "roles": {
+    "scenery": 9
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1,
+    "beach": 1,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-surf-rack",
+   "scenes": 8,
+   "uses": 8,
+   "roles": {
+    "scenery": 8
+   },
+   "settings": {
+    "floating islands": 4,
+    "vacation": 1,
+    "island": 1,
+    "tiny island": 1,
+    "islands": 1
+   }
+  },
+  {
+   "id": "turtle",
+   "scenes": 8,
+   "uses": 8,
+   "roles": {
+    "hero": 8
+   },
+   "settings": {
+    "floating islands": 3,
+    "sunny beach": 1,
+    "beach": 2,
+    "island": 1,
+    "tiny island": 1
+   }
+  },
+  {
+   "id": "cc0-cabinet-shelves",
+   "scenes": 7,
+   "uses": 7,
+   "roles": {
+    "scenery": 7
+   },
+   "settings": {
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5
+   }
+  },
+  {
+   "id": "cc0-can-fridge",
+   "scenes": 7,
+   "uses": 7,
+   "roles": {
+    "scenery": 7
+   },
+   "settings": {
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5
+   }
+  },
+  {
+   "id": "gen3d-fruit-stand",
+   "scenes": 7,
+   "uses": 7,
+   "roles": {
+    "scenery": 7
+   },
+   "settings": {
+    "market": 1,
+    "busy kitchen": 1,
+    "kitchen": 5
+   }
+  },
+  {
+   "id": "gen3d-ice-igloo",
+   "scenes": 7,
+   "uses": 7,
+   "roles": {
+    "scenery": 7
+   },
+   "settings": {
+    "snow": 2,
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-mushroom-cluster",
+   "scenes": 7,
+   "uses": 7,
+   "roles": {
+    "flora": 7
+   },
+   "settings": {
+    "cave": 1,
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "astronaut",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "hero": 6
+   },
+   "settings": {
+    "icy moon": 1,
+    "moon": 2,
+    "space": 3
+   }
+  },
+  {
+   "id": "cc0-barrel-stack",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "cc0-log-stack",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "cc0-pine-tree",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "cc0-tree-pine",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-broken-gravestone",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-cemetery-bench",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-container",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-fern",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-fir-tree",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-funeral-urn",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-gift-box",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 5,
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1,
+    "birthday party": 1,
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-grave-lantern",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-haunted-tree",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1,
+    "farm at night": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-industrial-fan",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-larch-tree",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-log-cabin",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-mossy-fallen-log",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-mossy-stump",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-oil-barrel",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-oil-drum",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-park-fountain",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "park": 5,
+    "open park": 1
+   }
+  },
+  {
+   "id": "gen3d-rooftop-water-tank",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-standing-stone",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "scenery": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-tire-pile",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-toolbox",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-toxic-barrel",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-traffic-cone",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "mining colony": 1,
+    "garage": 1,
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-wild-strawberry-plant",
+   "scenes": 6,
+   "uses": 6,
+   "roles": {
+    "flora": 6
+   },
+   "settings": {
+    "campsite": 1,
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-cactus",
+   "scenes": 5,
+   "uses": 7,
+   "roles": {
+    "flora": 5,
+    "cast": 2
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "cc0-bamboo",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "cc0-bee",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "hero": 2,
+    "cast": 2,
+    "enemy": 1
+   },
+   "settings": {
+    "flower gates": 2,
+    "farm": 1,
+    "open park": 1,
+    "farm at night": 1
+   }
+  },
+  {
+   "id": "cc0-bush-berries",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "cc0-cactus-flowers",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "cc0-pumpkin",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 4,
+    "cast": 1
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "halloween fair": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1
+   }
+  },
+  {
+   "id": "gen3d-abandoned-mine-entrance",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-acorn",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "cast": 5
+   },
+   "settings": {
+    "snow": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-aloe-plant",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "mall": 1,
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-bamboo-cluster",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-banana-plant",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-beach-hut",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "beach": 4,
+    "sunny beach": 1
+   }
+  },
+  {
+   "id": "gen3d-beach-umbrella",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "beach": 4,
+    "sunny beach": 1
+   }
+  },
+  {
+   "id": "gen3d-buried-statue-head",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-castle-ruin-wall",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-cholla-cactus",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-cycad-palm",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-desert-shrub",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-flower-pot",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "mall": 1,
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-gravestone",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 4,
+    "cast": 1
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "meadow": 1,
+    "haunted hall": 1,
+    "end we crash": 1
+   }
+  },
+  {
+   "id": "gen3d-heliconia",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-ice-arch",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-jungle-waterfall",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-kapok-tree",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-layered-canyon-rock",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-lifeguard-tower",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "beach": 4,
+    "sunny beach": 1
+   }
+  },
+  {
+   "id": "gen3d-mangrove-tree",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-mesquite-tree",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-pitcher-plant",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-prickly-pear-cactus",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-rafflesia",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-rubber-tree",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-ruin",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-ruined-stone-tower",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-saguaro-cactus",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-snowy-bench",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "mountain": 1,
+    "ice fortress": 1,
+    "orchard": 1,
+    "lane": 1,
+    "edge": 1
+   }
+  },
+  {
+   "id": "gen3d-stone-idol-head",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-strangler-fig-tree",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-suika",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "cast": 4,
+    "hero": 1
+   },
+   "settings": {
+    "half": 1,
+    "jungle": 1,
+    "planets": 1,
+    "air": 1,
+    "kitchen": 1
+   }
+  },
+  {
+   "id": "gen3d-treehouse",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-tribal-totem-pole",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-vine-covered-rock-wall",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-wooden-pier",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "beach": 4,
+    "sunny beach": 1
+   }
+  },
+  {
+   "id": "gen3d-wooden-rope-bridge",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "jungle": 5
+   }
+  },
+  {
+   "id": "gen3d-wooden-watchtower",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "scenery": 5
+   },
+   "settings": {
+    "forest": 1,
+    "forest trail": 4
+   }
+  },
+  {
+   "id": "gen3d-yucca-plant",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "flora": 5
+   },
+   "settings": {
+    "australian outback": 1,
+    "desert": 2,
+    "desert outpost": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "hamster",
+   "scenes": 5,
+   "uses": 5,
+   "roles": {
+    "hero": 5
+   },
+   "settings": {
+    "supermarket": 1,
+    "kitchen": 3,
+    "meadow": 1
+   }
+  },
+  {
+   "id": "cc0-armchair",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "cc0-couch",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "cc0-lamp-standing",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "cc0-monkey",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "cast": 1,
+    "hero": 3
+   },
+   "settings": {
+    "temple": 1,
+    "jungle": 3
+   }
+  },
+  {
+   "id": "cc0-wood-log",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "cast": 4
+   },
+   "settings": {
+    "log": 1,
+    "forest trail": 3
+   }
+  },
+  {
+   "id": "crystal",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "cast": 3,
+    "hero": 1
+   },
+   "settings": {
+    "tower": 1,
+    "cave": 1,
+    "icy moon": 1,
+    "castle": 1
+   }
+  },
+  {
+   "id": "gen3d-agave-plant",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "flora": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-bookshelf",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-cat-tree",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "flora": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-clay-pot",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "flora": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-crane",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-gramophone",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-iron-fence",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "race track": 1,
+    "haunted hall": 1,
+    "end we crash": 1
+   }
+  },
+  {
+   "id": "gen3d-jellyfish",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 3,
+    "cast": 1
+   },
+   "settings": {
+    "underwater": 1,
+    "meadow": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-pitchfork",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "farm": 3,
+    "farm at night": 1
+   }
+  },
+  {
+   "id": "gen3d-red-barn",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "farm": 3,
+    "farm at night": 1
+   }
+  },
+  {
+   "id": "gen3d-smokestack",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-television",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "school": 1,
+    "house": 2,
+    "home": 1
+   }
+  },
+  {
+   "id": "gen3d-white-picket-fence",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "farm": 3,
+    "farm at night": 1
+   }
+  },
+  {
+   "id": "ghost",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "cast": 4
+   },
+   "settings": {
+    "haunted hospital": 1,
+    "castle": 1,
+    "house": 1,
+    "haunted hall": 1
+   }
+  },
+  {
+   "id": "steam-machine",
+   "scenes": 4,
+   "uses": 4,
+   "roles": {
+    "scenery": 4
+   },
+   "settings": {
+    "mine": 1,
+    "factory": 1,
+    "mine tracks": 1,
+    "colony": 1
+   }
+  },
+  {
+   "id": "cc0-apple",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 3
+   },
+   "settings": {
+    "orchard": 2,
+    "sky at night": 1
+   }
+  },
+  {
+   "id": "cc0-clownfish",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "cc0-fruit",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 3
+   },
+   "settings": {
+    "air": 1,
+    "jar": 1,
+    "dojo": 1
+   }
+  },
+  {
+   "id": "cc0-goldfish",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 2,
+    "hero": 1
+   },
+   "settings": {
+    "market": 1,
+    "sunken city": 1,
+    "iceberg": 1
+   }
+  },
+  {
+   "id": "cc0-tang",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "cc0-traffic",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 3
+   },
+   "settings": {
+    "open country": 1,
+    "forest trail": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-adobe-house",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "desert": 2,
+    "desert outpost": 1
+   }
+  },
+  {
+   "id": "gen3d-bear",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "hero": 2,
+    "cast": 1
+   },
+   "settings": {
+    "campsite": 1,
+    "basket": 1,
+    "plate": 1
+   }
+  },
+  {
+   "id": "gen3d-bedouin-tent",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "desert": 2,
+    "desert outpost": 1
+   }
+  },
+  {
+   "id": "gen3d-checkout-counter",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "supermarket": 3
+   }
+  },
+  {
+   "id": "gen3d-coral",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "flora": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-coral-rock",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "flora": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-frog",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "hero": 3
+   },
+   "settings": {
+    "pond": 1,
+    "river": 1,
+    "beach": 1
+   }
+  },
+  {
+   "id": "gen3d-frozen-waterfall",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "snow": 2,
+    "glacier": 1
+   }
+  },
+  {
+   "id": "gen3d-oasis-well",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "desert": 2,
+    "desert outpost": 1
+   }
+  },
+  {
+   "id": "gen3d-octopus",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-sea-anemone",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "flora": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-sea-sponge",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "flora": 3
+   },
+   "settings": {
+    "underwater": 1,
+    "sunken city": 1,
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-shopping-basket",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "supermarket": 3
+   }
+  },
+  {
+   "id": "gen3d-stone-obelisk",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "scenery": 3
+   },
+   "settings": {
+    "desert": 2,
+    "desert outpost": 1
+   }
+  },
+  {
+   "id": "hoop",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 3
+   },
+   "settings": {
+    "sunken city": 1,
+    "spaceship": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "iron-gate",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 3
+   },
+   "settings": {
+    "long meadow run": 1,
+    "end we crash": 1,
+    "road": 1
+   }
+  },
+  {
+   "id": "roomba",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 2,
+    "hero": 1
+   },
+   "settings": {
+    "supermarket": 1,
+    "house": 1,
+    "castle walls": 1
+   }
+  },
+  {
+   "id": "slime",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 2,
+    "hero": 1
+   },
+   "settings": {
+    "dojo": 1,
+    "bucket": 1,
+    "plate": 1
+   }
+  },
+  {
+   "id": "star",
+   "scenes": 3,
+   "uses": 3,
+   "roles": {
+    "cast": 3
+   },
+   "settings": {
+    "orchard": 1,
+    "open park": 1,
+    "space": 1
+   }
+  },
+  {
+   "id": "cc0-tractor",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 1,
+    "hero": 1
+   },
+   "settings": {
+    "busy road": 1,
+    "farm": 1
+   }
+  },
+  {
+   "id": "cc0-traffic-barrier",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "city": 1,
+    "lane highway": 1
+   }
+  },
+  {
+   "id": "cc0-water",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "tiny island": 1,
+    "fair": 1
+   }
+  },
+  {
+   "id": "crate",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "windy hilltop": 1,
+    "space": 1
+   }
+  },
+  {
+   "id": "gen3d-balloon",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "hero": 1,
+    "cast": 1
+   },
+   "settings": {
+    "desert": 1,
+    "garden": 1
+   }
+  },
+  {
+   "id": "gen3d-brown-owl",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "hero": 1,
+    "cast": 1
+   },
+   "settings": {
+    "mountain": 1,
+    "sawmill": 1
+   }
+  },
+  {
+   "id": "gen3d-burnt-tree",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "flora": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-candelabra",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "haunted castle": 1,
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-cheese",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "supermarket": 1,
+    "farm": 1
+   }
+  },
+  {
+   "id": "gen3d-cog-gear",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "factory": 1,
+    "mine tracks": 1
+   }
+  },
+  {
+   "id": "gen3d-fishing",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 1,
+    "enemy": 1
+   },
+   "settings": {
+    "pond": 1,
+    "calm lake": 1
+   }
+  },
+  {
+   "id": "gen3d-highway-sign",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "lane highway": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-iceberg",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 1,
+    "cast": 1
+   },
+   "settings": {
+    "glacier": 1,
+    "iceberg": 1
+   }
+  },
+  {
+   "id": "gen3d-magma-crystal",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "flora": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-magma-rock",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-mine-cart",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "mining colony": 1,
+    "cave": 1
+   }
+  },
+  {
+   "id": "gen3d-obsidian-shard",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "flora": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-pearl",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "underwater": 1,
+    "meadow": 1
+   }
+  },
+  {
+   "id": "gen3d-raindrop",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "cup": 1,
+    "pot": 1
+   }
+  },
+  {
+   "id": "gen3d-ski-lift-tower",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "snow": 2
+   }
+  },
+  {
+   "id": "gen3d-smoldering-stump",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "flora": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-snowy-log-cabin",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "snow": 2
+   }
+  },
+  {
+   "id": "gen3d-squirrel",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "hero": 2
+   },
+   "settings": {
+    "snow": 1,
+    "busy road": 1
+   }
+  },
+  {
+   "id": "gen3d-steam-vent",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-toll-booth",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "lane highway": 1,
+    "highway": 1
+   }
+  },
+  {
+   "id": "gen3d-volcanic-rock",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "flora": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "gen3d-volcano",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "scenery": 2
+   },
+   "settings": {
+    "volcano": 1,
+    "air": 1
+   }
+  },
+  {
+   "id": "goblin",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "cast": 2
+   },
+   "settings": {
+    "castle": 1,
+    "garden": 1
+   }
+  },
+  {
+   "id": "pizza",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "hero": 1,
+    "cast": 1
+   },
+   "settings": {
+    "forest trail": 1,
+    "moon": 1
+   }
+  },
+  {
+   "id": "plane",
+   "scenes": 2,
+   "uses": 2,
+   "roles": {
+    "enemy": 1,
+    "hero": 1
+   },
+   "settings": {
+    "school": 1,
+    "canyon": 1
+   }
+  },
+  {
+   "id": "ball",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "park": 1
+   }
+  },
+  {
+   "id": "cc0-alien",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "moon": 1
+   }
+  },
+  {
+   "id": "cc0-barrel",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "deck": 1
+   }
+  },
+  {
+   "id": "cc0-bench",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "cc0-bowl",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "park": 1
+   }
+  },
+  {
+   "id": "cc0-candle",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "haunted hospital": 1
+   }
+  },
+  {
+   "id": "cc0-corgi",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "park": 1
+   }
+  },
+  {
+   "id": "cc0-cupcake",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "bakery": 1
+   }
+  },
+  {
+   "id": "cc0-dinner",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "moon": 1
+   }
+  },
+  {
+   "id": "cc0-donut",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "space": 1
+   }
+  },
+  {
+   "id": "cc0-elephant",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "volcano": 1
+   }
+  },
+  {
+   "id": "cc0-lily-pad",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "pond": 1
+   }
+  },
+  {
+   "id": "cc0-pancake",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "tower": 1
+   }
+  },
+  {
+   "id": "cc0-pigeon",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "enemy": 1
+   },
+   "settings": {
+    "park": 1
+   }
+  },
+  {
+   "id": "cc0-pillow",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "mine": 1
+   }
+  },
+  {
+   "id": "cc0-pipe-bump",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "circle": 1
+   }
+  },
+  {
+   "id": "cc0-police",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "city": 1
+   }
+  },
+  {
+   "id": "cc0-present",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "skateboard catches presents": 1
+   }
+  },
+  {
+   "id": "cc0-sausage",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "park": 1
+   }
+  },
+  {
+   "id": "cc0-ship-ghost",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "haunted hall": 1
+   }
+  },
+  {
+   "id": "cc0-tank",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "glass tank": 1
+   }
+  },
+  {
+   "id": "cc0-train",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "time": 1
+   }
+  },
+  {
+   "id": "cc0-zombie",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "garden": 1
+   }
+  },
+  {
+   "id": "dog",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "beach": 1
+   }
+  },
+  {
+   "id": "egg",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "kitchen": 1
+   }
+  },
+  {
+   "id": "exit-door",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "campsite": 1
+   }
+  },
+  {
+   "id": "gen3d-alien-bug",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "enemy": 1
+   },
+   "settings": {
+    "mining colony": 1
+   }
+  },
+  {
+   "id": "gen3d-apartment-block",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "glass skyscraper": 1
+   }
+  },
+  {
+   "id": "gen3d-baby",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "bucket": 1
+   }
+  },
+  {
+   "id": "gen3d-baguette",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-banana",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "temple": 1
+   }
+  },
+  {
+   "id": "gen3d-battery",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "mars": 1
+   }
+  },
+  {
+   "id": "gen3d-billboard-sign",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "glass skyscraper": 1
+   }
+  },
+  {
+   "id": "gen3d-birthday-cake",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "birthday party": 1
+   }
+  },
+  {
+   "id": "gen3d-black-hole-portal",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "city": 1
+   }
+  },
+  {
+   "id": "gen3d-boxer",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "ring": 1
+   }
+  },
+  {
+   "id": "gen3d-bread-oven",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-bug",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "kitchen": 1
+   }
+  },
+  {
+   "id": "gen3d-cake-stand",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "bakery": 1
+   }
+  },
+  {
+   "id": "gen3d-camping-chair",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "campsite": 1
+   }
+  },
+  {
+   "id": "gen3d-car-jack",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "garage": 1
+   }
+  },
+  {
+   "id": "gen3d-cattail-reed",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "pond": 1
+   }
+  },
+  {
+   "id": "gen3d-cave-crystal-cluster",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "flora": 1
+   },
+   "settings": {
+    "cave": 1
+   }
+  },
+  {
+   "id": "gen3d-chandelier",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-chimney",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "rooftops": 1
+   }
+  },
+  {
+   "id": "gen3d-circular-saw-blade",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "colony": 1
+   }
+  },
+  {
+   "id": "gen3d-clothing-rack",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "gen3d-clown",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "garden": 1
+   }
+  },
+  {
+   "id": "gen3d-coral-covered-archway",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "sunken city": 1
+   }
+  },
+  {
+   "id": "gen3d-crooked-house",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "crooked tower": 1
+   }
+  },
+  {
+   "id": "gen3d-crooked-lamppost",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "crooked tower": 1
+   }
+  },
+  {
+   "id": "gen3d-crooked-tower",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "crooked tower": 1
+   }
+  },
+  {
+   "id": "gen3d-crystal-geode",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "cave": 1
+   }
+  },
+  {
+   "id": "gen3d-dingo",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "australian outback": 1
+   }
+  },
+  {
+   "id": "gen3d-emu",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "australian outback": 1
+   }
+  },
+  {
+   "id": "gen3d-escalator",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "gen3d-eucalyptus-tree",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "australian outback": 1
+   }
+  },
+  {
+   "id": "gen3d-firework",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "dojo": 1
+   }
+  },
+  {
+   "id": "gen3d-fishmonger",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "market": 1
+   }
+  },
+  {
+   "id": "gen3d-fountain",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "gen3d-fuel-can",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "garage": 1
+   }
+  },
+  {
+   "id": "gen3d-gang",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "road": 1
+   }
+  },
+  {
+   "id": "gen3d-garden",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "row": 1
+   }
+  },
+  {
+   "id": "gen3d-glass-office-tower",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "glass skyscraper": 1
+   }
+  },
+  {
+   "id": "gen3d-glowing-mushroom",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "cave": 1
+   }
+  },
+  {
+   "id": "gen3d-grandfather-clock",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mansion": 1
+   }
+  },
+  {
+   "id": "gen3d-haunted-portrait",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "haunted castle": 1
+   }
+  },
+  {
+   "id": "gen3d-hedgehog",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "farm": 1
+   }
+  },
+  {
+   "id": "gen3d-hiking-backpack",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "campsite": 1
+   }
+  },
+  {
+   "id": "gen3d-hippo",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "dusty town": 1
+   }
+  },
+  {
+   "id": "gen3d-honey-jar",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "basket": 1
+   }
+  },
+  {
+   "id": "gen3d-ice-cave",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "glacier": 1
+   }
+  },
+  {
+   "id": "gen3d-ice-cream-cone",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "beach": 1
+   }
+  },
+  {
+   "id": "gen3d-ice-spike",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "icy moon": 1
+   }
+  },
+  {
+   "id": "gen3d-icicle",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "glacier": 1
+   }
+  },
+  {
+   "id": "gen3d-investor",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "glass skyscraper": 1
+   }
+  },
+  {
+   "id": "gen3d-kangaroo-sign",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "australian outback": 1
+   }
+  },
+  {
+   "id": "gen3d-kelp",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-mall-kiosk",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "gen3d-mannequin",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "gen3d-mermaid",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "meadow": 1
+   }
+  },
+  {
+   "id": "gen3d-mesa",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "canyon": 1
+   }
+  },
+  {
+   "id": "gen3d-mining-helmet",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mining colony": 1
+   }
+  },
+  {
+   "id": "gen3d-mom",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "path": 1
+   }
+  },
+  {
+   "id": "gen3d-net",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "beach": 1
+   }
+  },
+  {
+   "id": "gen3d-ore-crusher",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mining colony": 1
+   }
+  },
+  {
+   "id": "gen3d-paper-lantern",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "night sky": 1
+   }
+  },
+  {
+   "id": "gen3d-parrot",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "deck": 1
+   }
+  },
+  {
+   "id": "gen3d-party-hat",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "birthday party": 1
+   }
+  },
+  {
+   "id": "gen3d-pearl-oyster",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "underwater": 1
+   }
+  },
+  {
+   "id": "gen3d-pickaxe",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "mining colony": 1
+   }
+  },
+  {
+   "id": "gen3d-planet-rover",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "icy moon": 1
+   }
+  },
+  {
+   "id": "gen3d-princess",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "castle": 1
+   }
+  },
+  {
+   "id": "gen3d-race-car",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "checkpoint gates": 1
+   }
+  },
+  {
+   "id": "gen3d-red-ant",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "waves": 1
+   }
+  },
+  {
+   "id": "gen3d-red-phone-booth",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "glass skyscraper": 1
+   }
+  },
+  {
+   "id": "gen3d-roman-temple",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "jungle": 1
+   }
+  },
+  {
+   "id": "gen3d-santa",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "his sack": 1
+   }
+  },
+  {
+   "id": "gen3d-scooter",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "open country": 1
+   }
+  },
+  {
+   "id": "gen3d-sea-urchin",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "underwater": 1
+   }
+  },
+  {
+   "id": "gen3d-seahorse",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-sealed-letter",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "windy hilltop": 1
+   }
+  },
+  {
+   "id": "gen3d-shopping-bag",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "flora": 1
+   },
+   "settings": {
+    "mall": 1
+   }
+  },
+  {
+   "id": "gen3d-sloth",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "jungle": 1
+   }
+  },
+  {
+   "id": "gen3d-snake",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "jungle": 1
+   }
+  },
+  {
+   "id": "gen3d-space-probe",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "icy moon": 1
+   }
+  },
+  {
+   "id": "gen3d-space-soldier",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "mining colony": 1
+   }
+  },
+  {
+   "id": "gen3d-staghorn-coral",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-stalagmite",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "flora": 1
+   },
+   "settings": {
+    "cave": 1
+   }
+  },
+  {
+   "id": "gen3d-stickman",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "plus": 1
+   }
+  },
+  {
+   "id": "gen3d-submarine",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "coral reef": 1
+   }
+  },
+  {
+   "id": "gen3d-suit-of-armor",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "haunted castle": 1
+   }
+  },
+  {
+   "id": "gen3d-sumo-wrestler",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "dusty town": 1
+   }
+  },
+  {
+   "id": "gen3d-sunken-bell",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "sunken city": 1
+   }
+  },
+  {
+   "id": "gen3d-sunken-cannon",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "underwater": 1
+   }
+  },
+  {
+   "id": "gen3d-sunken-lamp-post",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "sunken city": 1
+   }
+  },
+  {
+   "id": "gen3d-sushi",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "dojo": 1
+   }
+  },
+  {
+   "id": "gen3d-throne",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "haunted castle": 1
+   }
+  },
+  {
+   "id": "gen3d-tool-chest",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "garage": 1
+   }
+  },
+  {
+   "id": "gen3d-water-lily",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "scenery": 1
+   },
+   "settings": {
+    "pond": 1
+   }
+  },
+  {
+   "id": "gen3d-white-snowball",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "orchard": 1
+   }
+  },
+  {
+   "id": "ice-patch",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "ice fortress": 1
+   }
+  },
+  {
+   "id": "kangaroo",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "australian outback": 1
+   }
+  },
+  {
+   "id": "key",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "haunted castle": 1
+   }
+  },
+  {
+   "id": "kid",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "snow": 1
+   }
+  },
+  {
+   "id": "knight",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "kingdom": 1
+   }
+  },
+  {
+   "id": "mushroom",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "flora": 1
+   },
+   "settings": {
+    "cave": 1
+   }
+  },
+  {
+   "id": "rival-car",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "enemy": 1
+   },
+   "settings": {
+    "ring": 1
+   }
+  },
+  {
+   "id": "rowing-boat",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "jungle": 1
+   }
+  },
+  {
+   "id": "rubber-duck",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "hero": 1
+   },
+   "settings": {
+    "river": 1
+   }
+  },
+  {
+   "id": "seal",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "glacier": 1
+   }
+  },
+  {
+   "id": "slide-bar",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "space": 1
+   }
+  },
+  {
+   "id": "sprinkler",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "cast": 1
+   },
+   "settings": {
+    "park": 1
+   }
+  },
+  {
+   "id": "target",
+   "scenes": 1,
+   "uses": 1,
+   "roles": {
+    "enemy": 1
+   },
+   "settings": {
+    "spaceship": 1
+   }
+  }
+ ]
+}

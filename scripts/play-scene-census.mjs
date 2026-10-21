@@ -16,11 +16,11 @@
  *   node --experimental-strip-types --import ./scripts/ts-paths.mjs scripts/play-scene-census.mjs --out evals/play/p54b/census-before.json
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { chaserModel, enemyModel, heroModel, propModels, riggedCharacter } from '@/play/arcade/models';
-import { LOOKS, floraIds, landmarks, lookOf, sceneLook } from '@/play/arcade/look';
+import { LOOKS, floraIds, kitFor, landmarks, lookOf, sceneLook } from '@/play/arcade/look';
 import { draftGameSpec } from '@/play/draft';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -58,6 +58,9 @@ export function census(sentences) {
     rows.push({
       id: sentence.id,
       text: sentence.text,
+      // Svět věty a velikost jeho kitu prostředí (P57 T2): sčítání podle světů, sady T9.
+      setting: spec.theme.setting,
+      kit: kitFor(spec.theme.setting).length,
       look: lookId,
       genre: spec.genre?.id ?? spec.control,
       hero,
@@ -92,12 +95,14 @@ export function census(sentences) {
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
-  const at = process.argv.indexOf('--out');
-  const out = at === -1 ? null : process.argv[at + 1];
-  const dev = JSON.parse(readFileSync(join(ROOT, 'evals', 'play', 'p30', 'dev.json'), 'utf8')).sentences;
+  const flag = (name) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : null);
+  const out = flag('--out');
+  // `--set <soubor>` (P57 T2): jiná sada vět se stejným tvarem `{ sentences: [{ id, text }] }`; výchozí je dev sada p30.
+  const set = flag('--set') ?? 'evals/play/p30/dev.json';
+  const dev = JSON.parse(readFileSync(resolve(ROOT, set), 'utf8')).sentences;
   const report = {
-    about: 'P54B scene census: dev set (evals/play/p30/dev.json) through draftGameSpec (fast version, no director). distinct = cast (hero, enemy, chaser, props) + setting scenery (landmarks) + vegetation species. lightChanged = sceneLook differs from the setting default in sky, light, sun, glow, fog or exposure. namesLight = the sentence names time of day, weather or mood. Rigged = model with a skeleton and clips (riggedCharacter).',
-    set: 'evals/play/p30/dev.json',
+    about: `P54B scene census: sentence set (${set}) through draftGameSpec (fast version, no director). distinct = cast (hero, enemy, chaser, props) + setting scenery (landmarks) + vegetation species. lightChanged = sceneLook differs from the setting default in sky, light, sun, glow, fog or exposure. namesLight = the sentence names time of day, weather or mood. Rigged = model with a skeleton and clips (riggedCharacter).`,
+    set,
     ...census(dev),
   };
   const { rows: _rows, ...summary } = report;
