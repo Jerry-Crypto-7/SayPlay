@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b6fbb9b2716207f35711b1f63c9127f377f7701e88d792a4fb46507e739b05fd",
+ "catalogHash": "627cebf6e5022e9f470d331e062ff24be176c6b2768084e01f726c9c9bc24d96",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1383,7 +1383,7 @@
   "gen3d-scree-rock-pile": {"class":"prop"},
   "gen3d-layered-canyon-rock": {"class":"prop"},
   "gen3d-poplar-tree": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-leaning-palm-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-leaning-palm-tree": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-basalt-column-rock": {"class":"prop"},
   "gen3d-olive-tree": {"class":"prop"},
   "gen3d-larch-tree": {"class":"biped","regions":{"legY":0.25}},
