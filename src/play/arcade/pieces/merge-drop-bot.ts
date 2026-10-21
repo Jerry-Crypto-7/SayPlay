@@ -29,9 +29,12 @@ export function replayed(observation: ArcadeObservation, reach: number): { reado
     x += dropperStep(x, input.axis, reach, MERGE.speed);
     tick += 1;
     if (clock > 0) clock -= 1;
-    else if ((input.buttons & BUTTON.TAP) !== 0 || -clock >= patienceOf(tick - 1)) {
+    else if ((input.buttons & BUTTON.TAP) !== 0) {
       drops += 1;
       clock = MERGE.reload;
+    } else if (-clock >= patienceOf(tick - 1)) {
+      drops += 1;
+      clock = MERGE.stoneReload;
     } else clock -= 1;
   }
   return { clock, drops, x };

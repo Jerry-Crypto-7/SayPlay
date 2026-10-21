@@ -78,6 +78,11 @@ export const MERGE = {
   patienceStep: 3,
   /** Kámen je o tolik úrovní větší než předmět, ze kterého zkameněl. */
   stoneUp: 1,
+  /**
+   * Přebití po kameni (tiky): kratší než `reload`, ať nečinnému hráči nádoba přeteče dřív, než doběhnou hodiny. S plným
+   * přebitím se po přetečení, které shodí úzkou věž koulí pod dávkovačem, plnila na 2 z 200 semínek až do konce hodin (s 15: nejpozději v tiku 2925 ze 4140).
+   */
+  stoneReload: 15,
   /** Tolerance dotyku (j): kvantování a měkký kontakt Rapieru. */
   touch: 30,
   /** Odraz předmětů a kamenů (‰). */
@@ -314,9 +319,9 @@ export const mergeDropRule: RulePiece<z.infer<typeof dropParams>> = {
     if (clock > 0) return [{ kind: 'count', counter: CLOCK_COUNTER, amount: -1 }];
     const level = queued(params.queue, dropsOf(state));
     const x = state[bodyBase(player) + BODY.x] as number;
-    const reload: ArcadeEffect[] = [{ kind: 'count', counter: QUEUE_COUNTER, amount: 1 }, { kind: 'count', counter: CLOCK_COUNTER, amount: MERGE.reload - clock }];
-    if ((input.buttons & BUTTON.TAP) !== 0) return [dropAt(itemTemplate(level), sizeOf(level), x), ...reload];
-    if (-clock >= patienceOf(state[HEADER.tick] as number)) return [dropAt(stoneTemplate(level), stoneSize(level), x), ...reload];
+    const reload = (ticks: number): ArcadeEffect[] => [{ kind: 'count', counter: QUEUE_COUNTER, amount: 1 }, { kind: 'count', counter: CLOCK_COUNTER, amount: ticks - clock }];
+    if ((input.buttons & BUTTON.TAP) !== 0) return [dropAt(itemTemplate(level), sizeOf(level), x), ...reload(MERGE.reload)];
+    if (-clock >= patienceOf(state[HEADER.tick] as number)) return [dropAt(stoneTemplate(level), stoneSize(level), x), ...reload(MERGE.stoneReload)];
     return [{ kind: 'count', counter: CLOCK_COUNTER, amount: -1 }];
   },
 };
