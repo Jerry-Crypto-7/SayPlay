@@ -1,0 +1,800 @@
+{
+ "schema": "p56c-final.v1",
+ "commit": "979d49bf",
+ "openedAt": "2026-10-21T18:30:15.276Z",
+ "sha256": "f8197a6cd96febc4edddaf88016495ad8de40e92a3522d3f8a03a9ebfc4b3b2e",
+ "gates": {
+  "judgeChainShare": 0.7,
+  "controlsShare": 0.8,
+  "minControls": 3,
+  "verified": 1,
+  "seconds": {
+   "min": 30,
+   "max": 90
+  }
+ },
+ "summary": {
+  "routed": {
+   "multi_verb": {
+    "hit": 7,
+    "of": 12
+   },
+   "single_verb": {
+    "hit": 2,
+    "of": 10
+   },
+   "no_verb": {
+    "hit": 10,
+    "of": 10
+   },
+   "world_only": {
+    "hit": 8,
+    "of": 8
+   },
+   "all": {
+    "hit": 27,
+    "of": 40
+   }
+  },
+  "chains": {
+   "built": {
+    "hit": 27,
+    "of": 27
+   },
+   "verified": {
+    "hit": 27,
+    "of": 27
+   },
+   "controls": {
+    "hit": 27,
+    "of": 27
+   },
+   "length": {
+    "hit": 27,
+    "of": 27
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "h01",
+   "family": "multi_verb",
+   "text": "a squirrel pilot flies a leaf plane, drops acorns on targets and lands on a wobbly branch",
+   "route": "single",
+   "reasons": [],
+   "top": "voyage.land 6 (náskok 1)",
+   "chain": null
+  },
+  {
+   "id": "h02",
+   "family": "multi_verb",
+   "text": "u play a pizza guy on a skateboard, ollie over trash cans and toss pizzas onto balconies",
+   "route": "chain",
+   "reasons": [
+    "multi_verb"
+   ],
+   "top": "throw.default 5 (náskok 3)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "runner.default",
+     "hop.default",
+     "whack.default",
+     "timing.stack",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 34.70274114156824,
+    "failures": []
+   }
+  },
+  {
+   "id": "h03",
+   "family": "multi_verb",
+   "text": "collect firewood, light the campfire, then scare off the raccoons stealing your marshmallows",
+   "route": "chain",
+   "reasons": [
+    "multi_verb"
+   ],
+   "top": "quest.spatial 5 (náskok 3)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "catch.default",
+     "platformer.default",
+     "timing.stack",
+     "shooter.default",
+     "duel.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.600567413712007,
+    "failures": []
+   }
+  },
+  {
+   "id": "h04",
+   "family": "multi_verb",
+   "text": "A ghost who has to spook the kids at a sleepover but hide every time the flashlight swings his way.",
+   "route": "single",
+   "reasons": [],
+   "top": "arena.escape 4 (náskok 3)",
+   "chain": null
+  },
+  {
+   "id": "h05",
+   "family": "multi_verb",
+   "text": "Luna the astronaut collects stars, dodges comets and fixes her rocket with tiny wrenches",
+   "route": "chain",
+   "reasons": [
+    "multi_verb"
+   ],
+   "top": "quest.station 5 (náskok 2)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "catch.default",
+     "platformer.default",
+     "runner.default",
+     "crowd.default",
+     "duel.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 32.21350398602313,
+    "failures": []
+   }
+  },
+  {
+   "id": "h06",
+   "family": "multi_verb",
+   "text": "make me a week of challenges at a magic school, broom racing, potion mixing and a spell duel",
+   "route": "chain",
+   "reasons": [
+    "multi_verb",
+    "cue"
+   ],
+   "top": "duel.default 5 (náskok 4)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "runner.default",
+     "crowd.default",
+     "whack.default",
+     "timing.stack",
+     "duel.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 33.91231569239658,
+    "failures": []
+   }
+  },
+  {
+   "id": "h07",
+   "family": "multi_verb",
+   "text": "roll a snowball down the mountain till its huge then smash the yeti's igloo with it",
+   "route": "single",
+   "reasons": [],
+   "top": "quest.spatial 4 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h08",
+   "family": "multi_verb",
+   "text": "dodge lasers in a museum, crack the safe code, then zipline out the window",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "runner.default 1 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "runner.default",
+     "crowd.default",
+     "platformer.default",
+     "rhythm.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 32.06262873820291,
+    "failures": []
+   }
+  },
+  {
+   "id": "h09",
+   "family": "multi_verb",
+   "text": "gardening but also fighting off bugs with the hose",
+   "route": "single",
+   "reasons": [],
+   "top": "arena.fight 5 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h10",
+   "family": "multi_verb",
+   "text": "jump between lily pads and snap flies w your tongue",
+   "route": "chain",
+   "reasons": [
+    "multi_verb"
+   ],
+   "top": "platformer.default 5 (náskok 4)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "platformer.default",
+     "flap.default",
+     "timing.precision",
+     "rhythm.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 30.81306300228733,
+    "failures": []
+   }
+  },
+  {
+   "id": "h11",
+   "family": "multi_verb",
+   "text": "skate around the frozen pond drawing shapes in the ice and dodging hockey kids",
+   "route": "single",
+   "reasons": [],
+   "top": "runner.default 6 (náskok 5)",
+   "chain": null
+  },
+  {
+   "id": "h12",
+   "family": "multi_verb",
+   "text": "A chef octopus who flips burgers with four arms and throws fries at hungry seagulls with the other four.",
+   "route": "chain",
+   "reasons": [
+    "multi_verb"
+   ],
+   "top": "quest.station 5 (náskok 3)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "whack.default",
+     "timing.stack",
+     "crowd.default",
+     "duel.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 32.21527085750688,
+    "failures": []
+   }
+  },
+  {
+   "id": "h13",
+   "family": "single_verb",
+   "text": "balance a wobbly pile of books on the butler's head while he walks across the ballroom",
+   "route": "single",
+   "reasons": [],
+   "top": "voyage.race 4 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h14",
+   "family": "single_verb",
+   "text": "tap along to the frogs croaking in the pond, timing has to be perfect",
+   "route": "single",
+   "reasons": [],
+   "top": "timing.stack 1 (náskok 0)",
+   "chain": null
+  },
+  {
+   "id": "h15",
+   "family": "single_verb",
+   "text": "chop logs before winter",
+   "route": "single",
+   "reasons": [],
+   "top": "quest.spatial 4 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h16",
+   "family": "single_verb",
+   "text": "throw paper planes through the hoop hanging from the classroom ceiling",
+   "route": "single",
+   "reasons": [],
+   "top": "throw.default 5 (náskok 3)",
+   "chain": null
+  },
+  {
+   "id": "h17",
+   "family": "single_verb",
+   "text": "pour lemonade into every glass right up to the top without spilling a drop",
+   "route": "single",
+   "reasons": [],
+   "top": "quest.station 4 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h18",
+   "family": "single_verb",
+   "text": "fly a little bee between the flower stems without touching any",
+   "route": "single",
+   "reasons": [],
+   "top": "voyage.race 5 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h19",
+   "family": "single_verb",
+   "text": "Catch the falling eggs in a basket before they go splat.",
+   "route": "single",
+   "reasons": [],
+   "top": "catch.default 4 (náskok 2)",
+   "chain": null
+  },
+  {
+   "id": "h20",
+   "family": "single_verb",
+   "text": "pack the suitcase so everything fits and the zipper actually closes",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "crowd.default",
+     "flap.default",
+     "catch.default",
+     "rhythm.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 30.82855910039212,
+    "failures": []
+   }
+  },
+  {
+   "id": "h21",
+   "family": "single_verb",
+   "text": "flick the ants off the picnic blanket before they reach the cake",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "catch.default",
+     "platformer.default",
+     "runner.default",
+     "crowd.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.706982987641663,
+    "failures": []
+   }
+  },
+  {
+   "id": "h22",
+   "family": "single_verb",
+   "text": "paint every plank of the fence before sundown",
+   "route": "single",
+   "reasons": [],
+   "top": "quest.spatial 5 (náskok 4)",
+   "chain": null
+  },
+  {
+   "id": "h23",
+   "family": "no_verb",
+   "text": "a pirate grandma and her parrot who only talks in rhymes",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "catch.default",
+     "flap.default",
+     "hop.default",
+     "runner.default",
+     "duel.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 34.46077760652367,
+    "failures": []
+   }
+  },
+  {
+   "id": "h24",
+   "family": "no_verb",
+   "text": "an extremely tired vampire accountant",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "hop.default",
+     "shooter.default",
+     "platformer.default",
+     "runner.default",
+     "duel.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 36.662042805766625,
+    "failures": []
+   }
+  },
+  {
+   "id": "h25",
+   "family": "no_verb",
+   "text": "Professor Wobble, a jelly scientist with tiny round glasses",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "timing.precision",
+     "whack.default",
+     "platformer.default",
+     "flap.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.316857303705493,
+    "failures": []
+   }
+  },
+  {
+   "id": "h26",
+   "family": "no_verb",
+   "text": "cozy rainy day vibes, a cat and hot cocoa",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "hop.default",
+     "platformer.default",
+     "duel.default",
+     "shooter.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 38.62170690785453,
+    "failures": []
+   }
+  },
+  {
+   "id": "h27",
+   "family": "no_verb",
+   "text": "a very shy cloud",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "rhythm.default",
+     "hop.default",
+     "timing.precision",
+     "flap.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.91711786215614,
+    "failures": []
+   }
+  },
+  {
+   "id": "h28",
+   "family": "no_verb",
+   "text": "sad clown vibes but make it pretty",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "duel.default",
+     "rhythm.default",
+     "crowd.default",
+     "platformer.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 35.82110682182183,
+    "failures": []
+   }
+  },
+  {
+   "id": "h29",
+   "family": "no_verb",
+   "text": "a retired superhero hamster in a cardigan",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "catch.default",
+     "platformer.default",
+     "hop.default",
+     "runner.default",
+     "duel.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 38.04446872161013,
+    "failures": []
+   }
+  },
+  {
+   "id": "h30",
+   "family": "no_verb",
+   "text": "twin baby yetis, one grumpy and one pure sunshine",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "duel.default",
+     "hop.default",
+     "flap.default",
+     "platformer.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 38.076879425644414,
+    "failures": []
+   }
+  },
+  {
+   "id": "h31",
+   "family": "no_verb",
+   "text": "an old tortoise wizard with a beard full of moss and fireflies",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "runner.default",
+     "defense.default",
+     "crowd.default",
+     "rhythm.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.150622308501838,
+    "failures": []
+   }
+  },
+  {
+   "id": "h32",
+   "family": "no_verb",
+   "text": "me and my bff as two tiny mushrooms lol",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "defense.default",
+     "platformer.default",
+     "duel.default",
+     "flap.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 34.62699186075612,
+    "failures": []
+   }
+  },
+  {
+   "id": "h33",
+   "family": "world_only",
+   "text": "an old train station floating in outer space",
+   "route": "chain",
+   "reasons": [
+    "multi_verb",
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "runner.default",
+     "crowd.default",
+     "flap.default",
+     "whack.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 33.35470182472927,
+    "failures": []
+   }
+  },
+  {
+   "id": "h34",
+   "family": "world_only",
+   "text": "a jungle growing out of an abandoned shopping mall",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "platformer.default",
+     "hop.default",
+     "runner.default",
+     "flap.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 33.26159946750731,
+    "failures": []
+   }
+  },
+  {
+   "id": "h35",
+   "family": "world_only",
+   "text": "volcano island with rivers of hot chocolate",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "runner.default",
+     "platformer.default",
+     "defense.default",
+     "crowd.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 30.903103685279042,
+    "failures": []
+   }
+  },
+  {
+   "id": "h36",
+   "family": "world_only",
+   "text": "a tiny planet covered in grass and windmills",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "shooter.default",
+     "timing.precision",
+     "hop.default",
+     "platformer.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.447055946124266,
+    "failures": []
+   }
+  },
+  {
+   "id": "h37",
+   "family": "world_only",
+   "text": "the attic of an old house, dusty and full of forgotten toys",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "whack.default",
+     "timing.stack",
+     "rhythm.default",
+     "crowd.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 31.053032785020363,
+    "failures": []
+   }
+  },
+  {
+   "id": "h38",
+   "family": "world_only",
+   "text": "ice caves glowing blue, super quiet",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "platformer.default",
+     "flap.default",
+     "timing.precision",
+     "runner.default",
+     "defense.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 30.059216848441174,
+    "failures": []
+   }
+  },
+  {
+   "id": "h39",
+   "family": "world_only",
+   "text": "a quiet bamboo forest with paper lanterns hanging everywhere",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "hop.default",
+     "catch.default",
+     "platformer.default",
+     "crowd.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 34.909516984051145,
+    "failures": []
+   }
+  },
+  {
+   "id": "h40",
+   "family": "world_only",
+   "text": "a sunflower field in the middle of a thunderstorm",
+   "route": "chain",
+   "reasons": [
+    "generic"
+   ],
+   "top": "arena.collect 0 (náskok 0)",
+   "chain": {
+    "ok": true,
+    "keys": [
+     "hop.default",
+     "catch.default",
+     "runner.default",
+     "crowd.default",
+     "shooter.default.boss"
+    ],
+    "controls": 5,
+    "lengthSec": 33.72679484798508,
+    "failures": []
+   }
+  }
+ ]
+}
