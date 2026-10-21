@@ -112,8 +112,21 @@ const POPS_UP = String.raw`(?:pop(?:s|ping)?|peek(?:s|ing)?|peep(?:s|ing)?|appea
 /** Před kým se brání: množné číslo nebo vlna („goblins“, „waves of orcs“, „a pack of wolves“), ne jeden („a hungry cat“, „the boss“). */
 const MANY = String.raw`(?:(?:the|all|those|these|every|endless|wave after wave of) )?(?:(?:a |an )?(?:waves?|hordes?|swarms?|armies|army|packs?|gangs?|bands?|flocks?|herds?|groups?|lines?|streams?) of )?(?!(?:its|his|this|us|is|was)\b)(?:[a-z'-]+ ){0,2}?[a-z'-]*[a-rt-z]s\b`;
 /** Co letí. */
-const FLIGHT = String.raw`(?:flying|tossed|thrown|launched|bouncing|flung|hurled|in the air|into the air|mid-?air|as they (?:fly|soar))\b`;
+const FLIGHT = String.raw`(?:flying|tossed|thrown|launched|bouncing|flung|hurled|in the air|into the air|mid-?air|as they (?:fly|soar)|(?:jump|jumps|jumping|leap|leaps|leaping) (?:out|up))\b`;
 const NOT_THROUGH = String.raw`(?!(?:through|into|across|down|off|of)\b)`;
+// P55 T3: rodiny opisů pruhových žánrů z chyb P54C holdoutu – vždy věc + pohyb, nikdy jedno slovo.
+/** Věc sama padá („candy falls from the ceiling“, „toppings drop from above“). */
+const FALLS = String.raw`(?:fall(?:s|ing)?|drop(?:s|ping)?|rain(?:s|ing)?|tumbl(?:e|es|ing)) (?:from|out of|down)\b`;
+/** Nádoba, kterou hráč posouvá pod padající věci („move a bucket left and right“, „slide my bowl under it“). */
+const VESSEL = String.raw`(?:baskets?|buckets?|bowls?|nets?|cups?|carts?|trays?|pans?|sacks?|hats?|plates?|aprons?)`;
+/** Úder na to, co vykouklo: zájmeno za úderem („tap them before they vanish“, „smash them quick“). */
+const STRIKE_THEM = String.raw`(?:${STRIKE}|whack(?:s|ing)?|bonk(?:s|ing)?|hammer(?:s|ing)?|punch(?:es|ing)?|slap(?:s|ping)?) (?:them|it|'em|each one)\b`;
+/** Množné číslo těsně před slovesem – vlna se valí („orcs march“, „skeletons keep coming“), jeden hrdina ne. */
+const PLURAL_BEFORE = String.raw`(?<=\b[a-z'-]*[a-rt-z]s )`;
+/** Co obrana chrání, kam vlna míří. */
+const STRONGHOLD = String.raw`(?:castles?|base|bases|towers?|gates?|walls?|village|town|city|fort|fortress|farm|farmhouse|garden|igloo|camp|house|home|kingdom|lanes?)\b`;
+/** Co letí, z druhé strany věty: věc vyhozená před řezem („pumpkins get thrown up and you slice them“). */
+const FLUNG = String.raw`(?:thrown|tossed|flung|launched|hurled|(?:jump|jumps|jumping|leap|leaps|leaping|fly|flies|flying|shoot|shoots|shooting|pop|pops|popping) (?:out|up)|in the air|into the air|mid-?air)\b`;
 // P54C T13b: znaky žánrů fáze 3, čtené stejně – pohledem dopředu za slovesem (nebo za jménem hry).
 /** Přes co se přeskáká: silnice, provoz, koleje („crosses a busy road“, „hops across train tracks“). */
 const TRAFFIC = String.raw`(?:roads?|streets?|highways?|freeways?|motorways?|traffic|crossings?|intersections?|(?:train |railway |rail )?tracks|rails|railways?|(?:country|traffic|busy|highway) lanes)\b`;
@@ -174,8 +187,20 @@ const VERBS: readonly Verb[] = [
   // of graves“), ne do čehokoli („pop ten balloons“ zůstává úkolem); brání se místo před někým („defend the castle from
   // goblins“, „tower defense“), ne sám sebe („defends himself in a duel“); krájí se, co letí („slice flying watermelons“),
   // ne cesta džunglí („slice through the jungle“) ani dříví („chop wood“).
-  v('catch', 'goal', CATCH, new RegExp(String.raw`\bcatch(?:es|ing)?(?= (?!(?:him|her|me|us|you|the player)\b)(?:${SAME_CLAUSE}){0,4}?${CAUGHT})`)),
-  v('whack', 'goal', WHACK, new RegExp(String.raw`\bwhack(?:s|ing|ed)?\b|\bwhac?k-?a-?mole\b|\b(?:bonk|bop)(?:s|ping|ped|ed|ing)?\b|\b${STRIKE}(?= (?:[a-z']+ ){1,5}?${POPS_UP}| (?:[a-z']+ ){0,2}?(?:moles?|gophers?)\b)`)),
+  // P55 T3: sebrat, chytit i sníst to, co padá („collect falling stars in a basket“, „grabs presents dropping from the
+  // sleigh“); věc, která padá, a hráč ji chytá nebo pod ni strká nádobu („toppings drop from above, catch them“); nádoba
+  // posouvaná pod věci („move a bucket left and right to catch raindrops“).
+  v('catch', 'goal', CATCH, new RegExp([
+    String.raw`\b(?:catch(?:es|ing)?|collect(?:s|ing)?|grab(?:s|bing)?|gather(?:s|ing)?|snag(?:s|ging)?|scoop(?:s|ing)?|eat(?:s|ing)?)(?= (?!(?:him|her|me|us|you|the player)\b)(?:${SAME_CLAUSE}){0,4}?${CAUGHT})`,
+    String.raw`\b${FALLS}(?= (?:[a-z'-]+ ){0,3}?[a-z'-]+\b[^.]*?\b(?:catch(?:es|ing)?|(?:slide|move|hold|put)s? (?:my|your|the|a|his|her) (?:[a-z]+ )?${VESSEL} under)\b)`,
+    String.raw`\b(?:mov(?:e|es|ing)|slid(?:e|es|ing)|swing(?:s|ing)?|hold(?:s|ing)?|carr(?:y|ies|ying)) (?:a|an|the|your|my|his|her|their) (?:[a-z]+ )?${VESSEL}(?= [^.]*?\b(?:to catch|under (?:it|them|the)|left and right)\b)`,
+  ].join('|'))),
+  // P55 T3: co vykoukne a hráč do toho udeří zájmenem („ghosts appear in windows, tap them before they vanish“,
+  // „gophers pop up in the garden and you smash them“).
+  v('whack', 'goal', WHACK, new RegExp([
+    String.raw`\bwhack(?:s|ing|ed)?\b|\bwhac?k-?a-?mole\b|\b(?:bonk|bop)(?:s|ping|ped|ed|ing)?\b|\b${STRIKE}(?= (?:[a-z']+ ){1,5}?${POPS_UP}| (?:[a-z']+ ){0,2}?(?:moles?|gophers?)\b)`,
+    String.raw`\b${POPS_UP}(?=[^.]*?\b${STRIKE_THEM})`,
+  ].join('|'))),
   // Obrana pruhů chce vlny: brání se před mnoha („from goblins“, „against waves of orcs“); kdo se brání jednomu
   // („a mouse defends its cheese from a hungry cat“), hraje dál rvačku Arény se štítem.
   v('defend', 'goal', DEFENSE, new RegExp([
@@ -184,12 +209,23 @@ const VERBS: readonly Verb[] = [
     String.raw`\bhold(?:s|ing)?(?= (?:the |a |your |our )?(?:[a-z]+ )?(?:lanes?|line|gates?|walls?|fort|fortress|bridge|pass)\b.*\b(?:against|from)\b)`,
     String.raw`\bkeep(?:s|ing)?(?= (?:the |a |an |all |those )?(?:[a-z]+ ){0,2}?[a-z]+ (?:from|out of) (?:breach(?:ing)?|break(?:ing)? (?:in|into|through)|storm(?:ing)?|invad(?:e|ing)|enter(?:ing)?|overrun(?:ning)?|reach(?:ing)?|get(?:ting)? (?:in|into|inside|through|past))\b)`,
     String.raw`\bstop(?:s|ping)?(?= (?:the |a |an |all |those )?(?:[a-z]+ ){0,2}?[a-z]+ (?:before|from) (?:they|it|he|she|them) (?:break|breaks|breaking|get|gets|getting|storm|storms|sneak|sneaks|march|marches|crawl|crawls|invade|invades) (?:in|into|inside|through|over|past)\b)`,
+    // P55 T3: zastavit mnohé, než dojdou k místu („stop the zombies before they reach the farmhouse“); vlna se valí
+    // k pevnosti („orcs march down three lanes toward my castle“, „skeletons keep coming down the road to my tower“,
+    // „goblins rush my village gate“); chránit místo něčím, co se staví nebo hází („guard their igloo by throwing
+    // snowballs at walruses“).
+    String.raw`\bstop(?:s|ping)?(?= (?:the |all |those )?(?:[a-z'-]+ ){0,2}?[a-z'-]*[a-rt-z]s (?:before|from) (?:they|them) (?:reach|reaching|get to|getting to|hit|hitting|touch|touching|cross|crossing|make it to) (?:the|your|my|our|their)\b)`,
+    String.raw`${PLURAL_BEFORE}\b(?:march(?:es|ing)?|advanc(?:e|es|ing)|rush(?:es|ing)?|charg(?:e|es|ing)|swarm(?:s|ing)?|stomp(?:s|ing)?|crawl(?:s|ing)?|creep(?:s|ing)?|(?:keep|kept|keeps) coming|pour(?:s|ing)?|storm(?:s|ing)?)(?= (?:[a-z'-]+ ){0,4}?(?:(?:toward|towards|to|at|on|down|along|up|into) )?(?:the |my |our |your |their |a )(?:[a-z'-]+ ){0,2}?${STRONGHOLD})`,
+    String.raw`\b(?:defend(?:s|ing)?|protect(?:s|ing)?|guard(?:s|ing)?)(?= (?:the|a|an|his|her|its|their|our|my|your|this)\b(?: [a-z']+){0,3}? by (?:throwing|shooting|placing|building|dropping|firing|launching|putting|setting up|tossing|hurling)\b)`,
   ].join('|'))),
   // Krájí a seká se ovoce („slices fruit“); řezat a sekat jde i v kuchyni a v rytmu („swords cutting fruit to music“), proto jen to, co letí.
   v('slice', 'goal', SLICE, new RegExp([
     String.raw`(?<!\b(?:pizza|cake|bread|pie|cheese|apple|lemon|orange|lime|tomato) )\b(?:slic(?:e|es|ing)|slash(?:es|ing)?)(?= ${NOT_THROUGH}(?:[a-z']+ ){0,3}?(?:${FLIGHT}|(?:fruits?|watermelons?|melons?)\b))`,
     String.raw`\b(?:chop(?:s|ping)?|cut(?:s|ting)?)(?= ${NOT_THROUGH}(?:[a-z']+ ){0,3}?${FLIGHT})`,
     String.raw`\bswip(?:e|es|ing) to (?:cut|slice|slash|chop)\b`,
+    // P55 T3: věc vyhozená nebo vyskočivší před řezem („pumpkins get thrown up and you slice them“) a tah prstem přes to,
+    // co letí („swipe through gems tossed in the air“).
+    String.raw`(?<=\b${FLUNG}[^.]*?)\b(?:slic(?:e|es|ing)|slash(?:es|ing)?|chop(?:s|ping)?|cut(?:s|ting)?|split(?:s|ting)?|swip(?:e|es|ing)) (?:them|it|'em|each one)\b`,
+    String.raw`\bswip(?:e|es|ing)(?= (?:through|across|at|over) (?:[a-z']+ ){0,3}?${FLIGHT})`,
   ].join('|'))),
   // P54C T13b: žánry fáze 3, stejně jako žánry pruhů jen se znakem žánru a před `hit`, skokem, sběrem a `make`.
   // Přeskáká se přes silnici, provoz nebo koleje („a chicken crosses a busy road“, „hops across train tracks“) a přes

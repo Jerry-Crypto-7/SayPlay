@@ -199,6 +199,30 @@ describe('classifyGenre', () => {
     expect(sentences.filter((row) => routed.has(row.expect))).toHaveLength(64);
   });
 
+  // P55 T3: holdout P54C otevřený v T16 je od té doby vývojová data – opisy nezávislého autora, na kterých klasifikátor
+  // padal. Pin drží každý pruhový žánr na ≥ 6/8, žádnou větu, kterou P55 výchozí stav trefil, a rušivé věty mimo nové žánry.
+  it('reads the paraphrases of the opened P54C holdout: each lane genre ≥ 6/8, no earlier hit lost, distractors stay out (P55 T3)', () => {
+    const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; family: string; genre: string | null; text: string }[] };
+    const baseline = JSON.parse(readFileSync(new URL('../../../../evals/play/p55/baseline.json', import.meta.url), 'utf8')) as { sets: { p54cHoldoutOpened: { rows: { id: string; expect: string | null; classify: string }[] } } };
+    const hitBefore = new Set(baseline.sets.p54cHoldoutOpened.rows.filter((row) => row.expect === row.classify).map((row) => row.id));
+    const fresh = new Set(['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push']);
+    const hits: Record<string, number> = {};
+    const lost: string[] = [];
+    const strayed: string[] = [];
+    for (const row of json('p54c/holdout.json').sentences) {
+      const first = classifyGenre(row.text, null, GENRE_MODULES).ranked[0];
+      if (row.family === 'distractor') {
+        if (fresh.has(first.genre)) strayed.push(`${row.id}: ${first.genre}`);
+        continue;
+      }
+      if (first.genre === row.genre) hits[row.genre!] = (hits[row.genre!] ?? 0) + 1;
+      else if (hitBefore.has(row.id)) lost.push(`${row.id}: ${first.genre}.${first.mode}`);
+    }
+    for (const genre of ['catch', 'whack', 'defense', 'slice']) expect(hits[genre] ?? 0, genre).toBeGreaterThanOrEqual(6);
+    expect(lost).toEqual([]);
+    expect(strayed).toEqual([]);
+  });
+
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {
     const sentences = [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text), '', '   '];
     for (const sentence of sentences) {
