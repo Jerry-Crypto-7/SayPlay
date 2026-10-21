@@ -132,7 +132,12 @@ export async function POST(request: Request): Promise<Response> {
 
   const versions = store();
   const caller = directorCallerOf(request);
-  if (parentId !== null && (await parentOf(versions, parentId)) === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
+  if (parentId !== null) {
+    const parent = await parentOf(versions, parentId);
+    if (parent === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
+    // Dítě řetězu by obešlo zákaz remixu řetězu (debata T9, revize T10).
+    if (parent.chain !== undefined) return fail(422, 'SPEC_REJECTED', 'a chain of microgames cannot be remixed yet');
+  }
 
   if (sentence !== undefined) {
     // Vyčerpaná kvóta ještě nezavírá: už publikovaná věta je `200` (R8) –

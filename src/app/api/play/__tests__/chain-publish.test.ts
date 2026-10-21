@@ -127,6 +127,9 @@ describe('POST /api/play/games publishes a chain of microgames (P56C T10)', () =
     expect(asked.status).toBe(422);
     const remixed = await remix(post(`/api/play/games/${id}/remix`, { sentence: 'add snow' }, freshCaller()), params(id));
     expect(remixed.status).toBe(422);
+    // Obecné dveře s `parentId` nejsou zadní vrátka k remixu (revize T10).
+    const child = await createGame(post('/api/play/games', { sentence: SINGLE, parentId: id }, freshCaller()));
+    expect(child.status).toBe(422);
     expect(await versionStoreFromEnv(process.env).childrenOf(id)).toEqual([]);
   });
 });
