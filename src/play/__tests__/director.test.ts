@@ -143,7 +143,8 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'whack.default': 'A fox whacks wolves popping out of holes in a dark forest',
   'defense.default': 'A fox defends its den from waves of wolves in a dark forest',
   'slice.default': 'A fox slices flying acorns in a dark forest but not the wolf',
-  'hop.default': 'A fox crosses a busy road in a dark forest past a wolf',
+  // Provoz věta jmenuje: „crosses a busy road“ sám čte záměr jako nejmenovaný `traffic`, který žádná role nedokáže (content.test).
+  'hop.default': 'A fox crosses a busy road full of traffic in a dark forest past a wolf',
   'crowd.default': 'A fox leads a crowd of foxes through gates in a dark forest past a wolf',
   'merge.default': 'A fox drops acorns into a jar in a dark forest and merges matching ones',
   'push.default': 'A fox pushes wolves out of a ring in a dark forest',
@@ -250,6 +251,8 @@ describe('direct – an answer naming a new genre builds that genre and the bot 
     const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, NEUTRAL);
     expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: CONTROL_OF_MODE[`${genre}.default`], genre: { id: genre, mode: 'default' } } });
     expect(game.spec.roles.find((role) => role.kind === 'player')?.label).toBe('fox');
+    expect(game.fallbackReason, game.failure?.detail).toBeNull();
+    expect(game.failure).toBeUndefined();
     expect(botWins(game.spec), genre).toBe(true);
   }, 60_000);
 
@@ -257,6 +260,8 @@ describe('direct – an answer naming a new genre builds that genre and the bot 
     const { answer } = GENRE_ANSWERS.find(({ name }) => name === `${genre}.default`)!;
     const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, SENTENCE_OF_MODE[`${genre}.default`]);
     expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: CONTROL_OF_MODE[`${genre}.default`], genre: { id: genre, mode: 'default' } } });
+    expect(game.fallbackReason, game.failure?.detail).toBeNull();
+    expect(game.failure).toBeUndefined();
     expect(botWins(game.spec), genre).toBe(true);
   }, 60_000);
 });

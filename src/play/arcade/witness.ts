@@ -497,7 +497,8 @@ export class WitnessRecorder {
     if (ref.id === 'merge_join' && effect.kind === 'spawn') this.add('merge', player, effect.template, tick, 'equal-items-merged', state);
     // Vytlačování (P54C T12): soupeř, kterému pravidlo pádu vzalo HP, je za okrajem ringu po výpadu hrdiny – vystrčený.
     // Pád hrdiny z ringu (ztracený život) způsobil soupeř, který u něj stojí nejblíž – ten hrdinu vystrčil (sonda hrozby).
-    if (ref.id === 'push_out' && effect.kind === 'hit' && roleAt(state, effect.body) === ROLE.enemy) this.add('push', player, effect.body, tick, 'pushed-out-of-ring', state);
+    // Záměr čte push a shove jako `kick` (šablona `push` slovníku, `vocab/anchors.ts`) – vystrčení z ringu ho dokazuje stejně.
+    if (ref.id === 'push_out' && effect.kind === 'hit' && roleAt(state, effect.body) === ROLE.enemy) for (const verb of ['push', 'kick']) this.add(verb, player, effect.body, tick, 'pushed-out-of-ring', state);
     if (ref.id === 'push_out' && effect.kind === 'damage') {
       const shover = nearestRival(state);
       if (shover >= 0) this.harm(shover, player, tick, 'pushed-hero-out-of-ring', state);
@@ -608,6 +609,8 @@ export class WitnessRecorder {
     const spike = bodyBase(body);
     if (this.control === 'platform' && code === ROLE.hazard && kindAt(this.world, state, body) === 'spikes' &&
         (state[spike + BODY.flags]! & FLAG.kinematic) === 0 && state[spike + BODY.vx] === 0 && state[spike + BODY.vy] === 0 && state[spike + BODY.vz] === 0) this.add('obstacle', body, player, tick, evidence, state);
+    // Bomba chytání, která sondě padla do koše, je i to, čemu se věta vyhýbá („dodges a wolf“ čte záměr jako `obstacle`).
+    if (evidence === 'falling-bomb-caught') this.add('obstacle', body, player, tick, evidence, state);
     // Hlídka arény používá skutečný dohled; pouhý popisek „guard“ nestačí.
     const control = baseControlOf(this.world.control);
     const sight = (control.params.chase as { patrol?: number } | undefined)?.patrol;
@@ -699,7 +702,13 @@ export class WitnessRecorder {
     // gravity and thrust. Its airborne translation is not driving on a road.
     const verb = this.movementVerb;
     const hero = this.binding(player, state);
-    if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) this.add(verb, player, null, tick, 'player-moved', state);
+    if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) {
+      this.add(verb, player, null, tick, 'player-moved', state);
+      // Záměr čte „crosses the road“ (lexikon `ROAD`) jako běh, „leads a crowd of foxes“ jako `lead` s davem hrdinů:
+      // skok přes silnici a dav, který hrdina vede, je dokazují stejně.
+      if (verb === 'hop') this.add('run', player, null, tick, 'player-moved', state);
+      if (verb === 'crowd') this.add('lead', player, player, tick, 'player-moved', state);
+    }
     if (this.race) {
       for (const b of this.bindings.values()) {
         if (roleAt(state, b.body) !== ROLE.enemy || !live(state, b.body)) continue;
