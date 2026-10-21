@@ -1,0 +1,142 @@
+{
+  "measuredAt": "2026-10-21T13:10:05.137Z",
+  "seeds": [
+    1,
+    2,
+    8,
+    9,
+    13,
+    20
+  ],
+  "repeats": 3,
+  "rows": [
+    {
+      "key": "runner.default",
+      "control": "runner",
+      "boss": false,
+      "verifyMs": 163,
+      "verifyMaxMs": 347,
+      "cheapMs": 43
+    },
+    {
+      "key": "platformer.default",
+      "control": "platform",
+      "boss": false,
+      "verifyMs": 21,
+      "verifyMaxMs": 45,
+      "cheapMs": 11
+    },
+    {
+      "key": "hop.default",
+      "control": "hop",
+      "boss": false,
+      "verifyMs": 60,
+      "verifyMaxMs": 158,
+      "cheapMs": 54
+    },
+    {
+      "key": "flap.default",
+      "control": "flap",
+      "boss": false,
+      "verifyMs": 10,
+      "verifyMaxMs": 18,
+      "cheapMs": 6
+    },
+    {
+      "key": "shooter.default",
+      "control": "shooter",
+      "boss": false,
+      "verifyMs": 11,
+      "verifyMaxMs": 34,
+      "cheapMs": 5
+    },
+    {
+      "key": "timing.stack",
+      "control": "timing",
+      "boss": false,
+      "verifyMs": 6,
+      "verifyMaxMs": 15,
+      "cheapMs": 3
+    },
+    {
+      "key": "timing.precision",
+      "control": "timing",
+      "boss": false,
+      "verifyMs": 5,
+      "verifyMaxMs": 6,
+      "cheapMs": 2
+    },
+    {
+      "key": "rhythm.default",
+      "control": "rhythm",
+      "boss": false,
+      "verifyMs": 5,
+      "verifyMaxMs": 10,
+      "cheapMs": 4
+    },
+    {
+      "key": "catch.default",
+      "control": "lanes",
+      "boss": false,
+      "verifyMs": 27,
+      "verifyMaxMs": 46,
+      "cheapMs": 17
+    },
+    {
+      "key": "whack.default",
+      "control": "lanes",
+      "boss": false,
+      "verifyMs": 21,
+      "verifyMaxMs": 35,
+      "cheapMs": 13
+    },
+    {
+      "key": "defense.default",
+      "control": "lanes",
+      "boss": false,
+      "verifyMs": 30,
+      "verifyMaxMs": 63,
+      "cheapMs": 20
+    },
+    {
+      "key": "duel.default",
+      "control": "duel",
+      "boss": false,
+      "verifyMs": 5,
+      "verifyMaxMs": 10,
+      "cheapMs": 3
+    },
+    {
+      "key": "crowd.default",
+      "control": "crowd",
+      "boss": false,
+      "verifyMs": 7,
+      "verifyMaxMs": 15,
+      "cheapMs": 3
+    },
+    {
+      "key": "shooter.default.boss",
+      "control": "shooter",
+      "boss": true,
+      "verifyMs": 30,
+      "verifyMaxMs": 33,
+      "cheapMs": 14
+    },
+    {
+      "key": "defense.default.boss",
+      "control": "lanes",
+      "boss": true,
+      "verifyMs": 41,
+      "verifyMaxMs": 51,
+      "cheapMs": 29
+    },
+    {
+      "key": "duel.default.boss",
+      "control": "duel",
+      "boss": true,
+      "verifyMs": 8,
+      "verifyMaxMs": 21,
+      "cheapMs": 5
+    }
+  ]
+}
