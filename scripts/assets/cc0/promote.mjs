@@ -111,7 +111,8 @@ export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET
   if (folder > budget.totalBytes) problems.push(`cc0 folder ${PUBLIC_DIR} holds ${folder} B, over the ${budget.totalBytes} B total`);
   const records = new Map(disclosure.entries.filter((entry) => entry.kind === 'asset').map((entry) => [entry.name, entry]));
   const own = new Set(catalog.assets.filter((asset) => !isCc0(asset)).flatMap((asset) => [asset.assetId, ...asset.tags]));
-  for (const asset of catalog.assets.filter(isCc0)) {
+  // Vyměněný pod stejným id (P57) už CC0 není; jeho licenci hlídá `checkReplaced` v `scripts/p37d/promote-batch.mjs`.
+  for (const asset of catalog.assets.filter((asset) => isCc0(asset) && !asset.provenance.replacedAt)) {
     const { license, licenseEvidence } = asset.provenance;
     const refused = licenseProblem({ license });
     if (refused) problems.push(`${asset.assetId}: ${refused}`);

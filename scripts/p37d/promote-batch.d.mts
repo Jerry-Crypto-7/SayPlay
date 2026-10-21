@@ -8,3 +8,13 @@ export declare function promoteBatch(
   batch: { schema?: string; entries: readonly Record<string, unknown>[] },
   options?: { root?: string; sync?: boolean; drop?: string[] },
 ): Promise<{ promoted: string[]; skipped: { id: string; reason: string }[]; dropped: string[] }>;
+export declare const REPLACED_DIR: string;
+export declare function replaceModels(
+  batch: { schema?: string; entries: readonly Record<string, unknown>[] },
+  options?: { root?: string; sync?: boolean; replacedDir?: string },
+): Promise<{ replaced: string[]; skipped: { id: string; reason: string }[] }>;
+export declare function checkReplaced(input: {
+  catalog: { assets: readonly unknown[] };
+  disclosure: { entries: readonly unknown[] };
+  root?: string;
+}): Promise<string[]>;

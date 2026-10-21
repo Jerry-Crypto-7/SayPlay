@@ -1,12 +1,15 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { isGen3d } from '../../assets/gen3d/promote.mjs';
-import { LICENSE, PUBLIC_DIR, promoteBatch } from '../promote-batch.mjs';
+import { LICENSE, PUBLIC_DIR, checkReplaced, promoteBatch, replaceModels } from '../promote-batch.mjs';
 
 /**
  * Povýšení dávky do katalogu (P37D T3) nad dočasným kořenem: přijatý model projde
@@ -19,7 +22,7 @@ const GLB = path.join(ROOT, 'public/assets/worldstream/gen3d/gen3d-acorn-lod0.gl
 const roots: string[] = [];
 
 const taken = {
-  assetId: 'gen3d-taken', tags: ['toad'], bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+  assetId: 'gen3d-taken', tags: ['toad'], bounds: { min: [0, 0, 0], max: [1, 1, 1] }, provenance: { source: 'scripts/assets/gen3d/promote.mjs' },
   lods: [{ level: 0, path: '/assets/worldstream/gen3d/gen3d-taken-lod0.glb' }, { level: 1, path: '/assets/worldstream/gen3d/gen3d-taken-lod1.glb' }],
 };
 
@@ -43,7 +46,127 @@ const read = (root: string, file: string) => JSON.parse(readFileSync(path.join(r
 afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
   // `normalizeModel` pracuje v `asset-quarantine/<id>` repa, ne pod dočasným kořenem.
-  for (const id of ['gen3d-test-acorn', 'gen3d-test-broken']) rmSync(path.join(ROOT, 'asset-quarantine', id), { recursive: true, force: true });
+  for (const id of ['gen3d-test-acorn', 'gen3d-test-broken', 'cc0-test-grass']) rmSync(path.join(ROOT, 'asset-quarantine', id), { recursive: true, force: true });
+});
+
+/** Model z repa přeškálovaný v osách – kandidát výměny s předem známým rozměrem. */
+async function scaled(root: string, file: string, scale: [number, number, number]): Promise<string> {
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  const doc = await io.read(path.join(ROOT, file));
+  for (const node of doc.getRoot().listScenes()[0].listChildren()) {
+    const [x, y, z] = node.getScale();
+    node.setScale([x * scale[0], y * scale[1], z * scale[2]]).setTranslation(node.getTranslation().map((value, axis) => value * scale[axis]) as [number, number, number]);
+  }
+  const out = path.join(root, `in-${scale.join('x')}-${path.basename(file)}`);
+  await io.write(out, doc);
+  return out;
+}
+
+const GRASS = 'cc0-grass';
+const TEST_GRASS = 'cc0-test-grass';
+const sha = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex');
+
+/**
+ * Dočasný kořen se skutečnou CC0 trávou z katalogu repa pod testovým id: soubory,
+ * záznam katalogu i CC0 záznamy disclosure, jako je má 19 CC0 modelů z `below6` (P57 T4).
+ */
+function makeReplaceRoot() {
+  const root = makeRoot();
+  const repoCatalog = JSON.parse(readFileSync(path.join(ROOT, 'src/assets/catalog.json'), 'utf8'));
+  const grass = JSON.parse(JSON.stringify(repoCatalog.assets.find((asset: { assetId: string }) => asset.assetId === GRASS)).replaceAll(GRASS, TEST_GRASS));
+  const repoDisclosure = JSON.parse(readFileSync(path.join(ROOT, 'disclosure.json'), 'utf8'));
+  const files = [...grass.lods.map((lod: { path: string }) => lod.path), grass.thumbnail].map((url: string) => `public${url}`);
+  mkdirSync(path.join(root, 'public/assets/worldstream/cc0'), { recursive: true });
+  const records = files.map((name: string) => {
+    copyFileSync(path.join(ROOT, name.replace(TEST_GRASS, GRASS)), path.join(root, name));
+    return { ...repoDisclosure.entries.find((record: { name: string }) => record.name === name.replace(TEST_GRASS, GRASS)), name };
+  });
+  writeFileSync(path.join(root, 'src/assets/catalog.json'), JSON.stringify({ version: 1, assets: [taken, grass] }));
+  writeFileSync(path.join(root, 'disclosure.json'), JSON.stringify({ $comment: 'test', entries: [{ name: 'public/other.png', kind: 'asset' }, ...records] }));
+  return { root, grass, files, replacedDir: path.join(root, 'replaced') };
+}
+
+describe('promote-batch --replace (P57 T5)', () => {
+  it('replaces a CC0 model under the same id: same paths, kept gameplay fields, old files kept aside', async () => {
+    const { root, grass, files, replacedDir } = makeReplaceRoot();
+    const oldHashes = files.map((name) => sha(path.join(root, name)));
+    const glb = await scaled(root, grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS), [1.05, 1.05, 1.05]);
+
+    const { replaced, skipped } = await replaceModels({ schema: 'catalog-batch.v1', entries: [entry(TEST_GRASS, ['grass'], { glb })] }, { root, sync: false, replacedDir });
+
+    expect(skipped).toEqual([]);
+    expect(replaced).toEqual([TEST_GRASS]);
+    const catalog = read(root, 'src/assets/catalog.json');
+    expect(catalog.assets.map((asset: { assetId: string }) => asset.assetId)).toEqual(['gen3d-taken', TEST_GRASS]);
+    const asset = catalog.assets[1];
+    for (const key of ['assetId', 'tags', 'collision', 'sockets', 'pivot', 'thumbnail']) expect(asset[key]).toEqual(grass[key]);
+    expect(asset.version).toBe(grass.version + 1);
+    expect(asset.lods.map((lod: { path: string }) => lod.path)).toEqual(grass.lods.map((lod: { path: string }) => lod.path));
+    for (const lod of asset.lods) {
+      const file = path.join(root, `public${lod.path}`);
+      expect(sha(file)).toBe(lod.hash);
+      expect(readFileSync(file).length).toBe(lod.bytes);
+    }
+    expect(asset.hash).toBe(asset.lods[0].hash);
+    expect(asset.hash).not.toBe(grass.hash);
+    expect(asset.lods[1].triangles).toBeLessThanOrEqual(grass.lods[1].triangles);
+    // Nový rozměr ze souboru: 5 % větší v každé ose.
+    for (let axis = 0; axis < 3; axis++) {
+      const ratio = (asset.bounds.max[axis] - asset.bounds.min[axis]) / (grass.bounds.max[axis] - grass.bounds.min[axis]);
+      expect(ratio).toBeCloseTo(1.05, 2);
+    }
+    expect(asset.label).toBe('Grass (generated)');
+    expect(asset.provenance).toMatchObject({ license: LICENSE, replacedAt: new Date().toISOString().slice(0, 10), replacedFrom: grass.provenance.source });
+    expect(asset.provenance.source).toMatch(/ops\/gen3d.*P57/);
+
+    // Staré soubory vedle, po verzích: návrat = zkopírovat zpět.
+    expect(files.map((name) => sha(path.join(replacedDir, TEST_GRASS, `v${grass.version}`, path.basename(name))))).toEqual(oldHashes);
+    const disclosure = read(root, 'disclosure.json');
+    for (const name of files) expect(disclosure.entries.find((record: { name: string }) => record.name === name)).toMatchObject({ license: LICENSE, firstParty: true });
+    expect(read(root, 'src/assets/catalog-index.json').assets[1]).toMatchObject({ assetId: TEST_GRASS, bounds: asset.bounds });
+    expect(readFileSync(path.join(root, PUBLIC_DIR, 'PROVENANCE.md'), 'utf8')).toMatch(new RegExp(`${TEST_GRASS}.*replaced`));
+    expect(await checkReplaced({ catalog, disclosure, root })).toEqual([]);
+  }, 180_000);
+
+  it('refuses a size change over 10 % in any axis, a heavier LOD1 and an unknown id, and touches nothing', async () => {
+    const { root, grass, files, replacedDir } = makeReplaceRoot();
+    const before = ['src/assets/catalog.json', 'disclosure.json', ...files].map((name) => sha(path.join(root, name)));
+    const lod0 = grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS);
+    const deeper = await scaled(root, lod0, [1, 1, 1.15]);
+    // Žalud (LOD1 2 370 trojúhelníků) vtěsnaný do krabice trávy (LOD1 96): rozměr sedí, váha ne.
+    const heavy = await scaled(root, 'public/assets/worldstream/gen3d/gen3d-acorn-lod0.glb', [0.4988, 1.2021, 0.6969]);
+
+    const { replaced, skipped } = await replaceModels({
+      schema: 'catalog-batch.v1',
+      entries: [entry(TEST_GRASS, ['grass'], { glb: deeper }), entry(TEST_GRASS, ['grass'], { glb: heavy }), entry('gen3d-test-nowhere', ['nowhere'])],
+    }, { root, sync: false, replacedDir });
+
+    expect(replaced).toEqual([]);
+    expect(skipped).toEqual([
+      { id: TEST_GRASS, reason: expect.stringMatching(/^bounds: z /) },
+      { id: TEST_GRASS, reason: expect.stringMatching(/^lod1: /) },
+      { id: 'gen3d-test-nowhere', reason: 'not in the catalog, nothing to replace' },
+    ]);
+    expect(['src/assets/catalog.json', 'disclosure.json', ...files].map((name) => sha(path.join(root, name)))).toEqual(before);
+    expect(existsSync(replacedDir)).toBe(false);
+  }, 180_000);
+
+  it('checkReplaced flags a replaced model whose bounds, file or disclosure drifted', async () => {
+    const { root, grass, replacedDir } = makeReplaceRoot();
+    const glb = await scaled(root, grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS), [1.05, 1.05, 1.05]);
+    await replaceModels({ schema: 'catalog-batch.v1', entries: [entry(TEST_GRASS, ['grass'], { glb })] }, { root, sync: false, replacedDir });
+    const catalog = read(root, 'src/assets/catalog.json');
+    const disclosure = read(root, 'disclosure.json');
+
+    const wide = structuredClone(catalog);
+    wide.assets[1].bounds.max[0] += 0.05;
+    expect((await checkReplaced({ catalog: wide, disclosure, root })).join('\n')).toMatch(new RegExp(`${TEST_GRASS}: bounds`));
+    const reverted = structuredClone(disclosure);
+    reverted.entries.find((record: { name: string }) => record.name.endsWith(`${TEST_GRASS}-lod1.glb`)).license = 'CC0-1.0';
+    expect((await checkReplaced({ catalog, disclosure: reverted, root })).join('\n')).toMatch(/lod1\.glb.*CC0-1\.0/);
+    rmSync(path.join(root, `public${grass.thumbnail}`));
+    expect((await checkReplaced({ catalog, disclosure, root })).join('\n')).toMatch(/\.png is missing/);
+  }, 180_000);
 });
 
 describe('promote-batch (P37D T3)', () => {

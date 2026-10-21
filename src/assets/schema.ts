@@ -43,6 +43,8 @@ export const assetRecordSchema = z.object({
     source: z.string().min(1).max(2048), author: z.string().min(1).max(160),
     license: z.string().min(1).max(160), licenseEvidence: z.string().min(1).max(2048),
     importedAt: z.string().date(), sourceHash: contentHashSchema,
+    /** Model vyměněný pod stejným id (P57, `promote-batch.mjs --replace`) a původ toho, co nahradil. */
+    replacedAt: z.string().date().optional(), replacedFrom: z.string().min(1).max(2048).optional(),
   }).strict(),
   units: z.literal('meters'), up: z.literal('+Y'), front: z.literal('+Z'), pivot: vector,
   bounds, stretchableAxes: z.array(z.enum(['x', 'y', 'z'])).max(3),
