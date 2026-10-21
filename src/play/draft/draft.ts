@@ -41,6 +41,7 @@ import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import type { Reading } from '../read/schema';
+import { moderatePrompt, PLAY_MODERATION } from '../../server/moderation';
 import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import {
   CAST_MAX,
@@ -265,6 +266,20 @@ function titleFrom(sentence: string, fallback: string): string {
   while (words.length > 1 && TITLE_TAIL.has(words.at(-1)!)) words.pop();
   const title = words.length === 0 ? fallback : titleCase(words);
   return cap(title, 80);
+}
+
+/** Šablona názvu modulu nebo skladatele („Corgi Run“, „Bee Defense“): postava a druh hry. */
+const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase)$/i;
+
+/**
+ * Název hry z věty (P56A T8): název čtení, když projde – nejvýš 32 znaků, filtr obsahu feedu (`blockedText` v
+ * `publishReadSpec`) a žádná šablona „<Postava> Run“, jejíž druh hry věta neříká; jinak nosná slova věty.
+ */
+function sentenceTitle(sentence: string, reading: Reading | null, fallback: string): string {
+  const read = reading?.title?.trim() ?? '';
+  const kind = TEMPLATE_TITLE.exec(read)?.[1]?.toLowerCase().replace(/e$/, '');
+  const said = kind === undefined || sentence.toLowerCase().split(/[^a-z]+/).some((token) => token.startsWith(kind));
+  return read.length <= 32 && said && moderatePrompt(read, PLAY_MODERATION).ok ? read : titleFrom(sentence, fallback);
 }
 
 const TITLE_TAIL = new Set([
@@ -1428,11 +1443,15 @@ function boundedCounts(spec: GenreSpec, counts: Partial<Record<CountRole, number
   return kept.length === 0 ? null : Object.fromEntries(kept);
 }
 
-/** Návrh a to, co věta řekne o světle (P54B T11): počasí a denní doba do uloženého `theme`, nic jiného. */
+/**
+ * Návrh, to, co věta řekne o světle (P54B T11) – počasí a denní doba do uloženého `theme` – a název z věty místo
+ * šablony modulu (P56A T8). Čtení, ze kterého návrh nic nevzal (mřížka `readBy: 'keywords'`), název nedá.
+ */
 export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
   const meta = draftMeta(sentence, seed, options);
   const sky = sentenceSky(sentence, meta.spec.theme);
-  return Object.keys(sky).length === 0 ? meta : { ...meta, spec: { ...meta.spec, theme: { ...meta.spec.theme, ...sky } } };
+  const title = sentenceTitle(sentence, meta.readBy === 'model' ? (options.reading ?? null) : null, meta.spec.title);
+  return { ...meta, spec: { ...meta.spec, title, theme: { ...meta.spec.theme, ...sky } } };
 }
 
 function draftMeta(sentence: string, seed: number, options: DraftOptions): DraftMeta {
