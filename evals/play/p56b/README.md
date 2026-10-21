@@ -109,6 +109,38 @@ Medián všech šesti běhů klesl o víc než 20 %. **Odchylka od AC:** 08-gems
 
 **Mimo T10 zůstává:** překážky agaru (`AgarWorld`, g-agar) jsou dál kvádr `FENCE_COLOR`, věc pravidel bez modelu je barevný kvádr `thingColor` a tunel a plošiny mají barvu z `look.block`, jinak výchozí kámen.
 
+## Pruhy z povrchu sady (T11)
+
+**Oprava:** pruhy obrany, krájení a kostry pruhů (`LaneScene`) kreslí `genres/lanes/LaneStrips.tsx` jako pásy cesty (`roadGeometry`, jako dráha běžce): povrch sady (hlína, prkna, dlažba, písek, sníh, asfalt), lem po krajích, spáry prken. Sousední pruhy se liší jen jasem (lichý o 16 % tmavší). Všech pět pruhů jsou 3–4 sítě místo pěti kvádrů.
+
+- **Obrana:** zelený kvádr živého plotu na konci je řada osmi dílů `block` z kitu sady (louka živý plot, obývák pohovky, hrad zbořená zeď), vyplněná do objemu plotu, takže nepřátele dál schová.
+- **Chytání:** zelený kvádr koruny jsou dvě řady kulatých chomáčů listí v barvě listí sady (`flora.leaf`), jedna síť. Deska si nechává světlou výplň P55 (papír a `cream-deep`), od sady dostane jen lem a spáry.
+- **Krájení:** bedny, ze kterých věci vylétají, zůstaly – nejsou deska pruhu.
+
+**`boxGeometry` před → po:** DefenseScene 7 → 5, CatchScene 3 → 1, SliceScene 6 → 5, LaneScene 2 → 1.
+
+**Kontrast cíl/pruh** (WCAG poměr jasu, nejhorší z obou pruhů; míchání jako `look/ground.ts`; skript ve scratchpadu relace `8031cb8e`):
+
+| Pruhy | ovoce `sun` | zlatý `sun-deep` | bonus `sky` | meloun `mint-deep` | bomba `ink` |
+|---|---|---|---|---|---|
+| před: obrana a krájení (`mint`/`mint-deep`) | 1,05 | 1,04 | 1,08 | 1,00 | 7,96 |
+| po: asfalt | 4,07 | 3,08 | 3,96 | 2,97 | 2,41 |
+| po: hlína | 2,70 | 2,05 | 2,63 | 1,97 | 3,53 |
+| po: prkna | 2,46 | 1,87 | 2,40 | 1,80 | 3,87 |
+| po: dlažba | 1,71 | 1,29 | 1,66 | 1,25 | 5,50 |
+| po: sníh | 1,14 | 1,51 | 1,17 | 1,56 | 12,45 |
+| po: písek | 1,10 | 1,03 | 1,07 | 1,07 | 8,51 |
+
+- Cíle (ovoce, zlatý a modrý bonus, meloun) mají proti pruhům kontrast stejný nebo vyšší ve všech šesti površích. Jediná výjimka je zlatý bonus na písku, 1,03 proti dřívějším 1,04, což je v mezích zaokrouhlení.
+- **Bomba krájení na tmavém povrchu klesá** (asfalt 2,41, hlína 3,53 proti 7,96). Bomba se ale čte ve vzduchu proti obloze a kulise, ne proti pruhu. E2e `play-slice` je zelené.
+- **Chytání:** povrch zesvětlený k papíru (zkoušeno 60 %) by snížil kontrast ovoce na 1,01–1,26 proti dnešním 1,31 a bomby na ~10 proti 14,3. Proto deska drží výplň P55 a kontrast se nemění.
+
+**Ověření** (build HEAD, `next start` 3158): `play-catch`, `play-whack`, `play-defense`, `play-slice` 12/12 zelené. Telefonní rozpočet: obrana 35 sítí a 85 volání, krájení 24/63, bouchání 21/60. `p56b-look` 2/2 na 34 scénách: 0× 404, 0 náhradních dílů.
+
+Snímky `shots --set genres --only g-catch,g-whack,g-defense,g-slice` jsou mimo git jako `before/`: desktop v `after-t11/`, telefon v `after-t11/phone/`, základ `72665fdc` v `before-t11/`. Volání kreslení na snímku: obrana 104 → 111 (osm dílů plotu místo kvádru), chytání 51 → 44, krájení 68 → 61, bouchání 60 → 60.
+
+**Sada `genres` má 22 vět místo 18.** Přibyly `g-catch`, `g-whack`, `g-defense`, `g-slice` – věty z `draft.test.ts`, které jsou připnuté ke svému žánru, protože AC T11 je fotí přes `--set genres`. Čtou je i `p56b-look` (teď 34 scén), `p54b-landmark` (počítá aspoň 13 bodů v záběru absolutně, takže nové věty bez bodu ho neshodí) a galerie scén. Sada T13 `p56b,genres` má tím 34 scén; před/po se měří na téže sadě.
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.

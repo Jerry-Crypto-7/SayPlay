@@ -13,8 +13,9 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useCallback, useMemo, useRef } from 'react';
-import { type Group, type PerspectiveCamera, Vector3 } from 'three';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { type Group, IcosahedronGeometry, type PerspectiveCamera, Vector3 } from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
@@ -28,8 +29,10 @@ import type { GhostPlacement } from '../../Ghost';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
+import { hash } from '../../look/ground';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
+import { LaneStrips } from '../lanes/LaneStrips';
 
 const m = (units: number): number => units / UNIT;
 const LANE_M = m(LANES.width);
@@ -50,6 +53,41 @@ const lerp = (from: number, to: number, alpha: number): number => from + (to - f
 const LANE_EDGES = Array.from({ length: LANES.count - 1 }, (_, lane) => laneX(lane) + LANES.width / 2);
 
 type CatchSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
+
+/**
+ * Deska chytání (P56B T11): výplň zůstává světlá deska P55 – v povrchu sady by žluté ovoce proti ní ztratilo
+ * kontrast (README T11) –, lem a spáry dává povrch sady zesvětlený o `BOARD_LIGHT` k papíru.
+ */
+const BOARD: readonly [string, string] = [color.paper, color['cream-deep']];
+const BOARD_LIGHT = 0.3;
+
+/**
+ * Koruna, ze které věci padají (P56B T11): dvě řady kulatých chomáčů listí s ploškami místo zeleného
+ * kvádru, velikost a výška z hashe pořadí (stejná hra, stejná koruna). Spodek chomáčů drží `CANOPY.bottom`
+ * až na pár centimetrů – pod ním je věc vidět. Jedna síť, jedno volání jako kvádr.
+ */
+function Canopy({ tint }: { readonly tint: string }) {
+  const geometry = useMemo(() => {
+    const width = FIELD_HALF * 2 + 1;
+    const radius = CANOPY.h * 0.55;
+    const puffs = [0, 1].flatMap((row) => {
+      const count = Math.round(width / (radius * 1.5)) - row;
+      return Array.from({ length: count }, (_, k) => {
+        const size = radius * (0.85 + 0.3 * hash(k, row + 3));
+        return new IcosahedronGeometry(size, 1).translate(-width / 2 + (width * (k + 0.5)) / count, CANOPY.bottom + size * 0.9 + 0.12 * hash(k, row + 9), row);
+      });
+    });
+    const merged = mergeGeometries(puffs);
+    for (const puff of puffs) puff.dispose();
+    return merged;
+  }, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return (
+    <mesh geometry={geometry}>
+      <meshStandardMaterial color={tint} roughness={0.9} flatShading />
+    </mesh>
+  );
+}
 
 function Fruit() {
   return (
@@ -162,17 +200,9 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
     <>
       <FieldGround look={look} area={LAND} y={-0.03} />
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={24} />
-      {Array.from({ length: LANES.count }, (_, lane) => (
-        <mesh key={lane} position={[-laneX(lane) / UNIT, -0.01, 0]} receiveShadow>
-          <boxGeometry args={[LANE_M * 0.94, 0.04, 3]} />
-          {/* Světlá deska (P55 T5): ovoce, bomby i bonusy na ní čtou dál než na zelené. */}
-          <meshStandardMaterial color={lane % 2 === 0 ? color.paper : color['cream-deep']} />
-        </mesh>
-      ))}
-      <mesh position={[0, CANOPY.bottom + CANOPY.h / 2, 0.6]}>
-        <boxGeometry args={[FIELD_HALF * 2 + 1, CANOPY.h, 2.2]} />
-        <meshStandardMaterial color={color.grass} roughness={0.9} />
-      </mesh>
+      {/* Světlá deska (P55 T5) s lemem a spárami povrchu sady (P56B T11): ovoce, bomby i bonusy na ní čtou dál než na zelené. */}
+      <LaneStrips look={look} z0={-1.5} z1={1.5} light={BOARD_LIGHT} fill={BOARD} />
+      <Canopy tint={look.flora?.leaf ?? look.tint[0]} />
       <group ref={hero} userData={{ frame: 'hero' }}>
         {/* Kamera kouká po +z: hrdina se otočí čelem k ní. */}
         <group rotation={[0, Math.PI, 0]}>
