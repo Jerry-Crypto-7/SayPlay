@@ -41,6 +41,22 @@ export function takeCodexCall(file, day, cap = CODEX_DAILY_CAP) {
 /** Pořadí soudu: top 300 podle použití, pak vzorek; každé id jednou. */
 export const judgeIds = (usage) => [...new Set([...usage.top300, ...usage.sample100])];
 
+/** Listí louky (`MEADOW_FLORA.leaf`): vegetace je nejčastěji v louce. */
+export const MEADOW_LEAF = '#4f9a3a';
+
+/**
+ * Položky pro `qa-sheets.mjs --ids`: model, který je ve hrách hlavně vegetací (aspoň polovina
+ * výskytů), dostane barvu listí, jak ho hra kreslí – šedé listí katalogu by soudce trestal za
+ * barvu, kterou hráč nikdy nevidí.
+ */
+export function sheetEntries(usage) {
+  const used = new Map(usage.models.map((model) => [model.id, model]));
+  return judgeIds(usage).map((id) => {
+    const model = used.get(id);
+    return model !== undefined && (model.roles.flora ?? 0) * 2 >= model.uses ? { id, leaf: MEADOW_LEAF } : { id };
+  });
+}
+
 /** Buňky listu zpět na modely přes `grid-index.json`: `{ assetId: { sheet, cell, …skóre } | null }`. */
 export const cellsBack = (sheet, scored) => Object.fromEntries(sheet.cells.map((id, index) => [id, scored[index] ? { sheet: sheet.sheet, ...scored[index] } : null]));
 
@@ -113,7 +129,7 @@ async function main() {
   const indexFile = path.join(sheetsDir, 'grid-index.json');
   if (!existsSync(indexFile)) {
     const idsFile = path.join(out, 'ids.json');
-    writeFileSync(idsFile, JSON.stringify(judgeIds(usage)));
+    writeFileSync(idsFile, JSON.stringify(sheetEntries(usage)));
     // Selhání vykreslení zapíše `failures.json` a vrátí 1; prázdná buňka dostane od soudce „broken“.
     spawnSync(process.execPath, [path.join(ROOT, 'scripts/assets/qa-sheets.mjs'), '--grid', '3', '--ids', idsFile, '--out', sheetsDir], { stdio: 'inherit' });
   }

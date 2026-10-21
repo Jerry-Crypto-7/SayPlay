@@ -5,7 +5,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { gridPlan } from '../../assets/qa-grid.mjs';
-import { CODEX_DAILY_CAP, cellsBack, judgeIds, judgesFor, mergeAttempts, summarize, takeCodexCall } from '../judge-library.mjs';
+import { CODEX_DAILY_CAP, cellsBack, judgeIds, judgesFor, MEADOW_LEAF, mergeAttempts, sheetEntries, summarize, takeCodexCall } from '../judge-library.mjs';
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -41,6 +41,19 @@ describe('takeCodexCall', () => {
 describe('judgeIds', () => {
   it('judges the top list in usage order, then the sample, each id once', () => {
     expect(judgeIds({ top300: ['b', 'a', 'c'], sample100: ['z', 'a', 'y'] })).toEqual(['b', 'a', 'c', 'z', 'y']);
+  });
+
+  it('paints the leaves of models the games mostly show as vegetation, as the game does', () => {
+    const usage = {
+      top300: ['grass', 'barn', 'bush'],
+      sample100: ['unused'],
+      models: [
+        { id: 'grass', uses: 4, roles: { flora: 4 } },
+        { id: 'barn', uses: 3, roles: { scenery: 2, flora: 1 } },
+        { id: 'bush', uses: 2, roles: { scenery: 1, flora: 1 } },
+      ],
+    };
+    expect(sheetEntries(usage)).toEqual([{ id: 'grass', leaf: MEADOW_LEAF }, { id: 'barn' }, { id: 'bush', leaf: MEADOW_LEAF }, { id: 'unused' }]);
   });
 });
 

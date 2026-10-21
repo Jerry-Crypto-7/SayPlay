@@ -8,6 +8,12 @@ export declare const AGREE_WITHIN: number;
 export declare function judgesFor(n: number): Judge[];
 export declare function takeCodexCall(file: string, day: string, cap?: number): boolean;
 export declare function judgeIds(usage: { top300: string[]; sample100: string[] }): string[];
+export declare const MEADOW_LEAF: string;
+export declare function sheetEntries(usage: {
+  top300: string[];
+  sample100: string[];
+  models: { id: string; uses: number; roles: Partial<Record<string, number>> }[];
+}): { id: string; leaf?: string }[];
 export declare function cellsBack(sheet: { sheet: string; cells: string[] }, scored: (ScoredCell | null)[]): Record<string, (ScoredCell & { sheet: string }) | null>;
 export declare function mergeAttempts(first: (ScoredCell | null)[], second: (ScoredCell | null)[]): (ScoredCell | null)[];
 export declare function summarize(
