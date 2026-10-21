@@ -67,11 +67,12 @@ export interface ArenaFraming {
 
 /**
  * Audit 21. 10.: hrdina malý a daleko, na telefonu nepřítel za okrajem obrazu (08-gems: v 0 % tiků).
- * Hrdina větší (strop 0,1 → 0,14, na výšku 0,11 → 0,16: kamera o ~30 % blíž) a blízká hrozba
- * v záběru i nad strop, nejvýš 2,5× – hrdina pak pořád ≥ 5,6 % výšky obrazu (P35 T2 měl 4,7 %).
+ * Hrdina větší (strop 0,1 → 0,14, na výšku 0,11 → 0,18: kamera o ~30–40 % blíž) a blízká hrozba
+ * v záběru i nad strop, nejvýš 1,8×, na výšku 2,1× – hrdina pak pořád ≥ 7,8 % výšky obrazu, na výšku
+ * 8,6 % (podlaha `e2e/p32-arena.spec.ts` 7 a 8 %; 2,5× dalo kočce na telefonu 6,4 %).
  * `nearest` se neměnil: s hrdinou do 1,3 m vždy rozhoduje strop pod ním (`arena-camera.test.ts`).
  */
-export const ARENA_FRAMING: ArenaFraming = { nearest: 16, see: 9, seeTall: 5, heroShare: 0.14, heroShareTall: 0.16, stretch: 2.5, stretchTall: 2.5 };
+export const ARENA_FRAMING: ArenaFraming = { nearest: 16, see: 9, seeTall: 5, heroShare: 0.14, heroShareTall: 0.18, stretch: 1.8, stretchTall: 2.1 };
 
 /** Nejmenší vzdálenost kamery od cíle pohledu, aby bod (m vůči cíli, poloměr `r`) promítl do ±`edge` NDC. */
 export function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, aspect: number, edge: number, tilt: Tilt): number {
@@ -96,9 +97,10 @@ export interface ArenaView {
 const heroReach = (view: ArenaView, from: Spot): number =>
   reachOf(view.hero.x - from.x, view.heroSize.h / 2, view.hero.z - from.z, Math.max(view.heroSize.w, view.heroSize.d) / 2, view.tan, view.aspect, HERO_EDGE, view.tilt);
 
+/** Hrozba se rámuje středem, ne celým tělem: na výšku by celé tělo kameru oddálilo pod podlahu hrdiny. */
 const threatReach = (view: ArenaView, from: Spot): number => {
   const threat = view.threat!;
-  return reachOf(threat.at.x - from.x, threat.size.h / 2, threat.at.z - from.z, Math.max(threat.size.w, threat.size.d) / 2, view.tan, view.aspect, THREAT_EDGE, view.tilt);
+  return reachOf(threat.at.x - from.x, threat.size.h / 2, threat.at.z - from.z, 0, view.tan, view.aspect, THREAT_EDGE, view.tilt);
 };
 
 /** Strop vzdálenosti: hrdina drží `heroShare` výšky obrazu. */

@@ -51,6 +51,21 @@ Obojí opravil `bc9c9408` (T3).
 
 **Věta → hratelná** (`scripts/measure/first-playable-ab.mjs`, A = `72665fdc` na 3157, B = T4 na 3158, 6 vět auditu × desktop + Pixel 7 CPU 4×, A a B prokládaně): server A po 24 bězích přestal odpovídat (`page.goto` 60 s), takže platí **8 úplných dvojic** z plánovaných 36. Medián rozdílu B − A ve dvojici **−57 ms** (desktop +44 ms, telefon −202 ms), rozdíl mediánů +400 ms (2 671 → 3 071 ms, táhne ho jediná dvojice 02-ghost desktop +1 279 ms), první snímek +22 ms. Obojí pod šumem 414 ms z `evals/play/first-playable/README.md` – T4 dobu do hratelnosti nezhoršila. Surová data `runs.jsonl` mimo repo (scratchpad relace `793eb4f9`).
 
+## Kamera arény (T9)
+
+`ARENA_OUT=<soubor> npx vitest run src/components/play/arcade/__tests__/arena-camera.test.ts` – robot hraje 600 tiků, poměr 1280/800 (wide) a 390/844 (tall). Vzdálenost kamery (m, medián) a podíl tiků, kdy je střed nejbližšího nepřítele do 22 m v obraze:
+
+| Běh | vzdálenost před → po | nepřítel v obraze před → po |
+|---|---|---|
+| 02-zombie wide | 15,3 → 10,9 | 1,00 → 1,00 |
+| 02-zombie tall | 13,9 → 8,5 | 1,00 → 0,99 |
+| 08-gems wide | 15,9 → 11,3 | 0,89 → 0,93 |
+| 08-gems tall | 14,4 → 14,9 | 0 (72665fdc) → 0,69 |
+| 10-chef wide | 15,9 → 11,3 | 1,00 → 1,00 |
+| 10-chef tall | 14,4 → 8,8 | 1,00 → 1,00 |
+
+Medián všech šesti běhů klesl o víc než 20 %. **Odchylka od AC:** 08-gems na výšku drží nepřítele v obraze v 69 % tiků, ne 85 %. Nepřítel tam celou hru bloudí 6–16 m do strany a do úzkého obrazu se s hrdinou vejde jen s kamerou tak daleko, že hrdina klesne pod podlahu `e2e/p32-arena.spec.ts` (8 % výšky obrazu na telefonu): první verze T9 (natažení 2,5×) dala 92 %, ale kočce na Pixel 7 jen 6,4 % výšky a e2e spadl. Platí podlaha hrdiny (natažení 1,8×, na výšku 2,1×, hrdina ≥ 7,8 % a 8,6 %); zbytek nepřátel ukazuje šipka na okraji. Test pro tento jediný běh hlídá 0,65.
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.
