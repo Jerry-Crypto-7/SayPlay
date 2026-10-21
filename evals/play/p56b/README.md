@@ -49,6 +49,8 @@ Obojí opravil `bc9c9408` (T3).
 
 **Oprava:** podklad pod plátnem (`--_sky` v `ArcadePlay` a `GridShell`) je `horizon` scény po náladě a denní době – táž barva, kterou `StyleRig` kreslí jako pozadí scény, takže první snímek na ni navazuje; obzor žádné sady pod 0,04 není (nejtmavší je vesmír `#0b1730`, luma 0,087; tóny nálad jsou všechny nad 0,2, takže je nestáhnou níž). Po opravě: 6 vět × desktop + Pixel 7, žádný vzorek nad 2,6 % černých pixelů; `p32-first-seconds` čeká obzor scény (`sceneLook(theme).horizon`), ne syrovou barvu sady – věta „haunted castle“ má náladu, která obzor ztmaví.
 
+**Věta → hratelná** (`scripts/measure/first-playable-ab.mjs`, A = `72665fdc` na 3157, B = T4 na 3158, 6 vět auditu × desktop + Pixel 7 CPU 4×, A a B prokládaně): server A po 24 bězích přestal odpovídat (`page.goto` 60 s), takže platí **8 úplných dvojic** z plánovaných 36. Medián rozdílu B − A ve dvojici **−57 ms** (desktop +44 ms, telefon −202 ms), rozdíl mediánů +400 ms (2 671 → 3 071 ms, táhne ho jediná dvojice 02-ghost desktop +1 279 ms), první snímek +22 ms. Obojí pod šumem 414 ms z `evals/play/first-playable/README.md` – T4 dobu do hratelnosti nezhoršila. Surová data `runs.jsonl` mimo repo (scratchpad relace `793eb4f9`).
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.
