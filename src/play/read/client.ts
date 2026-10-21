@@ -59,6 +59,13 @@ async function callerMayRead(caller: string, env: Env): Promise<boolean> {
  * smysl. 700 ms je cíl P56A pro rychlou cestu; po něm draft ze slov.
  */
 export const DEFAULT_READER_BUDGET_MS = 700;
+/**
+ * Výchozí rozpočet lokálního `llama-server` (`llamacpp:` i holá adresa): gpt-oss-20b
+ * tu čte p50 3,3 s a p95 7,9 s (`evals/play/p56a/readings/*.json`, 342 vět, T4-R1),
+ * takže s 700 ms by vrátil `null` skoro vždy. Codex CLI zůstává na 700 ms (změřené
+ * číslo nemá); čte desítky sekund, rozpočet mu dá až `PLAY_READER_BUDGET_MS`.
+ */
+export const DEFAULT_LOCAL_READER_BUDGET_MS = 8000;
 /** Horní mez rozpočtu: měření obrazu čte s 60 s, `codex-cli` čte desítky sekund. */
 const MAX_READER_BUDGET_MS = 120_000;
 /**
@@ -75,9 +82,9 @@ export function readerEnabled(env: Env = process.env): boolean {
   return env.PLAY_READER === 'on' && (env.PLAY_READER_ENDPOINT ?? '') !== '';
 }
 
-function readerBudgetMs(env: Env): number {
+function readerBudgetMs(env: Env, fallback: number): number {
   const budget = Number(env.PLAY_READER_BUDGET_MS);
-  return Number.isInteger(budget) && budget > 0 && budget <= MAX_READER_BUDGET_MS ? budget : DEFAULT_READER_BUDGET_MS;
+  return Number.isInteger(budget) && budget > 0 && budget <= MAX_READER_BUDGET_MS ? budget : fallback;
 }
 
 /**
@@ -89,7 +96,8 @@ function readerBudgetMs(env: Env): number {
  */
 export function readerConfigFromEnv(env: Env = process.env): UpstreamConfig | null {
   const endpoint = (env.PLAY_READER_ENDPOINT ?? '').trim();
-  const timeoutMs = readerBudgetMs(env);
+  const local = endpoint.startsWith(LLAMACPP_PREFIX) || /^https?:\/\//.test(endpoint);
+  const timeoutMs = readerBudgetMs(env, local ? DEFAULT_LOCAL_READER_BUDGET_MS : DEFAULT_READER_BUDGET_MS);
   if (endpoint === CODEX_CLI_ENDPOINT)
     return {
       endpoint,
@@ -170,11 +178,17 @@ async function readWithin(text: string, config: UpstreamConfig, env: Env, deps: 
 
 async function readThrough(text: string, config: UpstreamConfig, env: Env, deps: ReaderDeps, signal: AbortSignal): Promise<Reading | null> {
   try {
-    const store = deps.store === undefined ? answerStoreFromEnv(env, deps.fetchImpl ?? fetch) : deps.store;
+    const fetchImpl = deps.fetchImpl ?? fetch;
+    const store = deps.store === undefined ? answerStoreFromEnv(env, fetchImpl) : deps.store;
     const key = readerCacheKey({ sentence: text, promptVersion: readerPromptVersion(), model: config.model, endpoint: config.endpoint });
+    const call: GenerationCall = { prompt: text, request: { model: config.model, system: readerSystemPrompt(), user: text, outputSchema: READING_JSON_SCHEMA } };
+    const branch = upstreamBranch(config, fetchImpl);
+    const worstCaseUsd = branch.worstCaseUsd(call);
+    // Vypínač jen čte, takže na placené cestě letí souběžně s cache (T4-R1); nepřečtený = vypnuto.
+    const killed = worstCaseUsd > 0 && deps.caller !== undefined ? killState(env, fetchImpl).then((state) => state.upstream, () => true) : Promise.resolve(false);
     const cached = store === null ? null : await cachedReading(store, key);
     if (cached !== null) return cached;
-    const reading = await callReader(text, config, env, deps, signal);
+    const reading = worstCaseUsd <= 0 ? readingOf(await branch.generate(call, signal)) : await paidReading(call, branch, worstCaseUsd, killed, config, env, deps, signal);
     // Zápis neblokuje: hotové čtení nesmí propadnout rozpočtu kvůli úložišti.
     if (reading !== null && store !== null) void store.set(key, JSON.stringify(reading), ANSWER_TTL_SECONDS).catch(() => undefined);
     return reading;
@@ -195,24 +209,29 @@ async function cachedReading(store: AnswerStore, key: string): Promise<Reading |
 }
 
 /**
- * Volání modelu. Placené (`openai:`) jde přes vypínač a procesní strop režiséra:
- * rezervace nejhoršího případu před voláním, vyrovnání skutečnou cenou po něm,
- * bez účtenky celou rezervací. Odmítnutí stropem = `null` bez volání.
+ * Placené volání (`openai:`) přes vypínač a vlastní strop čtečky: rezervace
+ * nejhoršího případu před voláním, vyrovnání skutečnou cenou po něm, bez
+ * účtenky celou rezervací. Odmítnutí stropem = `null` bez volání.
  */
-async function callReader(text: string, config: UpstreamConfig, env: Env, deps: ReaderDeps, signal: AbortSignal): Promise<Reading | null> {
-  const fetchImpl = deps.fetchImpl ?? fetch;
-  const call: GenerationCall = { prompt: text, request: { model: config.model, system: readerSystemPrompt(), user: text, outputSchema: READING_JSON_SCHEMA } };
-  const branch = upstreamBranch(config, fetchImpl);
-  const worstCaseUsd = branch.worstCaseUsd(call);
-  if (worstCaseUsd <= 0) return readingOf(await branch.generate(call, signal));
-
+async function paidReading(
+  call: GenerationCall,
+  branch: ReturnType<typeof upstreamBranch>,
+  worstCaseUsd: number,
+  killed: Promise<boolean>,
+  config: UpstreamConfig,
+  env: Env,
+  deps: ReaderDeps,
+  signal: AbortSignal,
+): Promise<Reading | null> {
   // Placeně jen za známého volajícího (revize T4): režisér na pozadí volajícího nepředá, takže větu znovu nezaplatí.
   if (deps.caller === undefined) return null;
-  if ((await killState(env, fetchImpl)).upstream) return null;
-  const reservation = await (deps.cap ?? processReaderSpendCap()).reserve(worstCaseUsd);
+  if (await killed) return null;
+  // Kniha stropu a počet volajícího letí souběžně (T4-R1), ať z rozpočtu zbude modelu: před voláním
+  // jsou tak dva lety, ne čtyři. Daň: odmítnutí stropem volajícímu spálí jedno čtení dne.
+  const [reservation, mayRead] = await Promise.all([(deps.cap ?? processReaderSpendCap()).reserve(worstCaseUsd), callerMayRead(deps.caller, env)]);
   if (!reservation.ok) return null;
-  // Počet volajícího až po rezervaci (jako režisér, R8); rozpočet vypršel = volání neodejde, nic se neutratilo.
-  if (signal.aborted || !(await callerMayRead(deps.caller, env)) || signal.aborted) {
+  // Rozpočet vypršel = volání neodejde, nic se neutratilo.
+  if (signal.aborted || !mayRead) {
     await reservation.settle(0);
     return null;
   }

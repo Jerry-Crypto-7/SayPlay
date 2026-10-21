@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { memoryAnswerStore } from '@/server/answer-cache';
 import { processSpendCap, resetProcessSpendCap, type Reservation, type SpendCap } from '@/server/spend-cap';
 
-import { DEFAULT_READER_BUDGET_MS, readBeforeDraft, readerCacheKey, readerConfigFromEnv, readerPromptVersion, readSentence } from '../client';
+import { DEFAULT_LOCAL_READER_BUDGET_MS, DEFAULT_READER_BUDGET_MS, readBeforeDraft, readerCacheKey, readerConfigFromEnv, readerPromptVersion, readSentence } from '../client';
 import { READING_JSON_SCHEMA, readingSchema, type Reading } from '../schema';
 
 const READING: Reading = {
@@ -230,7 +230,17 @@ describe('readerConfigFromEnv', () => {
   });
 
   it.each([['60000', 60_000], ['250', 250], ['soon', 700], ['0', 700], ['-5', 700], ['2.5', 700], ['200000', 700]] as const)('reads a budget of %s as %i ms', (raw, ms) => {
-    expect(readerConfigFromEnv({ ...LOCAL, PLAY_READER_BUDGET_MS: raw })?.timeoutMs).toBe(ms);
+    expect(readerConfigFromEnv({ ...GROQ, PLAY_READER_BUDGET_MS: raw })?.timeoutMs).toBe(ms);
+  });
+
+  // T4-R1: lokální gpt-oss čte p50 3,3 s, p95 7,9 s (readings/*.json, 342 vět) – 700 ms by vrátilo `null` skoro vždy.
+  it('gives a local llama-server its own default budget, and an explicit one still wins', () => {
+    expect(DEFAULT_LOCAL_READER_BUDGET_MS).toBe(8000);
+    expect(readerConfigFromEnv(LOCAL)?.timeoutMs).toBe(DEFAULT_LOCAL_READER_BUDGET_MS);
+    expect(readerConfigFromEnv({ PLAY_READER_ENDPOINT: 'http://127.0.0.1:8791' })?.timeoutMs).toBe(DEFAULT_LOCAL_READER_BUDGET_MS);
+    expect(readerConfigFromEnv({ ...LOCAL, PLAY_READER_BUDGET_MS: 'soon' })?.timeoutMs).toBe(DEFAULT_LOCAL_READER_BUDGET_MS);
+    expect(readerConfigFromEnv({ ...LOCAL, PLAY_READER_BUDGET_MS: '700' })?.timeoutMs).toBe(700);
+    expect(readerConfigFromEnv(GROQ)?.timeoutMs).toBe(DEFAULT_READER_BUDGET_MS);
   });
 });
 
