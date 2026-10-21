@@ -20,7 +20,7 @@
  * s popisky „before“ / „after“ a větou.
  */
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -83,10 +83,10 @@ async function pair(leftFile, rightFile, out) {
 }
 
 /** Jedna otázka: čerstvý prázdný adresář jen se `sheet.png` jako cwd soudce, odpověď je text `result`. */
-function ask(sheet, sentence) {
+function ask(sheet, prompt) {
   const cwd = mkdtempSync(join(os.tmpdir(), 'judge-'));
   copyFileSync(sheet, join(cwd, 'sheet.png'));
-  const argv = ['-p', '--safe-mode', '--strict-mcp-config', '--tools', 'Read', '--allowedTools', 'Read', '--no-session-persistence', '--model', MODEL, '--output-format', 'json', question(sentence)];
+  const argv = ['-p', '--safe-mode', '--strict-mcp-config', '--tools', 'Read', '--allowedTools', 'Read', '--no-session-persistence', '--model', MODEL, '--output-format', 'json', prompt];
   return new Promise((done) => {
     const started = Date.now();
     const child = spawn(CLAUDE, argv, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -107,6 +107,88 @@ function ask(sheet, sentence) {
       done({ code, seconds: Math.round((Date.now() - started) / 100) / 10, text: text.trim(), stderr: stderr.trim().slice(-400) });
     });
   });
+}
+
+/** Odpovědi na dvojice `<work>/<key>-pair.png` do `<key>-answer.json`; hotová odpověď se nepřeptává. */
+async function answerAll(jobs, work, concurrency) {
+  const queue = jobs.filter(({ key }) => !existsSync(join(work, `${key}-answer.json`)));
+  const worker = async () => {
+    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
+      const attempts = [];
+      // Nečitelná odpověď se přeptá jednou (stejná otázka, nový prázdný adresář).
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const run = await ask(join(work, `${job.key}-pair.png`), job.prompt);
+        const parsed = parseVerdict(run.text);
+        attempts.push({ code: run.code, seconds: run.seconds, text: run.text.slice(-1500), stderr: run.stderr, parsed: parsed ?? null });
+        if (parsed) break;
+      }
+      writeJson(join(work, `${job.key}-answer.json`), { attempts });
+      const last = attempts.at(-1);
+      console.log(`${job.key}: ${last.parsed ? `${last.parsed.verdict} – ${last.parsed.reason}` : `no verdict (exit ${last.code}) ${last.stderr || last.text.slice(-200)}`} [${attempts.length} ask, ${last.seconds} s]`);
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+}
+
+export const ANCHOR_QUESTION =
+  'First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, each from a different 3D mobile game. Interface text is cropped away, so judge only the game scene. Which one looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>';
+
+/**
+ * `anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out <file>` (P56B T2):
+ * kotva „levného vzhledu“ – náš snímek telefonu proti snímku hotové hry z obchodu. `--count` (10)
+ * prvních vět sady × každá hra (podadresář `--anchor` s `crop/`); referenční snímek hry se střídá
+ * po řadě. Stranu losuje `sides` ze seedu (`before` = náš vlevo). Výsledek: podíl výher naší strany.
+ */
+async function anchor(options) {
+  const refRoot = resolve(String(options.anchor));
+  const dir = resolve(ROOT, typeof options.dir === 'string' ? options.dir : 'evals/play/p56b');
+  const ours = typeof options.ours === 'string' ? options.ours : 'before-phone';
+  const set = typeof options.set === 'string' ? options.set : 'p56b';
+  const setFile = set === 'p56b' ? join(ROOT, 'evals', 'play', 'p56b', 'sentences.json') : join(ROOT, 'evals', 'play', 'p46g', `${set}.json`);
+  const count = Number(options.count ?? 10);
+  const seed = typeof options.seed === 'string' ? Number(options.seed) : 56021;
+  const work = resolve(typeof options.work === 'string' ? options.work : 'D:/tmp/p56b-anchor');
+  const out = resolve(ROOT, typeof options.out === 'string' ? options.out : join(dir, 'anchor.json'));
+  const concurrency = Number(options.concurrency ?? 3);
+  mkdirSync(work, { recursive: true });
+  const games = readdirSync(refRoot).filter((name) => existsSync(join(refRoot, name, 'crop'))).sort();
+  const refs = Object.fromEntries(games.map((game) => [game, readdirSync(join(refRoot, game, 'crop')).filter((file) => file.endsWith('.png')).sort()]));
+  const sentences = readJson(setFile).sentences.slice(0, count);
+  const jobs = sentences.flatMap((sentence, index) => games.map((game) => ({ sentence, game, ref: refs[game][index % refs[game].length], key: `${ours}-${sentence.id}-${game}` })));
+  const left = sides(seed, jobs.length);
+  for (const [index, job] of jobs.entries()) {
+    const own = join(dir, ours, `${job.sentence.id}.png`);
+    if (!existsSync(own)) throw new Error(`${job.key}: missing ${own}`);
+    const reference = join(refRoot, job.game, 'crop', job.ref);
+    const file = join(work, `${job.key}-pair.png`);
+    if (!existsSync(file)) await pair(left[index] === 'before' ? own : reference, left[index] === 'before' ? reference : own, file);
+  }
+  await answerAll(jobs.map((job) => ({ key: job.key, prompt: ANCHOR_QUESTION })), work, concurrency);
+  const pairs = jobs.map((job, index) => {
+    const parsed = readJson(join(work, `${job.key}-answer.json`)).attempts.at(-1).parsed;
+    const oursSide = left[index] === 'before' ? 'LEFT' : 'RIGHT';
+    return { id: job.sentence.id, game: job.game, reference: job.ref, oursSide, verdict: parsed?.verdict ?? null, reason: parsed?.reason ?? null, oursWon: parsed ? parsed.verdict === oursSide : null };
+  });
+  const totalOf = (list) => {
+    const oursWins = list.filter((entry) => entry.oursWon === true).length;
+    const answered = list.filter((entry) => entry.oursWon !== null).length;
+    return { oursWins, refWins: answered - oursWins, unanswered: list.length - answered, of: list.length, share: answered === 0 ? null : Math.round((oursWins / answered) * 1000) / 1000 };
+  };
+  const result = {
+    about: `Store-game anchor: our ${ours} shot vs a cropped store screenshot of a finished game, side by side without labels. See README.md.`,
+    judgedAt: new Date().toISOString(),
+    judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: ANCHOR_QUESTION },
+    order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, game after game; 0 = ours is LEFT', seed },
+    ours: { dir: ours, set, sentences: sentences.map((sentence) => sentence.id) },
+    references: refs,
+    total: totalOf(pairs),
+    byGame: Object.fromEntries(games.map((game) => [game, totalOf(pairs.filter((entry) => entry.game === game))])),
+    leftShare: Math.round((pairs.filter((entry) => entry.verdict === 'LEFT').length / pairs.length) * 1000) / 1000,
+    pairs,
+  };
+  writeJson(out, result);
+  console.log(`ours wins ${result.total.oursWins} / ${result.total.of} (share ${result.total.share}), left chosen ${result.leftShare}`);
+  console.log(`-> ${out}`);
 }
 
 /**
@@ -148,23 +230,7 @@ async function judge(options) {
     if (!existsSync(file)) await pair(left[index] === 'before' ? before : after, left[index] === 'before' ? after : before, file);
   }
 
-  const queue = sentences.map((sentence, index) => ({ sentence: { ...sentence, id: sentence.key }, index })).filter(({ sentence }) => !existsSync(join(work, `${sentence.id}-answer.json`)));
-  const worker = async () => {
-    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
-      const attempts = [];
-      // Nečitelná odpověď se přeptá jednou (stejná otázka, nový prázdný adresář).
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const run = await ask(join(work, `${job.sentence.id}-pair.png`), job.sentence.text);
-        const parsed = parseVerdict(run.text);
-        attempts.push({ code: run.code, seconds: run.seconds, text: run.text.slice(-1500), stderr: run.stderr, parsed: parsed ?? null });
-        if (parsed) break;
-      }
-      writeJson(join(work, `${job.sentence.id}-answer.json`), { attempts });
-      const last = attempts.at(-1);
-      console.log(`${job.sentence.id}: ${last.parsed ? `${last.parsed.verdict} – ${last.parsed.reason}` : `no verdict (exit ${last.code}) ${last.stderr || last.text.slice(-200)}`} [${attempts.length} ask, ${last.seconds} s]`);
-    }
-  };
-  await Promise.all(Array.from({ length: concurrency }, worker));
+  await answerAll(sentences.map((sentence) => ({ key: sentence.key, prompt: question(sentence.text) })), work, concurrency);
 
   const pairs = sentences.map((sentence, index) => {
     const { attempts } = readJson(join(work, `${sentence.key}-answer.json`));
@@ -229,8 +295,9 @@ if (isMain) {
   const options = args();
   if (options._[0] === 'judge') await judge(options);
   else if (options._[0] === 'sheet') await sheet(options);
+  else if (options._[0] === 'anchor') await anchor(options);
   else {
-    console.error('usage: node scripts/play-p46g-blind.mjs judge|sheet [--dir evals/play/p54b] [--set genres] [--pairs before:after,before-phone:after-phone] [--pass-at 15] [--seed <n>] [--work <dir>] [--concurrency 3]');
+    console.error('usage: node scripts/play-p46g-blind.mjs judge|sheet|anchor [--dir evals/play/p54b] [--set genres] [--pairs before:after,before-phone:after-phone] [--pass-at 15] [--seed <n>] [--work <dir>] [--concurrency 3] [--anchor <ref dir> --ours before-phone --count 10 --out <file>]');
     process.exit(2);
   }
 }
