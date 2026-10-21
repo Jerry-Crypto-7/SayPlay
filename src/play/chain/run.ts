@@ -69,12 +69,22 @@ export interface ChainState {
   readonly results: ('won' | 'lost')[];
 }
 
-/** Počáteční stav kola; boss dostane jako životy těla zbývající životy řetězu (má-li hra životy). */
-function openRound(chain: ChainWorld, index: number, lives: number, library: ArcadeLibrary): { readonly state: ArcadeState; readonly program: ArcadeProgram } {
+/**
+ * Svět kola, jak ho otevře přehrávač: boss dostane jako životy těla zbývající životy řetězu (má-li hra životy).
+ * Sdílí ho `openRound` i relace řetězu v prohlížeči (T11), ať boss u obou začne týmž stavem.
+ */
+export function roundWorld(chain: ChainWorld, index: number, lives: number): ArcadeWorld {
   const round = chain.rounds[index]!;
-  const state = instantiate(round.world);
-  if (round.boss && (state[HEADER.counters + COUNTER.health] as number) > 0) state[HEADER.counters + COUNTER.health] = lives;
-  return { state, program: loadProgram(round.world, library) };
+  if (!round.boss) return round.world;
+  const initial = instantiate(round.world);
+  if ((initial[HEADER.counters + COUNTER.health] as number) <= 0) return round.world;
+  initial[HEADER.counters + COUNTER.health] = lives;
+  return { ...round.world, initial: Array.from(initial) };
+}
+
+function openRound(chain: ChainWorld, index: number, lives: number, library: ArcadeLibrary): { readonly state: ArcadeState; readonly program: ArcadeProgram } {
+  const world = roundWorld(chain, index, lives);
+  return { state: instantiate(world), program: loadProgram(world, library) };
 }
 
 export function startChain(chain: ChainWorld, library: ArcadeLibrary = ARCADE_LIBRARY): ChainState {
@@ -107,7 +117,10 @@ export function stepChain(run: ChainState, input: ArcadeInput): void {
   }
 }
 
-export function hashChain(run: ChainState): string {
+/** Co hash čte; relace v prohlížeči (T11) ho skládá ze svých kol, ne z `ChainState`. */
+export type ChainHashInput = Pick<ChainState, 'outcome' | 'card' | 'finals' | 'state' | 'lives' | 'score' | 'round' | 'tick'>;
+
+export function hashChain(run: ChainHashInput): string {
   const playing = run.outcome === 'running' && run.card === 0;
   const states = playing ? [...run.finals, run.state] : run.finals;
   const words = new Int32Array(states.reduce((sum, state) => sum + state.length, 0) + 4);

@@ -121,8 +121,8 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
     );
   }
   const { game, children, lineage, honesty, sentence, bestDare } = loaded;
-  // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
-  if (game.blueprint === null && game.arcade === undefined) notFound();
+  // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`, řetěz mikroher (P56C) v `chain`; hra bez nich nemá kde běžet.
+  if (game.blueprint === null && game.arcade === undefined && game.chain === undefined) notFound();
   // Výzvu nese jen arkáda (P36B T5) – mřížková hra odkaz s `dare=` otevře jako obyčejnou hru.
   const challenge = game.arcade === undefined ? null : await challengeOf(id, (await searchParams).dare);
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
@@ -136,6 +136,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
         spec={game.spec}
         blueprint={game.blueprint}
         {...(game.arcade === undefined ? {} : { arcade: game.arcade })}
+        {...(game.chain === undefined ? {} : { chain: game.chain })}
         lineage={lineage.length > 0 ? lineage : [game.version]}
         remixes={children.length}
         aiVersion={game.relation === 'upgrade'}

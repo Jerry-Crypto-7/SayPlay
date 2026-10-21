@@ -3433,3 +3433,41 @@ button.play-feed-card {
 .play-stats-table td:last-child {
   color: var(--sp-text-secondary);
 }
+
+/* Karta mezi koly řetězu (P56C T11): sloveso dalšího kola uprostřed nad zamrzlým koncem kola. Neprůhledná, bez skla. */
+.play-chain-card-frame {
+  position: absolute;
+  inset: 0;
+  z-index: var(--sp-z-sheet);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.play-chain-card {
+  min-width: min(80vw, 320px);
+  text-align: center;
+  box-shadow: var(--sp-shadow-md);
+  transform: rotate(-2deg);
+  animation: play-chain-card-in var(--sp-duration-base) var(--sp-ease-standard) both;
+}
+
+.play-chain-card-round {
+  margin: 0 0 var(--sp-space-2);
+  color: var(--sp-text-secondary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-chain-card-verb {
+  margin: 0;
+}
+
+@keyframes play-chain-card-in {
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-chain-card { animation: none; }
+}
