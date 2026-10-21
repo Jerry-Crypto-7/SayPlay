@@ -15,7 +15,8 @@ import { SUBSYSTEMS, createStreams, nextInt } from '@/sim/rng';
 
 import { CARD_TICKS, CHAIN_LIVES, CHAIN_RUNTIME_VERSION, type ChainWorld, RATE_STEPS } from '../contract';
 import { MICRO, genreModeOf, microSpec } from '../micro';
-import { chainFromSpecs, hashChain, replayChain, roundSeeds, startChain, stepChain } from '../run';
+import { chainFromSpecs } from '../build';
+import { hashChain, replayChain, roundSeeds, startChain, stepChain } from '../run';
 
 const SEED = 42;
 const KEYS = ['catch.default', 'timing.stack', 'flap.default', 'shooter.default.boss'] as const;

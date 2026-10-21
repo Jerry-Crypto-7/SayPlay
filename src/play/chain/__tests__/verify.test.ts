@@ -12,7 +12,8 @@ import { draftGenreFor } from '@/play/draft/draft';
 
 import type { ChainWorld } from '../contract';
 import { MICRO, type MicroEntry, genreModeOf, microSpec } from '../micro';
-import { chainFromSpecs, chainMaxTicks, replayChain, roundClock } from '../run';
+import { chainFromSpecs } from '../build';
+import { chainMaxTicks, replayChain, roundClock } from '../run';
 import { chainLengthSec, verifyChain } from '../verify';
 
 const entryOf = (key: string): MicroEntry => MICRO.find((entry) => entry.key === key)!;

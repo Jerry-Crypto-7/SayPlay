@@ -7,15 +7,12 @@
  * kolo a hlavička `[lives, score, round, tick]`. Tempo (`rate`) je jen rychlost přehrávání v klientovi.
  */
 
-import { arcadeWorldOf } from '../arcade/compile';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, underlyingRule } from '../arcade/contract';
 import { type ArcadeLibrary, type ArcadeOutcome, type ArcadeProgram, hashArcade, instantiate, loadProgram, outcomeOf, step } from '../arcade/kernel';
 import { ARCADE_LIBRARY } from '../arcade/library';
 import { hashHex } from '../../sim/hash';
 import { createStreams, nextInt } from '../../sim/rng';
-import type { GameSpecV1 } from '../spec';
-import { CARD_TICKS, CHAIN_LIVES, CHAIN_RUNTIME_VERSION, type ChainRound, type ChainWorld, RATE_STEPS } from './contract';
-import type { MicroKey } from './micro';
+import { type ChainWorld, RATE_STEPS } from './contract';
 
 /** Semínka kol ze streamu `chain` – jediný los řetězu. */
 export function roundSeeds(seed: number, count: number): number[] {
@@ -23,32 +20,8 @@ export function roundSeeds(seed: number, count: number): number[] {
   return Array.from({ length: count }, () => nextInt(stream, 1, 0x7fffffff));
 }
 
-export interface RoundPlan {
-  readonly spec: GameSpecV1;
-  readonly key: MicroKey;
-  readonly card: string;
-  readonly boss: boolean;
-  readonly mutator?: string;
-  /** Semínko světa kola, které už vybral stavitel (`buildChain`); bez něj los ze streamu `chain`. */
-  readonly seed?: number;
-}
-
 /** Tempo kola `index` (od 0) v promile. */
 export const roundRate = (index: number): number => RATE_STEPS[Math.min(index, RATE_STEPS.length - 1)]!;
-
-/** Řetěz z hotových specu kol: svět každého kola ze semínka streamu `chain`, tempo podle pořadí kola. */
-export function chainFromSpecs(seed: number, plans: readonly RoundPlan[]): { readonly ok: true; readonly chain: ChainWorld } | { readonly ok: false; readonly issues: readonly string[] } {
-  const seeds = roundSeeds(seed, plans.length);
-  const rounds: ChainRound[] = [];
-  const issues: string[] = [];
-  plans.forEach(({ seed: own, ...plan }, index) => {
-    const made = arcadeWorldOf(plan.spec, own ?? seeds[index]!);
-    if (!made.ok) issues.push(...made.issues.map((issue) => `round ${index + 1} (${plan.key}): ${issue}`));
-    else rounds.push({ ...plan, world: made.world, rate: roundRate(index) });
-  });
-  if (issues.length > 0) return { ok: false, issues };
-  return { ok: true, chain: { runtimeVersion: CHAIN_RUNTIME_VERSION, seed, lives: CHAIN_LIVES, cardTicks: CARD_TICKS, rounds } };
-}
 
 /** Stav běžícího řetězu; `stepChain` ho mění na místě jako jádro svůj stav. */
 export interface ChainState {

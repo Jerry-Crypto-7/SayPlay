@@ -14,11 +14,39 @@ import { draftGenreFor } from '../draft/draft';
 import { CAST_MAX, FOE_DOES, type GenreSpec } from '../genre/contract';
 import type { VerbClass } from '../read/schema';
 import { createStreams, nextInt } from '../../sim/rng';
-import { CARD_TICKS, type ChainWorld } from './contract';
+import type { GameSpecV1 } from '../spec';
+import { CARD_TICKS, CHAIN_LIVES, CHAIN_RUNTIME_VERSION, type ChainRound, type ChainWorld } from './contract';
 import { MICRO, type MicroEntry, type MicroKey, genreModeOf, microSpec } from './micro';
 import type { SentenceRead } from './read';
-import { chainFromSpecs, type RoundPlan, roundRate } from './run';
+import { roundRate, roundSeeds } from './run';
 import { CHAIN_SECONDS, chainLengthSec } from './verify';
+
+export interface RoundPlan {
+  readonly spec: GameSpecV1;
+  readonly key: MicroKey;
+  readonly card: string;
+  readonly boss: boolean;
+  readonly mutator?: string;
+  /** Semínko světa kola, které už vybral stavitel (`buildChain`); bez něj los ze streamu `chain`. */
+  readonly seed?: number;
+}
+
+/**
+ * Řetěz z hotových specu kol: svět každého kola ze semínka streamu `chain`, tempo podle pořadí kola.
+ * Žije tady, ne v `run.ts`: kompilátor her (`arcadeWorldOf`) táhne `node:crypto`, a `run.ts` čte i prohlížeč.
+ */
+export function chainFromSpecs(seed: number, plans: readonly RoundPlan[]): { readonly ok: true; readonly chain: ChainWorld } | { readonly ok: false; readonly issues: readonly string[] } {
+  const seeds = roundSeeds(seed, plans.length);
+  const rounds: ChainRound[] = [];
+  const issues: string[] = [];
+  plans.forEach(({ seed: own, ...plan }, index) => {
+    const made = arcadeWorldOf(plan.spec, own ?? seeds[index]!);
+    if (!made.ok) issues.push(...made.issues.map((issue) => `round ${index + 1} (${plan.key}): ${issue}`));
+    else rounds.push({ ...plan, world: made.world, rate: roundRate(index) });
+  });
+  if (issues.length > 0) return { ok: false, issues };
+  return { ok: true, chain: { runtimeVersion: CHAIN_RUNTIME_VERSION, seed, lives: CHAIN_LIVES, cardTicks: CARD_TICKS, rounds } };
+}
 
 /** Kola včetně bosse: 4 kola vycházejí těsně nad 30 s, krátká kola (načasování, střelba) potřebují 5 (T6). */
 export const CHAIN_ROUNDS = 5;
