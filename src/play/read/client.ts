@@ -39,6 +39,8 @@ export interface ReaderDeps {
   readonly cap?: Pick<SpendCap, 'reserve'>;
   /** Volající (route tvorby); placené čtení bez něj neodejde a jeho denní počet drží `PLAY_READER_CALLS_PER_CALLER`. */
   readonly caller?: string;
+  /** Volající čtení vzdal (route spadla, T10-R1): jako vypršený rozpočet – `null`, placené volání neodejde. */
+  readonly signal?: AbortSignal;
 }
 
 /** Placených čtení na volajícího za den, když `PLAY_READER_CALLS_PER_CALLER` chybí nebo nedává smysl. */
@@ -164,10 +166,12 @@ async function readWithin(text: string, config: UpstreamConfig, env: Env, deps: 
   const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   const budget = new Promise<null>((resolve) => {
-    timer = setTimeout(() => {
+    const giveUp = () => {
       controller.abort();
       resolve(null);
-    }, config.timeoutMs);
+    };
+    timer = setTimeout(giveUp, config.timeoutMs);
+    deps.signal?.addEventListener('abort', giveUp, { once: true });
   });
   try {
     return await Promise.race([readThrough(text, config, env, deps, controller.signal), budget]);
@@ -225,7 +229,7 @@ async function paidReading(
 ): Promise<Reading | null> {
   // Placeně jen za známého volajícího (revize T4): režisér na pozadí volajícího nepředá, takže větu znovu nezaplatí.
   if (deps.caller === undefined) return null;
-  if (await killed) return null;
+  if ((await killed) || signal.aborted) return null;
   // Kniha stropu a počet volajícího letí souběžně (T4-R1), ať z rozpočtu zbude modelu: před voláním
   // jsou tak dva lety, ne čtyři (první čtení volajícího za den tři: INCR a EXPIRE). Daň: odmítnutí
   // stropem i rozpočet, který vyprší během těch letů, volajícímu spálí jedno čtení dne bez volání.

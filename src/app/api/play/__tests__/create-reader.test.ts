@@ -6,16 +6,20 @@
  * tvorbu prodloužit nejvýš o `PLAY_READER_BUDGET_MS` – měřeno falešnými hodinami.
  */
 
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { direct } from '@/play/director';
 import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
+import { DEFAULT_LOCAL_READER_BUDGET_MS } from '@/play/read/client';
 import type { Reading } from '@/play/read/schema';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetProcessAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
+import { resetProcessSpendCap } from '@/server/spend-cap';
 import { upstreamBranch } from '@/server/upstream';
 
 const SENTENCE = 'a knight collects keys in a castle';
@@ -160,6 +164,48 @@ describe('create route reads the sentence before drafting', () => {
     }
   });
 
+  // P56A T10-R1: fyzika, která se nenačte, shodí tvorbu – placené čtení, které už běží, pak model nezavolá.
+  describe('a paid reader', () => {
+    const PAID = {
+      PLAY_READER: 'on',
+      PLAY_READER_ENDPOINT: 'openai:https://api.groq.com/openai',
+      PLAY_READER_KEY: 'gsk-test',
+      PLAY_READER_MODEL: 'openai/gpt-oss-20b',
+      PLAY_READER_USD_PER_MTOK_IN: '0.075',
+      PLAY_READER_USD_PER_MTOK_OUT: '0.30',
+      PLAY_READER_SPEND_CAP_USD: '1',
+      PLAY_STORE_DIR: mkdtempSync(join(tmpdir(), 'p56a-route-reader-')),
+    };
+    const paid = vi.fn(async (_url: string, _init?: RequestInit) =>
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(READING) }, finish_reason: 'stop' }], usage: { prompt_tokens: 900, completion_tokens: 300 } })));
+
+    beforeEach(() => {
+      for (const [name, value] of Object.entries(PAID)) vi.stubEnv(name, value);
+      resetProcessSpendCap();
+      paid.mockClear();
+      vi.stubGlobal('fetch', paid);
+    });
+    afterEach(() => {
+      rapier.gate = Promise.resolve();
+      resetProcessSpendCap();
+    });
+
+    it('pays once when the physics loads', async () => {
+      expect((await create()).status).toBe(201);
+      expect(paid).toHaveBeenCalledOnce();
+    });
+
+    it('sends nothing when the physics load fails', async () => {
+      const broken = Promise.reject(new Error('rapier wasm failed'));
+      broken.catch(() => undefined);
+      rapier.gate = broken;
+      await expect(create()).rejects.toThrow('rapier wasm failed');
+      // Čtení dobíhá po pádu route; jeho lety jsou tu místní, takže za 300 ms by volání dávno odešlo.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(paid).not.toHaveBeenCalled();
+    });
+  });
+
   // P56A T10: vypnutá čtečka = rychlá cesta jako dřív u třiceti vět výchozích čísel (T1: audit-12 + prvních 18 z p30 dev).
   it('with the reader off publishes the keyword draft of every baseline sentence and calls nothing', async () => {
     vi.stubGlobal('fetch', answering);
@@ -172,7 +218,8 @@ describe('create route reads the sentence before drafting', () => {
     expect(answering).not.toHaveBeenCalled();
   }, 300_000);
 
-  it.each(['soon', '0', '-5', '2.5', '200000'])('a budget of %s is not a whole number in 1..120000 and falls back to 700 ms', async (budget) => {
+  // T4-R1: holá adresa je lokální llama-server, jeho výchozí rozpočet je DEFAULT_LOCAL_READER_BUDGET_MS, ne 700 ms.
+  it.each(['soon', '0', '-5', '2.5', '200000'])('a budget of %s is not a whole number in 1..120000 and falls back to the local default', async (budget) => {
     vi.stubEnv('PLAY_READER', 'on');
     vi.stubEnv('PLAY_READER_BUDGET_MS', budget);
     vi.stubGlobal('fetch', silent);
@@ -182,7 +229,7 @@ describe('create route reads the sentence before drafting', () => {
       settled = true;
       return response;
     });
-    await vi.advanceTimersByTimeAsync(699);
+    await vi.advanceTimersByTimeAsync(DEFAULT_LOCAL_READER_BUDGET_MS - 1);
     expect(settled).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
     vi.useRealTimers();
