@@ -3448,7 +3448,6 @@ button.play-feed-card {
   min-width: min(80vw, 320px);
   text-align: center;
   box-shadow: var(--sp-shadow-md);
-  transform: rotate(-2deg);
   animation: play-chain-card-in var(--sp-duration-base) var(--sp-ease-standard) both;
 }
 

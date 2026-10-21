@@ -6,7 +6,7 @@
 export function ChainCard({ card, round, rounds }: { readonly card: string; readonly round: number; readonly rounds: number }) {
   return (
     <div className="play-chain-card-frame">
-      <section className="sp-card play-chain-card" data-testid="play-chain-card" data-round={round} role="status" aria-live="polite">
+      <section className="sp-card sp-tilt-l play-chain-card" data-testid="play-chain-card" data-round={round} role="status" aria-live="polite">
         <p className="play-chain-card-round">
           Round {round}/{rounds}
         </p>
