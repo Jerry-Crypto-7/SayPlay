@@ -166,9 +166,11 @@ describe('push genre is live (P54C T12)', () => {
     const made = arcadeWorldOf(game, 1);
     if (!made.ok) throw new Error(made.issues.join('; '));
     expect(made.world.rules.find((ref) => ref.id === 'push_round')?.params.sizes).toEqual([2, 3, 3]);
-    // Pod 7 soupeřů robot vyhraje pod 30 s (P54C T14br1): počet z věty pod mezí žánr nepřijme.
-    expect(readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', counts: { enemy: 4 } }).ok).toBe(false);
-    expect(readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', counts: { enemy: 2 } }).ok).toBe(false);
+    // Pod 7 soupeřů robot vyhraje pod 30 s (P54C T14br1): počet z věty pod mezí se ořízne na 7, žánr zůstane.
+    for (const enemy of [4, 2]) {
+      const under = readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', counts: { enemy } });
+      expect(under.ok && under.value.counts?.enemy).toBe(7);
+    }
     // Soupeř bez jména („rivals“) je hrdina věty: zápasník sumo proti zápasníkům sumo, ne auto z katalogu.
     const sumo = compileGenre({ genre: 'push', mode: 'default', hero: 'sumo wrestler', setting: 'bouncy ring', cast: [{ label: 'rival', does: 'fight' }] });
     expect(sumo.roles.find((role) => role.id === 'rival')?.label).toBe('sumo wrestler');

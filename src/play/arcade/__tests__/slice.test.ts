@@ -140,7 +140,9 @@ describe('slice genre is live (P54C T8)', () => {
     expect((game.controlParams as { tuning: { items: number } }).tuning.items).toBe(24);
     expect(COUNT_PARAMS.slice.default?.collectible).toBe('items');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
-    expect(readGenreSpec({ genre: 'slice', mode: 'default', hero: 'fox', setting: 'kitchen', counts: { collectible: SLICE.items.max + 1 } }).ok).toBe(false);
+    // Počet z věty nad mezí se ořízne (P54C): žánr zůstane.
+    const over = readGenreSpec({ genre: 'slice', mode: 'default', hero: 'fox', setting: 'kitchen', counts: { collectible: SLICE.items.max + 1 } });
+    expect(over.ok && over.value.counts?.collectible).toBe(SLICE.items.max);
   });
 
   // P54C T13: klasifikátor krájení zná – jen co letí nebo je ovoce; cesta džunglí mačetou krájení není.

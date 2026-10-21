@@ -1279,8 +1279,6 @@ function draftGenre(
   const own = paramsOf(module, fill.params, seconds);
   const depth = depthOf(sentence);
   const params = Object.keys(depth).length === 0 ? own : { ...own, ...depth };
-  // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
-  const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
   // Co věc dělá: sloveso u ní ve větě, pak doplněk modulu (čtení modelem), pak role, kterou žánr hraje sám.
   const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
   // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
@@ -1315,6 +1313,11 @@ function draftGenre(
     ...(place === null ? {} : { palette: place }),
     ...(params === null ? {} : { params }),
   };
+  // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
+  // Žánr pruhů má role z `draftFill`: počet věty patří jim („catches 5 falling bananas“, „shoves 2 seals off“, P54C).
+  const counts = countsOf(sentence, reading, lanes
+    ? { enemy: cast.find((entry) => entry.does === FOE_DOES[choice.genre])?.label ?? null, collectible: cast.find((entry) => entry.does === 'collect')?.label ?? null, target: null }
+    : { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
   if (!read.ok) return null;

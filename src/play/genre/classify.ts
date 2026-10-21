@@ -104,8 +104,8 @@ const PRONOUN = String.raw`(?:it|you|me|him|her|them|us|the player)\b`;
 // za slovesem jako u ostatních řádků („catches|falling honey jars“), návrh z něj čte předmět.
 /** Co se chytá: padá, prší, nebo míří do nádoby. */
 const CAUGHT = String.raw`(?:falling|dropping|raining|tumbling|plummeting|(?:falls?|drops?) (?:from|out of|down)|from (?:the )?(?:sky|skies|above|ceiling|clouds?|trees?)|in (?:a|an|the|his|her|their|your|its|my) (?:[a-z]+ )?(?:baskets?|buckets?|cups?|nets?|bowls?|jars?|hats?|sacks?|pans?|box|boxes|mouths?|carts?|trays?|bags?|barrels?|pots?|aprons?))\b`;
-/** Slovo téže klauze: spojka nebo uhýbání začíná jinou („catches mice and dodges falling branches“ – padá nástraha). */
-const SAME_CLAUSE = String.raw`(?!(?:and|but|or|while|then|avoid\w*|dodg\w*)\b)[a-z']+ `;
+/** Slovo téže klauze: spojka nebo uhýbání začíná jinou („catches mice and dodges falling branches“ – padá nástraha). Číslovka je slovo („catches 5 falling bananas“). */
+const SAME_CLAUSE = String.raw`(?!(?:and|but|or|while|then|avoid\w*|dodg\w*)\b)[a-z0-9']+ `;
 const STRIKE = String.raw`(?:hit(?:s|ting)?|smash(?:es|ing)?|squash(?:es|ing)?|tap(?:s|ping)?|pop(?:s|ping)?|zap(?:s|ping)?|swat(?:s|ting)?|bash(?:es|ing)?|smack(?:s|ing)?|thump(?:s|ing)?)`;
 /** Co vykukuje: „popping out of graves“, „appear in the windows“, „rising from the tents“. */
 const POPS_UP = String.raw`(?:pop(?:s|ping)?|peek(?:s|ing)?|peep(?:s|ing)?|appear(?:s|ing)?|emerg(?:e|es|ing)|ris(?:e|es|ing)|stick(?:s|ing)?) (?:out|up|from|in|of)\b`;
@@ -223,7 +223,7 @@ const VERBS: readonly Verb[] = [
   // „push crates onto switches“ je úkol, „knock out five scarecrows“ rvačka.
   v('push', 'goal', PUSH, new RegExp([
     String.raw`\bsumo (?:wrestling|match|bout|battle|game|fight)\b`,
-    String.raw`\b(?:push(?:es|ing|ed)?|shov(?:e|es|ing|ed)|knock(?:s|ing|ed)?|bump(?:s|ing|ed)?|nudg(?:e|es|ing)|ram(?:s|ming)?|barg(?:e|es|ing))(?= (?:[a-z'-]+ ){1,4}?(?:out of|off(?: of)?) (?:the |a |an |his |her |their |its )?(?:[a-z'-]+ ){0,3}?${RING})`,
+    String.raw`\b(?:push(?:es|ing|ed)?|shov(?:e|es|ing|ed)|knock(?:s|ing|ed)?|bump(?:s|ing|ed)?|nudg(?:e|es|ing)|ram(?:s|ming)?|barg(?:e|es|ing))(?= (?:[a-z0-9'-]+ ){1,4}?(?:out of|off(?: of)?) (?:the |a |an |his |her |their |its )?(?:[a-z'-]+ ){0,3}?${RING})`,
   ].join('|'))),
   v('hit', 'goal', SPATIAL, /\b(?:pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b|\bknock(?:s|ing)? on\b/),
   // Rodiny sloves (P37A T3, T4): úklid, vaření, sekání, řemeslo, zahrada, opravy (dřív sloveso `repair` tady), malování, péče,

@@ -390,15 +390,19 @@ export function withCounts(spec: GenreSpec): GenreSpec {
   return (Object.keys(params).length === 0 ? rest : { ...rest, params }) as GenreSpec;
 }
 
-/** Počty mimo meze parametru, do kterého jdou – `readGenreSpec` je hlásí jako parametry. */
-export function countIssues(spec: GenreSpec, bounds: ParamBounds): string[] {
+/**
+ * Počty do mezí parametru, do kterého jdou, jako v návrhu (`boundedCounts` v `draft.ts`): počet je číslo z věty, ne
+ * ladění – „catches 5 falling bananas“ pod minimem chytání (13) žánr neshodí, ořízne se na minimum (P54C).
+ */
+export function boundCounts(spec: GenreSpec, bounds: ParamBounds): GenreSpec {
+  if (spec.counts === undefined) return spec;
   const table = countParamsOf(spec);
-  return Object.entries(spec.counts ?? {}).flatMap(([role, value]) => {
+  const counts = Object.fromEntries(Object.entries(spec.counts).map(([role, value]) => {
     const key = table[role as CountRole];
     const range = key === undefined ? undefined : bounds[key];
-    if (range === undefined || value === undefined) return [];
-    return value < range.min || value > range.max ? [`/counts/${role}: ${String(value)} is outside ${String(range.min)}–${String(range.max)}`] : [];
-  });
+    return [role, range === undefined || value === undefined ? value : Math.min(range.max, Math.max(range.min, value))];
+  }));
+  return { ...spec, counts };
 }
 
 // ---------------------------------------------------------------------------

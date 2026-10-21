@@ -127,7 +127,9 @@ describe('whack genre is live (P54C T6)', () => {
     expect((game.controlParams as { tuning: { targets: number } }).tuning.targets).toBe(24);
     expect(COUNT_PARAMS.whack.default?.enemy).toBe('targets');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
-    expect(readGenreSpec({ genre: 'whack', mode: 'default', hero: 'fox', setting: 'garden', counts: { enemy: WHACK.targets.max + 1 } }).ok).toBe(false);
+    // Počet z věty nad mezí se ořízne (P54C): žánr zůstane.
+    const over = readGenreSpec({ genre: 'whack', mode: 'default', hero: 'fox', setting: 'garden', counts: { enemy: WHACK.targets.max + 1 } });
+    expect(over.ok && over.value.counts?.enemy).toBe(WHACK.targets.max);
   });
 
   // P54C T13: klasifikátor bouchání zná; samotné „pop the balloons“ (věta j05 P30) zůstává úkolem po scéně.

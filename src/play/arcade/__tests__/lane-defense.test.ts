@@ -147,7 +147,9 @@ describe('defense genre is live (P54C T7)', () => {
     expect((game.controlParams as { tuning: { enemies: number } }).tuning.enemies).toBe(12);
     expect(COUNT_PARAMS.defense.default?.enemy).toBe('enemies');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
-    expect(readGenreSpec({ genre: 'defense', mode: 'default', hero: 'fox', setting: 'farm', counts: { enemy: DEFENSE.enemies.max + 1 } }).ok).toBe(false);
+    // Počet z věty nad mezí se ořízne (P54C): žánr zůstane.
+    const over = readGenreSpec({ genre: 'defense', mode: 'default', hero: 'fox', setting: 'farm', counts: { enemy: DEFENSE.enemies.max + 1 } });
+    expect(over.ok && over.value.counts?.enemy).toBe(DEFENSE.enemies.max);
   });
 
   // P54C T13: klasifikátor obranu zná – brání se místo před mnoha; kdo se brání sám nebo jednomu, hraje dál souboj a rvačku.

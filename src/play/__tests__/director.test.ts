@@ -266,6 +266,24 @@ describe('direct – an answer naming a new genre builds that genre and the bot 
   }, 60_000);
 });
 
+// P54C: číslo ve větě pod minimem žánru (chytání 13 kusů, vytlačování 7 soupeřů, f02c7913) žánr neshodí – návrh ani
+// odpověď s tím počtem nejsou aréna ani MALFORMED, počet se ořízne na minimum.
+describe('a count under the genre minimum is clamped to it and the genre stays (P54C)', () => {
+  const CASES = [
+    { sentence: 'a monkey catches 5 falling bananas', genre: 'catch', role: 'coin', min: 13, answer: { hero: 'monkey', cast: [{ label: 'banana', does: 'collect' }], counts: { collectible: 5 } } },
+    { sentence: 'a walrus shoves 2 seals off the iceberg', genre: 'push', role: 'rival', min: 7, answer: { hero: 'walrus', cast: [{ label: 'seal', does: 'fight' }], counts: { enemy: 2 } } },
+  ] as const;
+
+  it.each(CASES)('$sentence', async ({ sentence, genre, role, min, answer }) => {
+    const draft = draftGameSpec(sentence);
+    expect(draft.genre?.id).toBe(genre);
+    expect(draft.roles.find((entry) => entry.id === role)?.count).toBe(min);
+    const game = await run(fakeBranch([answered(genreAnswer({ genre, mode: 'default', setting: 'iceberg', ...answer } as unknown as Partial<GenreSpec>))]), { maxRepairRounds: 0 }, sentence);
+    expect(game, game.failure?.detail).toMatchObject({ source: 'authored', spec: { genre: { id: genre } } });
+    expect(game.spec.roles.find((entry) => entry.id === role)?.count).toBe(min);
+  }, 60_000);
+});
+
 describe('direct – failure paths fall back to the draft, never throw', () => {
   it('UPSTREAM_UNAVAILABLE → draft + MODEL_UNAVAILABLE, and the draft came out before generate', async () => {
     const order: string[] = [];

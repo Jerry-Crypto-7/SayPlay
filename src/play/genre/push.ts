@@ -25,7 +25,7 @@ export const PUSH_DEFAULTS = { rival: 'bull' } as const;
 const NAMELESS = /^(?:rival|opponent|enemy|foe|competitor|challenger|contender|other)s?$/;
 
 /** Kdo se tlačí ven („pushes rivals out“, „shove the penguins off“, „knock bears out of the ring“). */
-const PUSH_OBJECT = /\b(?:push|pushes|pushed|pushing|shove|shoves|shoved|shoving|knock|knocks|knocked|knocking|bump|bumps|bumped|bumping|throw|throws|throwing)\s+(?:the\s+|all\s+|other\s+|every\s+|some\s+)*([a-z][a-z -]*?)\s+(?:out|off)\b/;
+const PUSH_OBJECT = /\b(?:push|pushes|pushed|pushing|shove|shoves|shoved|shoving|knock|knocks|knocked|knocking|bump|bumps|bumped|bumping|throw|throws|throwing)\s+(?:the\s+|all\s+|other\s+|every\s+|some\s+|\d+\s+)*([a-z][a-z -]*?)\s+(?:out|off)\b/;
 /** „push it out“, „knock them off“ nejsou soupeř. */
 const PRONOUN = /^(?:it|him|her|them|me|you|us|everyone|everybody)$/;
 /** Kdo se přetlačuje mezi sebou („sumo wrestlers push each other out“, P54C T13b): hrdina i soupeři jsou z nich. */
