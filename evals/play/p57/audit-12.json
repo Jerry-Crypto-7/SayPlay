@@ -1,0 +1,17 @@
+{
+ "note": "P57 T1: 12 vět auditu dema z 21. 10. 2026 (HEAD 72665fdc, rychlá cesta bez režiséra). Snímky před a po výměně modelů ve stejném tiku ukázky robota (scripts/p57/snap-audit.mjs); soudí je T12.",
+ "sentences": [
+  { "id": "01-frog", "text": "a frog catching flies on a lily pad" },
+  { "id": "02-zombie", "text": "zombies attack my farm at night" },
+  { "id": "03-ninja", "text": "a ninja slicing fruit" },
+  { "id": "04-shark", "text": "racing a shark through a coral reef" },
+  { "id": "05-pizza", "text": "stack pizzas as high as the moon" },
+  { "id": "06-cat", "text": "my cat defends the couch from vacuum robots" },
+  { "id": "07-goalie", "text": "a goalkeeper saves penalty kicks in a packed stadium" },
+  { "id": "08-gems", "text": "match three glowing gems to unlock a treasure chest" },
+  { "id": "09-astro", "text": "an astronaut dodges asteroids to reach the space station" },
+  { "id": "10-chef", "text": "a chef flips pancakes for a line of hungry customers" },
+  { "id": "11-drum", "text": "drum to the beat at a rock concert" },
+  { "id": "12-ghost", "text": "escape a haunted mansion while a ghost chases you" }
+ ]
+}
