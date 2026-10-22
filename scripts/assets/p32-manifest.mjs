@@ -106,6 +106,9 @@ const CLASS_OF_MODEL = {
   'gen3d-fish-tank': null,
   'gen3d-hamster-wheel': null,
   'gen3d-robot-arm': null,
+  // P57 T10: kulisy sad světů pojmenované po zvířeti.
+  'gen3d-duck-pond': null,
+  'gen3d-koi-pond': null,
 };
 
 /** Barva náhradního tvaru podle třídy, dokud se model nenačte. */
