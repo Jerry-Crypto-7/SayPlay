@@ -27,12 +27,28 @@ describe('buildChain', () => {
   const ROBOT = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
   const chain = built(ROBOT);
 
-  it('plays the main verb of the sentence in round 1', () => {
+  it('plays a verb of the sentence in round 1, and not always the first verb (T19)', () => {
     for (const sentence of [ROBOT, 'dodge pies then throw pies', 'bonk the gophers popping out of the lawn']) {
-      const main = readForChain(sentence, null).verbs[0]!.class;
-      expect(VERB_MICROS[main].length).toBeGreaterThan(0);
-      expect(VERB_MICROS[main]).toContain(built(sentence).rounds[0]!.key);
+      const heard = readForChain(sentence, null).verbs.flatMap((verb) => VERB_MICROS[verb.class]);
+      expect(heard.length).toBeGreaterThan(0);
+      for (const seed of [1, 2, 3, 4, 5, 6]) expect(heard).toContain(built(sentence, seed).rounds[0]!.key);
     }
+    // Dvě slovesa s různým ovládáním: podle semínka začíná řetěz jedním i druhým.
+    const TWO = 'dodge pies then throw pies';
+    const [first, second] = readForChain(TWO, null).verbs.map((verb) => VERB_MICROS[verb.class]);
+    const leads = [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => built(TWO, seed).rounds[0]!.key);
+    expect(leads.some((key) => first!.includes(key))).toBe(true);
+    expect(leads.some((key) => second!.includes(key))).toBe(true);
+  });
+
+  it('plays the world of a sentence without verbs in round 1 (T19)', () => {
+    const SNOW = 'a quiet snowy forest at dawn';
+    const read = readForChain(SNOW, null);
+    expect(read.verbs.flatMap((verb) => VERB_MICROS[verb.class])).toEqual([]);
+    expect(read.look).not.toBeNull();
+    const leads = [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => built(SNOW, seed).rounds[0]!.key);
+    for (const key of leads) expect(WORLD_MICROS[read.look!]).toContain(key);
+    expect(new Set(leads).size).toBeGreaterThan(1);
   });
 
   it('ends on a boss and never repeats a control', () => {
@@ -122,10 +138,11 @@ describe('buildChain', () => {
       for (const world of chains) expect(verifyChain(world).failures).toEqual([]);
     });
 
-    it('draws the same mutators from the same seed, and more kinds of chain than the rounds alone', () => {
+    it('draws the same mutators from the same seed, and most chains carry one', () => {
       const keys = (world: ChainWorld): string => world.rounds.map((round) => `${round.key}${round.mutator === undefined ? '' : `+${round.mutator}`}`).join(' ');
       expect(keys(built(ROBOT, 4, true))).toBe(keys(chains[3]!));
-      expect(new Set(chains.map(keys)).size).toBeGreaterThan(new Set(chains.map((world) => world.rounds.map((round) => round.key).join(' '))).size);
+      // Kola samotná se mezi semínky liší už losem kola 1 (T19); mutátor musí přesto nést většina řetězů.
+      expect(chains.filter((world) => world.rounds.some((round) => round.mutator !== undefined)).length).toBeGreaterThan(chains.length / 2);
     });
 
     it('leaves the rounds and their layouts as the chain without mutators builds them', () => {

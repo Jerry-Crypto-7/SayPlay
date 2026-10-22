@@ -164,7 +164,12 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number, m
   const stream = createStreams(seed).chain;
   const plain = shuffled(MICRO.filter((entry) => entry.boss !== true).map((entry) => entry.key), stream);
   const bosses = shuffled(MICRO.filter((entry) => entry.boss === true).map((entry) => entry.key), stream);
-  const order = [...new Set([...read.verbs.flatMap((verb) => VERB_MICROS[verb.class]), ...(read.look === null ? [] : WORLD_MICROS[read.look]), ...plain])].map(entryOf);
+  const heard = read.verbs.flatMap((verb) => VERB_MICROS[verb.class]);
+  const world = read.look === null ? [] : WORLD_MICROS[read.look];
+  // T19: kolo 1 losem z mikroher, které hrají slovesa věty (bez sloves ze světa věty) – jinak by
+  // první mikrohra prvního slovesa začínala většinu řetězů (běžec 40 % sady řetězu, krtky u obou vět z telefonu).
+  const lead = shuffled([...new Set(heard.length > 0 ? heard : world)], stream);
+  const order = [...new Set([...lead, ...heard, ...world, ...plain])].map(entryOf);
 
   const first = order.map((entry) => draftOf(sentence, entry)).find((draft) => draft !== null);
   if (first === undefined) return { ok: false, issues: ['the sentence drafts no microgame'] };
