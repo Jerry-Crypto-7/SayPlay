@@ -263,14 +263,17 @@ export async function promoteBatch(batch, { root = ROOT, sync = true, drop = [] 
   writeFileSync(path.join(root, 'src/assets/catalog.json'), `${JSON.stringify(catalog, null, 2)}\n`);
   writeFileSync(path.join(root, 'src/assets/catalog-index.json'), `${JSON.stringify(catalogIndex(catalog), null, 2)}\n`);
 
-  const records = readdirSync(publicDir).sort().map((file) => generatedRecord(
+  // Model vyměněný pod stejným id (P57, `replaceModels`) má vlastní záznam – i CC0; obecný záznam adresáře by ho přepsal na vlastní.
+  const replaced = new Set(catalog.assets.filter((asset) => asset.provenance.replacedAt)
+    .flatMap((asset) => [...asset.lods.map((lod) => lod.path), asset.thumbnail]).map((url) => `public${url}`));
+  const records = readdirSync(publicDir).sort().filter((file) => !replaced.has(`${PUBLIC_DIR}/${file}`)).map((file) => generatedRecord(
     `${PUBLIC_DIR}/${file}`,
     file.endsWith('.glb')
       ? 'Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.'
       : TABLE_REASON,
     'Worldsmith generated models P37D, 2026-10.',
   ));
-  disclosure.entries = [...disclosure.entries.filter((entry) => !(entry.kind === 'asset' && entry.name.startsWith(`${PUBLIC_DIR}/`))), ...records];
+  disclosure.entries = [...disclosure.entries.filter((entry) => !(entry.kind === 'asset' && entry.name.startsWith(`${PUBLIC_DIR}/`) && !replaced.has(entry.name))), ...records];
   writeFileSync(path.join(root, 'disclosure.json'), `${JSON.stringify(disclosure, null, 2)}\n`);
 
   if (sync) syncCatalog(root);

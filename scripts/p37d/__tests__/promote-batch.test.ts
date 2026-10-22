@@ -344,6 +344,23 @@ describe('promote-batch (P37D T3)', () => {
     expect(readdirSync(path.join(root, PUBLIC_DIR)).some((file) => file.includes('broken'))).toBe(false);
   }, 180_000);
 
+  it('keeps the disclosure of a model replaced under the same id: a CC0 swap stays CC0 (P57 T8r)', async () => {
+    const root = makeRoot();
+    await promoteBatch({ schema: 'catalog-batch.v1', entries: [entry('gen3d-test-acorn', ['test acorn'])] }, { root, sync: false });
+    const catalog = read(root, 'src/assets/catalog.json');
+    Object.assign(catalog.assets[1].provenance, { license: CC0, replacedAt: '2026-10-22' });
+    writeFileSync(path.join(root, 'src/assets/catalog.json'), JSON.stringify(catalog));
+    const disclosure = read(root, 'disclosure.json');
+    for (const record of disclosure.entries.filter((record: { name: string }) => record.name.includes('acorn'))) Object.assign(record, { license: CC0, firstParty: false });
+    writeFileSync(path.join(root, 'disclosure.json'), JSON.stringify(disclosure));
+
+    await promoteBatch({ schema: 'catalog-batch.v1', entries: [] }, { root, sync: false });
+
+    const acorn = read(root, 'disclosure.json').entries.filter((record: { name: string }) => record.name.includes('acorn'));
+    expect(acorn.map((record: { name: string }) => record.name).sort()).toEqual(['lod0.glb', 'lod1.glb', 'png'].map((end) => `${PUBLIC_DIR}/gen3d-test-acorn${end === 'png' ? '.png' : `-${end}`}`).sort());
+    for (const record of acorn) expect(record).toMatchObject({ license: CC0, firstParty: false });
+  }, 180_000);
+
   it('drops an own model with its files and disclosure, and never a foreign one', async () => {
     const root = makeRoot();
     await promoteBatch({ schema: 'catalog-batch.v1', entries: [entry('gen3d-test-acorn', ['test acorn'])] }, { root, sync: false });
