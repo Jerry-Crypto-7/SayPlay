@@ -1,0 +1,142 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "base": "http://127.0.0.1:3258",
+ "interleavedWith": "http://127.0.0.1:3257",
+ "repeats": 3,
+ "windowMs": 10000,
+ "measuredAt": "2026-10-22T20:09:39.269Z",
+ "rows": [
+  {
+   "id": "01-frog",
+   "genre": "race",
+   "fpsMedian": 55.9,
+   "samples": [
+    35.7,
+    55.9,
+    59.2
+   ],
+   "calls": 58
+  },
+  {
+   "id": "02-zombie",
+   "genre": "move_free",
+   "fpsMedian": 58.3,
+   "samples": [
+    58.3,
+    58.7,
+    56.3
+   ],
+   "calls": 82
+  },
+  {
+   "id": "03-ninja",
+   "genre": "lanes",
+   "fpsMedian": 59,
+   "samples": [
+    58.3,
+    59,
+    59
+   ],
+   "calls": 77
+  },
+  {
+   "id": "04-shark",
+   "genre": "race",
+   "fpsMedian": 58.9,
+   "samples": [
+    58.1,
+    58.9,
+    59.3
+   ],
+   "calls": 45
+  },
+  {
+   "id": "05-pizza",
+   "genre": "timing",
+   "fpsMedian": 59.1,
+   "samples": [
+    59.1,
+    59.1,
+    59.1
+   ],
+   "calls": 63
+  },
+  {
+   "id": "06-cat",
+   "genre": "lanes",
+   "fpsMedian": 58.8,
+   "samples": [
+    58.4,
+    58.8,
+    58.8
+   ],
+   "calls": 123
+  },
+  {
+   "id": "07-goalie",
+   "genre": "ball",
+   "fpsMedian": 57.9,
+   "samples": [
+    58,
+    57.8,
+    57.9
+   ],
+   "calls": 94
+  },
+  {
+   "id": "08-gems",
+   "genre": "move_free",
+   "fpsMedian": 57.1,
+   "samples": [
+    57,
+    58.4,
+    57.1
+   ],
+   "calls": 47
+  },
+  {
+   "id": "09-astro",
+   "genre": "runner",
+   "fpsMedian": 51.5,
+   "samples": [
+    54,
+    49.2,
+    51.5
+   ],
+   "calls": 111
+  },
+  {
+   "id": "10-chef",
+   "genre": "move_free",
+   "fpsMedian": 53.3,
+   "samples": [
+    50.7,
+    55.6,
+    53.3
+   ],
+   "calls": 86
+  },
+  {
+   "id": "11-drum",
+   "genre": "rhythm",
+   "fpsMedian": 59,
+   "samples": [
+    58.3,
+    59,
+    59.3
+   ],
+   "calls": 45
+  },
+  {
+   "id": "12-ghost",
+   "genre": "runner",
+   "fpsMedian": 54.6,
+   "samples": [
+    52.1,
+    54.6,
+    56.7
+   ],
+   "calls": 48
+  }
+ ]
+}

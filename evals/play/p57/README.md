@@ -90,3 +90,29 @@ Kandidáti dávek 1–3 se skóre ≥ 6, které staré pravidlo (8+) zahodilo, �
 | CC0 nemá | oliva, slunečnice, trnitý keř – zůstávají generátoru |
 
 Výměna z generátoru pod 8 vegetaci neuzavírá: CC0 kandidát se utká s ní (`vegTargets`). Id vyměněná z CC0 dávky 4–5 negenerují a souhrn 8+ je počítá skóre CC0 (`heroSummary`). Top 50 na 8+ po T8r: 15/50.
+
+## Brány po výměnách (T11)
+
+Proti výchozímu commitu `72665fdc`, 22. 10. 2026.
+
+- **Velikost:** `node scripts/p57/size-check.mjs` exit 0 – `public/assets` 375,8 → 378,1 MB (+0,6 %, strop 15 %). Brána napoprvé našla 24 ze 49 vyměněných modelů s LOD1 větším než původní (až 2×, uliční koš 23 → 47 kB); `2d795a48` je znovu zjednodušil z LOD0 (gltfpack 1.2.0 jako `finish.py`, poměr bisekcí na nejvíc trojúhelníků, které se vejdou do původních bajtů – většina drží přes 90 % trojúhelníků). 18 z nich prohlédnuto na mřížce, vzhled sedí.
+- **Determinismus:** `e2e/offline-chain.spec.ts` z plánu P44D smazal; místo něj `e2e/play-physics-determinism.spec.ts` + `e2e/play-physics-replay.spec.ts` nad `npm run build` (`next start` s `PLAY_LAB=1`, `FALLBACK_SMOKE_URL`) – 9/9 zelených, připíchnutý hash `src/play/arcade/physics/__fixtures__/determinism.json` se od `72665fdc` nezměnil (ani žádný jiný fixture, snapshot nebo e2e soubor).
+- **`npx vitest run src/play`:** 8366/8368; dva červené: počet záznamů postav 263 místo 261 (T10 zařadil kachní a koi rybník mezi hrdiny – opraveno `d2692be2`, pak zelené) a časový `swarm.test.ts` (0,056 ms proti 0,05 ms pod zátěží, sám zelený).
+- **FPS telefonu:** `node scripts/play-look-shots.mjs perf --base <72665fdc> --vs <HEAD> --set ../p57/audit-12 --repeats 3` – Pixel 7, CPU 4×, d3d11, A/B prokládaně scénu po scéně; `perf-before.json` / `perf-after.json`. **Medián mediánů 12 scén 58,1 → 58,0 FPS (−0,3 %, brána −5 % prošla).**
+
+| Věta | před | po | volání před → po |
+|---|---|---|---|
+| 01 žába | 55,9 | 27,4 | 58 → 90 |
+| 02 zombie | 58,3 | 58,9 | 82 → 42 |
+| 03 ninja | 59,0 | 58,9 | 77 → 77 |
+| 04 žralok | 58,9 | 56,7 | 45 → 82 |
+| 05 pizza | 59,1 | 59,1 | 63 → 63 |
+| 06 kočka | 58,8 | 58,7 | 123 → 123 |
+| 07 brankář | 57,9 | 58,2 | 94 → 94 |
+| 08 drahokamy | 57,1 | 57,7 | 47 → 48 |
+| 09 astronaut | 51,5 | 46,9 | 111 → 111 |
+| 10 kuchař | 53,3 | 50,9 | 86 → 45 |
+| 11 bubeník | 59,0 | 58,6 | 45 → 77 |
+| 12 strašidelný dům | 54,6 | 54,9 | 48 → 49 |
+
+Žába přeměřená samostatně s 5 opakováními: 58,6 → 58,0 FPS při stejných 88 voláních – první řádek byl šum. **Inference:** různý počet volání u téže věty (zombie, žralok, kuchař, bubeník) neznamená změnu modelů – každé zveřejnění věty skládá hru znovu a obě verze dostaly jinou scénu; srovnatelné jsou řádky se stejnými voláními a ty se drží v ±1 FPS kromě astronauta (−9 %, v rozptylu ±10 % jednoho A/B).
