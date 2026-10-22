@@ -1,9 +1,8 @@
 /**
- * Čtení věty pro řetěz mikroher (P56C T3): jediné, co řetěz z věty čte – hrdina, protivník, předmět, svět a slovesa.
+ * Čtení věty pro řetěz mikroher (P56C T3, T17): jediné, co řetěz z věty čte – hrdina, protivník, předmět, svět a slovesa.
  *
- * Rozhraní `SentenceRead` je to, co P56C od čtení věty z P56A čeká; dokud P56A nedorazí, tělo `readForChain`
- * skládá jen existující kusy: čtení modelem (`Reading`, když je), `draftRoles`, `readRoles`, `lookFor` a položky
- * záměru z `extractIntent`. Bez sítě a bez stavu – stejná věta dává stejné čtení. Na P56A sahá jen tělo (T17).
+ * Se čtením modelem vrací `readForChain` čtení P56A (`read/for-chain.ts`). Bez něj skládá slovník: `draftRoles`,
+ * `readRoles`, `lookFor` a položky záměru z `extractIntent`. Bez sítě a bez stavu – stejná věta dává stejné čtení.
  */
 
 import { lookFor, type LookId } from '../arcade/look';
@@ -11,6 +10,7 @@ import { readRoles } from '../draft/lexicon';
 import { draftRoles } from '../genre/contract';
 import { extractIntent } from '../intent';
 import type { IntentAction } from '../intent/contract';
+import { readForChain as readSentence } from '../read/for-chain';
 import type { Reading, VerbClass } from '../read/schema';
 
 export interface SentenceRead {
@@ -85,26 +85,26 @@ function intentHero(sentence: string, hero: string | null, verbs: SentenceRead['
 }
 
 export function readForChain(sentence: string, reading: Reading | null): SentenceRead {
-  const roles = draftRoles(sentence, reading);
+  // T17: se čtením modelem je zdrojem P56A – řetěz ukáže hrdinu, protivníka, věc, svět a název téže hry jako jedna hra.
+  if (reading !== null) return readSentence(sentence, reading);
+  // Bez čtení (čtečka vypnutá, vypršela, selhala) zůstává slovník: návrat P56A dá jedno sloveso (`multi_verb` by
+  // zmizel, T8) a role návrhu hry – na dev sadě hrdina = protivník (d07 „ice“), pojmenovaný hrdina jako protivník (d23 drak).
+  const roles = draftRoles(sentence, null);
   const intent = extractIntent(sentence);
-  const verbs = reading !== null ? reading.verbs.slice(0, MAX_VERBS) : lexiconVerbs(sentence, intent.items);
-  const lexiconHero = roles.hero !== undefined && !isPlace(roles.hero) ? roles.hero : intentHero(sentence, intent.hero, verbs);
-  const hero = reading?.hero ?? lexiconHero;
+  const verbs = lexiconVerbs(sentence, intent.items);
+  const hero = roles.hero !== undefined && !isPlace(roles.hero) ? roles.hero : intentHero(sentence, intent.hero, verbs);
 
   const foe = roles.cast?.find((member) => member.does !== 'collect')?.label ?? null;
   const caught = intent.items.find((item) => (item.verb === 'collect' || item.verb === 'catch') && item.object !== null)?.object ?? null;
-  const item =
-    roles.cast?.find((member) => member.does === 'collect')?.label ??
-    reading?.roles.find((role) => role.kind === 'target')?.noun ??
-    (reading === null ? readRoles(sentence).target ?? caught : null);
+  const item = roles.cast?.find((member) => member.does === 'collect')?.label ?? readRoles(sentence).target ?? caught;
 
   return {
     hero: hero === null ? null : short(hero),
     foe,
     item,
-    look: lookFor(reading?.setting ?? roles.setting ?? '', reading?.mood ?? '') ?? lookFor(sentence),
+    look: lookFor(roles.setting ?? '') ?? lookFor(sentence),
     verbs,
     title: null,
-    source: reading === null ? 'lexicon' : 'llm',
+    source: 'lexicon',
   };
 }

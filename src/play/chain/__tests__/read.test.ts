@@ -1,6 +1,6 @@
 /**
- * Čtení věty pro řetěz (P56C T3): pahýl ze slovníku, dokud čtení nedodá P56A. Pin hlídá, co typy nepoznají –
- * hrdinu prohozeného s protivníkem nebo s místem: řetěz s nimi projde stavbou a hraje se špatnou postavou.
+ * Čtení věty pro řetěz (P56C T3, T17): se čtením modelem to, co dá P56A, bez něj slovník. Pin hlídá, co typy
+ * nepoznají – hrdinu prohozeného s protivníkem nebo s místem: řetěz s nimi projde stavbou a hraje se špatnou postavou.
  */
 
 import { readFileSync } from 'node:fs';
@@ -8,6 +8,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { readForChain as readSentence } from '@/play/read/for-chain';
 import type { Reading } from '@/play/read/schema';
 
 import { readForChain, type SentenceRead } from '../read';
@@ -61,25 +62,49 @@ describe('readForChain from the lexicon', () => {
   });
 });
 
-describe('readForChain with a model reading', () => {
-  const reading: Reading = {
-    control: 'move_free',
-    verbs: [{ word: 'zap', class: 'aim_shoot' }, { word: 'dodge', class: 'steer' }],
-    hero: 'space cat',
-    roles: [{ noun: 'comet', kind: 'threat', count: null }, { noun: 'fish', kind: 'collectible', count: 3 }],
-    setting: 'outer space',
-    mood: null,
-    numbers: { seconds: null, counts: [] },
-    genre: null,
-    foe: null,
-    item: null,
-    world: null,
-    title: null,
-  };
+/** Čtení dvanácti vět auditu P56A skutečným modelem (gpt-oss-20b, P56A T4) – test čtečku nevolá. */
+const AUDIT = (JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', 'p56a', 'audit-12.json'), 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
+const READS = new Map(
+  (JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', 'p56a', 'readings', 'audit-12.gpt-oss-20b.json'), 'utf8')) as { readings: { id: string; reading: Reading | null }[] }).readings.map((row) => [row.id, row.reading]),
+);
+const READ_AUDIT = AUDIT.flatMap(({ id, text }) => {
+  const reading = READS.get(id) ?? null;
+  return reading === null ? [] : [[id, text, reading] as const];
+});
 
-  it('takes hero, foe, item, world and verbs from the reading', () => {
+describe('readForChain with a model reading (P56A, T17)', () => {
+  it('has a model reading for every audit sentence', () => {
+    expect(READ_AUDIT).toHaveLength(AUDIT.length);
+  });
+
+  // Jeden zdroj pravdy: řetěz ukáže hrdinu, protivníka, věc, svět a název hry téže věty (`read/for-chain.ts`).
+  it.each(READ_AUDIT)('%s takes every field from the P56A reading', (_id, text, reading) => {
+    expect(readForChain(text, reading)).toEqual({ ...readSentence(text, reading), source: 'llm' });
+  });
+
+  it.each(READ_AUDIT)('%s never makes the foe or the item the hero', (_id, text, reading) => {
+    const read = readForChain(text, reading);
+    expect(read.hero).not.toBeNull();
+    expect([read.foe, read.item]).not.toContain(read.hero);
+  });
+
+  it('keeps the foe, the world and the title the model named', () => {
+    const reading: Reading = {
+      control: 'move_free',
+      verbs: [{ word: 'zap', class: 'aim_shoot' }, { word: 'dodge', class: 'steer' }],
+      hero: 'cat',
+      roles: [{ noun: 'fish', kind: 'collectible', count: 3 }],
+      setting: null,
+      mood: null,
+      numbers: { seconds: null, counts: [] },
+      genre: null,
+      foe: 'comet',
+      item: 'fish',
+      world: 'space',
+      title: 'Comet Cat',
+    };
     expect(readForChain('a cat zaps comets and dodges them for fish', reading)).toMatchObject({
-      hero: 'space cat', foe: 'comet', item: 'fish', look: 'space', verbs: reading.verbs, source: 'llm',
+      hero: 'cat', foe: 'comet', look: 'space', title: 'Comet Cat', verbs: reading.verbs, source: 'llm',
     });
   });
 });
