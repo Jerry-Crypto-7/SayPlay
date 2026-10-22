@@ -252,7 +252,8 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   const declined = (): UpgradeOutcome => final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (directed.source === 'draft' && rejected === null) return declined();
   const aiSpec = rejected ?? directed.spec;
-  if (gameSpecHash(aiSpec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: aiSpec });
+  // Název nerozhoduje (jako `renamedQuick` níž): rychlá verze má od P56A T8 název z věty, modul režiséra svou šablonu.
+  if (gameSpecHash({ ...aiSpec, title: draft.spec.title }) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: aiSpec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 

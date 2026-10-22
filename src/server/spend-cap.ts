@@ -956,6 +956,7 @@ const PROCESS_CAP_KEY = '__worldsmithSpendCap';
 export function resetProcessSpendCap(): void {
   delete (globalThis as Record<string, unknown>)[PROCESS_CAP_KEY];
   delete (globalThis as Record<string, unknown>)[FALLBACK_CAP_KEY];
+  delete (globalThis as Record<string, unknown>)[READER_CAP_KEY];
   resetProcessLedger();
 }
 
@@ -996,6 +997,32 @@ export function fallbackSpendCapFromEnv(env: Record<string, string | undefined>)
   // v tisících a záloha by s ním ztratila jedinou pojistku proti překlepu v ceníku.
   const callCap = callCapFrom(env.WORLDSMITH_FALLBACK_CALL_CAP);
   return new SpendCap({ enabled: true, capUsd, callCap }, null, ledgerFromEnv(env, fetch, FALLBACK_BOOK), null);
+}
+
+/**
+ * **Strop placené čtečky věty** (P56A T4) – třetí strop procesu. Čtení běží
+ * před každou větou, takže ze stropu režiséra by jeden návštěvník větami vyjedl
+ * rozpočet režiséra všem (revize T4, nález 1). Táž doktrína jako u zálohy:
+ * vlastní částka `PLAY_READER_SPEND_CAP_USD` (chybí = 0, placená čtečka pak
+ * nepoběží), vlastní počet volání `PLAY_READER_CALL_CAP`, vlastní kniha
+ * (`READER_BOOK`) a bez ovládacího souboru hlavního stropu.
+ */
+export function processReaderSpendCap(): SpendCap {
+  const holder = globalThis as Record<string, unknown>;
+  holder[READER_CAP_KEY] ??= readerSpendCapFromEnv(process.env);
+  return holder[READER_CAP_KEY] as SpendCap;
+}
+
+const READER_CAP_KEY = '__worldsmithReaderSpendCap';
+
+/** Kniha čtečky: klíče `<předpona>:reader:*`, v procesu vlastní paměť. */
+export const READER_BOOK = 'reader';
+
+export function readerSpendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
+  const parsed = Number(env.PLAY_READER_SPEND_CAP_USD);
+  const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  const callCap = callCapFrom(env.PLAY_READER_CALL_CAP);
+  return new SpendCap({ enabled: true, capUsd, callCap }, null, ledgerFromEnv(env, fetch, READER_BOOK), null);
 }
 
 // Táž doktrína jako u dolarů: chybějící proměnná je výchozí hodnota, vadná je

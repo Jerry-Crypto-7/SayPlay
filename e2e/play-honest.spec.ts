@@ -65,8 +65,8 @@ test.describe('/play/[id] – honesty strip', () => {
     const game = await publish(request, 'Explain quantum physics to my grandma.');
     await page.goto(game.url);
     await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’');
-    // Sběr v Aréně se jmenuje podle tématu věty („<téma> Hunt“), dřív běžec podle celé věty.
-    await expect(page.getByRole('heading', { name: 'Grandma Hunt' })).toBeVisible();
+    // Název je ze slov věty (P56A T8), dřív šablona sběru v Aréně „<téma> Hunt“.
+    await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());

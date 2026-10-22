@@ -671,11 +671,19 @@ export function scoreArchetypes(sentence: string): Readonly<Record<ArchetypeId, 
   return scores;
 }
 
+/** Nepravidelná množná čísla, která `singular` čte zpátky: `wolf → wolves`, `mouse → mice` („5 waves of wolfs“, P56A T9). */
+const PLURAL_OF: Readonly<Record<string, string>> = Object.fromEntries(Object.entries(IRREGULAR).map(([many, one]) => [one, many]));
+
 /** Opak `singular` pro věty hráči: `dummy → dummies`, `box → boxes`, `gate → gates`. */
 export function plural(phrase: string, count: number): string {
   if (count === 1) return phrase;
   const words = phrase.split(' ');
   const last = words[words.length - 1];
-  const many = /[^aeiou]y$/.test(last) ? `${last.slice(0, -1)}ies` : /(?:s|x|ch|sh)$/.test(last) ? `${last}es` : `${last}s`;
+  const many = PLURAL_OF[last] ?? (/[^aeiou]y$/.test(last) ? `${last.slice(0, -1)}ies` : /(?:s|x|ch|sh)$/.test(last) ? `${last}es` : `${last}s`);
   return [...words.slice(0, -1), many].join(' ');
+}
+
+/** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí a cílové řádky). */
+export function withArticle(noun: string): string {
+  return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
 }

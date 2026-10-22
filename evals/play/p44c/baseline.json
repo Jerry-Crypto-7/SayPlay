@@ -7927,7 +7927,7 @@
             {
               "actor": "hero",
               "verb": "beat",
-              "object": "festival",
+              "object": null,
               "axis": "action",
               "essential": true,
               "said": "drums"

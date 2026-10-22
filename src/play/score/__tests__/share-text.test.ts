@@ -45,6 +45,12 @@ describe('shareText', () => {
     expect(text).toBe(['Mushrooms – sayplay', '🟩🟩🟩⬜⬜', '⏱️ 31.0s', 'So close. Can you beat it?', URL].join('\n'));
   });
 
+  it('a loss without a single point dares without „So close.“ (P56A T9)', () => {
+    expect(shareText(run({ won: false, score: 0 }), 'Mushrooms', URL).split('\n')).toContain('Can you beat it?');
+    expect(shareText(run({ won: false, goal: { count: 0, need: 5 } }), 'Mushrooms', URL).split('\n')).toContain('Can you beat it?');
+    expect(shareText(run({ won: false, score: 0, goal: { count: 2, need: 5 } }), 'Mushrooms', URL).split('\n')).toContain('Can you beat it?');
+  });
+
   it('a run with nothing to grid still says how it ended', () => {
     expect(shareText(run({}), null, URL).split('\n').slice(0, 2)).toEqual(['sayplay', '✅']);
     expect(shareText(run({ won: false }), null, URL).split('\n')[1]).toBe('❌');

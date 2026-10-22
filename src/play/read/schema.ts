@@ -10,6 +10,9 @@
 
 import { z } from 'zod';
 
+import { LOOK_IDS } from '../arcade/look';
+import type { GenreId, GenreMode, GenreModule } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/modules';
 import { READ_CONTROLS } from '../spec';
 
 /**
@@ -29,6 +32,19 @@ export type RoleKind = (typeof ROLE_KINDS)[number];
 
 const word = z.string().min(1).max(40);
 
+/** Režimy, které hrají (`availability = 'ready'`), po žánrech – jen ty smí čtečka jmenovat (P56A T3). */
+export const READY_GENRE_MODES: readonly { readonly genre: GenreModule['id']; readonly modes: readonly [string, ...string[]] }[] = (Object.values(GENRE_MODULES) as GenreModule[])
+  .map((module) => ({ genre: module.id, modes: module.modes.filter((mode) => module.availability(mode) === 'ready') as string[] }))
+  .filter((entry): entry is { genre: GenreModule['id']; modes: [string, ...string[]] } => entry.modes.length > 0);
+
+/**
+ * Žánr a režim jako jedna z dvojic, které hrají: `anyOf` objektů, ne dva nezávislé výčty – gramatika llama.cpp ani
+ * `strict` u Groq tak dvojici, která neexistuje („runner.stack“), nepustí.
+ */
+const genreChoice = z.union(
+  READY_GENRE_MODES.map(({ genre, modes }) => z.object({ genre: z.literal(genre), mode: z.enum(modes) }).strict()) as unknown as readonly [z.ZodObject, z.ZodObject, ...z.ZodObject[]],
+) as unknown as z.ZodType<{ genre: GenreId; mode: GenreMode }>;
+
 export const readingSchema = z
   .object({
     /** Ovládání, které nejlíp hraje hlavní sloveso věty. */
@@ -43,6 +59,16 @@ export const readingSchema = z
     setting: z.string().min(1).max(80).nullable(),
     mood: word.nullable(),
     numbers: z.object({ seconds: z.int().min(1).max(3600).nullable(), counts: z.array(z.int().min(1).max(999)).max(6) }).strict(),
+    /** P56A T3: hra, kterou věta chce – žánr a režim, nebo `null`, když žádný nesedí. */
+    genre: genreChoice.nullable(),
+    /** S kým nebo čím hrdina bojuje, před čím utíká nebo čemu se vyhýbá; 1–3 slova z věty. */
+    foe: word.nullable(),
+    /** Věc, se kterou hrdina hlavně pracuje (sbírá, hází, chrání). */
+    item: word.nullable(),
+    /** Sada vzhledu (`LOOK_IDS`), které místo věty odpovídá. */
+    world: z.enum(LOOK_IDS).nullable(),
+    /** Krátký název hry ze slov věty. */
+    title: z.string().min(1).max(32).nullable(),
   })
   .strict();
 export type Reading = z.infer<typeof readingSchema>;

@@ -1,0 +1,2293 @@
+{
+ "schema": "p56a-visible.v1",
+ "set": "evals/play/p56a/holdout.json",
+ "question": "blind judge (scripts/p37d/judge-sheet.mjs ask: Codex on the subscription, empty mkdtemp with only sheet.png) sees every noun of the sentence: hero (subject) and foe, or the item when the sentence names no foe",
+ "frame": "canvas only, page text hidden, 1280x800, robot (\"Show me how\") after 180 ticks (3 s of play) on the probe's hand clock",
+ "setup": "T13 sealed holdout: next start (webpack build of 7e34c2a8 = src of 0dd2f0d2), reader gpt-oss-20b via llamacpp on the RTX 3090 shared with ComfyUI, PLAY_READER_BUDGET_MS=120000 (the code maximum); 7 games whose reading timed out while ComfyUI held the GPU or whose llama-server was stopped by the session limit were re-made on a fresh store; side A not judged",
+ "a": null,
+ "b": {
+  "commit": "0dd2f0d2",
+  "side": "P56A with the sentence reader",
+  "seen": 13,
+  "of": 80,
+  "nounsSeen": 38,
+  "nounsOf": 128,
+  "readByModel": 78
+ },
+ "target": "B sees both nouns in >= 64/80",
+ "met": false,
+ "rows": [
+  {
+   "id": "s01",
+   "text": "pizza delivery guy sprints down a busy street nonstop, i swerve left and right around taxis, leap over trash cans and grab tips till i reach the last house",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Pizza Delivery Guy Sprint",
+    "hero": "pizza delivery guy",
+    "roles": [
+     "hazard:trash can",
+     "collectible:tip",
+     "exit:house",
+     "item:pizza"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small cartoon character runs down a city street past coins and obstacles, with buildings, a yellow car, and a fountain alongside the road.",
+    "nouns": [
+     {
+      "noun": "pizza delivery guy",
+      "visible": false,
+      "seenAs": "A brown-haired cartoon character wearing a dark blue top, with no visible pizza box or delivery markings."
+     },
+     {
+      "noun": "taxi",
+      "visible": true,
+      "seenAs": "A yellow car parked on the left with a roof-mounted taxi-style sign."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s02",
+   "text": "a cat knocks yarn balls into a basket, two matching ones squish together into a bigger ball, keep the heap from reaching the top",
+   "b": {
+    "readBy": "model",
+    "genre": "defense.default",
+    "title": "Cat Yarn Basket",
+    "hero": "cat",
+    "roles": [
+     "chaser:heap",
+     "prop:castle"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized game scene shows five green lanes leading to a beige platform with red knobs, large red end pieces, and a small gray figure near the bottom.",
+    "nouns": [
+     {
+      "noun": "cat",
+      "visible": false,
+      "seenAs": "A small gray rounded figure with indistinct protrusions near the bottom, without clearly recognizable cat features."
+     },
+     {
+      "noun": "yarn ball",
+      "visible": false,
+      "seenAs": "Red faceted balls or knobs with no visible yarn strands or winding."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s03",
+   "text": "1v1 vs a giant yeti in the snow, wait for him to raise his fists, roll away, then punch him back",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.fight",
+    "title": "Yeti Punch",
+    "hero": "penguin",
+    "roles": [
+     "hazard:him back"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A snowy, stone-walled icy arena contains a dark rounded character facing a small red-and-gray figure, surrounded by rocks, shrubs, and blue crystals.",
+    "nouns": [
+     {
+      "noun": "yeti",
+      "visible": false,
+      "seenAs": "The central figure is a dark rounded character with stubby side appendages, without clearly recognizable yeti features."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s04",
+   "text": "a ghost hunter creeps through the graveyard relighting every candle on the tombstones while a zombie shuffles after her",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Ghost Hunter Relighting",
+    "hero": "ghost hunter",
+    "roles": [
+     "hazard:zombie",
+     "exit:star"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark 3D maze contains a small green character, scattered pale blue shapes, and a yellow circular token.",
+    "nouns": [
+     {
+      "noun": "ghost hunter",
+      "visible": false,
+      "seenAs": "The small green character has no clearly discernible ghost-hunting equipment or features."
+     },
+     {
+      "noun": "zombie",
+      "visible": false,
+      "seenAs": "The green character is too small and indistinct to recognize as a zombie."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s05",
+   "text": "move a shopping basket under the shelves as groceries tumble down, keep the apples and avoid the rotten eggs",
+   "b": {
+    "readBy": "model",
+    "genre": "catch.default",
+    "title": "Shopping Basket",
+    "hero": "shopping basket",
+    "roles": [
+     "collectible:apples",
+     "hazard:shelves"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small wheeled cart sits beneath a green overhead platform, with a yellow disc and a brown irregular object suspended against a hazy city skyline.",
+    "nouns": [
+     {
+      "noun": "rotten egg",
+      "visible": false,
+      "seenAs": "A brown irregular object with a dark green protrusion, resembling a piece of fruit rather than a clearly recognizable rotten egg."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s06",
+   "text": "burger patties swing back n forth over the bun, let each one go at the perfect moment so it sits right on the last one, how tall can u get it",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.precision",
+    "title": "Burger Patties Stack",
+    "hero": "explorer",
+    "roles": [
+     "collectible:marker",
+     "hazard:missed drop",
+     "exit:last round"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy landscape contains a sunflower, tree, large rocks, wooden fences, a windmill, and colored blocks in the center.",
+    "nouns": [
+     {
+      "noun": "burger patty",
+      "visible": false,
+      "seenAs": "No recognizable burger patty is visible; the central objects are green, dark blue, and red rectangular blocks."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s07",
+   "text": "a goose in the city shuffles one square at a time across honking traffic, a river of drifting logs and a railway to get home",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Goose Shuffle",
+    "hero": "goose",
+    "roles": [
+     "hazard:traffic",
+     "collectible:turbo",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small red car drives along an elevated city road bordered by red barriers, with a cyan platform ahead and buildings and trees on both sides.",
+    "nouns": [
+     {
+      "noun": "goose",
+      "visible": false,
+      "seenAs": "No recognizable goose is visible; a cyan rectangular platform sits ahead of the car."
+     },
+     {
+      "noun": "car",
+      "visible": true,
+      "seenAs": "A small red car with a pale blue windshield and black wheels is centered on the road."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s08",
+   "text": "a grumpy farmer stands in his field blasting swarms of crows with a water hose before they get to the corn",
+   "b": {
+    "readBy": "model",
+    "genre": "shooter.default",
+    "title": "Grumpy Farmer Water Hose",
+    "hero": "grumpy farmer",
+    "roles": [
+     "target:corn",
+     "hazard:crow"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A third-person character stands in a grassy field with a windmill, trees, distant mountains, and red targeting markers.",
+    "nouns": [
+     {
+      "noun": "farmer",
+      "visible": false,
+      "seenAs": "A dark, hat-wearing humanoid seen from behind, without clear farming clothing or tools."
+     },
+     {
+      "noun": "crow",
+      "visible": false,
+      "seenAs": "Small distant red-outlined shapes that are too indistinct to recognize as birds."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s09",
+   "text": "my hamster scurries around the living room rug while the cat keeps hunting him, stay alive as long as u can and nab sunflower seeds",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Hamster Scurry",
+    "hero": "hamster",
+    "roles": [
+     "hazard:rock",
+     "collectible:sunflower seed",
+     "exit:finish line",
+     "chaser:cat"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D desert canyon contains a wooden path with a gray cat viewed from behind and a round brown rodent-like figure ahead, surrounded by scattered furniture, pots, and plants.",
+    "nouns": [
+     {
+      "noun": "hamster",
+      "visible": true,
+      "seenAs": "The round brown figure ahead on the path has a plump body and two rounded ears, resembling a hamster."
+     },
+     {
+      "noun": "cat",
+      "visible": true,
+      "seenAs": "The gray foreground figure has pointed ears and a curved tail, clearly depicting a cat viewed from behind."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s10",
+   "text": "a lumberjack hacks apart logs that get hurled up out of the forest, careful not to hit the beehives",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.precision",
+    "title": "Lumberjack Log Hack",
+    "hero": "lumberjack",
+    "roles": [
+     "collectible:marker",
+     "hazard:missed drop",
+     "exit:last round"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy clearing contains rocky barriers, two treehouses, a small tree, colored blocks on a platform, and a tiny upright brown figure.",
+    "nouns": [
+     {
+      "noun": "lumberjack",
+      "visible": false,
+      "seenAs": "A tiny brown upright figure near the center is too indistinct to identify as a lumberjack."
+     },
+     {
+      "noun": "beehive",
+      "visible": false,
+      "seenAs": "A tan angular object near the right-hand rocks resembles a log, with no clearly recognizable beehive."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s11",
+   "text": "guide a wobbly moon lander down onto the flat pad with little puffs from its engine and dont smash the legs",
+   "b": {
+    "readBy": "model",
+    "genre": "platformer.default",
+    "title": "Moon Lander Guide",
+    "hero": "moon lander",
+    "roles": [
+     "hazard:leg",
+     "collectible:coin",
+     "exit:flag"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly game scene shows rocky platforms, crumpled metallic structures, a crescent flag, and red-roofed towers beneath a dark sky.",
+    "nouns": [
+     {
+      "noun": "moon lander",
+      "visible": false,
+      "seenAs": "The central metallic structure looks like angular wreckage or crumpled machinery, without a clearly recognizable lunar lander shape."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s12",
+   "text": "a dj cat slaps the right button every time a glowing arrow slides down to the bottom, all perfectly in sync with the song",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "DJ Cat Slap",
+    "hero": "dj cat",
+    "roles": [
+     "hazard:rock",
+     "collectible:coin",
+     "exit:finish line",
+     "hazard:arrow"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark, rounded animal-like character travels along a dirt road through a low-poly green forest with rocks and obstacles.",
+    "nouns": [
+     {
+      "noun": "dj cat",
+      "visible": false,
+      "seenAs": "A dark animal-like character seen from behind, with a raised tail-like feature but no clear cat features or DJ equipment."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s13",
+   "text": "shoulder-barge the other bumper bots off the round stage in the factory before they knock you off",
+   "b": {
+    "readBy": "model",
+    "genre": "push.default",
+    "title": "Bumper Bot Barge",
+    "hero": "robot",
+    "roles": [
+     "chaser:bull"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "Two black bulls face a small gray and pink robot on a circular sandy arena.",
+    "nouns": [
+     {
+      "noun": "bumper bot",
+      "visible": true,
+      "seenAs": "A small gray robot with bright pink bumper-like bands around its body, positioned between the bulls."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s14",
+   "text": "help a little frog spring between rocks bobbing on lava, one bad leap and he's toast, get him up to the crater rim",
+   "b": {
+    "readBy": "model",
+    "genre": "platformer.default",
+    "title": "Little Frog Lava Leap",
+    "hero": "little frog",
+    "roles": [
+     "hazard:rock",
+     "collectible:gem",
+     "exit:flag",
+     "hazard:lava"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly volcanic game scene shows a green frog above rocky platforms, glowing lava below, pale crystals, and a volcano in the background.",
+    "nouns": [
+     {
+      "noun": "frog",
+      "visible": true,
+      "seenAs": "A large green crouching frog with a broad head and folded hind legs near the left-center."
+     },
+     {
+      "noun": "lava",
+      "visible": true,
+      "seenAs": "Glowing orange molten material beneath the separated rock platforms."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s15",
+   "text": "a beaver guards its dam by setting pinecone launchers on each forest path so the termite army never reaches it",
+   "b": {
+    "readBy": "model",
+    "genre": "defense.default",
+    "title": "Beaver Guards Dam",
+    "hero": "beaver",
+    "roles": [
+     "chaser:termite army",
+     "prop:dam"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A brown animal character faces five green lanes bordered at the near end by a beige barrier with red knobs and large red end caps.",
+    "nouns": [
+     {
+      "noun": "beaver",
+      "visible": true,
+      "seenAs": "The brown character at the bottom center has small rounded ears, a stocky body, and a broad flattened tail, resembling a beaver viewed from behind."
+     },
+     {
+      "noun": "termite",
+      "visible": false,
+      "seenAs": "No recognizable termite is visible; the red objects on the barrier appear to be knobs or caps."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s16",
+   "text": "a chubby pigeon wobbles forward through the city on its own, every click bumps it up a bit so it slips between pairs of pipes",
+   "b": {
+    "readBy": "model",
+    "genre": "flap.default",
+    "title": "Chubby Pigeon City",
+    "hero": "chubby pigeon",
+    "roles": [
+     "hazard:pipe",
+     "collectible:coin",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D city game shows a small dark bird beside green rectangular obstacles, with vehicles, buildings, and a fire hydrant in the background.",
+    "nouns": [
+     {
+      "noun": "pigeon",
+      "visible": true,
+      "seenAs": "A small, rounded dark pigeon with an eye, protruding beak, and folded wing near the center-left."
+     },
+     {
+      "noun": "pipe",
+      "visible": false,
+      "seenAs": "The green obstacles are solid rectangular pillars and blocks, without recognizable pipe openings or cylindrical shapes."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s17",
+   "text": "smack the zombies rising out of their graves for a split second before they sink back down, leave the friendly ghosts alone",
+   "b": {
+    "readBy": "model",
+    "genre": "whack.default",
+    "title": "Zombie Grave Smash",
+    "hero": "kid",
+    "roles": [
+     "target:zombie",
+     "hazard:zombies"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A blocky character viewed from behind faces five pale-rimmed dark holes and a red mallet on a yellow handle in a dim 3D scene.",
+    "nouns": [
+     {
+      "noun": "zombie",
+      "visible": false,
+      "seenAs": "A blocky humanlike character with dark hair and teal clothing, without clearly recognizable zombie features."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s18",
+   "text": "a skeleton bowls his own skull through the air across the graveyard trying to knock over a tower of pumpkins",
+   "b": {
+    "readBy": "model",
+    "genre": "throw.default",
+    "title": "Skeleton Skull Bowling",
+    "hero": "skeleton",
+    "roles": [
+     "target:pumpkin",
+     "item:his own"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark, foggy graveyard game scene contains jagged stone ruins, bare trees, pumpkins, gravestones, an armored character, and small skeletal figures.",
+    "nouns": [
+     {
+      "noun": "skeleton",
+      "visible": true,
+      "seenAs": "A pale humanoid near the center has a visible rib cage and thin, exposed bone-like limbs."
+     },
+     {
+      "noun": "skull",
+      "visible": false,
+      "seenAs": "The small figures’ heads are too indistinct to clearly recognize as skulls, and the foreground character has an armored face."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s19",
+   "text": "grow your army by picking the right portals, x3 good, -20 bad, then send everyone at the enormous king at the end",
+   "b": {
+    "readBy": "keywords",
+    "genre": "crowd.default",
+    "title": "Grow Your Army Picking",
+    "hero": "explorer",
+    "roles": [
+     "hazard:saw",
+     "target:ogre"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A group of small red-and-blue characters follows a larger brown-haired figure along a raised track toward a circular saw and two numbered gates.",
+    "nouns": [
+     {
+      "noun": "king",
+      "visible": false,
+      "seenAs": "The larger leading figure has brown hair and dark clothing, but no clearly visible crown or other recognizable royal features."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s20",
+   "text": "grandma at her stove flipping pancakes, frying eggs and pouring coffee as the breakfast orders get crazier and crazier",
+   "b": {
+    "readBy": "model",
+    "genre": "quest.spatial",
+    "title": "Grandma's Breakfast Rush",
+    "hero": "grandma",
+    "roles": [
+     "target:pancake",
+     "chaser:cat"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small character stands in a walled, tiled arena scattered with colorful debris, dark blocks, frying pans, and two gray creatures outlined in red.",
+    "nouns": [
+     {
+      "noun": "grandma",
+      "visible": false,
+      "seenAs": "The central figure is a tiny orange-and-black character with no clearly recognizable grandmother features."
+     },
+     {
+      "noun": "pancake",
+      "visible": true,
+      "seenAs": "A small golden-brown round pancake is visible inside a black frying pan near the center-right."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s21",
+   "text": "a safecracker watches the needle zip back and forth across the dial and has to freeze it right on the tiny green notch",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.precision",
+    "title": "Safecracker Needle Freeze",
+    "hero": "safecracker",
+    "roles": [
+     "collectible:marker",
+     "hazard:missed drop",
+     "exit:last round"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy landscape contains a windmill, wooden fences, a tree, a sunflower, a stone monument, and colored blocks on a dark platform.",
+    "nouns": [
+     {
+      "noun": "safecracker",
+      "visible": false,
+      "seenAs": "No recognizable safecracker figure; the center contains abstract green blocks on a dark platform beside a red block."
+     },
+     {
+      "noun": "dial",
+      "visible": false,
+      "seenAs": "No recognizable dial or numbered rotary control is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s22",
+   "text": "you sprint down a frozen mountain road on autopilot, shift sideways past snowmen, vault fallen trees and crouch under branches, grab hot cocoa cups along the way",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Frozen Mountain Sprint",
+    "hero": "penguin",
+    "roles": [
+     "hazard:snowmen",
+     "collectible:hot cocoa cup",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized snowy game scene shows a penguin on an icy road, a small snowman in the foreground, and blue igloos among snow-covered trees and rocks.",
+    "nouns": [
+     {
+      "noun": "snowman",
+      "visible": true,
+      "seenAs": "A small white snowman in the lower foreground wearing a black hat and scarf, with stick arms."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s23",
+   "text": "a surfing otter zooms out at sea against three dolphins, weave around the buoys and be the first one to the pier",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Surfing Otter Zoom",
+    "hero": "surfing otter",
+    "roles": [
+     "hazard:dolphin",
+     "collectible:coin",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A wooden track runs through a stylized blue coastal canyon with lighthouses, sailboats, buoys, coins, and a large irregular object on the track.",
+    "nouns": [
+     {
+      "noun": "surfing otter",
+      "visible": false,
+      "seenAs": "A bulky brown-and-black irregular object on the track, without clearly recognizable otter features or a surfboard."
+     },
+     {
+      "noun": "dolphin",
+      "visible": false,
+      "seenAs": "A tiny blue fish-like figure near the bottom of the track, too small to clearly identify as a dolphin."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s24",
+   "text": "plop planets into a bowl, two of the same kind smoosh into a bigger planet, dont let them spill over the rim",
+   "b": {
+    "readBy": "model",
+    "genre": "merge.default",
+    "title": "Plop Planets",
+    "hero": "explorer",
+    "roles": [
+     "collectible:planet"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small character stands on a platform above an open box containing blue-green spheres, with a red horizontal line across it and mountains in the background.",
+    "nouns": [
+     {
+      "noun": "planet",
+      "visible": true,
+      "seenAs": "The larger blue-green sphere floating inside the box resembles an Earth-like planet, with green land-like patches and blue oceans."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s25",
+   "text": "a kid with a bucket at the foot of a volcano gathering gemstones that rain down while staying away from the lava rocks",
+   "b": {
+    "readBy": "model",
+    "genre": "catch.default",
+    "title": "Volcano Gem Catch",
+    "hero": "kid",
+    "roles": [
+     "collectible:gemstones",
+     "hazard:lava rocks"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small cartoon child stands on a plank platform beneath floating rocks and a yellow coin, with brown mountains in the background.",
+    "nouns": [
+     {
+      "noun": "kid",
+      "visible": true,
+      "seenAs": "A small human child with dark hair, a green shirt, blue shorts, and shoes on the platform."
+     },
+     {
+      "noun": "lava rock",
+      "visible": false,
+      "seenAs": "A dark red-and-black floating lump looks like a rock, but lacks clearly visible molten glow or lava cracks."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s26",
+   "text": "a boxing kangaroo trades blows with one crocodile in the desert, weaving out of his chomps and countering every time",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.fight",
+    "title": "Boxing Kangaroo vs Crocodile",
+    "hero": "boxing kangaroo",
+    "roles": [
+     "hazard:kangaroo trades blow"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "Two upright animal fighters face each other in a walled orange desert arena dotted with rocks, cacti, and shrubs.",
+    "nouns": [
+     {
+      "noun": "boxing kangaroo",
+      "visible": true,
+      "seenAs": "The brown upright fighter near the bottom center has a kangaroo-like head, raised forepaws, large hind legs, and a long tail."
+     },
+     {
+      "noun": "crocodile",
+      "visible": false,
+      "seenAs": "No recognizable crocodile is visible; the opposing red figure appears to be another upright animal fighter."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s27",
+   "text": "a raccoon roams the supermarket after closing time scooping up every snack that fell on the floor till the place is spotless",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.collect",
+    "title": "Raccoon Supermarket Sweep",
+    "hero": "raccoon",
+    "roles": [
+     "collectible:snack"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small raccoon stands beside a low wall around a litter-strewn tiled area, with trash bags, food packages, boxes, plants, and bins scattered outside.",
+    "nouns": [
+     {
+      "noun": "raccoon",
+      "visible": true,
+      "seenAs": "A gray animal near the front wall with dark eye markings and a striped tail."
+     },
+     {
+      "noun": "snack",
+      "visible": true,
+      "seenAs": "Open snack packets with visible chip-like pieces scattered outside the wall."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s28",
+   "text": "inch your way across the jungle, a road of charging rhinos, then a river where you ride drifting crocodiles, then the rail line",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Jungle Rhino River Rail",
+    "hero": "car",
+    "roles": [
+     "hazard:rhino",
+     "collectible:turbo",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small red car drives along a brown jungle road bordered by red barriers, with a cyan block ahead and animals among the vegetation.",
+    "nouns": [
+     {
+      "noun": "rhino",
+      "visible": true,
+      "seenAs": "A gray, stocky, horned rhinoceros stands beside the right road barrier."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s29",
+   "text": "a sushi chef slashes the fish flung into the air with his knife but leaves the spiky sea mines alone",
+   "b": {
+    "readBy": "model",
+    "genre": "slice.default",
+    "title": "Sushi Chef Slashes",
+    "hero": "sushi chef",
+    "roles": [
+     "collectible:fish",
+     "hazard:sea mines"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small chef-like character stands on a green platform beside beige blocks and a knife, overlooking blue water beneath a hazy sky.",
+    "nouns": [
+     {
+      "noun": "sushi chef",
+      "visible": false,
+      "seenAs": "A character in a white chef-style coat beside a knife, with no clear sushi-specific features."
+     },
+     {
+      "noun": "sea mine",
+      "visible": false,
+      "seenAs": "Blue water and beige blocks; no recognizable sea mine is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s30",
+   "text": "tiny knight bounds from one floating stone to the next over bottomless drops to reach the throne room at the top of the castle",
+   "b": {
+    "readBy": "model",
+    "genre": "platformer.default",
+    "title": "Tiny Knight Bounds",
+    "hero": "tiny knight",
+    "roles": [
+     "hazard:floating stone",
+     "collectible:coin",
+     "exit:throne room",
+     "hazard:bottomless"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small armored knight stands on a grassy rocky platform among gold coins, trees, and a ruined stone tower above water.",
+    "nouns": [
+     {
+      "noun": "knight",
+      "visible": true,
+      "seenAs": "A small humanoid wearing a metal helmet and armor, with a sword extending to the right."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s31",
+   "text": "a mall cop swats shoplifters who peek out from behind clothing racks for a moment, but the real shoppers dont get hit",
+   "b": {
+    "readBy": "model",
+    "genre": "whack.default",
+    "title": "Mall Cop Swats Shoplifters",
+    "hero": "mall cop",
+    "roles": [
+     "target:shoplifter",
+     "hazard:shoplifters"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A uniformed figure stands before five dark holes with beige rims, with a large red mallet hovering above the left side.",
+    "nouns": [
+     {
+      "noun": "mall cop",
+      "visible": true,
+      "seenAs": "A security guard-like figure wearing a gray-green uniform, matching cap, and black trousers."
+     },
+     {
+      "noun": "shoplifter",
+      "visible": false,
+      "seenAs": "No clearly identifiable shoplifter is present; only the uniformed figure, holes, and mallet are visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s32",
+   "text": "im stuck behind a submarine porthole zapping swarm after swarm of angry jellyfish drifting at me",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Submarine Porthole",
+    "hero": "stuck",
+    "roles": [
+     "hazard:jellyfish",
+     "collectible:turbo",
+     "exit:finish line",
+     "hazard:swarm"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An underwater 3D game scene shows a small vehicle beside a yellow ball on a walled track surrounded by rocks, coral, tentacled creatures, and blue jellyfish.",
+    "nouns": [
+     {
+      "noun": "jellyfish",
+      "visible": true,
+      "seenAs": "Blue creatures with rounded bell-shaped tops and dangling tentacles, most clearly visible beside the track at the lower right."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s33",
+   "text": "a desert lizard stretches a cactus stick longer and longer, then tips it over to reach the next rock tower, too short or too long and he falls",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.stack",
+    "title": "Desert Lizard Stick Tower",
+    "hero": "desert lizard",
+    "roles": [
+     "collectible:rock",
+     "hazard:missed drop",
+     "exit:of the tower"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly desert scene shows orange sand, stone platforms beneath a green beam, an obelisk, a dark wooden structure, and a yellow tent.",
+    "nouns": [
+     {
+      "noun": "lizard",
+      "visible": false,
+      "seenAs": "No recognizable lizard; the small distant object looks like a faceted rock or token."
+     },
+     {
+      "noun": "cactus stick",
+      "visible": false,
+      "seenAs": "No recognizable cactus stick; a translucent green beam rises through stacked stone platforms."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s34",
+   "text": "keep the zombie horde from shambling down the five hallways into my mall food court, put a guard in each hallway",
+   "b": {
+    "readBy": "model",
+    "genre": "defense.default",
+    "title": "Zombie Mall Defense",
+    "hero": "kid",
+    "roles": [
+     "chaser:shambling down the",
+     "prop:castle"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark, low-poly game scene shows five green lanes leading toward a small pale figure, with red-topped barriers and another character in the foreground.",
+    "nouns": [
+     {
+      "noun": "zombie",
+      "visible": false,
+      "seenAs": "The distant pale humanoid is too small and indistinct to recognize as a zombie; the foreground character is seen mostly from above and behind."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s35",
+   "text": "keep yourself airborne in a spooky cave, each click is one wingbeat up, thread between the stalactites and stalagmites",
+   "b": {
+    "readBy": "model",
+    "genre": "flap.default",
+    "title": "Spooky Cave Flight",
+    "hero": "kid",
+    "roles": [
+     "hazard:pipe",
+     "collectible:crystal",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small character floats among dark green pillars, a red ring, a yellow ball, and small cyan objects in a dim teal game scene.",
+    "nouns": [
+     {
+      "noun": "stalactite",
+      "visible": false,
+      "seenAs": "The overhead objects are flat-ended rectangular green pillars, while the small cyan objects resemble floating crystals rather than hanging stalactites."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s36",
+   "text": "a breakdancing robot in the factory hits its four foot pads in sync with the techno song whenever the glowing arrows scroll up to the top",
+   "b": {
+    "readBy": "model",
+    "genre": "rhythm.default",
+    "title": "Breakdancing Robot",
+    "hero": "breakdancing robot",
+    "roles": [
+     "collectible:pad",
+     "hazard:missed beat",
+     "exit:last beat"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A 3D rhythm-game track runs through a hazy industrial yard with cranes, smokestacks, barrels, machinery, and a small robot standing beside the track.",
+    "nouns": [
+     {
+      "noun": "breakdancing robot",
+      "visible": false,
+      "seenAs": "A small gray robot with red accents stands upright beside the track, without a recognizable breakdancing pose."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s37",
+   "text": "a chubby walrus bumps other walruses off a round chunk of ice floating in the ocean without slipping off himself",
+   "b": {
+    "readBy": "model",
+    "genre": "push.default",
+    "title": "Walrus Bump",
+    "hero": "chubby walrus",
+    "roles": [
+     "chaser:walrus"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A circular sandy platform surrounded by blue water holds two small gray, low-poly animal-like figures with dark flippers or feet.",
+    "nouns": [
+     {
+      "noun": "walrus",
+      "visible": false,
+      "seenAs": "The right figure appears as clustered gray rock-like body parts with dark feet or flippers, without recognizable walrus features."
+     },
+     {
+      "noun": "walrus",
+      "visible": false,
+      "seenAs": "The right figure appears as clustered gray rock-like body parts with dark feet or flippers, without recognizable walrus features."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s38",
+   "text": "a gorilla lobs coconuts into a tiny basket across the jungle river, hold longer to fling harder and aim the curve right",
+   "b": {
+    "readBy": "model",
+    "genre": "throw.default",
+    "title": "Gorilla Coconuts",
+    "hero": "gorilla",
+    "roles": [
+     "target:tiny basket",
+     "item:ball"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly jungle game scene shows a dark ape-like figure, floating orange balls, red bullseye targets, and blocks among trees and vegetation.",
+    "nouns": [
+     {
+      "noun": "gorilla",
+      "visible": true,
+      "seenAs": "A dark, hunched gorilla figure with long arms in the lower-left foreground."
+     },
+     {
+      "noun": "coconut",
+      "visible": false,
+      "seenAs": "Small smooth orange-red balls without recognizable coconut texture or features."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s39",
+   "text": "sneak around the factory floor patching every leaky pipe one by one while a security robot patrols after you",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Factory Pipe Patch",
+    "hero": "robot",
+    "roles": [
+     "hazard:pipe",
+     "exit:star",
+     "patrol:patrol"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An overhead 3D game scene shows small robots in a red-walled maze with a yellow coin, pale objects, and industrial props outside the maze.",
+    "nouns": [
+     {
+      "noun": "security robot",
+      "visible": true,
+      "seenAs": "Small red-and-gray mechanical figures with boxy bodies and articulated limbs in the maze corridors."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s40",
+   "text": "one tiny lemming dashes down a cave tunnel, go through the right doors to turn him into 10, 50, 200 lemmings, avoid the saws, then swarm the huge troll at the end",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Lemming Tunnel",
+    "hero": "tiny lemming",
+    "roles": [
+     "hazard:rock",
+     "collectible:lemming",
+     "exit:finish line",
+     "hazard:saw"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small humanoid adventurer stands on a brown path through a dark rocky cavern lined with glowing crystals, mushrooms, plants, and ruined pillars.",
+    "nouns": [
+     {
+      "noun": "lemming",
+      "visible": false,
+      "seenAs": "A small humanoid adventurer with brown hair or a hood, not a recognizable lemming."
+     },
+     {
+      "noun": "troll",
+      "visible": false,
+      "seenAs": "No recognizable troll; nearby shapes appear to be mushrooms, crystals, and rocks."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s41",
+   "text": "a rescue helicopter has to ease down gently onto a tiny rooftop pad on a mountain hut in a snowstorm without crashing",
+   "b": {
+    "readBy": "model",
+    "genre": "quest.station",
+    "title": "Helicopter Landing",
+    "hero": "rescue helicopter",
+    "roles": [
+     "target:helicopter",
+     "hazard:snowstorm"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly room contains three rotor-like objects, including a large orange-and-black craft in the foreground, two smaller figures on a raised platform, and an orange block behind them.",
+    "nouns": [
+     {
+      "noun": "rescue helicopter",
+      "visible": false,
+      "seenAs": "The foreground craft has helicopter-like blades and an orange rectangular body, but lacks recognizable rescue equipment or markings."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s42",
+   "text": "a pirate crab brawls on the sand, pinching every seagull in the area until none of them can get up",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.fight",
+    "title": "Pirate Crab Brawl",
+    "hero": "pirate crab",
+    "roles": [
+     "hazard:sand"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark red crab-like creature faces a glowing sandcastle inside a low-walled sandy arena dotted with rocks and plants.",
+    "nouns": [
+     {
+      "noun": "pirate crab",
+      "visible": false,
+      "seenAs": "A dark red crab-like creature with claws, but no clearly recognizable pirate clothing or accessories."
+     },
+     {
+      "noun": "seagull",
+      "visible": false,
+      "seenAs": "No recognizable seagull is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s43",
+   "text": "my corgi dashes through a desert canyon all by itself, i switch between three paths so it misses the cactuses, springs over rocks and slides under low arches, snagging bones",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Corgi Canyon Dash",
+    "hero": "corgi",
+    "roles": [
+     "hazard:cactus",
+     "collectible:bone",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A blocky orange character faces down a sandy road through a desert canyon dotted with cacti, rocks, shrubs, and obstacles.",
+    "nouns": [
+     {
+      "noun": "corgi",
+      "visible": false,
+      "seenAs": "An orange rounded block-like character viewed from behind with two stubby feet, without clearly recognizable corgi features."
+     },
+     {
+      "noun": "cactus",
+      "visible": true,
+      "seenAs": "Multiple green upright desert cacti with branching arms along the road and canyon slopes."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s44",
+   "text": "a monkey dangles coconuts from a swaying vine and lets go at just the right second so each one lands on the heap, see how close to the canopy it gets",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.precision",
+    "title": "Monkey Dangles Coconuts",
+    "hero": "monkey",
+    "roles": [
+     "collectible:marker",
+     "hazard:missed drop",
+     "exit:last round"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy landscape contains a tree, sunflower, wooden fences, picnic table, stone monolith, windmill, and colored blocks on a dark platform.",
+    "nouns": [
+     {
+      "noun": "monkey",
+      "visible": false,
+      "seenAs": "No recognizable monkey is visible; the central objects are plain geometric blocks."
+     },
+     {
+      "noun": "coconut",
+      "visible": false,
+      "seenAs": "No recognizable coconut is visible; the dark round center at the lower left belongs to a sunflower."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s45",
+   "text": "a hedgehog scurries forward bit by bit across forest roads full of logging trucks and a stream with floating leaves to stand on",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Hedgehog Forest Roads",
+    "hero": "hedgehog",
+    "roles": [
+     "hazard:logging truck",
+     "collectible:acorn",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly forest road contains a large spiky creature, tiny green vehicles, and a rectangular obstacle among trees, stumps, and logs.",
+    "nouns": [
+     {
+      "noun": "hedgehog",
+      "visible": true,
+      "seenAs": "A large squat creature covered in pointed spines, with a small protruding snout, in the foreground."
+     },
+     {
+      "noun": "logging truck",
+      "visible": false,
+      "seenAs": "Tiny green vehicles are visible, but neither clearly depicts a logging truck or carries a recognizable load of logs."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s46",
+   "text": "an octopus drops shells into a giant clam, two same shells mash into a bigger shell until the clam is too full",
+   "b": {
+    "readBy": "model",
+    "genre": "merge.default",
+    "title": "Octopus Shell Merge",
+    "hero": "octopus",
+    "roles": [
+     "collectible:shell"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A teal 3D game arena contains a dark tentacled figure above a tall open chamber, several small red objects, and a green bulb-shaped object on the floor.",
+    "nouns": [
+     {
+      "noun": "octopus",
+      "visible": true,
+      "seenAs": "The dark figure above the chamber has a central head and several curling tentacles."
+     },
+     {
+      "noun": "shell",
+      "visible": false,
+      "seenAs": "The green object on the floor looks like a vertically ridged bulb or onion, without a clearly recognizable shell shape."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s47",
+   "text": "a penguin scoots side to side under a snowy sky snagging the fish that fall and steering clear of icicles",
+   "b": {
+    "readBy": "model",
+    "genre": "catch.default",
+    "title": "Penguin Fish Catch",
+    "hero": "penguin",
+    "roles": [
+     "collectible:fish",
+     "hazard:icicles"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized penguin stands on a platform in a snowy landscape with distant mountains, pointed trees, a floating yellow disc, and a large dark overhead platform.",
+    "nouns": [
+     {
+      "noun": "penguin",
+      "visible": true,
+      "seenAs": "A small dark penguin with a pale face and belly, flippers, and orange beak at the bottom center."
+     },
+     {
+      "noun": "icicle",
+      "visible": false,
+      "seenAs": "The pointed shapes in the background resemble upright conifer trees; no recognizable hanging icicle is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s48",
+   "text": "a samurai rooster takes on one rival rooster in the barnyard, sidestep his big swing then strike while hes wide open",
+   "b": {
+    "readBy": "model",
+    "genre": "duel.default",
+    "title": "Samurai Rooster Duel",
+    "hero": "samurai rooster",
+    "roles": [
+     "hazard:rival",
+     "exit:knockout"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small armored figure with a broad brown hat stands beside a tall green block-bodied figure with a yellow spherical head in a grassy arena with wooden obstacles and distant mountains.",
+    "nouns": [
+     {
+      "noun": "samurai rooster",
+      "visible": false,
+      "seenAs": "A small armored humanoid wearing a broad brown hat; no clear rooster features are recognizable."
+     },
+     {
+      "noun": "rooster",
+      "visible": false,
+      "seenAs": "No recognizable rooster; the figures appear to be an armored humanoid and a green block-bodied character with a yellow ball head."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s49",
+   "text": "a blacksmith stuck at his anvil in the castle hammering swords and mending shields for knights before the queue gets too long",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.collect",
+    "title": "Blacksmith Queue",
+    "hero": "blacksmith",
+    "roles": [
+     "collectible:sword"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small humanoid character stands in a walled stone courtyard scattered with weeds, rocks, blocks, and glowing yellow objects.",
+    "nouns": [
+     {
+      "noun": "blacksmith",
+      "visible": false,
+      "seenAs": "A small brown-haired humanoid character with a blue object, without clearly recognizable blacksmith features or equipment."
+     },
+     {
+      "noun": "sword",
+      "visible": false,
+      "seenAs": "Thin white streaks appear around the courtyard, but no clearly recognizable sword is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s50",
+   "text": "a snowman plants himself on a hill and fires his snowball blaster at the evil penguins charging up at him",
+   "b": {
+    "readBy": "model",
+    "genre": "shooter.default",
+    "title": "Snowman Snowball Blaster",
+    "hero": "snowman",
+    "roles": [
+     "target:target",
+     "hazard:evil penguin",
+     "hazard:fire"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly game scene shows a black-and-white character wearing a dark hat and holding a red-tipped staff on a grassy field near a windmill, trees, stone blocks, and outlined targets.",
+    "nouns": [
+     {
+      "noun": "snowman",
+      "visible": false,
+      "seenAs": "The foreground figure is a black-and-white birdlike character with a white belly and dark sides, rather than a clearly recognizable snowman."
+     },
+     {
+      "noun": "penguin",
+      "visible": true,
+      "seenAs": "The foreground character has a rounded black-and-white body, white belly, and flipperlike sides, recognizable as a stylized penguin wearing a hat."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s51",
+   "text": "slash watermelons and coconuts as they get launched over the beach, just dont cut the dynamite",
+   "b": {
+    "readBy": "model",
+    "genre": "slice.default",
+    "title": "Slash Watermelons and Coconuts",
+    "hero": "turtle",
+    "roles": [
+     "collectible:watermelon",
+     "hazard:dynamite"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A green turtle stands on a striped platform beside tan blocks, overlooking a yellow landscape beneath a hazy sun.",
+    "nouns": [
+     {
+      "noun": "dynamite",
+      "visible": false,
+      "seenAs": "Tan rectangular blocks and a pale narrow bar are visible, but no recognizable dynamite."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s52",
+   "text": "go left and right through a dark cave and leap across the chasms between rocky shelves until u find the exit door",
+   "b": {
+    "readBy": "model",
+    "genre": "platformer.default",
+    "title": "Cave Leap",
+    "hero": "kid",
+    "roles": [
+     "hazard:chasm",
+     "collectible:coin",
+     "exit:exit door"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small blocky character jumps between dark stone platforms in a foggy 3D environment, with yellow coin-like collectibles along the route and a glowing yellow orb on the left.",
+    "nouns": [],
+    "all": false
+   }
+  },
+  {
+   "id": "s53",
+   "text": "a grumpy gardener with a rolling pin smacks the gophers that peek out of the flowerbeds for a sec, but never the bunnies",
+   "b": {
+    "readBy": "model",
+    "genre": "whack.default",
+    "title": "Grumpy Gardener Smack",
+    "hero": "grumpy gardener",
+    "roles": [
+     "target:gopher",
+     "hazard:gophers"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A brown-haired character faces five holes in green ground, with a pale rabbit-like creature emerging from one hole and a red mallet above the middle hole.",
+    "nouns": [
+     {
+      "noun": "gardener",
+      "visible": false,
+      "seenAs": "A brown-haired human character viewed from behind, without clear gardening attire or tools."
+     },
+     {
+      "noun": "gopher",
+      "visible": false,
+      "seenAs": "A pale creature with two long pink-tipped ears, resembling a rabbit rather than a gopher."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s54",
+   "text": "a pufferfish swims ahead nonstop and every press makes it puff upward so it can sneak between spiky coral spires",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Pufferfish Puff",
+    "hero": "pufferfish",
+    "roles": [
+     "collectible:ring",
+     "hazard:spiky coral spire",
+     "zone:current",
+     "exit:finish"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An underwater game scene shows a small dark fish beneath a gold ring, a large pink arch, and coral scattered across the seabed.",
+    "nouns": [
+     {
+      "noun": "pufferfish",
+      "visible": false,
+      "seenAs": "A dark, rounded fish with side fins, without clearly recognizable pufferfish features."
+     },
+     {
+      "noun": "coral",
+      "visible": true,
+      "seenAs": "Branching green coral on the left and smaller coral clusters across the seabed."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s55",
+   "text": "a wizard protects the castle gate as skeleton soldiers trudge up four roads, cast spells on each road before they get there",
+   "b": {
+    "readBy": "model",
+    "genre": "defense.default",
+    "title": "Wizard Protects Gate",
+    "hero": "wizard",
+    "roles": [
+     "chaser:skeleton soldiers",
+     "prop:castle gate"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A green game field contains five striped lanes leading to a dark green barrier, a beige wall with red-topped towers, and a small purple object near the bottom.",
+    "nouns": [
+     {
+      "noun": "wizard",
+      "visible": false,
+      "seenAs": "A small purple rounded object with an orange ring near the bottom right, without clearly recognizable wizard features."
+     },
+     {
+      "noun": "skeleton",
+      "visible": false,
+      "seenAs": "No recognizable skeleton or exposed-bone figure is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s56",
+   "text": "i chuck a baseball at a pyramid of tin cans on the boardwalk, power it up and aim the curve to knock em all down",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Baseball Can Knockdown",
+    "hero": "player",
+    "roles": [
+     "item:football",
+     "target:tin can"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small character stands in an orange desert with cacti, dead trees, rocks, white barriers, a red-and-gray structure, and floating circular objects.",
+    "nouns": [
+     {
+      "noun": "baseball",
+      "visible": false,
+      "seenAs": "Small red and yellow circular objects are visible, but neither clearly resembles a baseball with recognizable stitching."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s57",
+   "text": "play bongos on the beach at sunset, smack the left or right drum exactly when the seashells scrolling down reach the sand, keep up with the song",
+   "b": {
+    "readBy": "model",
+    "genre": "rhythm.default",
+    "title": "Bongos at Sunset",
+    "hero": "right",
+    "roles": [
+     "collectible:bongo",
+     "hazard:missed beat",
+     "exit:last beat"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D game shows colored blocks on a long track through a sandy coastal setting with lighthouses, wooden huts, platforms, a sailboat, and a character.",
+    "nouns": [
+     {
+      "noun": "bongo",
+      "visible": false,
+      "seenAs": "No recognizable bongo drum or bongo antelope is visible; the scene contains colored rectangular blocks and coastal structures."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s58",
+   "text": "steer a parrot through the jungle vines against a flock of rival birds, loop through the flower hoops and beat them all to the big tree",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Parrot Jungle Race",
+    "hero": "parrot",
+    "roles": [
+     "hazard:flock",
+     "collectible:turbo",
+     "exit:finish line",
+     "patrol:bird"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small red car sits on a straight brown track with red barriers, surrounded by stylized jungle vegetation and a waterfall.",
+    "nouns": [
+     {
+      "noun": "parrot",
+      "visible": false,
+      "seenAs": "No recognizable parrot; only a tiny yellow speck near the waterfall."
+     },
+     {
+      "noun": "bird",
+      "visible": false,
+      "seenAs": "No clearly recognizable bird; the tiny yellow speck near the waterfall is too small to identify."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s59",
+   "text": "a few rubber ducks float down a factory conveyor, every right sign doubles them, then they bury the boss robot at the end",
+   "b": {
+    "readBy": "model",
+    "genre": "merge.default",
+    "title": "Rubber Duck Conveyor",
+    "hero": "few rubber",
+    "roles": [
+     "collectible:rubber duck"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A beige open-front arena contains several yellow duck-like figures, with a large duck above it, a red horizontal bar, and a hazy city skyline behind.",
+    "nouns": [
+     {
+      "noun": "rubber duck",
+      "visible": true,
+      "seenAs": "The large yellow figure above the arena has a rounded body, a duck bill, and black eyes, resembling a rubber duck."
+     },
+     {
+      "noun": "boss robot",
+      "visible": false,
+      "seenAs": "The prominent figure is a large yellow duck, with no clearly recognizable robot visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s60",
+   "text": "a grumpy rhino butts mountain goats off a round rock above the lava before they bump him in",
+   "b": {
+    "readBy": "model",
+    "genre": "push.default",
+    "title": "Rhino Rock Bump",
+    "hero": "grumpy rhino",
+    "roles": [
+     "chaser:lava"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An orange circular arena contains two yellow, dark-edged objects and a small dark brown animal-like figure beside an orange pointer.",
+    "nouns": [
+     {
+      "noun": "rhino",
+      "visible": false,
+      "seenAs": "A small dark brown quadruped whose features are too indistinct to clearly identify as a rhino."
+     },
+     {
+      "noun": "mountain goat",
+      "visible": false,
+      "seenAs": "Two yellow, dark-edged objects resembling tokens or platforms; no recognizable mountain goat."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s61",
+   "text": "a chicken needs to catch the bus, so get it across six busy roads and a river of bobbing logs one step at a time",
+   "b": {
+    "readBy": "keywords",
+    "genre": null,
+    "title": "Chicken Needs Catch Bus",
+    "hero": "chicken",
+    "roles": [
+     "target:bus"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A sandy low-poly game arena contains a small rounded yellow character beside a barrier lined with rocks, pillars, and assorted structures.",
+    "nouns": [
+     {
+      "noun": "chicken",
+      "visible": false,
+      "seenAs": "A rounded yellow character with dark facial details, without clearly recognizable chicken features."
+     },
+     {
+      "noun": "car",
+      "visible": false,
+      "seenAs": "A wooden platform with blue supports near scattered rocks, rather than a recognizable car."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s62",
+   "text": "a pizza chef slices pizzas in a math puzzle, figure out where to cut so every guest gets the exact same amount",
+   "b": {
+    "readBy": "model",
+    "genre": "slice.default",
+    "title": "Pizza Slice Puzzle",
+    "hero": "pizza chef",
+    "roles": [
+     "collectible:pizza",
+     "hazard:bomb"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small gray-haired character stands beside a sword among beige blocks on green lanes in a grassy landscape.",
+    "nouns": [
+     {
+      "noun": "pizza chef",
+      "visible": false,
+      "seenAs": "A gray-haired character wearing a light gray outfit, without clearly recognizable chef attire."
+     },
+     {
+      "noun": "pizza",
+      "visible": false,
+      "seenAs": "Plain beige rectangular blocks; no recognizable pizza is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s63",
+   "text": "a seal shoots hoops on an iceberg, hold to power up and lob the beach ball in a curve into the net",
+   "b": {
+    "readBy": "model",
+    "genre": "shooter.default",
+    "title": "Seal Shoots Hoops",
+    "hero": "seal",
+    "roles": [
+     "target:net",
+     "hazard:hoop"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly sandy tropical landscape contains palm trees, a lighthouse, scattered objects, and a brown rock-like figure in the foreground aiming toward a red crosshair.",
+    "nouns": [
+     {
+      "noun": "seal",
+      "visible": false,
+      "seenAs": "A faceted brown figure with a round head, bulky angular body, and dark block-like appendages, without clearly recognizable seal features."
+     },
+     {
+      "noun": "beach ball",
+      "visible": false,
+      "seenAs": "Small red flattened rings or tokens lie on the sand; no recognizable beach ball is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s64",
+   "text": "my fox runs left and right and springs from treetop to treetop over gaps to reach his den in the woods",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Fox Treetop Run",
+    "hero": "fox",
+    "roles": [
+     "hazard:treetop",
+     "collectible:acorn",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A fox runs along a dirt road through a stylized forest with treehouses, scattered obstacles, and a small striped hurdle.",
+    "nouns": [
+     {
+      "noun": "fox",
+      "visible": true,
+      "seenAs": "The orange animal in the foreground, seen from behind with pointed ears, dark legs, and a bushy pale-tipped tail."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s65",
+   "text": "a card battle where my wizard plays spell cards against a dragon's deck, taking turns",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.fight",
+    "title": "Card Battle",
+    "hero": "wizard",
+    "roles": [
+     "hazard:deck"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A top-down grassy arena enclosed by stone walls contains a purple pointed-hat character facing a gray and red blocky figure.",
+    "nouns": [
+     {
+      "noun": "wizard",
+      "visible": true,
+      "seenAs": "A purple-robed character wearing a broad pointed wizard hat near the center."
+     },
+     {
+      "noun": "dragon",
+      "visible": false,
+      "seenAs": "A gray and red blocky figure near the upper wall, with no clearly recognizable dragon features."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s66",
+   "text": "a samurai cat faces a single ninja dog, sidestep his big slash and slice him back while he's open",
+   "b": {
+    "readBy": "model",
+    "genre": "arena.fight",
+    "title": "Samurai Cat vs Ninja Dog",
+    "hero": "samurai cat",
+    "roles": [
+     "hazard:ninja dog"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly green courtyard contains two small rounded animal-like characters facing each other, surrounded by block walls, bushes, rocks, and trees.",
+    "nouns": [
+     {
+      "noun": "samurai cat",
+      "visible": false,
+      "seenAs": "An orange animal-like figure with pointed ears and a boxy orange back, without clearly recognizable samurai equipment."
+     },
+     {
+      "noun": "ninja dog",
+      "visible": false,
+      "seenAs": "A dark gray rounded animal-like figure viewed from behind, without clear dog features or recognizable ninja clothing."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s67",
+   "text": "defend your burger stand from the lunch rush: grill patties, add cheese and bag orders before customers get mad",
+   "b": {
+    "readBy": "model",
+    "genre": "defense.default",
+    "title": "Burger Stand Defense",
+    "hero": "knight",
+    "roles": [
+     "chaser:lunch rush",
+     "prop:burger stand"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "The scene shows five green lanes leading to a beige barrier with red-topped posts and towers, with a small armored figure near the bottom.",
+    "nouns": [
+     {
+      "noun": "patty",
+      "visible": false,
+      "seenAs": "Red faceted caps on beige posts and towers; no recognizable food patty is visible."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s68",
+   "text": "dating sim where you go out with members of a rock band and pick what to say to win the drummer's heart",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.precision",
+    "title": "Rock Band Dating",
+    "hero": "explorer",
+    "roles": [
+     "collectible:marker",
+     "hazard:missed drop",
+     "exit:last round"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly 3D scene shows a grassy field with two windmills, wooden fences, a tree, a sunflower, and green and red geometric objects near a dark platform.",
+    "nouns": [],
+    "all": false
+   }
+  },
+  {
+   "id": "s69",
+   "text": "an opera singer has to hit the high note perfectly, a pointer whizzes along a bar and you stop it in the tiny gold zone",
+   "b": {
+    "readBy": "model",
+    "genre": "timing.precision",
+    "title": "Opera Note Timing",
+    "hero": "opera singer",
+    "roles": [
+     "collectible:marker",
+     "hazard:missed drop",
+     "exit:last round"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy game scene contains a rock formation, tree, windmill, wooden fences and picnic tables, with colored blocks on a dark platform in the center.",
+    "nouns": [
+     {
+      "noun": "opera singer",
+      "visible": false,
+      "seenAs": "No recognizable singer is visible; the central objects are simple green and red geometric blocks."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s70",
+   "text": "a frog in the meadow collects raindrops in a leaf, sliding side to side as they fall but avoiding the hailstones",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Frog Raindrop Leaf",
+    "hero": "frog",
+    "roles": [
+     "hazard:hailstone",
+     "collectible:raindrop",
+     "exit:finish line",
+     "hazard:they"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly 3D game shows a green frog on a dirt road with a traffic cone, a small barricade, blue droplets, and a block amid wooded green hills.",
+    "nouns": [
+     {
+      "noun": "frog",
+      "visible": true,
+      "seenAs": "A large green crouching frog with splayed legs in the foreground."
+     },
+     {
+      "noun": "hailstone",
+      "visible": false,
+      "seenAs": "Small blue teardrop-shaped objects above the road resemble water droplets, not hailstones."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s71",
+   "text": "escape room where a detective searches a haunted mansion for clues and solves riddles to unlock the front door",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Haunted Mansion Escape",
+    "hero": "detective",
+    "roles": [
+     "hazard:rock",
+     "collectible:clue",
+     "exit:finish line",
+     "zone:room",
+     "item:door"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark humanoid character stands on a foggy path surrounded by bare trees, urns, candles, rocks, and benches.",
+    "nouns": [
+     {
+      "noun": "detective",
+      "visible": false,
+      "seenAs": "A dark humanoid character with no clearly recognizable detective features."
+     },
+     {
+      "noun": "clue",
+      "visible": false,
+      "seenAs": "Small green objects on the path and a distant yellow object, none clearly recognizable as a clue."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s72",
+   "text": "a cheetah races down a dusty desert trail by itself, i just shift left or right to miss boulders and spring over fallen trees grabbing water bottles",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Cheetah Trail",
+    "hero": "cheetah",
+    "roles": [
+     "hazard:boulder",
+     "collectible:water bottle",
+     "exit:finish line",
+     "patrol:trail"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small humanoid character runs along a desert canyon path surrounded by cacti, rocks, a dark mine entrance, and a pale blue crystal.",
+    "nouns": [
+     {
+      "noun": "cheetah",
+      "visible": false,
+      "seenAs": "The running figure is a brown-haired humanoid character, not a cheetah."
+     },
+     {
+      "noun": "boulder",
+      "visible": true,
+      "seenAs": "A large rounded beige rock sits on the path just behind and left of the blue crystal."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s73",
+   "text": "a tiny penguin slides down an icy slope combining with every penguin group it passes through the right doors till its an army, then they dogpile a huge walrus",
+   "b": {
+    "readBy": "model",
+    "genre": "merge.default",
+    "title": "Tiny Penguin Army",
+    "hero": "tiny penguin",
+    "roles": [
+     "collectible:fruit"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small penguin stands above a tall open chute containing fruit in a snowy landscape with stylized trees.",
+    "nouns": [
+     {
+      "noun": "penguin",
+      "visible": true,
+      "seenAs": "A black-and-white bird with flippers, an orange beak, and orange feet above the chute."
+     },
+     {
+      "noun": "walrus",
+      "visible": false,
+      "seenAs": "No walrus is visible; the animal figure is a penguin."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s74",
+   "text": "a story about a turtle who enters a race against a hare in the meadow and you choose what he says at every stop",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Turtle vs Hare Race",
+    "hero": "turtle",
+    "roles": [
+     "hazard:tire barrier",
+     "collectible:turbo",
+     "exit:finish line",
+     "patrol:hare"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D racing game shows four cars on a brown track with red barriers, surrounded by trees, rocks, and green vegetation.",
+    "nouns": [
+     {
+      "noun": "turtle",
+      "visible": false,
+      "seenAs": "Rounded green shrubs beside the track, but no recognizable turtle."
+     },
+     {
+      "noun": "hare",
+      "visible": false,
+      "seenAs": "Race cars and scenery, but no recognizable hare."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s75",
+   "text": "a bulldog fights three other dogs on a round floating raft out at sea, bump them into the water without falling in",
+   "b": {
+    "readBy": "model",
+    "genre": "push.default",
+    "title": "Bulldog Raft Fight",
+    "hero": "bulldog",
+    "roles": [
+     "chaser:other dogs"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "Two stylized brown dog figures stand on a pale circular platform surrounded by blue.",
+    "nouns": [
+     {
+      "noun": "bulldog",
+      "visible": true,
+      "seenAs": "The front-facing brown figure has a broad, squat head, folded ears, and a short, jowly muzzle characteristic of a cartoon bulldog."
+     },
+     {
+      "noun": "dog",
+      "visible": true,
+      "seenAs": "The front-facing brown animal is recognizable as a cartoon dog, with ears, eyes, a dark nose, and a muzzle."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s76",
+   "text": "run a medieval castle, build farms, collect taxes and decide which lords to trust before the enemy kingdom invades next winter",
+   "b": {
+    "readBy": "model",
+    "genre": "runner.default",
+    "title": "Medieval Castle Run",
+    "hero": "knight",
+    "roles": [
+     "hazard:lord",
+     "collectible:tax",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An armored character with a red cape runs along a forest road between ruined stone pillars, with coins, traffic obstacles, and large rocks ahead.",
+    "nouns": [
+     {
+      "noun": "enemy kingdom",
+      "visible": false,
+      "seenAs": "Scattered stone ruins and distant fortifications appear along a forest road, but nothing clearly identifies an enemy kingdom."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s77",
+   "text": "a baby dragon beats its wings to stay up and has to touch down softly on top of the castle tower without crashing",
+   "b": {
+    "readBy": "model",
+    "genre": "flap.default",
+    "title": "Baby Dragon Landing",
+    "hero": "baby dragon",
+    "roles": [
+     "hazard:wing",
+     "collectible:gem",
+     "exit:finish line"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small brown dragon flies through green pillar obstacles in a low-poly castle landscape with a red ring and a gold coin.",
+    "nouns": [
+     {
+      "noun": "baby dragon",
+      "visible": true,
+      "seenAs": "A small brown winged dragon near the center, with a horned head, long snout, and trailing tail."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "s78",
+   "text": "my grandpa sits by the frozen lake waiting for a bite, then you reel the fish in slowly so the line doesnt snap",
+   "b": {
+    "readBy": "model",
+    "genre": null,
+    "title": "Frozen Lake Fishing",
+    "hero": "grandpa",
+    "roles": [
+     "hazard:wall",
+     "exit:bite"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An overhead 3D view shows a gray maze with a tiny dark figure, a yellow sphere, pale blue crystals, and scattered rocks.",
+    "nouns": [
+     {
+      "noun": "grandpa",
+      "visible": false,
+      "seenAs": "A tiny dark figure with no discernible elderly human features."
+     },
+     {
+      "noun": "fish",
+      "visible": false,
+      "seenAs": "Scattered blue crystal clusters and rocks, with no recognizable fish."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s79",
+   "text": "build the tallest tower of jelly blobs in a jar, drop them in and matching blobs blend into a bigger blob, game over if it reaches the lid",
+   "b": {
+    "readBy": "model",
+    "genre": "merge.default",
+    "title": "Jelly Tower",
+    "hero": "knight",
+    "roles": [
+     "collectible:jelly blob"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy game scene contains a multicolored block beneath a translucent beam, an orange platform, stone ruins, crates, a bridge, and a torch.",
+    "nouns": [
+     {
+      "noun": "jelly blob",
+      "visible": false,
+      "seenAs": "A rigid multicolored rectangular block, with no recognizable jelly-like body or blob shape."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "s80",
+   "text": "shoot pics of wild animals on a jungle safari, sharper photos get more points and fill up your album",
+   "b": {
+    "readBy": "model",
+    "genre": "shooter.default",
+    "title": "Jungle Safari Snap",
+    "hero": "monkey",
+    "roles": [
+     "target:wild animal",
+     "hazard:pic"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A third-person game scene shows an orange character aiming across a foggy green field toward distant figures, with rocks, trees, and a wooden structure in the background.",
+    "nouns": [
+     {
+      "noun": "camera",
+      "visible": false,
+      "seenAs": "No recognizable camera object is visible; the foreground object is an orange game character viewed from behind."
+     }
+    ],
+    "all": false
+   }
+  }
+ ]
+}

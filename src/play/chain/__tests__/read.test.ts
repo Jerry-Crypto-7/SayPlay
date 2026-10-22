@@ -70,6 +70,11 @@ describe('readForChain with a model reading', () => {
     setting: 'outer space',
     mood: null,
     numbers: { seconds: null, counts: [] },
+    genre: null,
+    foe: null,
+    item: null,
+    world: null,
+    title: null,
   };
 
   it('takes hero, foe, item, world and verbs from the reading', () => {

@@ -6,13 +6,23 @@
  * tvorbu prodloužit nejvýš o `PLAY_READER_BUDGET_MS` – měřeno falešnými hodinami.
  */
 
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain } from '@/play/chain/read';
 import { direct } from '@/play/director';
 import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import { DEFAULT_LOCAL_READER_BUDGET_MS } from '@/play/read/client';
 import type { Reading } from '@/play/read/schema';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
+import { resetProcessAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
+import { resetProcessSpendCap } from '@/server/spend-cap';
 import { upstreamBranch } from '@/server/upstream';
 
 const SENTENCE = 'a knight collects keys in a castle';
@@ -24,7 +34,19 @@ const READING: Reading = {
   setting: 'a castle',
   mood: null,
   numbers: { seconds: null, counts: [] },
+  genre: null,
+  foe: null,
+  item: null,
+  world: null,
+  title: null,
 };
+
+// P56A T10: fyzika se načítá za závorou, kterou test drží zavřenou – čtečka se musí zeptat dřív, než se otevře.
+const rapier = vi.hoisted(() => ({ gate: Promise.resolve() }));
+vi.mock('@/play/arcade/physics/world', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/arcade/physics/world')>();
+  return { ...actual, loadRapier: async () => { await rapier.gate; return actual.loadRapier(); } };
+});
 
 vi.mock('../_director', () => ({
   getDirector: () => async () => ({ ok: true, spec: draftGameSpec(SENTENCE), source: 'draft', repairRounds: 0, fallbackReason: 'NO_MODEL', warnings: [], ms: 1, calls: 0, callerLimited: false }),
@@ -60,6 +82,8 @@ async function publishedSpec(response: Response): Promise<unknown> {
 beforeEach(() => {
   __resetProcessVersionStore();
   resetRateWindows();
+  // Čtečka si čtení pamatuje po větě (P56A T4); každý test čte znovu.
+  resetProcessAnswerStore();
   vi.stubEnv('PLAY_READER_ENDPOINT', 'http://reader.test');
 });
 
@@ -126,7 +150,81 @@ describe('create route reads the sentence before drafting', () => {
     expect(await publishedSpec(await pending)).toEqual(draftGameSpec(SENTENCE));
   });
 
-  it.each(['soon', '0', '-5', '2.5', '20000'])('a budget of %s is not a whole number in 1..10000 and falls back to 1500 ms', async (budget) => {
+  // P56A T10: čtečka za načítáním fyziky by přidala svůj rozpočet ke každé větě; souběžně se ptá hned.
+  it('asks the reader while the physics engine is still loading', async () => {
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', answering);
+    let open = (): void => undefined;
+    rapier.gate = new Promise<void>((resolve) => { open = resolve; });
+    try {
+      const pending = create();
+      await vi.waitFor(() => expect(answering).toHaveBeenCalledOnce());
+      open();
+      expect(await publishedSpec(await pending)).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
+    } finally {
+      open();
+      rapier.gate = Promise.resolve();
+    }
+  });
+
+  // P56A T10-R1: fyzika, která se nenačte, shodí tvorbu – placené čtení, které už běží, pak model nezavolá.
+  describe('a paid reader', () => {
+    const PAID = {
+      PLAY_READER: 'on',
+      PLAY_READER_ENDPOINT: 'openai:https://api.groq.com/openai',
+      PLAY_READER_KEY: 'gsk-test',
+      PLAY_READER_MODEL: 'openai/gpt-oss-20b',
+      PLAY_READER_USD_PER_MTOK_IN: '0.075',
+      PLAY_READER_USD_PER_MTOK_OUT: '0.30',
+      PLAY_READER_SPEND_CAP_USD: '1',
+      PLAY_STORE_DIR: mkdtempSync(join(tmpdir(), 'p56a-route-reader-')),
+    };
+    const paid = vi.fn(async (_url: string, _init?: RequestInit) =>
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(READING) }, finish_reason: 'stop' }], usage: { prompt_tokens: 900, completion_tokens: 300 } })));
+
+    beforeEach(() => {
+      for (const [name, value] of Object.entries(PAID)) vi.stubEnv(name, value);
+      resetProcessSpendCap();
+      paid.mockClear();
+      vi.stubGlobal('fetch', paid);
+    });
+    afterEach(() => {
+      rapier.gate = Promise.resolve();
+      resetProcessSpendCap();
+    });
+
+    it('pays once when the physics loads', async () => {
+      expect((await create()).status).toBe(201);
+      expect(paid).toHaveBeenCalledOnce();
+    });
+
+    it('sends nothing when the physics load fails', async () => {
+      const broken = Promise.reject(new Error('rapier wasm failed'));
+      broken.catch(() => undefined);
+      rapier.gate = broken;
+      await expect(create()).rejects.toThrow('rapier wasm failed');
+      // Čtení dobíhá po pádu route; jeho lety jsou tu místní, takže za 300 ms by volání dávno odešlo.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(paid).not.toHaveBeenCalled();
+    });
+  });
+
+  // P56A T10: vypnutá čtečka = rychlá cesta jako dřív u třiceti vět výchozích čísel (T1: audit-12 + prvních 18 z p30 dev).
+  it('with the reader off publishes the keyword draft of every baseline sentence and calls nothing', async () => {
+    vi.stubGlobal('fetch', answering);
+    const set = (path: string) => (JSON.parse(readFileSync(path, 'utf8')) as { sentences: { text: string }[] }).sentences.map((row) => row.text);
+    const sentences = [...set('evals/play/p56a/audit-12.json'), ...set('evals/play/p30/dev.json')].slice(0, 30);
+    for (const sentence of sentences) {
+      resetRateWindows();
+      const spec = await publishedSpec(await create(sentence));
+      // P56C T10: věta, kterou `chainOrSingle` pošle do řetězu, hraje řetěz – jeho publikaci pinuje `chain-publish.test.ts`.
+      if (chainOrSingle(sentence, readForChain(sentence, null), classifyGenre(sentence, null)) === 'single') expect(spec, sentence).toEqual(draftGameSpec(sentence));
+    }
+    expect(answering).not.toHaveBeenCalled();
+  }, 300_000);
+
+  // T4-R1: holá adresa je lokální llama-server, jeho výchozí rozpočet je DEFAULT_LOCAL_READER_BUDGET_MS, ne 700 ms.
+  it.each(['soon', '0', '-5', '2.5', '200000'])('a budget of %s is not a whole number in 1..120000 and falls back to the local default', async (budget) => {
     vi.stubEnv('PLAY_READER', 'on');
     vi.stubEnv('PLAY_READER_BUDGET_MS', budget);
     vi.stubGlobal('fetch', silent);
@@ -136,7 +234,7 @@ describe('create route reads the sentence before drafting', () => {
       settled = true;
       return response;
     });
-    await vi.advanceTimersByTimeAsync(1499);
+    await vi.advanceTimersByTimeAsync(DEFAULT_LOCAL_READER_BUDGET_MS - 1);
     expect(settled).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
     vi.useRealTimers();

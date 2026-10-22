@@ -146,25 +146,32 @@ export async function POST(request: Request): Promise<Response> {
     if (refused !== null && refused.status !== 429) return refused;
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
-    // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
-    const reading = await readBeforeDraft(sentence);
+    // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
+    // P29B T5: zapnutá čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`; P56A T10: souběžně
+    // s načítáním fyziky, ne za ním – jinak by její rozpočet přibyl ke studenému startu. Nikdy neodmítne (`null`).
+    const abandoned = new AbortController();
+    const reading = readBeforeDraft(sentence, process.env, { caller, signal: abandoned.signal });
+    // Ball composition verifies a real physics run before returning a draft.
+    // Await the cold engine here; background preloading alone is a race. Always, not only
+    // when the sentence says ball: the model reader may pick a ball game the words missed.
+    // Fyzika, která se nenačte, shodí tvorbu – čtení, které by nikdo nepoužil, se nezaplatí (T10-R1).
+    await loadRapier().catch((error: unknown) => {
+      abandoned.abort();
+      throw error;
+    });
+    const sentenceReading = await reading;
     // P56C T10: věta bez jednoho jasného slovesa hraje řetěz mikroher – bez AI verze a remixu (debata T9).
     // Řetěz, který stavba nebo brána nepustí, hraje dnešní cesta jako jedna hra; zakázaný text a úložiště ne.
-    const read = readForChain(sentence, reading);
-    if (chainOrSingle(sentence, read, classifyGenre(sentence, reading)) === 'chain') {
+    const read = readForChain(sentence, sentenceReading);
+    if (chainOrSingle(sentence, read, classifyGenre(sentence, sentenceReading)) === 'chain') {
       const built = buildChain(sentence, read, seeds[0]!);
       if (built.ok) {
-        const chained = await publishChain(versions, built.chain, parentId, { origin: { sentence, seed: seed ?? null, ...(reading === null ? {} : { readBy: 'model' as const }) } });
+        const chained = await publishChain(versions, built.chain, parentId, { origin: { sentence, seed: seed ?? null, ...(read.source === 'llm' ? { readBy: 'model' as const } : {}) } });
         if (chained.ok) return publishedResponse(chained.value);
         if (chained.response.status !== 422 || chained.issues?.[0] === 'CONTENT_REJECTED') return chained.response;
       }
     }
-    // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
-    // Ball composition verifies a real physics run before returning a draft.
-    // Await the cold engine here; background preloading alone is a race. Always, not only
-    // when the sentence says ball: the model reader may pick a ball game the words missed.
-    await loadRapier();
-    const meta = draftGameSpecWithMeta(sentence, 1, { reading });
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: sentenceReading });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });

@@ -67,7 +67,7 @@ describe('the about-this-game sheet', () => {
     const say = (read: ReadFacts) => /data-testid="play-read-by">(.*?)<\/p>/.exec(renderToStaticMarkup(createElement(ReadSection, { read })))?.[1] ?? '';
     expect(say(READ)).toContain('Quick version from your idea');
     expect(say(READ)).not.toMatch(/keywords|Instant draft|AI/);
-    expect(say({ ...READ, readBy: 'model' })).toContain('Quick version read by a local AI model');
+    expect(say({ ...READ, readBy: 'model' })).toContain('Quick version read by AI');
     expect(say({ ...READ, authorship: 'ai' })).toContain('Full-detail version of your idea');
     expect(say({ ...READ, authorship: 'ai' })).not.toContain('Designed by AI');
   });

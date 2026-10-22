@@ -147,4 +147,21 @@ test.describe('/play/[id] – instant retry (P36B T3)', () => {
     const tick = await page.evaluate(() => window.__playShell!.tick());
     await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(tick);
   });
+
+  test('a loss without a single point says Try again!, a loss with points still says So close. (P56A T9)', async ({ page, request }) => {
+    // Nečinný hráč prohraje: chytání drahokamů bez stisku nedá bod („So close.“ by lhalo), běžec boduje
+    // za překážky i bez stisku. „dodge the falling rocks“ sám body nepočítá, nadpis tam nuly nemá.
+    for (const [sentence, points, headline] of [
+      ['dodge the falling rocks and catch the gems', /^0\D/, 'Try again!'],
+      ['endless runner with a lot of obstacles', /^[1-9]/, 'So close.'],
+    ] as const) {
+      await page.goto(await publish(request, sentence));
+      await startGame(page);
+      await page.waitForFunction(() => window.__playShell!.tick() > 60, undefined, { timeout: 30_000 });
+      const end = await page.evaluate(() => (window.__playShell as unknown as { idleRun: () => { runState: string } }).idleRun());
+      expect(end.runState, sentence).toBe('lost');
+      await expect(page.getByTestId('play-score'), sentence).toHaveText(points);
+      await expect(page.getByTestId('play-postrun').locator('.play-result-title'), sentence).toHaveText(headline);
+    }
+  });
 });

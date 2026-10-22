@@ -91,8 +91,11 @@ const PLACE_ROLES: Readonly<Record<LookId, PlaceRoles>> = {
   graveyard: { hero: 'kid', craft: 'broom', enemy: 'ghost', collectible: 'candle' },
 };
 
-/** Místo, které sady neznají („village“): nástraha podle žánru, hrdina liška, mince. */
-const UNKNOWN_PLACE: PlaceRoles = { hero: 'fox', craft: 'car', enemy: 'rock', collectible: 'coin' };
+/**
+ * Místo, které sady neznají („village“): nástraha podle žánru, mince a průzkumník – riggovaný (`q-cowboy-hair`) a sedí
+ * každému žánru. Dřív liška, a ta pak hrála skoro každou větu bez hrdiny (P56A T6).
+ */
+const UNKNOWN_PLACE: PlaceRoles = { hero: 'explorer', craft: 'car', enemy: 'rock', collectible: 'coin' };
 const GENRE_FOE: Readonly<Record<GenreId, string>> = {
   runner: 'rock',
   platformer: 'spike',
@@ -120,10 +123,15 @@ const placeRoles = (setting: string): PlaceRoles | null => {
   return look === null ? null : PLACE_ROLES[look];
 };
 
-/** Hrdina, když ho věta neříká: Plavba jede na plavidle z věty, jinak na tom, co k místu patří. */
-export function defaultHero(setting: string, genre: GenreId, sentence: string): string {
+/**
+ * Hrdina, když ho věta neříká: Plavba jede na plavidle z věty, jinak na tom, co k místu patří. Liška je hrdina jen
+ * nouzově (P56A T6): věta, kterou přečetla čtečka (`read`) a hrdinu nejmenuje, dostane na louce, v lese i na poušti
+ * průzkumníka – lišku jen ta, která ji jmenuje.
+ */
+export function defaultHero(setting: string, genre: GenreId, sentence: string, read = false): string {
   const place = placeRoles(setting) ?? UNKNOWN_PLACE;
-  return genre === 'voyage' ? (craftOf(sentence) ?? place.craft) : place.hero;
+  if (genre === 'voyage') return craftOf(sentence) ?? place.craft;
+  return read && place.hero === 'fox' ? UNKNOWN_PLACE.hero : place.hero;
 }
 
 /**
