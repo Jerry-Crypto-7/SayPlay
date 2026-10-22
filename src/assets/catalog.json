@@ -49091,10 +49091,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-cardboard-box-lod1.glb",
-          "hash": "c3faaa1f7283b51563c2ab2ab0602dd468565b263073a7c4c73904beb2b75e6e",
-          "bytes": 53176,
-          "triangles": 2220,
-          "decodedGeometryBytes": 51804,
+          "hash": "6aac08518ccc9de00fe40ec8cb81c1764bcb3a023b51ce6bec7db7efa24192b5",
+          "bytes": 36756,
+          "triangles": 2171,
+          "decodedGeometryBytes": 35426,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -55861,10 +55861,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-windmill-lod1.glb",
-          "hash": "86212d7cade8c42c03368e3030db5ed1ced162fa2ed9acdf89a7b01dfd94b8d8",
-          "bytes": 50464,
-          "triangles": 2050,
-          "decodedGeometryBytes": 49092,
+          "hash": "3d8fe57f29a506035ff15c863d9eec7f3879f79617ab07efdcfdaba85c991c6a",
+          "bytes": 24508,
+          "triangles": 1838,
+          "decodedGeometryBytes": 23180,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -60475,10 +60475,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-lighthouse-lod1.glb",
-          "hash": "1e2a8bae8364a9b5454dc569c0dbcbfe0dbce693303fcf88b80b5d6bef9ef63c",
-          "bytes": 54644,
-          "triangles": 2246,
-          "decodedGeometryBytes": 53292,
+          "hash": "07dd02f940357d61a054e7e57eaabe44735e15b60c5caef6eb97fc0c8ad65ba5",
+          "bytes": 36932,
+          "triangles": 2213,
+          "decodedGeometryBytes": 35622,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -61705,10 +61705,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-traffic-light-lod1.glb",
-          "hash": "ac9554b2ddf883cc3302ab6d73cba7a49911102aeb44aae1070e3fd44dfe3880",
-          "bytes": 52440,
-          "triangles": 2180,
-          "decodedGeometryBytes": 51060,
+          "hash": "00b93cdbe811de4869ef2825e91fbdaabba322f5fa9b8144a1c203e14117db9f",
+          "bytes": 28560,
+          "triangles": 1985,
+          "decodedGeometryBytes": 27226,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -68845,10 +68845,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-sailboat-lod1.glb",
-          "hash": "3504ca7fe55a46c621a14ffb3982a980cc9120626f2d23dc96a8cb997924d313",
-          "bytes": 40780,
-          "triangles": 1906,
-          "decodedGeometryBytes": 39408,
+          "hash": "3c226ba927f8a21dc56750524a3cba791b4acab73bbff60bf1c1cc8e52341c1b",
+          "bytes": 25404,
+          "triangles": 1837,
+          "decodedGeometryBytes": 24070,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -70467,10 +70467,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-cheese-lod1.glb",
-          "hash": "669c178c4a5e66c1c1dd321710d267ddd395341b5494b5ccec3417311cddebc4",
-          "bytes": 43348,
-          "triangles": 1932,
-          "decodedGeometryBytes": 41976,
+          "hash": "6317bc7ff5a8c1fd29f643a65bcff00244938c18aea4a08ec68b3712cafc6382",
+          "bytes": 27100,
+          "triangles": 1808,
+          "decodedGeometryBytes": 25772,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -74135,10 +74135,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-snowman-with-hat-lod1.glb",
-          "hash": "69259424afb99c2be1cff12ba466b5c6449c4182fb49e6a0cbba96a480adbe11",
-          "bytes": 34940,
-          "triangles": 1725,
-          "decodedGeometryBytes": 33570,
+          "hash": "5abe5fe66180b7091c8b2a53ec5e50f82c3b0cec23673c1acaa9d87391af98fc",
+          "bytes": 23040,
+          "triangles": 1541,
+          "decodedGeometryBytes": 21706,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -74450,10 +74450,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d/gen3d-satellite-radar-dish-lod1.glb",
-          "hash": "d0a0c1d55601e0522ae2351afc443b780713c2c0d1b4bc2a48ad1f170c1e230f",
-          "bytes": 48080,
-          "triangles": 1822,
-          "decodedGeometryBytes": 46752,
+          "hash": "b4fa8155f6d0ba92623219dc480eb9688f55a79ff99f4d894980a9c5bb227131",
+          "bytes": 31348,
+          "triangles": 1572,
+          "decodedGeometryBytes": 30040,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -94044,10 +94044,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-toolbox-lod1.glb",
-          "hash": "68dae5f1fb34a762588dbdf2e7d3c746989d15ca08cf339109ae4f85d7d8c41f",
-          "bytes": 46652,
-          "triangles": 1960,
-          "decodedGeometryBytes": 45276,
+          "hash": "0ae2c1463d9faa019dbafb54624aaa748e564f7cd0e0991661adae3f23cf62ae",
+          "bytes": 27932,
+          "triangles": 1838,
+          "decodedGeometryBytes": 26596,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -95671,10 +95671,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-suitcase-lod1.glb",
-          "hash": "6c395424f51df6714d6f805cd1f99a8a7794fdac02f5b7e2580df53fee16da11",
-          "bytes": 33432,
-          "triangles": 1750,
-          "decodedGeometryBytes": 32064,
+          "hash": "dff08004b78d0708ad73fbbd11ecec2a3847c0f0aa64a9d6f4c290349de0c7f9",
+          "bytes": 22712,
+          "triangles": 1590,
+          "decodedGeometryBytes": 21384,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -101440,10 +101440,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod1.glb",
-          "hash": "bd67f5f95017f128771d0ed81b0f382ed559e93faaf52eb434cb7e9621b93c42",
-          "bytes": 31596,
-          "triangles": 1750,
-          "decodedGeometryBytes": 30228,
+          "hash": "aa9919f03639985dae8eea0436749565889f6ef3ac30147abeefc270fb752172",
+          "bytes": 22408,
+          "triangles": 1535,
+          "decodedGeometryBytes": 21082,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -111951,10 +111951,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-funeral-urn-lod1.glb",
-          "hash": "adab6ea4191ae27415a94287747801db9f3fdc77da278fa0334ef092b3179586",
-          "bytes": 49520,
-          "triangles": 1998,
-          "decodedGeometryBytes": 48168,
+          "hash": "73f6fc23f5d5e45528d0f098b9efe538ba899170870d3befba9a0bccc35d6c45",
+          "bytes": 41388,
+          "triangles": 1996,
+          "decodedGeometryBytes": 40088,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -120136,10 +120136,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-ancient-vase-lod1.glb",
-          "hash": "d1b6fc367c56add3563cb80d4eea220fce60b144d6b9f685c448c0f0d4b6e24f",
-          "bytes": 31200,
-          "triangles": 1702,
-          "decodedGeometryBytes": 29832,
+          "hash": "1d73734e7fcd7bf6072a2896278b53f9f2713f5cd83e7c05db028b8b673fa23b",
+          "bytes": 19632,
+          "triangles": 1431,
+          "decodedGeometryBytes": 18302,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -142040,10 +142040,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb",
-          "hash": "bd996bb0c285bb3fa8f804811f1152a607a9d5ddb206c3b5f4fedca6a7bb8cb2",
-          "bytes": 48500,
-          "triangles": 1960,
-          "decodedGeometryBytes": 47148,
+          "hash": "64ac6302334f389275f847ac9a1b1aba4da9f29549428f0a268b7c8895d7d6fc",
+          "bytes": 24328,
+          "triangles": 1839,
+          "decodedGeometryBytes": 23018,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -144195,10 +144195,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-idol-head-lod1.glb",
-          "hash": "8f0b74bbfeeaf9aa6d5f76a8da1f2045430d6599e4a08fc383570a27c37360f7",
-          "bytes": 48656,
-          "triangles": 1966,
-          "decodedGeometryBytes": 47328,
+          "hash": "ade3b87abd4f2f763bdf4ce772ff7986f4bf25cc37ada6d4aa02777e8033800b",
+          "bytes": 27328,
+          "triangles": 1805,
+          "decodedGeometryBytes": 26034,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -146651,10 +146651,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-park-bench-lod1.glb",
-          "hash": "c0a1adbf7393e3aeb4526503784f22ce295d56e35787d1f7eea3170e4e16df14",
-          "bytes": 51900,
-          "triangles": 2144,
-          "decodedGeometryBytes": 50520,
+          "hash": "ff77fba7655dfb288379bf09ec198f2f2ea748a53854845274ac117a6345e23c",
+          "bytes": 30076,
+          "triangles": 2024,
+          "decodedGeometryBytes": 28748,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -147368,10 +147368,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-street-trash-can-lod1.glb",
-          "hash": "bc8b2a6ee6a82ab0baa9b0cbf3b3ea9108fc496349dc25d9f56bd60b836f1d22",
-          "bytes": 46748,
-          "triangles": 1880,
-          "decodedGeometryBytes": 45372,
+          "hash": "8e7c2c9e0b4248be0bb2566ad6aaa2a5c96472fd06c0ecf3a37688c9c88db67a",
+          "bytes": 23212,
+          "triangles": 1617,
+          "decodedGeometryBytes": 21882,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -147881,10 +147881,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-concrete-planter-with-tree-lod1.glb",
-          "hash": "b8e5bac3532a428af9979e06b7a3db88de694cc68243a8a09e33ec915d1c99cb",
-          "bytes": 47392,
-          "triangles": 1940,
-          "decodedGeometryBytes": 46020,
+          "hash": "83c7be3cb3c40c5c3bdbd2411d082f2531ccf7b3a0242418887a882309c2a05b",
+          "bytes": 19976,
+          "triangles": 1358,
+          "decodedGeometryBytes": 18648,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -148086,10 +148086,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-rock-cluster-lod1.glb",
-          "hash": "82783a73fa08e3043de3ab5d0e9b55b85d7376cc3ef23633dbb20b0c5944754c",
-          "bytes": 49212,
-          "triangles": 2043,
-          "decodedGeometryBytes": 47862,
+          "hash": "3bbb0232b7600bcff20b6c3f674414f5b18e0173e4650b2f35d0b78c540374c9",
+          "bytes": 28092,
+          "triangles": 1897,
+          "decodedGeometryBytes": 26782,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -154525,10 +154525,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-street-bollard-lod1.glb",
-          "hash": "64ffbeea08b34d5c89436327174b96214113037f55cd7b3e999dc41b68525738",
-          "bytes": 49788,
-          "triangles": 2002,
-          "decodedGeometryBytes": 48408,
+          "hash": "09efb44ff966fbd44007f8ce129af8358b1592054e8eed840185acfce645bea3",
+          "bytes": 40508,
+          "triangles": 1946,
+          "decodedGeometryBytes": 39172,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -155950,10 +155950,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-poppy-flower-lod1.glb",
-          "hash": "2961e0035cd899978b0ca77998a8363575a80200e7e1109d70de7a9cd6b166bd",
-          "bytes": 53388,
-          "triangles": 2158,
-          "decodedGeometryBytes": 52008,
+          "hash": "244989986749fcdd2c0997275d4794019901febc28add90f0f507896038c6bff",
+          "bytes": 44372,
+          "triangles": 2146,
+          "decodedGeometryBytes": 43032,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -157075,10 +157075,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-gramophone-lod1.glb",
-          "hash": "b61dc3ab3131461d5d170b51d151bd18cfce2b1687882d6fb5203a0efa300613",
-          "bytes": 47844,
-          "triangles": 1931,
-          "decodedGeometryBytes": 46470,
+          "hash": "a01870f70d12c5f638f21beaf3a57cdaa706f4fd29856ab5b3a0436bd0fbd374",
+          "bytes": 28000,
+          "triangles": 1817,
+          "decodedGeometryBytes": 26666,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -162557,10 +162557,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-stall-lod1.glb",
-          "hash": "2e41f1771349373d3811b8f652a948665d2da4d371a51d64036ccff630cccbb9",
-          "bytes": 35608,
-          "triangles": 1855,
-          "decodedGeometryBytes": 34242,
+          "hash": "bbc5b5444f27c1bd7efa726a412ca96c0b8c96cfb256d49965cc931805f9b2d2",
+          "bytes": 21628,
+          "triangles": 1461,
+          "decodedGeometryBytes": 20302,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -172295,10 +172295,10 @@
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-energy-crystal-lod1.glb",
-          "hash": "de3d4c39ae34056041452dc7bcb0e1bf768b3501321343f9f2dbfcddb295d1f6",
-          "bytes": 46328,
+          "hash": "9ea651e96b1b40ad7be3c91da06db28809c22aa835b98507e2fde53cc59daf14",
+          "bytes": 38776,
           "triangles": 1862,
-          "decodedGeometryBytes": 44976,
+          "decodedGeometryBytes": 37464,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
