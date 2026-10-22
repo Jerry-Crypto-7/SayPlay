@@ -1,0 +1,400 @@
+{
+ "about": "P57 T12 blind before/after scene judge, written by scripts/p57/scene-duel.mjs.",
+ "before": {
+  "commit": "72665fdc",
+  "dir": "D:\\caches\\p57\\baseline"
+ },
+ "after": {
+  "commit": "b8930b11",
+  "dir": "D:\\caches\\p57\\after"
+ },
+ "renderer": "d3d11",
+ "tally": {
+  "claude": {
+   "desktop": {
+    "after": 8,
+    "before": 4,
+    "missing": 0
+   },
+   "phone": {
+    "after": 6,
+    "before": 6,
+    "missing": 0
+   }
+  },
+  "codex": {
+   "desktop": {
+    "after": 1,
+    "before": 0,
+    "missing": 11
+   },
+   "phone": {
+    "after": 0,
+    "before": 0,
+    "missing": 12
+   }
+  }
+ },
+ "pairs": [
+  {
+   "id": "01-frog-d",
+   "sentence": "a frog catching flies on a lily pad",
+   "view": "desktop",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "after",
+    "codex": "after"
+   },
+   "reasons": {
+    "claude": "Neither panel shows a frog, flies or a lily pad, since both are car-racing scenes, but panel 2 looks slightly more polished with more varied trees, fruit and flowers.",
+    "codex": "Panel 2 looks more polished with fuller trees and richer vegetation, though neither visibly shows a frog catching flies on a lily pad."
+   },
+   "sheet": "01-frog-d.png"
+  },
+  {
+   "id": "01-frog-m",
+   "sentence": "a frog catching flies on a lily pad",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "Neither panel shows a frog, flies or a lily pad; both are almost identical car-on-a-road scenes, but panel 1's blue flowers add a bit more color and polish.",
+    "codex": null
+   },
+   "sheet": "01-frog-m.png"
+  },
+  {
+   "id": "02-zombie-d",
+   "sentence": "zombies attack my farm at night",
+   "view": "desktop",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are nearly identical, but panel 1 is slightly brighter, so the zombies, farm and fences are a little easier to see while it still reads as night.",
+    "codex": null
+   },
+   "sheet": "02-zombie-d.png"
+  },
+  {
+   "id": "02-zombie-m",
+   "sentence": "zombies attack my farm at night",
+   "view": "phone",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "Both panels look almost identical, with the same dark night farm, zombies and HUD, so this is close to a tie; panel 1 wins by a hair because its framing is slightly cleaner.",
+    "codex": null
+   },
+   "sheet": "02-zombie-m.png"
+  },
+  {
+   "id": "03-ninja-d",
+   "sentence": "a ninja slicing fruit",
+   "view": "desktop",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels look the same: a ninja beside cutting boards, with no fruit, slicing or HUD in either, so neither is clearly better and choosing 1 is close to arbitrary.",
+    "codex": null
+   },
+   "sheet": "03-ninja-d.png"
+  },
+  {
+   "id": "03-ninja-m",
+   "sentence": "a ninja slicing fruit",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels look the same, with a ninja beside plain blocks and no visible fruit, so neither is better and panel 1 was picked only as a tie-break.",
+    "codex": null
+   },
+   "sheet": "03-ninja-m.png"
+  },
+  {
+   "id": "04-shark-d",
+   "sentence": "racing a shark through a coral reef",
+   "view": "desktop",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels look essentially identical (same reef track, coral, player, and obstacles), so neither is clearly better and panel 1 wins only as a tie-break.",
+    "codex": null
+   },
+   "sheet": "04-shark-d.png"
+  },
+  {
+   "id": "04-shark-m",
+   "sentence": "racing a shark through a coral reef",
+   "view": "phone",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are nearly identical, but panel 1 has slightly clearer contrast, which makes the reef track, coral and obstacles easier to read.",
+    "codex": null
+   },
+   "sheet": "04-shark-m.png"
+  },
+  {
+   "id": "05-pizza-d",
+   "sentence": "stack pizzas as high as the moon",
+   "view": "desktop",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are nearly identical, but panel 1's crystal decoration on the dome looks more polished than panel 2's plain grey pedestal object.",
+    "codex": null
+   },
+   "sheet": "05-pizza-d.png"
+  },
+  {
+   "id": "05-pizza-m",
+   "sentence": "stack pizzas as high as the moon",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are nearly identical, but panel 1 has a clean antenna/pad prop where panel 2 has a crumpled, glitchy-looking mesh, so panel 1 looks more polished.",
+    "codex": null
+   },
+   "sheet": "05-pizza-m.png"
+  },
+  {
+   "id": "06-cat-d",
+   "sentence": "my cat defends the couch from vacuum robots",
+   "view": "desktop",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels look almost exactly the same (same lane layout, cat and red turrets on the couch, and no clear vacuum robots in either), so panel 1 is a near coin-flip pick.",
+    "codex": null
+   },
+   "sheet": "06-cat-d.png"
+  },
+  {
+   "id": "06-cat-m",
+   "sentence": "my cat defends the couch from vacuum robots",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels look the same, with the same lane layout and no visible cat, couch or vacuum robots in either, so neither is better and panel 1 is a tie-break pick.",
+    "codex": null
+   },
+   "sheet": "06-cat-m.png"
+  },
+  {
+   "id": "07-goalie-d",
+   "sentence": "a goalkeeper saves penalty kicks in a packed stadium",
+   "view": "desktop",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two are almost identical and neither shows a packed stadium, but panel 1 has slightly richer, more varied scenery, such as fruit trees and brighter foliage.",
+    "codex": null
+   },
+   "sheet": "07-goalie-d.png"
+  },
+  {
+   "id": "07-goalie-m",
+   "sentence": "a goalkeeper saves penalty kicks in a packed stadium",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are almost the same, and neither shows a packed stadium, but panel 1's colored trees and flowers make the scene look a little more finished.",
+    "codex": null
+   },
+   "sheet": "07-goalie-m.png"
+  },
+  {
+   "id": "08-gems-d",
+   "sentence": "match three glowing gems to unlock a treasure chest",
+   "view": "desktop",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are almost identical, but panel 2 has extra scenery like blue flowers and more plants, so it looks slightly more polished; neither one clearly shows glowing gems.",
+    "codex": null
+   },
+   "sheet": "08-gems-d.png"
+  },
+  {
+   "id": "08-gems-m",
+   "sentence": "match three glowing gems to unlock a treasure chest",
+   "view": "phone",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are almost the same: neither shows clear glowing gems or match-three play, and panel 1's framing is only slightly cleaner.",
+    "codex": null
+   },
+   "sheet": "08-gems-m.png"
+  },
+  {
+   "id": "09-astro-d",
+   "sentence": "an astronaut dodges asteroids to reach the space station",
+   "view": "desktop",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The panels are almost identical, but panel 1 has dark asteroid-like rocks in the sky that better fit \"dodges asteroids\"; both lose the astronaut behind a gray wall at 15 seconds.",
+    "codex": null
+   },
+   "sheet": "09-astro-d.png"
+  },
+  {
+   "id": "09-astro-m",
+   "sentence": "an astronaut dodges asteroids to reach the space station",
+   "view": "phone",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The panels are nearly identical: both have no HUD, no visible asteroids, and lose the astronaut behind a grey slab at 15s, so panel 1 wins only by a hair on its slightly clearer path and pickups.",
+    "codex": null
+   },
+   "sheet": "09-astro-m.png"
+  },
+  {
+   "id": "10-chef-d",
+   "sentence": "a chef flips pancakes for a line of hungry customers",
+   "view": "desktop",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels are almost identical and neither shows a line of customers, but panel 1's pancake looks slightly more detailed and cooked.",
+    "codex": null
+   },
+   "sheet": "10-chef-d.png"
+  },
+  {
+   "id": "10-chef-m",
+   "sentence": "a chef flips pancakes for a line of hungry customers",
+   "view": "phone",
+   "beforeFirst": true,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The panels look almost the same and neither shows customers, but in panel 2 the chef is still holding a tool at 15 seconds, so it looks slightly more active.",
+    "codex": null
+   },
+   "sheet": "10-chef-m.png"
+  },
+  {
+   "id": "11-drum-d",
+   "sentence": "drum to the beat at a rock concert",
+   "view": "desktop",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The panels are nearly identical rhythm-lane farm scenes and neither looks like a rock concert, but panel 1's colorful windmills fit the low-poly style better than panel 2's spindly gray ones.",
+    "codex": null
+   },
+   "sheet": "11-drum-d.png"
+  },
+  {
+   "id": "11-drum-m",
+   "sentence": "drum to the beat at a rock concert",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "Both have the same note-highway gameplay and farm setting rather than a rock concert, but panel 2's windmills are more detailed and less blobby, so it looks slightly more polished.",
+    "codex": null
+   },
+   "sheet": "11-drum-m.png"
+  },
+  {
+   "id": "12-ghost-d",
+   "sentence": "escape a haunted mansion while a ghost chases you",
+   "view": "desktop",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "after",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The two panels look almost the same, but panel 1 is a little brighter and easier to read, so the haunted path and the chasing figure are clearer.",
+    "codex": null
+   },
+   "sheet": "12-ghost-d.png"
+  },
+  {
+   "id": "12-ghost-m",
+   "sentence": "escape a haunted mansion while a ghost chases you",
+   "view": "phone",
+   "beforeFirst": false,
+   "votes": {
+    "claude": "before",
+    "codex": null
+   },
+   "reasons": {
+    "claude": "The panels are almost identical, but in panel 2 the chasing fox renders cleanly, while in panel 1 it has an odd grey-blue patch that looks like a glitch.",
+    "codex": null
+   },
+   "sheet": "12-ghost-m.png"
+  }
+ ]
+}
