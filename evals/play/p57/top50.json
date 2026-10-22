@@ -16,6 +16,22 @@
    ],
    "startedAt": "2026-10-22T06:38:04.335Z",
    "finishedAt": "2026-10-22T09:07:05.472Z"
+  },
+  "2": {
+   "ids": [
+    "gen3d-picnic-table",
+    "gen3d-poppy-flower",
+    "gen3d-sunflower",
+    "gen3d-willow-tree",
+    "gen3d-wooden-gate",
+    "gen3d-windmill",
+    "gen3d-wooden-stile",
+    "gen3d-river-boulder",
+    "gen3d-rock-pillar",
+    "gen3d-basalt-column-rock"
+   ],
+   "startedAt": "2026-10-22T09:13:04.487Z",
+   "finishedAt": "2026-10-22T12:14:52.737Z"
   }
  },
  "models": {
@@ -956,10 +972,866 @@
    "newScore": 5,
    "result": "kept-old",
    "reason": "leafy tree: Pale washed-out leaves, noisy clustered canopy."
+  },
+  "gen3d-picnic-table": {
+   "noun": "picnic table",
+   "set": "gen3d-p37d",
+   "oldScore": 6,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.9943,
+        0.9916,
+        1.2368
+       ],
+       "triangles": 7344,
+       "pick": 0
+      }
+     ],
+     "pick": "c2",
+     "seed": 2,
+     "score": 6,
+     "reason": "picnic table: Recognisable, but noisy warped wood surfaces look scan-like.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "solid toy picnic table of clean smooth flat bright wooden planks with two attached benches, almost three times longer than tall and one and a half times wider than tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old",
+   "reason": "picnic table: Recognisable, but noisy warped wood surfaces look scan-like."
+  },
+  "gen3d-poppy-flower": {
+   "noun": "poppy flower",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.1095,
+        0.9988,
+        1.409
+       ],
+       "triangles": 7600,
+       "pick": 0
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 6,
+     "reason": "poppy flower: Bright, readable poppy; thin crumpled petals, spindly stem.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one big solid cup-shaped red bloom with a black centre on one thick straight green stem, about twice as tall as wide, no thin petals",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.2982,
+        0.9992,
+        1.3653
+       ],
+       "triangles": 7528,
+       "pick": 5
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.1455,
+        0.9989,
+        1.3254
+       ],
+       "triangles": 7598,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.1937,
+        0.999,
+        1.2845
+       ],
+       "triangles": 7600,
+       "pick": 7
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "ok",
+       "scale": [
+        1.1917,
+        0.9989,
+        1.3368
+       ],
+       "triangles": 7600,
+       "pick": 7
+      }
+     ],
+     "pick": "c3",
+     "seed": 3,
+     "score": 6,
+     "reason": "poppy flower: Bright readable flower, but stem too thin and no leaves.",
+     "won": false
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old",
+   "reason": "poppy flower: Bright, readable poppy; thin crumpled petals, spindly stem."
+  },
+  "gen3d-sunflower": {
+   "noun": "sunflower",
+   "set": "gen3d",
+   "oldScore": 7,
+   "oldOpus": 7,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not centred: x=0.003 z=-0.024"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "chunky toy sunflower with one thick straight stem, one big round yellow head facing front with short rounded petals, two broad leaves, about twice as tall as wide",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-willow-tree": {
+   "noun": "willow tree",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9689,
+        0.9689,
+        0.9689
+       ],
+       "triangles": 7599,
+       "pick": 7
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9979,
+        0.9979,
+        0.9979
+       ],
+       "triangles": 7599,
+       "pick": 7
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9447,
+        0.9447,
+        0.9447
+       ],
+       "triangles": 7599,
+       "pick": 7
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.9462,
+        0.9462,
+        0.9462
+       ],
+       "triangles": 7600,
+       "pick": 6
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 8,
+     "reason": "willow tree: Clean stylised willow with bright solid green, readable shape.",
+     "won": true
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-wooden-gate": {
+   "noun": "wooden gate",
+   "set": "gen3d-p37d",
+   "oldScore": 7,
+   "oldOpus": 7,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0243,
+        1.0243,
+        1.0243
+       ],
+       "triangles": 7600,
+       "pick": 0
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.040"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": "b1",
+     "seed": 1,
+     "score": 8,
+     "reason": "Wooden farm gate: Clean chunky gate silhouette; dark brown slightly dull for Toy Box.",
+     "won": true
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-windmill": {
+   "noun": "windmill",
+   "set": "gen3d",
+   "oldScore": 4,
+   "oldOpus": 4,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.149,
+        0.9937,
+        0.9549
+       ],
+       "triangles": 7455,
+       "pick": 5
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.2891,
+        0.9943,
+        0.8979
+       ],
+       "triangles": 7115,
+       "pick": 2
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.2193,
+        0.9942,
+        0.92
+       ],
+       "triangles": 7599,
+       "pick": 8
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        1.0108,
+        0.9958,
+        0.7306
+       ],
+       "triangles": 7578,
+       "pick": 4
+      }
+     ],
+     "pick": "c1",
+     "seed": 1,
+     "score": 8,
+     "reason": "windmill: Chunky toy windmill, bright colours, clear silhouette; blades slightly soft.",
+     "won": true
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-wooden-stile": {
+   "noun": "wooden stile",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one long low wooden fence section with two chunky wooden steps up each side, about three times longer than tall and a bit wider than tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-river-boulder": {
+   "noun": "river boulder",
+   "set": "gen3d-p37d",
+   "oldScore": 7,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.2177,
+        0.9999,
+        1.2527
+       ],
+       "triangles": 7600,
+       "pick": 3
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.3368,
+        0.9994,
+        1.1113
+       ],
+       "triangles": 7599,
+       "pick": 4
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        1.0603,
+        1.0603,
+        1.0603
+       ],
+       "triangles": 7600,
+       "pick": 5
+      }
+     ],
+     "pick": "c2",
+     "seed": 2,
+     "score": 5,
+     "reason": "blue boulder: Blobby smooth rock, weak definition and odd colour.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one big rounded warm grey river boulder with a few clear flat facets and a small bright moss patch, a bit wider than tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.036; pivot not centred: x=0.058 z=0.028"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.0573,
+        1.0573,
+        1.0573
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "ok",
+       "scale": [
+        0.9847,
+        0.9847,
+        0.9847
+       ],
+       "triangles": 7599,
+       "pick": 5
+      }
+     ],
+     "pick": "c3",
+     "seed": 3,
+     "score": 7,
+     "reason": "mossy boulder: Chunky faceted rock, toy-like; moss patches small and slightly sparse.",
+     "won": false
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "mossy boulder: Chunky faceted rock, toy-like; moss patches small and slightly sparse."
+  },
+  "gen3d-rock-pillar": {
+   "noun": "rock pillar",
+   "set": "gen3d-p37d",
+   "oldScore": 7,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.2092,
+        0.9999,
+        1.2065
+       ],
+       "triangles": 7600,
+       "pick": 8
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0431,
+        1.0431,
+        1.0431
+       ],
+       "triangles": 7600,
+       "pick": 8
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7039,
+        1.0036,
+        0.9342
+       ],
+       "triangles": 7484,
+       "pick": 2
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.9704,
+        1.0079,
+        0.8028
+       ],
+       "triangles": 7498,
+       "pick": 3
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 7,
+     "reason": "brick pillar: Chunky stacked bricks, nice colour; slightly lumpy, uneven stacking.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one natural sandstone rock pillar about three times taller than wide, smooth warm orange layered bands, straight clean sides and a slightly wider flat cap",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        0.9314,
+        0.9314,
+        0.9314
+       ],
+       "triangles": 7600,
+       "pick": 7
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        0.9806,
+        0.9806,
+        0.9806
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "ok",
+       "scale": [
+        0.7575,
+        1,
+        0.7555
+       ],
+       "triangles": 7600,
+       "pick": 7
+      }
+     ],
+     "pick": "a3",
+     "seed": 3,
+     "score": 7,
+     "reason": "stone pillar: Clean silhouette, warm colours; painterly texture slightly noisy.",
+     "won": false
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "brick pillar: Chunky stacked bricks, nice colour; slightly lumpy, uneven stacking."
+  },
+  "gen3d-basalt-column-rock": {
+   "noun": "basalt column rock",
+   "set": "gen3d-p37d",
+   "oldScore": 4,
+   "oldOpus": 3,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7488,
+        0.9995,
+        0.776
+       ],
+       "triangles": 7599,
+       "pick": 5
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9678,
+        0.9678,
+        0.9678
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 5,
+     "reason": "Stone rock pillar: Ambiguous stacked grey rock blob; dull colour, unclear object identity.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "a tight cluster of five clean hexagonal stone columns of different heights with flat tops, slate grey with lighter tops, about as wide as tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.4216,
+        0.9998,
+        1.156
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.033,
+        1.033,
+        1.033
+       ],
+       "triangles": 7599,
+       "pick": 4
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.0696,
+        1.0696,
+        1.0696
+       ],
+       "triangles": 7599,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "c3",
+     "seed": 3,
+     "score": 6,
+     "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy.",
+     "won": false
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old",
+   "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy."
   }
  },
  "summary": {
-  "atLeast8": 11,
+  "atLeast8": 14,
   "of": 50,
   "below": [
    {
@@ -1005,32 +1877,17 @@
    {
     "id": "gen3d-picnic-table",
     "score": 6,
-    "reason": "Good chunky table, but visible hole torn in tabletop."
+    "reason": "picnic table: Recognisable, but noisy warped wood surfaces look scan-like."
    },
    {
     "id": "gen3d-poppy-flower",
     "score": 5,
-    "reason": "Very thin stem, flat ragged bloom; weak silhouette."
+    "reason": "poppy flower: Bright, readable poppy; thin crumpled petals, spindly stem."
    },
    {
     "id": "gen3d-sunflower",
     "score": 7,
     "reason": "Bright readable sunflower; spiky petals somewhat noisy."
-   },
-   {
-    "id": "gen3d-willow-tree",
-    "score": 5,
-    "reason": "Messy shard-like foliage, noisy silhouette, not chunky toy look."
-   },
-   {
-    "id": "gen3d-wooden-gate",
-    "score": 7,
-    "reason": "Chunky toy-like gate; slightly lumpy, warped rails."
-   },
-   {
-    "id": "gen3d-windmill",
-    "score": 4,
-    "reason": "Melted ragged body, thin noisy sails, scan-like texture."
    },
    {
     "id": "gen3d-wooden-stile",
@@ -1039,18 +1896,18 @@
    },
    {
     "id": "gen3d-river-boulder",
-    "score": 7,
-    "reason": "Clean chunky facets and readable silhouette; pale colouring feels slightly bland."
+    "score": 6,
+    "reason": "mossy boulder: Chunky faceted rock, toy-like; moss patches small and slightly sparse."
    },
    {
     "id": "gen3d-rock-pillar",
-    "score": 7,
-    "reason": "Readable stacked stone pillar with tactile chunky forms, but muted colours and uneven detailing."
+    "score": 6,
+    "reason": "brick pillar: Chunky stacked bricks, nice colour; slightly lumpy, uneven stacking."
    },
    {
     "id": "gen3d-basalt-column-rock",
-    "score": 4,
-    "reason": "Nearly black shading obscures facets and makes the chunky silhouette visually uninformative."
+    "score": 3,
+    "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy."
    },
    {
     "id": "gen3d-street-trash-can",
