@@ -42,15 +42,15 @@ describe('cc0-veg (P57 T8r item 4)', () => {
     expect(matchFiles(queryFor('olive tree'), models)).toEqual([]);
   });
 
-  it('targets top-50 vegetation not yet replaced (by T8 or by this script) and kit vegetation the catalog has below 6', () => {
+  it('targets top-50 vegetation not yet replaced (by T8 at 8+ or by this script) and kit vegetation the catalog has below 6', () => {
     const asset = (assetId: string, tag: string) => ({ assetId, tags: [tag], provenance: { license: 'LicenseRef-Worldsmith-Generated' } });
-    const catalog = { assets: [asset('gen3d-a-tree', 'apple tree'), asset('gen3d-bench', 'park bench'), asset('gen3d-done', 'willow tree'), asset('gen3d-cc0-done', 'poppy flower'), asset('gen3d-kit-bush', 'kit bush')] };
-    const judge = { models: { 'gen3d-a-tree': { score: 7 }, 'gen3d-bench': { score: 5 }, 'gen3d-done': { score: 5 }, 'gen3d-cc0-done': { score: 5 }, 'gen3d-kit-bush': { score: 4 } } };
-    const usage = { top300: ['gen3d-a-tree', 'gen3d-bench', 'gen3d-done', 'gen3d-cc0-done'] };
-    const report = { models: { 'gen3d-done': { result: 'replaced' } }, cc0Veg: { models: { 'gen3d-cc0-done': { result: 'replaced' } } } };
+    const catalog = { assets: [asset('gen3d-a-tree', 'apple tree'), asset('gen3d-bench', 'park bench'), asset('gen3d-done', 'willow tree'), asset('gen3d-done-7', 'street tree'), asset('gen3d-cc0-done', 'poppy flower'), asset('gen3d-kit-bush', 'kit bush')] };
+    const judge = { models: { 'gen3d-a-tree': { score: 7 }, 'gen3d-bench': { score: 5 }, 'gen3d-done': { score: 5 }, 'gen3d-done-7': { score: 8 }, 'gen3d-cc0-done': { score: 5 }, 'gen3d-kit-bush': { score: 4 } } };
+    const usage = { top300: ['gen3d-a-tree', 'gen3d-bench', 'gen3d-done', 'gen3d-done-7', 'gen3d-cc0-done'] };
+    const report = { models: { 'gen3d-done': { result: 'replaced', newScore: 8 }, 'gen3d-done-7': { result: 'replaced', newScore: 7 } }, cc0Veg: { models: { 'gen3d-cc0-done': { result: 'replaced' } } } };
     const kit = { missing: [{ id: 'gen3d-kit-bush', noun: 'kit bush' }, { id: 'gen3d-nowhere-fern', noun: 'fern' }, { id: 'gen3d-flower-cart', noun: 'flower cart' }] };
     expect(vegTargets({ judge, usage, catalog, report, kit })).toEqual({
-      targets: [{ id: 'gen3d-a-tree', noun: 'apple tree', from: 'top50' }, { id: 'gen3d-kit-bush', noun: 'kit bush', from: 'kit' }],
+      targets: [{ id: 'gen3d-a-tree', noun: 'apple tree', from: 'top50' }, { id: 'gen3d-done-7', noun: 'street tree', from: 'top50' }, { id: 'gen3d-kit-bush', noun: 'kit bush', from: 'kit' }],
       outside: [{ id: 'gen3d-nowhere-fern', noun: 'fern' }],
     });
   });

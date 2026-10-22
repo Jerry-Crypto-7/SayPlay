@@ -70,4 +70,10 @@ describe('top50 (P57 T8)', () => {
     ]);
     expect(summary.atLeast8).toBe(48);
   });
+
+  it('counts a CC0 vegetation swap (cc0Veg) by its score, not the old one', () => {
+    const summary = heroSummary(usage, judge, { 'gen-low': { result: 'replaced', newScore: 8, oldOpus: 4 } }, { 'cc0-low': { result: 'replaced', score: 8 }, 'orig-low': { result: 'kept-old', score: 9 } });
+    expect(summary.below.map((entry) => entry.id)).toEqual(['orig-low']);
+    expect(summary.atLeast8).toBe(49);
+  });
 });

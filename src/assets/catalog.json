@@ -35062,22 +35062,24 @@
     },
     {
       "assetId": "cc0-palm-tree",
-      "version": 1,
-      "hash": "a40f795eadc616c6d85d59c2ce3bf909ce3ab4e1265550098edd94eb0eda8bf7",
-      "label": "Palm tree (CC0, Quaternius)",
+      "version": 2,
+      "hash": "348f7510edea8f8fb39ab5e2056a7b46cd05699ea7328291964057bc39cde984",
+      "label": "Palm tree (CC0, Kenney)",
       "tags": [
         "palm tree",
         "palm-tree"
       ],
-      "style": "CC0 low-poly, colours baked into vertices",
+      "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-palm-tree.png",
       "provenance": {
-        "source": "scripts/assets/cc0/normalize.mjs",
-        "author": "Quaternius (quaternius.com)",
+        "source": "CC0 model Models/GLB format/palm-detailed-straight.glb from the kenney-pirate-kit pack by Kenney (www.kenney.nl) (https://kenney.nl/assets/pirate-kit), fitted into the box of the model it replaced by scripts/p57/cc0-veg.mjs and swapped in under the same id by scripts/p37d/promote-batch.mjs --replace (P57).",
+        "author": "Kenney (www.kenney.nl)",
         "license": "CC0-1.0",
-        "licenseEvidence": "public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt",
-        "importedAt": "2026-09-24",
-        "sourceHash": "6f39f145164c65ab92f4147d6ba7db2776c3f9c9cb675e53406738b5377fe84d"
+        "licenseEvidence": "public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt",
+        "importedAt": "2026-10-22",
+        "sourceHash": "12077e3e700800bb80b3bf9dbea213570687a674edf1d093a38edd99eccea31f",
+        "replacedAt": "2026-10-22",
+        "replacedFrom": "scripts/assets/cc0/normalize.mjs"
       },
       "units": "meters",
       "up": "+Y",
@@ -35089,14 +35091,14 @@
       ],
       "bounds": {
         "min": [
-          -1.43846,
+          -1.43847,
           0,
-          -1.3045
+          -1.30451
         ],
         "max": [
-          1.43846,
-          4.4714,
-          1.3045
+          1.43847,
+          4.47141,
+          1.30451
         ]
       },
       "stretchableAxes": [],
@@ -35104,21 +35106,21 @@
         {
           "level": 0,
           "path": "/assets/worldstream/cc0/cc0-palm-tree-lod0.glb",
-          "hash": "a40f795eadc616c6d85d59c2ce3bf909ce3ab4e1265550098edd94eb0eda8bf7",
-          "bytes": 141584,
-          "triangles": 1772,
-          "decodedGeometryBytes": 140232,
-          "decodedTextureBytes": 0,
+          "hash": "348f7510edea8f8fb39ab5e2056a7b46cd05699ea7328291964057bc39cde984",
+          "bytes": 34740,
+          "triangles": 482,
+          "decodedGeometryBytes": 19788,
+          "decodedTextureBytes": 1398102,
           "minScreenPixels": 160
         },
         {
           "level": 1,
           "path": "/assets/worldstream/cc0/cc0-palm-tree-lod1.glb",
-          "hash": "0d0f51e2fceaa2bfe65ea17144554a78c06d1ceabd2214fa62f4fae1fc0ac839",
-          "bytes": 141584,
-          "triangles": 886,
-          "decodedGeometryBytes": 140232,
-          "decodedTextureBytes": 0,
+          "hash": "d98fb804d23ddfc4a2ecb355d60facf732788b9ff889e1593b02b0d8e8938451",
+          "bytes": 30748,
+          "triangles": 344,
+          "decodedGeometryBytes": 15792,
+          "decodedTextureBytes": 1398102,
           "minScreenPixels": 0
         }
       ],
@@ -35127,7 +35129,7 @@
           "id": "material-0",
           "name": "material_0",
           "alphaMode": "OPAQUE",
-          "doubleSided": false
+          "doubleSided": true
         }
       ],
       "collision": [
@@ -35154,9 +35156,9 @@
           "id": "part-0",
           "node": "part_0",
           "pivot": [
-            -0.170881986618042,
-            0.023760000243782997,
-            -0.2296084761619568
+            0,
+            0,
+            0
           ],
           "sockets": []
         }
@@ -140743,23 +140745,23 @@
     },
     {
       "assetId": "gen3d-wildflower-patch",
-      "version": 2,
-      "hash": "a9dc2f4ba01a008d6479fb21b783eb34c520b5960e6f14bfebacf1ee4ad151b5",
-      "label": "wildflower patch (generated)",
+      "version": 3,
+      "hash": "3643a99b2a257ca933427e190e6257e3b2e1abbca87092b2770e009788c67a29",
+      "label": "wildflower patch (CC0, Kenney)",
       "tags": [
         "wildflower patch",
         "wildflowers",
         "wildflower meadow"
       ],
-      "style": "generated low-poly vertex colour",
+      "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch.png",
       "provenance": {
-        "source": "Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 3 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). Swapped in under the same id by scripts/p37d/promote-batch.mjs --replace (P57).",
-        "author": "Worldsmith project – generated by ops/gen3d",
-        "license": "LicenseRef-Worldsmith-Generated",
-        "licenseEvidence": "public/assets/worldstream/gen3d-p37d/PROVENANCE.md",
+        "source": "CC0 model Models/GLB format/flowers.glb from the kenney-platformer-kit pack by Kenney (www.kenney.nl) (https://kenney.nl/assets/platformer-kit), fitted into the box of the model it replaced by scripts/p57/cc0-veg.mjs and swapped in under the same id by scripts/p37d/promote-batch.mjs --replace (P57).",
+        "author": "Kenney (www.kenney.nl)",
+        "license": "CC0-1.0",
+        "licenseEvidence": "public/assets/worldstream/cc0/licenses/kenney-platformer-kit.txt",
         "importedAt": "2026-10-22",
-        "sourceHash": "569bc5d1f4c4c21efba95c3a1820c4b129550e35ff1e6ddea71093a282689220",
+        "sourceHash": "9ea789d49c20a92a7fbdd8aeef6597b3fb16526229b11bd5ff420b2fcc4a2cee",
         "replacedAt": "2026-10-22",
         "replacedFrom": "Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT)."
       },
@@ -140773,14 +140775,14 @@
       ],
       "bounds": {
         "min": [
-          -1.88619,
+          -1.88621,
           0,
-          -1.90873
+          -1.90875
         ],
         "max": [
-          1.88619,
-          0.9941,
-          1.90873
+          1.88621,
+          0.99411,
+          1.90875
         ]
       },
       "stretchableAxes": [],
@@ -140788,21 +140790,21 @@
         {
           "level": 0,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod0.glb",
-          "hash": "a9dc2f4ba01a008d6479fb21b783eb34c520b5960e6f14bfebacf1ee4ad151b5",
-          "bytes": 139544,
-          "triangles": 7158,
-          "decodedGeometryBytes": 138168,
-          "decodedTextureBytes": 0,
+          "hash": "3643a99b2a257ca933427e190e6257e3b2e1abbca87092b2770e009788c67a29",
+          "bytes": 30404,
+          "triangles": 264,
+          "decodedGeometryBytes": 13104,
+          "decodedTextureBytes": 1398102,
           "minScreenPixels": 160
         },
         {
           "level": 1,
           "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
-          "hash": "c2de0b7278ea1575d810eb6b90475607592df15c9a812cd27a6ea40349de5865",
-          "bytes": 43904,
-          "triangles": 2049,
-          "decodedGeometryBytes": 42534,
-          "decodedTextureBytes": 0,
+          "hash": "f5109d702070762a36098d6dab7b924cedcb8e7a2478e10623d0ac9c57ef219d",
+          "bytes": 25384,
+          "triangles": 132,
+          "decodedGeometryBytes": 8088,
+          "decodedTextureBytes": 1398102,
           "minScreenPixels": 0
         }
       ],
@@ -140838,9 +140840,9 @@
           "id": "part-0",
           "node": "part_0",
           "pivot": [
-            -0.000706791877746582,
-            -0.00002073825817205943,
-            -0.000022530555725097656
+            0,
+            0,
+            0
           ],
           "sockets": []
         }

@@ -6,7 +6,7 @@
  *   node scripts/p57/cc0-veg.mjs [--out D:/caches/p57/cc0-veg] [--only id,id]   najde, napasuje, oskóruje, odsoudí; repo nezmění
  *   node scripts/p57/cc0-veg.mjs --apply                                         navíc vymění vítěze a zapíše `cc0Veg` do top50.json
  *
- * Cíle: vegetace z `heroTargets` (top 50), která v `top50.json` ještě není `replaced`, a vegetace
+ * Cíle: vegetace z `heroTargets` (top 50), která v `top50.json` ještě není `replaced` se skóre ≥ 8, a vegetace
  * z `kit-missing.json`, jejíž id katalog má se skóre pod 6. Kandidáti podle názvu souboru
  * (`queryFor` + `matchFiles`) ze všech balíků v cache; každý soubor projde `cc0Refusal` (CC0-1.0
  * v `sources.json` i v přibaleném textu licence). Pak `normalizeModel` se stylem katalogu (paleta
@@ -26,7 +26,7 @@ import { modelTokensOf } from '../assets/cc0/tokens.mjs';
 import { DUEL_FLOOR, duelWins, runDuel } from './duel.mjs';
 import { CODEX_DAILY_CAP, COUNTER, mergeAttempts, sheetEntries, takeCodexCall } from './judge-library.mjs';
 import { dimsOf, fit, shuffleKey } from './regen.mjs';
-import { heroTargets } from './top50.mjs';
+import { HERO_PASS, heroSummary, heroTargets } from './top50.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const REPORT = path.join(ROOT, 'evals/play/p57/top50.json');
@@ -113,7 +113,8 @@ export function matchFiles(query, models, skip = new Set()) {
  */
 export function vegTargets({ judge, usage, catalog, report = {}, kit = { missing: [] } }) {
   const byId = new Map(catalog.assets.map((asset) => [asset.assetId, asset]));
-  const done = (id) => report.models?.[id]?.result === 'replaced' || report.cc0Veg?.models?.[id]?.result === 'replaced';
+  // Výměna z generátoru pod 8 id neuzavře: CC0 kandidát se utká s ní.
+  const done = (id) => (report.models?.[id]?.result === 'replaced' && report.models[id].newScore >= HERO_PASS) || report.cc0Veg?.models?.[id]?.result === 'replaced';
   const targets = heroTargets(judge, usage, catalog).filter((id) => isVegetation(byId.get(id).tags[0]) && !done(id))
     .map((id) => ({ id, noun: byId.get(id).tags[0], from: 'top50' }));
   const outside = [];
@@ -366,6 +367,7 @@ async function main() {
   if (apply) {
     const fresh = JSON.parse(readFileSync(REPORT, 'utf8'));
     fresh.cc0Veg = section;
+    fresh.summary = heroSummary(usage, judge, fresh.models, section.models);
     writeFileSync(REPORT, `${JSON.stringify(fresh, null, 1)}\n`);
   }
   for (const item of items) {

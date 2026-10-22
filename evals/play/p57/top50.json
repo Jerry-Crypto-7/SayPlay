@@ -2990,7 +2990,7 @@
   }
  },
  "summary": {
-  "atLeast8": 14,
+  "atLeast8": 15,
   "of": 50,
   "below": [
    {
@@ -3149,11 +3149,6 @@
     "reason": "Recognisable signal, but crumpled housing and irregular lenses undermine clean toy styling."
    },
    {
-    "id": "cc0-palm-tree",
-    "score": 7,
-    "reason": "Readable stylised palm with clean colours, though thin trunk and pointed fronds feel delicate."
-   },
-   {
     "id": "gen3d-sandstone-rock",
     "score": 7,
     "reason": "Chunky clean low-poly rock, solid colour; slightly plain blob shape."
@@ -3175,5 +3170,223 @@
    }
   ]
  },
- "t8r": "From 22 Oct (T8r, batches 4-5 and a re-duel of batches 1-3): prompts a, b, c, c with the old box proportions in the prompt; a round wins when its pick scores >= 6 AND beats the current model in a blind pair duel (one sheet, order drawn by pure-rand) with both judges - Opus and Codex within the daily cap, else Opus twice with the order swapped. 8+ stays the measured goal in summary, not the swap rule."
+ "t8r": "From 22 Oct (T8r, batches 4-5 and a re-duel of batches 1-3): prompts a, b, c, c with the old box proportions in the prompt; a round wins when its pick scores >= 6 AND beats the current model in a blind pair duel (one sheet, order drawn by pure-rand) with both judges - Opus and Codex within the daily cap, else Opus twice with the order swapped. 8+ stays the measured goal in summary, not the swap rule.",
+ "cc0Veg": {
+  "about": "P57 T8r item 4 (owner decision 22 Oct): vegetation the 3D generator draws badly, taken from CC0 packs already on disk instead. Targets: vegetation among the top-50 targets not yet replaced, plus kit-missing vegetation the catalog has below 6. Candidates by file name from packs whose CC0-1.0 licence is declared in scripts/assets/cc0/sources.json and stated in the licence text shipped in the pack; styled like the other CC0 catalog models, fitted into the old box (scripts/p57/regen.mjs fit) and checked against the replace rules (bounds +-10 %, LOD1 at most the old one). Opus 5.5 scores them blind 1-10 on 3x3 grids; the best at >= 6 duels the current model blind (scripts/p57/duel.mjs). replaced = won both duel votes and swapped in by promote-batch replaceModels (origin cc0, profile hero). No CC0 match = the id stays with the generator.",
+  "updatedAt": "2026-10-22T14:58:13.588Z",
+  "models": {
+   "cc0-palm-tree": {
+    "noun": "palm tree",
+    "from": "top50",
+    "query": "palm",
+    "candidates": 13,
+    "rejectedFit": 3,
+    "pack": "kenney-pirate-kit",
+    "file": "Models/GLB format/palm-detailed-straight.glb",
+    "score": 8,
+    "judgeName": "palm tree",
+    "duel": [
+     {
+      "judge": "claude",
+      "vote": "new",
+      "reason": "Chunky, bright, toy-like palm with clean silhouette; 2 is thin, realistic, has grey leaves."
+     },
+     {
+      "judge": "codex",
+      "vote": "new",
+      "reason": "Chunky trunk, bright solid colours and sturdy fronds better suit the tactile Toy Box style."
+     }
+    ],
+    "result": "replaced"
+   },
+   "cc0-bush": {
+    "noun": "bush",
+    "from": "top50",
+    "query": "bush",
+    "candidates": 17,
+    "rejectedFit": 6,
+    "pack": "quaternius-ultimate-nature",
+    "file": "OBJ/BushBerries_2.glb",
+    "score": 8,
+    "judgeName": "berry bush",
+    "duel": [
+     {
+      "judge": "claude",
+      "vote": "new",
+      "reason": "Berries make bush recognisable and toy-like; minor jagged edges, but 1 is generic."
+     },
+     {
+      "judge": "codex",
+      "vote": "old",
+      "reason": "Cleaner, cohesive silhouette and chunky toy-like form; model 2 has jagged layers and distracting protrusions."
+     }
+    ],
+    "result": "kept-old"
+   },
+   "cc0-grass": {
+    "noun": "grass",
+    "from": "top50",
+    "query": "grass",
+    "candidates": 15,
+    "rejectedFit": 13,
+    "pack": null,
+    "file": null,
+    "score": null,
+    "judgeName": null,
+    "duel": null,
+    "result": "no-fit"
+   },
+   "gen3d-tall-grass-tuft": {
+    "noun": "tall grass tuft",
+    "from": "top50",
+    "query": "grass",
+    "candidates": 15,
+    "rejectedFit": 12,
+    "pack": "quaternius-ultimate-nature",
+    "file": "OBJ/Grass.glb",
+    "score": 5,
+    "judgeName": "Tall grass",
+    "duel": null,
+    "result": "below-6"
+   },
+   "gen3d-wildflower-patch": {
+    "noun": "wildflower patch",
+    "from": "top50",
+    "query": "flower",
+    "candidates": 18,
+    "rejectedFit": 16,
+    "pack": "kenney-platformer-kit",
+    "file": "Models/GLB format/flowers.glb",
+    "score": 6,
+    "judgeName": "Blue flowers",
+    "duel": [
+     {
+      "judge": "claude",
+      "vote": "new",
+      "reason": "Chunky, clean toy-like flowers; model 2's spiky grass is noisy and cluttered."
+     },
+     {
+      "judge": "claude",
+      "vote": "new",
+      "reason": "Chunky, clean, toy-like flowers; model 1's spiky grass looks noisy and cluttered."
+     }
+    ],
+    "result": "replaced"
+   },
+   "cc0-birch-tree": {
+    "noun": "birch tree",
+    "from": "top50",
+    "query": "birch",
+    "candidates": 10,
+    "rejectedFit": 9,
+    "pack": "quaternius-ultimate-nature",
+    "file": "OBJ/BirchTree_1.glb",
+    "score": 5,
+    "judgeName": "Birch tree",
+    "duel": null,
+    "result": "below-6"
+   },
+   "gen3d-buttercup": {
+    "noun": "buttercup",
+    "from": "top50",
+    "query": "buttercup",
+    "candidates": 3,
+    "rejectedFit": 1,
+    "pack": "kenney-nature-kit",
+    "file": "Models/GLTF format/flower_yellowA.glb",
+    "score": 3,
+    "judgeName": "crystal lamp",
+    "duel": null,
+    "result": "below-6"
+   },
+   "gen3d-olive-tree": {
+    "noun": "olive tree",
+    "from": "top50",
+    "query": null,
+    "candidates": 0,
+    "rejectedFit": 0,
+    "pack": null,
+    "file": null,
+    "score": null,
+    "judgeName": null,
+    "duel": null,
+    "result": "no-cc0-match"
+   },
+   "gen3d-poppy-flower": {
+    "noun": "poppy flower",
+    "from": "top50",
+    "query": "poppy",
+    "candidates": 3,
+    "rejectedFit": 2,
+    "pack": "kenney-nature-kit",
+    "file": "Models/GLTF format/flower_redA.glb",
+    "score": 6,
+    "judgeName": "Tulip flower",
+    "duel": [
+     {
+      "judge": "claude",
+      "vote": "old",
+      "reason": "Clearly a flower, bright solid colours; model 2 has a pale, glassy, odd stem."
+     },
+     {
+      "judge": "claude",
+      "vote": "old",
+      "reason": "Clearly a flower, bright solid colours, intact; model 1's pale icy stem looks glassy."
+     }
+    ],
+    "result": "kept-old"
+   },
+   "gen3d-sunflower": {
+    "noun": "sunflower",
+    "from": "top50",
+    "query": null,
+    "candidates": 0,
+    "rejectedFit": 0,
+    "pack": null,
+    "file": null,
+    "score": null,
+    "judgeName": null,
+    "duel": null,
+    "result": "no-cc0-match"
+   },
+   "gen3d-street-tree": {
+    "noun": "street tree",
+    "from": "top50",
+    "query": "tree",
+    "candidates": 52,
+    "rejectedFit": 28,
+    "pack": "kenney-holiday-kit",
+    "file": "Models/GLB format/tree.glb",
+    "score": 8,
+    "judgeName": "Pine tree",
+    "duel": [
+     {
+      "judge": "claude",
+      "vote": "old",
+      "reason": "Bright, chunky potted tree with clear trunk, canopy and silhouette; pine's trunk hidden."
+     },
+     {
+      "judge": "claude",
+      "vote": "old",
+      "reason": "Bright, chunky potted tree with a clean silhouette; pine's colours are muted and trunk hidden."
+     }
+    ],
+    "result": "kept-old"
+   },
+   "gen3d-thorn-bush": {
+    "noun": "thorn bush",
+    "from": "top50",
+    "query": null,
+    "candidates": 0,
+    "rejectedFit": 0,
+    "pack": null,
+    "file": null,
+    "score": null,
+    "judgeName": null,
+    "duel": null,
+    "result": "no-cc0-match"
+   }
+  },
+  "kitOutside": []
+ }
 }

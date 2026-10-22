@@ -15309,45 +15309,45 @@
       "name": "public/assets/worldstream/cc0/cc0-palm-tree-lod0.glb",
       "kind": "asset",
       "firstParty": false,
-      "reason": "CC0 model \"palm tree\" from quaternius-ultimate-nature, normalized and recoloured by scripts/assets/cc0/normalize.mjs.",
-      "source": "https://quaternius.com/packs/ultimatenature.html",
-      "authorOrProvider": "Quaternius (quaternius.com)",
+      "reason": "CC0 model \"palm tree\" (Models/GLB format/palm-detailed-straight.glb) from kenney-pirate-kit, fitted into the box of the model it replaced under the same id (P57) and normalized by scripts/assets/cc0/normalize.mjs.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
       "license": "CC0-1.0",
       "requiredNotices": [
-        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/gen3d-p37d/PROVENANCE.md"
       ],
-      "attribution": "palm tree (OBJ/PalmTree_1.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0",
-      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "attribution": "palm tree (Models/GLB format/palm-detailed-straight.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; checkReplaced in scripts/p37d/promote-batch.mjs re-checks it.",
       "scope": "prod"
     },
     {
       "name": "public/assets/worldstream/cc0/cc0-palm-tree-lod1.glb",
       "kind": "asset",
       "firstParty": false,
-      "reason": "CC0 model \"palm tree\" from quaternius-ultimate-nature, normalized and recoloured by scripts/assets/cc0/normalize.mjs.",
-      "source": "https://quaternius.com/packs/ultimatenature.html",
-      "authorOrProvider": "Quaternius (quaternius.com)",
+      "reason": "CC0 model \"palm tree\" (Models/GLB format/palm-detailed-straight.glb) from kenney-pirate-kit, fitted into the box of the model it replaced under the same id (P57) and normalized by scripts/assets/cc0/normalize.mjs.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
       "license": "CC0-1.0",
       "requiredNotices": [
-        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/gen3d-p37d/PROVENANCE.md"
       ],
-      "attribution": "palm tree (OBJ/PalmTree_1.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0",
-      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "attribution": "palm tree (Models/GLB format/palm-detailed-straight.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; checkReplaced in scripts/p37d/promote-batch.mjs re-checks it.",
       "scope": "prod"
     },
     {
       "name": "public/assets/worldstream/cc0/cc0-palm-tree.png",
       "kind": "asset",
       "firstParty": false,
-      "reason": "CC0 model \"palm tree\" from quaternius-ultimate-nature, normalized and recoloured by scripts/assets/cc0/normalize.mjs; this file is a preview render of it.",
-      "source": "https://quaternius.com/packs/ultimatenature.html",
-      "authorOrProvider": "Quaternius (quaternius.com)",
+      "reason": "CC0 model \"palm tree\" (Models/GLB format/palm-detailed-straight.glb) from kenney-pirate-kit, fitted into the box of the model it replaced under the same id (P57) and normalized by scripts/assets/cc0/normalize.mjs; this file is a preview render of it.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
       "license": "CC0-1.0",
       "requiredNotices": [
-        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/gen3d-p37d/PROVENANCE.md"
       ],
-      "attribution": "palm tree (OBJ/PalmTree_1.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0",
-      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "attribution": "palm tree (Models/GLB format/palm-detailed-straight.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; checkReplaced in scripts/p37d/promote-batch.mjs re-checks it.",
       "scope": "prod"
     },
     {
@@ -71333,46 +71333,46 @@
     {
       "name": "public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod0.glb",
       "kind": "asset",
-      "firstParty": true,
-      "reason": "Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.",
-      "source": "ops/gen3d; scripts/p37d/promote-batch.mjs",
-      "authorOrProvider": "Worldsmith project – generated by ops/gen3d",
-      "license": "LicenseRef-Worldsmith-Generated",
+      "firstParty": false,
+      "reason": "CC0 model \"wildflower patch\" (Models/GLB format/flowers.glb) from kenney-platformer-kit, fitted into the box of the model it replaced under the same id (P57) and normalized by scripts/assets/cc0/normalize.mjs.",
+      "source": "https://kenney.nl/assets/platformer-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
       "requiredNotices": [
-        "No third-party asset notice; generated by the project's own pipeline. See public/assets/worldstream/gen3d-p37d/PROVENANCE.md."
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/gen3d-p37d/PROVENANCE.md"
       ],
-      "attribution": "Worldsmith generated models P57, 2026-10.",
-      "reviewNote": "First-party output of local generation models whose licences are registered in disclosure.json (tool scope); no downloaded model or texture.",
+      "attribution": "wildflower patch (Models/GLB format/flowers.glb) from kenney-platformer-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-platformer-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; checkReplaced in scripts/p37d/promote-batch.mjs re-checks it.",
       "scope": "prod"
     },
     {
       "name": "public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
       "kind": "asset",
-      "firstParty": true,
-      "reason": "Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.",
-      "source": "ops/gen3d; scripts/p37d/promote-batch.mjs",
-      "authorOrProvider": "Worldsmith project – generated by ops/gen3d",
-      "license": "LicenseRef-Worldsmith-Generated",
+      "firstParty": false,
+      "reason": "CC0 model \"wildflower patch\" (Models/GLB format/flowers.glb) from kenney-platformer-kit, fitted into the box of the model it replaced under the same id (P57) and normalized by scripts/assets/cc0/normalize.mjs.",
+      "source": "https://kenney.nl/assets/platformer-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
       "requiredNotices": [
-        "No third-party asset notice; generated by the project's own pipeline. See public/assets/worldstream/gen3d-p37d/PROVENANCE.md."
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/gen3d-p37d/PROVENANCE.md"
       ],
-      "attribution": "Worldsmith generated models P57, 2026-10.",
-      "reviewNote": "First-party output of local generation models whose licences are registered in disclosure.json (tool scope); no downloaded model or texture.",
+      "attribution": "wildflower patch (Models/GLB format/flowers.glb) from kenney-platformer-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-platformer-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; checkReplaced in scripts/p37d/promote-batch.mjs re-checks it.",
       "scope": "prod"
     },
     {
       "name": "public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch.png",
       "kind": "asset",
-      "firstParty": true,
-      "reason": "Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).",
-      "source": "ops/gen3d; scripts/p37d/promote-batch.mjs",
-      "authorOrProvider": "Worldsmith project – generated by ops/gen3d",
-      "license": "LicenseRef-Worldsmith-Generated",
+      "firstParty": false,
+      "reason": "CC0 model \"wildflower patch\" (Models/GLB format/flowers.glb) from kenney-platformer-kit, fitted into the box of the model it replaced under the same id (P57) and normalized by scripts/assets/cc0/normalize.mjs; this file is a preview render of it.",
+      "source": "https://kenney.nl/assets/platformer-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
       "requiredNotices": [
-        "No third-party asset notice; generated by the project's own pipeline. See public/assets/worldstream/gen3d-p37d/PROVENANCE.md."
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/gen3d-p37d/PROVENANCE.md"
       ],
-      "attribution": "Worldsmith generated models P57, 2026-10.",
-      "reviewNote": "First-party output of local generation models whose licences are registered in disclosure.json (tool scope); no downloaded model or texture.",
+      "attribution": "wildflower patch (Models/GLB format/flowers.glb) from kenney-platformer-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-platformer-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; checkReplaced in scripts/p37d/promote-batch.mjs re-checks it.",
       "scope": "prod"
     },
     {

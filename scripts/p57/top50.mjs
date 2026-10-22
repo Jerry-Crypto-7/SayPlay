@@ -60,14 +60,14 @@ export function shapeHint([x, y, z]) {
 /** Kola, která starým pravidlem (8+) prohrála, ale na souboj mají (skóre ≥ 6), od nejlepšího. */
 export const reduelRounds = (item) => item.rounds.filter((done) => !done.won && !done.duel && done.glb && done.score >= DUEL_FLOOR).sort((a, b) => b.score - a.score);
 
-/** Souhrn přes celou top 50: kolik má skóre ≥ 8 a kdo zůstal pod, se skóre a důvodem. */
-export function heroSummary(usage, judge, models) {
+/** Souhrn přes celou top 50: kolik má skóre ≥ 8 a kdo zůstal pod, se skóre a důvodem. `veg` = `cc0Veg.models` (výměna z CC0 balíku). */
+export function heroSummary(usage, judge, models, veg = {}) {
   const below = [];
   let atLeast8 = 0;
   for (const id of usage.top300.slice(0, 50)) {
     const model = models[id];
     const old = judge.models[id];
-    const score = model?.result === 'replaced' ? model.newScore : (model?.oldOpus ?? old?.score ?? null);
+    const score = veg[id]?.result === 'replaced' ? veg[id].score : model?.result === 'replaced' ? model.newScore : (model?.oldOpus ?? old?.score ?? null);
     if (score !== null && score >= HERO_PASS) atLeast8++;
     else below.push({ id, score, reason: model?.reason ?? (old?.claude ?? old?.codex)?.reason ?? 'unjudged' });
   }
@@ -93,6 +93,9 @@ async function main() {
   const judge = read('evals/play/p57/judge.json');
   const usage = read('evals/play/p57/usage.json');
   const catalog = read('src/assets/catalog.json');
+  // Id vyměněná z CC0 balíku (T8r bod 4, `cc0-veg.mjs`) se negenerují ani nesoudí.
+  const cc0Swapped = new Set(Object.entries((existsSync(REPORT) ? JSON.parse(readFileSync(REPORT, 'utf8')) : {}).cc0Veg?.models ?? {})
+    .filter(([, model]) => model.result === 'replaced').map(([id]) => id));
   const byId = new Map(catalog.assets.map((asset) => [asset.assetId, asset]));
   const leafOf = new Map(sheetEntries(usage).filter((entry) => entry.leaf).map((entry) => [entry.id, entry.leaf]));
   const out = path.resolve(flag('--out', 'D:/caches/p57/top50'), `batch-${batchNo}`);
@@ -138,7 +141,7 @@ async function main() {
   });
 
   if (round !== null) {
-    const todo = Object.values(state.models).filter((item) => !item.rounds.some((done) => done.won || done.round === round));
+    const todo = Object.values(state.models).filter((item) => !cc0Swapped.has(item.id) && !item.rounds.some((done) => done.won || done.round === round));
     const fixes = flag('--fixes') ? JSON.parse(readFileSync(flag('--fixes'), 'utf8')) : {};
     const dir = path.join(out, `round-${round}`);
     mkdirSync(dir, { recursive: true });
@@ -215,7 +218,7 @@ async function main() {
   }
 
   if (args.includes('--reduel')) {
-    const open = Object.values(state.models).filter((item) => !item.rounds.some((done) => done.won));
+    const open = Object.values(state.models).filter((item) => !cc0Swapped.has(item.id) && !item.rounds.some((done) => done.won));
     for (const item of open) {
       for (const done of reduelRounds(item)) {
         done.duel = await duel(item, done.glb, `r${done.round}`);
@@ -250,7 +253,7 @@ async function main() {
   const { replaced, skipped } = entries.length > 0 ? await replaceModels(batch, { profile: 'hero' }) : { replaced: [], skipped: [] };
   const refusedOf = new Map(skipped.map((entry) => [entry.id, entry.reason]));
 
-  for (const item of Object.values(state.models)) {
+  for (const item of Object.values(state.models).filter((item) => !cc0Swapped.has(item.id))) {
     const refused = refusedOf.get(item.id);
     const attempts = item.rounds.flatMap((done) => done.attempts);
     const best = item.rounds.reduce((top, done) => (done.score !== null && (top === null || done.score > top.score) ? done : top), null);
@@ -265,9 +268,9 @@ async function main() {
   }
   const boundsRejected = ids.flatMap((id) => state.models[id].rounds.flatMap((done) => done.attempts)).filter((attempt) => attempt.fit && attempt.fit !== 'ok').length;
   report.batches[batchNo] = { ids, startedAt: state.startedAt, finishedAt: new Date().toISOString(), boundsRejected };
-  report.summary = heroSummary(usage, judge, report.models);
+  report.summary = heroSummary(usage, judge, report.models, report.cc0Veg?.models);
   writeFileSync(REPORT, `${JSON.stringify(report, null, 1)}\n`);
-  const count = (result) => ids.filter((id) => report.models[id].result === result);
+  const count = (result) => ids.filter((id) => (report.models[id]?.result ?? report.cc0Veg?.models[id]?.result) === result);
   console.log(`top50 batch ${batchNo}: replaced ${count('replaced').length}, kept-old ${count('kept-old').length}, rejected-bounds ${count('rejected-bounds').length}; top 50 at 8+: ${report.summary.atLeast8}/50; replaced ${count('replaced').join(' ')}`);
 }
 

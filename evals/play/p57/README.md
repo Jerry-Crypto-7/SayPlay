@@ -64,3 +64,21 @@ Dávky 1–3 starým pravidlem (výměna jen se skóre ≥ 8 nad starým): vymě
 ### Oprava sítě místo zahození (T8r, bod 1) – nezapojena
 
 Změřeno bez grafiky na 43 kandidátech dávek 1–3, které padly na bráně „inconsistent face winding“ (`D:/caches/p57/t8r-repair/report.json`): trimesh `merge_vertices` + `fix_winding` + `fix_normals` jich bránou pustí 36/43, ale do starého boxu se vejde jen 18 a Opus je na týchž slepých mřížkách 3×3 hodnotí průměrně 2,56 proti 5,79 u neodmítnutých kandidátů týchž id (o 3,0 bodu hůř, nejhůř −5; žádné z 9 srovnatelných id do 1 bodu, žádný opravený 8+). Příčina: ~32 % hran odmítnutých sítí sdílí víc než dvě plochy (u zdravých ~4 %) – brána zachytává skutečně roztrhanou síť, ne jen otočené plochy. Pravidlo plánu (≥ 1/3 projde **a** soud nespadne o víc než 1 bod) nesplněno → brána zůstává beze změny.
+
+### Výměna soubojem se starým (T8r, bod 3) – přesouzení dávek 1–3
+
+Kandidáti dávek 1–3 se skóre ≥ 6, které staré pravidlo (8+) zahodilo, šli bez grafiky do slepého souboje se současným modelem (22. 10. 14:42–14:52 UTC, `222fbbd3`, `3c040785`, `33466c81`): vyhrálo 11 z 25 id (dávka 1: 3/9, dávka 2: 3/7, dávka 3: 5/9). Dávky 1–3 mají teď 16 výměn z 30 (dřív 5). Průměr vyměněných: staré 5,6 → nové 7,2. Jeden pokles pod 8: uliční strom 8 → 7, nový ale u obou soudců vyhrál souboj (8+ je měřený cíl, ne brána výměny). Top 50 na 8+: 15/50.
+
+### Vegetace z CC0 balíků (T8r, bod 4)
+
+`scripts/p57/cc0-veg.mjs`: 13 cílů (vegetace top 50 bez výměny na 8+, vegetace z `kit-missing.json` pod 6 – ta žádná), kandidáti podle názvu souboru z CC0 balíků na disku, licence CC0-1.0 ověřená v `sources.json` i v textu licence balíku. Opus je slepě oznámkoval na mřížkách 3×3, nejlepší se skóre ≥ 6 šel do souboje se současným modelem (Codex jen do 15 volání denně, pak Opus dvakrát s prohozeným pořadím).
+
+| Výsledek | Id |
+|---|---|
+| vyměněno | palma (Kenney pirate kit, 8, souboj 2:0), luční kvítí (Kenney platformer kit, 6, porazilo i generovanou náhradu z přesouzení) |
+| souboj prohrál | keř (8), vlčí mák (6), uliční strom (smrk z Kenney holiday kit 8 proti generovanému 7 – oba soudci pro generovaný) |
+| pod 6 | trs vysoké trávy (5), pryskyřník (3), bříza (5) |
+| nevejde se do starého boxu | tráva |
+| CC0 nemá | oliva, slunečnice, trnitý keř – zůstávají generátoru |
+
+Výměna z generátoru pod 8 vegetaci neuzavírá: CC0 kandidát se utká s ní (`vegTargets`). Id vyměněná z CC0 dávky 4–5 negenerují a souhrn 8+ je počítá skóre CC0 (`heroSummary`). Top 50 na 8+ po T8r: 15/50.

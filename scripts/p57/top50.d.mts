@@ -13,4 +13,5 @@ export declare function heroSummary(
   usage: { top300: string[] },
   judge: { models: Record<string, { score: number | null; claude?: { reason?: string }; codex?: { reason?: string } }> },
   models: Record<string, { result: string; newScore: number | null; oldOpus: number | null; reason?: string }>,
+  veg?: Record<string, { result: string; score: number | null }>,
 ): { atLeast8: number; of: number; below: { id: string; score: number | null; reason: string }[] };
