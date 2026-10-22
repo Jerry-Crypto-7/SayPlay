@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "aefa850ab1960d3cd7699d991586b03704efff8d1b6ec6ec95b643f5a52d1376",
+ "catalogHash": "8af67e0b89ca7ebe0de89b963a0fbe061d5822738d573bfd9928149f50bd0de8",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},

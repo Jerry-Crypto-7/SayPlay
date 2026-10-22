@@ -104,6 +104,32 @@
    ],
    "startedAt": "2026-10-22T00:18:01.648Z",
    "finishedAt": "2026-10-22T01:42:10.501Z"
+  },
+  "5": {
+   "ids": [
+    "gen3d-sea-anemone",
+    "gen3d-sea-sponge",
+    "gen3d-shopping-basket",
+    "cc0-water",
+    "gen3d-brown-owl",
+    "gen3d-cheese",
+    "gen3d-highway-sign",
+    "gen3d-magma-crystal",
+    "gen3d-magma-rock",
+    "gen3d-mine-cart",
+    "gen3d-snowy-log-cabin",
+    "gen3d-squirrel",
+    "gen3d-steam-vent",
+    "gen3d-volcanic-rock",
+    "cc0-donut",
+    "cc0-lily-pad",
+    "cc0-pigeon",
+    "cc0-pillow",
+    "cc0-pipe-bump",
+    "cc0-ship-ghost"
+   ],
+   "startedAt": "2026-10-22T01:43:53.790Z",
+   "finishedAt": "2026-10-22T04:35:11.456Z"
   }
  },
  "models": {
@@ -2787,6 +2813,589 @@
    "oldScore": 4,
    "oldJudge": "claude",
    "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-sea-anemone": {
+   "noun": "sea anemone",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9435,
+      0.9435,
+      0.9435
+     ],
+     "triangles": 3739,
+     "dims": [
+      0.8219906668072896,
+      0.9434981309244748,
+      0.8606992361546126
+     ],
+     "score": 4,
+     "reason": "coral on rock: Blobby, lumpy coral with noisy scan-like rock base."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-sea-sponge": {
+   "noun": "sea sponge",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0866,
+      1.0866,
+      1.0866
+     ],
+     "triangles": 3718,
+     "dims": [
+      1.2548909036023166,
+      1.0744386358963118,
+      1.2672786182679283
+     ],
+     "score": 3,
+     "reason": "Crown/fire pit: Noisy jagged orange blob with spikes; ambiguous object."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-shopping-basket": {
+   "noun": "shopping basket",
+   "oldScore": 2,
+   "oldJudge": "claude",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "TimeoutExpired: Command '['C:/Program Files/Blender Foundation/Blender 5.1/blender.exe', '--background', '--factory-startup', '--python', 'D:\\\\claude\\\\Hackaton\\\\.claude\\\\worktrees\\\\P57A-modely-a-svety-plan-2026-10-21\\\\ops\\\\gen3d\\\\preview.py', '--', 'D:\\\\caches\\\\p57\\\\regen\\\\batch-5\\\\round-1\\\\cache\\\\shopping-basket\\\\shopping-basket-lod0.glb', 'D:\\\\caches\\\\p57\\\\regen\\\\batch-5\\\\round-1\\\\cache\\\\shopping-basket\\\\shopping-basket.png']' timed out after 180 seconds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "ComfyError: prompt a89f8a52-ccc3-4d1c-b75e-8b14ea0e9472 did not finish in 600 s"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "cc0-water": {
+   "noun": "water",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "ComfyError: prompt 2e9c6023-3f24-4016-99fa-54af46f218eb did not finish in 600 s"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-brown-owl": {
+   "noun": "brown owl",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-cheese": {
+   "noun": "cheese",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.2448,
+      0.9958,
+      1.2466
+     ],
+     "triangles": 3865,
+     "dims": [
+      2.00588,
+      0.9957399675081882,
+      2.0088
+     ],
+     "score": 7,
+     "reason": "Cheese wheel: Chunky, bright and readable; holes are a bit shallow and uneven."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-highway-sign": {
+   "noun": "highway sign",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0937,
+      1.0937,
+      1.0937
+     ],
+     "triangles": 3653,
+     "dims": [
+      0.8836623916593482,
+      1.0929359154874345,
+      0.3453381354309967
+     ],
+     "score": 6,
+     "reason": "Road sign: Clear sign shape, but streaky shading and warped sign face."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-magma-crystal": {
+   "noun": "magma crystal",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-magma-rock": {
+   "noun": "magma rock",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-mine-cart": {
+   "noun": "mine cart",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-snowy-log-cabin": {
+   "noun": "snowy log cabin",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9196,
+      0.9196,
+      0.9196
+     ],
+     "triangles": 3393,
+     "dims": [
+      1.083379680886836,
+      0.9177912611277967,
+      1.0777787465359876
+     ],
+     "score": 4,
+     "reason": "house: Chrome-crumpled roof and noisy walls, off-style."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-squirrel": {
+   "noun": "squirrel",
+   "oldScore": 2,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-steam-vent": {
+   "noun": "steam vent",
+   "oldScore": 5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9211,
+      0.9211,
+      0.9211
+     ],
+     "triangles": 3848,
+     "dims": [
+      0.98761900787052,
+      0.918470498783643,
+      0.9963374697520518
+     ],
+     "score": 5,
+     "reason": "erupting volcano: Readable volcano, but noisy chrome smoke plume and muddy texture."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.8212,
+      1.0088,
+      0.8572
+     ],
+     "triangles": 3895,
+     "dims": [
+      0.9132799999999999,
+      0.99824,
+      0.91672
+     ],
+     "score": 5,
+     "reason": "Volcano: Readable volcano, but noisy dark faceted surface and odd smoke."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-volcanic-rock": {
+   "noun": "volcanic rock",
+   "oldScore": 5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "ComfyError: prompt cddb46b4-b9f9-4961-a78a-7cf294247cd4 did not finish in 600 s"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "cc0-donut": {
+   "noun": "donut",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "cc0-lily-pad": {
+   "noun": "lily pad",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.2269,
+      0.2269,
+      0.2269
+     ],
+     "triangles": 316,
+     "dims": [
+      1.1616180881728635,
+      0.22481058916777452,
+      1.1701832429296846
+     ],
+     "score": 7,
+     "reason": "Lily pad: Clean toy-like lily pad; small flower and faceted shading."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "cc0-pigeon": {
+   "noun": "pigeon",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      2.0083,
+      1.8023,
+      2.2096
+     ],
+     "triangles": 1770,
+     "dims": [
+      2.34908,
+      1.80234,
+      2.01166
+     ],
+     "score": 2,
+     "reason": "bird: Torn grey shards, loose spikes; unreadable mesh."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.7976,
+      1.7976,
+      1.7976
+     ],
+     "triangles": 1787,
+     "dims": [
+      2.437992512132434,
+      1.7768155282424551,
+      1.9382956466370407
+     ],
+     "score": 2,
+     "reason": "Crumpled creature: Shredded, spiky mesh fragments; can't tell what object it is."
+    }
+   ],
+   "newScore": 2,
+   "result": "kept-old"
+  },
+  "cc0-pillow": {
+   "noun": "pillow",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "cc0-pipe-bump": {
+   "noun": "pipe bump",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.7564,
+      1.002,
+      1.0026
+     ],
+     "triangles": 447,
+     "dims": [
+      0.9944938518717497,
+      0.9836415379276969,
+      0.994090629434599
+     ],
+     "score": 4,
+     "reason": "Cable spool: Faceted, lumpy grey metal; ends crumpled, unclear identity."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "cc0-ship-ghost": {
+   "noun": "ship ghost",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
    "attempts": [
     {
      "round": 1,

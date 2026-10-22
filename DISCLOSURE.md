@@ -418,7 +418,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - use-sync-external-store@1.6.0
 - vite › fsevents@2.3.3
 
-## Assety (1292)
+## Assety (1289)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -1010,9 +1010,6 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 | public/assets/worldstream/cc0/cc0-lettuce.png | https://quaternius.com/packs/ultimatefood.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lettuce (OBJ/Lettuce.glb) from quaternius-ultimate-food by Quaternius (quaternius.com), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-lily-lod0.glb | https://kenney.nl/assets/nature-kit | Kenney (www.kenney.nl) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lily (Models/GLTF format/lily_large.glb) from kenney-nature-kit by Kenney (www.kenney.nl), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-lily-lod1.glb | https://kenney.nl/assets/nature-kit | Kenney (www.kenney.nl) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lily (Models/GLTF format/lily_large.glb) from kenney-nature-kit by Kenney (www.kenney.nl), CC0-1.0 |
-| public/assets/worldstream/cc0/cc0-lily-pad-lod0.glb | https://quaternius.com/packs/ultimatenature.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lily pad (OBJ/Lilypad.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0 |
-| public/assets/worldstream/cc0/cc0-lily-pad-lod1.glb | https://quaternius.com/packs/ultimatenature.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lily pad (OBJ/Lilypad.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0 |
-| public/assets/worldstream/cc0/cc0-lily-pad.png | https://quaternius.com/packs/ultimatenature.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lily pad (OBJ/Lilypad.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-lily.png | https://kenney.nl/assets/nature-kit | Kenney (www.kenney.nl) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lily (Models/GLTF format/lily_large.glb) from kenney-nature-kit by Kenney (www.kenney.nl), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-lionfish-lod0.glb | https://quaternius.com/packs/cutefish.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lionfish (OBJ/Lionfish.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-lionfish-lod1.glb | https://quaternius.com/packs/cutefish.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | lionfish (OBJ/Lionfish.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0 |
@@ -2305,9 +2302,6 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **public/assets/worldstream/cc0/cc0-lettuce.png** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-food.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-lily-lod0.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-nature-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-lily-lod1.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-nature-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
-- **public/assets/worldstream/cc0/cc0-lily-pad-lod0.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
-- **public/assets/worldstream/cc0/cc0-lily-pad-lod1.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
-- **public/assets/worldstream/cc0/cc0-lily-pad.png** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-lily.png** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-nature-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-lionfish-lod0.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-lionfish-lod1.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
@@ -3108,7 +3102,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (4702)
+## Vlastní, ne třetí strana (4705)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3253,6 +3247,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/cc0/cc0-couch-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/cc0/cc0-couch-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/cc0/cc0-couch.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
+- **public/assets/worldstream/cc0/cc0-lily-pad-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/cc0/cc0-lily-pad-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/cc0/cc0-lily-pad.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/classroom-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/classroom-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/classroom.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
@@ -4828,9 +4825,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-helm-wheel-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-helm-wheel-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-helm-wheel.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-highway-sign.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-highway-sign.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/gen3d-p37d/gen3d-hiking-backpack-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-hiking-backpack-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-hiking-backpack.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -7011,9 +7008,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-checkered-flag-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-checkered-flag-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-checkered-flag.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
-- **public/assets/worldstream/gen3d/gen3d-cheese-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d/gen3d-cheese-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d/gen3d-cheese.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cheese-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cheese-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cheese.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/gen3d/gen3d-chess-king-piece-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-chess-king-piece-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-chess-king-piece.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
