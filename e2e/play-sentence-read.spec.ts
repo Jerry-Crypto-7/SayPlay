@@ -67,7 +67,8 @@ test('a draft read by the local model says so', async ({ page, request }) => {
 });
 
 test('a draft from the keywords never claims an AI read it', async ({ page, request }) => {
-  await page.goto(await publish(request, 'A corgi runs through a park grabbing sausages'));
+  // P56C T17: jedno sloveso – „runs … grabbing“ by byl řetěz mikroher (dvě ovládání) a ten list „About“ nemá.
+  await page.goto(await publish(request, 'A corgi catches falling sausages in a park'));
   await openAbout(page);
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'keywords');

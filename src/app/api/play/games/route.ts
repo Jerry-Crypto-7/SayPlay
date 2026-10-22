@@ -155,10 +155,12 @@ export async function POST(request: Request): Promise<Response> {
     // Await the cold engine here; background preloading alone is a race. Always, not only
     // when the sentence says ball: the model reader may pick a ball game the words missed.
     // Fyzika, která se nenačte, shodí tvorbu – čtení, které by nikdo nepoužil, se nezaplatí (T10-R1).
-    await loadRapier().catch((error: unknown) => {
+    const physics = loadRapier().catch((error: unknown) => {
       abandoned.abort();
       throw error;
     });
+    // P56C T17: řetěz fyziku nepotřebuje (`MICRO` je bez míče) – na ni čeká až cesta jedné hry níž.
+    physics.catch(() => undefined);
     const sentenceReading = await reading;
     // P56C T10: věta bez jednoho jasného slovesa hraje řetěz mikroher – bez AI verze a remixu (debata T9).
     // Řetěz, který stavba nebo brána nepustí, hraje dnešní cesta jako jedna hra; zakázaný text a úložiště ne.
@@ -171,6 +173,7 @@ export async function POST(request: Request): Promise<Response> {
         if (chained.response.status !== 422 || chained.issues?.[0] === 'CONTENT_REJECTED') return chained.response;
       }
     }
+    await physics;
     const meta = draftGameSpecWithMeta(sentence, 1, { reading: sentenceReading });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };

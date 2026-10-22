@@ -26,6 +26,8 @@ import { resetProcessSpendCap } from '@/server/spend-cap';
 import { upstreamBranch } from '@/server/upstream';
 
 const SENTENCE = 'a knight collects keys in a castle';
+/** Dev P56C d04 (`multi_verb`): věta řetězu mikroher. */
+const CHAIN = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
 const READING: Reading = {
   control: 'shooter',
   verbs: [{ word: 'collect', class: 'aim_shoot' }],
@@ -73,11 +75,13 @@ const create = (sentence = SENTENCE) =>
     }),
   );
 
-async function publishedSpec(response: Response): Promise<unknown> {
+async function publishedGame(response: Response): Promise<{ spec: unknown; chain?: unknown }> {
   expect(response.status).toBe(201);
   const { versionId } = await response.json();
-  return (await (await readGame(new Request(`http://play.test/api/play/games/${versionId}`), { params: Promise.resolve({ id: versionId }) })).json()).spec;
+  return (await readGame(new Request(`http://play.test/api/play/games/${versionId}`), { params: Promise.resolve({ id: versionId }) })).json();
 }
+
+const publishedSpec = async (response: Response): Promise<unknown> => (await publishedGame(response)).spec;
 
 beforeEach(() => {
   __resetProcessVersionStore();
@@ -198,6 +202,16 @@ describe('create route reads the sentence before drafting', () => {
       expect(paid).toHaveBeenCalledOnce();
     });
 
+    // P56C T17: řetěz fyziku nepotřebuje – věta řetězu se publikuje i bez ní a nepoužité čtení se nezaplatí.
+    it('publishes a chain sentence without the physics and pays nothing', async () => {
+      const broken = Promise.reject(new Error('rapier wasm failed'));
+      broken.catch(() => undefined);
+      rapier.gate = broken;
+      expect(await publishedGame(await create(CHAIN))).toHaveProperty('chain');
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(paid).not.toHaveBeenCalled();
+    });
+
     it('sends nothing when the physics load fails', async () => {
       const broken = Promise.reject(new Error('rapier wasm failed'));
       broken.catch(() => undefined);
@@ -216,9 +230,10 @@ describe('create route reads the sentence before drafting', () => {
     const sentences = [...set('evals/play/p56a/audit-12.json'), ...set('evals/play/p30/dev.json')].slice(0, 30);
     for (const sentence of sentences) {
       resetRateWindows();
-      const spec = await publishedSpec(await create(sentence));
-      // P56C T10: věta, kterou `chainOrSingle` pošle do řetězu, hraje řetěz – jeho publikaci pinuje `chain-publish.test.ts`.
-      if (chainOrSingle(sentence, readForChain(sentence, null), classifyGenre(sentence, null)) === 'single') expect(spec, sentence).toEqual(draftGameSpec(sentence));
+      const game = await publishedGame(await create(sentence));
+      // P56C T10: věta, kterou `chainOrSingle` pošle do řetězu, hraje řetěz – jeho obsah pinuje `chain-publish.test.ts`.
+      if (chainOrSingle(sentence, readForChain(sentence, null), classifyGenre(sentence, null)) === 'single') expect(game.spec, sentence).toEqual(draftGameSpec(sentence));
+      else expect(game, sentence).toHaveProperty('chain');
     }
     expect(answering).not.toHaveBeenCalled();
   }, 300_000);
@@ -257,6 +272,18 @@ describe('the draft remembers who read the sentence (T6)', () => {
   it('keeps the origin as before when the keywords built it', async () => {
     vi.stubGlobal('fetch', answering);
     expect(await originOf(await create())).toEqual({ sentence: SENTENCE, seed: null });
+  });
+
+  // P56C T17: řetěz ze čtení modelem nese readBy a hrdinu čtení v každém kole.
+  it('stores readBy model on a chain the reading built, with its hero in every round', async () => {
+    const reading: Reading = { ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud' };
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 })));
+    const { versionId } = (await (await create(CHAIN)).json()) as { versionId: string };
+    const game = (await versionStoreFromEnv(process.env).get(versionId))!;
+    expect(game.origin).toEqual({ sentence: CHAIN, seed: null, readBy: 'model' });
+    const hero = readForChain(CHAIN, reading).hero;
+    expect(game.chain!.rounds.map((round) => round.spec.roles.find((role) => role.kind === 'player')?.label)).toEqual(game.chain!.rounds.map(() => hero));
   });
 });
 
