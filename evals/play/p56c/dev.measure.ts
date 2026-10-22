@@ -3,6 +3,9 @@
  * semínko jako publikace (`seedFrom` věty) a dvě další ze `derivedSeeds` pro odolnost. AC se počítá na prvním semínku.
  * Ladí se jen tady; zapečetěná sada (`holdout.json`) se neotvírá.
  *
+ * T17 přidá cestu se čtením P56A: věty, které P56A přečetl modelem a čtení uložil (`evals/play/p56a/readings`),
+ * stejně vynuceně jako řetěz – jednou se čtením, jednou slovníkem. Dev sadu P56C model nepřečetl.
+ *
  * `npx vitest run --config vitest.measure.mts evals/play/p56c/dev.measure.ts`
  */
 
@@ -14,8 +17,11 @@ import { expect, it } from 'vitest';
 import { derivedSeeds, seedFrom } from '../../../src/app/api/play/_publish';
 import { buildChain, VERB_MICROS } from '../../../src/play/chain/build';
 import { CHAIN_MUTATORS } from '../../../src/play/chain/contract';
+import { chainOrSingle } from '../../../src/play/chain/decide';
 import { readForChain } from '../../../src/play/chain/read';
 import { verifyChain } from '../../../src/play/chain/verify';
+import { classifyGenre } from '../../../src/play/genre/classify';
+import type { Reading } from '../../../src/play/read/schema';
 
 interface DevSentence {
   readonly id: string;
@@ -25,6 +31,15 @@ interface DevSentence {
 
 const DIR = join(process.cwd(), 'evals/play/p56c');
 const { sentences } = JSON.parse(readFileSync(join(DIR, 'dev.json'), 'utf8')) as { sentences: DevSentence[] };
+
+/** Sady, které P56A přečetl modelem gpt-oss-20b (P56A T4); `family` = sada, věty bez platného čtení vypadnou. */
+const READ_SETS = ['audit-12', 'p30-dev', 'p54c-dev'] as const;
+const READ_MODEL = 'gpt-oss-20b';
+const readSentences = READ_SETS.flatMap((name) =>
+  (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/readings', `${name}.${READ_MODEL}.json`), 'utf8')) as { readings: { id: string; text: string; reading: Reading | null }[] }).readings.flatMap(
+    ({ id, text, reading }) => (reading === null ? [] : [{ sentence: { id: `${name}/${id}`, family: name, text }, reading }]),
+  ),
+);
 
 interface Row {
   readonly id: string;
@@ -44,14 +59,17 @@ interface Row {
   /** Kola 2 až N−1 s mutátorem a jejich počet (T16). */
   readonly twisted: number;
   readonly middle: number;
+  /** Co by věta hrála bez vynucení (`chainOrSingle`, T8). */
+  readonly decided: 'chain' | 'single';
 }
 
-function measure(sentence: DevSentence, seed: number): Row {
+function measure(sentence: DevSentence, seed: number, reading: Reading | null = null): Row {
   const start = performance.now();
-  const read = readForChain(sentence.text, null);
+  const read = readForChain(sentence.text, reading);
+  const decided = chainOrSingle(sentence.text, read, classifyGenre(sentence.text, reading));
   const made = buildChain(sentence.text, read, seed);
   if (!made.ok) {
-    return { id: sentence.id, family: sentence.family, seed, keys: '–', failures: made.issues, controls: 0, lengthSec: 0, oneLook: false, oneHero: false, leadIsVerb: null, bossHasFoe: null, ms: performance.now() - start, twisted: 0, middle: 0 };
+    return { id: sentence.id, family: sentence.family, seed, keys: '–', failures: made.issues, controls: 0, lengthSec: 0, oneLook: false, oneHero: false, leadIsVerb: null, bossHasFoe: null, ms: performance.now() - start, twisted: 0, middle: 0, decided };
   }
   const { rounds } = made.chain;
   const verdict = verifyChain(made.chain);
@@ -72,6 +90,7 @@ function measure(sentence: DevSentence, seed: number): Row {
     ms: performance.now() - start,
     twisted: rounds.filter((round) => round.mutator !== undefined).length,
     middle: rounds.length - 2,
+    decided,
   };
 }
 
@@ -87,9 +106,12 @@ it('builds and verifies a chain for every dev sentence', () => {
   const all = [...primary, ...extra];
   const lengths = primary.map((row) => row.lengthSec).sort((a, b) => a - b);
   const ms = all.map((row) => row.ms).sort((a, b) => a - b);
+  const modelRows = readSentences.map(({ sentence, reading }) => measure(sentence, seedFrom(sentence.text), reading));
+  const wordRows = readSentences.map(({ sentence }) => measure(sentence, seedFrom(sentence.text)));
+  const both = (label: string, test: (row: Row) => boolean): string => `| ${label} | ${share(modelRows, test)} | ${share(wordRows, test)} |`;
 
   const lines = [
-    `# P56C T7 / T16 – řetěz na dev sadě (${CHAIN_MUTATORS ? 's mutátory' : 'bez mutátorů'})`,
+    `# P56C T7 / T16 / T17 – řetěz na dev sadě (${CHAIN_MUTATORS ? 's mutátory' : 'bez mutátorů'}, s P56A)`,
     '',
     `Změřeno ${new Date().toISOString().slice(0, 10)} \`dev.measure.ts\`: 40 vět vynuceně jako řetěz, čtení slovníkem (\`readForChain(text, null)\`), semínko \`seedFrom(věta)\` jako publikace; odolnost na dvou dalších semínkách z \`derivedSeeds\`.`,
     '',
@@ -109,6 +131,26 @@ it('builds and verifies a chain for every dev sentence', () => {
     '',
     'Stavitel bere jen kola, která robot vyhraje a nečinný prohraje (až 4 semínka na kolo, pak jiná mikrohra), a řetěz pod 30 s doplní výměnou nejkratšího kola za delší – proto minimum délky leží těsně na prahu.',
     '',
+    '## Se čtením P56A (T17)',
+    '',
+    `${modelRows.length} vět, které P56A přečetl modelem gpt-oss-20b (${READ_SETS.join(', ')}; uložená čtení v \`evals/play/p56a/readings\`, dev sadu P56C model nepřečetl), vynuceně jako řetěz, semínko publikace. Sloupec „slovník“ jsou tytéž věty bez čtení – cesta, když čtečka vyprší nebo selže.`,
+    '',
+    '| Kontrola | Čtení modelem | Slovník |',
+    '|---|---|---|',
+    both('`verifyChain` bez chyby', (row) => row.failures.length === 0),
+    both('≥ 3 různá ovládání', (row) => row.controls >= 3),
+    both('délka 30–90 s', (row) => row.lengthSec >= 30 && row.lengthSec <= 90),
+    both('jeden popisek hrdiny ve všech kolech', (row) => row.oneHero),
+    `| kolo 1 = hlavní sloveso (věty se slovesem z \`VERB_MICROS\`) | ${applicable(modelRows, (row) => row.leadIsVerb)} | ${applicable(wordRows, (row) => row.leadIsVerb)} |`,
+    `| boss nese protivníka věty (věty s protivníkem) | ${applicable(modelRows, (row) => row.bossHasFoe)} | ${applicable(wordRows, (row) => row.bossHasFoe)} |`,
+    ...READ_SETS.map((name) => {
+      const chained = (rows: readonly Row[]) => share(rows.filter((row) => row.family === name), (row) => row.decided === 'chain');
+      return `| věta by hrála řetěz (\`chainOrSingle\`), ${name} | ${chained(modelRows)} | ${chained(wordRows)} |`;
+    }),
+    '',
+    ...(modelRows.some((row) => row.failures.length > 0)
+      ? ['Chyby se čtením modelem:', '', ...modelRows.filter((row) => row.failures.length > 0).map((row) => `- ${row.id}: ${row.failures.join('; ')}`), '']
+      : []),
     '## Věty (semínko publikace)',
     '',
     '| id | rodina | kola | ovládání | s | chyby |',
@@ -122,4 +164,4 @@ it('builds and verifies a chain for every dev sentence', () => {
   writeFileSync(join(DIR, 'dev-result.md'), `${lines.join('\n')}\n`);
 
   expect(primary.filter((row) => row.failures.length > 0).map((row) => `${row.id}: ${row.failures.join('; ')}`)).toEqual([]);
-}, 600_000);
+}, 1_800_000);
