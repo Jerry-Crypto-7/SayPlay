@@ -212,7 +212,9 @@ const ROWS: readonly Row[] = [
   row(/\bstack(?:s|ing)?\b/, [act('stack'), goal('build')]),
   row(/\bbuild(?:s)?\b|\bbuilding (?=(?:a|an|the|games?|towers?|houses?|bridges?|castles?)\b)|\bconstruct(?:s|ing)?\b/, [goal('build'), act('stack', true)]),
   row(/\bat the (?:right|perfect|exact) (?:time|moment|second)\b|\btiming\b|\btim(?:e|es|ing) (?=(?:your|his|her|their|each|every)\b)|\bstop(?:s|ping)? the (?:moving|swinging|spinning|sliding)\b|\bcut(?:s|ting)? the ropes?\b/, [act('time')]),
-  row(/\bdanc(?:e|es|ing)\b|\b(?:to|with|on) the (?:beat|music|rhythm)\b|\bto music\b|\brhythm\b|\bmusic(?:al)? games?\b|\bdrum(?:s|ming)?\b|\bpiano\b|\bguitar\b|\bsing(?:s|ing)?\b|\bkaraoke\b|\bbeat saber\b/, [act('beat')]),
+  // Do rytmu se hraje bez předmětu (korpus P41: `beat` má vždy `object: null`); „at a rock concert“ je místo,
+  // a rytmická hra s ním by přiznala „Beat isn't here yet“ (P56A T9).
+  row(/\bdanc(?:e|es|ing)\b|\b(?:to|with|on) the (?:beat|music|rhythm)\b|\bto music\b|\brhythm\b|\bmusic(?:al)? games?\b|\bdrum(?:s|ming)?\b|\bpiano\b|\bguitar\b|\bsing(?:s|ing)?\b|\bkaraoke\b|\bbeat saber\b/, [{ axis: 'action', id: 'beat', who: 'bare', fallback: false }]),
   // Spor jeden na jednoho: předmět je protějšek („argue with my boss“, „play chess with a dragon“).
   row(
     /\bduel(?:s|ing|led|ling)?\b|\bargu(?:e|es|ing)\b|\bnegotiat(?:e|es|ing)\b|\bconvinc(?:e|es|ing)\b|\bpersuad(?:e|es|ing)\b|\bdebat(?:e|es|ing)\b|\bchess\b|\bcheckers\b|\bpoker\b|\b(?:play(?:s|ing)?|game of) cards\b|\btic[- ]tac[- ]toe\b|\brock[ ,-]+paper[ ,-]+scissors\b|\bstaring contest\b|\bshowdown\b|\bquick ?draw\b/,

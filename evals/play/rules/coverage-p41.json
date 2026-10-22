@@ -1,13 +1,13 @@
 {
  "total": 200,
  "before": {
-  "piece": 85,
-  "none": 115
+  "piece": 84,
+  "none": 116
  },
  "after": {
-  "piece": 85,
+  "piece": 84,
   "template": 37,
-  "none": 78
+  "none": 79
  },
  "byTemplate": {
   "collect_unlock": 1,
@@ -46,6 +46,10 @@
    "count": 3
   },
   {
+   "verb": "(steer)",
+   "count": 3
+  },
+  {
    "verb": "fish",
    "count": 3
   },
@@ -60,10 +64,6 @@
   {
    "verb": "tap",
    "count": 3
-  },
-  {
-   "verb": "(idle)",
-   "count": 2
   }
  ],
  "sentences": [
@@ -700,8 +700,8 @@
   {
    "id": "s066",
    "verbClass": "steer",
-   "drafted": "steer",
-   "cover": "piece",
+   "drafted": "push",
+   "cover": "none",
    "template": null,
    "verbs": []
   },

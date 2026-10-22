@@ -1,0 +1,19 @@
+{
+  "schema": "p56a-audit-12.v1",
+  "source": "Audit živého /play 21. 10. 2026 na 72665fdc (demo-audit/findings.md, relace a5c26629). Dev data – smí se na nich ladit.",
+  "labels": "hero = podmět věty (null = věta hrdinu nejmenuje: you/my/bez podstatného jména); foe = s kým nebo čím věta bojuje nebo před čím utíká (null = nikdo); item = věc, se kterou hrdina pracuje (null = žádná); world = id z LOOK_IDS (null = žádná sada místu neodpovídá); genre = žánr.režim, který věta chce.",
+  "sentences": [
+    { "id": "a01", "text": "a frog catching flies on a lily pad", "hero": "frog", "foe": null, "item": "fly", "world": null, "genre": "catch.default" },
+    { "id": "a02", "text": "zombies attack my farm at night", "hero": null, "foe": "zombie", "item": null, "world": "meadow", "genre": "defense.default" },
+    { "id": "a03", "text": "a ninja slicing fruit", "hero": "ninja", "foe": null, "item": "fruit", "world": null, "genre": "slice.default" },
+    { "id": "a04", "text": "racing a shark through a coral reef", "hero": null, "foe": "shark", "item": null, "world": "underwater", "genre": "voyage.race" },
+    { "id": "a05", "text": "stack pizzas as high as the moon", "hero": null, "foe": null, "item": "pizza", "world": "space", "genre": "timing.stack" },
+    { "id": "a06", "text": "my cat defends the couch from vacuum robots", "hero": "cat", "foe": "vacuum robot", "item": "couch", "world": "living_room", "genre": "defense.default" },
+    { "id": "a07", "text": "a goalkeeper saves penalty kicks in a packed stadium", "hero": "goalkeeper", "foe": null, "item": "ball", "world": null, "genre": "catch.default" },
+    { "id": "a08", "text": "match three glowing gems to unlock a treasure chest", "hero": null, "foe": null, "item": "gem", "world": null, "genre": "merge.default" },
+    { "id": "a09", "text": "an astronaut dodges asteroids to reach the space station", "hero": "astronaut", "foe": "asteroid", "item": null, "world": "space", "genre": "runner.default" },
+    { "id": "a10", "text": "a chef flips pancakes for a line of hungry customers", "hero": "chef", "foe": null, "item": "pancake", "world": null, "genre": "quest.station" },
+    { "id": "a11", "text": "drum to the beat at a rock concert", "hero": null, "foe": null, "item": "drum", "world": null, "genre": "rhythm.default" },
+    { "id": "a12", "text": "escape a haunted mansion while a ghost chases you", "hero": null, "foe": "ghost", "item": null, "world": "graveyard", "genre": "arena.escape" }
+  ]
+}

@@ -58,7 +58,9 @@ function grid(run: ShareRun): string {
 
 /** Cíl pro kamaráda: body, jinak čas; přežití nemá co zkrátit, prohra nemá číslo k překonání. */
 function dareLine(run: ShareRun, time: string): string {
-  if (!run.won) return 'So close. Can you beat it?';
+  // Prohra bez bodu „So close.“ neříká (P56A T9) – stejné pravidlo jako nadpis výsledku v `PostRun`.
+  const nothing = run.score !== null ? run.score === 0 : run.goal !== null && run.goal.count === 0;
+  if (!run.won) return nothing ? 'Can you beat it?' : 'So close. Can you beat it?';
   if (run.score !== null) return `Can you beat ${run.score.toLocaleString('en-US')}?`;
   return run.survive ? 'Can you survive it too?' : `Can you beat ${time}?`;
 }

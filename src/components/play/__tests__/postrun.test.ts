@@ -50,6 +50,17 @@ describe('PostRun', () => {
     expect(markup).not.toContain('data-testid="play-badge"');
   });
 
+  it('a loss without a single point says Try again!, not So close. (P56A T9)', () => {
+    const lost = facts(false);
+    expect(runResult({ ...lost, goal: { ...lost.goal!, count: 0 } }).headline).toBe('Try again!');
+    expect(runResult({ ...lost, score: { value: 0, unit: 'pts' } }).headline).toBe('Try again!');
+    // Body rozhodují před cílovými předměty; přežití bez bodů a předmětů nulu nemá.
+    expect(runResult({ ...lost, goal: { ...lost.goal!, count: 0 }, score: { value: 40, unit: 'pts' } }).headline).toBe('So close.');
+    expect(runResult({ ...lost, score: { value: 40, unit: 'pts' } }).headline).toBe('So close.');
+    expect(runResult({ ...lost, goal: null, survive: true }).headline).toBe('So close.');
+    expect(runResult({ ...facts(true), goal: { count: 0, need: 0, label: 'collected' } }).headline).toBe('You did it!');
+  });
+
   it('keeps the change field behind Remix it until the player asks for it', () => {
     const markup = card(true);
     expect(markup).toContain('>Remix it<');

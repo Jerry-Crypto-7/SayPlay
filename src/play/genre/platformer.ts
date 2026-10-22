@@ -19,7 +19,7 @@
 import { lookFor } from '../arcade/look';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from '../arcade/pieces/platform';
 import { platformStyleFor } from '../arcade/pieces/platform-chunks';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { nounPhrase, plural, singular, withArticle } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, type GenreSpecOf, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 import { defaultObstacle } from './roles';
@@ -65,7 +65,7 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,
-    objective: { kind: 'reach', description: line ?? `Jump across the platforms to the flag without touching a ${hazard ?? 'spike'}.`, role: 'finish' },
+    objective: { kind: 'reach', description: line ?? `Jump across the platforms to the flag without touching ${withArticle(hazard ?? 'spike')}.`, role: 'finish' },
     // Hrot ubere život a vrátí hrdinu na checkpoint (P36A T2).
     mechanics: [livesMechanic()],
     roles: [
