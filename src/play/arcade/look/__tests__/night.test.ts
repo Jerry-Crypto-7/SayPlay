@@ -10,12 +10,10 @@ import { Color } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { exposureOf, lightFloor, NIGHT_EXPOSURE } from '@/components/play/arcade/look/rig/StyleRig';
-import { setScenePalette, TOON_RIM_DAY, toon } from '@/components/play/arcade/look/rig/toon';
 
 import { type Look, LOOKS, sceneLook } from '../index';
 
 const night = sceneLook({ setting: 'farm', mood: '', timeOfDay: 'night' });
-const day = sceneLook({ setting: 'farm', mood: '' });
 const lit = (look: Look) => ({ ...look, ...lightFloor(look) });
 
 /** Světlo na matné ploše jako `brightness` v katalogu: polokoule shora a slunce, lineární jas. */
@@ -42,22 +40,13 @@ describe('night (P56B T7, T13-R1)', () => {
   });
 
   it('a light prop at night stays within 1.3× of its 72665fdc brightness', () => {
-    // Světlý kámen (albedo 0,6), plocha 70° od pohledu: matné světlo sady (Lambert, /π) a okraj toonu (Fresnel^3).
+    // Světlý kámen (albedo 0,6): matné světlo sady (Lambert, /π). Okraj toonu kulisy nemají (T13-R2, `toon.test`).
     const albedo = 0.6;
-    const grazing = (1 - Math.cos((70 * Math.PI) / 180)) ** 3;
-    setScenePalette(night);
-    const now = srgb(aces((albedo * brightness(lit(night))) / Math.PI + toon.rim.value * lum(night.light[0]) * grazing, exposureOf(lit(night))));
+    const now = srgb(aces((albedo * brightness(lit(night))) / Math.PI, exposureOf(lit(night))));
     // 72665fdc: stejná polokoule, měsíc 0,35, expozice sady, bez toonu.
     const then = srgb(aces((albedo * brightness({ ...night, sun: 0.35 })) / Math.PI, night.exposure));
     expect(now / then).toBeGreaterThan(1);
     expect(now / then).toBeLessThanOrEqual(1.3);
-  });
-
-  it('toon rim fades out at night: faceted props would turn icy white', () => {
-    setScenePalette(day);
-    expect(toon.rim.value).toBe(TOON_RIM_DAY);
-    setScenePalette(night);
-    expect(toon.rim.value).toBeLessThan(TOON_RIM_DAY);
   });
 
   // S měsícem 0,35 jsou hřbitov i jeskyně jasnější než noc; mez hlídá sadu tmavší než ony.

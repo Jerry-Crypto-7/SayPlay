@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { LOOK_IDS, LOOKS } from '@/play/arcade/look';
 
 import { glowingCopy, mergeBody, patchedClone, plantMaterial, rimMaterial, toonLit } from '../load';
-import { COLOR, COMMON, DOT_NL, LIGHTS, LIGHTS_BEGIN, PALETTE_MIX, paletteMix, type Rgb, scenePaletteOf, setScenePalette, toon, toonPatch } from '../rig/toon';
+import { COLOR, COMMON, DOT_NL, LIGHTS, PALETTE_MIX, paletteMix, type Rgb, scenePaletteOf, setScenePalette, toon, toonPatch } from '../rig/toon';
 
 function compiled(material: { onBeforeCompile(shader: never, renderer: never): void }) {
   const shader = { vertexShader: ShaderLib.standard.vertexShader, fragmentShader: ShaderLib.standard.fragmentShader, uniforms: {} as Record<string, unknown> };
@@ -47,14 +47,13 @@ const SCENERY = ['#808080', '#8b5a2b', '#4caf50', '#b5452f', '#1e88e5', '#e0c068
 describe('toon shading and the scene palette in one shader patch (P56B T6)', () => {
   it('finds every anchor it replaces exactly once in three', () => {
     expect(count(ShaderChunk.lights_physical_pars_fragment, DOT_NL)).toBe(1);
-    for (const anchor of [LIGHTS, COLOR, LIGHTS_BEGIN, COMMON]) expect(count(ShaderLib.standard.fragmentShader, anchor), anchor).toBe(1);
+    for (const anchor of [LIGHTS, COLOR, COMMON]) expect(count(ShaderLib.standard.fragmentShader, anchor), anchor).toBe(1);
   });
 
-  it('bands the direct light, adds the rim, and switches the palette on and off', () => {
+  it('bands the direct light and switches the palette on and off', () => {
     const shader = compiled({ onBeforeCompile: (s: never) => toonPatch(s, true) });
     expect(shader.fragmentShader).toContain('float dotNL = toonBands(');
     expect(shader.fragmentShader).not.toContain(LIGHTS);
-    expect(shader.fragmentShader).toMatch(/totalEmissiveRadiance \+= toonRimColor[^\n]*\n#include <lights_fragment_begin>/);
     expect(shader.fragmentShader).toMatch(/#include <color_fragment>\s*diffuseColor\.rgb = toonPaletteMix/);
     expect(shader.uniforms.toonPalette).toBe(toon.palette);
     const once = shader.fragmentShader;
@@ -62,7 +61,15 @@ describe('toon shading and the scene palette in one shader patch (P56B T6)', () 
     expect(shader.fragmentShader).toBe(once);
     toonPatch(shader as never, false);
     expect(shader.fragmentShader).not.toContain('toonPaletteMix( diffuseColor');
-    expect(count(shader.fragmentShader, 'uniform float toonRim;')).toBe(1);
+    expect(count(shader.fragmentShader, 'uniform float toonMix;')).toBe(1);
+  });
+
+  // Slepý soud T13 dvakrát: okraj zešedil koruny a kmeny ve dne (T13-R2) a výplň hřbitova v noci (T13-R1).
+  it('adds no rim light to scenery: faceted trees and props would turn grey', () => {
+    const plain = ShaderLib.standard.fragmentShader;
+    const shader = compiled({ onBeforeCompile: (s: never) => toonPatch(s, true) });
+    expect(count(shader.fragmentShader, 'totalEmissiveRadiance')).toBe(count(plain, 'totalEmissiveRadiance'));
+    expect(shader.fragmentShader).not.toMatch(/dot\(\s*normal,\s*normalize\(\s*vViewPosition/);
   });
 
   it('pulls scenery towards the set palette at the same brightness, never purple, and leaves characters alone', () => {
@@ -83,9 +90,7 @@ describe('toon shading and the scene palette in one shader patch (P56B T6)', () 
     const look = LOOKS[LOOK_IDS[0]];
     setScenePalette(look);
     expect(toon.mix.value).toBe(PALETTE_MIX);
-    expect(toon.rim.value).toBeGreaterThan(0);
     toon.palette.value[0]!.toArray().forEach((value, i) => expect(value).toBeCloseTo(oklab(linear(look.ground))[i]!, 5));
-    expect(toon.rimColor.value.getHex()).toBe(new Color(look.light[0]).getHex());
   });
 
   it('puts toon into the body, plant, clone, glow and rim programs, the palette only into scenery', () => {
