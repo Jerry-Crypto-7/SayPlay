@@ -258,7 +258,9 @@ export async function promoteBatch(batch, { root = ROOT, sync = true, drop = [] 
     }
   }
 
-  catalog.assets = [...others, ...entries];
+  // Znovu povýšené id nahradí svůj záznam; přeskočené (licence, štítek, normalize) si nechá starý i s disclosure.
+  const fresh = new Set(entries.map((entry) => entry.assetId));
+  catalog.assets = [...catalog.assets.filter((asset) => !fresh.has(asset.assetId) && !dropped.includes(asset.assetId)), ...entries];
   writeFileSync(path.join(root, PROVENANCE), provenanceMarkdown(catalog.assets));
   writeFileSync(path.join(root, 'src/assets/catalog.json'), `${JSON.stringify(catalog, null, 2)}\n`);
   writeFileSync(path.join(root, 'src/assets/catalog-index.json'), `${JSON.stringify(catalogIndex(catalog), null, 2)}\n`);

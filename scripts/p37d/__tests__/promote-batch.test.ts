@@ -361,6 +361,36 @@ describe('promote-batch (P37D T3)', () => {
     for (const record of acorn) expect(record).toMatchObject({ license: CC0, firstParty: false });
   }, 180_000);
 
+  it('a skipped re-promotion of an own id keeps its old record, files and disclosure (P57 R3)', async () => {
+    const root = makeRoot();
+    await promoteBatch({ schema: 'catalog-batch.v1', entries: [entry('gen3d-test-acorn', ['test acorn'])] }, { root, sync: false });
+    // CC0 výměna pod vlastním id (jako `gen3d-wildflower-patch`): vypadnout z katalogu, dostaly by její soubory záznam „vlastní generovaný“.
+    const catalog = read(root, 'src/assets/catalog.json');
+    Object.assign(catalog.assets[1].provenance, { license: CC0, replacedAt: '2026-10-22' });
+    writeFileSync(path.join(root, 'src/assets/catalog.json'), JSON.stringify(catalog));
+    const disclosure = read(root, 'disclosure.json');
+    for (const record of disclosure.entries.filter((record: { name: string }) => record.name.includes('acorn'))) Object.assign(record, { license: CC0, firstParty: false });
+    writeFileSync(path.join(root, 'disclosure.json'), JSON.stringify(disclosure));
+    const files = readdirSync(path.join(root, PUBLIC_DIR)).filter((file) => file.includes('acorn'));
+    const hashes = files.map((file) => sha(path.join(root, PUBLIC_DIR, file)));
+
+    const { promoted, skipped } = await promoteBatch({
+      schema: 'catalog-batch.v1',
+      entries: [entry('gen3d-test-acorn', ['test acorn'], { licence: 'CC-BY-4.0' }), entry('gen3d-test-acorn', ['test acorn'], { glb: path.join(root, 'missing-lod0.glb') })],
+    }, { root, sync: false });
+
+    expect(promoted).toEqual([]);
+    expect(skipped).toEqual([
+      { id: 'gen3d-test-acorn', reason: `licence CC-BY-4.0 is not the pipeline licence ${LICENSE}` },
+      { id: 'gen3d-test-acorn', reason: expect.stringMatching(/^normalize: /) },
+    ]);
+    expect(read(root, 'src/assets/catalog.json').assets).toEqual(catalog.assets);
+    expect(files.map((file) => sha(path.join(root, PUBLIC_DIR, file)))).toEqual(hashes);
+    const acorn = read(root, 'disclosure.json').entries.filter((record: { name: string }) => record.name.includes('acorn'));
+    expect(acorn).toHaveLength(3);
+    for (const record of acorn) expect(record).toMatchObject({ license: CC0, firstParty: false });
+  }, 180_000);
+
   it('drops an own model with its files and disclosure, and never a foreign one', async () => {
     const root = makeRoot();
     await promoteBatch({ schema: 'catalog-batch.v1', entries: [entry('gen3d-test-acorn', ['test acorn'])] }, { root, sync: false });
