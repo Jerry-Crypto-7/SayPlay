@@ -187,3 +187,19 @@ Brána T13: `anchor-after` ≥ 0 + 0,15.
 
 - Noc je proti T7 tmavší (02 desktop 0,227 → 0,133), pořád nad `72665fdc` a bez černých ploch (pod 0,04 nejvýš 0,9 %). Brána T7 (0,220) tím padá vědomě: soud dal přednost tlumené noci před jasnou s bílou výplní.
 - `night.test` pinuje model světlé kulisy (albedo 0,6, plocha 70° od pohledu, ACES three): ≤ ×1,3 proti `72665fdc`; každá ze tří pák T7 (okraj 0,5, expozice 2,4, měsíc 0,9) by ho sama shodila (ručně spočteno ×1,54–1,65).
+
+## Pokus 2 (T13, HEAD `51ec2088`) – telefon a FPS prošly, desktop a kotva ne
+
+Build `51ec2088`, snímky `after/`, `after-phone/` (34 + 34, 0× 404, 0 chyb; mimo git jako `before/`; pokus 1 přesunut do `after-a1/`, `after-a1-phone/`). Soud stejně jako pokus 1 (seed 56013, desktop a telefon zvlášť, sloučeno do `judge.json`).
+
+| Brána | Výsledek | Prošla |
+|---|---|---|
+| Soud telefon ≥ 0,75, levá 0,35–0,65 | 26/34 = 0,765, levá 0,559 | ano |
+| Soud desktop ≥ 0,75, levá 0,35–0,65 | 22/34 = 0,647, levá 0,676 | ne |
+| Kotva `anchor-after.json` ≥ 0 + 0,15 | 0/30 (levá 0,5) | ne |
+| FPS `perf-after.json` medián po/před ≥ 0,92 | 0,938 (medián 51,9 → 48,2 FPS) | ano |
+
+- **Desktop – co soud jmenoval (12 proher):** listí a stromy 01-frog („grey, broken-looking tree textures“), 07-goalkeeper, g-agar („grey bush“), g-ball, g-race; 02-zombie „enemy is an overexposed white blob“; 11-drum „ground plane's edge at the horizon“; pět téměř shodných dvojic (g-walker, g-timing, g-rhythm, g-voyage, g-lander) rozhodla strana. Noc 12-ghost, kterou pokus 1 prohrál, teď vyhrála (R1 zabrala).
+- **Pozorování 01-frog (výřez stromů):** kmeny stromů s texturou jsou plošně šedé (na `72665fdc` hnědé) a část plošek koruny taky; stromy bez textury (g-runner) jsou v pořádku. Na telefonu je ve 02-zombie nepřítel normální žlutomodrý zombík. **Odvozeno:** bílá skvrna na desktopu je nejspíš záblesk zásahu v tiku snímku, ne materiál.
+- **Kotva – co soud jmenoval:** všech 30 proher říká totéž jinými slovy – „bare green plane“, „flat placeholder scene“, „grey placeholder character“, „box-like“; hry z obchodu mají „detailed themed environment, rich lighting and VFX“. Toon, noc a díly prostředí na tom nic nezměnily – rozdíl je v hustotě a detailu scény, ne v materiálu.
+- **FPS:** pod 40 spadl jen 12-ghost (45,1 → 38,0, B celé okno na `low`); nejvíc ztrácí g-race 0,86, g-ball 0,87, g-fight 0,87. Měřeno pod zátěží souběžného soudu (34 scén ~80 min místo ~55).
