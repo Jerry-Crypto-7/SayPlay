@@ -18,6 +18,19 @@ import { publishDare } from '../../../ShareButton';
 import { createChainGhostSource, fetchChainGhost } from '../chain-ghost';
 import { type ChainSession, createChainSession } from '../chain-session';
 
+/** Kroky ducha: přetáčení od tiku 0 se pozná na počtu `stepChain`, ne na obraze. */
+const steps = vi.hoisted(() => ({ count: 0 }));
+vi.mock('@/play/chain/run', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/chain/run')>();
+  return {
+    ...actual,
+    stepChain: (...args: Parameters<typeof actual.stepChain>) => {
+      steps.count += 1;
+      return actual.stepChain(...args);
+    },
+  };
+});
+
 const MULTI = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
 
 let chain: ChainWorld;
@@ -100,6 +113,23 @@ describe('createChainGhostSource (P56C T12)', () => {
     expect(ghost.at(second + 10)!.round).toBe(1);
     // Hráč v kole 3, duch ještě v kole 2: nekreslí se ani tam.
     expect(ghost.forRound(2, second).poseAt(5)).toBeNull();
+  });
+
+  it('a card does not rewind the ghost: the HUD walks the card while the finished round scene stays on its last tick', () => {
+    const ghost = createChainGhostSource(chain, record);
+    let end = 0;
+    while (!ghost.at(end + 1)!.card) end += 1;
+    const scene = ghost.forRound(0, 0);
+    scene.poseAt(end);
+    steps.count = 0;
+    // Snímky karty jako v `ChainPlay`: HUD `at(session.tick())`, scéna kola 1 interpoluje `poseAt(tik − 1)` a `poseAt(tik)`.
+    for (let frame = 1; frame <= chain.cardTicks; frame += 1) {
+      expect(ghost.at(end + frame)!.card).toBe(true);
+      scene.poseAt(end - 1);
+      scene.poseAt(end);
+    }
+    // Jen HUD jde dál o tik za snímek; přetočení od nuly by stálo `end` kroků za snímek.
+    expect(steps.count).toBeLessThanOrEqual(chain.cardTicks);
   });
 
   it('fetchChainGhost reads the stored replay; a record with live changes is no chain ghost', async () => {

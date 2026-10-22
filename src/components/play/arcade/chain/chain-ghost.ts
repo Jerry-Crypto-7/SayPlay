@@ -30,8 +30,13 @@ export interface ChainGhostReplay {
   forRound(round: number, start: number): GhostSource;
 }
 
+interface ChainGhostCursor {
+  at(tick: number): ChainGhostAt | null;
+  run(): ChainState;
+}
+
 /** Zpět jen přetočením od tiku 0; o tik zpět (interpolace scény) vrátí uloženou předchozí pózu. */
-export function createChainGhostSource(chain: ChainWorld, inputs: readonly InputEvent[], library: ArcadeLibrary = ARCADE_LIBRARY): ChainGhostReplay {
+function chainGhostCursor(chain: ChainWorld, inputs: readonly InputEvent[], library: ArcadeLibrary): ChainGhostCursor {
   const horizon = chainHorizon(chain);
   let run: ChainState = startChain(chain, library);
   let next = 0;
@@ -71,13 +76,27 @@ export function createChainGhostSource(chain: ChainWorld, inputs: readonly Input
     while (run.tick < tick && run.outcome === 'running' && run.tick < horizon) stepOnce();
     return run.tick === tick ? current : null;
   };
+  return { at, run: () => run };
+}
+
+/**
+ * HUD se ptá na globální tik řetězu a scéna kola na svůj tik; během karty stojí scéna skončeného kola na posledním
+ * tiku a HUD jde dál. Se společným kurzorem by se duch každý snímek přetáčel od tiku 0 (na telefonu 80 ms), proto
+ * má scéna vlastní kurzor.
+ */
+export function createChainGhostSource(chain: ChainWorld, inputs: readonly InputEvent[], library: ArcadeLibrary = ARCADE_LIBRARY): ChainGhostReplay {
+  const hud = chainGhostCursor(chain, inputs, library);
+  const scene = chainGhostCursor(chain, inputs, library);
   return {
-    at,
-    hash: () => hashChain(run),
-    end: () => (run.outcome === 'running' ? null : { tick: run.tick, outcome: run.outcome, hash: hashChain(run) }),
+    at: hud.at,
+    hash: () => hashChain(hud.run()),
+    end: () => {
+      const run = hud.run();
+      return run.outcome === 'running' ? null : { tick: run.tick, outcome: run.outcome, hash: hashChain(run) };
+    },
     forRound: (round, start) => ({
       poseAt: (tick) => {
-        const ghost = at(start + tick);
+        const ghost = scene.at(start + tick);
         return ghost !== null && ghost.round === round ? ghost.pose : null;
       },
     }),
