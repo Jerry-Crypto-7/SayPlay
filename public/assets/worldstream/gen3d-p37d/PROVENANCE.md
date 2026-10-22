@@ -606,7 +606,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-prickly-pear-cactus` | prickly pear cactus, opuntia | 4552 / 2222 |
 | `gen3d-scree-rock-pile` | scree rock pile, rock pile | 4424 / 2084 |
 | `gen3d-layered-canyon-rock` | layered canyon rock, butte, canyon rock | 4653 / 2311 |
-| `gen3d-poplar-tree` | poplar tree, poplar | 4741 / 2362 |
+| `gen3d-poplar-tree` | poplar tree, poplar | 7599 / 2238 |
 | `gen3d-leaning-palm-tree` | leaning palm tree | 3245 / 1519 |
 | `gen3d-basalt-column-rock` | basalt column rock | 4748 / 2374 |
 | `gen3d-olive-tree` | olive tree, olive | 4450 / 2460 |
@@ -1016,6 +1016,7 @@ stay, the geometry and its licence are new. The files they replaced are kept out
 | `gen3d-funeral-urn` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3998 / 1998 |
 | `gen3d-ancient-vase` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3513 / 1702 |
 | `gen3d-oil-drum` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4054 / 2018 |
+| `gen3d-poplar-tree` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7599 / 2238 |
 | `gen3d-leaning-palm-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3245 / 1519 |
 | `gen3d-frozen-dead-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4031 / 1984 |
 | `gen3d-stone-idol-head` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3958 / 1966 |

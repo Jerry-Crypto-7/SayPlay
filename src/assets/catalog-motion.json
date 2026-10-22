@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "7e3de2710040d231919d975e50124518fe88d8d475a5fdaad3d89b5817675de1",
+ "catalogHash": "c5674089ea7acf4fa78fab676329a19e517085c29be3c72d5e9da9b719a376ff",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1382,7 +1382,7 @@
   "gen3d-prickly-pear-cactus": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-scree-rock-pile": {"class":"prop"},
   "gen3d-layered-canyon-rock": {"class":"prop"},
-  "gen3d-poplar-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-poplar-tree": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-leaning-palm-tree": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-basalt-column-rock": {"class":"prop"},
   "gen3d-olive-tree": {"class":"prop"},
