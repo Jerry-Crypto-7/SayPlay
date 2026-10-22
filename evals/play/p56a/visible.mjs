@@ -140,6 +140,7 @@ async function play(options) {
         versionId: created.versionId,
         draftMs,
         readBy: game.origin?.readBy ?? 'keywords',
+        genre: game.spec.genre === undefined ? null : `${game.spec.genre.id}.${game.spec.genre.mode}`,
         title: game.spec.title ?? null,
         hero: roles.find((role) => role.kind === 'player')?.label ?? null,
         roles: roles.filter((role) => role.kind !== 'player').map((role) => `${role.kind}:${role.label}`),
@@ -183,27 +184,28 @@ function sideOf(dir, sentences) {
 
 function report(options) {
   const sentences = readJson(resolve(ROOT, options.set)).sentences;
-  const a = sideOf(resolve(ROOT, options.a), sentences);
+  // Bez `--a` jen strana B (T13: zapečetěná sada, soudce jen nad P56A).
+  const a = options.a === undefined ? null : sideOf(resolve(ROOT, options.a), sentences);
   const b = sideOf(resolve(ROOT, options.b), sentences);
   const target = Number(options.target ?? 10);
-  const strip = (side) => ({ seen: side.seen, of: side.of, nounsSeen: side.nounsSeen, nounsOf: side.nounsOf, readByModel: side.readByModel });
+  const strip = (side) => (side === null ? null : { seen: side.seen, of: side.of, nounsSeen: side.nounsSeen, nounsOf: side.nounsOf, readByModel: side.readByModel });
   const result = {
     schema: 'p56a-visible.v1',
     set: options.set,
     question: 'blind judge (scripts/p37d/judge-sheet.mjs ask: Codex on the subscription, empty mkdtemp with only sheet.png) sees every noun of the sentence: hero (subject) and foe, or the item when the sentence names no foe',
     frame: `canvas only, page text hidden, 1280x800, robot ("Show me how") after ${PLAY_TICKS} ticks (3 s of play) on the probe's hand clock`,
     setup: options.setup ?? null,
-    a: { commit: options['a-commit'] ?? null, side: 'before P56A, no sentence reader', ...strip(a) },
+    a: a === null ? null : { commit: options['a-commit'] ?? null, side: 'before P56A, no sentence reader', ...strip(a) },
     b: { commit: options['b-commit'] ?? null, side: 'P56A with the sentence reader', ...strip(b) },
     target: `B sees both nouns in >= ${target}/${sentences.length}`,
     met: b.seen >= target,
     rows: sentences.map((sentence, index) => {
-      const side = (row) => ({ readBy: row.readBy, title: row.title, hero: row.hero, roles: row.roles, robot: row.robot, tick: row.tick, scene: row.scene, nouns: row.nouns, all: row.all });
-      return { id: sentence.id, text: sentence.text, a: side(a.rows[index]), b: side(b.rows[index]) };
+      const side = (row) => ({ readBy: row.readBy, genre: row.genre ?? null, title: row.title, hero: row.hero, roles: row.roles, robot: row.robot, tick: row.tick, scene: row.scene, nouns: row.nouns, all: row.all });
+      return { id: sentence.id, text: sentence.text, ...(a === null ? {} : { a: side(a.rows[index]) }), b: side(b.rows[index]) };
     }),
   };
   writeJson(resolve(ROOT, options.out), result);
-  console.log(`visible: A ${a.seen}/${a.of} (nouns ${a.nounsSeen}/${a.nounsOf}), B ${b.seen}/${b.of} (nouns ${b.nounsSeen}/${b.nounsOf}, read by model ${b.readByModel}) target ${target} ${result.met ? 'met' : 'missed'} -> ${options.out}`);
+  console.log(`visible: ${a === null ? '' : `A ${a.seen}/${a.of} (nouns ${a.nounsSeen}/${a.nounsOf}), `}B ${b.seen}/${b.of} (nouns ${b.nounsSeen}/${b.nounsOf}, read by model ${b.readByModel}) target ${target} ${result.met ? 'met' : 'missed'} -> ${options.out}`);
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

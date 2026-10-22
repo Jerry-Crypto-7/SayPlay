@@ -24,4 +24,8 @@ Plán `plans/P56A-veta-je-videt-2026-10-21.md` (necommitovaný). Větev `feature
 
 - **Proč B nevidí zbytek:** u šesti ze sedmi chybějících slov spec nese správné jméno a knihovna má model na úrovni `identity`. Soudce postavu nepoznal: zombie a brankář jsou „příliš malí“ (a02, a07), ninja „zelená kápě dobrodruha“ (a03, `rogue-hooded`), kuchař „oranžový kvádr“ (a10), ovoce „béžové kvádry“ (a03), asteroid „kameny“ (a09). Žralok (a04) je ve specu hrdina, závodní režim (`voyage.race`) ho ale nakreslí jako závodní auto – stejně jako žábu na straně A. To je vzhled, velikost a kamera – rozsah P56B a knihovny modelů, ne čtení věty. Jediná chyba specu: a11 „drum to the beat“ – rytmická hra nemá bubny, jen dlaždice a údery.
 - **e2e `play-sentence-visible.spec.ts`** 24/24 (desktop 1280×800, telefon 390×844): přečteno modelem, hrdina a protivník věty ve specu, hra běží, žádná `pageerror`. Bez čtečky padá na `readBy`.
-- **Prostředí:** ComfyUI držel 12 GB RTX 3090, gpt-oss-20b proto běžel s experty na CPU (`llama-server --cpu-moe`); první čtení věty 25–45 s, proto rozpočet 60 s. Režisér (AI verze) na serverech nebyl – soudí se jen rychlá verze, co AI verze přepíše, změřeno není.
+- **Prostředí (T12):** ComfyUI držel 12 GB RTX 3090, gpt-oss-20b proto běžel s experty na CPU (`llama-server --cpu-moe`); první čtení věty 25–45 s, proto rozpočet 60 s. Režisér (AI verze) na serverech nebyl – soudí se jen rychlá verze, co AI verze přepíše, změřeno není.
+
+## Zapečetěná sada otevřená (T13)
+
+`holdout.json` otevřel 22. 10. `holdout.measure.ts` (`holdout-opened.json`); od té doby je to **dev sada**. Výsledek a výklad v `final.md` + `final.json`, čtení v `readings/holdout.gpt-oss-20b.json`, snímky a soud v `visible-holdout.json` (`visible.mjs report` bez `--a` = jen strana B). Cíle 31/60, pasti 13/20, robot/nečinný/replay 80/80, viditelnost 13/80, latence v mezích – žánr, pasti a viditelnost nesplněny.

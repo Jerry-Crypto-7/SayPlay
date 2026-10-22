@@ -1,0 +1,3961 @@
+{
+ "schema": "p56a-final.v1",
+ "commit": "0dd2f0d2",
+ "sha256": "3dd3b9ebcabaa72b2f7ee275e188e80fab213de44da24d474dd78ca227e64999",
+ "model": "gpt-oss-20b",
+ "transport": "llamacpp:http://127.0.0.1:8792",
+ "seed": 1,
+ "holdout": {
+  "gates": {
+   "targetGenre": 48,
+   "trapOffLure": 19,
+   "bot": 80,
+   "idleLoses": 80,
+   "replayEqual": 80
+  },
+  "met": {
+   "targetGenre": false,
+   "trapOffLure": false,
+   "bot": true,
+   "idleLoses": true,
+   "replayEqual": true
+  },
+  "summary": {
+   "targetGenre": {
+    "hit": 31,
+    "of": 60
+   },
+   "targetMode": {
+    "hit": 29,
+    "of": 60
+   },
+   "targetReadingAlone": {
+    "hit": 14,
+    "of": 60
+   },
+   "targetWordsAlone": {
+    "hit": 29,
+    "of": 60
+   },
+   "trapOffLure": {
+    "hit": 13,
+    "of": 20
+   },
+   "trapGenre": {
+    "hit": 13,
+    "of": 20
+   },
+   "trapPlaysItsGenre": {
+    "hit": 4,
+    "of": 12
+   },
+   "bot": {
+    "hit": 80,
+    "of": 80
+   },
+   "idleLoses": {
+    "hit": 80,
+    "of": 80
+   },
+   "replayEqual": {
+    "hit": 80,
+    "of": 80
+   },
+   "specNames": {
+    "hero": {
+     "hit": 53,
+     "of": 58
+    },
+    "foe": {
+     "hit": 29,
+     "of": 49
+    },
+    "item": {
+     "hit": 26,
+     "of": 43
+    }
+   },
+   "worldMatches": {
+    "hit": 55,
+    "of": 66
+   },
+   "cast": {
+    "sentences": 80,
+    "foxHeroNotSaid": [
+     "s17"
+    ],
+    "heroFallback": 13,
+    "templateTitles": 0,
+    "distinctTitles": 80,
+    "looks": {
+     "meadow": 19,
+     "snow": 6,
+     "ocean": 6,
+     "castle": 6,
+     "desert": 5,
+     "city": 4,
+     "graveyard": 4,
+     "forest": 4,
+     "factory": 4,
+     "beach": 4,
+     "jungle": 4,
+     "supermarket": 3,
+     "cave": 3,
+     "space": 2,
+     "volcano": 2,
+     "underwater": 2,
+     "living_room": 1,
+     "mall": 1
+    }
+   },
+   "reader": {
+    "n": 80,
+    "valid": 39,
+    "p50Ms": 60002,
+    "p95Ms": 60054,
+    "maxMs": 60367
+   },
+   "targetMisses": [
+    "s02: merge.default -> defense.default (reading merge.default, words defense.default)",
+    "s03: duel.default -> arena.fight (reading duel.default, words arena.fight)",
+    "s07: hop.default -> voyage.race (reading quest.spatial, words voyage.race)",
+    "s08: shooter.default -> defense.default (reading defense.default, words shooter.default)",
+    "s09: arena.escape -> runner.default (reading arena.escape, words runner.default)",
+    "s10: slice.default -> timing.precision (reading timing.precision, words quest.spatial)",
+    "s12: rhythm.default -> runner.default (reading rhythm.default, words runner.default)",
+    "s15: defense.default -> arena.fight (reading none, words arena.fight)",
+    "s16: flap.default -> arena.escape (reading none, words arena.escape)",
+    "s21: timing.precision -> arena.collect (reading none, words arena.collect)",
+    "s23: voyage.race -> runner.default (reading none, words runner.default)",
+    "s24: merge.default -> throw.default (reading none, words throw.default)",
+    "s25: catch.default -> arena.escape (reading none, words arena.escape)",
+    "s26: duel.default -> arena.fight (reading none, words arena.fight)",
+    "s28: hop.default -> voyage.race (reading none, words voyage.race)",
+    "s30: platformer.default -> arena.collect (reading none, words arena.collect)",
+    "s32: shooter.default -> voyage.race (reading none, words voyage.race)",
+    "s34: defense.default -> arena.escape (reading none, words arena.escape)",
+    "s35: flap.default -> arena.collect (reading none, words arena.collect)",
+    "s36: rhythm.default -> quest.spatial (reading none, words quest.spatial)",
+    "s37: push.default -> voyage.race (reading none, words voyage.race)",
+    "s40: crowd.default -> runner.default (reading none, words runner.default)",
+    "s41: voyage.land -> quest.spatial (reading none, words quest.spatial)",
+    "s44: timing.stack -> voyage.race (reading none, words voyage.race)",
+    "s45: hop.default -> runner.default (reading none, words runner.default)",
+    "s46: merge.default -> arena.collect (reading none, words arena.collect)",
+    "s47: catch.default -> voyage.race (reading none, words voyage.race)",
+    "s54: flap.default -> voyage.race (reading platformer.default, words voyage.race)",
+    "s59: crowd.default -> voyage.race (reading none, words voyage.race)"
+   ],
+   "trapsOnLure": [
+    "s63: lure shooter.default played (reading shooter.default, words shooter.default)",
+    "s64: lure runner.default played (reading platformer.default, words runner.default)",
+    "s68: lure rhythm.default played (reading none, words rhythm.default)",
+    "s73: lure merge.default played (reading merge.default, words runner.default)",
+    "s74: lure voyage.race played (reading voyage.race, words voyage.race)",
+    "s77: lure flap.default played (reading flap.default, words timing.stack)",
+    "s80: lure shooter.default played (reading shooter.default, words shooter.default)"
+   ],
+   "botFailures": []
+  },
+  "rows": [
+   {
+    "id": "s01",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Pizza Delivery Sprint",
+    "look": "city",
+    "world": "city",
+    "heroLabel": "pizza delivery guy",
+    "heroLevel": "identity",
+    "cast": [
+     "pizza",
+     "trash can",
+     "tip",
+     "house",
+     "taxi",
+     "tips till"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s02",
+    "family": "target",
+    "genre": "merge.default",
+    "lure": null,
+    "draft": "defense.default",
+    "wordsDraft": "defense.default",
+    "readGenre": "merge.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Cat Yarn Merge",
+    "look": "meadow",
+    "world": "living_room",
+    "heroLabel": "cat",
+    "heroLevel": "identity",
+    "cast": [
+     "heap"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s03",
+    "family": "target",
+    "genre": "duel.default",
+    "lure": null,
+    "draft": "arena.fight",
+    "wordsDraft": "arena.fight",
+    "readGenre": "duel.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": null
+    },
+    "title": "1v1 vs a giant yeti",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "penguin",
+    "heroLevel": "identity",
+    "cast": [
+     "him back",
+     "snowflake"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s04",
+    "family": "target",
+    "genre": "quest.spatial",
+    "lure": null,
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": true
+    },
+    "title": "Ghost Hunter Candle Light",
+    "look": "graveyard",
+    "world": "graveyard",
+    "heroLabel": "ghost hunter",
+    "heroLevel": "identity",
+    "cast": [
+     "tombstone",
+     "candle",
+     "star"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s05",
+    "family": "target",
+    "genre": "catch.default",
+    "lure": null,
+    "draft": "catch.default",
+    "wordsDraft": "catch.default",
+    "readGenre": "arena.collect",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": true
+    },
+    "title": "Basket Grab",
+    "look": "supermarket",
+    "world": "supermarket",
+    "heroLabel": "shopping basket",
+    "heroLevel": "identity",
+    "cast": [
+     "rotten eggs",
+     "apples"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s06",
+    "family": "target",
+    "genre": "timing.stack",
+    "lure": null,
+    "draft": "timing.precision",
+    "wordsDraft": "timing.precision",
+    "readGenre": "timing.precision",
+    "genreOk": true,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "Burger Patties Swing Back",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "explorer",
+    "heroLevel": "identity",
+    "cast": [
+     "wind",
+     "patty"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s07",
+    "family": "target",
+    "genre": "hop.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": "quest.spatial",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Goose Shuffle",
+    "look": "city",
+    "world": "city",
+    "heroLabel": "goose",
+    "heroLevel": "fallback",
+    "cast": [
+     "traffic",
+     "traffic barrier"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s08",
+    "family": "target",
+    "genre": "shooter.default",
+    "lure": null,
+    "draft": "defense.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": "defense.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": false
+    },
+    "title": "Water Hose Crows",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "grumpy farmer",
+    "heroLevel": "identity",
+    "cast": [
+     "crows"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s09",
+    "family": "target",
+    "genre": "arena.escape",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "arena.escape",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Hamster Scurries",
+    "look": "living_room",
+    "world": "living_room",
+    "heroLabel": "hamster",
+    "heroLevel": "identity",
+    "cast": [
+     "cat",
+     "sunflower seed"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s10",
+    "family": "target",
+    "genre": "slice.default",
+    "lure": null,
+    "draft": "timing.precision",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "timing.precision",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Lumberjack Logs",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "lumberjack",
+    "heroLevel": "identity",
+    "cast": [
+     "bee",
+     "log",
+     "beehive"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s11",
+    "family": "target",
+    "genre": "voyage.land",
+    "lure": null,
+    "draft": "voyage.land",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "voyage.land",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Wobbly Moon Lander",
+    "look": "space",
+    "world": "space",
+    "heroLabel": "moon lander",
+    "heroLevel": "identity",
+    "cast": [
+     "leg"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s12",
+    "family": "target",
+    "genre": "rhythm.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "rhythm.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "DJ Cat Rhythm",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "dj cat",
+    "heroLevel": "identity",
+    "cast": [
+     "glowing arrow",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s13",
+    "family": "target",
+    "genre": "push.default",
+    "lure": null,
+    "draft": "push.default",
+    "wordsDraft": "push.default",
+    "readGenre": "push.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Shoulder-Barge Bumper Bots",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "robot",
+    "heroLevel": "identity",
+    "cast": [
+     "other bumper bots"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s14",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "platformer.default",
+    "wordsDraft": "platformer.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": false,
+     "foe": true,
+     "item": null
+    },
+    "title": "Help Little Frog Spring",
+    "look": "beach",
+    "world": "volcano",
+    "heroLabel": "turtle",
+    "heroLevel": "identity",
+    "cast": [
+     "lava",
+     "shell"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s15",
+    "family": "target",
+    "genre": "defense.default",
+    "lure": null,
+    "draft": "arena.fight",
+    "wordsDraft": "arena.fight",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": false
+    },
+    "title": "Beaver Guards Dam Setting",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "beaver",
+    "heroLevel": "identity",
+    "cast": [
+     "acorn"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s16",
+    "family": "target",
+    "genre": "flap.default",
+    "lure": null,
+    "draft": "arena.escape",
+    "wordsDraft": "arena.escape",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Chubby Pigeon Wobbles Forward",
+    "look": "city",
+    "world": "city",
+    "heroLabel": "pigeon",
+    "heroLevel": "identity",
+    "cast": [
+     "pipe",
+     "pigeon"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s17",
+    "family": "target",
+    "genre": "whack.default",
+    "lure": null,
+    "draft": "whack.default",
+    "wordsDraft": "whack.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Smack Zombies Rising",
+    "look": "meadow",
+    "world": "graveyard",
+    "heroLabel": "fox",
+    "heroLevel": "identity",
+    "cast": [
+     "zombie"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s18",
+    "family": "target",
+    "genre": "throw.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "throw.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Skeleton Bowls His Own",
+    "look": "graveyard",
+    "world": "graveyard",
+    "heroLabel": "skeleton",
+    "heroLevel": "identity",
+    "cast": [
+     "ghost",
+     "his own"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s19",
+    "family": "target",
+    "genre": "crowd.default",
+    "lure": null,
+    "draft": "crowd.default",
+    "wordsDraft": "crowd.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": null
+    },
+    "title": "Grow Your Army Picking",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "explorer",
+    "heroLevel": "identity",
+    "cast": [],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s20",
+    "family": "target",
+    "genre": "quest.station",
+    "lure": null,
+    "draft": "quest.station",
+    "wordsDraft": "quest.station",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": false,
+     "foe": null,
+     "item": true
+    },
+    "title": "Grandma Her Stove Flipping",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "get",
+    "heroLevel": "fallback",
+    "cast": [
+     "shadow",
+     "coin",
+     "pancake"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s21",
+    "family": "target",
+    "genre": "timing.precision",
+    "lure": null,
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Safecracker Watches Needle Zip",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "safecracker",
+    "heroLevel": "fallback",
+    "cast": [
+     "wolf",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s22",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": true
+    },
+    "title": "Sprint Down Frozen Mountain",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "penguin",
+    "heroLevel": "identity",
+    "cast": [
+     "cup",
+     "rock",
+     "hot cocoa"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s23",
+    "family": "target",
+    "genre": "voyage.race",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Surfing Otter Zooms",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "surfing otter",
+    "heroLevel": "identity",
+    "cast": [
+     "dolphin",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s24",
+    "family": "target",
+    "genre": "merge.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "throw.default",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": false
+    },
+    "title": "Plop Planets Into Bowl",
+    "look": "space",
+    "world": "space",
+    "heroLabel": "astronaut",
+    "heroLevel": "identity",
+    "cast": [
+     "asteroid",
+     "bowl"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s25",
+    "family": "target",
+    "genre": "catch.default",
+    "lure": null,
+    "draft": "arena.escape",
+    "wordsDraft": "arena.escape",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Kid Bucket Foot Volcano",
+    "look": "volcano",
+    "world": "volcano",
+    "heroLabel": "kid",
+    "heroLevel": "identity",
+    "cast": [
+     "gemstone",
+     "rock",
+     "lava"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s26",
+    "family": "target",
+    "genre": "duel.default",
+    "lure": null,
+    "draft": "arena.fight",
+    "wordsDraft": "arena.fight",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Boxing Kangaroo Trades Blows",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "boxing kangaroo",
+    "heroLevel": "identity",
+    "cast": [
+     "kangaroo trades blow",
+     "gem",
+     "kangaroo trade"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s27",
+    "family": "target",
+    "genre": "arena.collect",
+    "lure": null,
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Raccoon Roams Supermarket",
+    "look": "supermarket",
+    "world": "supermarket",
+    "heroLabel": "raccoon",
+    "heroLevel": "identity",
+    "cast": [
+     "snack",
+     "cat",
+     "cheese"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s28",
+    "family": "target",
+    "genre": "hop.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": null
+    },
+    "title": "Inch Your Way Jungle",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "car",
+    "heroLevel": "identity",
+    "cast": [
+     "snake"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s29",
+    "family": "target",
+    "genre": "slice.default",
+    "lure": null,
+    "draft": "slice.default",
+    "wordsDraft": "slice.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": true
+    },
+    "title": "Sushi Chef Slashes Fish",
+    "look": "ocean",
+    "world": null,
+    "heroLabel": "sushi chef",
+    "heroLevel": "identity",
+    "cast": [
+     "fish",
+     "fish flung"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s30",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Tiny Knight Bounds One",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "knight",
+    "heroLevel": "identity",
+    "cast": [
+     "bottomless",
+     "room",
+     "ghost",
+     "knight"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s31",
+    "family": "target",
+    "genre": "whack.default",
+    "lure": null,
+    "draft": "whack.default",
+    "wordsDraft": "whack.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Mall Cop Swats Shoplifters",
+    "look": "mall",
+    "world": "mall",
+    "heroLabel": "mall cop",
+    "heroLevel": "identity",
+    "cast": [
+     "shoplifter"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s32",
+    "family": "target",
+    "genre": "shooter.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": null
+    },
+    "title": "Im Stuck Behind Submarine",
+    "look": "underwater",
+    "world": "underwater",
+    "heroLabel": "stuck",
+    "heroLevel": "fallback",
+    "cast": [
+     "swarm"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s33",
+    "family": "target",
+    "genre": "timing.bridge",
+    "lure": null,
+    "draft": "timing.stack",
+    "wordsDraft": "timing.stack",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Desert Lizard Stretches Cactus",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "desert lizard",
+    "heroLevel": "identity",
+    "cast": [
+     "scorpion",
+     "rock"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s34",
+    "family": "target",
+    "genre": "defense.default",
+    "lure": null,
+    "draft": "arena.escape",
+    "wordsDraft": "arena.escape",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": true
+    },
+    "title": "Keep Zombie Horde Shambling",
+    "look": "graveyard",
+    "world": "mall",
+    "heroLabel": "zombie",
+    "heroLevel": "identity",
+    "cast": [
+     "guard",
+     "zombie",
+     "food"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s35",
+    "family": "target",
+    "genre": "flap.default",
+    "lure": null,
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": null
+    },
+    "title": "Keep Yourself Airborne Spooky",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "kid",
+    "heroLevel": "identity",
+    "cast": [
+     "bat",
+     "stalagmite"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s36",
+    "family": "target",
+    "genre": "rhythm.default",
+    "lure": null,
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.spatial",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Breakdancing Robot Factory Hits",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "breakdancing robot",
+    "heroLevel": "identity",
+    "cast": [
+     "arrow",
+     "foot pad",
+     "gear"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s37",
+    "family": "target",
+    "genre": "push.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": false,
+     "foe": true,
+     "item": null
+    },
+    "title": "Chubby Walrus Bumps Other",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "chubby",
+    "heroLevel": "fallback",
+    "cast": [
+     "ice",
+     "walrus"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s38",
+    "family": "target",
+    "genre": "throw.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "throw.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Gorilla Lobs Coconuts",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "gorilla",
+    "heroLevel": "identity",
+    "cast": [
+     "tiny basket",
+     "harder",
+     "snake"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s39",
+    "family": "target",
+    "genre": "quest.spatial",
+    "lure": null,
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.spatial",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": true
+    },
+    "title": "Sneak Around Factory Floor",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "robot",
+    "heroLevel": "identity",
+    "cast": [
+     "pipe",
+     "patrol",
+     "saw blade",
+     "gear",
+     "star"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s40",
+    "family": "target",
+    "genre": "crowd.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": false,
+     "foe": false,
+     "item": null
+    },
+    "title": "One Tiny Lemming Dashes",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "tiny",
+    "heroLevel": "fallback",
+    "cast": [
+     "saw",
+     "crystal"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s41",
+    "family": "target",
+    "genre": "voyage.land",
+    "lure": null,
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.spatial",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Rescue Helicopter Ease",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "rescue helicopter",
+    "heroLevel": "identity",
+    "cast": [
+     "helicopter",
+     "shadow",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s42",
+    "family": "target",
+    "genre": "arena.fight",
+    "lure": null,
+    "draft": "arena.fight",
+    "wordsDraft": "arena.fight",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Pirate Crab Brawls Sand",
+    "look": "ocean",
+    "world": "beach",
+    "heroLabel": "pirate crab",
+    "heroLevel": "identity",
+    "cast": [
+     "sand",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s43",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": false
+    },
+    "title": "Corgi Dashes Desert Canyon",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "corgi",
+    "heroLevel": "identity",
+    "cast": [
+     "cactus",
+     "gem"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s44",
+    "family": "target",
+    "genre": "timing.stack",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Monkey Dangles Coconuts Swaying",
+    "look": "meadow",
+    "world": "jungle",
+    "heroLabel": "monkey",
+    "heroLevel": "identity",
+    "cast": [
+     "heap",
+     "rock"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s45",
+    "family": "target",
+    "genre": "hop.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Hedgehog Scurries Forward Bit",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "hedgehog",
+    "heroLevel": "identity",
+    "cast": [
+     "log",
+     "truck"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s46",
+    "family": "target",
+    "genre": "merge.default",
+    "lure": null,
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Octopus Drops Shells",
+    "look": "meadow",
+    "world": "underwater",
+    "heroLabel": "octopus",
+    "heroLevel": "identity",
+    "cast": [
+     "wolf",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s47",
+    "family": "target",
+    "genre": "catch.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": false
+    },
+    "title": "Penguin Scoots Side Side",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "penguin",
+    "heroLevel": "fallback",
+    "cast": [
+     "icicle",
+     "polar bear"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s48",
+    "family": "target",
+    "genre": "duel.default",
+    "lure": null,
+    "draft": "duel.default",
+    "wordsDraft": "duel.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Samurai Rooster Takes One",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "samurai rooster",
+    "heroLevel": "identity",
+    "cast": [
+     "rival"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s49",
+    "family": "target",
+    "genre": "quest.station",
+    "lure": null,
+    "draft": "quest.station",
+    "wordsDraft": "quest.station",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Blacksmith Stuck His Anvil",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "blacksmith stuck",
+    "heroLevel": "fallback",
+    "cast": [
+     "queue",
+     "gem",
+     "sword"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s50",
+    "family": "target",
+    "genre": "shooter.default",
+    "lure": null,
+    "draft": "shooter.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": false
+    },
+    "title": "Snowman Plants Himself Hill",
+    "look": "meadow",
+    "world": "snow",
+    "heroLabel": "snowman",
+    "heroLevel": "identity",
+    "cast": [
+     "fire",
+     "fire",
+     "bee"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s51",
+    "family": "target",
+    "genre": "slice.default",
+    "lure": null,
+    "draft": "slice.default",
+    "wordsDraft": "slice.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": true
+    },
+    "title": "Slash Watermelons Coconuts They",
+    "look": "beach",
+    "world": "beach",
+    "heroLabel": "turtle",
+    "heroLevel": "identity",
+    "cast": [
+     "watermelon",
+     "dynamite"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s52",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "platformer.default",
+    "wordsDraft": "platformer.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "Go Left Right Dark",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "kid",
+    "heroLevel": "identity",
+    "cast": [
+     "exit door"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s53",
+    "family": "target",
+    "genre": "whack.default",
+    "lure": null,
+    "draft": "whack.default",
+    "wordsDraft": "whack.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": false
+    },
+    "title": "Grumpy Gardener Rolling Pin",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "grumpy gardener",
+    "heroLevel": "identity",
+    "cast": [
+     "gopher"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s54",
+    "family": "target",
+    "genre": "flap.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": "platformer.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Pufferfish Puff",
+    "look": "underwater",
+    "world": "underwater",
+    "heroLabel": "pufferfish",
+    "heroLevel": "identity",
+    "cast": [
+     "spiky coral spire"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s55",
+    "family": "target",
+    "genre": "defense.default",
+    "lure": null,
+    "draft": "defense.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": "defense.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Wizard Protects Gate",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "wizard",
+    "heroLevel": "identity",
+    "cast": [
+     "skeleton soldiers",
+     "castle gate"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s56",
+    "family": "target",
+    "genre": "throw.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "throw.default",
+    "readGenre": "throw.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": false
+    },
+    "title": "Baseball Can Knockdown",
+    "look": "desert",
+    "world": "beach",
+    "heroLabel": "player",
+    "heroLevel": "identity",
+    "cast": [
+     "pyramid",
+     "football"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s57",
+    "family": "target",
+    "genre": "rhythm.default",
+    "lure": null,
+    "draft": "rhythm.default",
+    "wordsDraft": "rhythm.default",
+    "readGenre": "rhythm.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": false
+    },
+    "title": "Bongos at Sunset",
+    "look": "beach",
+    "world": "beach",
+    "heroLabel": "right",
+    "heroLevel": "fallback",
+    "cast": [
+     "seashell"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s58",
+    "family": "target",
+    "genre": "voyage.race",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": "voyage.race",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Parrot Jungle Race",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "parrot",
+    "heroLevel": "fallback",
+    "cast": [
+     "flock of rival bird",
+     "flock"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s59",
+    "family": "target",
+    "genre": "crowd.default",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": false,
+     "foe": true,
+     "item": null
+    },
+    "title": "Few Rubber Ducks Float",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "few rubber",
+    "heroLevel": "identity",
+    "cast": [
+     "saw blade",
+     "boss robot"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s60",
+    "family": "target",
+    "genre": "push.default",
+    "lure": null,
+    "draft": "push.default",
+    "wordsDraft": "arena.collect",
+    "readGenre": "push.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Rhino Butts Goats",
+    "look": "volcano",
+    "world": "volcano",
+    "heroLabel": "grumpy rhino",
+    "heroLevel": "identity",
+    "cast": [
+     "mountain goats"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s61",
+    "family": "trap",
+    "genre": "hop.default",
+    "lure": "catch.default",
+    "draft": "platformer.default",
+    "wordsDraft": "arena.collect",
+    "readGenre": "platformer.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Chicken Bus Crossing",
+    "look": "ocean",
+    "world": "city",
+    "heroLabel": "chicken",
+    "heroLevel": "identity",
+    "cast": [
+     "bus",
+     "bus so"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s62",
+    "family": "trap",
+    "genre": null,
+    "lure": "slice.default",
+    "draft": "timing.precision",
+    "wordsDraft": "quest.station",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Pizza Slice Puzzle",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "pizza chef",
+    "heroLevel": "identity",
+    "cast": [
+     "guest",
+     "pizza"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s63",
+    "family": "trap",
+    "genre": "throw.default",
+    "lure": "shooter.default",
+    "draft": "shooter.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": "shooter.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Seal Hoops",
+    "look": "beach",
+    "world": "snow",
+    "heroLabel": "seal",
+    "heroLevel": "identity",
+    "cast": [
+     "hoop",
+     "net",
+     "robot",
+     "beach ball"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s64",
+    "family": "trap",
+    "genre": "platformer.default",
+    "lure": "runner.default",
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "platformer.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Fox Treetop Run",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "fox",
+    "heroLevel": "identity",
+    "cast": [
+     "treetop",
+     "acorn"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s65",
+    "family": "trap",
+    "genre": null,
+    "lure": "duel.default",
+    "draft": "arena.fight",
+    "wordsDraft": "arena.fight",
+    "readGenre": "arena.fight",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": true
+    },
+    "title": "Wizard Card Battle",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "wizard",
+    "heroLevel": "identity",
+    "cast": [
+     "deck",
+     "spell card"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s66",
+    "family": "trap",
+    "genre": "duel.default",
+    "lure": "slice.default",
+    "draft": "arena.fight",
+    "wordsDraft": "arena.fight",
+    "readGenre": "duel.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Samurai Cat vs Ninja Dog",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "samurai cat",
+    "heroLevel": "identity",
+    "cast": [
+     "ninja dog",
+     "flower"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s67",
+    "family": "trap",
+    "genre": "quest.station",
+    "lure": "defense.default",
+    "draft": "quest.spatial",
+    "wordsDraft": "arena.fight",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "Burger Stand Rush",
+    "look": "supermarket",
+    "world": null,
+    "heroLabel": "mouse",
+    "heroLevel": "identity",
+    "cast": [
+     "customer",
+     "patty",
+     "burger stand"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s68",
+    "family": "trap",
+    "genre": null,
+    "lure": "rhythm.default",
+    "draft": "rhythm.default",
+    "wordsDraft": "rhythm.default",
+    "readGenre": null,
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "Rock Band Dating",
+    "look": "city",
+    "world": null,
+    "heroLabel": "kid",
+    "heroLevel": "identity",
+    "cast": [
+     "drummer"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s69",
+    "family": "trap",
+    "genre": "timing.precision",
+    "lure": "rhythm.default",
+    "draft": "timing.precision",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "timing.precision",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Opera Note Timing",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "opera singer",
+    "heroLevel": "identity",
+    "cast": [
+     "high note",
+     "pointer"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s70",
+    "family": "trap",
+    "genre": "catch.default",
+    "lure": "arena.collect",
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "arena.collect",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Frog Raindrop Leaf",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "frog",
+    "heroLevel": "identity",
+    "cast": [
+     "raindrop",
+     "they",
+     "hailstone"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s71",
+    "family": "trap",
+    "genre": null,
+    "lure": "arena.escape",
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Haunted Mansion Escape",
+    "look": "graveyard",
+    "world": null,
+    "heroLabel": "detective",
+    "heroLevel": "identity",
+    "cast": [
+     "clue"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s72",
+    "family": "trap",
+    "genre": "runner.default",
+    "lure": "voyage.race",
+    "draft": "runner.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Cheetah Trail",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "cheetah",
+    "heroLevel": "fallback",
+    "cast": [
+     "trail",
+     "boulder",
+     "water bottle"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s73",
+    "family": "trap",
+    "genre": "crowd.default",
+    "lure": "merge.default",
+    "draft": "merge.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "merge.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Penguin Army",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "tiny penguin",
+    "heroLevel": "identity",
+    "cast": [
+     "penguin group"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s74",
+    "family": "trap",
+    "genre": null,
+    "lure": "voyage.race",
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": "voyage.race",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Turtle vs Hare Race",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "turtle",
+    "heroLevel": "fallback",
+    "cast": [
+     "hare"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s75",
+    "family": "trap",
+    "genre": "push.default",
+    "lure": "arena.fight",
+    "draft": "push.default",
+    "wordsDraft": "arena.fight",
+    "readGenre": "push.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Bulldog Bump",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "bulldog",
+    "heroLevel": "fallback",
+    "cast": [
+     "other dogs"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s76",
+    "family": "trap",
+    "genre": null,
+    "lure": "defense.default",
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": false,
+     "item": true
+    },
+    "title": "Medieval Castle Run",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "knight",
+    "heroLevel": "identity",
+    "cast": [
+     "tax",
+     "lord"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s77",
+    "family": "trap",
+    "genre": "voyage.land",
+    "lure": "flap.default",
+    "draft": "flap.default",
+    "wordsDraft": "timing.stack",
+    "readGenre": "flap.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Baby Dragon Landing",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "baby dragon",
+    "heroLevel": "identity",
+    "cast": [
+     "wing",
+     "gem"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s78",
+    "family": "trap",
+    "genre": null,
+    "lure": "catch.default",
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "timing.precision",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Frozen Lake Fishing",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "grandpa",
+    "heroLevel": "identity",
+    "cast": [
+     "line",
+     "fish",
+     "bite"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s79",
+    "family": "trap",
+    "genre": "merge.default",
+    "lure": "timing.stack",
+    "draft": "merge.default",
+    "wordsDraft": "timing.stack",
+    "readGenre": "merge.default",
+    "genreOk": true,
+    "modeOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "Jelly Tower",
+    "look": "castle",
+    "world": null,
+    "heroLabel": "knight",
+    "heroLevel": "identity",
+    "cast": [
+     "jelly blob"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s80",
+    "family": "trap",
+    "genre": null,
+    "lure": "shooter.default",
+    "draft": "shooter.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": "shooter.default",
+    "genreOk": false,
+    "modeOk": false,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": false
+    },
+    "title": "Jungle Safari Pics",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "monkey",
+    "heroLevel": "identity",
+    "cast": [
+     "pic",
+     "wild animal"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   }
+  ]
+ },
+ "latency": {
+  "a1": {
+   "base": "http://127.0.0.1:3111",
+   "reader": "",
+   "cold": true,
+   "n": 30,
+   "server": {
+    "n": 30,
+    "p50": 463,
+    "p95": 2811,
+    "max": 3228
+   },
+   "browser": {
+    "n": 27,
+    "p50": 939,
+    "p95": 2992,
+    "max": 3658
+   },
+   "pageErrors": 0,
+   "rows": [
+    {
+     "id": "a01",
+     "status": 201,
+     "postMs": 1978,
+     "versionId": "63924610e4d5c288b9c9a0dd1682bdaf",
+     "title": "frog drive",
+     "playableMs": 1669,
+     "browserVersionId": "63924610e4d5c288b9c9a0dd1682bdaf"
+    },
+    {
+     "id": "a02",
+     "status": 201,
+     "postMs": 429,
+     "versionId": "74454681e24cf24fc874ff4b244086ea",
+     "title": "Zombie Duel",
+     "playableMs": 939,
+     "browserVersionId": "74454681e24cf24fc874ff4b244086ea"
+    },
+    {
+     "id": "a03",
+     "status": 201,
+     "postMs": 198,
+     "versionId": "3c515c735c26e2cea5e3b57fb576c76e",
+     "title": "Ninja Slice",
+     "playableMs": 567,
+     "browserVersionId": "3c515c735c26e2cea5e3b57fb576c76e"
+    },
+    {
+     "id": "a04",
+     "status": 201,
+     "postMs": 1145,
+     "versionId": "4c5f23491980ce4e6e64ab0ab85f2b57",
+     "title": "submarine race",
+     "playableMs": 1625,
+     "browserVersionId": "4c5f23491980ce4e6e64ab0ab85f2b57"
+    },
+    {
+     "id": "a05",
+     "status": 201,
+     "postMs": 167,
+     "versionId": "4a4842cdf36073fb998813743ff7c5d2",
+     "title": "Moon Stack",
+     "playableMs": 575,
+     "browserVersionId": "4a4842cdf36073fb998813743ff7c5d2"
+    },
+    {
+     "id": "a06",
+     "status": 201,
+     "postMs": 360,
+     "versionId": "6cbbe44831f9e576ae6ec08d5efea6f2",
+     "title": "Cat Defense",
+     "playableMs": 657,
+     "browserVersionId": "6cbbe44831f9e576ae6ec08d5efea6f2"
+    },
+    {
+     "id": "a07",
+     "status": 201,
+     "postMs": 1023,
+     "versionId": "0f53ed85abd657b94e3fc4409278444a",
+     "title": "goalkeeper score",
+     "playableMs": 1494,
+     "browserVersionId": "0f53ed85abd657b94e3fc4409278444a"
+    },
+    {
+     "id": "a08",
+     "status": 201,
+     "postMs": 573,
+     "versionId": "c0bf0d3ae8311b86b13e17b0ecebb85c",
+     "title": "Fox Quest",
+     "playableMs": null,
+     "note": "page.waitForFunction: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "a09",
+     "status": 201,
+     "postMs": 2326,
+     "versionId": "b075c160683d622756d5abd4410cb8f1",
+     "title": "Astronaut Run",
+     "playableMs": 2729,
+     "browserVersionId": "b075c160683d622756d5abd4410cb8f1"
+    },
+    {
+     "id": "a10",
+     "status": 201,
+     "postMs": 318,
+     "versionId": "1be636cadaa10a26b189c2f0cdbecbeb",
+     "title": "Chef Quest",
+     "playableMs": 654,
+     "browserVersionId": "1be636cadaa10a26b189c2f0cdbecbeb"
+    },
+    {
+     "id": "a11",
+     "status": 201,
+     "postMs": 193,
+     "versionId": "afd2564e0e05effb584c98defc2e2bd3",
+     "title": "Fox Beat",
+     "playableMs": 553,
+     "browserVersionId": "afd2564e0e05effb584c98defc2e2bd3"
+    },
+    {
+     "id": "a12",
+     "status": 201,
+     "postMs": 3228,
+     "versionId": "0622dce69becc4954ed8903143e2ea08",
+     "title": "Fox Run",
+     "playableMs": 3658,
+     "browserVersionId": "0622dce69becc4954ed8903143e2ea08"
+    },
+    {
+     "id": "s039",
+     "status": 201,
+     "postMs": 397,
+     "versionId": "34a372a2669a383cfa86a8d2157bfa7d",
+     "title": "Kid Shootout",
+     "playableMs": 739,
+     "browserVersionId": "34a372a2669a383cfa86a8d2157bfa7d"
+    },
+    {
+     "id": "s037",
+     "status": 201,
+     "postMs": 339,
+     "versionId": "9c8cef873bb8dd298605b235a15fdbe9",
+     "title": "Space Marine Shootout",
+     "playableMs": null,
+     "note": "page.waitForFunction: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s002",
+     "status": 201,
+     "postMs": 675,
+     "versionId": "e9bb423087f1d0e820ebbb88e1008379",
+     "title": "Knight Escape",
+     "playableMs": 974,
+     "browserVersionId": "e9bb423087f1d0e820ebbb88e1008379"
+    },
+    {
+     "id": "s003",
+     "status": 201,
+     "postMs": 2641,
+     "versionId": "d95faf2ec550a201f9da0b4c0dd5eac6",
+     "title": "Hamster Run",
+     "playableMs": 2992,
+     "browserVersionId": "d95faf2ec550a201f9da0b4c0dd5eac6"
+    },
+    {
+     "id": "s006",
+     "status": 201,
+     "postMs": 1807,
+     "versionId": "c8ee11a66be8b937804c4ea1f6a0de5e",
+     "title": "Corgi Run",
+     "playableMs": 2137,
+     "browserVersionId": "c8ee11a66be8b937804c4ea1f6a0de5e"
+    },
+    {
+     "id": "s008",
+     "status": 201,
+     "postMs": 2811,
+     "versionId": "66398f2e24afff922bc11a9e4f8cac55",
+     "title": "Banana Run",
+     "playableMs": 2885,
+     "browserVersionId": "66398f2e24afff922bc11a9e4f8cac55"
+    },
+    {
+     "id": "s022",
+     "status": 201,
+     "postMs": 918,
+     "versionId": "d4479187f1750e2a2f02b8c21c269298",
+     "title": "Tiny Robot Jump",
+     "playableMs": 1277,
+     "browserVersionId": "d4479187f1750e2a2f02b8c21c269298"
+    },
+    {
+     "id": "s021",
+     "status": 201,
+     "postMs": 1069,
+     "versionId": "3013c8cb2b134097d431392b71b90421",
+     "title": "Turtle Jump",
+     "playableMs": 1390,
+     "browserVersionId": "3013c8cb2b134097d431392b71b90421"
+    },
+    {
+     "id": "s035",
+     "status": 201,
+     "postMs": 463,
+     "versionId": "10122ca7769aee3471e8964acad6a70f",
+     "title": "Bird Flight",
+     "playableMs": 656,
+     "browserVersionId": "10122ca7769aee3471e8964acad6a70f"
+    },
+    {
+     "id": "s050",
+     "status": 201,
+     "postMs": 324,
+     "versionId": "d0f5c1fc9713fdd6dfab6529d4297393",
+     "title": "Penguin Throw",
+     "playableMs": 504,
+     "browserVersionId": "d0f5c1fc9713fdd6dfab6529d4297393"
+    },
+    {
+     "id": "s088",
+     "status": 201,
+     "postMs": 228,
+     "versionId": "dd16c9403fb68f9e5499e83587e78514",
+     "title": "Cat Throw",
+     "playableMs": 450,
+     "browserVersionId": "dd16c9403fb68f9e5499e83587e78514"
+    },
+    {
+     "id": "s069",
+     "status": 201,
+     "postMs": 410,
+     "versionId": "0f17a73345f44222d79f1ddbeb96b76d",
+     "title": "Gem Quest",
+     "playableMs": 541,
+     "browserVersionId": "0f17a73345f44222d79f1ddbeb96b76d"
+    },
+    {
+     "id": "s056",
+     "status": 201,
+     "postMs": 1159,
+     "versionId": "007790088a5214e286b378945d80f75c",
+     "title": "delivery scooter race",
+     "playableMs": null,
+     "note": "page.waitForURL: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s058",
+     "status": 201,
+     "postMs": 1241,
+     "versionId": "4153c1548d185a1dc9915d82258c1d4d",
+     "title": "boat race",
+     "playableMs": 1352,
+     "browserVersionId": "4153c1548d185a1dc9915d82258c1d4d"
+    },
+    {
+     "id": "s111",
+     "status": 201,
+     "postMs": 737,
+     "versionId": "f45be145ce249c97ae8139c03bb6c35e",
+     "title": "Black Hole Hunt",
+     "playableMs": 958,
+     "browserVersionId": "f45be145ce249c97ae8139c03bb6c35e"
+    },
+    {
+     "id": "s095",
+     "status": 201,
+     "postMs": 203,
+     "versionId": "39662251dc258d34bdca3e104687b4e0",
+     "title": "Fox Throw",
+     "playableMs": 481,
+     "browserVersionId": "39662251dc258d34bdca3e104687b4e0"
+    },
+    {
+     "id": "s188",
+     "status": 201,
+     "postMs": 265,
+     "versionId": "7ce8d1932198c2123095f2f963f1ef6d",
+     "title": "Grandma Duel",
+     "playableMs": 496,
+     "browserVersionId": "7ce8d1932198c2123095f2f963f1ef6d"
+    },
+    {
+     "id": "s144",
+     "status": 201,
+     "postMs": 196,
+     "versionId": "5c274b9d56ba93e93ef7b82101f47cd7",
+     "title": "Drummer Frog Beat",
+     "playableMs": 485,
+     "browserVersionId": "5c274b9d56ba93e93ef7b82101f47cd7"
+    }
+   ]
+  },
+  "b1": {
+   "base": "http://127.0.0.1:3112",
+   "reader": "",
+   "cold": true,
+   "n": 30,
+   "server": {
+    "n": 30,
+    "p50": 440,
+    "p95": 2507,
+    "max": 3202
+   },
+   "browser": {
+    "n": 27,
+    "p50": 996,
+    "p95": 2886,
+    "max": 3716
+   },
+   "pageErrors": 0,
+   "rows": [
+    {
+     "id": "a01",
+     "status": 201,
+     "postMs": 2261,
+     "versionId": "403f02be24621869858fc3ae15e04da5",
+     "title": "Frog Catching Flies Lily",
+     "playableMs": 1160,
+     "browserVersionId": "403f02be24621869858fc3ae15e04da5"
+    },
+    {
+     "id": "a02",
+     "status": 201,
+     "postMs": 440,
+     "versionId": "4973f0770fcebff132bcbb8db71fe1eb",
+     "title": "Zombies Attack Farm Night",
+     "playableMs": 749,
+     "browserVersionId": "4973f0770fcebff132bcbb8db71fe1eb"
+    },
+    {
+     "id": "a03",
+     "status": 201,
+     "postMs": 203,
+     "versionId": "1a5d4fa4511096c0436d4c7ee7cffa03",
+     "title": "Ninja Slicing Fruit",
+     "playableMs": 444,
+     "browserVersionId": "1a5d4fa4511096c0436d4c7ee7cffa03"
+    },
+    {
+     "id": "a04",
+     "status": 201,
+     "postMs": 1276,
+     "versionId": "f618a3d8b3442264799e01db5ad6251f",
+     "title": "Racing Shark Coral Reef",
+     "playableMs": 1630,
+     "browserVersionId": "f618a3d8b3442264799e01db5ad6251f"
+    },
+    {
+     "id": "a05",
+     "status": 201,
+     "postMs": 187,
+     "versionId": "0c53f829dabd2c2b7b0680be4a622820",
+     "title": "Stack Pizzas High Moon",
+     "playableMs": 491,
+     "browserVersionId": "0c53f829dabd2c2b7b0680be4a622820"
+    },
+    {
+     "id": "a06",
+     "status": 201,
+     "postMs": 367,
+     "versionId": "82f0bbf3593f4c9d3983bbb720092573",
+     "title": "Cat Defends Couch Vacuum",
+     "playableMs": 607,
+     "browserVersionId": "82f0bbf3593f4c9d3983bbb720092573"
+    },
+    {
+     "id": "a07",
+     "status": 201,
+     "postMs": 1076,
+     "versionId": "6ad1a8542ea8ce8ea602e58da5012e92",
+     "title": "Goalkeeper Saves Penalty Kicks",
+     "playableMs": 1415,
+     "browserVersionId": "6ad1a8542ea8ce8ea602e58da5012e92"
+    },
+    {
+     "id": "a08",
+     "status": 201,
+     "postMs": 580,
+     "versionId": "c2fe8dd7c6e663055670ffc9153b7a44",
+     "title": "Match Three Glowing Gems",
+     "playableMs": 836,
+     "browserVersionId": "c2fe8dd7c6e663055670ffc9153b7a44"
+    },
+    {
+     "id": "a09",
+     "status": 201,
+     "postMs": 2344,
+     "versionId": "33ee5055fc3383069926a9e659dfe3ac",
+     "title": "Astronaut Dodges Asteroids Reach",
+     "playableMs": null,
+     "note": "page.waitForURL: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "a10",
+     "status": 201,
+     "postMs": 364,
+     "versionId": "8cd84abab41f633d05a4e466fcbc14aa",
+     "title": "Chef Flips Pancakes Line",
+     "playableMs": 641,
+     "browserVersionId": "8cd84abab41f633d05a4e466fcbc14aa"
+    },
+    {
+     "id": "a11",
+     "status": 201,
+     "postMs": 237,
+     "versionId": "67a337fa0941a7021066401781bc293d",
+     "title": "Drum Beat Rock Concert",
+     "playableMs": 515,
+     "browserVersionId": "67a337fa0941a7021066401781bc293d"
+    },
+    {
+     "id": "a12",
+     "status": 201,
+     "postMs": 3202,
+     "versionId": "4bcef88eadfd463cd2fb7a0925450194",
+     "title": "Escape Haunted Mansion Ghost",
+     "playableMs": 3716,
+     "browserVersionId": "4bcef88eadfd463cd2fb7a0925450194"
+    },
+    {
+     "id": "s039",
+     "status": 201,
+     "postMs": 364,
+     "versionId": "aea21f6b209fe24d15e240b7b6ae178d",
+     "title": "Zombie Shooter Mall",
+     "playableMs": 573,
+     "browserVersionId": "aea21f6b209fe24d15e240b7b6ae178d"
+    },
+    {
+     "id": "s037",
+     "status": 201,
+     "postMs": 279,
+     "versionId": "4272667e64c55dd6572ecced1cfdd621",
+     "title": "Space Marine Shoots Alien",
+     "playableMs": 517,
+     "browserVersionId": "4272667e64c55dd6572ecced1cfdd621"
+    },
+    {
+     "id": "s002",
+     "status": 201,
+     "postMs": 708,
+     "versionId": "30efad8ebbf14ad89b081b3d84c423d3",
+     "title": "Knight Collect Three Keys",
+     "playableMs": 1013,
+     "browserVersionId": "30efad8ebbf14ad89b081b3d84c423d3"
+    },
+    {
+     "id": "s003",
+     "status": 201,
+     "postMs": 2507,
+     "versionId": "c21981c9febaa52d83fc110bf9558d0c",
+     "title": "Hamster Escaping Supermarket Giant",
+     "playableMs": 2675,
+     "browserVersionId": "c21981c9febaa52d83fc110bf9558d0c"
+    },
+    {
+     "id": "s006",
+     "status": 201,
+     "postMs": 1610,
+     "versionId": "fd61842ad64e0738aa759421cce67b37",
+     "title": "Corgi Runs Park Grabbing",
+     "playableMs": 1878,
+     "browserVersionId": "fd61842ad64e0738aa759421cce67b37"
+    },
+    {
+     "id": "s008",
+     "status": 201,
+     "postMs": 2433,
+     "versionId": "4c4eee96cf5e3e2a6b88f8b1b60b11f4",
+     "title": "Temple Run Re Banana",
+     "playableMs": 2886,
+     "browserVersionId": "4c4eee96cf5e3e2a6b88f8b1b60b11f4"
+    },
+    {
+     "id": "s022",
+     "status": 201,
+     "postMs": 870,
+     "versionId": "6b3ec9fdf487c551a71b569f871e887d",
+     "title": "Tiny Robot Climbs Tower",
+     "playableMs": 1118,
+     "browserVersionId": "6b3ec9fdf487c551a71b569f871e887d"
+    },
+    {
+     "id": "s021",
+     "status": 201,
+     "postMs": 894,
+     "versionId": "eb7f8d383bd2bc28d6b85738e70ab8df",
+     "title": "Obby Lava Spinning Bars",
+     "playableMs": 1368,
+     "browserVersionId": "eb7f8d383bd2bc28d6b85738e70ab8df"
+    },
+    {
+     "id": "s035",
+     "status": 201,
+     "postMs": 407,
+     "versionId": "80e70fc3b6572cd1baf81ffff6fb1cc6",
+     "title": "Flappy Bird Underwater",
+     "playableMs": 769,
+     "browserVersionId": "80e70fc3b6572cd1baf81ffff6fb1cc6"
+    },
+    {
+     "id": "s050",
+     "status": 201,
+     "postMs": 277,
+     "versionId": "a482212868dacb62b87d38e11507f246",
+     "title": "Throwing Snowballs Kids",
+     "playableMs": null,
+     "note": "page.waitForFunction: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s088",
+     "status": 201,
+     "postMs": 195,
+     "versionId": "691a138fd30f16b62c49ee43cce80e64",
+     "title": "Angry Birds Cats Cardboard",
+     "playableMs": 2405,
+     "browserVersionId": "691a138fd30f16b62c49ee43cce80e64"
+    },
+    {
+     "id": "s069",
+     "status": 201,
+     "postMs": 279,
+     "versionId": "c0e6197a6a6585b07b77336973c36842",
+     "title": "Candy Crush Gems Cave",
+     "playableMs": 583,
+     "browserVersionId": "c0e6197a6a6585b07b77336973c36842"
+    },
+    {
+     "id": "s056",
+     "status": 201,
+     "postMs": 529,
+     "versionId": "738747792ec65d5f6d1312ddc001d7be",
+     "title": "Pizza Delivery Scooter Races",
+     "playableMs": 996,
+     "browserVersionId": "738747792ec65d5f6d1312ddc001d7be"
+    },
+    {
+     "id": "s058",
+     "status": 201,
+     "postMs": 866,
+     "versionId": "d64587281c9c8613cceae68b801d4a34",
+     "title": "Boat Race Jungle River",
+     "playableMs": 1207,
+     "browserVersionId": "d64587281c9c8613cceae68b801d4a34"
+    },
+    {
+     "id": "s111",
+     "status": 201,
+     "postMs": 674,
+     "versionId": "ce958acb4589e52acad6fa59bb1f0c1b",
+     "title": "Black Hole Swallows City",
+     "playableMs": 1133,
+     "browserVersionId": "ce958acb4589e52acad6fa59bb1f0c1b"
+    },
+    {
+     "id": "s095",
+     "status": 201,
+     "postMs": 193,
+     "versionId": "85c007fab8f7e7d7fd4783ad318381db",
+     "title": "Knife Throwing Spinning Log",
+     "playableMs": 559,
+     "browserVersionId": "85c007fab8f7e7d7fd4783ad318381db"
+    },
+    {
+     "id": "s188",
+     "status": 201,
+     "postMs": 240,
+     "versionId": "8c1dfc084e826dd1f3b234cbba0376c3",
+     "title": "Grandma Karate Fights Gang",
+     "playableMs": null,
+     "note": "page.waitForURL: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s144",
+     "status": 201,
+     "postMs": 174,
+     "versionId": "54b9c33c9ca6d547faa2ca50b7b3f89b",
+     "title": "Drummer Frog Plays Lily",
+     "playableMs": 813,
+     "browserVersionId": "54b9c33c9ca6d547faa2ca50b7b3f89b"
+    }
+   ]
+  },
+  "a2": {
+   "base": "http://127.0.0.1:3111",
+   "reader": "",
+   "cold": true,
+   "n": 30,
+   "server": {
+    "n": 30,
+    "p50": 579,
+    "p95": 3520,
+    "max": 4625
+   },
+   "browser": {
+    "n": 27,
+    "p50": 1334,
+    "p95": 4591,
+    "max": 5055
+   },
+   "pageErrors": 0,
+   "rows": [
+    {
+     "id": "a01",
+     "status": 200,
+     "postMs": 2448,
+     "versionId": "63924610e4d5c288b9c9a0dd1682bdaf",
+     "title": "frog drive",
+     "playableMs": 3039,
+     "browserVersionId": "63924610e4d5c288b9c9a0dd1682bdaf"
+    },
+    {
+     "id": "a02",
+     "status": 200,
+     "postMs": 561,
+     "versionId": "74454681e24cf24fc874ff4b244086ea",
+     "title": "Zombie Duel",
+     "playableMs": 1243,
+     "browserVersionId": "74454681e24cf24fc874ff4b244086ea"
+    },
+    {
+     "id": "a03",
+     "status": 200,
+     "postMs": 244,
+     "versionId": "3c515c735c26e2cea5e3b57fb576c76e",
+     "title": "Ninja Slice",
+     "playableMs": 856,
+     "browserVersionId": "3c515c735c26e2cea5e3b57fb576c76e"
+    },
+    {
+     "id": "a04",
+     "status": 200,
+     "postMs": 1766,
+     "versionId": "4c5f23491980ce4e6e64ab0ab85f2b57",
+     "title": "submarine race",
+     "playableMs": 2260,
+     "browserVersionId": "4c5f23491980ce4e6e64ab0ab85f2b57"
+    },
+    {
+     "id": "a05",
+     "status": 200,
+     "postMs": 271,
+     "versionId": "4a4842cdf36073fb998813743ff7c5d2",
+     "title": "Moon Stack",
+     "playableMs": 806,
+     "browserVersionId": "4a4842cdf36073fb998813743ff7c5d2"
+    },
+    {
+     "id": "a06",
+     "status": 200,
+     "postMs": 543,
+     "versionId": "6cbbe44831f9e576ae6ec08d5efea6f2",
+     "title": "Cat Defense",
+     "playableMs": 922,
+     "browserVersionId": "6cbbe44831f9e576ae6ec08d5efea6f2"
+    },
+    {
+     "id": "a07",
+     "status": 200,
+     "postMs": 1650,
+     "versionId": "0f53ed85abd657b94e3fc4409278444a",
+     "title": "goalkeeper score",
+     "playableMs": 2300,
+     "browserVersionId": "0f53ed85abd657b94e3fc4409278444a"
+    },
+    {
+     "id": "a08",
+     "status": 200,
+     "postMs": 832,
+     "versionId": "c0bf0d3ae8311b86b13e17b0ecebb85c",
+     "title": "Fox Quest",
+     "playableMs": null,
+     "note": "page.waitForFunction: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "a09",
+     "status": 200,
+     "postMs": 3051,
+     "versionId": "b075c160683d622756d5abd4410cb8f1",
+     "title": "Astronaut Run",
+     "playableMs": 4198,
+     "browserVersionId": "b075c160683d622756d5abd4410cb8f1"
+    },
+    {
+     "id": "a10",
+     "status": 200,
+     "postMs": 413,
+     "versionId": "1be636cadaa10a26b189c2f0cdbecbeb",
+     "title": "Chef Quest",
+     "playableMs": 994,
+     "browserVersionId": "1be636cadaa10a26b189c2f0cdbecbeb"
+    },
+    {
+     "id": "a11",
+     "status": 200,
+     "postMs": 240,
+     "versionId": "afd2564e0e05effb584c98defc2e2bd3",
+     "title": "Fox Beat",
+     "playableMs": 810,
+     "browserVersionId": "afd2564e0e05effb584c98defc2e2bd3"
+    },
+    {
+     "id": "a12",
+     "status": 200,
+     "postMs": 4625,
+     "versionId": "0622dce69becc4954ed8903143e2ea08",
+     "title": "Fox Run",
+     "playableMs": 5055,
+     "browserVersionId": "0622dce69becc4954ed8903143e2ea08"
+    },
+    {
+     "id": "s039",
+     "status": 200,
+     "postMs": 579,
+     "versionId": "34a372a2669a383cfa86a8d2157bfa7d",
+     "title": "Kid Shootout",
+     "playableMs": 1022,
+     "browserVersionId": "34a372a2669a383cfa86a8d2157bfa7d"
+    },
+    {
+     "id": "s037",
+     "status": 200,
+     "postMs": 484,
+     "versionId": "9c8cef873bb8dd298605b235a15fdbe9",
+     "title": "Space Marine Shootout",
+     "playableMs": 806,
+     "browserVersionId": "9c8cef873bb8dd298605b235a15fdbe9"
+    },
+    {
+     "id": "s002",
+     "status": 200,
+     "postMs": 1039,
+     "versionId": "e9bb423087f1d0e820ebbb88e1008379",
+     "title": "Knight Escape",
+     "playableMs": 1491,
+     "browserVersionId": "e9bb423087f1d0e820ebbb88e1008379"
+    },
+    {
+     "id": "s003",
+     "status": 200,
+     "postMs": 3520,
+     "versionId": "d95faf2ec550a201f9da0b4c0dd5eac6",
+     "title": "Hamster Run",
+     "playableMs": 4591,
+     "browserVersionId": "d95faf2ec550a201f9da0b4c0dd5eac6"
+    },
+    {
+     "id": "s006",
+     "status": 200,
+     "postMs": 2288,
+     "versionId": "c8ee11a66be8b937804c4ea1f6a0de5e",
+     "title": "Corgi Run",
+     "playableMs": 3129,
+     "browserVersionId": "c8ee11a66be8b937804c4ea1f6a0de5e"
+    },
+    {
+     "id": "s008",
+     "status": 200,
+     "postMs": 3389,
+     "versionId": "66398f2e24afff922bc11a9e4f8cac55",
+     "title": "Banana Run",
+     "playableMs": 4058,
+     "browserVersionId": "66398f2e24afff922bc11a9e4f8cac55"
+    },
+    {
+     "id": "s022",
+     "status": 200,
+     "postMs": 1385,
+     "versionId": "d4479187f1750e2a2f02b8c21c269298",
+     "title": "Tiny Robot Jump",
+     "playableMs": 2038,
+     "browserVersionId": "d4479187f1750e2a2f02b8c21c269298"
+    },
+    {
+     "id": "s021",
+     "status": 200,
+     "postMs": 1313,
+     "versionId": "3013c8cb2b134097d431392b71b90421",
+     "title": "Turtle Jump",
+     "playableMs": 2280,
+     "browserVersionId": "3013c8cb2b134097d431392b71b90421"
+    },
+    {
+     "id": "s035",
+     "status": 200,
+     "postMs": 510,
+     "versionId": "10122ca7769aee3471e8964acad6a70f",
+     "title": "Bird Flight",
+     "playableMs": 1026,
+     "browserVersionId": "10122ca7769aee3471e8964acad6a70f"
+    },
+    {
+     "id": "s050",
+     "status": 200,
+     "postMs": 406,
+     "versionId": "d0f5c1fc9713fdd6dfab6529d4297393",
+     "title": "Penguin Throw",
+     "playableMs": 874,
+     "browserVersionId": "d0f5c1fc9713fdd6dfab6529d4297393"
+    },
+    {
+     "id": "s088",
+     "status": 200,
+     "postMs": 259,
+     "versionId": "dd16c9403fb68f9e5499e83587e78514",
+     "title": "Cat Throw",
+     "playableMs": null,
+     "note": "page.waitForFunction: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s069",
+     "status": 200,
+     "postMs": 402,
+     "versionId": "0f17a73345f44222d79f1ddbeb96b76d",
+     "title": "Gem Quest",
+     "playableMs": 1034,
+     "browserVersionId": "0f17a73345f44222d79f1ddbeb96b76d"
+    },
+    {
+     "id": "s056",
+     "status": 200,
+     "postMs": 784,
+     "versionId": "007790088a5214e286b378945d80f75c",
+     "title": "delivery scooter race",
+     "playableMs": 1550,
+     "browserVersionId": "007790088a5214e286b378945d80f75c"
+    },
+    {
+     "id": "s058",
+     "status": 200,
+     "postMs": 1326,
+     "versionId": "4153c1548d185a1dc9915d82258c1d4d",
+     "title": "boat race",
+     "playableMs": 1864,
+     "browserVersionId": "4153c1548d185a1dc9915d82258c1d4d"
+    },
+    {
+     "id": "s111",
+     "status": 200,
+     "postMs": 931,
+     "versionId": "f45be145ce249c97ae8139c03bb6c35e",
+     "title": "Black Hole Hunt",
+     "playableMs": 1334,
+     "browserVersionId": "f45be145ce249c97ae8139c03bb6c35e"
+    },
+    {
+     "id": "s095",
+     "status": 200,
+     "postMs": 238,
+     "versionId": "39662251dc258d34bdca3e104687b4e0",
+     "title": "Fox Throw",
+     "playableMs": 681,
+     "browserVersionId": "39662251dc258d34bdca3e104687b4e0"
+    },
+    {
+     "id": "s188",
+     "status": 200,
+     "postMs": 385,
+     "versionId": "7ce8d1932198c2123095f2f963f1ef6d",
+     "title": "Grandma Duel",
+     "playableMs": null,
+     "note": "page.waitForURL: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s144",
+     "status": 200,
+     "postMs": 237,
+     "versionId": "5c274b9d56ba93e93ef7b82101f47cd7",
+     "title": "Drummer Frog Beat",
+     "playableMs": 711,
+     "browserVersionId": "5c274b9d56ba93e93ef7b82101f47cd7"
+    }
+   ]
+  },
+  "b2": {
+   "base": "http://127.0.0.1:3112",
+   "reader": "",
+   "cold": true,
+   "n": 30,
+   "server": {
+    "n": 30,
+    "p50": 646,
+    "p95": 3549,
+    "max": 4472
+   },
+   "browser": {
+    "n": 29,
+    "p50": 1354,
+    "p95": 5304,
+    "max": 5722
+   },
+   "pageErrors": 0,
+   "rows": [
+    {
+     "id": "a01",
+     "status": 200,
+     "postMs": 2719,
+     "versionId": "403f02be24621869858fc3ae15e04da5",
+     "title": "Frog Catching Flies Lily",
+     "playableMs": 1799,
+     "browserVersionId": "403f02be24621869858fc3ae15e04da5"
+    },
+    {
+     "id": "a02",
+     "status": 200,
+     "postMs": 549,
+     "versionId": "4973f0770fcebff132bcbb8db71fe1eb",
+     "title": "Zombies Attack Farm Night",
+     "playableMs": 1249,
+     "browserVersionId": "4973f0770fcebff132bcbb8db71fe1eb"
+    },
+    {
+     "id": "a03",
+     "status": 200,
+     "postMs": 241,
+     "versionId": "1a5d4fa4511096c0436d4c7ee7cffa03",
+     "title": "Ninja Slicing Fruit",
+     "playableMs": 1238,
+     "browserVersionId": "1a5d4fa4511096c0436d4c7ee7cffa03"
+    },
+    {
+     "id": "a04",
+     "status": 200,
+     "postMs": 1537,
+     "versionId": "f618a3d8b3442264799e01db5ad6251f",
+     "title": "Racing Shark Coral Reef",
+     "playableMs": 2352,
+     "browserVersionId": "f618a3d8b3442264799e01db5ad6251f"
+    },
+    {
+     "id": "a05",
+     "status": 200,
+     "postMs": 188,
+     "versionId": "0c53f829dabd2c2b7b0680be4a622820",
+     "title": "Stack Pizzas High Moon",
+     "playableMs": 584,
+     "browserVersionId": "0c53f829dabd2c2b7b0680be4a622820"
+    },
+    {
+     "id": "a06",
+     "status": 200,
+     "postMs": 451,
+     "versionId": "82f0bbf3593f4c9d3983bbb720092573",
+     "title": "Cat Defends Couch Vacuum",
+     "playableMs": 1076,
+     "browserVersionId": "82f0bbf3593f4c9d3983bbb720092573"
+    },
+    {
+     "id": "a07",
+     "status": 200,
+     "postMs": 1384,
+     "versionId": "6ad1a8542ea8ce8ea602e58da5012e92",
+     "title": "Goalkeeper Saves Penalty Kicks",
+     "playableMs": 2668,
+     "browserVersionId": "6ad1a8542ea8ce8ea602e58da5012e92"
+    },
+    {
+     "id": "a08",
+     "status": 200,
+     "postMs": 692,
+     "versionId": "c2fe8dd7c6e663055670ffc9153b7a44",
+     "title": "Match Three Glowing Gems",
+     "playableMs": 1144,
+     "browserVersionId": "c2fe8dd7c6e663055670ffc9153b7a44"
+    },
+    {
+     "id": "a09",
+     "status": 200,
+     "postMs": 2854,
+     "versionId": "33ee5055fc3383069926a9e659dfe3ac",
+     "title": "Astronaut Dodges Asteroids Reach",
+     "playableMs": 3982,
+     "browserVersionId": "33ee5055fc3383069926a9e659dfe3ac"
+    },
+    {
+     "id": "a10",
+     "status": 200,
+     "postMs": 407,
+     "versionId": "8cd84abab41f633d05a4e466fcbc14aa",
+     "title": "Chef Flips Pancakes Line",
+     "playableMs": 1113,
+     "browserVersionId": "8cd84abab41f633d05a4e466fcbc14aa"
+    },
+    {
+     "id": "a11",
+     "status": 200,
+     "postMs": 223,
+     "versionId": "67a337fa0941a7021066401781bc293d",
+     "title": "Drum Beat Rock Concert",
+     "playableMs": 946,
+     "browserVersionId": "67a337fa0941a7021066401781bc293d"
+    },
+    {
+     "id": "a12",
+     "status": 200,
+     "postMs": 4472,
+     "versionId": "4bcef88eadfd463cd2fb7a0925450194",
+     "title": "Escape Haunted Mansion Ghost",
+     "playableMs": 5722,
+     "browserVersionId": "4bcef88eadfd463cd2fb7a0925450194"
+    },
+    {
+     "id": "s039",
+     "status": 200,
+     "postMs": 605,
+     "versionId": "aea21f6b209fe24d15e240b7b6ae178d",
+     "title": "Zombie Shooter Mall",
+     "playableMs": 1354,
+     "browserVersionId": "aea21f6b209fe24d15e240b7b6ae178d"
+    },
+    {
+     "id": "s037",
+     "status": 200,
+     "postMs": 441,
+     "versionId": "4272667e64c55dd6572ecced1cfdd621",
+     "title": "Space Marine Shoots Alien",
+     "playableMs": 811,
+     "browserVersionId": "4272667e64c55dd6572ecced1cfdd621"
+    },
+    {
+     "id": "s002",
+     "status": 200,
+     "postMs": 1006,
+     "versionId": "30efad8ebbf14ad89b081b3d84c423d3",
+     "title": "Knight Collect Three Keys",
+     "playableMs": 1667,
+     "browserVersionId": "30efad8ebbf14ad89b081b3d84c423d3"
+    },
+    {
+     "id": "s003",
+     "status": 200,
+     "postMs": 3549,
+     "versionId": "c21981c9febaa52d83fc110bf9558d0c",
+     "title": "Hamster Escaping Supermarket Giant",
+     "playableMs": 4899,
+     "browserVersionId": "c21981c9febaa52d83fc110bf9558d0c"
+    },
+    {
+     "id": "s006",
+     "status": 200,
+     "postMs": 2305,
+     "versionId": "fd61842ad64e0738aa759421cce67b37",
+     "title": "Corgi Runs Park Grabbing",
+     "playableMs": 5304,
+     "browserVersionId": "fd61842ad64e0738aa759421cce67b37"
+    },
+    {
+     "id": "s008",
+     "status": 200,
+     "postMs": 3425,
+     "versionId": "4c4eee96cf5e3e2a6b88f8b1b60b11f4",
+     "title": "Temple Run Re Banana",
+     "playableMs": 4096,
+     "browserVersionId": "4c4eee96cf5e3e2a6b88f8b1b60b11f4"
+    },
+    {
+     "id": "s022",
+     "status": 200,
+     "postMs": 1218,
+     "versionId": "6b3ec9fdf487c551a71b569f871e887d",
+     "title": "Tiny Robot Climbs Tower",
+     "playableMs": 1877,
+     "browserVersionId": "6b3ec9fdf487c551a71b569f871e887d"
+    },
+    {
+     "id": "s021",
+     "status": 200,
+     "postMs": 1313,
+     "versionId": "eb7f8d383bd2bc28d6b85738e70ab8df",
+     "title": "Obby Lava Spinning Bars",
+     "playableMs": 1792,
+     "browserVersionId": "eb7f8d383bd2bc28d6b85738e70ab8df"
+    },
+    {
+     "id": "s035",
+     "status": 200,
+     "postMs": 646,
+     "versionId": "80e70fc3b6572cd1baf81ffff6fb1cc6",
+     "title": "Flappy Bird Underwater",
+     "playableMs": 993,
+     "browserVersionId": "80e70fc3b6572cd1baf81ffff6fb1cc6"
+    },
+    {
+     "id": "s050",
+     "status": 200,
+     "postMs": 335,
+     "versionId": "a482212868dacb62b87d38e11507f246",
+     "title": "Throwing Snowballs Kids",
+     "playableMs": 829,
+     "browserVersionId": "a482212868dacb62b87d38e11507f246"
+    },
+    {
+     "id": "s088",
+     "status": 200,
+     "postMs": 217,
+     "versionId": "691a138fd30f16b62c49ee43cce80e64",
+     "title": "Angry Birds Cats Cardboard",
+     "playableMs": 534,
+     "browserVersionId": "691a138fd30f16b62c49ee43cce80e64"
+    },
+    {
+     "id": "s069",
+     "status": 200,
+     "postMs": 372,
+     "versionId": "c0e6197a6a6585b07b77336973c36842",
+     "title": "Candy Crush Gems Cave",
+     "playableMs": 939,
+     "browserVersionId": "c0e6197a6a6585b07b77336973c36842"
+    },
+    {
+     "id": "s056",
+     "status": 200,
+     "postMs": 818,
+     "versionId": "738747792ec65d5f6d1312ddc001d7be",
+     "title": "Pizza Delivery Scooter Races",
+     "playableMs": 1342,
+     "browserVersionId": "738747792ec65d5f6d1312ddc001d7be"
+    },
+    {
+     "id": "s058",
+     "status": 200,
+     "postMs": 1423,
+     "versionId": "d64587281c9c8613cceae68b801d4a34",
+     "title": "Boat Race Jungle River",
+     "playableMs": 1810,
+     "browserVersionId": "d64587281c9c8613cceae68b801d4a34"
+    },
+    {
+     "id": "s111",
+     "status": 200,
+     "postMs": 1155,
+     "versionId": "ce958acb4589e52acad6fa59bb1f0c1b",
+     "title": "Black Hole Swallows City",
+     "playableMs": null,
+     "note": "page.waitForURL: Timeout 60000ms exceeded."
+    },
+    {
+     "id": "s095",
+     "status": 200,
+     "postMs": 331,
+     "versionId": "85c007fab8f7e7d7fd4783ad318381db",
+     "title": "Knife Throwing Spinning Log",
+     "playableMs": 2600,
+     "browserVersionId": "85c007fab8f7e7d7fd4783ad318381db"
+    },
+    {
+     "id": "s188",
+     "status": 200,
+     "postMs": 374,
+     "versionId": "8c1dfc084e826dd1f3b234cbba0376c3",
+     "title": "Grandma Karate Fights Gang",
+     "playableMs": 2500,
+     "browserVersionId": "8c1dfc084e826dd1f3b234cbba0376c3"
+    },
+    {
+     "id": "s144",
+     "status": 200,
+     "postMs": 235,
+     "versionId": "54b9c33c9ca6d547faa2ca50b7b3f89b",
+     "title": "Drummer Frog Plays Lily",
+     "playableMs": 873,
+     "browserVersionId": "54b9c33c9ca6d547faa2ca50b7b3f89b"
+    }
+   ]
+  }
+ },
+ "visible": {
+  "file": "visible-holdout.json",
+  "bothNounsSeen": {
+   "hit": 13,
+   "of": 80,
+   "share": 0.163
+  },
+  "target": 0.8,
+  "met": false,
+  "nounsSeen": {
+   "hit": 38,
+   "of": 128,
+   "share": 0.297
+  },
+  "heroSeen": {
+   "hit": 21,
+   "of": 58,
+   "share": 0.362
+  },
+  "foeOrItemSeen": {
+   "hit": 17,
+   "of": 70,
+   "share": 0.243
+  },
+  "missed": {
+   "inSpecNotRecognised": 63,
+   "notInSpec": [
+    "s02:yarn ball",
+    "s03:yeti",
+    "s05:rotten egg",
+    "s06:burger patty",
+    "s10:beehive",
+    "s18:skull",
+    "s19:king",
+    "s21:dial",
+    "s26:crocodile",
+    "s33:cactus stick",
+    "s34:zombie",
+    "s35:stalactite",
+    "s38:coconut",
+    "s40:troll",
+    "s42:seagull",
+    "s44:coconut",
+    "s56:baseball",
+    "s59:boss robot",
+    "s60:mountain goat",
+    "s61:car",
+    "s63:beach ball",
+    "s65:dragon",
+    "s67:patty",
+    "s73:walrus",
+    "s76:enemy kingdom",
+    "s78:fish",
+    "s80:camera"
+   ]
+  },
+  "readByModel": 78,
+  "setup": "T13 sealed holdout: next start (webpack build of 7e34c2a8 = src of 0dd2f0d2), reader gpt-oss-20b via llamacpp on the RTX 3090 shared with ComfyUI, PLAY_READER_BUDGET_MS=120000 (the code maximum); 7 games whose reading timed out while ComfyUI held the GPU or whose llama-server was stopped by the session limit were re-made on a fresh store; side A not judged"
+ },
+ "serverGenre": {
+  "note": "genre of the game the server published on the visible run (reader answered for 78/80 with a 120 s budget) – informative, the gate is holdout.summary.targetGenre",
+  "targetGenre": {
+   "hit": 39,
+   "of": 60,
+   "share": 0.65
+  },
+  "targetMode": {
+   "hit": 35,
+   "of": 60,
+   "share": 0.583
+  },
+  "trapOffLure": {
+   "hit": 13,
+   "of": 20,
+   "share": 0.65
+  }
+ },
+ "latencySummary": {
+  "how": "reader off (PLAY_READER=), A = 72665fdc (D:/tmp/p56a-base), B = this branch, passes a1,b1,a2,b2 on audit-12 + p30 dev (30 sentences, as T1), each pass a fresh next start (cold sentence)",
+  "t1Baseline": {
+   "serverP50": 590,
+   "browserP50": 1974
+  },
+  "server": {
+   "aP50": 579,
+   "bP50": 605,
+   "ratio": 1.045,
+   "pairedMedianBminusA": -17,
+   "pairs": 60,
+   "perPass": {
+    "a1": 573,
+    "b1": 529,
+    "a2": 784,
+    "b2": 692
+   }
+  },
+  "browser": {
+   "aP50": 1034,
+   "bP50": 1160,
+   "ratio": 1.122,
+   "pairedMedianBminusA": 5,
+   "pairs": 50,
+   "perPass": {
+    "a1": 939,
+    "b1": 996,
+    "a2": 1334,
+    "b2": 1354
+   }
+  },
+  "met": true
+ },
+ "gates": {
+  "targetGenre": {
+   "want": ">= 48/60",
+   "got": 31,
+   "met": false
+  },
+  "trapOffLure": {
+   "want": ">= 19/20",
+   "got": 13,
+   "met": false
+  },
+  "bot": {
+   "want": "80/80",
+   "got": 80,
+   "met": true
+  },
+  "idleLoses": {
+   "want": "80/80",
+   "got": 80,
+   "met": true
+  },
+  "replayEqual": {
+   "want": "80/80",
+   "got": 80,
+   "met": true
+  },
+  "visible": {
+   "want": ">= 0.8",
+   "got": 0.163,
+   "met": false
+  },
+  "latency": {
+   "want": "server p50 <= A + 5 %",
+   "got": "605 vs 579 ms (1.045), paired -17 ms",
+   "met": true
+  }
+ }
+}
