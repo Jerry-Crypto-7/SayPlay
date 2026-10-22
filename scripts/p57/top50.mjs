@@ -26,8 +26,9 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const REPORT = path.join(ROOT, 'evals/play/p57/top50.json');
 const GENERATED = 'LicenseRef-Worldsmith-Generated';
 export const HERO_PASS = 8;
-/** 2 zadání × 2 semínka na kolo; druhé kolo jiná semínka. */
-export const ROUND_ATTEMPTS = { 1: ['a1', 'b1', 'a2', 'b2'], 2: ['a3', 'b3', 'a4', 'b4'] };
+/** 4 kandidáti na kolo: zadání a, b a dvakrát c; druhé kolo jiná semínka. Od dávky 2 – v dávce 1
+ *  vyhrálo kolo 1 0/10 (plán „Co nevíme“: < 5/10 → třetí zadání místo semínek). */
+export const ROUND_ATTEMPTS = { 1: ['a1', 'b1', 'c1', 'c2'], 2: ['a3', 'b3', 'c3', 'c4'] };
 
 /** Cíle T8 v pořadí použití: gen3d vždy, ostatní jen se skóre pod 8. */
 export function heroTargets(judge, usage, catalog) {
