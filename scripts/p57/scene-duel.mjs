@@ -102,9 +102,10 @@ async function main() {
   const jobs = pairs.flatMap((pair) => JUDGES.map((judge) => ({ pair, judge, answerFile: path.join(out, 'answers', `${pair.id}-${judge}.json`) })));
   const queue = jobs.filter((job) => !existsSync(job.answerFile));
   let refused = 0;
-  const worker = async () => {
-    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
-      if (job.judge === 'codex' && !takeCodexCall(COUNTER, today, CODEX_DAILY_CAP)) {
+  // Jedna fronta na soudce: Codex nikdy dvakrát naráz (429), Opus vedle něj.
+  const worker = async (judge) => {
+    for (const job of queue.filter((job) => job.judge === judge)) {
+      if (judge === 'codex' && !takeCodexCall(COUNTER, today, CODEX_DAILY_CAP)) {
         refused += 1;
         continue;
       }
@@ -112,7 +113,7 @@ async function main() {
       console.log(`${job.pair.id} ${job.judge}: ${existsSync(job.answerFile) ? 'answered' : 'no answer'}`);
     }
   };
-  await Promise.all([worker(), worker()]);
+  await Promise.all(JUDGES.map(worker));
 
   for (const { pair, judge, answerFile } of jobs) {
     const answer = existsSync(answerFile) ? JSON.parse(readFileSync(answerFile, 'utf8')) : null;
