@@ -32,7 +32,8 @@
     "gen3d-basalt-column-rock"
    ],
    "startedAt": "2026-10-22T09:13:04.487Z",
-   "finishedAt": "2026-10-22T12:14:52.737Z"
+   "finishedAt": "2026-10-22T14:47:31.560Z",
+   "boundsRejected": 21
   },
   "3": {
    "ids": [
@@ -1113,7 +1114,21 @@
      "seed": 2,
      "score": 6,
      "reason": "picnic table: Recognisable, but noisy warped wood surfaces look scan-like.",
-     "won": false
+     "won": false,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "old",
+       "reason": "Chunky, clean picnic table silhouette; model 1's benches look melted and torn."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Clear picnic-table silhouette and intact tabletop; model 2 has conspicuous holes and torn edges."
+      }
+     ]
     },
     {
      "round": 2,
@@ -1193,7 +1208,21 @@
      "seed": 1,
      "score": 6,
      "reason": "poppy flower: Bright, readable poppy; thin crumpled petals, spindly stem.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Fuller, chunkier poppy cup; thicker stem; more readable toy-like silhouette than flat cell 1."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Chunkier stem and cupped petals feel toy-like, with a clearer flower silhouette and intact geometry."
+      }
+     ]
     },
     {
      "round": 2,
@@ -1256,8 +1285,7 @@
     }
    ],
    "newScore": 6,
-   "result": "kept-old",
-   "reason": "poppy flower: Bright, readable poppy; thin crumpled petals, spindly stem."
+   "result": "replaced"
   },
   "gen3d-sunflower": {
    "noun": "sunflower",
@@ -1690,7 +1718,21 @@
      "seed": 3,
      "score": 7,
      "reason": "mossy boulder: Chunky faceted rock, toy-like; moss patches small and slightly sparse.",
-     "won": false
+     "won": false,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Warm colour and moss make a readable, toy-like rock; 2 looks plain and untextured."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "old",
+       "reason": "Cleaner, recognisable rock silhouette with chunky toy-like facets and no visible broken geometry."
+      }
+     ]
     }
    ],
    "newScore": 7,
@@ -1760,7 +1802,21 @@
      "seed": 1,
      "score": 7,
      "reason": "brick pillar: Chunky stacked bricks, nice colour; slightly lumpy, uneven stacking.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Chunky stacked blocks, bright colour, clean toy-like silhouette; model 2 is duller and noisier."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Brighter colours, chunky blocks and a readable pillar silhouette better fit Toy Box; no obvious broken geometry."
+      }
+     ]
     },
     {
      "round": 2,
@@ -1816,8 +1872,7 @@
     }
    ],
    "newScore": 7,
-   "result": "kept-old",
-   "reason": "brick pillar: Chunky stacked bricks, nice colour; slightly lumpy, uneven stacking."
+   "result": "replaced"
   },
   "gen3d-basalt-column-rock": {
    "noun": "basalt column rock",
@@ -1920,12 +1975,25 @@
      "seed": 3,
      "score": 6,
      "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Chunky basalt columns, readable silhouette, clean mesh; model 1 is an unreadable black blob."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Chunky, readable forms and cleaner geometry fit Toy Box better than the dark, distorted blob."
+      }
+     ]
     }
    ],
    "newScore": 6,
-   "result": "kept-old",
-   "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy."
+   "result": "replaced"
   },
   "gen3d-street-trash-can": {
    "noun": "street trash can",
@@ -2906,8 +2974,8 @@
    },
    {
     "id": "gen3d-poppy-flower",
-    "score": 5,
-    "reason": "poppy flower: Bright, readable poppy; thin crumpled petals, spindly stem."
+    "score": 6,
+    "reason": "Very thin stem, flat ragged bloom; weak silhouette."
    },
    {
     "id": "gen3d-sunflower",
@@ -2926,13 +2994,13 @@
    },
    {
     "id": "gen3d-rock-pillar",
-    "score": 6,
-    "reason": "brick pillar: Chunky stacked bricks, nice colour; slightly lumpy, uneven stacking."
+    "score": 7,
+    "reason": "Readable stacked stone pillar with tactile chunky forms, but muted colours and uneven detailing."
    },
    {
     "id": "gen3d-basalt-column-rock",
-    "score": 3,
-    "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy."
+    "score": 6,
+    "reason": "Nearly black shading obscures facets and makes the chunky silhouette visually uninformative."
    },
    {
     "id": "gen3d-street-trash-can",
