@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "13fd7c2a6e68267cd841dfc3de9c60993436b7b19c8882224d6b1dccf6d571b6",
+ "catalogHash": "93ffa9591497538a0e480eecb10dd3ad3ba912ca086455a1b7d3f225fc68f624",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1767,6 +1767,13 @@
   "gen3d-ski-rack": {"class":"prop"},
   "gen3d-snow-lantern": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-frozen-barrel": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-polar-flag": {"class":"prop"}
+  "gen3d-polar-flag": {"class":"prop"},
+  "gen3d-spice-rack": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-kitchen-island": {"class":"prop"},
+  "gen3d-duck-pond": {"class":"flyer","regions":{"midX":0,"wingX":0.384,"legY":0.247}},
+  "gen3d-training-dummy": {"class":"prop"},
+  "gen3d-pagoda": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-koi-pond": {"class":"swimmer","regions":{"tailZ":-0.961}},
+  "gen3d-fishing-rod-rack": {"class":"biped","regions":{"legY":0.249}}
  }
 }

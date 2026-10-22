@@ -991,6 +991,13 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-snow-lantern` | snow lantern | 4223 / 2026 |
 | `gen3d-frozen-barrel` | frozen barrel | 4012 / 2144 |
 | `gen3d-polar-flag` | polar flag | 4748 / 2370 |
+| `gen3d-spice-rack` | spice rack | 4736 / 2350 |
+| `gen3d-kitchen-island` | kitchen island | 4613 / 2268 |
+| `gen3d-duck-pond` | duck pond | 4297 / 2025 |
+| `gen3d-training-dummy` | training dummy | 4728 / 2356 |
+| `gen3d-pagoda` | pagoda | 4647 / 2286 |
+| `gen3d-koi-pond` | koi pond | 4748 / 2374 |
+| `gen3d-fishing-rod-rack` | fishing rod rack | 4693 / 2345 |
 
 ## Replaced in P57 under the same id
 

@@ -62,36 +62,6 @@
    "reason": "score 2"
   },
   {
-   "setting": "kitchen",
-   "noun": "spice rack",
-   "id": "gen3d-spice-rack",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
-   "setting": "kitchen",
-   "noun": "kitchen island",
-   "id": "gen3d-kitchen-island",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
-   "setting": "park",
-   "noun": "park bench",
-   "id": "gen3d-park-bench",
-   "reason": "score 5"
-  },
-  {
-   "setting": "park",
-   "noun": "street trash can",
-   "id": "gen3d-street-trash-can",
-   "reason": "score 3"
-  },
-  {
-   "setting": "park",
-   "noun": "duck pond",
-   "id": "gen3d-duck-pond",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
    "setting": "village",
    "noun": "cottage",
    "id": "gen3d-cottage",
@@ -129,26 +99,8 @@
   },
   {
    "setting": "dojo",
-   "noun": "training dummy",
-   "id": "gen3d-training-dummy",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
-   "setting": "dojo",
    "noun": "taiko drum",
    "id": "gen3d-taiko-drum",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
-   "setting": "dojo",
-   "noun": "pagoda",
-   "id": "gen3d-pagoda",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
-   "setting": "dojo",
-   "noun": "koi pond",
-   "id": "gen3d-koi-pond",
    "reason": "not in the catalog or qa:unrecognisable"
   },
   {
@@ -173,12 +125,6 @@
    "setting": "frozen lake",
    "noun": "frozen pier",
    "id": "gen3d-frozen-pier",
-   "reason": "not in the catalog or qa:unrecognisable"
-  },
-  {
-   "setting": "frozen lake",
-   "noun": "fishing rod rack",
-   "id": "gen3d-fishing-rod-rack",
    "reason": "not in the catalog or qa:unrecognisable"
   },
   {

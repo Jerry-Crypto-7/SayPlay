@@ -101,6 +101,10 @@
         {
           "id": "gen3d-polar-flag",
           "height": 2.5
+        },
+        {
+          "id": "gen3d-fishing-rod-rack",
+          "height": 1.4
         }
       ]
     },
@@ -2110,6 +2114,18 @@
         {
           "id": "gen3d-cherry-blossom-tree",
           "height": 5
+        },
+        {
+          "id": "gen3d-park-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-street-trash-can",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-duck-pond",
+          "height": 0.5
         }
       ]
     },
@@ -3392,6 +3408,18 @@
         {
           "id": "gen3d-bamboo-hut",
           "height": 3
+        },
+        {
+          "id": "gen3d-training-dummy",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-pagoda",
+          "height": 6
+        },
+        {
+          "id": "gen3d-koi-pond",
+          "height": 0.5
         }
       ]
     },

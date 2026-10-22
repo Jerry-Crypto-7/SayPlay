@@ -35427,6 +35427,139 @@
           0.44392
         ]
       }
+    },
+    {
+      "assetId": "gen3d-spice-rack",
+      "tags": [
+        "spice rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spice-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3643,
+          0,
+          -0.36428
+        ],
+        "max": [
+          0.3643,
+          0.99988,
+          0.36428
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kitchen-island",
+      "tags": [
+        "kitchen island"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-kitchen-island-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.94993,
+          0,
+          -0.94978
+        ],
+        "max": [
+          0.94993,
+          1,
+          0.94978
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-duck-pond",
+      "tags": [
+        "duck pond"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-duck-pond-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64007,
+          0,
+          -0.70631
+        ],
+        "max": [
+          0.64007,
+          0.98882,
+          0.70631
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-training-dummy",
+      "tags": [
+        "training dummy"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-training-dummy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39207,
+          0,
+          -0.17589
+        ],
+        "max": [
+          0.39207,
+          0.99555,
+          0.17589
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pagoda",
+      "tags": [
+        "pagoda"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pagoda-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30888,
+          0,
+          -0.25705
+        ],
+        "max": [
+          0.30888,
+          0.9975,
+          0.25705
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-koi-pond",
+      "tags": [
+        "koi pond"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-koi-pond-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.92073,
+          0,
+          -1.92103
+        ],
+        "max": [
+          1.92073,
+          0.99948,
+          1.92103
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fishing-rod-rack",
+      "tags": [
+        "fishing rod rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fishing-rod-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29726,
+          0,
+          -0.19806
+        ],
+        "max": [
+          0.29726,
+          0.9976,
+          0.19806
+        ]
+      }
     }
   ]
 }
