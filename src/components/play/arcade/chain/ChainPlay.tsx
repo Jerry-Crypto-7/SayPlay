@@ -75,11 +75,16 @@ type ChainPlayProps = Parameters<typeof ChainRun>[0];
 /**
  * Bez hostitele feedu (`/play/[id]`) dostane řetěz jedno trvalé plátno (`StageHost`, P54A T5) přes všechna kola:
  * scéna kola se remountuje, ale WebGL kontext a renderer zůstanou – vlastní `<Canvas>` na kolo stál na telefonu
- * při každém přechodu snímek 150–280 ms (T13).
+ * při každém přechodu snímek 150–280 ms (T13). Scénu nového kola plátno staví odloženě (`deferScenes`) – do té doby
+ * kreslí konec předchozího kola (T13a).
  */
 export function ChainPlay(props: ChainPlayProps) {
   if (props.host !== undefined) return <ChainRun {...props} />;
-  return <StageHost keepPrograms>{(host) => <ChainRun {...props} host={host} />}</StageHost>;
+  return (
+    <StageHost keepPrograms deferScenes>
+      {(host) => <ChainRun {...props} host={host} />}
+    </StageHost>
+  );
 }
 
 function ChainRun({

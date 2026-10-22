@@ -9,7 +9,7 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Fragment, type ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, type ReactNode, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import type { PerspectiveCamera } from 'three';
 
@@ -58,7 +58,16 @@ function KeepPrograms() {
   return null;
 }
 
-function HostCanvas({ host, keepPrograms }: { readonly host: StageTunnel; readonly keepPrograms: boolean }) {
+/**
+ * Nový obsah scény jako odložená hodnota kořene R3F: plátno kreslí dál dosavadní scénu a novou React staví po
+ * dílech mezi snímky (přechod se vzdává každých ~5 ms). Bez toho stála montáž scény kola řetězu na telefonu
+ * ~85 ms v jednom kuse a s první kresbou nové scény padla do jednoho snímku 166–200 ms (T13a).
+ */
+function DeferredScene({ node }: { readonly node: ReactNode }) {
+  return useDeferredValue(node);
+}
+
+function HostCanvas({ host, keepPrograms, deferScenes }: { readonly host: StageTunnel; readonly keepPrograms: boolean; readonly deferScenes: boolean }) {
   const content = useSyncExternalStore(host.subscribe, host.content, () => null);
   useLayoutEffect(() => () => host.bind(null), [host]);
   return (
@@ -67,7 +76,7 @@ function HostCanvas({ host, keepPrograms }: { readonly host: StageTunnel; readon
       {content !== null && (
         <Fragment key={content.owner}>
           <FreshCamera />
-          {content.node}
+          {deferScenes ? <DeferredScene node={content.node} /> : content.node}
         </Fragment>
       )}
     </Canvas>
@@ -77,16 +86,18 @@ function HostCanvas({ host, keepPrograms }: { readonly host: StageTunnel; readon
 /**
  * Drží jedno plátno, dokud je feed na stránce; `children` dostanou hostitele pro `ArcadeStage`.
  * `onLeave` dostane snímek scény, která z plátna odchází (T8). `keepPrograms` drží programy shaderů přes výměny scén
- * (řetěz mikroher, `KeepPrograms`).
+ * (řetěz mikroher, `KeepPrograms`); `deferScenes` staví změněnou scénu odloženě (`DeferredScene`).
  */
 export function StageHost({
   children,
   onLeave,
   keepPrograms = false,
+  deferScenes = false,
 }: {
   readonly children: (host: StageTunnel) => ReactNode;
   readonly onLeave?: (frame: Promise<Blob | null>) => void;
   readonly keepPrograms?: boolean;
+  readonly deferScenes?: boolean;
 }) {
   const [host] = useState(() => {
     if (typeof document === 'undefined') return createStageTunnel(null);
@@ -98,7 +109,7 @@ export function StageHost({
   useEffect(() => (onLeave === undefined ? undefined : host.onLeave(onLeave)), [host, onLeave]);
   return (
     <>
-      {host.element !== null && createPortal(<HostCanvas host={host} keepPrograms={keepPrograms} />, host.element)}
+      {host.element !== null && createPortal(<HostCanvas host={host} keepPrograms={keepPrograms} deferScenes={deferScenes} />, host.element)}
       {children(host)}
     </>
   );
