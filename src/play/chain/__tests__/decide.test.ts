@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { classifyGenre } from '@/play/genre/classify';
+import type { Reading } from '@/play/read/schema';
 
 import { chainOrSingle, chainReasons } from '../decide';
 import { readForChain } from '../read';
@@ -40,6 +41,37 @@ describe('chainOrSingle', () => {
     ]) {
       expect(reasons(sentence), sentence).toEqual([]);
     }
+  });
+
+  // T17b: uložená čtení gpt-oss-20b (P56A, `evals/play/p56a/readings`). Čtení dává svému žánru +4, takže klasifikátor
+  // „slyší“ vždy – věta bez hratelného slovesa se pozná až podle sloves čtení.
+  describe('with a model reading', () => {
+    const none = { seconds: null, counts: [] };
+    const read = (sentence: string, reading: Reading) => chainReasons(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading));
+
+    it('two verbs the model reads that play different controls make a chain', () => {
+      const sentence = 'obby game with lava and spinning bars';
+      const reading: Reading = { control: 'platform', verbs: [{ word: 'platform', class: 'platform' }, { word: 'timing', class: 'timing' }], hero: null, roles: [{ noun: 'lava', kind: 'obstacle', count: null }, { noun: 'spinning bars', kind: 'obstacle', count: null }], setting: null, mood: null, numbers: none, genre: { genre: 'platformer', mode: 'default' }, foe: null, item: null, world: null, title: 'Obby Game with Lava and Spinning' };
+      expect(read(sentence, reading)).toContain('multi_verb');
+    });
+
+    it('a reading with no playable verb makes a chain even though its genre gets the reading bonus', () => {
+      const sentence = 'purple elephants doing taxes on a volcano';
+      const reading: Reading = { control: 'tap_go', verbs: [{ word: 'idle', class: 'idle' }], hero: null, roles: [{ noun: 'taxes', kind: 'collectible', count: null }], setting: 'volcano', mood: null, numbers: none, genre: { genre: 'quest', mode: 'spatial' }, foe: null, item: 'taxes', world: null, title: 'Purple Elephants Doing Taxes' };
+      expect(read(sentence, reading)).toEqual(['generic']);
+    });
+
+    it('a reading that lands on a chain microgame stays a single game even when the model calls the verb idle', () => {
+      const sentence = 'a wizard defends his tower from goblin hordes';
+      const reading: Reading = { control: 'lanes', verbs: [{ word: 'defends', class: 'idle' }], hero: 'wizard', roles: [{ noun: 'goblin hordes', kind: 'threat', count: null }], setting: 'tower', mood: null, numbers: none, genre: { genre: 'defense', mode: 'default' }, foe: 'goblin', item: null, world: null, title: 'Wizard Tower Defense' };
+      expect(read(sentence, reading)).toEqual([]);
+    });
+
+    it('one verb the model reads with its own genre stays a single game', () => {
+      const sentence = 'a chef catches eggs dropping into the kitchen while avoiding bombs';
+      const reading: Reading = { control: 'timing', verbs: [{ word: 'catches', class: 'timing' }], hero: 'chef', roles: [{ noun: 'eggs', kind: 'target', count: null }, { noun: 'bombs', kind: 'hazard', count: null }], setting: 'kitchen', mood: 'busy', numbers: none, genre: { genre: 'catch', mode: 'default' }, foe: null, item: 'eggs', world: null, title: 'Chef Egg Catch' };
+      expect(read(sentence, reading)).toEqual([]);
+    });
   });
 
   it('a generic cell heard by a clear margin stays a single game', () => {

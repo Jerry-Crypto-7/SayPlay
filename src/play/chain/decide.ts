@@ -35,7 +35,11 @@ export function chainReasons(sentence: string, read: SentenceRead, ranking: Genr
   const reasons: ChainReason[] = [];
   if (verbControls(read) >= 2) reasons.push('multi_verb');
   const [top, second] = ranking.ranked;
-  const heard = top !== undefined && top.score > 0;
+  // T17b: čtení modelem dává svému žánru +4, takže klasifikátor slyší vždy. Neslyšená věta je u něj čtení bez hratelného
+  // slovesa, které nepřistálo ani na mikrohře řetězu („doing taxes“ → quest); „defends his tower“ s `idle` → obrana slyšená.
+  const arcade = top !== undefined && MICRO.some((entry) => entry.key === `${top.genre}.${top.mode}`);
+  const playable = read.source !== 'llm' || arcade || read.verbs.some((verb) => VERB_MICROS[verb.class].length > 0);
+  const heard = top !== undefined && top.score > 0 && playable;
   if (!heard || (GENERIC_CELLS.has(`${top.genre}.${top.mode}`) && top.score - (second?.score ?? 0) < GENERIC_MARGIN)) reasons.push('generic');
   if (CHAIN_CUES.test(sentence.toLowerCase())) reasons.push('cue');
   return reasons;
