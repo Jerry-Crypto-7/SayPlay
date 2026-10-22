@@ -36,8 +36,10 @@ import {
   type RulePiece,
   START_LIVES,
   bodyBase,
+  bodyHp,
   targetStateOf,
 } from '../contract';
+import { EVENT_MARK, LANE_EVENTS, laneEventCursor, laneEventRng, planLaneEvents } from './lane-events';
 import { LANES, LANE_START, laneOfX, laneX, tappedIn } from './lanes';
 import { nextMultiplier } from './rules';
 
@@ -112,7 +114,12 @@ export interface Pop {
   readonly hole: number;
   readonly window: number;
   readonly good: boolean;
+  /** Bonus události (P55 T5, `EVENT_MARK`): body a kombo, do cíle se nepočítá a schovat se smí; 0 = běžný cíl. */
+  readonly mark: number;
 }
+
+/** Kouká cíl z díry (hráč ho vidí)? Ohlášení události odsud počítá bonus jako ukázaný. */
+export const whackInView = (state: Int32Array, body: number): boolean => holeOpen(state, body);
 
 export const whackParams = z
   .object({
@@ -128,11 +135,63 @@ const stretchOf = (targets: number): number => Math.max(1000, Math.round((WHACK.
 /** Třetina cíle, do které patří krtek `index` (krtci za cílem jsou ve třetí). */
 const thirdOf = (index: number, targets: number): number => Math.min(2, Math.floor((3 * index) / targets));
 
+/** Rozestup bonusů série a spěchu (tiky): vykukují rychle po sobě, takže jich kouká víc naráz. */
+const BONUS_GAP = [8, 14] as const;
+/** Okno bonusu série a spěchu (tiky): delší než okno krtka střední a poslední třetiny – kouká déle. */
+const BONUS_WINDOW = [46, 60] as const;
+/** Okno zlatého cíle (tiky): krátké, ale robot s reakcí ho stihne (`checkWhackLevel`). */
+const GOLDEN_WINDOW = [18, 22] as const;
+/** Nejkratší okno, které bonus v díře dostane, když se díra brzy otevře dalšímu cíli. */
+const BONUS_MIN_WINDOW = 18;
+
 /**
- * Rozpis ze semínka: krtci v pořadí vykouknutí a hodní sousedé v témž tiku. Díra krtka je jiná než
- * předchozího a volná (předchozí cíl se v ní schoval aspoň před `rest` tiky); soused bere jinou volnou.
+ * Rozpis ze semínka: krtci a hodní sousedé (`whackPlainPops`) a v dírách, které jsou zrovna volné, bonusy
+ * událostí (P55 T5, `planLaneEvents`). Bonusy mají vlastní stream (`laneEventRng`) a berou jen díru, která
+ * je volná po celé jejich okno i odpočinek – krtci a hodné cíle vykouknou přesně tam a tehdy jako bez událostí.
  */
 export function whackPops(seed: number, params: WhackParams, lives: number): Pop[] {
+  const plain = whackPlainPops(seed, params, lives);
+  const end = Math.max(...plain.map((pop) => pop.up + pop.window));
+  const cursor = laneEventCursor(planLaneEvents(seed, end));
+  const rng = laneEventRng(seed);
+  const pops = [...plain];
+  /** Bonus vykoukne v `up` do volné díry; okno se zkrátí, když díru brzy potřebuje jiný cíl, a nevejde-li se ani nejkratší, bonus nebude. */
+  const put = (mark: number, up: number, [shortest, longest]: readonly [number, number]): void => {
+    const wanted = rng.int(shortest, longest);
+    const room = (hole: number): number => {
+      let free = wanted;
+      for (const pop of pops) {
+        if (pop.hole !== hole) continue;
+        if (pop.up <= up && up < pop.up + pop.window + WHACK.rest) return 0;
+        if (pop.up > up) free = Math.min(free, pop.up - WHACK.rest - up);
+      }
+      return free;
+    };
+    const holes = Array.from({ length: LANES.count }, (_, hole) => hole).filter((hole) => room(hole) >= Math.min(BONUS_MIN_WINDOW, shortest));
+    if (holes.length === 0) return;
+    const hole = rng.pick(holes);
+    pops.push({ up, hole, window: room(hole), good: false, mark });
+  };
+  // Události se kotví k vykouknutí krtka: série a zlatý cíl začnou v mezeře po něm, spěch dá do každé mezery dva bonusy.
+  const moles = plain.filter((pop) => !pop.good);
+  for (const mole of moles) {
+    const event = cursor.take(mole.up);
+    let at = mole.up;
+    if (event?.kind === 'series') {
+      for (let n = rng.int(...LANE_EVENTS.series); n > 0; n -= 1) put(EVENT_MARK.series, (at += rng.int(...BONUS_GAP)), BONUS_WINDOW);
+    } else if (event?.kind === 'golden') put(EVENT_MARK.golden, at + rng.int(...BONUS_GAP), GOLDEN_WINDOW);
+    else if (cursor.inRush(mole.up)) {
+      for (let n = 2; n > 0; n -= 1) put(EVENT_MARK.rush, (at += rng.int(...BONUS_GAP)), BONUS_WINDOW);
+    }
+  }
+  return pops;
+}
+
+/**
+ * Krtci v pořadí vykouknutí a hodní sousedé v témž tiku, bez událostí. Díra krtka je jiná než
+ * předchozího a volná (předchozí cíl se v ní schoval aspoň před `rest` tiky); soused bere jinou volnou.
+ */
+export function whackPlainPops(seed: number, params: WhackParams, lives: number): Pop[] {
   const rng = createCompileRng(seed ^ SALT);
   const moles = params.targets + WHACK.free + lives - 1;
   const stretch = stretchOf(params.targets);
@@ -149,13 +208,13 @@ export function whackPops(seed: number, params: WhackParams, lives: number): Pop
     hole = rng.pick(holes);
     const [shortest, longest] = WHACK.windows[third] as readonly [number, number];
     const window = rng.int(shortest, longest);
-    pops.push({ up, hole, window, good: false });
+    pops.push({ up, hole, window, good: false, mark: 0 });
     freeAt[hole] = up + window + WHACK.rest;
     const drawn = rng.int(0, 999) < (WHACK.decoys[third] as number);
     if (index > 0 && (drawn || plain >= WHACK.plainRun)) {
       // Okno + odpočinek je kratší než nejmenší rozestup další třetiny o víc než dvě díry: volné jsou vždy aspoň tři.
       const beside = rng.pick(holes.filter((candidate) => candidate !== hole));
-      pops.push({ up, hole: beside, window, good: true });
+      pops.push({ up, hole: beside, window, good: true, mark: 0 });
       freeAt[beside] = up + window + WHACK.rest;
       plain = 0;
     } else plain += 1;
@@ -179,6 +238,7 @@ export function whackLevel(seed: number, params: WhackParams, lives: number): Ar
         solid: false,
         vy,
         kinematic: true,
+        ...(pop.mark > 0 ? { hp: pop.mark } : {}),
       };
     }),
   ];
@@ -189,7 +249,7 @@ export function whackLevel(seed: number, params: WhackParams, lives: number): Ar
 export function popsOf(level: ArcadeLevel): Pop[] {
   return level.bodies.slice(1).map((body) => {
     const vy = body.vy ?? 0;
-    return { up: vy > 0 ? upOf(body.y, vy, 0) : -1, hole: laneOfX(body.x), window: vy > 0 ? windowOf(vy) : 0, good: body.role === 'hazard' };
+    return { up: vy > 0 ? upOf(body.y, vy, 0) : -1, hole: laneOfX(body.x), window: vy > 0 ? windowOf(vy) : 0, good: body.role === 'hazard', mark: body.hp ?? 0 };
   });
 }
 
@@ -197,7 +257,7 @@ export function popsOf(level: ArcadeLevel): Pop[] {
 export function checkWhackLevel(level: ArcadeLevel, params: WhackParams, lives: number): string[] {
   const issues: string[] = [];
   const pops = popsOf(level);
-  const moles = pops.filter((pop) => !pop.good);
+  const moles = pops.filter((pop) => !pop.good && pop.mark === 0);
   const need = params.targets + WHACK.free + lives - 1;
   if (moles.length < need) issues.push(`only ${moles.length} moles pop up – whacking ${params.targets} needs ${need}`);
   level.bodies.slice(1).forEach((body, index) => {
@@ -214,15 +274,17 @@ export function checkWhackLevel(level: ArcadeLevel, params: WhackParams, lives: 
       if (pop.up < before.up + before.window + WHACK.rest) issues.push(`hole ${hole} opens at tick ${pop.up} before the target from tick ${before.up} has hidden`);
     });
   }
-  // Robot vidí krtka o reakci později a bouchá po jednom za tik, nejstaršího první; každý mu musí vyjít do konce okna.
-  let lastTap = -1;
-  let previous = -1;
   moles.forEach((mole, index) => {
-    if (mole.up <= previous) issues.push(`mole ${index + 1} pops up at tick ${mole.up}, not after the one before`);
+    if (index > 0 && mole.up <= (moles[index - 1] as Pop).up) issues.push(`mole ${index + 1} pops up at tick ${mole.up}, not after the one before`);
+  });
+  // Robot vidí cíl o reakci později a bouchá po jednom za tik, nejstaršího první (i do bonusů – honí je);
+  // každý krtek i bonus mu musí vyjít do konce okna.
+  let lastTap = -1;
+  const struck = pops.filter((pop) => !pop.good).sort((a, b) => a.up - b.up);
+  struck.forEach((mole, index) => {
     const tap = Math.max(mole.up + 1 + WHACK_BOT_REACTION, lastTap + 1);
-    if (tap > mole.up + mole.window - 1 - WHACK.margin) issues.push(`mole ${index + 1} hides ${mole.window} ticks after it pops up, too soon for the bot`);
+    if (tap > mole.up + mole.window - 1 - WHACK.margin) issues.push(`${mole.mark > 0 ? 'bonus' : 'mole'} ${index + 1} hides ${mole.window} ticks after it pops up, too soon for the bot`);
     lastTap = tap;
-    previous = mole.up;
   });
   for (const good of pops.filter((pop) => pop.good)) {
     if (!moles.some((mole) => mole.up === good.up && mole.hole !== good.hole)) issues.push(`the good target at tick ${good.up} has no mole in another hole beside it`);
@@ -258,7 +320,8 @@ export const whackHoles: ModeGeneratorPiece<WhackParams> = {
   id: 'whack_holes',
   params: whackParams,
   roles: ['player', 'target', 'hazard'],
-  cost: (params) => ({ bodies: 1 + 2 * (params.targets + WHACK.free + 8), rules: 4 }),
+  // Rezerva na bonusy událostí (P55 T5): série, zlaté cíle a spěch přes celou hru.
+  cost: (params) => ({ bodies: 1 + 2 * (params.targets + WHACK.free + 8) + 80, rules: 4 }),
   generate: (seed, params) => whackLevel(seed, params, START_LIVES),
   parts: whackParts,
 };
@@ -317,8 +380,10 @@ export const whackHitRule: RulePiece<z.infer<typeof hitParams>> = {
       if ((role !== ROLE.target && role !== ROLE.hazard) || (state[base + BODY.vy] as number) <= 0) continue;
       const y = state[base + BODY.y] as number;
       if (y < 0) continue;
+      // Bonus události (P55 T5): body a kombo, do cíle se nepočítá; schovaný nic nestojí.
+      const mark = role === ROLE.target ? bodyHp(state, body) : 0;
       if (y >= WHACK.band) {
-        if (role === ROLE.target) {
+        if (role === ROLE.target && mark === 0) {
           if (escaped < 0) escaped = escapedSoFar(state);
           escaped += 1;
           effects.push({ kind: 'stateChange', body, state: ESCAPED });
@@ -334,7 +399,8 @@ export const whackHitRule: RulePiece<z.infer<typeof hitParams>> = {
         continue;
       }
       const multiplier = params.combo === undefined ? 1 : whackMultiplier(state, params.combo);
-      effects.push({ kind: 'score', amount: params.points * multiplier }, { kind: 'count', counter: 'items', amount: 1 }, { kind: 'despawn', body });
+      if (mark > 0) effects.push({ kind: 'score', amount: params.points * (mark === EVENT_MARK.golden ? LANE_EVENTS.goldenPoints : 1) * multiplier }, { kind: 'despawn', body });
+      else effects.push({ kind: 'score', amount: params.points * multiplier }, { kind: 'count', counter: 'items', amount: 1 }, { kind: 'despawn', body });
       if (params.combo !== undefined) effects.push({ kind: 'combo', body: params.combo, multiplier });
     }
     if (tap !== null && !struck && params.combo !== undefined) effects.push({ kind: 'combo', body: params.combo, multiplier: 0 });

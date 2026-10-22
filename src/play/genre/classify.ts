@@ -85,6 +85,11 @@ const HOP = pair('hop', 'default');
 const CROWD = pair('crowd', 'default');
 const MERGE = pair('merge', 'default');
 const PUSH = pair('push', 'default');
+/**
+ * Žánry P54C, které slovník slyší přesně (P54C dev 64/64) a čtečka hádá i do rušivých vět („catch mice“, „push crates“,
+ * „merge into traffic“). P56A T5: slyší-li slovník první některý z nich, rozhodne slovník, jinak čtení.
+ */
+const NEW_GENRES: ReadonlySet<string> = new Set([CATCH, WHACK, DEFENSE, SLICE, HOP, CROWD, MERGE, PUSH].map((p) => `${p.genre}.${p.mode}`));
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -112,11 +117,24 @@ const POPS_UP = String.raw`(?:pop(?:s|ping)?|peek(?:s|ing)?|peep(?:s|ing)?|appea
 /** Před kým se brání: množné číslo nebo vlna („goblins“, „waves of orcs“, „a pack of wolves“), ne jeden („a hungry cat“, „the boss“). */
 const MANY = String.raw`(?:(?:the|all|those|these|every|endless|wave after wave of) )?(?:(?:a |an )?(?:waves?|hordes?|swarms?|armies|army|packs?|gangs?|bands?|flocks?|herds?|groups?|lines?|streams?) of )?(?!(?:its|his|this|us|is|was)\b)(?:[a-z'-]+ ){0,2}?[a-z'-]*[a-rt-z]s\b`;
 /** Co letí. */
-const FLIGHT = String.raw`(?:flying|tossed|thrown|launched|bouncing|flung|hurled|in the air|into the air|mid-?air|as they (?:fly|soar))\b`;
+const FLIGHT = String.raw`(?:flying|tossed|thrown|launched|bouncing|flung|hurled|in the air|into the air|mid-?air|as they (?:fly|soar)|(?:jump|jumps|jumping|leap|leaps|leaping) (?:out|up))\b`;
 const NOT_THROUGH = String.raw`(?!(?:through|into|across|down|off|of)\b)`;
+// P55 T3: rodiny opisů pruhových žánrů z chyb P54C holdoutu – vždy věc + pohyb, nikdy jedno slovo.
+/** Věc sama padá („candy falls from the ceiling“, „toppings drop from above“). */
+const FALLS = String.raw`(?:fall(?:s|ing)?|drop(?:s|ping)?|rain(?:s|ing)?|tumbl(?:e|es|ing)) (?:from|out of|down)\b`;
+/** Nádoba, kterou hráč posouvá pod padající věci („move a bucket left and right“, „slide my bowl under it“). */
+const VESSEL = String.raw`(?:baskets?|buckets?|bowls?|nets?|cups?|carts?|trays?|pans?|sacks?|hats?|plates?|aprons?)`;
+/** Úder na to, co vykouklo: zájmeno za úderem („tap them before they vanish“, „smash them quick“). */
+const STRIKE_THEM = String.raw`(?:${STRIKE}|whack(?:s|ing)?|bonk(?:s|ing)?|hammer(?:s|ing)?|punch(?:es|ing)?|slap(?:s|ping)?) (?:them|it|'em|each one)\b`;
+/** Množné číslo těsně před slovesem – vlna se valí („orcs march“, „skeletons keep coming“), jeden hrdina ne. */
+const PLURAL_BEFORE = String.raw`(?<=\b[a-z'-]*[a-rt-z]s )`;
+/** Co obrana chrání, kam vlna míří. */
+const STRONGHOLD = String.raw`(?:castles?|base|bases|towers?|gates?|walls?|village|town|city|fort|fortress|farm|farmhouse|garden|igloo|camp|house|home|kingdom|lanes?)\b`;
+/** Co letí, z druhé strany věty: věc vyhozená před řezem („pumpkins get thrown up and you slice them“). */
+const FLUNG = String.raw`(?:thrown|tossed|flung|launched|hurled|(?:jump|jumps|jumping|leap|leaps|leaping|fly|flies|flying|shoot|shoots|shooting|pop|pops|popping) (?:out|up)|in the air|into the air|mid-?air)\b`;
 // P54C T13b: znaky žánrů fáze 3, čtené stejně – pohledem dopředu za slovesem (nebo za jménem hry).
 /** Přes co se přeskáká: silnice, provoz, koleje („crosses a busy road“, „hops across train tracks“). */
-const TRAFFIC = String.raw`(?:roads?|streets?|highways?|freeways?|motorways?|traffic|crossings?|intersections?|(?:train |railway |rail )?tracks|rails|railways?|(?:country|traffic|busy|highway) lanes)\b`;
+const TRAFFIC = String.raw`(?:roads?|streets?|highways?|freeways?|motorways?|traffic|crossings?|intersections?|(?:train |railway |rail )?tracks|rails|railways?|(?:country|traffic|busy|highway) lanes|lanes of (?:[a-z]+ )?(?:cars|traffic|trucks|vehicles|buses))\b`;
 /** Řeka po kládách („cross the river by jumping on floating logs“); „jumps over logs“ je překážka plošinovky. */
 const LOGS = String.raw`(?:floating|drifting|river) logs?\b`;
 /** Kdo v davu roste: dav, armáda, roj. */
@@ -174,8 +192,20 @@ const VERBS: readonly Verb[] = [
   // of graves“), ne do čehokoli („pop ten balloons“ zůstává úkolem); brání se místo před někým („defend the castle from
   // goblins“, „tower defense“), ne sám sebe („defends himself in a duel“); krájí se, co letí („slice flying watermelons“),
   // ne cesta džunglí („slice through the jungle“) ani dříví („chop wood“).
-  v('catch', 'goal', CATCH, new RegExp(String.raw`\bcatch(?:es|ing)?(?= (?!(?:him|her|me|us|you|the player)\b)(?:${SAME_CLAUSE}){0,4}?${CAUGHT})`)),
-  v('whack', 'goal', WHACK, new RegExp(String.raw`\bwhack(?:s|ing|ed)?\b|\bwhac?k-?a-?mole\b|\b(?:bonk|bop)(?:s|ping|ped|ed|ing)?\b|\b${STRIKE}(?= (?:[a-z']+ ){1,5}?${POPS_UP}| (?:[a-z']+ ){0,2}?(?:moles?|gophers?)\b)`)),
+  // P55 T3: sebrat, chytit i sníst to, co padá („collect falling stars in a basket“, „grabs presents dropping from the
+  // sleigh“); věc, která padá, a hráč ji chytá nebo pod ni strká nádobu („toppings drop from above, catch them“); nádoba
+  // posouvaná pod věci („move a bucket left and right to catch raindrops“).
+  v('catch', 'goal', CATCH, new RegExp([
+    String.raw`\b(?:catch(?:es|ing)?|collect(?:s|ing)?|grab(?:s|bing)?|gather(?:s|ing)?|snag(?:s|ging)?|scoop(?:s|ing)?|eat(?:s|ing)?)(?= (?!(?:him|her|me|us|you|the player)\b)(?:${SAME_CLAUSE}){0,4}?${CAUGHT})`,
+    String.raw`\b${FALLS}(?= (?:[a-z'-]+ ){0,3}?[a-z'-]+\b[^.]*?\b(?:catch(?:es|ing)?|(?:slide|move|hold|put)s? (?:my|your|the|a|his|her) (?:[a-z]+ )?${VESSEL} under)\b)`,
+    String.raw`\b(?:mov(?:e|es|ing)|slid(?:e|es|ing)|swing(?:s|ing)?|hold(?:s|ing)?|carr(?:y|ies|ying)) (?:a|an|the|your|my|his|her|their) (?:[a-z]+ )?${VESSEL}(?= [^.]*?\b(?:to catch|under (?:it|them|the)|left and right)\b)`,
+  ].join('|'))),
+  // P55 T3: co vykoukne a hráč do toho udeří zájmenem („ghosts appear in windows, tap them before they vanish“,
+  // „gophers pop up in the garden and you smash them“).
+  v('whack', 'goal', WHACK, new RegExp([
+    String.raw`\bwhack(?:s|ing|ed)?\b|\bwhac?k-?a-?mole\b|\b(?:bonk|bop)(?:s|ping|ped|ed|ing)?\b|\b${STRIKE}(?= (?:[a-z']+ ){1,5}?${POPS_UP}| (?:[a-z']+ ){0,2}?(?:moles?|gophers?)\b)`,
+    String.raw`\b${POPS_UP}(?=[^.]*?\b${STRIKE_THEM})`,
+  ].join('|'))),
   // Obrana pruhů chce vlny: brání se před mnoha („from goblins“, „against waves of orcs“); kdo se brání jednomu
   // („a mouse defends its cheese from a hungry cat“), hraje dál rvačku Arény se štítem.
   v('defend', 'goal', DEFENSE, new RegExp([
@@ -184,12 +214,23 @@ const VERBS: readonly Verb[] = [
     String.raw`\bhold(?:s|ing)?(?= (?:the |a |your |our )?(?:[a-z]+ )?(?:lanes?|line|gates?|walls?|fort|fortress|bridge|pass)\b.*\b(?:against|from)\b)`,
     String.raw`\bkeep(?:s|ing)?(?= (?:the |a |an |all |those )?(?:[a-z]+ ){0,2}?[a-z]+ (?:from|out of) (?:breach(?:ing)?|break(?:ing)? (?:in|into|through)|storm(?:ing)?|invad(?:e|ing)|enter(?:ing)?|overrun(?:ning)?|reach(?:ing)?|get(?:ting)? (?:in|into|inside|through|past))\b)`,
     String.raw`\bstop(?:s|ping)?(?= (?:the |a |an |all |those )?(?:[a-z]+ ){0,2}?[a-z]+ (?:before|from) (?:they|it|he|she|them) (?:break|breaks|breaking|get|gets|getting|storm|storms|sneak|sneaks|march|marches|crawl|crawls|invade|invades) (?:in|into|inside|through|over|past)\b)`,
+    // P55 T3: zastavit mnohé, než dojdou k místu („stop the zombies before they reach the farmhouse“); vlna se valí
+    // k pevnosti („orcs march down three lanes toward my castle“, „skeletons keep coming down the road to my tower“,
+    // „goblins rush my village gate“); chránit místo něčím, co se staví nebo hází („guard their igloo by throwing
+    // snowballs at walruses“).
+    String.raw`\bstop(?:s|ping)?(?= (?:the |all |those )?(?:[a-z'-]+ ){0,2}?[a-z'-]*[a-rt-z]s (?:before|from) (?:they|them) (?:reach|reaching|get to|getting to|hit|hitting|touch|touching|cross|crossing|make it to) (?:the|your|my|our|their)\b)`,
+    String.raw`${PLURAL_BEFORE}\b(?:march(?:es|ing)?|advanc(?:e|es|ing)|rush(?:es|ing)?|charg(?:e|es|ing)|swarm(?:s|ing)?|stomp(?:s|ing)?|crawl(?:s|ing)?|creep(?:s|ing)?|(?:keep|kept|keeps) coming|pour(?:s|ing)?|storm(?:s|ing)?)(?= (?:[a-z'-]+ ){0,4}?(?:(?:toward|towards|to|at|on|down|along|up|into) )?(?:the |my |our |your |their |a )(?:[a-z'-]+ ){0,2}?${STRONGHOLD})`,
+    String.raw`\b(?:defend(?:s|ing)?|protect(?:s|ing)?|guard(?:s|ing)?)(?= (?:the|a|an|his|her|its|their|our|my|your|this)\b(?: [a-z']+){0,3}? by (?:throwing|shooting|placing|building|dropping|firing|launching|putting|setting up|tossing|hurling)\b)`,
   ].join('|'))),
   // Krájí a seká se ovoce („slices fruit“); řezat a sekat jde i v kuchyni a v rytmu („swords cutting fruit to music“), proto jen to, co letí.
   v('slice', 'goal', SLICE, new RegExp([
     String.raw`(?<!\b(?:pizza|cake|bread|pie|cheese|apple|lemon|orange|lime|tomato) )\b(?:slic(?:e|es|ing)|slash(?:es|ing)?)(?= ${NOT_THROUGH}(?:[a-z']+ ){0,3}?(?:${FLIGHT}|(?:fruits?|watermelons?|melons?)\b))`,
     String.raw`\b(?:chop(?:s|ping)?|cut(?:s|ting)?)(?= ${NOT_THROUGH}(?:[a-z']+ ){0,3}?${FLIGHT})`,
     String.raw`\bswip(?:e|es|ing) to (?:cut|slice|slash|chop)\b`,
+    // P55 T3: věc vyhozená nebo vyskočivší před řezem („pumpkins get thrown up and you slice them“) a tah prstem přes to,
+    // co letí („swipe through gems tossed in the air“).
+    String.raw`(?<=\b${FLUNG}[^.]*?)\b(?:slic(?:e|es|ing)|slash(?:es|ing)?|chop(?:s|ping)?|cut(?:s|ting)?|split(?:s|ting)?|swip(?:e|es|ing)) (?:them|it|'em|each one)\b`,
+    String.raw`\bswip(?:e|es|ing)(?= (?:through|across|at|over) (?:[a-z']+ ){0,3}?${FLIGHT})`,
   ].join('|'))),
   // P54C T13b: žánry fáze 3, stejně jako žánry pruhů jen se znakem žánru a před `hit`, skokem, sběrem a `make`.
   // Přeskáká se přes silnici, provoz nebo koleje („a chicken crosses a busy road“, „hops across train tracks“) a přes
@@ -210,6 +251,8 @@ const VERBS: readonly Verb[] = [
     String.raw`\b(?:pick(?:s|ing)?|choos(?:e|es|ing)) (?:the |a |an )?(?:right |best |correct |good )?gates\b(?=[^.;]*\b(?:${GROUP}|${GROWS}|bigger|larger)\b)`,
     String.raw`\b${GROWS}(?= (?:up )?(?:your|the|a|an|his|her|their|our|my) (?:[a-z'-]+ )?${GROUP}\b)`,
     String.raw`\b(?:growing|multiplying|ever-growing) ${GROUP}\b`,
+    // P55 T4: brány, které dav násobí („pick the x2 gates“, „flying through doubling hoops“, „gates that add more zombies“).
+    String.raw`\b(?:x\d+|×\d+|\+\d+|doubling|multiplying|multiplier|bonus) (?:gates|hoops|rings|portals)\b|\b(?:gates|hoops|portals) that (?:add|double|multiply|give you) (?:more|extra)\b`,
     String.raw`\bmak(?:e|es|ing)(?= (?:your|the|a|an|his|her|their|our|my) (?:[a-z'-]+ )?${GROUP} (?:bigger|larger|grow)\b)`,
   ].join('|'))),
   // Slučují se stejné kusy („merge matching candies“, „combine equal ones like 2048“), kusy v nádobě („merge the fruits
@@ -305,7 +348,7 @@ const NAMES: readonly (readonly [Pair, RegExp])[] = [
   [MERGE, /\bsuika\b|\b2048\b|\bwatermelon game\b|\bmerge (?:game|puzzle)\b/],
   [PUSH, /\bsumo\b|\bbumper (?:cars?|boats?|balls?)\b/],
   [PLATFORMER, /\bmario\b(?! kart)|\bobby\b|\bparkour\b|\bfall guys\b|\bobstacle course\b|\bsonic\b/],
-  [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bstunts?\b|\bramps?\b/],
+  [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|(?<!bumper )\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bstunts?\b|\bramps?\b/],
   [FLAP, /\bflapp?y\b/],
   [RHYTHM, /\bpiano tiles\b|\bbeat saber\b|\bguitar hero\b|\bthe beat\b|\bdrummers?\b|\bdrums?\b|\bsongs?\b|\bmusic(?:al)?\b|\bdisco\b|\bconcert\b|\bkaraoke\b/],
   [DUEL, /\brivals?\b|\bhigh noon\b|\bshowdown\b|\bstand-?off\b|\bquick ?draw\b/],
@@ -425,7 +468,28 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     }
   }
 
+  // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí `unheard`.
+  // Rozhodnutý režim (`decided`, P56A T5) jde před všechny.
+  const tier = (p: Pair, score: number, decided: string | null): number => (key(p) === decided ? -1 : score > 0 ? 0 : 2 + 2 * unheard(p)) + (availability(p) === 'ready' ? 0 : 1);
+  const order = (decided: string | null): GenreChoice[] => pairs.map((p, index) => {
+    const entry = scores.get(key(p)) ?? { score: 0, why: [] };
+    return { choice: { genre: p.genre, mode: p.mode, score: entry.score, why: entry.why.join(', ') || 'no cue' }, index };
+  })
+    .sort((a, b) => tier(a.choice, a.choice.score, decided) - tier(b.choice, b.choice.score, decided) || b.choice.score - a.choice.score || a.index - b.index)
+    .map((item) => item.choice);
+
+  let decided: string | null = null;
   if (reading !== null) {
+    // P56A T5: slyší-li slovník první nový žánr, rozhodne on – body ze sloves čtení ho nepřeskočí. Jinak rozhoduje platný
+    // žánr čtení, který hraje; slovník řadí zbytek, kam se ustupuje, když se režim čtení nepřeloží nebo neprojde robotem.
+    const heard = order(null)[0];
+    // Čtení uložená před P56A T3 (`read/__fixtures__/readings.json`) pole `genre` nemají.
+    const read = reading.genre ?? null;
+    if (heard !== undefined && heard.score > 0 && NEW_GENRES.has(key(heard))) decided = key(heard);
+    else if (read !== null && scores.has(key(read)) && availability(read) === 'ready') {
+      decided = key(read);
+      add(read, 4, `reading genre "${decided}"`);
+    }
     reading.verbs.forEach((verb, index) => {
       const pick = READ_CLASS[verb.class];
       if (pick === undefined) return;
@@ -433,15 +497,7 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     });
     if (reading.roles.some((role) => role.kind === 'chaser')) add(ESCAPE, 1, 'reading: chaser');
   }
-
-  // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí `unheard`.
-  const tier = (p: Pair, score: number): number => (score > 0 ? 0 : 2 + 2 * unheard(p)) + (availability(p) === 'ready' ? 0 : 1);
-  const ranked = pairs.map((p, index) => {
-    const entry = scores.get(key(p)) ?? { score: 0, why: [] };
-    return { choice: { genre: p.genre, mode: p.mode, score: entry.score, why: entry.why.join(', ') || 'no cue' }, index };
-  })
-    .sort((a, b) => tier(a.choice, a.choice.score) - tier(b.choice, b.choice.score) || b.choice.score - a.choice.score || a.index - b.index)
-    .map((item) => item.choice);
+  const ranked = order(decided);
 
   return {
     ranked,

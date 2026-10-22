@@ -13,7 +13,8 @@
  * Plocha dostane `data-lane-edges` (hranice pruhů ve výšce řezu, zleva doprava), podle kterých prst
  * trefí pruh (`lanes-input.ts`), a `data-player-x` pro vyskakující body.
  * Modely jsou z knihovny podle popisku (`cast.props.coin` ovoce, `cast.props.hazard` bomba);
- * bez modelu primitiva v barvách kitu (meloun a bomba).
+ * bez modelu primitiva v barvách kitu (meloun a bomba). Bonusy událostí (P55 T5, značka v HP těla) mají
+ * vlastní zásobu: zlatý cíl svítí, bonus série a spěchu nese kolem ovoce svítící kroužek.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -21,10 +22,11 @@ import { useCallback, useMemo, useRef } from 'react';
 import { type Group, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
-import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
 import { riggedCharacter } from '@/play/arcade/models';
+import { EVENT_MARK } from '@/play/arcade/pieces/lane-events';
 import { LANES, laneOf, laneX, tappedIn } from '@/play/arcade/pieces/lanes';
-import { SLICE, heightAfter } from '@/play/arcade/pieces/slice';
+import { SLICE, heightAfter, sliceInView } from '@/play/arcade/pieces/slice';
 
 import { renderHeld } from '../../effects/render-feel';
 import type { GhostPlacement } from '../../Ghost';
@@ -48,7 +50,7 @@ const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
 /** Kolik volné výšky (na výšku telefonu) jde nad nejvyšší bod místo pod zem: skoro nic, let je uprostřed plátna. */
 const SKY_SHARE = 0.05;
 /** Zásoba slotů: ovoce a bomb naráz ve vzduchu, stop čepele, rozseknutého ovoce a záblesků bomb. */
-const SLOTS = { fruit: 10, bomb: 5, trails: 3, halves: 6, blasts: 2 } as const;
+const SLOTS = { fruit: 10, bomb: 5, bonus: 6, golden: 2, trails: 3, halves: 6, blasts: 2 } as const;
 /** Jak dlouho žije stopa čepele, půlky ovoce a záblesk bomby (s). */
 const LIFE = { trail: 0.3, halves: 0.75, blast: 0.3 } as const;
 /** Věc, která skončila výš než tohle, byla rozseknutá (propadlá zmizí až na zemi). */
@@ -116,6 +118,26 @@ function Bomb() {
   );
 }
 
+/** Zlatý cíl události (P55 T5): svítí, ať je z dálky vidět, že stojí za švih navíc. */
+function Golden() {
+  return (
+    <mesh position={[0, THING / 2, 0]} castShadow>
+      <icosahedronGeometry args={[THING / 2, 0]} />
+      <meshStandardMaterial color={color['sun-deep']} emissive={color.sun} emissiveIntensity={0.7} roughness={0.3} metalness={0.4} />
+    </mesh>
+  );
+}
+
+/** Kroužek kolem bonusu série a spěchu: ovoce navíc, které se do cíle nepočítá. */
+function BonusHalo() {
+  return (
+    <mesh position={[0, THING / 2, 0]}>
+      <torusGeometry args={[THING * 0.62, 0.05, 6, 20]} />
+      <meshStandardMaterial color={color['sun-soft']} emissive={color.sun} emissiveIntensity={0.8} />
+    </mesh>
+  );
+}
+
 /** Půlka rozseknuté věci: polokoule slupky (x ≥ 0) a plocha řezu čelem k −x. */
 function Half({ skin, flesh }: { readonly skin: string; readonly flesh: string }) {
   return (
@@ -134,7 +156,15 @@ function Half({ skin, flesh }: { readonly skin: string; readonly flesh: string }
 
 export function SliceScene({ session, cast, surface, scene: look, ghost }: SliceSceneProps) {
   const world = session.world;
-  const groups = useRef<{ fruit: (Group | null)[]; bomb: (Group | null)[]; trails: (Mesh | null)[]; halves: (Group | null)[]; blasts: (Mesh | null)[] }>({ fruit: [], bomb: [], trails: [], halves: [], blasts: [] });
+  const groups = useRef<{ fruit: (Group | null)[]; bomb: (Group | null)[]; bonus: (Group | null)[]; golden: (Group | null)[]; trails: (Mesh | null)[]; halves: (Group | null)[]; blasts: (Mesh | null)[] }>({
+    fruit: [],
+    bomb: [],
+    bonus: [],
+    golden: [],
+    trails: [],
+    halves: [],
+    blasts: [],
+  });
   const memory = useRef<Memory[]>([]);
   const trails = useRef(bursts(SLOTS.trails));
   const halves = useRef(bursts(SLOTS.halves));
@@ -186,6 +216,8 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
     const mem = memory.current;
     const fruit: number[] = [];
     const bombs: number[] = [];
+    const bonus: number[] = [];
+    const golden: number[] = [];
     for (let index = from; index < count; index += 1) {
       const base = bodyBase(index);
       const alive = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
@@ -200,7 +232,8 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
       }
       Object.assign(last, { alive, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, vy, role });
       if (!alive) continue;
-      if (role === ROLE.collectible) fruit.push(index);
+      if (role === ROLE.collectible && sliceInView(state, index)) (bodyHp(state, index) === EVENT_MARK.golden ? golden : bonus).push(index);
+      else if (role === ROLE.collectible) fruit.push(index);
       else if (role === ROLE.hazard) bombs.push(index);
     }
     const place = (list: (Group | null)[], bodies: readonly number[]): void => {
@@ -219,6 +252,8 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
     };
     place(groups.current.fruit, fruit);
     place(groups.current.bomb, bombs);
+    place(groups.current.bonus, bonus);
+    place(groups.current.golden, golden);
 
     // Stopy čepele: tenký pás přes pruh, který se ztenčuje.
     trails.current.forEach((slot, index) => {
@@ -342,6 +377,31 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
           userData={{ frame: 'target', item: 'hazard' }}
         >
           {bombModel !== undefined ? <FittedModel id={bombModel} w={THING} h={THING} d={THING} fallback={color.ink} /> : <Bomb />}
+        </group>
+      ))}
+      {Array.from({ length: SLOTS.bonus }, (_, index) => (
+        <group
+          key={`bonus-${index}`}
+          ref={(group) => {
+            groups.current.bonus[index] = group;
+          }}
+          visible={false}
+          userData={{ frame: 'target', item: 'coin', bonus: true }}
+        >
+          {fruitModel !== undefined ? <FittedModel id={fruitModel} w={THING} h={THING} d={THING} fallback={color['mint-deep']} /> : <Melon />}
+          <BonusHalo />
+        </group>
+      ))}
+      {Array.from({ length: SLOTS.golden }, (_, index) => (
+        <group
+          key={`golden-${index}`}
+          ref={(group) => {
+            groups.current.golden[index] = group;
+          }}
+          visible={false}
+          userData={{ frame: 'target', item: 'coin', event: 'golden' }}
+        >
+          <Golden />
         </group>
       ))}
       {Array.from({ length: SLOTS.trails }, (_, index) => (

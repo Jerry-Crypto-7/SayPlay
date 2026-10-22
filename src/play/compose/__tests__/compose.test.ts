@@ -5,6 +5,8 @@ import { extractIntent } from '@/play/intent/extract';
 import { essentialTriples } from '@/play/intent/contract';
 import { matchesWitness } from '@/play/arcade/witness';
 import type { GameSpecV1 } from '@/play/spec';
+import { draftGameSpecWithMeta } from '@/play/draft/draft';
+import type { Reading } from '@/play/read/schema';
 import { compileRecipe } from '../compile';
 import { compose } from '../compose';
 
@@ -57,6 +59,40 @@ describe('compose a live recipe from the full intent', () => {
     const directed = compileRecipe({ ...made.recipe, content: { ...made.recipe.content, cast: [{ label: 'sharks', does: 'avoid' }, { label: 'shark', does: 'chase_me' }] } });
     expect(sharks(directed)).toEqual(['part_0']);
   });
+});
+
+// P56A T5: žánr hry se čtením gpt-oss-20b z `evals/play/p56a/readings/` (lokálně, tytéž váhy jako demo). Slovník rozhodne,
+// když první slyší nový žánr, jinak čtení – pin nad otevřeným holdoutem P55 a nad dev P54C, kde slovník trefí 64/64.
+// Pasti se prahem nehlídají (majitel 21. 10. přijal pokles), jen se vypíšou.
+describe('the sentence reading decides the genre unless the keywords hear a new one (P56A T5)', () => {
+  const fresh = new Set(['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push']);
+  const played = (set: string, reads: string) => {
+    const sentences = (JSON.parse(readFileSync(set, 'utf8')) as { sentences: { id: string; family: string; genre?: string | null; expect?: string | null; text: string }[] }).sentences;
+    const readings = new Map((JSON.parse(readFileSync(reads, 'utf8')) as { readings: { id: string; reading: Reading | null }[] }).readings.map(row => [row.id, row.reading]));
+    expect(readings.size).toBe(sentences.length);
+    const missed: string[] = [];
+    const strayed: string[] = [];
+    for (const row of sentences) {
+      const genre = draftGameSpecWithMeta(row.text, 1, { reading: readings.get(row.id) ?? null }).genre;
+      const got = genre === null ? 'none' : `${genre.genre}.${genre.mode}`;
+      const wanted = row.expect ?? `${row.genre}.default`;
+      if (row.family === 'target' && got !== wanted) missed.push(`${row.id}: ${wanted} -> ${got}`);
+      if (row.family !== 'target' && fresh.has(got.split('.')[0]!)) strayed.push(`${row.id}: ${got}`);
+    }
+    const targets = sentences.filter(row => row.family === 'target').length;
+    console.info(`${set}: targets ${targets - missed.length}/${targets}, traps kept ${sentences.length - targets - strayed.length}/${sentences.length - targets}\n${strayed.join('\n')}`);
+    return { hit: targets - missed.length, missed };
+  };
+
+  it('plays the read genre on the opened P55 holdout: targets ≥ 40/60', () => {
+    const { hit, missed } = played('evals/play/p55/holdout.json', 'evals/play/p56a/readings/p55-holdout.gpt-oss-20b.json');
+    expect(hit, missed.join('\n')).toBeGreaterThanOrEqual(40);
+  }, 300_000);
+
+  it('keeps every P54C dev target the keywords hear: 64/64', () => {
+    const { missed } = played('evals/play/p54c/dev.json', 'evals/play/p56a/readings/p54c-dev.gpt-oss-20b.json');
+    expect(missed).toEqual([]);
+  }, 300_000);
 });
 
 // Composition now executes physical ball witnesses even in synchronous draft tests.

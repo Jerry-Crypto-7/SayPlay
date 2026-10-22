@@ -18,8 +18,8 @@ const BY: Readonly<Record<Authorship, string>> = {
   remix: 'Remixed with one change',
 };
 
-/** Návrh, jehož větu přečetl lokální model (P29B T6) – pořád rychlá verze, ne hra od AI. */
-const READ_BY_MODEL = 'Quick version read by a local AI model';
+/** Návrh, jehož větu přečetl model (P29B T6; od P56A T10 i Groq, ne jen lokální) – pořád rychlá verze, ne hra od AI. */
+const READ_BY_MODEL = 'Quick version read by AI';
 
 /** Oddíl „Your sentence“: kdo hru navrhl, věta a co si z ní vzal. */
 export function ReadSection({ read }: { readonly read: ReadFacts }) {

@@ -38,7 +38,7 @@ import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
-import { killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { chatConfigFromEnv, killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 // `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test sirotka
 // jen čte, s čím se volal (`ship-pidreuse`).
@@ -1325,5 +1325,53 @@ describe('8. parseAnswerText opraví jen konec, nanejvýš o dvě závorky', () 
     // odpověď odmítlo taky a obě věty nad tímhle řádkem by prošly dál.
     const stopped = await upstreamBranch(liveConfig(), answer('stop_sequence')).generate(call);
     expect(stopped).toMatchObject({ ok: true, body: { a: [1, 2] } });
+  });
+});
+
+describe('9. chatConfigFromEnv staví zálohu režiséra i čtečku věty týmž kódem (P56A T4)', () => {
+  const READER = { localModel: 'local-reader', localMaxOutputTokens: 1024, hostedMaxOutputTokens: 1024, timeoutMs: 700 };
+  const groq = {
+    PLAY_READER_ENDPOINT: 'openai:https://api.groq.com/openai',
+    PLAY_READER_KEY: 'gsk-test',
+    PLAY_READER_MODEL: 'openai/gpt-oss-20b',
+    PLAY_READER_USD_PER_MTOK_IN: '0.075',
+    PLAY_READER_USD_PER_MTOK_OUT: '0.30',
+  };
+
+  it('placená čtečka nese klíč, cenu a profil api', () => {
+    expect(chatConfigFromEnv(groq, 'PLAY_READER', READER)).toEqual({
+      endpoint: 'openai:https://api.groq.com/openai',
+      apiKey: 'gsk-test',
+      model: 'openai/gpt-oss-20b',
+      effort: 'low',
+      pricing: { usdPerMTokIn: 0.075, usdPerMTokOut: 0.3 },
+      maxOutputTokens: 1024,
+      timeoutMs: 700,
+      profile: 'api',
+      callCap: null,
+    });
+  });
+
+  it.each(['PLAY_READER_KEY', 'PLAY_READER_MODEL', 'PLAY_READER_USD_PER_MTOK_OUT'])('placená čtečka bez %s není', (name) => {
+    expect(chatConfigFromEnv({ ...groq, [name]: ' ' }, 'PLAY_READER', READER)).toBeNull();
+  });
+
+  it('chybějící cena vstupu se dopočítá z výstupu, ne nulou', () => {
+    expect(chatConfigFromEnv({ ...groq, PLAY_READER_USD_PER_MTOK_IN: undefined }, 'PLAY_READER', READER)?.pricing).toEqual({ usdPerMTokIn: 0.3, usdPerMTokOut: 0.3 });
+  });
+
+  it('llama.cpp je zdarma, klíč smí chybět a model má výchozí jméno role', () => {
+    expect(chatConfigFromEnv({ PLAY_READER_ENDPOINT: 'llamacpp:http://127.0.0.1:8792' }, 'PLAY_READER', READER)).toMatchObject({
+      apiKey: '',
+      model: 'local-reader',
+      pricing: { usdPerMTokIn: 0, usdPerMTokOut: 0 },
+      maxOutputTokens: 1024,
+      profile: 'subscription',
+    });
+  });
+
+  it('proměnné jedné role druhou nezapnou', () => {
+    expect(chatConfigFromEnv(groq, 'WORLDSMITH_FALLBACK', READER)).toBeNull();
+    expect(chatConfigFromEnv({ WORLDSMITH_FALLBACK_ENDPOINT: 'llamacpp:http://127.0.0.1:8792' }, 'PLAY_READER', READER)).toBeNull();
   });
 });

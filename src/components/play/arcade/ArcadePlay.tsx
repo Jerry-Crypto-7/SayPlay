@@ -55,6 +55,7 @@ import { isTyping } from './input';
 import { heroActionOf } from './action-cue/cues';
 import { verbLine, verbLineShown } from './action-cue/verb-line';
 import { VerbLine } from './action-cue/VerbLine';
+import { LaneEventBanner, laneEventViewOf } from './LaneEventBanner';
 import { PacingBanner } from './PacingBanner';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
@@ -880,6 +881,9 @@ function ArcadePlayGame({
     };
   }, [session]);
 
+  // Ohlášení událostí pruhů (P55): jen žánry, které je mají.
+  const laneEventView = laneEventViewOf(session.world.rules);
+
   return (
     // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
     // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
@@ -911,6 +915,7 @@ function ArcadePlayGame({
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
             {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
             <PacingBanner session={session} enabled={running && active} foe={foe} boss={spec.boss?.name} />
+            {laneEventView !== null && <LaneEventBanner session={session} enabled={running && active} visible={laneEventView} />}
           </>
         }
       />

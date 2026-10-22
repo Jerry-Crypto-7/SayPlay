@@ -109,6 +109,7 @@ test.describe('lane defense on a phone (P54C T7)', () => {
     let last = { runState: 'running', tick: 0, score: 0, items: 0, health: 3 };
     let drawn = false;
     let held = 0;
+    const announced: { tick: number; kind: string }[] = [];
     // 6 000 tiků = 100 s, nad nejdelší hru.
     while (last.runState === 'running' && last.tick < 6000) {
       if (wants !== null && (wants.buttons & BUTTON.TAP) !== 0) {
@@ -125,9 +126,12 @@ test.describe('lane defense on a phone (P54C T7)', () => {
       } else await finger.lift();
       const next = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;
+        // P55: štítek události vykreslený po minulém tiku.
+        const event = document.querySelector('[data-testid="play-lane-event"]')?.getAttribute('data-event') ?? null;
         const now = shell.tickByHand();
-        return { now, wants: now.runState === 'running' ? shell.botWants() : null };
+        return { now, event, wants: now.runState === 'running' ? shell.botWants() : null };
       });
+      if (next.event !== null && next.event !== announced.at(-1)?.kind) announced.push({ tick: last.tick, kind: next.event });
       last = next.now;
       wants = next.wants;
     }
@@ -136,6 +140,9 @@ test.describe('lane defense on a phone (P54C T7)', () => {
     expect(drawn).toBe(true);
     expect(held, 'the finger placed guards by holding').toBeGreaterThanOrEqual(30);
     expect(last.runState).toBe('won');
+    // P55 T8: hra ohlásí události – první do 10 s, mezi nimi spěch.
+    expect(announced[0]?.tick ?? Infinity, JSON.stringify(announced)).toBeLessThanOrEqual(600);
+    expect(announced.map((event) => event.kind)).toContain('rush');
     // Každý nepřítel buď padl, nebo prošel hradbou a vzal život.
     expect(last.items + (3 - last.health)).toBe(NEED);
     expect(last.health).toBeGreaterThanOrEqual(1);

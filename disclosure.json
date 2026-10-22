@@ -91212,7 +91212,7 @@
         "license text and NOTICE if the weights are redistributed (they are not)"
       ],
       "attribution": "gpt-oss-20b © OpenAI, Apache-2.0",
-      "reviewNote": "Primary director of the deployed demo: turns the player's sentence into a game spec on Groq's hosted API (OpenAI-compatible, configured by WORLDSMITH_MODEL_* in the deployment's environment); the spec it writes is AI-generated output. During development the same model also ran locally through llama.cpp on the author's GPU (ops/llm/start.ps1). The weights are not in the repository or the bundle. License read from the model card, 2026-09-26."
+      "reviewNote": "Primary director of the deployed demo: turns the player's sentence into a game spec on Groq's hosted API (OpenAI-compatible, configured by WORLDSMITH_MODEL_* in the deployment's environment); the spec it writes is AI-generated output. When PLAY_READER_* is configured, the same model also reads the sentence on the fast path (genre, hero, foe, world, title) before the quick version is built; that reading is AI-generated output stored with the game. During development the same model also ran locally through llama.cpp on the author's GPU (ops/llm/start.ps1). The weights are not in the repository or the bundle. License read from the model card, 2026-09-26."
     },
     {
       "name": "gpt-test",

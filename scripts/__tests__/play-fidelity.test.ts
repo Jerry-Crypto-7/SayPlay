@@ -117,14 +117,14 @@ describe('reader gate', () => {
 
   it('drafts on the control the reading picked and falls back to keywords without one', () => {
     const text = 'a corgi dodges traffic in a neon city';
-    const reading = { control: 'steer' as const, verbs: [], hero: 'corgi', roles: [], setting: 'neon city', mood: null, numbers: { seconds: null, counts: [] } };
+    const reading = { control: 'steer' as const, verbs: [], hero: 'corgi', roles: [], setting: 'neon city', mood: null, numbers: { seconds: null, counts: [] }, genre: null, foe: null, item: null, world: null, title: null };
     expect(readerDraft(text, reading).control).toBe('steer');
     expect(readerDraft(text, null)).toEqual(draftGameSpec(text));
   });
 
   it('offlineChain measures the spec the given draft builds', () => {
     const [sentence] = CORPUS.sentences;
-    const chain = offlineChain([sentence], () => readerDraft(sentence.text, { control: 'rhythm', verbs: [], hero: null, roles: [], setting: null, mood: null, numbers: { seconds: null, counts: [] } }));
+    const chain = offlineChain([sentence], () => readerDraft(sentence.text, { control: 'rhythm', verbs: [], hero: null, roles: [], setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: null, foe: null, item: null, world: null, title: null }));
     expect(chain.sentences[0].control).toBe('rhythm');
   });
 });

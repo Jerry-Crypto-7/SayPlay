@@ -1,0 +1,142 @@
+{
+ "schema": "p55-fun.v1",
+ "a": {
+  "base": "http://127.0.0.1:3111",
+  "run": "p55-t8-a",
+  "commit": "ada7dd8b",
+  "side": "lane genres on origin/main, before P55"
+ },
+ "b": {
+  "base": "http://127.0.0.1:3102",
+  "run": "p55-t8-b",
+  "commit": "5788124c",
+  "side": "lane events, HEAD"
+ },
+ "genres": [
+  "catch",
+  "whack",
+  "slice",
+  "defense"
+ ],
+ "pick": "pure-rand xoroshiro128plus(55006): uniformInt without replacement per genre in turn (catch, whack, slice, defense) over P54C dev targets",
+ "target": "P55 wins >= 4/6",
+ "skipped": false,
+ "summary": {
+  "n": 6,
+  "newWins": 6,
+  "oldWins": 0,
+  "ties": 0,
+  "leftWinShare": 0.5
+ },
+ "met": true,
+ "pairs": [
+  {
+   "id": "c02",
+   "text": "catch the falling apples but dodge the rotten ones",
+   "genre": "catch.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B has more simultaneous falling rewards and bombs, with threats approaching the player and busier action in the later scenes. Game A stays comparatively sparse, with longer gaps between objects and less buildup toward the end."
+  },
+  {
+   "id": "c07",
+   "text": "catch raindrops in a cup but not the lightning bolts",
+   "genre": "catch.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B has busier early waves, with clusters of blue drops, yellow pickups, and bombs descending toward the player, while Game A mostly shows isolated objects and longer quiet stretches. Both become similarly sparse near the end without much buildup, but B offers more action and danger overall."
+  },
+  {
+   "id": "f05",
+   "text": "place cannons to hold the lanes against invading crabs on the beach",
+   "genre": "defense.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "lane_defense",
+    "title": "Turtle Defense"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "lane_defense",
+    "title": "Turtle Defense"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A shows more activity, with glowing shots and a ring appearing along the lanes, including several effects near the end. Game B mostly shows the turtle changing position beneath an otherwise similar scene, with little visible buildup or danger close to the player."
+  },
+  {
+   "id": "s02",
+   "text": "a ninja slices fruit tossed in the air but avoids the bombs",
+   "genre": "slice.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "slice_arcs",
+    "title": "Ninja Slice"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "slice_arcs",
+    "title": "Ninja Slice"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A builds toward a busier finish, with a glowing ring, several yellow objects near the platforms, and a dark projectile overhead. Game B shows similar early action but fewer objects late on, while A’s player also moves between lanes more often."
+  },
+  {
+   "id": "w02",
+   "text": "smash the aliens that pop out of craters on the moon",
+   "genre": "whack.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "whack_holes",
+    "title": "Astronaut Whack"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "whack_holes",
+    "title": "Astronaut Whack"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A has more sustained activity, with glowing ringed blue figures remaining visible alongside the orange creatures, while Game B has more empty holes between appearances. A also ends with the robot close to the orange creature on the right, giving the final scene more immediate danger than B."
+  },
+  {
+   "id": "w06",
+   "text": "a hammer game where goblins peek out of barrels and you whack them",
+   "genre": "whack.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "whack_holes",
+    "title": "Fox Whack"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "whack_holes",
+    "title": "Fox Whack"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B builds up with emerging creatures and a highlighted green object close to the player in the later scenes, giving it more nearby action. Game A shows movement and occasional creatures too, but ends with empty holes and less visible activity."
+  }
+ ]
+}

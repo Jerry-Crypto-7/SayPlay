@@ -15,7 +15,8 @@ import { ARCADE_HZ, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyI
 import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import { LANES, LANE_START, axisOfLane, laneOfX, laneX } from '../pieces/lanes';
-import { DEFENSE, breachStep, checkDefenseLevel, copiesOf, defenseLevel, defenseMarch, defenseParams, firstOverrun, marchOf, startZ, waveSizes } from '../pieces/lane-defense';
+import { DEFENSE, bonusesOf, breachStep, checkDefenseLevel, copiesOf, defenseBonuses, defenseInView, defenseLevel, defenseMarch, defenseParams, firstOverrun, marchOf, startZ, waveSizes } from '../pieces/lane-defense';
+import { EVENT_MARK, LANE_EVENTS } from '../pieces/lane-events';
 import { DEFENSE_CALM, defenseBot, defenseView } from '../pieces/lane-defense-bot';
 import { WAVE_COUNTER, waveOf } from '../pieces/waves';
 import { funMetrics, traceRun } from '../telemetry';
@@ -374,6 +375,69 @@ describe('defense gates on the live cell (G1, G2, G4, G5, G6)', () => {
     for (const verb of ['shoot', 'defeat', 'defend', 'lanes', 'chaser']) expect(verbs.has(verb), verb).toBe(true);
     expect(verdict.witnesses.find((witness) => witness.verb === 'defend')?.object?.label).toBe('castle');
     expect(verdict.failures).toEqual([]);
+  });
+});
+
+/** Bonus události v pruhu `lane`, který vejde do obrazu po kroku `enter − 1`. */
+function bonusBody(lane: number, enter: number, mark: number, speed: number = DEFENSE.bonus.speed): BodyInit {
+  const { w, h, d } = DEFENSE.bonus;
+  return { role: 'collectible', kind: 'bonus', x: laneX(lane), y: 0, z: startZ(enter, speed), w, h, d, solid: false, vz: -speed, kinematic: true, hp: mark };
+}
+
+describe('defense lane events (P55 T5)', () => {
+  it('a bonus downed by the hero scores without counting; a missed one costs nothing and leaves the view', () => {
+    // Nepřítel daleko v pruhu 4 drží hru v běhu; bonus jde pruhem 0.
+    const { world } = handWorld([marcher(4, 1500, 50), bonusBody(0, 10, EVENT_MARK.golden)]);
+    const shot = playFor(world, 40, tapsAt(0, 20));
+    expect(alive(shot, 3)).toBe(false);
+    expect(items(shot)).toBe(0);
+    expect(score(shot)).toBe(DEFENSE.points * LANE_EVENTS.goldenPoints);
+    const { world: series } = handWorld([marcher(4, 1500, 50), bonusBody(0, 10, EVENT_MARK.series), bonusBody(1, 20, EVENT_MARK.series)]);
+    expect(defenseInView(playFor(series, 20), 3)).toBe(true);
+    const missed = playFor(series, 400);
+    expect(health(missed)).toBe(START_LIVES);
+    expect(outcomeOf(missed)).toBe('running');
+    expect([3, 4].map((body) => defenseInView(missed, body))).toEqual([false, false]);
+    // Šíp obránce bonus míjí: obránce v pruhu 0 sestřelí nepřítele za pomalým bonusem a bonus jde dál.
+    const { world: behind } = handWorld([marcher(4, 1500, 50), bonusBody(0, 10, EVENT_MARK.series, 40), marcher(0, 60, 50)]);
+    const guarded = playFor(behind, 330, holdIn(0, 0, DEFENSE.hold));
+    expect(alive(guarded, 4)).toBe(false);
+    expect(alive(guarded, 3)).toBe(true);
+    expect(score(guarded)).toBe(DEFENSE.points);
+  });
+
+  it('every game has a rush and a bonus within 10 s, every kind shows up, and no bonus shares a lane window', () => {
+    const seen = new Set<number>();
+    for (const seed of SEEDS) {
+      const bonuses = bonusesOf(defenseLevel(seed, DEFAULTS));
+      for (const bonus of bonuses) seen.add(bonus.mark);
+      expect(bonuses.some((bonus) => bonus.mark === EVENT_MARK.rush), `seed ${seed}`).toBe(true);
+      expect(bonuses[0]!.enter, `seed ${seed}`).toBeLessThanOrEqual(600);
+      // Bonusy jdou z vlastního streamu: nepřátelé jdou s nimi i bez nich stejně.
+      expect(marchOf(defenseLevel(seed, DEFAULTS))).toEqual(marchOf({ ...defenseLevel(seed, DEFAULTS), bodies: defenseLevel(seed, DEFAULTS).bodies.filter((body) => body.role !== 'collectible') }));
+      expect(defenseBonuses(seed, defenseMarch(seed, DEFAULTS))).toEqual(bonuses);
+    }
+    expect(seen).toEqual(new Set(Object.values(EVENT_MARK)));
+    // Bonus v okně nepřítele téhož pruhu kontrola odmítne.
+    const level = defenseLevel(1, DEFAULTS);
+    const first = marchOf(level)[0]!;
+    const crowded = { ...level, bodies: [...level.bodies.slice(0, 2), bonusBody(first.lane, first.enter + 5, EVENT_MARK.series), ...level.bodies.slice(2)] };
+    expect(checkDefenseLevel(crowded, DEFAULTS).join(' ')).toMatch(/shares lane/);
+  });
+
+  it('seed 1: lively from start to finish and still a 30–90 s win (baseline 2.76 events/s, gap 8.28 s)', () => {
+    const world = worldOf(1);
+    const bot = runBot(world, undefined, { profile: 'intermediate' });
+    const trace = traceRun(world, bot.inputs);
+    const fun = funMetrics(trace);
+    expect(fun.eventsPerS).toBeGreaterThanOrEqual(4.14);
+    expect(fun.longestGapS).toBeLessThanOrEqual(3);
+    expect(trace.events.find((event) => event.kind === 'pickup')!.tick).toBeLessThanOrEqual(10 * ARCADE_HZ);
+    const own = runBot(world);
+    expect(own.outcome).toBe('won');
+    expect(own.tick / ARCADE_HZ).toBeGreaterThanOrEqual(30);
+    expect(own.tick / ARCADE_HZ).toBeLessThanOrEqual(90);
+    expect(traceRun(worldOf(1), bot.inputs).hash).toBe(trace.hash);
   });
 });
 

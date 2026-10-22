@@ -20,6 +20,11 @@
  * rozseknout, dokud v jejím pruhu bomba není (rozvrh EDF, jeden švih za tik). Ovoce je
  * `items + free + životy − 1`: kdo ho všechno nerozsekne, prohraje nejpozději posledním.
  * Nečinný hráč nešvihne nikdy, takže nic nerozsekne a prohraje po `free + životy` propadlých kusech.
+ *
+ * **Události (P55 T5, `lane-events.ts`):** do mezer mezi hrstmi vylétají bonusy – série, zlatý cíl a spěch –
+ * z vlastního streamu; hrsti a bomby letí přesně tam a tehdy, kdy bez nich. Bonus je kopie vlastní předlohy
+ * se značkou v HP (`EVENT_MARK`): rozseknutý dá body (zlatý ×`goldenPoints`) a kombo, do cíle se nepočítá
+ * a propadlý nic nestojí. Bonus přibude, jen když s ním robot pořád stihne všechny hrsti (`firstUncut`).
  */
 
 import { z } from 'zod';
@@ -42,8 +47,10 @@ import {
   type RulePiece,
   START_LIVES,
   bodyBase,
+  bodyHp,
 } from '../contract';
 import { GRAVITY } from '../kernel';
+import { EVENT_MARK, LANE_EVENTS, laneEventCursor, laneEventRng, planLaneEvents, stepLane } from './lane-events';
 import { LANES, LANE_START, laneOfX, laneX, tappedIn } from './lanes';
 import { nextMultiplier } from './rules';
 
@@ -105,8 +112,21 @@ export const SLICE = {
 /** Reakce robota světa – kontrola hratelnosti s ní počítá. */
 export const SLICE_BOT_REACTION = 8;
 
-/** Indexy těl úrovně: hrdina 0, předloha ovoce 1, předloha bomby 2. */
-export const SLICE_BODIES = { fruit: 1, bomb: 2 } as const;
+/** Indexy těl úrovně: hrdina 0, předloha ovoce 1, předloha bomby 2, předlohy bonusů 3–5 v pořadí `EVENT_MARK` (série, spěch, zlatý). */
+export const SLICE_BODIES = { fruit: 1, bomb: 2, bonus: 3 } as const;
+
+/** Rozestup bonusů série a spěchu (tiky): rychle za sebou, každý na vlastní švih. */
+const BONUS_GAP = [14, 20] as const;
+/** Zlatý cíl letí nízko: ve výšce řezu jen ~19 tiků (kratší okno než ovoce). */
+const GOLDEN_SPEED = 236;
+/** Zlatý cíl vyletí tolik tiků po hrsti (los v mezích). */
+const GOLDEN_LEAD = [24, 36] as const;
+
+/** Je bonus události (P55 T5) v obraze? Věc je vidět od výhozu, dokud žije a neleží na zemi. */
+export const sliceInView = (state: Int32Array, body: number): boolean => {
+  const flags = state[bodyBase(body) + BODY.flags] as number;
+  return (flags & FLAG.alive) !== 0 && (flags & FLAG.grounded) === 0 && bodyHp(state, body) > 0;
+};
 
 const SALT = 0x51ce;
 
@@ -151,6 +171,8 @@ export interface Throw {
   readonly group: number;
   /** Bomba pasti: týmž pruhem jako její hrst, o chvíli později. */
   readonly trap: boolean;
+  /** Bonus události (`EVENT_MARK`): body a kombo, do cíle se nepočítá a propadnout smí; 0 = ovoce nebo bomba. */
+  readonly mark: number;
 }
 
 export const sliceParams = z
@@ -173,9 +195,14 @@ const OFFSETS: Readonly<Record<number, readonly number[]>> = { 1: [0], 2: [-SLIC
 /**
  * Rozpis ze semínka v pořadí výhozu: hrsti ovoce (pruh vždy jiný než předchozí hrsti), u některých
  * past (bomba týmž pruhem o `trapLead` později) nebo návnada (bomba v jiném pruhu v témže tiku).
- * Nejvýš `plainRun` hrstí za sebou je bez bomby.
+ * Nejvýš `plainRun` hrstí za sebou je bez bomby. Do mezer mezi hrstmi přibudou bonusy událostí (`withLaneEvents`).
  */
 export function sliceThrows(seed: number, params: SliceParams, lives: number): Throw[] {
+  return withLaneEvents(seed, layThrows(seed, params, lives));
+}
+
+/** Hrsti a bomby ze streamu rozvržení – s událostmi i bez nich tytéž. */
+function layThrows(seed: number, params: SliceParams, lives: number): Throw[] {
   const rng = createCompileRng(seed ^ SALT);
   const total = params.items + SLICE.free + lives - 1;
   const stretch = stretchOf(params.items);
@@ -197,16 +224,16 @@ export function sliceThrows(seed: number, params: SliceParams, lives: number): T
     const trap = group > 0 && rng.int(0, 999) < (SLICE.traps[third] as number);
     const [slow, fast] = trap ? SLICE.trapSpeed : (SLICE.speeds[third] as readonly [number, number]);
     const speed = rng.int(slow, fast);
-    for (const offset of OFFSETS[size] as readonly number[]) throws.push({ tick, x: laneX(lane) + offset, speed, bomb: false, group, trap: false });
+    for (const offset of OFFSETS[size] as readonly number[]) throws.push({ tick, x: laneX(lane) + offset, speed, bomb: false, group, trap: false, mark: 0 });
     if (trap) {
       // Bomba jde po stejném oblouku o kus vedle, ať je za ovocem vidět.
       const side = rng.int(0, 1) === 0 ? -1 : 1;
-      throws.push({ tick: tick + rng.int(SLICE.trapLead[0], SLICE.trapLead[1]), x: laneX(lane) + (side * SLICE.spread) / 2, speed, bomb: true, group, trap: true });
+      throws.push({ tick: tick + rng.int(SLICE.trapLead[0], SLICE.trapLead[1]), x: laneX(lane) + (side * SLICE.spread) / 2, speed, bomb: true, group, trap: true, mark: 0 });
     }
     const decoy = !trap && group > 0 && (rng.int(0, 999) < (SLICE.decoys[third] as number) || plain >= SLICE.plainRun);
     if (decoy) {
       const [low, high] = SLICE.speeds[third] as readonly [number, number];
-      throws.push({ tick, x: laneX(rng.pick(lanes.filter((candidate) => candidate !== lane))), speed: rng.int(low, high), bomb: true, group, trap: false });
+      throws.push({ tick, x: laneX(rng.pick(lanes.filter((candidate) => candidate !== lane))), speed: rng.int(low, high), bomb: true, group, trap: false, mark: 0 });
     }
     plain = trap || decoy ? 0 : plain + 1;
     fruit += size;
@@ -214,24 +241,76 @@ export function sliceThrows(seed: number, params: SliceParams, lives: number): T
   return throws.sort((a, b) => a.tick - b.tick);
 }
 
-/** Úroveň krájení: hrdina ve startovním pruhu a předlohy ovoce a bomby (věci vyhazuje pravidlo). */
+/**
+ * Bonusy událostí (P55 T5) do mezer mezi hrstmi: série vede od pruhu hrsti ke vzdálenému kraji, zlatý cíl
+ * letí dva pruhy stranou a nízko, ve spěchu přibudou do každé mezery dva. Los jde z `laneEventRng` (pořadí
+ * tahů nezávisí na tom, co se vešlo), hrsti a bomby se nepohnou. Bonus vyletí před další hrstí a přibude,
+ * jen když s ním robot pořád stihne všechno ovoce (`firstUncut` počítá i bonusy); jinak se vynechá.
+ */
+function withLaneEvents(seed: number, plain: readonly Throw[]): Throw[] {
+  const starts = new Map<number, Throw>();
+  for (const item of plain) if (!item.bomb && !starts.has(item.group)) starts.set(item.group, item);
+  const heads = [...starts.values()].sort((a, b) => a.group - b.group);
+  const last = heads.at(-1);
+  if (last === undefined) return [...plain];
+  const cursor = laneEventCursor(planLaneEvents(seed, last.tick));
+  const rng = laneEventRng(seed);
+  let out = [...plain];
+  let bonuses = 0;
+  // Série nebo zlatý cíl, ze kterého se do mezery nevešlo nic, zkusí další mezeru (událost nepropadne).
+  let held: ReturnType<typeof cursor.take> = null;
+  heads.slice(0, -1).forEach((head, index) => {
+    const next = (heads[index + 1] as Throw).tick;
+    let at = head.tick;
+    let lane = laneOfX(head.x);
+    const put = (mark: number, gap: number, to: number, speed: number): void => {
+      const when = at + gap;
+      if (when >= next) return;
+      const bonus: Throw = { tick: when, x: laneX(to), speed, bomb: false, group: -1 - bonuses, trap: false, mark };
+      const tried = [...out, bonus].sort((a, b) => a.tick - b.tick);
+      if (firstUncut(tried) !== null) return;
+      out = tried;
+      bonuses += 1;
+      at = when;
+      lane = to;
+    };
+    const away = lane >= 2 ? 0 : LANES.count - 1;
+    const event = held ?? cursor.take(head.tick);
+    const before = bonuses;
+    if (event?.kind === 'series') {
+      for (let n = rng.int(...LANE_EVENTS.series); n > 0; n -= 1) put(EVENT_MARK.series, rng.int(...BONUS_GAP), stepLane(lane, away, LANES.count, rng), head.speed);
+    } else if (event?.kind === 'golden') {
+      put(EVENT_MARK.golden, rng.int(...GOLDEN_LEAD), stepLane(stepLane(lane, away, LANES.count, rng), away, LANES.count, rng), GOLDEN_SPEED);
+    } else if (cursor.inRush(head.tick)) {
+      for (let n = 2; n > 0; n -= 1) put(EVENT_MARK.rush, rng.int(...BONUS_GAP), stepLane(lane, away, LANES.count, rng), head.speed);
+    }
+    held = event !== null && bonuses === before ? event : null;
+  });
+  return out;
+}
+
+/** Úroveň krájení: hrdina ve startovním pruhu a předlohy ovoce, bomby a bonusů (věci vyhazuje pravidlo). */
 export function sliceLevel(): ArcadeLevel {
   const thing = { y: 0, z: SLICE.z, ...SLICE.thing, solid: false, gravity: true, template: true } as const;
   const bodies: BodyInit[] = [
     { role: 'player', kind: 'player', x: laneX(LANE_START), y: 0, z: 0, ...SLICE.hero, solid: false },
     { role: 'collectible', kind: 'coin', x: 0, ...thing },
     { role: 'hazard', kind: 'snag', x: 0, ...thing },
+    // Předlohy bonusů: značka v HP se kopií výhozu přenese (`spawn` kopíruje příznaky).
+    ...[EVENT_MARK.series, EVENT_MARK.rush, EVENT_MARK.golden].map((hp): BodyInit => ({ role: 'collectible', kind: 'coin', x: 0, ...thing, hp })),
   ];
   return { bodies, length: 0, spawnSlots: SLICE.spawnSlots };
 }
 
-/** Výhozy pro pravidlo: `[tik, x, rychlost, bomba 0/1]`. */
-export type Launch = readonly [tick: number, x: number, speed: number, bomb: 0 | 1];
+/** Výhozy pro pravidlo: `[tik, x, rychlost, druh]` – druh 0 ovoce, 1 bomba, 1 + `EVENT_MARK` bonus. */
+export type Launch = readonly [tick: number, x: number, speed: number, kind: number];
 
-export const launchesOf = (throws: readonly Throw[]): Launch[] => throws.map((item) => [item.tick, item.x, item.speed, item.bomb ? 1 : 0]);
+const kindOf = (item: Throw): number => (item.bomb ? 1 : item.mark > 0 ? 1 + item.mark : 0);
+
+export const launchesOf = (throws: readonly Throw[]): Launch[] => throws.map((item) => [item.tick, item.x, item.speed, kindOf(item)]);
 
 /** Rozpis zpět z výhozů pravidla (hrst se z výhozů nepozná). */
-export const throwsOf = (launches: readonly Launch[]): Throw[] => launches.map(([tick, x, speed, bomb]) => ({ tick, x, speed, bomb: bomb === 1, group: -1, trap: false }));
+export const throwsOf = (launches: readonly Launch[]): Throw[] => launches.map(([tick, x, speed, kind]) => ({ tick, x, speed, bomb: kind === 1, group: -1, trap: false, mark: kind > 1 ? kind - 1 : 0 }));
 
 /** Tiky (absolutní), ve kterých je věc ve výšce řezu, nebo `null`. */
 const windowOf = (item: Pick<Throw, 'tick' | 'speed'>): readonly [number, number] | null => {
@@ -279,7 +358,8 @@ export function firstUncut(throws: readonly Throw[], reaction = SLICE_BOT_REACTI
 /** Tvrzení „hratelné z konstrukce“ nad rozpisem; prázdné pole = hratelná. */
 export function checkSliceLevel(level: ArcadeLevel, throws: readonly Throw[], params: SliceParams, lives: number): string[] {
   const issues: string[] = [];
-  const fruit = throws.filter((item) => !item.bomb);
+  // Bonusy událostí se do cíle nepočítají; robot je ale stíhá taky, takže dosažitelnost (`firstUncut`) je počítá.
+  const fruit = throws.filter((item) => !item.bomb && item.mark === 0);
   const need = params.items + SLICE.free + lives - 1;
   if (fruit.length < need) issues.push(`only ${fruit.length} pieces of fruit fly – slicing ${params.items} needs ${need}`);
   throws.forEach((item, index) => {
@@ -311,7 +391,7 @@ export function sliceParts(seed: number, params: SliceParams, health: number | u
     bot: { id: 'slice_bot', params: {} },
     level,
     rules: [
-      { id: 'slice_cut', params: { fruit: SLICE_BODIES.fruit, bomb: SLICE_BODIES.bomb, launches: launchesOf(throws), free: SLICE.free, points: SLICE.points } },
+      { id: 'slice_cut', params: { fruit: SLICE_BODIES.fruit, bomb: SLICE_BODIES.bomb, bonus: SLICE_BODIES.bonus, launches: launchesOf(throws), free: SLICE.free, points: SLICE.points } },
       // Cíl „rozseknuto N“ je týž čítač jako u chytání (`items`), pravidlo cíle sdílí.
       { id: 'catch_goal', params: { need: params.items } },
       { id: 'out_of_health', params: {} },
@@ -327,7 +407,7 @@ export const sliceArcs: ModeGeneratorPiece<SliceParams> = {
   id: 'slice_arcs',
   params: sliceParams,
   roles: ['player', 'collectible', 'hazard'],
-  cost: () => ({ bodies: 3 + SLICE.spawnSlots, rules: 4 }),
+  cost: () => ({ bodies: 6 + SLICE.spawnSlots, rules: 4 }),
   generate: () => sliceLevel(),
   parts: sliceParts,
 };
@@ -342,9 +422,11 @@ const cutParams = z
     /** Předloha ovoce a bomby. */
     fruit: index,
     bomb: index,
-    /** Výhozy seřazené podle tiku: `[tik, x, rychlost, bomba 0/1]`. */
+    /** První ze tří předloh bonusů (série, spěch, zlatý – pořadí `EVENT_MARK`); bez ní svět bonusy nemá. */
+    bonus: index.optional(),
+    /** Výhozy seřazené podle tiku: `[tik, x, rychlost, druh]` – 0 ovoce, 1 bomba, 1 + `EVENT_MARK` bonus. */
     launches: z
-      .array(z.tuple([z.int().min(0).max(ARCADE_LIMITS.maxTicks), z.int().min(-LANES.count * LANES.width).max(LANES.count * LANES.width), z.int().min(1).max(1000), z.union([z.literal(0), z.literal(1)])]))
+      .array(z.tuple([z.int().min(0).max(ARCADE_LIMITS.maxTicks), z.int().min(-LANES.count * LANES.width).max(LANES.count * LANES.width), z.int().min(1).max(1000), z.int().min(0).max(1 + EVENT_MARK.golden)]))
       .max(ARCADE_LIMITS.maxBodies),
     /** Propadlé ovoce bez trestu. */
     free: z.int().min(0).max(9),
@@ -360,13 +442,13 @@ const alive = (state: Int32Array, body: number): boolean => ((state[bodyBase(bod
 function droppedSoFar(state: Int32Array, launches: readonly Launch[]): number {
   const tick = state[HEADER.tick] as number;
   let thrown = 0;
-  for (const [at, , , bomb] of launches) {
+  for (const [at, , , kind] of launches) {
     if (at >= tick) break;
-    if (bomb === 0) thrown += 1;
+    if (kind === 0) thrown += 1;
   }
   let flying = 0;
   for (let body = state[HEADER.spawnBase] as number; body < (state[HEADER.bodyCount] as number); body += 1) {
-    if (alive(state, body) && state[bodyBase(body) + BODY.role] === ROLE.collectible) flying += 1;
+    if (alive(state, body) && state[bodyBase(body) + BODY.role] === ROLE.collectible && bodyHp(state, body) === 0) flying += 1;
   }
   return thrown - (state[HEADER.counters + COUNTER.items] as number) - flying;
 }
@@ -392,9 +474,12 @@ export const sliceCutRule: RulePiece<z.infer<typeof cutParams>> = {
     const effects: ArcadeEffect[] = [];
     const tick = state[HEADER.tick] as number;
     // Výhozy první: nová věc vezme slot mrtvý už před tímhle tikem, ne ten, který se uvolní teď (scéna je nezamění).
-    for (const [at, x, speed, bomb] of params.launches) {
+    for (const [at, x, speed, kind] of params.launches) {
       if (at > tick) break;
-      if (at === tick) effects.push({ kind: 'spawn', template: bomb === 1 ? params.bomb : params.fruit, x, y: 0, z: SLICE.z, vx: 0, vy: speed, vz: 0 });
+      if (at !== tick) continue;
+      // Svět bez předloh bonusů (ruční, starší) bonusy vynechá.
+      const template = kind === 0 ? params.fruit : kind === 1 ? params.bomb : params.bonus === undefined ? -1 : params.bonus + kind - 2;
+      if (template >= 0) effects.push({ kind: 'spawn', template, x, y: 0, z: SLICE.z, vx: 0, vy: speed, vz: 0 });
     }
     const tap = tappedIn(state, player);
     const sliced: number[] = [];
@@ -406,7 +491,8 @@ export const sliceCutRule: RulePiece<z.infer<typeof cutParams>> = {
       if (role !== ROLE.collectible && role !== ROLE.hazard) continue;
       if (((state[base + BODY.flags] as number) & FLAG.grounded) !== 0) {
         effects.push({ kind: 'despawn', body });
-        if (role !== ROLE.collectible) continue;
+        // Propadlý bonus události nic nestojí: ani život, ani kombo.
+        if (role !== ROLE.collectible || bodyHp(state, body) > 0) continue;
         if (dropped < 0) dropped = droppedSoFar(state, params.launches);
         dropped += 1;
         if (dropped > params.free) effects.push({ kind: 'damage', amount: 1 });
@@ -421,7 +507,12 @@ export const sliceCutRule: RulePiece<z.infer<typeof cutParams>> = {
       // Propadlé ovoce v témže tiku sérii přerušilo: švih začíná od ×1.
       const chain = params.combo === undefined || dropped >= 0 ? 1 : sliceChain(state, params.combo);
       const multiplier = Math.min(COMBO.max, chain + sliced.length - 1);
-      for (const body of sliced) effects.push({ kind: 'score', amount: params.points * multiplier }, { kind: 'count', counter: 'items', amount: 1 }, { kind: 'despawn', body });
+      for (const body of sliced) {
+        // Bonus události: body (zlatý ×`goldenPoints`) a kombo, do cíle se nepočítá.
+        const mark = bodyHp(state, body);
+        if (mark > 0) effects.push({ kind: 'score', amount: params.points * multiplier * (mark === EVENT_MARK.golden ? LANE_EVENTS.goldenPoints : 1) }, { kind: 'despawn', body });
+        else effects.push({ kind: 'score', amount: params.points * multiplier }, { kind: 'count', counter: 'items', amount: 1 }, { kind: 'despawn', body });
+      }
       if (params.combo !== undefined) effects.push({ kind: 'combo', body: params.combo, multiplier });
     }
     return effects;

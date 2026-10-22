@@ -95,6 +95,7 @@ test.describe('slice on a phone (P54C T8)', () => {
     let drawn = false;
     let swings = 0;
     let shot = false;
+    const announced: { tick: number; kind: string }[] = [];
     // 6 000 tiků = 100 s, nad nejdelší hru.
     while (last.runState === 'running' && last.tick < 6000) {
       if (wants !== null && (wants.buttons & BUTTON.TAP) !== 0) {
@@ -109,9 +110,12 @@ test.describe('slice on a phone (P54C T8)', () => {
       }
       const next = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;
+        // P55: štítek události vykreslený po minulém tiku.
+        const event = document.querySelector('[data-testid="play-lane-event"]')?.getAttribute('data-event') ?? null;
         const now = shell.tickByHand();
-        return { now, wants: now.runState === 'running' ? shell.botWants() : null };
+        return { now, event, wants: now.runState === 'running' ? shell.botWants() : null };
       });
+      if (next.event !== null && next.event !== announced.at(-1)?.kind) announced.push({ tick: last.tick, kind: next.event });
       last = next.now;
       wants = next.wants;
       // Snímek po šestém švihu: stopa čepele a půlky rozseknutého ovoce (jen obraz).
@@ -124,6 +128,9 @@ test.describe('slice on a phone (P54C T8)', () => {
     console.log(`slice: ${last.runState} at tick ${last.tick}, ${last.items} sliced with ${swings} swings, score ${last.score}, ${last.health} lives`);
     expect(drawn).toBe(true);
     expect(last.runState).toBe('won');
+    // P55 T8: hra ohlásí události – první do 10 s, mezi nimi spěch.
+    expect(announced[0]?.tick ?? Infinity, JSON.stringify(announced)).toBeLessThanOrEqual(600);
+    expect(announced.map((event) => event.kind)).toContain('rush');
     expect(last.items).toBeGreaterThanOrEqual(NEED);
     expect(last.health).toBe(3);
     expect(last.tick / 60).toBeGreaterThanOrEqual(30);

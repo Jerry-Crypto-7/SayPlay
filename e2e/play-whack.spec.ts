@@ -93,6 +93,7 @@ test.describe('whack on a phone (P54C T6)', () => {
     });
     let last = { runState: 'running', tick: 0, score: 0, items: 0, health: 3 };
     let drawn = false;
+    const announced: { tick: number; kind: string }[] = [];
     // 6 000 tiků = 100 s, nad nejdelší hru.
     while (last.runState === 'running' && last.tick < 6000) {
       if (wants !== null && (wants.buttons & BUTTON.TAP) !== 0) {
@@ -106,15 +107,21 @@ test.describe('whack on a phone (P54C T6)', () => {
       }
       const next = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;
+        // P55: štítek události vykreslený po minulém tiku.
+        const event = document.querySelector('[data-testid="play-lane-event"]')?.getAttribute('data-event') ?? null;
         const now = shell.tickByHand();
-        return { now, wants: now.runState === 'running' ? shell.botWants() : null };
+        return { now, event, wants: now.runState === 'running' ? shell.botWants() : null };
       });
+      if (next.event !== null && next.event !== announced.at(-1)?.kind) announced.push({ tick: last.tick, kind: next.event });
       last = next.now;
       wants = next.wants;
     }
     console.log(`whack: ${last.runState} at tick ${last.tick}, ${last.items} whacked, score ${last.score}, ${last.health} lives`);
     expect(drawn).toBe(true);
     expect(last.runState).toBe('won');
+    // P55 T8: hra ohlásí události – první do 10 s, mezi nimi spěch.
+    expect(announced[0]?.tick ?? Infinity, JSON.stringify(announced)).toBeLessThanOrEqual(600);
+    expect(announced.map((event) => event.kind)).toContain('rush');
     expect(last.items).toBe(NEED);
     expect(last.health).toBe(3);
     expect(last.tick / 60).toBeGreaterThanOrEqual(30);

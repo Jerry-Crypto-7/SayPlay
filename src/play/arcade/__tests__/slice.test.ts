@@ -15,8 +15,10 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type Arc
 import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import { LANES, axisOfLane, laneOfX, laneX } from '../pieces/lanes';
-import { type Launch, SLICE, SLICE_BODIES, type Throw, checkSliceLevel, cutWindow, heightAfter, landingStep, launchesOf, sliceLevel, sliceParams, sliceThrows } from '../pieces/slice';
+import { EVENT_MARK, LANE_EVENTS } from '../pieces/lane-events';
+import { type Launch, SLICE, SLICE_BODIES, type Throw, checkSliceLevel, cutWindow, heightAfter, landingStep, launchesOf, sliceInView, sliceLevel, sliceParams, sliceThrows } from '../pieces/slice';
 import { sliceBot } from '../pieces/slice-bot';
+import { funMetrics, traceRun } from '../telemetry';
 import { BOT_PROFILES, type BotProfile, runBot, verifyArcade } from '../verify';
 import { assemblyOfCell, liveCells } from '../../compose/allowed';
 import { compileRecipe } from '../../compose/compile';
@@ -408,6 +410,58 @@ describe('slice difficulty band (G3 on 20 seeds; the gate itself is difficulty.t
     // Rozpis výhozů jde do pravidla beze změny (žádná věc se neztratí cestou).
     const throws = sliceThrows(2, DEFAULTS, START_LIVES);
     expect(worldOf(2).rules.find((ref) => ref.id === 'slice_cut')?.params.launches).toEqual(launchesOf(throws));
-    expect(throws.filter((item) => !item.bomb)).toHaveLength(DEFAULTS.items + SLICE.free + START_LIVES - 1);
+    expect(throws.filter((item) => !item.bomb && item.mark === 0)).toHaveLength(DEFAULTS.items + SLICE.free + START_LIVES - 1);
+  });
+});
+
+describe('slice lane events (P55 T5)', () => {
+  /** Bonus do ručního světa: druh výhozu je 1 + značka. */
+  const bonus = (tick: number, lane: number, mark: number): Launch => [tick, laneX(lane), SPEED, 1 + mark];
+  const handWithBonuses = (launches: readonly Launch[]): ArcadeWorld => {
+    const world = handWorld(launches);
+    const cut = world.rules.find((ref) => ref.id === 'slice_cut');
+    if (cut === undefined) throw new Error('no slice_cut');
+    return { ...world, rules: world.rules.map((ref) => (ref === cut ? { ...ref, params: { ...ref.params, bonus: SLICE_BODIES.bonus } } : ref)) };
+  };
+
+  it('a sliced bonus scores (golden ×3) without counting toward the goal; a dropped one costs nothing', () => {
+    const golden = playFor(handWithBonuses([bonus(10, 0, EVENT_MARK.golden)]), 40, swings({ [23]: 0 }));
+    expect(items(golden)).toBe(0);
+    expect(score(golden)).toBe(SLICE.points * LANE_EVENTS.goldenPoints);
+    const shown = playFor(handWithBonuses([bonus(10, 0, EVENT_MARK.series), thrown(10, 2)]), 20);
+    const shownBodies = Array.from({ length: (shown[HEADER.bodyCount] as number) - (shown[HEADER.spawnBase] as number) }, (_, index) => (shown[HEADER.spawnBase] as number) + index);
+    expect(shownBodies.map((body) => sliceInView(shown, body)).sort()).toEqual([false, true]);
+    // Víc propadlých bonusů, než je volných ovocí: žádný život, a ovoce potom se počítá jako první propadlé.
+    const many = Array.from({ length: SLICE.free + 2 }, (_, index) => bonus(10 + 20 * index, index % LANES.count, EVENT_MARK.series));
+    expect(health(playFor(handWithBonuses(many), 10 + 20 * (SLICE.free + 2) + landingStep(SPEED)))).toBe(START_LIVES);
+  });
+
+  it('bonuses fly between the groups without moving them; a rush and a bonus within 10 s in every game', () => {
+    const seen = new Set<number>();
+    for (const seed of SEEDS) {
+      const throws = sliceThrows(seed, DEFAULTS, START_LIVES);
+      const bonuses = throws.filter((item) => item.mark > 0);
+      for (const item of bonuses) seen.add(item.mark);
+      expect(bonuses.some((item) => item.mark === EVENT_MARK.rush), `seed ${seed}`).toBe(true);
+      expect(bonuses[0]!.tick, `seed ${seed}`).toBeLessThanOrEqual(600);
+    }
+    expect(seen).toEqual(new Set(Object.values(EVENT_MARK)));
+  });
+
+  it('seed 1: lively from start to finish and still a 30–90 s win (baseline 2.06 events/s)', () => {
+    const world = worldOf(1);
+    const bot = runBot(world, undefined, { profile: 'intermediate' });
+    const trace = traceRun(world, bot.inputs);
+    const fun = funMetrics(trace);
+    expect(fun.eventsPerS).toBeGreaterThanOrEqual(3.09);
+    expect(fun.longestGapS).toBeLessThanOrEqual(3);
+    // První bonus vyletí do 10 s.
+    const launches = world.rules.find((ref) => ref.id === 'slice_cut')?.params.launches as readonly Launch[];
+    expect(launches.find((launch) => launch[3] > 1)![0] / ARCADE_HZ).toBeLessThanOrEqual(10);
+    const own = runBot(world);
+    expect(own.outcome).toBe('won');
+    expect(own.tick / ARCADE_HZ).toBeGreaterThanOrEqual(30);
+    expect(own.tick / ARCADE_HZ).toBeLessThanOrEqual(90);
+    expect(traceRun(worldOf(1), bot.inputs).hash).toBe(trace.hash);
   });
 });

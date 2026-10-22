@@ -1,7 +1,8 @@
 /**
  * Robot obrany pruhů (P54C T7): brání pruh s nepřítelem, který je hradbě nejblíž – s nejdřívějším
  * průlomem, kterého šípy ve vzduchu ještě nesrazí. V klidu (nejbližší takový průlom je dál než
- * `DEFENSE_CALM` tiků) drží v pruhu bez obránce, až tam obránce stojí.
+ * `DEFENSE_CALM` tiků) drží v pruhu bez obránce, až tam obránce stojí. Bonus události (P55 T5) sestřelí
+ * přednostně, ale jen když po té ráně stihne všechny nepřátele v obraze (`spareShot`).
  *
  * Svět vidí `reactionTicks` starý. Co od té doby udělal sám (vystřelené šípy, držení, pruh), si
  * dopočítá z vlastních vstupů stejně jako pravidlo `defense_shot`; nepřátelé jdou stálou rychlostí,
@@ -45,6 +46,24 @@ export interface DefenseView {
   readonly guarded: ReadonlySet<number>;
   /** Nesražení nepřátelé v obraze podle průlomu, nejdřívější první. */
   readonly threats: readonly Threat[];
+  /** Bonusy událostí v obraze, na které ještě neletí šíp, podle odchodu k hradbě (`breach`), nejdřívější první. */
+  readonly bonuses: readonly Threat[];
+}
+
+/** Rezerva (tiky), kterou robotu po ráně do bonusu musí nechat každý nepřítel v obraze. */
+export const DEFENSE_BONUS_SLACK = 30;
+
+/**
+ * Smí robot vystřelit na bonus? Jen když po té ráně ještě stihne všechny nepřátele v obraze v pořadí
+ * průlomu (každé HP jedna rána po `reload`) s rezervou `DEFENSE_BONUS_SLACK`.
+ */
+export function spareShot(view: DefenseView): boolean {
+  let shots = 1;
+  for (const threat of view.threats) {
+    shots += threat.left;
+    if (threat.breach - view.now < DEFENSE.reload * (shots - 1) + DEFENSE_BONUS_SLACK) return false;
+  }
+  return true;
 }
 
 /** Co robot ví v tiku `now`: viděný stav plus vlastní vstupy od té doby. */
@@ -70,25 +89,32 @@ export function defenseView({ state, player, tick: seenAt, recent }: ArcadeObser
   }
   // Nepřátelé v obraze po pruzích, čelem ke hradbě první; šípy ve vzduchu srazí nejdřív ty vpředu.
   const elapsed = now - seenAt;
-  const foes: (Threat & { readonly z: number })[] = [];
+  const foes: (Threat & { readonly z: number; readonly bonus: boolean })[] = [];
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
     const base = bodyBase(body);
-    if (state[base + BODY.role] !== ROLE.chaser || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const role = state[base + BODY.role];
+    if ((role !== ROLE.chaser && role !== ROLE.collectible) || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
     // Jen co viděný stav ukazuje: nepřítel ještě v mlze (za `far`) robot nezná, i když už vyšel.
     if ((state[base + BODY.z] as number) > DEFENSE.far) continue;
     const speed = -(state[base + BODY.vz] as number);
     const z = (state[base + BODY.z] as number) - speed * elapsed;
-    foes.push({ body, z, lane: laneOfX(state[base + BODY.x] as number), breach: breachStep(z, speed, state[base + BODY.d] as number, now), left: bodyHp(state, body) });
+    const breach = breachStep(z, speed, state[base + BODY.d] as number, now);
+    // Bonus (P55 T5) má jednu „ránu“; ten, který k hradbě dojde dřív, než k němu šíp doletí, už nehoní.
+    const bonus = role === ROLE.collectible;
+    if (bonus && breach - now < 3) continue;
+    foes.push({ body, z, lane: laneOfX(state[base + BODY.x] as number), breach, left: bonus ? 1 : bodyHp(state, body), bonus });
   }
   foes.sort((a, b) => a.z - b.z || a.body - b.body);
   const threats: Threat[] = [];
+  const bonuses: Threat[] = [];
   for (const foe of foes) {
     const spent = Math.min(foe.left, shots[foe.lane]!);
     shots[foe.lane]! -= spent;
-    if (foe.left > spent) threats.push({ body: foe.body, lane: foe.lane, breach: foe.breach, left: foe.left - spent });
+    if (foe.left > spent) (foe.bonus ? bonuses : threats).push({ body: foe.body, lane: foe.lane, breach: foe.breach, left: foe.left - spent });
   }
   threats.sort((a, b) => a.breach - b.breach || a.body - b.body);
-  return { now, canFire: cooldown === 0, held, lane, guarded, threats };
+  bonuses.sort((a, b) => a.breach - b.breach || a.body - b.body);
+  return { now, canFire: cooldown === 0, held, lane, guarded, threats, bonuses };
 }
 
 export const defenseBot: BotPiece<DefenseBotParams> = {
@@ -100,6 +126,9 @@ export const defenseBot: BotPiece<DefenseBotParams> = {
   decide: (observation, params): ArcadeInput => {
     const view = defenseView(observation, params);
     const first = view.threats[0];
+    // Bonus události sestřelí, jen když to žádného nepřítele neohrozí.
+    const bonus = view.bonuses[0];
+    if (bonus !== undefined && view.canFire && spareShot(view)) return { buttons: BUTTON.TAP, axis: axisOfLane(bonus.lane) };
     const fire = first !== undefined && view.canFire ? { buttons: BUTTON.TAP, axis: axisOfLane(first.lane) } : NO_INPUT;
     const free = BUILD_ORDER.filter((lane) => !view.guarded.has(lane));
     if ((first !== undefined && first.breach - view.now < DEFENSE_CALM) || free.length === 0) return fire;

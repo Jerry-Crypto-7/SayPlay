@@ -1,0 +1,2165 @@
+{
+  "schema": "p56a-readings.v1",
+  "set": "evals/play/p30/dev.json",
+  "model": "gpt-oss-20b",
+  "transport": "llamacpp:http://127.0.0.1:8792",
+  "promptVersion": "beda31d4ee60c875",
+  "budgetMs": 60000,
+  "commit": "1b1cf43e",
+  "readAt": "2026-10-21T15:29:43.878Z",
+  "summary": {
+    "n": 60,
+    "valid": 59,
+    "genreAndHero": 33,
+    "withFoe": 22,
+    "withTitle": 58,
+    "p50Ms": 2513,
+    "p95Ms": 4891,
+    "maxMs": 6571
+  },
+  "cache": {
+    "rereads": 59,
+    "sameAgain": 59,
+    "extraCalls": 0
+  },
+  "readings": [
+    {
+      "id": "s039",
+      "text": "zombie shooter in a mall",
+      "ms": 1876,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "shooter",
+            "class": "aim_shoot"
+          }
+        ],
+        "hero": null,
+        "roles": [],
+        "setting": "mall",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "foe": "zombie",
+        "item": null,
+        "world": "mall",
+        "title": "Zombie Shooter in a Mall"
+      }
+    },
+    {
+      "id": "s037",
+      "text": "A space marine shoots alien bugs in a mining colony",
+      "ms": 2049,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "shoots",
+            "class": "aim_shoot"
+          }
+        ],
+        "hero": "space marine",
+        "roles": [
+          {
+            "noun": "alien bugs",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "mining colony",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "foe": "alien bugs",
+        "item": null,
+        "world": null,
+        "title": "Space Marine Shoots Alien Bugs"
+      }
+    },
+    {
+      "id": "s002",
+      "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+      "ms": 4006,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "collect",
+            "class": "move_free"
+          },
+          {
+            "word": "dodging",
+            "class": "move_free"
+          }
+        ],
+        "hero": "knight",
+        "roles": [
+          {
+            "noun": "keys",
+            "kind": "collectible",
+            "count": 3
+          },
+          {
+            "noun": "ghosts",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "haunted castle",
+        "mood": "haunted",
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            3
+          ]
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": "ghosts",
+        "item": "keys",
+        "world": "castle",
+        "title": "Knight Collects Keys"
+      }
+    },
+    {
+      "id": "s003",
+      "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+      "ms": 3699,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "escaping",
+            "class": "move_free"
+          }
+        ],
+        "hero": "hamster",
+        "roles": [
+          {
+            "noun": "Roomba",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "aisles",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "supermarket",
+        "mood": "frantic",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "Roomba",
+        "item": null,
+        "world": "mall",
+        "title": "Hamster Escape"
+      }
+    },
+    {
+      "id": "s006",
+      "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+      "ms": 2621,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "runs",
+            "class": "runner"
+          },
+          {
+            "word": "grabs",
+            "class": "manipulate"
+          },
+          {
+            "word": "jumps",
+            "class": "platform"
+          }
+        ],
+        "hero": "corgi",
+        "roles": [
+          {
+            "noun": "sausages",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "sprinklers",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "park",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "sausages",
+        "world": "meadow",
+        "title": "Corgi Sausage Run"
+      }
+    },
+    {
+      "id": "s008",
+      "text": "temple run but you're a banana running from a monkey",
+      "ms": 2924,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "run",
+            "class": "runner"
+          }
+        ],
+        "hero": "banana",
+        "roles": [
+          {
+            "noun": "monkey",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "temple",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "monkey",
+        "item": null,
+        "world": null,
+        "title": "Temple Run Banana"
+      }
+    },
+    {
+      "id": "s022",
+      "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+      "ms": 1736,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "climbs",
+            "class": "platform"
+          }
+        ],
+        "hero": "tiny robot",
+        "roles": [],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "charger",
+        "world": null,
+        "title": "Tiny Robot Tower Climb"
+      }
+    },
+    {
+      "id": "s021",
+      "text": "obby game with lava and spinning bars",
+      "ms": 1905,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "platform",
+            "class": "platform"
+          },
+          {
+            "word": "timing",
+            "class": "timing"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "lava",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "spinning bars",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Obby Game with Lava and Spinning"
+      }
+    },
+    {
+      "id": "s035",
+      "text": "like flappy bird but underwater",
+      "ms": 2402,
+      "reading": {
+        "control": "flap",
+        "verbs": [
+          {
+            "word": "flap",
+            "class": "flap"
+          }
+        ],
+        "hero": null,
+        "roles": [],
+        "setting": "underwater",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": "underwater",
+        "title": "Flappy Bird Underwater"
+      }
+    },
+    {
+      "id": "s050",
+      "text": "throwing snowballs at kids behind a snow fort",
+      "ms": 2712,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "throw",
+            "class": "throw"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "kids",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "snow fort",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "snowball",
+        "world": null,
+        "title": "Snowball Throw"
+      }
+    },
+    {
+      "id": "s088",
+      "text": "angry birds but with cats and cardboard boxes",
+      "ms": 2208,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "shoot",
+            "class": "aim_shoot"
+          }
+        ],
+        "hero": "cat",
+        "roles": [
+          {
+            "noun": "cardboard box",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "angry",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Angry Cats"
+      }
+    },
+    {
+      "id": "s069",
+      "text": "candy crush but with gems in a cave",
+      "ms": 2879,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "swap",
+            "class": "manipulate"
+          },
+          {
+            "word": "match",
+            "class": "manipulate"
+          },
+          {
+            "word": "sort",
+            "class": "manipulate"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "gem",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "cave",
+        "mood": "dark",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": "cave",
+        "title": "Gem Crush Cave"
+      }
+    },
+    {
+      "id": "s056",
+      "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+      "ms": 2691,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          }
+        ],
+        "hero": "pizza delivery scooter",
+        "roles": [
+          {
+            "noun": "traffic",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "city",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "traffic",
+        "item": "pizza",
+        "world": "city",
+        "title": "Pizza Delivery Scooter"
+      }
+    },
+    {
+      "id": "s058",
+      "text": "boat race through a jungle river full of crocodiles",
+      "ms": 1638,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "race",
+            "class": "steer"
+          }
+        ],
+        "hero": "boat",
+        "roles": [
+          {
+            "noun": "crocodile",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "jungle river",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": "crocodile",
+        "item": null,
+        "world": "jungle",
+        "title": "Jungle River Boat Race"
+      }
+    },
+    {
+      "id": "s111",
+      "text": "a black hole that swallows a city, it gets bigger the more it eats",
+      "ms": 5721,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "swallows",
+            "class": "move_free"
+          }
+        ],
+        "hero": "black hole",
+        "roles": [
+          {
+            "noun": "city",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "collect"
+        },
+        "foe": null,
+        "item": null,
+        "world": "city",
+        "title": "Black Hole Swallows City"
+      }
+    },
+    {
+      "id": "s095",
+      "text": "knife throwing at a spinning log",
+      "ms": 1539,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "throw",
+            "class": "throw"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "log",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "knife",
+        "world": null,
+        "title": "Knife Throwing at a Spinning Log"
+      }
+    },
+    {
+      "id": "s188",
+      "text": "A grandma karate fights a gang of pigeons in the park",
+      "ms": 2117,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "fights",
+            "class": "melee"
+          }
+        ],
+        "hero": "grandma",
+        "roles": [
+          {
+            "noun": "pigeons",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "park",
+        "mood": "action",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "fight"
+        },
+        "foe": "pigeons",
+        "item": null,
+        "world": "meadow",
+        "title": "Grandma Karate"
+      }
+    },
+    {
+      "id": "s144",
+      "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+      "ms": 1781,
+      "reading": {
+        "control": "rhythm",
+        "verbs": [
+          {
+            "word": "play",
+            "class": "rhythm"
+          }
+        ],
+        "hero": "drummer frog",
+        "roles": [],
+        "setting": "pond",
+        "mood": "rhythmic",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "rhythm",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Drummer Frog"
+      }
+    },
+    {
+      "id": "s155",
+      "text": "defend the castle from waves of goblins",
+      "ms": 3491,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "defend",
+            "class": "aim_shoot"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "goblins",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "castle",
+        "mood": "defensive",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "foe": "goblins",
+        "item": "castle",
+        "world": "castle",
+        "title": "Defend the Castle"
+      }
+    },
+    {
+      "id": "s099",
+      "text": "build the tallest pancake tower before it falls over",
+      "ms": 3501,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "build",
+            "class": "build_place"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "pancake",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "tower",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": "pancake",
+        "world": null,
+        "title": "Tallest Pancake Tower"
+      }
+    },
+    {
+      "id": "h01",
+      "text": "a cat stealing fish from a market while dodging the fishmonger",
+      "ms": 3040,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "stealing",
+            "class": "move_free"
+          },
+          {
+            "word": "dodging",
+            "class": "move_free"
+          }
+        ],
+        "hero": "cat",
+        "roles": [
+          {
+            "noun": "fish",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "fishmonger",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "market",
+        "mood": "stealth",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "fishmonger",
+        "item": "fish",
+        "world": "city",
+        "title": "Cat Stealing Fish"
+      }
+    },
+    {
+      "id": "h02",
+      "text": "shopping cart race in a supermarket",
+      "ms": 2712,
+      "reading": {
+        "control": "runner",
+        "verbs": [],
+        "hero": "shopping cart",
+        "roles": [],
+        "setting": "supermarket",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": "mall",
+        "title": "Shopping Cart Race"
+      }
+    },
+    {
+      "id": "h03",
+      "text": "defend a castle from dragons by throwing snowballs",
+      "ms": 2880,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "throw",
+            "class": "throw"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "dragons",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "castle",
+        "mood": "defensive",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "foe": "dragons",
+        "item": "snowballs",
+        "world": "castle",
+        "title": "Defend a Castle from Dragons"
+      }
+    },
+    {
+      "id": "h04",
+      "text": "a robot collects batteries on Mars",
+      "ms": 1824,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "collect",
+            "class": "move_free"
+          }
+        ],
+        "hero": "robot",
+        "roles": [
+          {
+            "noun": "batteries",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "Mars",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "batteries",
+        "world": "desert",
+        "title": "Robot Collects Batteries"
+      }
+    },
+    {
+      "id": "h05",
+      "text": "boxing a kangaroo in the australian outback",
+      "ms": 1963,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "boxing",
+            "class": "melee"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "kangaroo",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "australian outback",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "fight"
+        },
+        "foe": "kangaroo",
+        "item": null,
+        "world": "desert",
+        "title": "Boxing a Kangaroo"
+      }
+    },
+    {
+      "id": "h06",
+      "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+      "ms": 3474,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "repairs",
+            "class": "move_free"
+          },
+          {
+            "word": "collecting",
+            "class": "move_free"
+          },
+          {
+            "word": "avoiding",
+            "class": "move_free"
+          },
+          {
+            "word": "throws",
+            "class": "move_free"
+          }
+        ],
+        "hero": "tiny astronaut",
+        "roles": [
+          {
+            "noun": "glowing crystals",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "cracks in the ice",
+            "kind": "hazard",
+            "count": null
+          },
+          {
+            "noun": "grumpy alien",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "icy moon",
+        "mood": "cold",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "grumpy alien",
+        "item": "glowing crystals",
+        "world": null,
+        "title": "Tiny Astronaut Repairs"
+      }
+    },
+    {
+      "id": "h07",
+      "text": "purple elephants doing taxes on a volcano",
+      "ms": 2677,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "idle",
+            "class": "idle"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "taxes",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "volcano",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "taxes",
+        "world": null,
+        "title": "Purple Elephants Doing Taxes"
+      }
+    },
+    {
+      "id": "h08",
+      "text": "a romantic dinner date on the moon",
+      "ms": 1998,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "dinner",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "date",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "moon",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "moon",
+        "mood": "romantic",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": "dinner",
+        "world": "space",
+        "title": "Romantic Dinner Date on the Moon"
+      }
+    },
+    {
+      "id": "h09",
+      "text": "escape from a haunted hospital with a flashlight",
+      "ms": 1978,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "escape",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [],
+        "setting": "haunted hospital",
+        "mood": "haunted",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": null,
+        "item": "flashlight",
+        "world": null,
+        "title": "Haunted Hospital Escape"
+      }
+    },
+    {
+      "id": "h10",
+      "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+      "ms": 4529,
+      "reading": {
+        "control": "glide",
+        "verbs": [
+          {
+            "word": "slides",
+            "class": "flap"
+          },
+          {
+            "word": "jumps",
+            "class": "platform"
+          },
+          {
+            "word": "catches",
+            "class": "idle"
+          }
+        ],
+        "hero": "penguin",
+        "roles": [
+          {
+            "noun": "seals",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "fish",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "glacier",
+        "mood": "cold",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "fish",
+        "world": null,
+        "title": "Penguin Glacier Slide"
+      }
+    },
+    {
+      "id": "j01",
+      "text": "Explain quantum physics to my grandma.",
+      "ms": 1109,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [],
+        "hero": null,
+        "roles": [],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": null
+      }
+    },
+    {
+      "id": "j02",
+      "text": "a sleepy cat naps in a cozy rainy café",
+      "ms": 1696,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "idle",
+            "class": "idle"
+          }
+        ],
+        "hero": "sleepy cat",
+        "roles": [],
+        "setting": "cozy rainy café",
+        "mood": "cozy",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Sleepy Cat Naps"
+      }
+    },
+    {
+      "id": "j03",
+      "text": "my startup pitch to investors in a glass skyscraper",
+      "ms": 4537,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "pitch",
+            "class": "idle"
+          }
+        ],
+        "hero": "startup",
+        "roles": [
+          {
+            "noun": "investors",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "city",
+        "mood": "business pitch",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": "city",
+        "title": "Startup Pitch"
+      }
+    },
+    {
+      "id": "j04",
+      "text": "walk my dog along the beach while eating an ice cream",
+      "ms": 3315,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move_free",
+            "class": "move_free"
+          },
+          {
+            "word": "eat",
+            "class": "idle"
+          }
+        ],
+        "hero": "dog",
+        "roles": [],
+        "setting": "beach",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "collect"
+        },
+        "foe": null,
+        "item": "ice cream",
+        "world": "beach",
+        "title": "Walk My Dog"
+      }
+    },
+    {
+      "id": "j05",
+      "text": "pop ten balloons at a birthday party",
+      "ms": 4891,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "pop",
+            "class": "timing"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "balloons",
+            "kind": "collectible",
+            "count": 10
+          }
+        ],
+        "setting": "birthday party",
+        "mood": "celebratory",
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            10
+          ]
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "stack"
+        },
+        "foe": null,
+        "item": "balloon",
+        "world": null,
+        "title": "Pop Ten Balloons"
+      }
+    },
+    {
+      "id": "j06",
+      "text": "a chef flips pancakes in a busy kitchen",
+      "ms": 5644,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "flips",
+            "class": "timing"
+          }
+        ],
+        "hero": "chef",
+        "roles": [
+          {
+            "noun": "pancake",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "kitchen",
+        "mood": "busy",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "foe": null,
+        "item": "pancake",
+        "world": "cave",
+        "title": "Chef Flips"
+      }
+    },
+    {
+      "id": "j07",
+      "text": "a squirrel hoards acorns before winter comes",
+      "ms": 2310,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "hoards",
+            "class": "move_free"
+          }
+        ],
+        "hero": "squirrel",
+        "roles": [
+          {
+            "noun": "acorn",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "before winter comes",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "acorn",
+        "world": "forest",
+        "title": "Squirrel Hoards Acorns"
+      }
+    },
+    {
+      "id": "j08",
+      "text": "a wizard defends a crystal tower from flying skeletons",
+      "ms": 3931,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "defends",
+            "class": "move_free"
+          }
+        ],
+        "hero": "wizard",
+        "roles": [
+          {
+            "noun": "crystal tower",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "flying skeletons",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "foe": "flying skeletons",
+        "item": "crystal tower",
+        "world": "castle",
+        "title": "Wizard Defends Crystal Tower"
+      }
+    },
+    {
+      "id": "j09",
+      "text": "a dragon burns down villages and dodges arrows from knights",
+      "ms": 2263,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "burns down",
+            "class": "move_free"
+          },
+          {
+            "word": "dodges",
+            "class": "timing"
+          }
+        ],
+        "hero": "dragon",
+        "roles": [
+          {
+            "noun": "villages",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "knights",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "arrows",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "knights",
+        "item": null,
+        "world": "castle",
+        "title": "Dragon Burns Villages"
+      }
+    },
+    {
+      "id": "j10",
+      "text": "an elf princess escapes a goblin castle through a dark forest",
+      "ms": 2611,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "escape",
+            "class": "move_free"
+          }
+        ],
+        "hero": "elf princess",
+        "roles": [
+          {
+            "noun": "goblin castle",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "dark forest",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": "forest",
+        "title": "Elf Princess Escape"
+      }
+    },
+    {
+      "id": "d01",
+      "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+      "ms": 3732,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "rolls",
+            "class": "runner"
+          }
+        ],
+        "hero": "hedgehog",
+        "roles": [
+          {
+            "noun": "foxes",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "mushroom hill",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "foxes",
+        "item": null,
+        "world": "forest",
+        "title": "Hedgehog Hill Roll"
+      }
+    },
+    {
+      "id": "d02",
+      "text": "teach my little brother the multiplication table",
+      "ms": 2778,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "teach",
+            "class": "idle"
+          }
+        ],
+        "hero": "little brother",
+        "roles": [],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Teach Multiplication Table"
+      }
+    },
+    {
+      "id": "d03",
+      "text": "a witch brews potions in a crooked tower during a thunderstorm",
+      "ms": 3035,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "brews",
+            "class": "timing"
+          }
+        ],
+        "hero": "witch",
+        "roles": [],
+        "setting": "crooked tower",
+        "mood": "thunderstorm",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "potions",
+        "world": "castle",
+        "title": "Witch Brews Potions"
+      }
+    },
+    {
+      "id": "d04",
+      "text": "shoot down paper planes over a school playground",
+      "ms": 2513,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "shoot",
+            "class": "aim_shoot"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "paper planes",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "school playground",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "foe": "paper planes",
+        "item": null,
+        "world": null,
+        "title": "Shoot Down Paper Planes"
+      }
+    },
+    {
+      "id": "d05",
+      "text": "a sloth tries to cross a busy jungle highway",
+      "ms": 1607,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "tries",
+            "class": "runner"
+          }
+        ],
+        "hero": "sloth",
+        "roles": [
+          {
+            "noun": "traffic",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "jungle highway",
+        "mood": "slow",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "traffic",
+        "item": null,
+        "world": "jungle",
+        "title": "Sloth Highway"
+      }
+    },
+    {
+      "id": "d06",
+      "text": "race hot air balloons over a desert canyon",
+      "ms": 1443,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "race",
+            "class": "steer"
+          }
+        ],
+        "hero": "hot air balloons",
+        "roles": [],
+        "setting": "desert canyon",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": null,
+        "item": null,
+        "world": "desert",
+        "title": "Race Hot Air Balloons"
+      }
+    },
+    {
+      "id": "d07",
+      "text": "my grandpa fixing his old car in the garage",
+      "ms": 3212,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "fixing",
+            "class": "idle"
+          }
+        ],
+        "hero": "grandpa",
+        "roles": [
+          {
+            "noun": "car",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "garage",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Grandpa Fixing Car"
+      }
+    },
+    {
+      "id": "d08",
+      "text": "a mermaid collects pearls while avoiding jellyfish",
+      "ms": 2342,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "collects",
+            "class": "move_free"
+          }
+        ],
+        "hero": "mermaid",
+        "roles": [
+          {
+            "noun": "pearls",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "jellyfish",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "collect"
+        },
+        "foe": "jellyfish",
+        "item": "pearls",
+        "world": "ocean",
+        "title": "Mermaid Collects Pearls"
+      }
+    },
+    {
+      "id": "d09",
+      "text": "stack cheese wheels into a wobbly tower at a farm market",
+      "ms": 3298,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "stack",
+            "class": "manipulate"
+          },
+          {
+            "word": "build_place",
+            "class": "build_place"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "cheese wheels",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "farm market",
+        "mood": "wobbly",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "cheese wheels",
+        "world": "meadow",
+        "title": "Stack Cheese Wheels"
+      }
+    },
+    {
+      "id": "d10",
+      "text": "a pirate duels a skeleton captain on a sinking ship",
+      "ms": 1490,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "duel",
+            "class": "melee"
+          }
+        ],
+        "hero": "pirate",
+        "roles": [],
+        "setting": "sinking ship",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "duel",
+          "mode": "default"
+        },
+        "foe": "skeleton captain",
+        "item": null,
+        "world": null,
+        "title": "Pirate vs Skeleton"
+      }
+    },
+    {
+      "id": "d11",
+      "text": "tap along to the drums at a jungle festival",
+      "ms": 1608,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "tap",
+            "class": "tap_go"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "drums",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "jungle festival",
+        "mood": "rhythmic",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "rhythm",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": "jungle",
+        "title": "Jungle Festival Rhythm"
+      }
+    },
+    {
+      "id": "d12",
+      "text": "a goldfish swims through a sunken city dodging sharks",
+      "ms": 1984,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "swim",
+            "class": "move_free"
+          }
+        ],
+        "hero": "goldfish",
+        "roles": [
+          {
+            "noun": "sharks",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "sunken city",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "sharks",
+        "item": null,
+        "world": "underwater",
+        "title": "Goldfish City Escape"
+      }
+    },
+    {
+      "id": "d13",
+      "text": "write a thank-you letter to my teacher",
+      "ms": 945,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [],
+        "hero": null,
+        "roles": [],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "write a thank-you letter to my"
+      }
+    },
+    {
+      "id": "d14",
+      "text": "a bear sneaks into a campsite to steal honey",
+      "ms": 6571,
+      "reading": null
+    },
+    {
+      "id": "d15",
+      "text": "throw frisbees to a dog on a sunny beach",
+      "ms": 1891,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "throw",
+            "class": "throw"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "dog",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "beach",
+        "mood": "sunny",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "frisbee",
+        "world": "beach",
+        "title": "Frisbee Dog"
+      }
+    },
+    {
+      "id": "d16",
+      "text": "an owl delivers letters across a snowy mountain village",
+      "ms": 2143,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "delivers",
+            "class": "move_free"
+          }
+        ],
+        "hero": "owl",
+        "roles": [
+          {
+            "noun": "letters",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "snowy mountain village",
+        "mood": "peaceful",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "letters",
+        "world": "snow",
+        "title": "Owl Letter Delivery"
+      }
+    },
+    {
+      "id": "d17",
+      "text": "a robot vacuum cleans the house before the family comes home",
+      "ms": 3651,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "cleans",
+            "class": "move_free"
+          }
+        ],
+        "hero": "robot vacuum",
+        "roles": [],
+        "setting": "house",
+        "mood": "clean",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": "living_room",
+        "title": "Robot Vacuum"
+      }
+    },
+    {
+      "id": "d18",
+      "text": "a sumo wrestler pushes rivals out of a bouncy ring",
+      "ms": 2383,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "pushes",
+            "class": "timing"
+          }
+        ],
+        "hero": "sumo wrestler",
+        "roles": [
+          {
+            "noun": "rivals",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "bouncy ring",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "foe": "rivals",
+        "item": null,
+        "world": null,
+        "title": "Sumo Wrestler Pushes Rivals"
+      }
+    },
+    {
+      "id": "d19",
+      "text": "plan a budget for my family vacation",
+      "ms": 2250,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "plan",
+            "class": "idle"
+          }
+        ],
+        "hero": "my family",
+        "roles": [],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Plan a Budget"
+      }
+    },
+    {
+      "id": "d20",
+      "text": "a knight rides a unicorn to rescue a prince from a cloud castle",
+      "ms": 3511,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "rides",
+            "class": "steer"
+          }
+        ],
+        "hero": "knight",
+        "roles": [
+          {
+            "noun": "unicorn",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "prince",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "cloud castle",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "cloud castle",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Knight Unicorn Rescue"
+      }
+    }
+  ]
+}
