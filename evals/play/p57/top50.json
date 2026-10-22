@@ -68,6 +68,16 @@
    "startedAt": "2026-10-22T15:02:18.262Z",
    "finishedAt": "2026-10-22T16:17:11.177Z",
    "boundsRejected": 13
+  },
+  "5": {
+   "ids": [
+    "gen3d-scree-rock-pile",
+    "gen3d-bus-stop",
+    "gen3d-finish-banner"
+   ],
+   "startedAt": "2026-10-22T16:18:31.460Z",
+   "finishedAt": "2026-10-22T16:50:20.511Z",
+   "boundsRejected": 14
   }
  },
  "models": {
@@ -3677,6 +3687,237 @@
    ],
    "newScore": null,
    "result": "kept-old"
+  },
+  "gen3d-scree-rock-pile": {
+   "noun": "scree rock pile",
+   "set": "gen3d-p37d",
+   "oldScore": 4,
+   "oldOpus": 4,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: height along +Y is 1.155 m, expected 1.0 m (wrong up axis or scale); pivot not at the base: lowest point y=-0.062"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one solid low mound of a few big chunky grey rocks fused together into one piece, flat bottom, no loose small stones, gaps or overhangs, about two and a half times as wide as tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.040"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-bus-stop": {
+   "noun": "bus stop",
+   "set": "gen3d",
+   "oldScore": 6,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one wide low bus stop shelter with a flat roof, one solid back wall and a bench, seen straight from the front, about twice as wide as tall and much shallower than wide",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-finish-banner": {
+   "noun": "finish banner",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one flat finish line arch: two thick straight posts with a wide flat black and white checkered banner across the top, everything in one flat plane facing the viewer, about one and a half times as wide as tall, very thin front to back",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.3185,
+        0.9998,
+        1.4803
+       ],
+       "triangles": 7600,
+       "pick": 4
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.0392,
+        1.0392,
+        1.0392
+       ],
+       "triangles": 7600,
+       "pick": 4
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "bounds"
+      }
+     ],
+     "pick": "a3",
+     "seed": 3,
+     "score": 4,
+     "reason": "barrier gate: Thin dark posts, noisy mottled grey beam; not bright or chunky.",
+     "won": false
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old",
+   "reason": "barrier gate: Thin dark posts, noisy mottled grey beam; not bright or chunky."
   }
  },
  "summary": {
@@ -3851,7 +4092,7 @@
    {
     "id": "gen3d-finish-banner",
     "score": 5,
-    "reason": "Blurry noisy texture on banner, thin posts; unclear purpose."
+    "reason": "barrier gate: Thin dark posts, noisy mottled grey beam; not bright or chunky."
    }
   ]
  },
