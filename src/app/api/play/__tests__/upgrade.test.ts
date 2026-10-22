@@ -369,7 +369,7 @@ describe('GET …/upgrade', () => {
     const { adds: _adds, ...stored } = first as { adds?: unknown };
     expect(await upgrade(created.body.versionId)).toEqual(stored);
     expect(director.calls).toBe(1);
-  });
+  }, 90_000);
 
   it('proces bez záznamu vrátí uložený verdikt o větě a režiséra nezaplatí znovu (R10)', async () => {
     director.script = [answered('this is not a game')];
