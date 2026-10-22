@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "8af67e0b89ca7ebe0de89b963a0fbe061d5822738d573bfd9928149f50bd0de8",
+ "catalogHash": "927c1fd74f4b4256d2520c6502b3eaf7507a9af1d016141b5c3102a652c6cb6c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1160,7 +1160,7 @@
   "gen3d-haunted-portrait": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-mall-kiosk": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-flour-sack": {"class":"prop"},
-  "gen3d-ancient-vase": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ancient-vase": {"class":"biped","regions":{"legY":0.235}},
   "gen3d-thin-ice-sign": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-castle-banner": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-fireplace-screen": {"class":"prop"},

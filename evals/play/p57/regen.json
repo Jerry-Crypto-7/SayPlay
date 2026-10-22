@@ -130,6 +130,32 @@
    ],
    "startedAt": "2026-10-22T01:43:53.790Z",
    "finishedAt": "2026-10-22T04:35:11.456Z"
+  },
+  "6": {
+   "ids": [
+    "cc0-train",
+    "gen3d-apartment-block",
+    "gen3d-baby",
+    "cc0-koi",
+    "gen3d-egg-tray",
+    "gen3d-ancient-vase",
+    "gen3d-gold-trophy",
+    "gen3d-canopic-jar",
+    "cc0-bear-trap",
+    "cc0-pipe-cross",
+    "gen3d-kraken",
+    "gen3d-maze",
+    "cc0-avocado",
+    "gen3d-magnet",
+    "gen3d-eraser",
+    "gen3d-tesla-coil",
+    "gen3d-lobster",
+    "gen3d-sugar-bowl",
+    "gen3d-old-stone-bridge",
+    "gen3d-gumball-machine"
+   ],
+   "startedAt": "2026-10-22T04:36:47.235Z",
+   "finishedAt": "2026-10-22T05:23:40.345Z"
   }
  },
  "models": {
@@ -3412,6 +3438,609 @@
    ],
    "newScore": null,
    "result": "rejected-bounds"
+  },
+  "cc0-train": {
+   "noun": "train",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-apartment-block": {
+   "noun": "apartment block",
+   "oldScore": 2,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.3385,
+      1,
+      1.0429
+     ],
+     "triangles": 3249,
+     "dims": [
+      0.6699000000000002,
+      0.999931595373673,
+      0.45908
+     ],
+     "score": 2,
+     "reason": "Rock block: Crumpled, noisy slab with holes; the object can't be identified."
+    }
+   ],
+   "newScore": 2,
+   "result": "kept-old"
+  },
+  "gen3d-baby": {
+   "noun": "baby",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "cc0-koi": {
+   "noun": "koi",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-egg-tray": {
+   "noun": "egg tray",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-ancient-vase": {
+   "noun": "ancient vase",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9388,
+      0.9388,
+      0.9388
+     ],
+     "triangles": 3513,
+     "dims": [
+      0.6459238285009046,
+      0.9385992046358189,
+      0.6487350669806793
+     ],
+     "score": 6,
+     "reason": "Amphora vase: Clean vase silhouette, bright orange; dark blotches and dents."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-gold-trophy": {
+   "noun": "gold trophy",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.7654,
+      1.0001,
+      0.7815
+     ],
+     "triangles": 3815,
+     "dims": [
+      0.7571399999999999,
+      0.9995627675709586,
+      0.46695999999999993
+     ],
+     "score": 6,
+     "reason": "Trophy cup: Clear trophy silhouette, but surface is noisy and lumpy."
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old"
+  },
+  "gen3d-canopic-jar": {
+   "noun": "canopic jar",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9966,
+      0.9966,
+      0.9966
+     ],
+     "triangles": 3958,
+     "dims": [
+      0.5287777582341737,
+      0.9944094466659428,
+      0.5157258612969695
+     ],
+     "score": 4,
+     "reason": "Lidded urn: Lumpy shape, noisy crumpled silver lid, unclear object."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0207,
+      1.0207,
+      1.0207
+     ],
+     "triangles": 3996,
+     "dims": [
+      0.5102579493494162,
+      1.0163877822123921,
+      0.5162161282204334
+     ],
+     "score": 5,
+     "reason": "Canopic jar: Jar reads well, but the head is glassy and noisy."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "cc0-bear-trap": {
+   "noun": "bear trap",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "cc0-pipe-cross": {
+   "noun": "pipe cross",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.8283,
+      0.6,
+      0.8215
+     ],
+     "triangles": 287,
+     "dims": [
+      0.9647351860198137,
+      0.60001,
+      0.9048284110622189
+     ],
+     "score": 2,
+     "reason": "Spiky shard: Jagged green fragment cluster; unidentifiable object."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.6592,
+      0.6592,
+      0.6592
+     ],
+     "triangles": 287,
+     "dims": [
+      0.9131789736801356,
+      0.6252755749203643,
+      0.8717873780466888
+     ],
+     "score": 1,
+     "reason": "Unknown shards: Loose, spiky fragments; no recognisable object."
+    }
+   ],
+   "newScore": 2,
+   "result": "kept-old"
+  },
+  "gen3d-kraken": {
+   "noun": "kraken",
+   "oldScore": 2,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9384,
+      0.9952,
+      0.7392
+     ],
+     "triangles": 3393,
+     "dims": [
+      1.0818393673246316,
+      0.98556,
+      0.84418
+     ],
+     "score": 4,
+     "reason": "octopus: Readable octopus, but noisy streaky texture and lumpy faceting."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-maze": {
+   "noun": "maze",
+   "oldScore": 2,
+   "oldJudge": "claude",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "cc0-avocado": {
+   "noun": "avocado",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.1114,
+      1.1114,
+      1.1114
+     ],
+     "triangles": 218,
+     "dims": [
+      0.7358018785612966,
+      1.0756664767464434,
+      0.5129826384825606
+     ],
+     "score": 3,
+     "reason": "Avocado half: Melted green blob with a broken pit; reads poorly."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-magnet": {
+   "noun": "magnet",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-eraser": {
+   "noun": "eraser",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-tesla-coil": {
+   "noun": "tesla coil",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.69,
+      0.9989,
+      0.6782
+     ],
+     "triangles": 3920,
+     "dims": [
+      0.24018,
+      0.9987568710106536,
+      0.23587999999999998
+     ],
+     "score": 3,
+     "reason": "Pillar column: Shaft is a jagged, shredded stack; it doesn't read as an object."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-lobster": {
+   "noun": "lobster",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-sugar-bowl": {
+   "noun": "sugar bowl",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9855,
+      0.9855,
+      0.9855
+     ],
+     "triangles": 3695,
+     "dims": [
+      0.8951917278374051,
+      0.9842776467022281,
+      1.2171164211181105
+     ],
+     "score": 5,
+     "reason": "Sugar bowl: Lidded pot reads okay; blotchy blue texture and lumpy surface."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-old-stone-bridge": {
+   "noun": "old stone bridge",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.2243,
+      1.0004,
+      1.0257
+     ],
+     "triangles": 3511,
+     "dims": [
+      3.1014464247637026,
+      0.9921261031015417,
+      1.4364599999999998
+     ],
+     "score": 2,
+     "reason": "castle ruin: Shredded, torn grey mesh; unreadable blob."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 2,
+   "result": "kept-old"
+  },
+  "gen3d-gumball-machine": {
+   "noun": "gumball machine",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.974,
+      0.974,
+      0.974
+     ],
+     "triangles": 3933,
+     "dims": [
+      0.6554455925146704,
+      0.9735319286728518,
+      0.6528697254004681
+     ],
+     "score": 4,
+     "reason": "Gumball machine: Recognisable, but the globe is torn, noisy and faceted."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
   }
  }
 }
