@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e9d199ca4ad495b22ef73ff264a3176228886a9bd4a0e0c6337d44164efe942f",
+ "catalogHash": "aefa850ab1960d3cd7699d991586b03704efff8d1b6ec6ec95b643f5a52d1376",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1523,7 +1523,7 @@
   "gen3d-fuel-silo": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-crosswalk-sign": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-deli-scale": {"class":"prop"},
-  "gen3d-gramophone": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-gramophone": {"class":"biped","regions":{"legY":0.258}},
   "gen3d-jungle-waterfall": {"class":"prop"},
   "gen3d-wooden-stile": {"class":"prop"},
   "gen3d-atm-machine": {"class":"biped","regions":{"legY":0.25}},
@@ -1566,7 +1566,7 @@
   "gen3d-wedding-arch": {"class":"prop"},
   "gen3d-standing-stone": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-bromeliad": {"class":"prop"},
-  "gen3d-yucca-plant": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-yucca-plant": {"class":"biped","regions":{"legY":0.231}},
   "gen3d-graffiti-wall": {"class":"prop"},
   "gen3d-beach-cabana": {"class":"prop"},
   "gen3d-sunken-bell": {"class":"biped","regions":{"legY":0.249}},

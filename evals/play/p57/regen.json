@@ -78,6 +78,32 @@
    ],
    "startedAt": "2026-10-21T23:23:56.131Z",
    "finishedAt": "2026-10-22T00:16:20.970Z"
+  },
+  "4": {
+   "ids": [
+    "gen3d-ruin",
+    "gen3d-ruined-stone-tower",
+    "gen3d-snowy-bench",
+    "gen3d-stone-idol-head",
+    "gen3d-treehouse",
+    "gen3d-vine-covered-rock-wall",
+    "gen3d-wooden-pier",
+    "gen3d-yucca-plant",
+    "cc0-couch",
+    "gen3d-bookshelf",
+    "gen3d-gramophone",
+    "gen3d-red-barn",
+    "gen3d-television",
+    "cc0-apple",
+    "cc0-clownfish",
+    "gen3d-adobe-house",
+    "gen3d-bear",
+    "gen3d-frog",
+    "gen3d-frozen-waterfall",
+    "gen3d-octopus"
+   ],
+   "startedAt": "2026-10-22T00:18:01.648Z",
+   "finishedAt": "2026-10-22T01:42:10.501Z"
   }
  },
  "models": {
@@ -2075,6 +2101,708 @@
    ],
    "newScore": null,
    "result": "kept-old"
+  },
+  "gen3d-ruin": {
+   "noun": "ruin",
+   "oldScore": 2.5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.4471,
+      0.9939,
+      1.3783
+     ],
+     "triangles": 3475,
+     "dims": [
+      1.77195057803426,
+      0.99212,
+      1.687805240946779
+     ],
+     "score": 3,
+     "reason": "Ruin platform: Noisy grey slab with stubs; unclear single object, scan-like."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-ruined-stone-tower": {
+   "noun": "ruined stone tower",
+   "oldScore": 3.5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.7812,
+      0.9991,
+      0.755
+     ],
+     "triangles": 3707,
+     "dims": [
+      0.5129889731812228,
+      0.9990499999999999,
+      0.4963000000000001
+     ],
+     "score": 4,
+     "reason": "stone tower: Crumpled noisy grey mesh, scan-like, uneven battlements"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9178,
+      0.9178,
+      0.9178
+     ],
+     "triangles": 3751,
+     "dims": [
+      0.5416270234689318,
+      0.9167578898307357,
+      0.5407852474809082
+     ],
+     "score": 3,
+     "reason": "Trash can: Noisy shredded surface, jagged faces; unclear object, grey and scan-like."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-snowy-bench": {
+   "noun": "snowy bench",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: 3.7% of vertex colours are purple (hue 250–320°)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-stone-idol-head": {
+   "noun": "stone idol head",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.054,
+      1.054,
+      1.054
+     ],
+     "triangles": 3939,
+     "dims": [
+      0.7117550836500759,
+      1.047800774238146,
+      0.900154497867962
+     ],
+     "score": 3,
+     "reason": "human head: Chrome, faceted scan-like surface; noisy and not toy-like"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9188,
+      0.9188,
+      0.9188
+     ],
+     "triangles": 3958,
+     "dims": [
+      0.7584293592859119,
+      0.9184425748705837,
+      0.8787752552161472
+     ],
+     "score": 6,
+     "reason": "Human head: Clean low-poly head, readable; dull single colour, bit bland."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-treehouse": {
+   "noun": "treehouse",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.7529,
+      1.003,
+      0.6694
+     ],
+     "triangles": 3339,
+     "dims": [
+      0.56328,
+      0.99999,
+      0.49584
+     ],
+     "score": 6,
+     "reason": "Treehouse tree: Charming low-poly tree, but trunk geometry cluttered and noisy."
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old"
+  },
+  "gen3d-vine-covered-rock-wall": {
+   "noun": "vine covered rock wall",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.2403,
+      0.9968,
+      0.9392
+     ],
+     "triangles": 3409,
+     "dims": [
+      1.3905995271547695,
+      0.985196494428047,
+      0.3686522791525654
+     ],
+     "score": 4,
+     "reason": "Mossy stone wall: Noisy crumpled faceting and muddy shading; scan-like, not chunky toy style."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0164,
+      0.9913,
+      0.7854
+     ],
+     "triangles": 3479,
+     "dims": [
+      1.377984013474348,
+      0.9520579296229702,
+      0.36600854889960965
+     ],
+     "score": 4,
+     "reason": "mossy stone wall: Noisy scan-like texture, lumpy surface; not chunky toy style."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-wooden-pier": {
+   "noun": "wooden pier",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-yucca-plant": {
+   "noun": "yucca plant",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9302,
+      0.9302,
+      0.9302
+     ],
+     "triangles": 3765,
+     "dims": [
+      0.6667154050307644,
+      0.9253457327441419,
+      0.668151145921675
+     ],
+     "score": 6,
+     "reason": "potted succulent: Bright readable plant; odd white spike and no pot"
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "cc0-couch": {
+   "noun": "couch",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.6273,
+      1.2465,
+      1.2418
+     ],
+     "triangles": 2547,
+     "dims": [
+      3.0132000000000003,
+      1.2403401484999652,
+      1.2136
+     ],
+     "score": 6,
+     "reason": "Sofa: Bright chunky sofa; colour bleeding smears on cushions and arms."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-bookshelf": {
+   "noun": "bookshelf",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.8415,
+      1.0009,
+      0.7892
+     ],
+     "triangles": 3666,
+     "dims": [
+      0.6625,
+      0.9993300000000002,
+      0.27354
+     ],
+     "score": 5,
+     "reason": "Bookshelf: Readable shelf but warped frame and rainbow smeared book textures."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-gramophone": {
+   "noun": "gramophone",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 7,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.4105,
+      1.0083,
+      0.957
+     ],
+     "triangles": 3919,
+     "dims": [
+      0.6976462445542666,
+      1.0000000000000002,
+      0.64534
+     ],
+     "score": 7,
+     "reason": "gramophone: Chunky clean box, horn shading slightly blotchy"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0361,
+      1.0361,
+      1.0361
+     ],
+     "triangles": 3916,
+     "dims": [
+      0.6752440189430464,
+      1.0332264787655168,
+      0.6575715928697359
+     ],
+     "score": 8,
+     "reason": "Gramophone: Clean chunky silhouette, bright solid colours; minor texture smudges on base."
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-red-barn": {
+   "noun": "red barn",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9624,
+      0.9624,
+      0.9624
+     ],
+     "triangles": 3668,
+     "dims": [
+      0.9598582529148698,
+      0.9584454608857674,
+      0.9420694410506985
+     ],
+     "score": 2,
+     "reason": "gift box: Shattered red blob with jagged spikes; unclear object"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.993,
+      0.993,
+      0.993
+     ],
+     "triangles": 3535,
+     "dims": [
+      0.9292465054095289,
+      0.9902779389468985,
+      0.9060213236195683
+     ],
+     "score": 5,
+     "reason": "red house: Clear house silhouette but noisy glossy streaked texture, crumpled surfaces."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-television": {
+   "noun": "television",
+   "oldScore": 2,
+   "oldJudge": "claude",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.1926,
+      0.9987,
+      1.3354
+     ],
+     "triangles": 2901,
+     "dims": [
+      1.365591185177824,
+      0.9986819001034688,
+      1.0654501788449813
+     ],
+     "score": 4,
+     "reason": "CRT television: Readable TV shape but crumpled screen and colourless"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.4765,
+      1.0002,
+      1.2722
+     ],
+     "triangles": 2953,
+     "dims": [
+      1.3652063491789346,
+      0.9987299999999999,
+      1.0655646441489928
+     ],
+     "score": 5,
+     "reason": "Retro TV: Readable TV shape but untextured white, lumpy melted surfaces."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "cc0-apple": {
+   "noun": "apple",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9209,
+      0.9209,
+      0.9209
+     ],
+     "triangles": 374,
+     "dims": [
+      0.7482644849389806,
+      0.9141408579172112,
+      0.7401107747773411
+     ],
+     "score": 9,
+     "reason": "apple: Clean chunky low-poly apple, bright solid colours"
+    }
+   ],
+   "newScore": 9,
+   "result": "kept-old",
+   "reason": "lod1: 320 triangles, the replaced model had 220"
+  },
+  "cc0-clownfish": {
+   "noun": "clownfish",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-adobe-house": {
+   "noun": "adobe house",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0218,
+      0.9991,
+      1.3568
+     ],
+     "triangles": 3788,
+     "dims": [
+      1.4261743966284253,
+      0.99898,
+      1.8933187125949842
+     ],
+     "score": 4,
+     "reason": "wooden crate: Crumpled, dented surface with noisy facets on sides"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-bear": {
+   "noun": "bear",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.8615,
+      1.002,
+      1.2167
+     ],
+     "triangles": 3734,
+     "dims": [
+      0.8098000000000001,
+      0.9959300000000001,
+      0.70174
+     ],
+     "score": 4,
+     "reason": "Teddy bear: Bear shape readable but shiny noisy faceted texture, not toy-like."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-frog": {
+   "noun": "frog",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-frozen-waterfall": {
+   "noun": "frozen waterfall",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9375,
+      0.9987,
+      1.2591
+     ],
+     "triangles": 3449,
+     "dims": [
+      0.61864,
+      0.9969899999999999,
+      0.6866000000000001
+     ],
+     "score": 4,
+     "reason": "ice block: Glassy noisy icicle texture, dark muddy base, ambiguous object"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-octopus": {
+   "noun": "octopus",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
   }
  }
 }
