@@ -57,7 +57,15 @@ FPS naměřené v těchto oknech neplatí (pravidlo běhu). Časy UTC z `regen.j
 
 Souhrnně 21. 10. 19:54 až 22. 10. 06:33 UTC s pauzami nejvýš 22 minut. Před dávkou 2 proběhl a byl zahozen pokus s padlým ComfyUI (tentýž večer, mezi dávkami 1 a 2).
 
-## Top 50 na 8+ (T8) – průběžně
+## Top 50 na 8+ (T8)
+
+**Výsledek: 16/50 se skóre ≥ 8, cíl ≥ 45 nesplněn.** Všech 5 dávek proběhlo (43 cílů): vyměněno 23 id (21 generátorem, palma a luční kvítí z CC0), 19 zůstalo starých, 1 odmítnut boxem. Dávky 4–5 jely pravidlem T8r: dávka 4 kolo 1 vyhrálo 6/9 (proti 0–3/10 v dávkách 1–3), kolo 2 0/3; dávka 5 (suť, zastávka, cílová brána) 0/3 v obou kolech – všechny pokusy padly na boxu nebo na bráně roztrhané sítě. GPU generovalo 22. 10. 15:02–16:50 UTC (dávky 4–5).
+
+Pod 8 zůstává 34 id (skóre a důvod soudce v `top50.json` → `summary.below`): 7 – keř, bříza, mechový kámen, pryskyřník, slunečnice, kamenný sloup, uliční strom, krabice, maják, truhlík se stromem, taxi, stánek s květinami, pouliční lampa, pískovec; 6 – trs trávy, luční kvítí, piknikový stůl, vlčí mák, říční balvan, čedičový sloup, odpadkový koš, mořská skála, patník, semafor, zastávka; 5 – tráva, oliva, přelez, truhlík, truhlík s květinami, cílová brána; 4 – mechový balvan, suť; 3 – trnitý keř. Nejčastější důvod: zubatá, „naskenovaná“ síť a tmavé barvy – TRELLIS.2 na tomto stylu (hračkový low-poly) strop kolem 7 nepřekoná ani třetím zadáním, ani opravou podle soudce.
+
+**Inference:** dalších 29 bodů do cíle 45 nepřinese další kolo generátoru. Zbývají cesty mimo T8: ruční Blender modely pro nejpoužívanější prosté tvary (kameny, truhlíky, lampy), nebo placené API (mimo rozsah plánu).
+
+### Průběh dávek 1–3
 
 Dávky 1–3 starým pravidlem (výměna jen se skóre ≥ 8 nad starým): vyměněno 5 z 30 (topol; vrba, branka, mlýn; lavička 9), top 50 na 8+: 15/50. Od dávky 2 zadání a, b, c, c (`c` = plné tvary bez tenkých dílů, pohled zepředu; mlýn vyhrál s `c`). Kolo 2 s opravou podle soudce přidalo 1 výměnu z 26 id. GPU generovalo 22. 10. 09:13–14:27 UTC (dávky 2–3).
 
