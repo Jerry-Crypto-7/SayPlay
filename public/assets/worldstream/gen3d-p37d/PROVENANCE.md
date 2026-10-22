@@ -582,13 +582,13 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-banana-plant` | banana plant, banana tree | 4647 / 2270 |
 | `gen3d-saguaro-cactus` | saguaro cactus, saguaro | 4748 / 2372 |
 | `gen3d-snowy-fir-tree` | snowy fir tree, snow-covered fir, snowy pine tree | 4748 / 2374 |
-| `gen3d-apple-tree` | apple tree, apple orchard tree | 4749 / 2371 |
+| `gen3d-apple-tree` | apple tree, apple orchard tree | 7600 / 2252 |
 | `gen3d-street-tree` | street tree, sidewalk tree, park tree | 4750 / 2374 |
 | `gen3d-spruce-tree` | spruce tree, spruce | 4304 / 2010 |
 | `gen3d-monstera-plant` | monstera plant, monstera, swiss cheese plant | 4129 / 1983 |
 | `gen3d-joshua-tree` | joshua tree, yucca tree | 4748 / 2374 |
 | `gen3d-bare-winter-tree` | bare winter tree, leafless tree, bare tree | 4749 / 2369 |
-| `gen3d-wildflower-patch` | wildflower patch, wildflowers, wildflower meadow | 4673 / 2232 |
+| `gen3d-wildflower-patch` | wildflower patch, wildflowers, wildflower meadow | 7158 / 2049 |
 | `gen3d-kapok-tree` | kapok tree, kapok, ceiba tree | 4224 / 2556 |
 | `gen3d-snowy-rock` | snowy rock, snow-covered rock, snowy boulder | 4750 / 2364 |
 | `gen3d-tall-grass-tuft` | tall grass tuft, tall grass, grass tuft | 4699 / 2337 |
@@ -1002,6 +1002,7 @@ stay, the geometry and its licence are new. The files they replaced are kept out
 |---|---|---|---|
 | `cc0-lily-pad` | replaced 2026-10-22 | scripts/assets/cc0/normalize.mjs | 316 / 170 |
 | `cc0-couch` | replaced 2026-10-22 | scripts/assets/cc0/normalize.mjs | 2547 / 1203 |
+| `cc0-birch-tree` | replaced 2026-10-22 | scripts/assets/cc0/normalize.mjs | 7600 / 1588 |
 | `gen3d-container` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image from the prompt 'a container, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background' -> BiRefNet (MIT) background removal -> TRELLIS.2-4B bf16 (MIT) with DINOv3 ViT-L image encoder (DINOv3 License) via ComfyUI 0.37.0 (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3883 / 1803 |
 | `gen3d-gang` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image from the prompt 'a gang, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background' -> BiRefNet (MIT) background removal -> TRELLIS.2-4B bf16 (MIT) with DINOv3 ViT-L image encoder (DINOv3 License) via ComfyUI 0.37.0 (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3866 / 1898 |
 | `gen3d-windmill` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image from the prompt 'a windmill, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background' -> BiRefNet (MIT) background removal -> TRELLIS.2-4B bf16 (MIT) with DINOv3 ViT-L image encoder (DINOv3 License) via ComfyUI 0.37.0 (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7599 / 2050 |
@@ -1017,6 +1018,8 @@ stay, the geometry and its licence are new. The files they replaced are kept out
 | `gen3d-funeral-urn` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3998 / 1998 |
 | `gen3d-ancient-vase` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3513 / 1702 |
 | `gen3d-oil-drum` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4054 / 2018 |
+| `gen3d-apple-tree` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7600 / 2252 |
+| `gen3d-wildflower-patch` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7158 / 2049 |
 | `gen3d-willow-tree` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7599 / 1960 |
 | `gen3d-poplar-tree` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7599 / 2238 |
 | `gen3d-leaning-palm-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3245 / 1519 |

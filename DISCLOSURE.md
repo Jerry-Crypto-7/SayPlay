@@ -418,7 +418,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - use-sync-external-store@1.6.0
 - vite › fsevents@2.3.3
 
-## Assety (1289)
+## Assety (1286)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -552,9 +552,6 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 | public/assets/worldstream/cc0/cc0-betta-lod0.glb | https://quaternius.com/packs/cutefish.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | betta (OBJ/Betta.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-betta-lod1.glb | https://quaternius.com/packs/cutefish.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | betta (OBJ/Betta.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-betta.png | https://quaternius.com/packs/cutefish.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | betta (OBJ/Betta.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0 |
-| public/assets/worldstream/cc0/cc0-birch-tree-lod0.glb | https://quaternius.com/packs/ultimatenature.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | birch tree (OBJ/BirchTree_1.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0 |
-| public/assets/worldstream/cc0/cc0-birch-tree-lod1.glb | https://quaternius.com/packs/ultimatenature.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | birch tree (OBJ/BirchTree_1.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0 |
-| public/assets/worldstream/cc0/cc0-birch-tree.png | https://quaternius.com/packs/ultimatenature.html | Quaternius (quaternius.com) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | birch tree (OBJ/BirchTree_1.glb) from quaternius-ultimate-nature by Quaternius (quaternius.com), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-blaster-lod0.glb | https://kenney.nl/assets/blaster-kit | Kenney (www.kenney.nl) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | blaster (Models/GLB format/blaster-a.glb) from kenney-blaster-kit by Kenney (www.kenney.nl), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-blaster-lod1.glb | https://kenney.nl/assets/blaster-kit | Kenney (www.kenney.nl) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | blaster (Models/GLB format/blaster-a.glb) from kenney-blaster-kit by Kenney (www.kenney.nl), CC0-1.0 |
 | public/assets/worldstream/cc0/cc0-blaster.png | https://kenney.nl/assets/blaster-kit | Kenney (www.kenney.nl) | CC0-1.0 | none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md | blaster (Models/GLB format/blaster-a.glb) from kenney-blaster-kit by Kenney (www.kenney.nl), CC0-1.0 |
@@ -1844,9 +1841,6 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **public/assets/worldstream/cc0/cc0-betta-lod0.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-betta-lod1.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-betta.png** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
-- **public/assets/worldstream/cc0/cc0-birch-tree-lod0.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
-- **public/assets/worldstream/cc0/cc0-birch-tree-lod1.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
-- **public/assets/worldstream/cc0/cc0-birch-tree.png** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-nature.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-blaster-lod0.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-blaster-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-blaster-lod1.glb** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-blaster-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
 - **public/assets/worldstream/cc0/cc0-blaster.png** (CC0-1.0): Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-blaster-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.
@@ -3102,7 +3096,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (4705)
+## Vlastní, ne třetí strana (4708)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3244,6 +3238,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/canvas-tent-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/canvas-tent-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/canvas-tent.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/cc0/cc0-birch-tree-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/cc0/cc0-birch-tree-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/cc0/cc0-birch-tree.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/cc0/cc0-couch-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/cc0/cc0-couch-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/cc0/cc0-couch.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
@@ -3703,9 +3700,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-apartment-block-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-apartment-block-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-apartment-block.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-apple-tree.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-apple-tree.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/gen3d-p37d/gen3d-arcade-machine-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-arcade-machine-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-arcade-machine.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -6508,9 +6505,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wild-strawberry-plant-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wild-strawberry-plant-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wild-strawberry-plant.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-willow-tree.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).

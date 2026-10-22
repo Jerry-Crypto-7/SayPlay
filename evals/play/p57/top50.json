@@ -15,7 +15,8 @@
     "gen3d-olive-tree"
    ],
    "startedAt": "2026-10-22T06:38:04.335Z",
-   "finishedAt": "2026-10-22T09:07:05.472Z"
+   "finishedAt": "2026-10-22T14:44:20.353Z",
+   "boundsRejected": 26
   },
   "2": {
    "ids": [
@@ -397,7 +398,21 @@
      "seed": 3,
      "score": 7,
      "reason": "grass tuft: Clean chunky grass clump; slightly busy spiky leaves.",
-     "won": false
+     "won": false,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Bright solid green, simple clean grass silhouette; model 2 is busier and noisier."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Cleaner grass silhouette and bright solid colour suit Toy Box; model 2 feels cluttered and spiky."
+      }
+     ]
     }
    ],
    "newScore": 7,
@@ -491,12 +506,25 @@
      "seed": 3,
      "score": 6,
      "reason": "flower patch: Bright colours but noisy grass, flat floating flowers.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Chunky toy-like tile with bright solid flowers; clean silhouette, no loose fragments."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Recognisable chunky flowers, bright colours, and a solid base; clearer toy-like forms than tangled option 1."
+      }
+     ]
     }
    ],
    "newScore": 6,
-   "result": "kept-old",
-   "reason": "flower patch: Bright colours but noisy grass, flat floating flowers."
+   "result": "replaced"
   },
   "cc0-birch-tree": {
    "noun": "birch tree",
@@ -554,7 +582,21 @@
      "seed": 2,
      "score": 7,
      "reason": "lollipop tree: Chunky toy tree, clean silhouette; white trunk looks untextured.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Bright, chunky lollipop tree with a clean silhouette; model 1 looks lumpy and fragmented."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Recognisable tree with clean, chunky silhouette and bright colours; first feels fragmented and irregular."
+      }
+     ]
     },
     {
      "round": 2,
@@ -596,8 +638,7 @@
     }
    ],
    "newScore": 7,
-   "result": "kept-old",
-   "reason": "lollipop tree: Chunky toy tree, clean silhouette; white trunk looks untextured."
+   "result": "replaced"
   },
   "cc0-rock-moss": {
    "noun": "rock moss",
@@ -679,7 +720,21 @@
      "seed": 3,
      "score": 7,
      "reason": "mossy rock: Chunky rock with moss cap; plain grey body.",
-     "won": false
+     "won": false,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Clearly reads as mossy rock; clean faceted low-poly, solid colours. 2 resembles jar."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Crisp chunky facets and solid colours suit Toy Box; option 2’s moss looks melted."
+      }
+     ]
     }
    ],
    "newScore": 7,
@@ -749,7 +804,21 @@
      "seed": 2,
      "score": 8,
      "reason": "apple tree: Charming toy apple tree; red smudges around apples slightly muddy.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Clearly an apple tree, chunky toy-like silhouette; minor muddy smudges around apples."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Recognisable apple tree with a cleaner, chunky silhouette; model 1 looks like an amorphous blob."
+      }
+     ]
     },
     {
      "round": 2,
@@ -798,8 +867,7 @@
     }
    ],
    "newScore": 8,
-   "result": "kept-old",
-   "reason": "apple tree: Charming toy apple tree; red smudges around apples slightly muddy."
+   "result": "replaced"
   },
   "gen3d-buttercup": {
    "noun": "buttercup",
@@ -850,7 +918,21 @@
      "seed": 1,
      "score": 7,
      "reason": "yellow flower: Bright readable flower; petals lumpy, stem a bit dark.",
-     "won": false
+     "won": false,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Chunky, puffy petals and sturdy leaves feel toy-like; model 1's petals are paper-thin."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Cleaner flower silhouette, readable leaves, and coherent geometry; chunky petals suit the bright Toy Box style."
+      }
+     ]
     },
     {
      "round": 2,
@@ -2794,13 +2876,13 @@
    },
    {
     "id": "gen3d-wildflower-patch",
-    "score": 4,
-    "reason": "flower patch: Bright colours but noisy grass, flat floating flowers."
+    "score": 6,
+    "reason": "Dense jagged vegetation and tiny flowers create visual noise at mobile scale."
    },
    {
     "id": "cc0-birch-tree",
-    "score": 6,
-    "reason": "lollipop tree: Chunky toy tree, clean silhouette; white trunk looks untextured."
+    "score": 7,
+    "reason": "Faceted foliage is readable, but the lopsided crown and spindly bent trunk feel awkward."
    },
    {
     "id": "cc0-rock-moss",
@@ -2953,5 +3035,6 @@
     "reason": "Blurry noisy texture on banner, thin posts; unclear purpose."
    }
   ]
- }
+ },
+ "t8r": "From 22 Oct (T8r, batches 4-5 and a re-duel of batches 1-3): prompts a, b, c, c with the old box proportions in the prompt; a round wins when its pick scores >= 6 AND beats the current model in a blind pair duel (one sheet, order drawn by pure-rand) with both judges - Opus and Codex within the daily cap, else Opus twice with the order swapped. 8+ stays the measured goal in summary, not the swap rule."
 }

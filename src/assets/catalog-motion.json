@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "d7b3fccb976a02edbb4995273f69f9de65b0b9e7f620d6826b6c3ab6e6d366ee",
+ "catalogHash": "254540fff88b9391fa40cd74079e3632e52b89ac2763bfeec2a77564d15d3828",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1358,7 +1358,7 @@
   "gen3d-banana-plant": {"class":"prop"},
   "gen3d-saguaro-cactus": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-snowy-fir-tree": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-apple-tree": {"class":"prop"},
+  "gen3d-apple-tree": {"class":"biped","regions":{"legY":0.264}},
   "gen3d-street-tree": {"class":"prop"},
   "gen3d-spruce-tree": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-monstera-plant": {"class":"prop"},
