@@ -37,7 +37,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { getBounds } from '@gltf-transform/functions';
 
 import { licenseTextProblem } from '../assets/cc0/fetch.mjs';
-import { catalogIndex, disclosureRecord as cc0Record, licenseFileOf } from '../assets/cc0/promote.mjs';
+import { catalogIndex, disclosureRecord as cc0Record, licenseFileOf, markReplacedRows } from '../assets/cc0/promote.mjs';
 import { HERO_MAX_TRIANGLES, normalizeModel, renderPreview } from '../assets/cc0/normalize.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -400,6 +400,8 @@ export async function replaceModels(batch, { root = ROOT, sync = true, replacedD
 
   mkdirSync(path.join(root, PUBLIC_DIR), { recursive: true });
   writeFileSync(path.join(root, PROVENANCE), provenanceMarkdown(catalog.assets));
+  // Tabulka složky cc0 by dál připisovala vyměněný model jeho starému balíku.
+  markReplacedRows(root, catalog.assets);
   if (!disclosure.entries.some((entry) => entry.kind === 'asset' && entry.name === PROVENANCE)) disclosure.entries.push(generatedRecord(PROVENANCE, TABLE_REASON, 'Worldsmith generated models P37D, 2026-10.'));
   writeFileSync(path.join(root, 'src/assets/catalog.json'), `${JSON.stringify(catalog, null, 2)}\n`);
   writeFileSync(path.join(root, 'src/assets/catalog-index.json'), `${JSON.stringify(catalogIndex(catalog), null, 2)}\n`);

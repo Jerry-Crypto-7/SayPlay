@@ -9,5 +9,7 @@ export declare const BUDGET: Budget;
 export declare function fitBudget<T extends { assetId: string; bytes: number; folderBytes?: number }>(items: T[], budget?: Budget): { kept: T[]; dropped: (T & { reason: string })[]; total: number };
 export declare function folderBytes(dir: string): number;
 export declare const licenseFileOf: (pack: string) => string;
+export declare const replacedRow: (asset: any) => string;
+export declare function markReplacedRows(root: string, assets: any[]): void;
 export declare function checkCatalog(options: { catalog: any; disclosure: any; root?: string; budget?: Budget }): string[];
 export declare function promote(options?: { root?: string; budget?: Budget }): Promise<{ promoted: number; dropped: number; files: number; totalBytes: number }>;
