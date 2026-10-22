@@ -27,3 +27,32 @@ Měření a soudy P57: které modely porotce vidí nejčastěji, jak je soudci h
 - **Vstupy přegenerování:** `below6` 172 modelů (T6 bez top 50), `top50Below8` 41 z top 50 (T8).
 
 **Inference:** nejpoužívanější modely jsou jen o málo lepší než ocas (5,97 proti 5,68), takže levný vzhled scén nejde na vrub pár výjimek, ale celé knihovny.
+
+## Přegenerování pod 6 bodů (T6)
+
+`node scripts/p57/regen.mjs --batch N` → `regen.json` (8 dávek, 21.–22. 10. 2026, commity `a5fb68dc` … `14a94908`).
+
+- **Rozsah:** 151 modelů (`below6` bez top 50), 2 pokusy (zadání b se semínkem 1, pak zadání a se semínkem 2), zadání doplněné o opravu z důvodu soudce (`[judge_fix]` v `ops/gen3d/features.toml`). Kandidát se přeškáluje do starého boxu (rovnoměrně, nebo po osách, dokud poměr os nepřesáhne 1,5×) a zjednoduší tak, aby LOD1 nebyl těžší než starý.
+- **Soud:** Opus 5.5 na mřížkách 3×3, stejná otázka jako v T4. Staré modely, které v T4 soudil jen Codex, Opus přesoudil na stejných listech, aby staré a nové skóre dal týž soudce.
+- **Výsledek:** `replaced` 26 (17 v 1. pokusu, 9 ve 2.), `kept-old` 101, `rejected-bounds` 24 (16 %). Vyměněné modely v průměru z 4,46 na 6,81 bodu.
+- **Po T6 pod 6 bodů:** 109 ze 151. 16 ponechaných starých modelů dostalo od Opuse při přesouzení 6 a víc (Codex jim v T4 dal o bod méně).
+- **Odmítnuté na rozměry:** 16 %, pod hranicí 30 % z plánu, takže škálování v `finish_mesh.py` není potřeba – přeškálování do boxu už dělá `regen.mjs`; odmítnutí jsou tvary s poměrem os přes 1,5×. Na úrovni pokusů se do boxu nevešlo 84 z 216 kandidátů (39 %); model je odmítnutý, až když neprojde ani jeden z jeho pokusů.
+
+**Inference:** TRELLIS.2 s opravou zadání zvedne jen asi šestinu slabých modelů; zbytek drží strop výchozího profilu (5 000 trojúhelníků, paleta) a starý box. Další zlepšení slabých modelů nepřijde z dalších semínek, ale z profilu hero (T8) nebo z jiného zdroje.
+
+### Kdy GPU generovalo (pro FPS jiných plánů)
+
+FPS naměřené v těchto oknech neplatí (pravidlo běhu). Časy UTC z `regen.json` `batches[*]`:
+
+| Dávka | Začátek | Konec |
+|---|---|---|
+| 1 | 21. 10. 19:54 | 21. 10. 21:25 |
+| 2 | 21. 10. 21:47 | 21. 10. 23:17 |
+| 3 | 21. 10. 23:23 | 22. 10. 00:16 |
+| 4 | 22. 10. 00:18 | 22. 10. 01:42 |
+| 5 | 22. 10. 01:43 | 22. 10. 04:35 |
+| 6 | 22. 10. 04:36 | 22. 10. 05:23 |
+| 7 | 22. 10. 05:24 | 22. 10. 06:04 |
+| 8 | 22. 10. 06:08 | 22. 10. 06:33 |
+
+Souhrnně 21. 10. 19:54 až 22. 10. 06:33 UTC s pauzami nejvýš 22 minut. Před dávkou 2 proběhl a byl zahozen pokus s padlým ComfyUI (tentýž večer, mezi dávkami 1 a 2).
