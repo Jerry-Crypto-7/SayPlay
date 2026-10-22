@@ -1,0 +1,199 @@
+{
+ "about": "Blind judgement of before vs cur and before vs var: the same game at the same demo tick, side by side without labels. See README.md.",
+ "judgedAt": "2026-10-22T02:41:39.050Z",
+ "judge": {
+  "model": "claude-opus-5-5",
+  "how": "claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once",
+  "question": "First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, of the first frame of a small 3D mobile game made from the request: \"<sentence>\". Page text is hidden, so judge only the 3D scenes. Which first frame looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>"
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT",
+  "seed": 56013
+ },
+ "total": [
+  {
+   "profile": "cur",
+   "afterWins": 2,
+   "beforeWins": 6,
+   "unanswered": 0,
+   "of": 8,
+   "share": 0.25,
+   "leftShare": 0.625,
+   "passAt": 6,
+   "pass": false
+  },
+  {
+   "profile": "var",
+   "afterWins": 4,
+   "beforeWins": 0,
+   "unanswered": 4,
+   "of": 8,
+   "share": 1,
+   "leftShare": 0.25,
+   "passAt": 6,
+   "pass": false
+  }
+ ],
+ "pairs": [
+  {
+   "id": "04-shark",
+   "profile": "cur",
+   "sentence": "racing a shark through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "richer colour and contrast make the reef and racers easier to read than in the washed-out right frame.",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "05-pizza",
+   "profile": "cur",
+   "sentence": "stack pizzas as high as the moon",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the pizza stack is clearer and better framed, though both look like prototypes",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "10-chef",
+   "profile": "cur",
+   "sentence": "a chef flips pancakes for a line of hungry customers",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "slightly richer lighting and depth with a more readable pancake stack, though both still look like prototypes.",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-platform",
+   "profile": "cur",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "slightly richer lighting with soft cliff shadows and more ambient life, though both are near-identical",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-glide",
+   "profile": "cur",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "marginally more readable character details, though both look like unfinished prototypes",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-flap",
+   "profile": "cur",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "more consistent atmospheric lighting and shaded pipes that fit the jungle scene, though both still look like prototypes",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-shooter",
+   "profile": "cur",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the ranger has a slightly crisper outline and stronger shading, so the character reads a bit better.",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-duel",
+   "profile": "cur",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the outlined knights are easier to read, though both frames still look like prototypes",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "04-shark",
+   "profile": "var",
+   "sentence": "racing a shark through a coral reef",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "more vibrant coral colours and contrast make the reef look richer and easier to read",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "05-pizza",
+   "profile": "var",
+   "sentence": "stack pizzas as high as the moon",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "slightly tighter framing and a highlight make it a bit more polished, though both look like prototypes",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "10-chef",
+   "profile": "var",
+   "sentence": "a chef flips pancakes for a line of hungry customers",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "richer lighting contrast, depth and particle effects make it look more polished than the flat, washed-out left frame",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-platform",
+   "profile": "var",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "slightly richer foliage, shadowing and depth make it look a bit more polished",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-glide",
+   "profile": "var",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "LEFT",
+   "verdict": null,
+   "reason": null,
+   "afterWon": null,
+   "asks": 2
+  },
+  {
+   "id": "g-flap",
+   "profile": "var",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "LEFT",
+   "verdict": null,
+   "reason": null,
+   "afterWon": null,
+   "asks": 2
+  },
+  {
+   "id": "g-shooter",
+   "profile": "var",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "LEFT",
+   "verdict": null,
+   "reason": null,
+   "afterWon": null,
+   "asks": 2
+  },
+  {
+   "id": "g-duel",
+   "profile": "var",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "LEFT",
+   "verdict": null,
+   "reason": null,
+   "afterWon": null,
+   "asks": 2
+  }
+ ]
+}

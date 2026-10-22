@@ -227,3 +227,20 @@ Snímky `after/`, `after-phone/` (34 + 34, 0× 404, 0 chyb; pokus 2 v `after-a2*
 - **Desktop 20/34 (0,588), levá 0,735 – neprošel.** Stromové scény se otočily na výhry (01-frog, g-race, g-ball, g-walker, g-rhythm, 11-drum), ale prohrály 04, 05, 10, g-platform, g-glide, g-flap, g-shooter, g-duel – skoro všechny s důvodem „nearly identical“. 02-zombie dál „overexposed white blob“.
 - **Odvozeno:** okraj byl na desktopu hlavní viditelný rozdíl nového vzhledu; bez něj je půlka dvojic pro soudce totožná a rozhodne strana (levá 0,68 → 0,74). Opravy vad (noc R1, stromy R2) bránu desktopu nepřiblížily: 21 → 22 → 20 ze 34.
 - Soudce desktopu je silně stranový u podobných dvojic; brána 0,75 projde jen s výrazně odlišným vzhledem skoro ve všech scénách. Plán pro tento případ („pořád realistické“) jmenuje další krok: `MeshToonMaterial` jen pro kulisy (T13-R3).
+
+## T13-R3 – kreslené kulisy materiálem nejdou (změřeno, kód beze změny)
+
+Dočasné přepínače toonu (`window.__p56b` přes `shots --init`, necommitnuté) na 8 scénách, které pokus 3 prohrál jako „nearly identical“ (04-shark, 05-pizza, 10-chef, g-platform, g-glide, g-flap, g-shooter, g-duel), desktop, build `80d159c1` + přepínače:
+
+| Varianta | Co mění na kulisách | Na snímku proti `after/` |
+|---|---|---|
+| `s3` | tmavší stín stupňů (`toonBands` 0,5 → 0,3) | k nerozeznání |
+| `rough` | drsnost 1, kov 0 – bez odlesků; to je rozdíl `MeshToonMaterial` proti patchi (oba berou výplň polokoule stejně) | k nerozeznání |
+| `sat` | sytost v Oklab ×1,35 | sotva (koruny g-platform o chlup zelenější) |
+| `hot` | `s3` + `rough` + sytost ×1,7 + paleta 0,5 | korály 04-shark červenější, jinak skoro stejné; g-shooter, 05-pizza beze změny |
+
+- **Slepý soud jen 8 dvojic** (`judge-r3-eight.json`, stejný soudce, otázka a seed jako pokusy 1–3): současný stav 2/8, `hot` 4/8. Důvody i u výher: „slightly richer foliage“, „both look like prototypes“.
+- **Odvozeno:** obraz těchto scén nese plocha země, mlha a pozadí, ne materiál kulis. `MeshToonMaterial` (≈ `rough`) by nezměnil nic viditelného, proto se nestavěl. Pokus 4 by dal odhadem ~22/34 (20 + 2 z těchto 8) proti bráně 26 – nespouštěl se.
+- **Plán pro tento případ:** přestat opravovat vzhled a předat majiteli dvě rozhodnutí (plán T13). Sytost ×1,7 je jediná páka se signálem; je to barevné ladění, ne kreslený materiál, a telefon (26/34 třikrát) s ní není změřený.
+- **Brány T13 mimo soud (build `80d159c1` kódu):** e2e `p56b-look`, `p56b-first-frame`, `play-physics-replay` 15/15 (laboratoř pravidel je v produkci jen s `PLAY_LAB=1`); `git diff 72665fdc --stat -- src/play/arcade/pieces src/play/genre` prázdný. Celá vitest sada sama: 16 644 / 16 667; červené jsou časové limity (`compile-report` 966 ms > 500, `golden` 1 433 ms > 1 000, `STACK_TRACE_ERROR` = vypršení), chybějící gitignorovaný `plans/P8-odevzdani.md` a jedna skutečná regrese z T11: 4 věty pruhů v `p46g/genres.json` byly doslova věty sady P54C dev (`p54c/sets.test`). Přeformulované, stejný ovládací režim (`lanes`) na `72665fdc` i HEAD; snímky nových vět v `before-lanes*/`, `after-lanes*/` (necommitnuté) – před dalším soudem je přesunout do `before*/`, `after*/`.
+- Souběžné focení dvěma procesy proti jednomu `next start` server zasekne (proces na ~80 % jádra, neodpovídá ani po 8 min, dvakrát při stejné větě v obou procesech); jeden proces 6 scén bez výpadku.
