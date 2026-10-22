@@ -19,9 +19,9 @@
   { "id": "g-duel", "genre": "duel", "control": "duel", "text": "Two knights duel in a castle" },
   { "id": "g-voyage", "genre": "voyage", "control": "steer", "text": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure" },
   { "id": "g-lander", "genre": "lander", "control": "steer", "text": "A rocket lands on Mars" },
-  { "id": "g-catch", "genre": "catch", "control": "lanes", "text": "a bear catches falling honey jars in a basket" },
-  { "id": "g-whack", "genre": "whack", "control": "lanes", "text": "pop the balloons rising from the circus tents but spare the clowns" },
-  { "id": "g-defense", "genre": "defense", "control": "lanes", "text": "a wizard defends his tower from goblin hordes" },
-  { "id": "g-slice", "genre": "slice", "control": "lanes", "text": "a ninja slices fruit tossed in the air but avoids the bombs" }
+  { "id": "g-catch", "genre": "catch", "control": "lanes", "text": "a raccoon catches falling apples in a bucket" },
+  { "id": "g-whack", "genre": "whack", "control": "lanes", "text": "pop the balloons rising from the carnival rides but spare the mimes" },
+  { "id": "g-defense", "genre": "defense", "control": "lanes", "text": "a knight defends the castle gate from skeleton armies" },
+  { "id": "g-slice", "genre": "slice", "control": "lanes", "text": "a samurai slices melons thrown in the air but avoids the bombs" }
  ]
 }
