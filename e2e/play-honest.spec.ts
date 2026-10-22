@@ -59,6 +59,11 @@ test.describe('/play/[id] – honesty strip', () => {
       await expect(text).toHaveCSS('text-overflow', 'ellipsis');
       await expect(text).toHaveCSS('white-space', 'nowrap');
       expect(await text.getAttribute('title')).toContain(honesty.reason);
+      // `title` na dotyku nikdo neuvidí: klepnutí text rozbalí, druhé ho zase složí.
+      await text.click();
+      await expect(text).toHaveCSS('white-space', 'normal');
+      await text.click();
+      await expect(text).toHaveCSS('white-space', 'nowrap');
     });
   }
   test('a match-3 sentence shows the strip and the game still runs', async ({ page, request }) => {

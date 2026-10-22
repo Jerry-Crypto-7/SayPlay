@@ -2321,6 +2321,13 @@ button.play-version-switch__item:not(:disabled) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* Klepnutí rozbalí celý text – na dotyku `title` nefunguje. */
+.play-honest-text[aria-expanded='true'] {
+  white-space: normal;
+  padding: var(--sp-space-2) 0;
 }
 
 .play-honest-text span {
