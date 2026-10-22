@@ -1,0 +1,629 @@
+{
+ "schema": "p56a-visible.v1",
+ "set": "evals/play/p56a/audit-12.json",
+ "question": "blind judge (scripts/p37d/judge-sheet.mjs ask: Codex on the subscription, empty mkdtemp with only sheet.png) sees every noun of the sentence: hero (subject) and foe, or the item when the sentence names no foe",
+ "frame": "canvas only, page text hidden, 1280x800, robot (\"Show me how\") after 180 ticks (3 s of play) on the probe's hand clock",
+ "setup": "next start (webpack build) on 127.0.0.1, empty store per server. B :3121 PLAY_READER=on, llamacpp: gpt-oss-20b MXFP4 on a local llama-server with --cpu-moe (experts on CPU: ComfyUI held 12 GB of the RTX 3090), PLAY_READER_BUDGET_MS=60000, first read of a sentence 25-45 s, all 12 read by the model. A :3111 without the reader (as the live demo at 72665fdc). AI version (director) not configured on either server: only the quick version is judged; what the AI version overrides stays unmeasured.",
+ "a": {
+  "commit": "72665fdc",
+  "side": "before P56A, no sentence reader",
+  "seen": 2,
+  "of": 12,
+  "nounsSeen": 5,
+  "nounsOf": 18,
+  "readByModel": 0
+ },
+ "b": {
+  "commit": "7e34c2a8",
+  "side": "P56A with the sentence reader",
+  "seen": 5,
+  "of": 12,
+  "nounsSeen": 10,
+  "nounsOf": 18,
+  "readByModel": 12
+ },
+ "target": "B sees both nouns in >= 10/12",
+ "met": false,
+ "rows": [
+  {
+   "id": "a01",
+   "text": "a frog catching flies on a lily pad",
+   "a": {
+    "readBy": "keywords",
+    "title": "frog drive",
+    "hero": "frog",
+    "roles": [
+     "hazard:rock",
+     "collectible:turbo",
+     "exit:finish line",
+     "patrol:fly"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small red car sits on a straight brown road with red barriers, surrounded by stylized trees, rocks, birds, and a distant windmill.",
+    "nouns": [
+     {
+      "noun": "frog",
+      "visible": false,
+      "seenAs": "No recognizable frog is visible; the central character is a red car."
+     },
+     {
+      "noun": "fly",
+      "visible": false,
+      "seenAs": "Small flying shapes appear to be birds or butterflies, with no recognizable fly."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Frog Catching Flies",
+    "hero": "frog",
+    "roles": [
+     "collectible:flies",
+     "hazard:bomb"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A green low-poly frog sits on a platform beneath a hovering black fly and a yellow coin in a blue landscape.",
+    "nouns": [
+     {
+      "noun": "frog",
+      "visible": true,
+      "seenAs": "A green squat figure with prominent eyes and splayed frog legs at the bottom center."
+     },
+     {
+      "noun": "fly",
+      "visible": true,
+      "seenAs": "A black insect silhouette with wings and thin legs hovering above and left of the frog."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "a02",
+   "text": "zombies attack my farm at night",
+   "a": {
+    "readBy": "keywords",
+    "title": "Zombie Duel",
+    "hero": "zombie",
+    "roles": [
+     "hazard:bee"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark, low-poly graveyard arena contains a small humanoid player facing a green, long-eared monster, with stone walls, graves, and health bars.",
+    "nouns": [
+     {
+      "noun": "zombie",
+      "visible": false,
+      "seenAs": "The enemy resembles a green rabbit-like monster with long ears and orange eyes; the small humanoid player has no clearly recognizable zombie features."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Zombies Attack My Farm",
+    "hero": "explorer",
+    "roles": [
+     "chaser:zombies",
+     "prop:castle"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A dark green 3D scene shows five teal lanes leading to a gray barrier with red knobs and a tiny dark figure below it.",
+    "nouns": [
+     {
+      "noun": "zombie",
+      "visible": false,
+      "seenAs": "The small dark figure below the barrier is too indistinct to recognize as a zombie."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a03",
+   "text": "a ninja slicing fruit",
+   "a": {
+    "readBy": "keywords",
+    "title": "Ninja Slice",
+    "hero": "ninja",
+    "roles": [
+     "collectible:fruit",
+     "hazard:bomb"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A green-hooded armed character stands on a segmented platform among beige blocks, with grass, trees, mountains, and a bright sky behind it.",
+    "nouns": [
+     {
+      "noun": "ninja",
+      "visible": false,
+      "seenAs": "A green-hooded fantasy adventurer with a visible face, belt, and weapons, rather than a clearly recognizable ninja."
+     },
+     {
+      "noun": "fruit",
+      "visible": false,
+      "seenAs": "Beige rectangular blocks sit on the platform; no recognizable fruit is visible."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Ninja Slicing Fruit",
+    "hero": "ninja",
+    "roles": [
+     "collectible:fruit",
+     "hazard:bomb"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small green-hooded armed character stands on a platform with beige blocks, overlooking a grassy field beneath a hazy sky.",
+    "nouns": [
+     {
+      "noun": "ninja",
+      "visible": false,
+      "seenAs": "A green-hooded fantasy adventurer with a belt and sword, rather than a clearly recognizable ninja."
+     },
+     {
+      "noun": "fruit",
+      "visible": false,
+      "seenAs": "Beige rectangular blocks on the platform; no recognizable fruit."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a04",
+   "text": "racing a shark through a coral reef",
+   "a": {
+    "readBy": "keywords",
+    "title": "submarine race",
+    "hero": "submarine",
+    "roles": [
+     "hazard:tire barrier",
+     "collectible:turbo",
+     "exit:finish line",
+     "patrol:shark"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An underwater racing course contains three colorful cars, a small blue ray-like character, and a cyan block, surrounded by rocks and sea plants.",
+    "nouns": [
+     {
+      "noun": "shark",
+      "visible": false,
+      "seenAs": "The central blue character has a flattened, diamond-shaped body resembling a ray rather than a clearly recognizable shark."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Racing a Shark",
+    "hero": "shark",
+    "roles": [
+     "hazard:tire barrier",
+     "collectible:turbo",
+     "exit:finish line",
+     "patrol:shark"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "An underwater racing game shows four cars on a walled track surrounded by rocks, aquatic plants, a jellyfish, and an octopus.",
+    "nouns": [
+     {
+      "noun": "shark",
+      "visible": false,
+      "seenAs": "No recognizable shark is visible; the sea creatures include a jellyfish, an octopus, and small fish."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a05",
+   "text": "stack pizzas as high as the moon",
+   "a": {
+    "readBy": "keywords",
+    "title": "Moon Stack",
+    "hero": "moon",
+    "roles": [
+     "collectible:pizza",
+     "hazard:missed drop",
+     "exit:of the tower"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D scene shows pizzas on raised platforms among icy dome structures, with white spikes and a vertical green beam.",
+    "nouns": [
+     {
+      "noun": "pizza",
+      "visible": true,
+      "seenAs": "Flat round yellow pizzas with brown crusts and red circular toppings on platforms."
+     }
+    ],
+    "all": true
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Stack Pizzas",
+    "hero": "astronaut",
+    "roles": [
+     "collectible:pizzas"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A robot stands above an open vertical chamber containing floating platforms, a red horizontal bar, and a pizza on the floor.",
+    "nouns": [
+     {
+      "noun": "pizza",
+      "visible": true,
+      "seenAs": "A round yellow pizza with a brown crust and red toppings on a square base at the bottom of the chamber, with white spikes projecting upward."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "a06",
+   "text": "my cat defends the couch from vacuum robots",
+   "a": {
+    "readBy": "keywords",
+    "title": "Cat Defense",
+    "hero": "cat",
+    "roles": [
+     "chaser:vacuum robot",
+     "prop:couch"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D game scene shows five green lanes leading toward a hedge, a red-roofed castle barrier, a black robot vacuum, and a gray animal-like figure in the foreground.",
+    "nouns": [
+     {
+      "noun": "cat",
+      "visible": false,
+      "seenAs": "A squat gray figure with a protruding tail or trunk, without clearly recognizable feline features."
+     },
+     {
+      "noun": "vacuum robot",
+      "visible": true,
+      "seenAs": "A low black disc-shaped device with a raised gray top and red indicator lights near the far end of the rightmost lane."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Cat Defends Couch",
+    "hero": "cat",
+    "roles": [
+     "chaser:vacuum robot",
+     "prop:couch"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D game scene shows five green lanes, a beige barrier with red knobs, a gray cat in the foreground, and a dark robot vacuum at the far end.",
+    "nouns": [
+     {
+      "noun": "cat",
+      "visible": true,
+      "seenAs": "The gray figure at the bottom right, viewed from above, with pointed ears and a protruding tail."
+     },
+     {
+      "noun": "vacuum robot",
+      "visible": true,
+      "seenAs": "The dark, low circular device at the upper right with an orange indicator and a front bumper."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "a07",
+   "text": "a goalkeeper saves penalty kicks in a packed stadium",
+   "a": {
+    "readBy": "keywords",
+    "title": "goalkeeper score",
+    "hero": "goalkeeper",
+    "roles": [
+     "item:football",
+     "target:goal",
+     "patrol:goalkeeper"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D grassy clearing contains several humanoid characters, white obstacle frames, and a yellow circular token surrounded by trees.",
+    "nouns": [
+     {
+      "noun": "goalkeeper",
+      "visible": false,
+      "seenAs": "Humanoid characters near white frames, without a clearly recognizable goalkeeper pose or equipment."
+     },
+     {
+      "noun": "ball",
+      "visible": false,
+      "seenAs": "A flat yellow circular token with a bright rim near the foreground character."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Goalkeeper Saves",
+    "hero": "goalkeeper",
+    "roles": [
+     "chaser:penalty kicks",
+     "prop:penalty kick"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A soccer ball floats above a striped green runway leading toward a castle-like barrier, with a tiny character below it.",
+    "nouns": [
+     {
+      "noun": "goalkeeper",
+      "visible": false,
+      "seenAs": "A tiny character below the barrier is too small to identify as a goalkeeper."
+     },
+     {
+      "noun": "ball",
+      "visible": true,
+      "seenAs": "A black-and-white soccer ball above the far end of the runway."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a08",
+   "text": "match three glowing gems to unlock a treasure chest",
+   "a": {
+    "readBy": "keywords",
+    "title": "Fox Quest",
+    "hero": "fox",
+    "roles": [
+     "target:chest",
+     "chaser:shadow"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly grassy arena contains an orange animal character, a small robot, brown blocks, and gold-topped objects surrounded by stone walls and trees.",
+    "nouns": [
+     {
+      "noun": "gem",
+      "visible": false,
+      "seenAs": "Small glowing dots and gold-topped brown objects are visible, but no clearly recognizable gemstone."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Match Three Gems",
+    "hero": "explorer",
+    "roles": [
+     "collectible:glowing gem"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A character stands on a platform above an open vertical shaft containing pale cyan crystals and a red horizontal bar, surrounded by grassy terrain.",
+    "nouns": [
+     {
+      "noun": "gem",
+      "visible": true,
+      "seenAs": "Several pale cyan, faceted, pointed crystals, including a large crystal at the bottom of the shaft."
+     }
+    ],
+    "all": true
+   }
+  },
+  {
+   "id": "a09",
+   "text": "an astronaut dodges asteroids to reach the space station",
+   "a": {
+    "readBy": "keywords",
+    "title": "Astronaut Run",
+    "hero": "astronaut",
+    "roles": [
+     "hazard:asteroid",
+     "collectible:star",
+     "exit:station"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small suited figure stands on a path through an orange canyon lined with metallic domes, angular rocks, and star-shaped collectibles.",
+    "nouns": [
+     {
+      "noun": "astronaut",
+      "visible": true,
+      "seenAs": "A gray-suited humanoid with a rounded helmet and a rectangular backpack in the foreground."
+     },
+     {
+      "noun": "asteroid",
+      "visible": false,
+      "seenAs": "Scattered angular rocks and mottled round boulders resting on the canyon floor, without a clear asteroid depiction."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Astronaut Dodges Asteroids Reach",
+    "hero": "astronaut",
+    "roles": [
+     "chaser:asteroid",
+     "collectible:station"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small astronaut stands in a rocky red arena surrounded by crystals, scattered stones, industrial structures, a rocket, and glowing yellow pickups.",
+    "nouns": [
+     {
+      "noun": "astronaut",
+      "visible": true,
+      "seenAs": "A small figure near the center wearing a spacesuit with a round helmet and backpack."
+     },
+     {
+      "noun": "asteroid",
+      "visible": false,
+      "seenAs": "Scattered rocks and mottled round stones rest on the ground, but none clearly reads as an asteroid."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a10",
+   "text": "a chef flips pancakes for a line of hungry customers",
+   "a": {
+    "readBy": "keywords",
+    "title": "Chef Quest",
+    "hero": "chef",
+    "roles": [
+     "target:pancake"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A top-down kitchen scene shows an orange block-like character facing a counter with two frying pans containing food.",
+    "nouns": [
+     {
+      "noun": "chef",
+      "visible": false,
+      "seenAs": "An orange rectangular character with a gray ridged top, without clearly recognizable chef features."
+     },
+     {
+      "noun": "pancake",
+      "visible": true,
+      "seenAs": "A small stack of golden-brown pancakes with a yellow topping in the left frying pan."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Chef Flips Pancakes",
+    "hero": "chef",
+    "roles": [
+     "target:pancake"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small character stands at a kitchen counter with two frying pans, one holding a pancake stack and the other yellow food.",
+    "nouns": [
+     {
+      "noun": "chef",
+      "visible": false,
+      "seenAs": "An orange rectangular character with a gray ridged top, without clearly recognizable chef features."
+     },
+     {
+      "noun": "pancake",
+      "visible": true,
+      "seenAs": "A small stack of round golden-brown pancakes with a butter-like topping in the left frying pan."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a11",
+   "text": "drum to the beat at a rock concert",
+   "a": {
+    "readBy": "keywords",
+    "title": "Fox Beat",
+    "hero": "fox",
+    "roles": [
+     "collectible:tile",
+     "hazard:missed beat",
+     "exit:last beat"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A low-poly game scene shows colored lanes through a grassy landscape with windmills, trees, picnic tables, and a fox.",
+    "nouns": [
+     {
+      "noun": "drum",
+      "visible": false,
+      "seenAs": "No recognizable drum is visible; the lanes contain small rectangular blocks."
+     }
+    ],
+    "all": false
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Drum to the Beat",
+    "hero": "explorer",
+    "roles": [
+     "collectible:tile",
+     "hazard:missed beat",
+     "exit:last beat"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A stylized 3D game scene shows colored lanes across a grassy landscape with trees, picnic tables, two windmills, and a character beside the track.",
+    "nouns": [
+     {
+      "noun": "drum",
+      "visible": false,
+      "seenAs": "No recognizable drum is visible; a small orange rectangular block sits on one of the lanes."
+     }
+    ],
+    "all": false
+   }
+  },
+  {
+   "id": "a12",
+   "text": "escape a haunted mansion while a ghost chases you",
+   "a": {
+    "readBy": "keywords",
+    "title": "Fox Run",
+    "hero": "fox",
+    "roles": [
+     "hazard:rock",
+     "collectible:coin",
+     "exit:finish line",
+     "chaser:ghost",
+     "zone:mansion"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A pale ghost and a wolf-like animal stand on a path through a dark, stylized graveyard with tombstones, bare trees, and stone ruins.",
+    "nouns": [
+     {
+      "noun": "ghost",
+      "visible": true,
+      "seenAs": "A pale blue sheet-shaped figure in the foreground with a rounded head, flared arms, and a wavy bottom, outlined in red."
+     }
+    ],
+    "all": true
+   },
+   "b": {
+    "readBy": "model",
+    "title": "Haunted Mansion Escape",
+    "hero": "kid",
+    "roles": [
+     "hazard:rock",
+     "collectible:candle",
+     "exit:finish line",
+     "chaser:ghost",
+     "zone:mansion"
+    ],
+    "robot": true,
+    "tick": 180,
+    "scene": "A small adventurer and a pale sheet-shaped ghost stand on a path through a dark, foggy graveyard with bare trees and gravestones.",
+    "nouns": [
+     {
+      "noun": "ghost",
+      "visible": true,
+      "seenAs": "A pale floating sheet-shaped figure with a rounded head and stubby arms, outlined in red in the foreground."
+     }
+    ],
+    "all": true
+   }
+  }
+ ]
+}
