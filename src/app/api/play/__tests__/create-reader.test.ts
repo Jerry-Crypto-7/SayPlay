@@ -268,6 +268,23 @@ describe('create route reads the sentence before drafting', () => {
       expect(((await publishedSpec(await pending)) as { control?: string }).control).toBe('ball');
     });
 
+    // Revize T17e-1: návrh bez fyziky slučování nehodí, tiše vezme jinou hru – ta nesmí zůstat návrhu po načtení fyziky.
+    it('a reading that drafts a merge game publishes merge, not the game the cold draft fell back to', async () => {
+      /** Uložené čtení P56A (`p54c-dev` m01). */
+      const merge = 'drop fruits into a jar and merge matching ones into a watermelon';
+      const reader = readerOf({
+        control: 'tap_go', verbs: [{ word: 'drop', class: 'timing' }, { word: 'merge', class: 'timing' }], hero: null,
+        roles: [{ noun: 'fruit', kind: 'collectible', count: null }, { noun: 'watermelon', kind: 'destination', count: null }],
+        setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'merge', mode: 'default' }, foe: null, item: 'watermelon', world: null, title: 'Fruit Merge',
+      });
+      vi.stubGlobal('fetch', reader);
+      const pending = create(merge);
+      await vi.waitFor(() => expect(reader).toHaveBeenCalledOnce());
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      open();
+      expect(((await publishedSpec(await pending)) as { control?: string }).control).toBe('merge');
+    });
+
     it('a chain reading without a ball publishes the chain with the physics still loading', async () => {
       vi.stubGlobal('fetch', readerOf({ ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud' }));
       expect(await publishedGame(await create(CHAIN))).toHaveProperty('chain');

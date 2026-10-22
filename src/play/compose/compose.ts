@@ -1,6 +1,7 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
 import { lookFor, timeOfDayFor } from '../arcade/look';
+import { rapierIfLoaded } from '../arcade/physics/world';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingHero } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
@@ -29,6 +30,8 @@ export interface Composition {
 
 // Repeated publication of the same sentence must not replay identical worlds
 // on every request. Bounded and keyed by every input; callers get owned copies.
+// Whether Rapier is loaded is an input too: without it a physics source fails and
+// another game wins, which must not outlive the load (P56C T17e review).
 const compositions = new Map<string, Composition>();
 
 /** Hrdina, kterého věta jmenuje; se čtením jen ten, kterého čtení nemá za protivníka, věc ani místo (P56A T6). */
@@ -199,7 +202,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
 }
 
 export function compose(intent: Intent, seed = 1, reading: Reading | null = null): Composition {
-  const cacheKey = JSON.stringify([intent, seed, reading]);
+  const cacheKey = JSON.stringify([intent, seed, reading, rapierIfLoaded() !== null]);
   const cached = compositions.get(cacheKey);
   if (cached !== undefined) return structuredClone(cached);
   const classified = classifyGenre(intent.sentence, reading);
