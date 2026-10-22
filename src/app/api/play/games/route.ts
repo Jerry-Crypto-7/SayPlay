@@ -20,7 +20,7 @@ import { draftGameSpecWithMeta } from '@/play/draft';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { buildChain } from '@/play/chain/build';
 import { chainOrSingle } from '@/play/chain/decide';
-import { readForChain } from '@/play/chain/read';
+import { readForChain, type SentenceRead } from '@/play/chain/read';
 import { honestyOf } from '@/play/draft/unsupported';
 import { classifyGenre } from '@/play/genre/classify';
 import { readBeforeDraft } from '@/play/read/client';
@@ -164,7 +164,15 @@ export async function POST(request: Request): Promise<Response> {
     const sentenceReading = await reading;
     // P56C T10: věta bez jednoho jasného slovesa hraje řetěz mikroher – bez AI verze a remixu (debata T9).
     // Řetěz, který stavba nebo brána nepustí, hraje dnešní cesta jako jedna hra; zakázaný text a úložiště ne.
-    const read = readForChain(sentence, sentenceReading);
+    // T17e: čtení modelem staví návrh věty, a když z něj vyjde míč, bez fyziky se nepřeloží – pak řetěz na fyziku počká
+    // jako jedna hra níž. Jiná chyba se po načtení fyziky zopakuje a projde ven.
+    let read: SentenceRead;
+    try {
+      read = readForChain(sentence, sentenceReading);
+    } catch {
+      await physics;
+      read = readForChain(sentence, sentenceReading);
+    }
     if (chainOrSingle(sentence, read, classifyGenre(sentence, sentenceReading)) === 'chain') {
       const built = buildChain(sentence, read, seeds[0]!);
       if (built.ok) {

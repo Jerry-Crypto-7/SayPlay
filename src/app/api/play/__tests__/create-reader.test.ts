@@ -44,10 +44,19 @@ const READING: Reading = {
 };
 
 // P56A T10: fyzika se načítá za závorou, kterou test drží zavřenou – čtečka se musí zeptat dřív, než se otevře.
-const rapier = vi.hoisted(() => ({ gate: Promise.resolve() }));
+// P56C T17e: `loaded: false` je studený server – Rapier, kterého načetl dřívější test, se do otevření závory nepočítá.
+const rapier = vi.hoisted(() => ({ gate: Promise.resolve(), loaded: true }));
 vi.mock('@/play/arcade/physics/world', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/play/arcade/physics/world')>();
-  return { ...actual, loadRapier: async () => { await rapier.gate; return actual.loadRapier(); } };
+  return {
+    ...actual,
+    loadRapier: async () => {
+      await rapier.gate;
+      rapier.loaded = true;
+      return actual.loadRapier();
+    },
+    rapierIfLoaded: () => (rapier.loaded ? actual.rapierIfLoaded() : null),
+  };
 });
 
 vi.mock('../_director', () => ({
@@ -220,6 +229,48 @@ describe('create route reads the sentence before drafting', () => {
       // Čtení dobíhá po pádu route; jeho lety jsou tu místní, takže za 300 ms by volání dávno odešlo.
       await new Promise((resolve) => setTimeout(resolve, 300));
       expect(paid).not.toHaveBeenCalled();
+    });
+  });
+
+  // P56C T17e: čtení řetězu staví návrh věty, který se s míčem bez fyziky nepřeloží – route na ni počká jako jedna hra.
+  describe('on a cold server, before the physics loads', () => {
+    /** Uložené čtení P56A (`p30-dev` d01): model říká běžec, návrh z něj staví míč. */
+    const ROLLS = 'a hedgehog rolls down a mushroom hill avoiding foxes';
+    const ROLLS_READING: Reading = {
+      control: 'runner', verbs: [{ word: 'rolls', class: 'runner' }], hero: 'hedgehog', roles: [{ noun: 'foxes', kind: 'threat', count: null }],
+      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' },
+      foe: 'foxes', item: null, world: 'forest', title: 'Hedgehog Hill Roll',
+    };
+    const readerOf = (reading: Reading) => vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 }));
+    let open = (): void => undefined;
+
+    beforeEach(() => {
+      vi.stubEnv('PLAY_READER', 'on');
+      rapier.loaded = false;
+      rapier.gate = new Promise<void>((resolve) => { open = resolve; });
+    });
+    afterEach(() => {
+      open();
+      rapier.gate = Promise.resolve();
+      rapier.loaded = true;
+    });
+
+    it('a reading that drafts a ball game waits for the physics instead of failing', async () => {
+      const reader = readerOf(ROLLS_READING);
+      vi.stubGlobal('fetch', reader);
+      const pending = create(ROLLS);
+      const settled = vi.fn();
+      pending.then(settled, settled);
+      await vi.waitFor(() => expect(reader).toHaveBeenCalledOnce());
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      expect(settled).not.toHaveBeenCalled();
+      open();
+      expect(((await publishedSpec(await pending)) as { control?: string }).control).toBe('ball');
+    });
+
+    it('a chain reading without a ball publishes the chain with the physics still loading', async () => {
+      vi.stubGlobal('fetch', readerOf({ ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud' }));
+      expect(await publishedGame(await create(CHAIN))).toHaveProperty('chain');
     });
   });
 
