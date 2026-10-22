@@ -203,3 +203,27 @@ Build `51ec2088`, snímky `after/`, `after-phone/` (34 + 34, 0× 404, 0 chyb; mi
 - **Pozorování 01-frog (výřez stromů):** kmeny stromů s texturou jsou plošně šedé (na `72665fdc` hnědé) a část plošek koruny taky; stromy bez textury (g-runner) jsou v pořádku. Na telefonu je ve 02-zombie nepřítel normální žlutomodrý zombík. **Odvozeno:** bílá skvrna na desktopu je nejspíš záblesk zásahu v tiku snímku, ne materiál.
 - **Kotva – co soud jmenoval:** všech 30 proher říká totéž jinými slovy – „bare green plane“, „flat placeholder scene“, „grey placeholder character“, „box-like“; hry z obchodu mají „detailed themed environment, rich lighting and VFX“. Toon, noc a díly prostředí na tom nic nezměnily – rozdíl je v hustotě a detailu scény, ne v materiálu.
 - **FPS:** pod 40 spadl jen 12-ghost (45,1 → 38,0, B celé okno na `low`); nejvíc ztrácí g-race 0,86, g-ball 0,87, g-fight 0,87. Měřeno pod zátěží souběžného soudu (34 scén ~80 min místo ~55).
+
+## Stromy bez šedi (T13-R2)
+
+**Příčina (měřeno):** dočasné přepínače v buildu (necommitnuté, `window.__p56b` přes `shots --init`), 01-frog a 07-goalkeeper desktop, výřezy stromů proti `72665fdc` (snímky `D:/tmp/p56b-exp/<varianta>/`):
+
+| Varianta (jinak HEAD `51ec2088`) | kmeny a koruny stromů s texturou |
+|---|---|
+| beze změny | kmeny plošně šedé, část plošek koruny šedobílá |
+| okraj toonu 0 | hnědé kmeny, zelené koruny – jako `72665fdc` |
+| okraj s `abs(N·V)` (plochy otočené od kamery) | tmavší, pořád šedohnědé |
+| okraj v barvě povrchu (25 % bílé, jako svit postav) | šedohnědé |
+| paleta 0 / stupně světla vypnuté | beze změny šedé |
+
+- Fresnel okraj toonu (0,15 barvy oblohy) pokryl stinné plošky hustých korun a kmeny – dílem plochy bokem k pohledu, dílem plochy otočené od kamery, kde `saturate(N·V)` dá 0 a okraj svítí celou plochou.
+- **Oprava:** okraj z toon patche pryč (v noci byl 0 už od T13-R1); obrys postav dál nese jejich svit (`setCharacterRim`). `toon.test` pinuje, že patch kulis nepřidá žádnou záři.
+
+## Pokus 3 (T13, HEAD `80d159c1`) – desktop dál pod bránou
+
+Snímky `after/`, `after-phone/` (34 + 34, 0× 404, 0 chyb; pokus 2 v `after-a2*/`), soud stejně jako pokusy 1–2, `judge.json`. Výřez 01-frog: kmeny hnědé a koruny zelené jako na `72665fdc`.
+
+- **Telefon 26/34 (0,765), levá 0,559 – prošel** (potřetí stejné číslo).
+- **Desktop 20/34 (0,588), levá 0,735 – neprošel.** Stromové scény se otočily na výhry (01-frog, g-race, g-ball, g-walker, g-rhythm, 11-drum), ale prohrály 04, 05, 10, g-platform, g-glide, g-flap, g-shooter, g-duel – skoro všechny s důvodem „nearly identical“. 02-zombie dál „overexposed white blob“.
+- **Odvozeno:** okraj byl na desktopu hlavní viditelný rozdíl nového vzhledu; bez něj je půlka dvojic pro soudce totožná a rozhodne strana (levá 0,68 → 0,74). Opravy vad (noc R1, stromy R2) bránu desktopu nepřiblížily: 21 → 22 → 20 ze 34.
+- Soudce desktopu je silně stranový u podobných dvojic; brána 0,75 projde jen s výrazně odlišným vzhledem skoro ve všech scénách. Plán pro tento případ („pořád realistické“) jmenuje další krok: `MeshToonMaterial` jen pro kulisy (T13-R3).
