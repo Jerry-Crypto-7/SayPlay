@@ -8,11 +8,10 @@ import json
 import subprocess
 from pathlib import Path
 
+import precheck
 import pytest
 from test_batch import fake_result
 from test_server import FakeComfy as MeshComfy
-
-import precheck
 
 
 class FakeComfy(MeshComfy):
@@ -27,8 +26,9 @@ class FakeComfy(MeshComfy):
 
 
 import batch
-import server
 from comfy_client import ComfyError
+
+import server
 
 
 def test_class_picks_its_template_and_unknown_class_falls_back_to_prop():
@@ -85,6 +85,39 @@ def test_json_list_carries_the_second_round_fix(tmp_path):
     ]
     source.write_text(json.dumps({"nouns": nouns}), encoding="utf-8")
     assert batch.load_fixes(source) == {"orca": "rounder fins"}
+
+
+def test_json_list_shape_follows_the_fix_or_the_judge_fix(tmp_path, monkeypatch):
+    # P57 T8r: poměr os starého boxu jde do zadání už v kole 1, tabulka oprav zůstane.
+    monkeypatch.setattr(batch, "FEATURES", {"judge_fix": {"kettle": "smooth enamel"}})
+    source = tmp_path / "nouns.json"
+    nouns = [
+        {
+            "noun": "orca",
+            "class": "prop",
+            "flat": False,
+            "fix": "rounder fins",
+            "shape": "about 3 times wider than tall",
+        },
+        {
+            "noun": "kettle",
+            "class": "prop",
+            "flat": False,
+            "shape": "about as wide as tall",
+        },
+        {
+            "noun": "teapot",
+            "class": "prop",
+            "flat": False,
+            "shape": "about 1.5 times wider than tall",
+        },
+    ]
+    source.write_text(json.dumps({"nouns": nouns}), encoding="utf-8")
+    assert batch.load_fixes(source) == {
+        "orca": "rounder fins, about 3 times wider than tall",
+        "kettle": "smooth enamel, about as wide as tall",
+        "teapot": "about 1.5 times wider than tall",
+    }
 
 
 def test_json_list_carries_class_and_flat_wins(tmp_path):

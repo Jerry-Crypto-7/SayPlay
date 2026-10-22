@@ -20,13 +20,13 @@ import os
 import re
 import subprocess
 import time
-import tomllib
 import urllib.error
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
 
 import cache
+import tomllib
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -128,11 +128,24 @@ def load_classes(path: Path) -> dict[str, str]:
 
 
 def load_fixes(path: Path) -> dict[str, str]:
-    """Oprava zadání podle jména z pole `fix` seznamu `{"nouns": [...]}` (P57 T8, druhé kolo)."""
+    """Oprava zadání podle jména z pole `fix` seznamu `{"nouns": [...]}` (P57 T8, druhé kolo).
+
+    Pole `shape` (P57 T8r: poměr os starého modelu) jde za opravu; bez `fix` za `[judge_fix]`,
+    aby ho tvar nepřebil.
+    """
     if path.suffix != ".json":
         return {}
-    entries = json.loads(path.read_text(encoding="utf-8"))["nouns"]
-    return {cache.normalize(e["noun"]): e["fix"] for e in entries if e.get("fix")}
+    judge_fix = FEATURES.get("judge_fix", {})
+    fixes = {}
+    for e in json.loads(path.read_text(encoding="utf-8"))["nouns"]:
+        noun = cache.normalize(e["noun"])
+        parts = [
+            e.get("fix") or (judge_fix.get(noun) if e.get("shape") else None),
+            e.get("shape"),
+        ]
+        if any(parts):
+            fixes[noun] = ", ".join(filter(None, parts))
+    return fixes
 
 
 def load_nouns(path: Path) -> list[str]:
@@ -407,6 +420,7 @@ def main() -> None:
 
     import precheck
     from comfy_client import ComfyClient
+
     from server import generate
 
     classes = load_classes(args.source)

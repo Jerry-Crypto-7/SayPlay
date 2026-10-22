@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HERO_PASS, heroSummary, heroTargets, heroWins, pickBest } from '../top50.mjs';
+import { HERO_PASS, heroSummary, heroTargets, pickBest, reduelRounds, shapeHint } from '../top50.mjs';
 
 const GEN = 'LicenseRef-Worldsmith-Generated';
 const asset = (assetId: string, license: string) => ({ assetId, provenance: { license } });
@@ -37,12 +37,24 @@ describe('top50 (P57 T8)', () => {
     expect(pickBest([{ pick: null }, {}])).toBeNull();
   });
 
-  it('a round wins only at 8+ and above the old score of the same judge', () => {
-    expect(heroWins(HERO_PASS, 7)).toBe(true);
-    expect(heroWins(7, 3)).toBe(false);
-    expect(heroWins(8, 8)).toBe(false);
-    expect(heroWins(9, null)).toBe(true);
-    expect(heroWins(null, 2)).toBe(false);
+  it('words the old box proportions for the image prompt (T8r)', () => {
+    expect(shapeHint([0.69, 1, 0.69])).toBe('about 1.5 times taller than wide');
+    expect(shapeHint([0.32, 1, 0.32])).toBe('about 3 times taller than wide');
+    expect(shapeHint([1.18, 1, 1.16])).toBe('about as wide as tall');
+    expect(shapeHint([1.6, 1, 2.87])).toBe('about 3 times wider than tall, about 2 times wider than deep');
+    expect(shapeHint([0.57, 1, 0.25])).toBe('about 2 times taller than wide, about 2.5 times wider than deep');
+  });
+
+  it('re-duels only rounds that lost under the 8+ rule but reach the duel floor, best first', () => {
+    const rounds = [
+      { round: 1, score: 6, glb: 'a.glb', won: false },
+      { round: 2, score: 7, glb: 'b.glb', won: false },
+      { round: 3, score: 5, glb: 'c.glb', won: false },
+      { round: 4, score: 8, glb: null, won: false },
+      { round: 5, score: 9, glb: 'e.glb', won: false, duel: [] },
+    ];
+    expect(reduelRounds({ rounds }).map((done) => done.round)).toEqual([2, 1]);
+    expect(HERO_PASS).toBe(8);
   });
 
   it('counts the whole top 50: replaced by the new score, kept and skipped by the old one', () => {

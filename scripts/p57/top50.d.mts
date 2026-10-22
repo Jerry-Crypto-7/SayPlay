@@ -7,7 +7,8 @@ export declare function heroTargets(
   catalog: { assets: { assetId: string; provenance: { license: string } }[] },
 ): string[];
 export declare function pickBest<T extends { pick?: number | null }>(candidates: T[]): T | null;
-export declare function heroWins(score: number | null | undefined, old: number | null | undefined): boolean;
+export declare function shapeHint(dims: [number, number, number]): string;
+export declare function reduelRounds<T extends { won?: boolean; duel?: unknown; glb?: string | null; score?: number | null }>(item: { rounds: T[] }): T[];
 export declare function heroSummary(
   usage: { top300: string[] },
   judge: { models: Record<string, { score: number | null; claude?: { reason?: string }; codex?: { reason?: string } }> },

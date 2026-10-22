@@ -10,16 +10,22 @@
  * s vlastní cache. Kandidát se vejde do starého boxu (`fit` z T6, strop LOD0 hero), Opus
  * vybere nejlepšího z mřížky 2×2 a ten jde na druhý slepý soud na mřížkách 3×3 – spolu se
  * starými modely, které Opus v T4 nesoudil, aby nové i staré skóre dal týž soudce. Vítěz
- * kola = skóre ≥ 8 a vyšší než staré. Kolo 2 jen pro id bez vítěze, s opravou zadání
- * z důvodu soudce (`--fixes`, jinak `[judge_fix]`). Průběh v `<out>/batch-N/state.json`;
- * `--finish` vymění vítěze přes `replaceModels(..., { profile: 'hero' })` (LOD1 nejvýš
- * starý) a zapíše `evals/play/p57/top50.json` se souhrnem přes všech 50.
+ * kola (T8r, od dávky 4) = skóre ≥ 6 a vyhraný souboj se starým (`duel.mjs`); 8+ zůstává
+ * měřený cíl v souhrnu. Zadání nese poměr os starého boxu (`shapeHint`). Kolo 2 jen pro id
+ * bez vítěze, s opravou zadání z důvodu soudce (`--fixes`, jinak `[judge_fix]`). Průběh
+ * v `<out>/batch-N/state.json`; `--reduel` dá souboj kolům se skóre ≥ 6, která prohrála
+ * starým pravidlem (dávky 1–3, bez grafiky). `--finish` vymění vítěze, kteří ještě vyměnění
+ * nejsou, přes `replaceModels(..., { profile: 'hero' })` (LOD1 nejvýš starý) a zapíše
+ * `evals/play/p57/top50.json` se souhrnem přes všech 50.
+ *
+ *   node scripts/p57/top50.mjs --batch 1 --reduel --finish
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { DUEL_FLOOR, duelWins, runDuel } from './duel.mjs';
 import { classOf, dimsOf, fit, resultOf, shuffleKey } from './regen.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -40,8 +46,19 @@ export function heroTargets(judge, usage, catalog) {
 export const pickBest = (candidates) => candidates.filter((candidate) => typeof candidate.pick === 'number')
   .reduce((best, candidate) => (best && best.pick >= candidate.pick ? best : candidate), null);
 
-/** Vítěz kola: druhý soud ≥ 8 a víc, než má starý model od téhož soudce. */
-export const heroWins = (score, old) => typeof score === 'number' && score >= HERO_PASS && score > (old ?? Number.NEGATIVE_INFINITY);
+const half = (value) => Math.round(value * 2) / 2;
+
+/** Poměr os starého boxu `[x, y, z]` (y nahoru) slovy pro obrázkové zadání (T8r): obrys a hloubka. */
+export function shapeHint([x, y, z]) {
+  const wide = Math.max(x, z);
+  const deep = Math.min(x, z);
+  const ratio = wide / y;
+  const outline = ratio < 0.8 ? `about ${half(1 / ratio)} times taller than wide` : ratio > 1.25 ? `about ${half(ratio)} times wider than tall` : 'about as wide as tall';
+  return deep / wide < 0.6 ? `${outline}, about ${half(wide / deep)} times wider than deep` : outline;
+}
+
+/** Kola, která starým pravidlem (8+) prohrála, ale na souboj mají (skóre ≥ 6), od nejlepšího. */
+export const reduelRounds = (item) => item.rounds.filter((done) => !done.won && !done.duel && done.glb && done.score >= DUEL_FLOOR).sort((a, b) => b.score - a.score);
 
 /** Souhrn přes celou top 50: kolik má skóre ≥ 8 a kdo zůstal pod, se skóre a důvodem. */
 export function heroSummary(usage, judge, models) {
@@ -65,7 +82,7 @@ async function main() {
   const { scoreSheet, paletteOf } = await import('../p37d/judge-sheet.mjs');
   const { replaceModels } = await import('../p37d/promote-batch.mjs');
   const { HERO_MAX_TRIANGLES } = await import('../assets/cc0/normalize.mjs');
-  const { sheetEntries, mergeAttempts } = await import('./judge-library.mjs');
+  const { sheetEntries, mergeAttempts, takeCodexCall, COUNTER } = await import('./judge-library.mjs');
   const { assertNotTrainingDir } = await import('../assets/qa-astra.mjs');
   const args = process.argv.slice(2);
   const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -112,6 +129,13 @@ async function main() {
     await Promise.all([worker(), worker()]);
     return scored;
   };
+  // Souboj s modelem, který je teď v katalogu (T8r); Codex jen v denním stropu.
+  const today = new Date().toISOString().slice(0, 10);
+  const duel = (item, glb, tag) => runDuel({
+    key: `${item.id}-${tag}`, oldGlb: path.join(ROOT, 'public', byId.get(item.id).lods.find((lod) => lod.level === 0).path), newGlb: glb,
+    leaf: leafOf.get(item.id), dir: path.join(out, 'duel'), seed: Number.parseInt(shuffleKey('duel', item.id).slice(0, 8), 16),
+    takeCodex: () => takeCodexCall(COUNTER, today),
+  });
 
   if (round !== null) {
     const todo = Object.values(state.models).filter((item) => !item.rounds.some((done) => done.won || done.round === round));
@@ -119,7 +143,7 @@ async function main() {
     const dir = path.join(out, `round-${round}`);
     mkdirSync(dir, { recursive: true });
     const nounsFile = path.join(dir, 'nouns.json');
-    writeFileSync(nounsFile, JSON.stringify({ nouns: todo.map((item) => ({ noun: item.noun, class: classOf(item.noun), flat: false, ...(fixes[item.id] ? { fix: fixes[item.id] } : {}) })) }));
+    writeFileSync(nounsFile, JSON.stringify({ nouns: todo.map((item) => ({ noun: item.noun, class: classOf(item.noun), flat: false, shape: shapeHint(dimsOf(byId.get(item.id).bounds)), ...(fixes[item.id] ? { fix: fixes[item.id] } : {}) })) }));
     const candidates = new Map(todo.map((item) => [item.id, []]));
     for (const attempt of ROUND_ATTEMPTS[round]) {
       const sub = path.join(dir, attempt);
@@ -175,22 +199,43 @@ async function main() {
       if (old) item.oldOpus = old.score;
       const best = pickBest(candidates.get(item.id));
       const cell = scored.get(`new:${item.id}:${round}`);
+      const votes = best && cell?.score >= DUEL_FLOOR ? await duel(item, best.glb, `r${round}`) : null;
       item.rounds.push({
         round, fix: fixes[item.id] ?? null,
         attempts: candidates.get(item.id).map(({ key, ...rest }) => rest),
         pick: best ? `${best.prompt}${best.seed}` : null, glb: best?.glb ?? null, dims: best?.dims ?? null, seed: best?.seed ?? null,
         score: cell?.score ?? null, reason: cell ? `${cell.name}: ${cell.reason}` : null,
-        won: heroWins(cell?.score, item.oldOpus ?? item.oldScore),
+        won: duelWins(cell?.score, (votes ?? []).map((vote) => vote.vote)),
+        ...(votes ? { duel: votes } : {}),
       });
+      saveState();
     }
-    saveState();
     const won = todo.filter((item) => item.rounds.at(-1).won);
-    console.log(`top50 batch ${batchNo} round ${round}: won ${won.length}/${todo.length}; ${todo.map((item) => `${item.id} ${item.rounds.at(-1).score ?? '-'}`).join(', ')}`);
+    console.log(`top50 batch ${batchNo} round ${round}: won ${won.length}/${todo.length}; ${todo.map((item) => `${item.id} ${item.rounds.at(-1).score ?? '-'}${item.rounds.at(-1).duel ? `/${item.rounds.at(-1).duel.map((vote) => vote.vote ?? '-').join('+')}` : ''}`).join(', ')}`);
+  }
+
+  if (args.includes('--reduel')) {
+    const open = Object.values(state.models).filter((item) => !item.rounds.some((done) => done.won));
+    for (const item of open) {
+      for (const done of reduelRounds(item)) {
+        done.duel = await duel(item, done.glb, `r${done.round}`);
+        done.won = duelWins(done.score, done.duel.map((vote) => vote.vote));
+        saveState();
+        if (done.won) break;
+      }
+    }
+    console.log(`top50 batch ${batchNo} reduel: won ${open.filter((item) => item.rounds.some((done) => done.won)).length}/${open.length}; ${open.map((item) => `${item.id} ${item.rounds.filter((done) => done.duel).map((done) => `${done.score}/${done.duel.map((vote) => vote.vote ?? '-').join('+')}`).join(' ') || '-'}`).join(', ')}`);
   }
 
   if (!args.includes('--finish')) return;
   const imageModel = { klein: 'FLUX.2-klein-4B', zimage: 'Z-Image-Turbo' }[/^image_model\s*=\s*"(\w+)"/m.exec(readFileSync(path.join(ROOT, 'ops/gen3d/config.toml'), 'utf8'))[1]];
-  const winners = Object.values(state.models).map((item) => ({ item, win: item.rounds.find((done) => done.won) })).filter(({ win }) => win);
+  const report = existsSync(REPORT) ? JSON.parse(readFileSync(REPORT, 'utf8')) : {
+    about: 'P57 T8: the 50 most-used library models pushed to 8+. Targets: every gen3d model in the top 50 (even at 8+), CC0 and originals only below 8. Per round 4 candidates (image prompt a/b x 2 seeds) by ops/gen3d with the hero finishing profile, each scaled into the old box; Opus 5.5 picks the best on a 2x2 grid, the pick is scored blind on 3x3 grids (old models Opus did not score in T4 rejudged on the same grids). A round wins at >= 8 and above the old score; round 2 only for ids without a winner, with the first round judge reason turned into the prompt fix. Winners swapped in by promote-batch replaceModels (profile hero: LOD0 up to 8000 triangles, LOD1 at most the old LOD1).',
+    batches: {}, models: {}, summary: null,
+  };
+  report.t8r = 'From 22 Oct (T8r, batches 4-5 and a re-duel of batches 1-3): prompts a, b, c, c with the old box proportions in the prompt; a round wins when its pick scores >= 6 AND beats the current model in a blind pair duel (one sheet, order drawn by pure-rand) with both judges - Opus and Codex within the daily cap, else Opus twice with the order swapped. 8+ stays the measured goal in summary, not the swap rule.';
+  const swapped = new Set(Object.keys(report.models).filter((id) => report.models[id].result === 'replaced'));
+  const winners = Object.values(state.models).map((item) => ({ item, win: item.rounds.find((done) => done.won) })).filter(({ item, win }) => win && !swapped.has(item.id));
   const entries = [];
   for (const { item, win } of winners) {
     entries.push({
@@ -205,23 +250,21 @@ async function main() {
   const { replaced, skipped } = entries.length > 0 ? await replaceModels(batch, { profile: 'hero' }) : { replaced: [], skipped: [] };
   const refusedOf = new Map(skipped.map((entry) => [entry.id, entry.reason]));
 
-  const report = existsSync(REPORT) ? JSON.parse(readFileSync(REPORT, 'utf8')) : {
-    about: 'P57 T8: the 50 most-used library models pushed to 8+. Targets: every gen3d model in the top 50 (even at 8+), CC0 and originals only below 8. Per round 4 candidates (image prompt a/b x 2 seeds) by ops/gen3d with the hero finishing profile, each scaled into the old box; Opus 5.5 picks the best on a 2x2 grid, the pick is scored blind on 3x3 grids (old models Opus did not score in T4 rejudged on the same grids). A round wins at >= 8 and above the old score; round 2 only for ids without a winner, with the first round judge reason turned into the prompt fix. Winners swapped in by promote-batch replaceModels (profile hero: LOD0 up to 8000 triangles, LOD1 at most the old LOD1).',
-    batches: {}, models: {}, summary: null,
-  };
   for (const item of Object.values(state.models)) {
     const refused = refusedOf.get(item.id);
     const attempts = item.rounds.flatMap((done) => done.attempts);
     const best = item.rounds.reduce((top, done) => (done.score !== null && (top === null || done.score > top.score) ? done : top), null);
+    const isReplaced = replaced.includes(item.id) || swapped.has(item.id);
     report.models[item.id] = {
       noun: item.noun, set: byId.get(item.id).lods[0].path.split('/').at(-2), oldScore: item.oldScore, oldOpus: item.oldOpus,
       rounds: item.rounds.map(({ glb, dims, ...rest }) => ({ ...rest, attempts: rest.attempts.map(({ glb: file, dims: size, ...attempt }) => attempt) })),
-      newScore: best?.score ?? null,
-      result: replaced.includes(item.id) ? 'replaced' : resultOf(attempts, refused),
-      ...(refused ? { reason: refused } : !replaced.includes(item.id) && best?.reason ? { reason: best.reason } : {}),
+      newScore: (isReplaced ? item.rounds.find((done) => done.won) : best)?.score ?? null,
+      result: isReplaced ? 'replaced' : resultOf(attempts, refused),
+      ...(refused ? { reason: refused } : !isReplaced && best?.reason ? { reason: best.reason } : {}),
     };
   }
-  report.batches[batchNo] = { ids, startedAt: state.startedAt, finishedAt: new Date().toISOString() };
+  const boundsRejected = ids.flatMap((id) => state.models[id].rounds.flatMap((done) => done.attempts)).filter((attempt) => attempt.fit && attempt.fit !== 'ok').length;
+  report.batches[batchNo] = { ids, startedAt: state.startedAt, finishedAt: new Date().toISOString(), boundsRejected };
   report.summary = heroSummary(usage, judge, report.models);
   writeFileSync(REPORT, `${JSON.stringify(report, null, 1)}\n`);
   const count = (result) => ids.filter((id) => report.models[id].result === result);
