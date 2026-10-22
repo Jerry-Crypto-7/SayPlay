@@ -8,11 +8,12 @@
  * jedny (`STAGE_CANVAS`).
  */
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, type RootState, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { type Camera, type PerspectiveCamera, type Scene, type WebGLRenderer, WebGLRenderTarget } from 'three';
 
+import { loadsPending, loadsSettled } from '../arcade/look/pending-loads';
 import { captureFrame } from './snapshot-cache';
 import { createStageTunnel, type Frameloop, type StageTunnel } from './stage-tunnel';
 
@@ -88,15 +89,34 @@ function compileForComposer({ gl, scene, camera }: { readonly gl: WebGLRenderer;
   return compiled;
 }
 
+/** Pauza po doběhnutém načítání: model se do scény dostane až potvrzením Reactu v některé z dalších úloh. */
+const SETTLE_MS = 30;
+
+/**
+ * Scéna je hotová ke kresbě: přeložit, počkat na načítání modelů, která scéna rozjela, a překládat znovu, dokud
+ * průchod (aspoň druhý – efekty scény načítání rozjedou až po potvrzení) nepřidá žádný program a nic se nenačítá.
+ * Skončí i tehdy, když plátno mezitím kreslí (strop `holdDrawing`).
+ */
+async function readyToDraw(get: () => RootState): Promise<void> {
+  const programs = (): number => get().gl.info.programs?.length ?? 0;
+  for (let pass = 0; ; pass += 1) {
+    const before = programs();
+    await compileForComposer(get());
+    if (get().frameloop !== 'never' || (pass > 0 && loadsPending() === 0 && programs() === before)) return;
+    await loadsSettled();
+    await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+  }
+}
+
 /**
  * Vyměněná scéna (kolo řetězu, T13a) se poprvé nakreslí až s hotovými programy shaderů (`holdDrawing`): do té doby
- * plátno ukazuje poslední snímek předchozí scény a programy nových materiálů se překládají mimo hlavní vlákno. Montáž
- * scény, překlad a první kresba tak nepadnou do jednoho snímku – na telefonu to byl jeden snímek 117–300 ms. Plátno,
- * které ještě nic nenakreslilo, nemá co držet.
+ * plátno ukazuje poslední snímek předchozí scény, programy nových materiálů se překládají mimo hlavní vlákno
+ * a počká se i na modely, které scéna načítá. Montáž scény, překlad a první kresba tak nepadnou do jednoho snímku –
+ * na telefonu to byl jeden snímek 117–300 ms. Plátno, které ještě nic nenakreslilo, nemá co držet.
  */
 export function DrawWhenCompiled() {
   const get = useThree((three) => three.get);
-  useLayoutEffect(() => (get().gl.info.render.frame === 0 ? undefined : holdDrawing(get, () => compileForComposer(get()))), [get]);
+  useLayoutEffect(() => (get().gl.info.render.frame === 0 ? undefined : holdDrawing(get, () => readyToDraw(get))), [get]);
   return null;
 }
 
