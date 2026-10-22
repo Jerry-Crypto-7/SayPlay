@@ -126,7 +126,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ray-gun` | ray gun | 4585 / 2263 |
 | `gen3d-energy-drink` | energy drink | 4747 / 2373 |
 | `gen3d-oil-barrel` | oil barrel | 4044 / 2022 |
-| `gen3d-toolbox` | toolbox | 4617 / 2306 |
+| `gen3d-toolbox` | toolbox | 3942 / 1960 |
 | `gen3d-chainsaw` | chainsaw | 4697 / 2252 |
 | `gen3d-lawn-mower` | lawn mower, lawnmower | 4415 / 2122 |
 | `gen3d-garden-gnome` | garden gnome | 4668 / 2272 |
@@ -412,7 +412,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-pinwheel` | pinwheel | 4686 / 2290 |
 | `gen3d-price-tag` | price tag | 4708 / 2302 |
 | `gen3d-scarab-statue` | scarab statue | 4274 / 2111 |
-| `gen3d-oil-drum` | oil drum | 4748 / 2374 |
+| `gen3d-oil-drum` | oil drum | 4054 / 2018 |
 | `gen3d-soda-fountain` | soda fountain | 4144 / 2070 |
 | `gen3d-message-in-a-bottle` | message in a bottle | 4746 / 2364 |
 | `gen3d-statue-head` | statue head | 4229 / 2094 |
@@ -655,7 +655,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-street-trash-can` | street trash can, garbage bin, litter bin | 3988 / 1979 |
 | `gen3d-traffic-cone` | traffic cone | 4748 / 2374 |
 | `gen3d-red-phone-booth` | red phone booth, phone booth, telephone box | 4670 / 2309 |
-| `gen3d-park-fountain` | park fountain | 4530 / 2256 |
+| `gen3d-park-fountain` | park fountain | 3834 / 1910 |
 | `gen3d-billboard-sign` | billboard sign | 3970 / 1913 |
 | `gen3d-concrete-planter-with-tree` | concrete planter with tree, planter, street planter | 4229 / 2068 |
 | `gen3d-dead-desert-tree` | dead desert tree | 4592 / 2243 |
@@ -813,7 +813,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-anthurium` | anthurium | 4650 / 2298 |
 | `gen3d-snorkel-mask` | snorkel mask, snorkel | 4616 / 2181 |
 | `gen3d-wild-strawberry-plant` | wild strawberry plant | 4489 / 2211 |
-| `gen3d-abandoned-mine-entrance` | abandoned mine entrance | 4536 / 2261 |
+| `gen3d-abandoned-mine-entrance` | abandoned mine entrance | 3763 / 1731 |
 | `gen3d-weather-station` | weather station | 4730 / 2360 |
 | `gen3d-beach-flag` | beach flag | 4727 / 2345 |
 | `gen3d-desert-signpost` | desert signpost | 4748 / 2374 |
@@ -1005,8 +1005,12 @@ stay, the geometry and its licence are new. The files they replaced are kept out
 | `gen3d-snowman-with-hat` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image from the prompt 'a snowman with hat, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background' -> BiRefNet (MIT) background removal -> TRELLIS.2-4B bf16 (MIT) with DINOv3 ViT-L image encoder (DINOv3 License) via ComfyUI 0.37.0 (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3470 / 1725 |
 | `gen3d-satellite-radar-dish` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image from the prompt 'a satellite radar dish, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background' -> BiRefNet (MIT) background removal -> TRELLIS.2-4B bf16 (MIT) with DINOv3 ViT-L image encoder (DINOv3 License) via ComfyUI 0.37.0 (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3675 / 1822 |
 | `gen3d-oil-barrel` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 1 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4044 / 2022 |
+| `gen3d-toolbox` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 1 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3942 / 1960 |
 | `gen3d-funeral-urn` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3998 / 1998 |
+| `gen3d-oil-drum` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4054 / 2018 |
 | `gen3d-leaning-palm-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3245 / 1519 |
 | `gen3d-frozen-dead-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4031 / 1984 |
+| `gen3d-park-fountain` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3834 / 1910 |
 | `gen3d-fern` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 3 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3668 / 1824 |
+| `gen3d-abandoned-mine-entrance` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 1 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3763 / 1731 |
 | `gen3d-energy-crystal` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3724 / 1862 |

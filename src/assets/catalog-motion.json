@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "7570d3167a05c093e2fcd8a4c42f7a72bdab576adfaa3c6f672c5caf4ed30a40",
+ "catalogHash": "e9d199ca4ad495b22ef73ff264a3176228886a9bd4a0e0c6337d44164efe942f",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1188,7 +1188,7 @@
   "gen3d-pinwheel": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-price-tag": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-scarab-statue": {"class":"prop"},
-  "gen3d-oil-drum": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-oil-drum": {"class":"biped","regions":{"legY":0.247}},
   "gen3d-soda-fountain": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-message-in-a-bottle": {"class":"prop"},
   "gen3d-statue-head": {"class":"prop"},

@@ -52,6 +52,32 @@
    ],
    "startedAt": "2026-10-21T21:47:54.220Z",
    "finishedAt": "2026-10-21T23:17:51.371Z"
+  },
+  "3": {
+   "ids": [
+    "gen3d-oil-drum",
+    "gen3d-park-fountain",
+    "gen3d-rooftop-water-tank",
+    "gen3d-tire-pile",
+    "gen3d-toolbox",
+    "gen3d-toxic-barrel",
+    "gen3d-wild-strawberry-plant",
+    "gen3d-abandoned-mine-entrance",
+    "gen3d-beach-hut",
+    "gen3d-buried-statue-head",
+    "gen3d-castle-ruin-wall",
+    "gen3d-cholla-cactus",
+    "gen3d-desert-shrub",
+    "gen3d-gravestone",
+    "gen3d-jungle-waterfall",
+    "gen3d-layered-canyon-rock",
+    "gen3d-mangrove-tree",
+    "gen3d-mesquite-tree",
+    "gen3d-prickly-pear-cactus",
+    "gen3d-rafflesia"
+   ],
+   "startedAt": "2026-10-21T23:23:56.131Z",
+   "finishedAt": "2026-10-22T00:16:20.970Z"
   }
  },
  "models": {
@@ -1412,6 +1438,643 @@
    ],
    "newScore": 8,
    "result": "replaced"
+  },
+  "gen3d-oil-drum": {
+   "noun": "oil drum",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9869,
+      0.9869,
+      0.9869
+     ],
+     "triangles": 4054,
+     "dims": [
+      0.708622667634337,
+      0.986870942097582,
+      0.7049428721005102
+     ],
+     "score": 7,
+     "reason": "Oil barrel: Bold blue barrel, clean silhouette; minor grime blotches."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-park-fountain": {
+   "noun": "park fountain",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0227,
+      1.0227,
+      1.0227
+     ],
+     "triangles": 3834,
+     "dims": [
+      1.5114700438841913,
+      1.0214099455796595,
+      1.5191490733262938
+     ],
+     "score": 7,
+     "reason": "Fountain: Chunky readable fountain with bright water; slightly lumpy rim."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-rooftop-water-tank": {
+   "noun": "rooftop water tank",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.8205,
+      1.0004,
+      0.96
+     ],
+     "triangles": 3585,
+     "dims": [
+      0.45384,
+      0.9980234324195985,
+      0.49196
+     ],
+     "score": 5,
+     "reason": "Water tower: Recognisable shape but tank surface crumpled and noisy, scan-like."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.816,
+      0.999,
+      0.8839
+     ],
+     "triangles": 3551,
+     "dims": [
+      0.45384,
+      0.9984295898476756,
+      0.49195999999999995
+     ],
+     "score": 5,
+     "reason": "Water tower: Clear silhouette but tank surface noisy and crumpled."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-tire-pile": {
+   "noun": "tire pile",
+   "oldScore": 2,
+   "oldJudge": "claude",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-toolbox": {
+   "noun": "toolbox",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9994,
+      0.9994,
+      0.9994
+     ],
+     "triangles": 3942,
+     "dims": [
+      1.3787931331486214,
+      0.9994092989552884,
+      0.9679488566524956
+     ],
+     "score": 8,
+     "reason": "Red storage box: Clean chunky solid red box; very toy-like, slightly plain."
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-toxic-barrel": {
+   "noun": "toxic barrel",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9647,
+      0.9647,
+      0.9647
+     ],
+     "triangles": 3773,
+     "dims": [
+      0.7270247094952083,
+      0.9645374289036655,
+      0.7250770869574916
+     ],
+     "score": 5,
+     "reason": "Oil barrel: Readable barrel, but grimy scan-like texture and lumpy surface."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-wild-strawberry-plant": {
+   "noun": "wild strawberry plant",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 7,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0487,
+      1.0487,
+      1.0487
+     ],
+     "triangles": 3652,
+     "dims": [
+      1.1283078146487653,
+      1.048722793994376,
+      1.1848419260650374
+     ],
+     "score": 6,
+     "reason": "Strawberry plant: Bright, readable plant; jagged leaves a bit noisy."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9681,
+      0.9681,
+      0.9681
+     ],
+     "triangles": 3685,
+     "dims": [
+      1.2250465998599107,
+      0.9643269773860783,
+      1.2104405477630023
+     ],
+     "score": 6,
+     "reason": "Strawberry plant: Bright readable fruit; spiky ragged leaves, thin stems."
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old"
+  },
+  "gen3d-abandoned-mine-entrance": {
+   "noun": "abandoned mine entrance",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.3767,
+      0.9929,
+      1.048
+     ],
+     "triangles": 3763,
+     "dims": [
+      1.45586,
+      0.985683491922717,
+      1.35352
+     ],
+     "score": 6,
+     "reason": "Mine entrance: Clear mine entrance; rock is jagged and noisy, faceted."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-beach-hut": {
+   "noun": "beach hut",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-buried-statue-head": {
+   "noun": "buried statue head",
+   "oldScore": 2,
+   "oldJudge": "claude",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9341,
+      0.9341,
+      0.9341
+     ],
+     "triangles": 3641,
+     "dims": [
+      1.16973622773109,
+      0.9339962147235118,
+      1.1407517433135599
+     ],
+     "score": 3,
+     "reason": "Statue bust: Melted, crumpled grey head on orange blob; unclear object."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9629,
+      1,
+      0.761
+     ],
+     "triangles": 3636,
+     "dims": [
+      1.0926200000000001,
+      0.9999599999999998,
+      1.0925799999999999
+     ],
+     "score": 2,
+     "reason": "Crumpled unknown object: Crumpled, torn shards; no identifiable object."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-castle-ruin-wall": {
+   "noun": "castle ruin wall",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-cholla-cactus": {
+   "noun": "cholla cactus",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-desert-shrub": {
+   "noun": "desert shrub",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0402,
+      1.0402,
+      1.0402
+     ],
+     "triangles": 3636,
+     "dims": [
+      1.0247893642154384,
+      1.0401824023769872,
+      1.030130762593428
+     ],
+     "score": 5,
+     "reason": "Lemon tree: Dark, noisy canopy; muddy colours, not chunky toy look."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-gravestone": {
+   "noun": "gravestone",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9701,
+      1.0006,
+      0.8201
+     ],
+     "triangles": 3830,
+     "dims": [
+      0.88998,
+      1.0000100000000003,
+      0.3833390956781297
+     ],
+     "score": 5,
+     "reason": "Gravestone: Clean shape but smeared camouflage texture looks wrong."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0332,
+      1.0332,
+      1.0332
+     ],
+     "triangles": 3806,
+     "dims": [
+      0.8222130659083715,
+      1.0295531303714192,
+      0.41488934244380105
+     ],
+     "score": 5,
+     "reason": "Gravestone: Clear tombstone shape, but dented, smeared scan-like surface."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-jungle-waterfall": {
+   "noun": "jungle waterfall",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.221,
+      1.0056,
+      1.3682
+     ],
+     "triangles": 3355,
+     "dims": [
+      1.22802,
+      0.9821799999999999,
+      1.35262
+     ],
+     "score": 3,
+     "reason": "Waterfall: Melted blob with smeared blue-green; shape hard to read."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9034,
+      0.9034,
+      0.9034
+     ],
+     "triangles": 3243,
+     "dims": [
+      1.1982980658746993,
+      0.8971590339749766,
+      1.4795138754549435
+     ],
+     "score": 4,
+     "reason": "Rock waterfall: Blobby, noisy rock mass; waterfall barely readable."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-layered-canyon-rock": {
+   "noun": "layered canyon rock",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-mangrove-tree": {
+   "noun": "mangrove tree",
+   "oldScore": 4,
+   "oldJudge": "codex+claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0098,
+      1.0098,
+      1.0098
+     ],
+     "triangles": 3173,
+     "dims": [
+      0.8928270964023721,
+      1.0088520337118376,
+      0.8998215784853032
+     ],
+     "score": 5,
+     "reason": "Tree: Good tree silhouette; canopy faceted and noisy, odd blue base."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-mesquite-tree": {
+   "noun": "mesquite tree",
+   "oldScore": 5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-prickly-pear-cactus": {
+   "noun": "prickly pear cactus",
+   "oldScore": 3.5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-rafflesia": {
+   "noun": "rafflesia",
+   "oldScore": 4,
+   "oldJudge": "codex+claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
   }
  }
 }
