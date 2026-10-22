@@ -78,15 +78,32 @@ export function holdDrawing(get: () => DrawLoop, ready: () => Promise<unknown>):
   };
 }
 
-/** Programy všech materiálů scény, přeložené mimo hlavní vlákno do lineárního cíle jako vstup skládače – program pro obrazovku (sRGB) by skládač nepoužil. */
-function compileForComposer({ gl, scene, camera }: { readonly gl: WebGLRenderer; readonly scene: Scene; readonly camera: Camera }): Promise<unknown> {
+/**
+ * Programy všech materiálů scény, přeložené mimo hlavní vlákno do lineárního cíle jako vstup skládače – program pro
+ * obrazovku (sRGB) by skládač nepoužil. Čekání je `compileAsync` three až na jedno: materiál, který React mezitím
+ * uvolnil (odcházející scéna, náhrada načteného modelu), už program nemá a vypadne – `compileAsync` se na něj ptá dál
+ * a hodí `reading 'isReady'` (T18, přechod do kola Run! na Pixelu 7).
+ */
+export function compileForComposer({ gl, scene, camera }: { readonly gl: WebGLRenderer; readonly scene: Scene; readonly camera: Camera }): Promise<void> {
   const target = new WebGLRenderTarget(1, 1);
   const previous = gl.getRenderTarget();
   gl.setRenderTarget(target);
-  const compiled = gl.compileAsync(scene, camera);
+  const pending = gl.compile(scene, camera);
   gl.setRenderTarget(previous);
   target.dispose();
-  return compiled;
+  return new Promise((resolve) => {
+    const check = () => {
+      for (const material of pending) {
+        const { currentProgram } = gl.properties.get(material) as { currentProgram?: { isReady(): boolean } };
+        if (currentProgram === undefined || currentProgram.isReady()) pending.delete(material);
+      }
+      if (pending.size === 0) resolve();
+      else setTimeout(check, 10);
+    };
+    // Bez `KHR_parallel_shader_compile` je každý program „hotový“ hned; three pak dá překladu aspoň 10 ms.
+    if (gl.extensions.has('KHR_parallel_shader_compile')) check();
+    else setTimeout(check, 10);
+  });
 }
 
 /** Pauza po doběhnutém načítání: model se do scény dostane až potvrzením Reactu v některé z dalších úloh. */
