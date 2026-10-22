@@ -11,7 +11,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import type { PerspectiveCamera } from 'three';
+import { type Camera, type PerspectiveCamera, type Scene, type WebGLRenderer, WebGLRenderTarget } from 'three';
 
 import { captureFrame } from './snapshot-cache';
 import { createStageTunnel, type Frameloop, type StageTunnel } from './stage-tunnel';
@@ -35,6 +35,68 @@ export function FreshCamera() {
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
   }, [camera]);
+  return null;
+}
+
+/**
+ * Nejdelší držení starého snímku. simplified: co se do té doby nepřeloží (první spuštění prohlížeče, GPU bez
+ * `KHR_parallel_shader_compile`), přeloží první kresba synchronně jako dřív; kdyby to vadilo, držet až do hotového překladu.
+ */
+export const HOLD_CAP_MS = 1000;
+
+/** Část stavu R3F, kterou drží `holdDrawing`. */
+export interface DrawLoop {
+  readonly frameloop: Frameloop | 'never';
+  setFrameloop(frameloop: Frameloop | 'never'): void;
+  readonly internal: { frames: number };
+}
+
+/**
+ * Plátno přestane kreslit (`frameloop` 'never'), dokud `ready` nedoběhne – nejvýš `HOLD_CAP_MS` – a pak kreslí jako
+ * předtím. `ready` začne až v další úloze, ne v potvrzení Reactu. Vrátí úklid, který kreslení pustí hned. Když mezitím
+ * smyčku přepnul někdo jiný (plátno dostalo nový `frameloop`), nechá ji být.
+ */
+export function holdDrawing(get: () => DrawLoop, ready: () => Promise<unknown>): () => void {
+  const { frameloop, setFrameloop, internal } = get();
+  if (frameloop === 'never') return () => undefined;
+  setFrameloop('never');
+  // Snímek už vyžádaný před výměnou by novou scénu nakreslil hned.
+  internal.frames = 0;
+  let held = true;
+  const resume = () => {
+    if (!held) return;
+    held = false;
+    if (get().frameloop === 'never') get().setFrameloop(frameloop);
+  };
+  const cap = setTimeout(resume, HOLD_CAP_MS);
+  const start = setTimeout(() => void ready().then(resume, resume), 0);
+  return () => {
+    clearTimeout(cap);
+    clearTimeout(start);
+    resume();
+  };
+}
+
+/** Programy všech materiálů scény, přeložené mimo hlavní vlákno do lineárního cíle jako vstup skládače – program pro obrazovku (sRGB) by skládač nepoužil. */
+function compileForComposer({ gl, scene, camera }: { readonly gl: WebGLRenderer; readonly scene: Scene; readonly camera: Camera }): Promise<unknown> {
+  const target = new WebGLRenderTarget(1, 1);
+  const previous = gl.getRenderTarget();
+  gl.setRenderTarget(target);
+  const compiled = gl.compileAsync(scene, camera);
+  gl.setRenderTarget(previous);
+  target.dispose();
+  return compiled;
+}
+
+/**
+ * Vyměněná scéna (kolo řetězu, T13a) se poprvé nakreslí až s hotovými programy shaderů (`holdDrawing`): do té doby
+ * plátno ukazuje poslední snímek předchozí scény a programy nových materiálů se překládají mimo hlavní vlákno. Montáž
+ * scény, překlad a první kresba tak nepadnou do jednoho snímku – na telefonu to byl jeden snímek 117–300 ms. Plátno,
+ * které ještě nic nenakreslilo, nemá co držet.
+ */
+export function DrawWhenCompiled() {
+  const get = useThree((three) => three.get);
+  useLayoutEffect(() => (get().gl.info.render.frame === 0 ? undefined : holdDrawing(get, () => compileForComposer(get()))), [get]);
   return null;
 }
 

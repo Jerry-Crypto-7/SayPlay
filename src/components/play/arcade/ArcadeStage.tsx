@@ -57,7 +57,7 @@ import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
 import { KeepFrame } from '../feed/snapshot-cache';
-import { FreshCamera, HostedCanvas } from '../feed/StageHost';
+import { DrawWhenCompiled, FreshCamera, HostedCanvas } from '../feed/StageHost';
 import type { StageTunnel } from '../feed/stage-tunnel';
 
 /** Fire remains available when independent parts wrap the native weapon rule. */
@@ -709,6 +709,8 @@ const StageCanvas = memo(function StageCanvas({
   readonly keepFrame?: string;
   readonly sceneKey?: string;
 }) {
+  // První scéna plátna nemá předchozí snímek, který by mohla držet (`DrawWhenCompiled`).
+  const [firstScene] = useState(sceneKey);
   const base = baseControlOf(session.world.control);
   const control = base.id;
   const stage = stageOf(control);
@@ -743,6 +745,7 @@ const StageCanvas = memo(function StageCanvas({
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
       <Fragment key={sceneKey}>
       {sceneKey !== undefined && <FreshCamera />}
+      {sceneKey !== undefined && sceneKey !== firstScene && <DrawWhenCompiled />}
       {stage.scene === 'duel' ? (
         <DuelScene session={session} look={look} heroModel={castHero} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
       ) : (
