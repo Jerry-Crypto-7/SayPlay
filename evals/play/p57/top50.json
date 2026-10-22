@@ -51,6 +51,23 @@
    "startedAt": "2026-10-22T12:16:42.024Z",
    "finishedAt": "2026-10-22T14:50:35.640Z",
    "boundsRejected": 7
+  },
+  "4": {
+   "ids": [
+    "cc0-car-taxi",
+    "gen3d-flower-box",
+    "gen3d-flower-stall",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-street-bollard",
+    "gen3d-street-lamp",
+    "gen3d-traffic-light",
+    "cc0-palm-tree",
+    "gen3d-crystal-cluster",
+    "gen3d-sandstone-rock"
+   ],
+   "startedAt": "2026-10-22T15:02:18.262Z",
+   "finishedAt": "2026-10-22T16:17:11.177Z",
+   "boundsRejected": 13
   }
  },
  "models": {
@@ -2987,10 +3004,683 @@
    "newScore": 5,
    "result": "kept-old",
    "reason": "Spiky mine: Clean silhouette but dark, dull colour; ambiguous mine or cactus."
+  },
+  "cc0-car-taxi": {
+   "noun": "car taxi",
+   "set": "cc0",
+   "oldScore": 7,
+   "oldOpus": 7,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.062"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.022"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one chunky bright yellow taxi car with a small black and white checker sign on the roof, one solid rounded body with no thin parts, four thick wheels flat on the ground, seen from the side, about twice as long as tall and twice as long as wide",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        0.462,
+        0.462,
+        0.462
+       ],
+       "triangles": 7600,
+       "pick": 7
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        0.4507,
+        0.4244,
+        0.6164
+       ],
+       "triangles": 7599,
+       "pick": 4
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.039; inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "a3",
+     "seed": 3,
+     "score": 7,
+     "reason": "Taxi car: Chunky, readable toy taxi; slightly soft, smudgy shading and blurry roof sign.",
+     "won": false,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Clean chunky low-poly taxi; model 2 is lumpy, melted, with blown highlights."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "old",
+       "reason": "Recognisable toy taxi with clean geometry, chunky silhouette and bright colours; model 2 looks melted."
+      }
+     ]
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "Taxi car: Chunky, readable toy taxi; slightly soft, smudgy shading and blurry roof sign."
+  },
+  "gen3d-flower-box": {
+   "noun": "flower box",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.071"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one solid rectangular wooden flower box with a dense round mound of bright flowers on top, flat bottom, no thin stems or loose petals, about one and a half times as long as tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-flower-stall": {
+   "noun": "flower stall",
+   "set": "gen3d-p37d",
+   "oldScore": 4,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9643,
+        1.0017,
+        1.3282
+       ],
+       "triangles": 7348,
+       "pick": 4
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9699,
+        0.997,
+        0.7535
+       ],
+       "triangles": 7285,
+       "pick": 5
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9375,
+        0.9993,
+        0.8055
+       ],
+       "triangles": 7291,
+       "pick": 3
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.999,
+        0.999,
+        0.999
+       ],
+       "triangles": 7009,
+       "pick": 6
+      }
+     ],
+     "pick": "c2",
+     "seed": 2,
+     "score": 7,
+     "reason": "Flower stall: Solid readable stall; slightly lumpy, muddy textures on canopy.",
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Chunkier, cleaner flower stall silhouette; model 2 has noisy colors, ragged awning, loose pots."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Recognisable flower stall with chunky construction, cleaner silhouette, and less fragmented geometry than model 2."
+      }
+     ]
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-mossy-rock-cluster": {
+   "noun": "mossy rock cluster",
+   "set": "gen3d-p37d",
+   "oldScore": 3,
+   "oldOpus": 4,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7946,
+        0.993,
+        0.9117
+       ],
+       "triangles": 7599,
+       "pick": 0
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.085; pivot not centred: x=-0.030 z=-0.031"
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 8,
+     "reason": "Mossy rocks: Chunky clean rock cluster, bright moss, very toy-like.",
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Clean chunky mossy rocks, readable silhouette; model 2 is a noisy, jagged, glitchy blob."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Recognisable chunky rocks with clean silhouettes and bright colours; model 2 looks fractured and noisy."
+      }
+     ]
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-street-bollard": {
+   "noun": "street bollard",
+   "set": "gen3d-p37d",
+   "oldScore": 6,
+   "oldOpus": 4,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0316,
+        1.0316,
+        1.0316
+       ],
+       "triangles": 7600,
+       "pick": 4
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7774,
+        0.9997,
+        0.7788
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7791,
+        0.9986,
+        0.7766
+       ],
+       "triangles": 7599,
+       "pick": 4
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "b1",
+     "seed": 1,
+     "score": 6,
+     "reason": "Lamp post: Chunky toy shape, but dull grey egg head reads ambiguously.",
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Clean, readable bollard with bright yellow ring; model 2 is lumpy, noisy, all-black."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Clean, readable silhouette and bright yellow accent; model 2 looks torn, muddy, and malformed."
+      }
+     ]
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-street-lamp": {
+   "noun": "street lamp",
+   "set": "gen3d-p37d",
+   "oldScore": 7,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9296,
+        0.9296,
+        0.9296
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7653,
+        1,
+        0.7634
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7447,
+        1,
+        0.7499
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 7,
+     "reason": "Street lamp: Clean lamp but thin realistic proportions, not chunky toy look.",
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Clearer streetlamp silhouette with readable globe, clean geometry, bolder toy-like contrast."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Recognisable streetlamp with chunky shapes, clear contrast, and clean geometry; stronger toy-like silhouette."
+      }
+     ]
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-traffic-light": {
+   "noun": "traffic light",
+   "set": "gen3d",
+   "oldScore": 5,
+   "oldOpus": 4,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        1.4107,
+        0.9991,
+        1.1355
+       ],
+       "triangles": 7600,
+       "pick": 0
+      }
+     ],
+     "pick": "c2",
+     "seed": 2,
+     "score": 6,
+     "reason": "traffic light: Chunky toy-like shape; lumpy surfaces and blurry lens edges.",
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Chunky, toy-like traffic light with clear silhouette; model 2 has jagged, torn edges."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Recognisable chunky traffic light with clean geometry; model 2 has torn, jagged surfaces and holes."
+      }
+     ]
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-crystal-cluster": {
+   "noun": "crystal cluster",
+   "set": "gen3d",
+   "oldScore": 8,
+   "oldOpus": 7,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.683,
+        1.0002,
+        0.727
+       ],
+       "triangles": 7600,
+       "pick": 8
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.7262,
+        1,
+        0.7722
+       ],
+       "triangles": 7600,
+       "pick": 7
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "bounds"
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 8,
+     "reason": "Crystal cluster: Bright solid crystals on rock base, clean readable silhouette.",
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Clearly a crystal cluster, chunky toy-like style, clean silhouette, no broken geometry."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Clearly recognisable crystal cluster with solid colours, chunky toy-like forms, and no obvious broken geometry."
+      }
+     ]
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-sandstone-rock": {
+   "noun": "sandstone rock",
+   "set": "gen3d-p37d",
+   "oldScore": 7,
+   "oldOpus": 7,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one solid low sandstone rock with smooth rounded orange-tan layered bands, flat bottom, no loose pieces or overhangs, about twice as wide as tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: height along +Y is 1.257 m, expected 1.0 m (wrong up axis or scale); pivot not at the base: lowest point y=-0.155; pivot not centred: x=0.011 z=0.031"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
   }
  },
  "summary": {
-  "atLeast8": 15,
+  "atLeast8": 16,
   "of": 50,
   "below": [
    {
@@ -3116,7 +3806,7 @@
    {
     "id": "cc0-car-taxi",
     "score": 7,
-    "reason": "Charming toy taxi; 0.9m length seems wrongly scaled."
+    "reason": "Taxi car: Chunky, readable toy taxi; slightly soft, smudgy shading and blurry roof sign."
    },
    {
     "id": "gen3d-flower-box",
@@ -3125,13 +3815,8 @@
    },
    {
     "id": "gen3d-flower-stall",
-    "score": 4,
+    "score": 7,
     "reason": "Recognisable stall, but jagged foliage and mottled canopy create excessive visual noise."
-   },
-   {
-    "id": "gen3d-mossy-rock-cluster",
-    "score": 3,
-    "reason": "Crumpled green mass with fractured surfaces; intended object lacks a readable silhouette."
    },
    {
     "id": "gen3d-street-bollard",
@@ -3145,7 +3830,7 @@
    },
    {
     "id": "gen3d-traffic-light",
-    "score": 5,
+    "score": 6,
     "reason": "Recognisable signal, but crumpled housing and irregular lenses undermine clean toy styling."
    },
    {

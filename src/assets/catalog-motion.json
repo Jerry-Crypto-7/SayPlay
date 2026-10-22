@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "412c5b37cd522a36756a9cb8e740027b2f2c550fde6e38ea76771a40a6816742",
+ "catalogHash": "13fd7c2a6e68267cd841dfc3de9c60993436b7b19c8882224d6b1dccf6d571b6",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -844,7 +844,7 @@
   "gen3d-amulet": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-wrench": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-broom": {"class":"flyer"},
-  "gen3d-street-lamp": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-street-lamp": {"class":"biped","regions":{"legY":0.232}},
   "gen3d-slot-machine": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-arcade-machine": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-puzzle-piece": {"class":"prop"},
