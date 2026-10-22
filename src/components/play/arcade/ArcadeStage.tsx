@@ -14,7 +14,7 @@
  */
 
 import { addAfterEffect, useThree } from '@react-three/fiber';
-import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
@@ -57,7 +57,7 @@ import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
 import { KeepFrame } from '../feed/snapshot-cache';
-import { HostedCanvas } from '../feed/StageHost';
+import { FreshCamera, HostedCanvas } from '../feed/StageHost';
 import type { StageTunnel } from '../feed/stage-tunnel';
 
 /** Fire remains available when independent parts wrap the native weapon rule. */
@@ -693,6 +693,7 @@ const StageCanvas = memo(function StageCanvas({
   ghost,
   host,
   keepFrame,
+  sceneKey,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -706,6 +707,7 @@ const StageCanvas = memo(function StageCanvas({
   readonly ghost?: ArcadeGhost;
   readonly host?: StageTunnel;
   readonly keepFrame?: string;
+  readonly sceneKey?: string;
 }) {
   const base = baseControlOf(session.world.control);
   const control = base.id;
@@ -739,6 +741,8 @@ const StageCanvas = memo(function StageCanvas({
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
       {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
+      <Fragment key={sceneKey}>
+      {sceneKey !== undefined && <FreshCamera />}
       {stage.scene === 'duel' ? (
         <DuelScene session={session} look={look} heroModel={castHero} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
       ) : (
@@ -769,6 +773,7 @@ const StageCanvas = memo(function StageCanvas({
           )}
         </>
       )}
+      </Fragment>
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
@@ -791,6 +796,7 @@ export default function ArcadeStage({
   overlay,
   host,
   keepFrame,
+  sceneKey,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -815,6 +821,11 @@ export default function ArcadeStage({
   readonly host?: StageTunnel;
   /** Verze hry, jejíž snímek se po prvních snímcích uloží přes reload (P56B T12, `KeepFrame`). */
   readonly keepFrame?: string;
+  /**
+   * Klíč scény žánru (kolo řetězu, P56C T13a): jeho změna postaví znovu jen scénu žánru a kameru; rig, skládač,
+   * obloha a efekty zůstanou i s programy shaderů. Bez klíče se scéna remountuje jen se změnou žánru.
+   */
+  readonly sceneKey?: string;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -854,7 +865,11 @@ export default function ArcadeStage({
   const ended = useSyncExternalStore(session.subscribe, () => session.snapshot().runState !== 'running', () => false);
   const [settling, setSettling] = useState(false);
   useEffect(() => {
-    if (!ended) return;
+    // Nová relace bez remountu (kolo řetězu, `sceneKey`) nebo restart: úklid zrušil časovač, klip konce už neběží.
+    if (!ended) {
+      setSettling(false);
+      return;
+    }
     setSettling(true);
     const timer = window.setTimeout(() => setSettling(false), END_CLIP_MS);
     return () => window.clearTimeout(timer);
@@ -863,7 +878,7 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} />
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}

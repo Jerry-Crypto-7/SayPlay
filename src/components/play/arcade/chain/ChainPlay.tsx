@@ -79,7 +79,7 @@ type ChainPlayProps = Parameters<typeof ChainRun>[0];
  */
 export function ChainPlay(props: ChainPlayProps) {
   if (props.host !== undefined) return <ChainRun {...props} />;
-  return <StageHost>{(host) => <ChainRun {...props} host={host} />}</StageHost>;
+  return <StageHost keepPrograms>{(host) => <ChainRun {...props} host={host} />}</StageHost>;
 }
 
 function ChainRun({
@@ -299,8 +299,9 @@ function ChainRun({
 
   return (
     <main ref={shell} className="play-shell" data-chain-round={at + 1} data-chain-view={view} style={{ '--_sky': scene.sky } as CSSProperties}>
+      {/* Kolo mění jen scénu žánru (`sceneKey`); rig, skládač a efekty plátna zůstávají – nová stavba všeho stála na telefonu snímky 150–430 ms (T13a). */}
       <ArcadeStage
-        key={`${String(attempt)}-${String(at)}`}
+        sceneKey={`${String(attempt)}-${String(at)}`}
         session={round}
         cast={cast}
         lookId={lookOf(roundSpec.theme)}

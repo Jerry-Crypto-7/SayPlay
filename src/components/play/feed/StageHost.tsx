@@ -8,7 +8,7 @@
  * jedny (`STAGE_CANVAS`).
  */
 
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import type { PerspectiveCamera } from 'three';
@@ -25,7 +25,7 @@ export const STAGE_CANVAS = { camera: { position: [...CAMERA_AT] as [number, num
 let owners = 0;
 
 /** Kamera jako u nového plátna – další hra nezdědí záběr předchozí (R3F výchozí kameru míří na počátek). */
-function FreshCamera() {
+export function FreshCamera() {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   useLayoutEffect(() => {
     camera.position.set(...CAMERA_AT);
@@ -38,11 +38,32 @@ function FreshCamera() {
   return null;
 }
 
-function HostCanvas({ host }: { readonly host: StageTunnel }) {
+/**
+ * Každý program, který three na plátně vytvoří, dostane jedno použití navíc (`usedTimes`), takže ho `releaseProgram`
+ * při odchodu scény nesmaže a další scéna ho podle klíče vezme hotový. Kola řetězu kreslí z velké části tytéž
+ * shadery (skládač, terén, obrys) a na telefonu stála jejich nová kompilace při každém přechodu 100–300 ms (T13a).
+ * simplified: drží všechny programy plátna (u řetězu desítky, pár kB na GPU) do zániku kontextu; feed s desítkami
+ * her by je měl pouštět podle stáří, proto jen na požádání.
+ */
+function KeepPrograms() {
+  const gl = useThree((three) => three.gl);
+  const [kept] = useState(() => new WeakSet<object>());
+  useFrame(() => {
+    for (const program of gl.info.programs ?? []) {
+      if (kept.has(program)) continue;
+      kept.add(program);
+      program.usedTimes += 1;
+    }
+  });
+  return null;
+}
+
+function HostCanvas({ host, keepPrograms }: { readonly host: StageTunnel; readonly keepPrograms: boolean }) {
   const content = useSyncExternalStore(host.subscribe, host.content, () => null);
   useLayoutEffect(() => () => host.bind(null), [host]);
   return (
     <Canvas {...STAGE_CANVAS} frameloop={content?.frameloop ?? 'demand'} onCreated={(state) => host.bind(() => captureFrame(state))}>
+      {keepPrograms && <KeepPrograms />}
       {content !== null && (
         <Fragment key={content.owner}>
           <FreshCamera />
@@ -55,9 +76,18 @@ function HostCanvas({ host }: { readonly host: StageTunnel }) {
 
 /**
  * Drží jedno plátno, dokud je feed na stránce; `children` dostanou hostitele pro `ArcadeStage`.
- * `onLeave` dostane snímek scény, která z plátna odchází (T8).
+ * `onLeave` dostane snímek scény, která z plátna odchází (T8). `keepPrograms` drží programy shaderů přes výměny scén
+ * (řetěz mikroher, `KeepPrograms`).
  */
-export function StageHost({ children, onLeave }: { readonly children: (host: StageTunnel) => ReactNode; readonly onLeave?: (frame: Promise<Blob | null>) => void }) {
+export function StageHost({
+  children,
+  onLeave,
+  keepPrograms = false,
+}: {
+  readonly children: (host: StageTunnel) => ReactNode;
+  readonly onLeave?: (frame: Promise<Blob | null>) => void;
+  readonly keepPrograms?: boolean;
+}) {
   const [host] = useState(() => {
     if (typeof document === 'undefined') return createStageTunnel(null);
     const element = document.createElement('div');
@@ -68,7 +98,7 @@ export function StageHost({ children, onLeave }: { readonly children: (host: Sta
   useEffect(() => (onLeave === undefined ? undefined : host.onLeave(onLeave)), [host, onLeave]);
   return (
     <>
-      {host.element !== null && createPortal(<HostCanvas host={host} />, host.element)}
+      {host.element !== null && createPortal(<HostCanvas host={host} keepPrograms={keepPrograms} />, host.element)}
       {children(host)}
     </>
   );
