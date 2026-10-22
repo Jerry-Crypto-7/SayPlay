@@ -13,6 +13,94 @@
         {
           "id": "gen3d-ice-floe",
           "height": 0.5
+        },
+        {
+          "id": "gen3d-ice-auger",
+          "height": 1
+        },
+        {
+          "id": "gen3d-thin-ice-sign",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-frozen-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-ice-skate",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-hockey-goal",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-snow-lantern",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-ice-lantern",
+          "height": 1
+        },
+        {
+          "id": "gen3d-frozen-log",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-frozen-barrel",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-snowy-stump",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-ice-spike",
+          "height": 2
+        },
+        {
+          "id": "gen3d-ice-arch",
+          "height": 2.5
+        },
+        {
+          "id": "gen3d-iceberg",
+          "height": 3
+        },
+        {
+          "id": "gen3d-frozen-fountain",
+          "height": 2
+        },
+        {
+          "id": "gen3d-log-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-snowy-mailbox",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-snowy-lamppost",
+          "height": 1.2
+        },
+        {
+          "id": "cc0-campfire-logs",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-firewood-basket",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-sleigh",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-ski-rack",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-polar-flag",
+          "height": 2.5
         }
       ]
     },
@@ -28,6 +116,90 @@
         {
           "id": "gen3d-highway-sign",
           "height": 4.5
+        },
+        {
+          "id": "cc0-traffic-barrier",
+          "height": 1
+        },
+        {
+          "id": "cc0-barrier-single",
+          "height": 1
+        },
+        {
+          "id": "cc0-plastic-barrier",
+          "height": 1
+        },
+        {
+          "id": "gen3d-traffic-cone",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-roadblock",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-road-sign",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-hazard-sign",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-billboard-sign",
+          "height": 4.5
+        },
+        {
+          "id": "gen3d-gas-pump",
+          "height": 1.9
+        },
+        {
+          "id": "cc0-car-sedan",
+          "height": 1.5
+        },
+        {
+          "id": "cc0-car-stationwagon",
+          "height": 1.5
+        },
+        {
+          "id": "cc0-van",
+          "height": 2
+        },
+        {
+          "id": "cc0-delivery",
+          "height": 2.6
+        },
+        {
+          "id": "cc0-garbage-truck",
+          "height": 3
+        },
+        {
+          "id": "cc0-ambulance",
+          "height": 2.6
+        },
+        {
+          "id": "cc0-firetruck",
+          "height": 3
+        },
+        {
+          "id": "cc0-gas-tank",
+          "height": 2
+        },
+        {
+          "id": "gen3d-lamp-post",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-telephone-pole",
+          "height": 7
+        },
+        {
+          "id": "cc0-barrier-fixed",
+          "height": 1
+        },
+        {
+          "id": "cc0-school-bus",
+          "height": 3
         }
       ]
     },
@@ -41,8 +213,76 @@
           "height": 1.1
         },
         {
-          "id": "gen3d-shopping-basket",
+          "id": "cc0-cabinet-shelves",
+          "height": 1.9
+        },
+        {
+          "id": "cc0-can-fridge",
+          "height": 1.9
+        },
+        {
+          "id": "gen3d-deli-counter",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-deli-scale",
           "height": 0.8
+        },
+        {
+          "id": "gen3d-display-case",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-candy-display",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-magazine-rack",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-cereal-box",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-milk-carton",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-grocery-bag",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-shopping-bag",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-cheese-wheel",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-banana-bunch",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-soda-fountain",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-vending-machine",
+          "height": 1.9
+        },
+        {
+          "id": "gen3d-turnstile",
+          "height": 1
+        },
+        {
+          "id": "gen3d-umbrella-stand",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-berry-basket",
+          "height": 0.6
         }
       ]
     },
@@ -301,12 +541,76 @@
       "look": "desert",
       "props": [
         {
-          "id": "gen3d-rock-arch",
+          "id": "gen3d-rock-pillar",
+          "height": 4
+        },
+        {
+          "id": "gen3d-standing-stone",
           "height": 2.2
         },
         {
-          "id": "gen3d-mesa",
-          "height": 1.4
+          "id": "gen3d-stone-cairn",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-cow-skull",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-desert-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-desert-lantern",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wagon-wheel",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-mine-cart",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-rope-bridge",
+          "height": 2
+        },
+        {
+          "id": "gen3d-wooden-rope-bridge",
+          "height": 2.4
+        },
+        {
+          "id": "cc0-campfire-stones",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-wanted-poster",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-dinosaur-skeleton",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-fossil",
+          "height": 1
+        },
+        {
+          "id": "gen3d-bone-pile",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-tnt-crate",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-ore-crusher",
+          "height": 2.5
+        },
+        {
+          "id": "gen3d-sand-dune",
+          "height": 1.2
         }
       ]
     },
@@ -316,12 +620,80 @@
       "look": "desert",
       "props": [
         {
-          "id": "gen3d-rock-arch",
-          "height": 2.2
-        },
-        {
           "id": "gen3d-cow-skull",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-bedouin-tent",
+          "height": 3
+        },
+        {
+          "id": "gen3d-oasis-well",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-adobe-house",
+          "height": 2.8
+        },
+        {
+          "id": "gen3d-clay-jar",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-amphora",
+          "height": 1
+        },
+        {
+          "id": "gen3d-rock-pillar",
+          "height": 4
+        },
+        {
+          "id": "gen3d-desert-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-desert-lantern",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wagon-wheel",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-mine-cart",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wanted-poster",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-dinosaur-skeleton",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-fossil",
+          "height": 1
+        },
+        {
+          "id": "gen3d-bone-pile",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-sand-dune",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-stone-obelisk",
+          "height": 5
+        },
+        {
+          "id": "gen3d-joshua-tree",
+          "height": 4
+        },
+        {
+          "id": "cc0-campfire-stones",
+          "height": 0.6
         }
       ]
     },
@@ -1051,20 +1423,92 @@
       "look": "meadow",
       "props": [
         {
+          "id": "gen3d-wooden-fence",
+          "height": 1.1
+        },
+        {
           "id": "gen3d-dandelion",
           "height": 1
         },
         {
-          "id": "gen3d-picnic-basket",
-          "height": 0.6
-        },
-        {
-          "id": "gen3d-birdhouse",
+          "id": "gen3d-haystack",
           "height": 1.6
         },
         {
-          "id": "gen3d-wooden-fence",
+          "id": "gen3d-hay-cart",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-wooden-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-log-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-garden-gnome",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-wheelbarrow",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-water-pump",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-milk-can",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-standing-stone",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-stone-cairn",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wooden-swing",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-feeding-trough",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-white-picket-fence",
           "height": 1.1
+        },
+        {
+          "id": "gen3d-mossy-fallen-log",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-mossy-stump",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-wishing-well",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-weather-vane",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-gazebo",
+          "height": 3.2
+        },
+        {
+          "id": "cc0-hay-bale",
+          "height": 1
+        },
+        {
+          "id": "cc0-tractor",
+          "height": 2.4
         }
       ]
     },
@@ -1584,16 +2028,88 @@
           "height": 5
         },
         {
-          "id": "gen3d-park-bench",
-          "height": 1
-        },
-        {
           "id": "gen3d-park-fountain",
           "height": 2.2
         },
         {
-          "id": "gen3d-street-trash-can",
+          "id": "gen3d-gazebo",
+          "height": 3.2
+        },
+        {
+          "id": "gen3d-bandstand",
+          "height": 3.5
+        },
+        {
+          "id": "cc0-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-log-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-playground-slide",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-wooden-swing",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-seesaw",
+          "height": 1
+        },
+        {
+          "id": "gen3d-spring-rider",
+          "height": 1
+        },
+        {
+          "id": "gen3d-merry-go-round",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-carousel",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-lamp-post",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-street-lamp",
+          "height": 4
+        },
+        {
+          "id": "gen3d-flower-pot",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-garden-arch",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-statue",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-notice-board",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-trail-sign",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-food-kiosk",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-recycling-bin",
           "height": 1.1
+        },
+        {
+          "id": "gen3d-cherry-blossom-tree",
+          "height": 5
         }
       ]
     },
@@ -1803,12 +2319,72 @@
           "height": 2.4
         },
         {
-          "id": "gen3d-vine-covered-rock-wall",
-          "height": 2.6
+          "id": "gen3d-carved-stone-head",
+          "height": 2.4
         },
         {
-          "id": "gen3d-ruin",
-          "height": 2.5
+          "id": "gen3d-tiki-totem",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-tiki-torch",
+          "height": 1.9
+        },
+        {
+          "id": "gen3d-mossy-ruin-pillar",
+          "height": 2.8
+        },
+        {
+          "id": "gen3d-stilt-hut",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-jungle-vine-bridge",
+          "height": 2
+        },
+        {
+          "id": "gen3d-jungle-vine",
+          "height": 3
+        },
+        {
+          "id": "gen3d-tribal-drum",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-tribal-shield",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-tiki-mask",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-golden-idol",
+          "height": 1
+        },
+        {
+          "id": "gen3d-treasure-chest",
+          "height": 1
+        },
+        {
+          "id": "gen3d-medical-tent",
+          "height": 2.4
+        },
+        {
+          "id": "cc0-altar-stone",
+          "height": 1.2
+        },
+        {
+          "id": "cc0-campfire-stones",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-vine-curtain",
+          "height": 3
+        },
+        {
+          "id": "gen3d-camping-chair",
+          "height": 0.9
         }
       ]
     },
@@ -1948,10 +2524,6 @@
       "look": "beach",
       "props": [
         {
-          "id": "gen3d-beach-hut",
-          "height": 3.2
-        },
-        {
           "id": "gen3d-lifeguard-tower",
           "height": 4
         },
@@ -1960,8 +2532,72 @@
           "height": 2.4
         },
         {
-          "id": "gen3d-wooden-pier",
+          "id": "gen3d-beach-cabana",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-beach-cooler",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-beach-flag",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-beach-bonfire",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-sand-bucket",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-surfboard",
+          "height": 2
+        },
+        {
+          "id": "gen3d-coconut-stall",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-driftwood-log",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-driftwood",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-rock-pool",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-lifebuoy",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-message-in-a-bottle",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-tiki-torch",
+          "height": 1.9
+        },
+        {
+          "id": "gen3d-pier-lamp",
+          "height": 3
+        },
+        {
+          "id": "gen3d-wooden-dock",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-dock-piling",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-beach-ball",
+          "height": 0.6
         }
       ]
     },
@@ -2256,6 +2892,592 @@
         },
         {
           "id": "gen3d-sunken-lamp-post",
+          "height": 3
+        }
+      ]
+    },
+    {
+      "setting": "castle",
+      "pattern": "\\bcastle(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-castle-gate",
+          "height": 3.4
+        },
+        {
+          "id": "gen3d-portcullis",
+          "height": 3
+        },
+        {
+          "id": "gen3d-battlement-wall",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-castle-banner",
+          "height": 3
+        },
+        {
+          "id": "gen3d-tournament-banner",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-castle-catapult",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-trebuchet",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-siege-tower",
+          "height": 5
+        },
+        {
+          "id": "gen3d-battering-ram",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-cannon-tower",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-suit-of-armor",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-armor-rack",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-sword-rack",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-throne",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-stone-column",
+          "height": 3
+        },
+        {
+          "id": "gen3d-gargoyle",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-flagpole",
+          "height": 6
+        },
+        {
+          "id": "gen3d-wishing-well",
+          "height": 1.8
+        },
+        {
+          "id": "cc0-barrel-stack",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-hay-cart",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-market-stall",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-sword-in-the-stone",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-forge-furnace",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-pillory",
+          "height": 2
+        }
+      ]
+    },
+    {
+      "setting": "city",
+      "pattern": "\\bcity(?:e?s)?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "townhouse",
+          "height": 7
+        },
+        {
+          "id": "gen3d-brick-townhouse",
+          "height": 7
+        },
+        {
+          "id": "gen3d-glass-office-tower",
+          "height": 12
+        },
+        {
+          "id": "gen3d-skyscraper",
+          "height": 12
+        },
+        {
+          "id": "gen3d-red-phone-booth",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-street-mailbox",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-post-box",
+          "height": 1.3
+        },
+        {
+          "id": "cc0-car-sedan",
+          "height": 1.5
+        },
+        {
+          "id": "cc0-van",
+          "height": 2
+        },
+        {
+          "id": "cc0-bus",
+          "height": 3
+        },
+        {
+          "id": "cc0-car-police",
+          "height": 1.6
+        },
+        {
+          "id": "cc0-dumpster",
+          "height": 1.6
+        },
+        {
+          "id": "cc0-traffic-barrier",
+          "height": 1
+        },
+        {
+          "id": "gen3d-traffic-cone",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-crosswalk-sign",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-billboard-sign",
+          "height": 4.5
+        },
+        {
+          "id": "gen3d-neon-sign",
+          "height": 2
+        },
+        {
+          "id": "gen3d-food-truck",
+          "height": 2.8
+        },
+        {
+          "id": "gen3d-food-kiosk",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-vending-machine",
+          "height": 1.9
+        },
+        {
+          "id": "gen3d-parking-meter",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-street-clock",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-pay-phone",
+          "height": 2
+        },
+        {
+          "id": "gen3d-graffiti-wall",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-shop-sign",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "kitchen",
+      "pattern": "\\bkitchen(?:e?s)?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "cc0-kitchencabinet",
+          "height": 1
+        },
+        {
+          "id": "cc0-kitchentable",
+          "height": 0.9
+        },
+        {
+          "id": "cc0-kitchencounter-sink",
+          "height": 1
+        },
+        {
+          "id": "cc0-oven",
+          "height": 1
+        },
+        {
+          "id": "cc0-fridge-decorated",
+          "height": 1.9
+        },
+        {
+          "id": "cc0-cutting-table",
+          "height": 1
+        },
+        {
+          "id": "cc0-counter-sink",
+          "height": 1
+        },
+        {
+          "id": "cc0-cooking-pot",
+          "height": 0.8
+        },
+        {
+          "id": "cc0-toaster",
+          "height": 0.7
+        },
+        {
+          "id": "cc0-chair-stool",
+          "height": 0.8
+        },
+        {
+          "id": "cc0-chair-wood",
+          "height": 1
+        },
+        {
+          "id": "gen3d-microwave",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-dishwasher",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-espresso-machine",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-deep-fryer",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-griddle",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wood-stove",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-bread-oven",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-cake-stand",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-mortar-and-pestle",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-pepper-mill",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-kettle",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-cookie-jar",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-blender",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-teapot",
+          "height": 0.6
+        }
+      ]
+    },
+    {
+      "setting": "village",
+      "pattern": "\\bvillage(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-timber-house",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wooden-hut",
+          "height": 3
+        },
+        {
+          "id": "gen3d-market-stall",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-market-stall-shop",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-hay-cart",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-haystack",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-water-wheel",
+          "height": 3
+        },
+        {
+          "id": "gen3d-wishing-well",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-forest-well",
+          "height": 1.8
+        },
+        {
+          "id": "cc0-hay-bale",
+          "height": 1
+        },
+        {
+          "id": "cc0-barrel",
+          "height": 1
+        },
+        {
+          "id": "gen3d-wagon-wheel",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-wooden-fence",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-white-picket-fence",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-notice-board",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wooden-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-outhouse",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-doghouse",
+          "height": 1.2
+        },
+        {
+          "id": "cc0-workbench-anvil",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-forge-furnace",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-clock-tower",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-weather-vane",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-firewood-basket",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-milk-can",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-water-pump",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "dojo",
+      "pattern": "\\bdojo(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-torii-gate",
+          "height": 4
+        },
+        {
+          "id": "gen3d-stone-lantern",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-paper-lantern",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-gong",
+          "height": 2
+        },
+        {
+          "id": "cc0-bamboo",
+          "height": 3
+        },
+        {
+          "id": "gen3d-bamboo-cluster",
+          "height": 3
+        },
+        {
+          "id": "gen3d-cherry-blossom-tree",
+          "height": 5
+        },
+        {
+          "id": "gen3d-sword-rack",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-armor-rack",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-standing-stone",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-stone-cairn",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-forest-shrine",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-wooden-fence",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-bullseye-target",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-teapot",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-tribal-drum",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-bamboo-hut",
+          "height": 3
+        }
+      ]
+    },
+    {
+      "setting": "floating island",
+      "pattern": "\\bfloating[\\s-]+island(?:e?s)?\\b",
+      "look": "beach",
+      "props": [
+        {
+          "id": "gen3d-floating-island",
+          "height": 3
+        },
+        {
+          "id": "cc0-cloud",
+          "height": 1.5
+        },
+        {
+          "id": "cc0-tree-floating",
+          "height": 2.5
+        },
+        {
+          "id": "gen3d-airship",
+          "height": 3
+        },
+        {
+          "id": "gen3d-blimp",
+          "height": 3
+        },
+        {
+          "id": "gen3d-crystal-cluster",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-power-crystal",
+          "height": 2
+        },
+        {
+          "id": "gen3d-magic-fountain",
+          "height": 2
+        },
+        {
+          "id": "gen3d-orb-pedestal",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-crystal-pedestal",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-rune-stone",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-standing-stone",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-wooden-rope-bridge",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-plank-bridge",
+          "height": 1.5
+        },
+        {
+          "id": "gen3d-giant-toadstool",
+          "height": 2
+        },
+        {
+          "id": "gen3d-glowing-mushroom",
+          "height": 1.5
+        },
+        {
+          "id": "gen3d-fairy-door",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-gyrocopter",
+          "height": 2
+        },
+        {
+          "id": "cc0-tree-spiral",
+          "height": 3
+        },
+        {
+          "id": "cc0-tree-swirl",
           "height": 3
         }
       ]

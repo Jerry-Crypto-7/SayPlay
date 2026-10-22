@@ -1,0 +1,263 @@
+{
+ "about": "P57 T9: nouns the world kits (scripts/p45h/build-setting-kits.mjs, P57_KITS) asked for but the library cannot give – not in the catalog, or last judged below 6. T10 generates them or marks them skipped.",
+ "missing": [
+  {
+   "setting": "meadow",
+   "noun": "scarecrow",
+   "id": "gen3d-scarecrow",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "meadow",
+   "noun": "beehive",
+   "id": "gen3d-beehive",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "meadow",
+   "noun": "flower cart",
+   "id": "gen3d-flower-cart",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "castle",
+   "noun": "castle tower",
+   "id": "gen3d-castle-tower",
+   "reason": "score 4"
+  },
+  {
+   "setting": "castle",
+   "noun": "knight statue",
+   "id": "gen3d-knight-statue",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "city",
+   "noun": "apartment block",
+   "id": "gen3d-apartment-block",
+   "reason": "score 3"
+  },
+  {
+   "setting": "city",
+   "noun": "newspaper stand",
+   "id": "gen3d-newspaper-stand",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "jungle",
+   "noun": "vine covered rock wall",
+   "id": "gen3d-vine-covered-rock-wall",
+   "reason": "score 4"
+  },
+  {
+   "setting": "jungle",
+   "noun": "jungle temple stairs",
+   "id": "gen3d-jungle-temple-stairs",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "jungle",
+   "noun": "ruin",
+   "id": "gen3d-ruin",
+   "reason": "score 2"
+  },
+  {
+   "setting": "kitchen",
+   "noun": "spice rack",
+   "id": "gen3d-spice-rack",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "kitchen",
+   "noun": "kitchen island",
+   "id": "gen3d-kitchen-island",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "park",
+   "noun": "park bench",
+   "id": "gen3d-park-bench",
+   "reason": "score 5"
+  },
+  {
+   "setting": "park",
+   "noun": "street trash can",
+   "id": "gen3d-street-trash-can",
+   "reason": "score 3"
+  },
+  {
+   "setting": "park",
+   "noun": "duck pond",
+   "id": "gen3d-duck-pond",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "village",
+   "noun": "cottage",
+   "id": "gen3d-cottage",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "village",
+   "noun": "village church",
+   "id": "gen3d-village-church",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "village",
+   "noun": "log cabin",
+   "id": "gen3d-log-cabin",
+   "reason": "score 4"
+  },
+  {
+   "setting": "beach",
+   "noun": "beach hut",
+   "id": "gen3d-beach-hut",
+   "reason": "score 4"
+  },
+  {
+   "setting": "beach",
+   "noun": "wooden pier",
+   "id": "gen3d-wooden-pier",
+   "reason": "score 5"
+  },
+  {
+   "setting": "beach",
+   "noun": "ice cream cart",
+   "id": "gen3d-ice-cream-cart",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "dojo",
+   "noun": "training dummy",
+   "id": "gen3d-training-dummy",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "dojo",
+   "noun": "taiko drum",
+   "id": "gen3d-taiko-drum",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "dojo",
+   "noun": "pagoda",
+   "id": "gen3d-pagoda",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "dojo",
+   "noun": "koi pond",
+   "id": "gen3d-koi-pond",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "floating island",
+   "noun": "sky waterfall",
+   "id": "gen3d-sky-waterfall",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "floating island",
+   "noun": "floating rock",
+   "id": "gen3d-floating-rock",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "floating island",
+   "noun": "hot air balloon",
+   "id": "gen3d-hot-air-balloon",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "frozen lake",
+   "noun": "frozen pier",
+   "id": "gen3d-frozen-pier",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "frozen lake",
+   "noun": "fishing rod rack",
+   "id": "gen3d-fishing-rod-rack",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "highway",
+   "noun": "guardrail",
+   "id": "gen3d-guardrail",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "highway",
+   "noun": "highway overpass",
+   "id": "gen3d-highway-overpass",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "highway",
+   "noun": "highway lamp",
+   "id": "gen3d-highway-lamp",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "supermarket",
+   "noun": "shopping basket",
+   "id": "gen3d-shopping-basket",
+   "reason": "score 2"
+  },
+  {
+   "setting": "supermarket",
+   "noun": "egg carton",
+   "id": "gen3d-egg-carton",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "supermarket",
+   "noun": "ice cream freezer",
+   "id": "gen3d-ice-cream-freezer",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "supermarket",
+   "noun": "produce stand",
+   "id": "gen3d-produce-stand",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "canyon",
+   "noun": "rock arch",
+   "id": "gen3d-rock-arch",
+   "reason": "score 5"
+  },
+  {
+   "setting": "canyon",
+   "noun": "mesa",
+   "id": "gen3d-mesa",
+   "reason": "score 4"
+  },
+  {
+   "setting": "canyon",
+   "noun": "hoodoo rock",
+   "id": "gen3d-hoodoo-rock",
+   "reason": "not in the catalog or qa:unrecognisable"
+  },
+  {
+   "setting": "canyon",
+   "noun": "layered canyon rock",
+   "id": "gen3d-layered-canyon-rock",
+   "reason": "score 5"
+  },
+  {
+   "setting": "desert canyon",
+   "noun": "rock arch",
+   "id": "gen3d-rock-arch",
+   "reason": "score 5"
+  },
+  {
+   "setting": "desert canyon",
+   "noun": "hoodoo rock",
+   "id": "gen3d-hoodoo-rock",
+   "reason": "not in the catalog or qa:unrecognisable"
+  }
+ ]
+}
