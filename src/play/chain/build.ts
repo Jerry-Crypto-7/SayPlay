@@ -120,10 +120,18 @@ function shuffled<T>(keys: readonly T[], stream: ReturnType<typeof createStreams
   return out;
 }
 
-/** Návrh kola se stejným hrdinou, místem a vzhledem; boss dostane protivníka věty do obsazení. */
-function sameWorld(draft: GenreSpec, shared: Pick<GenreSpec, 'hero' | 'setting' | 'palette'>, foe: string | null): GenreSpec {
+/**
+ * Návrh kola se stejným hrdinou, místem a vzhledem; boss dostane protivníka věty do obsazení. `item` (jen čtení
+ * modelem, T17a) je věc, kterou kolo sbírá: přejmenuje sbíranou věc návrhu, kolo bez ní ji dostane navíc.
+ */
+function sameWorld(draft: GenreSpec, shared: Pick<GenreSpec, 'hero' | 'setting' | 'palette'>, foe: string | null, item: string | null): GenreSpec {
   const { palette: _own, ...rest } = draft;
-  const spec = { ...rest, ...shared } as GenreSpec;
+  const own = { ...rest, ...shared } as GenreSpec;
+  const collects = own.cast?.some((member) => member.does === 'collect') === true;
+  const spec =
+    item === null ? own
+    : collects ? ({ ...own, cast: own.cast!.map((member) => (member.does === 'collect' ? { ...member, label: item } : member)) } as GenreSpec)
+    : ({ ...own, cast: [...(own.cast ?? []), { label: item, does: 'collect' }].slice(0, CAST_MAX) } as GenreSpec);
   if (foe === null || spec.cast?.some((member) => member.label === foe)) return spec;
   return { ...spec, cast: [{ label: foe, does: FOE_DOES[spec.genre] }, ...(spec.cast ?? [])].slice(0, CAST_MAX) } as GenreSpec;
 }
@@ -160,6 +168,8 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number, m
   if (first === undefined) return { ok: false, issues: ['the sentence drafts no microgame'] };
   const palette = read.look ?? first.palette ?? lookFor(first.setting) ?? undefined;
   const shared = { hero: read.hero ?? first.hero, setting: first.setting, ...(palette === undefined ? {} : { palette }) };
+  // T17a: název čtení (P56A ho už prověřil jako název jedné hry) nese každé kolo – feed a odpověď berou kolo 1.
+  const titled = (spec: GameSpecV1): GameSpecV1 => (read.title === null ? spec : { ...spec, title: read.title });
 
   /**
    * Kolo, které robot vyhraje a nečinný prohraje: některá rozložení robot do hodin nestihne (nebo je nečinný vyhraje),
@@ -168,8 +178,8 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number, m
   const roundOf = (entry: MicroEntry, round: number): Built | null => {
     const draft = draftOf(sentence, entry);
     if (draft === null) return null;
-    const base = sameWorld(draft, shared, entry.boss === true ? read.foe : null);
-    const spec = microSpec(base, entry, round);
+    const base = sameWorld(draft, shared, entry.boss === true ? read.foe : null, read.source === 'llm' ? read.item : null);
+    const spec = titled(microSpec(base, entry, round));
     for (let attempt = 0; attempt < SEED_TRIES; attempt += 1) {
       const world = nextInt(stream, 1, 0x7fffffff);
       const made = arcadeWorldOf(spec, world);
@@ -219,7 +229,8 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number, m
   for (let index = 1; mutators && index < rounds.length; index += 1) {
     const plain = rounds[index]!;
     for (const id of shuffled(mutatorsFor(plain.entry.key), stream)) {
-      const spec = mutatedSpec(plain.base, plain.entry, index, id);
+      const mutated = mutatedSpec(plain.base, plain.entry, index, id);
+      const spec = mutated === null ? null : titled(mutated);
       const made = spec === null ? null : arcadeWorldOf(spec, plain.plan.seed!);
       const world = made === null || !made.ok ? null : mutateWorld(made.world, id);
       if (spec === null || world === null) continue;

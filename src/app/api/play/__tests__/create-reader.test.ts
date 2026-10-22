@@ -285,6 +285,20 @@ describe('the draft remembers who read the sentence (T6)', () => {
     const hero = readForChain(CHAIN, reading).hero;
     expect(game.chain!.rounds.map((round) => round.spec.roles.find((role) => role.kind === 'player')?.label)).toEqual(game.chain!.rounds.map(() => hero));
   });
+
+  // P56C T17a: název čtení, ne název kola 1 ze slov – v odpovědi POST, ve verzi (feed) i v každém kole.
+  it('publishes a chain the reading built under the reading title', async () => {
+    const reading: Reading = { ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud', title: 'Cloud Popper' };
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 })));
+    expect(readForChain(CHAIN, reading).title).toBe('Cloud Popper');
+    const body = (await (await create(CHAIN)).json()) as { versionId: string; title: string };
+    const game = (await versionStoreFromEnv(process.env).get(body.versionId))!;
+    expect(game.chain).toBeDefined();
+    expect(body.title).toBe('Cloud Popper');
+    expect(game.version.title).toBe('Cloud Popper');
+    expect(game.chain!.rounds.map((round) => round.spec.title)).toEqual(game.chain!.rounds.map(() => 'Cloud Popper'));
+  });
 });
 
 describe('director reads the sentence before drafting', () => {

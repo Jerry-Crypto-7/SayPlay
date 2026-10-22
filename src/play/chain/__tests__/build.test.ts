@@ -58,6 +58,18 @@ describe('buildChain', () => {
     expect(built(sentence).rounds.at(-1)!.spec.roles.map((role) => role.label)).toContain(read.foe);
   });
 
+  // T17a: čtení modelem jmenuje věc a název; kolo, které sbírá, sbírá věc čtení, a každé kolo nese název čtení.
+  it('puts the item and the title of a model reading into the rounds', () => {
+    const sentence = 'a fox catches falling apples in the orchard';
+    const read = { ...readForChain(sentence, null), verbs: [{ word: 'catches', class: 'move_free' as const }], item: 'golden star', title: 'Star Fox', source: 'llm' as const };
+    const made = buildChain(sentence, read, 11, false);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const caught = made.chain.rounds.find((round) => round.key === 'catch.default');
+    expect(caught?.spec.roles.find((role) => role.kind === 'collectible')?.label).toBe('golden star');
+    expect(made.chain.rounds.map((round) => round.spec.title)).toEqual(made.chain.rounds.map(() => 'Star Fox'));
+    expect(verifyChain(made.chain).failures).toEqual([]);
+  });
+
   it('builds the same chain from the same seed and a different one from another', () => {
     const keys = (world: ChainWorld): string => world.rounds.map((round) => round.key).join(' ');
     const idle = 'a quiet afternoon';

@@ -12,7 +12,7 @@ Změřeno 2026-10-22 `dev.measure.ts`: 40 vět vynuceně jako řetěz, čtení s
 | kolo 1 = hlavní sloveso (věty se slovesem z `VERB_MICROS`) | všechny | 21/21 | 63/63 |
 | boss nese protivníka věty (věty s protivníkem) | všechny | 6/6 | 18/18 |
 
-Délka řetězu (semínko publikace): min 30.0 s, medián 33.5 s, max 38.0 s. Stavba + ověření jednoho řetězu: medián 599 ms, max 2794 ms (stroj není v klidu, orientační).
+Délka řetězu (semínko publikace): min 30.0 s, medián 33.5 s, max 38.0 s. Stavba + ověření jednoho řetězu: medián 332 ms, max 1471 ms (stroj není v klidu, orientační).
 
 Mutátory (T16, `CHAIN_MUTATORS`): 0/360 kol 2 až N−1 nese mutátor (semínko publikace 0/120); kolo bez něj = žádný mutátor z `mutator-compat.json` na rozložení kola neprošel robotem, nečinným nebo délkou.
 
@@ -29,7 +29,7 @@ Stavitel bere jen kola, která robot vyhraje a nečinný prohraje (až 4 semínk
 | délka 30–90 s | 150/150 | 150/150 |
 | jeden popisek hrdiny ve všech kolech | 150/150 | 150/150 |
 | kolo 1 = hlavní sloveso (věty se slovesem z `VERB_MICROS`) | 137/137 | 114/114 |
-| boss nese protivníka věty (věty s protivníkem) | 129/132 | 21/21 |
+| boss nese protivníka věty (věty s protivníkem) | 132/132 | 21/21 |
 | věta by hrála řetěz (`chainOrSingle`), audit-12 | 0/12 | 2/12 |
 | věta by hrála řetěz (`chainOrSingle`), p30-dev | 17/59 | 21/59 |
 | věta by hrála řetěz (`chainOrSingle`), p54c-dev | 11/79 | 17/79 |
