@@ -149,11 +149,33 @@ function DeferredScene({ node }: { readonly node: ReactNode }) {
   return useDeferredValue(node);
 }
 
+/**
+ * `<Canvas>` s poměrem pixelů, který plátno už má. R3F při každém překreslení `<Canvas>` volá `configure` a ten vrátí
+ * `dpr` na hodnotu z props (`[1, 2]` → na telefonu 2) přes úroveň kvality rigu (`useQualityTier`, 1,5): plátno a cíle
+ * skládače se zvětšily (4–19 ms, T13b) a kreslilo se dál v plném rozlišení – u řetězu i u samostatné hry.
+ */
+function StageCanvasRoot({ frameloop, onCreated, children }: { readonly frameloop: Frameloop; readonly onCreated?: (state: RootState) => void; readonly children: ReactNode }) {
+  const live = useRef<RootState | null>(null);
+  return (
+    <Canvas
+      {...STAGE_CANVAS}
+      dpr={live.current?.get().viewport.dpr ?? STAGE_CANVAS.dpr}
+      frameloop={frameloop}
+      onCreated={(state) => {
+        live.current = state;
+        onCreated?.(state);
+      }}
+    >
+      {children}
+    </Canvas>
+  );
+}
+
 function HostCanvas({ host, keepPrograms, deferScenes }: { readonly host: StageTunnel; readonly keepPrograms: boolean; readonly deferScenes: boolean }) {
   const content = useSyncExternalStore(host.subscribe, host.content, () => null);
   useLayoutEffect(() => () => host.bind(null), [host]);
   return (
-    <Canvas {...STAGE_CANVAS} frameloop={content?.frameloop ?? 'demand'} onCreated={(state) => host.bind(() => captureFrame(state))}>
+    <StageCanvasRoot frameloop={content?.frameloop ?? 'demand'} onCreated={(state) => host.bind(() => captureFrame(state))}>
       {keepPrograms && <KeepPrograms />}
       {content !== null && (
         <Fragment key={content.owner}>
@@ -161,7 +183,7 @@ function HostCanvas({ host, keepPrograms, deferScenes }: { readonly host: StageT
           {deferScenes ? <DeferredScene node={content.node} /> : content.node}
         </Fragment>
       )}
-    </Canvas>
+    </StageCanvasRoot>
   );
 }
 
@@ -220,9 +242,5 @@ export function HostedCanvas({ host, frameloop, children }: { readonly host?: St
       </StageSlot>
     );
   }
-  return (
-    <Canvas {...STAGE_CANVAS} frameloop={frameloop}>
-      {children}
-    </Canvas>
-  );
+  return <StageCanvasRoot frameloop={frameloop}>{children}</StageCanvasRoot>;
 }
