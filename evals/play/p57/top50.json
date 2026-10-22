@@ -32,6 +32,22 @@
    ],
    "startedAt": "2026-10-22T09:13:04.487Z",
    "finishedAt": "2026-10-22T12:14:52.737Z"
+  },
+  "3": {
+   "ids": [
+    "gen3d-street-trash-can",
+    "gen3d-park-bench",
+    "gen3d-sea-rock",
+    "gen3d-street-tree",
+    "gen3d-cardboard-box",
+    "gen3d-lighthouse",
+    "gen3d-concrete-planter-with-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-planter-box",
+    "gen3d-thorn-bush"
+   ],
+   "startedAt": "2026-10-22T12:16:42.024Z",
+   "finishedAt": "2026-10-22T14:26:57.728Z"
   }
  },
  "models": {
@@ -1828,10 +1844,937 @@
    "newScore": 6,
    "result": "kept-old",
    "reason": "basalt columns: Clean column cluster but flat grey, dull and slightly lumpy."
+  },
+  "gen3d-street-trash-can": {
+   "noun": "street trash can",
+   "set": "gen3d-p37d",
+   "oldScore": 3,
+   "oldOpus": 3,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: height along +Y is 1.105 m, expected 1.0 m (wrong up axis or scale); pivot not at the base: lowest point y=-0.105"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0502,
+        1.0502,
+        1.0502
+       ],
+       "triangles": 7600,
+       "pick": 0
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "c1",
+     "seed": 1,
+     "score": 6,
+     "reason": "Trash bin: Bright, chunky bin; wrinkled lumpy surface reduces polish.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one smooth round bright green street trash can with a dark domed lid, clean flat sides with no wrinkles, a bit taller than wide",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.2344,
+        0.9997,
+        1.2283
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.2098,
+        1.0001,
+        1.2116
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "ok",
+       "scale": [
+        1.0753,
+        1.0753,
+        1.0753
+       ],
+       "triangles": 7600,
+       "pick": 7
+      }
+     ],
+     "pick": "c4",
+     "seed": 4,
+     "score": 6,
+     "reason": "Trash bin: Clean chunky shape, but texture bleeds dark streaks below lid.",
+     "won": false
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old",
+   "reason": "Trash bin: Bright, chunky bin; wrinkled lumpy surface reduces polish."
+  },
+  "gen3d-park-bench": {
+   "noun": "park bench",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9887,
+        0.9887,
+        0.9887
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0137,
+        1.0137,
+        1.0137
+       ],
+       "triangles": 7599,
+       "pick": 7
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0593,
+        1.0593,
+        1.0593
+       ],
+       "triangles": 7600,
+       "pick": 8
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        1.103,
+        0.9993,
+        0.7654
+       ],
+       "triangles": 7599,
+       "pick": 5
+      }
+     ],
+     "pick": "c1",
+     "seed": 1,
+     "score": 9,
+     "reason": "Park bench: Clean, chunky, bright solid colours; polished toy-like bench.",
+     "won": true
+    }
+   ],
+   "newScore": 9,
+   "result": "replaced"
+  },
+  "gen3d-sea-rock": {
+   "noun": "sea rock",
+   "set": "gen3d-p37d",
+   "oldScore": 7,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.1355,
+        0.9994,
+        1.4188
+       ],
+       "triangles": 7199,
+       "pick": 0
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "b1",
+     "seed": 1,
+     "score": 2,
+     "reason": "Rock: Jagged shards and torn faces; crumpled mess, unclear object.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one smooth rounded warm grey sea rock with a few big clean flat facets and a little green algae at the base, one and a half times wider than tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: pivot not centred: x=-0.039 z=0.063"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: pivot not centred: x=-0.067 z=0.060; inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": 2,
+   "result": "kept-old",
+   "reason": "Rock: Jagged shards and torn faces; crumpled mess, unclear object."
+  },
+  "gen3d-street-tree": {
+   "noun": "street tree",
+   "set": "gen3d-p37d",
+   "oldScore": 8,
+   "oldOpus": 8,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.1985,
+        0.9997,
+        1.2414
+       ],
+       "triangles": 7600,
+       "pick": 8
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.1804,
+        1,
+        1.2004
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        1.2855,
+        0.9998,
+        1.3294
+       ],
+       "triangles": 7600,
+       "pick": 5
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 7,
+     "reason": "Potted tree: Simple toy tree; overly saturated green, smudged base texture.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one round leafy street tree with a clean crown of soft natural green blobs on a straight trunk in a simple square grate, three-quarters as wide as tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.1241,
+        0.9719,
+        1.1887
+       ],
+       "triangles": 7341,
+       "pick": 4
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.158,
+        0.9727,
+        1.1812
+       ],
+       "triangles": 7484,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "b3",
+     "seed": 3,
+     "score": 6,
+     "reason": "Tree in planter: Readable tree; jagged noisy foliage, dark trunk lacks toy polish.",
+     "won": false
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "Potted tree: Simple toy tree; overly saturated green, smudged base texture."
+  },
+  "gen3d-cardboard-box": {
+   "noun": "cardboard box",
+   "set": "gen3d",
+   "oldScore": 6,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0464,
+        1.0004,
+        0.8356
+       ],
+       "triangles": 7599,
+       "pick": 7
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.0926,
+        1,
+        0.8795
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.2227,
+        0.9999,
+        0.9425
+       ],
+       "triangles": 7599,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.9499,
+        1.0006,
+        1.2912
+       ],
+       "triangles": 7599,
+       "pick": 5
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 7,
+     "reason": "Cardboard box: Clean open box; flaps thin and slightly muddy shading.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one closed chunky cardboard box with crisp tape across the top, clean flat light brown sides, no open flaps, wider than tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "bounds"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "Cardboard box: Clean open box; flaps thin and slightly muddy shading."
+  },
+  "gen3d-lighthouse": {
+   "noun": "lighthouse",
+   "set": "gen3d",
+   "oldScore": 5,
+   "oldOpus": 6,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.3687,
+        0.9986,
+        1.4645
+       ],
+       "triangles": 7598,
+       "pick": 6
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.4202,
+        0.999,
+        1.4188
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.018,
+        1.018,
+        1.018
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.9375,
+        0.9375,
+        0.9375
+       ],
+       "triangles": 7600,
+       "pick": 5
+      }
+     ],
+     "pick": "a1",
+     "seed": 1,
+     "score": 7,
+     "reason": "Lighthouse: Chunky readable shape; stripes slightly smudged and painterly.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one tall chunky lighthouse with crisp clean red and white stripes and a dark lamp room on top, about two and a half times taller than wide",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.2188,
+        0.999,
+        1.0186
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.3012,
+        0.9981,
+        1.1965
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.0025,
+        1.0025,
+        1.0025
+       ],
+       "triangles": 7600,
+       "pick": 5
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "fit": "ok",
+       "scale": [
+        1.2036,
+        0.9986,
+        1.2063
+       ],
+       "triangles": 7599,
+       "pick": 5
+      }
+     ],
+     "pick": "a3",
+     "seed": 3,
+     "score": 6,
+     "reason": "Lighthouse: Clear silhouette but smeared, blurry stripe texture looks scan-like.",
+     "won": false
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "Lighthouse: Chunky readable shape; stripes slightly smudged and painterly."
+  },
+  "gen3d-concrete-planter-with-tree": {
+   "noun": "concrete planter with tree",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        0.9795,
+        0.9795,
+        0.9795
+       ],
+       "triangles": 7600,
+       "pick": 6
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        0.8126,
+        0.9984,
+        0.7867
+       ],
+       "triangles": 7600,
+       "pick": 7
+      }
+     ],
+     "pick": "c2",
+     "seed": 2,
+     "score": 7,
+     "reason": "Potted tree: Chunky, clear toy shape; pot surface slightly lumpy.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one smooth clean square concrete planter with a small round tree in it, smooth flat pot sides, the whole thing twice as tall as wide",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.0233,
+        1.0233,
+        1.0233
+       ],
+       "triangles": 7503,
+       "pick": 0
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.021"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.067"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.054"
+      }
+     ],
+     "pick": "a3",
+     "seed": 3,
+     "score": 7,
+     "reason": "Potted topiary tree: Clear toy-like topiary; foliage slightly noisy with shard-like leaves.",
+     "won": false
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "Potted tree: Chunky, clear toy shape; pot surface slightly lumpy."
+  },
+  "gen3d-mossy-boulder": {
+   "noun": "mossy boulder",
+   "set": "gen3d-p37d",
+   "oldScore": 4,
+   "oldOpus": 4,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.052; pivot not centred: x=-0.052 z=-0.021"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not centred: x=-0.036 z=-0.004"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one solid rounded grey boulder with a smooth thick bright moss cap on top, about as wide as tall, no cracks or loose pieces",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: height along +Y is 1.240 m, expected 1.0 m (wrong up axis or scale); pivot not at the base: lowest point y=-0.196"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-planter-box": {
+   "noun": "planter box",
+   "set": "gen3d-p37d",
+   "oldScore": 5,
+   "oldOpus": 5,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.035"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "gate": "RuntimeError: quality gate: pivot not at the base: lowest point y=-0.039"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one long rectangular wooden planter box with a row of round bright flowers on top, the whole thing about one and two-thirds as long as tall and three-quarters as deep as tall",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "bounds"
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": null,
+     "seed": null,
+     "score": null,
+     "reason": null,
+     "won": false
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-thorn-bush": {
+   "noun": "thorn bush",
+   "set": "gen3d-p37d",
+   "oldScore": 3,
+   "oldOpus": 3,
+   "rounds": [
+    {
+     "round": 1,
+     "fix": null,
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.1994,
+        0.9942,
+        1.0281
+       ],
+       "triangles": 7166,
+       "pick": 3
+      },
+      {
+       "prompt": "b",
+       "seed": 1,
+       "fit": "ok",
+       "scale": [
+        1.4305,
+        0.9942,
+        1.3232
+       ],
+       "triangles": 7170,
+       "pick": 3
+      },
+      {
+       "prompt": "c",
+       "seed": 1,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 2,
+       "fit": "ok",
+       "scale": [
+        1.0711,
+        1.0711,
+        1.0711
+       ],
+       "triangles": 7599,
+       "pick": 5
+      }
+     ],
+     "pick": "c2",
+     "seed": 2,
+     "score": 5,
+     "reason": "Spiky mine: Clean silhouette but dark, dull colour; ambiguous mine or cactus.",
+     "won": false
+    },
+    {
+     "round": 2,
+     "fix": "one round leafy bright green bush with a few short brown thorny branches and small red berries, a bit wider than tall, clearly a plant",
+     "attempts": [
+      {
+       "prompt": "a",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "b",
+       "seed": 3,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      },
+      {
+       "prompt": "c",
+       "seed": 3,
+       "fit": "ok",
+       "scale": [
+        1.0014,
+        1.0014,
+        1.0014
+       ],
+       "triangles": 7131,
+       "pick": 0
+      },
+      {
+       "prompt": "c",
+       "seed": 4,
+       "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+      }
+     ],
+     "pick": "c3",
+     "seed": 3,
+     "score": 4,
+     "reason": "Bush: Noisy shard-covered blob with muddy brown patches; scan-like.",
+     "won": false
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old",
+   "reason": "Spiky mine: Clean silhouette but dark, dull colour; ambiguous mine or cactus."
   }
  },
  "summary": {
-  "atLeast8": 14,
+  "atLeast8": 15,
   "of": 50,
   "below": [
    {
@@ -1912,32 +2855,27 @@
    {
     "id": "gen3d-street-trash-can",
     "score": 3,
-    "reason": "Jagged overlapping surfaces and apparent tears create a severely fragmented, noisy bin."
-   },
-   {
-    "id": "gen3d-park-bench",
-    "score": 5,
-    "reason": "Clear bench silhouette, but streaky triangular surface artifacts undermine otherwise colourful chunky construction."
+    "reason": "Trash bin: Bright, chunky bin; wrinkled lumpy surface reduces polish."
    },
    {
     "id": "gen3d-sea-rock",
-    "score": 7,
-    "reason": "Solid teal colour and clean low-poly silhouette; slightly lumpy and visually plain."
+    "score": 6,
+    "reason": "Rock: Jagged shards and torn faces; crumpled mess, unclear object."
    },
    {
     "id": "gen3d-cardboard-box",
     "score": 6,
-    "reason": "Chunky box with readable flaps; white smears and awkward top intersections reduce polish."
+    "reason": "Cardboard box: Clean open box; flaps thin and slightly muddy shading."
    },
    {
     "id": "gen3d-lighthouse",
-    "score": 5,
-    "reason": "Distinct lighthouse silhouette, but smeared stripes and noisy surface artifacts spoil the toy finish."
+    "score": 6,
+    "reason": "Lighthouse: Chunky readable shape; stripes slightly smudged and painterly."
    },
    {
     "id": "gen3d-concrete-planter-with-tree",
     "score": 5,
-    "reason": "Crumpled noisy pot surface and shard-like canopy, scan-like."
+    "reason": "Potted tree: Chunky, clear toy shape; pot surface slightly lumpy."
    },
    {
     "id": "gen3d-mossy-boulder",
@@ -1952,7 +2890,7 @@
    {
     "id": "gen3d-thorn-bush",
     "score": 3,
-    "reason": "Dark noisy shard ball; reads as blob, not clear object."
+    "reason": "Spiky mine: Clean silhouette but dark, dull colour; ambiguous mine or cactus."
    },
    {
     "id": "cc0-car-taxi",

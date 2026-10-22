@@ -645,7 +645,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-coral-rock` | coral rock, reef rock | 4748 / 2374 |
 | `gen3d-thistle-plant` | thistle plant, thistle | 4722 / 2360 |
 | `gen3d-aloe-plant` | aloe plant, aloe vera, aloe | 4661 / 2294 |
-| `gen3d-park-bench` | park bench | 4626 / 2271 |
+| `gen3d-park-bench` | park bench | 7600 / 2144 |
 | `gen3d-brick-townhouse` | brick townhouse, row house | 4107 / 2027 |
 | `gen3d-white-picket-fence` | white picket fence, picket fence | 4731 / 2363 |
 | `gen3d-cattail-reed` | cattail reed | 4749 / 2370 |
@@ -1022,6 +1022,7 @@ stay, the geometry and its licence are new. The files they replaced are kept out
 | `gen3d-leaning-palm-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3245 / 1519 |
 | `gen3d-frozen-dead-tree` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 2 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 4031 / 1984 |
 | `gen3d-stone-idol-head` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3958 / 1966 |
+| `gen3d-park-bench` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7600 / 2144 |
 | `gen3d-park-fountain` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3834 / 1910 |
 | `gen3d-wooden-gate` | replaced 2026-10-22 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 0 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 7600 / 2245 |
 | `gen3d-fern` | replaced 2026-10-21 | Generated locally on an RTX 3090 by ops/gen3d: FLUX.2-klein-4B (Apache-2.0) image, seed 3 -> BiRefNet (MIT) background removal -> TRELLIS.2-4B (MIT) via ComfyUI (GPL-3.0, local tool, not distributed) -> Blender 5.1 finishing -> gltfpack 1.2.0 (MIT). | 3668 / 1824 |
