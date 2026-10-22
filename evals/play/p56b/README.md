@@ -268,3 +268,12 @@ Rozhodnutí majitele 22. 10.: desktop soudit v obou pořadích stran a počítat
   - **g-agar „fog, extra props“:** nový záběr arény je bližší (T9), takže v něm chybí opar v dálce a květiny a kameny v popředí.
 - **Pruhy:** 4 nové věty vyhrály na desktopu v obou pořadích; na telefonu 3/4 jako s původními větami (g-whack prohrál znovu jako „nearly identical“).
 - **Závěr (odvozeno):** nový vzhled na desktopu soudce od `72665fdc` spolehlivě nerozezná – u třetiny dvojic rozhoduje strana a ze shodných verdiktů vyhrává 58 %. Materiál kulis to nezmění (T13-R3). Co soud jmenuje (záběr, opar, hustota popředí, teplo světla), je scéna, ne materiál, a je mimo rozsah P56B. Telefon bránu drží čtyřikrát po sobě.
+
+## Výsledek T13 (rozhodnutí majitele 22. 10. po pokusu 4)
+
+T13 se uzavírá výsledky pokusu 4, bez dalšího měření a bez snížení brány:
+
+- **Telefon prošel:** 26/34 = 0,765, levá 0,559 – čtyři pokusy po sobě stejné číslo.
+- **Desktop neprošel a zůstává otevřenou bránou:** shodné verdikty 14/24 = 0,583 proti 0,75. Brána se nesnižuje, stěhuje se do plánu scény (bude založen) – záběr, opar v dálce, hustota popředí, teplo světla a detail scény.
+- **Kotva 0/30** patří do téhož plánu scény: soud u všech 30 proher jmenuje „bare green plane“ a „placeholder scene“, tedy hustotu a detail, ne materiál.
+- **FPS 0,938, e2e 15/15 a nedotčená herní logika** (`pieces`, `genre`) platí beze změny.
