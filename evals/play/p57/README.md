@@ -56,3 +56,11 @@ FPS naměřené v těchto oknech neplatí (pravidlo běhu). Časy UTC z `regen.j
 | 8 | 22. 10. 06:08 | 22. 10. 06:33 |
 
 Souhrnně 21. 10. 19:54 až 22. 10. 06:33 UTC s pauzami nejvýš 22 minut. Před dávkou 2 proběhl a byl zahozen pokus s padlým ComfyUI (tentýž večer, mezi dávkami 1 a 2).
+
+## Top 50 na 8+ (T8) – průběžně
+
+Dávky 1–3 starým pravidlem (výměna jen se skóre ≥ 8 nad starým): vyměněno 5 z 30 (topol; vrba, branka, mlýn; lavička 9), top 50 na 8+: 15/50. Od dávky 2 zadání a, b, c, c (`c` = plné tvary bez tenkých dílů, pohled zepředu; mlýn vyhrál s `c`). Kolo 2 s opravou podle soudce přidalo 1 výměnu z 26 id. GPU generovalo 22. 10. 09:13–14:27 UTC (dávky 2–3).
+
+### Oprava sítě místo zahození (T8r, bod 1) – nezapojena
+
+Změřeno bez grafiky na 43 kandidátech dávek 1–3, které padly na bráně „inconsistent face winding“ (`D:/caches/p57/t8r-repair/report.json`): trimesh `merge_vertices` + `fix_winding` + `fix_normals` jich bránou pustí 36/43, ale do starého boxu se vejde jen 18 a Opus je na týchž slepých mřížkách 3×3 hodnotí průměrně 2,56 proti 5,79 u neodmítnutých kandidátů týchž id (o 3,0 bodu hůř, nejhůř −5; žádné z 9 srovnatelných id do 1 bodu, žádný opravený 8+). Příčina: ~32 % hran odmítnutých sítí sdílí víc než dvě plochy (u zdravých ~4 %) – brána zachytává skutečně roztrhanou síť, ne jen otočené plochy. Pravidlo plánu (≥ 1/3 projde **a** soud nespadne o víc než 1 bod) nesplněno → brána zůstává beze změny.
