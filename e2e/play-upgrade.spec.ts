@@ -103,6 +103,35 @@ test('working → ready: the banner counts seconds, then offers the AI version w
   await page.getByTestId('upgrade-action').click();
   await page.waitForURL(`**/play/${target}`);
 });
+// P56B T5: toast konce bez AI verze ležel přes spodní třetinu celou hru. Teď 3 s mimo prostřední
+// třetinu plátna, pak tečka a „Try again“ v přepínači verze.
+for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
+  test(`final toast clears the middle third and hides into the version switch within 3 s at ${String(viewport.width)}×${String(viewport.height)}`, async ({ page, request }) => {
+    await page.setViewportSize(viewport);
+    const draft = await draftFromSentence(request);
+    await fakeUpgrade(page, draft, () => ({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }));
+
+    await page.goto(draft.url);
+    await running(page);
+    const banner = page.getByTestId('upgrade-state');
+    await expect(banner).toHaveClass(/sp-toast/, { timeout: 15_000 });
+    const shownAt = Date.now();
+    const canvas = await page.locator('canvas').first().boundingBox();
+    const toast = await banner.boundingBox();
+    if (canvas === null || toast === null) throw new Error('canvas or toast has no box');
+    const [middleTop, middleBottom] = [canvas.y + canvas.height / 3, canvas.y + (canvas.height * 2) / 3];
+    expect(toast.y + toast.height <= middleTop || toast.y >= middleBottom, `toast ${String(toast.y)}–${String(toast.y + toast.height)} vs middle third ${String(middleTop)}–${String(middleBottom)}`).toBe(true);
+
+    await expect(banner).toHaveClass(/play-version-switch/, { timeout: 3_200 });
+    expect(Date.now() - shownAt).toBeLessThanOrEqual(3_200);
+    await expect(banner).toHaveAttribute('data-kind', 'final');
+    await expect(banner).not.toHaveClass(/sp-toast/);
+    const retry = banner.getByTestId('upgrade-action');
+    await expect(retry).toHaveText('Try again');
+    await expect(retry).toBeEnabled();
+  });
+}
+
 test('working → final: the banner says why, and one double-clicked retry asks the server once', async ({ page, request }) => {
   const draft = await draftFromSentence(request);
   const asked = await fakeUpgrade(page, draft, (count) => (count < 2 ? pending : count === 2 ? { status: 'draft-final', reason: 'NOT_PLAYABLE' } : { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }));

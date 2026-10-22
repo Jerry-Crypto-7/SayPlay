@@ -126,11 +126,14 @@ test.describe('/play – vertical feed', () => {
       if (n === 1) warm = await heap(page);
     }
     expect(at).toBe(0);
-    const after = await heap(page);
-    expect(after, `heap ${String(warm)} → ${String(after)}`).toBeLessThanOrEqual(warm * 1.3);
 
     await upNext.nth(1).click();
     await expectShowing(page, rows[2]);
+    // Paměť se srovnává na téže hře (třetí) jako `warm`: scéna jiné hry váží jinak a nahromadění by předstírala.
+    // P56B T12: s novým vzhledem má scéna runneru o ~3,7 MB víc než na `72665fdc` a runner vs. třetí hra dával 1,32;
+    // třetí hra vs. třetí hra 0,98 na `72665fdc` a 0,90 s novým vzhledem, proto strop 1,1 místo 1,3.
+    const after = await heap(page);
+    expect(after, `heap ${String(warm)} → ${String(after)}`).toBeLessThanOrEqual(warm * 1.1);
     await page.goBack();
     await expectShowing(page, rows[0]);
     await page.goForward();
@@ -283,5 +286,54 @@ test.describe('/play – vertical feed', () => {
     await page.keyboard.press('ArrowLeft');
     await expect(page.getByTestId('play-demo')).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
+  });
+
+  // AC P56B T12: tři vytvořené a zahrané hry mají v „Up next“ i v kartách feedu svůj snímek, ne `/og`.
+  test('three played games show their own frame, not /og, in Up next and the feed', async ({ page, request }) => {
+    const sentences = ['a bear catches falling honey jars in a basket', 'a wizard defends his tower from goblin hordes', 'help the duck cross the highway and the river'];
+    const played: Row[] = [];
+    for (const sentence of sentences) {
+      const response = await request.post('/api/play/games', { data: { sentence } });
+      expect(response.status(), await response.text()).toBeLessThan(300);
+      const body = (await response.json()) as { versionId: string; archetype: string };
+      played.push({ versionId: body.versionId, title: sentence, archetype: body.archetype, createdAt: new Date().toISOString(), parentId: null, remixes: 0 });
+    }
+    await page.setViewportSize({ width: 1280, height: 800 });
+    // Úložiště se otevírá se stejnou verzí a obchodem jako aplikace: dotaz nesmí založit prázdnou databázi bez obchodu.
+    const kept = (): Promise<string[]> =>
+      page.evaluate(
+        () =>
+          new Promise<string[]>((resolve) => {
+            const open = indexedDB.open('sayplay-frames', 1);
+            open.onupgradeneeded = () => open.result.createObjectStore('frames');
+            open.onerror = () => resolve([]);
+            open.onsuccess = () => {
+              const keys = open.result.transaction('frames', 'readonly').objectStore('frames').getAllKeys();
+              keys.onsuccess = () => {
+                open.result.close();
+                resolve(keys.result.map(String));
+              };
+              keys.onerror = () => resolve([]);
+            };
+          }),
+      );
+    for (const game of played) {
+      await page.goto(`/play/${game.versionId}`);
+      await expect(page.getByTestId('arcade-stage').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
+      await expect.poll(kept, { timeout: 30_000 }).toContain(game.versionId);
+    }
+
+    await serveFeed(page, [rows[0], ...played]);
+    await page.goto('/play');
+    await expectShowing(page, rows[0]);
+    const thumbs = page.locator('img.play-feed-thumb');
+    await expect(thumbs).toHaveCount(3);
+    const shots = page.getByTestId('feed-shot');
+    await expect(shots).toHaveCount(3, { timeout: 15_000 });
+    for (const [n, game] of played.entries()) {
+      await expect(page.getByTestId('play-feed-card').nth(n)).toContainText(game.title);
+      await expect(thumbs.nth(n)).toHaveAttribute('src', /^blob:/);
+      await expect(page.locator(`[data-testid="feed-card"][data-version-id="${game.versionId}"] [data-testid="feed-shot"]`)).toHaveAttribute('src', /^blob:/);
+    }
   });
 });

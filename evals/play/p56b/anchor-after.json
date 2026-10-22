@@ -1,0 +1,352 @@
+{
+ "about": "Store-game anchor: our after-phone shot vs a cropped store screenshot of a finished game, side by side without labels. See README.md.",
+ "judgedAt": "2026-10-21T23:30:47.159Z",
+ "judge": {
+  "model": "claude-opus-5-5",
+  "how": "claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once",
+  "question": "First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, each from a different 3D mobile game. Interface text is cropped away, so judge only the game scene. Which one looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>"
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, game after game; 0 = ours is LEFT",
+  "seed": 56021
+ },
+ "ours": {
+  "dir": "after-phone",
+  "set": "p56b",
+  "sentences": [
+   "01-frog",
+   "02-zombie",
+   "03-ninja",
+   "04-shark",
+   "05-pizza",
+   "06-cat",
+   "07-goalkeeper",
+   "08-gems",
+   "09-astro",
+   "10-chef"
+  ]
+ },
+ "references": {
+  "crossy-road": [
+   "01.png",
+   "02.png",
+   "03.png",
+   "06.png",
+   "07.png",
+   "08.png"
+  ],
+  "hole-io": [
+   "03.png",
+   "04.png"
+  ],
+  "subway-surfers": [
+   "02.png",
+   "03.png",
+   "04.png",
+   "05.png"
+  ]
+ },
+ "total": {
+  "oursWins": 0,
+  "refWins": 30,
+  "unanswered": 0,
+  "of": 30,
+  "share": 0
+ },
+ "byGame": {
+  "crossy-road": {
+   "oursWins": 0,
+   "refWins": 10,
+   "unanswered": 0,
+   "of": 10,
+   "share": 0
+  },
+  "hole-io": {
+   "oursWins": 0,
+   "refWins": 10,
+   "unanswered": 0,
+   "of": 10,
+   "share": 0
+  },
+  "subway-surfers": {
+   "oursWins": 0,
+   "refWins": 10,
+   "unanswered": 0,
+   "of": 10,
+   "share": 0
+  }
+ },
+ "leftShare": 0.5,
+ "pairs": [
+  {
+   "id": "01-frog",
+   "game": "crossy-road",
+   "reference": "01.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "cohesive polished voxel art with readable characters, detailed props and clean lighting",
+   "oursWon": false
+  },
+  {
+   "id": "01-frog",
+   "game": "hole-io",
+   "reference": "03.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "polished stylized art, rich VFX and lighting, and clearly readable models",
+   "oursWon": false
+  },
+  {
+   "id": "01-frog",
+   "game": "subway-surfers",
+   "reference": "02.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "rich themed art, lighting and a readable, polished character, while the left is a flat, untextured prototype.",
+   "oursWon": false
+  },
+  {
+   "id": "02-zombie",
+   "game": "crossy-road",
+   "reference": "02.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "consistent, polished voxel art with clear lighting and easy-to-read characters",
+   "oursWon": false
+  },
+  {
+   "id": "02-zombie",
+   "game": "hole-io",
+   "reference": "04.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed city art, lighting and effects versus the left's dark, blocky placeholder look",
+   "oursWon": false
+  },
+  {
+   "id": "02-zombie",
+   "game": "subway-surfers",
+   "reference": "03.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed themed scene with polished lighting, materials and a readable character, unlike the box-like left scene",
+   "oursWon": false
+  },
+  {
+   "id": "03-ninja",
+   "game": "crossy-road",
+   "reference": "03.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive, detailed art and readable characters, while RIGHT is a bare placeholder scene",
+   "oursWon": false
+  },
+  {
+   "id": "03-ninja",
+   "game": "hole-io",
+   "reference": "03.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed ships, water, vortex effects and lighting look finished, while the left is a bare green plane with box blocks",
+   "oursWon": false
+  },
+  {
+   "id": "03-ninja",
+   "game": "subway-surfers",
+   "reference": "04.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "detailed environment, polished lighting and materials, and a readable character",
+   "oursWon": false
+  },
+  {
+   "id": "04-shark",
+   "game": "crossy-road",
+   "reference": "06.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "polished voxel art with clear characters and lighting, while the right is murky and looks like placeholder art",
+   "oursWon": false
+  },
+  {
+   "id": "04-shark",
+   "game": "hole-io",
+   "reference": "04.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "detailed, well-lit city with effects, versus a flat, foggy placeholder scene",
+   "oursWon": false
+  },
+  {
+   "id": "04-shark",
+   "game": "subway-surfers",
+   "reference": "05.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "detailed themed environment, readable character and polished lighting versus a flat, foggy placeholder scene",
+   "oursWon": false
+  },
+  {
+   "id": "05-pizza",
+   "game": "crossy-road",
+   "reference": "07.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive voxel art, clean lighting and readable characters, while the right has placeholder-looking textures and a debug-style beam",
+   "oursWon": false
+  },
+  {
+   "id": "05-pizza",
+   "game": "hole-io",
+   "reference": "03.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "polished stylized art, effects and lighting versus the left's flat placeholder-like visuals",
+   "oursWon": false
+  },
+  {
+   "id": "05-pizza",
+   "game": "subway-surfers",
+   "reference": "02.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive stylized art, lighting and a readable character, while RIGHT has rough faceted placeholder assets",
+   "oursWon": false
+  },
+  {
+   "id": "06-cat",
+   "game": "crossy-road",
+   "reference": "08.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive voxel art, clean lighting and readable characters versus placeholder-looking assets on a flat green plane",
+   "oursWon": false
+  },
+  {
+   "id": "06-cat",
+   "game": "hole-io",
+   "reference": "04.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed stylized city with rich lighting, effects and consistent polished materials",
+   "oursWon": false
+  },
+  {
+   "id": "06-cat",
+   "game": "subway-surfers",
+   "reference": "03.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed themed environment, lighting and a readable stylized character",
+   "oursWon": false
+  },
+  {
+   "id": "07-goalkeeper",
+   "game": "crossy-road",
+   "reference": "01.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "cohesive polished voxel art with clean lighting and readable characters",
+   "oursWon": false
+  },
+  {
+   "id": "07-goalkeeper",
+   "game": "hole-io",
+   "reference": "03.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "cohesive polished art, rich lighting/VFX and detailed models versus a flat placeholder-looking scene",
+   "oursWon": false
+  },
+  {
+   "id": "07-goalkeeper",
+   "game": "subway-surfers",
+   "reference": "04.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive stylized art, rich lighting and readable character versus flat placeholder-like scene on the right",
+   "oursWon": false
+  },
+  {
+   "id": "08-gems",
+   "game": "crossy-road",
+   "reference": "02.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive, polished voxel art with deliberate lighting and readable characters",
+   "oursWon": false
+  },
+  {
+   "id": "08-gems",
+   "game": "hole-io",
+   "reference": "04.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "richly detailed city with polished lighting, materials and effects versus a sparse flat-shaded prototype field",
+   "oursWon": false
+  },
+  {
+   "id": "08-gems",
+   "game": "subway-surfers",
+   "reference": "05.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed themed scene, rich lighting and a well-designed character, compared with a bare green-plane prototype",
+   "oursWon": false
+  },
+  {
+   "id": "09-astro",
+   "game": "crossy-road",
+   "reference": "03.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive polished voxel art with clear characters, while the right uses an untextured placeholder character and assets",
+   "oursWon": false
+  },
+  {
+   "id": "09-astro",
+   "game": "hole-io",
+   "reference": "03.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "polished stylized art, rich effects and detailed models versus a gray placeholder character in a bare scene",
+   "oursWon": false
+  },
+  {
+   "id": "09-astro",
+   "game": "subway-surfers",
+   "reference": "02.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed character, cohesive lighting and themed art versus the left's grey placeholder figure and bare scene",
+   "oursWon": false
+  },
+  {
+   "id": "10-chef",
+   "game": "crossy-road",
+   "reference": "06.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cohesive, polished voxel art with good lighting and readable characters",
+   "oursWon": false
+  },
+  {
+   "id": "10-chef",
+   "game": "hole-io",
+   "reference": "04.png",
+   "oursSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "detailed lit 3D city with lava and debris effects, versus LEFT's flat grey placeholder scene",
+   "oursWon": false
+  },
+  {
+   "id": "10-chef",
+   "game": "subway-surfers",
+   "reference": "03.png",
+   "oursSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "rich themed environment, lighting and detailed character versus a flat placeholder-looking scene",
+   "oursWon": false
+  }
+ ]
+}

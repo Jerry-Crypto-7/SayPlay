@@ -37,7 +37,7 @@ const DISCLOSURE = {
   authorOrProvider: 'Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs',
   license: 'LicenseRef-Worldsmith-Original',
   requiredNotices: ['No third-party asset notice; a screenshot of the project\'s own game scene. Models and backdrops in it are registered under their own entries.'],
-  attribution: 'Sayplay feed thumbnails, rendered 2026-10-19.',
+  attribution: 'Sayplay feed thumbnails, rendered 2026-10-21.',
   reviewNote: 'First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.',
   scope: 'prod',
 };
@@ -115,9 +115,11 @@ await browser.close();
 for (const name of readdirSync(new URL(`${DIR}/`, ROOT))) if (!written.has(name)) rmSync(new URL(`${DIR}/${name}`, ROOT));
 const disclosureFile = new URL('disclosure.json', ROOT);
 const disclosure = JSON.parse(readFileSync(disclosureFile, 'utf8'));
-disclosure.entries = [
-  ...disclosure.entries.filter((entry) => !(entry.kind === 'asset' && entry.name.startsWith(`${DIR}/`))),
-  ...[...written].sort().map((name) => ({ name: `${DIR}/${name}`, ...DISCLOSURE })),
-];
+const isThumb = (entry) => entry.kind === 'asset' && entry.name.startsWith(`${DIR}/`);
+// Na místě dosavadních záznamů, ne na konec: přegenerování nepřehází tisíce řádků souboru.
+const others = disclosure.entries.filter((entry) => !isThumb(entry));
+const at = disclosure.entries.findIndex(isThumb);
+others.splice(at === -1 ? others.length : at, 0, ...[...written].sort().map((name) => ({ name: `${DIR}/${name}`, ...DISCLOSURE })));
+disclosure.entries = others;
 writeFileSync(disclosureFile, `${JSON.stringify(disclosure, null, 2)}\n`);
 console.log(`${String(written.size)} pictures in ${DIR}, disclosure.json updated`);

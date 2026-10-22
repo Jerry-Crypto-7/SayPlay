@@ -23,8 +23,10 @@ import { renderHeld } from './effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box3, BoxGeometry, type BufferGeometry, type Group, type Object3D, type PerspectiveCamera, PlaneGeometry, Vector3 } from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
+import { color as brand } from '@/brand/tokens';
 import { ARCADE_HZ, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { baseControlOf } from '@/play/arcade/addons';
 import type { Look } from '@/play/arcade/look';
@@ -41,7 +43,7 @@ import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadBodyModel, rimLit, toyPartsOf } from './look/load';
+import { loadBodyModel, rimLit, toonLit, toyPartsOf } from './look/load';
 import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
@@ -53,27 +55,25 @@ import { ShooterRig } from './shooter/ShooterRig';
 import { GlideBackdrop, GLIDE_SCENE_KINDS, placeGlide } from './glide/GlideScene';
 import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/WalkerScene';
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
-import { SteerBackdrop, placeChase } from './steer/SteerScene';
+import { STEER_SCENE_KINDS, SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
 import { type ToyTarget, applyToy, toyIdleOf, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
 import { WorldBackdrop } from './WorldBackdrop';
 
-/** Barva náhradního kvádru podle id těla; nic fialového. */
-const FALLBACK_COLOR: Readonly<Record<string, string>> = {
-  player: '#2563eb',
-  hurdle: '#f59e0b',
-  'slide-bar': '#ea580c',
-  cone: '#f97316',
-  crate: '#a16207',
-  coin: '#facc15',
-  finish: '#14b8a6',
-  checkpoint: '#0ea5e9',
-  turbo: '#22d3ee',
-  enemy: '#dc2626',
-  chaser: '#b91c1c',
-};
+/**
+ * Barva náhradního dílu (P56B T10): postavy a sbírané věci barvou kitu, kulisy hlavní barvou rekvizit
+ * sady – šedý kvádr ve scéně, která šedá není, prozradí chybějící model na první pohled.
+ */
+function fallbackOf(view: BodyView, scene: Look): string {
+  if (view.role === ROLE.player) return brand['sky-deep'];
+  if (view.role === ROLE.enemy || view.role === ROLE.chaser || PACING_KINDS.has(view.kind)) return brand['tomato-deep'];
+  if (view.role === ROLE.collectible) return brand.sun;
+  return scene.tint[0];
+}
+
+const TURBO_COLOR = '#22d3ee';
 
 /** Jména rolí podle čísla – scéna je zapíše do `data-drawn`, ať e2e vidí, co kreslí. */
 const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
@@ -94,6 +94,8 @@ export interface Cast {
   readonly props: Partial<Record<PropRole, string>>;
   readonly things?: Readonly<Record<string, string>>;
   readonly objectives?: Readonly<Record<number, string>>;
+  /** Díly prostředí sady (P56B T10, `look/obstacle-kits.json`): druh překážky nebo `block` → model; popisek věty má přednost. */
+  readonly kit?: Readonly<Record<string, string>>;
 }
 
 /** Překážky běžce, které smí nést model z popisku; skluzová laťka tvarem říká „podlez“, tu ne. */
@@ -124,7 +126,9 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.powerup || view.kind === SPARK_KIND) return 'crystal';
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
-  if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
+  if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? cast.kit?.[view.kind] ?? view.kind;
+  // Laťku sady (P56B T10: hřbitov železný plot) model z popisku nenahradí; vyplní celé tělo, ať dál říká „podlez“.
+  if (view.role === ROLE.obstacle && view.kind === 'slide-bar') return cast.kit?.[view.kind] ?? view.kind;
   // P30B T4: mantinel závodu z popisku role `barrier` („crocodiles“ podél řeky).
   if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return cast.props.barrier ?? view.kind;
   // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
@@ -155,6 +159,29 @@ function ModelColumn({ id, w, h, d, fallback }: { readonly id: string; readonly 
           <FittedModel id={id} w={w} h={cell} d={d} fallback={fallback} />
         </group>
       ))}
+    </>
+  );
+}
+
+/**
+ * Zeď rozcestí běžce z dílů sady (P56B T10: hřbitov plot, louka živý plot) místo šedé kamenné desky:
+ * buňky zhruba výšky zdi po délce, každá posunutá a natočená po křivce trati jako ohnutá síť stavby.
+ */
+function ModelRow({ id, w, h, d, z, path, fallback }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly z: number; readonly path: Path; readonly fallback: string }) {
+  const cells = Math.max(1, Math.round(d / h));
+  const cell = d / cells;
+  const at = path(z);
+  return (
+    <>
+      {Array.from({ length: cells }, (_, index) => {
+        const local = -d / 2 + cell * (index + 0.5);
+        const there = path(z + local);
+        return (
+          <group key={index} position={[there.x - at.x, there.y - at.y, local]} rotation={[0, Math.atan(slopeAt(path, z + local).x), 0]}>
+            <FittedModel id={id} w={w} h={h} d={cell} fallback={fallback} fill />
+          </group>
+        );
+      })}
     </>
   );
 }
@@ -191,7 +218,9 @@ export function toyTargetOf(inner: Object3D): ToyTarget {
 export function fitModel(model: Object3D, { id, w, h, d, character = false, fill = false, posed = false, rim = false }: Fit): Object3D {
   const copy = model.clone(true);
   // Svit před deformací: kopie deformace volá úpravu shaderu zdroje, svit tak nese i ohnuté tělo.
+  // Kulisa s texturou, která se neslila, dostane toon s paletou sady; postava toon bez palety ve svitu (P56B T6).
   if (rim) rimLit(copy);
+  else toonLit(copy);
   const box = new Box3().setFromObject(copy);
   const size = box.getSize(new Vector3());
   const along = (length: number): number => Math.max(length, 1e-3);
@@ -208,7 +237,18 @@ export function fitModel(model: Object3D, { id, w, h, d, character = false, fill
   return copy;
 }
 
-export function FittedModel({ id, w, h, d, fallback, character = false, fill = false, posed = false, rim = false }: Fit & { readonly fallback: string }) {
+const idle = (): ClipState => 'idle';
+
+/**
+ * Model vepsaný do kvádru těla. Id postavy s kostrou (`rigged:`, hrdina z `cast.player` ve scénách
+ * žánrů) kreslí `RiggedModel` v klidu – statická cesta by ho stáhla jako model katalogu (P56B T3: 404).
+ */
+export function FittedModel(props: Fit & { readonly fallback: string }) {
+  const rig = riggedCharacter(props.id);
+  return rig === undefined ? <StaticModel {...props} /> : <RiggedModel character={rig} h={props.h} clip={idle} fallback={props.fallback} />;
+}
+
+function StaticModel({ id, w, h, d, fallback, character = false, fill = false, posed = false, rim = false }: Fit & { readonly fallback: string }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
@@ -223,13 +263,49 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
     () => (model === null || model === undefined ? null : fitModel(model, { id, w, h, d, character, fill, posed, rim })),
     [model, id, w, h, d, character, fill, posed, rim],
   );
+  useFallbackProbe(id, model === null);
   if (fitted !== null) return <primitive object={fitted} />;
+  return <FallbackPiece w={w} h={h} d={d} color={fallback} />;
+}
+
+/** Náhradní díl během načítání a bez modelu (P56B T10): zaoblený, v barvě sady – ne šedý kvádr. */
+function FallbackPiece({ w, h, d, color }: { readonly w: number; readonly h: number; readonly d: number; readonly color: string }) {
+  const geometry = useMemo(() => new RoundedBoxGeometry(w, h, d, 2, Math.min(w, h, d) * 0.25), [w, h, d]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
   return (
-    <mesh position={[0, h / 2, 0]}>
-      <boxGeometry args={[w, h, d]} />
-      <meshStandardMaterial color={fallback} roughness={0.6} />
+    <mesh position={[0, h / 2, 0]} geometry={geometry}>
+      <meshStandardMaterial color={color} roughness={0.6} />
     </mesh>
   );
+}
+
+/** Těla bez modelu po dotažení po plátnech (P56B T10) → `data-fallback` a `data-fallback-ids` na `arcade-stage`. */
+const fallbackBodies = new WeakMap<HTMLElement, Map<object, string>>();
+
+function useFallbackProbe(id: string, missing: boolean): void {
+  const canvas = useThree((three) => three.gl.domElement);
+  useEffect(() => {
+    const stage = canvas.closest<HTMLElement>('[data-testid="arcade-stage"]');
+    if (stage === null) return;
+    const drawn = fallbackBodies.get(stage) ?? new Map<object, string>();
+    fallbackBodies.set(stage, drawn);
+    const write = (): void => {
+      stage.dataset.fallback = String(drawn.size);
+      stage.dataset.fallbackIds = [...new Set(drawn.values())].sort().join(' ');
+    };
+    // Sonda existuje, jakmile scéna vepisuje první model – nula pak znamená „nic nechybí“, ne „nikdo nepočítal“.
+    if (!missing) {
+      if (stage.dataset.fallback === undefined) write();
+      return;
+    }
+    const token = {};
+    drawn.set(token, id);
+    write();
+    return () => {
+      drawn.delete(token);
+      write();
+    };
+  }, [canvas, id, missing]);
 }
 
 /**
@@ -240,7 +316,7 @@ function Primitive({ id, w, h, d, block, water }: { readonly id: string; readonl
   if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
   if (id === 'turbo') return <mesh position={[0, h / 2, 0]}>
     <boxGeometry args={[w, h, d]} />
-    <meshStandardMaterial color={FALLBACK_COLOR.turbo} emissive={FALLBACK_COLOR.turbo} emissiveIntensity={0.35} roughness={0.4} />
+    <meshStandardMaterial color={TURBO_COLOR} emissive={TURBO_COLOR} emissiveIntensity={0.35} roughness={0.4} />
   </mesh>;
   if (id === 'platform' || id === 'platform-moving') {
     const top = Math.min(0.25, h / 3);
@@ -653,11 +729,13 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
-        (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) ? null : (
+        (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) || (control === 'steer' && STEER_SCENE_KINDS.has(view.kind)) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
-            {path !== null && RUNNER_STRUCTURES.has(view.kind) ? (
+            {path !== null && view.kind === 'divider' && cast.kit?.block !== undefined ? (
+              <ModelRow id={cast.kit.block} w={view.w} h={view.h} d={view.d} z={(session.world.initial[bodyBase(view.index) + BODY.z] as number) / UNIT} path={path} fallback={fallbackOf(view, scene)} />
+            ) : path !== null && RUNNER_STRUCTURES.has(view.kind) ? (
               <RunnerStructure
                 kind={view.kind}
                 w={view.w}
@@ -678,7 +756,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 character={rigged[view.index]!}
                 h={view.h}
                 clip={() => clips.current[view.index] ?? 'idle'}
-                fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
+                fallback={fallbackOf(view, scene)}
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
                 yaw={control === 'platform' || control === 'walker' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
@@ -686,7 +764,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 toy={POSED_ROLES.has(view.role) ? () => ({ view: toyViewOf(session.state(), session.prev(), view.index), tick: toyTickOf(session) }) : undefined}
               />
             ) : view.kind === 'pipe' ? (
-              <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+              <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={fallbackOf(view, scene)} />
             ) : (
               <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
                 {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
@@ -697,7 +775,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                   w={view.w}
                   h={view.h}
                   d={view.kind === 'target' || ((view.kind === 'finish' || view.kind === 'goal') && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
-                  fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
+                  fallback={fallbackOf(view, scene)}
+                  fill={view.kind === 'slide-bar' && modelIdOf(view, cast) !== view.kind}
                   character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
                   posed={POSED_ROLES.has(view.role)}
                   rim={POSED_ROLES.has(view.role)}

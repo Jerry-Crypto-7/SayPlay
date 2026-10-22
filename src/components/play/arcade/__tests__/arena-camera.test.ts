@@ -1,0 +1,170 @@
+/**
+ * Kamera arény blíž a nepřítel v záběru (P56B T9). Audit 21. 10.: na telefonu
+ * hrdina malý a daleko, nepřítel za okrajem obrazu. Test hraje robotem tři věty
+ * auditu (souboj a volný pohyb), každý tik postaví kameru scény z `arena-camera.ts`
+ * (dojíždění `FOLLOW` jako `useFrame` při 60 snímcích za sekundu) a promítne
+ * střed hrdiny a nejbližší hrozby – na šířku (snímek soudu 1280 × 800) i na výšku
+ * (telefon 390 × 844), proti pákám ze `72665fdc`.
+ *
+ * Medián vzdálenosti se porovnává přes všech šest běhů dohromady: 08-gems na výšku
+ * má nepřítele 6–16 m do strany po celou hru a ten se do užšího záběru vejde jen
+ * s kamerou dál (na `72665fdc` tam byl v obraze v 0 % tiků).
+ */
+
+import { writeFileSync } from 'node:fs';
+import { PerspectiveCamera, Vector3 } from 'three';
+import { describe, expect, it } from 'vitest';
+
+import { baseControlOf } from '@/play/arcade/addons';
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, UNIT, bodyBase } from '@/play/arcade/contract';
+import { instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
+import { ARCADE_LIBRARY } from '@/play/arcade/library';
+import { runBot } from '@/play/arcade/verify';
+import { draftGameSpec } from '@/play/draft/draft';
+
+import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal } from '../arena/arena-camera';
+import { drawnOf, partOf } from '../arena/ArenaScene';
+import { bodiesOf } from '../bodies';
+
+const SENTENCES = [
+  ['02-zombie', 'zombies attack my farm at night'],
+  ['08-gems', 'match three glowing gems to unlock a treasure chest'],
+  ['10-chef', 'a chef flips pancakes for a line of hungry customers'],
+] as const;
+const ASPECTS = { wide: 1280 / 800, tall: 390 / 844 } as const;
+const TICKS = 600;
+/** Hrozba blíž než tolik metrů má být v obraze – `THREAT_M` ze `72665fdc`, pevně tady, ať ho změna páky nezúží. */
+const NEAR_M = 22;
+/** Páky kamery na `72665fdc` (P55 tip). */
+const BEFORE: ArenaFraming = { nearest: 16, see: 9, seeTall: 5, heroShare: 0.1, heroShareTall: 0.11, stretch: 1, stretchTall: 1 };
+/** Zorný úhel plátna hry (`STAGE_CANVAS`). */
+const FOV = 60;
+
+function worldOf(sentence: string): ArcadeWorld {
+  const made = arcadeWorldOf(draftGameSpec(sentence, 1), 1);
+  if (!made.ok) throw new Error(made.issues.join('; '));
+  return made.world;
+}
+
+const seen = (camera: PerspectiveCamera, point: Vector3): boolean => {
+  if (point.clone().applyMatrix4(camera.matrixWorldInverse).z >= 0) return false;
+  const ndc = point.clone().project(camera);
+  return Math.abs(ndc.x) <= 1 && Math.abs(ndc.y) <= 1;
+};
+
+interface Frame {
+  readonly distance: number;
+  readonly hero: boolean;
+  /** Hrozba do `NEAR_M`: je její střed v obraze? `null` = žádná blízko. */
+  readonly threat: boolean | null;
+}
+
+/** Tiky hry robota „Show me how“ a kamera scény po každém z nich (jako `useFrame` stylové arény). */
+function framesOf(world: ArcadeWorld, aspect: number, framing: ArenaFraming): Frame[] {
+  const inputs = new Map(runBot(world).inputs.map((input) => [input.tick, input]));
+  const state = instantiate(world);
+  const program = loadProgram(world, ARCADE_LIBRARY);
+  const tilt = baseControlOf(world.control).id === 'fight' ? FIGHT_TILT : STYLED_TILT;
+  const camera = new PerspectiveCamera(FOV, aspect, 0.1, 500);
+  const tan = Math.tan((FOV * Math.PI) / 360);
+  const k = 1 - Math.exp(-FOLLOW / ARCADE_HZ);
+  const speed = ARCADE_HZ / UNIT;
+  const session = { world, state: () => state };
+  const frames: Frame[] = [];
+  let aim: Spot | null = null;
+  let distance = 0;
+  for (let tick = 0; tick < TICKS && outcomeOf(state) === 'running'; tick += 1) {
+    step(state, inputs.get(tick) ?? NO_INPUT, program);
+    const views = bodiesOf(session);
+    const player = state[HEADER.player] as number;
+    const at = (index: number): Vector3 => {
+      const base = bodyBase(index);
+      return new Vector3(-(state[base + BODY.x] as number) / UNIT, (state[base + BODY.y] as number) / UNIT, (state[base + BODY.z] as number) / UNIT);
+    };
+    const hero = at(player);
+    const heroSize = drawnOf(views[player]!, 'hero');
+    const pb = bodyBase(player);
+    const lead = { x: hero.x - (state[pb + BODY.vx] as number) * speed * LEAD_S, z: hero.z + (state[pb + BODY.vz] as number) * speed * LEAD_S };
+    let threat: ArenaView['threat'] = null;
+    let threatCentre: Vector3 | null = null;
+    let nearest = Infinity;
+    for (const view of views) {
+      const part = partOf(view);
+      if (part !== 'chaser' && part !== 'enemy') continue;
+      if (((state[bodyBase(view.index) + BODY.flags] as number) & FLAG.alive) === 0) continue;
+      const other = at(view.index);
+      const gap = Math.hypot(other.x - hero.x, other.z - hero.z);
+      if (gap >= nearest) continue;
+      nearest = gap;
+      const size = drawnOf(view, part);
+      threat = { at: { x: other.x, z: other.z }, size };
+      threatCentre = other.setY(other.y + size.h / 2);
+    }
+    const view: ArenaView = { hero: { x: hero.x, z: hero.z }, heroSize, lead, threat, tan, aspect, tilt };
+    const { goal, framed } = arenaGoal(view, framing);
+    aim = aim === null ? goal : { x: aim.x + (goal.x - aim.x) * k, z: aim.z + (goal.z - aim.z) * k };
+    const wanted = arenaDistance(view, aim, framed, framing);
+    distance = frames.length === 0 ? wanted : distance + (wanted - distance) * k;
+    camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
+    camera.lookAt(aim.x, 0, aim.z);
+    camera.updateMatrixWorld();
+    frames.push({ distance, hero: seen(camera, hero.setY(hero.y + heroSize.h / 2)), threat: nearest < NEAR_M ? seen(camera, threatCentre!) : null });
+  }
+  return frames;
+}
+
+const median = (values: readonly number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)]!;
+};
+const round = (value: number): number => Math.round(value * 1000) / 1000;
+
+/** Podíl tiků s blízkou hrozbou, kdy je její střed v obraze (bez blízké hrozby 1). */
+function threatShare(frames: readonly Frame[]): number {
+  const near = frames.filter((frame) => frame.threat !== null);
+  return near.length === 0 ? 1 : near.filter((frame) => frame.threat).length / near.length;
+}
+
+/**
+ * 08-gems na výšku: nepřítel bloudí 6–16 m do strany celou hru a do úzkého obrazu se s hrdinou nad
+ * podlahou e2e (8 % výšky) vejde jen v ~70 % tiků (72665fdc: 0 %); zbytek ukáže šipka na okraji.
+ */
+const FOE_SHARE: Readonly<Record<string, number>> = { '08-gems tall': 0.65 };
+
+const runs = SENTENCES.flatMap(([id, sentence]) => {
+  const world = worldOf(sentence);
+  return Object.entries(ASPECTS).map(([name, aspect]) => ({ id, name, world, before: framesOf(world, aspect, BEFORE), after: framesOf(world, aspect, ARENA_FRAMING) }));
+});
+
+describe('the arena camera sits closer and keeps the nearest foe in frame (P56B T9)', () => {
+  // Měření pro README: `ARENA_OUT=<soubor> npx vitest run …arena-camera.test.ts`.
+  if (process.env.ARENA_OUT !== undefined) {
+    const summary = (frames: readonly Frame[]) => ({ ticks: frames.length, medianDistance: round(median(frames.map((frame) => frame.distance))), maxDistance: round(Math.max(...frames.map((frame) => frame.distance))), threatShare: round(threatShare(frames)) });
+    writeFileSync(process.env.ARENA_OUT, JSON.stringify(Object.fromEntries(runs.map((run) => [`${run.id} ${run.name}`, { before: summary(run.before), after: summary(run.after) }])), null, 1));
+  }
+
+  it.each(SENTENCES)('%s plays in the styled arena (fight or free movement with a sized hero)', (_, sentence) => {
+    const control = baseControlOf(worldOf(sentence).control);
+    expect(control.id === 'fight' || (control.id === 'move_free' && control.params.size !== undefined), control.id).toBe(true);
+  });
+
+  it.each(runs.map((run) => [`${run.id} ${run.name}`, run] as const))('%s: the hero never leaves the frame and a foe within 22 m is in frame >= 85 % of ticks', (_, run) => {
+    expect(run.after.length).toBeGreaterThan(300);
+    expect(run.after.filter((frame) => !frame.hero)).toHaveLength(0);
+    expect(threatShare(run.after)).toBeGreaterThanOrEqual(FOE_SHARE[`${run.id} ${run.name}`] ?? 0.85);
+  });
+
+  // Nejdál s taženou hrozbou (strop × `stretch`) drží hrdina podlahu `HERO_SHARE` z `e2e/p32-arena.spec.ts`
+  // (telefon 0,08, desktop 0,07): 2,5× dalo kočce na Pixel 7 přesně 0,16 / 2,5 = 6,4 %.
+  it('a framed foe never shrinks the hero under the e2e share floor', () => {
+    expect(ARENA_FRAMING.heroShareTall / ARENA_FRAMING.stretchTall).toBeGreaterThanOrEqual(0.08);
+    expect(ARENA_FRAMING.heroShare / ARENA_FRAMING.stretch).toBeGreaterThanOrEqual(0.07);
+  });
+
+  it('the median camera distance over all six runs drops by at least 20 % against 72665fdc', () => {
+    const before = median(runs.flatMap((run) => run.before.map((frame) => frame.distance)));
+    const after = median(runs.flatMap((run) => run.after.map((frame) => frame.distance)));
+    expect(after).toBeLessThanOrEqual(before * 0.8);
+  });
+});

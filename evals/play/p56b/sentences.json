@@ -1,0 +1,17 @@
+{
+ "note": "P56B T1: 12 vět živého auditu 21. 10. 2026 (72665fdc, rychlá cesta bez režiséra) – noc skoro černá (02, 12), černá obrazovka ve 2 s (09, 12), šedé kvádry a desky (08, 12), holé pruhy (03, 06, 11). Slug NN-slovo jako snímky auditu. Bez `genre` a `control`: sada měří vzhled, ne volbu žánru (to je P56A).",
+ "sentences": [
+  { "id": "01-frog", "text": "a frog catching flies on a lily pad" },
+  { "id": "02-zombie", "text": "zombies attack my farm at night" },
+  { "id": "03-ninja", "text": "a ninja slicing fruit" },
+  { "id": "04-shark", "text": "racing a shark through a coral reef" },
+  { "id": "05-pizza", "text": "stack pizzas as high as the moon" },
+  { "id": "06-cat", "text": "my cat defends the couch from vacuum robots" },
+  { "id": "07-goalkeeper", "text": "a goalkeeper saves penalty kicks in a packed stadium" },
+  { "id": "08-gems", "text": "match three glowing gems to unlock a treasure chest" },
+  { "id": "09-astro", "text": "an astronaut dodges asteroids to reach the space station" },
+  { "id": "10-chef", "text": "a chef flips pancakes for a line of hungry customers" },
+  { "id": "11-drum", "text": "drum to the beat at a rock concert" },
+  { "id": "12-ghost", "text": "escape a haunted mansion while a ghost chases you" }
+ ]
+}

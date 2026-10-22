@@ -18,6 +18,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import fixture from '@/play/arcade/__fixtures__/runner.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, BUTTON, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase } from '@/play/arcade/contract';
+import { LOOKS } from '@/play/arcade/look';
 import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { BODY_CLASSES, type BodyClass, type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
@@ -347,7 +348,7 @@ function drawn(player: string, heroPose: boolean, ticks = 240): Drawn[] {
   hooks.frames = [];
   hooks.scene = scene;
   const cast = { player, enemy: '', chaser: '', props: {} };
-  const top = RunnerWorld({ session, cast, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' }) as Element;
+  const top = RunnerWorld({ session, cast, surface: { current: null }, scene: LOOKS.meadow, enabled: true, heroAction: 'none' }) as Element;
   const parts = top.props.children as Element[];
   // `World` se přihlásí ke snímku první, `HeroPose` po něm – jako sourozenci v R3F.
   build((World as (props: unknown) => ReactNode)(parts.find((part) => part.type === World)!.props), scene);

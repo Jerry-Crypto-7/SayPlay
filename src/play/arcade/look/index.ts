@@ -736,8 +736,11 @@ const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk' | 'cozy'>, MoodShift>> =
   bright: { tone: '#ffffff', lightTone: '#ffffff', amount: 0, light: 1.1, sun: 1.2, glow: 1, fog: [1.25, 1.25] },
 };
 
-/** Noc nad sadou: slunce je měsíc – studené, slabé, záře nízko. */
-const NIGHT = { sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', glow: 0.12 } as const;
+/**
+ * Noc nad sadou: slunce je měsíc – studené, shora a zezadu (P56B T7); záře nízko. Síla zůstává 0,35: jas noci
+ * je i mez nálad (`withMood`), a měsíc 0,9 tak zvedl polokouli strašidelných sad a vybělil jejich výplň (T13-R1).
+ */
+export const NIGHT = { sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', sunDir: [-0.3, 0.85, 0.35], glow: 0.12 } as const;
 const DUSK = { sky: '#785944', skyTop: '#233a51', horizon: '#d59461', light: ['#e3b28b', '#4c4137', 0.95], sun: 0.75, sunColor: '#ffd1a0', glow: 0.55 } as const;
 
 /** Směs dvou `#rrggbb` po kanálech. */

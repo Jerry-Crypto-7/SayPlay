@@ -7,6 +7,7 @@ import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
 import { admit } from '@/app/api/play/_publish';
 import { PrefetchPhysics } from '@/components/play/arcade/ArcadePlay';
 import type { Dare } from '@/components/play/best';
+import { FpsProbe } from '@/components/play/FpsProbe';
 import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
@@ -130,6 +131,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
   return (
     <>
       <PrefetchPhysics needed={game.arcade !== undefined && worldHasPhysics(game.arcade)} />
+      <FpsProbe />
       <PlayShell
         key={game.version.versionId}
         versionId={game.version.versionId}

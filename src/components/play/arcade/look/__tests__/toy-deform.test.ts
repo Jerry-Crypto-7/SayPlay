@@ -73,7 +73,7 @@ describe('deformBody', () => {
     expect(a.material).not.toBe(b.material);
     expect(a.material).not.toBe(merged.material);
     expect((a.material as MeshStandardMaterial).customProgramCacheKey()).toBe((b.material as MeshStandardMaterial).customProgramCacheKey());
-    expect((a.material as MeshStandardMaterial).customProgramCacheKey()).toBe('arcade-body+toy');
+    expect((a.material as MeshStandardMaterial).customProgramCacheKey()).toBe('arcade-body+toon+toy');
     expect(poseA.toyFlap).not.toBe(poseB.toyFlap);
     expect(uniformsOf(a).toyFlap).toBe(poseA.toyFlap);
   });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSnapshotCache } from '../snapshot-cache';
+import thumbs from '../feed-thumbs.json';
+import { type FrameStore, cardImage, createSnapshotCache, indexedFrames, keepFrame } from '../snapshot-cache';
 
 /** `objectURL` jako počitadlo: kolik se vytvořilo a které se uvolnily. */
 function urls() {
@@ -10,6 +11,25 @@ function urls() {
 }
 
 const blob = new Blob(['x']);
+
+/** IndexedDB prohlížeče jako mapa, která přežije „reload“ (novou cache nad týmž úložištěm). */
+function memoryStore(): FrameStore & { readonly saved: Map<string, Blob> } {
+  const saved = new Map<string, Blob>();
+  return {
+    saved,
+    save: async (versionId, frame) => {
+      saved.delete(versionId);
+      saved.set(versionId, frame);
+    },
+    load: async () => [...saved.entries()],
+  };
+}
+
+/** Úložiště, které selže při čtení i zápisu (Safari v anonymním okně, plný disk). */
+const brokenStore: FrameStore = {
+  save: () => Promise.reject(new Error('QuotaExceededError')),
+  load: () => Promise.reject(new Error('InvalidStateError')),
+};
 
 describe('snapshot-cache', () => {
   it('drží nejvýš limit snímků a vyřadí ten, ze kterého hráč odešel nejdřív', () => {
@@ -41,5 +61,50 @@ describe('snapshot-cache', () => {
     expect(cache.size).toBe(20);
     expect(fake.revoked).toHaveLength(30);
     expect(new Set(fake.revoked).size).toBe(30);
+  });
+});
+
+describe('snapshot-cache: snímek vlastní hry přežije reload (P56B T12)', () => {
+  it('hra, kterou návštěvník hrál nebo vytvořil, má po reloadu snímek; /og jen cizí nenavštívená hra mimo kurátorskou sadu', async () => {
+    const store = memoryStore();
+    // Vytvořená hra: snímek po prvních snímcích na její stránce. Hraná ve feedu: snímek při odchodu z karty.
+    await keepFrame('created', blob, store);
+    createSnapshotCache(20, urls(), store).put('played', blob);
+    await Promise.resolve();
+    const reloaded = createSnapshotCache(20, urls(), store);
+    expect(await reloaded.restore()).toBe(2);
+    expect(reloaded.get('created')).toMatch(/^blob:/);
+    expect(reloaded.get('played')).toMatch(/^blob:/);
+    expect(reloaded.get('foreign')).toBeUndefined();
+    expect(cardImage('foreign')).toEqual({ portrait: '/api/play/games/foreign/og', landscape: '/api/play/games/foreign/og' });
+    const curated = thumbs[0]!;
+    expect(cardImage(curated).portrait).toBe(`/feed-thumbs/${curated}-p.webp`);
+  });
+
+  it('obnova nepřepíše snímek z této návštěvy a drží pořadí odchodů', async () => {
+    const store = memoryStore();
+    for (const id of ['a', 'b']) await keepFrame(id, blob, store);
+    const cache = createSnapshotCache(2, urls(), store);
+    const fresh = cache.put('a', blob);
+    await cache.restore();
+    expect(cache.get('a')).toBe(fresh);
+    // Strop 2: `b` z úložiště je starší než dnešní odchod z `a` a vypadne první.
+    cache.put('c', blob);
+    expect(cache.get('b')).toBeUndefined();
+    expect(cache.get('a')).toBe(fresh);
+  });
+
+  it('selhané úložiště nic nerozbije: snímek zůstane v paměti, obnova vrátí nulu', async () => {
+    const cache = createSnapshotCache(20, urls(), brokenStore);
+    expect(cache.put('a', blob)).toBe('blob:shot-1');
+    await expect(keepFrame('b', blob, brokenStore)).resolves.toBeUndefined();
+    await expect(cache.restore()).resolves.toBe(0);
+    expect(cache.get('a')).toBe('blob:shot-1');
+  });
+
+  it('bez IndexedDB (server, starý prohlížeč) úložiště nic neuloží ani nevyhodí', async () => {
+    const store = indexedFrames();
+    await expect(store.save('a', blob)).resolves.toBeUndefined();
+    await expect(store.load()).resolves.toEqual([]);
   });
 });
