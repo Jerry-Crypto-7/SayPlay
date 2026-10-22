@@ -156,6 +156,32 @@
    ],
    "startedAt": "2026-10-22T04:36:47.235Z",
    "finishedAt": "2026-10-22T05:23:40.345Z"
+  },
+  "7": {
+   "ids": [
+    "gen3d-manticore",
+    "gen3d-rainbow",
+    "gen3d-mesa",
+    "gen3d-toucan",
+    "gen3d-manta-ray",
+    "gen3d-pet-carrier",
+    "gen3d-stair",
+    "gen3d-planet-rover",
+    "gen3d-wand",
+    "gen3d-statue-head",
+    "gen3d-wooden-pergola",
+    "gen3d-greenhouse",
+    "gen3d-fighter-jet",
+    "gen3d-fountain",
+    "cc0-turbot",
+    "cc0-tree-stump",
+    "gen3d-mummy",
+    "gen3d-star-trophy",
+    "gen3d-donkey",
+    "cc0-lantern-candle"
+   ],
+   "startedAt": "2026-10-22T05:24:55.912Z",
+   "finishedAt": "2026-10-22T06:04:24.132Z"
   }
  },
  "models": {
@@ -4041,6 +4067,671 @@
    ],
    "newScore": 4,
    "result": "kept-old"
+  },
+  "gen3d-manticore": {
+   "noun": "manticore",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: pivot not centred: x=-0.093 z=-0.000; inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-rainbow": {
+   "noun": "rainbow",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-mesa": {
+   "noun": "mesa",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-toucan": {
+   "noun": "toucan",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.8921,
+      1.0059,
+      0.8159
+     ],
+     "triangles": 3453,
+     "dims": [
+      1.0669,
+      0.9917795132583156,
+      0.8507199999999999
+     ],
+     "score": 4,
+     "reason": "hornbill bird: Jagged noisy dark mesh, messy silhouette despite recognisable beak."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-manta-ray": {
+   "noun": "manta ray",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.8031,
+      1.0027,
+      0.7592
+     ],
+     "triangles": 3878,
+     "dims": [
+      2.5336600000000002,
+      0.99218,
+      2.498578205769719
+     ],
+     "score": 2,
+     "reason": "black cloth: Flat black sheet with loose fragments; unreadable."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 2,
+   "result": "kept-old"
+  },
+  "gen3d-pet-carrier": {
+   "noun": "pet carrier",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-stair": {
+   "noun": "stair",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-planet-rover": {
+   "noun": "planet rover",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.2056,
+      0.993,
+      1.107
+     ],
+     "triangles": 3271,
+     "dims": [
+      1.64184532539765,
+      0.9882099999999998,
+      1.3929199999999997
+     ],
+     "score": 4,
+     "reason": "RC buggy: Crumpled noisy chrome surface, spoiler looks detached; not toy-like."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.3603,
+      0.9908,
+      0.9201
+     ],
+     "triangles": 3283,
+     "dims": [
+      1.6151404055620313,
+      0.98821,
+      1.39292
+     ],
+     "score": 5,
+     "reason": "Toy buggy: Clear car silhouette, but crumpled metallic noisy shading, odd floating panels."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-wand": {
+   "noun": "wand",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-statue-head": {
+   "noun": "statue head",
+   "oldScore": 3.5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.1944,
+      1.0046,
+      1.2173
+     ],
+     "triangles": 3517,
+     "dims": [
+      0.8608200000000001,
+      0.9938764057833898,
+      1.15752
+     ],
+     "score": 3,
+     "reason": "chrome head: Shiny crumpled faceted head, glassy and noisy, unclear object."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0488,
+      1.0488,
+      1.0488
+     ],
+     "triangles": 3437,
+     "dims": [
+      0.8253620301663819,
+      1.0366401645924055,
+      1.123973051612444
+     ],
+     "score": 3,
+     "reason": "Head bust: Crumpled foil blob; face barely readable, scan-like."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-wooden-pergola": {
+   "noun": "wooden pergola",
+   "oldScore": 4,
+   "oldJudge": "codex+claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.956,
+      0.956,
+      0.956
+     ],
+     "triangles": 3284,
+     "dims": [
+      1.0825192695058359,
+      0.9537506811173739,
+      1.0550302658791426
+     ],
+     "score": 5,
+     "reason": "Vine pergola: Readable shape but noisy spiky foliage roof, warped legs."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.7806,
+      0.999,
+      0.826
+     ],
+     "triangles": 3166,
+     "dims": [
+      1.0795467794499283,
+      0.9820794989989523,
+      1.0333704685438456
+     ],
+     "score": 4,
+     "reason": "Wooden table: Noisy, crumpled top with scan-like texture; legs uneven and droopy."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-greenhouse": {
+   "noun": "greenhouse",
+   "oldScore": 3,
+   "oldJudge": "codex+claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0144,
+      1.0144,
+      1.0144
+     ],
+     "triangles": 2733,
+     "dims": [
+      0.8912057777971909,
+      1.013804774016471,
+      0.900371926795063
+     ],
+     "score": 4,
+     "reason": "glass terrarium: Glassy chrome frame, crumpled noisy facets, off-style."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.2951,
+      0.99,
+      0.9998
+     ],
+     "triangles": 2678,
+     "dims": [
+      0.91506,
+      0.9900083477415728,
+      0.9186672863251628
+     ],
+     "score": 4,
+     "reason": "Greenhouse: Glassy, techy crinkled surfaces; house shape readable but noisy."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-fighter-jet": {
+   "noun": "fighter jet",
+   "oldScore": 5.5,
+   "oldJudge": "codex+claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9659,
+      0.9659,
+      0.9659
+     ],
+     "triangles": 4002,
+     "dims": [
+      2.6170965563777657,
+      0.9557522014922465,
+      2.487707779880716
+     ],
+     "score": 7,
+     "reason": "jet plane: Bright toy jet, clear silhouette; minor shading noise."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-fountain": {
+   "noun": "fountain",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9973,
+      0.9973,
+      0.9973
+     ],
+     "triangles": 3650,
+     "dims": [
+      1.5637888037544088,
+      0.9972872146885903,
+      1.5624665605429042
+     ],
+     "score": 3,
+     "reason": "blue puck base: Unclear object; crumpled glossy faceted surface."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "cc0-turbot": {
+   "noun": "turbot",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 6,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "cc0-tree-stump": {
+   "noun": "tree stump",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.841,
+      0.6216,
+      0.6435
+     ],
+     "triangles": 196,
+     "dims": [
+      1.3595800000000002,
+      0.6192749439928846,
+      1.029175622831898
+     ],
+     "score": 7,
+     "reason": "tree stump: Clean chunky low-poly stump; plain, a bit dull colour."
+    }
+   ],
+   "newScore": 7,
+   "result": "kept-old",
+   "reason": "lod1: 192 triangles, the replaced model had 116"
+  },
+  "gen3d-mummy": {
+   "noun": "mummy",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.7376,
+      1.0019,
+      0.806
+     ],
+     "triangles": 3974,
+     "dims": [
+      0.4424,
+      0.9961600000000002,
+      0.21349999999999997
+     ],
+     "score": 3,
+     "reason": "astronaut figure: Crumpled foil-like noisy surface; figure barely readable."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.7319,
+      1.0009,
+      0.6945
+     ],
+     "triangles": 3994,
+     "dims": [
+      0.4424,
+      0.99616,
+      0.21350000000000002
+     ],
+     "score": 4,
+     "reason": "Humanoid figure: Readable figure but chrome, faceted noisy surface; not toy-like."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-star-trophy": {
+   "noun": "star trophy",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.7222,
+      1.0048,
+      1.0167
+     ],
+     "triangles": 3762,
+     "dims": [
+      0.5295,
+      1.000009580745109,
+      0.41931999999999997
+     ],
+     "score": 7,
+     "reason": "star trophy: Bright chunky toy trophy; slightly lumpy surface and dents."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-donkey": {
+   "noun": "donkey",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9127,
+      0.9997,
+      1.2976
+     ],
+     "triangles": 3831,
+     "dims": [
+      0.39737999999999996,
+      0.9996500000000001,
+      1.08838
+     ],
+     "score": 5,
+     "reason": "goat/donkey: Chunky shape but chrome-like shading, animal species ambiguous."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.3566,
+      0.9997,
+      1.3096
+     ],
+     "triangles": 3784,
+     "dims": [
+      0.39738,
+      0.9996500000000001,
+      1.08838
+     ],
+     "score": 1,
+     "reason": "Unknown shards: Torn mesh of loose fragments; no identifiable object."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "cc0-lantern-candle": {
+   "noun": "lantern candle",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.5232,
+      0.3879,
+      0.523
+     ],
+     "triangles": 352,
+     "dims": [
+      0.23907484666140733,
+      0.3874753950591341,
+      0.23904548368533513
+     ],
+     "score": 6,
+     "reason": "Lantern: Clear silhouette but dark glossy glass look, not bright toy colours."
+    }
+   ],
+   "newScore": 6,
+   "result": "kept-old",
+   "reason": "lod1: 338 triangles, the replaced model had 208"
   }
  }
 }
