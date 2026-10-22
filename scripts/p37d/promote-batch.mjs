@@ -340,7 +340,8 @@ export async function replaceModels(batch, { root = ROOT, sync = true, replacedD
 
       const aside = path.join(replacedDir, entry.id, `v${old.version}`);
       mkdirSync(aside, { recursive: true });
-      for (const name of filesOf(old)) copyFileSync(path.join(root, name), path.join(aside, path.basename(name)));
+      // Opakovaný běh po pádu uprostřed dávky: v `public/` už můžou být nové soubory, originál ve `v<verze>` zůstane.
+      for (const name of filesOf(old)) if (!existsSync(path.join(aside, path.basename(name)))) copyFileSync(path.join(root, name), path.join(aside, path.basename(name)));
       const lods = old.lods.map((lod) => {
         const fresh = lod.level === 0 ? record.lod0 : record.lod1;
         copyFileSync(fresh.file, path.join(root, `public${lod.path}`));

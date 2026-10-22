@@ -152,6 +152,24 @@ describe('promote-batch --replace (P57 T5)', () => {
     expect(existsSync(replacedDir)).toBe(false);
   }, 180_000);
 
+  it('a rerun after a crash mid-batch never overwrites the originals kept aside (P57 R2)', async () => {
+    const { root, grass, files, replacedDir } = makeReplaceRoot();
+    const oldHashes = files.map((name) => sha(path.join(root, name)));
+    const glb = await scaled(root, grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS), [1.05, 1.05, 1.05]);
+    // Stav po pádu: originály už vedle, v `public/` nové soubory, katalog pořád starý.
+    const aside = path.join(replacedDir, TEST_GRASS, `v${grass.version}`);
+    mkdirSync(aside, { recursive: true });
+    for (const name of files) {
+      copyFileSync(path.join(root, name), path.join(aside, path.basename(name)));
+      writeFileSync(path.join(root, name), 'half-written swap');
+    }
+
+    const { replaced } = await replaceModels({ schema: 'catalog-batch.v1', entries: [entry(TEST_GRASS, ['grass'], { glb })] }, { root, sync: false, replacedDir });
+
+    expect(replaced).toEqual([TEST_GRASS]);
+    expect(files.map((name) => sha(path.join(aside, path.basename(name))))).toEqual(oldHashes);
+  }, 180_000);
+
   it('the hero profile simplifies LOD1 toward the replaced one instead of refusing it as heavier (P57 T8)', async () => {
     const { root, grass, replacedDir } = makeReplaceRoot();
     // Žalud (4 740) do trávy (LOD1 96): na 96 trojúhelníků při stejné velikosti zjednodušit nejde;
