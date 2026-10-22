@@ -206,16 +206,19 @@ export async function promoteBatch(batch, { root = ROOT, sync = true, drop = [] 
   for (const id of dropped) for (const file of [`${id}-lod0.glb`, `${id}-lod1.glb`, `${id}.png`]) rmSync(path.join(publicDir, file), { force: true });
   const passed = batch.entries.filter((entry) => entry.checked.verdict === 'pass');
   const again = new Set(passed.map((entry) => entry.id).filter((id) => catalog.assets.some((asset) => asset.assetId === id && isOurs(asset))));
-  const others = catalog.assets.filter((asset) => !again.has(asset.assetId) && !dropped.includes(asset.assetId));
-  const taken = new Set(others.flatMap((asset) => [asset.assetId, ...asset.tags]));
+  // Štítky znovu povyšovaného id zůstanou obsazené: přeskočené si nechá starý záznam (R3) a nikdo jiný je nedostane.
+  const kept = catalog.assets.filter((asset) => !dropped.includes(asset.assetId));
+  const taken = new Set(kept.flatMap((asset) => [asset.assetId, ...asset.tags]));
+  const ownOld = new Map(kept.filter((asset) => again.has(asset.assetId)).map((asset) => [asset.assetId, new Set([asset.assetId, ...asset.tags])]));
   const skipped = batch.entries.filter((entry) => entry.checked.verdict !== 'pass').map((entry) => ({ id: entry.id, reason: `judge: ${entry.checked.judge}` }));
   const entries = [];
 
   for (const entry of passed) {
-    const tags = entry.nouns.filter((noun, i, all) => !taken.has(noun) && all.indexOf(noun) === i);
+    const free = (tag) => !taken.has(tag) || Boolean(ownOld.get(entry.id)?.has(tag));
+    const tags = entry.nouns.filter((noun, i, all) => free(noun) && all.indexOf(noun) === i);
     const reason =
       entry.licence !== LICENSE ? `licence ${entry.licence} is not the pipeline licence ${LICENSE}`
-      : taken.has(entry.id) ? 'id already in the catalog outside gen3d-p37d'
+      : !free(entry.id) ? 'id already in the catalog outside gen3d-p37d'
       : !tags.includes(entry.nouns[0]) ? `"${entry.nouns[0]}" is already a tag of another catalog model`
       : null;
     if (reason) {
@@ -253,6 +256,7 @@ export async function promoteBatch(batch, { root = ROOT, sync = true, drop = [] 
         materials: candidate.materials, collision: candidate.collision, sockets: [], supportSurfaces: [], parts: candidate.parts,
       });
       [entry.id, ...tags].forEach((tag) => taken.add(tag));
+      ownOld.delete(entry.id); // druhý záznam téhož id v dávce už je obsazené id
     } finally {
       rmSync(work, { recursive: true, force: true });
     }

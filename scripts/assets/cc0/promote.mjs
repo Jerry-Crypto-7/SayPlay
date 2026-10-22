@@ -206,7 +206,8 @@ export async function promote({ root = ROOT, budget = BUDGET } = {}) {
   // záznam, soubory, text licence i disclosure zůstanou, jak je výměna zapsala.
   const replaced = replacedOf(catalog.assets);
   const replacedFiles = replaced.flatMap((asset) => [...asset.lods.map((lod) => lod.path), asset.thumbnail]).map((url) => `public${url}`);
-  const replacedNames = new Set([...replacedFiles, ...replaced.map((asset) => asset.provenance.licenseEvidence)]);
+  // Text licence CC0 výměny drží i vlastní id mimo složku cc0 (`gen3d-wildflower-patch`).
+  const replacedNames = new Set([...replacedFiles, ...catalog.assets.filter((asset) => asset.provenance.replacedAt).map((asset) => asset.provenance.licenseEvidence)]);
   const others = catalog.assets.filter((asset) => !isCc0(asset) || asset.provenance.replacedAt);
   const taken = new Set(others.flatMap((asset) => [asset.assetId, ...asset.tags]));
   const entries = [];

@@ -325,22 +325,37 @@ describe('a model swapped inside the cc0 folder (P57 R1)', () => {
     writeFileSync(path.join(root, 'scripts/assets/cc0/selection.json'), JSON.stringify({ selected: [stale, fern].map(({ pack, file, noun }) => ({ pack, file, noun })) }));
     writeFileSync(path.join(root, 'scripts/assets/cc0/fetched.json'), JSON.stringify({ cache, packs: [{ pack: PACK, licenseFile: `<cache>/${PACK}.license.txt` }] }));
     copyFileSync(path.join(ROOT, 'scripts/assets/cc0/sources.json'), path.join(root, 'scripts/assets/cc0/sources.json'));
+    // Vlastní id vyměněné za CC0 z balíku, který žádný model složky cc0 nepoužívá (`gen3d-wildflower-patch`): text licence zůstane.
+    const evidence = licenseFileOf('kenney-nature-kit');
+    const before = read(root, 'src/assets/catalog.json');
+    before.assets.push({
+      assetId: 'gen3d-test-weed', tags: ['weed'], bounds: grass.bounds, thumbnail: '/assets/worldstream/gen3d-p37d/gen3d-test-weed.png',
+      lods: [{ level: 0, path: '/assets/worldstream/gen3d-p37d/gen3d-test-weed-lod0.glb' }], provenance: { license: CC0, replacedAt: '2026-10-22', licenseEvidence: evidence },
+    });
+    writeFileSync(path.join(root, 'src/assets/catalog.json'), JSON.stringify(before));
+    mkdirSync(path.join(root, path.dirname(evidence)), { recursive: true });
+    writeFileSync(path.join(root, evidence), 'CC0 1.0 Universal');
+    const withEvidence = read(root, 'disclosure.json');
+    withEvidence.entries.push({ name: evidence, kind: 'asset', license: CC0, authorOrProvider: 'Kenney' });
+    writeFileSync(path.join(root, 'disclosure.json'), JSON.stringify(withEvidence));
+    const kept = [...files, evidence];
     const hashes = files.map((name) => sha(path.join(root, name)));
-    const disclosed = read(root, 'disclosure.json').entries.filter((entry: { name: string }) => files.includes(entry.name));
+    const disclosed = withEvidence.entries.filter((entry: { name: string }) => kept.includes(entry.name));
 
     await promoteCc0({ root });
 
+    expect(existsSync(path.join(root, evidence))).toBe(true);
     const catalog = read(root, 'src/assets/catalog.json');
     expect(catalog.assets.find((asset: { assetId: string }) => asset.assetId === TEST_GRASS)).toEqual(swapped);
     expect(catalog.assets.find((asset: { assetId: string }) => asset.assetId === 'cc0-test-fern')).toMatchObject({ version: 1, provenance: { license: CC0 } });
     expect(files.map((name) => sha(path.join(root, name)))).toEqual(hashes);
     const disclosure = read(root, 'disclosure.json');
-    expect(disclosure.entries.filter((entry: { name: string }) => files.includes(entry.name))).toEqual(disclosed);
+    expect(disclosure.entries.filter((entry: { name: string }) => kept.includes(entry.name))).toEqual(disclosed);
     const rows = readFileSync(table, 'utf8');
     expect(rows).toContain(replacedRow(swapped));
     expect(rows).toMatch(/\| `cc0-test-fern` \| fern \| .*Fern_1\.glb/);
     expect(rows).not.toContain(SOURCE_FILE);
-    expect(await checkReplaced({ catalog, disclosure, root })).toEqual([]);
+    expect(await checkReplaced({ catalog: { assets: [swapped] }, disclosure, root })).toEqual([]);
   }, 180_000);
 });
 
@@ -393,10 +408,11 @@ describe('promote-batch (P37D T3)', () => {
     const root = makeRoot();
     const batch = { schema: 'catalog-batch.v1', entries: [entry('gen3d-test-acorn', ['test acorn'])] };
     await promoteBatch(batch, { root, sync: false });
-    const { promoted, skipped } = await promoteBatch(batch, { root, sync: false });
+    // Téhož id dvakrát v jedné dávce: první nahradí starý záznam, druhé už narazí na obsazené id.
+    const { promoted, skipped } = await promoteBatch({ ...batch, entries: [...batch.entries, ...batch.entries] }, { root, sync: false });
 
     expect(promoted).toEqual(['gen3d-test-acorn']);
-    expect(skipped).toEqual([]);
+    expect(skipped).toEqual([{ id: 'gen3d-test-acorn', reason: 'id already in the catalog outside gen3d-p37d' }]);
     const ids = read(root, 'src/assets/catalog.json').assets.map((asset: { assetId: string }) => asset.assetId);
     expect(ids).toEqual(['gen3d-taken', 'gen3d-test-acorn']);
     const names: string[] = read(root, 'disclosure.json').entries.map((record: { name: string }) => record.name);
@@ -450,11 +466,17 @@ describe('promote-batch (P37D T3)', () => {
 
     const { promoted, skipped } = await promoteBatch({
       schema: 'catalog-batch.v1',
-      entries: [entry('gen3d-test-acorn', ['test acorn'], { licence: 'CC-BY-4.0' }), entry('gen3d-test-acorn', ['test acorn'], { glb: path.join(root, 'missing-lod0.glb') })],
+      entries: [
+        // Štítek modelu, který si nechá starý záznam, nový model nedostane.
+        entry('gen3d-test-oak', ['test acorn']),
+        entry('gen3d-test-acorn', ['test acorn'], { licence: 'CC-BY-4.0' }),
+        entry('gen3d-test-acorn', ['test acorn'], { glb: path.join(root, 'missing-lod0.glb') }),
+      ],
     }, { root, sync: false });
 
     expect(promoted).toEqual([]);
     expect(skipped).toEqual([
+      { id: 'gen3d-test-oak', reason: '"test acorn" is already a tag of another catalog model' },
       { id: 'gen3d-test-acorn', reason: `licence CC-BY-4.0 is not the pipeline licence ${LICENSE}` },
       { id: 'gen3d-test-acorn', reason: expect.stringMatching(/^normalize: /) },
     ]);
