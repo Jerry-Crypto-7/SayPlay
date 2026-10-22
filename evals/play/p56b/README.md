@@ -244,3 +244,27 @@ Dočasné přepínače toonu (`window.__p56b` přes `shots --init`, necommitnut�
 - **Plán pro tento případ:** přestat opravovat vzhled a předat majiteli dvě rozhodnutí (plán T13). Sytost ×1,7 je jediná páka se signálem; je to barevné ladění, ne kreslený materiál, a telefon (26/34 třikrát) s ní není změřený.
 - **Brány T13 mimo soud (build `80d159c1` kódu):** e2e `p56b-look`, `p56b-first-frame`, `play-physics-replay` 15/15 (laboratoř pravidel je v produkci jen s `PLAY_LAB=1`); `git diff 72665fdc --stat -- src/play/arcade/pieces src/play/genre` prázdný. Celá vitest sada sama: 16 644 / 16 667; červené jsou časové limity (`compile-report` 966 ms > 500, `golden` 1 433 ms > 1 000, `STACK_TRACE_ERROR` = vypršení), chybějící gitignorovaný `plans/P8-odevzdani.md` a jedna skutečná regrese z T11: 4 věty pruhů v `p46g/genres.json` byly doslova věty sady P54C dev (`p54c/sets.test`). Přeformulované, stejný ovládací režim (`lanes`) na `72665fdc` i HEAD; snímky nových vět v `before-lanes*/`, `after-lanes*/` (necommitnuté) – před dalším soudem je přesunout do `before*/`, `after*/`.
 - Souběžné focení dvěma procesy proti jednomu `next start` server zasekne (proces na ~80 % jádra, neodpovídá ani po 8 min, dvakrát při stejné větě v obou procesech); jeden proces 6 scén bez výpadku.
+
+## Pokus 4 (T13, HEAD `66f0055f`) – desktop v obou pořadích stran, pořád pod bránou
+
+Rozhodnutí majitele 22. 10.: desktop soudit v obou pořadích stran a počítat jen dvojice, kde obě pořadí vybrala týž snímek; brána 0,75 platí nad nimi. Kotva se přijímá bez přikrášlení, sytost kulis se nezapíná.
+
+- **Snímky:** kód od pokusu 3 kreslí stejně (`d1677494` a `66f0055f` mění jen věty a README), takže `after/`, `after-phone/` jsou snímky pokusu 3. 4 přeformulované věty pruhů přesunuté z `before-lanes*/`, `after-lanes*/` do `before*/`, `after*/` (staré snímky v `D:/tmp/p56b-lanes-old/`).
+- **Jak:** pořadí AB = strany ze seedu 56013 jako pokusy 1–3; pořadí BA = každá dvojice prohozená (`--pairs after:before`, týž seed). V AB a u telefonu se převzaly odpovědi pokusu 3 na nezměněné dvojice (stejný obrázek i otázka, skript hotovou odpověď nepřeptává); 4 věty pruhů a celé BA se ptaly znovu. Sloučeno do `judge.json` (`total[0]` desktop se shodnými verdikty, `pairs[].ab` / `.ba`).
+
+| Brána | Výsledek | Prošla |
+|---|---|---|
+| Desktop, shodné verdikty ≥ 0,75 | 14/24 = 0,583 (10 dvojic se v pořadích rozešlo) | ne |
+| – pro informaci: AB / BA zvlášť | 20/34, levá 0,735 / 18/34, levá 0,441 | – |
+| Telefon ≥ 0,75, levá 0,35–0,65 | 26/34 = 0,765, levá 0,559 (počtvrté) | ano |
+| Kotva | 0/30 – přijato bez přikrášlení, brána +0,15 pro T13 neplatí (majitel) | – |
+| FPS `perf-after.json` | 0,938 (pokus 2, vzhled od té doby jen bez okraje toonu) | ano |
+| e2e, determinismus | 15/15, diff `pieces` + `genre` prázdný (T13-R3) | ano |
+
+- **Rozešlé dvojice (rozhodla strana):** 01-frog, 04-shark, 05-pizza, g-race, g-platform, g-fight, g-ball, g-throw, g-duel, g-whack – důvody v obou pořadích „nearly identical“, „slightly richer…“.
+- **Prohry v obou pořadích (10):** 02-zombie, 07-goalkeeper, 10-chef, g-agar, g-glide, g-flap, g-shooter, g-timing, g-voyage, g-lander. Šest z nich soudce popisuje jako téměř shodné (lepší „wider framing“, „slightly brighter colours“). S konkrétním důvodem:
+  - **02-zombie „overexposed white blob“:** záblesk zásahu z `FightFx` (`FLASH_MS` 160 ms reálného času, bílá `paper` × 1,6), soubor od `72665fdc` beze změny. Snímek pokusu 1 (`after-a1/`) ve stejném tiku a místě ukazuje normálního zombíka, telefon taky. **Odvozeno:** náhoda okamžiku focení, ne vada vzhledu; přefocení by mohlo dvojici otočit, bránu ne (nejvýš 15/25).
+  - **10-chef „flat gray look“:** nová kuchyně je šedší a méně teplá než béžová na `72665fdc`.
+  - **g-agar „fog, extra props“:** nový záběr arény je bližší (T9), takže v něm chybí opar v dálce a květiny a kameny v popředí.
+- **Pruhy:** 4 nové věty vyhrály na desktopu v obou pořadích; na telefonu 3/4 jako s původními větami (g-whack prohrál znovu jako „nearly identical“).
+- **Závěr (odvozeno):** nový vzhled na desktopu soudce od `72665fdc` spolehlivě nerozezná – u třetiny dvojic rozhoduje strana a ze shodných verdiktů vyhrává 58 %. Materiál kulis to nezmění (T13-R3). Co soud jmenuje (záběr, opar, hustota popředí, teplo světla), je scéna, ne materiál, a je mimo rozsah P56B. Telefon bránu drží čtyřikrát po sobě.
