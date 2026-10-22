@@ -33,6 +33,7 @@ import { heroActionOf } from '../action-cue/cues';
 import type { GhostLabel } from '../Ghost';
 import { type ChainGhostReplay, fetchChainGhost } from './chain-ghost';
 import { wakesGame } from '../ready-gate';
+import { prebuildRunnerTerrain } from '../runner/terrain';
 import type { Cast } from '../World';
 import { ChainCard } from './ChainCard';
 import { type ChainSession, createChainSession } from './chain-session';
@@ -129,6 +130,12 @@ function ChainRun({
   const scene = useMemo(() => sceneLook(roundSpec.theme), [roundSpec.theme]);
   const clock = useMemo(() => roundClock(round.world), [round]);
   const remix = useRemixJob(versionId, false);
+
+  // Terén kol běžce staví worker hned po montáži řetězu: na hlavním vlákně by přechod do kola zasekl telefon o ~0,5 s (T18).
+  useEffect(() => {
+    if (!active) return;
+    for (const { spec: next, world } of chain.rounds) prebuildRunnerTerrain(world, sceneLook(next.theme));
+  }, [active, chain]);
 
   // Karta mezi koly: hodiny karty jdou snímky prohlížeče, kolo pak pohání jeho scéna.
   const carding = card > 0;
