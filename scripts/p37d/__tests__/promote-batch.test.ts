@@ -9,7 +9,8 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { isGen3d } from '../../assets/gen3d/promote.mjs';
-import { LICENSE, PUBLIC_DIR, checkReplaced, promoteBatch, replaceModels } from '../promote-batch.mjs';
+import { licenseFileOf } from '../../assets/cc0/promote.mjs';
+import { CC0, LICENSE, PUBLIC_DIR, checkReplaced, promoteBatch, replaceModels } from '../promote-batch.mjs';
 
 /**
  * Povýšení dávky do katalogu (P37D T3) nad dočasným kořenem: přijatý model projde
@@ -176,6 +177,96 @@ describe('promote-batch --replace (P57 T5)', () => {
     expect((await checkReplaced({ catalog, disclosure: reverted, root })).join('\n')).toMatch(/lod1\.glb.*CC0-1\.0/);
     rmSync(path.join(root, `public${grass.thumbnail}`));
     expect((await checkReplaced({ catalog, disclosure, root })).join('\n')).toMatch(/\.png is missing/);
+  }, 180_000);
+});
+
+/**
+ * Výměna za model z CC0 balíku (P57 T8r, `origin: 'cc0'`) nad dočasnou cache: balík ze `sources.json`,
+ * text licence vedle, zdrojový soubor v balíku. Do katalogu jde autor a text licence balíku, ne „generated“.
+ */
+const PACK = 'quaternius-ultimate-nature';
+const SOURCE_FILE = 'OBJ/Grass_9.glb';
+function makeCache(licence = readFileSync(path.join(ROOT, 'public/assets/worldstream/cc0/licenses', `${PACK}.txt`), 'utf8')) {
+  const cache = mkdtempSync(path.join(os.tmpdir(), 'p57-cc0-cache-'));
+  roots.push(cache);
+  mkdirSync(path.join(cache, PACK, 'OBJ'), { recursive: true });
+  copyFileSync(GLB, path.join(cache, PACK, SOURCE_FILE));
+  writeFileSync(path.join(cache, `${PACK}.license.txt`), licence);
+  return cache;
+}
+const cc0Entry = (glb: string, extra: Record<string, unknown> = {}) => entry(TEST_GRASS, ['grass'], { glb, licence: CC0, source: { pack: PACK, file: SOURCE_FILE }, ...extra });
+
+describe('promote-batch --replace with a CC0 model (P57 T8r)', () => {
+  it('records the CC0 pack, author and licence text, discloses every file as CC0, and checkReplaced accepts it', async () => {
+    const { root, grass, files, replacedDir } = makeReplaceRoot();
+    const cc0Cache = makeCache();
+    const glb = await scaled(root, grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS), [1.05, 1.05, 1.05]);
+
+    const { replaced, skipped } = await replaceModels({ schema: 'catalog-batch.v1', entries: [cc0Entry(glb)] }, { root, sync: false, replacedDir, origin: 'cc0', cc0Cache });
+
+    expect(skipped).toEqual([]);
+    expect(replaced).toEqual([TEST_GRASS]);
+    const catalog = read(root, 'src/assets/catalog.json');
+    const asset = catalog.assets[1];
+    expect(asset.label).toBe('Grass (CC0, Quaternius)');
+    expect(asset.version).toBe(grass.version + 1);
+    expect(asset.provenance).toMatchObject({ license: CC0, author: 'Quaternius (quaternius.com)', licenseEvidence: licenseFileOf(PACK), replacedFrom: grass.provenance.source });
+    expect(asset.provenance.source).toContain(`${SOURCE_FILE} from the ${PACK} pack`);
+    expect(readFileSync(path.join(root, licenseFileOf(PACK)), 'utf8')).toMatch(/CC0 1\.0/);
+    const disclosure = read(root, 'disclosure.json');
+    for (const name of files) expect(disclosure.entries.find((record: { name: string }) => record.name === name)).toMatchObject({ license: CC0, firstParty: false, authorOrProvider: 'Quaternius (quaternius.com)' });
+    expect(disclosure.entries.find((record: { name: string }) => record.name === licenseFileOf(PACK))).toMatchObject({ license: CC0 });
+    expect(readFileSync(path.join(root, PUBLIC_DIR, 'PROVENANCE.md'), 'utf8')).toMatch(new RegExp(`Replaced by CC0[\\s\\S]*${TEST_GRASS}.*Quaternius`));
+    expect(await checkReplaced({ catalog, disclosure, root })).toEqual([]);
+
+    // Špatně zapsaná CC0 výměna neprojde: záznam souboru jako vlastní, cizí text licence, štítek „generated“, cizí licence.
+    const own = structuredClone(disclosure);
+    Object.assign(own.entries.find((record: { name: string }) => record.name.endsWith(`${TEST_GRASS}-lod0.glb`)), { license: LICENSE, firstParty: true });
+    expect((await checkReplaced({ catalog, disclosure: own, root })).join('\n')).toMatch(/lod0\.glb is disclosed as LicenseRef-Worldsmith-Generated first-party/);
+    const labelled = structuredClone(catalog);
+    labelled.assets[1].label = 'Grass (generated)';
+    expect((await checkReplaced({ catalog: labelled, disclosure, root })).join('\n')).toMatch(/claims a generated model/);
+    const foreign = structuredClone(catalog);
+    foreign.assets[1].provenance.license = 'CC-BY-4.0';
+    expect((await checkReplaced({ catalog: foreign, disclosure, root })).join('\n')).toMatch(/provenance says CC-BY-4\.0/);
+    const undeclared = structuredClone(catalog);
+    undeclared.assets[1].provenance.licenseEvidence = 'public/assets/worldstream/cc0/licenses/some-pack.txt';
+    expect((await checkReplaced({ catalog: undeclared, disclosure, root })).join('\n')).toMatch(/not the text of a CC0 pack/);
+    writeFileSync(path.join(root, licenseFileOf(PACK)), 'Creative Commons Attribution-NonCommercial 4.0');
+    expect((await checkReplaced({ catalog, disclosure, root })).join('\n')).toMatch(/does not say CC0-1\.0/);
+  }, 180_000);
+
+  it('refuses a wrong licence, an undeclared pack, a missing or non-CC0 licence text, a file not in the pack and a size change, and touches nothing', async () => {
+    const { root, grass, files, replacedDir } = makeReplaceRoot();
+    const before = ['src/assets/catalog.json', 'disclosure.json', ...files].map((name) => sha(path.join(root, name)));
+    const lod0 = grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS);
+    const glb = await scaled(root, lod0, [1.05, 1.05, 1.05]);
+    const deeper = await scaled(root, lod0, [1, 1, 1.15]);
+    const cache = makeCache();
+    const run = (entries: Record<string, unknown>[], cc0Cache = cache) => replaceModels({ schema: 'catalog-batch.v1', entries }, { root, sync: false, replacedDir, origin: 'cc0', cc0Cache });
+
+    expect((await run([
+      cc0Entry(glb, { licence: 'CC-BY-4.0' }),
+      cc0Entry(glb, { licence: LICENSE }),
+      cc0Entry(glb, { source: { pack: 'some-pack', file: SOURCE_FILE } }),
+      cc0Entry(glb, { source: { pack: PACK, file: 'OBJ/Missing.glb' } }),
+      cc0Entry(deeper),
+    ])).skipped).toEqual([
+      { id: TEST_GRASS, reason: 'licence CC-BY-4.0 is not CC0-1.0' },
+      { id: TEST_GRASS, reason: `licence ${LICENSE} is not CC0-1.0` },
+      { id: TEST_GRASS, reason: 'CC0 pack some-pack is not declared in scripts/assets/cc0/sources.json' },
+      { id: TEST_GRASS, reason: `source file OBJ/Missing.glb is not in the ${PACK} pack` },
+      { id: TEST_GRASS, reason: expect.stringMatching(/^bounds: z /) },
+    ]);
+    expect((await run([cc0Entry(glb)], makeCache('Creative Commons Attribution-NonCommercial 4.0'))).skipped).toEqual([{ id: TEST_GRASS, reason: `${PACK}: license text does not say CC0-1.0` }]);
+    const noText = makeCache();
+    rmSync(path.join(noText, `${PACK}.license.txt`));
+    expect((await run([cc0Entry(glb)], noText)).skipped).toEqual([{ id: TEST_GRASS, reason: `licence text ${path.join(noText, `${PACK}.license.txt`)} is missing` }]);
+    // Generovaná cesta CC0 záznam dál odmítá.
+    expect((await replaceModels({ schema: 'catalog-batch.v1', entries: [cc0Entry(glb)] }, { root, sync: false, replacedDir })).skipped).toEqual([{ id: TEST_GRASS, reason: `licence ${CC0} is not the pipeline licence ${LICENSE}` }]);
+
+    expect(['src/assets/catalog.json', 'disclosure.json', ...files].map((name) => sha(path.join(root, name)))).toEqual(before);
+    expect(existsSync(replacedDir)).toBe(false);
   }, 180_000);
 });
 

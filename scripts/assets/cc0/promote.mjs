@@ -102,7 +102,8 @@ export function catalogIndex(catalog) {
   };
 }
 
-const licenseFileOf = (pack) => `${PUBLIC_DIR}/licenses/${pack}.txt`;
+/** Text licence balíku v repu – důkaz licence CC0 modelů (i těch, které P57 vyměnil pod stejným id). */
+export const licenseFileOf = (pack) => `${PUBLIC_DIR}/licenses/${pack}.txt`;
 
 /** Problémy CC0 záznamů katalogu: licence, text licence, soubory, registr, tagy. Prázdné pole = v pořádku. */
 export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET }) {
@@ -138,7 +139,7 @@ export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET
   return problems;
 }
 
-function disclosureRecord(name, { reason, source, author, license, attribution, reviewNote }) {
+export function disclosureRecord(name, { reason, source, author, license, attribution, reviewNote }) {
   return {
     name, kind: 'asset', firstParty: false, reason, source, authorOrProvider: author, license,
     requiredNotices: license === 'CC-BY-4.0' ? ['attribution to the author', 'link to the licence', 'note that the model was changed'] : ['none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md'],
