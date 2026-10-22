@@ -1,0 +1,155 @@
+{
+ "dark": 0.04,
+ "rows": [
+  {
+   "id": "01-frog",
+   "mean": 0.481,
+   "dark": 0.002
+  },
+  {
+   "id": "02-zombie",
+   "mean": 0.111,
+   "dark": 0.005
+  },
+  {
+   "id": "03-ninja",
+   "mean": 0.556,
+   "dark": 0
+  },
+  {
+   "id": "04-shark",
+   "mean": 0.412,
+   "dark": 0
+  },
+  {
+   "id": "05-pizza",
+   "mean": 0.34,
+   "dark": 0.003
+  },
+  {
+   "id": "06-cat",
+   "mean": 0.371,
+   "dark": 0.001
+  },
+  {
+   "id": "07-goalkeeper",
+   "mean": 0.448,
+   "dark": 0.008
+  },
+  {
+   "id": "08-gems",
+   "mean": 0.235,
+   "dark": 0.004
+  },
+  {
+   "id": "09-astro",
+   "mean": 0.342,
+   "dark": 0.002
+  },
+  {
+   "id": "10-chef",
+   "mean": 0.606,
+   "dark": 0.012
+  },
+  {
+   "id": "11-drum",
+   "mean": 0.364,
+   "dark": 0.045
+  },
+  {
+   "id": "12-ghost",
+   "mean": 0.208,
+   "dark": 0
+  },
+  {
+   "id": "g-agar",
+   "mean": 0.265,
+   "dark": 0.008
+  },
+  {
+   "id": "g-arena",
+   "mean": 0.189,
+   "dark": 0.002
+  },
+  {
+   "id": "g-ball",
+   "mean": 0.481,
+   "dark": 0.016
+  },
+  {
+   "id": "g-duel",
+   "mean": 0.48,
+   "dark": 0.009
+  },
+  {
+   "id": "g-fight",
+   "mean": 0.061,
+   "dark": 0.303
+  },
+  {
+   "id": "g-flap",
+   "mean": 0.696,
+   "dark": 0.003
+  },
+  {
+   "id": "g-glide",
+   "mean": 0.356,
+   "dark": 0
+  },
+  {
+   "id": "g-lander",
+   "mean": 0.286,
+   "dark": 0
+  },
+  {
+   "id": "g-platform",
+   "mean": 0.499,
+   "dark": 0.058
+  },
+  {
+   "id": "g-quest",
+   "mean": 0.291,
+   "dark": 0.032
+  },
+  {
+   "id": "g-race",
+   "mean": 0.627,
+   "dark": 0
+  },
+  {
+   "id": "g-rhythm",
+   "mean": 0.396,
+   "dark": 0.084
+  },
+  {
+   "id": "g-runner",
+   "mean": 0.452,
+   "dark": 0.007
+  },
+  {
+   "id": "g-shooter",
+   "mean": 0.431,
+   "dark": 0.002
+  },
+  {
+   "id": "g-throw",
+   "mean": 0.44,
+   "dark": 0.007
+  },
+  {
+   "id": "g-timing",
+   "mean": 0.435,
+   "dark": 0.016
+  },
+  {
+   "id": "g-voyage",
+   "mean": 0.685,
+   "dark": 0.001
+  },
+  {
+   "id": "g-walker",
+   "mean": 0.31,
+   "dark": 0.004
+  }
+ ]
+}

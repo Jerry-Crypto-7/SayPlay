@@ -205,6 +205,9 @@ export function noticeOf(view: UpgradeView, title: string | null = null): Upgrad
   }
 }
 
+/** Toast konce bez AI verze (P56B T5): 3 s jako `.sp-toast` kitu, pak jen tečka a akce v přepínači verze. */
+export const TOAST_MS = 3_000;
+
 function draftIdOf(request: string): string | null {
   return /\/games\/([^/]+)\/upgrade$/.exec(request)?.[1] ?? null;
 }
@@ -224,6 +227,13 @@ export function UpgradeBanner({ request, sentence, quick = null }: { readonly re
   const { view, retry } = useUpgrade(request);
   const draftId = request === null ? null : draftIdOf(request);
   const since = view.kind === 'working' ? view.since : null;
+  // Konec bez AI verze (P56B T5) je stav na pozadí, ne chyba hráče: toast `TOAST_MS`, pak se schová do přepínače verze.
+  const [toasted, setToasted] = useState<UpgradeView | null>(null);
+  useEffect(() => {
+    if (view.kind !== 'final' && view.kind !== 'offline' && view.kind !== 'lost') return;
+    const timer = setTimeout(() => setToasted(view), TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [view]);
 
   useEffect(() => {
     if (draftId === null) return;
@@ -285,6 +295,27 @@ export function UpgradeBanner({ request, sentence, quick = null }: { readonly re
         {notice.note !== undefined && (
           <span className="play-version-switch__note" data-testid="upgrade-queued" aria-hidden="true">
             {notice.note}
+          </span>
+        )}
+      </aside>
+    );
+  }
+  if (toasted === view) {
+    return (
+      <aside className="sp-status play-upgrade-status play-version-switch" data-testid="upgrade-state" data-kind={view.kind}>
+        <span className="play-sr-only">{notice.text}</span>
+        <span className="play-version-switch__item is-active" aria-current="true">
+          {QUICK_LABEL}
+        </span>
+        {notice.action !== null ? (
+          <button type="button" className="play-version-switch__item" data-testid="upgrade-action" title={notice.text} onClick={act}>
+            <span className="sp-status__dot play-version-switch__dot" aria-hidden="true" />
+            {notice.action.label}
+          </button>
+        ) : (
+          <span className="play-version-switch__item is-off" title={notice.text}>
+            <span className="sp-status__dot play-version-switch__dot" aria-hidden="true" />
+            {FULL_LABEL}
           </span>
         )}
       </aside>

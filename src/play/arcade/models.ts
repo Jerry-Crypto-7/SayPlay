@@ -659,7 +659,11 @@ export function riggedCharacter(modelId: string): RiggedCharacter | undefined {
   return modelId.startsWith(RIGGED_PREFIX) ? RIGGED.get(modelId.slice(RIGGED_PREFIX.length)) : undefined;
 }
 
-/** Cesta ke GLB: katalog zná 86 modelů, jiné id (tělo jádra) leží ve složce her. */
+/**
+ * Cesta ke GLB: katalog, pak soubor záznamu manifestu (postavy s kostrou katalog nezná), jiné id
+ * (tělo jádra) leží ve složce her. Předpona `rigged:` na cestu nikdy nepropadne (P56B T3: 19× 404).
+ */
 export function modelPath(id: string): string {
-  return PATHS.get(id) || `${GAME_BASE}${id}-lod1.glb`;
+  const bare = id.startsWith(RIGGED_PREFIX) ? id.slice(RIGGED_PREFIX.length) : id;
+  return PATHS.get(bare) || ENTRY_OF_ID.get(bare)?.file || `${GAME_BASE}${bare}-lod1.glb`;
 }

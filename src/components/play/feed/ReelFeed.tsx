@@ -194,6 +194,17 @@ export function ReelFeed() {
     }
   }, [games, index, details, snapshots]);
 
+  // Snímky her z dřívějších návštěv (P56B T12): hraná nebo vytvořená hra nedostane `/og`.
+  useEffect(() => {
+    let live = true;
+    void snapshots.restore().then((count) => {
+      if (live && count > 0) setShots((shots) => shots + 1);
+    });
+    return () => {
+      live = false;
+    };
+  }, [snapshots]);
+
   // Snímek scény, ze které hráč odchází (T8). `shown` drží hru, jejíž scéna je v plátně –
   // `StageHost` volá `onLeave` uprostřed commitu další karty, dřív než se `shown` přepíše.
   const shown = useRef<string | null>(null);

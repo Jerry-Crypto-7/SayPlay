@@ -125,7 +125,7 @@ export function unclippedView(view: ToyView, hasClip: (state: ClipState) => bool
 
 const cache = new Map<string, Promise<GLTF | null>>();
 
-function loadRigged(path: string): Promise<GLTF | null> {
+export function loadRigged(path: string): Promise<GLTF | null> {
   let pending = cache.get(path);
   if (pending === undefined) {
     // Slít jednou na načtený model (P36C T9): klony z `cloneSkinned` pak nesou jednu síť na materiál.

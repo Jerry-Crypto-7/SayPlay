@@ -13,6 +13,7 @@
  *   node scripts/play-p46g-blind.mjs judge [--seed 46009] [--work D:/tmp/p46g-blind] [--concurrency 3]
  *   node scripts/play-p46g-blind.mjs sheet
  *   node scripts/play-p46g-blind.mjs judge --dir evals/play/p54b --pass-at 15 --work D:/tmp/p54b-blind   (P54B T15: věty žánrů, desktop i telefon)
+ *   node scripts/play-p46g-blind.mjs judge --dir evals/play/p56b --set p56b,genres --question store --pass-at 26 --seed 56013 --work D:/tmp/p56b-blind   (P56B T13)
  *
  * `judge` zapíše `evals/play/p46g/judge.json` (projde, když „po“ vyhraje aspoň 10 z 12);
  * listy dvojic a odpovědi leží ve `--work` mimo repo a hotová odpověď se nepřeptává.
@@ -20,7 +21,7 @@
  * s popisky „before“ / „after“ a větou.
  */
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -83,10 +84,10 @@ async function pair(leftFile, rightFile, out) {
 }
 
 /** Jedna otázka: čerstvý prázdný adresář jen se `sheet.png` jako cwd soudce, odpověď je text `result`. */
-function ask(sheet, sentence) {
+function ask(sheet, prompt) {
   const cwd = mkdtempSync(join(os.tmpdir(), 'judge-'));
   copyFileSync(sheet, join(cwd, 'sheet.png'));
-  const argv = ['-p', '--safe-mode', '--strict-mcp-config', '--tools', 'Read', '--allowedTools', 'Read', '--no-session-persistence', '--model', MODEL, '--output-format', 'json', question(sentence)];
+  const argv = ['-p', '--safe-mode', '--strict-mcp-config', '--tools', 'Read', '--allowedTools', 'Read', '--no-session-persistence', '--model', MODEL, '--output-format', 'json', prompt];
   return new Promise((done) => {
     const started = Date.now();
     const child = spawn(CLAUDE, argv, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -109,6 +110,95 @@ function ask(sheet, sentence) {
   });
 }
 
+/** Odpovědi na dvojice `<work>/<key>-pair.png` do `<key>-answer.json`; hotová odpověď se nepřeptává. */
+async function answerAll(jobs, work, concurrency) {
+  const queue = jobs.filter(({ key }) => !existsSync(join(work, `${key}-answer.json`)));
+  const worker = async () => {
+    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
+      const attempts = [];
+      // Nečitelná odpověď se přeptá jednou (stejná otázka, nový prázdný adresář).
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const run = await ask(join(work, `${job.key}-pair.png`), job.prompt);
+        const parsed = parseVerdict(run.text);
+        attempts.push({ code: run.code, seconds: run.seconds, text: run.text.slice(-1500), stderr: run.stderr, parsed: parsed ?? null });
+        if (parsed) break;
+      }
+      writeJson(join(work, `${job.key}-answer.json`), { attempts });
+      const last = attempts.at(-1);
+      console.log(`${job.key}: ${last.parsed ? `${last.parsed.verdict} – ${last.parsed.reason}` : `no verdict (exit ${last.code}) ${last.stderr || last.text.slice(-200)}`} [${attempts.length} ask, ${last.seconds} s]`);
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+}
+
+/** P56B T13 (`--question store`): stejná hra před a po, otázka kotvy – vypadá první snímek jako hotová hra z obchodu? */
+export const storeQuestion = (sentence) =>
+  `First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, of the first frame of a small 3D mobile game made from the request: "${sentence}". Page text is hidden, so judge only the 3D scenes. Which first frame looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>`;
+
+/** Věty sady: `p56b` = 12 vět auditu P56B, jinak `evals/play/p46g/<set>.json`; víc sad čárkou (`p56b,genres`) jako `play-look-shots.mjs`. */
+const sentencesOf = (set) =>
+  set.split(',').flatMap((name) => readJson(name === 'p56b' ? join(ROOT, 'evals', 'play', 'p56b', 'sentences.json') : join(ROOT, 'evals', 'play', 'p46g', `${name}.json`)).sentences);
+
+export const ANCHOR_QUESTION =
+  'First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, each from a different 3D mobile game. Interface text is cropped away, so judge only the game scene. Which one looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>';
+
+/**
+ * `anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out <file>` (P56B T2):
+ * kotva „levného vzhledu“ – náš snímek telefonu proti snímku hotové hry z obchodu. `--count` (10)
+ * prvních vět sady × každá hra (podadresář `--anchor` s `crop/`); referenční snímek hry se střídá
+ * po řadě. Stranu losuje `sides` ze seedu (`before` = náš vlevo). Výsledek: podíl výher naší strany.
+ */
+async function anchor(options) {
+  const refRoot = resolve(String(options.anchor));
+  const dir = resolve(ROOT, typeof options.dir === 'string' ? options.dir : 'evals/play/p56b');
+  const ours = typeof options.ours === 'string' ? options.ours : 'before-phone';
+  const set = typeof options.set === 'string' ? options.set : 'p56b';
+  const count = Number(options.count ?? 10);
+  const seed = typeof options.seed === 'string' ? Number(options.seed) : 56021;
+  const work = resolve(typeof options.work === 'string' ? options.work : 'D:/tmp/p56b-anchor');
+  const out = resolve(ROOT, typeof options.out === 'string' ? options.out : join(dir, 'anchor.json'));
+  const concurrency = Number(options.concurrency ?? 3);
+  mkdirSync(work, { recursive: true });
+  const games = readdirSync(refRoot).filter((name) => existsSync(join(refRoot, name, 'crop'))).sort();
+  const refs = Object.fromEntries(games.map((game) => [game, readdirSync(join(refRoot, game, 'crop')).filter((file) => file.endsWith('.png')).sort()]));
+  const sentences = sentencesOf(set).slice(0, count);
+  const jobs = sentences.flatMap((sentence, index) => games.map((game) => ({ sentence, game, ref: refs[game][index % refs[game].length], key: `${ours}-${sentence.id}-${game}` })));
+  const left = sides(seed, jobs.length);
+  for (const [index, job] of jobs.entries()) {
+    const own = join(dir, ours, `${job.sentence.id}.png`);
+    if (!existsSync(own)) throw new Error(`${job.key}: missing ${own}`);
+    const reference = join(refRoot, job.game, 'crop', job.ref);
+    const file = join(work, `${job.key}-pair.png`);
+    if (!existsSync(file)) await pair(left[index] === 'before' ? own : reference, left[index] === 'before' ? reference : own, file);
+  }
+  await answerAll(jobs.map((job) => ({ key: job.key, prompt: ANCHOR_QUESTION })), work, concurrency);
+  const pairs = jobs.map((job, index) => {
+    const parsed = readJson(join(work, `${job.key}-answer.json`)).attempts.at(-1).parsed;
+    const oursSide = left[index] === 'before' ? 'LEFT' : 'RIGHT';
+    return { id: job.sentence.id, game: job.game, reference: job.ref, oursSide, verdict: parsed?.verdict ?? null, reason: parsed?.reason ?? null, oursWon: parsed ? parsed.verdict === oursSide : null };
+  });
+  const totalOf = (list) => {
+    const oursWins = list.filter((entry) => entry.oursWon === true).length;
+    const answered = list.filter((entry) => entry.oursWon !== null).length;
+    return { oursWins, refWins: answered - oursWins, unanswered: list.length - answered, of: list.length, share: answered === 0 ? null : Math.round((oursWins / answered) * 1000) / 1000 };
+  };
+  const result = {
+    about: `Store-game anchor: our ${ours} shot vs a cropped store screenshot of a finished game, side by side without labels. See README.md.`,
+    judgedAt: new Date().toISOString(),
+    judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: ANCHOR_QUESTION },
+    order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, game after game; 0 = ours is LEFT', seed },
+    ours: { dir: ours, set, sentences: sentences.map((sentence) => sentence.id) },
+    references: refs,
+    total: totalOf(pairs),
+    byGame: Object.fromEntries(games.map((game) => [game, totalOf(pairs.filter((entry) => entry.game === game))])),
+    leftShare: Math.round((pairs.filter((entry) => entry.verdict === 'LEFT').length / pairs.length) * 1000) / 1000,
+    pairs,
+  };
+  writeJson(out, result);
+  console.log(`ours wins ${result.total.oursWins} / ${result.total.of} (share ${result.total.share}), left chosen ${result.leftShare}`);
+  console.log(`-> ${out}`);
+}
+
 /**
  * Kde leží snímky a které dvojice se soudí. Bez voleb sada P46G; `--dir evals/play/p54b`
  * (P54B T15) vezme věty žánrů (`--set genres`) a dvě dvojice adresářů, desktop
@@ -122,7 +212,7 @@ function layout(options) {
   const pairs = typeof options.pairs === 'string' ? options.pairs : own ? 'before:after' : 'before:after,before-phone:after-phone';
   return {
     dir,
-    sentences: readJson(join(ROOT, 'evals', 'play', 'p46g', `${set}.json`)).sentences,
+    sentences: sentencesOf(set),
     profiles: pairs.split(',').map((entry) => {
       const [before, after] = entry.split(':');
       return { before, after };
@@ -148,23 +238,8 @@ async function judge(options) {
     if (!existsSync(file)) await pair(left[index] === 'before' ? before : after, left[index] === 'before' ? after : before, file);
   }
 
-  const queue = sentences.map((sentence, index) => ({ sentence: { ...sentence, id: sentence.key }, index })).filter(({ sentence }) => !existsSync(join(work, `${sentence.id}-answer.json`)));
-  const worker = async () => {
-    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
-      const attempts = [];
-      // Nečitelná odpověď se přeptá jednou (stejná otázka, nový prázdný adresář).
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const run = await ask(join(work, `${job.sentence.id}-pair.png`), job.sentence.text);
-        const parsed = parseVerdict(run.text);
-        attempts.push({ code: run.code, seconds: run.seconds, text: run.text.slice(-1500), stderr: run.stderr, parsed: parsed ?? null });
-        if (parsed) break;
-      }
-      writeJson(join(work, `${job.sentence.id}-answer.json`), { attempts });
-      const last = attempts.at(-1);
-      console.log(`${job.sentence.id}: ${last.parsed ? `${last.parsed.verdict} – ${last.parsed.reason}` : `no verdict (exit ${last.code}) ${last.stderr || last.text.slice(-200)}`} [${attempts.length} ask, ${last.seconds} s]`);
-    }
-  };
-  await Promise.all(Array.from({ length: concurrency }, worker));
+  const questionOf = options.question === 'store' ? storeQuestion : question;
+  await answerAll(sentences.map((sentence) => ({ key: sentence.key, prompt: questionOf(sentence.text) })), work, concurrency);
 
   const pairs = sentences.map((sentence, index) => {
     const { attempts } = readJson(join(work, `${sentence.key}-answer.json`));
@@ -174,7 +249,10 @@ async function judge(options) {
   });
   const totalOf = (list) => {
     const afterWins = list.filter((entry) => entry.afterWon === true).length;
-    return { afterWins, beforeWins: list.filter((entry) => entry.afterWon === false).length, unanswered: list.filter((entry) => entry.afterWon === null).length, of: list.length, passAt, pass: afterWins >= passAt };
+    const answered = list.filter((entry) => entry.afterWon !== null).length;
+    const share = (count) => (answered === 0 ? null : Math.round((count / answered) * 1000) / 1000);
+    // `leftShare` (P56B T13): soudce, který volí jednu stranu, by se tvářil jako výsledek.
+    return { afterWins, beforeWins: answered - afterWins, unanswered: list.length - answered, of: list.length, share: share(afterWins), leftShare: share(list.filter((entry) => entry.verdict === 'LEFT').length), passAt, pass: afterWins >= passAt };
   };
   const totals = profiles.map(({ after }) => ({ profile: after, ...totalOf(pairs.filter((entry) => entry.profile === undefined || entry.profile === after)) }));
   const result = {
@@ -182,7 +260,7 @@ async function judge(options) {
       ? 'P46G T9 blind judgement: the same game at the same demo tick, before P46G (T1 2c95c85c, evals/play/p46g/before) and after (evals/play/p46g/after), side by side without labels. See README.md.'
       : `Blind judgement of ${profiles.map(({ before, after }) => `${before} vs ${after}`).join(' and ')}: the same game at the same demo tick, side by side without labels. See README.md.`,
     judgedAt: new Date().toISOString(),
-    judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: question('<sentence>') },
+    judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: questionOf('<sentence>') },
     order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT', seed },
     total: profiles.length === 1 ? totals[0] : totals,
     pairs,
@@ -229,8 +307,9 @@ if (isMain) {
   const options = args();
   if (options._[0] === 'judge') await judge(options);
   else if (options._[0] === 'sheet') await sheet(options);
+  else if (options._[0] === 'anchor') await anchor(options);
   else {
-    console.error('usage: node scripts/play-p46g-blind.mjs judge|sheet [--dir evals/play/p54b] [--set genres] [--pairs before:after,before-phone:after-phone] [--pass-at 15] [--seed <n>] [--work <dir>] [--concurrency 3]');
+    console.error('usage: node scripts/play-p46g-blind.mjs judge|sheet|anchor [--dir evals/play/p54b] [--set genres] [--pairs before:after,before-phone:after-phone] [--pass-at 15] [--seed <n>] [--work <dir>] [--concurrency 3] [--anchor <ref dir> --ours before-phone --count 10 --out <file>]');
     process.exit(2);
   }
 }

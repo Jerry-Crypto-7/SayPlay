@@ -7,10 +7,11 @@
 
 import { envFor, seedOf } from '@/play/arcade/look/env';
 import { worldHasPhysics } from '@/play/arcade/kernel';
-import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { chaserModel, enemyModel, heroModel, propModels, riggedCharacter } from '@/play/arcade/models';
 import { loadRapier } from '@/play/arcade/physics/world';
 
 import { loadModel } from '../arcade/look/load';
+import { loadRigged } from '../arcade/RiggedModel';
 import { previewFor } from './preview';
 import type { GameDetail } from './ReelCard';
 
@@ -30,7 +31,11 @@ export function warmGame(versionId: string, detail: GameDetail, cardImage: strin
   warmed.add(versionId);
   decodeImage(cardImage);
   const { spec, arcade } = detail;
-  for (const id of new Set([heroModel(spec), enemyModel(spec), chaserModel(spec), ...Object.values(propModels(spec))])) void loadModel(id);
+  // Postava s kostrou jde přes cache `RiggedModel`, ne jako model katalogu (P56B T3).
+  for (const id of new Set([heroModel(spec), enemyModel(spec), chaserModel(spec), ...Object.values(propModels(spec))])) {
+    const rig = riggedCharacter(id);
+    void (rig === undefined ? loadModel(id) : loadRigged(rig.path));
+  }
   const env = envFor(spec.theme, seedOf(versionId));
   decodeImage(env.low);
   decodeImage(env.url);

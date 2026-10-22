@@ -16,6 +16,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
+import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
 import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
@@ -417,6 +418,7 @@ function ArcadePlayGame({
     const bossModel = spec.boss === undefined ? undefined : (riggedModelOf(spec.boss.role) ?? sceneModelOf(spec.boss.role, true));
     const prey = preyModel(spec);
     return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props, ...(prey === undefined ? {} : { prey }),
+    kit: obstacleKits.kits[lookOf(spec.theme)],
     ...(bossKind === null || bossModel === undefined ? {} : { boss: { kind: bossKind, model: bossModel } }),
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];
@@ -885,10 +887,12 @@ function ArcadePlayGame({
   const laneEventView = laneEventViewOf(session.world.rules);
 
   return (
-    // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
+    // Pod plátnem obzor sady (P32D T6, P56B T4): do prvního snímku scény je vidět on, ne tmavé pozadí stránky.
+    // Obzor, ne `sky`: vesmírná `sky` je skoro černá a pomalý první snímek (překlad shaderů) dal černou obrazovku;
+    // obzor je i barva pozadí scény (`StyleRig`), takže první snímek na něj navazuje.
     // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
-    // Obloha jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
-    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.sky } as CSSProperties}>
+    // Barva jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
+    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.horizon } as CSSProperties}>
       <ArcadeStage
         session={session}
         cast={cast}
@@ -901,6 +905,7 @@ function ArcadePlayGame({
         // Sloveso věty na tlačítkách akcí (P47B T10) – jen popisek, svět ho nečte.
         abilityWords={spec.abilityWords}
         host={host}
+        keepFrame={versionId}
         overlay={
           <>
             <Weather session={session} theme={spec.theme} />

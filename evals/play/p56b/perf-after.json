@@ -1,0 +1,1010 @@
+{
+ "what": "P56B T13 attempt 2: whole look. A = 72665fdc, B = HEAD 51ec2088, perf --base A --vs B (Pixel 7, CPU 4x, d3d11, interleaved scene by scene)",
+ "a": "http://127.0.0.1:3157",
+ "b": "http://127.0.0.1:3158",
+ "repeats": 3,
+ "measuredAt": "2026-10-22T00:32:02.083Z",
+ "scenes": 34,
+ "noise": 0.08,
+ "medianRatio": 0.938,
+ "medianFps": {
+  "a": 51.9,
+  "b": 48.2
+ },
+ "gate": {
+  "medianRatioAtLeast": 0.92,
+  "pass": true
+ },
+ "lostForty": [
+  "12-ghost"
+ ],
+ "bStayedMedium": 11,
+ "rows": [
+  {
+   "id": "01-frog",
+   "genre": "race",
+   "a": 50,
+   "b": 47.6,
+   "ratio": 0.952,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "low",
+    "medium"
+   ],
+   "callsA": 58,
+   "callsB": 87,
+   "samplesA": [
+    50,
+    55.2,
+    47.1
+   ],
+   "samplesB": [
+    45.5,
+    47.6,
+    49.5
+   ]
+  },
+  {
+   "id": "02-zombie",
+   "genre": "move_free",
+   "a": 45.9,
+   "b": 43.5,
+   "ratio": 0.948,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 43,
+   "callsB": 72,
+   "samplesA": [
+    44,
+    49.6,
+    45.9
+   ],
+   "samplesB": [
+    42.7,
+    43.5,
+    46.6
+   ]
+  },
+  {
+   "id": "03-ninja",
+   "genre": "lanes",
+   "a": 54.6,
+   "b": 48.3,
+   "ratio": 0.885,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 51,
+   "callsB": 78,
+   "samplesA": [
+    50.3,
+    54.6,
+    56.2
+   ],
+   "samplesB": [
+    47,
+    50.4,
+    48.3
+   ]
+  },
+  {
+   "id": "04-shark",
+   "genre": "race",
+   "a": 43.9,
+   "b": 40,
+   "ratio": 0.911,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 45,
+   "callsB": 41,
+   "samplesA": [
+    43.9,
+    45.1,
+    42.4
+   ],
+   "samplesB": [
+    44.3,
+    40,
+    30
+   ]
+  },
+  {
+   "id": "05-pizza",
+   "genre": "timing",
+   "a": 55.8,
+   "b": 56.1,
+   "ratio": 1.005,
+   "qualityA": [
+    "medium",
+    "low",
+    "medium"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 63,
+   "callsB": 63,
+   "samplesA": [
+    55.5,
+    58.2,
+    55.8
+   ],
+   "samplesB": [
+    55.6,
+    56.1,
+    58.1
+   ]
+  },
+  {
+   "id": "06-cat",
+   "genre": "lanes",
+   "a": 57.8,
+   "b": 55.4,
+   "ratio": 0.958,
+   "qualityA": [
+    "low",
+    "low",
+    "medium"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 119,
+   "callsB": 130,
+   "samplesA": [
+    56.8,
+    59.5,
+    57.8
+   ],
+   "samplesB": [
+    57,
+    50.6,
+    55.4
+   ]
+  },
+  {
+   "id": "07-goalkeeper",
+   "genre": "ball",
+   "a": 58.2,
+   "b": 54.6,
+   "ratio": 0.938,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "high",
+    "medium",
+    "low"
+   ],
+   "callsA": 64,
+   "callsB": 62,
+   "samplesA": [
+    58.2,
+    57.7,
+    58.2
+   ],
+   "samplesB": [
+    56.9,
+    54.6,
+    46.4
+   ]
+  },
+  {
+   "id": "08-gems",
+   "genre": "move_free",
+   "a": 45.7,
+   "b": 48.1,
+   "ratio": 1.053,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 45,
+   "callsB": 44,
+   "samplesA": [
+    50.1,
+    45.7,
+    43.2
+   ],
+   "samplesB": [
+    45,
+    48.1,
+    51.8
+   ]
+  },
+  {
+   "id": "09-astro",
+   "genre": "runner",
+   "a": 42.9,
+   "b": 43.9,
+   "ratio": 1.023,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 110,
+   "callsB": 110,
+   "samplesA": [
+    42.9,
+    41.8,
+    52.1
+   ],
+   "samplesB": [
+    41.2,
+    43.9,
+    44.3
+   ]
+  },
+  {
+   "id": "10-chef",
+   "genre": "move_free",
+   "a": 47.3,
+   "b": 44,
+   "ratio": 0.93,
+   "qualityA": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 86,
+   "callsB": 45,
+   "samplesA": [
+    48.3,
+    44,
+    47.3
+   ],
+   "samplesB": [
+    43.9,
+    46.5,
+    44
+   ]
+  },
+  {
+   "id": "11-drum",
+   "genre": "rhythm",
+   "a": 57.6,
+   "b": 54.1,
+   "ratio": 0.939,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 45,
+   "callsB": 77,
+   "samplesA": [
+    57.6,
+    57.1,
+    58.2
+   ],
+   "samplesB": [
+    57.5,
+    51.3,
+    54.1
+   ]
+  },
+  {
+   "id": "12-ghost",
+   "genre": "runner",
+   "a": 45.1,
+   "b": 38,
+   "ratio": 0.843,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 49,
+   "callsB": 51,
+   "samplesA": [
+    43.5,
+    45.1,
+    50.1
+   ],
+   "samplesB": [
+    39.2,
+    36.4,
+    38
+   ]
+  },
+  {
+   "id": "g-runner",
+   "genre": "runner",
+   "a": 42.9,
+   "b": 42.3,
+   "ratio": 0.986,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 60,
+   "callsB": 66,
+   "samplesA": [
+    42.9,
+    42,
+    43.2
+   ],
+   "samplesB": [
+    42.3,
+    44,
+    38.4
+   ]
+  },
+  {
+   "id": "g-race",
+   "genre": "race",
+   "a": 50.4,
+   "b": 43.3,
+   "ratio": 0.859,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "medium",
+    "low"
+   ],
+   "callsA": 55,
+   "callsB": 50,
+   "samplesA": [
+    45.7,
+    50.4,
+    53.2
+   ],
+   "samplesB": [
+    41.5,
+    47,
+    43.3
+   ]
+  },
+  {
+   "id": "g-platform",
+   "genre": "platformer",
+   "a": 58.4,
+   "b": 51.2,
+   "ratio": 0.877,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 52,
+   "callsB": 87,
+   "samplesA": [
+    58.6,
+    58.4,
+    51.8
+   ],
+   "samplesB": [
+    51.2,
+    52.9,
+    45.8
+   ]
+  },
+  {
+   "id": "g-arena",
+   "genre": "move_free",
+   "a": 44.4,
+   "b": 40.5,
+   "ratio": 0.912,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 38,
+   "callsB": 35,
+   "samplesA": [
+    43.7,
+    51.6,
+    44.4
+   ],
+   "samplesB": [
+    40.5,
+    41.1,
+    40.1
+   ]
+  },
+  {
+   "id": "g-fight",
+   "genre": "move_free",
+   "a": 49.3,
+   "b": 42.9,
+   "ratio": 0.87,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "medium"
+   ],
+   "callsA": 57,
+   "callsB": 81,
+   "samplesA": [
+    48.7,
+    49.3,
+    56.2
+   ],
+   "samplesB": [
+    42.9,
+    41.3,
+    47.5
+   ]
+  },
+  {
+   "id": "g-quest",
+   "genre": "move_free",
+   "a": 43.8,
+   "b": 41,
+   "ratio": 0.936,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "medium",
+    "low"
+   ],
+   "callsA": 40,
+   "callsB": 39,
+   "samplesA": [
+    43.6,
+    44.6,
+    43.8
+   ],
+   "samplesB": [
+    41,
+    40.8,
+    47.1
+   ]
+  },
+  {
+   "id": "g-agar",
+   "genre": "move_free",
+   "a": 57.8,
+   "b": 52.5,
+   "ratio": 0.908,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 32,
+   "callsB": 55,
+   "samplesA": [
+    57.8,
+    58.7,
+    55.7
+   ],
+   "samplesB": [
+    52.6,
+    52.4,
+    52.5
+   ]
+  },
+  {
+   "id": "g-walker",
+   "genre": "walker",
+   "a": 52.9,
+   "b": 52,
+   "ratio": 0.983,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 31,
+   "callsB": 69,
+   "samplesA": [
+    52.9,
+    52.1,
+    52.9
+   ],
+   "samplesB": [
+    45.7,
+    53.6,
+    52
+   ]
+  },
+  {
+   "id": "g-glide",
+   "genre": "glide",
+   "a": 52.1,
+   "b": 48.2,
+   "ratio": 0.925,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "low"
+   ],
+   "callsA": 36,
+   "callsB": 35,
+   "samplesA": [
+    51.8,
+    57.3,
+    52.1
+   ],
+   "samplesB": [
+    48.2,
+    43.9,
+    50.1
+   ]
+  },
+  {
+   "id": "g-ball",
+   "genre": "ball",
+   "a": 51.3,
+   "b": 44.6,
+   "ratio": 0.869,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "low",
+    "low"
+   ],
+   "callsA": 73,
+   "callsB": 73,
+   "samplesA": [
+    51.3,
+    50.6,
+    53.5
+   ],
+   "samplesB": [
+    44.6,
+    53.3,
+    37.4
+   ]
+  },
+  {
+   "id": "g-flap",
+   "genre": "flap",
+   "a": 56.2,
+   "b": 53.6,
+   "ratio": 0.954,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "low"
+   ],
+   "callsA": 46,
+   "callsB": 46,
+   "samplesA": [
+    54.2,
+    56.2,
+    58.8
+   ],
+   "samplesB": [
+    53.6,
+    57.4,
+    51.6
+   ]
+  },
+  {
+   "id": "g-shooter",
+   "genre": "shooter",
+   "a": 49.8,
+   "b": 50,
+   "ratio": 1.004,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 37,
+   "callsB": 37,
+   "samplesA": [
+    49.8,
+    48.8,
+    51.1
+   ],
+   "samplesB": [
+    39.4,
+    50.5,
+    50
+   ]
+  },
+  {
+   "id": "g-throw",
+   "genre": "throw",
+   "a": 42,
+   "b": 42,
+   "ratio": 1,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 54,
+   "callsB": 54,
+   "samplesA": [
+    50.9,
+    41.6,
+    42
+   ],
+   "samplesB": [
+    42.9,
+    42,
+    38.5
+   ]
+  },
+  {
+   "id": "g-timing",
+   "genre": "timing",
+   "a": 57.1,
+   "b": 58.3,
+   "ratio": 1.021,
+   "qualityA": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "high"
+   ],
+   "callsA": 64,
+   "callsB": 64,
+   "samplesA": [
+    56.5,
+    57.1,
+    58.3
+   ],
+   "samplesB": [
+    56.5,
+    58.3,
+    59.6
+   ]
+  },
+  {
+   "id": "g-rhythm",
+   "genre": "rhythm",
+   "a": 57.5,
+   "b": 57.2,
+   "ratio": 0.995,
+   "qualityA": [
+    "low",
+    "medium",
+    "medium"
+   ],
+   "qualityB": [
+    "high",
+    "medium",
+    "medium"
+   ],
+   "callsA": 93,
+   "callsB": 93,
+   "samplesA": [
+    49.1,
+    58.7,
+    57.5
+   ],
+   "samplesB": [
+    59.1,
+    57.2,
+    47.5
+   ]
+  },
+  {
+   "id": "g-duel",
+   "genre": "duel",
+   "a": 52.7,
+   "b": 47,
+   "ratio": 0.892,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 27,
+   "callsB": 27,
+   "samplesA": [
+    43.2,
+    56.1,
+    52.7
+   ],
+   "samplesB": [
+    47.3,
+    47,
+    43.2
+   ]
+  },
+  {
+   "id": "g-voyage",
+   "genre": "race",
+   "a": 38.2,
+   "b": 42.7,
+   "ratio": 1.118,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "low",
+    "low",
+    "low"
+   ],
+   "callsA": 43,
+   "callsB": 43,
+   "samplesA": [
+    38.2,
+    34.9,
+    40.7
+   ],
+   "samplesB": [
+    42.7,
+    37.4,
+    43.8
+   ]
+  },
+  {
+   "id": "g-lander",
+   "genre": "race",
+   "a": 56,
+   "b": 53.5,
+   "ratio": 0.955,
+   "qualityA": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "qualityB": [
+    "medium",
+    "high",
+    "medium"
+   ],
+   "callsA": 46,
+   "callsB": 46,
+   "samplesA": [
+    57.2,
+    55.9,
+    56
+   ],
+   "samplesB": [
+    53.5,
+    58,
+    51.7
+   ]
+  },
+  {
+   "id": "g-catch",
+   "genre": "lanes",
+   "a": 57.8,
+   "b": 56.7,
+   "ratio": 0.981,
+   "qualityA": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 51,
+   "callsB": 44,
+   "samplesA": [
+    58.2,
+    57.8,
+    53.3
+   ],
+   "samplesB": [
+    56.1,
+    59.1,
+    56.7
+   ]
+  },
+  {
+   "id": "g-whack",
+   "genre": "lanes",
+   "a": 57.8,
+   "b": 53.1,
+   "ratio": 0.919,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 35,
+   "callsB": 59,
+   "samplesA": [
+    53.9,
+    57.8,
+    58.4
+   ],
+   "samplesB": [
+    53.8,
+    52.5,
+    53.1
+   ]
+  },
+  {
+   "id": "g-defense",
+   "genre": "lanes",
+   "a": 51.6,
+   "b": 47.3,
+   "ratio": 0.917,
+   "qualityA": [
+    "low",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "low"
+   ],
+   "callsA": 76,
+   "callsB": 75,
+   "samplesA": [
+    45.3,
+    51.6,
+    51.9
+   ],
+   "samplesB": [
+    42.9,
+    49.5,
+    47.3
+   ]
+  },
+  {
+   "id": "g-slice",
+   "genre": "lanes",
+   "a": 58.1,
+   "b": 50.8,
+   "ratio": 0.874,
+   "qualityA": [
+    "medium",
+    "low",
+    "low"
+   ],
+   "qualityB": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "callsA": 56,
+   "callsB": 62,
+   "samplesA": [
+    58.1,
+    58.1,
+    56.1
+   ],
+   "samplesB": [
+    50.8,
+    56.1,
+    48.3
+   ]
+  }
+ ]
+}

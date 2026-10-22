@@ -5,7 +5,7 @@
  * stránky (`--play-bg`, #0f172a), takže nová hra nejdřív „zčernala“. Test
  * otevře hru každé věty offline sady a zachytí:
  * - **pozadí pod plátnem** – první neprůhledné pozadí od `arcade-stage`
- *   nahoru; u arkády musí být obloha sady (`LOOKS[data-look].sky`);
+ *   nahoru; u arkády musí být obzor scény (`sceneLook(theme).horizon`, P56B T4);
  * - **úplně první snímek plátna** – hned po prvním volání kreslení, ještě
  *   před složením stránky, přes pozadí pod ním; nesmí mít > 90 % černých
  *   pixelů.
@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 
 import { expect, test } from '@playwright/test';
 
-import { LOOKS } from '../src/play/arcade/look';
+import { LOOKS, sceneLook } from '../src/play/arcade/look';
 
 const SET = (JSON.parse(readFileSync('evals/play/p32/baseline-sentences.json', 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
 
@@ -97,9 +97,10 @@ for (const sentence of SET) {
     test.info().annotations.push({ type: 'first-frame', description: `${first.stage} look=${String(first.look)} backdrop=${hex(first.backdrop)} black=${first.black.toFixed(2)}` });
     expect(first.black, `first frame of ${sentence.id} over ${hex(first.backdrop)}`).toBeLessThanOrEqual(MAX_BLACK);
     if (first.stage === 'arcade-stage') {
-      const look = LOOKS[first.look as keyof typeof LOOKS];
-      expect(look, `unknown look ${String(first.look)}`).toBeDefined();
-      expect(hex(first.backdrop), 'what shows under the canvas before its first frame').toBe(look.sky);
+      expect(LOOKS[first.look as keyof typeof LOOKS], `unknown look ${String(first.look)}`).toBeDefined();
+      // P56B T4: obzor scény (po náladě a denní době, jak ho kreslí `StyleRig`), ne `sky` – vesmírná `sky` #020617 byla sama černá obrazovka.
+      const game = (await (await request.get(`/api/play/games/${url.split('/').pop()!}`)).json()) as { spec: { theme: Parameters<typeof sceneLook>[0] } };
+      expect(hex(first.backdrop), 'what shows under the canvas before its first frame').toBe(sceneLook(game.spec.theme).horizon);
     }
   });
 }
