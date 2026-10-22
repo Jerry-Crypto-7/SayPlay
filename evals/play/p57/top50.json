@@ -49,7 +49,8 @@
     "gen3d-thorn-bush"
    ],
    "startedAt": "2026-10-22T12:16:42.024Z",
-   "finishedAt": "2026-10-22T14:26:57.728Z"
+   "finishedAt": "2026-10-22T14:50:35.640Z",
+   "boundsRejected": 7
   }
  },
  "models": {
@@ -2037,7 +2038,21 @@
      "seed": 1,
      "score": 6,
      "reason": "Trash bin: Bright, chunky bin; wrinkled lumpy surface reduces polish.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Clean chunky green bin fits Toy Box; model 2 is noisy, faceted and broken."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Recognisable bin with clean silhouette, bright solid colour, chunky proportions, and intact geometry."
+      }
+     ]
     },
     {
      "round": 2,
@@ -2093,8 +2108,7 @@
     }
    ],
    "newScore": 6,
-   "result": "kept-old",
-   "reason": "Trash bin: Bright, chunky bin; wrinkled lumpy surface reduces polish."
+   "result": "replaced"
   },
   "gen3d-park-bench": {
    "noun": "park bench",
@@ -2301,7 +2315,21 @@
      "seed": 1,
      "score": 7,
      "reason": "Potted tree: Simple toy tree; overly saturated green, smudged base texture.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Chunky, bright toy-like tree on a base; clean silhouette with no broken geometry."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Clean, recognisable toy tree with chunky forms; model 2 has a lumpy, cluttered canopy."
+      }
+     ]
     },
     {
      "round": 2,
@@ -2350,8 +2378,7 @@
     }
    ],
    "newScore": 7,
-   "result": "kept-old",
-   "reason": "Potted tree: Simple toy tree; overly saturated green, smudged base texture."
+   "result": "replaced"
   },
   "gen3d-cardboard-box": {
    "noun": "cardboard box",
@@ -2416,7 +2443,21 @@
      "seed": 1,
      "score": 7,
      "reason": "Cardboard box: Clean open box; flaps thin and slightly muddy shading.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Clean, readable open-box silhouette; solid colours; model 1 has noisy texture, warped flaps."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 1,
+       "vote": "new",
+       "reason": "Recognisable open box with chunky forms and cleaner silhouette; fewer torn-looking surfaces than model 1."
+      }
+     ]
     },
     {
      "round": 2,
@@ -2451,8 +2492,7 @@
     }
    ],
    "newScore": 7,
-   "result": "kept-old",
-   "reason": "Cardboard box: Clean open box; flaps thin and slightly muddy shading."
+   "result": "replaced"
   },
   "gen3d-lighthouse": {
    "noun": "lighthouse",
@@ -2517,7 +2557,21 @@
      "seed": 1,
      "score": 7,
      "reason": "Lighthouse: Chunky readable shape; stripes slightly smudged and painterly.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Chunky, clean lighthouse silhouette; model 2 has noisy texture and torn, holey surfaces."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Chunky, recognisable lighthouse with cleaner geometry and solid colours; model 2 looks torn and noisy."
+      }
+     ]
     },
     {
      "round": 2,
@@ -2580,8 +2634,7 @@
     }
    ],
    "newScore": 7,
-   "result": "kept-old",
-   "reason": "Lighthouse: Chunky readable shape; stripes slightly smudged and painterly."
+   "result": "replaced"
   },
   "gen3d-concrete-planter-with-tree": {
    "noun": "concrete planter with tree",
@@ -2632,7 +2685,21 @@
      "seed": 2,
      "score": 7,
      "reason": "Potted tree: Chunky, clear toy shape; pot surface slightly lumpy.",
-     "won": false
+     "won": true,
+     "duel": [
+      {
+       "judge": "claude",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Smooth chunky toy-like potted tree; model 2 has noisy shard foliage, crumpled pot."
+      },
+      {
+       "judge": "codex",
+       "oldCell": 2,
+       "vote": "new",
+       "reason": "Recognisable tree with a clean, chunky silhouette; model 2 has noisy, fractured-looking foliage."
+      }
+     ]
     },
     {
      "round": 2,
@@ -2674,8 +2741,7 @@
     }
    ],
    "newScore": 7,
-   "result": "kept-old",
-   "reason": "Potted tree: Chunky, clear toy shape; pot surface slightly lumpy."
+   "result": "replaced"
   },
   "gen3d-mossy-boulder": {
    "noun": "mossy boulder",
@@ -2924,7 +2990,7 @@
   }
  },
  "summary": {
-  "atLeast8": 15,
+  "atLeast8": 14,
   "of": 50,
   "below": [
    {
@@ -3004,8 +3070,8 @@
    },
    {
     "id": "gen3d-street-trash-can",
-    "score": 3,
-    "reason": "Trash bin: Bright, chunky bin; wrinkled lumpy surface reduces polish."
+    "score": 6,
+    "reason": "Jagged overlapping surfaces and apparent tears create a severely fragmented, noisy bin."
    },
    {
     "id": "gen3d-sea-rock",
@@ -3013,19 +3079,24 @@
     "reason": "Rock: Jagged shards and torn faces; crumpled mess, unclear object."
    },
    {
+    "id": "gen3d-street-tree",
+    "score": 7,
+    "reason": "Bright green chunky canopy and simple trunk create a readable, appealing toy tree."
+   },
+   {
     "id": "gen3d-cardboard-box",
-    "score": 6,
-    "reason": "Cardboard box: Clean open box; flaps thin and slightly muddy shading."
+    "score": 7,
+    "reason": "Chunky box with readable flaps; white smears and awkward top intersections reduce polish."
    },
    {
     "id": "gen3d-lighthouse",
-    "score": 6,
-    "reason": "Lighthouse: Chunky readable shape; stripes slightly smudged and painterly."
+    "score": 7,
+    "reason": "Distinct lighthouse silhouette, but smeared stripes and noisy surface artifacts spoil the toy finish."
    },
    {
     "id": "gen3d-concrete-planter-with-tree",
-    "score": 5,
-    "reason": "Potted tree: Chunky, clear toy shape; pot surface slightly lumpy."
+    "score": 7,
+    "reason": "Crumpled noisy pot surface and shard-like canopy, scan-like."
    },
    {
     "id": "gen3d-mossy-boulder",

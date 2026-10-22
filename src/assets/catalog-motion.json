@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "f647abea0b69baf8f3e8a846fe186a6f640ff3b642a7cc6cff11b3f5cc8fb1fb",
+ "catalogHash": "403259ca0882ed506b6e34d3d97122c7c159df200e6daf8e4771b2fbbef04a0e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1428,7 +1428,7 @@
   "gen3d-exposed-tree-root": {"class":"prop"},
   "gen3d-dune-grass-clump": {"class":"prop"},
   "gen3d-ice-block-pile": {"class":"prop"},
-  "gen3d-street-trash-can": {"class":"prop"},
+  "gen3d-street-trash-can": {"class":"biped","regions":{"legY":0.263}},
   "gen3d-traffic-cone": {"class":"prop"},
   "gen3d-red-phone-booth": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-park-fountain": {"class":"prop"},
