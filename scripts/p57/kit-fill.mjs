@@ -10,9 +10,11 @@
  * povýší `promoteBatch` jako nový model `gen3d-<jméno>`. Id, která už v katalogu jsou (skóre pod 6),
  * přegenerovala T6 nebo je dělá T8 – ty se jen označí. Pak `build-setting-kits.mjs` sady přestaví a
  * přepíše `missing`; skript k nim doplní `skipped` s důvodem a výsledky každého jména do `results`.
+ * Opakované spuštění nad týmž `--out` znovu použije hotová kola (`batch.json`, mřížky, odpovědi Opuse)
+ * a id povýšená dřívějším spuštěním jen započítá.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -34,7 +36,7 @@ async function main() {
     const run = spawnSync(process.execPath, ['--experimental-strip-types', '--no-warnings', fileURLToPath(import.meta.url), ...process.argv.slice(2)], { stdio: 'inherit' });
     process.exit(run.status ?? 1);
   }
-  const { scoreSheet, paletteOf } = await import('../p37d/judge-sheet.mjs');
+  const { scoreCells, scoreSheet, paletteOf } = await import('../p37d/judge-sheet.mjs');
   const { promoteBatch } = await import('../p37d/promote-batch.mjs');
   const { mergeAttempts } = await import('./judge-library.mjs');
   const { heroTargets } = await import('./top50.mjs');
@@ -49,9 +51,13 @@ async function main() {
   const top50Targets = heroTargets(read('evals/play/p57/judge.json'), read('evals/play/p57/usage.json'), catalog);
   const inCatalog = new Set(catalog.assets.map((asset) => asset.assetId));
   const wanted = [...new Map(JSON.parse(readFileSync(MISSING, 'utf8')).missing.map((entry) => [entry.id, entry.noun])).entries()];
+  // Jména, která generovalo už dřívější spuštění (kolo 1 v `--out`): jejich povýšené id je v katalogu díky T10, ne T6/T8.
+  const firstNouns = path.join(out, 'round-1', 'nouns.json');
+  const earlier = new Set(existsSync(firstNouns) ? JSON.parse(readFileSync(firstNouns, 'utf8')).nouns.map((entry) => entry.noun) : []);
+  const ours = ([id, noun]) => !inCatalog.has(id) || earlier.has(noun);
 
-  const results = new Map(wanted.filter(([id]) => inCatalog.has(id)).map(([id, noun]) => [id, { noun, id, result: 'skipped', reason: skipReason(id, { regen, top50Targets }) }]));
-  const state = new Map(wanted.filter(([id]) => !inCatalog.has(id)).map(([id, noun]) => [id, { id, noun, attempts: [] }]));
+  const results = new Map(wanted.filter((pair) => !ours(pair)).map(([id, noun]) => [id, { noun, id, result: 'skipped', reason: skipReason(id, { regen, top50Targets }) }]));
+  const state = new Map(wanted.filter(ours).map(([id, noun]) => [id, { id, noun, attempts: [] }]));
   const imageModel = { klein: 'FLUX.2-klein-4B', zimage: 'Z-Image-Turbo' }[/^image_model\s*=\s*"(\w+)"/m.exec(readFileSync(path.join(ROOT, 'ops/gen3d/config.toml'), 'utf8'))[1]];
   const best = (item) => item.attempts.filter((attempt) => attempt.score >= PASS).sort((a, b) => b.score - a.score)[0] ?? null;
 
@@ -61,12 +67,15 @@ async function main() {
     const dir = path.join(out, `round-${round}`);
     mkdirSync(dir, { recursive: true });
     const nounsFile = path.join(dir, 'nouns.json');
-    writeFileSync(nounsFile, JSON.stringify({ nouns: todo.map((item) => ({ noun: item.noun, class: classOf(item.noun), flat: false })) }));
     const record = path.join(dir, 'batch.json');
-    console.log(`kit-fill round ${round}: generating ${todo.length} (${attempts})`);
-    const gen = spawnSync('uv', ['run', 'batch.py', '--from', nounsFile, '--limit', '999', '--record', record, '--sheet', path.join(dir, 'sheet.png'), '--attempts', attempts, '--no-quarantine', '--start-comfy'],
-      { cwd: path.join(ROOT, 'ops/gen3d'), env: { ...process.env, GEN3D_CACHE_DIR: path.join(dir, 'cache') }, stdio: 'inherit' });
-    if (gen.status !== 0) throw new Error(`batch.py exit ${gen.status}`);
+    if (existsSync(record)) console.log(`kit-fill round ${round}: reusing ${record}`);
+    else {
+      writeFileSync(nounsFile, JSON.stringify({ nouns: todo.map((item) => ({ noun: item.noun, class: classOf(item.noun), flat: false })) }));
+      console.log(`kit-fill round ${round}: generating ${todo.length} (${attempts})`);
+      const gen = spawnSync('uv', ['run', 'batch.py', '--from', nounsFile, '--limit', '999', '--record', record, '--sheet', path.join(dir, 'sheet.png'), '--attempts', attempts, '--no-quarantine', '--start-comfy'],
+        { cwd: path.join(ROOT, 'ops/gen3d'), env: { ...process.env, GEN3D_CACHE_DIR: path.join(dir, 'cache') }, stdio: 'inherit' });
+      if (gen.status !== 0) throw new Error(`batch.py exit ${gen.status}`);
+    }
     const records = new Map(JSON.parse(readFileSync(record, 'utf8')).records.map((entry) => [entry.noun, entry]));
 
     const cells = [];
@@ -86,15 +95,21 @@ async function main() {
       const sheets = path.join(dir, `sheets-${shuffleKey('cells', cells.map((cell) => cell.key).join(',')).slice(0, 8)}`);
       writeFileSync(path.join(dir, 'glb-list.json'), JSON.stringify(cells.map(({ key, glb }) => ({ id: key, glb }))));
       writeFileSync(path.join(dir, 'ids.json'), JSON.stringify(cells.map(({ key }) => ({ id: key }))));
-      spawnSync(process.execPath, [path.join(ROOT, 'scripts/assets/qa-sheets.mjs'), '--grid', '3', '--glb-list', path.join(dir, 'glb-list.json'), '--ids', path.join(dir, 'ids.json'), '--out', sheets], { stdio: 'inherit' });
+      if (!existsSync(path.join(sheets, 'grid-index.json'))) {
+        spawnSync(process.execPath, [path.join(ROOT, 'scripts/assets/qa-sheets.mjs'), '--grid', '3', '--glb-list', path.join(dir, 'glb-list.json'), '--ids', path.join(dir, 'ids.json'), '--out', sheets], { stdio: 'inherit' });
+      }
       const plan = JSON.parse(readFileSync(path.join(sheets, 'grid-index.json'), 'utf8'));
       const scored = new Map();
       const queue = [...plan.sheets];
+      const answers = path.join(dir, 'judge', 'answers');
       const worker = async () => {
         for (let sheet = queue.shift(); sheet !== undefined; sheet = queue.shift()) {
           const png = path.join(sheets, `${sheet.sheet}.png`);
-          let got = (await scoreSheet(png, sheet.cells.length, path.join(dir, 'judge'), 'claude')).cells;
-          if (got.some((cell) => cell === null)) got = mergeAttempts(got, (await scoreSheet(png, sheet.cells.length, path.join(dir, 'judge'), 'claude')).cells);
+          // Odpovědi Opuse z dřívějšího spuštění se znovu nečtou za peníze ani čas.
+          const cached = (existsSync(answers) ? readdirSync(answers) : []).filter((file) => file.startsWith(`${sheet.sheet}-claude-`)).sort()
+            .map((file) => scoreCells(JSON.parse(readFileSync(path.join(answers, file), 'utf8')), sheet.cells.length));
+          let got = cached.length > 0 ? cached.reduce(mergeAttempts) : (await scoreSheet(png, sheet.cells.length, path.join(dir, 'judge'), 'claude')).cells;
+          if (got.some((cell) => cell === null) && cached.length < 2) got = mergeAttempts(got, (await scoreSheet(png, sheet.cells.length, path.join(dir, 'judge'), 'claude')).cells);
           sheet.cells.forEach((key, index) => scored.set(key, got[index]));
           console.log(`${sheet.sheet}: ${got.map((cell) => cell?.score ?? '-').join(' ')}`);
         }
@@ -108,9 +123,15 @@ async function main() {
   }
 
   const entries = [];
+  const already = [];
   for (const item of state.values()) {
     const win = best(item);
     if (!win) continue;
+    // Povýšené dřívějším spuštěním: znovu do promoteBatch ne (nové id by přepsalo hotový záznam, R3).
+    if (inCatalog.has(item.id)) {
+      already.push(item.id);
+      continue;
+    }
     entries.push({
       id: item.id, nouns: [item.noun], glb: win.glb, palette: await paletteOf(win.glb),
       source: { pipeline: 'ops/gen3d', imageModel, shapeModel: 'TRELLIS.2-4B', seed: win.seed },
@@ -118,8 +139,9 @@ async function main() {
       checked: { judge: `P57 T10 blind 1-10 grid, Opus 5.5: ${win.score}`, verdict: 'pass' },
     });
   }
-  const { promoted, skipped } = entries.length > 0 ? await promoteBatch({ schema: 'catalog-batch.v1', entries }) : { promoted: [], skipped: [] };
-  const refused = new Map(skipped.map((entry) => [entry.id, entry.reason]));
+  const batch = entries.length > 0 ? await promoteBatch({ schema: 'catalog-batch.v1', entries }) : { promoted: [], skipped: [] };
+  const promoted = [...already, ...batch.promoted];
+  const refused = new Map(batch.skipped.map((entry) => [entry.id, entry.reason]));
   for (const item of state.values()) {
     const win = best(item);
     const top = Math.max(0, ...item.attempts.map((attempt) => attempt.score ?? 0)) || null;

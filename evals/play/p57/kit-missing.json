@@ -1,209 +1,512 @@
 {
- "about": "P57 T9: nouns the world kits (scripts/p45h/build-setting-kits.mjs, P57_KITS) asked for but the library cannot give – not in the catalog, or last judged below 6. T10 generates them or marks them skipped.",
+ "about": "P57 T9: nouns the world kits (scripts/p45h/build-setting-kits.mjs, P57_KITS) asked for but the library cannot give – not in the catalog, or last judged below 6. T10 generates them or marks them skipped. T10 (scripts/p57/kit-fill.mjs) generated the new ones it could; every noun still missing carries `skipped` with the reason, `results` holds every noun T10 looked at.",
  "missing": [
   {
    "setting": "meadow",
    "noun": "scarecrow",
    "id": "gen3d-scarecrow",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "\"scarecrow\" is already a tag of another catalog model"
   },
   {
    "setting": "meadow",
    "noun": "beehive",
    "id": "gen3d-beehive",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 4 below 6: Treasure crate: Shattered noisy golden blocks; object identity unclear."
   },
   {
    "setting": "meadow",
    "noun": "flower cart",
    "id": "gen3d-flower-cart",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Flower planter cart: Readable flower pot, but crumpled faceted mesh and blotchy colour bleeding."
   },
   {
    "setting": "castle",
    "noun": "castle tower",
    "id": "gen3d-castle-tower",
-   "reason": "score 4"
+   "reason": "score 4",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "castle",
    "noun": "knight statue",
    "id": "gen3d-knight-statue",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Knight statue: Dark, noisy faceted texture; recognisable figure but not toy-like."
   },
   {
    "setting": "city",
    "noun": "apartment block",
    "id": "gen3d-apartment-block",
-   "reason": "score 3"
+   "reason": "score 3",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "city",
    "noun": "newspaper stand",
    "id": "gen3d-newspaper-stand",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 2 below 6: Grey block: Grey crumpled scan-like box with torn base fragments; unidentifiable."
   },
   {
    "setting": "jungle",
    "noun": "vine covered rock wall",
    "id": "gen3d-vine-covered-rock-wall",
-   "reason": "score 4"
+   "reason": "score 4",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "jungle",
    "noun": "jungle temple stairs",
    "id": "gen3d-jungle-temple-stairs",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best - below 6: no record"
   },
   {
    "setting": "jungle",
    "noun": "ruin",
    "id": "gen3d-ruin",
-   "reason": "score 2"
+   "reason": "score 2",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "village",
    "noun": "cottage",
    "id": "gen3d-cottage",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "\"cottage\" is already a tag of another catalog model"
   },
   {
    "setting": "village",
    "noun": "village church",
    "id": "gen3d-village-church",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Chapel: Good church silhouette but noisy, smeared scan-like textures."
   },
   {
    "setting": "village",
    "noun": "log cabin",
    "id": "gen3d-log-cabin",
-   "reason": "score 4"
+   "reason": "score 4",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "beach",
    "noun": "beach hut",
    "id": "gen3d-beach-hut",
-   "reason": "score 4"
+   "reason": "score 4",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "beach",
    "noun": "wooden pier",
    "id": "gen3d-wooden-pier",
-   "reason": "score 5"
+   "reason": "score 5",
+   "skipped": "T6 regenerated it and rejected-bounds (still below 6)"
   },
   {
    "setting": "beach",
    "noun": "ice cream cart",
    "id": "gen3d-ice-cream-cart",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 4 below 6: Food cart: Glossy, warped surfaces and messy colours; booth shape only roughly readable."
   },
   {
    "setting": "dojo",
    "noun": "taiko drum",
    "id": "gen3d-taiko-drum",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Drum: Crumpled faceted surface, noisy shading; reads as drum but scan-like."
   },
   {
    "setting": "floating island",
    "noun": "sky waterfall",
    "id": "gen3d-sky-waterfall",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 3 below 6: Blue backpack: Crumpled faceted blue blob; object identity unclear."
   },
   {
    "setting": "floating island",
    "noun": "floating rock",
    "id": "gen3d-floating-rock",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 3 below 6: Rock: Featureless melted blob; unclear what object it is."
   },
   {
    "setting": "floating island",
    "noun": "hot air balloon",
    "id": "gen3d-hot-air-balloon",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "\"hot air balloon\" is already a tag of another catalog model"
   },
   {
    "setting": "frozen lake",
    "noun": "frozen pier",
    "id": "gen3d-frozen-pier",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 4 below 6: Table: Crumpled melted slab; legs and purpose unreadable."
   },
   {
    "setting": "highway",
    "noun": "guardrail",
    "id": "gen3d-guardrail",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "\"guardrail\" is already a tag of another catalog model"
   },
   {
    "setting": "highway",
    "noun": "highway overpass",
    "id": "gen3d-highway-overpass",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 4 below 6: Bed: Noisy smeared texture on simple table/bed form; scan-like."
   },
   {
    "setting": "highway",
    "noun": "highway lamp",
    "id": "gen3d-highway-lamp",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Standing mirror/sign: Ambiguous mirror or sign; dark, lumpy, smeared texture, not toy-like."
   },
   {
    "setting": "supermarket",
    "noun": "shopping basket",
    "id": "gen3d-shopping-basket",
-   "reason": "score 2"
+   "reason": "score 2",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "supermarket",
    "noun": "egg carton",
    "id": "gen3d-egg-carton",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best - below 6: RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
   },
   {
    "setting": "supermarket",
    "noun": "ice cream freezer",
    "id": "gen3d-ice-cream-freezer",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Arcade machine: Lumpy melted surfaces and smeared texture; vaguely a vending/arcade box."
   },
   {
    "setting": "supermarket",
    "noun": "produce stand",
    "id": "gen3d-produce-stand",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 4 below 6: Fruit basket: Crumpled faceted mesh, noisy gradient colours; contents ill-defined."
   },
   {
    "setting": "canyon",
    "noun": "rock arch",
    "id": "gen3d-rock-arch",
-   "reason": "score 5"
+   "reason": "score 5",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "canyon",
    "noun": "mesa",
    "id": "gen3d-mesa",
-   "reason": "score 4"
+   "reason": "score 4",
+   "skipped": "T6 regenerated it and rejected-bounds (still below 6)"
   },
   {
    "setting": "canyon",
    "noun": "hoodoo rock",
    "id": "gen3d-hoodoo-rock",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Avocado: Lumpy muddy green blob; hard to identify at a glance."
   },
   {
    "setting": "canyon",
    "noun": "layered canyon rock",
    "id": "gen3d-layered-canyon-rock",
-   "reason": "score 5"
+   "reason": "score 5",
+   "skipped": "T6 regenerated it and rejected-bounds (still below 6)"
   },
   {
    "setting": "desert canyon",
    "noun": "rock arch",
    "id": "gen3d-rock-arch",
-   "reason": "score 5"
+   "reason": "score 5",
+   "skipped": "T6 regenerated it and kept-old (still below 6)"
   },
   {
    "setting": "desert canyon",
    "noun": "hoodoo rock",
    "id": "gen3d-hoodoo-rock",
-   "reason": "not in the catalog or qa:unrecognisable"
+   "reason": "not in the catalog or qa:unrecognisable",
+   "skipped": "best 5 below 6: Avocado: Lumpy muddy green blob; hard to identify at a glance."
+  }
+ ],
+ "results": [
+  {
+   "noun": "castle tower",
+   "id": "gen3d-castle-tower",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "apartment block",
+   "id": "gen3d-apartment-block",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "vine covered rock wall",
+   "id": "gen3d-vine-covered-rock-wall",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "ruin",
+   "id": "gen3d-ruin",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "park bench",
+   "id": "gen3d-park-bench",
+   "result": "skipped",
+   "reason": "top-50 model, regenerated by T8"
+  },
+  {
+   "noun": "street trash can",
+   "id": "gen3d-street-trash-can",
+   "result": "skipped",
+   "reason": "top-50 model, regenerated by T8"
+  },
+  {
+   "noun": "log cabin",
+   "id": "gen3d-log-cabin",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "beach hut",
+   "id": "gen3d-beach-hut",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "wooden pier",
+   "id": "gen3d-wooden-pier",
+   "result": "skipped",
+   "reason": "T6 regenerated it and rejected-bounds (still below 6)"
+  },
+  {
+   "noun": "shopping basket",
+   "id": "gen3d-shopping-basket",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "rock arch",
+   "id": "gen3d-rock-arch",
+   "result": "skipped",
+   "reason": "T6 regenerated it and kept-old (still below 6)"
+  },
+  {
+   "noun": "mesa",
+   "id": "gen3d-mesa",
+   "result": "skipped",
+   "reason": "T6 regenerated it and rejected-bounds (still below 6)"
+  },
+  {
+   "noun": "layered canyon rock",
+   "id": "gen3d-layered-canyon-rock",
+   "result": "skipped",
+   "reason": "T6 regenerated it and rejected-bounds (still below 6)"
+  },
+  {
+   "noun": "scarecrow",
+   "id": "gen3d-scarecrow",
+   "result": "skipped",
+   "score": 6,
+   "reason": "\"scarecrow\" is already a tag of another catalog model"
+  },
+  {
+   "noun": "beehive",
+   "id": "gen3d-beehive",
+   "result": "skipped",
+   "score": 4,
+   "reason": "best 4 below 6: Treasure crate: Shattered noisy golden blocks; object identity unclear."
+  },
+  {
+   "noun": "flower cart",
+   "id": "gen3d-flower-cart",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Flower planter cart: Readable flower pot, but crumpled faceted mesh and blotchy colour bleeding."
+  },
+  {
+   "noun": "knight statue",
+   "id": "gen3d-knight-statue",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Knight statue: Dark, noisy faceted texture; recognisable figure but not toy-like."
+  },
+  {
+   "noun": "newspaper stand",
+   "id": "gen3d-newspaper-stand",
+   "result": "skipped",
+   "score": 2,
+   "reason": "best 2 below 6: Grey block: Grey crumpled scan-like box with torn base fragments; unidentifiable."
+  },
+  {
+   "noun": "jungle temple stairs",
+   "id": "gen3d-jungle-temple-stairs",
+   "result": "skipped",
+   "score": null,
+   "reason": "best - below 6: no record"
+  },
+  {
+   "noun": "spice rack",
+   "id": "gen3d-spice-rack",
+   "result": "generated",
+   "score": 6
+  },
+  {
+   "noun": "kitchen island",
+   "id": "gen3d-kitchen-island",
+   "result": "generated",
+   "score": 6
+  },
+  {
+   "noun": "duck pond",
+   "id": "gen3d-duck-pond",
+   "result": "generated",
+   "score": 6
+  },
+  {
+   "noun": "cottage",
+   "id": "gen3d-cottage",
+   "result": "skipped",
+   "score": 6,
+   "reason": "\"cottage\" is already a tag of another catalog model"
+  },
+  {
+   "noun": "village church",
+   "id": "gen3d-village-church",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Chapel: Good church silhouette but noisy, smeared scan-like textures."
+  },
+  {
+   "noun": "ice cream cart",
+   "id": "gen3d-ice-cream-cart",
+   "result": "skipped",
+   "score": 4,
+   "reason": "best 4 below 6: Food cart: Glossy, warped surfaces and messy colours; booth shape only roughly readable."
+  },
+  {
+   "noun": "training dummy",
+   "id": "gen3d-training-dummy",
+   "result": "generated",
+   "score": 6
+  },
+  {
+   "noun": "taiko drum",
+   "id": "gen3d-taiko-drum",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Drum: Crumpled faceted surface, noisy shading; reads as drum but scan-like."
+  },
+  {
+   "noun": "pagoda",
+   "id": "gen3d-pagoda",
+   "result": "generated",
+   "score": 6
+  },
+  {
+   "noun": "koi pond",
+   "id": "gen3d-koi-pond",
+   "result": "generated",
+   "score": 8
+  },
+  {
+   "noun": "sky waterfall",
+   "id": "gen3d-sky-waterfall",
+   "result": "skipped",
+   "score": 3,
+   "reason": "best 3 below 6: Blue backpack: Crumpled faceted blue blob; object identity unclear."
+  },
+  {
+   "noun": "floating rock",
+   "id": "gen3d-floating-rock",
+   "result": "skipped",
+   "score": 3,
+   "reason": "best 3 below 6: Rock: Featureless melted blob; unclear what object it is."
+  },
+  {
+   "noun": "hot air balloon",
+   "id": "gen3d-hot-air-balloon",
+   "result": "skipped",
+   "score": 6,
+   "reason": "\"hot air balloon\" is already a tag of another catalog model"
+  },
+  {
+   "noun": "frozen pier",
+   "id": "gen3d-frozen-pier",
+   "result": "skipped",
+   "score": 4,
+   "reason": "best 4 below 6: Table: Crumpled melted slab; legs and purpose unreadable."
+  },
+  {
+   "noun": "fishing rod rack",
+   "id": "gen3d-fishing-rod-rack",
+   "result": "generated",
+   "score": 7
+  },
+  {
+   "noun": "guardrail",
+   "id": "gen3d-guardrail",
+   "result": "skipped",
+   "score": 7,
+   "reason": "\"guardrail\" is already a tag of another catalog model"
+  },
+  {
+   "noun": "highway overpass",
+   "id": "gen3d-highway-overpass",
+   "result": "skipped",
+   "score": 4,
+   "reason": "best 4 below 6: Bed: Noisy smeared texture on simple table/bed form; scan-like."
+  },
+  {
+   "noun": "highway lamp",
+   "id": "gen3d-highway-lamp",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Standing mirror/sign: Ambiguous mirror or sign; dark, lumpy, smeared texture, not toy-like."
+  },
+  {
+   "noun": "egg carton",
+   "id": "gen3d-egg-carton",
+   "result": "skipped",
+   "score": null,
+   "reason": "best - below 6: RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+  },
+  {
+   "noun": "ice cream freezer",
+   "id": "gen3d-ice-cream-freezer",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Arcade machine: Lumpy melted surfaces and smeared texture; vaguely a vending/arcade box."
+  },
+  {
+   "noun": "produce stand",
+   "id": "gen3d-produce-stand",
+   "result": "skipped",
+   "score": 4,
+   "reason": "best 4 below 6: Fruit basket: Crumpled faceted mesh, noisy gradient colours; contents ill-defined."
+  },
+  {
+   "noun": "hoodoo rock",
+   "id": "gen3d-hoodoo-rock",
+   "result": "skipped",
+   "score": 5,
+   "reason": "best 5 below 6: Avocado: Lumpy muddy green blob; hard to identify at a glance."
   }
  ]
 }

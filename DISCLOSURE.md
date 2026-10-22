@@ -3102,7 +3102,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (4726)
+## Vlastní, ne třetí strana (4732)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3366,12 +3366,18 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/env/set-carnival.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-disco-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-disco.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/assets/worldstream/env/set-dojo-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/assets/worldstream/env/set-dojo.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-dungeon-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-dungeon.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/assets/worldstream/env/set-floating-island-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/assets/worldstream/env/set-floating-island.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-garden-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-garden.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-haunted-castle-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-haunted-castle.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/assets/worldstream/env/set-highway-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/assets/worldstream/env/set-highway.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-hills-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-hills.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/assets/worldstream/env/set-hospital-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
