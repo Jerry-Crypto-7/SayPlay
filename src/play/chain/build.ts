@@ -132,8 +132,10 @@ function sameWorld(draft: GenreSpec, shared: Pick<GenreSpec, 'hero' | 'setting' 
     item === null ? own
     : collects ? ({ ...own, cast: own.cast!.map((member) => (member.does === 'collect' ? { ...member, label: item } : member)) } as GenreSpec)
     : ({ ...own, cast: [...(own.cast ?? []), { label: item, does: 'collect' }].slice(0, CAST_MAX) } as GenreSpec);
-  if (foe === null || spec.cast?.some((member) => member.label === foe)) return spec;
-  return { ...spec, cast: [{ label: foe, does: FOE_DOES[spec.genre] }, ...(spec.cast ?? [])].slice(0, CAST_MAX) } as GenreSpec;
+  // T17c: protivník pod jinou rolí (sbírá se, je cíl) bossovi nestačí – jméno přejde do role protivníka žánru.
+  const does = FOE_DOES[spec.genre];
+  if (foe === null || spec.cast?.some((member) => member.label === foe && member.does === does)) return spec;
+  return { ...spec, cast: [{ label: foe, does }, ...(spec.cast ?? []).filter((member) => member.label !== foe)].slice(0, CAST_MAX) } as GenreSpec;
 }
 
 interface Built {

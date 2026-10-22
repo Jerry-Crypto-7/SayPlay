@@ -70,6 +70,18 @@ describe('buildChain', () => {
     expect(verifyChain(made.chain).failures).toEqual([]);
   });
 
+  // T17c: čtení „a cat catches mice“ má myš za protivníka i za věc; boss s ní musí bojovat, ne ji mít jen jako sbíranou věc.
+  it('makes the boss fight the foe even when its name is also the item', () => {
+    const sentence = 'a cat catches mice running around the barn';
+    const read = { ...readForChain(sentence, null), verbs: [{ word: 'catches', class: 'move_free' as const }], foe: 'mouse', item: 'mouse', source: 'llm' as const };
+    for (const seed of [1, 2, 3, 11]) {
+      const made = buildChain(sentence, read, seed, false);
+      if (!made.ok) throw new Error(made.issues.join('; '));
+      const boss = made.chain.rounds.at(-1)!;
+      expect(boss.spec.roles.filter((role) => role.label === 'mouse' && role.kind !== 'collectible'), `${seed} ${boss.key}`).not.toEqual([]);
+    }
+  });
+
   it('builds the same chain from the same seed and a different one from another', () => {
     const keys = (world: ChainWorld): string => world.rounds.map((round) => round.key).join(' ');
     const idle = 'a quiet afternoon';
