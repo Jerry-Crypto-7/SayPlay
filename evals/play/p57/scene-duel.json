@@ -24,14 +24,14 @@
   },
   "codex": {
    "desktop": {
-    "after": 1,
-    "before": 0,
-    "missing": 11
+    "after": 8,
+    "before": 4,
+    "missing": 0
    },
    "phone": {
-    "after": 0,
-    "before": 0,
-    "missing": 12
+    "after": 8,
+    "before": 4,
+    "missing": 0
    }
   }
  },
@@ -58,11 +58,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "Neither panel shows a frog, flies or a lily pad; both are almost identical car-on-a-road scenes, but panel 1's blue flowers add a bit more color and polish.",
-    "codex": null
+    "codex": "Panel 2’s green, lily-pad-like details better fit the prompt and create a more cohesive look, though both visibly resemble driving games."
    },
    "sheet": "01-frog-m.png"
   },
@@ -73,11 +73,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "The two panels are nearly identical, but panel 1 is slightly brighter, so the zombies, farm and fences are a little easier to see while it still reads as night.",
-    "codex": null
+    "codex": "Panel 2 has more defined shadows and environmental detail, giving the nighttime farm attack a slightly more polished look."
    },
    "sheet": "02-zombie-d.png"
   },
@@ -88,11 +88,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "Both panels look almost identical, with the same dark night farm, zombies and HUD, so this is close to a tie; panel 1 wins by a hair because its framing is slightly cleaner.",
-    "codex": null
+    "codex": "Panel 1 has stronger lighting and clearer character detail, giving the nighttime zombie attack a more polished look."
    },
    "sheet": "02-zombie-m.png"
   },
@@ -103,11 +103,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels look the same: a ninja beside cutting boards, with no fruit, slicing or HUD in either, so neither is clearly better and choosing 1 is close to arbitrary.",
-    "codex": null
+    "codex": "Panel 1 has slightly stronger depth and more substantial platforms, though neither visibly shows fruit or slicing."
    },
    "sheet": "03-ninja-d.png"
   },
@@ -118,11 +118,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels look the same, with a ninja beside plain blocks and no visible fruit, so neither is better and panel 1 was picked only as a tie-break.",
-    "codex": null
+    "codex": "Panel 1 has slightly more varied platform detail, though both look unfinished and neither visibly shows fruit slicing."
    },
    "sheet": "03-ninja-m.png"
   },
@@ -133,11 +133,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels look essentially identical (same reef track, coral, player, and obstacles), so neither is clearly better and panel 1 wins only as a tie-break.",
-    "codex": null
+    "codex": "Panel 1 has slightly cleaner track framing and a clearer shark silhouette, making the reef race feel more polished."
    },
    "sheet": "04-shark-d.png"
   },
@@ -148,11 +148,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "The two panels are nearly identical, but panel 1 has slightly clearer contrast, which makes the reef track, coral and obstacles easier to read.",
-    "codex": null
+    "codex": "Panel 1 has clearer, more substantial obstacles and reef details, making the shark-racing scene feel slightly more polished."
    },
    "sheet": "04-shark-m.png"
   },
@@ -163,11 +163,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels are nearly identical, but panel 1's crystal decoration on the dome looks more polished than panel 2's plain grey pedestal object.",
-    "codex": null
+    "codex": "Panel 2 looks more polished thanks to its cleaner, more coherent background prop, while clearly showing pizzas stacking upward toward the moon."
    },
    "sheet": "05-pizza-d.png"
   },
@@ -178,11 +178,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels are nearly identical, but panel 1 has a clean antenna/pad prop where panel 2 has a crumpled, glitchy-looking mesh, so panel 1 looks more polished.",
-    "codex": null
+    "codex": "Panel 1 looks more polished, with cleaner background objects and a clearer pizza tower reaching upward toward the moon."
    },
    "sheet": "05-pizza-m.png"
   },
@@ -193,11 +193,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "The two panels look almost exactly the same (same lane layout, cat and red turrets on the couch, and no clear vacuum robots in either), so panel 1 is a near coin-flip pick.",
-    "codex": null
+    "codex": "Panel 1 narrowly gets the pick, though both look virtually identical and neither clearly conveys a cat defending a couch from vacuum robots."
    },
    "sheet": "06-cat-d.png"
   },
@@ -208,11 +208,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels look the same, with the same lane layout and no visible cat, couch or vacuum robots in either, so neither is better and panel 1 is a tie-break pick.",
-    "codex": null
+    "codex": "Panel 1’s more compact couch proportions make the scene feel more cohesive and better communicate the cat defending the couch."
    },
    "sheet": "06-cat-m.png"
   },
@@ -223,11 +223,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "The two are almost identical and neither shows a packed stadium, but panel 1 has slightly richer, more varied scenery, such as fruit trees and brighter foliage.",
-    "codex": null
+    "codex": "Panel 2 looks slightly more polished with more detailed, varied trees, though neither shows a packed stadium or clearly depicts a goalkeeper saving penalties."
    },
    "sheet": "07-goalie-d.png"
   },
@@ -238,11 +238,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels are almost the same, and neither shows a packed stadium, but panel 1's colored trees and flowers make the scene look a little more finished.",
-    "codex": null
+    "codex": "Panel 1’s closer framing makes the players, ball, and goal clearer, though neither shows a packed stadium."
    },
    "sheet": "07-goalie-m.png"
   },
@@ -253,11 +253,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels are almost identical, but panel 2 has extra scenery like blue flowers and more plants, so it looks slightly more polished; neither one clearly shows glowing gems.",
-    "codex": null
+    "codex": "Panel 2 looks more polished with richer foliage and flowers, while retaining the visible glowing collectibles and treasure chests."
    },
    "sheet": "08-gems-d.png"
   },
@@ -268,11 +268,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels are almost the same: neither shows clear glowing gems or match-three play, and panel 1's framing is only slightly cleaner.",
-    "codex": null
+    "codex": "Panel 2 has slightly cleaner spacing around the character and chests, though neither clearly shows three matching glowing gems."
    },
    "sheet": "08-gems-m.png"
   },
@@ -283,11 +283,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The panels are almost identical, but panel 1 has dark asteroid-like rocks in the sky that better fit \"dodges asteroids\"; both lose the astronaut behind a gray wall at 15 seconds.",
-    "codex": null
+    "codex": "Panel 2 looks more polished with more consistent canyon detailing, while clearly showing the astronaut, rocky obstacles, and futuristic station structures."
    },
    "sheet": "09-astro-d.png"
   },
@@ -298,11 +298,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The panels are nearly identical: both have no HUD, no visible asteroids, and lose the astronaut behind a grey slab at 15s, so panel 1 wins only by a hair on its slightly clearer path and pickups.",
-    "codex": null
+    "codex": "Panel 2 has slightly clearer star collectibles and more consistent framing, while both show the astronaut, rocky obstacles, and space-station setting."
    },
    "sheet": "09-astro-m.png"
   },
@@ -313,11 +313,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "The two panels are almost identical and neither shows a line of customers, but panel 1's pancake looks slightly more detailed and cooked.",
-    "codex": null
+    "codex": "Panel 1 looks slightly more polished, with a stronger pan highlight and tighter framing of the chef and pancakes, though neither shows hungry customers."
    },
    "sheet": "10-chef-d.png"
   },
@@ -328,11 +328,11 @@
    "beforeFirst": true,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The panels look almost the same and neither shows customers, but in panel 2 the chef is still holding a tool at 15 seconds, so it looks slightly more active.",
-    "codex": null
+    "codex": "Panel 2 looks slightly more polished, with a more clearly defined chef and pancake station, though neither shows a line of hungry customers."
    },
    "sheet": "10-chef-m.png"
   },
@@ -343,11 +343,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The panels are nearly identical rhythm-lane farm scenes and neither looks like a rock concert, but panel 1's colorful windmills fit the low-poly style better than panel 2's spindly gray ones.",
-    "codex": null
+    "codex": "Panel 1 looks more polished with cohesive, colorful scenery and visible rhythm lanes, though neither clearly depicts a rock concert."
    },
    "sheet": "11-drum-d.png"
   },
@@ -358,11 +358,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "Both have the same note-highway gameplay and farm setting rather than a rock concert, but panel 2's windmills are more detailed and less blobby, so it looks slightly more polished.",
-    "codex": null
+    "codex": "Panel 1 looks more polished with cohesive, stylized scenery, though neither visibly conveys drumming at a rock concert."
    },
    "sheet": "11-drum-m.png"
   },
@@ -373,11 +373,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "after",
-    "codex": null
+    "codex": "after"
    },
    "reasons": {
     "claude": "The two panels look almost the same, but panel 1 is a little brighter and easier to read, so the haunted path and the chasing figure are clearer.",
-    "codex": null
+    "codex": "Panel 1 has clearer character silhouettes and tighter framing, making the ghost chase feel slightly more polished and readable."
    },
    "sheet": "12-ghost-d.png"
   },
@@ -388,11 +388,11 @@
    "beforeFirst": false,
    "votes": {
     "claude": "before",
-    "codex": null
+    "codex": "before"
    },
    "reasons": {
     "claude": "The panels are almost identical, but in panel 2 the chasing fox renders cleanly, while in panel 1 it has an odd grey-blue patch that looks like a glitch.",
-    "codex": null
+    "codex": "Panel 2 has cleaner character silhouettes and a clearer ghost-pursuit scene, though neither visibly establishes a haunted mansion."
    },
    "sheet": "12-ghost-m.png"
   }
