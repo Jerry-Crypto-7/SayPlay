@@ -104,7 +104,8 @@ describe('rng streams', () => {
   });
 
   it('adds the merge queue stream after pacing, so pacing draws what it drew before (P54C T11)', () => {
-    expect(SUBSYSTEMS.at(-1)).toBe('merge');
+    // Za `merge` přibyl už jen stream řetězu (P56C T5), takže `merge` zůstal šestý.
+    expect(SUBSYSTEMS.indexOf('merge')).toBe(5);
     const rows = Array.from({ length: 20 }, (_, i) => { const stream = createStreams(i + 1).pacing; return [0, 1, 2, 3].map(() => nextInt(stream, 0, 999_999)); });
     // Otisk změřený na HEAD 6d5bfce9 před přidáním streamu `merge`.
     expect(createHash('sha256').update(JSON.stringify(rows)).digest('hex')).toBe('6a3094b06729daeb255c0e77151541ce2bd7b7079a73c646ffc9428a91e18666');

@@ -12,8 +12,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain } from '@/play/chain/read';
 import { direct } from '@/play/director';
 import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
 import { DEFAULT_LOCAL_READER_BUDGET_MS } from '@/play/read/client';
 import type { Reading } from '@/play/read/schema';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
@@ -23,6 +26,8 @@ import { resetProcessSpendCap } from '@/server/spend-cap';
 import { upstreamBranch } from '@/server/upstream';
 
 const SENTENCE = 'a knight collects keys in a castle';
+/** Dev P56C d04 (`multi_verb`): věta řetězu mikroher. */
+const CHAIN = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
 const READING: Reading = {
   control: 'shooter',
   verbs: [{ word: 'collect', class: 'aim_shoot' }],
@@ -39,10 +44,19 @@ const READING: Reading = {
 };
 
 // P56A T10: fyzika se načítá za závorou, kterou test drží zavřenou – čtečka se musí zeptat dřív, než se otevře.
-const rapier = vi.hoisted(() => ({ gate: Promise.resolve() }));
+// P56C T17e: `loaded: false` je studený server – Rapier, kterého načetl dřívější test, se do otevření závory nepočítá.
+const rapier = vi.hoisted(() => ({ gate: Promise.resolve(), loaded: true }));
 vi.mock('@/play/arcade/physics/world', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/play/arcade/physics/world')>();
-  return { ...actual, loadRapier: async () => { await rapier.gate; return actual.loadRapier(); } };
+  return {
+    ...actual,
+    loadRapier: async () => {
+      await rapier.gate;
+      rapier.loaded = true;
+      return actual.loadRapier();
+    },
+    rapierIfLoaded: () => (rapier.loaded ? actual.rapierIfLoaded() : null),
+  };
 });
 
 vi.mock('../_director', () => ({
@@ -70,11 +84,13 @@ const create = (sentence = SENTENCE) =>
     }),
   );
 
-async function publishedSpec(response: Response): Promise<unknown> {
+async function publishedGame(response: Response): Promise<{ spec: unknown; chain?: unknown }> {
   expect(response.status).toBe(201);
   const { versionId } = await response.json();
-  return (await (await readGame(new Request(`http://play.test/api/play/games/${versionId}`), { params: Promise.resolve({ id: versionId }) })).json()).spec;
+  return (await readGame(new Request(`http://play.test/api/play/games/${versionId}`), { params: Promise.resolve({ id: versionId }) })).json();
 }
+
+const publishedSpec = async (response: Response): Promise<unknown> => (await publishedGame(response)).spec;
 
 beforeEach(() => {
   __resetProcessVersionStore();
@@ -195,6 +211,16 @@ describe('create route reads the sentence before drafting', () => {
       expect(paid).toHaveBeenCalledOnce();
     });
 
+    // P56C T17: řetěz fyziku nepotřebuje – věta řetězu se publikuje i bez ní a nepoužité čtení se nezaplatí.
+    it('publishes a chain sentence without the physics and pays nothing', async () => {
+      const broken = Promise.reject(new Error('rapier wasm failed'));
+      broken.catch(() => undefined);
+      rapier.gate = broken;
+      expect(await publishedGame(await create(CHAIN))).toHaveProperty('chain');
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(paid).not.toHaveBeenCalled();
+    });
+
     it('sends nothing when the physics load fails', async () => {
       const broken = Promise.reject(new Error('rapier wasm failed'));
       broken.catch(() => undefined);
@@ -206,6 +232,65 @@ describe('create route reads the sentence before drafting', () => {
     });
   });
 
+  // P56C T17e: čtení řetězu staví návrh věty, který se s míčem bez fyziky nepřeloží – route na ni počká jako jedna hra.
+  describe('on a cold server, before the physics loads', () => {
+    /** Uložené čtení P56A (`p30-dev` d01): model říká běžec, návrh z něj staví míč. */
+    const ROLLS = 'a hedgehog rolls down a mushroom hill avoiding foxes';
+    const ROLLS_READING: Reading = {
+      control: 'runner', verbs: [{ word: 'rolls', class: 'runner' }], hero: 'hedgehog', roles: [{ noun: 'foxes', kind: 'threat', count: null }],
+      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' },
+      foe: 'foxes', item: null, world: 'forest', title: 'Hedgehog Hill Roll',
+    };
+    const readerOf = (reading: Reading) => vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 }));
+    let open = (): void => undefined;
+
+    beforeEach(() => {
+      vi.stubEnv('PLAY_READER', 'on');
+      rapier.loaded = false;
+      rapier.gate = new Promise<void>((resolve) => { open = resolve; });
+    });
+    afterEach(() => {
+      open();
+      rapier.gate = Promise.resolve();
+      rapier.loaded = true;
+    });
+
+    it('a reading that drafts a ball game waits for the physics instead of failing', async () => {
+      const reader = readerOf(ROLLS_READING);
+      vi.stubGlobal('fetch', reader);
+      const pending = create(ROLLS);
+      const settled = vi.fn();
+      pending.then(settled, settled);
+      await vi.waitFor(() => expect(reader).toHaveBeenCalledOnce());
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      expect(settled).not.toHaveBeenCalled();
+      open();
+      expect(((await publishedSpec(await pending)) as { control?: string }).control).toBe('ball');
+    });
+
+    // Revize T17e-1: návrh bez fyziky slučování nehodí, tiše vezme jinou hru – ta nesmí zůstat návrhu po načtení fyziky.
+    it('a reading that drafts a merge game publishes merge, not the game the cold draft fell back to', async () => {
+      /** Uložené čtení P56A (`p54c-dev` m01). */
+      const merge = 'drop fruits into a jar and merge matching ones into a watermelon';
+      const reader = readerOf({
+        control: 'tap_go', verbs: [{ word: 'drop', class: 'timing' }, { word: 'merge', class: 'timing' }], hero: null,
+        roles: [{ noun: 'fruit', kind: 'collectible', count: null }, { noun: 'watermelon', kind: 'destination', count: null }],
+        setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'merge', mode: 'default' }, foe: null, item: 'watermelon', world: null, title: 'Fruit Merge',
+      });
+      vi.stubGlobal('fetch', reader);
+      const pending = create(merge);
+      await vi.waitFor(() => expect(reader).toHaveBeenCalledOnce());
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      open();
+      expect(((await publishedSpec(await pending)) as { control?: string }).control).toBe('merge');
+    });
+
+    it('a chain reading without a ball publishes the chain with the physics still loading', async () => {
+      vi.stubGlobal('fetch', readerOf({ ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud' }));
+      expect(await publishedGame(await create(CHAIN))).toHaveProperty('chain');
+    });
+  });
+
   // P56A T10: vypnutá čtečka = rychlá cesta jako dřív u třiceti vět výchozích čísel (T1: audit-12 + prvních 18 z p30 dev).
   it('with the reader off publishes the keyword draft of every baseline sentence and calls nothing', async () => {
     vi.stubGlobal('fetch', answering);
@@ -213,7 +298,10 @@ describe('create route reads the sentence before drafting', () => {
     const sentences = [...set('evals/play/p56a/audit-12.json'), ...set('evals/play/p30/dev.json')].slice(0, 30);
     for (const sentence of sentences) {
       resetRateWindows();
-      expect(await publishedSpec(await create(sentence)), sentence).toEqual(draftGameSpec(sentence));
+      const game = await publishedGame(await create(sentence));
+      // P56C T10: věta, kterou `chainOrSingle` pošle do řetězu, hraje řetěz – jeho obsah pinuje `chain-publish.test.ts`.
+      if (chainOrSingle(sentence, readForChain(sentence, null), classifyGenre(sentence, null)) === 'single') expect(game.spec, sentence).toEqual(draftGameSpec(sentence));
+      else expect(game, sentence).toHaveProperty('chain');
     }
     expect(answering).not.toHaveBeenCalled();
   }, 300_000);
@@ -252,6 +340,32 @@ describe('the draft remembers who read the sentence (T6)', () => {
   it('keeps the origin as before when the keywords built it', async () => {
     vi.stubGlobal('fetch', answering);
     expect(await originOf(await create())).toEqual({ sentence: SENTENCE, seed: null });
+  });
+
+  // P56C T17: řetěz ze čtení modelem nese readBy a hrdinu čtení v každém kole.
+  it('stores readBy model on a chain the reading built, with its hero in every round', async () => {
+    const reading: Reading = { ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud' };
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 })));
+    const { versionId } = (await (await create(CHAIN)).json()) as { versionId: string };
+    const game = (await versionStoreFromEnv(process.env).get(versionId))!;
+    expect(game.origin).toEqual({ sentence: CHAIN, seed: null, readBy: 'model' });
+    const hero = readForChain(CHAIN, reading).hero;
+    expect(game.chain!.rounds.map((round) => round.spec.roles.find((role) => role.kind === 'player')?.label)).toEqual(game.chain!.rounds.map(() => hero));
+  });
+
+  // P56C T17a: název čtení, ne název kola 1 ze slov – v odpovědi POST, ve verzi (feed) i v každém kole.
+  it('publishes a chain the reading built under the reading title', async () => {
+    const reading: Reading = { ...READING, control: 'platform', verbs: [{ word: 'hops', class: 'platform' }, { word: 'shoots', class: 'aim_shoot' }], hero: 'robot', roles: [], setting: null, foe: 'grumpy cloud', title: 'Cloud Popper' };
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 })));
+    expect(readForChain(CHAIN, reading).title).toBe('Cloud Popper');
+    const body = (await (await create(CHAIN)).json()) as { versionId: string; title: string };
+    const game = (await versionStoreFromEnv(process.env).get(body.versionId))!;
+    expect(game.chain).toBeDefined();
+    expect(body.title).toBe('Cloud Popper');
+    expect(game.version.title).toBe('Cloud Popper');
+    expect(game.chain!.rounds.map((round) => round.spec.title)).toEqual(game.chain!.rounds.map(() => 'Cloud Popper'));
   });
 });
 

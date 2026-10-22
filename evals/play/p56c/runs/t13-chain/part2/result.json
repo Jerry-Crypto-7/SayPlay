@@ -1,0 +1,6218 @@
+{
+  "schema": "p32-shots/1",
+  "label": "part2",
+  "base": "http://127.0.0.1:3112",
+  "set": "~/.claude/logs/p56c-t13/chain2.json",
+  "live": false,
+  "startedAt": "2026-10-21T16:29:01.933Z",
+  "finishedAt": "2026-10-21T16:31:24.936Z",
+  "settings": {
+    "desktop": "1280x720",
+    "desktopCpuThrottling": 1,
+    "phone": "Pixel 7",
+    "cpuThrottling": 4,
+    "fpsSeconds": 10,
+    "renderer": "native"
+  },
+  "sentences": [
+    {
+      "id": "d07",
+      "text": "fish for glowing eels on a frozen lake, then race your sled home before the ice cracks",
+      "source": "sentence",
+      "gamePath": "/play/af16bb952526659b524f034428f03320",
+      "timeToPlayableMs": 882,
+      "timeToFirstFrameMs": 931,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 671,
+        "timeToFirstFrameMs": 724,
+        "phoneFirstFrameMs": 3121,
+        "network": [
+          {
+            "path": "/play/af16bb952526659b524f034428f03320",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 20,
+            "bytes": 11042,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 22,
+            "endMs": 36,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 23,
+            "endMs": 36,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 28,
+            "endMs": 43,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 30,
+            "endMs": 46,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 31,
+            "endMs": 51,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 33,
+            "endMs": 50,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 36,
+            "endMs": 62,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 36,
+            "endMs": 64,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 38,
+            "endMs": 58,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 40,
+            "endMs": 62,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 41,
+            "endMs": 63,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 44,
+            "endMs": 81,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 44,
+            "endMs": 74,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 46,
+            "endMs": 81,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 46,
+            "endMs": 76,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 50,
+            "endMs": 83,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 53,
+            "endMs": 86,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 54,
+            "endMs": 88,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 54,
+            "endMs": 92,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 56,
+            "endMs": 100,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 57,
+            "endMs": 98,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 58,
+            "endMs": 98,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 60,
+            "endMs": 101,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 61,
+            "endMs": 104,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 63,
+            "endMs": 106,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 64,
+            "endMs": 133,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 65,
+            "endMs": 110,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 65,
+            "endMs": 118,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 67,
+            "endMs": 119,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 67,
+            "endMs": 92,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 67,
+            "endMs": 121,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 70,
+            "endMs": 119,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 295,
+            "endMs": 305,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 295,
+            "endMs": 305,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 296,
+            "endMs": 304,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 296,
+            "endMs": 304,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 296,
+            "endMs": 303,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 296,
+            "endMs": 304,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 304,
+            "endMs": 317,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 304,
+            "endMs": 318,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 304,
+            "endMs": 324,
+            "bytes": 92806,
+            "failed": false
+          }
+        ],
+        "phoneNetwork": [
+          {
+            "path": "/play/af16bb952526659b524f034428f03320",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 19,
+            "bytes": 11042,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 31,
+            "endMs": 35,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 31,
+            "endMs": 36,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 60,
+            "endMs": 67,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 60,
+            "endMs": 67,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 60,
+            "endMs": 68,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 70,
+            "endMs": 85,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 72,
+            "endMs": 93,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 84,
+            "endMs": 120,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 84,
+            "endMs": 116,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 84,
+            "endMs": 116,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 84,
+            "endMs": 119,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 86,
+            "endMs": 134,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 88,
+            "endMs": 129,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 92,
+            "endMs": 138,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 93,
+            "endMs": 129,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 95,
+            "endMs": 133,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 95,
+            "endMs": 132,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 97,
+            "endMs": 137,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 98,
+            "endMs": 142,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 100,
+            "endMs": 152,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 102,
+            "endMs": 151,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 102,
+            "endMs": 150,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 105,
+            "endMs": 155,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 108,
+            "endMs": 158,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 109,
+            "endMs": 161,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 111,
+            "endMs": 184,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 112,
+            "endMs": 165,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 113,
+            "endMs": 171,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 113,
+            "endMs": 167,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 114,
+            "endMs": 169,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 115,
+            "endMs": 144,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 211,
+            "endMs": 297,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1473,
+            "endMs": 1482,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1473,
+            "endMs": 1482,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1474,
+            "endMs": 1482,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1476,
+            "endMs": 1483,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1477,
+            "endMs": 1483,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1478,
+            "endMs": 1485,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1480,
+            "endMs": 1487,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1482,
+            "endMs": 1494,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1482,
+            "endMs": 1491,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 2054,
+            "endMs": 2063,
+            "bytes": 0,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-block-pile-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2930,
+            "endMs": 2935,
+            "bytes": 11920,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-river-boulder-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2931,
+            "endMs": 2942,
+            "bytes": 39074,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-shrub-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2933,
+            "endMs": 2943,
+            "bytes": 39184,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-rock-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2935,
+            "endMs": 2946,
+            "bytes": 37132,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-dead-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2937,
+            "endMs": 2946,
+            "bytes": 39054,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-fir-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2939,
+            "endMs": 2946,
+            "bytes": 39120,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-bare-winter-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2942,
+            "endMs": 2947,
+            "bytes": 38705,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-fishing-hut-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2945,
+            "endMs": 2950,
+            "bytes": 18122,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/game/penguin-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2946,
+            "endMs": 2950,
+            "bytes": 5596,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-floe-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2948,
+            "endMs": 2953,
+            "bytes": 26301,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-sled-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2950,
+            "endMs": 2954,
+            "bytes": 18941,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d/gen3d-snowman-with-hat-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2952,
+            "endMs": 2955,
+            "bytes": 15959,
+            "failed": false
+          }
+        ]
+      },
+      "fpsMedian": 60,
+      "fpsSamples": [
+        58.1,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        27
+      ],
+      "shots": {
+        "draftDesktop": "d07-draft-desktop.png",
+        "draftPhone": "d07-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 1,
+          "endMs": 16,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 2,
+          "endMs": 18,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 3,
+          "endMs": 19,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5,
+          "endMs": 515,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 518,
+          "bytes": 176836,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/8f9fe29b93093dfd22f03caf371c816a/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 7,
+          "endMs": 20,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 7,
+          "endMs": 512,
+          "bytes": 174,
+          "failed": false
+        },
+        {
+          "path": "/play/af16bb952526659b524f034428f03320?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 511,
+          "endMs": 583,
+          "bytes": 8503,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 512,
+          "endMs": 574,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 576,
+          "endMs": 583,
+          "bytes": 191,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 577,
+          "endMs": 584,
+          "bytes": 1214,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 601,
+          "endMs": 603,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-block-pile-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 902,
+          "endMs": 907,
+          "bytes": 11920,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-river-boulder-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 902,
+          "endMs": 911,
+          "bytes": 39074,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-rock-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 903,
+          "endMs": 912,
+          "bytes": 37132,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-shrub-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 903,
+          "endMs": 913,
+          "bytes": 39184,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-dead-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 903,
+          "endMs": 912,
+          "bytes": 39054,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-fir-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 904,
+          "endMs": 913,
+          "bytes": 39120,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-bare-winter-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 905,
+          "endMs": 915,
+          "bytes": 38705,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-fishing-hut-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 905,
+          "endMs": 918,
+          "bytes": 18122,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/penguin-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 905,
+          "endMs": 918,
+          "bytes": 5596,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-floe-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 906,
+          "endMs": 920,
+          "bytes": 26301,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-sled-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 906,
+          "endMs": 920,
+          "bytes": 18941,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-snowman-with-hat-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 907,
+          "endMs": 920,
+          "bytes": 15959,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/pet-penguin.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 908,
+          "endMs": 922,
+          "bytes": 27567,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/ice-patch-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 908,
+          "endMs": 923,
+          "bytes": 2215,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-snowflake-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 908,
+          "endMs": 925,
+          "bytes": 39151,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/finish-flag-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 909,
+          "endMs": 925,
+          "bytes": 3318,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-iceberg-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 1135,
+          "endMs": 1141,
+          "bytes": 32939,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/44adf12e-de07-4bed-ab65-a381e7e59d6a",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 1143,
+          "endMs": 1143,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/ab59f95a-b44f-4119-8848-e792e37ceade",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 1151,
+          "endMs": 1151,
+          "bytes": -67,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "d08",
+      "text": "ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way",
+      "source": "sentence",
+      "gamePath": "/play/e2a907930f844a30d8cad99d518774d4",
+      "timeToPlayableMs": 645,
+      "timeToFirstFrameMs": 684,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 694,
+        "timeToFirstFrameMs": 742,
+        "phoneFirstFrameMs": 2870,
+        "network": [
+          {
+            "path": "/play/e2a907930f844a30d8cad99d518774d4",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 18,
+            "bytes": 10187,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 21,
+            "endMs": 35,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 21,
+            "endMs": 35,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 28,
+            "endMs": 44,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 29,
+            "endMs": 47,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 30,
+            "endMs": 49,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 32,
+            "endMs": 50,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 35,
+            "endMs": 60,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 35,
+            "endMs": 61,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 38,
+            "endMs": 58,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 39,
+            "endMs": 60,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 40,
+            "endMs": 62,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 40,
+            "endMs": 78,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 42,
+            "endMs": 71,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 43,
+            "endMs": 83,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 44,
+            "endMs": 70,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 48,
+            "endMs": 84,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 49,
+            "endMs": 82,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 50,
+            "endMs": 83,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 51,
+            "endMs": 87,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 55,
+            "endMs": 104,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 56,
+            "endMs": 97,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 58,
+            "endMs": 99,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 59,
+            "endMs": 102,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 60,
+            "endMs": 104,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 62,
+            "endMs": 107,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 64,
+            "endMs": 136,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 64,
+            "endMs": 111,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 66,
+            "endMs": 116,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 67,
+            "endMs": 116,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 67,
+            "endMs": 116,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 69,
+            "endMs": 115,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 79,
+            "endMs": 105,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 324,
+            "endMs": 334,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 324,
+            "endMs": 334,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 324,
+            "endMs": 332,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 324,
+            "endMs": 332,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 324,
+            "endMs": 332,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 325,
+            "endMs": 333,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 332,
+            "endMs": 345,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 332,
+            "endMs": 346,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 333,
+            "endMs": 353,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-planter-box-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 700,
+            "endMs": 709,
+            "bytes": 20097,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 701,
+            "endMs": 706,
+            "bytes": 7398,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-trash-can-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 701,
+            "endMs": 706,
+            "bytes": 13812,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-bollard-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 701,
+            "endMs": 709,
+            "bytes": 26008,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-park-bench-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 702,
+            "endMs": 710,
+            "bytes": 25254,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-box-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 702,
+            "endMs": 710,
+            "bytes": 23245,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-concrete-planter-with-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 702,
+            "endMs": 711,
+            "bytes": 13485,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 702,
+            "endMs": 714,
+            "bytes": 38909,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-lamp-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 702,
+            "endMs": 716,
+            "bytes": 39346,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-stall-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 703,
+            "endMs": 716,
+            "bytes": 19079,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-fire-hydrant-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 703,
+            "endMs": 714,
+            "bytes": 11074,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-glass-office-tower-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 703,
+            "endMs": 716,
+            "bytes": 19576,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-billboard-sign-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 703,
+            "endMs": 717,
+            "bytes": 16277,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-red-phone-booth-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 704,
+            "endMs": 722,
+            "bytes": 22354,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-car-taxi-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 704,
+            "endMs": 724,
+            "bytes": 63950,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d/gen3d-traffic-light-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 705,
+            "endMs": 723,
+            "bytes": 26192,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-apartment-block-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 706,
+            "endMs": 723,
+            "bytes": 17836,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/boy-a.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 706,
+            "endMs": 724,
+            "bytes": 31923,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-traffic-barrier-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 706,
+            "endMs": 723,
+            "bytes": 7820,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/game/checkpoint-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 707,
+            "endMs": 726,
+            "bytes": 2885,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d/gen3d-sushi-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 707,
+            "endMs": 728,
+            "bytes": 23651,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/game/finish-flag-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 708,
+            "endMs": 727,
+            "bytes": 3318,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/game/crystal-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 708,
+            "endMs": 728,
+            "bytes": 2430,
+            "failed": false
+          }
+        ],
+        "phoneNetwork": [
+          {
+            "path": "/play/e2a907930f844a30d8cad99d518774d4",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 23,
+            "bytes": 10187,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 37,
+            "endMs": 41,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 37,
+            "endMs": 42,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 65,
+            "endMs": 73,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 65,
+            "endMs": 74,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 65,
+            "endMs": 75,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 74,
+            "endMs": 89,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 75,
+            "endMs": 96,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 86,
+            "endMs": 122,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 87,
+            "endMs": 120,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 87,
+            "endMs": 120,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 87,
+            "endMs": 123,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 89,
+            "endMs": 139,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 91,
+            "endMs": 133,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 95,
+            "endMs": 141,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 96,
+            "endMs": 132,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 98,
+            "endMs": 137,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 98,
+            "endMs": 135,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 99,
+            "endMs": 139,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 101,
+            "endMs": 145,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 103,
+            "endMs": 160,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 104,
+            "endMs": 152,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 105,
+            "endMs": 152,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 108,
+            "endMs": 158,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 110,
+            "endMs": 160,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 112,
+            "endMs": 171,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 113,
+            "endMs": 192,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 114,
+            "endMs": 173,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 115,
+            "endMs": 176,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 116,
+            "endMs": 175,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 123,
+            "endMs": 183,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 125,
+            "endMs": 159,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 151,
+            "endMs": 171,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1355,
+            "endMs": 1364,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1355,
+            "endMs": 1364,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1357,
+            "endMs": 1365,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1358,
+            "endMs": 1365,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1359,
+            "endMs": 1366,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1360,
+            "endMs": 1366,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1362,
+            "endMs": 1368,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1364,
+            "endMs": 1371,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1364,
+            "endMs": 1376,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 1992,
+            "endMs": 2001,
+            "bytes": 0,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 2064,
+            "endMs": 2068,
+            "bytes": 0,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-planter-box-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2679,
+            "endMs": 2687,
+            "bytes": 20097,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2681,
+            "endMs": 2686,
+            "bytes": 7398,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-trash-can-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2683,
+            "endMs": 2689,
+            "bytes": 13812,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-park-bench-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2684,
+            "endMs": 2689,
+            "bytes": 25254,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-box-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2686,
+            "endMs": 2690,
+            "bytes": 23245,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-bollard-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2688,
+            "endMs": 2693,
+            "bytes": 26008,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-concrete-planter-with-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2690,
+            "endMs": 2693,
+            "bytes": 13485,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-lamp-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2691,
+            "endMs": 2696,
+            "bytes": 39346,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-street-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2693,
+            "endMs": 2698,
+            "bytes": 38909,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-stall-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2696,
+            "endMs": 2700,
+            "bytes": 19079,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-fire-hydrant-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2698,
+            "endMs": 2701,
+            "bytes": 11074,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-glass-office-tower-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2699,
+            "endMs": 2704,
+            "bytes": 19576,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-billboard-sign-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2701,
+            "endMs": 2705,
+            "bytes": 16277,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-red-phone-booth-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2703,
+            "endMs": 2707,
+            "bytes": 22354,
+            "failed": false
+          }
+        ]
+      },
+      "fpsMedian": 60,
+      "fpsSamples": [
+        57,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        43.3
+      ],
+      "shots": {
+        "draftDesktop": "d08-draft-desktop.png",
+        "draftPhone": "d08-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 1,
+          "endMs": 17,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 2,
+          "endMs": 18,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 3,
+          "endMs": 19,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 4,
+          "endMs": 21,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5,
+          "endMs": 394,
+          "bytes": 176836,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/8f9fe29b93093dfd22f03caf371c816a/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 20,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 390,
+          "bytes": 171,
+          "failed": false
+        },
+        {
+          "path": "/play/e2a907930f844a30d8cad99d518774d4?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 389,
+          "endMs": 422,
+          "bytes": 7691,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 391,
+          "endMs": 421,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 422,
+          "endMs": 424,
+          "bytes": 191,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 424,
+          "endMs": 426,
+          "bytes": 1214,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 448,
+          "endMs": 450,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-planter-box-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 649,
+          "endMs": 658,
+          "bytes": 20097,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 649,
+          "endMs": 654,
+          "bytes": 7398,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-street-trash-can-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 650,
+          "endMs": 655,
+          "bytes": 13812,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-street-bollard-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 650,
+          "endMs": 659,
+          "bytes": 26008,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-park-bench-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 651,
+          "endMs": 659,
+          "bytes": 25254,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-box-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 652,
+          "endMs": 660,
+          "bytes": 23245,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-concrete-planter-with-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 652,
+          "endMs": 661,
+          "bytes": 13485,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-street-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 653,
+          "endMs": 663,
+          "bytes": 38909,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-street-lamp-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 653,
+          "endMs": 667,
+          "bytes": 39346,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-stall-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 654,
+          "endMs": 667,
+          "bytes": 19079,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-fire-hydrant-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 654,
+          "endMs": 665,
+          "bytes": 11074,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-glass-office-tower-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 655,
+          "endMs": 668,
+          "bytes": 19576,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-billboard-sign-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 655,
+          "endMs": 667,
+          "bytes": 16277,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-red-phone-booth-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 655,
+          "endMs": 669,
+          "bytes": 22354,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-car-taxi-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 656,
+          "endMs": 677,
+          "bytes": 63950,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-traffic-light-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 656,
+          "endMs": 679,
+          "bytes": 26192,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-apartment-block-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 656,
+          "endMs": 676,
+          "bytes": 17836,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/boy-a.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 657,
+          "endMs": 679,
+          "bytes": 31923,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-traffic-barrier-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 657,
+          "endMs": 678,
+          "bytes": 7820,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/checkpoint-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 657,
+          "endMs": 677,
+          "bytes": 2885,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-sushi-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 658,
+          "endMs": 683,
+          "bytes": 23651,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/finish-flag-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 658,
+          "endMs": 682,
+          "bytes": 3318,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-crane-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 872,
+          "endMs": 877,
+          "bytes": 30470,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/1b4ad9c0-a8dd-4c0e-8988-f44e8a6769c1",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 874,
+          "endMs": 874,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/bea7857c-2c74-4f64-a1b9-49727973af61",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 877,
+          "endMs": 877,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/203aa8ab-3ca9-4c6b-9b97-976e934ca7b6",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 880,
+          "endMs": 880,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/80a639d2-3c42-454d-a2a3-38d3802ecd65",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 882,
+          "endMs": 883,
+          "bytes": -66,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "d09",
+      "text": "i want a whole party night with like four minigames: balloon popping, a dance-off, sack race and pie throwing",
+      "source": "sentence",
+      "gamePath": "/play/f837797725a9a766b188285ab9b544cd",
+      "timeToPlayableMs": 555,
+      "timeToFirstFrameMs": 563,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 1216,
+        "timeToFirstFrameMs": 1036,
+        "phoneFirstFrameMs": 2554,
+        "network": [
+          {
+            "path": "/play/f837797725a9a766b188285ab9b544cd",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 27,
+            "bytes": 9395,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 28,
+            "endMs": 45,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 29,
+            "endMs": 47,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 35,
+            "endMs": 53,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 37,
+            "endMs": 55,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 38,
+            "endMs": 58,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 40,
+            "endMs": 61,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 45,
+            "endMs": 196,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 47,
+            "endMs": 200,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 48,
+            "endMs": 72,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 49,
+            "endMs": 185,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 50,
+            "endMs": 126,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 50,
+            "endMs": 222,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 54,
+            "endMs": 231,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 80,
+            "endMs": 190,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 165,
+            "endMs": 368,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 167,
+            "endMs": 342,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 181,
+            "endMs": 384,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 183,
+            "endMs": 426,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 202,
+            "endMs": 406,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 205,
+            "endMs": 485,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 207,
+            "endMs": 540,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 234,
+            "endMs": 517,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 234,
+            "endMs": 478,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 235,
+            "endMs": 517,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 274,
+            "endMs": 555,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 274,
+            "endMs": 600,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 311,
+            "endMs": 663,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 313,
+            "endMs": 638,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 313,
+            "endMs": 680,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 314,
+            "endMs": 658,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 357,
+            "endMs": 689,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 357,
+            "endMs": 681,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 609,
+            "endMs": 668,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 609,
+            "endMs": 668,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 609,
+            "endMs": 669,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 610,
+            "endMs": 662,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 610,
+            "endMs": 680,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 610,
+            "endMs": 667,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 662,
+            "endMs": 745,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 666,
+            "endMs": 781,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 668,
+            "endMs": 842,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/q-fox.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 1002,
+            "endMs": 1015,
+            "bytes": 160891,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/pet-bunny.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 1002,
+            "endMs": 1008,
+            "bytes": 27462,
+            "failed": false
+          },
+          {
+            "path": "http://127.0.0.1:3112/12da9f08-3278-4bda-8d21-5adf2dc555a8",
+            "category": "other",
+            "resourceType": "fetch",
+            "startMs": 1167,
+            "endMs": 1167,
+            "bytes": -67,
+            "failed": false
+          }
+        ],
+        "phoneNetwork": [
+          {
+            "path": "/play/f837797725a9a766b188285ab9b544cd",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 18,
+            "bytes": 9395,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 30,
+            "endMs": 34,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 31,
+            "endMs": 35,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 58,
+            "endMs": 67,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 59,
+            "endMs": 68,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 59,
+            "endMs": 69,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 66,
+            "endMs": 80,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 67,
+            "endMs": 87,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 80,
+            "endMs": 116,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 81,
+            "endMs": 113,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 81,
+            "endMs": 113,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 81,
+            "endMs": 116,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 82,
+            "endMs": 131,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 84,
+            "endMs": 125,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 88,
+            "endMs": 135,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 89,
+            "endMs": 125,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 91,
+            "endMs": 132,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 91,
+            "endMs": 129,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 93,
+            "endMs": 134,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 94,
+            "endMs": 139,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 97,
+            "endMs": 154,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 98,
+            "endMs": 149,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 99,
+            "endMs": 147,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 102,
+            "endMs": 153,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 104,
+            "endMs": 157,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 105,
+            "endMs": 158,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 107,
+            "endMs": 179,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 108,
+            "endMs": 161,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 108,
+            "endMs": 165,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 110,
+            "endMs": 167,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 111,
+            "endMs": 166,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 112,
+            "endMs": 138,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 132,
+            "endMs": 149,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1471,
+            "endMs": 1480,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1471,
+            "endMs": 1480,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1472,
+            "endMs": 1480,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1474,
+            "endMs": 1480,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1475,
+            "endMs": 1481,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1476,
+            "endMs": 1482,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1477,
+            "endMs": 1484,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1479,
+            "endMs": 1491,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1479,
+            "endMs": 1487,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 1969,
+            "endMs": 1977,
+            "bytes": 0,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/q-fox.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2422,
+            "endMs": 2437,
+            "bytes": 160891,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/pet-bunny.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2423,
+            "endMs": 2429,
+            "bytes": 27462,
+            "failed": false
+          }
+        ]
+      },
+      "fpsMedian": 60,
+      "fpsSamples": [
+        58.9,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        48.2
+      ],
+      "shots": {
+        "draftDesktop": "d09-draft-desktop.png",
+        "draftPhone": "d09-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 0,
+          "endMs": 16,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 2,
+          "endMs": 17,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 3,
+          "endMs": 18,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 4,
+          "endMs": 20,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5,
+          "endMs": 388,
+          "bytes": 176836,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/8f9fe29b93093dfd22f03caf371c816a/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 18,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 384,
+          "bytes": 168,
+          "failed": false
+        },
+        {
+          "path": "/play/f837797725a9a766b188285ab9b544cd?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 384,
+          "endMs": 405,
+          "bytes": 6917,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 385,
+          "endMs": 404,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 405,
+          "endMs": 420,
+          "bytes": 191,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 406,
+          "endMs": 427,
+          "bytes": 1214,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 434,
+          "endMs": 436,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/q-fox.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 540,
+          "endMs": 554,
+          "bytes": 160891,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/pet-bunny.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 541,
+          "endMs": 546,
+          "bytes": 27462,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/e358d470-771b-4755-ac20-e233a63e4360",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 549,
+          "endMs": 550,
+          "bytes": -67,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "d10",
+      "text": "steer a paper boat down the gutter, hop it over drains and blow the leaves out of the way",
+      "source": "sentence",
+      "gamePath": "/play/a9de51c87937e2c5d2585a58df4893e3",
+      "timeToPlayableMs": 819,
+      "timeToFirstFrameMs": 883,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 676,
+        "timeToFirstFrameMs": 697,
+        "phoneFirstFrameMs": 3200,
+        "network": [
+          {
+            "path": "/play/a9de51c87937e2c5d2585a58df4893e3",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 21,
+            "bytes": 10222,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 24,
+            "endMs": 35,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 24,
+            "endMs": 35,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 28,
+            "endMs": 41,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 30,
+            "endMs": 43,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 31,
+            "endMs": 45,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 32,
+            "endMs": 47,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 35,
+            "endMs": 56,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 35,
+            "endMs": 56,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 38,
+            "endMs": 55,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 38,
+            "endMs": 55,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 39,
+            "endMs": 57,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 40,
+            "endMs": 72,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 42,
+            "endMs": 68,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 42,
+            "endMs": 75,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 43,
+            "endMs": 66,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 45,
+            "endMs": 71,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 46,
+            "endMs": 71,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 49,
+            "endMs": 76,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 51,
+            "endMs": 87,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 51,
+            "endMs": 92,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 52,
+            "endMs": 88,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 53,
+            "endMs": 88,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 58,
+            "endMs": 96,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 59,
+            "endMs": 97,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 61,
+            "endMs": 100,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 61,
+            "endMs": 122,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 62,
+            "endMs": 103,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 63,
+            "endMs": 108,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 64,
+            "endMs": 107,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 65,
+            "endMs": 107,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 66,
+            "endMs": 106,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 75,
+            "endMs": 99,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 280,
+            "endMs": 289,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 281,
+            "endMs": 290,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 281,
+            "endMs": 289,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 281,
+            "endMs": 289,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 282,
+            "endMs": 286,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 282,
+            "endMs": 290,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 286,
+            "endMs": 296,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 289,
+            "endMs": 301,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 289,
+            "endMs": 308,
+            "bytes": 92806,
+            "failed": false
+          }
+        ],
+        "phoneNetwork": [
+          {
+            "path": "/play/a9de51c87937e2c5d2585a58df4893e3",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 20,
+            "bytes": 10222,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 33,
+            "endMs": 37,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 34,
+            "endMs": 38,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 59,
+            "endMs": 70,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 60,
+            "endMs": 68,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 60,
+            "endMs": 69,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 75,
+            "endMs": 97,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 77,
+            "endMs": 104,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 88,
+            "endMs": 131,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 89,
+            "endMs": 127,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 89,
+            "endMs": 128,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 89,
+            "endMs": 131,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 91,
+            "endMs": 146,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 92,
+            "endMs": 141,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 97,
+            "endMs": 150,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 97,
+            "endMs": 140,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 99,
+            "endMs": 147,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 100,
+            "endMs": 145,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 101,
+            "endMs": 149,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 105,
+            "endMs": 158,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 107,
+            "endMs": 166,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 107,
+            "endMs": 163,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 107,
+            "endMs": 161,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 113,
+            "endMs": 173,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 114,
+            "endMs": 173,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 114,
+            "endMs": 172,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 114,
+            "endMs": 192,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 116,
+            "endMs": 171,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 119,
+            "endMs": 178,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 120,
+            "endMs": 177,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 120,
+            "endMs": 177,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 121,
+            "endMs": 149,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 208,
+            "endMs": 300,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1436,
+            "endMs": 1447,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1436,
+            "endMs": 1445,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1436,
+            "endMs": 1444,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1438,
+            "endMs": 1444,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1440,
+            "endMs": 1447,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1441,
+            "endMs": 1448,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1444,
+            "endMs": 1454,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1445,
+            "endMs": 1454,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1445,
+            "endMs": 1458,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 2003,
+            "endMs": 2012,
+            "bytes": 0,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-seaweed-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2979,
+            "endMs": 2986,
+            "bytes": 37924,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-barnacle-rock-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2980,
+            "endMs": 2986,
+            "bytes": 24892,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-river-boulder-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2983,
+            "endMs": 2989,
+            "bytes": 39074,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-rock-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2985,
+            "endMs": 2990,
+            "bytes": 34525,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-pillar-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2989,
+            "endMs": 2994,
+            "bytes": 39337,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-arch-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2992,
+            "endMs": 2997,
+            "bytes": 17017,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-basalt-column-rock-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2995,
+            "endMs": 3000,
+            "bytes": 38765,
+            "failed": false
+          }
+        ]
+      },
+      "fpsMedian": 60,
+      "fpsSamples": [
+        58.2,
+        60,
+        60,
+        60,
+        60,
+        58,
+        60,
+        60,
+        39
+      ],
+      "shots": {
+        "draftDesktop": "d10-draft-desktop.png",
+        "draftPhone": "d10-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 2,
+          "endMs": 18,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 3,
+          "endMs": 20,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 4,
+          "endMs": 21,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5,
+          "endMs": 23,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 440,
+          "bytes": 176836,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/8f9fe29b93093dfd22f03caf371c816a/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 8,
+          "endMs": 22,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 8,
+          "endMs": 437,
+          "bytes": 177,
+          "failed": false
+        },
+        {
+          "path": "/play/a9de51c87937e2c5d2585a58df4893e3?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 436,
+          "endMs": 483,
+          "bytes": 7724,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 437,
+          "endMs": 482,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 482,
+          "endMs": 485,
+          "bytes": 191,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 485,
+          "endMs": 487,
+          "bytes": 1214,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 502,
+          "endMs": 504,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-seaweed-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 851,
+          "endMs": 859,
+          "bytes": 37924,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-barnacle-rock-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 851,
+          "endMs": 860,
+          "bytes": 24892,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-river-boulder-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 851,
+          "endMs": 860,
+          "bytes": 39074,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-rock-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 852,
+          "endMs": 861,
+          "bytes": 34525,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-arch-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 852,
+          "endMs": 861,
+          "bytes": 17017,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-boat-row-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 853,
+          "endMs": 860,
+          "bytes": 11749,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-navigation-buoy-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 853,
+          "endMs": 868,
+          "bytes": 38657,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-floating-dock-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 854,
+          "endMs": 868,
+          "bytes": 19956,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-sailboat-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 854,
+          "endMs": 868,
+          "bytes": 20669,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-lighthouse-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 855,
+          "endMs": 868,
+          "bytes": 33472,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rowing-boat-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 856,
+          "endMs": 868,
+          "bytes": 2629,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stepping-stone-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 857,
+          "endMs": 868,
+          "bytes": 2224,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/coin-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 857,
+          "endMs": 873,
+          "bytes": 2050,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/finish-flag-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 858,
+          "endMs": 873,
+          "bytes": 3318,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/7ba8904e-316a-4d69-a0bf-078cd9aae473",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 1023,
+          "endMs": 1024,
+          "bytes": -67,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "d11",
+      "text": "the wizard Pip mixes potions from the right colors and then flings them at sneaky slime blobs in the cellar",
+      "source": "sentence",
+      "gamePath": "/play/ce116d3bfa387fad69c6c1ac93b8a247",
+      "timeToPlayableMs": 554,
+      "timeToFirstFrameMs": 421,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 789,
+        "timeToFirstFrameMs": 651,
+        "phoneFirstFrameMs": 2618,
+        "network": [
+          {
+            "path": "/play/ce116d3bfa387fad69c6c1ac93b8a247",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 0,
+            "endMs": 20,
+            "bytes": 8976,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 23,
+            "endMs": 36,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 24,
+            "endMs": 37,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 29,
+            "endMs": 44,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 31,
+            "endMs": 46,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 32,
+            "endMs": 48,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 33,
+            "endMs": 50,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 36,
+            "endMs": 60,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 36,
+            "endMs": 60,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 39,
+            "endMs": 58,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 40,
+            "endMs": 62,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 41,
+            "endMs": 62,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 41,
+            "endMs": 74,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 43,
+            "endMs": 71,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 46,
+            "endMs": 80,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 47,
+            "endMs": 74,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 49,
+            "endMs": 79,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 49,
+            "endMs": 78,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 52,
+            "endMs": 83,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 54,
+            "endMs": 89,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 54,
+            "endMs": 95,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 55,
+            "endMs": 93,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 56,
+            "endMs": 93,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 57,
+            "endMs": 95,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 60,
+            "endMs": 100,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 60,
+            "endMs": 100,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 62,
+            "endMs": 124,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 62,
+            "endMs": 105,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 63,
+            "endMs": 107,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 64,
+            "endMs": 108,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 65,
+            "endMs": 108,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 66,
+            "endMs": 107,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 68,
+            "endMs": 90,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 300,
+            "endMs": 308,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 300,
+            "endMs": 309,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 300,
+            "endMs": 307,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 301,
+            "endMs": 307,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 301,
+            "endMs": 306,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 301,
+            "endMs": 309,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 306,
+            "endMs": 318,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 307,
+            "endMs": 319,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 307,
+            "endMs": 324,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-buttercup-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 613,
+            "endMs": 624,
+            "bytes": 38151,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-poppy-flower-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 613,
+            "endMs": 622,
+            "bytes": 32867,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-grass-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 614,
+            "endMs": 619,
+            "bytes": 4623,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 614,
+            "endMs": 620,
+            "bytes": 7398,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-rock-moss-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 614,
+            "endMs": 621,
+            "bytes": 2094,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-tall-grass-tuft-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 615,
+            "endMs": 624,
+            "bytes": 37866,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 615,
+            "endMs": 627,
+            "bytes": 27923,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 615,
+            "endMs": 628,
+            "bytes": 22494,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-olive-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 616,
+            "endMs": 627,
+            "bytes": 18763,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 616,
+            "endMs": 629,
+            "bytes": 34987,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 616,
+            "endMs": 630,
+            "bytes": 38408,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/oak-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 617,
+            "endMs": 629,
+            "bytes": 3295,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-poplar-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 617,
+            "endMs": 632,
+            "bytes": 37831,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-picnic-table-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 617,
+            "endMs": 634,
+            "bytes": 23032,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d/gen3d-windmill-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 618,
+            "endMs": 635,
+            "bytes": 23657,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d/gen3d-sunflower-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 619,
+            "endMs": 636,
+            "bytes": 27802,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/mage.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 619,
+            "endMs": 646,
+            "bytes": 241395,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/q-blob-green.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 620,
+            "endMs": 636,
+            "bytes": 39840,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/rigged/blocky-robot.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 620,
+            "endMs": 639,
+            "bytes": 36049,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d/gen3d-stone-water-well-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 766,
+            "endMs": 770,
+            "bytes": 17656,
+            "failed": false
+          },
+          {
+            "path": "http://127.0.0.1:3112/30c76022-2c99-489a-8447-e39f7f78d380",
+            "category": "other",
+            "resourceType": "fetch",
+            "startMs": 822,
+            "endMs": 823,
+            "bytes": -67,
+            "failed": false
+          },
+          {
+            "path": "http://127.0.0.1:3112/28152e93-331d-4ec2-b86a-4f2fb004beaa",
+            "category": "other",
+            "resourceType": "fetch",
+            "startMs": 834,
+            "endMs": 835,
+            "bytes": -67,
+            "failed": false
+          }
+        ],
+        "phoneNetwork": [
+          {
+            "path": "/play/ce116d3bfa387fad69c6c1ac93b8a247",
+            "category": "html",
+            "resourceType": "document",
+            "startMs": 1,
+            "endMs": 20,
+            "bytes": 8976,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Black.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 33,
+            "endMs": 37,
+            "bytes": 12352,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Medium.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 33,
+            "endMs": 37,
+            "bytes": 12508,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/5662bd81b81244f3.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 63,
+            "endMs": 70,
+            "bytes": 553,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/4f164efaae2fc34c.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 63,
+            "endMs": 71,
+            "bytes": 1186,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/css/e21706a503626ebf.css",
+            "category": "other",
+            "resourceType": "stylesheet",
+            "startMs": 63,
+            "endMs": 71,
+            "bytes": 11161,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/webpack-835a6b3d2a2fe15f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 76,
+            "endMs": 94,
+            "bytes": 2260,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0937d497-e4b3c577da4da67b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 78,
+            "endMs": 103,
+            "bytes": 63365,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/1858-c5f86ad71cf9eddc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 90,
+            "endMs": 129,
+            "bytes": 66155,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/main-app-b46acde922f27d3f.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 90,
+            "endMs": 124,
+            "bytes": 528,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8202-d22828e45db31cd7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 90,
+            "endMs": 125,
+            "bytes": 3589,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 91,
+            "endMs": 128,
+            "bytes": 191,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6994b59d-406c423dc555f2e3.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 92,
+            "endMs": 144,
+            "bytes": 100514,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8aea6800-9eeb2d7d3b4e5a04.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 93,
+            "endMs": 138,
+            "bytes": 46334,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/0f3c8638-0696fa986e7c8622.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 97,
+            "endMs": 146,
+            "bytes": 87412,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/8537-3619ec28349dcbfe.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 98,
+            "endMs": 136,
+            "bytes": 8220,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/218-c66b925899a416e0.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 101,
+            "endMs": 142,
+            "bytes": 14722,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/808-0ccdf39470b7da82.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 101,
+            "endMs": 141,
+            "bytes": 3432,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7544-5e1d8ff8c0785a7a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 102,
+            "endMs": 145,
+            "bytes": 4271,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6916-860301fc0ccb2f9a.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 105,
+            "endMs": 151,
+            "bytes": 29397,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/489-a5df2eac5e5deef5.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 106,
+            "endMs": 160,
+            "bytes": 89578,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6398-fc801605993f5a26.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 108,
+            "endMs": 158,
+            "bytes": 27778,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9629-7e9edfdf0fb74cd6.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 108,
+            "endMs": 155,
+            "bytes": 5966,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2268-c472cf73e5b2973b.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 111,
+            "endMs": 162,
+            "bytes": 12071,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5014-0f6b20cee01efc07.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 113,
+            "endMs": 165,
+            "bytes": 13051,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/6574-268d4f2e51afc365.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 114,
+            "endMs": 166,
+            "bytes": 6838,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4574-c484a4b0a8e39ac9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 115,
+            "endMs": 187,
+            "bytes": 166935,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/519-6deb023b43b9b984.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 117,
+            "endMs": 170,
+            "bytes": 10636,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/9592-242e6f009e630918.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 118,
+            "endMs": 174,
+            "bytes": 41109,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/7510-f55ee9a44817d562.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 120,
+            "endMs": 175,
+            "bytes": 4617,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 120,
+            "endMs": 176,
+            "bytes": 1214,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 120,
+            "endMs": 146,
+            "bytes": 1435,
+            "failed": false
+          },
+          {
+            "path": "/fonts/roboto/Roboto-Bold.woff2",
+            "category": "other",
+            "resourceType": "font",
+            "startMs": 217,
+            "endMs": 313,
+            "bytes": 12468,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/b2af3bad-24107d57e34ab561.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1396,
+            "endMs": 1406,
+            "bytes": 74640,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/569d3572-af4765c410c44549.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1396,
+            "endMs": 1404,
+            "bytes": 83535,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/84d33e83-ab251c5a4b7ac1fc.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1397,
+            "endMs": 1405,
+            "bytes": 20229,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4984-0d001d4acae184f7.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1399,
+            "endMs": 1406,
+            "bytes": 14747,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/4671-53e5854b6f6f6542.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1399,
+            "endMs": 1406,
+            "bytes": 5801,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3619-c26863060fcf1234.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1401,
+            "endMs": 1408,
+            "bytes": 14861,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/2304-97692b89139aa662.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1404,
+            "endMs": 1412,
+            "bytes": 20204,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/5492-923cd160b495bbc1.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1404,
+            "endMs": 1411,
+            "bytes": 25393,
+            "failed": false
+          },
+          {
+            "path": "/_next/static/chunks/3664-2a63dc303e0c0a79.js",
+            "category": "js",
+            "resourceType": "script",
+            "startMs": 1405,
+            "endMs": 1416,
+            "bytes": 92806,
+            "failed": false
+          },
+          {
+            "path": "/brand/icons/sprite.svg",
+            "category": "other",
+            "resourceType": "other",
+            "startMs": 1950,
+            "endMs": 1958,
+            "bytes": 0,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-buttercup-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2424,
+            "endMs": 2431,
+            "bytes": 38151,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-poppy-flower-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2425,
+            "endMs": 2431,
+            "bytes": 32867,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-grass-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2428,
+            "endMs": 2433,
+            "bytes": 4623,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-tall-grass-tuft-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2429,
+            "endMs": 2434,
+            "bytes": 37866,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2430,
+            "endMs": 2435,
+            "bytes": 27923,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-rock-moss-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2432,
+            "endMs": 2436,
+            "bytes": 2094,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2434,
+            "endMs": 2438,
+            "bytes": 7398,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-olive-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2436,
+            "endMs": 2440,
+            "bytes": 18763,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2438,
+            "endMs": 2442,
+            "bytes": 22494,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2440,
+            "endMs": 2445,
+            "bytes": 38408,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/oak-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2442,
+            "endMs": 2446,
+            "bytes": 3295,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2444,
+            "endMs": 2451,
+            "bytes": 34987,
+            "failed": false
+          },
+          {
+            "path": "/assets/worldstream/gen3d-p37d/gen3d-poplar-tree-lod1.glb",
+            "category": "glb",
+            "resourceType": "fetch",
+            "startMs": 2446,
+            "endMs": 2451,
+            "bytes": 37831,
+            "failed": false
+          }
+        ]
+      },
+      "fpsMedian": 60,
+      "fpsSamples": [
+        58.2,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        43
+      ],
+      "shots": {
+        "draftDesktop": "d11-draft-desktop.png",
+        "draftPhone": "d11-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 1,
+          "endMs": 18,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 3,
+          "endMs": 20,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 4,
+          "endMs": 21,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5,
+          "endMs": 225,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6,
+          "endMs": 227,
+          "bytes": 176836,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/8f9fe29b93093dfd22f03caf371c816a/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 7,
+          "endMs": 22,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 8,
+          "endMs": 222,
+          "bytes": 178,
+          "failed": false
+        },
+        {
+          "path": "/play/ce116d3bfa387fad69c6c1ac93b8a247?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 221,
+          "endMs": 250,
+          "bytes": 6544,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 222,
+          "endMs": 248,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-d24607b05ae81f26.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 251,
+          "endMs": 253,
+          "bytes": 191,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-f5ea3b5f990c68f9.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 252,
+          "endMs": 254,
+          "bytes": 1214,
+          "failed": false
+        },
+        {
+          "path": "/brand/icons/sprite.svg",
+          "category": "other",
+          "resourceType": "other",
+          "startMs": 272,
+          "endMs": 274,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-buttercup-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 394,
+          "endMs": 404,
+          "bytes": 38151,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-poppy-flower-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 395,
+          "endMs": 403,
+          "bytes": 32867,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-grass-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 395,
+          "endMs": 400,
+          "bytes": 4623,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 395,
+          "endMs": 401,
+          "bytes": 7398,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-rock-moss-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 396,
+          "endMs": 402,
+          "bytes": 2094,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-tall-grass-tuft-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 396,
+          "endMs": 404,
+          "bytes": 37866,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 397,
+          "endMs": 407,
+          "bytes": 27923,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 397,
+          "endMs": 409,
+          "bytes": 22494,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-olive-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 398,
+          "endMs": 409,
+          "bytes": 18763,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 398,
+          "endMs": 411,
+          "bytes": 34987,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 399,
+          "endMs": 412,
+          "bytes": 38408,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/oak-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 400,
+          "endMs": 410,
+          "bytes": 3295,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-poplar-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 400,
+          "endMs": 419,
+          "bytes": 37831,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d-p37d/gen3d-picnic-table-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 400,
+          "endMs": 418,
+          "bytes": 23032,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-windmill-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 401,
+          "endMs": 418,
+          "bytes": 23657,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-sunflower-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 401,
+          "endMs": 418,
+          "bytes": 27802,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/mage.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 402,
+          "endMs": 432,
+          "bytes": 241395,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/q-blob-green.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 402,
+          "endMs": 419,
+          "bytes": 39840,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-stone-water-well-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 535,
+          "endMs": 539,
+          "bytes": 17656,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3112/2db6ed1f-4f8f-4d40-af69-306a5101045e",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 597,
+          "endMs": 598,
+          "bytes": -67,
+          "failed": false
+        }
+      ],
+      "error": null
+    }
+  ]
+}

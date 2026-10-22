@@ -77,7 +77,8 @@ export default defineConfig({
     // Telefon s dotykem (P36C T4): hry jen gesty, žádná klávesnice. Mimo `chromium`, ať dotyk nehraje desktop.
     {
       name: 'pixel7-touch',
-      testMatch: /play-touch\.spec\.ts/,
+      // Řetěz mikroher (P56C T13) jede i tady: přechod kola a první kolo na telefonu.
+      testMatch: /(play-touch|play-chain)\.spec\.ts/,
       use: { ...devices['Pixel 7'], hasTouch: true },
     },
     /**

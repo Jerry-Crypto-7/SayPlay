@@ -1,4 +1,4 @@
-export { sealVersion, type PlayTimings, type PublishedGame } from './version';
+export { sealChainVersion, sealVersion, type PlayTimings, type PublishedGame } from './version';
 export { beatOf, decodeCursor, feedEligible, feedPage, hiddenFromEnv, keptFromEnv, remixParents, type FeedCandidate, type FeedPage } from './feed';
 export {
   DARE_ID_PATTERN,

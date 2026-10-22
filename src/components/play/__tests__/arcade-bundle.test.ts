@@ -37,6 +37,12 @@ describe('arkáda v prohlížeči nenese schémata GameSpec (P28E T5)', () => {
     expect([...loaded].filter((file) => ['src/play/spec.ts', 'src/play/registry.ts', 'src/ir/worlddoc.ts'].includes(file))).toEqual([]);
   });
 
+  it('ChainPlay nenačte kompilátor her (P56C T13: `node:crypto` z `contracts.ts` shodí `next build`)', () => {
+    const loaded = valueImports('src/components/play/arcade/chain/ChainPlay.tsx');
+    expect(loaded.has('src/play/chain/run.ts')).toBe(true);
+    expect([...loaded].filter((file) => ['src/play/arcade/compile.ts', 'src/play/contracts.ts'].includes(file))).toEqual([]);
+  });
+
   it('chunky scény se stahují při načtení modulu, ne až po hydrataci', () => {
     const source = readFileSync(join(ROOT, 'src/components/play/arcade/ArcadePlay.tsx'), 'utf8');
     expect(source).toMatch(/^if \(typeof window !== 'undefined'\) void import\('\.\/ArcadeStage'\);$/m);

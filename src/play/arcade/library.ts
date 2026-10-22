@@ -69,6 +69,9 @@ import { walkerBot } from './pieces/walker-bot';
 import { ballControl, ballPitch, ballLaunch, ballScore, ballKnockdown } from './pieces/ball';
 import { ballBot } from './pieces/ball-bot';
 
+import { makeMirrorBot, makeMirrorControl } from './pieces/mirror';
+import { makeVanishingFloorBot, vanishingFloor } from './pieces/vanishing-floor';
+
 const BASE_BOTS = {
   ball_bot: ballBot,
   walker_bot: walkerBot,
@@ -180,9 +183,12 @@ const NATIVE_LIBRARY: ArcadeLibrary = {
   bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS, abilityStep) as BotPiece },
 };
 
+const ASSEMBLY_CONTROLS = { ...NATIVE_LIBRARY.controls, assembly_control: makeAssemblyControl(NATIVE_LIBRARY.controls) };
+const ASSEMBLY_BOTS = { ...NATIVE_LIBRARY.bots, assembly_bot: makeAssemblyBot(NATIVE_LIBRARY.bots) };
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   ...NATIVE_LIBRARY,
-  controls: { ...NATIVE_LIBRARY.controls, assembly_control: makeAssemblyControl(NATIVE_LIBRARY.controls) },
-  bots: { ...NATIVE_LIBRARY.bots, assembly_bot: makeAssemblyBot(NATIVE_LIBRARY.bots) },
-  rules: { ...NATIVE_LIBRARY.rules, assembly_part: assemblyPart, assembly_finish: assemblyFinish, ...assemblyGateRules(NATIVE_LIBRARY.rules) },
+  // P56C T15: obaly mutátorů řetězu kolem kteréhokoli ovládání a robota (`chain/mutators.ts`).
+  controls: { ...ASSEMBLY_CONTROLS, mirror_control: makeMirrorControl(ASSEMBLY_CONTROLS) },
+  bots: { ...ASSEMBLY_BOTS, mirror_bot: makeMirrorBot(ASSEMBLY_BOTS), vanishing_floor_bot: makeVanishingFloorBot(ASSEMBLY_BOTS) },
+  rules: { ...NATIVE_LIBRARY.rules, assembly_part: assemblyPart, assembly_finish: assemblyFinish, ...assemblyGateRules(NATIVE_LIBRARY.rules), vanishing_floor: vanishingFloor as RulePiece },
 };

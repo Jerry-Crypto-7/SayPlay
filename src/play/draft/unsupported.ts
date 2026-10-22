@@ -175,6 +175,8 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
  * bez návrhu v `sentence`, autorská verze po upgradu ji má u rodiče.
  */
 export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<Honesty | null> {
+  // Řetěz mikroher poctivou hlášku nemá (P56C T10); bez tohohle by `/play/[id]` pouštěl robota na kolo 1 při každém zobrazení.
+  if (game.chain !== undefined) return null;
   const sentence = await sentenceOf(versions, game);
   return sentence === null ? null : honestyForSpec(sentence, game.spec, game.version.seed, game.arcade);
 }

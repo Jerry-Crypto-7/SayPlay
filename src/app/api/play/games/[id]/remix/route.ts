@@ -101,6 +101,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const versions = store();
   const parent = await versions.get(id);
   if (parent === null) return notFound();
+  // Remix řetězu mikroher P56C nemá (debata T9): změna specu kola 1 by z řetězu udělala jednu hru.
+  if (parent.chain !== undefined) return fail(422, 'SPEC_REJECTED', 'a chain of microgames cannot be remixed yet');
 
   if (sentence !== null && RECIPE_LABELS.has(sentence.toLowerCase())) {
     // A supplied seed must not change the already advertised/verified world.

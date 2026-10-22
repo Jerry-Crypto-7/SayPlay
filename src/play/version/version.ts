@@ -6,12 +6,16 @@
  * téže hry v jiné minutě jsou táž verze, a jméno se smí opravit bez nové hry.
  */
 
+import { createHash } from 'node:crypto';
+
+import { canonical, canonicalHash } from '@/ir/worlddoc';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { ArcadeWorld } from '../arcade/contract';
+import { CHAIN_RUNTIME_VERSION, type ChainWorld } from '../chain/contract';
 
-import { gameVersionId, type CompiledGame, type GameVersion, type QualityReport } from '../contracts';
+import { GAME_COMPILER_VERSION, gameVersionId, type CompiledGame, type GameVersion, type QualityReport } from '../contracts';
 import type { GameSpecV1 } from '../spec';
 
 /**
@@ -35,6 +39,11 @@ export interface PublishedGame {
   /** `null` u arkádové hry – ta se hraje z `arcade`. */
   readonly blueprint: WorldstreamBlueprint | null;
   readonly arcade?: ArcadeWorld;
+  /**
+   * Řetěz mikroher (P56C T10). Hra s řetězem nemá `arcade` (zapomenutá cesta jedné hry selže viditelně, ne tiše
+   * na kole 1), `spec` je spec kola 1, `report.par` par celého řetězu a `preview` náhled kola 1. Starší hry pole nemají.
+   */
+  readonly chain?: ChainWorld;
   readonly report: QualityReport;
   /**
    * Návrh z věty si nese větu a semínko volajícího (`null` = odvozené), aby
@@ -91,4 +100,22 @@ export function sealVersion(compiled: CompiledGame, parentId: string | null, now
     ...fields,
     createdAt: new Date(now()).toISOString(),
   };
+}
+
+/**
+ * Verze řetězu (P56C T10, debata T9): `worldHash` = SHA-256 celého řetězu, takže dva řetězy se stejným kolem 1
+ * dostanou různé id. Titulek a spec z kola 1.
+ */
+export function sealChainVersion(chain: ChainWorld, parentId: string | null, now: () => number): GameVersion {
+  const spec = chain.rounds[0]!.spec;
+  const fields: Omit<GameVersion, 'versionId' | 'createdAt' | 'title'> = {
+    specHash: canonicalHash(spec),
+    worldHash: createHash('sha256').update(canonical(chain)).digest('hex'),
+    seed: chain.seed,
+    schemaVersion: 'gamespec.v1',
+    compilerVersion: `${GAME_COMPILER_VERSION}/${CHAIN_RUNTIME_VERSION}`,
+    runtimeVersion: CHAIN_RUNTIME_VERSION,
+    parentId,
+  };
+  return { versionId: gameVersionId(fields, spec), title: spec.title, ...fields, createdAt: new Date(now()).toISOString() };
 }

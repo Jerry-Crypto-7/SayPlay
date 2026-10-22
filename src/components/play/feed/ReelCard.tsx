@@ -14,12 +14,14 @@ import Link from 'next/link';
 import { type RefObject, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
+import type { ChainWorld } from '@/play/chain/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { Par } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 import type { FeedPreview } from '@/play/version/version';
 
 import { ArcadePlay } from '../arcade/ArcadePlay';
+import { ChainPlay } from '../arcade/chain/ChainPlay';
 import { WithPlayEnv } from '../arcade/look/play-env';
 import { beatText, type FeedGame, moodTone } from '../Feed';
 import { Lineage } from '../Lineage';
@@ -31,6 +33,8 @@ import type { StageTunnel } from './stage-tunnel';
 export interface GameDetail {
   readonly spec: GameSpecV1;
   readonly arcade?: ArcadeWorld;
+  /** Řetěz mikroher (P56C) místo `arcade`. */
+  readonly chain?: ChainWorld;
   readonly relation?: string;
   readonly children: readonly string[];
   readonly lineage: readonly GameVersion[];
@@ -146,6 +150,17 @@ function ActiveSlide({
       <p className="play-pager-note" role="status">
         This game could not be loaded. Try the next one.
       </p>
+    );
+  }
+  if (detail.chain !== undefined) {
+    // Řetěz mikroher (P56C T11, debata T9): kolo 1 stojí jako obraz, dokud se ho hráč nedotkne – náhled robota nemá.
+    return (
+      <>
+        <WithPlayEnv key={`${game.versionId}-${String(round)}`} theme={detail.spec.theme} versionId={game.versionId}>
+          <ChainPlay versionId={game.versionId} spec={detail.spec} chain={detail.chain} par={detail.report?.par ?? null} active={live} inFeed host={host} />
+        </WithPlayEnv>
+        <TapHint goal={detail.spec.tutorial.goalLine} beat={game.beat ?? null} />
+      </>
     );
   }
   if (detail.arcade === undefined) {

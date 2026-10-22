@@ -14,6 +14,7 @@ import { type Flora, type Look, LOOK_WIND, type LookId } from '@/play/arcade/loo
 import { modelPath } from '@/play/arcade/models';
 
 import type { ToyPart } from '../toy/applyToy';
+import { trackLoad } from './pending-loads';
 import { type MotionPart, motionOf } from '../toy/body-class';
 import type { QualityTier } from './rig/quality';
 import { toonPatch } from './rig/toon';
@@ -41,10 +42,12 @@ export function singlePass(model: Object3D): Object3D {
 export function loadModel(id: string): Promise<Object3D | null> {
   let pending = modelCache.get(id);
   if (pending === undefined) {
-    pending = new GLTFLoader()
-      .loadAsync(modelPath(id))
-      .then((gltf) => singlePass(gltf.scene as Object3D))
-      .catch(() => null);
+    pending = trackLoad(
+      new GLTFLoader()
+        .loadAsync(modelPath(id))
+        .then((gltf) => singlePass(gltf.scene as Object3D))
+        .catch(() => null),
+    );
     modelCache.set(id, pending);
   }
   return pending;
@@ -78,7 +81,7 @@ const flatCache = new Map<string, Promise<Object3D | null>>();
 export function loadFlatModel(id: string): Promise<Object3D | null> {
   let pending = flatCache.get(id);
   if (pending === undefined) {
-    pending = loadModel(id).then((model) => (model === null ? null : flatten(model)));
+    pending = trackLoad(loadModel(id).then((model) => (model === null ? null : flatten(model))));
     flatCache.set(id, pending);
   }
   return pending;
@@ -733,7 +736,7 @@ export function loadBodyModel(id: string, { posed = false }: { readonly posed?: 
   const key = posed && motionOf(id)?.parts !== undefined ? `${id}:posed` : id;
   let pending = bodyCache.get(key);
   if (pending === undefined) {
-    pending = loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed)));
+    pending = trackLoad(loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed))));
     bodyCache.set(key, pending);
   }
   return pending;

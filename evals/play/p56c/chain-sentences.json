@@ -1,0 +1,15 @@
+{
+  "note": "P56C T13: 10 vět z dev.json, které rozhodnutí T8 (decide.md) pošle do řetězu – rodina multi_verb bez d03 (ta dá jednu hru). Formát jako evals/play/p32/baseline-sentences.json, pro scripts/p32/shots.mjs.",
+  "sentences": [
+    { "id": "d01", "text": "a penguin mail carrier slides down icy hills dodging snowballs, then tosses letters into chimneys", "family": "multi_verb" },
+    { "id": "d02", "text": "ok so ur a raccoon, sneak past the guard dog, grab the pizza and climb the fence before the lights come on", "family": "multi_verb" },
+    { "id": "d04", "text": "can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds", "family": "multi_verb" },
+    { "id": "d05", "text": "three rounds: catch falling apples, juggle them, then bake a pie without burning it", "family": "multi_verb" },
+    { "id": "d06", "text": "Grandma Rosa on her scooter weaving through traffic, honking at pidgeons and catching the groceries that fly out of her basket", "family": "multi_verb" },
+    { "id": "d07", "text": "fish for glowing eels on a frozen lake, then race your sled home before the ice cracks", "family": "multi_verb" },
+    { "id": "d08", "text": "ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way", "family": "multi_verb" },
+    { "id": "d09", "text": "i want a whole party night with like four minigames: balloon popping, a dance-off, sack race and pie throwing", "family": "multi_verb" },
+    { "id": "d10", "text": "steer a paper boat down the gutter, hop it over drains and blow the leaves out of the way", "family": "multi_verb" },
+    { "id": "d11", "text": "the wizard Pip mixes potions from the right colors and then flings them at sneaky slime blobs in the cellar", "family": "multi_verb" }
+  ]
+}

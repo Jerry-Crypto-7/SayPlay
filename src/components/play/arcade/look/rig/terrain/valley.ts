@@ -81,18 +81,50 @@ export interface ValleyOptions {
   readonly to: number;
 }
 
-export function buildValley({ look, from, to }: ValleyOptions): Valley {
-  const rows = Math.max(1, Math.ceil((to - from) / ROW));
-  const shifts = XS.map((_, column) => shiftOf(column));
-  const zAt = (column: number, row: number): number => from + row * ROW + shifts[column]!;
-  // Výšky vrcholů: řada `row` sloupce `column` na indexu `row * XS.length + column`.
+const SHIFTS = XS.map((_, column) => shiftOf(column));
+const rowsOf = (from: number, to: number): number => Math.max(1, Math.ceil((to - from) / ROW));
+const zOf = (from: number, column: number, row: number): number => from + row * ROW + SHIFTS[column]!;
+
+/** Výšky vrcholů údolí: řada `row` sloupce `column` na indexu `row * XS.length + column`. */
+export function valleyHeights(from: number, to: number): Float32Array {
+  const rows = rowsOf(from, to);
   const heights = new Float32Array((rows + 1) * XS.length);
   for (let row = 0; row <= rows; row += 1) {
     for (let column = 0; column < XS.length; column += 1) {
       const x = XS[column]!;
-      heights[row * XS.length + column] = Math.abs(x) <= PLAYABLE_HALF ? 0 : reliefAt(x, zAt(column, row));
+      heights[row * XS.length + column] = Math.abs(x) <= PLAYABLE_HALF ? 0 : reliefAt(x, zOf(from, column, row));
     }
   }
+  return heights;
+}
+
+/** `heightAt` údolí z jeho výšek (`valleyHeights`) – i když síť postavil worker (P56C T18). */
+export function valleyHeightAt(from: number, to: number, heights: Float32Array): Valley['heightAt'] {
+  const rows = rowsOf(from, to);
+  const h = (column: number, row: number): number => heights[row * XS.length + column]!;
+  return (x, z) => {
+    if (Math.abs(x) <= PLAYABLE_HALF) return 0;
+    const cx = Math.min(Math.max(x, XS[0]!), XS[XS.length - 1]!);
+    let column = 0;
+    while (column < XS.length - 2 && XS[column + 1]! < cx) column += 1;
+    const t = (cx - XS[column]!) / (XS[column + 1]! - XS[column]!);
+    // Buňka je rovnoběžník: svislé hrany po ose z, řady posunuté o posun sloupce.
+    const v = Math.min(Math.max((z - from - (SHIFTS[column]! + t * (SHIFTS[column + 1]! - SHIFTS[column]!))) / ROW, 0), rows);
+    const row = Math.min(Math.floor(v), rows - 1);
+    const s = v - row;
+    const a = h(column, row);
+    const b = h(column + 1, row);
+    const c = h(column + 1, row + 1);
+    const d = h(column, row + 1);
+    if (flipped(column, row)) return t + s <= 1 ? a + t * (b - a) + s * (d - a) : c + (1 - t) * (d - c) + (1 - s) * (b - c);
+    return s <= t ? a + t * (b - a) + s * (c - b) : a + s * (d - a) + t * (c - d);
+  };
+}
+
+export function buildValley({ look, from, to }: ValleyOptions): Valley & { readonly heights: Float32Array } {
+  const rows = rowsOf(from, to);
+  const zAt = (column: number, row: number): number => zOf(from, column, row);
+  const heights = valleyHeights(from, to);
   const h = (column: number, row: number): number => heights[row * XS.length + column]!;
 
   const palette = valleyPalette(look);
@@ -155,23 +187,5 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley {
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new Float32BufferAttribute(tints, 3));
   geometry.computeVertexNormals();
-
-  const heightAt = (x: number, z: number): number => {
-    if (Math.abs(x) <= PLAYABLE_HALF) return 0;
-    const cx = Math.min(Math.max(x, XS[0]!), XS[XS.length - 1]!);
-    let column = 0;
-    while (column < XS.length - 2 && XS[column + 1]! < cx) column += 1;
-    const t = (cx - XS[column]!) / (XS[column + 1]! - XS[column]!);
-    // Buňka je rovnoběžník: svislé hrany po ose z, řady posunuté o posun sloupce.
-    const v = Math.min(Math.max((z - from - (shifts[column]! + t * (shifts[column + 1]! - shifts[column]!))) / ROW, 0), rows);
-    const row = Math.min(Math.floor(v), rows - 1);
-    const s = v - row;
-    const a = h(column, row);
-    const b = h(column + 1, row);
-    const c = h(column + 1, row + 1);
-    const d = h(column, row + 1);
-    if (flipped(column, row)) return t + s <= 1 ? a + t * (b - a) + s * (d - a) : c + (1 - t) * (d - c) + (1 - s) * (b - c);
-    return s <= t ? a + t * (b - a) + s * (c - b) : a + s * (d - a) + t * (c - d);
-  };
-  return { geometry, heightAt };
+  return { geometry, heights, heightAt: valleyHeightAt(from, to, heights) };
 }

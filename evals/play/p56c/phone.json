@@ -1,0 +1,1440 @@
+{
+  "measuredAt": "2026-10-22T14:41:56.990Z",
+  "device": "Pixel 7 emulated, CPU 4x",
+  "renderer": "native",
+  "server": "http://127.0.0.1:3141 (next start, worktree HEAD)",
+  "sentences": {
+    "chain": {
+      "text": "a penguin mail carrier slides down icy hills dodging snowballs, then tosses letters into chimneys",
+      "path": "/play/5fa86466552aa84e01f16ea76e875585"
+    },
+    "single": {
+      "text": "A firefighter robot sprays water on burning trees and jumps over fallen logs",
+      "path": "/play/fcc69c9314bff95b81dd75c99eee5411"
+    }
+  },
+  "method": {
+    "order": "A (chain + round bot), B (single game + bot), A0 (chain, no bot) interleaved; one new browser context per run",
+    "transitionWindow": "[card start - 100 ms, round open + 1000 ms]",
+    "fps": "frames per whole second; chain = round time only (cards excluded), single = whole run minus first 2 s; summary median pools every second of every run",
+    "demoCall": "chain rounds 2+ get __playShell.demo() via setTimeout(0) on the first frame the card reads 0; demoCallMs = how long that synchronous call (startDemo re-runs the round bot) blocked the main thread – a cost a real player does not pay"
+  },
+  "runs": [
+    {
+      "kind": "chain",
+      "index": 1,
+      "path": "/play/5fa86466552aa84e01f16ea76e875585",
+      "durationMs": 34678,
+      "rounds": 5,
+      "outcome": "won",
+      "lives": 3,
+      "transitions": [
+        {
+          "toRound": 2,
+          "cardStartMs": 5945,
+          "roundOpenMs": 6929,
+          "cardMs": 983,
+          "maxFrameMs": 250,
+          "maxFrameAtMs": 6962,
+          "maxFrameHasDemoCall": true,
+          "maxFrameMsWithoutDemoCall": 66.7,
+          "demoCallMs": 223.9
+        },
+        {
+          "toRound": 3,
+          "cardStartMs": 14945,
+          "roundOpenMs": 15845,
+          "cardMs": 900,
+          "maxFrameMs": 83.3,
+          "maxFrameAtMs": 16128,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 83.3,
+          "demoCallMs": 13.6
+        },
+        {
+          "toRound": 4,
+          "cardStartMs": 19811,
+          "roundOpenMs": 20661,
+          "cardMs": 850,
+          "maxFrameMs": 33.4,
+          "maxFrameAtMs": 20845,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 33.4,
+          "demoCallMs": 14.4
+        },
+        {
+          "toRound": 5,
+          "cardStartMs": 24945,
+          "roundOpenMs": 25745,
+          "cardMs": 800,
+          "maxFrameMs": 83.4,
+          "maxFrameAtMs": 25761,
+          "maxFrameHasDemoCall": true,
+          "maxFrameMsWithoutDemoCall": 66.6,
+          "demoCallMs": 78.5
+        }
+      ],
+      "roundFps": [
+        {
+          "round": 1,
+          "playedMs": 5945,
+          "bins": [
+            11,
+            43,
+            53,
+            50,
+            49
+          ],
+          "median": 49
+        },
+        {
+          "round": 2,
+          "playedMs": 8016,
+          "bins": [
+            39,
+            47,
+            60,
+            55,
+            59,
+            59,
+            60,
+            60
+          ],
+          "median": 59
+        },
+        {
+          "round": 3,
+          "playedMs": 3967,
+          "bins": [
+            54,
+            60,
+            61
+          ],
+          "median": 60
+        },
+        {
+          "round": 4,
+          "playedMs": 4283,
+          "bins": [
+            58,
+            60,
+            60,
+            57
+          ],
+          "median": 59
+        },
+        {
+          "round": 5,
+          "playedMs": 8933,
+          "bins": [
+            52,
+            57,
+            59,
+            60,
+            60,
+            60,
+            60,
+            60
+          ],
+          "median": 60
+        }
+      ],
+      "fpsBins": [
+        11,
+        43,
+        53,
+        50,
+        49,
+        39,
+        47,
+        60,
+        55,
+        59,
+        59,
+        60,
+        60,
+        54,
+        60,
+        61,
+        58,
+        60,
+        60,
+        57,
+        52,
+        57,
+        59,
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "fpsMedian": 59,
+      "longestFrameMs": 299.9,
+      "transitionMaxFrameMs": 250,
+      "demoCalls": [
+        {
+          "round": 1,
+          "atMs": 0,
+          "ms": 188.6
+        },
+        {
+          "round": 2,
+          "atMs": 6977,
+          "ms": 223.9
+        },
+        {
+          "round": 3,
+          "atMs": 15874,
+          "ms": 13.6
+        },
+        {
+          "round": 4,
+          "atMs": 20685,
+          "ms": 14.4
+        },
+        {
+          "round": 5,
+          "atMs": 25769,
+          "ms": 78.5
+        }
+      ],
+      "longFrames": [
+        {
+          "atMs": 246,
+          "ms": 50.1
+        },
+        {
+          "atMs": 296,
+          "ms": 299.9
+        },
+        {
+          "atMs": 662,
+          "ms": 150.1
+        },
+        {
+          "atMs": 5479,
+          "ms": 83.2
+        },
+        {
+          "atMs": 5945,
+          "ms": 66.7
+        },
+        {
+          "atMs": 6962,
+          "ms": 250
+        },
+        {
+          "atMs": 7379,
+          "ms": 66.7
+        },
+        {
+          "atMs": 8429,
+          "ms": 166.7
+        },
+        {
+          "atMs": 8595,
+          "ms": 83.3
+        },
+        {
+          "atMs": 16128,
+          "ms": 83.3
+        },
+        {
+          "atMs": 25761,
+          "ms": 83.4
+        },
+        {
+          "atMs": 26028,
+          "ms": 66.6
+        }
+      ],
+      "stuck": null,
+      "pageErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Cannot read properties of undefined (reading 'isReady')"
+      ],
+      "error": null
+    },
+    {
+      "kind": "single",
+      "index": 1,
+      "path": "/play/fcc69c9314bff95b81dd75c99eee5411",
+      "durationMs": 34678,
+      "isChain": false,
+      "botStarts": 1,
+      "clicks": 1,
+      "fpsBins": [
+        44,
+        58,
+        60,
+        57,
+        54,
+        46,
+        41,
+        40,
+        47,
+        42,
+        50,
+        40,
+        45,
+        45,
+        56,
+        49,
+        54,
+        58,
+        59,
+        58,
+        60,
+        58,
+        51,
+        44,
+        59,
+        59,
+        57,
+        56,
+        51,
+        50,
+        50,
+        51,
+        55
+      ],
+      "fpsMedian": 51,
+      "longestFrameMs": 700,
+      "longFrames": [
+        {
+          "atMs": 98,
+          "ms": 150
+        },
+        {
+          "atMs": 282,
+          "ms": 99.9
+        },
+        {
+          "atMs": 582,
+          "ms": 283.3
+        },
+        {
+          "atMs": 1498,
+          "ms": 700
+        },
+        {
+          "atMs": 2365,
+          "ms": 50.1
+        },
+        {
+          "atMs": 7148,
+          "ms": 66.7
+        },
+        {
+          "atMs": 8015,
+          "ms": 50.1
+        },
+        {
+          "atMs": 10998,
+          "ms": 100
+        },
+        {
+          "atMs": 17164,
+          "ms": 66.7
+        }
+      ],
+      "pageErrors": [],
+      "error": null
+    },
+    {
+      "kind": "chain-idle",
+      "index": 1,
+      "path": "/play/5fa86466552aa84e01f16ea76e875585",
+      "durationMs": 19627,
+      "rounds": 5,
+      "outcome": "lost",
+      "lives": 0,
+      "transitions": [
+        {
+          "toRound": 2,
+          "cardStartMs": 2677,
+          "roundOpenMs": 3677,
+          "cardMs": 1000,
+          "maxFrameMs": 83.3,
+          "maxFrameAtMs": 2677,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 83.3,
+          "demoCallMs": null
+        },
+        {
+          "toRound": 3,
+          "cardStartMs": 9694,
+          "roundOpenMs": 10594,
+          "cardMs": 900,
+          "maxFrameMs": 66.6,
+          "maxFrameAtMs": 10810,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 66.6,
+          "demoCallMs": null
+        }
+      ],
+      "roundFps": [
+        {
+          "round": 1,
+          "playedMs": 2677,
+          "bins": [
+            39,
+            51
+          ],
+          "median": 45
+        },
+        {
+          "round": 2,
+          "playedMs": 6016,
+          "bins": [
+            46,
+            57,
+            60,
+            60,
+            60,
+            60
+          ],
+          "median": 60
+        },
+        {
+          "round": 3,
+          "playedMs": 9033,
+          "bins": [
+            57,
+            60,
+            60,
+            58,
+            60,
+            60,
+            60,
+            59,
+            52
+          ],
+          "median": 60
+        }
+      ],
+      "fpsBins": [
+        39,
+        51,
+        46,
+        57,
+        60,
+        60,
+        60,
+        60,
+        57,
+        60,
+        60,
+        58,
+        60,
+        60,
+        60,
+        59,
+        52
+      ],
+      "fpsMedian": 60,
+      "longestFrameMs": 150,
+      "transitionMaxFrameMs": 83.3,
+      "demoCalls": [],
+      "longFrames": [
+        {
+          "atMs": 111,
+          "ms": 133.3
+        },
+        {
+          "atMs": 294,
+          "ms": 66.6
+        },
+        {
+          "atMs": 2677,
+          "ms": 83.3
+        },
+        {
+          "atMs": 3860,
+          "ms": 50.1
+        },
+        {
+          "atMs": 4094,
+          "ms": 66.7
+        },
+        {
+          "atMs": 10810,
+          "ms": 66.6
+        },
+        {
+          "atMs": 19460,
+          "ms": 150
+        }
+      ],
+      "stuck": null,
+      "pageErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ],
+      "error": null
+    },
+    {
+      "kind": "chain",
+      "index": 2,
+      "path": "/play/5fa86466552aa84e01f16ea76e875585",
+      "durationMs": 35093,
+      "rounds": 5,
+      "outcome": "won",
+      "lives": 3,
+      "transitions": [
+        {
+          "toRound": 2,
+          "cardStartMs": 5978,
+          "roundOpenMs": 6944,
+          "cardMs": 967,
+          "maxFrameMs": 300,
+          "maxFrameAtMs": 7011,
+          "maxFrameHasDemoCall": true,
+          "maxFrameMsWithoutDemoCall": 83.3,
+          "demoCallMs": 285.2
+        },
+        {
+          "toRound": 3,
+          "cardStartMs": 15127,
+          "roundOpenMs": 16044,
+          "cardMs": 917,
+          "maxFrameMs": 66.6,
+          "maxFrameAtMs": 16361,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 66.6,
+          "demoCallMs": 14.4
+        },
+        {
+          "toRound": 4,
+          "cardStartMs": 20061,
+          "roundOpenMs": 20894,
+          "cardMs": 833,
+          "maxFrameMs": 33.4,
+          "maxFrameAtMs": 20061,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 33.4,
+          "demoCallMs": 10.4
+        },
+        {
+          "toRound": 5,
+          "cardStartMs": 25177,
+          "roundOpenMs": 25977,
+          "cardMs": 800,
+          "maxFrameMs": 150,
+          "maxFrameAtMs": 26360,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 150,
+          "demoCallMs": 92.7
+        }
+      ],
+      "roundFps": [
+        {
+          "round": 1,
+          "playedMs": 5978,
+          "bins": [
+            28,
+            52,
+            57,
+            55,
+            51
+          ],
+          "median": 52
+        },
+        {
+          "round": 2,
+          "playedMs": 8183,
+          "bins": [
+            28,
+            56,
+            60,
+            60,
+            60,
+            60,
+            60,
+            60
+          ],
+          "median": 60
+        },
+        {
+          "round": 3,
+          "playedMs": 4017,
+          "bins": [
+            53,
+            58,
+            59,
+            59
+          ],
+          "median": 58.5
+        },
+        {
+          "round": 4,
+          "playedMs": 4283,
+          "bins": [
+            59,
+            60,
+            59,
+            61
+          ],
+          "median": 59.5
+        },
+        {
+          "round": 5,
+          "playedMs": 9116,
+          "bins": [
+            38,
+            57,
+            50,
+            53,
+            60,
+            60,
+            60,
+            60,
+            60
+          ],
+          "median": 60
+        }
+      ],
+      "fpsBins": [
+        28,
+        52,
+        57,
+        55,
+        51,
+        28,
+        56,
+        60,
+        60,
+        60,
+        60,
+        60,
+        60,
+        53,
+        58,
+        59,
+        59,
+        59,
+        60,
+        59,
+        61,
+        38,
+        57,
+        50,
+        53,
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "fpsMedian": 59,
+      "longestFrameMs": 300,
+      "transitionMaxFrameMs": 300,
+      "demoCalls": [
+        {
+          "round": 1,
+          "atMs": 0,
+          "ms": 162.3
+        },
+        {
+          "round": 2,
+          "atMs": 7016,
+          "ms": 285.2
+        },
+        {
+          "round": 3,
+          "atMs": 16069,
+          "ms": 14.4
+        },
+        {
+          "round": 4,
+          "atMs": 20929,
+          "ms": 10.4
+        },
+        {
+          "round": 5,
+          "atMs": 26004,
+          "ms": 92.7
+        }
+      ],
+      "longFrames": [
+        {
+          "atMs": 195,
+          "ms": 100
+        },
+        {
+          "atMs": 295,
+          "ms": 66.7
+        },
+        {
+          "atMs": 395,
+          "ms": 83.2
+        },
+        {
+          "atMs": 5978,
+          "ms": 50.1
+        },
+        {
+          "atMs": 6944,
+          "ms": 66.7
+        },
+        {
+          "atMs": 7011,
+          "ms": 300
+        },
+        {
+          "atMs": 7544,
+          "ms": 83.3
+        },
+        {
+          "atMs": 7628,
+          "ms": 50.1
+        },
+        {
+          "atMs": 8611,
+          "ms": 83.4
+        },
+        {
+          "atMs": 16161,
+          "ms": 50.1
+        },
+        {
+          "atMs": 16361,
+          "ms": 66.6
+        },
+        {
+          "atMs": 25994,
+          "ms": 100
+        },
+        {
+          "atMs": 26360,
+          "ms": 150
+        },
+        {
+          "atMs": 26510,
+          "ms": 83.3
+        },
+        {
+          "atMs": 28227,
+          "ms": 66.6
+        }
+      ],
+      "stuck": null,
+      "pageErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Cannot read properties of undefined (reading 'isReady')"
+      ],
+      "error": null
+    },
+    {
+      "kind": "single",
+      "index": 2,
+      "path": "/play/fcc69c9314bff95b81dd75c99eee5411",
+      "durationMs": 35093,
+      "isChain": false,
+      "botStarts": 1,
+      "clicks": 1,
+      "fpsBins": [
+        31,
+        59,
+        57,
+        59,
+        54,
+        55,
+        56,
+        53,
+        54,
+        53,
+        44,
+        56,
+        56,
+        57,
+        56,
+        53,
+        47,
+        40,
+        54,
+        51,
+        40,
+        58,
+        47,
+        59,
+        60,
+        58,
+        60,
+        58,
+        58,
+        58,
+        60,
+        60,
+        53
+      ],
+      "fpsMedian": 56,
+      "longestFrameMs": 566.6,
+      "longFrames": [
+        {
+          "atMs": 36,
+          "ms": 133.4
+        },
+        {
+          "atMs": 170,
+          "ms": 83.3
+        },
+        {
+          "atMs": 253,
+          "ms": 200
+        },
+        {
+          "atMs": 453,
+          "ms": 83.3
+        },
+        {
+          "atMs": 536,
+          "ms": 66.7
+        },
+        {
+          "atMs": 753,
+          "ms": 66.6
+        },
+        {
+          "atMs": 886,
+          "ms": 316.7
+        },
+        {
+          "atMs": 1836,
+          "ms": 566.6
+        },
+        {
+          "atMs": 2570,
+          "ms": 66.6
+        },
+        {
+          "atMs": 7353,
+          "ms": 66.7
+        }
+      ],
+      "pageErrors": [],
+      "error": null
+    },
+    {
+      "kind": "chain-idle",
+      "index": 2,
+      "path": "/play/5fa86466552aa84e01f16ea76e875585",
+      "durationMs": 19698,
+      "rounds": 5,
+      "outcome": "lost",
+      "lives": 0,
+      "transitions": [
+        {
+          "toRound": 2,
+          "cardStartMs": 2682,
+          "roundOpenMs": 3682,
+          "cardMs": 1000,
+          "maxFrameMs": 99.9,
+          "maxFrameAtMs": 2682,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 99.9,
+          "demoCallMs": null
+        },
+        {
+          "toRound": 3,
+          "cardStartMs": 9832,
+          "roundOpenMs": 10715,
+          "cardMs": 883,
+          "maxFrameMs": 66.7,
+          "maxFrameAtMs": 10965,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 66.7,
+          "demoCallMs": null
+        }
+      ],
+      "roundFps": [
+        {
+          "round": 1,
+          "playedMs": 2682,
+          "bins": [
+            22,
+            51
+          ],
+          "median": 36.5
+        },
+        {
+          "round": 2,
+          "playedMs": 6150,
+          "bins": [
+            37,
+            47,
+            60,
+            60,
+            60,
+            58
+          ],
+          "median": 59
+        },
+        {
+          "round": 3,
+          "playedMs": 8983,
+          "bins": [
+            56,
+            61,
+            48,
+            55,
+            58,
+            59,
+            60,
+            60
+          ],
+          "median": 58.5
+        }
+      ],
+      "fpsBins": [
+        22,
+        51,
+        37,
+        47,
+        60,
+        60,
+        60,
+        58,
+        56,
+        61,
+        48,
+        55,
+        58,
+        59,
+        60,
+        60
+      ],
+      "fpsMedian": 58,
+      "longestFrameMs": 150,
+      "transitionMaxFrameMs": 99.9,
+      "demoCalls": [],
+      "longFrames": [
+        {
+          "atMs": 99,
+          "ms": 66.6
+        },
+        {
+          "atMs": 166,
+          "ms": 150
+        },
+        {
+          "atMs": 399,
+          "ms": 116.7
+        },
+        {
+          "atMs": 2682,
+          "ms": 99.9
+        },
+        {
+          "atMs": 2782,
+          "ms": 66.8
+        },
+        {
+          "atMs": 3682,
+          "ms": 50.1
+        },
+        {
+          "atMs": 3915,
+          "ms": 66.8
+        },
+        {
+          "atMs": 4215,
+          "ms": 66.7
+        },
+        {
+          "atMs": 4466,
+          "ms": 66.6
+        },
+        {
+          "atMs": 10965,
+          "ms": 66.7
+        },
+        {
+          "atMs": 13198,
+          "ms": 50.1
+        }
+      ],
+      "stuck": null,
+      "pageErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ],
+      "error": null
+    },
+    {
+      "kind": "chain",
+      "index": 3,
+      "path": "/play/5fa86466552aa84e01f16ea76e875585",
+      "durationMs": 34507,
+      "rounds": 5,
+      "outcome": "won",
+      "lives": 3,
+      "transitions": [
+        {
+          "toRound": 2,
+          "cardStartMs": 5975,
+          "roundOpenMs": 6942,
+          "cardMs": 967,
+          "maxFrameMs": 233.3,
+          "maxFrameAtMs": 6975,
+          "maxFrameHasDemoCall": true,
+          "maxFrameMsWithoutDemoCall": 66.6,
+          "demoCallMs": 210
+        },
+        {
+          "toRound": 3,
+          "cardStartMs": 14908,
+          "roundOpenMs": 15808,
+          "cardMs": 900,
+          "maxFrameMs": 50,
+          "maxFrameAtMs": 16058,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 50,
+          "demoCallMs": 14.1
+        },
+        {
+          "toRound": 4,
+          "cardStartMs": 19774,
+          "roundOpenMs": 20608,
+          "cardMs": 833,
+          "maxFrameMs": 49.9,
+          "maxFrameAtMs": 19724,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 49.9,
+          "demoCallMs": 11.8
+        },
+        {
+          "toRound": 5,
+          "cardStartMs": 24924,
+          "roundOpenMs": 25724,
+          "cardMs": 800,
+          "maxFrameMs": 100,
+          "maxFrameAtMs": 25741,
+          "maxFrameHasDemoCall": true,
+          "maxFrameMsWithoutDemoCall": 50,
+          "demoCallMs": 81.9
+        }
+      ],
+      "roundFps": [
+        {
+          "round": 1,
+          "playedMs": 5975,
+          "bins": [
+            16,
+            58,
+            56,
+            58,
+            60
+          ],
+          "median": 58
+        },
+        {
+          "round": 2,
+          "playedMs": 7966,
+          "bins": [
+            41,
+            57,
+            55,
+            57,
+            60,
+            60,
+            60
+          ],
+          "median": 57
+        },
+        {
+          "round": 3,
+          "playedMs": 3967,
+          "bins": [
+            56,
+            59,
+            60
+          ],
+          "median": 59
+        },
+        {
+          "round": 4,
+          "playedMs": 4317,
+          "bins": [
+            58,
+            59,
+            61,
+            60
+          ],
+          "median": 59.5
+        },
+        {
+          "round": 5,
+          "playedMs": 8783,
+          "bins": [
+            53,
+            60,
+            60,
+            57,
+            59,
+            59,
+            59,
+            60
+          ],
+          "median": 59
+        }
+      ],
+      "fpsBins": [
+        16,
+        58,
+        56,
+        58,
+        60,
+        41,
+        57,
+        55,
+        57,
+        60,
+        60,
+        60,
+        56,
+        59,
+        60,
+        58,
+        59,
+        61,
+        60,
+        53,
+        60,
+        60,
+        57,
+        59,
+        59,
+        59,
+        60
+      ],
+      "fpsMedian": 59,
+      "longestFrameMs": 233.3,
+      "transitionMaxFrameMs": 233.3,
+      "demoCalls": [
+        {
+          "round": 1,
+          "atMs": 0,
+          "ms": 219.6
+        },
+        {
+          "round": 2,
+          "atMs": 6989,
+          "ms": 210
+        },
+        {
+          "round": 3,
+          "atMs": 15834,
+          "ms": 14.1
+        },
+        {
+          "round": 4,
+          "atMs": 20643,
+          "ms": 11.8
+        },
+        {
+          "round": 5,
+          "atMs": 25752,
+          "ms": 81.9
+        }
+      ],
+      "longFrames": [
+        {
+          "atMs": 258,
+          "ms": 183.3
+        },
+        {
+          "atMs": 442,
+          "ms": 133.3
+        },
+        {
+          "atMs": 575,
+          "ms": 83.4
+        },
+        {
+          "atMs": 675,
+          "ms": 100.1
+        },
+        {
+          "atMs": 2492,
+          "ms": 66.7
+        },
+        {
+          "atMs": 6975,
+          "ms": 233.3
+        },
+        {
+          "atMs": 7342,
+          "ms": 66.6
+        },
+        {
+          "atMs": 25741,
+          "ms": 100
+        }
+      ],
+      "stuck": null,
+      "pageErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Cannot read properties of undefined (reading 'isReady')"
+      ],
+      "error": null
+    },
+    {
+      "kind": "single",
+      "index": 3,
+      "path": "/play/fcc69c9314bff95b81dd75c99eee5411",
+      "durationMs": 34507,
+      "isChain": false,
+      "botStarts": 1,
+      "clicks": 1,
+      "fpsBins": [
+        44,
+        45,
+        47,
+        50,
+        53,
+        59,
+        60,
+        54,
+        54,
+        52,
+        41,
+        42,
+        33,
+        39,
+        53,
+        59,
+        60,
+        60,
+        58,
+        58,
+        54,
+        57,
+        55,
+        60,
+        59,
+        58,
+        45,
+        54,
+        44,
+        50,
+        49,
+        53
+      ],
+      "fpsMedian": 53.5,
+      "longestFrameMs": 750,
+      "longFrames": [
+        {
+          "atMs": 122,
+          "ms": 66.7
+        },
+        {
+          "atMs": 389,
+          "ms": 183.3
+        },
+        {
+          "atMs": 1189,
+          "ms": 750
+        },
+        {
+          "atMs": 2106,
+          "ms": 66.7
+        },
+        {
+          "atMs": 6822,
+          "ms": 83.2
+        },
+        {
+          "atMs": 14022,
+          "ms": 50.1
+        },
+        {
+          "atMs": 15288,
+          "ms": 50.1
+        },
+        {
+          "atMs": 15405,
+          "ms": 50.1
+        },
+        {
+          "atMs": 28921,
+          "ms": 50.1
+        },
+        {
+          "atMs": 29071,
+          "ms": 50.1
+        }
+      ],
+      "pageErrors": [],
+      "error": null
+    },
+    {
+      "kind": "chain-idle",
+      "index": 3,
+      "path": "/play/5fa86466552aa84e01f16ea76e875585",
+      "durationMs": 20432,
+      "rounds": 5,
+      "outcome": "lost",
+      "lives": 0,
+      "transitions": [
+        {
+          "toRound": 2,
+          "cardStartMs": 2699,
+          "roundOpenMs": 3683,
+          "cardMs": 983,
+          "maxFrameMs": 66.7,
+          "maxFrameAtMs": 3849,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 66.7,
+          "demoCallMs": null
+        },
+        {
+          "toRound": 3,
+          "cardStartMs": 10499,
+          "roundOpenMs": 11416,
+          "cardMs": 917,
+          "maxFrameMs": 50,
+          "maxFrameAtMs": 11699,
+          "maxFrameHasDemoCall": false,
+          "maxFrameMsWithoutDemoCall": 50,
+          "demoCallMs": null
+        }
+      ],
+      "roundFps": [
+        {
+          "round": 1,
+          "playedMs": 2699,
+          "bins": [
+            40,
+            57
+          ],
+          "median": 48.5
+        },
+        {
+          "round": 2,
+          "playedMs": 6816,
+          "bins": [
+            54,
+            55,
+            60,
+            60,
+            60,
+            60
+          ],
+          "median": 60
+        },
+        {
+          "round": 3,
+          "playedMs": 9016,
+          "bins": [
+            56,
+            60,
+            61,
+            60,
+            60,
+            60,
+            60,
+            60,
+            59
+          ],
+          "median": 60
+        }
+      ],
+      "fpsBins": [
+        40,
+        57,
+        54,
+        55,
+        60,
+        60,
+        60,
+        60,
+        56,
+        60,
+        61,
+        60,
+        60,
+        60,
+        60,
+        60,
+        59
+      ],
+      "fpsMedian": 60,
+      "longestFrameMs": 100,
+      "transitionMaxFrameMs": 66.7,
+      "demoCalls": [],
+      "longFrames": [
+        {
+          "atMs": 49,
+          "ms": 83.4
+        },
+        {
+          "atMs": 133,
+          "ms": 66.6
+        },
+        {
+          "atMs": 249,
+          "ms": 66.7
+        },
+        {
+          "atMs": 816,
+          "ms": 50.1
+        },
+        {
+          "atMs": 2699,
+          "ms": 66.6
+        },
+        {
+          "atMs": 2766,
+          "ms": 50.1
+        },
+        {
+          "atMs": 3849,
+          "ms": 66.7
+        },
+        {
+          "atMs": 4916,
+          "ms": 100
+        }
+      ],
+      "stuck": null,
+      "pageErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Cannot read properties of undefined (reading 'isReady')"
+      ],
+      "error": null
+    }
+  ],
+  "summary": {
+    "chain": {
+      "transitions": 12,
+      "transitionMaxFrameMsMedian": 83.4,
+      "transitionMaxFrameMsWorst": 300,
+      "transitionMaxFrameMsWorstWithoutDemoCall": 150,
+      "fpsMedian": 59,
+      "longestFrameMsWorst": 300,
+      "stuck": [],
+      "errors": []
+    },
+    "chainIdle": {
+      "transitions": 6,
+      "transitionMaxFrameMsMedian": 66.7,
+      "transitionMaxFrameMsWorst": 99.9,
+      "transitionMaxFrameMsWorstWithoutDemoCall": 99.9,
+      "fpsMedian": 60,
+      "longestFrameMsWorst": 150,
+      "stuck": [],
+      "errors": []
+    },
+    "single": {
+      "fpsMedian": 54,
+      "longestFrameMsWorst": 750,
+      "errors": []
+    },
+    "gate": {
+      "transitionMaxFrameMs": "<= 100",
+      "chainFpsMedian": ">= 30",
+      "pass": false,
+      "transitionPassWithoutBot": true
+    }
+  }
+}

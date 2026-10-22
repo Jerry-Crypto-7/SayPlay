@@ -611,7 +611,7 @@ const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
   ['factory', /factory|warehouse|workshop|laborator|\blab\b|construction|\bmine\b|mining|colony|garage/],
   ['supermarket', /supermarket|grocery|market|\bstore\b|bakery|kitchen|restaurant/],
   ['mall', /\bmall\b|shopping|arcade hall|plaza/],
-  ['living_room', /living room|house|\bhome\b|bedroom|apartment|office|classroom|school|toy/],
+  ['living_room', /living room|\bhouses?\b|\bhome\b|bedroom|apartment|office|classroom|school|toy/],
   ['city', /city|street|town|downtown|road|traffic|rooftop|neon|subway|highway|urban|skyscraper/],
   // Věž až za městem a kuchyní: „pancake tower in a kitchen“ je kuchyně, samotná věž hrad (P30B T6).
   ['castle', /\btower\b/],

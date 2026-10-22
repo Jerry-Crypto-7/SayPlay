@@ -19,6 +19,10 @@ import { resetRateWindows } from '@/server/rate-limit';
 
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
 
+// Poctivá hláška patří jedné hře: větu „shooting and racing“ P56C posílá do řetězu mikroher, který hlášku nemá.
+// Tady se zkouší hláška jedné hry, proto rozhodnutí vždy `single`.
+vi.mock('@/play/chain/decide', async (original) => ({ ...(await original<typeof import('@/play/chain/decide')>()), chainOrSingle: () => 'single' }));
+
 const MATCH3 = 'a match 3 game with fruits';
 
 function puzzle(required: readonly string[]) {
@@ -112,6 +116,8 @@ describe('honestyOf – uložená hra', () => {
     const game = (await versions.get(body.versionId))!;
     expect(game.origin).toBeUndefined();
     expect(await honestyOf(versions, game)).toMatchObject(body.honesty as object);
+    // Řetěz mikroher (P56C T10a) hlášku nemá, ani když by ji věta a spec kola 1 dostaly – robot se na něj nepouští.
+    expect(await honestyOf(versions, { ...game, chain: {} as NonNullable<typeof game.chain> })).toBeNull();
     // Uložená věta upgrade nezapne – režisér by jinak tutéž hru platil podruhé.
     const upgrade = await readUpgrade(new Request(`http://play.test/api/play/games/${body.versionId}/upgrade`, { headers: { 'x-forwarded-for': '203.0.113.9' } }), {
       params: Promise.resolve({ id: body.versionId }),

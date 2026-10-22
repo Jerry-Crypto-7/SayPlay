@@ -20,7 +20,7 @@ export const sha256Lf = (text: string): string => createHash('sha256').update(te
 /** Otevře `holdout.json` v `dir` jednou: ověří otisk, zapíše záznam otevření a vrátí LF obsah. */
 export function openSealedOnce(dir: string, sha256: string, commit: string, by: string): string {
   const opened = join(dir, 'holdout-opened.json');
-  if (existsSync(opened)) throw new Error('holdout-opened.json exists – the P55 holdout was already opened; a second run would make it a dev set');
+  if (existsSync(opened)) throw new Error(`holdout-opened.json exists in ${dir} – the holdout was already opened; a second run would make it a dev set`);
   const bytes = readFileSync(join(dir, 'holdout.json'), 'utf8').replace(/\r\n/g, '\n');
   const sha = sha256Lf(bytes);
   if (sha !== sha256) throw new Error(`holdout.json SHA-256 ${sha} is not the sealed ${sha256}`);

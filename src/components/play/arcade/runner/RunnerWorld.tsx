@@ -15,7 +15,7 @@ import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { Box3, DataTexture, LinearFilter, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
-import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { type ArcadeWorld, BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { type Look, SURFACES } from '@/play/arcade/look';
 
 import { type GhostPlacement, worldPlacement } from '../Ghost';
@@ -23,8 +23,7 @@ import { type GhostPose, GhostSlot } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
 import type { Box } from '../look/ground';
 import { Landmark } from '../look/Landmark';
-import { buildValley, PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
-import { roadGeometry } from '../look/road-strip';
+import { PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { Scenery } from '../look/Scenery';
 import { Vegetation } from '../look/Vegetation';
 import type { RoadAt } from '../look/vegetation-places';
@@ -33,10 +32,8 @@ import { type ToyTarget, applyToy, toyMotionOn } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { World, type WorldProps, toyTargetOf } from '../World';
 import { type Ride, blinksOnHit, createHeroMotion, rideOf } from './heroMotion';
-import { type Path, bendGeometry, runnerPathOf, slopeAt } from './path';
-
-/** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
-const BEHIND_M = 40;
+import { type Path, runnerPathOf, slopeAt } from './path';
+import { BEHIND_M, buildRunnerTerrain, prebuiltRunnerTerrain, terrainEnd } from './terrain';
 
 /** Cesta běžce před ohnutím po křivce: rovná, v ose (vegetaci ohne `bend` jako kulisy). */
 const RUNNER_ROAD = (): RoadAt => ({ center: 0, half: PATH_HALF });
@@ -46,22 +43,16 @@ const VEGETATION_CLEAR = PLAYABLE_HALF - PATH_HALF + 0.5;
 const RUNNER_AREA: readonly Box[] = [{ x0: -PLAYABLE_HALF, x1: PLAYABLE_HALF, z0: -Infinity, z1: Infinity }];
 
 /** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy, kulisy i vegetace (P46G T4) jdou zatáčkou a kopcem spolu s těly. */
-function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Look; readonly length: number; readonly seed: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
-  const valley = useMemo(() => {
-    const built = buildValley({ look, from: -BEHIND_M, to: length + look.fog[1] + 10 });
-    if (path !== null) bendGeometry(built.geometry, path);
-    return built;
-  }, [look, length, path]);
+function RunnerValley({ look, world, terrain, path }: { readonly look: Look; readonly world: ArcadeWorld; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
+  const length = world.length / UNIT;
+  const seed = world.seed;
+  // Kolo řetězu má terén postavený workerem (P56C T18); jinak se staví tady, jako dřív.
+  const { valley, lane } = useMemo(() => prebuiltRunnerTerrain(world, look) ?? buildRunnerTerrain(look, length, path), [world, look, length, path]);
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => valley.geometry.dispose(), [valley]);
   useEffect(() => () => material.dispose(), [material]);
   // Cesta jako jeden pás s hladkými okraji (P46G T2), ohnutý po křivce trati jako údolí; vedle ní krajnice údolí (T3).
   const surface = SURFACES[look.surface];
-  const lane = useMemo(() => {
-    const built = roadGeometry([{ near: -BEHIND_M, far: length + look.fog[1] + 10, center: 0, width: 2 * PATH_HALF }], surface);
-    if (built !== null && path !== null) for (const geometry of [built.surface, built.edges, built.marks]) if (geometry !== null) bendGeometry(geometry, path);
-    return built;
-  }, [surface, look.fog, length, path]);
   useEffect(() => () => { lane?.surface.dispose(); lane?.edges.dispose(); lane?.marks?.dispose(); }, [lane]);
   const trackHeight = useMemo(() => (path === null ? undefined : (z: number) => path(z).y), [path]);
   // Terén údolí ohnutého po křivce v místě (x, z) scény: `heightAt` platí pro rovné údolí.
@@ -94,7 +85,7 @@ function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Lo
           )}
         </>
       )}
-      {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-BEHIND_M} to={length + look.fog[1] + 10} road={RUNNER_ROAD} clear={VEGETATION_CLEAR} ground={valley.heightAt} bend={path ?? undefined} />}
+      {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-BEHIND_M} to={terrainEnd(look, length)} road={RUNNER_ROAD} clear={VEGETATION_CLEAR} ground={valley.heightAt} bend={path ?? undefined} />}
       <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} vegetation />
       {/* Kulisa za mlhou (P46G T6) na konci údolí; pata pod zemí kryje kopce trati. */}
       <HorizonBackdrop look={look} seed={seed} length={length} clear={PLAYABLE_HALF + 1.5} skirt={RUNNER_SKIRT_M} ground={trackHeight} />
@@ -351,7 +342,7 @@ export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   );
   return (
     <>
-      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} seed={props.session.world.seed} terrain={terrain} path={path} />} />
+      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} world={props.session.world} terrain={terrain} path={path} />} />
       <GroundProbe terrain={terrain} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
       <HeroPose session={props.session} hero={props.cast.player} rides={props.scene.ride === true} />

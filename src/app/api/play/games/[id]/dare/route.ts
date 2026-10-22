@@ -16,6 +16,8 @@
  * jiného hráče z žebříčku (T5b). `board: { place, of } | null`; `beat` = porazil běh
  * výzvu `against` téže hry (`null` = není s čím srovnat). Id hráče jde ven jen
  * v `set-cookie`.
+ *
+ * Hra s řetězem mikroher (P56C T10) se přehraje celá (`replayChain`); živé změny u ní dveře odmítnou.
  */
 
 import { createHash } from 'node:crypto';
@@ -26,6 +28,7 @@ import { ARCADE_LIMITS, type InputEvent } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import { type LiveEntry, TIMES_OF_DAY, WEATHERS } from '@/play/arcade/live';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { replayChain } from '@/play/chain/run';
 import { packInputs, unpackInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { BOARD_READ_MAX, type BoardRow, bestRank, DARE_ID_PATTERN, type DareRecord, type DareReplay, type VersionStore, VersionStoreUnavailable } from '@/play/version';
@@ -142,7 +145,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const versions = store();
   const game = await versions.get(id);
   if (game === null) return markVolatileStore(notFound());
-  if (game.arcade === undefined) return fail(422, 'DARE_REJECTED', 'this game cannot carry a dare');
+  const { arcade, chain } = game;
+  if (arcade === undefined && chain === undefined) return fail(422, 'DARE_REJECTED', 'this game cannot carry a dare');
+  // Řetěz mikroher živé změny nebere (debata P56C T9): kolo by se hrálo jinak, než ho brána ověřila.
+  if (chain !== undefined && patches.length > 0) return fail(422, 'DARE_REJECTED', 'a chain of microgames takes no live changes');
   // Výzva přehrává celý běh (až ~250 ms CPU), proto má navíc vlastní, přísnější okno.
   // Slot bere až skutečné přehrání: levné vadné požadavky (400/404/422) jinak
   // zaplní strop instance a výzvy zavřou všem (nález 2. revize T5).
@@ -152,9 +158,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const code = rateLimitCode(slot);
     return fail(429, code, code === 'SERVER_AT_CAPACITY' ? 'this instance is at capacity right now' : 'too many requests from this client', { 'retry-after': String(slot.retryAfterSeconds) });
   }
-  if (worldHasPhysics(game.arcade)) await loadRapier();
+  if (arcade !== undefined && worldHasPhysics(arcade)) await loadRapier();
 
-  const run = scoredReplay(game.arcade, inputs, patches);
+  // Řetěz (P56C T10): všechna kola na globálních tikách, vstupy během karty se zahodí; hash = `hashChain`.
+  const run = chain !== undefined ? { ...replayChain(chain, inputs), refusedPatch: null } : scoredReplay(arcade!, inputs, patches);
   // Prohrané přehrání posílá cizí klient (náš jen po výhře): stojí ho zbytek okna výzev (T5r3r1).
   // Odmítnutá živá změna sem patří taky – přehrání v ní stojí, takže hra nikdy není `won`.
   if (run.outcome !== 'won') spendDareWindow(caller);
