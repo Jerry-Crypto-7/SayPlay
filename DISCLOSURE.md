@@ -6172,9 +6172,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-suit-of-armor-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-suit-of-armor-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-suit-of-armor.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-suitcase-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-suitcase-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d-p37d/gen3d-suitcase.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-suitcase-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-suitcase-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-suitcase.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/gen3d-p37d/gen3d-sumo-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-sumo-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-sumo.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -6906,9 +6906,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-fruit-stand-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fruit-stand-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fruit-stand.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
-- **public/assets/worldstream/gen3d/gen3d-gang-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d/gen3d-gang-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d/gen3d-gang.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gang-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gang-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gang.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
 - **public/assets/worldstream/gen3d/gen3d-garden-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-garden-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-garden-snail-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.

@@ -182,6 +182,23 @@
    ],
    "startedAt": "2026-10-22T05:24:55.912Z",
    "finishedAt": "2026-10-22T06:04:24.132Z"
+  },
+  "8": {
+   "ids": [
+    "gen3d-santa",
+    "gen3d-harbor-crane",
+    "gen3d-frost-giant",
+    "gen3d-magic-bean",
+    "gen3d-grindstone",
+    "gen3d-ride",
+    "gen3d-gang",
+    "gen3d-battery-pack",
+    "gen3d-ammo",
+    "gen3d-suitcase",
+    "gen3d-atm-machine"
+   ],
+   "startedAt": "2026-10-22T06:08:00.151Z",
+   "finishedAt": "2026-10-22T06:33:03.994Z"
   }
  },
  "models": {
@@ -4732,6 +4749,379 @@
    "newScore": 6,
    "result": "kept-old",
    "reason": "lod1: 338 triangles, the replaced model had 208"
+  },
+  "gen3d-santa": {
+   "noun": "santa",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9861,
+      0.9861,
+      0.9861
+     ],
+     "triangles": 3676,
+     "dims": [
+      0.7048932125579025,
+      0.9856436857380477,
+      0.41745673069000955
+     ],
+     "score": 5,
+     "reason": "Santa Claus: Clearly Santa, but noisy smeared texture on white areas looks scan-like."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.958,
+      0.9995,
+      1.2428
+     ],
+     "triangles": 3669,
+     "dims": [
+      0.6788999999999998,
+      0.99877,
+      0.43325403076807917
+     ],
+     "score": 4,
+     "reason": "Santa Claus: Recognisable Santa, but noisy metallic faceted texture"
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-harbor-crane": {
+   "noun": "harbor crane",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-frost-giant": {
+   "noun": "frost giant",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.3245,
+      0.9999,
+      0.9513
+     ],
+     "triangles": 3398,
+     "dims": [
+      0.9276706094755405,
+      0.9999013054400682,
+      0.462032075140689
+     ],
+     "score": 5,
+     "reason": "Ice yeti: Readable brute pose but jagged faceted noise and glassy shading."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-magic-bean": {
+   "noun": "magic bean",
+   "oldScore": 2,
+   "oldJudge": "codex",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-grindstone": {
+   "noun": "grindstone",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0249,
+      1.0249,
+      1.0249
+     ],
+     "triangles": 3473,
+     "dims": [
+      0.9896169705716074,
+      1.021477807240258,
+      0.763866799053949
+     ],
+     "score": 4,
+     "reason": "Grinding wheel: Ambiguous object; lumpy wheel and glowing base unclear."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.4525,
+      0.9985,
+      1.2946
+     ],
+     "triangles": 3392,
+     "dims": [
+      0.92746,
+      0.9913289343500093,
+      0.81506
+     ],
+     "score": 3,
+     "reason": "Ore crusher machine: Unclear machine, crumpled noisy surfaces, muddy shapes"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-ride": {
+   "noun": "ride",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-gang": {
+   "noun": "gang",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0889,
+      1,
+      1.2201
+     ],
+     "triangles": 3866,
+     "dims": [
+      0.53206,
+      0.9990287637873241,
+      0.28538
+     ],
+     "score": 6,
+     "reason": "Hoodie man: Chunky blocky character, readable; dark muddy colours, slightly noisy face texture."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-battery-pack": {
+   "noun": "battery pack",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.2291,
+      1.0001,
+      1.3497
+     ],
+     "triangles": 3521,
+     "dims": [
+      1.165175823625566,
+      1.00001,
+      1.038015897209954
+     ],
+     "score": 5,
+     "reason": "Medkit crate: Clear cross icon but crumpled icy faceted surfaces look glassy."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0401,
+      1.0401,
+      1.0401
+     ],
+     "triangles": 3576,
+     "dims": [
+      1.1198705723480504,
+      1.0397687843026742,
+      0.9999624814290673
+     ],
+     "score": 4,
+     "reason": "Medkit crate: Readable cube with cross, but crumpled foil-like shading"
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-ammo": {
+   "noun": "ammo",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-suitcase": {
+   "noun": "suitcase",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.3367,
+      1.0015,
+      0.896
+     ],
+     "triangles": 3611,
+     "dims": [
+      0.76466,
+      0.99867,
+      0.37792
+     ],
+     "score": 7,
+     "reason": "Rolling suitcase: Bright solid green, clean toy-like shape; slightly soft lumpy edges."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-atm-machine": {
+   "noun": "atm machine",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9775,
+      1,
+      0.8133
+     ],
+     "triangles": 3941,
+     "dims": [
+      0.43366,
+      0.9999999999999998,
+      0.43068
+     ],
+     "score": 4,
+     "reason": "ATM machine: Melted, wrinkled panels and noisy shading; scan-like."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.9694,
+      0.9694,
+      0.9694
+     ],
+     "triangles": 3907,
+     "dims": [
+      0.44735840366852875,
+      0.9693070994822293,
+      0.43985756800463927
+     ],
+     "score": 4,
+     "reason": "ATM machine: ATM shape reads, front crumpled and glossy, off-style"
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
   }
  }
 }
