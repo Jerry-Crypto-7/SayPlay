@@ -107,6 +107,11 @@ export function CreateGame() {
   useEffect(() => {
     if (!offline) return;
     const back = (): void => void create(trimmed);
+    // Síť se může vrátit dřív, než se posluchač přihlásí (WebKit, P58C T4) – `online` by pak už nepřišlo.
+    if (navigator.onLine) {
+      back();
+      return;
+    }
     window.addEventListener('online', back);
     return () => window.removeEventListener('online', back);
     // `create` je nová každým renderem; znovu se přihlásit stačí při změně věty.
