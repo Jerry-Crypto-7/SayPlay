@@ -154,6 +154,122 @@
   "identity": 54
  },
  "lookCalledSmall": 25,
+ "calledSmall": {
+  "hero": [
+   {
+    "edge": 0.1,
+    "below": {
+     "small": 8,
+     "of": 9
+    },
+    "above": {
+     "small": 15,
+     "of": 50
+    }
+   },
+   {
+    "edge": 0.15,
+    "below": {
+     "small": 18,
+     "of": 30
+    },
+    "above": {
+     "small": 5,
+     "of": 29
+    }
+   },
+   {
+    "edge": 0.2,
+    "below": {
+     "small": 21,
+     "of": 39
+    },
+    "above": {
+     "small": 2,
+     "of": 20
+    }
+   },
+   {
+    "edge": 0.25,
+    "below": {
+     "small": 22,
+     "of": 49
+    },
+    "above": {
+     "small": 1,
+     "of": 10
+    }
+   },
+   {
+    "edge": 0.3,
+    "below": {
+     "small": 22,
+     "of": 54
+    },
+    "above": {
+     "small": 1,
+     "of": 5
+    }
+   }
+  ],
+  "other": [
+   {
+    "edge": 0.1,
+    "below": {
+     "small": 7,
+     "of": 14
+    },
+    "above": {
+     "small": 1,
+     "of": 8
+    }
+   },
+   {
+    "edge": 0.15,
+    "below": {
+     "small": 7,
+     "of": 15
+    },
+    "above": {
+     "small": 1,
+     "of": 7
+    }
+   },
+   {
+    "edge": 0.2,
+    "below": {
+     "small": 7,
+     "of": 18
+    },
+    "above": {
+     "small": 1,
+     "of": 4
+    }
+   },
+   {
+    "edge": 0.25,
+    "below": {
+     "small": 7,
+     "of": 18
+    },
+    "above": {
+     "small": 1,
+     "of": 4
+    }
+   },
+   {
+    "edge": 0.3,
+    "below": {
+     "small": 7,
+     "of": 20
+    },
+    "above": {
+     "small": 1,
+     "of": 2
+    }
+   }
+  ]
+ },
  "rows": [
   {
    "set": "evals/play/p56a/audit-12.json",

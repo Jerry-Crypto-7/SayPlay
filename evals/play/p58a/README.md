@@ -67,8 +67,17 @@ node --experimental-strip-types --no-warnings --import ./scripts/ts-paths.mjs sc
 
 Práh platí, jen když nejlepší řez (aspoň 3 slova na každé straně) má nad sebou poznáno aspoň polovinu a aspoň dvakrát častěji než pod sebou (`thresholdOf`). **Ani pro hrdinu, ani pro protivníka nevyšel** (`threshold: null`): hrdina je poznaný v pásmech 5–50 % mezi pětinou a polovinou případů bez trendu nahoru, nejlepší řez (30,6 %) má nad sebou 2/5. Proto `too-small` = 0 a všechno takové je `look`. První rozbor bez téhle podmínky dal `too-small` 42 – řez na 38,7 % se dvěma slovy nad sebou, artefakt.
 
+**Kdy soudce sám píše, že je tělo malé** („small / tiny / distant / far / little“ v odpovědi, `calledSmall`; malé / slov pod hranou a nad ní):
+
+| Hrana výšky | 10 % | 15 % | 20 % | 25 % |
+|---|---|---|---|---|
+| hrdina pod / nad | 8/9 · 15/50 | 18/30 · 5/29 | **21/39 · 2/20** | 22/49 · 1/10 |
+| protivník / věc pod / nad | **7/14 · 1/8** | 7/15 · 1/7 | 7/18 · 1/4 | 7/18 · 1/4 |
+
+**X a Y pro T3:** práh poznání nevyšel, proto T3 bere hranu, nad kterou soudce tělo skoro nikdy nenazve malým: **hrdina ≥ 20 % výšky plátna** (nad ní 2/20, pod ní 21/39), **protivník či věc ≥ 10 %** (nad ní 1/8, pod ní 7/14).
+
 **Inference (ne měření):**
-- Zvětšení hrdiny v rozsahu, ve kterém dnes hry kreslí, samo poznání nezaručí – X a Y pro T3 data nedávají. Soudce ale u 25 z 54 `look` sám píše „small / tiny / distant“ (`lookCalledSmall`), takže velikost spolu s tvarem modelu roli hraje; oddělit je jde až pokusem (T3 velikost, T8 změří).
+- Zvětšení hrdiny nad 20 % odstraní výtku „malý“, ale poznání samo nezaručí: hrdina nad 20 % je poznaný 6/20, zhruba jako pod (10/39). Soudce u 25 z 54 `look` píše „small“ (`lookCalledSmall`), zbytek je tvar modelu nebo scéna; kolik dá velikost sama, změří T8.
 - Největší jednotlivé díry jsou `no-role` u protivníka či věci (44, hra slovo z věty vůbec nekreslí – T6) a `look` u hrdiny (43 – T3, T5).
 
 **Chybějící modely – `missing-nouns.json`:** 72 slov z popisků dev sad a nahraných čtení bez přesného modelu (`heroChoice(…, 'enemy').level` ≠ `identity`), podle počtu vět v poptávce a dev sadách. Vrchol: basket 10, pad 10, gopher 4, mole 4, vegetable 4, honey 3, leaf 3, master 3. Ne-jména ze čtení („you“, „can“, „three“), místa a abstrakta vyřazuje `ops/gen3d/not-nouns.txt` a `abstract` z `evals/play/p37d/common-nouns.json`; T2 do `not-nouns.txt` přidal terén a skupiny bez vlastní podoby (highway, path, line, hole, crater, swarm, crew…). Jednotné číslo bere lexikon draftu (`singular`: zombies → zombie, ne „zomby“).

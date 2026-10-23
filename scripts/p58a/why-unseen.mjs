@@ -82,6 +82,10 @@ export function classify({ carrier, level, box, threshold }) {
   return 'look';
 }
 
+/** Slova, kterými soudce popisuje tělo jako malé nebo vzdálené. */
+const SMALL = /\b(?:small|tiny|distant|far|little|miniature)\b/i;
+const SMALL_EDGES = [0.1, 0.15, 0.2, 0.25, 0.3];
+
 /** Pásma výšky na plátně pro tabulku „kolik soudce poznal“ – podle nich se čte, jestli velikost vůbec hraje roli. */
 const BAND_EDGES = [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1.01];
 
@@ -222,8 +226,11 @@ function main() {
     });
   });
   // Práh zvlášť pro hrdinu a pro protivníka či věc; role, kde velikost nic nedělí, nemá žádné `too-small`.
-  const fitted = (role) => thresholdOf(nouns.filter((item) => item.carrier !== null && item.level !== 'fallback' && item.onScreen && item.role === role).map((item) => ({ share: item.share, visible: item.visible })));
-  const thresholds = { hero: fitted('hero'), other: fitted('other') };
+  const sized = (role) => nouns.filter((item) => item.carrier !== null && item.level !== 'fallback' && item.onScreen && item.role === role);
+  const thresholds = { hero: thresholdOf(sized('hero')), other: thresholdOf(sized('other')) };
+  // Kolikrát soudce sám píše, že je tělo malé, pod a nad hranou výšky – podklad pro X a Y v T3, když práh poznání nevyjde.
+  const called = (list) => ({ small: list.filter((item) => SMALL.test(item.seenAs ?? '')).length, of: list.length });
+  const calledSmall = Object.fromEntries(['hero', 'other'].map((role) => [role, SMALL_EDGES.map((edge) => ({ edge, below: called(sized(role).filter((item) => item.share < edge)), above: called(sized(role).filter((item) => item.share >= edge)) }))]));
   for (const item of nouns) {
     // Věta bez průchodu rozměrů (server spadl) nemá spec ani snímek – třída by byla hádání.
     item.class = item.visible ? null : !item.measured ? 'unmeasured' : classify({ carrier: item.carrier, level: item.level, box: item.onScreen ? item.box : null, threshold: thresholds[item.role].threshold });
@@ -245,7 +252,8 @@ function main() {
     // `look` podle úrovně modelu: `identity` je přesný model, ostatní je blízká náhrada (jiné zvíře, jiná věc).
     lookByLevel: tally(looked, 'level'),
     // Kolikrát soudce u `look` sám píše, že je tělo malé nebo daleko – velikost bez čistého prahu, ale ne bez vlivu.
-    lookCalledSmall: looked.filter((item) => /\b(?:small|tiny|distant|far)\b/i.test(item.seenAs ?? '')).length,
+    lookCalledSmall: called(looked).small,
+    calledSmall,
     rows: nouns,
   };
   writeFileSync(resolve(ROOT, flag('out')), `${JSON.stringify(result, null, 1)}\n`);
