@@ -755,6 +755,13 @@
   transform: translateX(-50%);
 }
 
+/* Dotykové zóny souboje a plošinovky (P58C T6) stojí na téže výšce vlevo i vpravo – přepínač verze
+ * uprostřed je zakryl („Dodg|Quick · Full detail|trike“), sedne o řádek nad ně. `:where`, ať výsledek,
+ * karta konce i otevřené pole změny dál rozhodnou samy. */
+:where(.play-shell:has(.play-touch-zones)) .play-hud > :is(.play-upgrade-status, .play-upgrade-toast) {
+  bottom: calc(var(--_stack) + var(--sp-size-hud-pill) + var(--sp-space-3));
+}
+
 .play-hud > .play-demo-note {
   flex-wrap: wrap;
   justify-content: center;
@@ -1839,6 +1846,21 @@ button.play-version-switch__item:not(:disabled) {
   top: calc(var(--_hero-bottom) + var(--sp-space-4));
   transform: translateX(-50%) scale(var(--_prompt-scale, 1));
   transform-origin: top center;
+}
+
+/* Vedle hrdiny (P58C T6): nad ani pod rytíře přes půl výšky se karta na desktopu vešla jen v 0,3 a klávesy
+ * nešly přečíst. Uprostřed volné strany a mezi lištami HUD; zmenšuje se od středu. */
+.play-stage:is([data-prompt-at='left'], [data-prompt-at='right']) .play-first-prompt {
+  top: var(--_prompt-mid);
+  transform: translate(-50%, -50%) scale(var(--_prompt-scale, 1));
+}
+
+.play-stage[data-prompt-at='left'] .play-first-prompt {
+  left: calc(var(--_hero-left) / 2);
+}
+
+.play-stage[data-prompt-at='right'] .play-first-prompt {
+  left: calc((100% + var(--_hero-right)) / 2);
 }
 
 @keyframes play-first-prompt {

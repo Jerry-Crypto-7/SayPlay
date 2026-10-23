@@ -231,3 +231,32 @@ test.describe('touch only', () => {
     });
   }
 });
+
+// P58C T6: souboj ukáže zóny „Dodge“ a „Strike“ na výšce, kde stál i přepínač Quick | Full detail – porotce
+// ovládání neviděl (T5, 3/3 soudci). Překryv je vidět jen s dotykem: bez něj zóny nejsou.
+test('duel: the Quick | Full detail switch leaves the touch zones readable', async ({ page, request }) => {
+  const created = await request.post('/api/play/games', { data: { sentence: 'A knight fights a three-headed hydra at the castle gates.' } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  const { url } = (await created.json()) as { url: string };
+  await page.route('**/api/play/games/*/upgrade', (route) =>
+    route.request().method() === 'GET' ? route.fulfill({ json: { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() } }) : route.continue(),
+  );
+  await page.goto(url);
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'duel', { timeout: 90_000 });
+  const notice = page.getByTestId('upgrade-state');
+  await expect(notice).toHaveAttribute('data-kind', 'working', { timeout: 15_000 });
+  const zones = page.locator('.play-touch-zone');
+  await expect(zones).toHaveCount(2);
+  // Karta „Tap to start“ se staví podle hrdiny každý snímek tiku 0 – pod hrdinou na přepínač ani zóny nesmí.
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-prompt-at', /.+/, { timeout: 15_000 });
+  await page.waitForTimeout(500);
+  const named = async (name: string, locator: typeof notice) => ({ name, ...(await locator.boundingBox())! });
+  const pieces = [await named('switch', notice), await named('Tap to start', page.getByTestId('play-first-prompt'))];
+  for (const zone of await zones.all()) pieces.push(await named(`zone ${String(await zone.textContent())}`, zone));
+  for (const [i, a] of pieces.entries()) {
+    for (const b of pieces.slice(i + 1)) {
+      const overlaps = a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      expect(overlaps, `${a.name} ${JSON.stringify(a)} overlaps ${b.name} ${JSON.stringify(b)}`).toBe(false);
+    }
+  }
+});
