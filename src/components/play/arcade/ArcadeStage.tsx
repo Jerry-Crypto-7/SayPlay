@@ -388,6 +388,42 @@ function LegibleBodies({ control }: { readonly control: string }) {
   return null;
 }
 
+const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+
+/**
+ * Popisek jména (P58A T5) nad tělem, které jmenuje: štítek `.play-name-line` (vrstva nad plátnem) dostane
+ * polohu promítnutého temene hrdiny, nebo nejbližšího těla, jehož slot (`userData.item`) má jméno z věty – a to
+ * jméno. Tělo mimo záběr nebo bez jména = štítek zůstane schovaný. Scénou se prochází jen, když štítek visí
+ * (3 s běhu). Jen obraz; simulace a hash ho nevidí.
+ */
+function NameAnchor({ surface, control, bodies }: { readonly surface: React.RefObject<HTMLDivElement | null>; readonly control: string; readonly bodies: Readonly<Record<string, string>> }) {
+  useFrame(({ camera, scene, size }) => {
+    const tag = surface.current?.querySelector<HTMLElement>('.play-name-line');
+    if (tag == null) return;
+    let hero: Object3D | null = null;
+    const named: Object3D[] = [];
+    scene.traverse((node) => {
+      if (node.userData.frame === 'hero' && shown(node)) hero ??= node;
+      else if (node.userData.frame === 'target' && bodies[node.userData.item as string] !== undefined && shown(node)) named.push(node);
+    });
+    const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
+    const body = tag.dataset.slot === 'hero' ? hero : heroAt === null ? null : (nearestTarget(heroAt, named, control)?.node ?? null);
+    const box = body === null ? null : frameOf(body, camera, size.width, size.height, false);
+    if (box === null || box.behind || Math.abs(box.x) > 1 || box.maxY < -1) {
+      tag.style.visibility = 'hidden';
+      return;
+    }
+    if (tag.dataset.slot !== 'hero') {
+      const name = bodies[body!.userData.item as string]!;
+      if (tag.textContent !== name) tag.textContent = name;
+    }
+    tag.style.left = `${(clamp((box.x + 1) / 2, 0.1, 0.9) * 100).toFixed(1)}%`;
+    tag.style.top = `${(clamp((1 - box.maxY) / 2, 0.12, 0.95) * 100).toFixed(1)}%`;
+    tag.style.visibility = 'visible';
+  });
+  return null;
+}
+
 function FrameProbe({ control }: { readonly control: string }) {
   const get = useThree((three) => three.get);
   useEffect(() => {
@@ -785,6 +821,7 @@ const StageCanvas = memo(function StageCanvas({
   host,
   keepFrame,
   sceneKey,
+  names,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -799,6 +836,7 @@ const StageCanvas = memo(function StageCanvas({
   readonly host?: StageTunnel;
   readonly keepFrame?: string;
   readonly sceneKey?: string;
+  readonly names?: Readonly<Record<string, string>>;
 }) {
   // První scéna plátna nemá předchozí snímek, který by mohla držet (`DrawWhenCompiled`).
   const [firstScene] = useState(sceneKey);
@@ -829,6 +867,7 @@ const StageCanvas = memo(function StageCanvas({
     <HostedCanvas host={host} frameloop={live ? 'always' : 'demand'}>
       <RedrawOnChange session={session} />
       <FrameProbe control={control} />
+      {names !== undefined && <NameAnchor surface={surface} control={control} bodies={names} />}
       <RenderProbe />
       {keepFrame !== undefined && <KeepFrame versionId={keepFrame} />}
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
@@ -893,6 +932,7 @@ export default function ArcadeStage({
   host,
   keepFrame,
   sceneKey,
+  names,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -922,6 +962,8 @@ export default function ArcadeStage({
    * obloha a efekty zůstanou i s programy shaderů. Bez klíče se scéna remountuje jen se změnou žánru.
    */
   readonly sceneKey?: string;
+  /** Jména těl z věty podle slotu (`nameLines`, P58A T5) pro popisek jména; bez nich popisek nevisí nad ničím. */
+  readonly names?: Readonly<Record<string, string>>;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -974,7 +1016,7 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} />
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} names={names} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}

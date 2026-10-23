@@ -360,7 +360,7 @@ export function heroModel(spec: GameSpecV1): string {
 }
 
 /** Popisek nepřítele střelnice (role `enemy`, kořist, hlídka, soupeř souboje), nebo prázdný. */
-function enemyLabel(spec: GameSpecV1): string {
+export function enemyLabel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
   const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
