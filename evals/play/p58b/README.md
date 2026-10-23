@@ -41,3 +41,15 @@ Majitel 23. 10. zúžil srovnání na dva modely: `opus-5.5@anthropic` (Anthropi
 - **Chyba samotného čtení 2×:** `p56a/s08` (farmář stříká hadicí na vrány „než se dostanou ke kukuřici“ – čtení `defense`, štítek `shooter`), `p56a/s65` (karetní souboj – čtení `duel`, tedy lákavý žánr).
 
 **Útrata T3:** běh 5,92 USD (strop 12) + zkouška 3 vět 0,081 USD + sonda bez uvažování ~0 USD (7 vět odmítnutých 400, které OpenAI neúčtuje – měřidlo si je přesto rezervovalo nejhorším případem 0,61 USD – a 3 drobná volání). Celkem T3 ~6,0 USD.
+
+## Slovník × čtení (T5)
+
+**Pravidlo** (`classifyGenre`): rozhoduje platný žánr čtení, který hraje. Slovník rozhodne jen když čtení chybí nebo je neplatné, když jeho žánr je `null` nebo nehraje, nebo když si čtení není jisté – nové pole schématu `sure: false` („dva řádky žánru sedí zhruba stejně nebo hádám“) – a slovník něco slyšel. Pravidlo P56A T5 (slovník rozhodne, kdykoli první slyší nový žánr P54C) zrušeno.
+
+- **Offline na čteních T3** (`compare-dev.json`, pole `sure` ještě nemají = jistá): cíle 118 → **119/120**, pasti 34 → **36/40**. Opravené `p56a/s02` (merge), `p55/h78` a `h79` (už ne nový žánr). Všechny 4 případy P56A s gpt-oss-20b (s02, s03, s09, s12) teď hrají správný žánr.
+- **Živě 23. 10.** (`compare-dev-t5.json`, astra, prompt `37da73059b148b9e` s řádkem `sure`, p56a + p55 holdout, 160 vět, `--cap-usd 6`): cíle **118/120** (T3 118), pasti **35/40** (T3 34), role hrdina 77/80, protivník 76/80, 0 neplatných, p50 2,9 s, p95 5,4 s. **Žádný žánr cílů neklesl o víc než 1 větu:** úkol 4 → 3.
+- **`sure: false` padlo 12×:** 10 pastí (8 z nich se žánrem `null`) a 2 cíle. Se žánrem a nejisté byly 4 věty a slovník u nich rozhodl: `s04` stejně jako čtení, `p55/h64` jinak, ale obojí mimo nový žánr, **`s39` cíl ztracen** (čtení `quest.spatial` správně, slovník `arena.escape`) a **`s71` past spadla na lákavý `arena.escape`** (čtení `quest.spatial`). Bez větve `sure` by tatáž čtení dala 119/120 a 36/40.
+- **Data pro T6:** nejistota astry zatím slovníku nepomohla ani jednou (0 zisků, 2 ztráty na 160 větách). Prompt v T6 ať `sure` buď zpřesní, nebo se větev zruší – rozhodne dev s novým promptem.
+- **Skládání hry přehodí žánr čtení** (zjištěno pinem v `compose.test.ts`): se stejnými čteními T3 dává `draftGameSpecWithMeta` na p56a jen 50/60 (před T5 49/60), `classifyGenre` 59/60 – úkol **T5a** v plánu. Na p55 60/60.
+
+**Útrata T5:** 4,40 USD (strop 6).

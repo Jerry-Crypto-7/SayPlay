@@ -20,6 +20,7 @@ const READING: Reading = {
   mood: null,
   numbers: { seconds: null, counts: [] },
   genre: { genre: 'catch', mode: 'default' },
+  sure: true,
   foe: null,
   item: 'apple',
   world: 'meadow',

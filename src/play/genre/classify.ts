@@ -85,11 +85,6 @@ const HOP = pair('hop', 'default');
 const CROWD = pair('crowd', 'default');
 const MERGE = pair('merge', 'default');
 const PUSH = pair('push', 'default');
-/**
- * Žánry P54C, které slovník slyší přesně (P54C dev 64/64) a čtečka hádá i do rušivých vět („catch mice“, „push crates“,
- * „merge into traffic“). P56A T5: slyší-li slovník první některý z nich, rozhodne slovník, jinak čtení.
- */
-const NEW_GENRES: ReadonlySet<string> = new Set([CATCH, WHACK, DEFENSE, SLICE, HOP, CROWD, MERGE, PUSH].map((p) => `${p.genre}.${p.mode}`));
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -480,15 +475,16 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
 
   let decided: string | null = null;
   if (reading !== null) {
-    // P56A T5: slyší-li slovník první nový žánr, rozhodne on – body ze sloves čtení ho nepřeskočí. Jinak rozhoduje platný
-    // žánr čtení, který hraje; slovník řadí zbytek, kam se ustupuje, když se režim čtení nepřeloží nebo neprojde robotem.
+    // P58B T5: rozhoduje platný žánr čtení, který hraje. Slovník jen když si čtení není jisté (`sure: false`) a slovník
+    // něco slyšel – body ze sloves čtení ho pak nepřeskočí. Slovník řadí zbytek, kam se ustupuje, když se režim čtení
+    // nepřeloží nebo neprojde robotem. Dřív (P56A T5) rozhodl slovník, kdykoli první slyšel nový žánr P54C – na dev
+    // P58B tak 2× přebil správné čtení astry (p56a s02, p55 h78), u gpt-oss-20b 4× (P56A s02, s03, s09, s12).
     const heard = order(null)[0];
-    // Čtení uložená před P56A T3 (`read/__fixtures__/readings.json`) pole `genre` nemají.
+    // Čtení uložená před P56A T3 (`read/__fixtures__/readings.json`) pole `genre` nemají, před P58B T5 pole `sure`.
     const read = reading.genre ?? null;
-    if (heard !== undefined && heard.score > 0 && NEW_GENRES.has(key(heard))) decided = key(heard);
-    else if (read !== null && scores.has(key(read)) && availability(read) === 'ready') {
-      decided = key(read);
-      add(read, 4, `reading genre "${decided}"`);
+    if (read !== null && scores.has(key(read)) && availability(read) === 'ready') {
+      add(read, 4, `reading genre "${key(read)}"`);
+      decided = reading.sure === false && heard !== undefined && heard.score > 0 ? key(heard) : key(read);
     }
     reading.verbs.forEach((verb, index) => {
       const pick = READ_CLASS[verb.class];

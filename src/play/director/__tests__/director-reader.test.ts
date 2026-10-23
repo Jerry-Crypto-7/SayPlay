@@ -17,7 +17,7 @@ import { direct } from '../index';
 // nečte znovu. Strop čtečky je tu kladný a cache vypnutá, takže volání zastaví jen chybějící volající.
 const READING: Reading = {
   control: 'runner', verbs: [{ word: 'runs', class: 'runner' }], hero: 'corgi', roles: [], setting: 'park', mood: null,
-  numbers: { seconds: null, counts: [] }, genre: null, foe: null, item: null, world: null, title: null,
+  numbers: { seconds: null, counts: [] }, genre: null, sure: true, foe: null, item: null, world: null, title: null,
 };
 const SENTENCE = 'a corgi runs through a park grabbing sausages';
 

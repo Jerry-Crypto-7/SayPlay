@@ -84,6 +84,7 @@ export function readerSystemPrompt(): string {
     ...READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`))
       .sort((a, b) => (MODE_ORDER.indexOf(a) + 1 || 99) - (MODE_ORDER.indexOf(b) + 1 || 99))
       .map((id) => `- ${id}: ${MODE_HINTS[id] ?? ''}`),
+    'sure: false when two genre lines fit about equally or you are guessing, else true.',
     'foe: who or what the hero fights, flees or dodges, 1-3 words, or null.',
     'item: the main thing the hero collects, throws or protects, or null.',
     `world: the look of the place, one of ${LOOK_IDS.map((id) => (LOOK_HINTS[id] === undefined ? id : `${id} (${LOOK_HINTS[id]})`)).join(', ')}; null when none fits.`,

@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { goldenPrompts } from '../../../../evals/play/golden';
 import sentenceSet from '../../../../evals/play/p32/sentences.json';
+import { type CompareRow, loadSet, scoreOf } from '../../../../evals/play/p58b/compare.measure';
 import { T13_MOVED } from '../../../../evals/play/p54c/rows';
 import type { Reading } from '../../read/schema';
 import { readGameSpec } from '../../spec';
@@ -25,6 +26,8 @@ const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/co
 
 // Střílečka a hod jsou od P36A T10 zase žánry, poletování, načasování, rytmus a souboj od T11; žánr nemá jen `tap_go`.
 const LEGACY_CONTROLS = ['tap_go'];
+/** P58B T5: jistá čtení astry, která sama trefila (117 cílů + 26 pastí ze 160 vět) – hlídá, že pin data opravdu prošel. */
+const SCORED_READINGS = 143;
 
 const top = (sentence: string, modules = genreDoubles()) => classifyGenre(sentence, null, modules).ranked[0];
 
@@ -145,6 +148,7 @@ describe('classifyGenre', () => {
       mood: null,
       numbers: { seconds: null, counts: [] },
       genre: null,
+      sure: true,
       foe: null,
       item: null,
       world: null,
@@ -155,14 +159,17 @@ describe('classifyGenre', () => {
     expect(result.ranked[0].why).toContain('reading');
   });
 
-  // P56A T5 (majitel 21. 10., varianta a): slyší-li slovník první nový žánr P54C, rozhodne slovník; jinak platné čtení
-  // rozhoduje žánr i režim, i proti dobře slyšenému slovesu. Režim, který nehraje (`fallback`), čtení nerozhodne.
-  describe('the reading genre decides unless the keywords hear a new genre (P56A T5)', () => {
-    const read = (genre: Reading['genre']): Reading => ({
+  // P58B T5 (dřív P56A T5, kde slovník rozhodl, kdykoli první slyšel nový žánr P54C): platné čtení rozhoduje žánr i režim,
+  // i proti dobře slyšenému slovesu nového žánru. Slovník rozhodne jen když si čtení není jisté (`sure: false`) a něco
+  // slyšel. Režim, který nehraje (`fallback`), čtení nerozhodne.
+  describe('a sure reading genre decides; the keywords only when the reading is unsure (P58B T5)', () => {
+    const read = (genre: Reading['genre'], sure = true): Reading => ({
       control: 'move_free', verbs: [], hero: null, roles: [], setting: null, mood: null,
-      numbers: { seconds: null, counts: [] }, genre, foe: null, item: null, world: null, title: null,
+      numbers: { seconds: null, counts: [] }, genre, sure, foe: null, item: null, world: null, title: null,
     });
     const order = (sentence: string, reading: Reading | null, modules: Parameters<typeof classifyGenre>[2] = genreDoubles()) => classifyGenre(sentence, reading, modules).ranked.map((choice) => `${choice.genre}.${choice.mode}`);
+    const CATCH = 'a bear catches falling honey jars in a basket';
+    const running = (sure: boolean): Reading => ({ ...read({ genre: 'runner', mode: 'default' }, sure), verbs: [{ word: 'run', class: 'runner' }, { word: 'dash', class: 'runner' }, { word: 'sprint', class: 'runner' }] });
 
     it('goes first over a heard old-genre verb and leaves the rest in keyword order', () => {
       const sentence = 'Two knights duel in a castle';
@@ -173,13 +180,27 @@ describe('classifyGenre', () => {
       expect(ranked.slice(1).map((choice) => `${choice.genre}.${choice.mode}`)).toEqual(order(sentence, null).filter((id) => id !== 'arena.collect'));
     });
 
-    it('yields to the keywords when they hear a new genre first, also against the reading verbs', () => {
-      const sentence = 'a bear catches falling honey jars in a basket';
-      expect(order(sentence, null, GENRE_MODULES)[0]).toBe('catch.default');
-      const pulled = { ...read({ genre: 'runner', mode: 'default' }), verbs: [{ word: 'run', class: 'runner' as const }, { word: 'dash', class: 'runner' as const }, { word: 'sprint', class: 'runner' as const }] };
-      const ranked = classifyGenre(sentence, pulled, GENRE_MODULES).ranked;
-      expect(ranked[0]).toMatchObject({ genre: 'catch', mode: 'default' });
-      expect(ranked[0].why).not.toContain('reading genre');
+    it('goes first over a heard new genre too', () => {
+      expect(order(CATCH, null, GENRE_MODULES)[0]).toBe('catch.default');
+      const ranked = classifyGenre(CATCH, running(true), GENRE_MODULES).ranked;
+      expect(ranked[0]).toMatchObject({ genre: 'runner', mode: 'default' });
+      expect(ranked[0].why).toContain('reading genre');
+    });
+
+    it('yields to what the keywords heard when it is unsure, also against its own verbs', () => {
+      expect(order(CATCH, running(false), GENRE_MODULES)[0]).toBe('catch.default');
+      expect(order('Two knights duel in a castle', read({ genre: 'arena', mode: 'collect' }, false))[0]).toBe('duel.default');
+    });
+
+    it('still decides when it is unsure and the keywords heard nothing', () => {
+      const sentence = 'A key inside a glass box on a pedestal behind a locked gate.';
+      expect(classifyGenre(sentence, null, genreDoubles()).ranked[0].score).toBe(0);
+      expect(order(sentence, read({ genre: 'duel', mode: 'default' }, false))[0]).toBe('duel.default');
+    });
+
+    it('decides like a sure one when it was stored before the sure field', () => {
+      const { sure: _drop, ...stored } = running(true);
+      expect(order(CATCH, stored as Reading, GENRE_MODULES)[0]).toBe('runner.default');
     });
 
     it('reads a new genre the keywords do not hear', () => {
@@ -193,6 +214,46 @@ describe('classifyGenre', () => {
     it('a null genre leaves the keyword order', () => {
       expect(order('Two knights duel in a castle', read(null))).toEqual(order('Two knights duel in a castle', null));
     });
+  });
+
+  // P58B T5: na datech – čtení astry s polem `sure` (`evals/play/p58b/compare-dev-t5.json`, dev sady p56a a p55). Jisté
+  // čtení, které samo trefilo, slovník nepřebije (v T3 přebil p56a s02 a p55 h78), a žádný žánr cílů neklesne proti T3
+  // (`compare-dev.json`) o víc než 1 větu – nejisté čtení p56a s39 tak úkol stálo 4 → 3.
+  it('lets the keywords beat no sure reading that scored on its own and drops no genre by more than 1 target against T3', () => {
+    const rows = (file: string) => (JSON.parse(readFileSync(new URL(`../../../../evals/play/p58b/${file}`, import.meta.url), 'utf8')) as { rows: CompareRow[] }).rows;
+    const sets = new Map(['p56a/holdout', 'p55/holdout'].map((name) => [name, new Map(loadSet(`evals/play/${name}.json`).sentences.map((row) => [row.id, row]))]));
+    const before = new Map(rows('compare-dev.json').map((row) => [`${row.set} ${row.id}`, row.models['astra@openai']!.hit]));
+    const beaten: string[] = [];
+    const genres: Record<string, { before: number; now: number }> = {};
+    let scored = 0;
+    for (const row of rows('compare-dev-t5.json')) {
+      const sentence = sets.get(row.set)?.get(row.id);
+      const read = row.models['astra@openai']!;
+      if (sentence === undefined || read.reading === null) continue;
+      const first = classifyGenre(sentence.text, read.reading, GENRE_MODULES).ranked[0];
+      const hit = scoreOf(sentence, `${first.genre}.${first.mode}`).hit === true;
+      if (row.kind === 'target') {
+        const genre = (genres[row.label!.split('.')[0]!] ??= { before: 0, now: 0 });
+        genre.before += before.get(`${row.set} ${row.id}`) === true ? 1 : 0;
+        genre.now += hit ? 1 : 0;
+      }
+      if (read.reading.sure === false || scoreOf(sentence, read.readGenre).hit !== true) continue;
+      scored += 1;
+      if (!hit) beaten.push(`${row.set} ${row.id}: read ${read.readGenre}, played ${first.genre}.${first.mode}`);
+    }
+    expect(beaten).toEqual([]);
+    expect(Object.entries(genres).filter(([, count]) => count.now < count.before - 1)).toEqual([]);
+    expect(scored).toBe(SCORED_READINGS);
+  });
+
+  // P56A final.md: s02, s03, s09 a s12 – gpt-oss-20b přečetl správně a pravidlo P56A T5 ho přebilo slovem slovníku.
+  it.each(['s02', 's03', 's09', 's12'])('plays the right gpt-oss-20b reading of P56A %s that the keywords used to beat', (id) => {
+    const json = <T,>(path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/p56a/${path}`, import.meta.url), 'utf8')) as T;
+    const sentence = json<{ sentences: { id: string; genre: string; text: string }[] }>('holdout.json').sentences.find((row) => row.id === id)!;
+    const reading = json<{ readings: { id: string; reading: Reading }[] }>('readings/holdout.gpt-oss-20b.json').readings.find((row) => row.id === id)!.reading;
+    expect(`${reading.genre?.genre}.${reading.genre?.mode}`).toBe(sentence.genre);
+    const first = classifyGenre(sentence.text, reading, GENRE_MODULES).ranked[0];
+    expect(`${first.genre}.${first.mode}`).toBe(sentence.genre);
   });
 
   // P39 T5: hlavní sloveso říká, co jeho předmět ve hře dělá; pohyb a načasování předmět obsazení nemají.

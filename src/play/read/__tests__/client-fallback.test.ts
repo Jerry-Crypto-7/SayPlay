@@ -17,7 +17,7 @@ import type { Reading } from '../schema';
 
 const READING: Reading = {
   control: 'runner', verbs: [{ word: 'runs', class: 'runner' }], hero: 'corgi', roles: [], setting: 'park', mood: null,
-  numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' }, foe: null, item: null, world: null, title: null,
+  numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' }, sure: true, foe: null, item: null, world: null, title: null,
 };
 
 /** Produkční vzor čtečky (`scripts/cloud/env.production.example`) s testovacím klíčem. */

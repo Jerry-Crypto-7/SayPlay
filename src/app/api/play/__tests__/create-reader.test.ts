@@ -37,6 +37,7 @@ const READING: Reading = {
   mood: null,
   numbers: { seconds: null, counts: [] },
   genre: null,
+  sure: true,
   foe: null,
   item: null,
   world: null,
@@ -248,7 +249,7 @@ describe('create route reads the sentence before drafting', () => {
     const ROLLS = 'a hedgehog rolls down a mushroom hill avoiding foxes';
     const ROLLS_READING: Reading = {
       control: 'runner', verbs: [{ word: 'rolls', class: 'runner' }], hero: 'hedgehog', roles: [{ noun: 'foxes', kind: 'threat', count: null }],
-      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' },
+      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' }, sure: true,
       foe: 'foxes', item: null, world: 'forest', title: 'Hedgehog Hill Roll',
     };
     const readerOf = (reading: Reading) => vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 }));
@@ -285,7 +286,7 @@ describe('create route reads the sentence before drafting', () => {
       const reader = readerOf({
         control: 'tap_go', verbs: [{ word: 'drop', class: 'timing' }, { word: 'merge', class: 'timing' }], hero: null,
         roles: [{ noun: 'fruit', kind: 'collectible', count: null }, { noun: 'watermelon', kind: 'destination', count: null }],
-        setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'merge', mode: 'default' }, foe: null, item: 'watermelon', world: null, title: 'Fruit Merge',
+        setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'merge', mode: 'default' }, sure: true, foe: null, item: 'watermelon', world: null, title: 'Fruit Merge',
       });
       vi.stubGlobal('fetch', reader);
       const pending = create(merge);

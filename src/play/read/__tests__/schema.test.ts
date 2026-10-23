@@ -20,13 +20,14 @@ const READING: Reading = {
   mood: null,
   numbers: { seconds: null, counts: [] },
   genre: { genre: 'runner', mode: 'default' },
+  sure: true,
   foe: 'asteroid',
   item: null,
   world: 'space',
   title: 'Asteroid Dash',
 };
 
-const FIELDS = ['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'foe', 'item', 'world', 'title'];
+const FIELDS = ['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'sure', 'foe', 'item', 'world', 'title'];
 
 describe('readingSchema P56A fields', () => {
   it('accepts a full reading and the same reading with every new field null', () => {
