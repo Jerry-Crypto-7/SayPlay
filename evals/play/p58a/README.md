@@ -110,3 +110,22 @@ Na `9b0a37f7` stejně jako T1: tatáž nahraná čtení, tentýž soudce po sad�
 - **Precision (s06, s20, s44, okem):** hrdina v záběru vůbec není, je vidět jen lišta a sloupek. Věc na ručičce: s20 palačinky poznané (nově), s06 patty soudce četl jako sendvič, s44 kokos jako hnědý kotouč.
 
 **Inference:** „too-small“ je ve skutečnosti „look“. Práh 30,7 % stojí na 4 hrdinech nad ním a 42 hrdinů má medián 21 % výšky plátna, tedy cíl T3 splňují. Zhruba 67 slov má správný model na obrazovce a soudce je přesto nepozná. 14 z těch 42 jsou hry precision/stack, kde sonda bere jako hrdinu houpající se díl a postava v záběru chybí – to je nejužší cílená oprava (T8, druhé kolo).
+
+### Druhé kolo T8 – hrdina u načasování
+
+**Co se zkusilo:** scéna načasování (`TimingScene`, žánry `timing.precision` a `timing.stack`) hrdinu věty vůbec nekreslila – rytmus ho měl vedle lišty, načasování ne. Teď stojí před věží za krajem kyvu, natočený ke kameře i k věži, 1,8 m (na šířku ~25 % výšky snímku), s poskokem po trefě (`f8e3c7c7`). Po prvním přefocení ho u s47 zakryl rámující kus kulis (ledový oblouk), proto je místo hrdiny pro kulisy zakázané (`30ba646d`). Popisek jména hrdiny jde v rytmu a načasování nad postavu, ne nad lištu nebo ručičku. Sonda záběru má hrdinou dál jezdce, testy záběru se nemění.
+
+**Měření:** 22 her načasování (všechny v otevřené sadě P56A) přefocených na `30ba646d` a znovu posouzených Opusem, stejná nahraná čtení. Zbylých 70 her nese snímky a verdikty prvního kola z `9b0a37f7` – od té doby se změnila jen scéna načasování a textový popisek, který snímek skrývá. Souhrn `dev-result.json`.
+
+| | celé věty | slova | hrdina | protivník/věc |
+|---|---|---|---|---|
+| audit-12 (Codex) | 2/12 | 7/18 | 2/6 | 5/12 |
+| otevřená P56A (Opus) | 12/80 (kolo 1: 9/80) | 43/128 (32/128) | 27/59 (17/59) | 16/69 (15/69) |
+| **celkem** | **14/92 = 0,15** (0,12) | **50/146 = 0,34** (0,27) | 29/65 (19/65) | 21/81 (20/81) |
+
+- **Hrdina u her načasování: 11/16 poznaných** (kolo 1: 1/16, šest vět hrdinu soudci nejmenuje) – dítě, ochranka, opice, chobotnice, tučňák, kovář, papoušek, gumová kachna, tuleň, detektiv, děda. Nepoznaní: DJ kočka (obyčejná kočka), babička (čte se jako děda s cylindrem), kasař a operní pěvkyně (obecná postava), ještěrka (čte se jako raptor).
+- Celé věty u načasování 0/22 → 3/22. Šum soudce: s06 „burger patty“ při prvním přefocení poznaný, při druhém ne (táž scéna, obrázek se liší jen kulisami).
+- **Proč dál chybí** (96 neviděných): look 48 (hrdina 24, protivník/věc 24; přesný model `identity` 41), no-role 31 (vše protivník/věc), too-small 9, off-screen 6, no-model 2. Práh velikosti opět nevyšel (hrdina 20–30 % výšky poznaný 20/45).
+- **Brána dev (0,5 celých vět, 0,75 slov) splněná není a jedna cílená oprava ji nepřiblíží.** Největší třída je teď „look“: správné tělo i model na obrazovce a soudce ho nepozná (generický člověk místo profese, kočka bez znaku DJ, ještěrka jako raptor). Druhá je no-role – věc, kterou hra nedostala do žádné role (zombie, náboj, šperk z věty).
+
+**Inference:** zbylé body neleží v kameře ani velikosti. Profese a přívlastky („opera singer“, „dj cat“, „safecracker“) potřebují znak na modelu (rekvizita, kostým), zvířata přesnější model. To je práce na knihovně modelů, ne na scéně.

@@ -1,18 +1,18 @@
 {
  "schema": "p58a-visibility.v1",
- "commit": "9b0a37f7",
- "setup": "next start (webpack build of 9b0a37f7) on 127.0.0.1:3171, empty in-memory store, PLAY_READER=on via scripts/p58a/reader-replay.mjs replaying the same evals/play/p58a/readings as T1 (gpt-oss-20b, audit 12/12, p56a holdout 78/80). Chromium ANGLE d3d11 (RTX 3090). Since T1: hero >= 20 % and foe/item >= 10 % of canvas height (T3), camera frames hero and nearest foe (T4), HTML name label (hidden from the judge like all page text, T5), every sentence noun cast with the nearest model (T6), 7 generated models (T7). All 92 games on one server, no hang or restart. 37/92 games are P56C chains without the hand clock (snapped 3 s of real time after __playShell.start()), all 37 with React #418. Judges: audit-12 Codex, p56a holdout Opus 5.5 (claude -p --safe-mode).",
+ "commit": "30ba646d",
+ "setup": "T8 second round. The 22 timing games (timing.precision, timing.stack; all in the p56a holdout) re-shot on this commit (webpack build, next start 127.0.0.1:3171, empty in-memory store, PLAY_READER=on via scripts/p58a/reader-replay.mjs replaying the same evals/play/p58a/readings as T1, Chromium ANGLE d3d11) and re-judged by Opus 5.5 (claude -p --safe-mode). The other 70 games carry the T8 first-round photos and verdicts on 9b0a37f7 unchanged: since then only the timing scene and the HTML name label changed, and the snapshot hides page text. Change since 9b0a37f7: timing scenes draw the sentence hero in front of the tower (the first round drew no hero at all), and framing pieces keep off it. Judges: audit-12 Codex, p56a holdout Opus 5.5.",
  "question": "blind judge (scripts/p37d/judge-sheet.mjs ask, empty mkdtemp with only sheet.png) sees each noun of the sentence: hero (subject) and foe, or the item when the sentence names no foe",
  "frame": "canvas only, page text hidden, 1280x800, robot (\"Show me how\") after 180 ticks (3 s of play) on the probe's hand clock",
  "total": {
   "sentences": 92,
-  "allSeen": 11,
+  "allSeen": 14,
   "nouns": 146,
-  "nounsSeen": 39,
+  "nounsSeen": 50,
   "hero": 65,
-  "heroSeen": 19,
+  "heroSeen": 29,
   "other": 81,
-  "otherSeen": 20,
+  "otherSeen": 21,
   "judges": {
    "codex": 12,
    "claude": 80
@@ -34,13 +34,13 @@
   },
   "evals/play/p56a/holdout.json": {
    "sentences": 80,
-   "allSeen": 9,
+   "allSeen": 12,
    "nouns": 128,
-   "nounsSeen": 32,
+   "nounsSeen": 43,
    "hero": 59,
-   "heroSeen": 17,
+   "heroSeen": 27,
    "other": 69,
-   "otherSeen": 15,
+   "otherSeen": 16,
    "judges": {
     "claude": 80
    }
@@ -1207,13 +1207,13 @@
     }
    },
    "judge": "claude",
-   "scene": "A snowy low-poly landscape with igloos, snowmen in top hats, a sled, a ski-lift pylon, a flat blue tree-like shape on a red block, and a dark block with a translucent green marker in the center.",
+   "scene": "A snowy low-poly landscape with igloos, a penguin character, a partial snowman, sleds, a lift tower, a blue spiky plant on a red block, and dark block/pillar shapes with a translucent green marker.",
    "all": false,
    "nouns": [
     {
      "noun": "yeti",
      "visible": false,
-     "seenAs": "No yeti; there are only snowmen, igloos, a sled, a lift pylon and plain dark/red blocks (a dark pillar in front of the igloo is just a block).",
+     "seenAs": "No yeti; the only creatures are a blocky penguin on the right and a partial snowman at the left edge, and the dark pillar in the center is just a plain column.",
      "role": "other"
     }
    ]
@@ -1427,13 +1427,13 @@
     }
    },
    "judge": "claude",
-   "scene": "A low-poly grassy farm field with a large dark rock formation, a windmill, a tree, a sunflower, a wooden fence, and a giant flat sandwich on a wooden platform; a dark blue block, a translucent green pillar and a red block sit in the foreground.",
+   "scene": "A low-poly grassy field with a chibi brown-haired character, a big sunflower, a tree, a large dark rock formation, a windmill, a dark block with a green translucent marker, a red block, and a giant flat sandwich on a wooden platform.",
    "all": false,
    "nouns": [
     {
      "noun": "burger patty",
      "visible": false,
-     "seenAs": "A giant flat, rectangular sandwich (bread, lettuce and a thin dark filling layer) on a wooden platform. It reads as a sandwich, not as a clearly recognizable burger patty.",
+     "seenAs": "No distinct burger patty; there's only a giant flat sandwich (bread, lettuce, cheese and a thin brown filling layer) on a wooden platform, which reads as a sandwich, not a patty.",
      "role": "other"
     }
    ]
@@ -1886,13 +1886,13 @@
     }
    },
    "judge": "claude",
-   "scene": "A low-poly green meadow with two windmills, a tree, picnic tables, a wooden bench, a sunflower, a dark block under a green light beam, and a flat dark disc-like platform with a yellow center.",
+   "scene": "A low-poly farm field with two windmills, a tree, picnic tables, and a wooden fence; a blocky grey cat stands near a dark flat object with a yellow eye-shaped marking, beside a dark block under a translucent green light beam.",
    "all": false,
    "nouns": [
     {
      "noun": "dj cat",
      "visible": false,
-     "seenAs": "No cat or DJ figure; only a dark block under a green beam and a flat dark disc/turntable-like platform with a yellow center, with no character on it",
+     "seenAs": "A blocky grey cat with yellow eyes, but it has no DJ features such as headphones, turntables or a mixing deck. The dark flat object behind it doesn't clearly look like DJ equipment, so it reads as a plain cat, not a DJ cat.",
      "role": "hero"
     }
    ]
@@ -2306,13 +2306,13 @@
     "items": {}
    },
    "judge": "claude",
-   "scene": "A moonlit low-poly graveyard at night with lanterns, a pumpkin, an iron fence, a gravestone, and rock spires, with a red box and a green box on a dark platform in the foreground.",
+   "scene": "A dark, moonlit low-poly graveyard with pine trees, rock spires, a pumpkin, an iron fence and a lantern, plus plain red and green blocks on a slab and a blocky cartoon kid character on the right.",
    "all": false,
    "nouns": [
     {
      "noun": "zombie",
      "visible": false,
-     "seenAs": "No zombie figure. There are only plain colored blocks (a red slab and a green upright box), lanterns, a pumpkin and a gravestone.",
+     "seenAs": "A blocky cartoon kid with glasses, a green shirt and arms held out. Skin and clothes look normal, with no rot, wounds or undead features, so it reads as an ordinary human character, not a zombie.",
      "role": "other"
     }
    ]
@@ -2545,19 +2545,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A foggy white low-poly plain with a pale city skyline behind it, scattered with kitchen objects: a vending machine, a red toaster, a mortar and pestle, a giant stack of pancakes on a red stand, rust-colored rocky lumps, and a dark slab with a translucent green marker in the foreground.",
+   "scene": "A foggy, empty white plaza with a city skyline behind it, scattered with low-poly props: a vending machine, a red toaster, a dark block with a green glowing marker, a big stack of tan discs on a red stand, a mortar and pestle in the foreground, and a small gray-haired character in a top hat.",
    "all": false,
    "nouns": [
     {
      "noun": "grandma",
      "visible": false,
-     "seenAs": "No old-woman character anywhere; the only figure-like thing is a translucent green capsule/block marker on a dark navy slab in the foreground.",
+     "seenAs": "A small elderly-looking character with gray hair, a black top hat, a white shirt, suspenders and green trousers. It reads as an old man or gentleman, not clearly a grandma.",
      "role": "hero"
     },
     {
      "noun": "pancake",
      "visible": true,
-     "seenAs": "A large stack of flat tan discs with a yellow butter-like pat on top, at center-right, reads as a pancake stack.",
+     "seenAs": "A large stack of flat, round, tan-brown discs on a red stand in the middle of the scene, which reads as a stack of pancakes.",
      "role": "other"
     }
    ]
@@ -2607,19 +2607,19 @@
     "items": {}
    },
    "judge": "claude",
-   "scene": "A low-poly green field with a sunflower, a tree, a windmill, a tall rock, a picnic table and wooden fences, and in the middle a dark block, a translucent green box and a red wall slab.",
+   "scene": "A low-poly grassy field with a chibi brown-haired character, a dark block with a translucent green pillar, a red wall slab, a windmill, a standing stone, a tree, a picnic table, fences and a sunflower.",
    "all": false,
    "nouns": [
     {
      "noun": "safecracker",
      "visible": false,
-     "seenAs": "No character is visible. The only things in the middle are plain geometric shapes: a dark box, a translucent green block and a red slab.",
+     "seenAs": "A generic chibi character in a brown shirt; nothing about them suggests a safecracker.",
      "role": "hero"
     },
     {
      "noun": "dial",
      "visible": false,
-     "seenAs": "There is no dial or safe. The dark flat block and the translucent green rectangle are plain, unmarked shapes.",
+     "seenAs": "No dial anywhere; there's only a dark flat block with a translucent green pillar and a red wall slab.",
      "role": "other"
     }
    ]
@@ -2822,13 +2822,13 @@
     }
    },
    "judge": "claude",
-   "scene": "A low-poly red Mars-like surface with lander modules, a small red-tipped rocket, a flag with a crescent moon, rocks, a floating cyan disc platform, a dark block and a green translucent beam under a hazy sky.",
+   "scene": "A small chibi character stands on a red, Mars-like surface beside a cyan disc platform, with a small red-and-white rocket, lander modules, a crescent-moon flag, rocks, a dark block with a green light beam, and dark mountains under a grey sky.",
    "all": false,
    "nouns": [
     {
      "noun": "planet",
      "visible": false,
-     "seenAs": "No planet body appears as an object. The red ground suggests a planet's surface, and there is only a bright glow in the sky and a crescent-moon symbol on the flag.",
+     "seenAs": "No planet appears as an object. There is only a red, planet-like ground surface, a bright glow in the sky, and a crescent-moon symbol on the flag.",
      "role": "other"
     }
    ]
@@ -2894,19 +2894,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A dark red volcanic landscape at sunset with two red volcano cones, a black cone, a flat yellow slab, a green light beam, a small smoking vent, and large dark jagged boulders in the foreground.",
-   "all": false,
+   "scene": "A low-poly volcanic landscape under a red sky, with a cartoon kid in glasses and a green shirt standing on dark ground, dark faceted boulders, a flat yellow rock slab, volcanoes in the background and a green light beam.",
+   "all": true,
    "nouns": [
     {
      "noun": "kid",
-     "visible": false,
-     "seenAs": "No child or humanoid figure appears; the only small objects are a smoking vent and a dark crystal-like spike in the distance.",
+     "visible": true,
+     "seenAs": "Chibi-style cartoon child with brown hair, round glasses, a green shirt and orange shoes, standing on the right",
      "role": "hero"
     },
     {
      "noun": "lava rock",
      "visible": true,
-     "seenAs": "Large dark, jagged, faceted boulders in the bottom-left and bottom-right foreground (plus one at far left), which read as volcanic lava rocks in this volcano setting.",
+     "seenAs": "Dark, jagged low-poly volcanic boulders in the lower-left foreground and on the left, set in the lava landscape",
      "role": "other"
     }
    ]
@@ -3307,19 +3307,19 @@
     "items": {}
    },
    "judge": "claude",
-   "scene": "A low-poly mall-like plaza with market kiosks, a fountain, a giant gumball machine, a clothing rack, a red counter, dress mannequins, and a dark block with a green stripe in the center.",
+   "scene": "A low-poly mall-like open plaza with market kiosks, a fountain, a giant gumball machine, a clothing rack, a red counter, a dark bench with a green marker, and a uniformed security guard standing in the foreground right.",
    "all": false,
    "nouns": [
     {
      "noun": "mall cop",
-     "visible": false,
-     "seenAs": "No security guard figure; only mannequins in red dresses and props are present.",
+     "visible": true,
+     "seenAs": "Uniformed security guard with cap, badge, tie and belt standing at right",
      "role": "hero"
     },
     {
      "noun": "shoplifter",
      "visible": false,
-     "seenAs": "No person stealing; the only human-like figures are dress mannequins on stands, and the central dark block with a green stripe is not a character.",
+     "seenAs": "Only a tiny white-and-red figure (mannequin-like) far in the background, too small to make out; no clear thief character",
      "role": "other"
     }
    ]
@@ -3456,19 +3456,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A low-poly orange desert with an obelisk, rocks, a yellow tent, a brown hut-like structure, a black block with a green translucent post, and a green curved object in the foreground.",
+   "scene": "A low-poly orange desert with an obelisk, rocks, a yellow tent, a brown rock and wood structure, a black block with a green translucent post, and a green raptor-like reptile standing on the right.",
    "all": false,
    "nouns": [
     {
      "noun": "lizard",
      "visible": false,
-     "seenAs": "No lizard; only a small, indistinct brown-and-white figure in the distance that can't be made out",
+     "seenAs": "A green, bipedal, raptor-like reptile on the right. It reads more as a dinosaur (velociraptor) than a lizard.",
      "role": "hero"
     },
     {
      "noun": "cactus stick",
      "visible": false,
-     "seenAs": "A green translucent rectangular post on a black block, which looks like a marker rather than a cactus; the green curved foreground object is a rock or ring shape",
+     "seenAs": "A plain green translucent post or bar on a black block. It has no cactus features and looks like a marker or pickup highlight.",
      "role": "other"
     }
    ]
@@ -3621,13 +3621,13 @@
     }
    },
    "judge": "claude",
-   "scene": "A dark, foggy cave floor in low-poly style, with large blue faceted mushrooms in the foreground, a green pillar standing on a dark slab, a pale icy floating platform held up by a red block, and faint cone-shaped spires in the background.",
+   "scene": "A low-poly character with glasses stands in a dark, foggy cave-like area next to a large blue faceted rock, a green pillar on a dark block, a pale floating platform with a red block under it, and faint cone-shaped spires in the background.",
    "all": false,
    "nouns": [
     {
      "noun": "stalactite",
      "visible": false,
-     "seenAs": "Nothing hangs from a ceiling. The only rock formations are faint, fog-covered cone spires rising from the ground in the background, which look like stalagmites, not stalactites.",
+     "seenAs": "Nothing hangs from a ceiling. The only pointed shapes are faint, fog-covered cones rising from the ground in the background, which look more like stalagmites or rock spires, plus a large blue faceted boulder in the foreground.",
      "role": "other"
     }
    ]
@@ -4256,19 +4256,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A low-poly jungle clearing on green grass with a palm tree, potted bamboo, a thatched hut, rock spires, a floating brown platform, a red block, a dark box, and a translucent green pillar.",
+   "scene": "A low-poly jungle clearing with a palm tree, a thatched hut, bamboo in a pot, dark rocks, a floating brown slab, red and dark blocks with a green glowing marker, and a chunky orange monkey-like character in the right foreground.",
    "all": false,
    "nouns": [
     {
      "noun": "monkey",
-     "visible": false,
-     "seenAs": "No monkey or animal character visible; only blocks, a translucent green pillar, and scenery.",
+     "visible": true,
+     "seenAs": "Blocky orange creature with a tan face, large round side ears and a hair tuft in the right foreground, recognisable as a cartoon monkey",
      "role": "hero"
     },
     {
      "noun": "coconut",
      "visible": false,
-     "seenAs": "No coconuts visible; the palm tree has no fruit, and only tiny orange specks are near the hut.",
+     "seenAs": "No coconuts on the palm tree; only a few tiny orange specks near the palm, too small to make out",
      "role": "other"
     }
    ]
@@ -4427,19 +4427,19 @@
     }
    },
    "judge": "claude",
-   "scene": "An underwater seafloor scene with a large dark octopus-like figure in the distance, a yellow-green block platform, a green light beam, a green seahorse in the foreground right, a faceted dark rock at lower left, and a small blue jellyfish.",
+   "scene": "An underwater seafloor scene: a large dark octopus in the background, a red-and-black tentacled creature in the foreground on the right, a yellow block on a dark platform, a translucent green light beam, a faceted rock at lower left, and a green seahorse at lower right.",
    "all": false,
    "nouns": [
     {
      "noun": "octopus",
      "visible": true,
-     "seenAs": "Large dark figure in the background with a rounded head and curling tentacles",
+     "seenAs": "A large dark octopus with a rounded head and curling tentacles in the mid-background, plus a red-and-black tentacled octopus-like figure in the right foreground",
      "role": "hero"
     },
     {
      "noun": "shell",
      "visible": false,
-     "seenAs": "No shell visible; the lower-left object is a faceted dark rock/boulder, other items are a seahorse, jellyfish, and block",
+     "seenAs": "No shell is visible; the closest things are a faceted dark rock or boulder at lower left and a green seahorse at lower right",
      "role": "other"
     }
    ]
@@ -4505,19 +4505,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A snowy low-poly landscape with blue ice arches around a dark block that has a green light beam, a floating brown log or plank, and a tall blue ice spike in front of a misty pine forest and mountains.",
+   "scene": "A snowy low-poly arena with blue ice arches, a driftwood plank, a dark block crossed by a green light beam, and a boxy penguin character in the right foreground.",
    "all": false,
    "nouns": [
     {
      "noun": "penguin",
-     "visible": false,
-     "seenAs": "No penguin or any other creature appears; the scene has only ice arches, a dark block, a brown log or plank, and a small dark shard.",
+     "visible": true,
+     "seenAs": "Boxy cartoon penguin with a black body, white face, big eyes, an orange beak and flipper wings, in the right foreground",
      "role": "hero"
     },
     {
      "noun": "icicle",
      "visible": false,
-     "seenAs": "The closest match is a tall blue ice spike pointing up from the ground. It looks like an ice crystal or rock, not a hanging icicle.",
+     "seenAs": "No hanging icicle. The closest thing is a floating blue diamond-shaped ice crystal/gem near the arches, which reads as a crystal shard rather than an icicle",
      "role": "other"
     }
    ]
@@ -4660,19 +4660,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A green field with two jagged black rock gateways, a beige sign board, a heraldic banner, a small well, a dark blue block with a green translucent pillar in the foreground, and a red box with flat beige plank-like shapes floating in it.",
+   "scene": "A green field with two dark jagged castle-like ruins, a banner, a beige panel, a dark block with a green translucent column, a red block under a floating flat beige shape, and a man in an apron holding a hammer in the right foreground.",
    "all": false,
    "nouns": [
     {
      "noun": "blacksmith",
-     "visible": false,
-     "seenAs": "Only a tiny dark armored figure stands in the distance, too small to make out and with nothing marking it as a blacksmith (no anvil or forge).",
+     "visible": true,
+     "seenAs": "Muscular man in a leather apron holding a hammer in the right foreground",
      "role": "hero"
     },
     {
      "noun": "sword",
      "visible": false,
-     "seenAs": "There is no recognisable sword; the closest thing is a red box with flat, jagged beige plank-like shapes that don't read as a blade.",
+     "seenAs": "No recognisable sword; there is only a flat, jagged beige shape floating over a red block, and it doesn't clearly read as a blade",
      "role": "other"
     }
    ]
@@ -5275,13 +5275,13 @@
     }
    },
    "judge": "claude",
-   "scene": "A first-person view of a sunny desert with sand dunes, showing dark and red block platforms, a floating dark rock with a pole, orange sandstone rocks, a small wooden post cluster, and the player's outstretched hand.",
+   "scene": "A first-person view of a low-poly yellow desert with a chibi brown-haired boy, a large black-and-red block structure, a black block with a green stripe, orange rocks, a dark lamp-post-like pole with birds circling it, and the player's pale hand in the foreground.",
    "all": false,
    "nouns": [
     {
      "noun": "bongo",
      "visible": false,
-     "seenAs": "Nothing in the scene clearly looks like a bongo (drum or antelope). The closest candidates are a small bluish crate/basket on the left and a tiny tan figure in the distance, but both are too small or plain to identify.",
+     "seenAs": "No bongo drums are visible; the closest thing is a tiny blue-and-white object far off on the left that could be a small drum or basket, but it is too small to identify.",
      "role": "other"
     }
    ]
@@ -5347,19 +5347,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A low-poly jungle scene on green grass, with an orange floating block, a dark block, a translucent green light beam, bamboo, a small drum, a teal waterfall among dark rock spires, and a golden low-poly figure (it looks like a monkey or ape) in the bottom-right foreground.",
-   "all": false,
+   "scene": "A low-poly jungle clearing with an orange block platform, bamboo, a drum, a rocky waterfall, a green beam of light, a green-and-yellow parrot standing on the grass, and a gold rocky shape in the foreground.",
+   "all": true,
    "nouns": [
     {
      "noun": "parrot",
-     "visible": false,
-     "seenAs": "There is no parrot. The only creature is a golden low-poly figure in the bottom right that looks like a monkey or ape.",
+     "visible": true,
+     "seenAs": "Low-poly parrot standing on the grass at right, with a yellow head, hooked beak and green/blue body",
      "role": "hero"
     },
     {
      "noun": "bird",
-     "visible": false,
-     "seenAs": "There is no bird. The only creature is the golden low-poly monkey- or ape-like figure. The other objects are blocks, bamboo, a drum, rocks and a waterfall.",
+     "visible": true,
+     "seenAs": "The same parrot figure, which is clearly a bird",
      "role": "other"
     }
    ]
@@ -5425,19 +5425,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A hazy industrial wasteland with red smokestacks, an orange construction crane on a green grassy cliff, flat yellow hexagonal platforms, a dark block with a green light beam, a dark cannon-like machine, and spiky dark wireframe spheres rolling on brown ground against a grey city skyline.",
+   "scene": "A low-poly industrial wasteland with a hazy city skyline, cranes, a smoking red chimney, flat yellow rock slabs, a dark block with a green light beam, spiky dark wireframe spheres, a dark cannon-like machine, and a large yellow rubber duck.",
    "all": false,
    "nouns": [
     {
      "noun": "rubber duck",
-     "visible": false,
-     "seenAs": "No duck; only yellow flat hexagonal platforms, which are not duck-shaped.",
+     "visible": true,
+     "seenAs": "Large yellow low-poly duck with black eyes and an orange beak, front right",
      "role": "hero"
     },
     {
      "noun": "boss robot",
      "visible": false,
-     "seenAs": "No robot figure; there are spiky dark wireframe spheres and a dark cannon/machine with a blue light, but nothing that reads as a robot.",
+     "seenAs": "No clear robot; there is only a dark boxy machine with a barrel on the left, which looks like a cannon or turret, plus spiky dark wireframe spheres",
      "role": "other"
     }
    ]
@@ -5704,19 +5704,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A sunny low-poly beach with a red-and-white striped lighthouse, deck chairs, a red-and-yellow table-like object, a dark box with a green stripe, wooden posts, and a partly visible colorful ball in the lower-right foreground.",
-   "all": false,
+   "scene": "A sunny low-poly beach with a red-and-white lighthouse, deck chairs, a red-and-yellow umbrella or table, a dark box with a green stripe, a grey seal-like animal, and a colorful ball in the foreground.",
+   "all": true,
    "nouns": [
     {
      "noun": "seal",
-     "visible": false,
-     "seenAs": "No seal anywhere in the scene. The only animal-like shape is a tiny grey figure in the middle distance, possibly a seagull, and it is too small to make out.",
+     "visible": true,
+     "seenAs": "Grey low-poly animal on the right, sitting upright on the sand with dark flippers, a pale muzzle and black eyes",
      "role": "hero"
     },
     {
      "noun": "beach ball",
      "visible": true,
-     "seenAs": "A large ball with yellow, white and blue panels in the lower-right foreground, partly cut off by the edge of the frame.",
+     "seenAs": "Large ball with yellow, red, white and blue panels, partly cut off in the bottom-right foreground",
      "role": "other"
     }
    ]
@@ -6138,13 +6138,13 @@
     "items": {}
    },
    "judge": "claude",
-   "scene": "A low-poly grassy field with a large dark rock, a windmill, a tree, wooden fences, a bench and a table, plus a red block, a dark navy slab and a translucent green pillar in the centre.",
+   "scene": "A low-poly grassy field with a large dark rock, a windmill, wooden fences and benches, a red block, a dark platform with a green translucent marker, and a female humanoid character in a short brown dress standing on the right.",
    "all": false,
    "nouns": [
     {
      "noun": "opera singer",
      "visible": false,
-     "seenAs": "No person or character anywhere; the nearest candidates are plain primitives: a red block, a dark slab and a translucent green pillar.",
+     "seenAs": "A generic female humanoid character in a short brown dress/tunic standing in a T-like idle pose; nothing (costume, pose, stage, microphone) identifies her as an opera singer.",
      "role": "hero"
     }
    ]
@@ -6260,19 +6260,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A moonlit low-poly graveyard with tombstones, a distant stone tower, pine trees, an iron fence, a dark disc-shaped platform, and plain green and red blocks on a dark slab.",
+   "scene": "A foggy moonlit graveyard at night with a gravestone, a ruined stone tower, pine trees, an iron fence, a dark disc-shaped platform, plain green and red blocks, and a man in a suit and hat standing on the right.",
    "all": false,
    "nouns": [
     {
      "noun": "detective",
-     "visible": false,
-     "seenAs": "No detective figure; only a tiny dark figure/lamp post in the distance, too small to make out, plus plain green and red blocks",
+     "visible": true,
+     "seenAs": "Man on the right in a dark suit and a fedora-style hat, which reads as a noir-style detective",
      "role": "hero"
     },
     {
      "noun": "clue",
      "visible": false,
-     "seenAs": "Nothing recognizable as a clue; only plain colored blocks, tombstones and a dark disc",
+     "seenAs": "Nothing that looks like a clue: only a plain green block, a red block and graveyard props",
      "role": "other"
     }
    ]
@@ -6854,19 +6854,19 @@
     }
    },
    "judge": "claude",
-   "scene": "A first-person view of a snowy ice-fishing area: an orange sleeve or arm in the foreground, a blue igloo with a small penguin at its entrance, a dark square ice hole with a green light beam, a brown wooden platform holding some items, an ice auger, and signposts.",
+   "scene": "A snowy ice-fishing area with a blue igloo, a small penguin, a dark ice-hole block under a green light beam, a wooden platform with small items on it, an old man in a top hat, and a first-person view holding an ice auger and an orange log.",
    "all": false,
    "nouns": [
     {
      "noun": "grandpa",
-     "visible": false,
-     "seenAs": "No grandpa figure is shown; the only figures are the player's orange sleeve or arm in the foreground and a small penguin by the igloo.",
+     "visible": true,
+     "seenAs": "An elderly man with grey hair and a moustache, wearing a top hat, shirt and suspenders, standing on the right",
      "role": "hero"
     },
     {
      "noun": "fish",
      "visible": false,
-     "seenAs": "No fish can be seen; there is a dark ice-fishing hole with a green beam, and small unclear items sit on the brown platform.",
+     "seenAs": "No recognisable fish; only a dark ice-hole block and small orange objects on the wooden platform that are too small to identify",
      "role": "other"
     }
    ]
