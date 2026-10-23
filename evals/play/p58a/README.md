@@ -36,3 +36,39 @@ Cíl P58A je ≥ 0,5 celých vět a ≥ 0,75 slov. P56A T13 měřila na téže s
 - **37/92 her je řetěz miniher P56C** (`__playShell` s `round`/`playRound`, bez ručních hodin `byHand`): robot se nepustí, snímek je po 3 s skutečného času po `start()`. V P56A T13 to bylo 0/80. Všech 37 stránek hlásí **chybu hydratace Reactu #418** (HTML ze serveru nesedí s klientem) – kandidát pro P58C.
 - **`next start` přestal odpovídat na `POST /api/play/games`** dvakrát po ~55 hrách (proces drží ~70 % jádra, hlavičky nepřijdou do 300 s). Táž věta na čerstvém serveru projde za 3,6 s. Shoduje se s pamětí „server po ~24 bězích přestane odpovídat“; pro veřejné demo je to riziko (P58C/P59).
 - s45 (`runner.default`) hlásí na stránce `Cannot read properties of null (reading 'x')`.
+
+## Proč slova chybí (T2)
+
+**Jak:** druhý průchod obou dev sad se stejnými nahranými čteními (`scripts/p58a/play-sets.mjs … --spec`) uloží ke každé hře spec, jaký kreslil server, a sondu `__playFrame` v okamžiku snímku (obdélník hrdiny, cíle a položek na plátně). Snímky leží mimo repo (`D:/tmp/p58a/frames/{audit-12,p56a-holdout}`, 92/92). `scripts/p58a/why-unseen.mjs` pak zařadí každé neviděné slovo z `baseline.json` do první platné třídy → `why.json`:
+
+```
+node --experimental-strip-types --no-warnings --import ./scripts/ts-paths.mjs scripts/p58a/why-unseen.mjs --baseline evals/play/p58a/baseline.json \
+  --frames D:/tmp/p58a/frames/audit-12=evals/play/p56a/audit-12.json --frames D:/tmp/p58a/frames/p56a-holdout=evals/play/p56a/holdout.json \
+  --out evals/play/p58a/why.json --missing evals/play/p58a/missing-nouns.json
+```
+
+**111 neviděných slov ze 146:**
+
+| Třída | Co znamená | Hrdina | Protivník / věc | Celkem | Úloha |
+|---|---|---|---|---|---|
+| `no-role` | slovo nenese žádná role hry (pizza → „fruit“, king → „ogre“, krokodýl nikde) | 0 | 44 | **44** | T6 |
+| `no-model` | role je, model je výchozí náhrada (husa → závodní auto, gopher → robot) | 5 | 4 | 9 | T6, T7 |
+| `off-screen` | tělo role není v záběru | 0 | 4 | 4 | T4 |
+| `too-small` | tělo je pod prahem velikosti | 0 | 0 | 0 | T3 |
+| `look` | správná role, přesný model (`identity` 54/54), v záběru – soudce ho přesto nepoznal | 43 | 11 | **54** | T3, T5 |
+| **celkem** | | 48 | 63 | 111 | |
+
+**Velikost na snímku** (podíl výšky plátna; poznáno / slov s rolí, modelem a v záběru):
+
+| | 0–5 % | 5–10 % | 10–15 % | 15–20 % | 20–30 % | 30–50 % | nad 50 % |
+|---|---|---|---|---|---|---|---|
+| hrdina | 0/2 | 3/7 | 4/21 | 3/9 | 4/15 | 2/4 | 0/1 |
+| protivník / věc | 3/6 | 5/8 | 1/1 | 1/3 | 1/2 | – | 0/2 |
+
+Práh platí, jen když nejlepší řez (aspoň 3 slova na každé straně) má nad sebou poznáno aspoň polovinu a aspoň dvakrát častěji než pod sebou (`thresholdOf`). **Ani pro hrdinu, ani pro protivníka nevyšel** (`threshold: null`): hrdina je poznaný v pásmech 5–50 % mezi pětinou a polovinou případů bez trendu nahoru, nejlepší řez (30,6 %) má nad sebou 2/5. Proto `too-small` = 0 a všechno takové je `look`. První rozbor bez téhle podmínky dal `too-small` 42 – řez na 38,7 % se dvěma slovy nad sebou, artefakt.
+
+**Inference (ne měření):**
+- Zvětšení hrdiny v rozsahu, ve kterém dnes hry kreslí, samo poznání nezaručí – X a Y pro T3 data nedávají. Soudce ale u 25 z 54 `look` sám píše „small / tiny / distant“ (`lookCalledSmall`), takže velikost spolu s tvarem modelu roli hraje; oddělit je jde až pokusem (T3 velikost, T8 změří).
+- Největší jednotlivé díry jsou `no-role` u protivníka či věci (44, hra slovo z věty vůbec nekreslí – T6) a `look` u hrdiny (43 – T3, T5).
+
+**Chybějící modely – `missing-nouns.json`:** 72 slov z popisků dev sad a nahraných čtení bez přesného modelu (`heroChoice(…, 'enemy').level` ≠ `identity`), podle počtu vět v poptávce a dev sadách. Vrchol: basket 10, pad 10, gopher 4, mole 4, vegetable 4, honey 3, leaf 3, master 3. Ne-jména ze čtení („you“, „can“, „three“), místa a abstrakta vyřazuje `ops/gen3d/not-nouns.txt` a `abstract` z `evals/play/p37d/common-nouns.json`; T2 do `not-nouns.txt` přidal terén a skupiny bez vlastní podoby (highway, path, line, hole, crater, swarm, crew…). Jednotné číslo bere lexikon draftu (`singular`: zombies → zombie, ne „zomby“).

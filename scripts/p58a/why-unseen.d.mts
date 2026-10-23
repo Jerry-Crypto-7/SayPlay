@@ -8,10 +8,14 @@ export declare function carrierOf<R extends Role>(noun: string, isHero: boolean,
 export declare function heightShare(box: Box | null | undefined): number;
 export declare function onScreen(box: Box | null | undefined): boolean;
 export declare function classify(input: { readonly carrier: unknown; readonly level: string | null; readonly box: Box | null; readonly threshold: number | null }): UnseenClass;
-export declare function thresholdOf(points: readonly { readonly share: number; readonly visible: boolean }[]): {
-  readonly threshold: number | null; readonly correct: number; readonly of: number;
-  readonly seenAbove?: number; readonly above?: number; readonly seenBelow?: number; readonly below?: number;
+export interface Point { readonly share: number; readonly visible: boolean }
+export interface Band { readonly from: number; readonly to: number; readonly seen: number; readonly of: number }
+export declare function bandsOf(points: readonly Point[]): Band[];
+export declare function thresholdOf(points: readonly Point[], min?: number): {
+  readonly threshold: number | null; readonly of: number; readonly seen: number; readonly bands: Band[];
+  readonly cut: { readonly at: number; readonly correct: number; readonly seenAbove: number; readonly above: number; readonly seenBelow: number; readonly below: number } | null;
 };
+export declare function thingOf(noun: string, notNouns: ReadonlySet<string>): string | null;
 export declare function rankMissing<R extends { readonly noun: string; readonly sentences: number }>(
   rows: readonly R[],
   choose: (noun: string) => { readonly level: string; readonly model: string },

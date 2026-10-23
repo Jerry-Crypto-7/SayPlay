@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { carrierOf, classify, heightShare, onScreen, rankMissing, thresholdOf } from '../why-unseen.mjs';
+import { carrierOf, classify, heightShare, onScreen, rankMissing, thingOf, thresholdOf } from '../why-unseen.mjs';
 
 const box = (minY: number, maxY: number, extra: Record<string, unknown> = {}) => ({ x: 0, y: (minY + maxY) / 2, minX: -0.1, maxX: 0.1, minY, maxY, widthPx: 0, heightPx: 0, sizePx: 0, behind: false, ...extra });
 
@@ -43,8 +43,27 @@ describe('why-unseen', () => {
     const split = thresholdOf(points);
     expect(split.threshold).toBeGreaterThan(0.07);
     expect(split.threshold).toBeLessThanOrEqual(0.09);
-    expect(split.correct).toBe(8);
+    expect(split.cut?.correct).toBe(8);
+    expect(split.bands.find((band) => band.from === 0.05)).toMatchObject({ seen: 1, of: 3 });
     expect(thresholdOf([]).threshold).toBeNull();
+  });
+
+  it('gives no threshold when size does not separate seen from unseen (P58A dev: hero 17/65 at every height)', () => {
+    // Soudce poznává čtvrtinu v každém pásmu a dva body úplně nahoře – řez nad nimi by byl náhoda, ne práh.
+    const flat = [0.05, 0.1, 0.15, 0.2, 0.25].flatMap((share) => [{ share, visible: true }, ...[1, 2, 3].map((step) => ({ share: share + step / 1000, visible: false }))]);
+    const top = flat.concat([{ share: 0.39, visible: true }, { share: 0.52, visible: false }]);
+    expect(thresholdOf(top).threshold).toBeNull();
+    // Řez, nad kterým soudce poznává polovinu, ale pod ním stejně často, práh také není.
+    const even = [0.02, 0.04, 0.05, 0.06, 0.07, 0.09, 0.1, 0.12].map((share, index) => ({ share, visible: index % 2 === 0 }));
+    expect(thresholdOf(even).threshold).toBeNull();
+  });
+
+  it('keeps only drawable things in the missing-noun list', () => {
+    const notNouns = new Set(['you', 'i', 'can', 'other', 'three', 'fall', 'city', 'river', 'giant']);
+    expect(['you', 'i', 'can', 'other', 'three', 'fall', 'city', 'river'].map((noun) => thingOf(noun, notNouns))).toEqual(Array(8).fill(null));
+    expect(thingOf('giant yeti', notNouns)).toBe('yeti');
+    expect(thingOf('big city', notNouns)).toBeNull();
+    expect(thingOf('fire truck', notNouns)).toBe('fire truck');
   });
 
   it('ranks missing nouns by sentence count and keeps only the ones without an exact model', () => {

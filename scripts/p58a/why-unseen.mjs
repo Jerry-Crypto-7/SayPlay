@@ -10,9 +10,10 @@
  * - `look` – správná role, model a velikost, soudce ho přesto nepoznal.
  *
  * Práh je řez výškou (podíl výšky plátna), který nejlépe dělí viděná a neviděná slova s rolí, modelem a v záběru –
- * zvlášť hrdina (X pro T3) a protivník či věc (Y). Vedle toho `missing-nouns.json`: podstatná jména z popisků
- * dev sad a z nahraných čtení, která katalog nemá přesně (`level` ≠ `identity`), podle počtu vět v poptávce
- * a dev sadách.
+ * zvlášť hrdina (X pro T3) a protivník či věc (Y) – a platí jen, když velikost viděná a neviděná slova opravdu
+ * dělí (`thresholdOf`); vedle něj pásma výšky. Vedle toho `missing-nouns.json`: podstatná jména z popisků dev sad
+ * a z nahraných čtení bez ne-jmen (`thingOf`), která katalog nemá přesně (`level` ≠ `identity`), podle počtu vět
+ * v poptávce a dev sadách.
  *
  *   node --experimental-strip-types --import ./scripts/ts-paths.mjs scripts/p58a/why-unseen.mjs --baseline evals/play/p58a/baseline.json \
  *     --frames <adresář>=<sada.json> [--frames …] --out evals/play/p58a/why.json --missing evals/play/p58a/missing-nouns.json
@@ -23,6 +24,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { heroChoice } from '../../src/play/arcade/models.ts';
+import { singular } from '../../src/play/draft/lexicon.ts';
+import { normal, parseNotNouns } from '../p37d/missing-nouns.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const readJson = (path) => JSON.parse(readFileSync(resolve(ROOT, path), 'utf8'));
@@ -79,21 +82,36 @@ export function classify({ carrier, level, box, threshold }) {
   return 'look';
 }
 
+/** Pásma výšky na plátně pro tabulku „kolik soudce poznal“ – podle nich se čte, jestli velikost vůbec hraje roli. */
+const BAND_EDGES = [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1.01];
+
+export function bandsOf(points) {
+  return BAND_EDGES.slice(0, -1).map((from, index) => {
+    const inside = points.filter((point) => point.share >= from && point.share < BAND_EDGES[index + 1]);
+    return { from, to: Math.min(BAND_EDGES[index + 1], 1), seen: inside.filter((point) => point.visible).length, of: inside.length };
+  });
+}
+
 /**
- * Řez `share ≥ t` → viděno, který správně zařadí nejvíc bodů; při shodě nižší práh. Práh leží na hodnotě
- * nejmenšího bodu nad řezem.
+ * Řez `share ≥ t` → viděno, který správně zařadí nejvíc bodů a nechá aspoň `min` bodů na každé straně; při shodě
+ * nižší práh (hodnota nejmenšího bodu nad řezem). Práh platí, jen když soudce nad ním poznává aspoň polovinu a
+ * aspoň dvakrát častěji než pod ním – jinak velikost viděná a neviděná slova nedělí a `threshold` je `null`
+ * (nejlepší řez zůstane v `cut` pro kontrolu).
  */
-export function thresholdOf(points) {
-  if (points.length === 0) return { threshold: null, correct: 0, of: 0 };
+export function thresholdOf(points, min = 3) {
+  const bands = bandsOf(points);
+  const seenOf = (list) => list.filter((point) => point.visible).length;
   const shares = [...new Set(points.map((point) => point.share))].sort((a, b) => a - b);
-  let best = { threshold: null, correct: -1, of: points.length };
+  let cut = null;
   for (const t of shares) {
-    const correct = points.filter((point) => (point.share >= t) === point.visible).length;
-    if (correct > best.correct) best = { threshold: t, correct, of: points.length };
+    const above = points.filter((point) => point.share >= t);
+    const below = points.filter((point) => point.share < t);
+    if (above.length < min || below.length < min) continue;
+    const correct = seenOf(above) + below.length - seenOf(below);
+    if (cut === null || correct > cut.correct) cut = { at: t, correct, seenAbove: seenOf(above), above: above.length, seenBelow: seenOf(below), below: below.length };
   }
-  const above = points.filter((point) => point.share >= best.threshold);
-  const below = points.filter((point) => point.share < best.threshold);
-  return { ...best, seenAbove: above.filter((point) => point.visible).length, above: above.length, seenBelow: below.filter((point) => point.visible).length, below: below.length };
+  const holds = cut !== null && cut.seenAbove / cut.above >= 0.5 && cut.seenAbove / cut.above >= (2 * cut.seenBelow) / cut.below;
+  return { threshold: holds ? cut.at : null, of: points.length, seen: seenOf(points), cut, bands };
 }
 
 /** Slova bez přesného modelu podle počtu vět (pak abecedně), s dnešní volbou modelu. */
@@ -124,22 +142,22 @@ const DEV_SETS = ['p56a/audit-12.json', 'p56a/holdout.json', 'p30/dev.json', 'p5
 const READINGS = ['p56a', 'p58a'].flatMap((plan) => readdirSync(join(ROOT, 'evals', 'play', plan, 'readings')).filter((file) => file.endsWith('.json')).map((file) => `${plan}/readings/${file}`));
 const DETERMINERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'their', 'our', 'some', 'other', 'many', 'lots', 'of', 'two', 'three', 'every', 'all']);
 
-/** Jednotné číslo hlavy popisku; „glass“, „bus“, „cactus“ zůstanou. */
-function singularOf(word) {
-  if (/(?:ss|us|is)$/.test(word)) return word;
-  if (word.endsWith('ies')) return `${word.slice(0, -3)}y`;
-  if (word.endsWith('ves')) return `${word.slice(0, -3)}f`;
-  if (/(?:ch|sh|x|z)es$/.test(word)) return word.slice(0, -2);
-  if (word.endsWith('men')) return `${word.slice(0, -3)}man`;
-  return word.endsWith('s') ? word.slice(0, -1) : word;
-}
-
-/** Popisek → jméno v jednotném čísle bez členů; prázdný nebo příliš dlouhý (věta, ne jméno) = `null`. */
+/** Popisek → jméno v jednotném čísle (lexikon draftu: „zombies“, „walruses“, „cyclops“) bez členů; prázdný nebo příliš dlouhý (věta, ne jméno) = `null`. */
 function nounOf(label) {
   if (typeof label !== 'string') return null;
   const words = wordsOf(label).filter((word) => !DETERMINERS.has(word));
   if (words.length === 0 || words.length > 3) return null;
-  return [...words.slice(0, -1), singularOf(words.at(-1))].join(' ');
+  return singular(words.join(' '));
+}
+
+/**
+ * Jméno věci, kterou jde nakreslit: bez slov ze seznamu ne-jmen (`ops/gen3d/not-nouns.txt` – zájmena, slovesa,
+ * číslovky, přídavná jména, místa); když na seznamu je hlava („you“, „city“, „big city“), věc to není = `null`.
+ */
+export function thingOf(noun, notNouns) {
+  const words = noun.split(' ');
+  if (notNouns.has(noun) || notNouns.has(words.at(-1))) return null;
+  return words.filter((word) => !notNouns.has(word)).join(' ');
 }
 
 function textsOf(path) {
@@ -169,8 +187,12 @@ function missingNouns() {
     }
   }
   nouns.delete(null);
+  // Ne-jména a abstrakta („tax“, „date“, „gap“) jako P37D; abstraktní fráze jen celé.
+  const notNouns = parseNotNouns(readFileSync(join(ROOT, 'ops', 'gen3d', 'not-nouns.txt'), 'utf8'));
+  for (const word of readJson('evals/play/p37d/common-nouns.json').abstract.map(normal)) notNouns.add(word);
   const texts = [...textsOf('demand/corpus.json'), ...DEV_SETS.flatMap(textsOf)];
-  const rows = [...nouns].map((noun) => ({ noun, sentences: sentenceCount(noun, texts) })).filter((row) => row.sentences > 0);
+  const kept = new Set([...nouns].map((noun) => thingOf(noun, notNouns)).filter((noun) => noun !== null));
+  const rows = [...kept].map((noun) => ({ noun, sentences: sentenceCount(noun, texts) })).filter((row) => row.sentences > 0);
   return rankMissing(rows, (noun) => heroChoice(noun, undefined, undefined, 'enemy'));
 }
 
@@ -199,30 +221,36 @@ function main() {
       };
     });
   });
-  const fitted = (role) => thresholdOf(nouns.filter((item) => item.carrier !== null && item.level !== 'fallback' && item.onScreen && (role === null || item.role === role)).map((item) => ({ share: item.share, visible: item.visible })));
-  const thresholds = { hero: fitted('hero'), other: fitted('other'), pooled: fitted(null) };
-  const thresholdFor = (role) => thresholds[role].threshold ?? thresholds.pooled.threshold;
+  // Práh zvlášť pro hrdinu a pro protivníka či věc; role, kde velikost nic nedělí, nemá žádné `too-small`.
+  const fitted = (role) => thresholdOf(nouns.filter((item) => item.carrier !== null && item.level !== 'fallback' && item.onScreen && item.role === role).map((item) => ({ share: item.share, visible: item.visible })));
+  const thresholds = { hero: fitted('hero'), other: fitted('other') };
   for (const item of nouns) {
     // Věta bez průchodu rozměrů (server spadl) nemá spec ani snímek – třída by byla hádání.
-    item.class = item.visible ? null : !item.measured ? 'unmeasured' : classify({ carrier: item.carrier, level: item.level, box: item.onScreen ? item.box : null, threshold: thresholdFor(item.role) });
+    item.class = item.visible ? null : !item.measured ? 'unmeasured' : classify({ carrier: item.carrier, level: item.level, box: item.onScreen ? item.box : null, threshold: thresholds[item.role].threshold });
     delete item.box;
   }
   const unseen = nouns.filter((item) => !item.visible);
-  const count = (list) => Object.fromEntries(['no-role', 'no-model', 'off-screen', 'too-small', 'look'].map((name) => [name, list.filter((item) => item.class === name).length]));
+  const count = (list) => Object.fromEntries(['no-role', 'no-model', 'off-screen', 'too-small', 'look', 'unmeasured'].map((name) => [name, list.filter((item) => item.class === name).length]));
+  const tally = (list, key) => list.reduce((out, item) => ({ ...out, [item[key]]: (out[item[key]] ?? 0) + 1 }), {});
+  const looked = unseen.filter((item) => item.class === 'look');
   const result = {
     schema: 'p58a-why-unseen.v1',
     baseline: { file: flag('baseline'), commit: baseline.commit },
-    classes: 'first match in this order: no-role (no spec role carries the noun), no-model (the role draws the fallback model), off-screen (the role body is behind the camera or off the canvas), too-small (body height on the canvas under the fitted threshold), look (right role, model and size, still not recognised)',
+    classes: 'first match in this order: no-role (no spec role carries the noun), no-model (the role draws the fallback model), off-screen (the role body is behind the camera or off the canvas), too-small (body height on the canvas under the fitted threshold; none when size does not separate seen from unseen), look (right role, model and size, still not recognised)',
     thresholds,
     measured: nouns.filter((item) => item.measured).length,
     nouns: nouns.length,
     unseen: unseen.length,
     byClass: { all: count(unseen), hero: count(unseen.filter((item) => item.role === 'hero')), other: count(unseen.filter((item) => item.role === 'other')) },
+    // `look` podle úrovně modelu: `identity` je přesný model, ostatní je blízká náhrada (jiné zvíře, jiná věc).
+    lookByLevel: tally(looked, 'level'),
+    // Kolikrát soudce u `look` sám píše, že je tělo malé nebo daleko – velikost bez čistého prahu, ale ne bez vlivu.
+    lookCalledSmall: looked.filter((item) => /\b(?:small|tiny|distant|far)\b/i.test(item.seenAs ?? '')).length,
     rows: nouns,
   };
   writeFileSync(resolve(ROOT, flag('out')), `${JSON.stringify(result, null, 1)}\n`);
-  console.log(`why: ${unseen.length} unseen of ${nouns.length} nouns (${result.measured} measured); ${JSON.stringify(result.byClass.all)}`);
-  console.log(`thresholds: hero ${JSON.stringify(thresholds.hero)}, other ${JSON.stringify(thresholds.other)}`);
+  console.log(`why: ${unseen.length} unseen of ${nouns.length} nouns (${result.measured} measured); ${JSON.stringify(result.byClass.all)}; look by level ${JSON.stringify(result.lookByLevel)}`);
+  for (const role of ['hero', 'other']) console.log(`${role}: threshold ${thresholds[role].threshold}, seen ${thresholds[role].seen}/${thresholds[role].of}, cut ${JSON.stringify(thresholds[role].cut)}, bands ${thresholds[role].bands.map((band) => `${band.from}-${band.to}:${band.seen}/${band.of}`).join(' ')}`);
   const missing = missingNouns();
   writeFileSync(resolve(ROOT, flag('missing')), `{\n "about": "P58A T2: nouns from dev-set labels (hero/foe/item) and recorded gpt-oss-20b readings that the catalog has no exact model for (heroChoice level != identity), ranked by the number of sentences naming them in evals/play/demand/corpus.json and the dev sets. Written by scripts/p58a/why-unseen.mjs.",\n "nouns": [\n${missing.map((row) => `  ${JSON.stringify(row)}`).join(',\n')}\n ]\n}\n`);
   console.log(`missing nouns: ${missing.length}; top 10 ${missing.slice(0, 10).map((row) => `${row.noun}(${row.sentences},${row.level})`).join(' ')}`);
