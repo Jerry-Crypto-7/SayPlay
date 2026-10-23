@@ -37,6 +37,27 @@ test.describe('/play – create', () => {
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
   });
 
+  // P58C T4: Safari hydratuje pomaleji než Chromium a hráč stihne psát dřív. Věta napsaná před
+  // hydratací musí přežít a odejít celá – dřív stav zůstal prázdný a „Make it!“ hlásil prázdné pole.
+  test('a sentence typed before the page hydrates survives and is sent', async ({ page }) => {
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route('**/_next/static/chunks/**', async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto('/play', { waitUntil: 'domcontentloaded' });
+    const text = 'Collect five glowing mushrooms then open a portal.';
+    await page.getByTestId('play-sentence').fill(text);
+    release();
+    await page.waitForFunction(() => Object.keys(document.querySelector('[data-testid="play-sentence"]') ?? {}).some((key) => key.startsWith('__reactFiber')));
+    await expect(page.getByTestId('play-counter')).toHaveText(`${String(text.length)}/140`);
+
+    const sent = page.waitForRequest((request) => request.url().endsWith('/api/play/games') && request.method() === 'POST');
+    await page.getByTestId('play-create').click();
+    expect((await sent).postDataJSON()).toEqual({ sentence: text });
+  });
+
   // P34 T3 (kit, Idea card): karta větu jen vloží, hru spustí až odeslání – tady Enter.
   test('an idea card fills the prompt without starting, Enter sends it', async ({ page }) => {
     await page.goto('/play');
