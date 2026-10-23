@@ -1324,9 +1324,8 @@ button.play-version-switch__item:not(:disabled) {
   margin-left: 2px;
 }
 
-/* Telefon podle reference nadpis nepodepisuje; pod ním rovnou bublina. */
+/* Podtitul i na telefonu (P58C T6): bez něj porotce na telefonu nevěděl, že z věty vznikne hra (T5, Codex 2× „ne“). */
 .play-subhead {
-  display: none;
   margin: var(--sp-space-3) 0 0;
   color: var(--sp-text-secondary);
   font-size: var(--sp-text-body-l-size);
@@ -1354,12 +1353,19 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-danger);
 }
 
-/* Nápověda první návštěvy (P44D T12): karta kitu nad bublinou, pět vět pod sebou. */
+/* Nápověda první návštěvy (P44D T12): karta kitu, pět vět pod sebou. Pod bublinou s „Make it!“ na každé
+ * šířce (P58C T6, dřív jen v levém sloupci desktopu): nad ní odsunula tlačítko, o kterém mluví, pod lištu
+ * telefonu (T5, 7 s). Nápady pod ní. */
 .play-first-visit {
   display: flex;
   flex-direction: column;
   gap: var(--sp-space-3);
   margin-top: var(--sp-space-6);
+  order: 1;
+}
+
+.play-ideas {
+  order: 2;
 }
 
 /* Schovaná karta je dál sourozenec: `HIDE_FOR_RETURNING` (FirstVisitHint.tsx) vrací poli `--sp-space-6` sám. */
@@ -1494,29 +1500,10 @@ button.play-version-switch__item:not(:disabled) {
     margin: 0;
   }
 
-  /* Pole hned pod nadpisem: tip prvního návštěvníka a nápady by ho v úzkém
-   * sloupci odsunuly pod okraj obrazovky. */
-  .play-side .play-create {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .play-side .play-first-visit {
-    order: 1;
-  }
-
-  .play-side .play-ideas {
-    order: 2;
-  }
-
   .play-side .play-hero {
     font-size: var(--sp-text-title-l-size);
     line-height: var(--sp-text-title-l-leading);
     letter-spacing: var(--sp-text-title-l-tracking);
-  }
-
-  .play-subhead {
-    display: block;
   }
 
   .play-side .play-idea-grid {

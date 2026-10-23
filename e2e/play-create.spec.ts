@@ -217,6 +217,23 @@ test.describe('/play – create', () => {
     await expect(make).toHaveAttribute('aria-current', 'true');
   });
 
+  // P58C T6: karta tipu „Tap one, then Make it!“ stála nad polem a odsunula „Make it!“ pod lištu telefonu,
+  // porotce ho hledal (T5, 7 s). Na nejmenším telefonu porotce (iPhone 15 v Safari, 393×659) musí být podtitul,
+  // pole i „Make it!“ vidět bez posunu nad lištou a karta tipu až pod nimi.
+  test('phone 393×659: the subhead and Make it! sit above the tab bar, the first-visit tip below them', async ({ page }) => {
+    await page.setViewportSize({ width: 393, height: 659 });
+    await page.goto('/play');
+    const create = page.getByTestId('play-create');
+    await expect(page.getByTestId('play-first-visit')).toBeVisible();
+    await expect(page.locator('.play-subhead')).toBeInViewport({ ratio: 1 });
+    await expect(create).toBeInViewport({ ratio: 1 });
+    const button = (await create.boundingBox())!;
+    const tabbar = (await page.locator('.play-tabbar').first().boundingBox())!;
+    const tip = (await page.getByTestId('play-first-visit').boundingBox())!;
+    expect(button.y + button.height, `Make it! ends at ${String(button.y + button.height)}, tab bar starts at ${String(tabbar.y)}`).toBeLessThanOrEqual(tabbar.y);
+    expect(tip.y).toBeGreaterThan(button.y);
+  });
+
   // P54A T12: od 1024 px pole v levém sloupci vedle feedu, viditelné i s tipem prvního návštěvníka.
   for (const size of [
     { width: 1440, height: 900 },
