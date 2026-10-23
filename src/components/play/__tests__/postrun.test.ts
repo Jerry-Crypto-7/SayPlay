@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PostRun, type RunFacts, retryKey, runResult, shareRunOf } from '../PostRun';
+import { PostRun, QUICK_LOSS_S, quickLossTip, type RunFacts, retryKey, runResult, shareRunOf } from '../PostRun';
 import type { RemixJob } from '../RemixBox';
 
 /**
@@ -123,5 +123,27 @@ describe('shareRunOf (P37C T4)', () => {
     expect(shareRunOf(arcade)).toEqual({ won: true, survive: false, seconds: 12.3, stars: 2, score: 2450, lives: 2, goal: { count: 5, need: 5, label: 'collected' } });
     expect(shareRunOf({ ...arcade, won: false })).toMatchObject({ won: false, stars: null, score: 2450 });
     expect(shareRunOf(facts(false))).toMatchObject({ stars: null, score: null, lives: null });
+  });
+});
+
+// P58C T6: prohra za 4,8 s bez vysvětlení (T5, 3/3 soudci na telefonech) – karta rychlé prohry zopakuje
+// nápovědu hry. Karta bez řádku vypadá úplně stejně správně, proto pin.
+describe('quick-loss tip', () => {
+  const hint = 'Tap right or Space to strike, tap left or Down to dodge.';
+  const quick: RunFacts = { ...facts(false), tick: 96 };
+
+  it('repeats the controls hint after a loss inside 10 s, without keys on touch', () => {
+    expect(quickLossTip(quick, hint, false)).toBe(hint);
+    expect(quickLossTip(quick, hint, true)).toBe('Tap right to strike, tap left to dodge.');
+    const html = renderToStaticMarkup(createElement(PostRun, { versionId: 'v1', remix: job, facts: quick, controlsHint: hint, onReplay: () => undefined }));
+    expect(html).toContain('data-testid="play-result-tip"');
+    expect(html).toContain(hint);
+  });
+
+  it('says nothing after a win, a run of 10 s or more, or without a hint', () => {
+    expect(quickLossTip({ ...quick, won: true }, hint, true)).toBeNull();
+    expect(quickLossTip({ ...quick, tick: QUICK_LOSS_S * quick.hz }, hint, true)).toBeNull();
+    expect(quickLossTip(quick, undefined, true)).toBeNull();
+    expect(card(false)).not.toContain('play-result-tip');
   });
 });

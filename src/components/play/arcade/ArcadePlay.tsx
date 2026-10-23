@@ -1021,6 +1021,7 @@ function ArcadePlayGame({
           challenge={challenge}
           offline={offline}
           record={record}
+          controlsHint={spec.tutorial.controlsHint}
           onReplay={(via) => {
             if (!offline && session.humanRun()) loopEvent('restart', versionId);
             session.restart();
