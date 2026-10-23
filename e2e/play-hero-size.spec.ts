@@ -1,5 +1,6 @@
 import { devices, expect, type Page, test } from '@playwright/test';
 
+import { LEGIBLE_SHARE } from '../src/play/arcade/models';
 import { arenaGenre } from '../src/play/genre/arena';
 import { compileGenre, readGenreSpec } from '../src/play/genre/index';
 import { platformerGenre } from '../src/play/genre/platformer';
@@ -9,14 +10,14 @@ import { voyageGenre } from '../src/play/genre/voyage';
 import type { GameSpecV1 } from '../src/play/spec';
 
 /**
- * Čitelný hrdina (P36C T6): v každém z 5 žánrů, na telefonu i na desktopu, je
- * hrdina aspoň 8 % výšky obrazu a nese inkoustový obrys. Výška je promítnutý
+ * Čitelný hrdina (P36C T6, práh P58A T3 `LEGIBLE_SHARE.hero`): v každém z 5 žánrů, na telefonu i na desktopu, je
+ * hrdina aspoň 20 % výšky obrazu a nese inkoustový obrys. Výška je promítnutý
  * kvádr hrdiny skutečnou kamerou scény (`__playFrame().hero`, NDC −1 … 1), obrys
  * počet obalů pod hrdinou (`heroInk`). Obrys je v scéně, ne v postprocessingu,
  * takže drží i na úrovni `low`, která skládač nemá.
  */
 
-const MIN_HERO_SHARE = 0.08;
+const MIN_HERO_SHARE = LEGIBLE_SHARE.hero;
 
 const GAMES = [
   { genre: 'runner', module: runnerGenre, sentence: 'a fox runs through a forest dodging logs and rocks' },
@@ -68,7 +69,7 @@ for (const [device, use] of [
     test.setTimeout(150_000);
 
     for (const game of GAMES) {
-      test(`${game.genre}: hero is at least 8 % of the frame and outlined`, async ({ page, request }) => {
+      test(`${game.genre}: hero is at least 20 % of the frame and outlined`, async ({ page, request }) => {
         const response = await request.post('/api/play/games', { data: { spec: gameSpecOf(game) } });
         expect(response.status(), await response.text()).toBeLessThan(300);
         const { url } = (await response.json()) as { url: string };

@@ -298,6 +298,60 @@ export function fitScale(model: { x: number; y: number; z: number }, body: { x: 
   return scale || 1;
 }
 
+/**
+ * Nejmenší výška těla na plátně (podíl výšky plátna, P58A T2): nad 20 % soudce hrdinu nazve „malým“ ve 2/20
+ * případů (pod ní 21/39), protivníka či věc nad 10 % v 1/8 (pod ní 7/14). `evals/play/p58a/README.md`.
+ */
+export const LEGIBLE_SHARE = { hero: 0.2, target: 0.1 } as const;
+
+/** Nejvýš kolikrát se tělo vizuálně zvětší: kolizní tělo zůstává a větší rozdíl by hráč viděl jako zásah, který nebyl. */
+export const LEGIBLE_CAP = 2;
+
+/** Zmenšuje se, až když je tělo o tolik nad `min` (kamera po najetí přiblížila) – mezi tím měřítko stojí a nepulzuje. */
+const LEGIBLE_SLACK = 1.3;
+/** Po zmenšení zůstane tělo tolikrát nad `min`, uprostřed klidového pásma. */
+const LEGIBLE_MARGIN = 1.15;
+
+/**
+ * Vizuální měřítko čitelnosti (P58A T3): z dnešního měřítka `scale` a změřeného podílu `share` výšky plátna
+ * (s tímto měřítkem) nové měřítko, nejvýš `LEGIBLE_CAP`, nejmíň 1. Pod `min` tělo hned doroste přesně na `min`;
+ * nad `LEGIBLE_SLACK × min` se zmenší na `LEGIBLE_MARGIN × min` (najetí kamery z dálky ho jinak nechalo
+ * obřím); mezi tím zůstane. Bez měření (`share` 0) zůstane.
+ */
+export function legibleScale(scale: number, share: number, min: number): number {
+  if (!(share > 0)) return scale;
+  const exact = (scale * min) / share;
+  if (exact > scale) return Math.min(LEGIBLE_CAP, exact);
+  if (exact * LEGIBLE_SLACK <= scale) return Math.min(LEGIBLE_CAP, Math.max(1, exact * LEGIBLE_MARGIN));
+  return scale;
+}
+
+interface Xyz {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/** Čitelné tělo: měřítko čitelnosti, základ, který kreslí scéna, a co se naposledy zapsalo. */
+export interface Legible {
+  scale: number;
+  readonly base: Xyz;
+  readonly written: Xyz;
+}
+
+/**
+ * Zapíše měřítko čitelnosti do `scale` skupiny, po osách: osa, kterou od minula přepsala scéna (`World` každý
+ * snímek nastaví hrdinovi `scale.y` podle skluzu), je nový základ; ostatní osy drží starý. Celý vektor jako
+ * základ by na nepřepsaných osách násobil měřítko každý snímek znovu.
+ */
+export function legibleWrite(scale: Xyz, body: Legible): void {
+  for (const axis of ['x', 'y', 'z'] as const) {
+    if (scale[axis] !== body.written[axis]) body.base[axis] = scale[axis];
+    body.written[axis] = body.base[axis] * body.scale;
+    scale[axis] = body.written[axis];
+  }
+}
+
 /** Hrdina z popisku hráče (`heroChoice`); bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
 export function heroModel(spec: GameSpecV1): string {
   return heroChoice(spec.roles.find((role) => role.kind === 'player')?.label ?? '', spec.genre?.id, spec.control).model;

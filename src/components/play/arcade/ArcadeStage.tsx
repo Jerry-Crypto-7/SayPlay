@@ -13,15 +13,15 @@
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  */
 
-import { addAfterEffect, useThree } from '@react-three/fiber';
+import { addAfterEffect, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
+import { Box3, type Camera, type Mesh, type Object3D, type PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { riggedCharacter } from '@/play/arcade/models';
+import { LEGIBLE_SHARE, type Legible, legibleScale, legibleWrite, riggedCharacter } from '@/play/arcade/models';
 import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
@@ -293,6 +293,77 @@ function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
   return null;
 }
 
+/** Nejbližší cíl k hrdinovi; na trati jen cíle před ním, když nějaké jsou. */
+function nearestTarget(heroAt: Vector3, candidates: readonly Object3D[], control: string): { node: Object3D; pos: Vector3 } | null {
+  if (candidates.length === 0) return null;
+  const at = candidates.map((node) => ({ node, pos: node.getWorldPosition(new Vector3()) }));
+  const ahead = TRACK_CONTROLS.has(control) ? at.filter((c) => c.pos.z > heroAt.z) : [];
+  const pool = ahead.length > 0 ? ahead : at;
+  return pool.reduce((best, c) => (c.pos.distanceTo(heroAt) < best.pos.distanceTo(heroAt) ? c : best));
+}
+
+/** Jak často se těla měří (snímky): čtyřikrát za sekundu stačí, průchod scénou každý snímek stál na telefonu CPU. */
+const LEGIBLE_EVERY = 15;
+
+/**
+ * Čitelná těla (P58A T3): hrdina na plátně aspoň `LEGIBLE_SHARE.hero` výšky plátna, nejbližší cíl aspoň
+ * `LEGIBLE_SHARE.target` – přepočtený na hloubku hrdiny, ať se překážka nezvětší jen proto, že je zatím daleko.
+ * Zvětšuje jen skupinu se značkou `frame` (vizuál); simulace, kolize a stavový hash ho nevidí. Měří se po
+ * nakresleném snímku (kamera už stojí, jak ji scéna postavila) v klidové póze; měřítko se píše každý snímek
+ * po scénách – přepíše-li scéna měřítko skupiny sama, její hodnota je nový základ.
+ */
+function LegibleBodies({ control }: { readonly control: string }) {
+  const get = useThree((three) => three.get);
+  const bodies = useRef(new Map<Object3D, Legible>());
+  useFrame(() => {
+    for (const [node, body] of bodies.current) {
+      if (node.parent === null) {
+        bodies.current.delete(node);
+        continue;
+      }
+      legibleWrite(node.scale, body);
+    }
+  });
+  useEffect(() => {
+    let frames = 0;
+    const view = new Vector3();
+    return addAfterEffect(() => {
+      frames += 1;
+      const { camera, scene, size, invalidate, frameloop } = get();
+      // Kreslení na požádání (úvodní karta) dá snímků málo – změří se každý, i ten po dotaženém modelu.
+      if (frameloop === 'always' && frames % LEGIBLE_EVERY !== 1) return;
+      let hero: Object3D | null = null;
+      const candidates: Object3D[] = [];
+      scene.traverseVisible((node) => {
+        if (node.userData.frame === 'hero') hero = node;
+        else if (node.userData.frame === 'target') candidates.push(node);
+      });
+      if (hero === null) return;
+      const heroNode: Object3D = hero;
+      const heroAt = heroNode.getWorldPosition(new Vector3());
+      const target = nearestTarget(heroAt, candidates, control);
+      const depthOf = (at: Vector3): number => -view.copy(at).applyMatrix4(camera.matrixWorldInverse).z;
+      const grow = (node: Object3D, min: number, depthScale: number): void => {
+        const box = frameOf(node, camera, size.width, size.height, false);
+        if (box === null || box.behind) return;
+        const body = bodies.current.get(node) ?? { scale: 1, base: node.scale.clone(), written: node.scale.clone() };
+        const next = legibleScale(body.scale, ((box.maxY - box.minY) / 2) * depthScale, min);
+        if (next === body.scale) return;
+        body.scale = next;
+        bodies.current.set(node, body);
+        invalidate();
+      };
+      grow(heroNode, LEGIBLE_SHARE.hero, 1);
+      if (target === null) return;
+      // Perspektiva zmenšuje s hloubkou: cíl se posuzuje, jak velký by byl vedle hrdiny.
+      const perspective = (camera as PerspectiveCamera).isPerspectiveCamera === true;
+      const heroDepth = depthOf(heroAt);
+      grow(target.node, LEGIBLE_SHARE.target, perspective && heroDepth > 0 ? Math.max(depthOf(target.pos), 0) / heroDepth : 1);
+    });
+  }, [get, control]);
+  return null;
+}
+
 function FrameProbe({ control }: { readonly control: string }) {
   const get = useThree((three) => three.get);
   useEffect(() => {
@@ -315,13 +386,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
       });
       const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
-      let target: { node: Object3D; pos: Vector3 } | null = null;
-      if (heroAt !== null && candidates.length > 0) {
-        const at = candidates.map((node) => ({ node, pos: node.getWorldPosition(new Vector3()) }));
-        const ahead = TRACK_CONTROLS.has(control) ? at.filter((c) => c.pos.z > heroAt.z) : [];
-        const pool = ahead.length > 0 ? ahead : at;
-        target = pool.reduce((best, c) => (c.pos.distanceTo(heroAt) < best.pos.distanceTo(heroAt) ? c : best));
-      }
+      const target = heroAt === null ? null : nearestTarget(heroAt, candidates, control);
       return {
         control,
         width: size.width,
@@ -779,6 +844,8 @@ const StageCanvas = memo(function StageCanvas({
       </Fragment>
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
+      {/* Za scénami: měřítko čitelnosti se píše až po jejich snímku (P58A T3). */}
+      <LegibleBodies control={control} />
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
       <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
