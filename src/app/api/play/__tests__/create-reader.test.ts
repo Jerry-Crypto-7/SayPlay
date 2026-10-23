@@ -221,6 +221,16 @@ describe('create route reads the sentence before drafting', () => {
       expect(paid).not.toHaveBeenCalled();
     });
 
+    // P58B T4: astra čte p95 6,4 s – čtečka jen pro AI verzi rychlou hru nebrzdí a route ji vůbec nezavolá.
+    it('reading for the AI version only, publishes the keyword draft and asks nothing', async () => {
+      vi.stubEnv('PLAY_READER_PATH', 'ai');
+      // Úložiště her je tu souborové a sdílené s testy výš – věta, kterou ještě nikdo nepublikoval.
+      const sentence = 'a knight collects gems in a tower';
+      expect(await publishedSpec(await create(sentence))).toEqual(draftGameSpec(sentence));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(paid).not.toHaveBeenCalled();
+    });
+
     it('sends nothing when the physics load fails', async () => {
       const broken = Promise.reject(new Error('rapier wasm failed'));
       broken.catch(() => undefined);

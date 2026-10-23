@@ -41,7 +41,7 @@ import type { Reading } from '../read/schema';
 import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
-import { readBeforeDraft, readerEnabled } from '../read/client';
+import { readBeforeDraft, readerEnabled, readerForAiVersion } from '../read/client';
 import { type GameSpecV1, readGameSpec } from '../spec';
 import { vocabVersion } from '../vocab';
 
@@ -110,6 +110,12 @@ export interface DirectorDeps {
   readonly modules?: GenreModules;
   /** Pokyn modelu za zadáním (P46E T4: upgrade, který nic nepřidal, požádá o bosse nebo akci). */
   readonly nudge?: string;
+  /**
+   * Volající, jehož věta režii spustila (P58B T4). Čtení věty za něj režisér zaplatí jen u čtečky
+   * pro AI verzi (`readerForAiVersion`), kde route nečetla; jinak větu četla route a režisér ji
+   * placeně nečte podruhé (P56A T4-R2).
+   */
+  readonly caller?: string;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -232,7 +238,8 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
   const intent = extractIntent(sentence);
   if (intent.items.some(item => item.essential && item.axis === 'move' && item.verb === 'ball')) await loadRapier();
   // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
-  const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
+  const paidFor = readerForAiVersion() && deps.caller !== undefined ? { caller: deps.caller } : {};
+  const reading = readerEnabled() ? await readBeforeDraft(sentence, process.env, paidFor) : null;
   const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
   const drafted = draftGameSpecWithMeta(sentence, deps.seed, genreOptions);
   const draft = drafted.spec;

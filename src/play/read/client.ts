@@ -68,13 +68,19 @@ export const DEFAULT_READER_BUDGET_MS = 700;
  * číslo nemá); čte desítky sekund, rozpočet mu dá až `PLAY_READER_BUDGET_MS`.
  */
 export const DEFAULT_LOCAL_READER_BUDGET_MS = 8000;
+/**
+ * Výchozí rozpočet čtení pro AI verzi (`PLAY_READER_PATH=ai`): astra přes OpenAI API čte
+ * p95 6,4 s a nejpomalejší z 220 vět 9,1 s (`evals/play/p58b/README.md`). AI verze běží
+ * desítky sekund, takže 15 s ji nebrzdí a vypršení je výjimka, ne pravidlo.
+ */
+export const DEFAULT_AI_READER_BUDGET_MS = 15_000;
 /** Horní mez rozpočtu: měření obrazu čte s 60 s, `codex-cli` čte desítky sekund. */
 const MAX_READER_BUDGET_MS = 120_000;
 /**
  * Výstup čtení je ~200 tokenů a gpt-oss k němu na `low` uvažuje. Je to i strop
  * rezervace: na Groq gpt-oss-20b (0,30 USD za Mtok výstupu) ~0,0003 USD.
  */
-const READER_MAX_OUTPUT_TOKENS = 1024;
+export const READER_MAX_OUTPUT_TOKENS = 1024;
 
 /**
  * Čtení před draftem je zapnuté jen `PLAY_READER=on` s endpointem (objednávka);
@@ -82,6 +88,15 @@ const READER_MAX_OUTPUT_TOKENS = 1024;
  */
 export function readerEnabled(env: Env = process.env): boolean {
   return env.PLAY_READER === 'on' && (env.PLAY_READER_ENDPOINT ?? '') !== '';
+}
+
+/**
+ * Čtečka jen pro AI verzi (`PLAY_READER_PATH=ai`, P58B T3): žádný změřený hostovaný model
+ * nečte pod 1 000 ms, takže route na čtení nečeká a rychlou hru staví slovník. Čte až režisér
+ * na pozadí, placeně za volajícího, jehož věta AI verzi spustila.
+ */
+export function readerForAiVersion(env: Env = process.env): boolean {
+  return readerEnabled(env) && env.PLAY_READER_PATH === 'ai';
 }
 
 function readerBudgetMs(env: Env, fallback: number): number {
@@ -99,7 +114,7 @@ function readerBudgetMs(env: Env, fallback: number): number {
 export function readerConfigFromEnv(env: Env = process.env): UpstreamConfig | null {
   const endpoint = (env.PLAY_READER_ENDPOINT ?? '').trim();
   const local = endpoint.startsWith(LLAMACPP_PREFIX) || /^https?:\/\//.test(endpoint);
-  const timeoutMs = readerBudgetMs(env, local ? DEFAULT_LOCAL_READER_BUDGET_MS : DEFAULT_READER_BUDGET_MS);
+  const timeoutMs = readerBudgetMs(env, local ? DEFAULT_LOCAL_READER_BUDGET_MS : env.PLAY_READER_PATH === 'ai' ? DEFAULT_AI_READER_BUDGET_MS : DEFAULT_READER_BUDGET_MS);
   if (endpoint === CODEX_CLI_ENDPOINT)
     return {
       endpoint,
@@ -227,7 +242,8 @@ async function paidReading(
   deps: ReaderDeps,
   signal: AbortSignal,
 ): Promise<Reading | null> {
-  // Placeně jen za známého volajícího (revize T4): režisér na pozadí volajícího nepředá, takže větu znovu nezaplatí.
+  // Placeně jen za známého volajícího (revize T4): režisér na pozadí ho předá jen u čtečky pro AI verzi (P58B T4),
+  // kde route nečetla – jinak by větu, kterou route už četla, zaplatil podruhé.
   if (deps.caller === undefined) return null;
   if ((await killed) || signal.aborted) return null;
   // Kniha stropu a počet volajícího letí souběžně (T4-R1), ať z rozpočtu zbude modelu: před voláním

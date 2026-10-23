@@ -499,7 +499,7 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
       // P30A T8: ověřené příklady jen na objednávku, dokud T10 nezměří, jestli pomáhají.
       const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
-      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
+      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, caller, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
       // `seat` přiřazuje `generate` výš; TypeScript to po `await` nevidí.
       (seat as { readonly release: () => void } | null)?.release();

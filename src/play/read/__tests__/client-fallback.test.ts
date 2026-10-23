@@ -1,0 +1,106 @@
+/**
+ * Čtečka pro AI verzi (P58B T4): astra přes OpenAI API čte p95 6,4 s (T3), takže čte jen AI verzi
+ * s vlastním rozpočtem 15 s a zálohou je slovník – po chybě, vypršení i bez klíče `null` a žádné
+ * další volání. Route a režisér: `create-reader.test.ts`, `director-reader.test.ts`.
+ */
+
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import type { Reservation, SpendCap } from '@/server/spend-cap';
+
+import { DEFAULT_AI_READER_BUDGET_MS, DEFAULT_LOCAL_READER_BUDGET_MS, DEFAULT_READER_BUDGET_MS, readBeforeDraft, readerConfigFromEnv, readerForAiVersion } from '../client';
+import type { Reading } from '../schema';
+
+const READING: Reading = {
+  control: 'runner', verbs: [{ word: 'runs', class: 'runner' }], hero: 'corgi', roles: [], setting: 'park', mood: null,
+  numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' }, foe: null, item: null, world: null, title: null,
+};
+
+/** Produkční vzor čtečky (`scripts/cloud/env.production.example`) s testovacím klíčem. */
+const ASTRA = {
+  PLAY_READER: 'on',
+  PLAY_READER_PATH: 'ai',
+  PLAY_READER_ENDPOINT: 'openai:https://api.openai.com',
+  PLAY_READER_MODEL: 'gpt-6-astra',
+  PLAY_READER_KEY: 'sk-test',
+  PLAY_READER_USD_PER_MTOK_IN: '10',
+  PLAY_READER_USD_PER_MTOK_OUT: '50',
+  PLAY_STORE_DIR: mkdtempSync(join(tmpdir(), 'p58b-reader-ai-')),
+} as const;
+const VISITOR = '203.0.113.7';
+
+type FetchArgs = [input: string | URL | Request, init?: RequestInit];
+const replying = (status: number) =>
+  vi.fn(async (..._args: FetchArgs) =>
+    new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(READING) }, finish_reason: 'stop' }], usage: { prompt_tokens: 1900, completion_tokens: 150 } }), { status }));
+const hanging = () =>
+  vi.fn((...[, init]: FetchArgs) => new Promise<Response>((_resolve, reject) => {
+    init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+  }));
+
+function bookkeeping() {
+  const settled: (number | 'unknown')[] = [];
+  const cap: Pick<SpendCap, 'reserve'> = {
+    reserve: vi.fn(async (usd: number): Promise<Reservation> => ({ ok: true, reservedUsd: usd, settle: async (actual) => { settled.push(actual); return actual === 'unknown' ? usd : actual; } })),
+  };
+  return { cap, settled };
+}
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe('the reader for the AI version (P58B T4)', () => {
+  it('is on only with PLAY_READER=on, an endpoint and PLAY_READER_PATH=ai', () => {
+    expect(readerForAiVersion(ASTRA)).toBe(true);
+    expect(readerForAiVersion({ ...ASTRA, PLAY_READER_PATH: '' })).toBe(false);
+    expect(readerForAiVersion({ ...ASTRA, PLAY_READER_PATH: 'fast' })).toBe(false);
+    expect(readerForAiVersion({ ...ASTRA, PLAY_READER: 'off' })).toBe(false);
+    expect(readerForAiVersion({ ...ASTRA, PLAY_READER_ENDPOINT: '' })).toBe(false);
+  });
+
+  it('reads astra with a 15 s budget, the fast path keeps 700 ms and an explicit budget still wins', () => {
+    expect(DEFAULT_AI_READER_BUDGET_MS).toBe(15_000);
+    expect(readerConfigFromEnv(ASTRA)).toMatchObject({ endpoint: 'openai:https://api.openai.com', model: 'gpt-6-astra', profile: 'api', pricing: { usdPerMTokIn: 10, usdPerMTokOut: 50 }, timeoutMs: DEFAULT_AI_READER_BUDGET_MS });
+    expect(readerConfigFromEnv({ ...ASTRA, PLAY_READER_PATH: '' })?.timeoutMs).toBe(DEFAULT_READER_BUDGET_MS);
+    expect(readerConfigFromEnv({ ...ASTRA, PLAY_READER_BUDGET_MS: '9000' })?.timeoutMs).toBe(9000);
+    expect(readerConfigFromEnv({ ...ASTRA, PLAY_READER_ENDPOINT: 'http://127.0.0.1:8791' })?.timeoutMs).toBe(DEFAULT_LOCAL_READER_BUDGET_MS);
+  });
+
+  it('falls back to the dictionary after a 5xx: null, one call, nothing else asked', async () => {
+    const fetchImpl = replying(503);
+    const { cap, settled } = bookkeeping();
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(String(fetchImpl.mock.calls[0]![0])).toBe('https://api.openai.com/v1/chat/completions');
+    expect(settled).toEqual(['unknown']);
+  });
+
+  it('waits for astra up to 15 s, then the dictionary, and the cut call is charged in full', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const fetchImpl = hanging();
+    const { cap, settled } = bookkeeping();
+    let result: Reading | null | 'pending' = 'pending';
+    const pending = readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store: null, caller: VISITOR }).then((reading) => (result = reading));
+    await vi.advanceTimersByTimeAsync(DEFAULT_AI_READER_BUDGET_MS - 1);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(result).toBe('pending');
+    await vi.advanceTimersByTimeAsync(1);
+    await pending;
+    expect(result).toBeNull();
+    await vi.waitFor(() => expect(settled).toEqual(['unknown']));
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  it('asks nothing and reserves nothing without a key', async () => {
+    const fetchImpl = replying(200);
+    const { cap } = bookkeeping();
+    await expect(readBeforeDraft('a corgi runs', { ...ASTRA, PLAY_READER_KEY: '' }, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(cap.reserve).not.toHaveBeenCalled();
+  });
+});
