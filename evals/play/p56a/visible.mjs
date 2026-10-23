@@ -128,6 +128,13 @@ async function play(options) {
       if (existsSync(record)) continue;
       const started = Date.now();
       const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
+      // P58A T9: server odpověděl chybou (návrh hry spadl) – hra nevznikla a soudce nemá co vidět; řádek bez snímku.
+      // Server, který neodpoví vůbec, dál hodí výjimku a `play-sets.mjs` ho restartuje.
+      if (!response.ok) {
+        writeJson(record, { id: sentence.id, text: sentence.text, nouns: nounsOf(sentence), error: `POST ${response.status} ${(await response.text()).slice(0, 200)}` });
+        console.log(`${sentence.id} no game: POST ${response.status}`);
+        continue;
+      }
       const created = await response.json();
       if (!created.versionId) throw new Error(`${sentence.id}: POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
       const draftMs = Date.now() - started;
@@ -173,6 +180,7 @@ async function judge(options) {
     const answerFile = join(dir, `${id}.answer.json`);
     if (existsSync(answerFile)) continue;
     const row = readJson(join(dir, `${id}.json`));
+    if (row.error !== undefined) continue;
     const asked = await ask(join(dir, `${id}.png`), schemaFile, answerFile, questionOf(row.nouns), by, isVisibleAnswer);
     // Ztráta přihlášení nebo vyčerpaný limit: zastavit, díra není „nevidím“.
     if (!existsSync(answerFile)) throw new Error(`judge ${id}: no answer (exit ${asked?.code}) ${asked?.stderr ?? ''}`);

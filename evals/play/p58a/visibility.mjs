@@ -37,7 +37,8 @@ export function tally(rows) {
 export function rowsOf(dir, setPath) {
   return readJson(resolve(ROOT, setPath)).sentences.map((sentence) => {
     const row = readJson(join(dir, `${sentence.id}.json`));
-    const answer = readJson(join(dir, `${sentence.id}.answer.json`));
+    // Hra nevznikla (`visible.mjs play` zapsal `error`): soudce nic neviděl, žádné slovo není vidět.
+    const answer = row.error === undefined ? readJson(join(dir, `${sentence.id}.answer.json`)) : { scene: `no game: ${row.error}`, nouns: [], judge: 'none' };
     const verdict = verdictOf(nounsOf(sentence), answer);
     return {
       set: setPath,
