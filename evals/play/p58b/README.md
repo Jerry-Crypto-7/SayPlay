@@ -13,7 +13,31 @@ Plán `plans/P58B-ctecka-a-typ-hry-2026-10-23.md` (necommitovaný). Větev `feat
 
 ## Srovnání čteček (T3)
 
-Majitel 23. 10. zúžil srovnání na dva modely: `opus-5.5@anthropic` (Anthropic Messages API, `claude-opus-5-5`, úsilí `low`) a `astra@openai` (OpenAI API, `gpt-6-astra`, úsilí `low`). Měří se z lokálního PC k poskytovateli.
+Majitel 23. 10. zúžil srovnání na dva modely: `opus-5.5@anthropic` (Anthropic Messages API, `claude-opus-5-5`, úsilí `low`) a `astra@openai` (OpenAI API, `gpt-6-astra`, úsilí `low`). Klíč Anthropic ani po opravě souboru neprošel (400), proto **rozhodnutí majitele 23. 10.: měří se jen astra**, Opus ne. Měří se z lokálního PC k poskytovateli.
 
 - **Ceny v měřidle:** Opus 5.5 4/20 USD za Mtok, zápis cache 1,25×, čtení 0,05× (systémový prompt nese bod cache). Astra 10/50 USD za Mtok podle ceníkových přehledů (oficiální stránka OpenAI neověřena); automatickou slevu OpenAI za cache produktová cesta nevidí, takže útrata astry je horní mez.
 - **Zkouška 23. 10., 3 věty (1 cíl a 1 past z `p56a/holdout.json`, 1 věta `p30/dev.json`), `--cap-usd 1`:** astra přečetla 3/3 (cíl i past správně), 4,7 s medián, 6,9 s max, ~1 930 vstupních a 87–227 výstupních tokenů, **0,081 USD**. Opus 3× odmítnut 400 – klíč majitele (`sk-ant-usr…`) je vázaný na uživatele a API chce hlavičku `anthropic-workspace-id`; výchozí pracovní prostor ID nemá. Odmítnutá volání Anthropic neúčtuje, měřidlo je přesto započetlo nejhorším případem (0,114 USD). Skutečná útrata zkoušky ≤ 0,081 USD.
+- **Srovnání se slovníkem** počítá měřidlo samo a zdarma (`dictionaryOf`, klíč `dictionary` ve výstupu): tytéž přečtené věty jen přes `classifyGenre(věta, null)`.
+
+### Výsledek na dev, 23. 10. (`compare-dev.json`, commit měřidla `bf964e7e`, prompt `beda31d4ee60c875`)
+
+220 vět: `p56a/holdout` (60 cílů + 20 pastí), `p55/holdout` (60 + 20), `p30/dev` (60 vět bez štítku – jen rychlost a cena). Žádná neplatná odpověď, žádná chyba.
+
+| | žánr cílů | pasti mimo lákavý žánr | p50 | p95 | cena za větu |
+|---|---|---|---|---|---|
+| **astra** (čtení + dnešní `classifyGenre`) | **118/120** | **34/40** | 3,3 s | 6,4 s | 0,027 USD |
+| jen slovník (dnešní rychlá hra, `classifyGenre(věta, null)`) | 45/120 | 29/40 | – | – | 0 |
+
+- **Po sadách:** `p56a` astra 58/60 a pasti 16/20, slovník 25/60 a 11/20; `p55` astra 60/60 a 18/20, slovník 20/60 a 18/20; `p30/dev` p50 3,0 s, p95 4,9 s. Režim sedí všude, kde sedí žánr (118/120). Role v `p56a`: hrdina 77/80, protivník 75/80.
+- **Rychlost:** žádná z 220 vět pod 1 000 ms; nejrychlejší 2,1 s, nejpomalejší 9,1 s. Odpověď je celá naráz, takže první bajt = celek.
+- **Rychleji astra nejde:** `reasoning_effort` `none` i `minimal` API odmítne (400, povolené jen `low`, `medium`, `high`, `xhigh`) a i odpověď o 4 tokenech trvá při `low` ~1 s.
+- **Tokeny a cena:** ~1 918 vstupních a ~154 výstupních tokenů na větu. Cena je horní mez – slevu OpenAI za cache měřidlo nevidí.
+
+**Rozhodnutí (T3):** čtečka je **astra a čte jen pro AI verzi** na pozadí. Rychlá hra (do 2 s) na čtení nečeká a dál vybírá slovník s pravidlem z T5; zálohou čtení je slovník. Brána pro rychlou hru se v T8 zapíše zvlášť (cíl plánu). Důvod: p95 6,4 s je šestkrát nad hranicí 1 000 ms a nižší úsilí model nedovolí.
+
+**Data pro T5** (dnešní pravidlo „slovník přebije čtení, když slyší nový žánr“):
+- **Slovník přebil správné čtení 2×:** `p56a/s02` (čtení `merge`, hra `defense`), `p55/h78` (čtení `voyage.race`, hra `whack`). Samotné čtení by mělo cíle 119/120.
+- **Čtení řeklo „nic nesedí“ (žánr `null`) a slovník pak zvolil lákavý žánr 4×:** `p56a/s68` (`rhythm`), `s74` (`voyage.race`), `s80` (`shooter`), `p55/h79` (`hop`). U 7 dalších pastí s `null` padl slovník mimo lákavý žánr náhodou (`s62`, `s76`, `s78`, `h64`, `h67`, `h71`, `h73`).
+- **Chyba samotného čtení 2×:** `p56a/s08` (farmář stříká hadicí na vrány „než se dostanou ke kukuřici“ – čtení `defense`, štítek `shooter`), `p56a/s65` (karetní souboj – čtení `duel`, tedy lákavý žánr).
+
+**Útrata T3:** běh 5,92 USD (strop 12) + zkouška 3 vět 0,081 USD + sonda bez uvažování ~0 USD (7 vět odmítnutých 400, které OpenAI neúčtuje – měřidlo si je přesto rezervovalo nejhorším případem 0,61 USD – a 3 drobná volání). Celkem T3 ~6,0 USD.

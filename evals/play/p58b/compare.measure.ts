@@ -349,6 +349,26 @@ export function summaryOf(rows: readonly CompareRow[], sentences: ReadonlyMap<st
   };
 }
 
+/** Tytéž věty jen se slovníkem (`classifyGenre(věta, null)` – dnešní rychlá hra bez čtečky), zdarma a pro srovnání. */
+export function dictionaryOf(rows: readonly CompareRow[], sets: readonly SentenceSet[]) {
+  const sentences = new Map(sets.flatMap((set) => set.sentences.map((sentence) => [`${set.name}#${sentence.id}`, sentence] as const)));
+  const scored = rows.map((row) => {
+    const sentence = sentences.get(`${row.set}#${row.id}`)!;
+    const top = classifyGenre(sentence.text, null).ranked[0];
+    const classified = top === undefined ? null : `${top.genre}.${top.mode}`;
+    return { row, classified, ...scoreOf(sentence, classified) };
+  });
+  const summary = (of: typeof scored) => ({
+    targets: { of: of.filter(({ row }) => row.kind === 'target').length, hit: of.filter(({ row, hit }) => row.kind === 'target' && hit === true).length, modeHit: of.filter(({ row, modeHit }) => row.kind === 'target' && modeHit === true).length },
+    traps: { of: of.filter(({ row }) => row.kind === 'trap').length, offLure: of.filter(({ row, hit }) => row.kind === 'trap' && hit === true).length },
+  });
+  return {
+    all: summary(scored),
+    perSet: Object.fromEntries(sets.map((set) => [set.name, summary(scored.filter(({ row }) => row.set === set.name))])),
+    classified: Object.fromEntries(scored.map(({ row, classified }) => [`${row.set}#${row.id}`, classified])),
+  };
+}
+
 /** Přečte všechny věty všech sad každým modelem; po stropu útraty skončí a vrátí, co stihl. */
 export async function compareReaders(options: { readonly models: readonly Candidate[]; readonly sets: readonly SentenceSet[]; readonly capUsd: number }, deps: CompareDeps = {}) {
   const env = deps.env ?? process.env;
@@ -501,6 +521,7 @@ async function main(): Promise<void> {
   }
   const out = resolve(ROOT, arg('out') ?? join('evals', 'play', 'p58b', `compare-${sets.map((set) => set.name.replace('/', '-')).join('+')}.json`));
   const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const dictionary = dictionaryOf(result.rows, sets);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, `${JSON.stringify({
     schema: 'p58b-compare.v1',
@@ -514,7 +535,9 @@ async function main(): Promise<void> {
       return { id, ...rest, endpoint: rest.endpoint === '' ? 'claude -p' : new URL(rest.endpoint.replace(/^openai:/, '')).host };
     }),
     ...result,
+    dictionary,
   }, null, 1)}\n`);
+  console.log(`dictionary only: targets ${dictionary.all.targets.hit}/${dictionary.all.targets.of}, traps ${dictionary.all.traps.offLure}/${dictionary.all.traps.of}`);
   for (const id of models) {
     const all = result.summary[id]!.all;
     console.log(`${id}: targets ${all.targets.hit}/${all.targets.of}, traps ${all.traps.offLure}/${all.traps.of}, invalid ${all.invalid}, errors ${all.errors}, p50 ${all.latencyMs.p50} ms, p95 ${all.latencyMs.p95} ms, ${all.usd} USD${all.listUsd === null ? '' : ` (list ${all.listUsd} USD)`}`);
