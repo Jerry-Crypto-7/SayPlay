@@ -20,12 +20,13 @@ import os
 import re
 import subprocess
 import time
-import tomllib
+import urllib.error
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
 
 import cache
+import tomllib
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -100,11 +101,16 @@ def write_nouns(counted: list[tuple[str, int]], path: Path = NOUNS_FILE) -> None
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def prompt_for(noun: str, body: str, variant: str) -> str:
-    """Zadání obrázku: šablona třídy (neznámá třída → `prop`) a rozlišovací znak za jménem."""
+def prompt_for(noun: str, body: str, variant: str, fix: str | None = None) -> str:
+    """Zadání obrázku: šablona třídy (neznámá třída → `prop`) a rozlišovací znak za jménem.
+
+    Za znakem jde oprava z tabulky `[judge_fix]` (P57 T6): obráceně, co slepý soudce
+    starému modelu vytkl („glassy, noisy“ → „matte, smooth“). `fix` ji nahradí
+    (P57 T8: druhé kolo s důvodem soudce z prvního).
+    """
     templates = CONFIG["prompts"].get(body, CONFIG["prompts"]["prop"])
-    feature = FEATURES.get(noun)
-    return templates[variant].format(noun=f"{noun}, {feature}" if feature else noun)
+    traits = [FEATURES.get(noun), fix or FEATURES.get("judge_fix", {}).get(noun)]
+    return templates[variant].format(noun=", ".join([noun, *filter(None, traits)]))
 
 
 def load_classes(path: Path) -> dict[str, str]:
@@ -119,6 +125,27 @@ def load_classes(path: Path) -> dict[str, str]:
         cache.normalize(entry["noun"]): "flat" if entry["flat"] else entry["class"]
         for entry in entries
     }
+
+
+def load_fixes(path: Path) -> dict[str, str]:
+    """Oprava zadání podle jména z pole `fix` seznamu `{"nouns": [...]}` (P57 T8, druhé kolo).
+
+    Pole `shape` (P57 T8r: poměr os starého modelu) jde za opravu; bez `fix` za `[judge_fix]`,
+    aby ho tvar nepřebil.
+    """
+    if path.suffix != ".json":
+        return {}
+    judge_fix = FEATURES.get("judge_fix", {})
+    fixes = {}
+    for e in json.loads(path.read_text(encoding="utf-8"))["nouns"]:
+        noun = cache.normalize(e["noun"])
+        parts = [
+            e.get("fix") or (judge_fix.get(noun) if e.get("shape") else None),
+            e.get("shape"),
+        ]
+        if any(parts):
+            fixes[noun] = ", ".join(filter(None, parts))
+    return fixes
 
 
 def load_nouns(path: Path) -> list[str]:
@@ -205,6 +232,10 @@ def run_batch(
                     result = cache.store(noun, {**made, **used}, cache_root)
                     record.update(used)
                     break
+                except (ConnectionError, urllib.error.URLError):
+                    # ComfyUI nedostupné je chyba prostředí, ne slova: zapsané „failed“ by se už
+                    # nikdy nezopakovalo (P57 T6: pád ComfyUI otrávil 19 slov dávky). Dávka stojí.
+                    raise
                 except Exception as error:  # noqa: BLE001 – slovo se zapíše jako failed a dávka jede dál
                     record["reason"] = f"{type(error).__name__}: {error}"[:500]
                     record.setdefault("attempts", []).append(
@@ -369,6 +400,8 @@ def main() -> None:
     parser.add_argument("--judge", choices=("codex", "claude"), default="codex")
     parser.add_argument("--no-quarantine", action="store_true")
     parser.add_argument("--start-comfy", action="store_true")
+    # P57 T8: top 50 dodělané profilem „hero“ (víc trojúhelníků, ochrana hran).
+    parser.add_argument("--profile", choices=("default", "hero"), default="default")
     args = parser.parse_args()
 
     if args.derive:
@@ -387,9 +420,11 @@ def main() -> None:
 
     import precheck
     from comfy_client import ComfyClient
+
     from server import generate
 
     classes = load_classes(args.source)
+    fixes = load_fixes(args.source)
 
     def make(noun: str, out_dir: Path, seed: int, prompt: str) -> dict:
         check = None
@@ -398,7 +433,9 @@ def main() -> None:
             def check(image: Path) -> dict:
                 return precheck.check(noun, image, judge=args.judge)
 
-        return generate(comfy, noun, out_dir, seed, prompt=prompt, check=check)
+        return generate(
+            comfy, noun, out_dir, seed, prompt=prompt, check=check, profile=args.profile
+        )
 
     comfy = ComfyClient()
     with comfy_running(comfy, args.start_comfy):
@@ -414,7 +451,7 @@ def main() -> None:
             deadline=deadline,
             attempts=[(a[0], int(a[1:])) for a in args.attempts.split(",")],
             prompt_of=lambda noun, variant: prompt_for(
-                noun, classes.get(noun, "prop"), variant
+                noun, classes.get(noun, "prop"), variant, fixes.get(noun)
             ),
         )
     subprocess.run(

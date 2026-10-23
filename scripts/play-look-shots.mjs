@@ -39,10 +39,10 @@ const PIXEL_TOLERANCE = 8;
 const require = createRequire(import.meta.url);
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 1)}\n`);
-const SCENE_ONLY = { content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' };
+export const SCENE_ONLY = { content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' };
 const GENRE_OF_CONTROL = { runner: 'runner', platform: 'platformer', steer: 'race' };
 
-function args() {
+export function args() {
   const out = { _: [] };
   const list = process.argv.slice(2);
   for (let i = 0; i < list.length; i += 1) {
@@ -57,21 +57,21 @@ const chosen = (options) => {
   return sentencesOf(typeof options.set === 'string' ? options.set : undefined).filter((sentence) => only === null || only.has(sentence.id));
 };
 
-async function browserFor(gpu) {
+export async function browserFor(gpu) {
   const { chromium } = require('@playwright/test');
   const angle = gpu ? ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
   return chromium.launch({ args: angle });
 }
 
 /** Kontext Playwrightu pro Pixel 7 (bez volby prohlížeče, ta jde z `browserFor`). */
-function pixel7() {
+export function pixel7() {
   const { devices } = require('@playwright/test');
   const { defaultBrowserType: _browser, ...device } = devices['Pixel 7'];
   return device;
 }
 
 /** Rychlá verze věty; stejná věta dá stejnou hru (semínko z věty). */
-async function publish(base, text) {
+export async function publish(base, text) {
   const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: text }) });
   const created = await response.json();
   if (!created.versionId) throw new Error(`POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
@@ -81,7 +81,7 @@ async function publish(base, text) {
 }
 
 /** Modely dotažené: počet sítí scény se `quietMs` nezměnil (jako `settledRender` v `e2e/p35-perf.spec.ts`). */
-async function settle(page, quietMs = 1500) {
+export async function settle(page, quietMs = 1500) {
   await page.waitForFunction(() => window.__playRender !== undefined && window.__playRender().calls > 0, undefined, { timeout: 60_000 });
   let last = -1;
   let since = Date.now();
@@ -98,7 +98,7 @@ async function settle(page, quietMs = 1500) {
 }
 
 /** Ukázka robota odtikaná ručními hodinami do `ticks`; vrací tik, na kterém stojí. */
-async function demoTo(page, ticks) {
+export async function demoTo(page, ticks) {
   await page.waitForFunction(() => typeof window.__playShell?.byHand === 'function', undefined, { timeout: 30_000 });
   await page.evaluate(() => window.__playShell.byHand(true));
   await page.getByTestId('play-pause').click();

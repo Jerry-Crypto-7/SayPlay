@@ -9,6 +9,7 @@
  * node scripts/assets/qa-sheets.mjs --out <adresář>    jinam než D:/caches/p30d/sheets
  * node scripts/assets/qa-sheets.mjs --glb-list <json>  modely mimo katalog: [{ "id", "glb" }] (P37D)
  * node scripts/assets/qa-sheets.mjs --grid 3 --out D:/caches/p43/grids   mřížky 3×3 pro slepý soud (P43)
+ * node scripts/assets/qa-sheets.mjs --grid 3 --ids <json> --out <adresář> jen vybrané id v daném pořadí (P57)
  * ```
  *
  * Rozvržení listu: vlevo nahoře zepředu, vpravo nahoře z boku, vlevo dole
@@ -37,6 +38,10 @@ const flag = (name) => {
 const outDir = flag('--out') ?? 'D:/caches/p30d/sheets';
 const only = flag('--only')?.split(',');
 const gridSize = flag('--grid') === null ? null : Number(flag('--grid'));
+// `--ids <json>` (P57 T3): jen tyhle assetId na mřížkách, v pořadí ze souboru (nejpoužívanější první).
+// Položka `{ id, leaf }` (P57 T4) přebarví šedé listí na barvu listí sady, jako hra (`plantPaint`).
+const idOrder = flag('--ids') ? JSON.parse(readFileSync(flag('--ids'), 'utf8')).map((entry) => (typeof entry === 'string' ? { id: entry } : entry)) : null;
+const leafOf = new Map((idOrder ?? []).filter((entry) => entry.leaf).map((entry) => [entry.id, entry.leaf]));
 
 // Modely z cache výroby (P37D) leží mimo `public/`; každý dostane vlastní adresu `/ext/<pořadí>.glb`.
 const external = flag('--glb-list') ? JSON.parse(readFileSync(flag('--glb-list'), 'utf8')) : null;
@@ -116,8 +121,28 @@ window.renderSheet = async (url) => {
   return sheet.toDataURL('image/png');
 };
 
+// Šedá listí katalogu (vegetation-places.ts SLATE): hra ji ve vegetaci přebarví na listí sady.
+const SLATE = new T.Color('#4a525c');
+const nearSlate = (c) => Math.abs(c.r - SLATE.r) + Math.abs(c.g - SLATE.g) + Math.abs(c.b - SLATE.b) < 0.01;
+function repaint(root, leafHex) {
+  const leaf = new T.Color(leafHex);
+  const c = new T.Color();
+  root.traverse((node) => {
+    if (!node.isMesh) return;
+    const colour = node.geometry.getAttribute('color');
+    if (colour) {
+      for (let i = 0; i < colour.count; i++) {
+        c.fromBufferAttribute(colour, i);
+        if (nearSlate(c)) colour.setXYZ(i, leaf.r, leaf.g, leaf.b);
+      }
+      colour.needsUpdate = true;
+    }
+    for (const material of [node.material].flat()) if (material && material.color && nearSlate(material.color)) material.color.copy(leaf);
+  });
+}
+
 // P43 T10: mřížka n×n, v buňce ¾ pohled, číslo buňky a rozměry; žádné jméno.
-window.renderGrid = async (urls, n) => {
+window.renderGrid = async (urls, n, leaves = []) => {
   const CELL = 340;
   const grid = document.createElement('canvas');
   grid.width = grid.height = CELL * n;
@@ -128,6 +153,7 @@ window.renderGrid = async (urls, n) => {
     const x = (cell % n) * CELL, y = Math.floor(cell / n) * CELL;
     try {
       const gltf = await loader.loadAsync(urls[cell]);
+      if (leaves[cell]) repaint(gltf.scene, leaves[cell]);
       const scene = stage();
       scene.add(gltf.scene);
       scene.updateMatrixWorld(true);
@@ -187,7 +213,7 @@ const lod0Of = (asset) => asset.lods?.find((lod) => lod.level === 0) ?? asset.lo
 if (gridSize !== null) {
   // Mřížkové listy (P43 T10): `grid-index.json` je jediná cesta z buňky zpět na model.
   const byId = new Map(catalog.map((asset) => [asset.assetId, asset]));
-  const plan = gridPlan(catalog, gridSize);
+  const plan = idOrder ? gridPlan(idOrder.map(({ id }) => ({ assetId: id })), gridSize, { keepOrder: true }) : gridPlan(catalog, gridSize);
   writeFileSync(join(outDir, 'grid-index.json'), `${JSON.stringify({ size: gridSize, sheets: plan }, null, 1)}\n`);
   page = await browser.newPage();
   await page.goto(base);
@@ -195,7 +221,8 @@ if (gridSize !== null) {
   for (const { sheet, cells } of plan) {
     if (existsSync(join(outDir, `${sheet}.png`))) continue;
     const urls = cells.map((id) => lod0Of(byId.get(id))?.path ?? '/missing.glb');
-    const { data, failed } = await page.evaluate(([list, n]) => window.renderGrid(list, n), [urls, gridSize]);
+    const paints = cells.map((id) => leafOf.get(id) ?? null);
+    const { data, failed } = await page.evaluate(([list, n, leaves]) => window.renderGrid(list, n, leaves), [urls, gridSize, paints]);
     writeFileSync(join(outDir, `${sheet}.png`), Buffer.from(data.split(',')[1], 'base64'));
     for (const cell of failed) failures[cells[cell]] = `${sheet} cell ${cell + 1}: render failed`;
     done += 1;

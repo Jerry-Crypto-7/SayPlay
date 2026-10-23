@@ -24,7 +24,7 @@
  * Jméno bez ruční výšky dostane výšku podle třídy a skript ho vypíše.
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -39,9 +39,10 @@ if (isMain && !process.features.typescript) {
 }
 // Importy bez přípon a JSON doplní `ts-paths.mjs`, vitest sám.
 if (!process.env.VITEST) await import('../ts-paths.mjs');
-const { lookFor } = await import('../../src/play/arcade/look/index.ts');
+const { floraIds, lookFor, LOOKS, SCENERY_MODELS, withKit } = await import('../../src/play/arcade/look/index.ts');
 
 export const OUT = 'src/play/arcade/look/setting-kits.json';
+export const MISSING = 'evals/play/p57/kit-missing.json';
 /** Vstupy v pořadí: P45G a pozdější kola; pořadí prostředí i rekvizit drží první výskyt. */
 export const KIT_NOUNS = ['evals/play/p45g/kit-nouns.json', 'evals/play/p46i/kit-nouns.json', 'evals/play/p47c/kit-nouns.json'];
 
@@ -212,6 +213,44 @@ const NEAREST = {
   'parking lot': 'city',
 };
 
+/**
+ * P57 T9: sady světů, do kterých věty padají nejčastěji (10 nejčastějších z `evals/play/p57/usage.json`
+ * a pět z auditu), z celé knihovny místo z `kit-nouns.json`. Seznam podle přednosti: jméno
+ * (`gen3d-<jméno>`) nebo celé id (`cc0-…`, model ze `SCENERY_MODELS`), u nového modelu i výška
+ * v metrech. Do sady jde nejvýš `P57_MAX` modelů, které katalog má, poslední soud nedal pod 6
+ * (`latestScores`), vegetace sady je nekreslí sama a sada je už neukazuje vedle kitu. Co katalog
+ * nemá nebo má pod 6, zapíše skript do `evals/play/p57/kit-missing.json` k dogenerování (T10).
+ * „floating island“ místo „floating islands“: vzor bere jednotné i množné číslo jen od jednotného.
+ */
+export const P57_KITS = {
+  'meadow': ['wooden fence', 'dandelion', ['haystack', 1.6], ['hay cart', 1.8], 'wooden signpost', ['log bench', 1], ['garden gnome', 0.9], ['wheelbarrow', 1], ['water pump', 1.4], ['milk can', 0.9], ['standing stone', 2.2], ['stone cairn', 1.2], ['wooden swing', 2.4], ['feeding trough', 0.8], 'white picket fence', ['mossy fallen log', 0.7], ['mossy stump', 0.8], ['wishing well', 1.8], ['weather vane', 2.5], ['gazebo', 3], ['cc0-hay-bale', 1], ['cc0-tractor', 2.4], ['scarecrow', 1.8], ['beehive', 1], ['flower cart', 1.6]],
+  'castle': ['castle gate', 'portcullis', ['battlement wall', 2.6], ['castle banner', 2.4], ['tournament banner', 2.4], ['castle catapult', 2.2], ['trebuchet', 3.5], ['siege tower', 5], ['battering ram', 1.8], ['cannon tower', 3.5], ['suit of armor', 1.9], ['armor rack', 1.6], ['sword rack', 1.4], ['throne', 1.8], ['stone column', 3], ['gargoyle', 1.4], 'flagpole', ['wishing well', 1.8], ['cc0-barrel-stack', 1.4], ['hay cart', 1.8], ['market stall', 2.4], ['sword in the stone', 1.4], 'forge furnace', 'pillory', ['castle tower', 6], ['knight statue', 2.2]],
+  'city': [['townhouse', 7], ['brick townhouse', 7], 'glass office tower', ['skyscraper', 12], 'red phone booth', ['street mailbox', 1.2], 'post box', ['cc0-car-sedan', 1.5], ['cc0-van', 2], ['cc0-bus', 3], ['cc0-car-police', 1.6], ['cc0-dumpster', 1.6], ['cc0-traffic-barrier', 1], 'traffic cone', ['crosswalk sign', 2.4], 'billboard sign', ['neon sign', 2], ['food truck', 2.8], ['food kiosk', 2.6], ['vending machine', 1.9], 'parking meter', ['street clock', 3.5], ['pay phone', 2], ['graffiti wall', 2.4], ['shop sign', 2.2], 'apartment block', ['newspaper stand', 1.6]],
+  'jungle': ['stone idol head', 'tribal totem pole', 'wooden rope bridge', ['carved stone head', 2.4], ['tiki totem', 2.4], 'tiki torch', ['mossy ruin pillar', 2.8], ['stilt hut', 3.5], ['jungle vine bridge', 2.4], 'jungle vine', ['tribal drum', 1], ['tribal shield', 1.2], ['tiki mask', 1.2], ['golden idol', 1], ['treasure chest', 0.9], 'medical tent', ['cc0-altar-stone', 1.2], ['cc0-campfire-stones', 0.6], ['vine curtain', 3], ['camping chair', 0.9], 'hiking backpack', 'vine covered rock wall', ['jungle temple stairs', 3], 'ruin'],
+  'kitchen': [['cc0-kitchencabinet', 1], ['cc0-kitchentable', 0.9], ['cc0-kitchencounter-sink', 1], ['cc0-oven', 1], ['cc0-fridge-decorated', 1.9], ['cc0-cutting-table', 1], ['cc0-counter-sink', 1], ['cc0-cooking-pot', 0.8], ['cc0-toaster', 0.7], ['cc0-chair-stool', 0.8], ['cc0-chair-wood', 1], ['microwave', 0.7], ['dishwasher', 0.9], ['espresso machine', 0.8], ['deep fryer', 1], ['griddle', 1], ['wood stove', 1.6], 'bread oven', 'cake stand', ['mortar and pestle', 0.7], 'pepper mill', ['kettle', 0.7], ['cookie jar', 0.7], ['blender', 0.8], ['teapot', 0.7], ['spice rack', 1.2], ['kitchen island', 1]],
+  'park': ['street tree', 'park fountain', ['gazebo', 3], ['bandstand', 3.5], ['picnic table', 0.9], ['cc0-bench', 1], ['log bench', 1], 'playground slide', ['wooden swing', 2.4], ['seesaw', 1], ['spring rider', 1], ['merry go round', 1.4], ['carousel', 3.5], ['lamp post', 3.5], ['street lamp', 4.5], ['flower pot', 0.8], ['garden arch', 2.4], ['statue', 2.2], ['notice board', 1.8], ['trail sign', 1.8], ['food kiosk', 2.6], ['recycling bin', 1.1], 'cherry blossom tree', 'park bench', 'street trash can', ['duck pond', 0.5]],
+  'village': [['timber house', 4.5], 'wooden hut', ['market stall', 2.4], ['market stall shop', 2.6], ['hay cart', 1.8], ['haystack', 1.6], ['water wheel', 3], ['wishing well', 1.8], ['forest well', 1.8], ['cc0-hay-bale', 1], ['cc0-barrel', 1], 'wagon wheel', 'wooden fence', 'white picket fence', ['notice board', 1.8], 'wooden signpost', ['outhouse', 2.2], ['doghouse', 1.2], ['cc0-workbench-anvil', 0.9], 'forge furnace', ['clock tower', 6], ['weather vane', 2.5], ['firewood basket', 0.8], ['milk can', 0.9], ['water pump', 1.4], ['cottage', 4.5], ['village church', 7], 'log cabin'],
+  'beach': ['lifeguard tower', 'beach umbrella', ['beach cabana', 2.6], ['beach cooler', 0.7], ['beach flag', 2.4], ['beach bonfire', 0.8], ['sand bucket', 0.6], ['surfboard', 2], ['coconut stall', 2.4], ['driftwood log', 0.7], ['driftwood', 0.8], ['rock pool', 0.6], ['lifebuoy', 0.9], ['message in a bottle', 0.6], 'tiki torch', ['pier lamp', 3], ['wooden dock', 0.9], ['dock piling', 1.4], ['sea rock', 1.2], ['beach ball', 0.6], 'beach hut', 'wooden pier', ['ice cream cart', 1.8]],
+  'dojo': [['torii gate', 4], ['stone lantern', 1.4], ['paper lantern', 0.9], ['gong', 2], ['cc0-bamboo', 3], ['bamboo cluster', 3], 'cherry blossom tree', ['sword rack', 1.4], ['armor rack', 1.6], ['standing stone', 2.2], ['stone cairn', 1.2], ['forest shrine', 2.2], ['wooden gate', 1.4], 'wooden fence', ['bullseye target', 1.4], ['teapot', 0.7], ['tribal drum', 1], ['bamboo hut', 3], ['training dummy', 1.8], ['taiko drum', 1.2], ['pagoda', 6], ['koi pond', 0.5]],
+  'floating island': [['floating island', 2.5], ['cc0-cloud', 1.5], ['cc0-tree-floating', 2.5], ['airship', 3], ['blimp', 3], ['crystal cluster', 1.6], ['power crystal', 2], ['magic fountain', 2], ['orb pedestal', 1.4], ['crystal pedestal', 1.4], ['rune stone', 1.6], ['standing stone', 2.2], 'wooden rope bridge', ['plank bridge', 1], ['giant toadstool', 2], ['glowing mushroom', 1.5], ['fairy door', 1], ['gyrocopter', 2], ['cc0-tree-spiral', 3], ['cc0-tree-swirl', 3], ['weather vane', 2.5], ['sky waterfall', 4], ['floating rock', 2], ['hot air balloon', 4]],
+  'frozen lake': ['ice fishing hut', 'ice floe', ['ice auger', 1], ['thin ice sign', 1.6], ['frozen signpost', 1.8], ['snowman with hat', 1.8], 'ice skate', ['hockey goal', 1.2], ['snow lantern', 1.2], ['ice lantern', 1], ['frozen log', 0.6], ['frozen barrel', 0.9], ['snowy stump', 0.7], ['snowy rock', 1], ['ice spike', 1.6], ['ice arch', 2.5], ['iceberg', 2], ['frozen fountain', 2], ['log bench', 1], ['snowy mailbox', 1.3], ['snowy lamppost', 3], ['cc0-campfire-logs', 0.6], ['firewood basket', 0.8], ['sleigh', 1.4], ['ski rack', 1.4], ['polar flag', 2.4], ['frozen pier', 0.8], ['fishing rod rack', 1.4]],
+  'highway': ['toll booth', 'highway sign', ['cc0-traffic-barrier', 1], ['cc0-barrier-single', 1], ['cc0-plastic-barrier', 1], 'traffic cone', ['roadblock', 1.2], ['road sign', 2.4], ['hazard sign', 2.2], 'billboard sign', ['gas pump', 1.9], ['cc0-car-sedan', 1.5], ['cc0-car-stationwagon', 1.5], ['cc0-van', 2], ['cc0-delivery', 2.6], ['cc0-garbage-truck', 3], ['cc0-ambulance', 2.6], ['cc0-firetruck', 3], ['cc0-gas-tank', 2], ['lamp post', 3.5], ['telephone pole', 7], ['cc0-barrier-fixed', 1], ['cc0-school-bus', 3], ['guardrail', 0.9], ['highway overpass', 6], ['highway lamp', 8]],
+  'supermarket': ['checkout counter', ['cc0-cabinet-shelves', 1.9], ['cc0-can-fridge', 1.9], ['deli counter', 1.2], ['deli scale', 0.8], ['display case', 1.2], ['candy display', 1.4], ['magazine rack', 1.4], ['cereal box', 0.8], ['milk carton', 0.8], ['grocery bag', 0.7], ['shopping bag', 0.6], ['cheese wheel', 0.6], ['banana bunch', 0.6], ['soda fountain', 1.4], ['vending machine', 1.9], ['turnstile', 1], ['umbrella stand', 0.9], ['berry basket', 0.6], 'shopping basket', ['egg carton', 0.6], ['ice cream freezer', 1.2], ['produce stand', 1.4]],
+  'canyon': [['sandstone rock', 1.4], ['rock pillar', 4], ['standing stone', 2.2], ['stone cairn', 1.2], ['cow skull', 0.6], ['dead desert tree', 3.5], ['desert signpost', 1.8], ['desert lantern', 1.2], 'wagon wheel', ['mine cart', 1.2], ['abandoned mine entrance', 3], 'rope bridge', 'wooden rope bridge', ['cc0-campfire-stones', 0.6], ['wanted poster', 1.6], ['dinosaur skeleton', 2], ['fossil', 1], ['bone pile', 0.8], ['tnt crate', 0.9], ['ore crusher', 2.5], ['sand dune', 1.2], ['cc0-cactus-flowers', 1.2], ['saguaro cactus', 3], 'rock arch', 'mesa', ['hoodoo rock', 3], ['layered canyon rock', 2.4]],
+  'desert canyon': [['cow skull', 0.6], 'bedouin tent', 'oasis well', 'adobe house', ['clay jar', 0.9], ['amphora', 1], ['sandstone rock', 1.4], ['rock pillar', 4], ['dead desert tree', 3.5], ['desert signpost', 1.8], ['desert lantern', 1.2], 'wagon wheel', ['mine cart', 1.2], ['wanted poster', 1.6], ['dinosaur skeleton', 2], ['fossil', 1], ['bone pile', 0.8], ['sand dune', 1.2], 'stone obelisk', ['cc0-cactus-flowers', 1.2], ['saguaro cactus', 3], ['joshua tree', 4], ['abandoned mine entrance', 3], ['cc0-campfire-stones', 0.6], 'rock arch', ['hoodoo rock', 3]],
+};
+/** Nejvýš kulis v sadě P57; víc už jen ředí řadu, kterou trať stejně nedojde. */
+export const P57_MAX = 25;
+
+/** Poslední soud modelu: výměna T8, výměna T6, přesouzení Opusem v T6, soud T4; `null` = nesouzený. */
+export function latestScores({ judge, regen, top50 }) {
+  return (id) => {
+    if (top50.models[id]?.result === 'replaced') return top50.models[id].newScore;
+    if (regen.models[id]?.result === 'replaced') return regen.models[id].newScore;
+    return regen.models[id]?.oldOpus ?? judge.models[id]?.score ?? null;
+  };
+}
+
 const normalize = (text) => text.trim().replace(/\s+/g, ' ');
 const escape = (word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export const modelId = (noun) => `gen3d-${normalize(noun).replace(/ /g, '-')}`;
@@ -224,24 +263,62 @@ export function patternOf(setting) {
 
 /**
  * Tabulka z mapy jmen a katalogu. Pořadí prostředí i rekvizit drží `kit-nouns.json`
- * (podle počtu vět), takže druhý běh nad stejnými vstupy zapíše totéž.
+ * (podle počtu vět), takže druhý běh nad stejnými vstupy zapíše totéž. Světy z `P57_KITS`
+ * přepíše sada z knihovny (`p57Kit`) na místě, nové světy přibudou na konec.
  */
-export function settingKits({ kitNouns, catalog }) {
+export function settingKits({ kitNouns, catalog, scoreOf = () => null }) {
   const known = new Set(catalog.assets.filter((asset) => !asset.tags.includes('qa:unrecognisable')).map((asset) => asset.assetId));
   const kits = new Map();
   const guessed = [];
+  const lookOf = (setting) => lookFor(setting) ?? NEAREST[setting] ?? 'meadow';
   for (const entry of kitNouns.nouns) {
     const id = modelId(entry.noun);
     if (!known.has(id)) continue;
     const height = HEIGHTS[entry.noun] ?? entry.height ?? CLASS_HEIGHTS[entry.class] ?? CLASS_HEIGHTS.prop;
     if (HEIGHTS[entry.noun] === undefined && entry.height === undefined && entry.settings.length > 0) guessed.push(entry.noun);
     for (const setting of entry.settings.map(normalize)) {
-      const kit = kits.get(setting) ?? { setting, pattern: patternOf(setting), look: lookFor(setting) ?? NEAREST[setting] ?? 'meadow', props: [] };
+      const kit = kits.get(setting) ?? { setting, pattern: patternOf(setting), look: lookOf(setting), props: [] };
       if (!kit.props.some((prop) => prop.id === id)) kit.props.push({ id, height });
       kits.set(setting, kit);
     }
   }
-  return { kits: [...kits.values()], guessed };
+  // Výška id, které už nese jiný svět: `KIT_HEIGHTS` za běhu bere poslední výskyt, cizí svět se nesmí pohnout.
+  const heights = new Map([...kits.values()].flatMap((kit) => kit.props.map((prop) => [prop.id, prop.height])));
+  const missing = [];
+  for (const [setting, wishes] of Object.entries(P57_KITS)) {
+    const look = lookOf(setting);
+    const kit = p57Kit({ setting, look, wishes, known, scoreOf, heights, missing });
+    kits.set(setting, { setting, pattern: patternOf(setting), look, props: kit });
+  }
+  return { kits: [...kits.values()], guessed, missing };
+}
+
+/**
+ * Sada P57 jednoho světa podle přednosti `wishes`. Přeskočí id, které kreslí vegetace sady
+ * (`landmarks` ho z řady kulis vyhodí) nebo které sada ukazuje vedle kitu sama (liché pozice
+ * `withKit`). Nedostupné id zapíše do `missing` s důvodem.
+ */
+function p57Kit({ setting, look, wishes, known, scoreOf, heights, missing }) {
+  const flora = LOOKS[look].flora === undefined ? new Set() : floraIds(LOOKS[look].flora);
+  const shown = new Set(withKit(LOOKS[look].props, ['gen3d-kit']).filter((_, index) => index % 2 === 1));
+  const props = [];
+  for (const wish of wishes) {
+    const [name, wishHeight] = typeof wish === 'string' ? [wish, undefined] : wish;
+    const id = /^cc0-/.test(name) || Object.hasOwn(SCENERY_MODELS, name) ? name : modelId(name);
+    const score = scoreOf(id);
+    const reason = !known.has(id) ? 'not in the catalog or qa:unrecognisable' : score !== null && score < 6 ? `score ${score}` : null;
+    if (reason !== null) {
+      missing.push({ setting, noun: name, id, reason });
+      continue;
+    }
+    if (flora.has(id) || shown.has(id) || props.some((prop) => prop.id === id) || props.length >= P57_MAX) continue;
+    const height = heights.get(id) ?? HEIGHTS[name] ?? wishHeight;
+    if (height === undefined) throw new Error(`${setting}: ${name} nemá výšku`);
+    heights.set(id, height);
+    props.push({ id, height });
+  }
+  // `sceneryPlaces` jde po seznamu s kitem (2 × délka kitu) krokem 7: násobek 7 by ukázal jen sedminu.
+  return props.length % 7 === 0 ? props.slice(0, -1) : props;
 }
 
 export function render(kits) {
@@ -253,8 +330,13 @@ if (isMain) {
   const read = (file) => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
   // P46I: další páry prostředí → rekvizita (s vlastní výškou `height`) leží v evals/play/p46i/kit-nouns.json.
   const kitNouns = { nouns: KIT_NOUNS.flatMap((file) => read(file).nouns) };
-  const { kits, guessed } = settingKits({ kitNouns, catalog: read('src/assets/catalog.json') });
+  const top50 = existsSync(path.join(ROOT, 'evals/play/p57/top50.json')) ? read('evals/play/p57/top50.json') : { models: {} };
+  const scoreOf = latestScores({ judge: read('evals/play/p57/judge.json'), regen: read('evals/play/p57/regen.json'), top50 });
+  const { kits, guessed, missing } = settingKits({ kitNouns, catalog: read('src/assets/catalog.json'), scoreOf });
   writeFileSync(path.join(ROOT, OUT), render(kits));
+  const about = 'P57 T9: nouns the world kits (scripts/p45h/build-setting-kits.mjs, P57_KITS) asked for but the library cannot give – not in the catalog, or last judged below 6. T10 generates them or marks them skipped.';
+  writeFileSync(path.join(ROOT, MISSING), `${JSON.stringify({ about, missing }, null, 1)}\n`);
+  for (const setting of Object.keys(P57_KITS)) console.log(`${setting}: ${kits.find((kit) => kit.setting === setting).props.length} kulis, chybí ${missing.filter((entry) => entry.setting === setting).map((entry) => `${entry.noun} (${entry.reason})`).join(', ') || '–'}`);
   const props = new Set(kits.flatMap((kit) => kit.props.map((prop) => prop.id)));
   console.log(`${OUT}: ${kits.length} prostředí, ${props.size} modelů, ${kits.filter((kit) => kit.props.length >= 2).length} prostředí se ≥ 2 rekvizitami`);
   if (guessed.length > 0) console.log(`výška podle třídy (doplň do HEIGHTS): ${guessed.join(', ')}`);

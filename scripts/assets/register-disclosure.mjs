@@ -3,6 +3,10 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 const root = new URL('../../', import.meta.url);
 const file = new URL('disclosure.json', root);
 const disclosure = JSON.parse(await readFile(file, 'utf8'));
+const catalog = JSON.parse(await readFile(new URL('src/assets/catalog.json', root), 'utf8'));
+// Model vyměněný pod stejným id (P57, `promote-batch.mjs --replace`) má záznam vygenerovaného modelu; původ adresáře by ho vrátil.
+const replaced = new Set(catalog.assets.filter((asset) => asset.provenance.replacedAt)
+  .flatMap((asset) => [...asset.lods.map((lod) => lod.path), asset.thumbnail]).map((url) => `public${url}`));
 
 const ORIGINALS = {
   reason: 'Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.',
@@ -36,8 +40,8 @@ const PLAY_ENV = {
 
 async function register(dir, origin) {
   for (const entry of await readdir(new URL(`public/${dir}/`, root), { withFileTypes: true })) {
-    if (!entry.isFile()) continue;
     const fullName = `public/${dir}/${entry.name}`;
+    if (!entry.isFile() || replaced.has(fullName)) continue;
     const record = { name: fullName, kind: 'asset', firstParty: true, reason: origin.reason, source: origin.source,
       authorOrProvider: origin.authorOrProvider, license: origin.license ?? 'LicenseRef-Worldsmith-Original', requiredNotices: origin.requiredNotices,
       attribution: origin.attribution,

@@ -191,8 +191,8 @@ export const SCENERY_MODELS = {
   'gen3d-iron-fence': 1.4,
   'gen3d-grave-lantern': 1.3,
 } as const satisfies Readonly<Record<string, number>>;
-/** Rekvizita prostředí z `setting-kits.json` (P45H): model gen3d, který žádná sada nenese. */
-export type KitModel = `gen3d-${string}`;
+/** Rekvizita prostředí z `setting-kits.json` (P45H): model gen3d, od P57 T9 i CC0 nebo model ze `SCENERY_MODELS`. */
+export type KitModel = `gen3d-${string}` | `cc0-${string}` | keyof typeof SCENERY_MODELS;
 export type SceneryModel = keyof typeof SCENERY_MODELS | KitModel;
 export type SceneryKind = PropKind | SceneryModel;
 
@@ -679,8 +679,9 @@ export function kitFor(setting: string): readonly KitModel[] {
 /**
  * Rekvizity sady s kitem prostředí: kit a sada se střídají, sada si nechá
  * rekvizity z lichých pozic, kit zabere místo sudých. Seznam má sudou délku
- * 4–8, protože `sceneryPlaces` jde po rekvizitách krokem 7: ze sady o sedmi
- * by viděl jen první a poslední. Počet kulis ve scéně dává délka trati, ne seznam.
+ * (kit P45H 4–8, sady P57 T9 do 50) a nikdy násobek 7, protože `sceneryPlaces`
+ * jde po rekvizitách krokem 7: ze sady o sedmi by viděl jen první a poslední.
+ * Počet kulis ve scéně dává délka trati, ne seznam.
  */
 export function withKit(props: readonly SceneryKind[], kit: readonly KitModel[]): readonly SceneryKind[] {
   if (kit.length === 0) return props;

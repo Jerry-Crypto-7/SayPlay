@@ -1367,6 +1367,47 @@
    "low": "/assets/worldstream/env/set-rainbow-road-low.webp",
    "horizon": "#d6e2e3",
    "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-dojo",
+   "look": null,
+   "tags": [
+    "dojo",
+    "martial arts"
+   ],
+   "prompt": "japanese dojo courtyard with wooden halls, cherry blossoms and paper lanterns",
+   "url": "/assets/worldstream/env/set-dojo.webp",
+   "low": "/assets/worldstream/env/set-dojo-low.webp",
+   "horizon": "#5a4c4c",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-highway",
+   "look": null,
+   "tags": [
+    "highway",
+    "freeway",
+    "motorway"
+   ],
+   "prompt": "wide highway through open countryside with overpasses and road signs under a blue sky",
+   "url": "/assets/worldstream/env/set-highway.webp",
+   "low": "/assets/worldstream/env/set-highway-low.webp",
+   "horizon": "#a6c2ce",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-floating-island",
+   "look": null,
+   "tags": [
+    "floating island",
+    "floating",
+    "sky island"
+   ],
+   "prompt": "floating sky islands with waterfalls high above the clouds",
+   "url": "/assets/worldstream/env/set-floating-island.webp",
+   "low": "/assets/worldstream/env/set-floating-island-low.webp",
+   "horizon": "#d3e2e7",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
   }
  ]
 }

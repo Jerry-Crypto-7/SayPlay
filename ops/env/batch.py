@@ -505,6 +505,27 @@ def settings() -> list[dict]:
     return [{k: v for k, v in r.items() if k != "order"} for r in chosen]
 
 
+# P57 T10: světy sad T9, pro které `envFor` žádné panorama nenašel (dojo, highway) nebo našel
+# jen plážový ostrov (floating island). Mimo korpusový výběr, ať se výběr 40 nepřeskládá.
+P57_SETTINGS = [
+    {
+        "id": "dojo",
+        "prompt": "japanese dojo courtyard with wooden halls, cherry blossoms and paper lanterns",
+        "tags": ["dojo", "martial arts"],
+    },
+    {
+        "id": "highway",
+        "prompt": "wide highway through open countryside with overpasses and road signs under a blue sky",
+        "tags": ["highway", "freeway", "motorway"],
+    },
+    {
+        "id": "floating-island",
+        "prompt": "floating sky islands with waterfalls high above the clouds",
+        "tags": ["floating island", "floating", "sky island"],
+    },
+]
+
+
 def jobs() -> list[dict]:
     out = []
     for look, variants in LOOKS.items():
@@ -518,7 +539,7 @@ def jobs() -> list[dict]:
                     "seed": i,
                 }
             )
-    chosen = json.loads(SETTINGS.read_text(encoding="utf-8"))["settings"]
+    chosen = json.loads(SETTINGS.read_text(encoding="utf-8"))["settings"] + P57_SETTINGS
     for row in chosen:
         out.append(
             {

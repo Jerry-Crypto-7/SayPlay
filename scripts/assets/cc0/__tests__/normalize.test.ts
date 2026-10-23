@@ -7,7 +7,7 @@ import sharp from 'sharp';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { metadata, validate } from '../../glb-meta.mjs';
-import { MAX_TRIANGLES, normalizeModel, quarantineDir } from '../normalize.mjs';
+import { HERO_MAX_TRIANGLES, MAX_TRIANGLES, normalizeModel, quarantineDir } from '../normalize.mjs';
 import { isPurple, loadPalette } from '../palette.mjs';
 
 const work = mkdtempSync(path.join(tmpdir(), 'cc0-normalize-'));
@@ -77,7 +77,7 @@ async function writeFixture(name: string, build: (doc: Document) => Promise<void
 
 const pack = (over: Record<string, unknown> = {}) => ({ id: 'test-pack', author: 'Test Author', license: 'CC0-1.0', pageUrl: 'https://example.test/pack', up: '+Y', front: '+Z', metersPerUnit: 1, ...over });
 
-async function run(assetId: string, input: string, packOver: Record<string, unknown> = {}, options: { style?: boolean; keepTextures?: boolean } = {}) {
+async function run(assetId: string, input: string, packOver: Record<string, unknown> = {}, options: { style?: boolean; keepTextures?: boolean; maxTriangles?: number; lod1Max?: number } = {}) {
   ids.push(assetId);
   rmSync(quarantineDir(assetId), { recursive: true, force: true });
   return normalizeModel({ input, assetId, label: assetId, tags: [assetId], pack: pack(packOver), licenseFile: license, sourceFile: 'Models/x.glb', ...options });
@@ -205,6 +205,18 @@ describe('normalizeModel', () => {
     const result = await run('test-p26a-dense', input);
     expect(result.lod0.triangles).toBeLessThan(MAX_TRIANGLES);
     expect(result.lod1.triangles).toBeLessThan(result.lod0.triangles);
+    expect(result.bounds.max[1] - result.bounds.min[1]).toBeCloseTo(2, 1);
+  });
+
+  it('a hero budget keeps LOD0 above the default cap and holds LOD1 to the replaced model (P57 T8)', async () => {
+    const input = await writeFixture('dense-hero', (doc) => {
+      const mat = doc.createMaterial('paint').setBaseColorFactor([0.9, 0.9, 0.2, 1]);
+      doc.createScene().addChild(doc.createNode('ball').setMesh(doc.createMesh().addPrimitive(sphere(doc, 80).setMaterial(mat))));
+    });
+    const result = await run('test-p57-hero', input, {}, { maxTriangles: HERO_MAX_TRIANGLES, lod1Max: 1200 });
+    expect(result.lod0.triangles).toBeGreaterThan(MAX_TRIANGLES);
+    expect(result.lod0.triangles).toBeLessThan(HERO_MAX_TRIANGLES);
+    expect(result.lod1.triangles).toBeLessThanOrEqual(1200);
     expect(result.bounds.max[1] - result.bounds.min[1]).toBeCloseTo(2, 1);
   });
 });

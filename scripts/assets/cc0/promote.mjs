@@ -102,7 +102,27 @@ export function catalogIndex(catalog) {
   };
 }
 
-const licenseFileOf = (pack) => `${PUBLIC_DIR}/licenses/${pack}.txt`;
+/** Text licence balíku v repu – důkaz licence CC0 modelů (i těch, které P57 vyměnil pod stejným id). */
+export const licenseFileOf = (pack) => `${PUBLIC_DIR}/licenses/${pack}.txt`;
+
+const PROVENANCE = `${PUBLIC_DIR}/PROVENANCE.md`;
+const replacedOf = (assets) => assets.filter((asset) => isCc0(asset) && asset.provenance.replacedAt);
+
+/** Řádek tabulky pro CC0 model vyměněný pod stejným id (P57): autor a licence z katalogu, celý původ v tabulce gen3d-p37d. */
+export const replacedRow = (asset) =>
+  `| \`${asset.assetId}\` | ${asset.tags[0]} | ${asset.provenance.author} | replaced ${asset.provenance.replacedAt} under the same id, see [gen3d-p37d/PROVENANCE.md](../gen3d-p37d/PROVENANCE.md) | – | ${asset.provenance.license} |`;
+
+/** Přepíše v `PROVENANCE.md` složky cc0 pod `root` řádky modelů, které vyměnil `scripts/p37d/promote-batch.mjs --replace`. */
+export function markReplacedRows(root, assets) {
+  const file = path.join(root, PROVENANCE);
+  if (!existsSync(file)) return;
+  const replaced = new Map(replacedOf(assets).map((asset) => [asset.assetId, asset]));
+  const lines = readFileSync(file, 'utf8').split('\n').map((line) => {
+    const asset = replaced.get(/^\| `([^`]+)` \|/.exec(line)?.[1]);
+    return asset ? replacedRow(asset) : line;
+  });
+  writeFileSync(file, lines.join('\n'));
+}
 
 /** Problémy CC0 záznamů katalogu: licence, text licence, soubory, registr, tagy. Prázdné pole = v pořádku. */
 export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET }) {
@@ -111,7 +131,8 @@ export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET
   if (folder > budget.totalBytes) problems.push(`cc0 folder ${PUBLIC_DIR} holds ${folder} B, over the ${budget.totalBytes} B total`);
   const records = new Map(disclosure.entries.filter((entry) => entry.kind === 'asset').map((entry) => [entry.name, entry]));
   const own = new Set(catalog.assets.filter((asset) => !isCc0(asset)).flatMap((asset) => [asset.assetId, ...asset.tags]));
-  for (const asset of catalog.assets.filter(isCc0)) {
+  // Vyměněný pod stejným id (P57) už CC0 není; jeho licenci hlídá `checkReplaced` v `scripts/p37d/promote-batch.mjs`.
+  for (const asset of catalog.assets.filter((asset) => isCc0(asset) && !asset.provenance.replacedAt)) {
     const { license, licenseEvidence } = asset.provenance;
     const refused = licenseProblem({ license });
     if (refused) problems.push(`${asset.assetId}: ${refused}`);
@@ -137,7 +158,7 @@ export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET
   return problems;
 }
 
-function disclosureRecord(name, { reason, source, author, license, attribution, reviewNote }) {
+export function disclosureRecord(name, { reason, source, author, license, attribution, reviewNote }) {
   return {
     name, kind: 'asset', firstParty: false, reason, source, authorOrProvider: author, license,
     requiredNotices: license === 'CC-BY-4.0' ? ['attribution to the author', 'link to the licence', 'note that the model was changed'] : ['none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md'],
@@ -145,7 +166,7 @@ function disclosureRecord(name, { reason, source, author, license, attribution, 
   };
 }
 
-function provenanceMarkdown(rows, packs) {
+function provenanceMarkdown(rows, packs, replaced) {
   const lines = [
     '# CC0 models – provenance',
     '',
@@ -157,6 +178,7 @@ function provenanceMarkdown(rows, packs) {
     '| Model | Noun | Author | Pack | Source file | License |',
     '|---|---|---|---|---|---|',
     ...rows.map((row) => `| \`${row.assetId}\` | ${row.noun} | ${row.author} | [${row.pack}](${row.pageUrl}) | \`${row.file}\` | ${row.license} |`),
+    ...replaced.map(replacedRow),
     '',
     '## Pack licence texts',
     '',
@@ -180,16 +202,22 @@ export async function promote({ root = ROOT, budget = BUDGET } = {}) {
 
   const publicDir = path.join(root, PUBLIC_DIR);
   mkdirSync(path.join(publicDir, 'licenses'), { recursive: true });
-  const others = catalog.assets.filter((asset) => !isCc0(asset));
+  // Vyměněný pod stejným id (P57, `scripts/p37d/promote-batch.mjs --replace`) se z karantény znovu nestaví:
+  // záznam, soubory, text licence i disclosure zůstanou, jak je výměna zapsala.
+  const replaced = replacedOf(catalog.assets);
+  const replacedFiles = replaced.flatMap((asset) => [...asset.lods.map((lod) => lod.path), asset.thumbnail]).map((url) => `public${url}`);
+  // Text licence CC0 výměny drží i vlastní id mimo složku cc0 (`gen3d-wildflower-patch`).
+  const replacedNames = new Set([...replacedFiles, ...catalog.assets.filter((asset) => asset.provenance.replacedAt).map((asset) => asset.provenance.licenseEvidence)]);
+  const others = catalog.assets.filter((asset) => !isCc0(asset) || asset.provenance.replacedAt);
   const taken = new Set(others.flatMap((asset) => [asset.assetId, ...asset.tags]));
   const entries = [];
   const rows = [];
   const usedPacks = new Map();
-  const keep = new Set(['PROVENANCE.md', 'licenses']);
+  const keep = new Set(['PROVENANCE.md', 'licenses', ...replacedFiles.map((name) => path.basename(name))]);
 
   // Model, který z výběru vypadl po normalizaci (ruční oprava dat), se nezařadí.
   const selected = new Set(selection.selected.map((entry) => `${entry.pack}/${entry.file}`));
-  const sized = manifest.normalized.filter((entry) => entry.styled && selected.has(`${entry.pack}/${entry.file}`)).map((item) => {
+  const sized = manifest.normalized.filter((entry) => entry.styled && selected.has(`${entry.pack}/${entry.file}`) && !replaced.some((asset) => asset.assetId === entry.assetId)).map((item) => {
     const record = read(`asset-quarantine/${item.assetId}/cc0.json`);
     const bytes = record.lod0.bytes + record.lod1.bytes;
     const preview = path.join(publicDir, `${item.assetId}.png`);
@@ -238,19 +266,23 @@ export async function promote({ root = ROOT, budget = BUDGET } = {}) {
 
   for (const pack of usedPacks.values()) copyFileSync(licenseFiles.get(pack.id), path.join(root, licenseFileOf(pack.id)));
   for (const name of readdirSync(publicDir)) if (!keep.has(name)) rmSync(path.join(publicDir, name), { recursive: true, force: true });
-  for (const name of readdirSync(path.join(publicDir, 'licenses'))) if (!usedPacks.has(name.replace(/\.txt$/, ''))) rmSync(path.join(publicDir, 'licenses', name));
-  writeFileSync(path.join(publicDir, 'PROVENANCE.md'), provenanceMarkdown(rows, [...usedPacks.values()]));
+  for (const name of readdirSync(path.join(publicDir, 'licenses'))) {
+    if (!usedPacks.has(name.replace(/\.txt$/, '')) && !replacedNames.has(`${PUBLIC_DIR}/licenses/${name}`)) rmSync(path.join(publicDir, 'licenses', name));
+  }
+  writeFileSync(path.join(publicDir, 'PROVENANCE.md'), provenanceMarkdown(rows, [...usedPacks.values()], replaced));
 
   catalog.assets = [...others, ...entries];
   writeFileSync(path.join(root, 'src/assets/catalog.json'), `${JSON.stringify(catalog, null, 2)}\n`);
   writeFileSync(path.join(root, 'src/assets/catalog-index.json'), `${JSON.stringify(catalogIndex(catalog), null, 2)}\n`);
 
   const byName = new Map(rows.map((row) => [row.assetId, row]));
+  const swappedRecords = new Map(disclosure.entries.filter((entry) => entry.kind === 'asset' && replacedNames.has(entry.name)).map((entry) => [entry.name, entry]));
   const records = [];
   const walk = (dir) => {
     for (const entry of readdirSync(path.join(root, dir), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       const name = `${dir}/${entry.name}`;
       if (entry.isDirectory()) { walk(name); continue; }
+      if (swappedRecords.has(name)) { records.push(swappedRecords.get(name)); continue; }
       const model = byName.get(entry.name.replace(/(-lod\d)?\.(glb|png)$/, ''));
       if (model) {
         records.push(disclosureRecord(name, {

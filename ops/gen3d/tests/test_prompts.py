@@ -8,11 +8,10 @@ import json
 import subprocess
 from pathlib import Path
 
+import precheck
 import pytest
 from test_batch import fake_result
 from test_server import FakeComfy as MeshComfy
-
-import precheck
 
 
 class FakeComfy(MeshComfy):
@@ -27,8 +26,9 @@ class FakeComfy(MeshComfy):
 
 
 import batch
-import server
 from comfy_client import ComfyError
+
+import server
 
 
 def test_class_picks_its_template_and_unknown_class_falls_back_to_prop():
@@ -55,6 +55,69 @@ def test_feature_line_follows_the_noun():
     prompt = batch.prompt_for("orca", "swimmer", "a")
     assert prompt.startswith("a orca, black and white killer whale")
     assert "fins" in prompt
+
+
+def test_judge_fix_follows_the_feature_and_reaches_nouns_without_one(monkeypatch):
+    # P57 T6: bez opravy by přegenerování dostalo stejné zadání jako starý model.
+    features = {
+        "orca": "black and white killer whale",
+        "judge_fix": {"orca": "matte toy", "kettle": "smooth enamel"},
+    }
+    monkeypatch.setattr(batch, "FEATURES", features)
+    assert batch.prompt_for("orca", "prop", "a").startswith(
+        "a orca, black and white killer whale, matte toy, low-poly"
+    )
+    assert batch.prompt_for("kettle", "prop", "a").startswith(
+        "a kettle, smooth enamel, low-poly"
+    )
+    assert batch.prompt_for("teapot", "prop", "a").startswith("a teapot, low-poly")
+    # P57 T8: druhé kolo nese důvod soudce z prvního místo tabulky.
+    assert batch.prompt_for("orca", "prop", "a", "rounder fins").startswith(
+        "a orca, black and white killer whale, rounder fins, low-poly"
+    )
+
+
+def test_json_list_carries_the_second_round_fix(tmp_path):
+    source = tmp_path / "nouns.json"
+    nouns = [
+        {"noun": "orca", "class": "swimmer", "flat": False, "fix": "rounder fins"},
+        {"noun": "kettle", "class": "prop", "flat": False},
+    ]
+    source.write_text(json.dumps({"nouns": nouns}), encoding="utf-8")
+    assert batch.load_fixes(source) == {"orca": "rounder fins"}
+
+
+def test_json_list_shape_follows_the_fix_or_the_judge_fix(tmp_path, monkeypatch):
+    # P57 T8r: poměr os starého boxu jde do zadání už v kole 1, tabulka oprav zůstane.
+    monkeypatch.setattr(batch, "FEATURES", {"judge_fix": {"kettle": "smooth enamel"}})
+    source = tmp_path / "nouns.json"
+    nouns = [
+        {
+            "noun": "orca",
+            "class": "prop",
+            "flat": False,
+            "fix": "rounder fins",
+            "shape": "about 3 times wider than tall",
+        },
+        {
+            "noun": "kettle",
+            "class": "prop",
+            "flat": False,
+            "shape": "about as wide as tall",
+        },
+        {
+            "noun": "teapot",
+            "class": "prop",
+            "flat": False,
+            "shape": "about 1.5 times wider than tall",
+        },
+    ]
+    source.write_text(json.dumps({"nouns": nouns}), encoding="utf-8")
+    assert batch.load_fixes(source) == {
+        "orca": "rounder fins, about 3 times wider than tall",
+        "kettle": "smooth enamel, about as wide as tall",
+        "teapot": "about 1.5 times wider than tall",
+    }
 
 
 def test_json_list_carries_class_and_flat_wins(tmp_path):
@@ -105,6 +168,22 @@ def test_attempts_go_a0_b0_a1_and_record_the_prompt_that_worked(tmp_path):
         ("b", 0),
     ]
     assert (record["variant"], record["seed"], record["prompt"]) == ("a", 1, a)
+
+
+def test_unreachable_comfy_stops_the_batch_without_recording_the_noun(tmp_path):
+    # Zapsané „failed“ se už nikdy nezopakuje; výpadek ComfyUI není vlastnost slova.
+    def generate(noun, out_dir, seed, prompt):
+        raise ConnectionRefusedError("[WinError 10061] connection refused")
+
+    with pytest.raises(ConnectionRefusedError):
+        batch.run_batch(
+            ["hippo"],
+            limit=1,
+            generate=generate,
+            record_path=tmp_path / "batch.json",
+            cache_root=tmp_path / "cache",
+        )
+    assert not (tmp_path / "batch.json").exists()
 
 
 def test_provenance_names_the_prompt_and_seed_actually_used(tmp_path):

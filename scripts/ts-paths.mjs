@@ -38,4 +38,6 @@ export async function load(url, context, next) {
 if (!process.env.TS_PATHS_HOOK) {
   process.env.TS_PATHS_HOOK = '1';
   register(import.meta.url);
+  // Vlákno zavaděče už značku vidělo; podprocesy (spawn) si zavaděč musí zaregistrovat samy (P57 T10).
+  delete process.env.TS_PATHS_HOOK;
 }

@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { blindQuestion, catalogBatch, claudeAnswer, CLAUDE_MODEL, matches, verdictOf } from '../judge-sheet.mjs';
+import { blindQuestion, catalogBatch, claudeAnswer, CLAUDE_MODEL, isScoreAnswer, matches, SCORE_SCHEMA, scoreCells, scoreQuestion, verdictOf } from '../judge-sheet.mjs';
 
 const answer = (name: string, alternatives: string[] = [], intact = true, recognizable = true) => ({ name, alternatives, intact, recognizable });
 
@@ -159,5 +159,50 @@ describe('claudeAnswer (P46F T2)', () => {
 
   it('refuses JSON that is not the schema answer', () => {
     expect(claudeAnswer(0, envelope({ result: '{"name":"door"}' })).answer).toBeUndefined();
+  });
+});
+
+describe('score mode (P57 T3)', () => {
+  const cell = (n: number, score: unknown, extra: Record<string, unknown> = {}) => ({ cell: n, name: 'barn', score, recognisable: true, broken: false, styleFit: true, reason: 'clean shape', ...extra });
+
+  it('reads one scored entry per cell, numbered from 1', () => {
+    const cells = scoreCells({ cells: [cell(2, 4), cell(1, 9)] }, 2);
+    expect(cells).toEqual([
+      { cell: 1, name: 'barn', score: 9, recognisable: true, broken: false, styleFit: true, reason: 'clean shape' },
+      { cell: 2, name: 'barn', score: 4, recognisable: true, broken: false, styleFit: true, reason: 'clean shape' },
+    ]);
+  });
+
+  it('gives null, never a middle score, for a cell the answer does not read', () => {
+    const cells = scoreCells({ cells: [cell(1, 0), cell(2, 11), cell(3, 6.5), cell(4, '7'), cell(5, 7, { broken: 'no' }), cell(6, 7, { reason: undefined }), cell(8, 7), cell(8, 3)] }, 9);
+    expect(cells).toEqual([null, null, null, null, null, null, null, null, null]);
+    expect(cells.some((entry) => entry?.score === 5)).toBe(false);
+  });
+
+  it('gives a whole sheet of nulls for an answer out of shape', () => {
+    expect(scoreCells(undefined, 3)).toEqual([null, null, null]);
+    expect(scoreCells({ cells: 'all fine' }, 2)).toEqual([null, null]);
+    expect(scoreCells({ name: 'barn', alternatives: [], recognizable: true, intact: true }, 2)).toEqual([null, null]);
+  });
+
+  it('ignores cells beyond the sheet', () => {
+    expect(scoreCells({ cells: [cell(1, 8), cell(4, 2)] }, 1)).toEqual([expect.objectContaining({ cell: 1, score: 8 })]);
+  });
+
+  it('asks about numbered cells by count only, never by name, under a strict schema', () => {
+    const question = scoreQuestion(4);
+    expect(question).toMatch(/4 numbered/);
+    expect(question).toMatch(/Toy Box/);
+    expect(question).not.toMatch(/barn|gen3d|cc0/);
+    const item = (SCORE_SCHEMA as { properties: { cells: { items: { required: string[]; additionalProperties: boolean } } } }).properties.cells.items;
+    expect(item.required.sort()).toEqual(['broken', 'cell', 'name', 'reason', 'recognisable', 'score', 'styleFit']);
+    expect(item.additionalProperties).toBe(false);
+  });
+
+  it('takes a scored answer from claude -p only with the score validator', () => {
+    const said = { cells: [cell(1, 8)] };
+    const stdout = JSON.stringify({ type: 'result', is_error: false, result: `Here: ${JSON.stringify(said)}` });
+    expect(claudeAnswer(0, stdout, isScoreAnswer).answer).toEqual(said);
+    expect(claudeAnswer(0, stdout).answer).toBeUndefined();
   });
 });

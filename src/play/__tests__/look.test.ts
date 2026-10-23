@@ -135,13 +135,13 @@ describe('kulisy z katalogu', () => {
 });
 
 describe('rekvizity prostředí (P45H T3)', () => {
+  // P57 T9: zamrzlé jezero, dálnice, supermarket, kaňon, pouštní kaňon a park mají sady z knihovny (`look/__tests__/setting-kits.test.ts`).
+  it('nejdelší shoda vyhrává: pouštní kaňon má vlastní sadu, ne sadu kaňonu', () => {
+    expect(kitFor('a desert canyon')[0]).toBe('gen3d-cow-skull');
+    expect(kitFor('a desert canyon')).not.toEqual(kitFor('a canyon'));
+  });
+
   it.each([
-    ['ice fishing on a frozen lake', ['gen3d-ice-fishing-hut', 'gen3d-ice-floe']],
-    ['race cars on the highway', ['gen3d-toll-booth', 'gen3d-highway-sign']],
-    ['a cat runs through a supermarket', ['gen3d-checkout-counter', 'gen3d-shopping-basket']],
-    ['a canyon', ['gen3d-rock-arch', 'gen3d-mesa']],
-    // Nejdelší shoda vyhrává: pouštní kaňon má vlastní kit.
-    ['a desert canyon', ['gen3d-rock-arch', 'gen3d-cow-skull']],
     ['Haunted Mansion at midnight', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
     // Návrh z „escape the haunted mansion“ píše místo jen „mansion“.
     ['mansion', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
@@ -149,7 +149,6 @@ describe('rekvizity prostředí (P45H T3)', () => {
     ['A buggy races across the desert', ['gen3d-adobe-house', 'gen3d-bedouin-tent', 'gen3d-oasis-well', 'gen3d-stone-obelisk']],
     // P46I: přístav dostal k molu záchranný kruh, kotvu a uvazovací patník.
     ['a harbour at dawn', ['gen3d-wooden-pier', 'gen3d-lifebuoy', 'gen3d-anchor', 'gen3d-mooring-bollard']],
-    ['a dog runs in a park', ['gen3d-street-tree', 'gen3d-park-bench', 'gen3d-park-fountain', 'gen3d-street-trash-can']],
     ['a dog runs in a field', []],
     ['a completely different place', []],
   ] as const)('%s → %j', (setting, props) => {
@@ -161,8 +160,8 @@ describe('rekvizity prostředí (P45H T3)', () => {
 
   it('věta bez kitu má sadu beze změny', () => {
     expect(sceneLook(theme('a dog runs in a field'))).toBe(LOOKS.meadow);
-    // Obývák má od modelů P45I vlastní kit (konferenční stolek), park od P46G T8, proto tu už nejsou.
-    expect(sceneLook({ ...theme('busy city traffic'), look: 'city' }).props).toBe(LOOKS.city.props);
+    // Obývák má od modelů P45I vlastní kit (konferenční stolek), park od P46G T8, město od P57 T9, proto tu už nejsou.
+    expect(sceneLook({ ...theme('a busy factory'), look: 'factory' }).props).toBe(LOOKS.factory.props);
   });
 
   it.each([
@@ -186,8 +185,10 @@ describe('rekvizity prostředí (P45H T3)', () => {
       const before = kinds(LOOKS[look].props, layout);
       const after = kinds(props, layout);
       expect(after).toHaveLength(before.length);
-      // Každá rekvizita kitu ve scéně opravdu stojí, a sada v ní pořád je.
-      expect(kit.filter((id) => !after.includes(id))).toEqual([]);
+      // Každá rekvizita kitu ve scéně opravdu stojí, a sada v ní pořád je. Sada P57 (15–25 kulis) se do 120 m
+      // nevejde celá: na trati, která seznam projde aspoň jednou (krok 7 m), nesmí zůstat žádná mrtvá.
+      const long = sceneryPlaces(props, layout, 6, 0, props.length * 7).map((place) => place.kind);
+      expect(kit.filter((id) => !(kit.length > 8 ? long : after).includes(id))).toEqual([]);
       expect(after.some((kind) => (LOOKS[look].props as readonly string[]).includes(kind))).toBe(true);
     }
   });
@@ -260,7 +261,7 @@ describe('nálada z věty (P46G T5)', () => {
     }
     for (const mood of ['energetic', 'fast', 'playful', 'tense', 'adventurous', 'cheerful', 'cozy', 'curious', 'calm', 'eerie', 'dreamy', 'electric']) {
       expect(moodFor('a forest', mood)).toBeNull();
-      expect(sceneLook({ setting: 'busy city traffic', mood })).toBe(LOOKS.city);
+      expect(sceneLook({ setting: 'a busy factory', mood })).toBe(LOOKS.factory);
     }
   });
 

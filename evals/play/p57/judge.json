@@ -1,0 +1,7408 @@
+{
+ "about": "P57 T4 library judge: top300 by usage + sample100, 3x3 grids, score 1-10 per cell (recognisable, silhouette, Toy Box style, broken mesh). Odd sheets Codex, even sheets Opus, every tenth both (agreement). score = mean of the judges that read the cell; null = unread after two attempts.",
+ "question": "The attached image is a contact sheet of 9 numbered 3D game models (cells 1 to 9, row by row; each cell shows one model from a 3/4 view, its number in the top-left corner and its size in metres at the bottom). Our game has a \"Toy Box\" look: chunky, tactile, toy-like low-poly models with clean readable silhouettes and bright solid colours – not glassy, techy, photo-scanned or noisy. Score every cell from 1 to 10 as a model a player would see in a finished mobile game, judging four things: recognisable = a player can tell at a glance which single object it is; silhouette = a clean, readable shape; style = fits the Toy Box look; broken = torn mesh, holes through it, loose fragments, a melted blob or an empty cell. Anchors: 1-3 broken or not recognisable; 4-5 recognisable but blobby, scan-like, noisy or off-style; 6-7 a decent game asset with visible flaws; 8-9 a polished toy-like model from a finished game; 10 flawless. Reply only with the JSON the schema asks for: one entry per cell with cell (its number), name (what you think it is, 1-3 words), score (whole number 1-10), recognisable, broken, styleFit (true when it fits the Toy Box look) and reason (at most 15 words: the main flaw or strength).",
+ "calibration": null,
+ "judged": 400,
+ "nulls": [],
+ "agreement": {
+  "cells": 36,
+  "within": 2,
+  "share": 1,
+  "meanDiff": 0.86
+ },
+ "distribution": {
+  "top300": {
+   "count": 300,
+   "median": 6,
+   "mean": 5.97,
+   "below6": 124,
+   "atLeast8": 73
+  },
+  "sample100": {
+   "count": 100,
+   "median": 6,
+   "mean": 5.68,
+   "below6": 48,
+   "atLeast8": 16
+  }
+ },
+ "below6": [
+  "cc0-grass",
+  "gen3d-wildflower-patch",
+  "gen3d-olive-tree",
+  "gen3d-poppy-flower",
+  "gen3d-willow-tree",
+  "gen3d-windmill",
+  "gen3d-wooden-stile",
+  "gen3d-basalt-column-rock",
+  "gen3d-street-trash-can",
+  "gen3d-park-bench",
+  "gen3d-lighthouse",
+  "gen3d-concrete-planter-with-tree",
+  "gen3d-mossy-boulder",
+  "gen3d-planter-box",
+  "gen3d-thorn-bush",
+  "gen3d-flower-box",
+  "gen3d-flower-stall",
+  "gen3d-mossy-rock-cluster",
+  "gen3d-traffic-light",
+  "gen3d-scree-rock-pile",
+  "gen3d-finish-banner",
+  "gen3d-energy-crystal",
+  "gen3d-crater-rock",
+  "gen3d-fuel-silo",
+  "gen3d-meteorite",
+  "gen3d-rock-arch",
+  "gen3d-satellite-radar-dish",
+  "gen3d-stone-gatehouse",
+  "gen3d-stone-water-well",
+  "gen3d-moon-lander",
+  "gen3d-space-colony-dome",
+  "gen3d-beach-chair",
+  "gen3d-birdhouse",
+  "gen3d-castle-tower",
+  "gen3d-dandelion",
+  "gen3d-dune-grass-clump",
+  "gen3d-leaning-palm-tree",
+  "gen3d-picnic-basket",
+  "gen3d-barnacle-rock",
+  "gen3d-bread-basket",
+  "gen3d-bread-rack",
+  "gen3d-flour-sack",
+  "gen3d-fruit-crate",
+  "gen3d-wine-barrel",
+  "gen3d-floating-dock",
+  "gen3d-sailboat",
+  "gen3d-snowman-with-hat",
+  "gen3d-frozen-dead-tree",
+  "gen3d-ice-block-pile",
+  "gen3d-fruit-stand",
+  "gen3d-ice-igloo",
+  "gen3d-mushroom-cluster",
+  "gen3d-broken-gravestone",
+  "gen3d-cemetery-bench",
+  "gen3d-container",
+  "gen3d-fern",
+  "gen3d-funeral-urn",
+  "gen3d-gift-box",
+  "gen3d-industrial-fan",
+  "gen3d-log-cabin",
+  "gen3d-oil-barrel",
+  "gen3d-oil-drum",
+  "gen3d-park-fountain",
+  "gen3d-rooftop-water-tank",
+  "gen3d-tire-pile",
+  "gen3d-toolbox",
+  "gen3d-toxic-barrel",
+  "gen3d-wild-strawberry-plant",
+  "gen3d-abandoned-mine-entrance",
+  "gen3d-beach-hut",
+  "gen3d-buried-statue-head",
+  "gen3d-castle-ruin-wall",
+  "gen3d-cholla-cactus",
+  "gen3d-desert-shrub",
+  "gen3d-gravestone",
+  "gen3d-jungle-waterfall",
+  "gen3d-layered-canyon-rock",
+  "gen3d-mangrove-tree",
+  "gen3d-mesquite-tree",
+  "gen3d-prickly-pear-cactus",
+  "gen3d-rafflesia",
+  "gen3d-ruin",
+  "gen3d-ruined-stone-tower",
+  "gen3d-snowy-bench",
+  "gen3d-stone-idol-head",
+  "gen3d-treehouse",
+  "gen3d-vine-covered-rock-wall",
+  "gen3d-wooden-pier",
+  "gen3d-yucca-plant",
+  "cc0-couch",
+  "gen3d-bookshelf",
+  "gen3d-gramophone",
+  "gen3d-red-barn",
+  "gen3d-television",
+  "cc0-apple",
+  "cc0-clownfish",
+  "gen3d-adobe-house",
+  "gen3d-bear",
+  "gen3d-frog",
+  "gen3d-frozen-waterfall",
+  "gen3d-octopus",
+  "gen3d-sea-anemone",
+  "gen3d-sea-sponge",
+  "gen3d-shopping-basket",
+  "cc0-water",
+  "gen3d-brown-owl",
+  "gen3d-cheese",
+  "gen3d-highway-sign",
+  "gen3d-magma-crystal",
+  "gen3d-magma-rock",
+  "gen3d-mine-cart",
+  "gen3d-snowy-log-cabin",
+  "gen3d-squirrel",
+  "gen3d-steam-vent",
+  "gen3d-volcanic-rock",
+  "cc0-donut",
+  "cc0-lily-pad",
+  "cc0-pigeon",
+  "cc0-pillow",
+  "cc0-pipe-bump",
+  "cc0-ship-ghost",
+  "cc0-train",
+  "gen3d-apartment-block",
+  "gen3d-baby",
+  "cc0-koi",
+  "gen3d-egg-tray",
+  "gen3d-ancient-vase",
+  "gen3d-gold-trophy",
+  "gen3d-canopic-jar",
+  "cc0-bear-trap",
+  "cc0-pipe-cross",
+  "gen3d-kraken",
+  "gen3d-maze",
+  "cc0-avocado",
+  "gen3d-magnet",
+  "gen3d-eraser",
+  "gen3d-tesla-coil",
+  "gen3d-lobster",
+  "gen3d-sugar-bowl",
+  "gen3d-old-stone-bridge",
+  "gen3d-gumball-machine",
+  "gen3d-manticore",
+  "gen3d-rainbow",
+  "gen3d-mesa",
+  "gen3d-toucan",
+  "gen3d-manta-ray",
+  "gen3d-pet-carrier",
+  "gen3d-stair",
+  "gen3d-planet-rover",
+  "gen3d-wand",
+  "gen3d-statue-head",
+  "gen3d-wooden-pergola",
+  "gen3d-greenhouse",
+  "gen3d-fighter-jet",
+  "gen3d-fountain",
+  "cc0-turbot",
+  "cc0-tree-stump",
+  "gen3d-mummy",
+  "gen3d-star-trophy",
+  "gen3d-donkey",
+  "cc0-lantern-candle",
+  "gen3d-santa",
+  "gen3d-harbor-crane",
+  "gen3d-frost-giant",
+  "gen3d-magic-bean",
+  "gen3d-grindstone",
+  "gen3d-ride",
+  "gen3d-gang",
+  "gen3d-battery-pack",
+  "gen3d-ammo",
+  "gen3d-suitcase",
+  "gen3d-atm-machine"
+ ],
+ "top50Below8": [
+  "cc0-bush",
+  "cc0-grass",
+  "gen3d-poplar-tree",
+  "gen3d-tall-grass-tuft",
+  "gen3d-wildflower-patch",
+  "cc0-birch-tree",
+  "cc0-rock-moss",
+  "gen3d-apple-tree",
+  "gen3d-buttercup",
+  "gen3d-olive-tree",
+  "gen3d-picnic-table",
+  "gen3d-poppy-flower",
+  "gen3d-sunflower",
+  "gen3d-willow-tree",
+  "gen3d-wooden-gate",
+  "gen3d-windmill",
+  "gen3d-wooden-stile",
+  "gen3d-river-boulder",
+  "gen3d-rock-pillar",
+  "gen3d-basalt-column-rock",
+  "gen3d-street-trash-can",
+  "gen3d-park-bench",
+  "gen3d-sea-rock",
+  "gen3d-cardboard-box",
+  "gen3d-lighthouse",
+  "gen3d-concrete-planter-with-tree",
+  "gen3d-mossy-boulder",
+  "gen3d-planter-box",
+  "gen3d-thorn-bush",
+  "cc0-car-taxi",
+  "gen3d-flower-box",
+  "gen3d-flower-stall",
+  "gen3d-mossy-rock-cluster",
+  "gen3d-street-bollard",
+  "gen3d-street-lamp",
+  "gen3d-traffic-light",
+  "cc0-palm-tree",
+  "gen3d-sandstone-rock",
+  "gen3d-scree-rock-pile",
+  "gen3d-bus-stop",
+  "gen3d-finish-banner"
+ ],
+ "models": {
+  "cc0-bush": {
+   "rank": 1,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 1,
+    "name": "Cabbage",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky faceted form, but stacked bands make the leaves look unnaturally rigid."
+   }
+  },
+  "cc0-grass": {
+   "rank": 2,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 2,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 2,
+    "name": "Reeds",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Thin, sparse blades lack tactile volume and a cohesive toy-like silhouette."
+   }
+  },
+  "oak-tree": {
+   "rank": 3,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 3,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 3,
+    "name": "Tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Rounded canopy clusters and sturdy trunk create a clear, appealing toy silhouette."
+   }
+  },
+  "gen3d-poplar-tree": {
+   "rank": 4,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 4,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 4,
+    "name": "Conifer",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky bright foliage fits, but irregular overlapping masses make the crown awkward."
+   }
+  },
+  "gen3d-tall-grass-tuft": {
+   "rank": 5,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 5,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 5,
+    "name": "Grass Tuft",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable bright tuft, but fused cylindrical base and needle-thin tips feel unfinished."
+   }
+  },
+  "gen3d-wildflower-patch": {
+   "rank": 6,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 6,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 6,
+    "name": "Meadow Patch",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dense jagged vegetation and tiny flowers create visual noise at mobile scale."
+   }
+  },
+  "cc0-birch-tree": {
+   "rank": 7,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 7,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 7,
+    "name": "Birch Tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Faceted foliage is readable, but the lopsided crown and spindly bent trunk feel awkward."
+   }
+  },
+  "cc0-rock-moss": {
+   "rank": 8,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 8,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 8,
+    "name": "Mossy Rock",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky geometry, but flat top and angular moss bands resemble a painted pillar."
+   }
+  },
+  "gen3d-apple-tree": {
+   "rank": 9,
+   "group": "top300",
+   "sheet": "grid-001",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-001",
+    "cell": 9,
+    "name": "Tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky canopy reads clearly, though lumpy protrusions reduce the shape's polish."
+   }
+  },
+  "gen3d-buttercup": {
+   "rank": 10,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 1,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 1,
+    "name": "Yellow flower",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky toy flower; petals slightly flat and simple."
+   }
+  },
+  "gen3d-olive-tree": {
+   "rank": 11,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 2,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 2,
+    "name": "Bushy tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy crumpled faceted canopy, scan-like rather than clean toy shapes."
+   }
+  },
+  "gen3d-picnic-table": {
+   "rank": 12,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 3,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 3,
+    "name": "Picnic table",
+    "score": 6,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": true,
+    "reason": "Good chunky table, but visible hole torn in tabletop."
+   }
+  },
+  "gen3d-poppy-flower": {
+   "rank": 13,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 4,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 4,
+    "name": "Red poppy",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Very thin stem, flat ragged bloom; weak silhouette."
+   }
+  },
+  "gen3d-sunflower": {
+   "rank": 14,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 5,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 5,
+    "name": "Sunflower",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright readable sunflower; spiky petals somewhat noisy."
+   }
+  },
+  "gen3d-willow-tree": {
+   "rank": 15,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 6,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 6,
+    "name": "Willow tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Messy shard-like foliage, noisy silhouette, not chunky toy look."
+   }
+  },
+  "gen3d-wooden-gate": {
+   "rank": 16,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 7,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 7,
+    "name": "Wooden gate",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy-like gate; slightly lumpy, warped rails."
+   }
+  },
+  "gen3d-windmill": {
+   "rank": 17,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 8,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 8,
+    "name": "Windmill",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Melted ragged body, thin noisy sails, scan-like texture."
+   }
+  },
+  "gen3d-wooden-stile": {
+   "rank": 18,
+   "group": "top300",
+   "sheet": "grid-002",
+   "cell": 9,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-002",
+    "cell": 9,
+    "name": "Fence with steps",
+    "score": 5,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Odd fence/stile hybrid, ambiguous object; clean chunky wood."
+   }
+  },
+  "gen3d-river-boulder": {
+   "rank": 19,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 1,
+    "name": "Boulder",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky facets and readable silhouette; pale colouring feels slightly bland."
+   }
+  },
+  "gen3d-rock-pillar": {
+   "rank": 20,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 2,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 2,
+    "name": "Stone pillar",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable stacked stone pillar with tactile chunky forms, but muted colours and uneven detailing."
+   }
+  },
+  "gen3d-basalt-column-rock": {
+   "rank": 21,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 3,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 3,
+    "name": "Black rock",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Nearly black shading obscures facets and makes the chunky silhouette visually uninformative."
+   }
+  },
+  "gen3d-street-trash-can": {
+   "rank": 22,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 4,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 4,
+    "name": "Trash bin",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Jagged overlapping surfaces and apparent tears create a severely fragmented, noisy bin."
+   }
+  },
+  "gen3d-park-bench": {
+   "rank": 23,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 5,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 5,
+    "name": "Bench",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear bench silhouette, but streaky triangular surface artifacts undermine otherwise colourful chunky construction."
+   }
+  },
+  "gen3d-sea-rock": {
+   "rank": 24,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 6,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 6,
+    "name": "Boulder",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Solid teal colour and clean low-poly silhouette; slightly lumpy and visually plain."
+   }
+  },
+  "gen3d-street-tree": {
+   "rank": 25,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 7,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 7,
+    "name": "Tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright green chunky canopy and simple trunk create a readable, appealing toy tree."
+   }
+  },
+  "gen3d-cardboard-box": {
+   "rank": 26,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 8,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 8,
+    "name": "Cardboard box",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky box with readable flaps; white smears and awkward top intersections reduce polish."
+   }
+  },
+  "gen3d-lighthouse": {
+   "rank": 27,
+   "group": "top300",
+   "sheet": "grid-003",
+   "cell": 9,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-003",
+    "cell": 9,
+    "name": "Lighthouse",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Distinct lighthouse silhouette, but smeared stripes and noisy surface artifacts spoil the toy finish."
+   }
+  },
+  "potted-plant": {
+   "rank": 28,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 1,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 1,
+    "name": "Potted plant",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky potted plant; leaves slightly thin and floaty."
+   }
+  },
+  "cc0-bomb": {
+   "rank": 29,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 2,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 2,
+    "name": "Skull bomb",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold readable toy bomb; fuse looks metallic rather than rope."
+   }
+  },
+  "gen3d-concrete-planter-with-tree": {
+   "rank": 30,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 3,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 3,
+    "name": "Potted tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Crumpled noisy pot surface and shard-like canopy, scan-like."
+   }
+  },
+  "gen3d-mossy-boulder": {
+   "rank": 31,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 4,
+    "name": "Mossy rock",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Blobby egg shape with noisy torn-looking moss patches."
+   }
+  },
+  "gen3d-planter-box": {
+   "rank": 32,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 5,
+    "name": "Planter box",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Warped melted wood and spiky noisy foliage."
+   }
+  },
+  "gen3d-thorn-bush": {
+   "rank": 33,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 6,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 6,
+    "name": "Round bush",
+    "score": 3,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dark noisy shard ball; reads as blob, not clear object."
+   }
+  },
+  "cc0-car-taxi": {
+   "rank": 34,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 7,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 7,
+    "name": "Taxi",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming toy taxi; 0.9m length seems wrongly scaled."
+   }
+  },
+  "cc0-fire-hydrant": {
+   "rank": 35,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 8,
+   "score": 9,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 8,
+    "name": "Fire hydrant",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky silhouette, bright solid red, polished toy look."
+   }
+  },
+  "gen3d-flower-box": {
+   "rank": 36,
+   "group": "top300",
+   "sheet": "grid-004",
+   "cell": 9,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-004",
+    "cell": 9,
+    "name": "Flower planter",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Lumpy melted planter, noisy flower clutter."
+   }
+  },
+  "gen3d-flower-stall": {
+   "rank": 37,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 1,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 1,
+    "name": "Flower stall",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable stall, but jagged foliage and mottled canopy create excessive visual noise."
+   }
+  },
+  "gen3d-mossy-rock-cluster": {
+   "rank": 38,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 2,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 2,
+    "name": "Rock pile",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled green mass with fractured surfaces; intended object lacks a readable silhouette."
+   }
+  },
+  "gen3d-street-bollard": {
+   "rank": 39,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 3,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 3,
+    "name": "Bollard",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable bollard silhouette, but near-black surfaces and uneven cap obscure toy-like form."
+   }
+  },
+  "gen3d-street-lamp": {
+   "rank": 40,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 4,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 4,
+    "name": "Street lamp",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean low-poly lamp silhouette; thin proportions and muted grey reduce chunky toy appeal."
+   }
+  },
+  "gen3d-traffic-light": {
+   "rank": 41,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 5,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 5,
+    "name": "Traffic light",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable signal, but crumpled housing and irregular lenses undermine clean toy styling."
+   }
+  },
+  "cc0-boat-row": {
+   "rank": 42,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 6,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 6,
+    "name": "Rowboat",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky hull, simple benches and bright solid colours create a polished toy boat."
+   }
+  },
+  "race-car": {
+   "rank": 43,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 7,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 7,
+    "name": "Race car",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold colours, chunky wheels and clear racing details make an appealing toy silhouette."
+   }
+  },
+  "cc0-palm-tree": {
+   "rank": 44,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 8,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 8,
+    "name": "Palm tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable stylised palm with clean colours, though thin trunk and pointed fronds feel delicate."
+   }
+  },
+  "gen3d-crystal-cluster": {
+   "rank": 45,
+   "group": "top300",
+   "sheet": "grid-005",
+   "cell": 9,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-005",
+    "cell": 9,
+    "name": "Blue crystal",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright solid blue and bold faceting read clearly; uneven lower facets slightly weaken polish."
+   }
+  },
+  "gen3d-sandstone-rock": {
+   "rank": 46,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 1,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 1,
+    "name": "sandstone boulder",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky clean low-poly rock, solid colour; slightly plain blob shape."
+   }
+  },
+  "gen3d-scree-rock-pile": {
+   "rank": 47,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 2,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 2,
+    "name": "rubble pile",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy jagged shards, dark crumpled shading, scan-like and messy."
+   }
+  },
+  "townhouse": {
+   "rank": 48,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 3,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 3,
+    "name": "townhouse",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean readable building, simple solid colours; slightly plain detailing."
+   }
+  },
+  "gen3d-bus-stop": {
+   "rank": 49,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 4,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 4,
+    "name": "bus shelter",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable shelter but wobbly warped edges and uneven base."
+   }
+  },
+  "gen3d-finish-banner": {
+   "rank": 50,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 5,
+    "name": "checkered banner",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Blurry noisy texture on banner, thin posts; unclear purpose."
+   }
+  },
+  "gen3d-monstera-plant": {
+   "rank": 51,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 6,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 6,
+    "name": "potted plant",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear potted plant; leaves crumpled and noisy, pot good."
+   }
+  },
+  "gen3d-telephone-pole": {
+   "rank": 52,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 7,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 7,
+    "name": "utility pole",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean readable telephone pole; thin, slightly bumpy surface."
+   }
+  },
+  "gen3d-bare-winter-tree": {
+   "rank": 53,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 8,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 8,
+    "name": "bare tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable bare tree but spindly thin branches, not chunky toy-like."
+   }
+  },
+  "gen3d-energy-crystal": {
+   "rank": 54,
+   "group": "top300",
+   "sheet": "grid-006",
+   "cell": 9,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-006",
+    "cell": 9,
+    "name": "crystal pillar",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Glowing glassy crystal, lumpy melted base with noisy dents."
+   }
+  },
+  "gen3d-power-crystal": {
+   "rank": 55,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 1,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 1,
+    "name": "Green crystal",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean pointed silhouette and bright solid green; simple, readable toy collectible."
+   }
+  },
+  "stepping-stone": {
+   "rank": 56,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 2,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 2,
+    "name": "Mossy platform",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky clean geometry, but muted colours and ambiguous details weaken object identity."
+   }
+  },
+  "gen3d-moon-rock": {
+   "rank": 57,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 3,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 3,
+    "name": "Egg",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable egg silhouette and chunky facets; uneven shading reduces toy-like polish."
+   }
+  },
+  "gen3d-beech-tree": {
+   "rank": 58,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 4,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 4,
+    "name": "Pine tree",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear layered silhouette, chunky trunk, and solid colours make a convincing toy tree."
+   }
+  },
+  "gen3d-crater-rock": {
+   "rank": 59,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 5,
+   "score": 2,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 5,
+    "name": "Damaged sphere",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Jagged overlapping facets and apparent tears obscure identity; shiny surface clashes with toy styling."
+   }
+  },
+  "gen3d-fuel-silo": {
+   "rank": 60,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 6,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 6,
+    "name": "Storage silo",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable silo, but thin ladder, spindly supports, and metallic glare undermine chunky toy styling."
+   }
+  },
+  "gen3d-meteorite": {
+   "rank": 61,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 7,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 7,
+    "name": "Dark rock",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Rock silhouette reads, but muddy dark patches and jagged surface details look noisy."
+   }
+  },
+  "gen3d-moon-flag": {
+   "rank": 62,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 8,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 8,
+    "name": "Moon flag",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable colourful flag and chunky base; thin pole and rough crescent limit polish."
+   }
+  },
+  "gen3d-rock-arch": {
+   "rank": 63,
+   "group": "top300",
+   "sheet": "grid-007",
+   "cell": 9,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-007",
+    "cell": 9,
+    "name": "Rock arch",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Recognisable arch overwhelmed by torn-looking triangular facets, sharp protrusions, and noisy surface shading."
+   }
+  },
+  "gen3d-satellite-radar-dish": {
+   "rank": 64,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 1,
+   "score": 2,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 1,
+    "name": "crystal brazier",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled glassy shards, torn geometry, unreadable object."
+   }
+  },
+  "gen3d-stone-gatehouse": {
+   "rank": 65,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 2,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 2,
+    "name": "castle gate",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable gate but noisy, scan-like faceted dark surface."
+   }
+  },
+  "gen3d-stone-water-well": {
+   "rank": 66,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 3,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 3,
+    "name": "stone well",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear ring shape but lumpy, noisy stone texture."
+   }
+  },
+  "stone-wall": {
+   "rank": 67,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 4,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 4,
+    "name": "brick wall",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky wall with readable bricks; slightly plain."
+   }
+  },
+  "cc0-asteroid": {
+   "rank": 68,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 5,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 5,
+    "name": "rock cluster",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean low-poly rocks, solid colour, nice silhouette."
+   }
+  },
+  "rocket": {
+   "rank": 69,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 6,
+   "score": 9,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 6,
+    "name": "toy rocket",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright, chunky, instantly readable toy rocket."
+   }
+  },
+  "cc0-torch-lit": {
+   "rank": 70,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 7,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 7,
+    "name": "torch",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable stylised torch; muted colours, thin handle."
+   }
+  },
+  "gen3d-dead-desert-tree": {
+   "rank": 71,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 8,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 8,
+    "name": "dead tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear tree but spindly thin branches, less chunky."
+   }
+  },
+  "gen3d-moon-lander": {
+   "rank": 72,
+   "group": "top300",
+   "sheet": "grid-008",
+   "cell": 9,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-008",
+    "cell": 9,
+    "name": "metal stump",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Melted chrome blob, noisy texture, unclear object."
+   }
+  },
+  "gen3d-sandcastle": {
+   "rank": 73,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 1,
+    "name": "Sandcastle",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Warm solid colour and chunky silhouette; soft, uneven details reduce polish."
+   }
+  },
+  "gen3d-seaweed": {
+   "rank": 74,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 2,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 2,
+    "name": "Seaweed",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright green and readable branching shape, but sharp flattened fronds feel crude."
+   }
+  },
+  "gen3d-space-colony-dome": {
+   "rank": 75,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 3,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 3,
+    "name": "Igloo",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable dome, but glassy blue panels and heavy dark seams feel metallic and techy."
+   }
+  },
+  "gen3d-beach-chair": {
+   "rank": 76,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 4,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 4,
+    "name": "Deck chair",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear chair silhouette; fragmented, reflective-looking fabric creates distracting visual noise."
+   }
+  },
+  "gen3d-birdhouse": {
+   "rank": 77,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 5,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 5,
+    "name": "Birdhouse",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Warped roof and torn-looking surfaces obscure construction; muddy colours and deep creases resemble scan damage."
+   }
+  },
+  "gen3d-castle-tower": {
+   "rank": 78,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 6,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 6,
+    "name": "Castle tower",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Battlements identify a tower, but melted walls and jagged cavities make the mesh appear damaged."
+   }
+  },
+  "gen3d-dandelion": {
+   "rank": 79,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 7,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 7,
+    "name": "Dandelion",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable flower silhouette, but crumpled crystalline seed head looks noisy rather than tactile."
+   }
+  },
+  "gen3d-drawbridge": {
+   "rank": 80,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 8,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 8,
+    "name": "Footbridge",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky supports and warm colours suit toys; tangled thin railings and uneven geometry reduce readability."
+   }
+  },
+  "gen3d-dune-grass-clump": {
+   "rank": 81,
+   "group": "top300",
+   "sheet": "grid-009",
+   "cell": 9,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-009",
+    "cell": 9,
+    "name": "Bush",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Bright colour helps, but densely intersecting spikes create a harsh, cluttered silhouette."
+   }
+  },
+  "gen3d-leaning-palm-tree": {
+   "rank": 82,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 1,
+   "score": 3.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 1,
+    "name": "palm tree",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Crumpled noisy fronds, spindly trunk; messy silhouette."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 1,
+    "name": "Palm tree",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn, jagged foliage and needle-thin trunk undermine a readable toy silhouette."
+   }
+  },
+  "gen3d-pandanus-tree": {
+   "rank": 83,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 2,
+   "score": 7.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 2,
+    "name": "palm tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean low-poly palm, bright solid colours, readable silhouette."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 2,
+    "name": "Palm tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean trunk and solid green leaves; flat, uneven foliage lacks chunky toy volume."
+   }
+  },
+  "gen3d-picnic-basket": {
+   "rank": 84,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 3,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 3,
+    "name": "picnic basket",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Scan-like crumpled surface with noisy pink texture."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 3,
+    "name": "Picnic basket",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable handle and basket, but crumpled surfaces and muddy colours create excessive visual noise."
+   }
+  },
+  "gen3d-wooden-fence": {
+   "rank": 85,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 4,
+   "score": 8.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 4,
+    "name": "wooden fence",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy-like fence, clean shape and solid colour."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 4,
+    "name": "Wooden fence",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky posts, clean rails, warm solid colour, and an immediately readable silhouette."
+   }
+  },
+  "shopping-cart": {
+   "rank": 86,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 5,
+   "score": 6.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 5,
+    "name": "barbecue grill",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean but dull grey; reads as cart or grill ambiguously."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 5,
+    "name": "Shopping cart",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear cart silhouette and simple colours; bulky opaque basket and thin legs feel less polished."
+   }
+  },
+  "gen3d-barnacle-rock": {
+   "rank": 87,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 6,
+   "score": 3.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 6,
+    "name": "rock",
+    "score": 3,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy blotchy blob; unclear object, scan-like texture."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 6,
+    "name": "Rock",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Rock silhouette reads, but mottled patches and crumpled facets look scan-like and noisy."
+   }
+  },
+  "gen3d-bread-basket": {
+   "rank": 88,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 7,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 7,
+    "name": "bread basket",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Melted faceted blob, contents unreadable, noisy texture."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 7,
+    "name": "Fruit basket",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Indistinct fused contents and torn-looking basket edges obscure the object."
+   }
+  },
+  "gen3d-bread-rack": {
+   "rank": 89,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 8,
+   "score": 3.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 8,
+    "name": "shoe rack",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn crumpled shelves, melted noisy geometry."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 8,
+    "name": "Bread rack",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Rack structure reads, but angular, crumpled contents and muddy shading overwhelm the silhouette."
+   }
+  },
+  "gen3d-cash-register": {
+   "rank": 90,
+   "group": "top300",
+   "sheet": "grid-010",
+   "cell": 9,
+   "score": 6.5,
+   "claude": {
+    "sheet": "grid-010",
+    "cell": 9,
+    "name": "cash register",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean readable shape; keys slightly smeared, odd scale."
+   },
+   "codex": {
+    "sheet": "grid-010",
+    "cell": 9,
+    "name": "Cash register",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky white body and colourful keys read clearly; warped recesses and uneven buttons reduce polish."
+   }
+  },
+  "gen3d-flour-sack": {
+   "rank": 91,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 1,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 1,
+    "name": "Sack",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Glassy metallic facets overwhelm the sack shape and create distracting visual noise."
+   }
+  },
+  "gen3d-fruit-crate": {
+   "rank": 92,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 2,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 2,
+    "name": "Produce crate",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable crate and produce, but jagged surfaces and metallic highlights undermine the toy aesthetic."
+   }
+  },
+  "gen3d-potato-sack": {
+   "rank": 93,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 3,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 3,
+    "name": "Potato sack",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky sack with clear contents; muted colours and lumpy base limit polish."
+   }
+  },
+  "gen3d-vegetable-basket": {
+   "rank": 94,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 4,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 4,
+    "name": "Vegetable basket",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright vegetables and chunky basket read clearly, but crowded angular details create noise."
+   }
+  },
+  "gen3d-wine-barrel": {
+   "rank": 95,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 5,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 5,
+    "name": "Barrel",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn-looking gaps, irregular hoops and muddy surfaces make the barrel appear damaged."
+   }
+  },
+  "cc0-flower": {
+   "rank": 96,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 6,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 6,
+    "name": "Blue flower",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright petals and simple leaves read well; angular petal cluster and thin stem lack polish."
+   }
+  },
+  "gen3d-floating-dock": {
+   "rank": 97,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 7,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 7,
+    "name": "Raft",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Deck appears torn with irregular holes and splintered facets, despite readable blue flotation barrels."
+   }
+  },
+  "gen3d-navigation-buoy": {
+   "rank": 98,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 8,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 8,
+    "name": "Buoy",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold colours and chunky silhouette fit well; ragged stripe edges reduce finish quality."
+   }
+  },
+  "gen3d-sailboat": {
+   "rank": 99,
+   "group": "top300",
+   "sheet": "grid-011",
+   "cell": 9,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-011",
+    "cell": 9,
+    "name": "Sailboat",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear sailboat silhouette, but crumpled metallic hull details and thin mast feel unfinished."
+   }
+  },
+  "gen3d-wooden-signpost": {
+   "rank": 100,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 1,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 1,
+    "name": "Wooden signpost",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy-like sign, clean silhouette, warm solid colours."
+   }
+  },
+  "gen3d-snowman-with-hat": {
+   "rank": 101,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 2,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 2,
+    "name": "Snowman",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Glassy chrome-like faceted body, noisy shading, off-style."
+   }
+  },
+  "cc0-hazard-saw": {
+   "rank": 102,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 3,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 3,
+    "name": "Saw blade",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean silhouette but flat grey, dull; huge 3m scale."
+   }
+  },
+  "cc0-sled": {
+   "rank": 103,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 4,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 4,
+    "name": "Sled",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy sled, readable shape, bright solid colours."
+   }
+  },
+  "gen3d-frozen-dead-tree": {
+   "rank": 104,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 5,
+    "name": "Frosted bare tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Spiky thin branches, dark muted colours, less toy-like."
+   }
+  },
+  "gen3d-frozen-shrub": {
+   "rank": 105,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 6,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 6,
+    "name": "Low-poly tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright toy tree, but lumpy irregular canopy silhouette."
+   }
+  },
+  "gen3d-ice-block-pile": {
+   "rank": 106,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 7,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 7,
+    "name": "Ice blocks",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Glassy noisy ice texture, cluttered clumped shape."
+   }
+  },
+  "gen3d-snowy-fir-tree": {
+   "rank": 107,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 8,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 8,
+    "name": "Snowy pine",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean stacked tiers, snow caps, polished toy look."
+   }
+  },
+  "gen3d-snowy-rock": {
+   "rank": 108,
+   "group": "top300",
+   "sheet": "grid-012",
+   "cell": 9,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-012",
+    "cell": 9,
+    "name": "Snowy rock",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple chunky boulder; odd snow patch shape on top."
+   }
+  },
+  "penguin": {
+   "rank": 109,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 1,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 1,
+    "name": "Penguin",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky, readable penguin with solid colours; angular flippers and dark facial details slightly weaken polish."
+   }
+  },
+  "gen3d-surf-rack": {
+   "rank": 110,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 2,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 2,
+    "name": "Surfboard rack",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear surfboards and sturdy rack; uneven pale stripes look rough against clean toy shapes."
+   }
+  },
+  "turtle": {
+   "rank": 111,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 3,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 3,
+    "name": "Turtle",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright, rounded turtle with charming proportions, clear features and a cohesive toy-like shell."
+   }
+  },
+  "cc0-cabinet-shelves": {
+   "rank": 112,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 4,
+    "name": "Shelving unit",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean, chunky shelving with readable compartments and warm solid colours; slightly plain."
+   }
+  },
+  "cc0-can-fridge": {
+   "rank": 113,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 5,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 5,
+    "name": "Locker",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable pastel locker with softened edges and tidy vents; door lacks an obvious handle."
+   }
+  },
+  "gen3d-fruit-stand": {
+   "rank": 114,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 6,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 6,
+    "name": "Produce stall",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Recognisable stall, but jagged folded surfaces and dark triangular gaps make the counter appear torn."
+   }
+  },
+  "gen3d-ice-igloo": {
+   "rank": 115,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 7,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 7,
+    "name": "Igloo",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Igloo silhouette remains readable, but roof holes, surface shards and distorted entrance undermine finish."
+   }
+  },
+  "gen3d-mushroom-cluster": {
+   "rank": 116,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 8,
+   "score": 2,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 8,
+    "name": "Rock cluster",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Ambiguous dark mass with tangled jagged surfaces, deep gaps and no readable single-object silhouette."
+   }
+  },
+  "astronaut": {
+   "rank": 117,
+   "group": "top300",
+   "sheet": "grid-013",
+   "cell": 9,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-013",
+    "cell": 9,
+    "name": "Astronaut",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean toy astronaut with chunky helmet and backpack; thin arms and pale palette reduce visual impact."
+   }
+  },
+  "cc0-barrel-stack": {
+   "rank": 118,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 1,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 1,
+    "name": "Barrel stack",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky stacked barrels, clean shapes and bright solid colours."
+   }
+  },
+  "cc0-log-stack": {
+   "rank": 119,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 2,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 2,
+    "name": "Log pile",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean hexagonal logs, readable toy-like silhouette."
+   }
+  },
+  "cc0-pine-tree": {
+   "rank": 120,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 3,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 3,
+    "name": "Pine tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright layered low-poly pine, readable silhouette."
+   }
+  },
+  "cc0-tree-pine": {
+   "rank": 121,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 4,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 4,
+    "name": "Autumn pine",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Nice toy tree, slightly jagged layered foliage."
+   }
+  },
+  "gen3d-broken-gravestone": {
+   "rank": 122,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 5,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 5,
+    "name": "Gravestone",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Glassy noisy scan-like surface, distorted crumpled mesh."
+   }
+  },
+  "gen3d-cemetery-bench": {
+   "rank": 123,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 6,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 6,
+    "name": "Park bench",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dark, noisy ornate scan-like texture, busy silhouette."
+   }
+  },
+  "gen3d-container": {
+   "rank": 124,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 7,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 7,
+    "name": "Trash bin",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dull lumpy surface, muted colour, slightly scan-like."
+   }
+  },
+  "gen3d-fern": {
+   "rank": 125,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 8,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 8,
+    "name": "Fern plant",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Spiky noisy realistic foliage, thin unreadable silhouette."
+   }
+  },
+  "gen3d-fir-tree": {
+   "rank": 126,
+   "group": "top300",
+   "sheet": "grid-014",
+   "cell": 9,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-014",
+    "cell": 9,
+    "name": "Pine tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple clean stacked cones, bright toy-like look."
+   }
+  },
+  "gen3d-funeral-urn": {
+   "rank": 127,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 1,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 1,
+    "name": "Decorative urn",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable urn silhouette, but chaotic dark patches and jagged surface details undermine toy-like clarity."
+   }
+  },
+  "gen3d-gift-box": {
+   "rank": 128,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 2,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 2,
+    "name": "Gift box",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable present, but crumpled ribbon and noisy angular colour patches look unfinished."
+   }
+  },
+  "gen3d-grave-lantern": {
+   "rank": 129,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 3,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 3,
+    "name": "Lantern",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear chunky lantern structure; dark palette and thin handle reduce toy-like appeal."
+   }
+  },
+  "gen3d-haunted-tree": {
+   "rank": 130,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 4,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 4,
+    "name": "Spooky tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable bare tree, but crowded spindly branches and nearly black colouring weaken readability."
+   }
+  },
+  "gen3d-industrial-fan": {
+   "rank": 131,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 5,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 5,
+    "name": "Desk fan",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Fan silhouette survives, but its cage appears shredded into overlapping shards and irregular holes."
+   }
+  },
+  "gen3d-larch-tree": {
+   "rank": 132,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 6,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 6,
+    "name": "Pine tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky evergreen silhouette; crowded angular foliage and dark seam artifacts need cleanup."
+   }
+  },
+  "gen3d-log-cabin": {
+   "rank": 133,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 7,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 7,
+    "name": "Wooden cabin",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Cabin remains identifiable, but roof and walls appear torn, with holes and splintered geometry."
+   }
+  },
+  "gen3d-mossy-fallen-log": {
+   "rank": 134,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 8,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 8,
+    "name": "Mossy log",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple chunky log with readable end ring and solid moss colours; slightly uneven contour."
+   }
+  },
+  "gen3d-mossy-stump": {
+   "rank": 135,
+   "group": "top300",
+   "sheet": "grid-015",
+   "cell": 9,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-015",
+    "cell": 9,
+    "name": "Tree stump",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky stump with bright solid colours; featureless green top slightly weakens object recognition."
+   }
+  },
+  "gen3d-oil-barrel": {
+   "rank": 136,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 1,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 1,
+    "name": "Black oil barrel",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clean shape but dark, grimy realistic look; off Toy Box style."
+   }
+  },
+  "gen3d-oil-drum": {
+   "rank": 137,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 2,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 2,
+    "name": "Blue oil drum",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Good silhouette but rusty weathered texture is realistic, not toy-like."
+   }
+  },
+  "gen3d-park-fountain": {
+   "rank": 138,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 3,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 3,
+    "name": "Water fountain",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable but noisy faceted stone, glassy water; scan-like artefacts."
+   }
+  },
+  "gen3d-rooftop-water-tank": {
+   "rank": 139,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 4,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 4,
+    "name": "Water tower",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable, but tank is lumpy, melted-looking with muddy texture."
+   }
+  },
+  "gen3d-standing-stone": {
+   "rank": 140,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 5,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 5,
+    "name": "Standing stone",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky menhir on grass base; slightly blobby rock surface."
+   }
+  },
+  "gen3d-tire-pile": {
+   "rank": 141,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 6,
+   "score": 2,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 6,
+    "name": "Tyre pile",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Black tangled blob with holes; unreadable mess of fragments."
+   }
+  },
+  "gen3d-toolbox": {
+   "rank": 142,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 7,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 7,
+    "name": "Toolbox crate",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Good chunky form, but noisy smeared texture and crumpled faces."
+   }
+  },
+  "gen3d-toxic-barrel": {
+   "rank": 143,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 8,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 8,
+    "name": "Yellow toxic barrel",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Bright colour but crumpled, noisy faceted surface looks melted."
+   }
+  },
+  "gen3d-traffic-cone": {
+   "rank": 144,
+   "group": "top300",
+   "sheet": "grid-016",
+   "cell": 9,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-016",
+    "cell": 9,
+    "name": "Traffic cone",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean low-poly cone, bright solid colours, very toy-like."
+   }
+  },
+  "gen3d-wild-strawberry-plant": {
+   "rank": 145,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 1,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 1,
+    "name": "Strawberry plant",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable fruit, but thin jagged foliage and tangled stems create a noisy silhouette."
+   }
+  },
+  "gen3d-cactus": {
+   "rank": 146,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 2,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 2,
+    "name": "Potted cactus",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold chunky shape, bright solid colours, and clean branching silhouette read immediately."
+   }
+  },
+  "cc0-bamboo": {
+   "rank": 147,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 3,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 3,
+    "name": "Potted bamboo",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean segmented stalks and rounded pot feel tactile; pale joints are slightly uneven."
+   }
+  },
+  "cc0-bee": {
+   "rank": 148,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 4,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 4,
+    "name": "Toy bee",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Expressive face, chunky body, and oversized wings create a polished, readable toy character."
+   }
+  },
+  "cc0-bush-berries": {
+   "rank": 149,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 5,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 5,
+    "name": "Barrel cactus",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky colourful form, but deep horizontal seams and sparse red spikes obscure cactus identity."
+   }
+  },
+  "cc0-cactus-flowers": {
+   "rank": 150,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 6,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 6,
+    "name": "Flowering cactus",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable branching cactus with playful flowers; narrow arms and pointed petals feel slightly fragile."
+   }
+  },
+  "cc0-pumpkin": {
+   "rank": 151,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 7,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 7,
+    "name": "Pumpkin",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Strong lobed silhouette and chunky stem; muted brown colour reduces visual appeal."
+   }
+  },
+  "gen3d-abandoned-mine-entrance": {
+   "rank": 152,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 8,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 8,
+    "name": "Mine entrance",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Jagged dark rock facets overwhelm the timber entrance, producing a noisy, confusing silhouette."
+   }
+  },
+  "gen3d-acorn": {
+   "rank": 153,
+   "group": "top300",
+   "sheet": "grid-017",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-017",
+    "cell": 9,
+    "name": "Acorn",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple chunky silhouette reads clearly, but dark similar colours flatten the cap and body."
+   }
+  },
+  "gen3d-aloe-plant": {
+   "rank": 154,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 1,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 1,
+    "name": "Potted plant",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean, bright, toy-like potted agave with readable silhouette."
+   }
+  },
+  "gen3d-bamboo-cluster": {
+   "rank": 155,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 2,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 2,
+    "name": "Bamboo cluster",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky bright bamboo stalks; slightly cluttered overlapping silhouette."
+   }
+  },
+  "gen3d-banana-plant": {
+   "rank": 156,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 3,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 3,
+    "name": "Banana tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean stylised small palm; leaves a bit sparse and thin."
+   }
+  },
+  "gen3d-beach-hut": {
+   "rank": 157,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 4,
+    "name": "Wooden hut",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable house but noisy, crumpled scan-like surfaces and glossy shading."
+   }
+  },
+  "gen3d-beach-umbrella": {
+   "rank": 158,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 5,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 5,
+    "name": "Beach umbrella",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright solid-colour panels, clean toy-like silhouette."
+   }
+  },
+  "gen3d-buried-statue-head": {
+   "rank": 159,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 6,
+   "score": 2,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 6,
+    "name": "Head statue",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled metallic blob on orange ring; unclear object, melted mesh."
+   }
+  },
+  "gen3d-castle-ruin-wall": {
+   "rank": 160,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 7,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 7,
+    "name": "Castle wall",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Grey melted, torn castle mesh with holes and noisy geometry."
+   }
+  },
+  "gen3d-cholla-cactus": {
+   "rank": 161,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 8,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 8,
+    "name": "Cactus",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear cactus but lumpy, glossy, noisy surface with messy spikes."
+   }
+  },
+  "gen3d-cycad-palm": {
+   "rank": 162,
+   "group": "top300",
+   "sheet": "grid-018",
+   "cell": 9,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-018",
+    "cell": 9,
+    "name": "Palm tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable palm; darker muted leaves, slightly less toy-like."
+   }
+  },
+  "gen3d-desert-shrub": {
+   "rank": 163,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 1,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 1,
+    "name": "Dead bush",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dense thin branches create a noisy silhouette; muted colours lack chunky toy appeal."
+   }
+  },
+  "gen3d-flower-pot": {
+   "rank": 164,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 2,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 2,
+    "name": "Flower pot",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold terracotta colour, thick rim and clean silhouette make a convincing toy prop."
+   }
+  },
+  "gen3d-gravestone": {
+   "rank": 165,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 3,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 3,
+    "name": "Gravestone",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable gravestone, but jagged surface scars and muddy engraving undermine the clean toy finish."
+   }
+  },
+  "gen3d-heliconia": {
+   "rank": 166,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 4,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 4,
+    "name": "Red flower",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright readable flower; thin stems and crowded pointed petals feel less chunky and polished."
+   }
+  },
+  "gen3d-ice-arch": {
+   "rank": 167,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 5,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 5,
+    "name": "Ice arch",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky blue arch with a clean opening and bold silhouette; slightly uneven faceting."
+   }
+  },
+  "gen3d-jungle-waterfall": {
+   "rank": 168,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 6,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 6,
+    "name": "Rock waterfall",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Waterfall reads clearly, but crumpled rocks and sharp water facets create excessive visual noise."
+   }
+  },
+  "gen3d-kapok-tree": {
+   "rank": 169,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 7,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 7,
+    "name": "Tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright toy colours and readable tree silhouette; heavily crumpled foliage weakens the finish."
+   }
+  },
+  "gen3d-layered-canyon-rock": {
+   "rank": 170,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 8,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 8,
+    "name": "Rock formation",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable rock formation, but fractured surfaces and muddy shading feel scan-like rather than toy-like."
+   }
+  },
+  "gen3d-lifeguard-tower": {
+   "rank": 171,
+   "group": "top300",
+   "sheet": "grid-019",
+   "cell": 9,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-019",
+    "cell": 9,
+    "name": "Watchtower",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable colourful tower, but spindly cross-bracing and warped canopy lack chunky toy solidity."
+   }
+  },
+  "gen3d-mangrove-tree": {
+   "rank": 172,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 1,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 1,
+    "name": "Mangrove tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable tree but noisy scattered leaf shards, spindly roots."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 1,
+    "name": "Rooted tree",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Fragmented foliage with extensive holes and spindly roots creates a torn, noisy silhouette."
+   }
+  },
+  "gen3d-mesquite-tree": {
+   "rank": 173,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 2,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 2,
+    "name": "Leafy tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Spiky noisy canopy of loose leaf polygons, not chunky toy look."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 2,
+    "name": "Leafy tree",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable tree, but jagged overlapping foliage and muddy colours lack chunky toy simplicity."
+   }
+  },
+  "gen3d-pitcher-plant": {
+   "rank": 174,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 3,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 3,
+    "name": "Pitcher plant",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky shape, readable; gradient colouring slightly off solid style."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 3,
+    "name": "Pitcher plant",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold pitcher silhouette and solid colours; uneven rim and stretched body reduce polish."
+   }
+  },
+  "gen3d-prickly-pear-cactus": {
+   "rank": 175,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 4,
+   "score": 3.5,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 4,
+    "name": "Prickly pear cactus",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Blobby lumpy mesh with noisy scan-like texture."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 4,
+    "name": "Cactus",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn-looking surfaces, angular holes and fragmented arms undermine the recognisable cactus shape."
+   }
+  },
+  "gen3d-rafflesia": {
+   "rank": 176,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 5,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 5,
+    "name": "Rafflesia flower",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable shape but noisy dark speckled texture artifacts."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 5,
+    "name": "Rafflesia flower",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Readable flower outline, but torn-looking petal patches and harsh surface noise spoil the toy finish."
+   }
+  },
+  "gen3d-rubber-tree": {
+   "rank": 177,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 6,
+   "score": 8.5,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 6,
+    "name": "Low-poly tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky low-poly tree with bright solid colours."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 6,
+    "name": "Round tree",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky canopy, bright solid colours and sturdy trunk form a clean, appealing toy tree."
+   }
+  },
+  "gen3d-ruin": {
+   "rank": 178,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 7,
+   "score": 2.5,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 7,
+    "name": "Rock formation",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Melted black blob on slab, unreadable object."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 7,
+    "name": "Rock formation",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Black crumpled spikes merge into a melted base; intended object is unclear."
+   }
+  },
+  "gen3d-ruined-stone-tower": {
+   "rank": 179,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 8,
+   "score": 3.5,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 8,
+    "name": "Ruined tower",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled noisy grey mesh, torn faces, unclear object."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 8,
+    "name": "Stone tower",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Battlements suggest a tower, but crumpled faceting and irregular walls look noisy and unfinished."
+   }
+  },
+  "gen3d-saguaro-cactus": {
+   "rank": 180,
+   "group": "top300",
+   "sheet": "grid-020",
+   "cell": 9,
+   "score": 8.5,
+   "claude": {
+    "sheet": "grid-020",
+    "cell": 9,
+    "name": "Saguaro cactus",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean iconic toy-like silhouette, bright solid green; very thin."
+   },
+   "codex": {
+    "sheet": "grid-020",
+    "cell": 9,
+    "name": "Cactus",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Instantly readable cactus with rounded chunky arms, bright solid green and a clean silhouette."
+   }
+  },
+  "gen3d-snowy-bench": {
+   "rank": 181,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 1,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 1,
+    "name": "Bench",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Jagged, torn surfaces and dark gaps spoil an otherwise recognisable bench."
+   }
+  },
+  "gen3d-stone-idol-head": {
+   "rank": 182,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 2,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 2,
+    "name": "Stone head",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable face, but crumpled, scan-like facets obscure features and create excessive noise."
+   }
+  },
+  "gen3d-strangler-fig-tree": {
+   "rank": 183,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 3,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 3,
+    "name": "Tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky canopy and clear trunk; jagged foliage facets reduce polish."
+   }
+  },
+  "gen3d-suika": {
+   "rank": 184,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 4,
+    "name": "Lime",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean rounded silhouette, bright solid colour, and simple facets create a convincing toy fruit."
+   }
+  },
+  "gen3d-treehouse": {
+   "rank": 185,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 5,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 5,
+    "name": "Treehouse",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable treehouse concept, but crowded angular details and muddy surfaces undermine mobile readability."
+   }
+  },
+  "gen3d-tribal-totem-pole": {
+   "rank": 186,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 6,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 6,
+    "name": "Totem pole",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Expressive face and strong silhouette; jagged facial details and streaky colouring reduce polish."
+   }
+  },
+  "gen3d-vine-covered-rock-wall": {
+   "rank": 187,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 7,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 7,
+    "name": "Ivy wall",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear wall shape, but crumpled stone and scattered triangular foliage look noisy and scan-like."
+   }
+  },
+  "gen3d-wooden-pier": {
+   "rank": 188,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 8,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 8,
+    "name": "Wooden platform",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable platform silhouette, but splintered edges and noisy plank surfaces lack toy-like cleanliness."
+   }
+  },
+  "gen3d-wooden-rope-bridge": {
+   "rank": 189,
+   "group": "top300",
+   "sheet": "grid-021",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-021",
+    "cell": 9,
+    "name": "Rope bridge",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear bridge silhouette and chunky posts; thin uneven ropes and angular connections need refinement."
+   }
+  },
+  "gen3d-wooden-watchtower": {
+   "rank": 190,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 1,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 1,
+    "name": "Wooden watchtower",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear stylised watchtower; muted brown, slightly busy hand-painted detail."
+   }
+  },
+  "gen3d-yucca-plant": {
+   "rank": 191,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 2,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 2,
+    "name": "Yucca plant",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Spiky dark leaves, thin noisy silhouette; realistic, not toy-like."
+   }
+  },
+  "hamster": {
+   "rank": 192,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 3,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 3,
+    "name": "Hamster",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Cute chunky low-poly hamster, bright colours; feet slightly detached-looking."
+   }
+  },
+  "cc0-armchair": {
+   "rank": 193,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 4,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 4,
+    "name": "Armchair",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky bright blue armchair, very toy-like and readable."
+   }
+  },
+  "cc0-couch": {
+   "rank": 194,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 5,
+    "name": "Worn sofa",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Grimy patches and odd translucent block legs; off-style worn look."
+   }
+  },
+  "cc0-lamp-standing": {
+   "rank": 195,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 6,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 6,
+    "name": "Floor lamp",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean readable lamp; somewhat plain, thin pole, muted colours."
+   }
+  },
+  "cc0-monkey": {
+   "rank": 196,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 7,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 7,
+    "name": "Cube monkey",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming blocky monkey toy, bright and readable silhouette."
+   }
+  },
+  "cc0-wood-log": {
+   "rank": 197,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 8,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 8,
+    "name": "Fallen log",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable log; dull colours, tiny mushrooms and twig add little."
+   }
+  },
+  "crystal": {
+   "rank": 198,
+   "group": "top300",
+   "sheet": "grid-022",
+   "cell": 9,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-022",
+    "cell": 9,
+    "name": "Crystal cluster",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright clean crystal on rock; slightly glassy but chunky shape."
+   }
+  },
+  "gen3d-agave-plant": {
+   "rank": 199,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 1,
+    "name": "Potted plant",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright colours and readable pot; crowded, needlelike leaves weaken the chunky toy silhouette."
+   }
+  },
+  "gen3d-bookshelf": {
+   "rank": 200,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 2,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 2,
+    "name": "Bookshelf",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable shelving, but dark colours and warped, jagged surfaces look unfinished."
+   }
+  },
+  "gen3d-cat-tree": {
+   "rank": 201,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 3,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 3,
+    "name": "Cat tree",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple chunky platforms read clearly; muted colours and rough post connections reduce polish."
+   }
+  },
+  "gen3d-clay-pot": {
+   "rank": 202,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 4,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 4,
+    "name": "Clay vase",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean rounded silhouette, solid terracotta colour, and substantial rim create a polished toy prop."
+   }
+  },
+  "gen3d-crane": {
+   "rank": 203,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 5,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 5,
+    "name": "Tower crane",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright yellow and clear crane silhouette; thin lattice details feel delicate at mobile scale."
+   }
+  },
+  "gen3d-gramophone": {
+   "rank": 204,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 6,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 6,
+    "name": "Gramophone",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Recognisable gramophone, but crumpled horn and torn-looking turntable edges severely undermine finish."
+   }
+  },
+  "gen3d-iron-fence": {
+   "rank": 205,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 7,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 7,
+    "name": "Iron fence",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Strong recognisable fence silhouette; uneven spikes and nearly black colouring reduce toy appeal."
+   }
+  },
+  "gen3d-jellyfish": {
+   "rank": 206,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 8,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 8,
+    "name": "Jellyfish",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright blue dome and chunky tentacles form a clear toy silhouette; appendages overlap awkwardly."
+   }
+  },
+  "gen3d-pitchfork": {
+   "rank": 207,
+   "group": "top300",
+   "sheet": "grid-023",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-023",
+    "cell": 9,
+    "name": "Pitchfork",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean readable fork silhouette; thin pointed tines and subdued colours limit chunky toy appeal."
+   }
+  },
+  "gen3d-red-barn": {
+   "rank": 208,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 1,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 1,
+    "name": "Red barn",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled glossy scan-like mesh with noisy, smeared textures"
+   }
+  },
+  "gen3d-smokestack": {
+   "rank": 209,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 2,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 2,
+    "name": "Smokestack chimney",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear shape and cute smoke, but blotchy noisy texture"
+   }
+  },
+  "gen3d-television": {
+   "rank": 210,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 3,
+   "score": 2,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 3,
+    "name": "CRT monitor",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled dark glassy mesh, torn faces, hard to read"
+   }
+  },
+  "gen3d-white-picket-fence": {
+   "rank": 211,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 4,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 4,
+    "name": "Picket fence",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky fence, readable; plain white, slightly uneven planks"
+   }
+  },
+  "ghost": {
+   "rank": 212,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 5,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 5,
+    "name": "Cute ghost",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming toy-like ghost, clean silhouette, solid colours"
+   }
+  },
+  "steam-machine": {
+   "rank": 213,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 6,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 6,
+    "name": "Steam engine",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky clean toy engine; dull colours, slightly ambiguous object"
+   }
+  },
+  "cc0-apple": {
+   "rank": 214,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 7,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 7,
+    "name": "Brown apple",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Faceted blobby shape, dull brown colour reads as rotten"
+   }
+  },
+  "cc0-clownfish": {
+   "rank": 215,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 8,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 8,
+    "name": "Wooden cannon",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Confusing shape and odd scale; unclear what object it is"
+   }
+  },
+  "cc0-fruit": {
+   "rank": 216,
+   "group": "top300",
+   "sheet": "grid-024",
+   "cell": 9,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-024",
+    "cell": 9,
+    "name": "Coconut with leaf",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean simple toy fruit, but ambiguous which fruit"
+   }
+  },
+  "cc0-goldfish": {
+   "rank": 217,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 1,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 1,
+    "name": "Toy fish",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky fish with expressive eyes and readable fins; muted brown limits playful appeal."
+   }
+  },
+  "cc0-tang": {
+   "rank": 218,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 2,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 2,
+    "name": "Toy fish",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable rounded fish, but dark face obscures features and tail feels sharply angular."
+   }
+  },
+  "cc0-traffic": {
+   "rank": 219,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 3,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 3,
+    "name": "Road barricade",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean striped boards and coherent supports; thin feet slightly weaken chunky toy styling."
+   }
+  },
+  "gen3d-adobe-house": {
+   "rank": 220,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 4,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 4,
+    "name": "House",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Recognisable house undermined by jagged roof holes, distorted openings, and noisy colour patches."
+   }
+  },
+  "gen3d-bear": {
+   "rank": 221,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 5,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 5,
+    "name": "Bear",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Bear outline survives, but fractured surfaces and deep irregular cavities look severely damaged."
+   }
+  },
+  "gen3d-bedouin-tent": {
+   "rank": 222,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 6,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 6,
+    "name": "Yellow tent",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright, simple tent silhouette; entrance folds look pinched and uneven."
+   }
+  },
+  "gen3d-checkout-counter": {
+   "rank": 223,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 7,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 7,
+    "name": "Checkout counter",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Register and conveyor convey checkout counter; muddy dark colours and warped panels reduce polish."
+   }
+  },
+  "gen3d-coral": {
+   "rank": 224,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 8,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 8,
+    "name": "Coral",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky branches form readable coral; crowded intersections slightly reduce silhouette clarity."
+   }
+  },
+  "gen3d-coral-rock": {
+   "rank": 225,
+   "group": "top300",
+   "sheet": "grid-025",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-025",
+    "cell": 9,
+    "name": "Orange rock",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky rock with solid orange facets; generic shape and dark underside limit polish."
+   }
+  },
+  "gen3d-frog": {
+   "rank": 226,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 1,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 1,
+    "name": "Frog",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable frog but jagged, noisy faceted scan-like surface"
+   }
+  },
+  "gen3d-frozen-waterfall": {
+   "rank": 227,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 2,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 2,
+    "name": "Ice pillar",
+    "score": 3,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Ambiguous icy rock block, noisy shading, unclear object"
+   }
+  },
+  "gen3d-oasis-well": {
+   "rank": 228,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 3,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 3,
+    "name": "Stone well rim",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky ring, but muddy blended texture colours"
+   }
+  },
+  "gen3d-octopus": {
+   "rank": 229,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 4,
+    "name": "Octopus",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable octopus but glassy, crumpled, noisy mesh"
+   }
+  },
+  "gen3d-sea-anemone": {
+   "rank": 230,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 5,
+    "name": "Coral on rock",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Nice coral colour; lumpy scan-like crown and chrome base"
+   }
+  },
+  "gen3d-sea-sponge": {
+   "rank": 231,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 6,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 6,
+    "name": "Sponge/cheese pot",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright toy colour but blobby, unclear what object it is"
+   }
+  },
+  "gen3d-shopping-basket": {
+   "rank": 232,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 7,
+   "score": 2,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 7,
+    "name": "Shopping basket",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn mesh, glassy shards, chaotic contents"
+   }
+  },
+  "gen3d-stone-obelisk": {
+   "rank": 233,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 8,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 8,
+    "name": "Obelisk",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky low-poly silhouette; plain white, little character"
+   }
+  },
+  "hoop": {
+   "rank": 234,
+   "group": "top300",
+   "sheet": "grid-026",
+   "cell": 9,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-026",
+    "cell": 9,
+    "name": "Fire hoop",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear toy-like hoop, but ring floats unattached to posts"
+   }
+  },
+  "iron-gate": {
+   "rank": 235,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 1,
+    "name": "Iron gate",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear gate silhouette, but thin bars and muted colours lack chunky toy appeal."
+   }
+  },
+  "roomba": {
+   "rank": 236,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 2,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 2,
+    "name": "Robot vacuum",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable chunky vacuum with clean geometry; dark palette slightly obscures details."
+   }
+  },
+  "slime": {
+   "rank": 237,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 3,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 3,
+    "name": "Slime creature",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright green body, expressive eyes and rounded facets create a polished toy creature."
+   }
+  },
+  "star": {
+   "rank": 238,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 4,
+    "name": "Star trophy",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright star and sturdy base read clearly; flat star feels less tactile."
+   }
+  },
+  "cc0-tractor": {
+   "rank": 239,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 5,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 5,
+    "name": "Tractor",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky wheels, cheerful yellow body and simplified cabin make an appealing toy tractor."
+   }
+  },
+  "cc0-traffic-barrier": {
+   "rank": 240,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 6,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 6,
+    "name": "Road barricade",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear striped barricade, though thin supports and muted colours reduce toy-like solidity."
+   }
+  },
+  "cc0-water": {
+   "rank": 241,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 7,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 7,
+    "name": "Water tower",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Thin lattice and irregular tank bands feel fragile and weathered rather than toy-like."
+   }
+  },
+  "crate": {
+   "rank": 242,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 8,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 8,
+    "name": "Wooden crate",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold framing, solid colours and oversized bolts create a clean, tactile toy crate."
+   }
+  },
+  "gen3d-balloon": {
+   "rank": 243,
+   "group": "top300",
+   "sheet": "grid-027",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-027",
+    "cell": 9,
+    "name": "Hot air balloon",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Pleasant faceted balloon; tiny basket and spindly connection weaken the silhouette."
+   }
+  },
+  "gen3d-brown-owl": {
+   "rank": 244,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 1,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 1,
+    "name": "gold nugget",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled, shredded metallic mesh; reads as foil blob, not toy."
+   }
+  },
+  "gen3d-burnt-tree": {
+   "rank": 245,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 2,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 2,
+    "name": "dead tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear silhouette but dark, gritty texture and messy base."
+   }
+  },
+  "gen3d-candelabra": {
+   "rank": 246,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 3,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 3,
+    "name": "candelabra",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean, chunky readable shape; plain white but polished."
+   }
+  },
+  "gen3d-cheese": {
+   "rank": 247,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 4,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 4,
+    "name": "cheese wedge",
+    "score": 5,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": true,
+    "reason": "Bright toy look, but holes are torn, jagged geometry."
+   }
+  },
+  "gen3d-cog-gear": {
+   "rank": 248,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 5,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 5,
+    "name": "cog gear",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky gear silhouette; grey colour slightly dull."
+   }
+  },
+  "gen3d-fishing": {
+   "rank": 249,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 6,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 6,
+    "name": "fishing rod",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable but thin, dark and realistic textures."
+   }
+  },
+  "gen3d-highway-sign": {
+   "rank": 250,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 7,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 7,
+    "name": "signpost",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy smeared green texture; sign face unreadable."
+   }
+  },
+  "gen3d-iceberg": {
+   "rank": 251,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 8,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 8,
+    "name": "ice crystal",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright clean crystal; slightly lumpy faceting."
+   }
+  },
+  "gen3d-magma-crystal": {
+   "rank": 252,
+   "group": "top300",
+   "sheet": "grid-028",
+   "cell": 9,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-028",
+    "cell": 9,
+    "name": "coal ore",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy dark scan-like texture, blobby shape."
+   }
+  },
+  "gen3d-magma-rock": {
+   "rank": 253,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 1,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 1,
+    "name": "Rock",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable rock silhouette, but crumpled facets and dark creases create a noisy, scan-like surface."
+   }
+  },
+  "gen3d-mine-cart": {
+   "rank": 254,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 2,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 2,
+    "name": "Mine cart",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Recognisable wheeled cart, but torn-looking panels and warped edges undermine the chunky toy form."
+   }
+  },
+  "gen3d-obsidian-shard": {
+   "rank": 255,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 3,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 3,
+    "name": "Crystal",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean pointed silhouette and solid colours; jagged red patch looks unfinished against nearly black faces."
+   }
+  },
+  "gen3d-pearl": {
+   "rank": 256,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 4,
+    "name": "Egg",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple, chunky egg with clean facets and a readable silhouette; slightly flattened crown."
+   }
+  },
+  "gen3d-raindrop": {
+   "rank": 257,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 5,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 5,
+    "name": "Water droplet",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright solid cyan, clean teardrop silhouette, and deliberate chunky facets suit the toy aesthetic."
+   }
+  },
+  "gen3d-ski-lift-tower": {
+   "rank": 258,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 6,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 6,
+    "name": "Ski lift tower",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Coherent tower structure, but thin braces and tiny mechanical details lack chunky mobile-game readability."
+   }
+  },
+  "gen3d-smoldering-stump": {
+   "rank": 259,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 7,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 7,
+    "name": "Tree stump",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky stump silhouette reads clearly, though near-black colouring hides detail and red growths feel ambiguous."
+   }
+  },
+  "gen3d-snowy-log-cabin": {
+   "rank": 260,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 8,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 8,
+    "name": "Snowy cabin",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Cabin remains recognisable, but fractured roof surfaces and crumpled walls look damaged and noisy."
+   }
+  },
+  "gen3d-squirrel": {
+   "rank": 261,
+   "group": "top300",
+   "sheet": "grid-029",
+   "cell": 9,
+   "score": 2,
+   "codex": {
+    "sheet": "grid-029",
+    "cell": 9,
+    "name": "Squirrel",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Severely crumpled, intersecting forms obscure anatomy and prevent a clear single-object reading."
+   }
+  },
+  "gen3d-steam-vent": {
+   "rank": 262,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 1,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 1,
+    "name": "Smoking volcano",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy, splotchy lava texture; chimney-like vent reads oddly"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 1,
+    "name": "Smoking volcano",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Jagged yellow patches and lumpy smoke make the volcano look cluttered and unfinished."
+   }
+  },
+  "gen3d-toll-booth": {
+   "rank": 263,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 2,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 2,
+    "name": "Toll booth",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Wobbly, warped geometry; barrier pierces booth awkwardly"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 2,
+    "name": "Guard booth",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable booth and barriers; uneven framing and smeared stripes reduce polish."
+   }
+  },
+  "gen3d-volcanic-rock": {
+   "rank": 264,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 3,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 3,
+    "name": "Chocolate chip cookie",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Lumpy blob; could be cookie or rock, scan-like texture"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 3,
+    "name": "Asteroid",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky rock silhouette reads clearly, but scattered dark patches feel arbitrary and rough."
+   }
+  },
+  "gen3d-volcano": {
+   "rank": 265,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 4,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 4,
+    "name": "Volcano",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean low-poly cone but dull, dark gradient colours"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 4,
+    "name": "Volcano",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean angular silhouette and bold lava cap make an immediately readable toy volcano."
+   }
+  },
+  "goblin": {
+   "rank": 266,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 5,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 5,
+    "name": "Goblin with club",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming toy goblin; blocky robe and floating eyes slightly crude"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 5,
+    "name": "Goblin",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Expressive ears, bright eyes and chunky proportions; arms blend somewhat into the torso."
+   }
+  },
+  "pizza": {
+   "rank": 267,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 6,
+   "score": 6.5,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 6,
+    "name": "Pizza with candles",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright, chunky pizza; spiky candles look odd"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 6,
+    "name": "Birthday pizza",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky food model, but tall white spikes confuse candles with an unclear topping."
+   }
+  },
+  "plane": {
+   "rank": 268,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 7,
+   "score": 7.5,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 7,
+    "name": "Toy biplane",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright toy plane; thin, sparse wings and floating parts"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 7,
+    "name": "Propeller airplane",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright blocky wings and clear airplane silhouette; thin landing gear feels comparatively fragile."
+   }
+  },
+  "ball": {
+   "rank": 269,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 8,
+   "score": 6.5,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 8,
+    "name": "Beach ball",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean but mostly white, ambiguous ball type"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 8,
+    "name": "Beach ball",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean rounded silhouette, but narrow uneven colored bands look less polished than broad panels."
+   }
+  },
+  "cc0-alien": {
+   "rank": 270,
+   "group": "top300",
+   "sheet": "grid-030",
+   "cell": 9,
+   "score": 6.5,
+   "claude": {
+    "sheet": "grid-030",
+    "cell": 9,
+    "name": "Blocky robot",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Toy-like voxel robot; pale colours, jumbled limb blocks"
+   },
+   "codex": {
+    "sheet": "grid-030",
+    "cell": 9,
+    "name": "Robot",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky pastel blocks fit the style; featureless head and overlapping torso shapes weaken character readability."
+   }
+  },
+  "cc0-barrel": {
+   "rank": 271,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 1,
+    "name": "Rusty barrel",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable chunky barrel; muted colours and large rust patches reduce toy-like polish."
+   }
+  },
+  "cc0-bench": {
+   "rank": 272,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 2,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 2,
+    "name": "Padded bench",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear silhouette, bold red cushion, and sturdy wooden legs create a polished toy prop."
+   }
+  },
+  "cc0-bowl": {
+   "rank": 273,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 3,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 3,
+    "name": "Black bowl",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clean bowl silhouette, but near-black shading obscures detail and lacks playful colour."
+   }
+  },
+  "cc0-candle": {
+   "rank": 274,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 4,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 4,
+    "name": "Candle",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple readable candle; oversized brown wick and featureless body feel slightly unfinished."
+   }
+  },
+  "cc0-corgi": {
+   "rank": 275,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 5,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 5,
+    "name": "Toy dog",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Expressive blocky dog with playful colours; crowded muzzle slightly weakens facial readability."
+   }
+  },
+  "cc0-cupcake": {
+   "rank": 276,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 6,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 6,
+    "name": "Cupcake",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright pink frosting, chunky layers, and distinct wrapper form a polished readable silhouette."
+   }
+  },
+  "cc0-dinner": {
+   "rank": 277,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 7,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 7,
+    "name": "Plated meal",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Plate reads clearly, but flattened orange food shapes make the specific meal ambiguous."
+   }
+  },
+  "cc0-donut": {
+   "rank": 278,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 8,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 8,
+    "name": "Doughnut",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable ring shape, but muddy grey icing and scattered flecks look unappetising and noisy."
+   }
+  },
+  "cc0-elephant": {
+   "rank": 279,
+   "group": "top300",
+   "sheet": "grid-031",
+   "cell": 9,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-031",
+    "cell": 9,
+    "name": "Toy elephant",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming chunky elephant with readable trunk and tusks; angular ear openings feel mechanically rigid."
+   }
+  },
+  "cc0-lily-pad": {
+   "rank": 280,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 1,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 1,
+    "name": "Lotus lily pad",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Flat grey pad, odd colour; flower small and crumpled, weak read."
+   }
+  },
+  "cc0-pancake": {
+   "rank": 281,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 2,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 2,
+    "name": "Pancake stack",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Cute toy pancakes with butter; syrup puddle slightly messy."
+   }
+  },
+  "cc0-pigeon": {
+   "rank": 282,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 3,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 3,
+    "name": "Bird head",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming but just a head; ambiguous bird, odd scale."
+   }
+  },
+  "cc0-pillow": {
+   "rank": 283,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 4,
+    "name": "Sponge/cushion",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Blobby yellow slab; unclear object identity."
+   }
+  },
+  "cc0-pipe-bump": {
+   "rank": 284,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 5,
+    "name": "Cannon barrel",
+    "score": 5,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky shape but ambiguous: pipe, barrel or spool?"
+   }
+  },
+  "cc0-police": {
+   "rank": 285,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 6,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 6,
+    "name": "Police car",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky toy police car, readable silhouette."
+   }
+  },
+  "cc0-present": {
+   "rank": 286,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 7,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 7,
+    "name": "Gift box",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright, chunky, instantly readable present with bow."
+   }
+  },
+  "cc0-sausage": {
+   "rank": 287,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 8,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 8,
+    "name": "Rolling pin",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple readable shape; plain, could be sausage."
+   }
+  },
+  "cc0-ship-ghost": {
+   "rank": 288,
+   "group": "top300",
+   "sheet": "grid-032",
+   "cell": 9,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-032",
+    "cell": 9,
+    "name": "Pirate ship",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy detailed mesh, monochrome green, cluttered silhouette."
+   }
+  },
+  "cc0-tank": {
+   "rank": 289,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 1,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 1,
+    "name": "Toy tank",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky proportions, readable cannon and tracks, and cohesive solid colours create a polished toy."
+   }
+  },
+  "cc0-train": {
+   "rank": 290,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 2,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 2,
+    "name": "Train carriage",
+    "score": 5,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Pale elongated block lacks clear windows, wheels, or distinctive features identifying its purpose."
+   }
+  },
+  "cc0-zombie": {
+   "rank": 291,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 3,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 3,
+    "name": "Zombie toy",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright colours and chunky limbs form a readable, playful zombie with a clear silhouette."
+   }
+  },
+  "dog": {
+   "rank": 292,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 4,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 4,
+    "name": "Dog",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Recognisable friendly dog, though thin cylindrical legs and awkward body joins reduce polish."
+   }
+  },
+  "egg": {
+   "rank": 293,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 5,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 5,
+    "name": "Egg",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean faceted egg on a chunky golden base; simple, tactile, and immediately readable."
+   }
+  },
+  "exit-door": {
+   "rank": 294,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 6,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 6,
+    "name": "Double doors",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean frame, bold green panels, and simple handles make a readable toy-like doorway."
+   }
+  },
+  "gen3d-alien-bug": {
+   "rank": 295,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 7,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 7,
+    "name": "Beetle",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky shell reads clearly, but thin angular legs and antennae feel less polished."
+   }
+  },
+  "gen3d-apartment-block": {
+   "rank": 296,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 8,
+   "score": 2,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 8,
+    "name": "Cabinet",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Severely fragmented surfaces and chaotic cavities obscure the object and destroy clean readability."
+   }
+  },
+  "gen3d-baby": {
+   "rank": 297,
+   "group": "top300",
+   "sheet": "grid-033",
+   "cell": 9,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-033",
+    "cell": 9,
+    "name": "Seated child",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Child remains identifiable, but collapsed facial geometry and torn clothing surfaces look severely broken."
+   }
+  },
+  "gen3d-baguette": {
+   "rank": 298,
+   "group": "top300",
+   "sheet": "grid-034",
+   "cell": 1,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 1,
+    "name": "bread loaf",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear baguette shape, warm colours; slightly scan-like shading."
+   }
+  },
+  "gen3d-banana": {
+   "rank": 299,
+   "group": "top300",
+   "sheet": "grid-034",
+   "cell": 2,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 2,
+    "name": "banana",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean faceted banana, bright solid colour, very readable."
+   }
+  },
+  "gen3d-battery": {
+   "rank": 300,
+   "group": "top300",
+   "sheet": "grid-034",
+   "cell": 3,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 3,
+    "name": "milk jug",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky bright bottle, but blue body makes contents ambiguous."
+   }
+  },
+  "cc0-velociraptor": {
+   "rank": 301,
+   "group": "sample100",
+   "sheet": "grid-034",
+   "cell": 4,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 4,
+    "name": "raptor dinosaur",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable raptor, but dull dark grey and realistic, not toy-like."
+   }
+  },
+  "gen3d-wagon-wheel": {
+   "rank": 302,
+   "group": "sample100",
+   "sheet": "grid-034",
+   "cell": 5,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 5,
+    "name": "wagon wheel",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear wheel silhouette; thin spokes less chunky than Toy Box."
+   }
+  },
+  "cc0-koi": {
+   "rank": 303,
+   "group": "sample100",
+   "sheet": "grid-034",
+   "cell": 6,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 6,
+    "name": "aviator helmet",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Confusing jumble with stray fins and fragments; unclear object."
+   }
+  },
+  "gen3d-egg-tray": {
+   "rank": 304,
+   "group": "sample100",
+   "sheet": "grid-034",
+   "cell": 7,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 7,
+    "name": "egg carton",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Spiky melted eggs, noisy glassy carton mesh."
+   }
+  },
+  "gen3d-holy-grail": {
+   "rank": 305,
+   "group": "sample100",
+   "sheet": "grid-034",
+   "cell": 8,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 8,
+    "name": "golden goblet",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy-like chalice with gems, clean silhouette."
+   }
+  },
+  "gen3d-ancient-vase": {
+   "rank": 306,
+   "group": "sample100",
+   "sheet": "grid-034",
+   "cell": 9,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-034",
+    "cell": 9,
+    "name": "amphora vase",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable shape but noisy shattered texture, scan-like."
+   }
+  },
+  "gen3d-gold-trophy": {
+   "rank": 307,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 1,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 1,
+    "name": "Trophy",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable trophy, but crumpled surfaces and jagged handles undermine a clean toy finish."
+   }
+  },
+  "gen3d-canopic-jar": {
+   "rank": 308,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 2,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 2,
+    "name": "Lion urn",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable lion ornament, but muddy colouring and dented, noisy surfaces feel scan-like."
+   }
+  },
+  "gen3d-joystick": {
+   "rank": 309,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 3,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 3,
+    "name": "Joystick",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky base and bright red knob create an immediately readable toy silhouette."
+   }
+  },
+  "gen3d-throwing-knife": {
+   "rank": 310,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 4,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 4,
+    "name": "Dagger",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple solid colours and clear silhouette; blade is overly blunt and guard loops awkward."
+   }
+  },
+  "cc0-bear-trap": {
+   "rank": 311,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 5,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 5,
+    "name": "Bear trap",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Intersecting jagged strips and disconnected-looking parts obscure the object and suggest damaged geometry."
+   }
+  },
+  "cc0-pipe-cross": {
+   "rank": 312,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 6,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 6,
+    "name": "Binoculars",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Chunky paired lenses read as binoculars, but glassy cyan interiors and angular casing feel techy."
+   }
+  },
+  "gen3d-kraken": {
+   "rank": 313,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 7,
+   "score": 2,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 7,
+    "name": "Octopus",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Hollow, shredded-looking limbs and reflective blue facets obscure anatomy and destroy the silhouette."
+   }
+  },
+  "cc0-tree-decorated": {
+   "rank": 314,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 8,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 8,
+    "name": "Skull staff",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable skull-topped branch, but thin spikes, tiny attachments and muted colours lack toy chunkiness."
+   }
+  },
+  "cc0-cabinet-doors": {
+   "rank": 315,
+   "group": "sample100",
+   "sheet": "grid-035",
+   "cell": 9,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-035",
+    "cell": 9,
+    "name": "Cabinet",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky construction, solid warm colours and readable doors make a convincing toy cabinet."
+   }
+  },
+  "gen3d-kayak": {
+   "rank": 316,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 1,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 1,
+    "name": "Kayak",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright clear kayak; thin noisy details and stray strands on top."
+   }
+  },
+  "gen3d-maze": {
+   "rank": 317,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 2,
+   "score": 2,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 2,
+    "name": "Hedge maze",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Glassy, torn chrome mesh; maze barely readable, very noisy."
+   }
+  },
+  "cc0-avocado": {
+   "rank": 318,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 3,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 3,
+    "name": "Rock / egg",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Ambiguous grey blob shape; unclear what object it is."
+   }
+  },
+  "gen3d-magnet": {
+   "rank": 319,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 4,
+    "name": "Crystal pedestal",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright toy-like but unclear object; lumpy red base."
+   }
+  },
+  "gen3d-stone-lantern": {
+   "rank": 320,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 5,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 5,
+    "name": "Stone lantern",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky silhouette, clearly a Japanese stone lantern."
+   }
+  },
+  "cc0-candle-triple": {
+   "rank": 321,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 6,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 6,
+    "name": "Candles",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable candle cluster; odd slab shape, wicks oversized."
+   }
+  },
+  "gen3d-eraser": {
+   "rank": 322,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 7,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 7,
+    "name": "Block / pillar",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Blurry scan-like texture; generic box, unclear object."
+   }
+  },
+  "gen3d-firework": {
+   "rank": 323,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 8,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 8,
+    "name": "Firecracker",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright clear firecracker; splotchy texture slightly noisy."
+   }
+  },
+  "gen3d-tesla-coil": {
+   "rank": 324,
+   "group": "sample100",
+   "sheet": "grid-036",
+   "cell": 9,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-036",
+    "cell": 9,
+    "name": "Coil spring",
+    "score": 5,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Thin techy spring, floating loose fragment above."
+   }
+  },
+  "gen3d-lobster": {
+   "rank": 325,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 1,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 1,
+    "name": "Lobster",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable claws and tail, but jagged surfaces and noisy patches undermine the toy finish."
+   }
+  },
+  "gen3d-sugar-bowl": {
+   "rank": 326,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 2,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 2,
+    "name": "Porcelain pot",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable lidded pot, but crumpled surfaces and smeared decoration look scanned rather than toy-like."
+   }
+  },
+  "gen3d-old-stone-bridge": {
+   "rank": 327,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 3,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 3,
+    "name": "Stone bridge",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clear bridge silhouette, but muddy colours and densely fractured stonework feel noisy and rough."
+   }
+  },
+  "gen3d-fairy-door": {
+   "rank": 328,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 4,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 4,
+    "name": "Fairy door",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky arched door reads clearly; dark crevices and uneven frame detailing reduce polish."
+   }
+  },
+  "gen3d-mermaid": {
+   "rank": 329,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 5,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 5,
+    "name": "Mermaid",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright turquoise tail and clear silhouette; angular hands and pinched facial features need refinement."
+   }
+  },
+  "gen3d-scorpion": {
+   "rank": 330,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 6,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 6,
+    "name": "Scorpion",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Distinctive raised tail and pincers; thin legs and rough claw tips weaken the chunky finish."
+   }
+  },
+  "gen3d-gumball-machine": {
+   "rank": 331,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 7,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 7,
+    "name": "Gumball machine",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable overall shape, but opaque globe, jagged joins and smeared details look unfinished."
+   }
+  },
+  "gen3d-manticore": {
+   "rank": 332,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 8,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 8,
+    "name": "Manticore",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Winged lion silhouette reads, but tangled facial geometry and mottled surfaces obscure details."
+   }
+  },
+  "gen3d-slingshot": {
+   "rank": 333,
+   "group": "sample100",
+   "sheet": "grid-037",
+   "cell": 9,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-037",
+    "cell": 9,
+    "name": "Slingshot",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky fork and bright solid colours fit well, but missing elastic leaves it incomplete."
+   }
+  },
+  "gen3d-chameleon": {
+   "rank": 334,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 1,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 1,
+    "name": "Chameleon",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy lizard, clear silhouette; slightly muddy texture shading."
+   }
+  },
+  "gen3d-rainbow": {
+   "rank": 335,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 2,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 2,
+    "name": "Rainbow",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable but lumpy, smeared gradient colours, uneven arch."
+   }
+  },
+  "gen3d-mesa": {
+   "rank": 336,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 3,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 3,
+    "name": "Stepped pyramid",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Ambiguous melted mound, scan-like noisy surface."
+   }
+  },
+  "gen3d-toucan": {
+   "rank": 337,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 4,
+    "name": "Toucan",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy faceted texture, messy wings, cluttered silhouette."
+   }
+  },
+  "gen3d-manta-ray": {
+   "rank": 338,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 5,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 5,
+    "name": "Manta ray",
+    "score": 3,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled jagged blob, hard to identify, torn-looking geometry."
+   }
+  },
+  "gen3d-fossil": {
+   "rank": 339,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 6,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 6,
+    "name": "Ammonite fossil",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky stone slab with readable spiral fossil."
+   }
+  },
+  "gen3d-post-box": {
+   "rank": 340,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 7,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 7,
+    "name": "Post box",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright, clean toy-like pillar box; crisp silhouette."
+   }
+  },
+  "gen3d-pet-carrier": {
+   "rank": 341,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 8,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 8,
+    "name": "Pet carrier",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy crumpled chrome texture, glassy and off-style."
+   }
+  },
+  "cc0-anglerfish": {
+   "rank": 342,
+   "group": "sample100",
+   "sheet": "grid-038",
+   "cell": 9,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-038",
+    "cell": 9,
+    "name": "Anglerfish",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming chunky angler; dark palette, small floating fins."
+   }
+  },
+  "gen3d-coconut-stall": {
+   "rank": 343,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 1,
+    "name": "Produce stall",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming chunky stall, but overlapping pointed foliage makes the canopy visually cluttered."
+   }
+  },
+  "gen3d-red-crab": {
+   "rank": 344,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 2,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 2,
+    "name": "Crab",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright red shell reads clearly; angular overlapping legs and indistinct claws reduce polish."
+   }
+  },
+  "cc0-sniper-rifle": {
+   "rank": 345,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 3,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 3,
+    "name": "Scoped rifle",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable clean rifle silhouette, but thin proportions and muted colours lack chunky toy appeal."
+   }
+  },
+  "gen3d-giant-leaf": {
+   "rank": 346,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 4,
+    "name": "Leaf",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright solid green, simple readable silhouette, and chunky stem create a convincing toy leaf."
+   }
+  },
+  "gen3d-cowboy": {
+   "rank": 347,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 5,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 5,
+    "name": "Cowboy",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky proportions and distinctive hat read well; jagged clothing details diminish finish."
+   }
+  },
+  "gen3d-stair": {
+   "rank": 348,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 6,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 6,
+    "name": "Staircase",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Stairs remain identifiable, but torn-looking treads, gaps, and jagged surfaces appear severely damaged."
+   }
+  },
+  "gen3d-planet-rover": {
+   "rank": 349,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 7,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 7,
+    "name": "Space rover",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Wheels and solar panels identify a rover; noisy fractured-looking surfaces overwhelm its toy silhouette."
+   }
+  },
+  "cc0-mustard-bottle": {
+   "rank": 350,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 8,
+   "score": 9,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 8,
+    "name": "Squeeze bottle",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky silhouette, controlled facets, and warm solid colour make a polished toy prop."
+   }
+  },
+  "gen3d-wand": {
+   "rank": 351,
+   "group": "sample100",
+   "sheet": "grid-039",
+   "cell": 9,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-039",
+    "cell": 9,
+    "name": "Candle",
+    "score": 5,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Simple intact shape, but pointed tip and uneven colour bands leave the object's identity unclear."
+   }
+  },
+  "gen3d-statue-head": {
+   "rank": 352,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 1,
+   "score": 3.5,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 1,
+    "name": "Stone head",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Crumpled, faceted scan-like mesh; noisy surface, not toy-like."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 1,
+    "name": "Stone head",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable face, but crumpled facets and muddy colours create a noisy, scan-like surface."
+   }
+  },
+  "gen3d-date-palm-tree": {
+   "rank": 353,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 2,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 2,
+    "name": "Palm tree",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean stylised palm with coconuts; bright, readable silhouette."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 2,
+    "name": "Papaya tree",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable fruit tree, but thin jagged leaves and crowded foliage lack chunky toy simplicity."
+   }
+  },
+  "gen3d-wooden-pergola": {
+   "rank": 354,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 3,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 3,
+    "name": "Vine pergola",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Noisy tangled leafy top, muddy textures; reads as messy table."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 3,
+    "name": "Leaf canopy",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable shelter, but tangled foliage, splintery supports and muddy textures overwhelm its silhouette."
+   }
+  },
+  "gen3d-greenhouse": {
+   "rank": 355,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 4,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 4,
+    "name": "Greenhouse",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn glassy panels, shredded mesh, dark noisy interior."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 4,
+    "name": "Greenhouse",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Shattered-looking panels and fragmented framing obscure the greenhouse; glassy surfaces strongly clash with toy styling."
+   }
+  },
+  "gen3d-blender": {
+   "rank": 356,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 5,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 5,
+    "name": "Pillar pedestal",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean simple shape but ambiguous identity, dull colours."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 5,
+    "name": "Bollard light",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Clean cylindrical silhouette, but cold translucent styling feels generic and techy rather than playful."
+   }
+  },
+  "gen3d-sleigh": {
+   "rank": 357,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 6,
+   "score": 7.5,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 6,
+    "name": "Sleigh",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy sleigh; slightly blurry textures and odd proportions."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 6,
+    "name": "Sleigh",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky seat, solid colours and curved runners read clearly; runner junctions look slightly awkward."
+   }
+  },
+  "gen3d-fighter-jet": {
+   "rank": 358,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 7,
+   "score": 5.5,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 7,
+    "name": "Fighter jet",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Flat dark grey, realistic military look; off Toy Box style."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 7,
+    "name": "Fighter jet",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Distinct aircraft silhouette, but dark colouring hides details and thin wings lack toy-like chunkiness."
+   }
+  },
+  "cc0-bed-single": {
+   "rank": 359,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 8,
+   "score": 9,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 8,
+    "name": "Bed",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky, bright, clean toy-like bed; polished and readable."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 8,
+    "name": "Bed",
+    "score": 9,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Instantly readable, with chunky construction, soft bevels and cheerful solid colours."
+   }
+  },
+  "cc0-menu": {
+   "rank": 360,
+   "group": "sample100",
+   "sheet": "grid-040",
+   "cell": 9,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-040",
+    "cell": 9,
+    "name": "Standing mirror",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky shape, but all grey and lacks bright colour."
+   },
+   "codex": {
+    "sheet": "grid-040",
+    "cell": 9,
+    "name": "Standing mirror",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky frame and sturdy base; muted colours and blank inset make its identity slightly ambiguous."
+   }
+  },
+  "gen3d-fountain": {
+   "rank": 361,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 1,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 1,
+    "name": "Fountain",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable fountain, but glassy water and noisy stone surfaces undermine the chunky toy aesthetic."
+   }
+  },
+  "cc0-turbot": {
+   "rank": 362,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 2,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 2,
+    "name": "Anglerfish",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable fish with oversized eyes, but muddy colours and crowded teeth feel rough."
+   }
+  },
+  "cc0-tree-stump": {
+   "rank": 363,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 3,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 3,
+    "name": "Teapot",
+    "score": 4,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky solid surfaces fit, but ambiguous protrusions obscure the intended object."
+   }
+  },
+  "gen3d-trident-statue": {
+   "rank": 364,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 4,
+    "name": "Trident",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright chunky trident with clear prongs; coral base is slightly cluttered."
+   }
+  },
+  "gen3d-tripwire": {
+   "rank": 365,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 5,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 5,
+    "name": "Hanging bell",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Simple colourful construction reads clearly; thin rope and soft bell shape reduce polish."
+   }
+  },
+  "gen3d-mummy": {
+   "rank": 366,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 6,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 6,
+    "name": "Mummy",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Humanoid mummy reads, but crumpled surfaces and dark crevices feel noisy and scan-like."
+   }
+  },
+  "gen3d-star-trophy": {
+   "rank": 367,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 7,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 7,
+    "name": "Star trophy",
+    "score": 4,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Trophy is recognisable, but jagged overlapping surfaces and torn-looking star details spoil the finish."
+   }
+  },
+  "cc0-smg": {
+   "rank": 368,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 8,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 8,
+    "name": "Submachine gun",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable weapon silhouette, but muted metallic colours and small mechanical details feel too technical."
+   }
+  },
+  "cc0-worm": {
+   "rank": 369,
+   "group": "sample100",
+   "sheet": "grid-041",
+   "cell": 9,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-041",
+    "cell": 9,
+    "name": "Snake",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky coiled body and oversized eyes read well; angular bends and blunt tail need refinement."
+   }
+  },
+  "gen3d-net": {
+   "rank": 370,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 1,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 1,
+    "name": "Butterfly net",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear simple shape; odd base stand, cloth slightly realistic."
+   }
+  },
+  "cc0-armabee-evolved": {
+   "rank": 371,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 2,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 2,
+    "name": "Cartoon bee",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Charming bee, but one wing missing/thin, grey wing off-style."
+   }
+  },
+  "cc0-heart": {
+   "rank": 372,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 3,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 3,
+    "name": "Chocolate heart",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky silhouette; flat brown, slightly lumpy."
+   }
+  },
+  "gen3d-donkey": {
+   "rank": 373,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 4,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 4,
+    "name": "Donkey",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dark noisy texture, faceted scan-like look, poor readability."
+   }
+  },
+  "cc0-lantern-candle": {
+   "rank": 374,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 5,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 5,
+    "name": "Lantern shrine",
+    "score": 5,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky toy style but unclear what object it is."
+   }
+  },
+  "gen3d-santa": {
+   "rank": 375,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 6,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 6,
+    "name": "Santa Claus",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable but noisy streaky texture, messy face."
+   }
+  },
+  "gen3d-nurse": {
+   "rank": 376,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 7,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 7,
+    "name": "Nurse figure",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean toy-like character; slight texture smudging at apron hem."
+   }
+  },
+  "gen3d-harbor-crane": {
+   "rank": 377,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 8,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 8,
+    "name": "Tower crane",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Thin spindly lattice, weak silhouette, not chunky."
+   }
+  },
+  "gen3d-roadblock": {
+   "rank": 378,
+   "group": "sample100",
+   "sheet": "grid-042",
+   "cell": 9,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-042",
+    "cell": 9,
+    "name": "Road barrier",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky bright shape; blurry smeared stripe texture."
+   }
+  },
+  "gen3d-shop-sign": {
+   "rank": 379,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 1,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 1,
+    "name": "Hanging sign",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Chunky hanging sign with warm colours; muddy raised lettering reduces polish."
+   }
+  },
+  "gen3d-vending-machine": {
+   "rank": 380,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 2,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 2,
+    "name": "Vending machine",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable chunky cabinet and colourful products; dark recess and uneven details feel unfinished."
+   }
+  },
+  "gen3d-bromeliad": {
+   "rank": 381,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 3,
+   "score": 6,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 3,
+    "name": "Potted plant",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright potted plant; crowded pointed leaves obscure the flower and clutter the silhouette."
+   }
+  },
+  "gen3d-maraca": {
+   "rank": 382,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 4,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 4,
+    "name": "Maraca",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean chunky silhouette, cheerful solid colours, and tactile faceting make a convincing toy."
+   }
+  },
+  "gen3d-restaurant-table": {
+   "rank": 383,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 5,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 5,
+    "name": "Pedestal table",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear silhouette and chunky orange tabletop; simple pedestal reads cleanly at mobile scale."
+   }
+  },
+  "gen3d-frost-giant": {
+   "rank": 384,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 6,
+   "score": 4,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 6,
+    "name": "Ice monster",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Humanoid monster reads, but jagged reflective facets create excessive noise and obscure anatomy."
+   }
+  },
+  "cc0-rocket-launcher": {
+   "rank": 385,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 7,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 7,
+    "name": "Toy blaster",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Strong chunky barrel and grip silhouette; muted colours slightly weaken the playful finish."
+   }
+  },
+  "push-button": {
+   "rank": 386,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 8,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 8,
+    "name": "Button pedestal",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bold red button and simple chunky pedestal communicate clearly; dark body feels slightly plain."
+   }
+  },
+  "gen3d-magic-bean": {
+   "rank": 387,
+   "group": "sample100",
+   "sheet": "grid-043",
+   "cell": 9,
+   "score": 2,
+   "codex": {
+    "sheet": "grid-043",
+    "cell": 9,
+    "name": "Green blob",
+    "score": 2,
+    "recognisable": false,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Amorphous melted shape lacks identifying features or a readable single-object silhouette."
+   }
+  },
+  "gen3d-grindstone": {
+   "rank": 388,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 1,
+   "score": 3,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 1,
+    "name": "Satellite dish crate",
+    "score": 3,
+    "recognisable": false,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Confusing mashup of dish, crate and chrome drawer; noisy textures"
+   }
+  },
+  "gen3d-iguana": {
+   "rank": 389,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 2,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 2,
+    "name": "Lizard",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean bright toy-like lizard with readable silhouette"
+   }
+  },
+  "gen3d-ride": {
+   "rank": 390,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 3,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 3,
+    "name": "Jeep",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Recognisable buggy but muddy faceted shading and noisy texture"
+   }
+  },
+  "gen3d-gang": {
+   "rank": 391,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 4,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 4,
+    "name": "Man figure",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Blocky figure but dark, smeared scan-like textures"
+   }
+  },
+  "gen3d-golden-statue": {
+   "rank": 392,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 5,
+   "score": 6,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 5,
+    "name": "Cat statue",
+    "score": 6,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear golden cat; jagged noisy faceting on surface"
+   }
+  },
+  "gen3d-battery-pack": {
+   "rank": 393,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 6,
+   "score": 4,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 6,
+    "name": "Cooler box",
+    "score": 4,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Dark glossy box with glassy techy lid; dull silhouette"
+   }
+  },
+  "gen3d-milk-can": {
+   "rank": 394,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 7,
+   "score": 7,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 7,
+    "name": "Milk churn",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clean simple churn shape; plain white, slightly bland"
+   }
+  },
+  "gen3d-water-gun": {
+   "rank": 395,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 8,
+   "score": 8,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 8,
+    "name": "Water gun",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Bright toy blaster, chunky readable shape; slight lumpy surface"
+   }
+  },
+  "gen3d-ammo": {
+   "rank": 396,
+   "group": "sample100",
+   "sheet": "grid-044",
+   "cell": 9,
+   "score": 5,
+   "claude": {
+    "sheet": "grid-044",
+    "cell": 9,
+    "name": "Ammo crate",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable bullet box but dented, grimy, noisy military texture"
+   }
+  },
+  "gen3d-suitcase": {
+   "rank": 397,
+   "group": "sample100",
+   "sheet": "grid-045",
+   "cell": 1,
+   "score": 5,
+   "codex": {
+    "sheet": "grid-045",
+    "cell": 1,
+    "name": "Suitcase",
+    "score": 5,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": false,
+    "reason": "Readable suitcase silhouette, but muddy colours and crumpled corners undermine the clean toy look."
+   }
+  },
+  "gen3d-atm-machine": {
+   "rank": 398,
+   "group": "sample100",
+   "sheet": "grid-045",
+   "cell": 2,
+   "score": 3,
+   "codex": {
+    "sheet": "grid-045",
+    "cell": 2,
+    "name": "ATM",
+    "score": 3,
+    "recognisable": true,
+    "broken": true,
+    "styleFit": false,
+    "reason": "Torn, jagged front geometry and metallic blue surfaces feel broken and overly techy."
+   }
+  },
+  "cc0-bed-frame": {
+   "rank": 399,
+   "group": "sample100",
+   "sheet": "grid-045",
+   "cell": 3,
+   "score": 8,
+   "codex": {
+    "sheet": "grid-045",
+    "cell": 3,
+    "name": "Bed",
+    "score": 8,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Clear chunky bed silhouette, solid warm colours, and soft bedding; blanket slightly blobby."
+   }
+  },
+  "gen3d-notice-board": {
+   "rank": 400,
+   "group": "sample100",
+   "sheet": "grid-045",
+   "cell": 4,
+   "score": 7,
+   "codex": {
+    "sheet": "grid-045",
+    "cell": 4,
+    "name": "Notice Board",
+    "score": 7,
+    "recognisable": true,
+    "broken": false,
+    "styleFit": true,
+    "reason": "Readable chunky wooden board; crumpled notices and dark roof creases reduce polish."
+   }
+  }
+ }
+}

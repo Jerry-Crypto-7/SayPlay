@@ -7,7 +7,10 @@
  *     [--aliases <aliases.json>] [--batch-out <catalog-batch.json> [--viewed <pilot.json>]]
  *     [--judge codex|claude]
  *   node scripts/p37d/judge-sheet.mjs --precheck <image.png> --noun <jméno> --out <adresář> [--judge codex|claude]
+ *   node scripts/p37d/judge-sheet.mjs --score <grid.png> --cells 9 --out <adresář> [--judge codex|claude]
  *
+ * `--score` (P57 T3) dá každé buňce mřížky `qa-sheets.mjs --grid` skóre 1–10 s důvodem
+ * (`scoreQuestion`, `scoreCells`); listy skládá a mezi soudce dělí `scripts/p57/judge-library.mjs`.
  * `--precheck` (P45E T2) se zeptá na jeden 2D obrázek před TRELLIS stejnou cestou a shodou;
  * volá ho `ops/gen3d/precheck.py`.
  * `--judge claude` (P46F T2) se ptá Opus 5.5 přes `claude -p` na předplatné místo Codexu – stejná
@@ -64,6 +67,55 @@ export const ANSWER_SCHEMA = {
     intact: { type: 'boolean' },
   },
 };
+
+/**
+ * Skóre 1–10 nad mřížkou modelů (P57 T3): list `qa-sheets.mjs --grid` nese očíslované buňky
+ * bez jména. Rubrika: poznatelnost, silueta, styl Toy Box (`docs/brand/docs/01-brand-foundations.md`:
+ * „chunky, tactile, toy-like“, ne „glassy, techy“), rozbitá síť; kotvy drží stupnici stejnou pro
+ * Codex i Opus. Soudce jen čte obrázek – jméno buňky neví, `name` je jeho odhad.
+ */
+export const scoreQuestion = (count) =>
+  `The attached image is a contact sheet of ${count} numbered 3D game models (cells 1 to ${count}, row by row; each cell shows one model from a 3/4 view, its number in the top-left corner and its size in metres at the bottom). `
+  + 'Our game has a "Toy Box" look: chunky, tactile, toy-like low-poly models with clean readable silhouettes and bright solid colours – not glassy, techy, photo-scanned or noisy. '
+  + 'Score every cell from 1 to 10 as a model a player would see in a finished mobile game, judging four things: recognisable = a player can tell at a glance which single object it is; silhouette = a clean, readable shape; style = fits the Toy Box look; broken = torn mesh, holes through it, loose fragments, a melted blob or an empty cell. '
+  + 'Anchors: 1-3 broken or not recognisable; 4-5 recognisable but blobby, scan-like, noisy or off-style; 6-7 a decent game asset with visible flaws; 8-9 a polished toy-like model from a finished game; 10 flawless. '
+  + 'Reply only with the JSON the schema asks for: one entry per cell with cell (its number), name (what you think it is, 1-3 words), score (whole number 1-10), recognisable, broken, styleFit (true when it fits the Toy Box look) and reason (at most 15 words: the main flaw or strength).';
+
+const SCORE_FIELDS = { cell: 'integer', name: 'string', score: 'integer', recognisable: 'boolean', broken: 'boolean', styleFit: 'boolean', reason: 'string' };
+
+export const SCORE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['cells'],
+  properties: {
+    cells: {
+      type: 'array',
+      items: { type: 'object', additionalProperties: false, required: Object.keys(SCORE_FIELDS), properties: Object.fromEntries(Object.entries(SCORE_FIELDS).map(([key, type]) => [key, { type }])) },
+    },
+  },
+};
+
+export const isScoreAnswer = (value) => Array.isArray(value?.cells);
+
+const isScoredCell = (entry) =>
+  Number.isInteger(entry?.cell) && Number.isInteger(entry.score) && entry.score >= 1 && entry.score <= 10
+  && typeof entry.name === 'string' && typeof entry.reason === 'string'
+  && typeof entry.recognisable === 'boolean' && typeof entry.broken === 'boolean' && typeof entry.styleFit === 'boolean';
+
+/**
+ * Odpověď soudce → buňky 1…`count` v pořadí. Buňka, kterou odpověď nečte (chybí, dvakrát, skóre
+ * mimo 1–10 nebo necelé, pole jiného typu), je `null` – nikdy výchozí prostředek: čísla, která
+ * vypadají správně a nic neměří, jsou horší než díra.
+ */
+export function scoreCells(answer, count) {
+  const entries = isScoreAnswer(answer) ? answer.cells : [];
+  return Array.from({ length: count }, (_, index) => {
+    const mine = entries.filter((entry) => entry?.cell === index + 1);
+    if (mine.length !== 1 || !isScoredCell(mine[0])) return null;
+    const { cell, name, score, recognisable, broken, styleFit, reason } = mine[0];
+    return { cell, name, score, recognisable, broken, styleFit, reason };
+  });
+}
 
 /**
  * Slova, která jen popisují vzhled (barva, materiál, velikost, stáří) – „wooden bench“ smí být
@@ -196,12 +248,12 @@ export function blindQuestion(sheet, schemaFile, question = QUESTION, judge = 'c
 const isAnswer = (value) => typeof value?.name === 'string' && Array.isArray(value.alternatives) && typeof value.recognizable === 'boolean' && typeof value.intact === 'boolean';
 
 /** První objekt `{…}` v textu, který je odpovědí podle schématu – model kolem JSONu občas napíše větu. */
-function answerIn(text) {
+function answerIn(text, valid) {
   for (let start = text.indexOf('{'); start !== -1; start = text.indexOf('{', start + 1)) {
     for (let end = text.lastIndexOf('}'); end > start; end = text.lastIndexOf('}', end - 1)) {
       try {
         const value = JSON.parse(text.slice(start, end + 1));
-        if (isAnswer(value)) return value;
+        if (valid(value)) return value;
       } catch { /* zkus kratší úsek */ }
     }
   }
@@ -211,9 +263,9 @@ function answerIn(text) {
 /**
  * Odpověď z výstupu `claude -p --output-format json`: `structured_output`, jinak JSON v textu
  * `result`. Nenulový exit nebo `is_error` (vyčerpaný limit, pád) = žádná odpověď a `error`
- * nese hlášku – smyčka P46F z ní čte čas obnovení limitu.
+ * nese hlášku – smyčka P46F z ní čte čas obnovení limitu. `valid` je tvar odpovědi (skóre P57: `isScoreAnswer`).
  */
-export function claudeAnswer(code, stdout) {
+export function claudeAnswer(code, stdout, valid = isAnswer) {
   let envelope;
   try {
     envelope = JSON.parse(stdout);
@@ -222,12 +274,12 @@ export function claudeAnswer(code, stdout) {
   }
   const text = typeof envelope?.result === 'string' ? envelope.result : envelope ? '' : stdout;
   if (code !== 0 || envelope?.is_error) return { error: (text || stdout).trim().slice(-400) };
-  const answer = isAnswer(envelope?.structured_output) ? envelope.structured_output : answerIn(text);
+  const answer = valid(envelope?.structured_output) ? envelope.structured_output : answerIn(text, valid);
   return answer ? { answer } : { error: `no schema JSON in: ${text.trim().slice(-400)}` };
 }
 
 /** Jedna otázka soudci nad listem; `answerFile` dostane odpověď, když soudce nějakou dal. */
-export function ask(sheet, schemaFile, answerFile, question = QUESTION, judge = 'codex') {
+export function ask(sheet, schemaFile, answerFile, question = QUESTION, judge = 'codex', valid = isAnswer) {
   const { cwd: blind, args } = blindQuestion(sheet, schemaFile, question, judge);
   const { file, prefix } = JUDGES[judge];
   return new Promise((done) => {
@@ -241,7 +293,7 @@ export function ask(sheet, schemaFile, answerFile, question = QUESTION, judge = 
     // Claude: `close` počká na celý stdout. Codex odpovídá souborem a vnuk codexu může stderr chvíli držet – `exit` jako dřív.
     child.on(judge === 'claude' ? 'close' : 'exit', (code) => {
       if (judge === 'claude') {
-        const { answer, error } = claudeAnswer(code, stdout);
+        const { answer, error } = claudeAnswer(code, stdout, valid);
         if (answer) writeFileSync(answerFile, JSON.stringify(answer));
         else stderr = `${error}${stderr ? ` | ${stderr}` : ''}`;
       } else if (existsSync(path.join(blind, 'answer.json'))) copyFileSync(path.join(blind, 'answer.json'), answerFile);
@@ -275,6 +327,26 @@ async function precheck(image, noun, out, names, judge) {
   console.log(JSON.stringify(line));
 }
 
+/**
+ * Mřížka `count` buněk, jedna slepá otázka na skóre (P57 T3): `{ judge, seconds, cells, error? }`,
+ * buňky 1…`count` jako `scoreCells`. Surová odpověď zůstane v `<out>/answers/`. `calibration`
+ * je text připojený za otázku (kalibrace rubriky T4: ukázky s pevným skóre).
+ */
+export async function scoreSheet(sheet, count, out, judge, calibration = '') {
+  mkdirSync(path.join(out, 'answers'), { recursive: true });
+  const schemaFile = path.join(out, 'score-schema.json');
+  writeFileSync(schemaFile, JSON.stringify(SCORE_SCHEMA));
+  const answerFile = path.join(out, 'answers', `${path.basename(sheet, '.png')}-${judge}-${Date.now()}.json`);
+  const run = await ask(sheet, schemaFile, answerFile, calibration ? `${scoreQuestion(count)} ${calibration}` : scoreQuestion(count), judge, isScoreAnswer);
+  let answer;
+  try {
+    answer = JSON.parse(readFileSync(answerFile, 'utf8'));
+  } catch {
+    return { judge, seconds: run.seconds, cells: scoreCells(undefined, count), error: `${judge} exit ${run.code}: ${run.stderr}` };
+  }
+  return { judge, seconds: run.seconds, cells: scoreCells(answer, count) };
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -291,6 +363,12 @@ async function main() {
   const image = flag('--precheck');
   if (image) {
     await precheck(path.resolve(image), flag('--noun'), out, namesOf(flag('--noun')), judge);
+    return;
+  }
+
+  const scored = flag('--score');
+  if (scored) {
+    console.log(JSON.stringify(await scoreSheet(path.resolve(scored), Number(flag('--cells', '9')), out, judge)));
     return;
   }
 

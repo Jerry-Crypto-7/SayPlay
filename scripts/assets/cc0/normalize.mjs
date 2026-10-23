@@ -36,6 +36,8 @@ import { isPurple, loadPalette, nearest, recolorDoc, toSrgb } from './palette.mj
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
 export const MAX_TRIANGLES = 5000;
+/** Strop LOD0 profilu „hero“ (`HERO_MAX_TRIANGLES` v `ops/gen3d/finish.py`): top 50 modelů P57 T8. */
+export const HERO_MAX_TRIANGLES = 8000;
 const LOD1_RATIO = 0.5;
 const KEEP_ATTRIBUTES = new Set(['POSITION', 'NORMAL', 'COLOR_0']);
 const KEEP_TEXTURED = new Set([...KEEP_ATTRIBUTES, 'TEXCOORD_0']);
@@ -242,8 +244,9 @@ async function simplifyUnder(doc, limit) {
 /**
  * Jeden model z balíku → karanténa `asset-quarantine/<assetId>/` s LOD0 (`model.glb`),
  * LOD1 (`lod1.glb`) a `cc0.json`. Osy a jednotky bere z balíku (`up`, `front`, `metersPerUnit`).
+ * `maxTriangles` je strop LOD0, `lod1Max` strop LOD1 (výměna pod stejným id: nejvýš starý LOD1).
  */
-export async function normalizeModel({ input, assetId, label, tags, pack, licenseFile, sourceFile, style = false, keepTextures: keep = true }) {
+export async function normalizeModel({ input, assetId, label, tags, pack, licenseFile, sourceFile, style = false, keepTextures: keep = true, maxTriangles = MAX_TRIANGLES, lod1Max = Infinity }) {
   const doc = await io().read(input);
   if (doc.getRoot().listBuffers().length === 0) doc.createBuffer();
   const [buffer, ...extra] = doc.getRoot().listBuffers();
@@ -259,7 +262,7 @@ export async function normalizeModel({ input, assetId, label, tags, pack, licens
   // Transformace uzlů do vrcholů: pivoty částí pak nenesou float32 zaokrouhlení.
   for (const node of doc.getRoot().listNodes()) if (node.getMesh()) clearNodeTransform(node);
   await doc.transform(join(), weld(), prune());
-  if (triangles(doc) >= MAX_TRIANGLES) await simplifyUnder(doc, MAX_TRIANGLES);
+  if (triangles(doc) >= maxTriangles) await simplifyUnder(doc, maxTriangles);
 
   const work = mkdtempSync(path.join(tmpdir(), 'cc0-'));
   try {
@@ -286,20 +289,22 @@ export async function normalizeModel({ input, assetId, label, tags, pack, licens
     writeFileSync(lod0File, await io().writeBinary(lod0Doc));
     const lod0Triangles = triangles(lod0Doc);
     const lod0Size = sizeOf(lod0Doc);
+    const ratio = Math.min(LOD1_RATIO, (lod1Max / lod0Triangles) * 0.95);
+    const fits = (lod1) => triangles(lod1) < lod0Triangles && triangles(lod1) <= lod1Max && keepsSize(lod1, lod0Size);
     let lod1Doc;
     await MeshoptSimplifier.ready;
     for (let error = 0.02; error <= 1.5; error *= 4) {
       lod1Doc = await io().read(lod0File);
-      await lod1Doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: LOD1_RATIO, error }), prune());
-      if (triangles(lod1Doc) < lod0Triangles && keepsSize(lod1Doc, lod0Size)) break;
+      await lod1Doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio, error }), prune());
+      if (fits(lod1Doc)) break;
     }
-    if (triangles(lod1Doc) >= lod0Triangles || !keepsSize(lod1Doc, lod0Size)) {
+    if (!fits(lod1Doc)) {
       // Švy barev a normál drží každý vrchol; dovolit slučování přes ně.
       lod1Doc = await io().read(lod0File);
-      acrossSeams(lod1Doc, LOD1_RATIO);
+      acrossSeams(lod1Doc, ratio);
       await lod1Doc.transform(prune());
     }
-    if (triangles(lod1Doc) >= lod0Triangles || !keepsSize(lod1Doc, lod0Size)) throw new Error('LOD1 cannot be made lighter than LOD0 at the same size');
+    if (!fits(lod1Doc)) throw new Error(`LOD1 cannot be made lighter than LOD0${Number.isFinite(lod1Max) ? ` and at most ${lod1Max} triangles` : ''} at the same size`);
     const lod1File = path.join(output, 'lod1.glb');
     writeFileSync(lod1File, await io().writeBinary(lod1Doc));
 

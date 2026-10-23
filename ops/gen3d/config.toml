@@ -10,6 +10,8 @@ image_model = "klein"
 [prompts.prop]
 a = "a {noun}, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background"
 b = "a single {noun} as a chunky toy, whole object visible, three-quarter view, low-poly 3D game asset, flat colors, plain white background"
+# P57 T8: třetí zadání pro hero modely – plné uzavřené tvary bez tenkých dílů (brána „face winding“) a pohled zepředu (box)
+c = "a {noun} as a finished stylized mobile game prop, smooth solid chunky shapes with no thin or loose parts, whole object visible from the front, centered, clean flat colors, plain white background"
 
 [prompts.flat]
 a = "a chunky oversized toy version of a {noun}, thick, standing upright on a small base, low-poly stylized 3D game asset, single object, centered, flat colors, plain white background"
