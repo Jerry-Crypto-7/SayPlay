@@ -46,6 +46,9 @@ import { type DriveInputMode, driveInput } from './drive-input';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
+/** Přistávací plochu kreslí `VoyageBackdrop` (i model z věty); `World` ji nekreslí znovu – `pad-lod1.glb` neexistuje (P56B T3). */
+export const STEER_SCENE_KINDS: ReadonlySet<string> = new Set(['pad']);
+
 /**
  * Kamera za autem: dojíždí za ním do strany, kouká kus před něj. Na výšku
  * (mobil) je nízká kamera tak úzká, že soupeř nebo turbo vedle auta (~6 m

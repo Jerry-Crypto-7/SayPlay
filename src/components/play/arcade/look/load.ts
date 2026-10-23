@@ -14,8 +14,10 @@ import { type Flora, type Look, LOOK_WIND, type LookId } from '@/play/arcade/loo
 import { modelPath } from '@/play/arcade/models';
 
 import type { ToyPart } from '../toy/applyToy';
+import { trackLoad } from './pending-loads';
 import { type MotionPart, motionOf } from '../toy/body-class';
 import type { QualityTier } from './rig/quality';
+import { toonPatch } from './rig/toon';
 import { plantPaint } from './vegetation-places';
 
 const modelCache = new Map<string, Promise<Object3D | null>>();
@@ -40,10 +42,12 @@ export function singlePass(model: Object3D): Object3D {
 export function loadModel(id: string): Promise<Object3D | null> {
   let pending = modelCache.get(id);
   if (pending === undefined) {
-    pending = new GLTFLoader()
-      .loadAsync(modelPath(id))
-      .then((gltf) => singlePass(gltf.scene as Object3D))
-      .catch(() => null);
+    pending = trackLoad(
+      new GLTFLoader()
+        .loadAsync(modelPath(id))
+        .then((gltf) => singlePass(gltf.scene as Object3D))
+        .catch(() => null),
+    );
     modelCache.set(id, pending);
   }
   return pending;
@@ -77,7 +81,7 @@ const flatCache = new Map<string, Promise<Object3D | null>>();
 export function loadFlatModel(id: string): Promise<Object3D | null> {
   let pending = flatCache.get(id);
   if (pending === undefined) {
-    pending = loadModel(id).then((model) => (model === null ? null : flatten(model)));
+    pending = trackLoad(loadModel(id).then((model) => (model === null ? null : flatten(model))));
     flatCache.set(id, pending);
   }
   return pending;
@@ -290,8 +294,12 @@ export function plantMaterial(double: boolean): MeshStandardMaterial {
   let material = plantMaterials.get(double);
   if (material === undefined) {
     material = new MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: double ? DoubleSide : FrontSide });
-    material.onBeforeCompile = windShader;
-    material.customProgramCacheKey = () => (windOn ? 'plant-wind' : 'plant');
+    material.onBeforeCompile = (shader) => {
+      windShader(shader);
+      toonPatch(shader, true);
+    };
+    material.customProgramCacheKey = () => (windOn ? 'plant-wind+toon' : 'plant+toon');
+    material.userData.toon = true;
     plantMaterials.set(double, material);
   }
   return material;
@@ -337,8 +345,10 @@ function bodyMaterial(side: Side): MeshStandardMaterial {
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n\troughnessFactor *= vPbr.x;')
       .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n\tmetalnessFactor *= vPbr.y;')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance += vGlow;');
+    toonPatch(shader, true);
   };
-  material.customProgramCacheKey = () => 'arcade-body';
+  material.customProgramCacheKey = () => 'arcade-body+toon';
+  material.userData.toon = true;
   bodyMaterials.set(side, material);
   return material;
 }
@@ -349,6 +359,7 @@ function bodyMaterial(side: Side): MeshStandardMaterial {
  * tělo –, záře se jí násobí; jinak z bílého materiálu zářila bílá a zlaté
  * rybky kočky byly bílé fleky (P35 T8). `clone()` úpravu shaderu nepřenese,
  * proto kopie volá tu zdrojovou (slité tělo bez ní kreslilo kov 1, skoro černě).
+ * Záře je toon bez palety (P56B T6): zářící věc má svítit svou barvou, ne barvou sady.
  */
 export function glowingCopy(source: Material, intensity: number): Material {
   const glow = source.clone();
@@ -356,12 +367,14 @@ export function glowingCopy(source: Material, intensity: number): Material {
   glow.emissive.copy(glow.color);
   glow.emissiveMap = glow.map;
   glow.emissiveIntensity = intensity;
-  if (!glow.vertexColors) return glow;
+  const tinted = glow.vertexColors;
   glow.onBeforeCompile = (shader, renderer) => {
     source.onBeforeCompile(shader, renderer);
-    shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;');
+    if (tinted) shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;');
+    toonPatch(shader, false);
   };
   glow.customProgramCacheKey = () => `${source.customProgramCacheKey()}+glow`;
+  glow.userData.toon = true;
   return glow;
 }
 
@@ -420,14 +433,49 @@ export function rimMaterial(source: Material): Material {
   if (copy === undefined) {
     copy = source.clone();
     copy.userData.rim = true;
+    copy.userData.toon = true;
+    // Postava je toon bez palety (P56B T6): hrdina a nepřítel drží svou barvu proti zemi.
     copy.onBeforeCompile = (shader, renderer) => {
       source.onBeforeCompile(shader, renderer);
+      toonPatch(shader, false);
       rimShader(shader);
     };
     copy.customProgramCacheKey = () => `${source.customProgramCacheKey()}+rim`;
     rimCopies.set(source, copy);
   }
   return copy;
+}
+
+const toonCopies = new WeakMap<Material, Material>();
+
+/**
+ * Toon kopie materiálu modelu, který se neslil (textura, průhlednost – P56B T6), jedna na zdroj.
+ * Materiál, který toon už nese, a materiál mimo `MeshStandardMaterial` (jiné kotvy shaderu) zůstanou.
+ */
+export function toonMaterial(source: Material): Material {
+  if (source.userData.toon === true || (source as MeshStandardMaterial).isMeshStandardMaterial !== true) return source;
+  let copy = toonCopies.get(source);
+  if (copy === undefined) {
+    copy = source.clone();
+    copy.userData.toon = true;
+    copy.onBeforeCompile = (shader, renderer) => {
+      source.onBeforeCompile(shader, renderer);
+      toonPatch(shader, true);
+    };
+    copy.customProgramCacheKey = () => `${source.customProgramCacheKey()}+toon`;
+    toonCopies.set(source, copy);
+  }
+  return copy;
+}
+
+/** Toon všem sítím kulisy pod `root` (klon modelu z `fitModel`); zdrojové materiály se nemění. */
+export function toonLit(root: Object3D): Object3D {
+  root.traverse((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true) return;
+    mesh.material = Array.isArray(mesh.material) ? mesh.material.map(toonMaterial) : toonMaterial(mesh.material);
+  });
+  return root;
 }
 
 /** Svit všem sítím pod `root` – klon těla postavy nebo načtená riggovaná postava; zdrojové materiály se nemění. */
@@ -688,7 +736,7 @@ export function loadBodyModel(id: string, { posed = false }: { readonly posed?: 
   const key = posed && motionOf(id)?.parts !== undefined ? `${id}:posed` : id;
   let pending = bodyCache.get(key);
   if (pending === undefined) {
-    pending = loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed)));
+    pending = trackLoad(loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed))));
     bodyCache.set(key, pending);
   }
   return pending;

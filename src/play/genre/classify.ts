@@ -85,6 +85,11 @@ const HOP = pair('hop', 'default');
 const CROWD = pair('crowd', 'default');
 const MERGE = pair('merge', 'default');
 const PUSH = pair('push', 'default');
+/**
+ * Žánry P54C, které slovník slyší přesně (P54C dev 64/64) a čtečka hádá i do rušivých vět („catch mice“, „push crates“,
+ * „merge into traffic“). P56A T5: slyší-li slovník první některý z nich, rozhodne slovník, jinak čtení.
+ */
+const NEW_GENRES: ReadonlySet<string> = new Set([CATCH, WHACK, DEFENSE, SLICE, HOP, CROWD, MERGE, PUSH].map((p) => `${p.genre}.${p.mode}`));
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -463,7 +468,28 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     }
   }
 
+  // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí `unheard`.
+  // Rozhodnutý režim (`decided`, P56A T5) jde před všechny.
+  const tier = (p: Pair, score: number, decided: string | null): number => (key(p) === decided ? -1 : score > 0 ? 0 : 2 + 2 * unheard(p)) + (availability(p) === 'ready' ? 0 : 1);
+  const order = (decided: string | null): GenreChoice[] => pairs.map((p, index) => {
+    const entry = scores.get(key(p)) ?? { score: 0, why: [] };
+    return { choice: { genre: p.genre, mode: p.mode, score: entry.score, why: entry.why.join(', ') || 'no cue' }, index };
+  })
+    .sort((a, b) => tier(a.choice, a.choice.score, decided) - tier(b.choice, b.choice.score, decided) || b.choice.score - a.choice.score || a.index - b.index)
+    .map((item) => item.choice);
+
+  let decided: string | null = null;
   if (reading !== null) {
+    // P56A T5: slyší-li slovník první nový žánr, rozhodne on – body ze sloves čtení ho nepřeskočí. Jinak rozhoduje platný
+    // žánr čtení, který hraje; slovník řadí zbytek, kam se ustupuje, když se režim čtení nepřeloží nebo neprojde robotem.
+    const heard = order(null)[0];
+    // Čtení uložená před P56A T3 (`read/__fixtures__/readings.json`) pole `genre` nemají.
+    const read = reading.genre ?? null;
+    if (heard !== undefined && heard.score > 0 && NEW_GENRES.has(key(heard))) decided = key(heard);
+    else if (read !== null && scores.has(key(read)) && availability(read) === 'ready') {
+      decided = key(read);
+      add(read, 4, `reading genre "${decided}"`);
+    }
     reading.verbs.forEach((verb, index) => {
       const pick = READ_CLASS[verb.class];
       if (pick === undefined) return;
@@ -471,15 +497,7 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     });
     if (reading.roles.some((role) => role.kind === 'chaser')) add(ESCAPE, 1, 'reading: chaser');
   }
-
-  // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí `unheard`.
-  const tier = (p: Pair, score: number): number => (score > 0 ? 0 : 2 + 2 * unheard(p)) + (availability(p) === 'ready' ? 0 : 1);
-  const ranked = pairs.map((p, index) => {
-    const entry = scores.get(key(p)) ?? { score: 0, why: [] };
-    return { choice: { genre: p.genre, mode: p.mode, score: entry.score, why: entry.why.join(', ') || 'no cue' }, index };
-  })
-    .sort((a, b) => tier(a.choice, a.choice.score) - tier(b.choice, b.choice.score) || b.choice.score - a.choice.score || a.index - b.index)
-    .map((item) => item.choice);
+  const ranked = order(decided);
 
   return {
     ranked,

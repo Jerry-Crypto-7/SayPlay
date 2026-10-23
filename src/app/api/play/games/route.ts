@@ -10,19 +10,25 @@
  * kde se klient ptá na autorskou verzi, kterou režisér dopočítá na pozadí
  * (`_upgrade.ts`, P23-D T2). Věta, kterou knihovna ovládání neumí, dostane
  * navíc `honesty: { reason, closest }` (P25E T2) – hra se publikuje i tak.
+ * Věta, kterou `chainOrSingle` pošle do řetězu mikroher (P56C T10), dostane hru
+ * s `chain` a odpověď bez `upgrade` – řetěz AI verzi nemá.
  */
 
 import { z } from 'zod';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { buildChain } from '@/play/chain/build';
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain, type SentenceRead } from '@/play/chain/read';
 import { honestyOf } from '@/play/draft/unsupported';
+import { classifyGenre } from '@/play/genre/classify';
 import { readBeforeDraft } from '@/play/read/client';
 import { beatOf, decodeCursor, feedPage, hiddenFromEnv, keptFromEnv, RECENT_CAP, remixParents } from '@/play/version';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody, refuseSentence } from '../_errors';
-import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishChain, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
@@ -126,7 +132,12 @@ export async function POST(request: Request): Promise<Response> {
 
   const versions = store();
   const caller = directorCallerOf(request);
-  if (parentId !== null && (await parentOf(versions, parentId)) === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
+  if (parentId !== null) {
+    const parent = await parentOf(versions, parentId);
+    if (parent === null) return fail(404, 'UNKNOWN_PARENT', 'the parent game does not exist');
+    // Dítě řetězu by obešlo zákaz remixu řetězu (debata T9, revize T10).
+    if (parent.chain !== undefined) return fail(422, 'SPEC_REJECTED', 'a chain of microgames cannot be remixed yet');
+  }
 
   if (sentence !== undefined) {
     // Vyčerpaná kvóta ještě nezavírá: už publikovaná věta je `200` (R8) –
@@ -136,12 +147,42 @@ export async function POST(request: Request): Promise<Response> {
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
-    // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
+    // P29B T5: zapnutá čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`; P56A T10: souběžně
+    // s načítáním fyziky, ne za ním – jinak by její rozpočet přibyl ke studenému startu. Nikdy neodmítne (`null`).
+    const abandoned = new AbortController();
+    const reading = readBeforeDraft(sentence, process.env, { caller, signal: abandoned.signal });
     // Ball composition verifies a real physics run before returning a draft.
     // Await the cold engine here; background preloading alone is a race. Always, not only
     // when the sentence says ball: the model reader may pick a ball game the words missed.
-    await loadRapier();
-    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) });
+    // Fyzika, která se nenačte, shodí tvorbu – čtení, které by nikdo nepoužil, se nezaplatí (T10-R1).
+    const physics = loadRapier().catch((error: unknown) => {
+      abandoned.abort();
+      throw error;
+    });
+    // P56C T17: řetěz fyziku nepotřebuje (`MICRO` je bez míče) – na ni čeká až cesta jedné hry níž.
+    physics.catch(() => undefined);
+    const sentenceReading = await reading;
+    // P56C T10: věta bez jednoho jasného slovesa hraje řetěz mikroher – bez AI verze a remixu (debata T9).
+    // Řetěz, který stavba nebo brána nepustí, hraje dnešní cesta jako jedna hra; zakázaný text a úložiště ne.
+    // T17e: čtení modelem staví návrh věty, a když z něj vyjde míč, bez fyziky se nepřeloží – pak řetěz na fyziku počká
+    // jako jedna hra níž. Jiná chyba se po načtení fyziky zopakuje a projde ven.
+    let read: SentenceRead;
+    try {
+      read = readForChain(sentence, sentenceReading);
+    } catch {
+      await physics;
+      read = readForChain(sentence, sentenceReading);
+    }
+    if (chainOrSingle(sentence, read, classifyGenre(sentence, sentenceReading)) === 'chain') {
+      const built = buildChain(sentence, read, seeds[0]!);
+      if (built.ok) {
+        const chained = await publishChain(versions, built.chain, parentId, { origin: { sentence, seed: seed ?? null, ...(read.source === 'llm' ? { readBy: 'model' as const } : {}) } });
+        if (chained.ok) return publishedResponse(chained.value);
+        if (chained.response.status !== 422 || chained.issues?.[0] === 'CONTENT_REJECTED') return chained.response;
+      }
+    }
+    await physics;
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: sentenceReading });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });

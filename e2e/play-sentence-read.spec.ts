@@ -6,8 +6,8 @@ import { openAbout } from './play-start';
 
 /**
  * P29B T6: panel „From your sentence“ říká pravdu o tom, kdo větu přečetl.
- * Návrh ze čtení lokálním modelem píše „read by a local AI model“, návrh ze
- * slov dál „from the keywords“ – a ani jeden se nevydává za hru od AI.
+ * Návrh ze čtení modelem píše „read by AI“ (P56A T10: čtečka už není jen
+ * lokální), návrh ze slov dál „from your idea“ – a ani jeden se nevydává za hru od AI.
  *
  * Server musí běžet s `PLAY_READER=on PLAY_READER_ENDPOINT=http://127.0.0.1:8799`
  * (čtečka je jinak vypnutá, T3). Místo modelu odpovídá stub níž: větu
@@ -23,6 +23,11 @@ const READING = {
   setting: 'an ice floe',
   mood: null,
   numbers: { seconds: null, counts: [] },
+  genre: null,
+  foe: null,
+  item: null,
+  world: null,
+  title: null,
 };
 
 let reader: Server;
@@ -57,12 +62,13 @@ test('a draft read by the local model says so', async ({ page, request }) => {
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'model');
   await expect(read).toHaveAttribute('data-authorship', 'draft');
-  await expect(page.getByTestId('play-read-by')).toContainText('Quick version read by a local AI model');
+  await expect(page.getByTestId('play-read-by')).toContainText('Quick version read by AI');
   await expect(page.getByTestId('play-read-by')).not.toContainText('from your idea');
 });
 
 test('a draft from the keywords never claims an AI read it', async ({ page, request }) => {
-  await page.goto(await publish(request, 'A corgi runs through a park grabbing sausages'));
+  // P56C T17: jedno sloveso – „runs … grabbing“ by byl řetěz mikroher (dvě ovládání) a ten list „About“ nemá.
+  await page.goto(await publish(request, 'A corgi catches falling sausages in a park'));
   await openAbout(page);
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'keywords');

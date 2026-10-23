@@ -51,7 +51,7 @@ import { Leaderboard } from './Leaderboard';
 import { PlayingAs } from './NicknameSheet';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type DarePublish, type LivePublish, ShareButton } from './ShareButton';
-import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_BACK, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_BEAT_IT, YOU_DID_IT } from './starters';
+import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_BACK, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, TRY_AGAIN, YOU_BEAT_IT, YOU_DID_IT } from './starters';
 import { Button, Chip, Sheet } from './ui';
 import { clockText } from './ui/GameHud';
 import { onControl } from './ui/PauseCard';
@@ -155,8 +155,10 @@ export function runResult(facts: RunFacts, record: BestOutcome | null = null, ch
         ? `Done in ${time}.`
         : `You lasted ${time}.`;
   const lead: ResultStat[] = goal === null ? [] : [{ value: `${goal.count}/${goal.need}`, label: goal.label }];
+  // Prohra bez bodu (body, jinak cílové předměty) není „So close.“ (P56A T9); přežití bez bodů nulu nemá.
+  const nothing = !facts.won && (facts.score != null ? facts.score.value === 0 : goal !== null && goal.count === 0);
   return {
-    headline: dare !== null ? (dare.beat ? YOU_BEAT_IT : SO_CLOSE) : facts.won ? YOU_DID_IT : SO_CLOSE,
+    headline: dare !== null ? (dare.beat ? YOU_BEAT_IT : SO_CLOSE) : facts.won ? YOU_DID_IT : nothing ? TRY_AGAIN : SO_CLOSE,
     time,
     badge: !facts.won ? null : facts.survive ? 'Survived!' : seconds <= SPEEDY_SECONDS ? 'Speedy!' : 'Steady!',
     summary,
@@ -256,9 +258,12 @@ export function PostRun({
   dare,
   challenge = null,
   offline = false,
+  remixable = true,
   record = null,
   onReplay,
 }: {
+  /** Řetěz mikroher (P56C T12) remix nemá – server ho odmítne (422), tlačítko by vedlo do chyby. */
+  readonly remixable?: boolean;
   readonly versionId: string;
   readonly remix: RemixJob;
   readonly facts: RunFacts;
@@ -451,9 +456,11 @@ export function PostRun({
               {won ? dareAction : replay}
               <div className="play-result-more">
                 {won ? replay : dareAction}
-                <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
-                  {REMIX_IT}
-                </Button>
+                {remixable && (
+                  <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
+                    {REMIX_IT}
+                  </Button>
+                )}
                 {next !== null && (
                   <Button variant="secondary" data-testid="play-next-game" onClick={next}>
                     Next game

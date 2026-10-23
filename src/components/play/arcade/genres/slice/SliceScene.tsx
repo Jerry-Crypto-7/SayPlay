@@ -35,6 +35,7 @@ import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
+import { LaneStrips } from '../lanes/LaneStrips';
 
 const m = (units: number): number => units / UNIT;
 const LANE_M = m(LANES.width);
@@ -315,12 +316,10 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
     <>
       <FieldGround look={look} area={LAND} y={-0.03} />
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={24} />
+      {/* Pruhy z povrchu sady (P56B T11). */}
+      <LaneStrips look={look} z0={-1} z1={PLANE_Z + 1} />
       {Array.from({ length: LANES.count }, (_, lane) => (
         <group key={lane} position={[-laneX(lane) / UNIT, 0, 0]}>
-          <mesh position={[0, -0.01, PLANE_Z / 2]} receiveShadow>
-            <boxGeometry args={[LANE_M * 0.94, 0.04, PLANE_Z + 2]} />
-            <meshStandardMaterial color={lane % 2 === 0 ? color.mint : color['mint-deep']} />
-          </mesh>
           {/* Bedna, ze které věci pruhu vylétají. */}
           <mesh position={[0, 0.22, PLANE_Z]} castShadow>
             <boxGeometry args={[LANE_M * 0.7, 0.44, 0.9]} />

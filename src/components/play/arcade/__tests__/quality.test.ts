@@ -15,10 +15,20 @@ const STEP_MS = 500;
 /** Desktop, který už v čase 0 měří (první vzorek po startu jen začne měřit). */
 const measuring = (): QualityState => sampleQuality(startQuality(1), 50, 0);
 
-it('starts touch devices cheaply even when their pixel ratio is below two', () => {
-  expect(startQuality(1.75, true).tier).toBe('low');
+// P56B T8: telefon dřív startoval na `low` (bez bloomu a AO, DPR 1) a první snímek vypadal levně;
+// `medium` mu ze startu dá bloom a poloviční AO, a když ho neudrží, za 3 s spadne na `low`.
+it('starts touch devices on medium whatever their pixel ratio, desktops as before', () => {
+  expect(startQuality(2.6, true).tier).toBe('medium');
+  expect(startQuality(1.75, true).tier).toBe('medium');
   expect(startQuality(3, true).ceiling).toBe('high');
   expect(startQuality(1.75, false).tier).toBe('high');
+  expect(startQuality(2.6, false).tier).toBe('medium');
+});
+
+it('a touch device that cannot hold medium drops to low after 3 s under 45 FPS', () => {
+  const phone = sampleQuality(startQuality(2.6, true), 30, 0);
+  expect(run(phone, 30, DOWN_MS - STEP_MS, 0).state.tier).toBe('medium');
+  expect(run(phone, 30, DOWN_MS, 0).state.tier).toBe('low');
 });
 
 /** Vzorky po půl sekundě s daným FPS po dobu `ms`; vrací stav a úroveň po každém vzorku. */

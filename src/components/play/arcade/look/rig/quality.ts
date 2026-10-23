@@ -75,9 +75,12 @@ export interface QualityState {
 
 const rank = (tier: QualityTier): number => QUALITY_TIERS.indexOf(tier);
 
-/** Touch devices start cheaply; measured spare frame time can raise quality. */
+/**
+ * Telefon (dotyk) a hustý displej startují na `medium`, desktop na `high` (P56B T8: start na `low` dával telefonu
+ * levný první snímek bez bloomu a AO). Kdo `medium` neudrží, za `DOWN_MS` spadne na `low`; volný čas snímku vrací výš.
+ */
 export function startQuality(devicePixelRatio: number, coarsePointer = false): QualityState {
-  return { tier: coarsePointer ? 'low' : devicePixelRatio > 2 ? 'medium' : 'high', ceiling: 'high', slowSince: null, fastSince: null, raisedAt: null, lastAt: null };
+  return { tier: coarsePointer || devicePixelRatio > 2 ? 'medium' : 'high', ceiling: 'high', slowSince: null, fastSince: null, raisedAt: null, lastAt: null };
 }
 
 /**

@@ -11,7 +11,7 @@
  * jádro o zemi neví, hash hry se nehne.
  */
 
-import { BufferGeometry, Color, Float32BufferAttribute } from 'three';
+import { BufferAttribute, BufferGeometry, Color, Float32BufferAttribute } from 'three';
 
 import { type Cover, type Look, SURFACES } from '@/play/arcade/look';
 
@@ -144,34 +144,48 @@ export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: num
   const paint = groundPainter(groundPalette(look));
   const columns = Math.max(1, Math.ceil((area.x1 - area.x0) / FIELD_CELL_M));
   const rows = Math.max(1, Math.ceil((area.z1 - area.z0) / FIELD_CELL_M));
-  const positions = new Float32Array((rows + 1) * (columns + 1) * 3);
+  const count = (rows + 1) * (columns + 1);
+  const positions = new Float32Array(count * 3);
   const colors = new Float32Array(positions.length);
   const normals = new Float32Array(positions.length);
   const color = new Color();
+  // Zápis po složkách, ne `set([…])`: pole na vrchol stálo na telefonu při montáži scény kola desítky ms (T13a).
+  let at = 0;
   for (let row = 0; row <= rows; row += 1) {
     const z = area.z0 + ((area.z1 - area.z0) * row) / rows;
     for (let column = 0; column <= columns; column += 1) {
       const x = area.x0 + ((area.x1 - area.x0) * column) / columns;
       paint(x, z, edge(x, z), color);
-      const at = (row * (columns + 1) + column) * 3;
-      positions.set([x, 0, z], at);
-      colors.set([color.r, color.g, color.b], at);
-      normals.set([0, 1, 0], at);
+      positions[at] = x;
+      positions[at + 2] = z;
+      colors[at] = color.r;
+      colors[at + 1] = color.g;
+      colors[at + 2] = color.b;
+      normals[at + 1] = 1;
+      at += 3;
     }
   }
-  const index: number[] = [];
+  // Stejná šířka indexu, jakou by zvolil `setIndex(number[])` (Uint32 až od indexu 65535).
+  const index = count > 65535 ? new Uint32Array(rows * columns * 6) : new Uint16Array(rows * columns * 6);
+  let next = 0;
   for (let row = 0; row < rows; row += 1) {
     for (let column = 0; column < columns; column += 1) {
       const a = row * (columns + 1) + column;
-      const [b, c, d] = [a + 1, a + columns + 1, a + columns + 2];
-      index.push(a, c, b, b, c, d);
+      const c = a + columns + 1;
+      index[next] = a;
+      index[next + 1] = c;
+      index[next + 2] = a + 1;
+      index[next + 3] = a + 1;
+      index[next + 4] = c;
+      index[next + 5] = c + 1;
+      next += 6;
     }
   }
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
   geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
-  geometry.setIndex(index);
+  geometry.setIndex(new BufferAttribute(index, 1));
   return geometry;
 }
 

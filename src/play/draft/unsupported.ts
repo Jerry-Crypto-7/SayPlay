@@ -175,6 +175,8 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
  * bez návrhu v `sentence`, autorská verze po upgradu ji má u rodiče.
  */
 export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<Honesty | null> {
+  // Řetěz mikroher poctivou hlášku nemá (P56C T10); bez tohohle by `/play/[id]` pouštěl robota na kolo 1 při každém zobrazení.
+  if (game.chain !== undefined) return null;
   const sentence = await sentenceOf(versions, game);
   return sentence === null ? null : honestyForSpec(sentence, game.spec, game.version.seed, game.arcade);
 }
@@ -193,8 +195,8 @@ export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: n
 const honesties = new Map<string, Honesty | null>();
 
 const LABELS: Readonly<Record<string, string>> = { drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
-/** Co hra hraje místo slovesa z věty („Stab plays as a fight.“); jinak popisek kusu. */
-const PLAYED_AS: Readonly<Record<string, string>> = { fight: 'a fight', duel: 'a duel', race: 'a race', deliver: 'a delivery' };
+/** Co hra hraje místo slovesa z věty („Stab plays as a fight.“, „Flip plays as a tap.“); jinak popisek kusu. */
+const PLAYED_AS: Readonly<Record<string, string>> = { fight: 'a fight', duel: 'a duel', race: 'a race', deliver: 'a delivery', interact: 'a tap' };
 
 const capital = (text: string) => `${text[0]!.toUpperCase()}${text.slice(1)}`;
 const listed = (words: readonly string[]) => (words.length === 1 ? words[0]! : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`);
@@ -225,7 +227,8 @@ async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, 
   const said = (triple: IntentTriple) => mapped.find(item => item.verb === triple.verb && item.actor === triple.actor && item.object === triple.object);
   const missing = [...new Set(unmet.map(triple => {
     const item = said(triple);
-    return item === undefined ? (LABELS[triple.verb] ?? triple.verb) : gerund(lemmaOf(item));
+    // Kus bez popisku se jmenuje činností („Beating isn't here yet“), ne holým slovesem.
+    return item === undefined ? (LABELS[triple.verb] ?? gerund(triple.verb)) : gerund(lemmaOf(item));
   }))];
   const closest = spec.control === 'steer' && !witnesses.some(w => w.verb === 'race') ? 'a driving game' : closestOf(spec);
   return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${missing.length === 1 ? "isn't" : "aren't"} here yet – here's ${closest}.` };

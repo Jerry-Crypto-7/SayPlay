@@ -273,13 +273,20 @@ export function answerCacheFromEnv(
   env: Record<string, string | undefined>,
   fetchImpl: typeof fetch = fetch,
 ): AnswerCache | null {
+  const store = answerStoreFromEnv(env, fetchImpl);
+  return store === null ? null : answerCache(store);
+}
+
+/** Úložiště cache podle prostředí, nebo `null`, když je vypnutá. Sdílí ho i čtečka věty (P56A T4) pod vlastními klíči. */
+export function answerStoreFromEnv(
+  env: Record<string, string | undefined>,
+  fetchImpl: typeof fetch = fetch,
+): AnswerStore | null {
   if ((env.WORLDSMITH_ANSWER_CACHE ?? '').trim().toLowerCase() === 'off') return null;
   const shared = sharedStoreFromEnv(env);
-  const store =
-    shared === null
-      ? processAnswerStore()
-      : httpAnswerStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: ANSWER_CACHE_TIMEOUT_MS }, fetchImpl);
-  return answerCache(store);
+  return shared === null
+    ? processAnswerStore()
+    : httpAnswerStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: ANSWER_CACHE_TIMEOUT_MS }, fetchImpl);
 }
 
 /**

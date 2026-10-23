@@ -48,7 +48,7 @@ vi.mock('react', async (importOriginal) => {
 type Element = ReactElement<Record<string, unknown>>;
 
 /** Komponenty, do kterých test vstoupí: `ArcadeStage` až po místo plátna. */
-const ENTER = new Set(['StageCanvas', 'HostedCanvas', 'HostCanvas']);
+const ENTER = new Set(['StageCanvas', 'HostedCanvas', 'HostCanvas', 'StageCanvasRoot']);
 
 /** Všechny elementy stromu, i za hranicí `memo`, portálu a komponent z `ENTER`. */
 function elementsOf(node: ReactNode): Element[] {
@@ -125,6 +125,25 @@ function mountSlot(host: StageTunnel, scene: string): { readonly slot: FakeNode;
   const cleanups = effects.map((effect) => effect()).filter((cleanup) => typeof cleanup === 'function');
   return { slot, unmount: () => cleanups.forEach((cleanup) => cleanup()) };
 }
+
+describe('poměr pixelů plátna (P56C T13b)', () => {
+  // R3F `configure` při každém překreslení `<Canvas>` nastaví `dpr` z props; plátno musí nést ten, který už má
+  // (úroveň kvality rigu na telefonu 1,5), jinak se vrátí na 2.
+  it('překreslené plátno nese poměr pixelů, který mu nastavila úroveň kvality', () => {
+    const live = { current: null };
+    const canvasOf = (): Element => {
+      refs.push(live);
+      return elementsOf(HostedCanvas({ frameloop: 'always', children: 'scene' })).find((element) => element.type === Canvas)!;
+    };
+    const first = canvasOf();
+    expect(first.props.dpr).toEqual([1, 2]);
+    let dpr = 1.5;
+    (first.props.onCreated as (state: unknown) => void)({ get: () => ({ viewport: { dpr } }) });
+    expect(canvasOf().props.dpr).toBe(1.5);
+    dpr = 1;
+    expect(canvasOf().props.dpr).toBe(1);
+  });
+});
 
 describe('jedno plátno feedu (P54A T5)', () => {
   it('ArcadeStage s hostitelem nemá vlastní Canvas a hostitele podá místu plátna; bez něj má jedno jako dnes', () => {

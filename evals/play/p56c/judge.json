@@ -1,0 +1,411 @@
+{
+ "schema": "p56c-judge.v1",
+ "set": "holdout",
+ "base": "http://127.0.0.1:3156",
+ "commit": "979d49bf",
+ "a": {
+  "run": "p56c-t14-holdout-single",
+  "side": "single game (chainOrSingle forced to single)"
+ },
+ "b": {
+  "run": "p56c-t14-holdout-chain",
+  "side": "chain of microgames"
+ },
+ "seed": 56014,
+ "frames": 8,
+ "question": "The attached image shows two small 3D video games side by side, each played by the same robot player. Game A is the left column, game B the right column. Rows go down in time: eight frames spread evenly from the start to the end of each game's play. Page text is hidden, so judge only what the 3D scenes show. Which one would you rather keep playing, and which shows more different games? Pick the game that wins on both together; answer \"tie\" only when neither is better. Reply only with the JSON the schema asks for: winner = \"A\", \"B\" or \"tie\"; why = one or two sentences naming what you see in each game.",
+ "target": "chain wins >= 0.7 of decided pairs",
+ "notChain": [],
+ "skipped": false,
+ "summary": {
+  "n": 27,
+  "chainWins": 27,
+  "singleWins": 0,
+  "ties": 0,
+  "decided": 27,
+  "chainShareDecided": 1,
+  "chainShareAll": 1,
+  "leftWinShare": 0.444
+ },
+ "met": true,
+ "pairs": [
+  {
+   "id": "h02",
+   "chainKeys": [
+    "runner.default",
+    "hop.default",
+    "whack.default",
+    "timing.stack",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "runner.default",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A looks more engaging and varied, moving from a forest run to traffic-and-river crossing, a mallet-and-holes game, platforms, and target shooting. Game B mostly stays on the same forest road, adding hoops, barriers, coins, and robot enemies."
+  },
+  {
+   "id": "h03",
+   "chainKeys": [
+    "catch.default",
+    "platformer.default",
+    "timing.stack",
+    "shooter.default",
+    "duel.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows more varied activities: catching floating balls, crossing raised platforms, exploring among domes, and interacting with a launcher. Game B mostly stays in one overhead arena with pickups and enemies, so A looks more varied and more appealing to keep playing."
+  },
+  {
+   "id": "h05",
+   "chainKeys": [
+    "catch.default",
+    "platformer.default",
+    "runner.default",
+    "crowd.default",
+    "duel.default.boss"
+   ],
+   "singleGenre": "voyage.race",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B shows more varied play: jumping between rock platforms, running through a canyon, choosing numbered gates, and interacting with a large swinging obstacle. Game A mostly repeats the same hazy construction course with orange hoops, so B looks more engaging to keep playing and shows more different games."
+  },
+  {
+   "id": "h06",
+   "chainKeys": [
+    "runner.default",
+    "crowd.default",
+    "whack.default",
+    "timing.stack",
+    "duel.default.boss"
+   ],
+   "singleGenre": "runner.default",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows more varied play: a canyon run, number gates, a five-hole target challenge, and a platform encounter with a spider and swinging objects. Game B mainly repeats the same canyon track with hurdles, rings, spiders, and other runners, so A looks more appealing to keep playing."
+  },
+  {
+   "id": "h08",
+   "chainKeys": [
+    "runner.default",
+    "crowd.default",
+    "platformer.default",
+    "rhythm.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "runner.default",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and varied, switching from a forest runner to arithmetic gates, platform jumps, colored lanes, and a button-lined obstacle. Game A stays on the same forest road with changing blocks, coins, and small robot obstacles."
+  },
+  {
+   "id": "h10",
+   "chainKeys": [
+    "platformer.default",
+    "flap.default",
+    "timing.precision",
+    "rhythm.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "platformer.default",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows more varied activities: island jumping, green obstacle gates, a multicolored lane course, and a tabletop game with balls and paddles. Game B mostly repeats jumps across tropical islands, so A looks more varied and more appealing to keep playing."
+  },
+  {
+   "id": "h12",
+   "chainKeys": [
+    "whack.default",
+    "timing.stack",
+    "crowd.default",
+    "duel.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "quest.station",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows more varied activities: a mallet over holes, an obstacle scene, number gates, a close-range encounter, and aiming across an open area. Game B stays at the same counter with changing pans and targets, so A looks more varied and more appealing to keep playing."
+  },
+  {
+   "id": "h20",
+   "chainKeys": [
+    "crowd.default",
+    "flap.default",
+    "catch.default",
+    "rhythm.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows varied activities: numbered gates, obstacle sections, falling bombs, colored lanes, and aiming at targets, making it more appealing to keep playing. Game B mostly stays in the same grassy arena with rocks, collectibles, and an enemy encounter, showing less variety."
+  },
+  {
+   "id": "h21",
+   "chainKeys": [
+    "catch.default",
+    "platformer.default",
+    "runner.default",
+    "crowd.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more inviting to keep playing and shows more variety: floating-platform jumps, a forest road, numbered gates, and aiming at distant targets. Game A stays in a similar grassy arena, with coins, rocks, and robot enemies."
+  },
+  {
+   "id": "h23",
+   "chainKeys": [
+    "catch.default",
+    "flap.default",
+    "hop.default",
+    "runner.default",
+    "duel.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B shows varied challenges with overhead green obstacles, roads with cars, rivers with logs, a boardwalk run, and a robot encounter, making it more appealing to keep playing. Game A stays in the same sandy arena with scattered blocks and a larger enemy appearing near the end."
+  },
+  {
+   "id": "h24",
+   "chainKeys": [
+    "hop.default",
+    "shooter.default",
+    "platformer.default",
+    "runner.default",
+    "duel.default.boss"
+   ],
+   "singleGenre": "arena.escape",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B shows traffic and train crossings, rooftop platforming, street obstacles, and close-up combat, offering more variety that I'd want to keep exploring. Game A stays in the same grassy arena, mostly moving around rocks, collecting glowing items, and fighting enemies."
+  },
+  {
+   "id": "h25",
+   "chainKeys": [
+    "timing.precision",
+    "whack.default",
+    "platformer.default",
+    "flap.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.escape",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B shows more variety: a fox with a mallet over holes, jumping between cliff platforms, hanging targets, and aiming across a field. Game A stays in the same overhead grassy arena chasing or fighting enemies, so B looks more appealing to keep playing."
+  },
+  {
+   "id": "h26",
+   "chainKeys": [
+    "hop.default",
+    "platformer.default",
+    "duel.default",
+    "shooter.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A looks more engaging and shows more variety: traffic dodging, rooftop jumping, street combat with a giant enemy, and a lane-based challenge. Game B stays in the same dark grassy arena with scattered pickups and a few enemies."
+  },
+  {
+   "id": "h27",
+   "chainKeys": [
+    "rhythm.default",
+    "hop.default",
+    "timing.precision",
+    "flap.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A looks more appealing to keep playing and shows more variety: city obstacle lanes, traffic and river crossings, green barriers, and a bowling-like lane setup. Game B stays in the same grassy arena, with collectibles, rocks, and enemies appearing later."
+  },
+  {
+   "id": "h28",
+   "chainKeys": [
+    "duel.default",
+    "rhythm.default",
+    "crowd.default",
+    "platformer.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and varied, showing a punching target, rooftop platforming, numbered gates, and a lane-and-ball challenge. Game A mostly repeats the same grassy arena with scattered yellow pickups and occasional enemies."
+  },
+  {
+   "id": "h29",
+   "chainKeys": [
+    "catch.default",
+    "platformer.default",
+    "hop.default",
+    "runner.default",
+    "duel.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and varied, showing platform jumps, traffic dodging, a path run, and close-up encounters with large obstacles. Game A stays in a similar grassy arena throughout, with scattered pickups, blocks, and occasional enemies."
+  },
+  {
+   "id": "h30",
+   "chainKeys": [
+    "duel.default",
+    "hop.default",
+    "flap.default",
+    "platformer.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and shows more different games: a two-character timing challenge, traffic dodging, rooftop platforming, and a lane-based ball game. Game A stays in the same green arena, with scattered coins, rocks, and occasional enemies."
+  },
+  {
+   "id": "h31",
+   "chainKeys": [
+    "runner.default",
+    "defense.default",
+    "crowd.default",
+    "rhythm.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A looks more engaging and varied, moving from a forest coin run to a button platform, numbered gates, obstacle lanes, and aiming at distant targets. Game B shows mostly the same grassy arena throughout, with coins and increasing numbers of enemies."
+  },
+  {
+   "id": "h32",
+   "chainKeys": [
+    "defense.default",
+    "platformer.default",
+    "duel.default",
+    "flap.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and varied, showing a lane board, separated platforms, a training dummy with a changing health bar, green obstacles, and aimed shooting. Game A mostly stays in the same grassy arena, with movement and combat against pink enemies."
+  },
+  {
+   "id": "h33",
+   "chainKeys": [
+    "runner.default",
+    "crowd.default",
+    "flap.default",
+    "whack.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "voyage.race",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and varied, showing a canyon runner, ×2/+2 gates, green obstacles, a hammer over holes, and aiming/shooting scenes. Game A stays on a similar red-railed running track with scattered pickups throughout."
+  },
+  {
+   "id": "h34",
+   "chainKeys": [
+    "platformer.default",
+    "hop.default",
+    "runner.default",
+    "flap.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows platform jumping, traffic dodging, a jungle run, pipe obstacles, and aiming scenes, offering more variety and reasons to keep playing. Game B stays in a similar green arena throughout, with scattered pickups and an enemy encounter."
+  },
+  {
+   "id": "h35",
+   "chainKeys": [
+    "runner.default",
+    "platformer.default",
+    "defense.default",
+    "crowd.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows varied activities: a canyon obstacle course, jumping across lava pillars, a green lane challenge, numbered gates, and laser aiming. Game B mostly repeats the same dark arena with scattered coins, blocks, and robots, so A looks more varied and more appealing to keep playing."
+  },
+  {
+   "id": "h36",
+   "chainKeys": [
+    "shooter.default",
+    "timing.precision",
+    "hop.default",
+    "platformer.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B shows varied scenes: a moonlike landscape, traffic and river crossings, pillar jumping, and a lane-based ball game. Game A stays in the same rocky arena with scattered glowing pickups and robot enemies, so B looks more varied and more appealing to keep playing."
+  },
+  {
+   "id": "h37",
+   "chainKeys": [
+    "whack.default",
+    "timing.stack",
+    "rhythm.default",
+    "crowd.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and shows more varied games: holes with a hammer, stacked spinning obstacles, colored lanes, number gates, and aiming and shooting. Game A stays in the same brick courtyard with scattered blocks and a few changing characters or effects."
+  },
+  {
+   "id": "h38",
+   "chainKeys": [
+    "platformer.default",
+    "flap.default",
+    "timing.precision",
+    "runner.default",
+    "defense.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B shows varied challenges with stepping platforms, hanging obstacles, a road, and a green lane board with red bumpers. Game A stays in a similar rocky arena with scattered glowing pickups and blocks, so B looks more varied and more appealing to keep playing."
+  },
+  {
+   "id": "h39",
+   "chainKeys": [
+    "hop.default",
+    "catch.default",
+    "platformer.default",
+    "crowd.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "chain",
+   "winner": "chain",
+   "why": "Game A shows traffic dodging, platform jumping, a gate-choice runner, and target aiming, giving me more varied activities to keep playing. Game B stays in the same grassy arena, with coins and robot enemies appearing as the fox moves around."
+  },
+  {
+   "id": "h40",
+   "chainKeys": [
+    "hop.default",
+    "catch.default",
+    "runner.default",
+    "crowd.default",
+    "shooter.default.boss"
+   ],
+   "singleGenre": "arena.collect",
+   "left": "single",
+   "winner": "chain",
+   "why": "Game B looks more engaging and varied, showing traffic crossing, platform jumping, a wooded running path, numbered gates, and target aiming. Game A stays in the same dark arena with glowing pickups, crates, and enemies."
+  }
+ ]
+}

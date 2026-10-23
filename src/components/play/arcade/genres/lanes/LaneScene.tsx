@@ -13,7 +13,7 @@ import type { Mesh } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, ROLE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
-import { LANES, laneX } from '@/play/arcade/pieces/lanes';
+import type { Look } from '@/play/arcade/look';
 
 import { bodiesOf, bodiesStale, drawsNothing } from '../../bodies';
 import { renderHeld } from '../../effects/render-feel';
@@ -23,6 +23,7 @@ import { CatchScene } from '../catch/CatchScene';
 import { DefenseScene } from '../defense/DefenseScene';
 import { SliceScene } from '../slice/SliceScene';
 import { WhackScene } from '../whack/WhackScene';
+import { LaneStrips } from './LaneStrips';
 
 export { useLanesInput } from './lanes-input';
 
@@ -36,7 +37,7 @@ export function LaneStage(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   if (nativeRule(props.session.world.rules, 'whack_hit') !== undefined) return <WhackScene {...props} />;
   if (nativeRule(props.session.world.rules, 'defense_hit') !== undefined) return <DefenseScene {...props} />;
   if (nativeRule(props.session.world.rules, 'slice_cut') !== undefined) return <SliceScene {...props} />;
-  return <LaneScene session={props.session} />;
+  return <LaneScene session={props.session} look={props.scene} />;
 }
 
 const LANE_LENGTH = 40;
@@ -45,7 +46,7 @@ const lerp = (from: number, to: number, alpha: number): number => from + (to - f
 const bodyColor = (role: number): string =>
   role === ROLE.player ? color['sky-deep'] : role === ROLE.collectible ? color.sun : role === ROLE.hazard || role === ROLE.enemy ? color.tomato : color['ink-soft'];
 
-export function LaneScene({ session }: { readonly session: ArcadeSession }) {
+export function LaneScene({ session, look }: { readonly session: ArcadeSession; readonly look: Look }) {
   const camera = useThree((three) => three.camera);
   const [views, setViews] = useState(() => bodiesOf(session));
   const meshes = useRef<(Mesh | null)[]>([]);
@@ -73,12 +74,7 @@ export function LaneScene({ session }: { readonly session: ArcadeSession }) {
 
   return (
     <>
-      {Array.from({ length: LANES.count }, (_, lane) => (
-        <mesh key={lane} position={[-laneX(lane) / UNIT, -0.05, LANE_LENGTH / 2 - 4]} receiveShadow>
-          <boxGeometry args={[(LANES.width / UNIT) * 0.9, 0.1, LANE_LENGTH]} />
-          <meshStandardMaterial color={lane % 2 === 0 ? color.mint : color['mint-deep']} />
-        </mesh>
-      ))}
+      <LaneStrips look={look} z0={-4} z1={LANE_LENGTH - 4} />
       {views.map((view) =>
         drawsNothing(view) ? null : (
           <mesh

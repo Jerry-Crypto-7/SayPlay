@@ -15,6 +15,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { color } from '@/brand/tokens';
 import { type ArcadeWorld, HEADER, NO_INPUT, targetStateOf } from '@/play/arcade/contract';
+import { LOOKS } from '@/play/arcade/look';
 import { buildWorld, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { releasePhysics } from '@/play/arcade/physics/step';
@@ -266,7 +267,7 @@ function playCraft(craft: (typeof CRAFTS)[number], moving: boolean, reduce = fal
   const scene = new Group();
   hooks.scene = scene;
   hooks.frames = [];
-  wire(World({ session, control: 'steer', cast: { player: craft.model, enemy: '', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' }), scene);
+  wire(World({ session, control: 'steer', cast: { player: craft.model, enemy: '', chaser: '', props: {} }, surface: { current: null }, scene: LOOKS.meadow, enabled: true, heroAction: 'none' }), scene);
   const drawWorld = hooks.frames.at(-1)!;
   // Plavba se připojí po `World` a její snímek běží po něm, jako za běhu.
   wire(VoyageHero({ session, layout: layout!, look: { water: color.sky } as never, waveAt: () => 0 }), scene);

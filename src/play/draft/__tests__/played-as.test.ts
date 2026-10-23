@@ -16,6 +16,10 @@ import { honestyForSpec } from '@/play/draft/unsupported';
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
+// Poctivá hláška patří jedné hře: větu bez hratelného slovesa („stabs“) P56C posílá do řetězu mikroher, který hlášku nemá.
+// Tady se zkouší hláška jedné hry, proto rozhodnutí vždy `single`.
+vi.mock('@/play/chain/decide', async (original) => ({ ...(await original<typeof import('@/play/chain/decide')>()), chainOrSingle: () => 'single' }));
+
 const STAB = 'a knight stabs the goblins';
 
 beforeAll(async () => {
@@ -42,6 +46,16 @@ describe('played_as honesty', () => {
     const honesty = await honestyForSpec(STAB, read.value, 1);
     expect(honesty?.kind).toBe('actions');
     expect(honesty?.reason).toMatch(/^Stabbing isn't here yet – here's /);
+  });
+
+  it('reads like a sentence for the audit sentences (P56A T9)', async () => {
+    // „Flip plays as interaction.“ a „Beat isn't here yet – here's a rhythm game.“ ze živého auditu.
+    expect((await honestyOfSentence('a chef flips pancakes for a line of hungry customers'))?.reason).toBe('Flip plays as a tap.');
+    expect(await honestyOfSentence('drum to the beat at a rock concert')).toBeNull();
+    // Kus bez popisku se jmenuje činností, ne holým slovesem.
+    const read = readGameSpec(collectExit);
+    if (!read.ok) throw new Error('fixture');
+    expect((await honestyForSpec('drum to the beat at a rock concert', read.value, 1))?.reason).toMatch(/^Beating isn't here yet – here's /);
   });
 
   it('says nothing for a verb the hand table knows', async () => {

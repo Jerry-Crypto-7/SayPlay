@@ -67,6 +67,7 @@ import { InkOutline } from '../look/rig/InkOutline';
 import { applyToy, toyIdleOf, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { type Cast, FittedModel, toyTargetOf } from '../World';
+import { ARENA_FRAMING, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Size, arenaDistance, arenaGoal } from './arena-camera';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
 import { useThreatEdge } from './ThreatEdge';
@@ -96,11 +97,6 @@ function thingColor(id: string): string {
 
 /** Nad zemí víc než tohle (m) = ve vzduchu (sonda `data-airborne`). */
 const AIRBORNE_M = 0.05;
-
-/** Kolik metrů od hráče do strany je vidět vždy. */
-const SEE_M = 9;
-/** Na výšku (mobil) méně: při 6 m měl hráč 3,7 % výšky obrazu (P27A T6, P30B T5); nahoru a dolů je pak vidět víc. */
-const SEE_M_TALL = 5;
 
 /** Jak daleko za hranou arény stojí první řada kulis (m); tamtéž začíná vegetace (P46G T7). */
 const SCENERY_MARGIN = 1.5;
@@ -204,10 +200,10 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
     }
     const me = groups.current[player];
     if (me !== null && me !== undefined) {
-      // Aspoň `SEE_M` metrů do strany i na výšku (mobil) a výš s velikostí hráče,
+      // Aspoň `see` metrů do strany i na výšku (mobil) a výš s velikostí hráče,
       // ať větší buňku vidí dřív, než dojede.
       const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const distance = Math.max(16, (camera.aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
+      const distance = Math.max(ARENA_FRAMING.nearest, (camera.aspect < 1 ? ARENA_FRAMING.seeTall : ARENA_FRAMING.see) / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
       // Šikmo zezadu, ne kolmo dolů (P28D T6, F-29): kolmá kamera viděla jen podlahu,
       // takhle horní okraj obrazu sahá za hranu arény na kulisy prostředí.
       camera.position.set(me.position.x, distance * Math.sin(PITCH), me.position.z - distance * Math.cos(PITCH));
@@ -304,39 +300,6 @@ const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
 const SPARK_GLOW = new Color(brand.mint).multiplyScalar(2.5);
 const ALERT_GLOW = new Color(brand.tomato).multiplyScalar(1.6);
 
-/** Sklon kamery nad vodorovnou (sin, cos). */
-interface Tilt {
-  readonly sin: number;
-  readonly cos: number;
-}
-const tiltOf = (degrees: number): Tilt => ({ sin: Math.sin((degrees * Math.PI) / 180), cos: Math.cos((degrees * Math.PI) / 180) });
-/**
- * Kamera 3/4 shora; předstih = kam hráč dojede za tolik sekund. P35 T2: 50° → 40°.
- * Při 50° byla kočka shora zezadu jen hřbet a uši a astra ji naslepo nepoznala (O10);
- * při 40° je vidět hlava a bok.
- */
-const STYLED_TILT = tiltOf(40);
-/**
- * Souboj strměji (P32E T6): soupeř jde na hrdinu podél osy kamery a při 50°
- * ho hrdina i jeho lišta HP zakryly, zásah i pád se ztratily za zády.
- */
-const FIGHT_TILT = tiltOf(60);
-const LEAD_S = 0.35;
-/** Hrozba blíž než tolik metrů táhne záběr k sobě, ať je vidět hráč i ona. */
-const THREAT_M = 22;
-/** Kam do obrazu (NDC) se musí vejít hrdina a nejbližší hrozba. */
-const HERO_EDGE = 0.8;
-const THREAT_EDGE = 0.9;
-/**
- * Hrdina drží aspoň tenhle podíl výšky obrazu – strop vzdálenosti kamery; na výšku (mobil) víc.
- * P35 T2: dřív 5 % všude a hrozba za zády kameru oddálila až k němu (čaroděj 4,7 %, O10).
- * Hrozba, která se do toho nevejde, se ukáže šipkou na okraji (`useThreatEdge`), ne oddálením.
- */
-// Kvádr těla je o ~30 % vyšší než model, který do něj sonda záběru měří: 0,085 dalo kočce 6,5 % (1. 10.).
-const HERO_SHARE = 0.1;
-const HERO_SHARE_TALL = 0.11;
-/** Jak rychle kamera dojíždí za cílem (1/s). */
-const FOLLOW = 5;
 /** Pod touhle rychlostí (jednotek za tik, ~0,5 m/s) tělo stojí a otáčí se k hráči, nebo drží směr. */
 const TURN_MIN = 8;
 /** Vykřičník svítí posledních tolik tiků ochrany a tolik tiků po probuzení. */
@@ -366,13 +329,7 @@ export function modelOf(part: Part, cast: Cast, kind?: string): string | undefin
 
 const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], foe: brand.alarm, item: brand.sun, block: FENCE_COLOR };
 
-interface Size {
-  readonly w: number;
-  readonly h: number;
-  readonly d: number;
-}
-
-function drawnOf(view: BodyView, part: Part): Size {
+export function drawnOf(view: BodyView, part: Part): Size {
   if (part === 'item') return { w: ITEM_DRAWN_M, h: ITEM_DRAWN_M, d: ITEM_DRAWN_M };
   if (part === 'hero' && view.h < HERO_DRAWN_M) return { w: Math.max(view.w, HERO_DRAWN_M), h: HERO_DRAWN_M, d: Math.max(view.d, HERO_DRAWN_M) };
   return { w: view.w, h: view.h, d: view.d };
@@ -381,12 +338,6 @@ function drawnOf(view: BodyView, part: Part): Size {
 /** Otočení skupiny (rad kolem y), aby lokální +z mířilo směrem jádra (dx, dz); scéna zrcadlí x. */
 const yawOf = (dx: number, dz: number): number => Math.atan2(-dx, dz);
 
-/** Nejmenší vzdálenost kamery od cíle pohledu, aby bod (m vůči cíli, poloměr `r`) promítl do ±`edge` NDC. */
-function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, aspect: number, edge: number, tilt: Tilt): number {
-  const along = qz * tilt.cos - qy * tilt.sin;
-  const up = qy * tilt.cos + qz * tilt.sin;
-  return Math.max((Math.abs(qx) + r) / (edge * tan * aspect), (Math.abs(up) + r) / (edge * tan)) - along;
-}
 
 /**
  * Hračkový úder (`toyPoseOf`) začne nápřahem dozadu a výpad vrcholí až tolik tiků po začátku.
@@ -740,26 +691,14 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     }
     const threatAt = threat < 0 ? null : groups.current[threat]!.position;
     const threatSize = threat < 0 ? null : drawn[threat]!;
-    // Vzdálenost: aspoň `SEE_M` do strany, dál, dokud se hrdina a hrozba nevejdou, nejvýš tak, ať hrdina drží `HERO_SHARE` výšky.
-    const hero = drawn[player]!;
-    const heroR = Math.max(hero.w, hero.d) / 2;
+    // Záběr (P56B T9, `arena-camera.ts`): hrozba, která se s hrdinou nevejde ani pod strop krát `stretch`, pohled netáhne – ukáže ji šipka na okraji.
     const tilt = fight ? FIGHT_TILT : STYLED_TILT;
-    const most = (hero.h * tilt.cos + 2 * heroR * tilt.sin) / (2 * tan * (aspect < 1 ? HERO_SHARE_TALL : HERO_SHARE));
-    const heroReach = (from: Vector3): number => reachOf(me.position.x - from.x, hero.h / 2, me.position.z - from.z, heroR, tan, aspect, HERO_EDGE, tilt);
-    const threatReach = (at: Vector3, size: Size, from: Vector3): number => reachOf(at.x - from.x, size.h / 2, at.z - from.z, Math.max(size.w, size.d) / 2, tan, aspect, THREAT_EDGE, tilt);
-    // Hrozba, která se s hrdinou pod strop `most` nevejde, pohled netáhne – ukáže ji šipka na okraji.
-    let framed = false;
-    if (threatAt !== null && threatSize !== null && nearest < THREAT_M) {
-      mid.set((goal.x + threatAt.x) / 2, 0, (goal.z + threatAt.z) / 2);
-      framed = Math.max(heroReach(mid), threatReach(threatAt, threatSize, mid)) <= most;
-      if (framed) goal.copy(mid);
-    }
+    const shot: ArenaView = { hero: me.position, heroSize: drawn[player]!, lead: goal, threat: threatAt === null ? null : { at: threatAt, size: threatSize! }, tan, aspect, tilt };
+    const { goal: target, framed } = arenaGoal(shot, ARENA_FRAMING);
     const snap = follow.current === null || restarted;
     const k = snap ? 1 : 1 - Math.exp(-delta * FOLLOW);
-    aim.lerp(goal, k);
-    const need = Math.max(heroReach(aim), framed ? threatReach(threatAt!, threatSize!, aim) : 0);
-    const least = Math.max(16, (aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, aspect)));
-    const wanted = Math.min(most, Math.max(least, need));
+    aim.lerp(mid.set(target.x, 0, target.z), k);
+    const wanted = arenaDistance(shot, aim, framed, ARENA_FRAMING);
     const distance = snap ? wanted : follow.current!.distance + (wanted - follow.current!.distance) * k;
     follow.current = { tick, distance };
     camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
@@ -784,12 +723,12 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
           groups.current[view.index] = group;
         };
         if (part === 'block') {
-          // Věc pravidel nebo plot: kvádr jako v agaru.
+          // Věc pravidel nebo plot: kvádr jako v agaru. Plot kreslí díl sady (P56B T10), vyplní celé tělo jako srážka.
           const thing = thingOf(view.kind);
-          const namedModel = thing === null ? undefined : cast.things?.[thing];
+          const namedModel = thing === null ? cast.kit?.block : cast.things?.[thing];
           return (
             <group key={view.index} ref={register} userData={{ frame: thing === null ? undefined : 'target' }}>
-              {namedModel !== undefined ? <FittedModel id={namedModel} w={view.w} h={view.h} d={view.d} fallback={thingColor(thing!)} character={view.h >= Math.max(view.w, view.d)} /> : <mesh position={[0, view.h / 2, 0]}>
+              {namedModel !== undefined && thing === null ? <FittedModel id={namedModel} w={view.w} h={view.h} d={view.d} fallback={scene.tint[0]} fill /> : namedModel !== undefined ? <FittedModel id={namedModel} w={view.w} h={view.h} d={view.d} fallback={thingColor(thing!)} character={view.h >= Math.max(view.w, view.d)} /> : <mesh position={[0, view.h / 2, 0]}>
                 <boxGeometry args={[view.w, view.h, view.d]} />
                 <meshStandardMaterial color={thing === null ? FENCE_COLOR : thingColor(thing)} roughness={0.6} />
               </mesh>}

@@ -1,0 +1,183 @@
+{
+  "runs": 3,
+  "summary": {
+    "sentences": 9,
+    "published": 9,
+    "compileMsMedian": 315.9,
+    "verifyMsMedian": 229.3,
+    "verifyMsMax": 411.8
+  },
+  "rows": [
+    {
+      "id": "penguin",
+      "genre": "runner.default",
+      "error": null,
+      "compileMs": 614.1,
+      "verifyMs": 288,
+      "runs": {
+        "compileMs": [
+          614.1,
+          529.2,
+          698.4
+        ],
+        "verifyMs": [
+          288,
+          313.8,
+          269.8
+        ]
+      }
+    },
+    {
+      "id": "firefighter",
+      "genre": "platformer.default",
+      "error": null,
+      "compileMs": 503.8,
+      "verifyMs": 411.8,
+      "runs": {
+        "compileMs": [
+          605.2,
+          503.8,
+          448.6
+        ],
+        "verifyMs": [
+          411.8,
+          589.6,
+          351.3
+        ]
+      }
+    },
+    {
+      "id": "wizard",
+      "genre": "voyage.race",
+      "error": null,
+      "compileMs": 110.9,
+      "verifyMs": 135.7,
+      "runs": {
+        "compileMs": [
+          104,
+          137.3,
+          110.9
+        ],
+        "verifyMs": [
+          171.7,
+          135.7,
+          134.8
+        ]
+      }
+    },
+    {
+      "id": "pirate",
+      "genre": "voyage.race",
+      "error": null,
+      "compileMs": 315.9,
+      "verifyMs": 229.3,
+      "runs": {
+        "compileMs": [
+          411.1,
+          281.2,
+          315.9
+        ],
+        "verifyMs": [
+          222.9,
+          275.2,
+          229.3
+        ]
+      }
+    },
+    {
+      "id": "cat",
+      "genre": "runner.default",
+      "error": null,
+      "compileMs": 822.2,
+      "verifyMs": 398.3,
+      "runs": {
+        "compileMs": [
+          688.3,
+          822.2,
+          845.7
+        ],
+        "verifyMs": [
+          483.9,
+          393.8,
+          398.3
+        ]
+      }
+    },
+    {
+      "id": "chef",
+      "genre": "quest.station",
+      "error": null,
+      "compileMs": 171.5,
+      "verifyMs": 82.7,
+      "runs": {
+        "compileMs": [
+          148.6,
+          208.6,
+          171.5
+        ],
+        "verifyMs": [
+          97.9,
+          82.7,
+          52.3
+        ]
+      }
+    },
+    {
+      "id": "dog",
+      "genre": "quest.spatial",
+      "error": null,
+      "compileMs": 334.9,
+      "verifyMs": 242.7,
+      "runs": {
+        "compileMs": [
+          380.7,
+          327.3,
+          334.9
+        ],
+        "verifyMs": [
+          242.7,
+          237,
+          260.4
+        ]
+      }
+    },
+    {
+      "id": "knights",
+      "genre": "duel.default",
+      "error": null,
+      "compileMs": 11.5,
+      "verifyMs": 11.3,
+      "runs": {
+        "compileMs": [
+          11.5,
+          27.7,
+          11.1
+        ],
+        "verifyMs": [
+          11.3,
+          12.8,
+          10.3
+        ]
+      }
+    },
+    {
+      "id": "rocket",
+      "genre": "voyage.race",
+      "error": null,
+      "compileMs": 17.3,
+      "verifyMs": 7,
+      "runs": {
+        "compileMs": [
+          11.8,
+          21.6,
+          17.3
+        ],
+        "verifyMs": [
+          3.6,
+          7,
+          9.9
+        ]
+      }
+    }
+  ]
+}

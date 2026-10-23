@@ -25,6 +25,11 @@ const reading = (over: Partial<Reading>): Reading => ({
   setting: null,
   mood: null,
   numbers: { seconds: null, counts: [] },
+  genre: null,
+  foe: null,
+  item: null,
+  world: null,
+  title: null,
   ...over,
 });
 
@@ -74,6 +79,16 @@ describe('draft from the local reading', () => {
     // Hrdinu čtení nejmenuje – zůstane z klíčových slov.
     const noHero = draftGameSpecWithMeta(sentence, 1, { reading: reading({}) }).spec;
     expect(label(noHero, 'player')).toBe('corgi');
+  });
+
+  // P56A T6: čtení vybere hrdinu z jiného slova téže věty, ne ze slova, které ve větě není (corgi výš).
+  it('a reading picks the hero among the words of the sentence and never casts its foe as the hero', () => {
+    const ogre = draftGameSpecWithMeta('an ogre arm wrestles a frost giant in a smoky mountain tavern', 1, {
+      reading: reading({ control: 'move_free', hero: 'ogre', foe: 'frost giant', roles: [{ noun: 'frost giant', kind: 'threat', count: 1 }] }),
+    }).spec;
+    expect(label(ogre, 'player')).toBe('ogre');
+    const farm = draftGameSpecWithMeta('zombies attack my farm', 1, { reading: reading({ foe: 'zombies', roles: [{ noun: 'zombies', kind: 'threat', count: null }] }) }).spec;
+    expect(farm.roles.find((role) => role.kind === 'player')?.label).not.toMatch(/zombie|fox/);
   });
 
   it('a generic hero like "player" is no hero: the keywords name it', () => {

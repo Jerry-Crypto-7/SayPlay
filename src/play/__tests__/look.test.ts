@@ -47,6 +47,12 @@ describe('lookFor', () => {
     expect(lookFor(setting)).toBe(look);
   });
 
+  it('„house“ je dům jen jako celé slovo (P56C T19a: maják kreslil gauč a televizi)', () => {
+    expect(lookFor('a tiny house')).toBe('living_room');
+    expect(lookFor('a row of houses')).toBe('living_room');
+    for (const setting of ['a foggy lighthouse cliff at midnight', 'a greenhouse full of tomatoes', 'a birdhouse']) expect(lookFor(setting)).not.toBe('living_room');
+  });
+
   it('nálada rozhoduje, jen když místo nic neřekne', () => {
     expect(lookFor('a shopping mall', 'spooky')).toBe('mall');
     expect(lookFor('somewhere', 'spooky')).toBe('graveyard');

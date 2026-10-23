@@ -15,6 +15,7 @@
 import dynamic from 'next/dynamic';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
+import type { ChainWorld } from '@/play/chain/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { Honesty } from '@/play/draft/unsupported';
 import type { Par } from '@/play/score/stars';
@@ -22,6 +23,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { ChainPlay } from './arcade/chain/ChainPlay';
 import type { Dare } from './best';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { DareStrip } from './DareStrip';
@@ -61,17 +63,22 @@ export interface PlayShellProps {
 export function PlayShell({
   blueprint,
   arcade,
+  chain,
   honesty = null,
   ...rest
-}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty?: Honesty | null }) {
-  if (blueprint === null && arcade === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
-  const game = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly chain?: ChainWorld; readonly honesty?: Honesty | null }) {
+  if (blueprint === null && arcade === undefined && chain === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
+  // Řetěz mikroher (P56C T11) nemá `arcade`; hraje ho `ChainPlay`.
+  const game =
+    chain !== undefined ? <ChainPlay versionId={rest.versionId} spec={rest.spec} chain={chain} par={rest.par ?? null} challenge={rest.challenge ?? null} bestDare={rest.bestDare} />
+    : arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} />
+    : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
   // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.
   const shell = (
     <WithPlayEnv theme={rest.spec.theme} versionId={rest.versionId}>
       <InfoSheetProvider>
-        {/* Žebříček mají jen arkádové hry – ověřený běh píše jen výzva (P44B T9). */}
-        {arcade !== undefined && <BoardInfoPart versionId={rest.versionId} />}
+        {/* Žebříček mají jen arkádové hry a řetězy – ověřený běh píše jen výzva (P44B T9, P56C T10). */}
+        {(arcade !== undefined || chain !== undefined) && <BoardInfoPart versionId={rest.versionId} />}
         {game}
       </InfoSheetProvider>
     </WithPlayEnv>

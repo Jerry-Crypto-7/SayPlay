@@ -76,7 +76,8 @@ export function ghostRunOf(replay: unknown): GhostRun | null {
 }
 
 /** Natočení kolem svislé osy podle vodorovné rychlosti v osách jádra (0 = po +z); stojící tělo drží poslední. */
-function headingOf(state: Int32Array, base: number, was: number): number {
+/** Natočení hrdiny ze směru pohybu; stojí-li, zůstane `was`. Sdílí ho duch řetězu (`chain/chain-ghost.ts`). */
+export function headingOf(state: Int32Array, base: number, was: number): number {
   const vx = state[base + BODY.vx] as number;
   const vz = state[base + BODY.vz] as number;
   return vx === 0 && vz === 0 ? was : Math.atan2(vx, vz);

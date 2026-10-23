@@ -1,8 +1,9 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
 import { lookFor, timeOfDayFor } from '../arcade/look';
+import { rapierIfLoaded } from '../arcade/physics/world';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
-import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
+import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingHero } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
@@ -29,7 +30,13 @@ export interface Composition {
 
 // Repeated publication of the same sentence must not replay identical worlds
 // on every request. Bounded and keyed by every input; callers get owned copies.
+// Whether Rapier is loaded is an input too: without it a physics source fails and
+// another game wins, which must not outlive the load (P56C T17e review).
 const compositions = new Map<string, Composition>();
+
+/** Hrdina, kterého věta jmenuje; se čtením jen ten, kterého čtení nemá za protivníka, věc ani místo (P56A T6). */
+const namedHero = (intent: Intent, reading: Reading | null): string | null =>
+  intent.hero !== null && (reading === null || heroFitsReading(intent.hero, reading, intent.sentence)) ? intent.hero : null;
 
 function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null): GenreSpec {
   const draft = draftGenreFor(intent.sentence, cell.preset.genre, cell.preset.mode, { reading }) ?? cell.preset;
@@ -183,7 +190,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   const explicitPlayer = /\b(?:as|you are|you're|i am|i'm|you control) (?:a |an |the )?/.test(intent.sentence.toLowerCase());
   const keepNamedHero = !explicitPlayer && draftedAt >= 0 && intendedAt > draftedAt &&
     intent.items.some(item => item.essential && item.axis !== 'threat' && item.actor === head(draft.hero));
-  const hero = cell.recipe.move === 'ball' && intent.hero === null ? BALL_PLAYER : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
+  // P56A T6: hrdina slov, kterého čtení má za protivníka, věc nebo místo, návrh nepřepíše; míč jen bez hrdiny slov i čtení.
+  const named = namedHero(intent, reading);
+  const ball = cell.recipe.move === 'ball' && named === null && (reading === null || readingHero(reading) === null);
+  const hero = ball ? BALL_PLAYER : named !== null && head(draft.hero) !== named && !keepNamedHero ? named : draft.hero;
   const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
   // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
   // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
@@ -192,7 +202,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
 }
 
 export function compose(intent: Intent, seed = 1, reading: Reading | null = null): Composition {
-  const cacheKey = JSON.stringify([intent, seed, reading]);
+  const cacheKey = JSON.stringify([intent, seed, reading, rapierIfLoaded() !== null]);
   const cached = compositions.get(cacheKey);
   if (cached !== undefined) return structuredClone(cached);
   const classified = classifyGenre(intent.sentence, reading);
@@ -208,7 +218,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   // A reading whose movement cannot play a requested action yields to a later reading
   // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
   const sources = ranking.map((choice, rank) => {
-    const fallback = { genre: choice.genre, mode: choice.mode, hero: intent.hero ?? 'fox', setting: intent.setting ?? 'forest' } as GenreSpec;
+    // Liška jen nouzově (P56A T6): věta přečtená čtečkou bez hrdiny dostane průzkumníka.
+    const hero = reading === null ? (intent.hero ?? 'fox') : (namedHero(intent, reading) ?? readingHero(reading) ?? 'explorer');
+    const fallback = { genre: choice.genre, mode: choice.mode, hero, setting: intent.setting ?? 'forest' } as GenreSpec;
     // P54C T13: a lanes genre the classifier heard and put first plays its own recipe; anywhere else it is read as before.
     const source = (rank === 0 && choice.score > 0 ? genreSource(fallback) : null) ?? sourceFor(intent, fallback);
     return { source, rank, missing: unplayed(source) };

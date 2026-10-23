@@ -19,6 +19,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { type ArcadeWorld, HEADER, NO_INPUT } from '@/play/arcade/contract';
+import { LOOKS } from '@/play/arcade/look';
 import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { releasePhysics } from '@/play/arcade/physics/step';
@@ -141,7 +142,7 @@ function play(world: ArcadeWorld, { mount, ticks = 120, still = false, player = 
   } as unknown as ArcadeSession;
   const control = baseControlOf(world.control).id;
   hooks.frame = undefined;
-  const hero = mount ? wire(World({ session, control, cast: { player, enemy: '', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' })) : undefined;
+  const hero = mount ? wire(World({ session, control, cast: { player, enemy: '', chaser: '', props: {} }, surface: { current: null }, scene: LOOKS.meadow, enabled: true, heroAction: 'none' })) : undefined;
   if (mount && (hero === undefined || hooks.frame === undefined)) throw new Error(`${control}: no hero pose group or frame`);
   const samples: Sample[] = [];
   try {
@@ -226,7 +227,7 @@ describe('rigged bodies in the shared world (P45D T13)', () => {
     const state = instantiate(world);
     try {
       const session = { world, state: () => state, prev: () => state, advance: () => 0, alpha: () => 0.5, endedFor: () => 0, snapshot: () => ({ tick: 0, runState: 'running' }), subscribe: () => () => undefined, onEvents: () => () => undefined, paused: () => false } as unknown as ArcadeSession;
-      const tree = World({ session, control: 'runner', cast: { player: 'rigged:boy-a', enemy: 'rigged:knight', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' });
+      const tree = World({ session, control: 'runner', cast: { player: 'rigged:boy-a', enemy: 'rigged:knight', chaser: '', props: {} }, surface: { current: null }, scene: LOOKS.meadow, enabled: true, heroAction: 'none' });
       const rigged = elementsOf(tree).filter((element) => element.type === RiggedModel);
       expect(rigged.length).toBeGreaterThan(0);
       // Jediná riggovaná postava běžce je hrdina (`boy-a`); překážky jsou modely katalogu.

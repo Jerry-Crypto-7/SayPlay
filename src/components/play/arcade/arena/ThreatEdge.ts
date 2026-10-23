@@ -2,8 +2,8 @@
 
 /**
  * Šipka k hrozbě mimo záběr (P35 T2). Kamera arény drží hrdinu velkého
- * (`HERO_SHARE` v `ArenaScene.tsx`), takže pronásledovatel za zády se do
- * obrazu často nevejde; místo oddálení kamery ukáže kolečko na okraji plátna,
+ * (`heroShare` a `stretch` v `arena-camera.ts`), takže vzdálený pronásledovatel se do
+ * obrazu často nevejde; místo dalšího oddálení kamery ukáže kolečko na okraji plátna,
  * odkud jde. Strana jde do `data-threat-edge` (sonda e2e), prázdná = hrozba
  * v záběru nebo žádná. Jen kresba – jádro ani hash o ní nevědí.
  */

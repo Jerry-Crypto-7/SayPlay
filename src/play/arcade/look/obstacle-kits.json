@@ -1,0 +1,23 @@
+{
+  "about": "P56B T10: díly prostředí místo obecných překážek z kvádrů a stavebních zábran. Sada → druh těla → id modelu katalogu. hurdle (přeskoč, nízký a široký), slide-bar (podlez, vyplní laťku), cone a crate (vyhni se), block (plot arény a zeď rozcestí běžce, vyplní kvádr těla). Model z popisku věty má přednost; hlídá src/play/arcade/look/__tests__/obstacle-kits.test.ts.",
+  "kits": {
+    "meadow": { "hurdle": "gen3d-wooden-fence", "slide-bar": "gen3d-fallen-log", "crate": "cc0-hay-bale", "cone": "gen3d-wooden-signpost", "block": "cc0-hedge" },
+    "city": { "hurdle": "cc0-traffic-barrier", "slide-bar": "cc0-barrier-fixed", "crate": "gen3d-cardboard-box", "cone": "gen3d-traffic-cone", "block": "gen3d-graffiti-wall" },
+    "mall": { "hurdle": "gen3d-park-bench", "slide-bar": "gen3d-shop-sign", "crate": "gen3d-gift-box", "cone": "gen3d-umbrella-stand", "block": "gen3d-flower-box" },
+    "supermarket": { "hurdle": "shopping-cart", "slide-bar": "gen3d-price-tag", "crate": "gen3d-fruit-crate", "cone": "gen3d-milk-carton", "block": "gen3d-cereal-box" },
+    "living_room": { "hurdle": "gen3d-coffee-table", "slide-bar": "gen3d-bookshelf", "crate": "cc0-armchair", "cone": "cc0-lamp-standing", "block": "cc0-sofa" },
+    "factory": { "hurdle": "cc0-plastic-barrier", "slide-bar": "gen3d-hazard-sign", "crate": "gen3d-tool-chest", "cone": "gen3d-oil-barrel", "block": "cc0-barrel-stack" },
+    "forest": { "hurdle": "gen3d-fallen-log", "slide-bar": "gen3d-mossy-fallen-log", "crate": "gen3d-mossy-boulder", "cone": "cc0-tree-cone", "block": "gen3d-mossy-rock-cluster" },
+    "jungle": { "hurdle": "cc0-wood-log", "slide-bar": "gen3d-jungle-vine", "crate": "gen3d-stone-idol-head", "cone": "gen3d-tribal-totem-pole", "block": "gen3d-vine-covered-rock-wall" },
+    "desert": { "hurdle": "gen3d-sandbag-wall", "slide-bar": "gen3d-rock-arch", "crate": "gen3d-sandstone-rock", "cone": "gen3d-saguaro-cactus", "block": "gen3d-layered-canyon-rock" },
+    "beach": { "hurdle": "gen3d-beach-chair", "slide-bar": "gen3d-driftwood-log", "crate": "gen3d-beach-cooler", "cone": "gen3d-beach-umbrella", "block": "gen3d-sea-rock" },
+    "ocean": { "hurdle": "gen3d-barnacle-rock", "slide-bar": "gen3d-driftwood-log", "crate": "cc0-barrel", "cone": "gen3d-navigation-buoy", "block": "gen3d-sea-rock" },
+    "underwater": { "hurdle": "gen3d-coral-rock", "slide-bar": "gen3d-coral-arch", "crate": "gen3d-sunken-crate", "cone": "gen3d-staghorn-coral", "block": "gen3d-coral-reef-rock" },
+    "snow": { "hurdle": "gen3d-frozen-log", "slide-bar": "gen3d-ice-arch", "crate": "gen3d-ice-block-pile", "cone": "gen3d-snowman-with-hat", "block": "gen3d-snowy-rock" },
+    "volcano": { "hurdle": "gen3d-charred-log", "slide-bar": "gen3d-basalt-column-rock", "crate": "gen3d-volcanic-rock", "cone": "gen3d-magma-crystal", "block": "gen3d-magma-rock" },
+    "cave": { "hurdle": "gen3d-scree-rock-pile", "slide-bar": "cc0-wood-log", "crate": "gen3d-mine-cart", "cone": "gen3d-crystal-spire", "block": "gen3d-large-boulder" },
+    "space": { "hurdle": "gen3d-crater-rock", "slide-bar": "gen3d-laser-gate", "crate": "gen3d-moon-rock", "cone": "gen3d-energy-crystal", "block": "gen3d-meteorite" },
+    "castle": { "hurdle": "gen3d-battlement-wall", "slide-bar": "gen3d-portcullis", "crate": "gen3d-wine-barrel", "cone": "gen3d-stone-column", "block": "gen3d-castle-ruin-wall" },
+    "graveyard": { "hurdle": "gen3d-broken-gravestone", "slide-bar": "gen3d-iron-fence", "crate": "gen3d-gravestone", "cone": "gen3d-grave-lantern", "block": "gen3d-iron-fence" }
+  }
+}

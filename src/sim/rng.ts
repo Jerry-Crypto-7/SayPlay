@@ -13,7 +13,8 @@ import type { JumpableRandomGenerator } from 'pure-rand/types/JumpableRandomGene
  */
 // `pacing` (P45C) je rozvrh průběhu hry; připsaný na konec, takže dřívější streamy losují totéž.
 // `merge` (P54C T11) je fronta předmětů slučování, připsaná za něj stejně.
-export const SUBSYSTEMS = ['spawn', 'ai', 'effect', 'layout', 'pacing', 'merge'] as const;
+// `chain` (P56C T5) losuje semínka kol řetězu mikroher, připsaný poslední.
+export const SUBSYSTEMS = ['spawn', 'ai', 'effect', 'layout', 'pacing', 'merge', 'chain'] as const;
 
 export type Subsystem = (typeof SUBSYSTEMS)[number];
 

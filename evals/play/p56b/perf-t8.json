@@ -1,0 +1,828 @@
+{
+  "what": "P56B T8: phones start on medium. A = 72665fdc, B = HEAD, perf --base A --vs B (Pixel 7, CPU 4x, d3d11, interleaved scene by scene)",
+  "a": "http://127.0.0.1:3157",
+  "b": "http://127.0.0.1:3158",
+  "repeats": 3,
+  "measuredAt": "2026-10-21T17:28:20.846Z",
+  "scenes": 30,
+  "noise": 0.08,
+  "medianRatio": 0.941,
+  "gate": {
+    "medianRatioAtLeast": 0.92,
+    "pass": true
+  },
+  "lostForty": [],
+  "bStayedMedium": 10,
+  "rows": [
+    {
+      "id": "01-frog",
+      "genre": "race",
+      "a": 56.5,
+      "b": 51.5,
+      "ratio": 0.912,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        55.8,
+        56.5,
+        56.9
+      ],
+      "samplesB": [
+        56.6,
+        48.7,
+        51.5
+      ]
+    },
+    {
+      "id": "02-zombie",
+      "genre": "move_free",
+      "a": 58.7,
+      "b": 57,
+      "ratio": 0.971,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        58.7,
+        57.6,
+        58.9
+      ],
+      "samplesB": [
+        57.7,
+        57,
+        52.3
+      ]
+    },
+    {
+      "id": "03-ninja",
+      "genre": "lanes",
+      "a": 58.9,
+      "b": 58.8,
+      "ratio": 0.998,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "high",
+        "high",
+        "high"
+      ],
+      "samplesA": [
+        58.5,
+        58.9,
+        59
+      ],
+      "samplesB": [
+        58.7,
+        58.8,
+        59.6
+      ]
+    },
+    {
+      "id": "04-shark",
+      "genre": "race",
+      "a": 58.2,
+      "b": 50.8,
+      "ratio": 0.873,
+      "qualityA": [
+        "low",
+        "medium",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        58.5,
+        55.9,
+        58.2
+      ],
+      "samplesB": [
+        50.8,
+        54.7,
+        50.3
+      ]
+    },
+    {
+      "id": "05-pizza",
+      "genre": "timing",
+      "a": 59,
+      "b": 59.8,
+      "ratio": 1.014,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "high",
+        "high",
+        "high"
+      ],
+      "samplesA": [
+        59.1,
+        58.8,
+        59
+      ],
+      "samplesB": [
+        59.7,
+        59.8,
+        59.8
+      ]
+    },
+    {
+      "id": "06-cat",
+      "genre": "lanes",
+      "a": 58.7,
+      "b": 55.3,
+      "ratio": 0.942,
+      "qualityA": [
+        "medium",
+        "low",
+        "medium"
+      ],
+      "qualityB": [
+        "high",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        58.3,
+        59.6,
+        58.7
+      ],
+      "samplesB": [
+        57.9,
+        54.9,
+        55.3
+      ]
+    },
+    {
+      "id": "07-goalkeeper",
+      "genre": "ball",
+      "a": 57.3,
+      "b": 56.2,
+      "ratio": 0.981,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        57.3,
+        56.5,
+        57.5
+      ],
+      "samplesB": [
+        56.2,
+        54.9,
+        56.6
+      ]
+    },
+    {
+      "id": "08-gems",
+      "genre": "move_free",
+      "a": 56.3,
+      "b": 49.4,
+      "ratio": 0.877,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        56.3,
+        56.4,
+        56
+      ],
+      "samplesB": [
+        48.1,
+        49.4,
+        54
+      ]
+    },
+    {
+      "id": "09-astro",
+      "genre": "runner",
+      "a": 56.9,
+      "b": 51.8,
+      "ratio": 0.91,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        56.9,
+        57,
+        50.8
+      ],
+      "samplesB": [
+        51.8,
+        51.9,
+        49.2
+      ]
+    },
+    {
+      "id": "10-chef",
+      "genre": "move_free",
+      "a": 48.3,
+      "b": 46.1,
+      "ratio": 0.954,
+      "qualityA": [
+        "low",
+        "low",
+        "medium"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "medium"
+      ],
+      "samplesA": [
+        48.7,
+        48.3,
+        46.4
+      ],
+      "samplesB": [
+        46.1,
+        41.4,
+        48.7
+      ]
+    },
+    {
+      "id": "11-drum",
+      "genre": "rhythm",
+      "a": 57.4,
+      "b": 47.5,
+      "ratio": 0.828,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "low",
+        "medium"
+      ],
+      "samplesA": [
+        58.5,
+        57.4,
+        56.8
+      ],
+      "samplesB": [
+        47.5,
+        41.1,
+        50
+      ]
+    },
+    {
+      "id": "12-ghost",
+      "genre": "runner",
+      "a": 48.9,
+      "b": 43.6,
+      "ratio": 0.892,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        50.1,
+        48.9,
+        47.6
+      ],
+      "samplesB": [
+        43.3,
+        43.6,
+        44
+      ]
+    },
+    {
+      "id": "g-runner",
+      "genre": "runner",
+      "a": 57.1,
+      "b": 42.4,
+      "ratio": 0.743,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "low"
+      ],
+      "samplesA": [
+        53.5,
+        57.7,
+        57.1
+      ],
+      "samplesB": [
+        42.4,
+        48.1,
+        41.9
+      ]
+    },
+    {
+      "id": "g-race",
+      "genre": "race",
+      "a": 55,
+      "b": 45.3,
+      "ratio": 0.824,
+      "qualityA": [
+        "low",
+        "low",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "low"
+      ],
+      "samplesA": [
+        58,
+        54.8,
+        55
+      ],
+      "samplesB": [
+        42.5,
+        45.7,
+        45.3
+      ]
+    },
+    {
+      "id": "g-platform",
+      "genre": "platformer",
+      "a": 43.2,
+      "b": 40.6,
+      "ratio": 0.94,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "low",
+        "low"
+      ],
+      "samplesA": [
+        55.6,
+        43.2,
+        42.1
+      ],
+      "samplesB": [
+        48,
+        40,
+        40.6
+      ]
+    },
+    {
+      "id": "g-arena",
+      "genre": "move_free",
+      "a": 30.2,
+      "b": 31.9,
+      "ratio": 1.056,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "low"
+      ],
+      "samplesA": [
+        33.9,
+        30.2,
+        29.5
+      ],
+      "samplesB": [
+        31.9,
+        33.9,
+        28.3
+      ]
+    },
+    {
+      "id": "g-fight",
+      "genre": "move_free",
+      "a": 29.7,
+      "b": 31.3,
+      "ratio": 1.054,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "low"
+      ],
+      "samplesA": [
+        34.4,
+        26.3,
+        29.7
+      ],
+      "samplesB": [
+        35.3,
+        31.3,
+        29.1
+      ]
+    },
+    {
+      "id": "g-quest",
+      "genre": "move_free",
+      "a": 45,
+      "b": 41.6,
+      "ratio": 0.924,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "low"
+      ],
+      "samplesA": [
+        22.8,
+        45.6,
+        45
+      ],
+      "samplesB": [
+        19.8,
+        45,
+        41.6
+      ]
+    },
+    {
+      "id": "g-agar",
+      "genre": "move_free",
+      "a": 57.3,
+      "b": 48.8,
+      "ratio": 0.852,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        56.5,
+        57.9,
+        57.3
+      ],
+      "samplesB": [
+        48.8,
+        46.8,
+        53.9
+      ]
+    },
+    {
+      "id": "g-walker",
+      "genre": "walker",
+      "a": 54.7,
+      "b": 51.6,
+      "ratio": 0.943,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "medium"
+      ],
+      "samplesA": [
+        55.5,
+        53.3,
+        54.7
+      ],
+      "samplesB": [
+        51.6,
+        53,
+        51.2
+      ]
+    },
+    {
+      "id": "g-glide",
+      "genre": "glide",
+      "a": 56.9,
+      "b": 45,
+      "ratio": 0.791,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "medium"
+      ],
+      "samplesA": [
+        50.2,
+        56.9,
+        57.2
+      ],
+      "samplesB": [
+        44.3,
+        49.6,
+        45
+      ]
+    },
+    {
+      "id": "g-ball",
+      "genre": "ball",
+      "a": 51.9,
+      "b": 42.9,
+      "ratio": 0.827,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "low"
+      ],
+      "samplesA": [
+        51.9,
+        47.3,
+        52.2
+      ],
+      "samplesB": [
+        42.9,
+        39.8,
+        46.2
+      ]
+    },
+    {
+      "id": "g-flap",
+      "genre": "flap",
+      "a": 59,
+      "b": 55.8,
+      "ratio": 0.946,
+      "qualityA": [
+        "low",
+        "low",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        59,
+        59.4,
+        56.4
+      ],
+      "samplesB": [
+        54.4,
+        55.8,
+        57.5
+      ]
+    },
+    {
+      "id": "g-shooter",
+      "genre": "shooter",
+      "a": 48.1,
+      "b": 49.3,
+      "ratio": 1.025,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "low",
+        "low"
+      ],
+      "samplesA": [
+        46.2,
+        48.1,
+        53.1
+      ],
+      "samplesB": [
+        49.3,
+        41.6,
+        50.5
+      ]
+    },
+    {
+      "id": "g-throw",
+      "genre": "throw",
+      "a": 57,
+      "b": 51.1,
+      "ratio": 0.896,
+      "qualityA": [
+        "medium",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        57,
+        55.3,
+        58.1
+      ],
+      "samplesB": [
+        51.1,
+        55.4,
+        49.6
+      ]
+    },
+    {
+      "id": "g-timing",
+      "genre": "timing",
+      "a": 58.6,
+      "b": 58.5,
+      "ratio": 0.998,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "high",
+        "medium"
+      ],
+      "samplesA": [
+        57.9,
+        58.9,
+        58.6
+      ],
+      "samplesB": [
+        58.5,
+        58.5,
+        54.3
+      ]
+    },
+    {
+      "id": "g-rhythm",
+      "genre": "rhythm",
+      "a": 51.4,
+      "b": 50.8,
+      "ratio": 0.988,
+      "qualityA": [
+        "medium",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "low"
+      ],
+      "samplesA": [
+        51.4,
+        47.2,
+        58.8
+      ],
+      "samplesB": [
+        50.8,
+        50.1,
+        54.6
+      ]
+    },
+    {
+      "id": "g-duel",
+      "genre": "duel",
+      "a": 57.8,
+      "b": 56.3,
+      "ratio": 0.974,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "samplesA": [
+        57.8,
+        57.7,
+        57.9
+      ],
+      "samplesB": [
+        56.3,
+        58.1,
+        55.8
+      ]
+    },
+    {
+      "id": "g-voyage",
+      "genre": "race",
+      "a": 54.1,
+      "b": 45.7,
+      "ratio": 0.845,
+      "qualityA": [
+        "low",
+        "low",
+        "low"
+      ],
+      "qualityB": [
+        "low",
+        "medium",
+        "low"
+      ],
+      "samplesA": [
+        51.2,
+        54.2,
+        54.1
+      ],
+      "samplesB": [
+        49.1,
+        42.1,
+        45.7
+      ]
+    },
+    {
+      "id": "g-lander",
+      "genre": "race",
+      "a": 57.9,
+      "b": 59.6,
+      "ratio": 1.029,
+      "qualityA": [
+        "medium",
+        "medium",
+        "medium"
+      ],
+      "qualityB": [
+        "high",
+        "high",
+        "high"
+      ],
+      "samplesA": [
+        57.9,
+        58.6,
+        57.7
+      ],
+      "samplesB": [
+        59.6,
+        59.8,
+        59.6
+      ]
+    }
+  ]
+}

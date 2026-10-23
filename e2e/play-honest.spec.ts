@@ -45,6 +45,27 @@ test.describe('/play/[id] – honesty strip', () => {
     await page.keyboard.press('Space');
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
   });
+  // P56B T5: na telefonu se proužek zalomil do tří řádků a ubral hře plochu – teď jeden řádek s výpustkou, celý text v `title`.
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
+    test(`the strip is one line at ${String(viewport.width)}×${String(viewport.height)}, full text in its title`, async ({ page, request }) => {
+      await page.setViewportSize(viewport);
+      const game = await publish(request, 'a match 3 game with fruits');
+      const honesty = game.honesty as { reason: string };
+      await page.goto(game.url);
+      const strip = page.getByTestId('play-honest');
+      await expect(strip).toBeVisible();
+      expect((await strip.boundingBox())?.height ?? Infinity).toBeLessThanOrEqual(48);
+      const text = strip.locator('.play-honest-text');
+      await expect(text).toHaveCSS('text-overflow', 'ellipsis');
+      await expect(text).toHaveCSS('white-space', 'nowrap');
+      expect(await text.getAttribute('title')).toContain(honesty.reason);
+      // `title` na dotyku nikdo neuvidí: klepnutí text rozbalí, druhé ho zase složí.
+      await text.click();
+      await expect(text).toHaveCSS('white-space', 'normal');
+      await text.click();
+      await expect(text).toHaveCSS('white-space', 'nowrap');
+    });
+  }
   test('a match-3 sentence shows the strip and the game still runs', async ({ page, request }) => {
     const game = await publish(request, 'a match 3 game with fruits');
     expect(game.honesty).toBeDefined();
@@ -65,8 +86,8 @@ test.describe('/play/[id] – honesty strip', () => {
     const game = await publish(request, 'Explain quantum physics to my grandma.');
     await page.goto(game.url);
     await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’');
-    // Sběr v Aréně se jmenuje podle tématu věty („<téma> Hunt“), dřív běžec podle celé věty.
-    await expect(page.getByRole('heading', { name: 'Grandma Hunt' })).toBeVisible();
+    // Název je ze slov věty (P56A T8), dřív šablona sběru v Aréně „<téma> Hunt“.
+    await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());

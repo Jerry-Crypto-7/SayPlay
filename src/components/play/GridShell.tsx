@@ -415,8 +415,8 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
   const cardShown = paused && running && changing === null && !aboutOpen;
 
   return (
-    // Pod plátnem obloha sady jako u arkády (P32D T6, P33 T14): do prvního snímku ne tmavá plocha.
-    <main className="play-shell play-shell-grid" style={{ '--_sky': scene.sky } as CSSProperties}>
+    // Pod plátnem obzor sady jako u arkády (P32D T6, P33 T14, P56B T4): do prvního snímku ne tmavá plocha.
+    <main className="play-shell play-shell-grid" style={{ '--_sky': scene.horizon } as CSSProperties}>
       <div
         className="play-stage"
         aria-hidden="true"

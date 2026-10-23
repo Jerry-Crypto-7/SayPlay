@@ -32,6 +32,7 @@ import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
+import { LaneStrips } from '../lanes/LaneStrips';
 
 const m = (units: number): number => units / UNIT;
 const LANE_M = m(LANES.width);
@@ -41,8 +42,9 @@ const ENEMY = { w: m(DEFENSE.enemy.w), h: m(DEFENSE.enemy.h), d: m(DEFENSE.enemy
 const BOSS = { w: m(DEFENSE.boss.w), h: m(DEFENSE.boss.h), d: m(DEFENSE.boss.d) };
 const WALL = { z: m(DEFENSE.wall), h: m(DEFENSE.castle.h), d: m(DEFENSE.castle.d) };
 const FAR = m(DEFENSE.far);
-/** Živý plot těsně za čárou, odkud nepřátelé vycházejí. */
-const HEDGE = { z: FAR + 0.9, h: 1.7 };
+/** Živý plot těsně za čárou, odkud nepřátelé vycházejí: díly zhruba výšky plotu po celé šíři. */
+const HEDGE_W = FIELD_HALF * 2 + 3;
+const HEDGE = { z: FAR + 0.9, h: 1.7, d: 1.2, w: HEDGE_W, cells: Math.round(HEDGE_W / 1.7), cell: HEDGE_W / Math.round(HEDGE_W / 1.7) };
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 46 } as const;
 /** Kamera kouká na pole shora pod tímhle úhlem (rad); míří doprostřed mezi hrdinu a plot. */
 const PITCH = 0.95;
@@ -270,18 +272,14 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
     <>
       <FieldGround look={look} area={LAND} y={-0.03} />
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={30} />
-      {/* Pět pruhů od hradby k plotu. */}
-      {Array.from({ length: LANES.count }, (_, lane) => (
-        <mesh key={lane} position={[-laneX(lane) / UNIT, -0.01, (WALL.z + FAR) / 2]} receiveShadow>
-          <boxGeometry args={[LANE_M * 0.94, 0.04, FAR - WALL.z]} />
-          <meshStandardMaterial color={lane % 2 === 0 ? color.mint : color['mint-deep']} />
-        </mesh>
+      {/* Pět pruhů od hradby k plotu z povrchu sady (P56B T11). */}
+      <LaneStrips look={look} z0={WALL.z} z1={FAR} />
+      {/* Plot, zpoza kterého nepřátelé vycházejí: řada dílu sady (P56B T11: louka živý plot, obývák pohovky) čelem ke kameře. */}
+      {Array.from({ length: HEDGE.cells }, (_, k) => (
+        <group key={k} position={[-HEDGE.w / 2 + HEDGE.cell * (k + 0.5), 0, HEDGE.z]} rotation={[0, Math.PI, 0]}>
+          <FittedModel id={cast.kit?.block ?? 'cc0-hedge'} w={HEDGE.cell} h={HEDGE.h} d={HEDGE.d} fallback={look.tint[0]} fill />
+        </group>
       ))}
-      {/* Živý plot, zpoza kterého nepřátelé vycházejí. */}
-      <mesh position={[0, HEDGE.h / 2, HEDGE.z]}>
-        <boxGeometry args={[FIELD_HALF * 2 + 3, HEDGE.h, 1.2]} />
-        <meshStandardMaterial color={color.grass} roughness={1} />
-      </mesh>
       {/* Hradba s cimbuřím a dvěma věžemi (bráněná věc z věty). */}
       <group userData={{ frame: 'target', item: 'castle' }}>
         <mesh position={[0, WALL.h / 2, WALL.z - WALL.d / 2]} castShadow receiveShadow>

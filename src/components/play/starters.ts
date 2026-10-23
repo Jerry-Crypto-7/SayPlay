@@ -109,6 +109,8 @@ export const STARTERS: readonly Starter[] = [
 export const CHANGE_ONE_THING = 'Change one thing';
 export const YOU_DID_IT = 'You did it!';
 export const SO_CLOSE = 'So close.';
+/** Prohra bez jediného bodu (P56A T9): „So close.“ při nule lže; sloveso tlačítka z `11-voice-copy.md`. */
+export const TRY_AGAIN = 'Try again!';
 /** Překonaný osobní rekord (P36B T2) – na výsledku i v HUD. */
 export const NEW_BEST = 'New best!';
 export const DARE_A_FRIEND = 'Dare a friend to beat it';

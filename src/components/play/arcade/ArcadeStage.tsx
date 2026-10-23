@@ -14,9 +14,10 @@
  */
 
 import { addAfterEffect, useThree } from '@react-three/fiber';
-import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
+import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
@@ -55,7 +56,8 @@ import { type ToyTarget, appliedToyOf } from './toy/applyToy';
 import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
-import { HostedCanvas } from '../feed/StageHost';
+import { KeepFrame } from '../feed/snapshot-cache';
+import { DrawWhenCompiled, FreshCamera, HostedCanvas } from '../feed/StageHost';
 import type { StageTunnel } from '../feed/stage-tunnel';
 
 /** Fire remains available when independent parts wrap the native weapon rule. */
@@ -690,6 +692,8 @@ const StageCanvas = memo(function StageCanvas({
   heroAction,
   ghost,
   host,
+  keepFrame,
+  sceneKey,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -702,7 +706,11 @@ const StageCanvas = memo(function StageCanvas({
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
   readonly host?: StageTunnel;
+  readonly keepFrame?: string;
+  readonly sceneKey?: string;
 }) {
+  // První scéna plátna nemá předchozí snímek, který by mohla držet (`DrawWhenCompiled`).
+  const [firstScene] = useState(sceneKey);
   const base = baseControlOf(session.world.control);
   const control = base.id;
   const stage = stageOf(control);
@@ -713,17 +721,17 @@ const StageCanvas = memo(function StageCanvas({
   const rivalModel: RivalModel | undefined =
     rival === undefined
       ? undefined
-      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" rim />);
+      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback={brand['tomato-deep']} /> : <FittedModel id={rival} w={w} h={h} d={d} fallback={brand['tomato-deep']} rim />);
   // P43 T14b: hrdina souboje a rytmu z popisku (rytíř, pirát, babička); výchozí průzkumník zůstává postavou z kvádrů.
   const heroRig = riggedCharacter(cast.player);
   const castHero: RivalModel | undefined =
     cast.player === 'explorer'
       ? undefined
-      : (w, h, d) => (heroRig !== undefined ? <RiggedModel character={heroRig} h={h} clip={() => 'idle'} fallback="#2563eb" /> : <FittedModel id={cast.player} w={w} h={h} d={d} fallback="#2563eb" character rim />);
+      : (w, h, d) => (heroRig !== undefined ? <RiggedModel character={heroRig} h={h} clip={() => 'idle'} fallback={brand['sky-deep']} /> : <FittedModel id={cast.player} w={w} h={h} d={d} fallback={brand['sky-deep']} character rim />);
   // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
   const { note, block } = cast.props;
-  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
-  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
+  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback={look.tint[0]} />;
+  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback={look.tint[0]} fill />;
   const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
@@ -731,9 +739,13 @@ const StageCanvas = memo(function StageCanvas({
       <RedrawOnChange session={session} />
       <FrameProbe control={control} />
       <RenderProbe />
+      {keepFrame !== undefined && <KeepFrame versionId={keepFrame} />}
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
       {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
+      <Fragment key={sceneKey}>
+      {sceneKey !== undefined && <FreshCamera />}
+      {sceneKey !== undefined && sceneKey !== firstScene && <DrawWhenCompiled />}
       {stage.scene === 'duel' ? (
         <DuelScene session={session} look={look} heroModel={castHero} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
       ) : (
@@ -764,6 +776,7 @@ const StageCanvas = memo(function StageCanvas({
           )}
         </>
       )}
+      </Fragment>
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
@@ -785,6 +798,8 @@ export default function ArcadeStage({
   abilityWords,
   overlay,
   host,
+  keepFrame,
+  sceneKey,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -807,6 +822,13 @@ export default function ArcadeStage({
   readonly overlay?: ReactNode;
   /** Trvalé plátno feedu (P54A T5, `feed/StageHost.tsx`): scéna se kreslí do něj, vlastní `<Canvas>` nevznikne. */
   readonly host?: StageTunnel;
+  /** Verze hry, jejíž snímek se po prvních snímcích uloží přes reload (P56B T12, `KeepFrame`). */
+  readonly keepFrame?: string;
+  /**
+   * Klíč scény žánru (kolo řetězu, P56C T13a): jeho změna postaví znovu jen scénu žánru a kameru; rig, skládač,
+   * obloha a efekty zůstanou i s programy shaderů. Bez klíče se scéna remountuje jen se změnou žánru.
+   */
+  readonly sceneKey?: string;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -846,7 +868,11 @@ export default function ArcadeStage({
   const ended = useSyncExternalStore(session.subscribe, () => session.snapshot().runState !== 'running', () => false);
   const [settling, setSettling] = useState(false);
   useEffect(() => {
-    if (!ended) return;
+    // Nová relace bez remountu (kolo řetězu, `sceneKey`) nebo restart: úklid zrušil časovač, klip konce už neběží.
+    if (!ended) {
+      setSettling(false);
+      return;
+    }
     setSettling(true);
     const timer = window.setTimeout(() => setSettling(false), END_CLIP_MS);
     return () => window.clearTimeout(timer);
@@ -855,7 +881,7 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} />
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
