@@ -29,6 +29,7 @@ import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
 import type { Box } from '../look/ground';
+import type { Volume } from '../look/landmark-places';
 import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -115,6 +116,8 @@ export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
 const HERO_M = { w: 1.2, h: 1.8, d: 1.6 };
 const HERO_AT: readonly [number, number, number] = [-(TIMING.amplitude / UNIT + 1), 0, -2.2];
 const HERO_TURN = (3 * Math.PI) / 4;
+/** Místo hrdiny (půdorys natočeného kvádru): rámující kus kulis ho v obraze nezakryje – ledový oblouk schoval tučňáka (s47). */
+const HERO_PLAY: readonly Volume[] = [{ x0: HERO_AT[0] - 1, y0: 0, z0: HERO_AT[2] - 1, x1: HERO_AT[0] + 1, y1: HERO_M.h, z1: HERO_AT[2] + 1 }];
 
 /** Poskok po trefě (P45D T11): tak dlouho (s) je tělo ve vzduchu a tak vysoko (podíl výšky) vyskočí. */
 const BEAT_HOP_S = 0.24;
@@ -259,7 +262,7 @@ export function TimingScene({
       </group>
       {/* Kulisa za mlhou (P46G T7) za řadou kulis; vegetace ne – plocha je jen věž a kyv jezdce. */}
       <HorizonBackdrop look={scene} seed={world.seed} clear={0} beyond={BACKDROP_BEYOND} />
-      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} />
+      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} play={heroModel === undefined ? undefined : HERO_PLAY} />
       <mesh position={[0, base.h / 2, 0]}>
         <boxGeometry args={[base.w, base.h, depth]} />
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />
