@@ -39,3 +39,17 @@ Další: dlouhé věty karet (6 s), stránka neříká, že z věty vznikne hra 
 - **iPhone = WebKit na Windows.** Film běží při hustotě 1, protože tento WebKit po zmenšení plátna přestane plátno ukazovat (`webkit.md`). Časy jsou jen orientační.
 - **Stav AI verze ve filmu odpovídá „pracuji“.** Lokální server bez modelu by verzi hned vzdal a ukázal toast „Couldn't make the full-detail version“, který porotce na nasazení v prvních 10 s nevidí.
 - **Inference:** ztráta 2 (rychlá prohra) je zčásti dílem skriptu – ťuká doprostřed, neuhýbá. Skutečný porotce prohraje později, ale hra mu také neřekne, co ho zasáhlo.
+
+## Po T6 (23. 10., build `8f5c46bf`, `first-impression-after.json`, listy `first-impression-after/*.jpg`)
+
+Opravy: `46039323` přepínač verze nad zónami Dodge/Strike + karta „Tap to start“ vedle hrdiny na desktopu · `49a3a8b3` po prohře do 10 s karta zopakuje nápovědu hry · `f5e91311` „Make it!“ a podtitul na první obrazovce telefonu · `8f5c46bf` cíl na telefonu na dva řádky místo výpustky.
+
+| | Před (T5) | Po (T6) |
+|---|---|---|
+| Rozumím do 2 s – Pixel 7 / iPhone / desktop | 2/3 · 2/3 · 3/3 | **3/3 · 3/3 · 3/3** |
+| Ovládání nejasné (soudci na profil) | 3 · 3 · 3 | 3 · 3 · 3 (brána ≤ 1 **nesplněná**) |
+| Ztráta „ovládání“ celkem | 37 s | 27 s |
+| p50 „Make it!“ → vstup – Pixel 7 / iPhone / desktop | 0,9 · 2,9 · 2,1 s | 1,8 · 1,0 · 2,4 s (Pixel 7 > 1,5 s) |
+
+- **Čím si soudci stěžují teď (jiné než v T5):** nevidí, kdy hydra napřahuje a kdy je otevřená (hydra je drobný červený obrys), tip „Tap right to strike, tap left to dodge“ chtějí před bojem, ne až po prohře; na desktopu po startu žádné klávesy (karta zmizí prvním stiskem). Na iPhonu karty nápadů teď leží pod lištou Make/Play.
+- **Časy:** stroj při měření 96–100 % CPU (74 procesů node jiných běhů). Prokládané A/B starý build T5 (3188) × nový (3187), 2 kola po 3 bězích: desktop 2,47 × 2,50 s, Pixel 7 2,29 × 3,07 s (rozptyl 1,0–5,4 s), iPhone 6,4 × 5,0 s. **Inference:** starý build bránu pod stejnou zátěží nesplní taky, měřitelné zhoršení opravami není; mez 1,5 s Pixel 7 je potřeba přeměřit v klidu.
