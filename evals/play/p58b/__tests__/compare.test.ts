@@ -226,6 +226,8 @@ describe('P58B reader comparison', () => {
       { answer: { status: 529 }, error: 'unavailable', usd: worst },
       { answer: { status: 400 }, error: 'rejected', usd: worst },
       { answer: { stop: 'refusal', text: null, usage: { input_tokens: 100, output_tokens: 5 } }, error: 'invalid', usd: (100 * 4 + 5 * 20) / 1e6 },
+      // Odmítnutí s textem, který schéma projde, je pořád odmítnutí – rozhoduje `stop_reason`, ne tvar textu.
+      { answer: { stop: 'refusal' }, error: 'invalid', usd: (100 * 4 + 300 * 20) / 1e6 },
       { answer: { stop: 'max_tokens', text: '{"control":', usage: { input_tokens: 100, output_tokens: 1024 } }, error: 'invalid', usd: (100 * 4 + 1024 * 20) / 1e6 },
       { answer: { text: JSON.stringify({ ...READING, hero: 'x'.repeat(60) }) }, error: 'invalid', usd: (100 * 4 + 300 * 20) / 1e6 },
       { answer: { usage: { input_tokens: -1, output_tokens: 300 } }, error: 'none', usd: worst },
