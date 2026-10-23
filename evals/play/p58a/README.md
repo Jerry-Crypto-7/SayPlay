@@ -93,3 +93,20 @@ Práh platí, jen když nejlepší řez (aspoň 3 slova na každé straně) má 
 - Odmítnutá slova zůstávají na nejbližším modelu z T6.
 
 **Inference:** platí strop řetězu, ne počtu kol. 3D z TRELLIS u zvířat a drobných věcí končí na 4–6 z 10 i z poznaného obrázku. Další kolo se stejným řetězem by přidalo jednotky. Víc by mohla dát ruční úprava v Blenderu nebo CC0 modely pro zvířata (bulldog, cheetah).
+
+## Dev kontrola po T3–T7 (T8)
+
+Na `9b0a37f7` stejně jako T1: tatáž nahraná čtení, tentýž soudce po sadě (audit-12 Codex, otevřená sada P56A Opus). Souhrn `dev-result.json` (krok 4 potřebuje `node --experimental-strip-types --import ./scripts/ts-paths.mjs evals/play/p58a/visibility.mjs …`). Všech 92 her proběhlo na jednom serveru bez zaseknutí.
+
+| | celé věty | slova | hrdina | protivník/věc |
+|---|---|---|---|---|
+| audit-12 (Codex) | 2/12 (T1 4/12) | 7/18 (9/18) | 2/6 (2/6) | 5/12 (7/12) |
+| otevřená P56A (Opus) | 9/80 (6/80) | 32/128 (26/128) | 17/59 (15/59) | 15/69 (11/69) |
+| **celkem** | **11/92 = 0,12** (0,11) | **39/146 = 0,27** (0,24) | 19/65 (17/65) | 20/81 (18/81) |
+
+- Proti T1: 8 slov nově vidět, 4 ztracená (shark, asteroid, pigeon, bulldog). Věty: 4 získané, 3 ztracené, rozdíl je v mezích šumu. Cíl 0,5 / 0,75 je daleko.
+- **Proč dál chybí** (`why-unseen.mjs` nad `dev-result.json`, 107 neviděných, T2 111): no-role 32 (44), no-model 2 (9), off-screen 6 (4), too-small 42 (0, vše hrdinové), look 25 (54). Nejčastější neviděná slova: zombie 4, cat 3, walrus 3, pizza 2, skeleton 2.
+- **Popisek jména (T5) soudce neviděl ani jednou:** je to text stránky a snímek `visible.mjs` text stránky skrývá. Porotce ve hře popisek uvidí, měření ne.
+- **Precision (s06, s20, s44, okem):** hrdina v záběru vůbec není, je vidět jen lišta a sloupek. Věc na ručičce: s20 palačinky poznané (nově), s06 patty soudce četl jako sendvič, s44 kokos jako hnědý kotouč.
+
+**Inference:** „too-small“ je ve skutečnosti „look“. Práh 30,7 % stojí na 4 hrdinech nad ním a 42 hrdinů má medián 21 % výšky plátna, tedy cíl T3 splňují. Zhruba 67 slov má správný model na obrazovce a soudce je přesto nepozná. 14 z těch 42 jsou hry precision/stack, kde sonda bere jako hrdinu houpající se díl a postava v záběru chybí – to je nejužší cílená oprava (T8, druhé kolo).
