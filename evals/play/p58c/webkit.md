@@ -93,18 +93,22 @@ Sonda schopností prohlížeče 23. 10. (Playwright WebKit na Windows proti Chro
 - **Proč zvuk:** podle pravidla HTML o aktivaci uživatelem je prst gestem až při zvednutí. `pointerdown` prstu gesto nedává, takže telefon mohl zvuk z prvního ťuku odmítnout. Na WebKitu pod Windows to vidět nejde (nemá `AudioContext`), drží to jen jednotkový test.
 - **Sdílení a klip** jsem jen přečetl v kódu. Před `navigator.share` není žádné `await`, takže gesto nevyprší, a klip zkouší nejdřív MP4. Spustit to tady nejde.
 
-### Otevřené – kolo s davem se na iPhonu nevykreslí
+### Vyřešeno – „prázdné“ kolo s davem je chyba WebKitu pro Windows, ne hry
 
-**Fakt:** řetěz z věty „a fox runs through a forest dodging logs and rocks“ (`/play/053c4e61…`), kolo 2 „Grow your crowd, then beat the ogre!“ (`data-control="crowd"`). Snímky jsou v `D:/caches/p58c/`:
+**Příznak:** řetěz z věty „a fox runs through a forest dodging logs and rocks“, kolo 2 „Grow your crowd, then beat the ogre!“ (`data-control="crowd"`) ukázalo na iPhone 15 jen mátovou plochu, HUD a štítek „5“; Pixel 7 tutéž scénu kreslí.
 
-- **Pixel 7:** dráha, brány ×2/+4, liška a dav (`pixel/iphone-runner-1-tapped.png`).
-- **iPhone 15 (WebKit):** jen mátová plocha, HUD a štítek „5“ (`iphone-runner-1-tapped.png`).
-- **Ťuky a čas:** ťuky se počítají (`data-input-at` 5/6), tiky běží.
-- **Plátno:** viditelné, kontext WebGL není ztracený, chyba v konzoli žádná. Má ale 393×659 při 1×, kdežto kolo 1 mělo 589×988 při 1,5×.
+**Fakta (snímky v `D:/caches/p58c/`):**
 
-**Kolo 1 (přeskakování řad) se na iPhonu vykreslí stejně jako na Pixelu.** Gesta jsou tím na iPhone profilu ověřená snímkem jen pro kolo 1.
+- **Nezáleží na kole, ale na poklesu kvality.** Kolo 1 na iPhonu zmizí taky (`tier-iphone-5.png`), přesně když úroveň spadne z `medium` na `low` a plátno se zmenší z 589×988 na 393×659. Desktopové Safari zmizí už při `high` → `medium` (2550×1430 → 1912×1072), kde žádné MSAA není.
+- **WebGL kreslí dál celou scénu.** Pixely čtené z plátna hned po vykreslení mají po poklesu barvy lišky a trávy, neprůhledné (`readPixels`, 5 bodů, beze změny proti `high`); chyba GL žádná, MSAA cíle RGBA8 i RGBA16F kompletní.
+- **Minimální stránka bez aplikace to zopakuje:** plátno WebGL, které každý snímek maže oranžovou, po zmenšení `canvas.width` z obrazovky WebKitu zmizí; Chromium ho ukazuje dál (`resize-min-webkit.png`).
+- **Kolo s davem vyfocené přímo z plátna** (`toDataURL` po vykreslení) na iPhone profilu: trať, brány ×2/+4, liška, dav; ťuky vlevo a vpravo ho přesunou (`playerX` −0,551 → +0,551) – `crowd-iphone-1-left.png`, `crowd-iphone-2-right.png`. Gesta jsou tím ověřená snímkem i pro kolo 2.
 
-**Inference:** scéna kola s davem na WebKitu nekreslí nic, nebo ji něco překrývá. Zda jde o rozdíl WebKitu na Windows (překlad shaderů přes ANGLE hlásí varování X3595), nebo o chybu, kterou uvidí i skutečný iPhone, zatím nevím.
+**Závěr:** Playwright WebKit pro Windows přestane plátno skládat na obrazovku, jakmile se jeho kreslicí plocha zmenší. Hra nic neopravuje.
+
+**Inference:** skutečné Safari skládá plátno jinou cestou (iOS, macOS) a zmenšení plátna při změně kvality je v Three.js běžné. Při zkoušce na skutečném iPhonu (P59) ale hlídat, jestli scéna nezmizí 3–5 s po startu – to je chvíle poklesu kvality.
+
+**Pro měření:** snímek stránky z WebKitu na Windows po poklesu kvality ukáže jen pozadí. Snímky scény na WebKitu brát z plátna (`toDataURL` v `requestAnimationFrame` hned po vykreslení), ne `page.screenshot`.
 
 ### Mimo Safari (zapsáno, neopraveno)
 
