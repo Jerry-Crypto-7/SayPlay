@@ -8,8 +8,9 @@
  *   --models gpt-oss-20b@groq,gpt-oss-120b@cerebras,claude-cli:opus --set evals/play/p56a/holdout.json,evals/play/p55/holdout.json --cap-usd 2 [--out <soubor>]
  * ```
  *
- * - Hostované modely jdou týmž transportem jako produkt (`upstreamBranch`, `openai:`), klíč z proměnné kandidáta
- *   (`CANDIDATES`, např. `GROQ_API_KEY`) – ven nikdy. Volání má 30 s; rozpočet 700 ms se tu neuplatní, latence se jen zapíše.
+ * - Hostované modely s OpenAI API jdou týmž transportem jako produkt (`upstreamBranch`, `openai:`), Anthropic API
+ *   vlastním adaptérem (`anthropicReader`; produktová cesta Messages schéma neposílá). Klíč z proměnné kandidáta
+ *   (`CANDIDATES`, např. `OPENAI_API_KEY`) – ven nikdy. Volání má 30 s; rozpočet 700 ms se tu neuplatní, latence se jen zapíše.
  * - `claude-cli:opus` je strop kvality, ne kandidát: `claude -p` na předplatné (`ANTHROPIC_API_KEY` se dítěti nepředá),
  *   jeho cena je přepočet z ceníku (`listUsd`) a do `--cap-usd` se nepočítá.
  * - `--cap-usd` je povinný: před každým placeným voláním se rezervuje nejhorší případ, a nevejde-li se pod strop, běh
@@ -48,8 +49,8 @@ const BUDGET_MS = 700;
 
 export interface Candidate {
   readonly id: string;
-  readonly kind: 'openai' | 'claude-cli';
-  /** `openai:<kořen bez /v1>` u hostovaných; u `claude-cli` prázdné. */
+  readonly kind: 'openai' | 'anthropic' | 'claude-cli';
+  /** `openai:<kořen bez /v1>` u OpenAI API; celá adresa Messages u `anthropic`; u `claude-cli` prázdné. */
   readonly endpoint: string;
   readonly model: string;
   /** Proměnná s klíčem poskytovatele; `null` u `claude-cli`. */
@@ -57,6 +58,8 @@ export interface Candidate {
   readonly effort: Effort;
   /** Ceník za Mtok; u `claude-cli` nula (předplatné). */
   readonly pricing: Pricing;
+  /** Jen `anthropic`: cena zápisu a čtení cache jako násobek ceny vstupu. */
+  readonly cache?: { readonly write: number; readonly read: number };
   /** Pole těla navíc nebo pryč u poskytovatele, který jinak uvažování nevypne. */
   readonly body?: { readonly omit?: readonly string[]; readonly set?: Readonly<Record<string, unknown>> };
 }
@@ -82,6 +85,17 @@ export const CANDIDATES: Readonly<Record<string, Candidate>> = {
   },
   'claude-cli:opus': {
     id: 'claude-cli:opus', kind: 'claude-cli', endpoint: '', model: 'claude-opus-5-5', keyEnv: null, effort: 'low', pricing: { usdPerMTokIn: 0, usdPerMTokOut: 0 },
+  },
+  // T3 po rozhodnutí majitele 23. 10. srovnává jen tyhle dva. Opus 5.5: 4/20 USD za Mtok, čtení cache 0,05×, zápis 1,25×
+  // (ceník Anthropicu k 6. 10. 2026). Astra: 10/50 USD za Mtok podle ceníkových přehledů k 11. 10. 2026; automatickou
+  // slevu OpenAI za cache produktová cesta nevidí, takže její útrata je horní mez.
+  'opus-5.5@anthropic': {
+    id: 'opus-5.5@anthropic', kind: 'anthropic', endpoint: 'https://api.anthropic.com/v1/messages', model: 'claude-opus-5-5', keyEnv: 'ANTHROPIC_API_KEY', effort: 'low',
+    pricing: { usdPerMTokIn: 4, usdPerMTokOut: 20 }, cache: { write: 1.25, read: 0.05 },
+  },
+  'astra@openai': {
+    id: 'astra@openai', kind: 'openai', endpoint: 'openai:https://api.openai.com', model: 'gpt-6-astra', keyEnv: 'OPENAI_API_KEY', effort: 'low',
+    pricing: { usdPerMTokIn: 10, usdPerMTokOut: 50 },
   },
 };
 
@@ -205,6 +219,100 @@ function hostedConfig(candidate: Candidate, apiKey: string): UpstreamConfig {
   };
 }
 
+/** Jedno placené čtení: tělo odpovědi nebo proč žádné, účtenka a útrata (bez účtenky nejhorší případ). */
+interface HostedRead { readonly body: unknown; readonly failure: { readonly error: ReadError; readonly detail: string } | null; readonly usage: Usage | null; readonly usd: number }
+export interface HostedReader { worstCaseUsd(call: GenerationCall): number; read(call: GenerationCall): Promise<HostedRead> }
+
+function openaiReader(candidate: Candidate, apiKey: string, fetchImpl: typeof fetch): HostedReader {
+  const branch = upstreamBranch(hostedConfig(candidate, apiKey), fetchImpl);
+  return {
+    worstCaseUsd: (call) => branch.worstCaseUsd(call),
+    async read(call) {
+      const outcome = await branch.generate(call);
+      const usd = outcome.usage === null ? branch.worstCaseUsd(call) : costUsd(outcome.usage, candidate.pricing);
+      if (outcome.ok) return { body: outcome.body, failure: null, usage: outcome.usage, usd };
+      const error = outcome.reason === 'MALFORMED_RESPONSE' ? 'invalid' : outcome.reason === 'UPSTREAM_REJECTED' ? 'rejected' : 'unavailable';
+      return { body: undefined, failure: { error, detail: outcome.detail }, usage: outcome.usage, usd };
+    },
+  };
+}
+
+/** Klíče JSON Schema, které structured outputs Anthropicu odmítnou; hlídá je dál `readingSchema` po odpovědi. */
+const ANTHROPIC_UNSUPPORTED = new Set(['minLength', 'maxLength', 'minimum', 'maximum', 'minItems', 'maxItems']);
+
+/** Schéma čtení bez omezení, která Anthropic nebere; jména vlastností (`properties`) se nefiltrují. */
+export function anthropicSchema(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(anthropicSchema);
+  if (node === null || typeof node !== 'object') return node;
+  return Object.fromEntries(Object.entries(node).flatMap(([key, value]) => {
+    if (ANTHROPIC_UNSUPPORTED.has(key)) return [];
+    if (key !== 'properties') return [[key, anthropicSchema(value)]];
+    return [[key, Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([name, sub]) => [name, anthropicSchema(sub)]))]];
+  }));
+}
+
+/**
+ * Anthropic Messages API: týž systémový prompt a schéma (`output_config.format`) jako ostatní, úsilí z kandidáta
+ * (Opus 5.5 uvažování vypnout nedovolí, `low` je nejméně). Systémový prompt nese bod cache – je u každé věty stejný,
+ * takže od druhého volání se čte z cache, stejně jako OpenAI cachuje sám. Záložní model při odmítnutí (`fallbacks`)
+ * se schválně neposílá: odpověď by pak nebyla od měřeného modelu. Odmítnutí nebo useknutí je neplatná odpověď.
+ * Klíč vázaný na uživatele (`sk-ant-usr…`) API pustí jen s hlavičkou `anthropic-workspace-id` (`workspaceId`, z
+ * `ANTHROPIC_WORKSPACE_ID`); klíč jednoho pracovního prostoru ji nepotřebuje.
+ */
+export function anthropicReader(candidate: Candidate, apiKey: string, fetchImpl: typeof fetch, workspaceId = ''): HostedReader {
+  const { usdPerMTokIn: input, usdPerMTokOut: output } = candidate.pricing;
+  const cache = candidate.cache ?? { write: 1, read: 1 };
+  // Jeden token na znak jako `upstream.ts`, a celý vstup jako zápis do cache – dražší než čerstvý vstup.
+  const worstCaseUsd = (call: GenerationCall) => ((call.request.system.length + call.request.user.length) * input * Math.max(1, cache.write) + MAX_OUTPUT_TOKENS * output) / 1e6;
+  // Záporná, chybějící nebo nulová účtenka je nečitelná (jako `usageOf` v `upstream.ts`) a účtuje se nejhorším případem.
+  const receipt = (raw: unknown): { usage: Usage; usd: number } | null => {
+    const counts = (raw ?? {}) as Record<string, unknown>;
+    const [fresh, out, written, cached] = [counts.input_tokens, counts.output_tokens, counts.cache_creation_input_tokens ?? 0, counts.cache_read_input_tokens ?? 0];
+    if (typeof fresh !== 'number' || typeof out !== 'number' || typeof written !== 'number' || typeof cached !== 'number') return null;
+    if (!(fresh >= 0 && out >= 0 && written >= 0 && cached >= 0) || fresh + out + written + cached === 0) return null;
+    return { usage: { inputTokens: fresh + written + cached, outputTokens: out }, usd: ((fresh + written * cache.write + cached * cache.read) * input + out * output) / 1e6 };
+  };
+  return {
+    worstCaseUsd,
+    async read(call) {
+      const worst = worstCaseUsd(call);
+      const fail = (error: ReadError, detail: string, paid: { usage: Usage; usd: number } | null = null): HostedRead => ({ body: undefined, failure: { error, detail }, usage: paid?.usage ?? null, usd: paid?.usd ?? worst });
+      let response: Response;
+      try {
+        response = await fetchImpl(candidate.endpoint, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', ...(workspaceId === '' ? {} : { 'anthropic-workspace-id': workspaceId }) },
+          body: JSON.stringify({
+            model: candidate.model,
+            max_tokens: MAX_OUTPUT_TOKENS,
+            output_config: { effort: candidate.effort, format: { type: 'json_schema', schema: anthropicSchema(call.request.outputSchema) } },
+            system: [{ type: 'text', text: call.request.system, cache_control: { type: 'ephemeral' } }],
+            messages: [{ role: 'user', content: call.request.user }],
+          }),
+          signal: AbortSignal.timeout(HOSTED_TIMEOUT_MS),
+        });
+      } catch (thrown) {
+        return fail('unavailable', `the Anthropic call did not complete: ${(thrown as Error).message}`);
+      }
+      if (!response.ok) return fail(response.status >= 500 || response.status === 429 ? 'unavailable' : 'rejected', `Anthropic answered ${response.status}: ${(await response.text()).slice(0, 160)}`);
+      let payload: { content?: { type?: unknown; text?: unknown }[]; stop_reason?: unknown; usage?: unknown };
+      try {
+        payload = (await response.json()) as typeof payload;
+      } catch (thrown) {
+        return fail('invalid', `the Anthropic answer is not JSON: ${(thrown as Error).message}`);
+      }
+      const paid = receipt(payload.usage);
+      const text = payload.content?.find((block) => block.type === 'text')?.text;
+      if (payload.stop_reason !== 'end_turn' || typeof text !== 'string') return fail('invalid', `Anthropic stopped with ${String(payload.stop_reason)}${typeof text === 'string' ? '' : ', no text block'}`, paid);
+      try {
+        return { body: JSON.parse(text) as unknown, failure: null, usage: paid?.usage ?? null, usd: paid?.usd ?? worst };
+      } catch (thrown) {
+        return fail('invalid', `the Anthropic text is not JSON: ${(thrown as Error).message}`, paid);
+      }
+    },
+  };
+}
+
 const quantile = (values: readonly number[], q: number): number | null => {
   const sorted = [...values].sort((a, b) => a - b);
   return sorted.length === 0 ? null : sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]!;
@@ -269,8 +377,10 @@ export async function compareReaders(options: { readonly models: readonly Candid
       for (const model of options.models) {
         const call: GenerationCall = { prompt: sentence.text, request: { model: model.model, system, user: sentence.text, outputSchema: READING_JSON_SCHEMA } };
         let firstByteAt: number | null = null;
-        const branch = model.kind === 'openai' ? upstreamBranch(hostedConfig(model, keys.get(model.id)!), timedFetch(fetchImpl, model, now, (at) => { firstByteAt ??= at; })) : null;
-        const worstUsd = branch === null ? 0 : branch.worstCaseUsd(call);
+        const timed = timedFetch(fetchImpl, model, now, (at) => { firstByteAt ??= at; });
+        const reader = model.kind === 'openai' ? openaiReader(model, keys.get(model.id)!, timed)
+          : model.kind === 'anthropic' ? anthropicReader(model, keys.get(model.id)!, timed, (env.ANTHROPIC_WORKSPACE_ID ?? '').trim()) : null;
+        const worstUsd = reader === null ? 0 : reader.worstCaseUsd(call);
         if (spentUsd + worstUsd > options.capUsd) {
           stopped = { by: 'cap', set: set.name, id: sentence.id, model: model.id };
           if (Object.keys(row.models).length > 0) rows.push(row);
@@ -280,12 +390,10 @@ export async function compareReaders(options: { readonly models: readonly Candid
         let body: unknown;
         let failure: { error: ReadError; detail: string } | null = null;
         let usage: Usage | null = null;
+        let usd = 0;
         let listUsd: number | null = null;
-        if (branch !== null) {
-          const outcome = await branch.generate(call);
-          usage = outcome.usage;
-          if (outcome.ok) body = outcome.body;
-          else failure = { error: outcome.reason === 'MALFORMED_RESPONSE' ? 'invalid' : outcome.reason === 'UPSTREAM_REJECTED' ? 'rejected' : 'unavailable', detail: outcome.detail };
+        if (reader !== null) {
+          ({ body, failure, usage, usd } = await reader.read(call));
         } else {
           const outcome = await runClaude({ model: model.model, system, user: sentence.text, schema: READING_JSON_SCHEMA, timeoutMs: CLAUDE_TIMEOUT_MS });
           listUsd = outcome.listUsd;
@@ -296,7 +404,6 @@ export async function compareReaders(options: { readonly models: readonly Candid
           } else failure = { error: 'unavailable', detail: outcome.detail };
         }
         const totalMs = Math.round(now() - started);
-        const usd = branch === null ? 0 : usage === null ? worstUsd : costUsd(usage, model.pricing);
         spentUsd += usd;
         const parsed = failure === null ? readingSchema.safeParse(body) : null;
         if (parsed !== null && !parsed.success) failure = { error: 'invalid', detail: parsed.error.issues[0]?.message ?? 'the answer breaks the reading schema' };
@@ -404,7 +511,7 @@ async function main(): Promise<void> {
     sets: setPaths.map((path) => relative(ROOT, resolve(ROOT, path)).replaceAll('\\', '/')),
     models: models.map((id) => {
       const { id: _id, keyEnv: _key, ...rest } = CANDIDATES[id]!;
-      return { id, ...rest, endpoint: rest.endpoint === '' ? 'claude -p' : new URL(rest.endpoint.slice('openai:'.length)).host };
+      return { id, ...rest, endpoint: rest.endpoint === '' ? 'claude -p' : new URL(rest.endpoint.replace(/^openai:/, '')).host };
     }),
     ...result,
   }, null, 1)}\n`);

@@ -93371,7 +93371,7 @@
         "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
       ],
       "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
-      "reviewNote": "Od 12. 10. 2026 (P46F) slepý soudce generovaných 3D modelů a předkontrola obrázku před TRELLIS: scripts/p37d/judge-sheet.mjs --judge claude, prázdný adresář jen s obrázkem, nástroj jen Read. Odpověď (jméno předmětu) rozhoduje, jestli model jde do knihovny; do knihovny ani do trénovacích dat se z ní nic nepíše. Produkt ho nevolá."
+      "reviewNote": "Od 12. 10. 2026 (P46F) slepý soudce generovaných 3D modelů a předkontrola obrázku před TRELLIS: scripts/p37d/judge-sheet.mjs --judge claude, prázdný adresář jen s obrázkem, nástroj jen Read. Odpověď (jméno předmětu) rozhoduje, jestli model jde do knihovny; do knihovny ani do trénovacích dat se z ní nic nepíše. Produkt ho nevolá. Od 23. 10. 2026 (P58B T3) i kandidát na čtečku vět: evals/play/p58b/compare.measure.ts ho volá přes placené Anthropic Messages API s klíčem majitele a stropem --cap-usd; jen měření, výstupy nikdy do trénovacích dat ani příkladů v promptu."
     },
     {
       "name": "claude-sonnet-5",
@@ -93781,6 +93781,18 @@
       ]
     },
     {
+      "name": "Anthropic Messages API (reader comparison)",
+      "kind": "api",
+      "source": "https://api.anthropic.com/v1/messages",
+      "authorOrProvider": "Anthropic",
+      "license": "komerční podmínky služby (Anthropic Commercial Terms)",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
+      "reviewNote": "P58B T3: evals/play/p58b/compare.measure.ts sends the dev sentences to claude-opus-5-5 here (structured outputs, effort low, the system prompt cached) to compare it with gpt-6-astra as the sentence reader, with the owner's key from .env.local and a --cap-usd spend cap. Measurement only; the product does not call it unless T4 configures it as the reader. Outputs are never used as training data or prompt examples (plan P58B, run rules)."
+    },
+    {
       "name": "Cerebras Inference API (reader comparison)",
       "kind": "api",
       "source": "https://api.cerebras.ai/v1/chat/completions",
@@ -93899,7 +93911,7 @@
         "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
-      "reviewNote": "Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output."
+      "reviewNote": "Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output. P58B T3 also sends the dev sentences to gpt-6-astra here to compare sentence readers (evals/play/p58b/compare.measure.ts, --cap-usd spend cap); measurement only."
     }
   ]
 }
