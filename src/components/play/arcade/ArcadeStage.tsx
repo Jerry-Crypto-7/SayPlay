@@ -101,6 +101,8 @@ export interface FrameReport {
   /** Kolik inkoustových obalů (obrys, P36C T6) sítě hrdiny nesou; obrys nezávisí na úrovni kvality. */
   readonly heroInk: number;
   readonly target: FrameBox | null;
+  /** Položka věty (`userData.item`) nejbližšího cíle, nebo `null` – kdo to je, když vyjde mimo záběr. */
+  readonly targetItem: string | null;
   /** Vizuální měřítko čitelnosti (P58A T3) hrdiny a cíle; 1 = nezvětšené, `LEGIBLE_CAP` = strop, dál neroste. */
   readonly legible: { readonly hero: number; readonly target: number };
   /** Kolik viditelných kandidátů na cíl scéna má. */
@@ -376,7 +378,8 @@ function LegibleBodies({ control }: { readonly control: string }) {
         invalidate();
       };
       grow(heroNode, LEGIBLE_SHARE.hero, 1);
-      if (target === null) return;
+      // Zástupce (`userData.proxy`, nejbližší vozidlo hopu) se nekreslí – zvětšit by šel jen jeho kvádr v sondě.
+      if (target === null || target.node.userData.proxy === true) return;
       // Perspektiva zmenšuje s hloubkou: cíl se posuzuje, jak velký by byl vedle hrdiny.
       const heroDepth = depthOf(heroAt);
       grow(target.node, LEGIBLE_SHARE.target, perspective && heroDepth > 0 ? Math.max(depthOf(target.pos), 0) / heroDepth : 1);
@@ -416,6 +419,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
         heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
+        targetItem: (target?.node.userData.item as string | undefined) ?? null,
         legible: { hero: (hero as Object3D | null)?.userData.legible ?? 1, target: target?.node.userData.legible ?? 1 },
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },

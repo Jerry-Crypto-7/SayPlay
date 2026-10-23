@@ -64,6 +64,11 @@ const RUN_OUT = 10;
 const EAGLE_WARN = 90;
 /** Kamera: polovina šíře, která se musí vejít, náklon, rozsah vzdálenosti a kam před hrdinu kouká. */
 const CAMERA = { fit: HALF + 0.6, elevation: (58 * Math.PI) / 180, near: 9, far: 26, ahead: 2.6, follow: 5 } as const;
+/**
+ * Nejbližší vozidlo pro sondu záběru (P58A T4): jen na poli (střed uvnitř krajních sloupců) a v řadě hrdiny
+ * nebo nejvýš `NEAR_ROWS` před ním – dál už je za horním okrajem. Cíl cesty se počítá od stejné vzdálenosti.
+ */
+const NEAR_ROWS = 5;
 /** Vagony vlaku na jedno tělo jádra a mezera mezi nimi (m). */
 const CARRIAGES = 2;
 const COUPLING = 0.25;
@@ -278,6 +283,7 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
   const eagle = useRef<Group | null>(null);
   const shadow = useRef<Mesh | null>(null);
   const finish = useRef<Group | null>(null);
+  const nearest = useRef<Group | null>(null);
   const fleets = { car: useRef<Group | null>(null), truck: useRef<Group | null>(null), log: useRef<Group | null>(null), carriage: useRef<Group | null>(null), lampOn: useRef<Group | null>(null) };
   const hopping = useRef(false);
   const follow = useRef<number | null>(null);
@@ -325,6 +331,7 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
     // Provoz v řadách kolem hrdiny, jen na zemi scény.
     for (const slots of [scratch.car, scratch.truck, scratch.log, scratch.carriage, scratch.lampOn]) slots.count = 0;
     const warned = new Set<number>();
+    let near = { gap: Infinity, x: 0, z: 0 };
     const draw = (code: number, kernelBodyX: number, z: number, units: number, dir: number): void => {
       const row = Math.round(z / HOP.cell);
       if (row < heroRow - BEHIND || row > heroRow + AHEAD) return;
@@ -332,6 +339,8 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
       const x = -m(kernelBodyX);
       const w = m(units);
       if (Math.abs(x) - w / 2 > HALF + SIDE) return;
+      const gap = Math.hypot(x - heroX, m(z) - heroZ);
+      if (code !== codes.log && row >= heroRow && row <= heroRow + NEAR_ROWS && Math.abs(x) <= HALF - CELL / 2 && gap < near.gap) near = { gap, x, z: m(z) };
       const turn = dir >= 0 ? TURN.plus : TURN.minus;
       if (code === codes.log) scratch.log.add(scratch.at.set(x, -0.15, m(z)), turn, scratch.size.set(1, 1, w));
       else if (code === codes.train) {
@@ -367,7 +376,14 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
     place(fleets.log.current, scratch.log.matrices, scratch.log.count);
     place(fleets.carriage.current, scratch.carriage.matrices, scratch.carriage.count);
     place(fleets.lampOn.current, scratch.lampOn.matrices, scratch.lampOn.count);
-    if (finish.current !== null) finish.current.visible = last <= heroRow + AHEAD;
+    if (finish.current !== null) {
+      finish.current.visible = last <= heroRow + AHEAD;
+      finish.current.userData.frame = last <= heroRow + NEAR_ROWS ? 'target' : undefined;
+    }
+    if (nearest.current !== null) {
+      nearest.current.visible = near.gap < Infinity;
+      nearest.current.position.set(near.x, 0, near.z);
+    }
 
     // Orel: posledních `EAGLE_WARN` tiků před koncem trpělivosti se snáší nad hrdinu; prohra bez ztráty životů je jeho.
     const idle = idleTicks(state, player);
@@ -410,8 +426,15 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
       <Fleet model={truckModel} box={TRUCK_BOX} fill={cast.props.obstacle === undefined} capacity={CAPACITY.truck} tint={color['sun-deep']} item="obstacle" holder={fleets.truck} />
       <Fleet model="cc0-wood-log" box={LOG_BOX} fill capacity={CAPACITY.log} tint={color['sun-deep']} item="platform" holder={fleets.log} />
       <Fleet model="cc0-train" box={CARRIAGE_BOX} fill capacity={CAPACITY.carriage} tint={color['tomato-deep']} item="obstacle" holder={fleets.carriage} />
-      <group ref={finish} position={[0, 0, last * CELL + CELL / 2 + 0.4]} userData={{ frame: 'target', item: 'finish' }}>
+      <group ref={finish} position={[0, 0, last * CELL + CELL / 2 + 0.4]} userData={{ item: 'finish' }}>
         <FittedModel id={finishModel} w={2} h={2.2} d={0.6} fallback={color.sun} />
+      </group>
+      {/* Zástupce nejbližšího vozidla pro sondu záběru: vozidla jsou instance jedné sítě, kvádr skupiny by nic neřekl. Nekreslí se. */}
+      <group ref={nearest} visible={false} userData={{ frame: 'target', proxy: true }}>
+        <mesh position={[0, CAR_BOX[1] / 2, 0]}>
+          <boxGeometry args={[CAR_BOX[2], CAR_BOX[1], CAR_BOX[0]]} />
+          <meshBasicMaterial visible={false} />
+        </mesh>
       </group>
       <group ref={hero} userData={{ frame: 'hero' }}>
         <group ref={heroTurn}>
