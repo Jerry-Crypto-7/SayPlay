@@ -4,7 +4,7 @@ import { lookFor, timeOfDayFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingFoe, readingHero } from '../draft/draft';
-import { nounPhrase, singular } from '../draft/lexicon';
+import { nounPhrase, singular, toolsOf } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
 import { BALL_PLAYER, DEFAULT_LABELS, defaultCollectible, defaultFoe } from '../genre/roles';
@@ -16,6 +16,9 @@ import type { TemplateName } from '../arcade/rules/templates';
 import { compileTemplated, withoutPartNames } from './compile';
 import { namedProjectiles } from './projectiles';
 import { type RecipeAssembly } from './presets';
+
+/** Roles that threaten or are hit – the critic's `HOSTILE`: a thrown thing never plays them. */
+const HOSTILE: ReadonlySet<CastItem['does']> = new Set<CastItem['does']>(['shoot_at', 'chase_me', 'avoid', 'fight']);
 
 export interface Composition {
   readonly cellId: string;
@@ -123,6 +126,9 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
       }
       const does = roles[item.verb];
       if (item.verb === 'shoot' && firedWithoutTarget(item.object)) continue;
+      // P58A T7r1: what the sentence throws is no foe – „toss a pancake and catch it“ catches the ammunition (critic B-R12).
+      const object = item.object;
+      if (does !== undefined && HOSTILE.has(does) && toolsOf(intent.sentence).some(tool => head(tool) === head(object))) continue;
       if (does !== undefined) put(item.object, does);
       else if (item.axis === 'unknown' && /^(?:sweep|mop)$/.test(item.verb) && draft.genre === 'arena' && draft.mode === 'collect' && draft.heroAction === 'sweep') {
         // Retain the surface named by a cleaning request in its established
