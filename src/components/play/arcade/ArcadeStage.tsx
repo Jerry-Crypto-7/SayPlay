@@ -401,13 +401,16 @@ function NameAnchor({ surface, control, bodies }: { readonly surface: React.RefO
     const tag = surface.current?.querySelector<HTMLElement>('.play-name-line');
     if (tag == null) return;
     let hero: Object3D | null = null;
+    // Rytmus a načasování (P58A T8): hrdinou sondy je lišta nebo jezdec, postava z věty stojí vedle – jméno patří nad ni.
+    let figure: Object3D | null = null;
     const named: Object3D[] = [];
     scene.traverse((node) => {
       if (node.userData.frame === 'hero' && shown(node)) hero ??= node;
+      else if (node.userData.toyHero === true && shown(node)) figure ??= node;
       else if (node.userData.frame === 'target' && bodies[node.userData.item as string] !== undefined && shown(node)) named.push(node);
     });
     const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
-    const body = tag.dataset.slot === 'hero' ? hero : heroAt === null ? null : (nearestTarget(heroAt, named, control)?.node ?? null);
+    const body = tag.dataset.slot === 'hero' ? (figure ?? hero) : heroAt === null ? null : (nearestTarget(heroAt, named, control)?.node ?? null);
     const box = body === null ? null : frameOf(body, camera, size.width, size.height, false);
     if (box === null || box.behind || Math.abs(box.x) > 1 || box.maxY < -1) {
       tag.style.visibility = 'hidden';
@@ -882,7 +885,7 @@ const StageCanvas = memo(function StageCanvas({
         <>
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
           {stage.scene === 'timing' ? (
-            <TimingScene session={session} look={look} blockModel={blockModel} heroAction={heroAction} ghost={ghost} />
+            <TimingScene session={session} look={look} blockModel={blockModel} heroModel={castHero} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'rhythm' ? (
             <RhythmScene session={session} look={look} heroModel={castHero} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'arena' ? (
