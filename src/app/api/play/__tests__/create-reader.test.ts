@@ -245,11 +245,14 @@ describe('create route reads the sentence before drafting', () => {
 
   // P56C T17e: čtení řetězu staví návrh věty, který se s míčem bez fyziky nepřeloží – route na ni počká jako jedna hra.
   describe('on a cold server, before the physics loads', () => {
-    /** Uložené čtení P56A (`p30-dev` d01): model říká běžec, návrh z něj staví míč. */
+    /**
+     * Uložené čtení P56A (`p30-dev` d01) se žánrem hodu: návrh z něj staví míč. S žánrem běžce, jak ho model přečetl,
+     * od P58B T5a hraje běžec (d01 ho povoluje) a míč, na jehož fyziku se čeká, nevznikne.
+     */
     const ROLLS = 'a hedgehog rolls down a mushroom hill avoiding foxes';
     const ROLLS_READING: Reading = {
       control: 'runner', verbs: [{ word: 'rolls', class: 'runner' }], hero: 'hedgehog', roles: [{ noun: 'foxes', kind: 'threat', count: null }],
-      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' }, sure: true,
+      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'throw', mode: 'default' }, sure: true,
       foe: 'foxes', item: null, world: 'forest', title: 'Hedgehog Hill Roll',
     };
     const readerOf = (reading: Reading) => vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 }));

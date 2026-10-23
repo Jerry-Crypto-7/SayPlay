@@ -89,12 +89,13 @@ describe('the sentence reading decides the genre (P58B T5)', () => {
     expect(missed).toEqual([]);
   }, 300_000);
 
-  // `classifyGenre` dá se stejnými čteními 59/60; skládání (`sources` řazené podle `missing`) 9 z nich přehodí jinam
-  // (s03, s06, s09, s12, s23, s26, s32, s41, s54) – úkol P58B T5a. Před T5 49/60, s02 tehdy přebil slovník.
-  it('plays the read genre on the opened P56A holdout: targets ≥ 50/60, s02 among them', () => {
+  // `classifyGenre` dá se stejnými čteními 59/60 (s08 čtení samo plete). Do T5a skládání 9 z nich přehodilo jinam: řadilo
+  // zdroje podle `missing` a `sourceFor` přepsal žánr čtení akcí věty (duel s „punch“ → arena.fight). Před T5 49/60.
+  it('plays the read genre on the opened P56A holdout: targets ≥ 58/60, s02 and the T5a nine among them', () => {
     const { hit, missed } = played('p56a/holdout');
-    expect(hit, missed.join('\n')).toBeGreaterThanOrEqual(50);
-    expect(missed.filter(line => line.startsWith('s02:'))).toEqual([]);
+    expect(hit, missed.join('\n')).toBeGreaterThanOrEqual(58);
+    const recast = ['s02', 's03', 's06', 's09', 's12', 's23', 's26', 's32', 's41', 's54'];
+    expect(missed.filter(line => recast.includes(line.split(':')[0]!))).toEqual([]);
   }, 300_000);
 });
 

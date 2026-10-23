@@ -49,6 +49,8 @@ export interface GenreRanking {
    * (cesta pohybu, místo útěku, kus načasování) nebo věta hlavní sloveso nemá.
    */
   readonly does: CastRole | null;
+  /** První režim rozhodlo čtení (P58B T5; u nejistého čtení slovník) – skladatel ho zkusí první (T5a). Bez čtení `false`. */
+  readonly decided: boolean;
 }
 
 export type GenreModules = { readonly [G in GenreId]: GenreModule<G> };
@@ -503,5 +505,6 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     pick: main === undefined ? null : (main.pick ?? pickup()),
     ride: carrier === undefined ? null : 'shoot',
     does: main?.does ?? null,
+    decided: decided !== null,
   };
 }

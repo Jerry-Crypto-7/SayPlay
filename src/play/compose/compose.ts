@@ -15,7 +15,7 @@ import { assemble, genreSource, sourceFor, unplayed, wholeGame, type AssemblySou
 import type { TemplateName } from '../arcade/rules/templates';
 import { compileTemplated, withoutPartNames } from './compile';
 import { namedProjectiles } from './projectiles';
-import { type RecipeAssembly } from './presets';
+import { PRESETS, type RecipeAssembly } from './presets';
 
 export interface Composition {
   readonly cellId: string;
@@ -217,14 +217,21 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   const pacingProbe = (binding: RoleBinding) => triples.some(triple => namesActor(triple, binding));
   // A reading whose movement cannot play a requested action yields to a later reading
   // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
-  const sources = ranking.map((choice, rank) => {
+  const sources = ranking.flatMap((choice, rank) => {
     // Liška jen nouzově (P56A T6): věta přečtená čtečkou bez hrdiny dostane průzkumníka.
     const hero = reading === null ? (intent.hero ?? 'fox') : (namedHero(intent, reading) ?? readingHero(reading) ?? 'explorer');
     const fallback = { genre: choice.genre, mode: choice.mode, hero, setting: intent.setting ?? 'forest' } as GenreSpec;
     // P54C T13: a lanes genre the classifier heard and put first plays its own recipe; anywhere else it is read as before.
     const source = (rank === 0 && choice.score > 0 ? genreSource(fallback) : null) ?? sourceFor(intent, fallback);
-    return { source, rank, missing: unplayed(source) };
-  }).sort((a, b) => a.missing - b.missing || a.rank - b.rank);
+    const entry = { source, rank, missing: unplayed(source), decided: false };
+    if (!classified.decided || choice !== classified.ranked[0]) return [entry];
+    // P58B T5a: the genre the reading decided goes first, before `missing` ranks the rest; where the sentence's
+    // movement or action recast it (a duel's "punch" is the arena fight), first as its own recipe, then as recast.
+    const recipe = PRESETS[`${choice.genre}.${choice.mode}`]!;
+    const own: AssemblySource | null = source.preset.genre === choice.genre && source.preset.mode === choice.mode ? null
+      : { id: `assembled.${recipe.move}`, recipe, preset: fallback, assembly: 'native' };
+    return own === null ? [{ ...entry, decided: true }] : [{ source: own, rank, missing: unplayed(own), decided: true }, entry];
+  }).sort((a, b) => Number(b.decided) - Number(a.decided) || a.missing - b.missing || a.rank - b.rank);
   for (const { source } of sources) {
     const requested = assemble(intent, source, contentOf(intent, source, reading));
     // A failed combination is reduced one independent part at a time. Every
