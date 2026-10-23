@@ -78,9 +78,36 @@ Sonda schopností prohlížeče 23. 10. (Playwright WebKit na Windows proti Chro
 - **`deviceMemory` chybí i ve skutečném Safari** – `src/worldstream/quality.ts` s tím počítá (pole je volitelné), emulace tady odpovídá realitě.
 - **Grafika:** WebKit na Windows není Metal na iPhonu; časy snímků a vzhled tady jsou jen orientační.
 
-## Pro T4
+## T4 – opravy (23. 10.)
 
-1. A – převzít větu napsanou před hydratací (`CreateGame.tsx`), test na WebKitu.
-2. B – prsty pro WebKit v `play-touch`, pak teprve hodnotit gesta.
-3. C – telefon podle dotyku v `play-chain`, rozhodnout strop pro WebKit.
-4. D – `grepInvert` desktopových rozměrů v `iphone-touch`.
+**Po opravách 42/42** (`webkit-desktop` 20/20, `iphone-touch` 22/22) nad buildem se všemi opravami; Chromium 19/19 a Pixel 7 6/6 na týchž souborech.
+
+| Co | Commit | Test, který to drží |
+|---|---|---|
+| A – věta napsaná před hydratací se převezme do stavu | `942c4115` | `play-create` „typed before the page hydrates“: drží JS, napíše, pustí – před opravou červený na Chromiu i WebKitu (0/140) |
+| Offline nápad odejde, i když se síť vrátila dřív, než se posluchač přihlásil | `62912d39` | `play-create` „offline“ na obou WebKit projektech: 4/6 před, 10/10 po |
+| Zvuk se probudí i zvednutím prstu (`pointerup`, `touchend`) | `9e0729a6` | `playback.test` „the first touch wakes the sound“: červený před, 63/63 po |
+| B – prsty na WebKitu jako dotykové `PointerEvent` | `c56d2dc5` | `play-touch` 5/5 na iPhonu (quest 5/5 opakovaně) |
+| C, D – telefon podle dotyku, strop 1,5 s jen na Chromiu, desktopové rozměry mimo iPhone | `939ebde1` | `play-chain` na obou WebKit projektech; Chromium desktop 1 449 ms |
+
+- **Proč zvuk:** podle pravidla HTML o aktivaci uživatelem je prst gestem až při zvednutí. `pointerdown` prstu gesto nedává, takže telefon mohl zvuk z prvního ťuku odmítnout. Na WebKitu pod Windows to vidět nejde (nemá `AudioContext`), drží to jen jednotkový test.
+- **Sdílení a klip** jsem jen přečetl v kódu. Před `navigator.share` není žádné `await`, takže gesto nevyprší, a klip zkouší nejdřív MP4. Spustit to tady nejde.
+
+### Otevřené – kolo s davem se na iPhonu nevykreslí
+
+**Fakt:** řetěz z věty „a fox runs through a forest dodging logs and rocks“ (`/play/053c4e61…`), kolo 2 „Grow your crowd, then beat the ogre!“ (`data-control="crowd"`). Snímky jsou v `D:/caches/p58c/`:
+
+- **Pixel 7:** dráha, brány ×2/+4, liška a dav (`pixel/iphone-runner-1-tapped.png`).
+- **iPhone 15 (WebKit):** jen mátová plocha, HUD a štítek „5“ (`iphone-runner-1-tapped.png`).
+- **Ťuky a čas:** ťuky se počítají (`data-input-at` 5/6), tiky běží.
+- **Plátno:** viditelné, kontext WebGL není ztracený, chyba v konzoli žádná. Má ale 393×659 při 1×, kdežto kolo 1 mělo 589×988 při 1,5×.
+
+**Kolo 1 (přeskakování řad) se na iPhonu vykreslí stejně jako na Pixelu.** Gesta jsou tím na iPhone profilu ověřená snímkem jen pro kolo 1.
+
+**Inference:** scéna kola s davem na WebKitu nekreslí nic, nebo ji něco překrývá. Zda jde o rozdíl WebKitu na Windows (překlad shaderů přes ANGLE hlásí varování X3595), nebo o chybu, kterou uvidí i skutečný iPhone, zatím nevím.
+
+### Mimo Safari (zapsáno, neopraveno)
+
+- **`play-audio` „no audio context before the gesture“ padá na Chromiu (desktop i Pixel 7).** Věta testu je od P56C řetěz a přehrávač řetězu zvuk vůbec nezapíná (`installSoundControls` volají jen `ArcadePlay` a `GridShell`), takže `__playAudio` nevznikne. Nesouvisí s opravou zvuku.
+- **React #418** (nesoulad HTML při hydrataci) na stránce hry v obou prohlížečích.
+- **Dlouho běžící server:** p44b na Chromiu dá výzvě 200 místo 201, když tutéž hru už vyzval WebKit běh. Na čistém úložišti prošel.
