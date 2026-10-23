@@ -51,10 +51,16 @@ function gameSpecOf(game: (typeof GAMES)[number]): GameSpecV1 {
   return compileGenre(read.value);
 }
 
-/** Prsty na skle: CDP dostane vždy celou sadu, co se změnilo, dopočítá sám. */
+/**
+ * Prsty na skle: CDP dostane vždy celou sadu, co se změnilo, dopočítá sám. WebKit CDP nemá (P58C T4) –
+ * tam jde každý prst jako dotykové `PointerEvent` na prvek pod ním, tytéž události, které hra čte.
+ */
 class Fingers {
   private readonly down = new Map<number, { x: number; y: number }>();
-  constructor(private readonly cdp: CDPSession) {}
+  constructor(
+    private readonly cdp: CDPSession | null,
+    private readonly page: Page,
+  ) {}
   has(id: number): boolean {
     return this.down.has(id);
   }
@@ -64,18 +70,46 @@ class Fingers {
   private points() {
     return [...this.down].map(([id, at]) => ({ id, x: at.x, y: at.y }));
   }
+  /** Dotyk drží cíl z položení prstu (implicitní zachycení), proto pohyb i zvednutí jdou tam, ne pod prst. */
+  private pointer(type: 'pointerdown' | 'pointermove' | 'pointerup', id: number, x: number, y: number): Promise<void> {
+    return this.page.evaluate(
+      ({ type, id, x, y }) => {
+        const own = window as unknown as { __fingers?: Map<number, Element> };
+        if (own.__fingers === undefined) {
+          // Skutečný prst je aktivní ukazatel; syntetický WebKit nezná a `setPointerCapture` (držené tlačítko akce)
+          // by na něm hodil `NotFoundError`. Zachycení tu dělá sám ovladač – pohyb a zvednutí jdou na cíl položení.
+          const capture = Element.prototype.setPointerCapture;
+          Element.prototype.setPointerCapture = function (this: Element, pointerId: number) {
+            if (!own.__fingers?.has(pointerId)) capture.call(this, pointerId);
+          };
+        }
+        const held = (own.__fingers ??= new Map());
+        const target = type === 'pointerdown' ? document.elementFromPoint(x, y) : held.get(id);
+        if (target == null) return;
+        if (type === 'pointerdown') held.set(id, target);
+        if (type === 'pointerup') held.delete(id);
+        const isPrimary = type === 'pointerdown' ? held.size === 1 : [...held.keys()][0] === id;
+        target.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', isPrimary, clientX: x, clientY: y, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true }));
+      },
+      { type, id, x, y },
+    );
+  }
   async press(id: number, x: number, y: number): Promise<void> {
     this.down.set(id, { x, y });
+    if (this.cdp === null) return this.pointer('pointerdown', id, x, y);
     await this.cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: this.points() });
   }
   async move(id: number, x: number, y: number): Promise<void> {
     const at = this.down.get(id);
     if (at === undefined || (at.x === x && at.y === y)) return;
     this.down.set(id, { x, y });
+    if (this.cdp === null) return this.pointer('pointermove', id, x, y);
     await this.cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: this.points() });
   }
   async lift(id: number): Promise<void> {
+    const at = this.down.get(id);
     if (!this.down.delete(id)) return;
+    if (this.cdp === null) return this.pointer('pointerup', id, at!.x, at!.y);
     // `touchEnd` pustí v Chromu všechny prsty: po ťuku druhým palcem by běžící palec plošinovky „zvedl“ i ten
     // držený a hra by stála (prohra na čas ve 39 %). Prst, který zbývá na skle, pošle CDP jako `touchMove`
     // – chybějící bod pak pustí sám (rozdíl proti předchozí události).
@@ -157,7 +191,7 @@ test.describe('touch only', () => {
   test.setTimeout(300_000);
 
   for (const game of GAMES) {
-    test(`${game.genre}: won with gestures alone, or at least half the way`, async ({ page, request, context }) => {
+    test(`${game.genre}: won with gestures alone, or at least half the way`, async ({ page, request, context, browserName }) => {
       const response = await request.post('/api/play/games', { data: { spec: gameSpecOf(game) } });
       expect(response.status(), await response.text()).toBeLessThan(300);
       const { url } = (await response.json()) as { url: string };
@@ -166,8 +200,7 @@ test.describe('touch only', () => {
       const stageEl = page.getByTestId('arcade-stage');
       await expect(stageEl).toHaveAttribute('data-control', game.control);
       const stage = (await stageEl.boundingBox())!;
-      const cdp = await context.newCDPSession(page);
-      const fingers = new Fingers(cdp);
+      const fingers = new Fingers(browserName === 'chromium' ? await context.newCDPSession(page) : null, page);
       const wants0 = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;
         shell.byHand(true);
