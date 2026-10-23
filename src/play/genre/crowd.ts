@@ -80,7 +80,9 @@ export const crowdGenre: GenreModule<'crowd'> = {
     const setting = place !== undefined && NOT_A_PLACE.test(place) ? undefined : place;
     // Dav zná jen dvě role: s kým se na konci bije, a čemu se cestou vyhýbá. Věci ke sběru dav nemá – rostou mu brány.
     let roles = (cast ?? []).filter((item) => item.does !== 'collect').map((item): CastItem => (item.does === 'fight' || item.does === 'reach' ? { ...item, does: 'fight' } : { ...item, does: 'avoid' }));
-    const named = BOSS_OBJECT.exec(sentence.toLowerCase())?.[1]?.replace(TAIL, '');
+    // P58A T6: cíl čtení („send everyone at the enormous king“) je boss, když ho slova věty nenašla.
+    const readBoss = reading?.roles.find((role) => role.kind === 'target')?.noun.toLowerCase();
+    const named = BOSS_OBJECT.exec(sentence.toLowerCase())?.[1]?.replace(TAIL, '') ?? (readBoss === undefined ? undefined : singular(readBoss));
     if (named !== undefined && named !== hero) roles = [...roles.filter((item) => item.label !== named && item.does !== 'fight'), { label: named, does: 'fight' }];
     return {
       genre: 'crowd',

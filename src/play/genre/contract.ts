@@ -492,7 +492,9 @@ const READ_DOES: Readonly<Record<string, CastRole>> = { chaser: 'chase_me', thre
 export function draftRoles(sentence: string, reading: Reading | null): Pick<Partial<GenreSpec>, 'hero' | 'cast' | 'setting'> {
   const words = readRoles(sentence);
   const hero = reading?.hero ?? words.player;
-  const readFoe = reading?.roles.find((role) => role.kind in READ_DOES);
+  // P58A T6: protivník, kterého čtení jmenuje (`foe`: „dolphins“), před první překážkou v pořadí rolí („buoys“).
+  const foes = reading?.roles.filter((role) => role.kind in READ_DOES) ?? [];
+  const readFoe = foes.find((role) => reading?.foe != null && role.noun.toLowerCase() === reading.foe.toLowerCase()) ?? foes[0];
   const foe: CastItem | null =
     readFoe !== undefined
       ? { label: readFoe.noun, does: READ_DOES[readFoe.kind] as CastRole }

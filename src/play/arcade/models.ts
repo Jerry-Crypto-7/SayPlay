@@ -486,9 +486,10 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   // „barriers“ je v katalogu překážka běžce; obecný popisek mantinelu nechá pneumatiky.
   barrier: ['tire-barrier', 'hurdle'],
   turbo: ['turbo'],
-  // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je.
+  // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je. Ručička lišty („marker“) je
+  // `checkpoint` – výchozí popisek načasování nesmí na ručičku posadit praporek (P58A T6).
   note: ['hazard-tile'],
-  block: ['wood-block'],
+  block: ['wood-block', 'checkpoint'],
   finish: ['finish-flag'],
   spikes: ['cc0-spike'],
   pipe: ['cc0-pipe'],

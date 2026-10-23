@@ -177,6 +177,8 @@ export function TimingScene({
   const posedRound = useRef(-1);
   // Jehla a prkno můstku nejsou díly věže – model z popisku nese jen `block`.
   const blocks = sliderKind === 'block' ? blockModel : undefined;
+  // P58A T6: věc z věty na liště („pancakes“) jede na ručičce jako čtverec o výšce dílu; ručička zůstává.
+  const rider = sliderKind === 'needle' ? blockModel : undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
@@ -281,6 +283,12 @@ export function TimingScene({
               <boxGeometry args={[sliderInit.w, blockH, depth]} />
               <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
             </mesh>
+          )}
+          {rider === undefined ? null : (
+            // Ručičku mění jádro v šířce (`scale.x`); věc nad ní tu změnu vrací, ať se nezplacatí.
+            <group position={[0, blockH, 0]} scale={[1 / Math.max(0.001, sliderInit.w), 1, 1]} userData={{ item: 'block' }}>
+              {rider(blockH, blockH, depth)}
+            </group>
           )}
         </group>
       </group>

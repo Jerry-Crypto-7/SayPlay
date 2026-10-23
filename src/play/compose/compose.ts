@@ -3,7 +3,7 @@ import { verifyArcade } from '../arcade/verify';
 import { lookFor, timeOfDayFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
-import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingHero } from '../draft/draft';
+import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingFoe, readingHero } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
@@ -133,6 +133,14 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
       }
     }
   }
+  // P58A T6: a fight's rival is the foe the reading names („one crocodile“); the verb's object from the words
+  // („trades blows“, „punch him back“, „brawls on the sand“) is no rival.
+  const rival = reading !== null && (draft.genre === 'duel' || (draft.genre === 'arena' && draft.mode === 'fight')) ? readingFoe(reading) : null;
+  if (rival !== null) {
+    for (let index = cast.length - 1; index >= 0; index--) if (cast[index].does === 'fight' || head(cast[index].label) === head(rival)) cast.splice(index, 1);
+    cast.unshift({ label: singular(rival), does: 'fight' });
+    spoken.unshift(singular(rival));
+  }
   if (projectiles.length > 0) {
     // The moving controls' shooting addon needs a target even when the request
     // only names ammunition. That default target keeps its own identity.
@@ -231,7 +239,7 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
     // removed/unproved triple is still included in the public admission.
     for (let count = requested.parts?.length ?? 0; count >= 0; count--) {
       // A dropped part's thing does not come back as a base-genre role (a tossed pancake is no throw target).
-      const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
+      const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? [], true) };
       // Šablona pravidel (P45B T9) jde první; neprojde-li, tentýž recept bez ní – teprve potom méně dílů.
       const { intent: _intent, ...untemplated } = recipe;
       // Akce hrdiny (P46A T8), které robot neprokáže, ustoupí dřív než díly: věta nesmí kvůli tlačítku spadnout.
