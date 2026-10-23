@@ -6,7 +6,7 @@
  * věc, se kterou hrdina pracuje). `report` složí obě strany do jednoho souboru. Soudce táhne TS slovník, proto
  * `node --experimental-strip-types --import ./scripts/ts-paths.mjs` před každým příkazem níž.
  *
- *   node evals/play/p56a/visible.mjs play --base http://127.0.0.1:3121 --set evals/play/p56a/audit-12.json --out <dir> [--gpu]
+ *   node evals/play/p56a/visible.mjs play --base http://127.0.0.1:3121 --set evals/play/p56a/audit-12.json --out <dir> [--gpu] [--spec]
  *   node evals/play/p56a/visible.mjs judge --dir <dir> [--judge codex|claude]
  *   node evals/play/p56a/visible.mjs report --a <dir> --b <dir> --set evals/play/p56a/audit-12.json --out evals/play/p56a/visible-dev.json [--a-commit <sha>] [--b-commit <sha>] [--setup <text>]
  */
@@ -148,6 +148,8 @@ async function play(options) {
         roles: roles.filter((role) => role.kind !== 'player').map((role) => `${role.kind}:${role.label}`),
         ...shot,
         pageErrors: [...errors],
+        // P58A T2: modely rolí počítá `scripts/p58a/why-unseen.mjs` ze stejného specu, jaký kreslil server.
+        ...(options.spec === true ? { spec: game.spec } : {}),
       };
       writeJson(record, row);
       console.log(`${sentence.id} ${row.readBy} ${draftMs} ms hero ${row.hero} robot ${shot.robot ? shot.tick : 'no'} errors ${row.pageErrors.length}`);
