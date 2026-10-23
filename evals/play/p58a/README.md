@@ -81,3 +81,15 @@ Práh platí, jen když nejlepší řez (aspoň 3 slova na každé straně) má 
 - Největší jednotlivé díry jsou `no-role` u protivníka či věci (44, hra slovo z věty vůbec nekreslí – T6) a `look` u hrdiny (43 – T3, T5).
 
 **Chybějící modely – `missing-nouns.json`:** 72 slov z popisků dev sad a nahraných čtení bez přesného modelu (`heroChoice(…, 'enemy').level` ≠ `identity`), podle počtu vět v poptávce a dev sadách. Vrchol: basket 10, pad 10, gopher 4, mole 4, vegetable 4, honey 3, leaf 3, master 3. Ne-jména ze čtení („you“, „can“, „three“), místa a abstrakta vyřazuje `ops/gen3d/not-nouns.txt` a `abstract` z `evals/play/p37d/common-nouns.json`; T2 do `not-nouns.txt` přidal terén a skupiny bez vlastní podoby (highway, path, line, hole, crater, swarm, crew…). Jednotné číslo bere lexikon draftu (`singular`: zombies → zombie, ne „zomby“).
+
+## Dogenerované modely (T7)
+
+`scripts/p58a/gen-models.mjs` nad `gen-nouns.json`, výsledek každého slova v `gen-models.json`.
+
+- **Generovalo se 36 ze 72 slov** – jen ta, kde nejbližší model z T6 slovo neukazuje (gopher jako křeček, marine jako astronaut, rail jako lokomotiva, trout jako zlatá rybka). Vynechané: 16 slov, jejichž náhrada už sedí (basket → nákupní košík, honey → hrnec medu, lord → král, shoplifter → zloděj), dvojznačné pad a board a 18 slov bez jedné věci (riddle, clue, circle, citizen, guest…).
+- **Prošlo 7 z 36:** bun, rail, blacksmith, dumpling, hostage, lizard, trout – skóre slepého Opuse ≥ 7 **a** soudce model nazval slovem věty. Všech 7 hra teď bere jako přesný model (`heroChoice` → `identity`); trout má v `catalog-motion.json` třídu swimmer.
+- **Tři kola:** zadání `b`/`a` se semínkem 1, pak 2, pak semínka 3–4 s předkontrolou obrázku Opusem (vzor P46F). Kola přidala 5, 1 a 1 model. Předkontrola nepomohla: obrázek soudce pozná, 3D z něj pak dostane 3–6 („Pine cone“ 4, „Cheetah“ 5, „Bulldog“ 5).
+- **Poznané, ale pod 7:** snowplow 6, bongo 6, marine („Toy soldier“) 6, bulldog 5, cheetah 5, pinecone 4. **Nepoznané:** firecracker 8 jako „Dynamite stick“, lid 7 jako „Cooking pot“, patty 7 jako „Cake / pie“, branch 7 jako „Bare tree“. Brána kvality sítě (`inconsistent face winding`) shodila 20 pokusů, nejvíc u mole (5/6) a vegetable.
+- Odmítnutá slova zůstávají na nejbližším modelu z T6.
+
+**Inference:** platí strop řetězu, ne počtu kol. 3D z TRELLIS u zvířat a drobných věcí končí na 4–6 z 10 i z poznaného obrázku. Další kolo se stejným řetězem by přidalo jednotky. Víc by mohla dát ruční úprava v Blenderu nebo CC0 modely pro zvířata (bulldog, cheetah).

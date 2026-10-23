@@ -35560,6 +35560,139 @@
           0.19806
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bun",
+      "tags": [
+        "bun"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69589,
+          0,
+          -0.69482
+        ],
+        "max": [
+          0.69589,
+          0.99954,
+          0.69482
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rail",
+      "tags": [
+        "rail"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rail-lod1.glb",
+      "bounds": {
+        "min": [
+          -4.46782,
+          0,
+          -1.43466
+        ],
+        "max": [
+          4.46782,
+          0.99778,
+          1.43466
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-blacksmith",
+      "tags": [
+        "blacksmith"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-blacksmith-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28665,
+          0,
+          -0.16376
+        ],
+        "max": [
+          0.28665,
+          0.9992,
+          0.16376
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hostage",
+      "tags": [
+        "hostage"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hostage-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29597,
+          0,
+          -0.14605
+        ],
+        "max": [
+          0.29597,
+          0.9994,
+          0.14605
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lizard",
+      "tags": [
+        "lizard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lizard-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.15559,
+          0,
+          -0.49133
+        ],
+        "max": [
+          1.15559,
+          0.99747,
+          0.49133
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-trout",
+      "tags": [
+        "trout"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-trout-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30871,
+          0,
+          -1.49919
+        ],
+        "max": [
+          0.30871,
+          0.98524,
+          1.49919
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dumpling",
+      "tags": [
+        "dumpling"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dumpling-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.67606,
+          0,
+          -0.67616
+        ],
+        "max": [
+          0.67606,
+          0.99989,
+          0.67616
+        ]
+      }
     }
   ]
 }

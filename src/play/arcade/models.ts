@@ -135,16 +135,13 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   leaf: 'gen3d-maple-leaf',
   vine: 'gen3d-jungle-vine',
   branch: 'gen3d-stick',
-  bun: 'cc0-bread',
   patty: 'cc0-burger',
   topping: 'gen3d-pizza-slice',
   snack: 'gen3d-food',
   veggie: 'gen3d-vegetable-basket',
-  dumpling: 'gen3d-food',
   circle: 'hoop',
   fortress: 'gen3d-castle-tower',
   heap: 'gen3d-scree-rock-pile',
-  rail: 'gen3d-locomotive',
   tip: 'cone',
   album: 'gen3d-vinyl-record',
   ash: 'gen3d-fire',
@@ -167,7 +164,6 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   snowplow: 'gen3d-snowmobile',
   snowstorm: 'gen3d-snowflake',
   starfighter: 'gen3d-fighter-jet',
-  trout: 'cc0-goldfish',
 };
 
 /** Nejbližší kategorie postavy, kterou katalog nemá. */

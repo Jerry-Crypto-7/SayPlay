@@ -1223,6 +1223,40 @@ rug = "round woven living room rug with a pattern"
 "see saw" = "red playground seesaw on a central pivot"
 "milk churn" = "old metal farm milk churn with a lid and handles"
 
+# P58A T7: slova z vět, která hra kreslila jen nejbližším modelem (evals/play/p58a/gen-nouns.json).
+# Znak volí jeden význam slova, který věty myslí (dial = kolečko sejfu, rail = kolejnice). Mole,
+# dumpling, pinecone a stalactite mají znak už výše.
+gopher = "brown gopher with chubby cheeks and two big front teeth, standing on its hind legs"
+vegetable = "wooden crate full of fresh vegetables: orange carrots, green broccoli and red tomatoes"
+bun = "round golden bread bun with sesame seeds on top"
+fortress = "stone fortress with four corner towers, battlements and a big gate"
+marine = "marine soldier in green camouflage uniform, combat helmet and boots"
+patty = "single round brown grilled burger patty with grill marks"
+rail = "short straight section of railway track, two steel rails on wooden sleepers"
+shell = "pink and white spiral seashell"
+treetop = "the round leafy green crown at the top of a tall tree"
+album = "thick photo album with a padded cover and photos sticking out"
+blacksmith = "blacksmith in a brown leather apron holding a big hammer"
+bongo = "pair of joined bongo drums with tan skin heads"
+branch = "bare brown tree branch with a few twigs and green leaves"
+bulldog = "stocky bulldog with a wrinkled face, underbite and short legs"
+dial = "round silver combination safe dial with numbers around the edge"
+"expense report" = "printed paper report with a bar chart and a big dollar sign"
+firecracker = "red firecracker stick with a lit fuse and sparks"
+hailstone = "big round lumpy white ice hailstone"
+hostage = "frightened person tied up with rope around the body"
+cheetah = "spotted cheetah, slim body, long legs, black tear marks on the face"
+lemming = "small round furry lemming with brown and black fur and tiny ears"
+lid = "round metal cooking pot lid with a knob handle on top"
+needle = "big silver sewing needle with red thread through the eye"
+snack = "bag of potato chips with chips spilling out"
+snowplow = "orange snowplow truck with a big angled plow blade in front"
+steamer = "old steamboat with a tall black smokestack and a red paddle wheel"
+termite = "pale termite insect with six legs and big brown jaws"
+traveler = "traveler with a big backpack, a hat and a walking stick"
+trout = "rainbow trout fish with a pink stripe along the side and black spots"
+wire = "coil of copper electrical wire with bare ends"
+
 # P57 T6: oprava za znakem, obráceně to, co slepý soudce 1–10 starému modelu vytkl
 # (evals/play/p57/judge.json, důvod v komentáři zkráceně). `batch.prompt_for` ji připíše
 # za řádek výše; tabulka musí zůstat poslední, jinak by pod ni spadly další klíče.

@@ -25,8 +25,9 @@ import { assetEntrySchema } from '../manifest';
  * 3. 10.: +3 z pilotu P37D (frog, submarine, monster truck – ostatní nová jména třídu nemají).
  * 7. 10.: −1 ze slepého soudu P43 T13 (`gen3d-stage-magician` nepoznatelný, hrdinu nehraje).
  * 7. 10.: +1 z P43 T12 (`gen3d-caveman`; ostatních 16 nových jmen třídu nemá).
+ * 23. 10.: +4 z P58A T7 (lizard, trout, blacksmith, hostage; bun, rail a dumpling třídu nemají).
  */
-const COUNT = 261;
+const COUNT = 265;
 
 const LICENSES = new Map(disclosure.entries.map((entry) => [entry.name, entry.license]));
 const TAGS = new Map(catalog.assets.map((asset) => [asset.path, asset.tags]));
