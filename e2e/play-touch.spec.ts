@@ -259,4 +259,10 @@ test('duel: the Quick | Full detail switch leaves the touch zones readable', asy
       expect(overlaps, `${a.name} ${JSON.stringify(a)} overlaps ${b.name} ${JSON.stringify(b)}`).toBe(false);
     }
   }
+  // Cíl souboje (69 znaků) uťala na telefonu výpustka uprostřed pokynu („Beat 9 three-…“) – celý se vejde do dvou řádků.
+  const goal = page.getByTestId('play-goal');
+  await expect(goal).toContainText('three-headed');
+  // Výpustka jednoho řádku ořízne do šířky, dvou řádků do výšky – celý text nepřeteče ani jedním směrem.
+  const fits = await goal.evaluate((el) => `${String(el.scrollWidth)}×${String(el.scrollHeight)} in ${String(el.clientWidth)}×${String(el.clientHeight)}: ${String(el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1)}`);
+  expect(fits).toMatch(/true$/);
 });

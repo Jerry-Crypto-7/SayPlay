@@ -642,8 +642,9 @@
   cursor: pointer;
 }
 
-/* Řádek cíle: jeden řádek přes šířku (kit ≤ 50 znaků, delší dostane výpustku), zmizí po 4 s hry.
- * Vpravo pod časovačem mu místo vezme jen fáze světla mřížky. */
+/* Řádek cíle přes šířku, zmizí po 4 s hry; vpravo pod časovačem mu místo vezme jen fáze světla mřížky.
+ * Kit chce ≤ 50 znaků na řádek, cíl souboje jich má 69 („Dodge the wind-up, strike in the opening. Beat 9
+ * three-…“) a na telefonu výpustka uťala, co dělat (P58C T6, T5 ztráta 1) – nejvýš dva řádky, pak výpustka. */
 .play-hud-goal {
   grid-column: 1 / -1;
   grid-row: 2;
@@ -651,9 +652,11 @@
   max-width: 100%;
   margin: 0;
   line-height: 1.3;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
   transition: opacity var(--sp-duration-base) var(--sp-ease-standard), visibility 0s;
 }
 
