@@ -81,6 +81,18 @@ export default defineConfig({
       testMatch: /(play-touch|play-chain)\.spec\.ts/,
       use: { ...devices['Pixel 7'], hasTouch: true },
     },
+    // Safari a iPhone (P58C T3): hlavní cesta věta → hra → výhra → výzva na WebKitu. Přepínače
+    // renderu z `use` výš jsou pro Chromium, WebKit dostane prázdné `launchOptions`.
+    {
+      name: 'webkit-desktop',
+      testMatch: /(play-create|play-chain|p36-dare|p44b-friends-loop)\.spec\.ts/,
+      use: { ...devices['Desktop Safari'], launchOptions: { args: [] } },
+    },
+    {
+      name: 'iphone-touch',
+      testMatch: /(play-create|play-touch|play-chain|p36-dare)\.spec\.ts/,
+      use: { ...devices['iPhone 15'], hasTouch: true, launchOptions: { args: [] } },
+    },
     /**
      * Stroj bez akcelerace (P11 T4). Nedědí `launchOptions` z `use` výš — ty
      * SwiftShader naopak zapínají — a přidává `--disable-gpu`, takže WebGPU

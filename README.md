@@ -74,6 +74,8 @@ npm run test:e2e
 npm run gate:license
 ```
 
+The Safari projects (`webkit-desktop`, `iphone-touch`) need their browser once: `npx playwright install webkit`.
+
 The full unit suite (`npm run test`) and the end-to-end suite rewrite a few committed measurement files with new timings; check `git status` afterwards. Third-party materials, models and APIs are listed in [DISCLOSURE.md](DISCLOSURE.md), generated from `disclosure.json`.
 
 ## Origin
