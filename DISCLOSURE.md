@@ -7578,9 +7578,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-white-swan-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-white-swan-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-white-swan.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
-- **public/assets/worldstream/gen3d/gen3d-windmill-lod0.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d/gen3d-windmill-lod1.glb** (asset): Model generated locally by ops/gen3d and swapped in under the id of the model it replaced (P57), passed a blind 1-10 judge; LOD1 by scripts/assets/cc0/normalize.mjs.
-- **public/assets/worldstream/gen3d/gen3d-windmill.png** (asset): Preview render of a model generated locally by ops/gen3d under the id of the model it replaced (P57).
+- **public/assets/worldstream/gen3d/gen3d-windmill-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-windmill-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-windmill.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-witch-cauldron-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-witch-cauldron-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-witch-cauldron.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.

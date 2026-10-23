@@ -88,6 +88,7 @@
 1. **Další kolo začít shodou scény s větou, ne modely.** Pro 12 vět auditu spočítat, kolik podstatných jmen věty je ve scéně vidět (žába, mouchy, leknín; zákazníci; asteroidy …), a opravit výběr žánru a kulis tam, kde chybí. Patří k pravidlům a žánrům (P56A/C).
 2. **Soud scén dělat s oběma pořadími.** Každý pár dvakrát, „před“ jednou nahoře a jednou dole; hlas platí, jen když se obě pořadí shodnou. Bez toho je u téměř shodných scén rozdíl ±3 hlasy šum.
 3. **Prohlédnout tři zhoršené kusy:** objekt na kopuli (pizza), větrný mlýn (bubeník), liška (duch). Najít jejich id podle snímků v `D:/caches/p57/after` a případně vrátit starý soubor z `D:/caches/p57/replaced/<id>/`.
+   **Hotovo 23. 10.:** `gen3d-windmill` vrácen na původní model (nový byl beztvarý, lopatky jako válce). `gen3d-satellite-radar-dish` (pizza) zůstává – původní byla pomačkaná síť, nová je čistá anténa. Liška u ducha se nevyměnila (`fox` beze změny); rozdíl na snímku je jen jiná fáze animace.
 4. **Výjimky knihovny níže nechat, dokud bod 1 neukáže, že na nich scéna stojí.**
 
 ## Výjimky knihovny
