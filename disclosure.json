@@ -789,7 +789,7 @@
         "zdroje modifikovaných souborů, pokud se modifikují"
       ],
       "attribution": "resvg-js © yisibl, MPL-2.0",
-      "reviewNote": "Rasterises the preview SVG to PNG inside @vercel/og (P27B T6); WASM on the /og route only, never on the path to a game's first frame; unmodified, not in package-lock.json."
+      "reviewNote": "Vendored inside next, not used by the product: since P58C T2 the game link preview is drawn by our own rasteriser (src/app/api/og/raster.ts), nothing in src/ imports next/og, and the production build carries no resvg.wasm. Listed because the file ships inside the next package; unmodified, not in package-lock.json."
     },
     {
       "name": "@rolldown/binding-android-arm64@1.2.4",
@@ -1242,7 +1242,7 @@
       "kind": "library",
       "manual": true,
       "scope": "prod",
-      "source": "node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0, imported as next/og)",
+      "source": "node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0)",
       "authorOrProvider": "Vercel, Inc.",
       "license": "MPL-2.0",
       "requiredNotices": [
@@ -1250,7 +1250,7 @@
         "zdroje modifikovaných souborů, pokud se modifikují"
       ],
       "attribution": "@vercel/og © Vercel, Inc., MPL-2.0",
-      "reviewNote": "Draws the game link preview (GET /api/play/games/<id>/og, P27B T6) on the server only; used unmodified. Vendored in next, so invisible to package-lock.json. It also bundles yoga.wasm (MIT, Meta) and the default font Geist-Regular.ttf (SIL OFL-1.1, Vercel), which renders the preview text; OFL permits bundling and use, the font is not sold on its own."
+      "reviewNote": "Vendored inside next, not used by the product: since P58C T2 the game link preview (GET /api/play/games/<id>/og) is drawn by our own rasteriser (src/app/api/og/raster.ts) and nothing in src/ imports next/og. Listed because it ships inside the next package, together with yoga.wasm (MIT, Meta) and Geist-Regular.ttf (SIL OFL-1.1, Vercel), neither used either; unmodified, not in package-lock.json."
     },
     {
       "name": "@vitest/expect@4.1.10",
@@ -2606,7 +2606,7 @@
         "zdroje modifikovaných souborů, pokud se modifikují"
       ],
       "attribution": "satori © Vercel, Inc., MPL-2.0",
-      "reviewNote": "Turns the preview layout into SVG inside @vercel/og for the game link preview (P27B T6); server-only, unmodified, not in package-lock.json."
+      "reviewNote": "Vendored inside next, not used by the product: since P58C T2 the game link preview is drawn by our own rasteriser (src/app/api/og/raster.ts) and nothing in src/ imports next/og. Listed because it ships inside the next package; unmodified, not in package-lock.json."
     },
     {
       "name": "semver@7.8.5",
@@ -92427,7 +92427,7 @@
       "name": "public/fonts/roboto/Roboto-Black.ttf",
       "kind": "asset",
       "firstParty": false,
-      "reason": "Roboto 900 for the game title, the time and the question on the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "reason": "Roboto 900 for the game title, the time and the question on the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); since P58C T2 the source of the glyph atlas src/app/api/og/glyphs.json (scripts/p58c/og-glyphs.mjs), not read at runtime.",
       "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf)",
       "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
       "license": "Apache-2.0",
@@ -92437,7 +92437,7 @@
         "soubor NOTICE, pokud balíček nějaký nese",
         "označení změn"
       ],
-      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion.",
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion. Its glyphs are rasterised to 8-bit alpha masks at 80 px in src/app/api/og/glyphs.json (P58C T2, with the Sayplay logo).",
       "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
       "scope": "prod"
     },
@@ -92463,7 +92463,7 @@
       "name": "public/fonts/roboto/Roboto-Bold.ttf",
       "kind": "asset",
       "firstParty": false,
-      "reason": "Roboto 700 for the word on the time badge of the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "reason": "Roboto 700 for the word on the time badge of the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); since P58C T2 the source of the glyph atlas src/app/api/og/glyphs.json (scripts/p58c/og-glyphs.mjs), not read at runtime.",
       "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf)",
       "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
       "license": "Apache-2.0",
@@ -92473,7 +92473,7 @@
         "soubor NOTICE, pokud balíček nějaký nese",
         "označení změn"
       ],
-      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion.",
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion. Its ASCII glyphs are rasterised to 8-bit alpha masks at 80 px in src/app/api/og/glyphs.json (P58C T2).",
       "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
       "scope": "prod"
     },

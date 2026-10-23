@@ -8,18 +8,16 @@
  * cestě k první odpovědi. Kodér je proti tomu padesát řádků nad `node:zlib`,
  * který v Node stejně je.
  *
- * **P27B T6 to pro náhled hry mění.** Paletový obrázek nenesl nic z hry, a
- * sdílený odkaz proto nerozlišil jednu hru od druhé. `next/og` je součástí
- * `next` (žádný nový balíček; satori, resvg a `@vercel/og` jsou MPL-2.0 a stojí
- * v `disclosure.json`) a WASM leží jen na cestě `…/og`, kterou volá crawler
- * sociální sítě – ne na cestě k prvnímu snímku hry. Tenhle kodér zůstává
- * pro paletovou zálohu a pro `/api/og`.
+ * **Od P58C T2 kóduje i kartu výzvy hry.** Tu mezi P27B a P58C kreslil
+ * `next/og`, jenže satori a resvg jsou MPL-2.0 a pravidla copyleft zakazují.
+ * Kartu teď kreslí `raster.ts` a kóduje tenhle kodér; `decodePng` níže čte
+ * náhledy modelů, které na kartu přijdou.
  *
  * Formát je záměrně ten nejjednodušší platný: 8 bitů na kanál, truecolor bez
  * alfy, každý řádek s filtrem 0. Žádná paleta, žádné prokládání.
  */
 
-import { deflateSync } from 'node:zlib';
+import { deflateSync, inflateSync } from 'node:zlib';
 
 const SIGNATURE = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
@@ -91,6 +89,64 @@ export function encodePng(width: number, height: number, rgb: Uint8Array): Uint8
     at += part.length;
   }
   return png;
+}
+
+/**
+ * Dekodér náhledu modelu (P58C T2): 8 bitů na kanál, RGB nebo RGBA, bez
+ * prokládání – tak vypadají všechny náhledy v `public/assets`. Jiné PNG hodí
+ * chybu a karta se nakreslí bez hrdiny.
+ */
+export function decodePng(png: Uint8Array): { width: number; height: number; rgba: Uint8Array } {
+  if (!SIGNATURE.every((byte, i) => png[i] === byte)) throw new Error('png: chybí podpis');
+  const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
+  const idat: Uint8Array[] = [];
+  let [width, height, channels] = [0, 0, 0];
+  for (let at = 8; at + 8 <= png.length; ) {
+    const length = view.getUint32(at);
+    const type = String.fromCharCode(...png.subarray(at + 4, at + 8));
+    const data = png.subarray(at + 8, at + 8 + length);
+    if (type === 'IHDR') {
+      [width, height] = [view.getUint32(at + 8), view.getUint32(at + 12)];
+      const [depth, colorType, interlace] = [data[8], data[9], data[12]];
+      if (depth !== 8 || (colorType !== 2 && colorType !== 6) || interlace !== 0) throw new Error(`png: nepodporovaný formát ${depth}/${colorType}/${interlace}`);
+      channels = colorType === 6 ? 4 : 3;
+    } else if (type === 'IDAT') {
+      idat.push(data);
+    } else if (type === 'IEND') {
+      break;
+    }
+    at += 12 + length;
+  }
+  if (channels === 0) throw new Error('png: chybí IHDR');
+
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * channels;
+  if (raw.length < (stride + 1) * height) throw new Error('png: krátká data');
+  const pixels = new Uint8Array(stride * height);
+  for (let y = 0; y < height; y += 1) {
+    const filter = raw[y * (stride + 1)];
+    const row = y * stride;
+    for (let x = 0; x < stride; x += 1) {
+      const value = raw[y * (stride + 1) + 1 + x];
+      const left = x >= channels ? pixels[row + x - channels] : 0;
+      const up = y > 0 ? pixels[row - stride + x] : 0;
+      const corner = x >= channels && y > 0 ? pixels[row - stride + x - channels] : 0;
+      let predictor = 0;
+      if (filter === 1) predictor = left;
+      else if (filter === 2) predictor = up;
+      else if (filter === 3) predictor = (left + up) >> 1;
+      else if (filter === 4) {
+        const p = left + up - corner;
+        const [pa, pb, pc] = [Math.abs(p - left), Math.abs(p - up), Math.abs(p - corner)];
+        predictor = pa <= pb && pa <= pc ? left : pb <= pc ? up : corner;
+      } else if (filter !== 0) throw new Error(`png: neznámý filtr ${filter}`);
+      pixels[row + x] = (value + predictor) & 0xff;
+    }
+  }
+  if (channels === 4) return { width, height, rgba: pixels };
+  const rgba = new Uint8Array(width * height * 4);
+  for (let i = 0; i < width * height; i += 1) rgba.set([pixels[i * 3], pixels[i * 3 + 1], pixels[i * 3 + 2], 255], i * 4);
+  return { width, height, rgba };
 }
 
 /** `#rrggbb` na trojici bajtů. Jiný tvar je vada dat palety. */

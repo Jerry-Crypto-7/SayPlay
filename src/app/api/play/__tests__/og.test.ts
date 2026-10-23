@@ -1,39 +1,59 @@
 /**
  * Náhled hry pro sdílený odkaz (P23-C T7). Stránka bez OG vypadá v prohlížeči
  * stejně – tenhle test drží, že obrázek je PNG 1200×630, liší se podle nálady,
- * nemá fialovou a neznámá hra dostane tutéž 404 jako čtení.
+ * nemá fialovou a neznámá hra dostane tutéž 404 jako čtení. Od P58C T2 kartu
+ * kreslí vlastní rastr bez `next/og` (MPL-2.0) – test čte pixely dekódovaného PNG.
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { color } from '@/brand/tokens';
 import type { GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore, type DareRecord, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 
+import { decodePng, hexToRgb } from '../../og/png';
+import { hasGlyph } from '../../og/raster';
 import { OG_INK, OG_PALETTES, assetOriginFrom, dareBadge, dareScoreBadge, fontCovers, ogPngFor, paletteForMood } from '../_og';
 import { POST as createGame } from '../games/route';
 import { GET as ogImage } from '../games/[id]/og/route';
 
 const CALLER = { 'x-forwarded-for': '203.0.113.7' };
 
-// Selhání renderu na požádání: `ImageResponse` hodí dřív, než začne kreslit.
+// Selhání renderu na požádání: text karty hodí dřív, než se nakreslí.
 const failRender = vi.hoisted(() => ({ value: false }));
-vi.mock('next/og', async (importOriginal) => {
-  const real = await importOriginal<typeof import('next/og')>();
-  class FlakyImageResponse extends real.ImageResponse {
-    constructor(...args: ConstructorParameters<typeof real.ImageResponse>) {
+vi.mock('../../og/raster', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../../og/raster')>();
+  return {
+    ...real,
+    drawText: (...args: Parameters<typeof real.drawText>) => {
       if (failRender.value) throw new Error('render failed on purpose');
-      super(...args);
-    }
-  }
-  return { ...real, ImageResponse: FlakyImageResponse };
+      real.drawText(...args);
+    },
+  };
 });
+
+/** Dekódovaná karta a kolik pixelů obdélníku má (do tolerance) danou barvu. */
+async function cardOf(response: Response): Promise<{ width: number; count: (hex: string, x0: number, y0: number, x1: number, y1: number) => number }> {
+  const { width, height, rgba } = decodePng(new Uint8Array(await response.arrayBuffer()));
+  expect([width, height]).toEqual([1200, 630]);
+  return {
+    width,
+    count(hex, x0, y0, x1, y1) {
+      const want = hexToRgb(hex);
+      let hits = 0;
+      for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) if (want.every((v, c) => Math.abs(rgba[(y * width + x) * 4 + c] - v) <= 8)) hits += 1;
+      return hits;
+    },
+  };
+}
 
 // Soubor náhledu hrdiny chybí na požádání – jako funkce na Vercelu, která `public/` nenese.
 const noPublicFiles = vi.hoisted(() => ({ value: false }));
@@ -160,20 +180,62 @@ describe('GET /api/play/games/:id/og', () => {
   it('text outside the bundled font is never cached as immutable, even when the render succeeds (review T6-1)', async () => {
     expect(fontCovers('Canyon Dash – “Go” café…')).toBe(true);
     expect(fontCovers('峡谷ダッシュ')).toBe(false);
-    // Stažení písma selže: satori nehodí, kreslí prázdná místa – právě ten případ.
-    const offline = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+    // Atlas znaky nemá: karta se nakreslí bez nich – právě ten případ.
+    const versionId = await publishSpec('峡谷ダッシュ');
+    const response = await og(versionId);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-og-partial')).toBe('1');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+  });
+
+  // P58C T2: kartu kreslí vlastní rastr. Prázdný nebo rozbitý obrázek by prošel kontrolou hlavičky – proto pixely.
+  it('draws the dare card itself: scene, hero, title, sun badge and logo where the kit puts them (P58C T2)', async () => {
+    const response = await og(await publishSpec('Canyon Dash'));
+    expect(response.headers.get('x-og-partial')).toBeNull();
+    const card = await cardOf(response);
+    expect(card.count(color.cream, 0, 0, 50, 50)).toBe(2500);
+    // Obloha scény vlevo nahoře uvnitř rámu, inkoustový rám a tvrdý stín vpravo dole.
+    const { sky } = (await import('@/play/arcade/look')).sceneLook(runnerFixture.theme);
+    expect(card.count(sky, 100, 80, 140, 120)).toBe(1600);
+    expect(card.count(color.ink, 56, 300, 62, 310)).toBe(60);
+    expect(card.count(color.ink, 560, 300, 570, 310)).toBe(100);
+    // Hrdina v rámu: náhled modelu není barva scény.
+    expect(card.count(sky, 160, 160, 450, 450)).toBeLessThan(1000);
+    // Název: jeden řádek 72 px nahoře v pravém sloupci; pod ním nic do odznaku.
+    expect(card.count(color.ink, 612, 64, 1144, 140)).toBeGreaterThan(3000);
+    expect(card.count(color.cream, 612, 150, 1144, 220)).toBe(532 * 70);
+    // Slunečný odznak (kruh 196, mezi názvem a logem) a otázka vedle něj.
+    expect(card.count(color.sun, 612, 200, 812, 460)).toBeGreaterThan(15_000);
+    expect(card.count(color.ink, 844, 250, 1144, 410)).toBeGreaterThan(3000);
+    // Logo vpravo dole: rajčatová ikona a inkoustové písmo.
+    expect(card.count(color.tomato, 930, 514, 1144, 574)).toBeGreaterThan(300);
+    expect(card.count(color.ink, 930, 514, 1144, 574)).toBeGreaterThan(300);
+  });
+
+  it('draws a target instead of a hero the catalog cannot serve (P58C T2)', async () => {
+    const versionId = await publishSpec('No Hero');
+    noPublicFiles.value = true;
     try {
-      const versionId = await publishSpec('峡谷ダッシュ');
-      const response = await og(versionId);
-      expect(response.status).toBe(200);
-      expect(response.headers.get('x-og-partial')).toBe('1');
-      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+      const card = await cardOf(await og(versionId));
+      // Terč se středem uprostřed scény: rajčatový střed, bílý kruh, slunečný okraj.
+      expect(card.count(color.tomato, 296, 298, 316, 318)).toBe(400);
+      expect(card.count(color.paper, 306 + 50, 303, 306 + 60, 313)).toBe(100);
+      expect(card.count(color.sun, 306 + 100, 303, 306 + 110, 313)).toBe(100);
     } finally {
-      offline.mockRestore();
+      noPublicFiles.value = false;
     }
   });
 
-  // P34 T7: karta kreslí Roboto z `public/fonts/roboto` (Black a Bold), ne Geist z `next/og`.
+  it('nothing in src/ imports next/og, satori or resvg – MPL-2.0 stays out of the product (P58C T2)', () => {
+    const banned = /(?:from\s*|import\s*\(\s*|require\s*\(\s*)['"](?:next\/og|@vercel\/og|satori|@resvg\/[\w-]+)['"]|\bImageResponse\b/;
+    // Soubory v gitu i nové necommitnuté – ne celý strom, ten má i vygenerovaná data.
+    const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', 'src'], { encoding: 'utf8' }).split('\n');
+    const code = files.filter((path) => /\.(?:ts|tsx|js|mjs|cjs)$/.test(path) && !path.endsWith('__tests__/og.test.ts'));
+    expect(code.length).toBeGreaterThan(500);
+    expect(code.filter((path) => banned.test(readFileSync(path, 'utf8')))).toEqual([]);
+  });
+
+  // P34 T7: karta kreslí Roboto z `public/fonts/roboto` (Black a Bold), od P58C T2 z atlasu glyfů.
   it('accepts only characters both bundled Roboto cuts really have (review T6-2)', async () => {
     const { readFileSync } = await vi.importActual<typeof import('node:fs')>('node:fs');
     // cmap formát 4 (Windows, Unicode BMP): kódy, které mají glyf.
@@ -203,6 +265,9 @@ describe('GET /api/play/games/:id/og', () => {
     for (let c = 0; c <= 0x10ffff; c += c === 0xd7ff ? 0x801 : 1) if (fontCovers(String.fromCodePoint(c))) accepted.push(c);
     expect(accepted.length).toBeGreaterThan(250);
     expect(accepted.filter((c) => !black.has(c) || !bold.has(c)).map((c) => c.toString(16))).toEqual([]);
+    // P58C T2: karta kreslí z atlasu – každý přijatý znak v něm má glyf Black, slovo odznaku (ASCII) i Bold.
+    expect(accepted.filter((c) => !hasGlyph(String.fromCodePoint(c))).map((c) => c.toString(16))).toEqual([]);
+    expect(Array.from({ length: 0x7f - 0x20 }, (_, i) => String.fromCodePoint(0x20 + i)).filter((ch) => !hasGlyph(ch, 700))).toEqual([]);
     expect(fontCovers('Sky-High Run – “Go”')).toBe(true);
     // Podmnožina je latinka 1: česká diakritika v ní není a jde přes stažené písmo (dočasný náhled).
     expect(fontCovers('Běžec')).toBe(false);

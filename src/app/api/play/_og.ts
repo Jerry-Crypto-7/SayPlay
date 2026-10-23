@@ -18,9 +18,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { ImageResponse } from 'next/og';
-import { createElement as h } from 'react';
-
 import catalog from '@/assets/catalog.json';
 import { color } from '@/brand/tokens';
 import { CAN_YOU_BEAT_IT, DARE_BADGE, daresYou } from '@/components/play/starters';
@@ -32,7 +29,8 @@ import { heroModel } from '@/play/arcade/models';
 import { arenaWinOf, type GameSpecV1 } from '@/play/spec';
 import type { DareRecord } from '@/play/version';
 
-import { encodePng, hexToRgb } from '../og/png';
+import { decodePng, encodePng, hexToRgb } from '../og/png';
+import { baselineOf, drawImage, drawText, logoImage, measureText, paint, raster, type Raster, type Rgb, type RgbaImage, roundRect, type Shape, type TextStyle, type Turn, wrapText } from '../og/raster';
 
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
@@ -87,26 +85,20 @@ const RENDERED = new Map<string, Uint8Array<ArrayBuffer>>();
 
 // ---------------------------------------------------------------------------
 // Karta výzvy (P34 T7, kit `docs/brand/docs/13-assets.md`, Dare card; dřív
-// titulní obrázek P27B T6), kreslená přes `next/og` (satori + resvg ve WASM):
+// titulní obrázek P27B T6), od P58C T2 kreslená vlastním rastrem
+// (`../og/raster.ts`) místo `next/og`, jehož satori a resvg jsou MPL-2.0:
 // krémová plocha, vlevo barva scény (obloha a zem sady prostředí arkády) s
 // hrdinou v rámu s inkoustovým obrysem, vpravo název hry, slunečný odznak
 // s časem, „Can you beat it?“ a logo vpravo dole. Snímek scény to není – na
-// serveru GPU není. Písmo je Roboto v2.138 z `public/fonts/roboto` (TTF,
-// satori WOFF2 nečte). Rozměry kitu jsou pro telefon 390 px; karta 1200 px je
+// serveru GPU není. Písmo je atlas glyfů Roboto v2.138 z `public/fonts/roboto`
+// (`../og/glyphs.json`). Rozměry kitu jsou pro telefon 390 px; karta 1200 px je
 // kreslí dvojnásobně (obrys 6, poloměr xl 48, tvrdé stíny 10 a 14).
 // ---------------------------------------------------------------------------
 
 /** Barvy karty: jen tokeny kitu (`src/brand/tokens.ts`); `og.test.ts` je měří na fialovou spolu s paletami. */
 export const OG_INK: readonly [string, string, string, string] = [color.cream, color.ink, color.sun, color.paper];
 
-/** Poměr stran loga `public/brand/logo/logo-lockup.svg` (viewBox 4773 × 1340). */
-const LOGO_RATIO = 4773 / 1340;
-
-/** Řezy Roboto, které karta kreslí: název a čas Black 900, slovo odznaku Bold 700. */
-const FONT_FILES = [
-  { weight: 900, file: 'Roboto-Black.ttf' },
-  { weight: 700, file: 'Roboto-Bold.ttf' },
-] as const;
+const INK = hexToRgb(color.ink);
 
 /** Odznak karty: čas, který hra opravdu měří, a jedno slovo; `time: null` = hra čas neměří. */
 export interface DareBadge {
@@ -156,7 +148,7 @@ export function dareScoreBadge(spec: GameSpecV1, dare: Pick<DareRecord, 'score' 
 }
 
 /**
- * Soubor z `public/` (náhled modelu, písmo, logo). Nejdřív z disku, kde ho má
+ * Soubor z `public/` (náhled modelu). Nejdřív z disku, kde ho má
  * lokální server i test; kde funkce soubory `public/` nenese (Vercel je
  * servíruje z CDN), přes HTTP z důvěryhodného původu. **Nikdy z hlaviček
  * požadavku** – viz `assetOriginFrom`. `valid` odmítne cizí odpověď (chybovou
@@ -180,36 +172,6 @@ async function publicFile(path: string, origin: string | null, valid: (bytes: Ui
   }
 }
 
-/** TrueType začíná verzí 1.0 (`00 01 00 00`); HTML chybové stránky ne. */
-const isTrueType = (bytes: Uint8Array): boolean => bytes.length > 4 && bytes[0] === 0 && bytes[1] === 1 && bytes[2] === 0 && bytes[3] === 0;
-
-type OgFont = { readonly name: string; readonly data: ArrayBuffer; readonly weight: 700 | 900; readonly style: 'normal' };
-
-/** Načtené řezy a logo se nemění – drží se na proces; selhání se nezapamatuje. */
-let FONTS: readonly OgFont[] | null = null;
-let LOGO: string | null = null;
-
-async function dareFonts(origin: string | null): Promise<readonly OgFont[] | null> {
-  if (FONTS !== null) return FONTS;
-  const loaded = await Promise.all(
-    FONT_FILES.map(async ({ weight, file }): Promise<OgFont | null> => {
-      const bytes = await publicFile(`/fonts/roboto/${file}`, origin, isTrueType);
-      return bytes === null ? null : { name: 'Roboto', data: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer, weight, style: 'normal' };
-    }),
-  );
-  if (loaded.some((font) => font === null)) return null;
-  FONTS = loaded as OgFont[];
-  return FONTS;
-}
-
-async function logoLockup(origin: string | null): Promise<string | null> {
-  if (LOGO !== null) return LOGO;
-  const bytes = await publicFile('/brand/logo/logo-lockup.svg', origin, (_, type) => type?.startsWith('image/svg+xml') === true);
-  if (bytes === null) return null;
-  LOGO = `data:image/svg+xml;base64,${Buffer.from(bytes).toString('base64')}`;
-  return LOGO;
-}
-
 const THUMBNAILS: ReadonlyMap<string, string> = new Map(catalog.assets.map((asset) => [asset.assetId, asset.thumbnail]));
 
 /**
@@ -225,115 +187,112 @@ export function assetOriginFrom(env: Record<string, string | undefined>): string
   return null;
 }
 
-/** PNG náhled modelu hrdiny z katalogu jako data URL; bez něj (`null`) nakreslí karta terč. */
-async function heroImage(modelId: string, origin: string | null): Promise<string | null> {
+/** Dekódovaný PNG náhled modelu hrdiny z katalogu; bez něj (`null`) nakreslí karta terč. */
+async function heroImage(modelId: string, origin: string | null): Promise<RgbaImage | null> {
   const thumbnail = THUMBNAILS.get(modelId);
   if (thumbnail === undefined) return null;
   const bytes = await publicFile(thumbnail, origin, (_, type) => type === 'image/png');
-  return bytes === null ? null : `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
-}
-
-type Node = ReturnType<typeof h>;
-
-/** Terč ze tří kruhů místo hrdiny, který katalog nemá: bez písma, jen barvy kitu. */
-function target(): Node {
-  const ring = (size: number, fill: string, child?: Node): Node =>
-    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: size, height: size, borderRadius: size / 2, background: fill, border: `6px solid ${color.ink}` } }, child);
-  return ring(260, color.sun, ring(170, color.paper, ring(80, color.tomato)));
-}
-
-/** Slunečný odznak výhry (kit `.sp-badge`: kruh, obrys, stín, náklon −6°) s časem a slovem. */
-function badge({ time, word }: DareBadge): Node {
-  return h(
-    'div',
-    {
-      style: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        width: 196,
-        height: 196,
-        borderRadius: 98,
-        background: color.sun,
-        border: `6px solid ${color.ink}`,
-        boxShadow: `10px 10px 0 0 ${color.ink}`,
-        transform: 'rotate(-6deg)',
-      },
-    },
-    // Body výzvy bývají delší než čas („12,450“): nad pět znaků menší písmo, ať se vejdou do kruhu.
-    time === null ? null : h('div', { style: { fontSize: time.length > 5 ? 44 : 60, fontWeight: 900, lineHeight: 1, letterSpacing: time.length > 5 ? -1.3 : -1.8 } }, time),
-    h('div', { style: { marginTop: time === null ? 0 : 6, fontSize: time === null ? 34 : 24, fontWeight: time === null ? 900 : 700, lineHeight: 1.1, textAlign: 'center' } }, word),
-  );
-}
-
-function dareCard(spec: GameSpecV1, hero: string | null, logo: string | null, sun: DareBadge): Node {
-  const look = sceneLook(spec.theme);
-  const long = spec.title.length > 24;
-  return h(
-    'div',
-    { style: { display: 'flex', width: '100%', height: '100%', padding: 56, gap: 56, background: color.cream, color: color.ink, fontFamily: 'Roboto' } },
-    // Vlevo „zamrzlá scéna“: obloha a zem sady prostředí, hrdina na horizontu, rám kitu.
-    h(
-      'div',
-      {
-        style: {
-          display: 'flex',
-          position: 'relative',
-          flexShrink: 0,
-          width: 500,
-          height: 504,
-          borderRadius: 48,
-          border: `6px solid ${color.ink}`,
-          boxShadow: `14px 14px 0 0 ${color.ink}`,
-          background: look.sky,
-          overflow: 'hidden',
-        },
-      },
-      h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 170, background: look.ground } }),
-      h(
-        'div',
-        { style: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-        // Náhled modelu má vlastní šedé pozadí: na scéně stojí jako karta hrdiny s rámem a stínem kitu.
-        hero === null
-          ? target()
-          : h(
-              'div',
-              { style: { display: 'flex', width: 330, height: 330, borderRadius: 32, border: `6px solid ${color.ink}`, boxShadow: `10px 10px 0 0 ${color.ink}`, overflow: 'hidden' } },
-              h('img', { src: hero, width: 318, height: 318, style: { objectFit: 'cover' } }),
-            ),
-      ),
-    ),
-    // Vpravo název (display-m), odznak s „Can you beat it?“ a logo vpravo dole.
-    h(
-      'div',
-      { style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0, paddingTop: 8 } },
-      h('div', { style: { fontSize: long ? 56 : 72, fontWeight: 900, lineHeight: 1.05, letterSpacing: long ? -1.7 : -2.2 } }, spec.title),
-      h(
-        'div',
-        { style: { display: 'flex', flexDirection: 'column', gap: 20 } },
-        // Kdo vyzývá (P44B T7) stojí nad odznakem s jeho výsledkem.
-        sun.lead === undefined ? null : h('div', { style: { fontSize: 40, fontWeight: 900, lineHeight: 1.05, letterSpacing: -1.2 } }, sun.lead),
-        h(
-          'div',
-          { style: { display: 'flex', alignItems: 'center', gap: 36 } },
-          badge(sun),
-          // Šířka láme otázku na „Can you / beat it?“, ne „Can you beat / it?“.
-          h('div', { style: { width: 240, fontSize: 54, fontWeight: 900, lineHeight: 1.02, letterSpacing: -1.6 } }, CAN_YOU_BEAT_IT),
-        ),
-      ),
-      h('div', { style: { display: 'flex', justifyContent: 'flex-end' } }, logo === null ? null : h('img', { src: logo, width: Math.round(60 * LOGO_RATIO), height: 60 })),
-    ),
-  );
+  if (bytes === null) return null;
+  try {
+    return decodePng(bytes);
+  } catch {
+    // Formát, který dekodér nečte: karta bez hrdiny, dočasná (`complete: false`).
+    return null;
+  }
 }
 
 /**
- * Znaky, které nakreslí Roboto z `public/fonts/roboto` (podmnožina latinky
- * z P34 T1, oba řezy karty mají tutéž). Pro jiné znaky si satori písmo
- * stahuje z Google Fonts a když to nevyjde, **nehodí**: nakreslí prázdná
- * místa a render „projde“ (nález revize T6-1). `og.test.ts` rozsah měří na
- * souborech písma.
+ * Rámeček kitu: tvrdý stín (posunutý o `shadow`, s `turn` otočený s prvkem),
+ * inkoustový obrys `border` a výplň uvnitř. Vrací vnitřní tvar pro ořez obsahu.
+ */
+function framed(card: Raster, x: number, y: number, w: number, h: number, r: number, fill: Rgb | null, border: number, shadow: number, turn?: Turn): Shape {
+  if (shadow > 0) {
+    const [cos, sin] = turn === undefined ? [1, 0] : [Math.cos(turn.angle), Math.sin(turn.angle)];
+    paint(card, roundRect(x + shadow * cos - shadow * sin, y + shadow * sin + shadow * cos, w, h, r), INK);
+  }
+  paint(card, roundRect(x, y, w, h, r), INK);
+  const inner = roundRect(x + border, y + border, w - 2 * border, h - 2 * border, r - border);
+  // Bez výplně (rám hrdiny) prosvítá scéna, jako u CSS rámečku bez pozadí.
+  if (fill !== null) paint(card, inner, fill);
+  return inner;
+}
+
+/** Terč ze tří kruhů se středem `(cx, cy)` místo hrdiny, kterého katalog nemá: bez písma, jen barvy kitu. */
+function target(card: Raster, cx: number, cy: number): void {
+  for (const [size, fill] of [[260, color.sun], [170, color.paper], [80, color.tomato]] as const) framed(card, cx - size / 2, cy - size / 2, size, size, size / 2, hexToRgb(fill), 6, 0);
+}
+
+/** Řádky textu shora od `top`; `align` vodorovně v `[x, x + width]` jako CSS `text-align`. */
+function textBlock(card: Raster, lines: readonly string[], x: number, top: number, width: number, style: TextStyle, lineHeight: number, align: 'left' | 'center', turn?: Turn): void {
+  lines.forEach((line, i) => {
+    const left = align === 'center' ? x + (width - measureText(line, style)) / 2 : x;
+    drawText(card, line, left, baselineOf(top + i * lineHeight, lineHeight, style), style, INK, turn);
+  });
+}
+
+/** Slunečný odznak výhry (kit `.sp-badge`: kruh 196, obrys, stín, náklon −6°) s časem a slovem; `(x, y)` = levý horní roh. */
+function badge(card: Raster, x: number, y: number, { time, word }: DareBadge): void {
+  const size = 196;
+  const inner = size - 12;
+  const turn: Turn = { cx: x + size / 2, cy: y + size / 2, angle: (-6 * Math.PI) / 180 };
+  framed(card, x, y, size, size, size / 2, hexToRgb(color.sun), 6, 10, turn);
+  // Body výzvy bývají delší než čas („12,450“): nad pět znaků menší písmo, ať se vejdou do kruhu.
+  const clock: TextStyle = { weight: 900, size: time !== null && time.length > 5 ? 44 : 60, spacing: time !== null && time.length > 5 ? -1.3 : -1.8 };
+  const label: TextStyle = time === null ? { weight: 900, size: 34, spacing: 0 } : { weight: 700, size: 24, spacing: 0 };
+  const words = wrapText(word, label, inner);
+  const above = time === null ? 0 : clock.size + 6;
+  const top = turn.cy - (above + words.length * label.size * 1.1) / 2;
+  if (time !== null) textBlock(card, [time], x + 6, top, inner, clock, clock.size, 'center', turn);
+  textBlock(card, words, x + 6, top + above, inner, label, label.size * 1.1, 'center', turn);
+}
+
+/** Karta výzvy 1200×630 v rozměrech, které dřív kreslil `next/og`: okraj 56, mezera 56. */
+function dareCard(spec: GameSpecV1, hero: RgbaImage | null, sun: DareBadge): Raster {
+  const look = sceneLook(spec.theme);
+  const card = raster(OG_WIDTH, OG_HEIGHT, hexToRgb(color.cream));
+
+  // Vlevo „zamrzlá scéna“ 500×504: obloha a zem sady prostředí (spodních 170 px), hrdina na horizontu, rám kitu.
+  const scene = framed(card, 56, 56, 500, 504, 48, hexToRgb(look.sky), 6, 14);
+  paint(card, { ...scene, y0: scene.y1 - 170 }, hexToRgb(look.ground));
+  const [cx, cy] = [56 + 250, 56 + 252];
+  if (hero === null) {
+    target(card, cx, cy);
+  } else {
+    // Náhled modelu má vlastní šedé pozadí: na scéně stojí jako karta hrdiny s rámem a stínem kitu.
+    const frame = framed(card, cx - 165, cy - 165, 330, 330, 32, null, 6, 10);
+    drawImage(card, hero, cx - 159, cy - 159, 318, 318, frame);
+  }
+
+  // Vpravo sloupec 532 px: název (display-m), odznak s „Can you beat it?“ a logo vpravo dole, rozestup jako CSS `space-between`.
+  const [x, top, bottom, width] = [612, 64, 574, 532];
+  const long = spec.title.length > 24;
+  const titleStyle: TextStyle = { weight: 900, size: long ? 56 : 72, spacing: long ? -1.7 : -2.2 };
+  const title = wrapText(spec.title, titleStyle, width);
+  const titleHeight = title.length * titleStyle.size * 1.05;
+  textBlock(card, title, x, top, width, titleStyle, titleStyle.size * 1.05, 'left');
+
+  // Kdo vyzývá (P44B T7) stojí nad odznakem s jeho výsledkem.
+  const leadStyle: TextStyle = { weight: 900, size: 40, spacing: -1.2 };
+  const lead = sun.lead === undefined ? [] : wrapText(sun.lead, leadStyle, width);
+  const leadHeight = lead.length === 0 ? 0 : lead.length * leadStyle.size * 1.05 + 20;
+  const logo = logoImage();
+  const y = top + titleHeight + Math.max(0, (bottom - top - titleHeight - leadHeight - 196 - logo.height) / 2);
+  textBlock(card, lead, x, y, width, leadStyle, leadStyle.size * 1.05, 'left');
+  badge(card, x, y + leadHeight, sun);
+  // Šířka 240 láme otázku na „Can you / beat it?“, ne „Can you beat / it?“.
+  const askStyle: TextStyle = { weight: 900, size: 54, spacing: -1.6 };
+  const ask = wrapText(CAN_YOU_BEAT_IT, askStyle, 240);
+  textBlock(card, ask, x + 196 + 36, y + leadHeight + (196 - ask.length * askStyle.size * 1.02) / 2, 240, askStyle, askStyle.size * 1.02, 'left');
+  drawImage(card, logo, x + width - logo.width, bottom - logo.height, logo.width, logo.height);
+  return card;
+}
+
+/**
+ * Znaky, které má atlas glyfů karty (`../og/glyphs.json`: podmnožina latinky
+ * z P34 T1, kterou mají oba řezy Roboto v `public/fonts/roboto`; generátor
+ * atlasu bere tytéž rozsahy). Jiný znak karta nakreslí jen jako základní
+ * písmeno, nebo vůbec – takový náhled nesmí být trvalý (nález revize T6-1).
+ * `og.test.ts` rozsah měří na souborech písma i na atlasu.
  */
 const ROBOTO_TEXT = /^[ -~ -ÿıŒœʻʼˆ˚˜ -‧ - ⁴€™↑↓−]*$/u;
 
@@ -348,8 +307,8 @@ const PREVIEWS = new Map<string, Uint8Array<ArrayBuffer>>();
 export interface GamePreview {
   readonly png: Uint8Array<ArrayBuffer>;
   /**
-   * `false`: obrázek hrdiny (ač ho katalog má), písmo nebo logo se nepodařilo
-   * získat, nebo název potřebuje stažené písmo. Takový náhled se neukládá a
+   * `false`: obrázek hrdiny (ač ho katalog má) se nepodařilo získat, nebo
+   * název či jméno autora má znak mimo atlas písma. Takový náhled se neukládá a
    * nesmí být `immutable` – přechodná chyba by se jinak stala trvalým obrázkem verze.
    */
   readonly complete: boolean;
@@ -368,12 +327,10 @@ export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin
   if (ready !== undefined) return { png: ready, complete: true };
   try {
     const model = heroModel(spec);
-    const [hero, fonts, logo] = await Promise.all([heroImage(model, origin), dareFonts(origin), logoLockup(origin)]);
-    // Bez Roboto kreslí `next/og` svým výchozím písmem – náhled je pak jen dočasný (`complete: false`).
+    const hero = await heroImage(model, origin);
     const sun = dare === null ? dareBadge(spec) : dareScoreBadge(spec, dare, by);
-    const complete = (hero !== null || !THUMBNAILS.has(model)) && fonts !== null && logo !== null && fontCovers(spec.title) && fontCovers(sun.lead ?? '');
-    const response = new ImageResponse(dareCard(spec, hero, logo, sun), { width: OG_WIDTH, height: OG_HEIGHT, ...(fonts === null ? {} : { fonts: [...fonts] }) });
-    const png = new Uint8Array(await response.arrayBuffer());
+    const complete = (hero !== null || !THUMBNAILS.has(model)) && fontCovers(spec.title) && fontCovers(sun.lead ?? '');
+    const png = encodePng(OG_WIDTH, OG_HEIGHT, dareCard(spec, hero, sun).rgb);
     if (complete) {
       if (PREVIEWS.size >= PREVIEW_CAP) PREVIEWS.delete(PREVIEWS.keys().next().value as string);
       PREVIEWS.set(key, png);
