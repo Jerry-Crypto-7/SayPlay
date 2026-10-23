@@ -91,6 +91,8 @@ export default defineConfig({
     {
       name: 'iphone-touch',
       testMatch: /(play-create|play-touch|play-chain|p36-dare)\.spec\.ts/,
+      // Rozložení vedle feedu je desktopové; mobilní profil z něj změna velikosti okna neudělá.
+      grepInvert: /desktop \d+×\d+/,
       use: { ...devices['iPhone 15'], hasTouch: true, launchOptions: { args: [] } },
     },
     /**

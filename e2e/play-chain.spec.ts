@@ -51,7 +51,7 @@ async function firstPlayable(page: Page, info: TestInfo): Promise<number> {
   const stage = page.getByTestId('arcade-stage');
   await expect(stage).toBeVisible({ timeout: 60_000 });
   for (let attempt = 0; attempt < 600 && (await stage.getAttribute('data-input-at')) === null; attempt += 1) {
-    if (info.project.name === 'pixel7-touch') await stage.tap({ force: true });
+    if (info.project.use.hasTouch === true) await stage.tap({ force: true });
     else await page.keyboard.press('Space');
   }
   const at = Number(await stage.getAttribute('data-input-at'));
@@ -63,7 +63,8 @@ test.describe('/play/[id] – a microgame chain (P56C T13)', () => {
     test.setTimeout(180_000);
     const url = await publish(request, SENTENCE);
     const id = url.split('/').at(-1)!;
-    const phone = info.project.name === 'pixel7-touch';
+    // Telefon podle dotyku, ne podle jména projektu: `iphone-touch` (P58C T4) je telefon stejně jako Pixel 7.
+    const phone = info.project.use.hasTouch === true;
     const a = await browser.newContext(person(phone ? 72 : 71));
     const page = await a.newPage();
     // Čerstvě spuštěný `next start` staví stránku hry při prvním požadavku líně (měřeno 1581 ms proti 1,1 s
@@ -74,7 +75,8 @@ test.describe('/play/[id] – a microgame chain (P56C T13)', () => {
 
     const playable = await firstPlayable(page, info);
     info.annotations.push({ type: 'first-playable-ms', description: String(Math.round(playable)) });
-    if (!phone) expect(playable).toBeLessThanOrEqual(FIRST_PLAYABLE_MS);
+    // Strop je změřený na Chromiu. WebKit na Windows není build ani grafika Safari, čas jen zapíše (`evals/play/p58c/webkit.md`).
+    if (!phone && browser.browserType().name() === 'chromium') expect(playable).toBeLessThanOrEqual(FIRST_PLAYABLE_MS);
 
     await probeReady(page);
     const rounds = Number((await page.getByTestId('hud-counter-round').textContent())!.split('/').at(-1));
