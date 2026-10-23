@@ -37,9 +37,9 @@ describe('OEWN nouns in nearest.json', () => {
   });
 
   it('gives fantasy creatures a model', () => {
-    // Oba tvory má katalog od P42 přímo; „wyvern“ OEWN zná, ale s žádným modelem nedosáhne 0,5 a do tabulky nejde.
+    // Oba tvory má katalog od P42 přímo; „wyvern“ do tabulky vešel až přegenerováním P58A T6, kdy katalog měl `gen3d-wyvern`.
     for (const word of ['griffin', 'kraken']) expect(modelOf(word, true), word).toBeDefined();
-    expect(table.words.wyvern).toBeUndefined();
+    expect(table.words.wyvern?.[0]).toBe('gen3d-wyvern');
   });
 
   it('draws a noun only OEWN brought in', () => {
