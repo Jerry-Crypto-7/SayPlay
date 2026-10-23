@@ -211,7 +211,8 @@ test.describe('lane defense on a phone (P54C T7)', () => {
     const end = await page.evaluate(() => (window.__playShell as unknown as HandProbe).idleRun());
     expect(end.runState).toBe('lost');
     await expect(page.getByTestId('hud-counter-collected')).toHaveAttribute('data-count', '0');
-    await expect(page.getByTestId('play-postrun')).toContainText('So close.', { timeout: 30_000 });
+    // Prohra bez jediného bodu (P56A T9) říká „Try again!“, ne „So close.“.
+    await expect(page.getByTestId('play-postrun')).toContainText('Try again!', { timeout: 30_000 });
     await context.close();
   });
 });
