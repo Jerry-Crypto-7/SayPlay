@@ -22,7 +22,7 @@
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
-import type { UpstreamRequest } from '@/model/prompt';
+import { DIRECTOR_PRIMARY_MODEL, type UpstreamRequest } from '@/model/prompt';
 import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
 import { AdmissionQueue } from '@/server/admission';
 import { costUsd, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
@@ -74,7 +74,7 @@ export const OSS_MIN_CALL_MS = 30_000;
  */
 export function minCallMs(config: UpstreamConfig): number {
   if (config.pricing.usdPerMTokOut === 0) return 0;
-  return /gpt-oss-20b/i.test(config.model) ? OSS_MIN_CALL_MS : MIN_CALL_MS;
+  return config.model.toLowerCase().includes(DIRECTOR_PRIMARY_MODEL) ? OSS_MIN_CALL_MS : MIN_CALL_MS;
 }
 
 /**

@@ -65,7 +65,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import ts from 'typescript';
 
-import { modelIdsIn } from './license-gate.mjs';
+import { modelIdsIn, registeredModelNames } from './license-gate.mjs';
 
 /** Strom, který se kontroluje. Přepisuje ho `buildContext({ repo })` v testech. */
 const REPO = process.cwd();
@@ -78,7 +78,6 @@ const REPO = process.cwd();
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 export const MANIFEST_FILE = 'docs/submission/submission.json';
-export const PLAN_FILE = 'plans/P8-odevzdani.md';
 export const REGISTRY_FILE = 'disclosure.json';
 
 /**
@@ -395,12 +394,6 @@ export function focusCategoryInDescription(text) {
   return match ? match[1] : null;
 }
 
-/** Focus kategorie tak, jak byla zapsaná při registraci (P0 T107 → plán P8). */
-export function focusCategoryInRegistration(text) {
-  const match = text.match(/<!--\s*registrace:\s*focus-kategorie\s*=\s*(.+?)\s*-->/);
-  return match ? match[1] : null;
-}
-
 /**
  * Váha literálů v jednom modulu. `bytes` je součet obsahu **všech** literálů
  * včetně řetězcových a šablonových, `items` je nejdelší pole nebo objekt.
@@ -642,14 +635,16 @@ check(5, 'focus kategorie je zvolená a shodná s registrací', false, ({ repo, 
   if (isPlaceholder(path) || !existsSync(join(repo, path))) return `popis chybí, kategorii nejde odkud přečíst`;
 
   const chosen = focusCategoryInDescription(readText(repo, path));
-  const registered = focusCategoryInRegistration(readText(repo, PLAN_FILE));
+  const registered = manifest.focusCategory;
 
-  // **Dvě nezávislé strany, ne kopie jedné.** Kategorie v registraci se zapsala
-  // do plánu při T107, tedy měsíce před odevzdáním; kategorie v popisu je to, co
-  // uvidí hodnotitel. Porovnávat popis se sebou samým by nedokázalo nic.
+  // **Dvě nezávislé strany, ne kopie jedné.** Kategorie z registrace stojí v
+  // manifestu jako `focusCategory`; kategorie v popisu je to, co uvidí
+  // hodnotitel. Porovnávat popis se sebou samým by nedokázalo nic. Do P58C se
+  // registrace četla z `plans/P8-odevzdani.md`, který je gitignorovaný a v
+  // čistém klonu chybí – brána pak padala na souboru, ne na rozporu.
   if (!chosen) return `${path} neuvádí řádek "**Focus kategorie:** …"`;
-  if (!registered) return `${PLAN_FILE} nenese značku "<!-- registrace: focus-kategorie = … -->" z T107`;
-  if (isPlaceholder(registered)) return `${PLAN_FILE}: kategorie z registrace ještě není doplněná ("${registered}")`;
+  if (registered === undefined || registered === null) return `${MANIFEST_FILE} neuvádí "focusCategory" z registrace`;
+  if (isPlaceholder(registered)) return `${MANIFEST_FILE}: kategorie z registrace ještě není doplněná ("${registered}")`;
   if (chosen.toLowerCase() !== registered.toLowerCase()) {
     return `popis uvádí "${chosen}", registrace "${registered}" — to je materiální rozpor s přihláškou`;
   }
@@ -696,11 +691,7 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
   for (const table of tables) {
     if (!sources.has(table)) problems.push(`modelTablePaths "${table}" není sledovaný zdrojový soubor`);
   }
-  const known = new Set(
-    (registry.entries ?? [])
-      .filter((entry) => entry?.kind === 'model')
-      .map((entry) => String(entry.name).toLowerCase()),
-  );
+  const known = registeredModelNames(registry.entries);
   for (const [path, source] of sources) {
     const ids = modelIdsIn(source);
     if (ids.size === 0) continue;
@@ -862,7 +853,7 @@ export async function main(argv = []) {
         '  node scripts/submission-check.mjs             plný běh proti nasazené adrese',
         '  node scripts/submission-check.mjs --offline   přeskočí síťové kontroly, exit 2',
         '',
-        `Vstupy: ${MANIFEST_FILE}, ${REGISTRY_FILE}, ${PLAN_FILE}. Popis: aktuální Reality Compiler disclosure kontrakt.`,
+        `Vstupy: ${MANIFEST_FILE}, ${REGISTRY_FILE}. Popis: aktuální Reality Compiler disclosure kontrakt.`,
         'Exit 0 jen když prošlo všech osm kontrol. Přeskočená kontrola není splněná.',
       ].join('\n'),
     );

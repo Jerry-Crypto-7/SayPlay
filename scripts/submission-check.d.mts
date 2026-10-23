@@ -5,7 +5,6 @@
  */
 
 export declare const MANIFEST_FILE: string;
-export declare const PLAN_FILE: string;
 export declare const REGISTRY_FILE: string;
 export declare const PLACEHOLDER: RegExp;
 export declare const VIDEO_LIMIT_SECONDS: number;
@@ -39,7 +38,6 @@ export declare function distinctiveNumbers(text: string): Set<string>;
 export declare function proseOf(markdown: string): string;
 
 export declare function focusCategoryInDescription(text: string): string | null;
-export declare function focusCategoryInRegistration(text: string): string | null;
 
 /** Souhrn literálů v modulu: bajty všech literálů a nejdelší kolekce. */
 export declare function literalWeight(path: string, source: string): { bytes: number; items: number };

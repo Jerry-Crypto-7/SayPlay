@@ -277,16 +277,24 @@ describe('[5] focus kategorie', () => {
 
   it('selže, dokud registrace kategorii nedoplnila', async () => {
     const dir = repo();
-    write(dir, 'plans/P8-odevzdani.md', '# P8\n\n<!-- registrace: focus-kategorie = TODO: T107 -->\n');
+    patchManifest(dir, { focusCategory: 'TODO: T107' });
     const results = await check(dir);
     expect(failed(results)).toEqual([5]);
     expect(detailOf(results, 5)).toContain('ještě není doplněná');
   });
 
-  it('selže, když plán registrační značku vůbec nemá', async () => {
+  it('selže, když manifest registrovanou kategorii vůbec neuvádí', async () => {
     const dir = repo();
-    write(dir, 'plans/P8-odevzdani.md', '# P8\n\nBez značky.\n');
-    expect(failed(await check(dir))).toEqual([5]);
+    patchManifest(dir, { focusCategory: undefined });
+    const results = await check(dir);
+    expect(failed(results)).toEqual([5]);
+    expect(detailOf(results, 5)).toContain('focusCategory');
+  });
+
+  it('chybějící gitignorovaný plán P8 kontrolu neshodí — registrace stojí v manifestu', async () => {
+    const dir = repo();
+    rmSync(join(dir, 'plans'), { recursive: true, force: true });
+    expect(failed(await check(dir))).toEqual([]);
   });
 
   it('selže, když popis kategorii neuvádí', async () => {
@@ -401,6 +409,25 @@ describe('[6] disclosure napříč pěti třídami', () => {
     // A první strana se do výpisu dostane — svojí sekcí, ne mezi třetí strany.
     expect(rendered).toContain('Vlastní, ne třetí strana');
     expect(rendered).toContain('gpt-neexistuje');
+  });
+
+  it('alias registrovaného modelu registraci splní, alias jinde v registru ne', async () => {
+    const dir = repo();
+    // Složená za běhu, jinak by obě jména našla kontrola 6 v tomhle souboru.
+    const [alias, unknown] = [['claude', 'opus'], ['claude', 'opus', '5', 'preview']].map((parts) => parts.join('-'));
+    write(dir, 'src/thing.test.ts', `export const used = ['${alias}', '${unknown}'];\n`);
+    const registry = readRegistry(dir);
+    const model = registry.entries.find((entry) => entry.kind === 'model' && entry.name === 'claude-opus-5')!;
+    model.aliases = [alias];
+    writeRegistry(dir, registry);
+    write(dir, 'DISCLOSURE.md', renderDisclosure(registry.entries as unknown as readonly DisclosureEntry[]));
+    stage(dir);
+    const results = await check(dir);
+    // Alias kryje jen sebe: delší jméno, které v registru není, zůstává
+    // nálezem — alias není prefix.
+    expect(failed(results)).toEqual([6]);
+    expect(detailOf(results, 6)).toContain(unknown);
+    expect(detailOf(results, 6)).not.toContain(`"${alias}"`);
   });
 
   it('selže, když model v tabulce není v registru', async () => {

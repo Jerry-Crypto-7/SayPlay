@@ -29,6 +29,8 @@ export declare interface DisclosureEntry {
   readonly firstParty?: boolean;
   /** Proč to není třetí strana. Povinné právě tehdy, když `firstParty` platí. */
   readonly reason?: string;
+  /** Jiná jména téhož modelu (jen `kind: model`). */
+  readonly aliases?: readonly string[];
 }
 
 /** Odstraní řádkové i blokové komentáře, obsah řetězců nechá být. */
@@ -45,6 +47,11 @@ export declare function credentialUrlsIn(source: string): Set<string>;
 
 /** Identifikátory modelů jmenované v kódu, lexikálně podle tvaru jména. */
 export declare function modelIdsIn(source: string): Set<string>;
+
+/** Jména a aliasy položek `kind: model`, malými písmeny. */
+export declare function registeredModelNames(
+  entries: readonly { readonly kind?: unknown; readonly name?: unknown; readonly aliases?: readonly unknown[] }[],
+): Set<string>;
 
 /** Povinné notices pro licenci, včetně složených výrazů `A AND B`. */
 export declare function noticesFor(license: string): string[];

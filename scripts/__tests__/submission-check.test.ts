@@ -21,7 +21,6 @@ import {
   datasetPaths,
   distinctiveNumbers,
   focusCategoryInDescription,
-  focusCategoryInRegistration,
   descriptionContractProblems,
   isDeployedUrl,
   isPlaceholder,
@@ -29,6 +28,7 @@ import {
   mp4DurationSeconds,
   proseOf,
 } from '../submission-check.mjs';
+import { modelIdsIn, registeredModelNames } from '../license-gate.mjs';
 import { box, mp4, description, GUARANTEE } from './submission-fixture';
 
 describe('isDeployedUrl: nasazená adresa, ne localhost', () => {
@@ -199,16 +199,48 @@ describe('isPlaceholder a čtení kategorií', () => {
     expect(isPlaceholder('Games')).toBe(false);
   });
 
-  it('kategorii z popisu i z registrace přečte z jejich vlastních značek', () => {
+  it('kategorii z popisu přečte z jeho vlastní značky', () => {
     expect(focusCategoryInDescription('# X\n\n**Focus kategorie:** Games\n')).toBe('Games');
-    expect(focusCategoryInRegistration('<!-- registrace: focus-kategorie = Games -->')).toBe('Games');
   });
 
-  it('registrační značka ve skutečném plánu P8 existuje', () => {
-    // Bez ní by kontrola 5 neměla proti čemu měřit. Že je zatím `TODO:`, drží
-    // bránu červenou — a to je správný stav, dokud registrace neproběhne.
-    const plan = readFileSync(join(process.cwd(), 'plans', 'P8-odevzdani.md'), 'utf8');
-    expect(focusCategoryInRegistration(plan)).not.toBeNull();
+  it('registrovaná kategorie stojí ve sledovaném manifestu a sedí na skutečný popis', () => {
+    // Kontrola 5 ji dřív četla z `plans/P8-odevzdani.md`, který je gitignorovaný
+    // a v čistém klonu ani v hlavní složce není — brána tak padala na chybějícím
+    // souboru, ne na rozporu s přihláškou.
+    const manifest = JSON.parse(readFileSync(join(process.cwd(), 'docs/submission/submission.json'), 'utf8'));
+    const text = readFileSync(join(process.cwd(), 'docs/submission/description.md'), 'utf8');
+    expect(isPlaceholder(manifest.focusCategory)).toBe(false);
+    expect(focusCategoryInDescription(text)).toBe(manifest.focusCategory);
+  });
+});
+
+describe('modelIdsIn: jméno modelu, ne jméno nástroje ani souboru', () => {
+  // Jména modelů se skládají za běhu: literál v tomhle souboru by sám byl
+  // nález kontroly 6 a potřeboval by vymyšlenou položku v registru.
+  const id = (...parts: string[]) => parts.join('-');
+
+  it('binárky llama.cpp nejsou model Llama — skutečný model Llama ano', () => {
+    expect([...modelIdsIn("run('llama-server'); run('llama-bench');")]).toEqual([]);
+    // Výjimka je výčet binárek, ne prefix: kdyby spolkla `llama-*`, zmizel by
+    // z kontroly každý model rodiny Llama.
+    for (const model of [id('llama', '3.1', '8b'), id('llama', 'server', '70b')]) {
+      expect([...modelIdsIn(`const m = '${model}';`)]).toEqual([model]);
+    }
+  });
+
+  it('soubor pojmenovaný po modelu jmenuje ten model, přípona k jménu nepatří', () => {
+    expect([...modelIdsIn("read('audit-12.gpt-oss-20b.json')")]).toEqual(['gpt-oss-20b']);
+    expect([...modelIdsIn("join(dir, 'gpt-oss-20b-MXFP4.gguf')")]).toEqual(['gpt-oss-20b-mxfp4']);
+  });
+});
+
+describe('registeredModelNames: jména a aliasy položek kind: model', () => {
+  it('započítá alias modelu, alias jiné třídy ne', () => {
+    const names = registeredModelNames([
+      { kind: 'model', name: 'gpt-oss-20b', aliases: ['gpt-oss', 'GPT-OSS-20B-MXFP4'] },
+      { kind: 'api', name: 'Groq API', aliases: ['mistral-42-large'] },
+    ]);
+    expect([...names].sort()).toEqual(['gpt-oss', 'gpt-oss-20b', 'gpt-oss-20b-mxfp4']);
   });
 });
 
