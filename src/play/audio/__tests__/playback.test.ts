@@ -95,6 +95,20 @@ afterEach(() => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 const audio = () => import('..');
 
+describe('the first touch wakes the sound (P58C T4)', () => {
+  // Prst je gesto prohlížeče až při zvednutí (HTML „activation-triggering input event“: `pointerup`, `touchend`);
+  // `pointerdown` prstu gesto nedává, takže iPhone by zvuk z něj nepustil.
+  it.each(['pointerup', 'touchend'])('%s on the page starts the audio context', async (type) => {
+    const page = new EventTarget();
+    vi.stubGlobal('window', page);
+    const { installSoundControls } = await audio();
+    const remove = installSoundControls();
+    page.dispatchEvent(new Event(type));
+    expect(FakeContext.last?.state).toBe('running');
+    remove();
+  });
+});
+
 describe('the game’s own sounds', () => {
   it('nothing is fetched before the first gesture', async () => {
     const { playMusic, setSoundLook } = await audio();
