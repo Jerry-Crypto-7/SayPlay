@@ -93330,6 +93330,12 @@
       "reviewNote": "Background removal between the image and TRELLIS.2. Used instead of RMBG-2.0, which is non-commercial. Both the repack card and the Lucida card declare MIT for weights and code, read 2026-09-24."
     },
     {
+      "name": "claude-cli",
+      "kind": "model",
+      "firstParty": true,
+      "reason": "Není to model, ale označení cesty v měřidle evals/play/p58b/compare.measure.ts (P58B T2): „claude-cli:opus“ = claude-opus-5-5 přes claude -p na předplatné, jen jako strop kvality při srovnání čteček. Model sám má vlastní položku claude-opus-5-5."
+    },
+    {
       "name": "claude-code",
       "kind": "model",
       "scope": "tool",
@@ -93497,6 +93503,19 @@
       "reason": "vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá\". Žádný model tohoto jména neexistuje."
     },
     {
+      "name": "gpt-oss-120b",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://huggingface.co/openai/gpt-oss-120b (hosted by Cerebras, https://api.cerebras.ai/v1/chat/completions); license https://huggingface.co/openai/gpt-oss-120b/blob/main/LICENSE",
+      "authorOrProvider": "OpenAI (weights), Cerebras Systems (hosting)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "license text and NOTICE if the weights are redistributed (they are not)"
+      ],
+      "attribution": "gpt-oss-120b © OpenAI, Apache-2.0",
+      "reviewNote": "P58B T2: one of the sentence-reader candidates compared by evals/play/p58b/compare.measure.ts on the dev sets (Cerebras API, reasoning effort low). Measurement only until T3 picks a reader; the product does not call it. The weights are not in the repository or the bundle. License: Apache-2.0 as for gpt-oss-20b, model card read 2026-10-23."
+    },
+    {
       "name": "gpt-oss-20b",
       "kind": "model",
       "scope": "tool",
@@ -93558,6 +93577,19 @@
       ],
       "attribution": "MOSS-SoundEffect © OpenMOSS team, MOSI.AI, Apache-2.0",
       "reviewNote": "Generates the per-look sound effects offline (8B, loaded 4-bit nf4 on the shared RTX 3090). Model cards of MOSS-SoundEffect and MOSS-Audio-Tokenizer read via HF API 2026-09-26: both apache-2.0. Only generated audio ships."
+    },
+    {
+      "name": "qwen-3.8-27b",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://huggingface.co/Qwen/Qwen3.8-27B (hosted by Cerebras as qwen-3.8-27b, https://api.cerebras.ai/v1/chat/completions)",
+      "authorOrProvider": "Qwen Team, Alibaba Cloud (weights), Cerebras Systems (hosting)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "license text and NOTICE if the weights are redistributed (they are not)"
+      ],
+      "attribution": "Qwen3.8 © Alibaba Group, Apache-2.0",
+      "reviewNote": "P58B T2: one of the sentence-reader candidates compared by evals/play/p58b/compare.measure.ts on the dev sets (Cerebras API, reasoning off). Measurement only until T3 picks a reader; the product does not call it. Apache-2.0 for the 27B model per release reporting of 2026-10-23 (the larger Qwen3.8-Max weights carry a different licence); re-read the LICENSE file of Qwen/Qwen3.8-27B before T4 wires it in."
     },
     {
       "name": "Qwen3-1.7B-q4f16_1-MLC",
@@ -93747,6 +93779,18 @@
         "evals/frozen",
         "evals/gold.jsonl"
       ]
+    },
+    {
+      "name": "Cerebras Inference API (reader comparison)",
+      "kind": "api",
+      "source": "https://api.cerebras.ai/v1/chat/completions",
+      "authorOrProvider": "Cerebras Systems Inc.",
+      "license": "Cerebras Cloud terms of service (commercial terms of service)",
+      "requiredNotices": [
+        "none for the caller; the output is governed by the service terms and by the model licence (gpt-oss-120b and Qwen3.8-27B, Apache-2.0)"
+      ],
+      "attribution": "Cerebras Systems Inc., https://www.cerebras.ai",
+      "reviewNote": "P58B T2: evals/play/p58b/compare.measure.ts sends the dev sentences to qwen-3.8-27b and gpt-oss-120b here to compare sentence readers, with the owner's key from .env.local and a --cap-usd spend cap. Measurement only; the product does not call it unless T4 configures it as the reader. Whether the paid tier may serve a public demo is checked by the owner before T3 (plan P58B, HALT)."
     },
     {
       "name": "ComfyUI local HTTP API (gen3d tool)",
