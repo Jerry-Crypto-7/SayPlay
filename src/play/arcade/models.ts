@@ -307,6 +307,8 @@ export const LEGIBLE_SHARE = { hero: 0.2, target: 0.1 } as const;
 /** Nejvýš kolikrát se tělo vizuálně zvětší: kolizní tělo zůstává a větší rozdíl by hráč viděl jako zásah, který nebyl. */
 export const LEGIBLE_CAP = 2;
 
+/** Doroste tolikrát nad `min`: póza a dojíždějící kamera hýbou výškou o ~1–2 %, přesně na `min` leželo tělo půlku času pod ním. */
+const LEGIBLE_GROW = 1.05;
 /** Zmenšuje se, až když je tělo o tolik nad `min` (kamera po najetí přiblížila) – mezi tím měřítko stojí a nepulzuje. */
 const LEGIBLE_SLACK = 1.3;
 /** Po zmenšení zůstane tělo tolikrát nad `min`, uprostřed klidového pásma. */
@@ -314,14 +316,14 @@ const LEGIBLE_MARGIN = 1.15;
 
 /**
  * Vizuální měřítko čitelnosti (P58A T3): z dnešního měřítka `scale` a změřeného podílu `share` výšky plátna
- * (s tímto měřítkem) nové měřítko, nejvýš `LEGIBLE_CAP`, nejmíň 1. Pod `min` tělo hned doroste přesně na `min`;
- * nad `LEGIBLE_SLACK × min` se zmenší na `LEGIBLE_MARGIN × min` (najetí kamery z dálky ho jinak nechalo
- * obřím); mezi tím zůstane. Bez měření (`share` 0) zůstane.
+ * (s tímto měřítkem) nové měřítko, nejvýš `LEGIBLE_CAP`, nejmíň 1. Pod `min` tělo hned doroste na
+ * `LEGIBLE_GROW × min`; nad `LEGIBLE_SLACK × min` se zmenší na `LEGIBLE_MARGIN × min` (najetí kamery z dálky
+ * ho jinak nechalo obřím); mezi tím zůstane. Bez měření (`share` 0) zůstane.
  */
 export function legibleScale(scale: number, share: number, min: number): number {
   if (!(share > 0)) return scale;
   const exact = (scale * min) / share;
-  if (exact > scale) return Math.min(LEGIBLE_CAP, exact);
+  if (exact > scale) return Math.min(LEGIBLE_CAP, exact * LEGIBLE_GROW);
   if (exact * LEGIBLE_SLACK <= scale) return Math.min(LEGIBLE_CAP, Math.max(1, exact * LEGIBLE_MARGIN));
   return scale;
 }

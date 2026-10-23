@@ -8,16 +8,19 @@ import { describe, expect, it } from 'vitest';
 import { LEGIBLE_CAP, LEGIBLE_SHARE, legibleScale, legibleWrite } from '../models';
 
 describe('legibleScale', () => {
-  it('grows a body under the minimum share to exactly the minimum', () => {
-    // Hrdina na 10 % výšky plátna potřebuje dvojnásobek, na 16 % 1,25×.
-    expect(legibleScale(1, 0.1, LEGIBLE_SHARE.hero)).toBeCloseTo(2);
-    expect(legibleScale(1, 0.16, LEGIBLE_SHARE.hero)).toBeCloseTo(1.25);
-    // Měřený podíl už nese dnešní měřítko: 1,5× a 15 % → 2×.
-    expect(legibleScale(1.5, 0.15, LEGIBLE_SHARE.hero)).toBeCloseTo(2);
-    expect(legibleScale(1, 0.08, LEGIBLE_SHARE.target)).toBeCloseTo(1.25);
+  it('grows a body under the minimum share to 5 % above the minimum', () => {
+    // Přesně na prahu ležel hrdina půlku času těsně pod ním – póza a dojíždějící kamera hýbou výškou (voyage 19,98 %).
+    // Hrdina na 16 % výšky plátna potřebuje 1,25×, dostane 1,3125× (21 %).
+    expect(legibleScale(1, 0.16, LEGIBLE_SHARE.hero)).toBeCloseTo(1.3125);
+    // Měřený podíl už nese dnešní měřítko: 1,5× a 18 % → 1,75×.
+    expect(legibleScale(1.5, 0.18, LEGIBLE_SHARE.hero)).toBeCloseTo(1.75);
+    expect(legibleScale(1, 0.08, LEGIBLE_SHARE.target)).toBeCloseTo(1.3125);
+    // Dorostlé tělo leží v klidovém pásmu a už neroste.
+    expect(legibleScale(1.3125, 0.21, LEGIBLE_SHARE.hero)).toBe(1.3125);
   });
 
   it('never goes under 1 or past the cap', () => {
+    expect(legibleScale(1, 0.1, LEGIBLE_SHARE.hero)).toBe(LEGIBLE_CAP);
     expect(legibleScale(1, 0.35, LEGIBLE_SHARE.hero)).toBe(1);
     // Poletování (6 %) by chtělo 3,3× – kolizní tělo by pak hráč neviděl.
     expect(legibleScale(1, 0.06, LEGIBLE_SHARE.hero)).toBe(LEGIBLE_CAP);

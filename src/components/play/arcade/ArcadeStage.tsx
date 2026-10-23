@@ -15,7 +15,7 @@
 
 import { addAfterEffect, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Mesh, type Object3D, type PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
+import { Box3, type Camera, type Mesh, type Object3D, PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -31,6 +31,7 @@ import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
 import type { ArcadeGhost } from './GhostSlot';
 import { comboOf } from './effects/feel';
+import { introLeftOf, restCamera } from './look/intro';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
@@ -100,6 +101,8 @@ export interface FrameReport {
   /** Kolik inkoustových obalů (obrys, P36C T6) sítě hrdiny nesou; obrys nezávisí na úrovni kvality. */
   readonly heroInk: number;
   readonly target: FrameBox | null;
+  /** Vizuální měřítko čitelnosti (P58A T3) hrdiny a cíle; 1 = nezvětšené, `LEGIBLE_CAP` = strop, dál neroste. */
+  readonly legible: { readonly hero: number; readonly target: number };
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
   /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
@@ -286,10 +289,23 @@ function facingOf(hero: Object3D, at: Vector3, camera: Camera): number {
   return (gaze.angleTo(toCamera) * 180) / Math.PI;
 }
 
-/** Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza. */
+/**
+ * Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza – a dokud úvodní
+ * průlet nedosedne: úvodní karta jinak zamrzla u jeho startu a hrdina stál 2,6× dál (rytíř 9,8 % výšky, P58A T3).
+ */
 function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
-  const invalidate = useThree((three) => three.invalidate);
-  useEffect(() => session.subscribe(() => invalidate()), [session, invalidate]);
+  const get = useThree((three) => three.get);
+  useEffect(() => session.subscribe(() => get().invalidate()), [session, get]);
+  useEffect(() => {
+    let last = 0;
+    return addAfterEffect(() => {
+      const { camera, frameloop, invalidate } = get();
+      const left = introLeftOf(camera);
+      // Stejný zbytek dvakrát po sobě = průlet už žádná scéna nepočítá; nepřekreslovat donekonečna.
+      if (frameloop === 'demand' && left !== 0 && left !== last) invalidate();
+      last = left;
+    });
+  }, [get]);
   return null;
 }
 
@@ -309,8 +325,10 @@ const LEGIBLE_EVERY = 15;
  * Čitelná těla (P58A T3): hrdina na plátně aspoň `LEGIBLE_SHARE.hero` výšky plátna, nejbližší cíl aspoň
  * `LEGIBLE_SHARE.target` – přepočtený na hloubku hrdiny, ať se překážka nezvětší jen proto, že je zatím daleko.
  * Zvětšuje jen skupinu se značkou `frame` (vizuál); simulace, kolize a stavový hash ho nevidí. Měří se po
- * nakresleném snímku (kamera už stojí, jak ji scéna postavila) v klidové póze; měřítko se píše každý snímek
- * po scénách – přepíše-li scéna měřítko skupiny sama, její hodnota je nový základ.
+ * nakresleném snímku (kamera už stojí, jak ji scéna postavila) herní kamerou bez úvodního průletu – široký
+ * záběr průletu by tělo nafoukl a po dosednutí zase splaskl – a v póze, jakou má kostra, stejně jako sonda
+ * `__playFrame` (klidový kvádr riggovaného rytíře je o ~20 % vyšší, zůstal pak na 16,5 %). Měřítko se píše
+ * každý snímek po scénách – přepíše-li scéna měřítko skupiny sama, její hodnota je nový základ.
  */
 function LegibleBodies({ control }: { readonly control: string }) {
   const get = useThree((three) => three.get);
@@ -327,9 +345,10 @@ function LegibleBodies({ control }: { readonly control: string }) {
   useEffect(() => {
     let frames = 0;
     const view = new Vector3();
+    const rest = new PerspectiveCamera();
     return addAfterEffect(() => {
       frames += 1;
-      const { camera, scene, size, invalidate, frameloop } = get();
+      const { camera: drawn, scene, size, invalidate, frameloop } = get();
       // Kreslení na požádání (úvodní karta) dá snímků málo – změří se každý, i ten po dotaženém modelu.
       if (frameloop === 'always' && frames % LEGIBLE_EVERY !== 1) return;
       let hero: Object3D | null = null;
@@ -342,21 +361,23 @@ function LegibleBodies({ control }: { readonly control: string }) {
       const heroNode: Object3D = hero;
       const heroAt = heroNode.getWorldPosition(new Vector3());
       const target = nearestTarget(heroAt, candidates, control);
+      const perspective = (drawn as PerspectiveCamera).isPerspectiveCamera === true;
+      const camera = perspective ? restCamera(drawn as PerspectiveCamera, rest) : drawn;
       const depthOf = (at: Vector3): number => -view.copy(at).applyMatrix4(camera.matrixWorldInverse).z;
       const grow = (node: Object3D, min: number, depthScale: number): void => {
-        const box = frameOf(node, camera, size.width, size.height, false);
+        const box = frameOf(node, camera, size.width, size.height);
         if (box === null || box.behind) return;
         const body = bodies.current.get(node) ?? { scale: 1, base: node.scale.clone(), written: node.scale.clone() };
         const next = legibleScale(body.scale, ((box.maxY - box.minY) / 2) * depthScale, min);
         if (next === body.scale) return;
         body.scale = next;
+        node.userData.legible = next;
         bodies.current.set(node, body);
         invalidate();
       };
       grow(heroNode, LEGIBLE_SHARE.hero, 1);
       if (target === null) return;
       // Perspektiva zmenšuje s hloubkou: cíl se posuzuje, jak velký by byl vedle hrdiny.
-      const perspective = (camera as PerspectiveCamera).isPerspectiveCamera === true;
       const heroDepth = depthOf(heroAt);
       grow(target.node, LEGIBLE_SHARE.target, perspective && heroDepth > 0 ? Math.max(depthOf(target.pos), 0) / heroDepth : 1);
     });
@@ -395,6 +416,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
         heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
+        legible: { hero: (hero as Object3D | null)?.userData.legible ?? 1, target: target?.node.userData.legible ?? 1 },
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
         items,
