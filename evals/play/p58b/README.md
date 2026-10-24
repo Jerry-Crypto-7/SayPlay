@@ -76,3 +76,9 @@ Majitel 23. 10. zúžil srovnání na dva modely: `opus-5.5@anthropic` (Anthropi
 - **Výhrada (odvozeno):** prompt i pravidlo se ladily přímo na těchto dev sadách, takže 120/120 a 40/40 jsou horní odhad. Skutečné číslo dá jedině zapečetěná sada v T8.
 
 **Útrata T6:** 13,79 USD (5,00 + 1,83 + 1,86 + 5,10; každý běh se stropem 7 nebo 3 USD). Ceny jsou horní mez – slevu OpenAI za cache měřidlo nevidí.
+
+## Režisér AI verze (T7)
+
+Rozbor a doporučení pro P59: `director.md`, čísla `director.json`. Astra `low` na prvních 30 větách dev: 10 řetězů mikroher (AI verzi nemají), 12 změřeno, 8 nezměřeno kvůli rozpočtu. Robot pustil 12/12, věrnost 0,92 (rychlá 0,88), slepý soud AI 6 : 4 (2 remízy), p50 57 s, 0,62–0,67 USD za hru.
+
+**Útrata T7:** 12,29 USD (zkušební běhy 1,90 + dávka 1 5,00 se stropem 6,05 + dávka 2 4,97 se stropem 7 + čtečka ~0,41).
