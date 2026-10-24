@@ -47,6 +47,7 @@ Stejně jako T1 a T8, jen soudce je pro všech 80 her Opus 5.5:
 
 - Další tři scény jsou na hraně (`g-duel` −11 %, `08-gems` −10 %, `g-ball` −10 %) se stejným počtem volání.
 - **Inference:** u zombie se počet volání nezměnil, pokles je tedy práce procesoru za snímek (dřívější měření ukázala totéž: pokles FPS bez nových volání = procesor). Kandidáti z P58A jsou výpočty každý snímek: zvětšení těl (`LegibleBodies`, T3), kamera (T4) a promítání popisku (`NameAnchor`, T5). U střílečky přibylo 15 volání; kamera se od T4 natáčí k nejbližšímu terči, takže v záběru může být víc nepřátel. Ověří CDP profil ms/snímek, routovaná úloha T9r1.
+- **Opraveno v T9r1** (`7a01e428`): profil ukázal měření pózy v `LegibleBodies` – u riggovaných postav přepočítávalo kosti pro každý vrchol (~57 ms na měření, 13–16 % hlavního vlákna). Teď se kost spočítá jednou. Nové měření (`perf-t9r1-a.json` / `-b.json`): zombie 0,94, střílečka 0,98, medián 34 scén 0,998, žádná scéna pod 0,9.
 
 ## Proč slova chybí
 
@@ -81,7 +82,7 @@ Věty uvnitř katalogu dopadly jako dev (slova 0,39 proti 0,34, celé věty 0,13
 1. **Bránu nelze splnit bez modelů pro zvířata mimo katalog.** Polovina sady je postavená tak, aby hra model neměla. Bez nich je strop 0,5 celých vět jen teoretický. Řetěz z T7 (obrázek → TRELLIS) prošel 7 z 36 slov. Víc dá CC0 knihovna zvířat, nebo ruční úprava v Blenderu. Rozhodnutí pro majitele: je polovina vět mimo katalog férová váha pro porotu? Kolik vět skutečných hráčů jmenuje zvíře mimo katalog, nikdo nezměřil.
 2. **Nejužší oprava v kódu je velikost protivníka a věci:** zvednout cíl `LegibleBodies` z 10,5 % ke 20 % výšky snímku a ověřit na dev sadách. Tahle sada je od dnešního dne dev, takže se smí použít k ladění dalšího plánu, ne k dalšímu měření brány.
 3. **`no-role` (34):** věc nebo protivník z věty nedostal roli. To je čtení a obsazení (P58B), stejně jako obě hry, které nevznikly (v02, v55).
-4. **Pokles FPS u zombie a střílečky (−20 a −24 %) opravit před sloučením větve** – medián bránu splní, ale hráč s telefonem tyhle dvě hry pozná. Úloha T9r1 v plánu.
+4. **Pokles FPS u zombie a střílečky (−20 a −24 %)** – opravený v T9r1, viz FPS výše.
 5. **Nová brána potřebuje novou zapečetěnou sadu** (`seal-holdout.ts`, jedno volání Codexu), až budou modely z bodu 1.
 
 ## Odchylky od plánu
