@@ -1000,6 +1000,54 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig,
   };
 }
 
+/** Nejvýš tolik hodnot výčtů v celém striktním `json_schema` OpenAI API přijme (jinak 400, změřeno 24. 10. 2026). */
+export const OPENAI_ENUM_LIMIT = 1000;
+
+type SchemaNode = Readonly<Record<string, unknown>>;
+const isNode = (node: unknown): node is SchemaNode => node !== null && typeof node === 'object' && !Array.isArray(node);
+const isEnum = (node: SchemaNode): boolean => Array.isArray(node.enum);
+
+/**
+ * Schéma pro striktní `json_schema` OpenAI API (P58B T7). Schéma režiséra nese ~2 200 hodnot výčtů – tytéž seznamy
+ * (paleta, režimy…) v každém z 20 žánrů, různých je 169 – a OpenAI nad `OPENAI_ENUM_LIMIT` odmítne každé volání.
+ * Nad limitem jde každý opakovaný výčet jednou do `$defs` a na jeho místa `$ref`; význam schématu se nemění.
+ * Pod limitem (čtečka) odejde schéma beze změny.
+ */
+export function openaiStrictSchema(schema: SchemaNode): SchemaNode {
+  const seen = new Map<string, number>();
+  let values = 0;
+  const count = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(count);
+    if (!isNode(node)) return;
+    if (isEnum(node)) {
+      const key = JSON.stringify(node);
+      values += (node.enum as unknown[]).length;
+      seen.set(key, (seen.get(key) ?? 0) + 1);
+      return;
+    }
+    Object.values(node).forEach(count);
+  };
+  count(schema);
+  if (values <= OPENAI_ENUM_LIMIT) return schema;
+  const defs: Record<string, unknown> = {};
+  const names = new Map<string, string>();
+  const share = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(share);
+    if (!isNode(node)) return node;
+    if (!isEnum(node)) return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, share(value)]));
+    const key = JSON.stringify(node);
+    if (seen.get(key)! < 2) return node;
+    let name = names.get(key);
+    if (name === undefined) {
+      name = `enum${String(names.size)}`;
+      names.set(key, name);
+      defs[name] = node;
+    }
+    return { $ref: `#/$defs/${name}` };
+  };
+  return { ...(share(schema) as SchemaNode), $defs: defs };
+}
+
 /** Timeout volání, a když přijde `signal`, i jeho zrušení. */
 function withCancel(timeoutMs: number, signal: AbortSignal | undefined): AbortSignal {
   return signal === undefined ? AbortSignal.timeout(timeoutMs) : AbortSignal.any([AbortSignal.timeout(timeoutMs), signal]);
@@ -1034,7 +1082,8 @@ async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fet
   const hosted = config.endpoint.startsWith(OPENAI_PREFIX);
   const name = hosted ? 'hosted' : 'llama.cpp';
   const root = config.endpoint.slice(hosted ? OPENAI_PREFIX.length : LLAMACPP_PREFIX.length).replace(/\/+$/, '');
-  const schema = call.request.outputSchema;
+  const openaiApi = hosted && new URL(root).hostname === 'api.openai.com';
+  const schema = call.request.outputSchema === undefined || !openaiApi ? call.request.outputSchema : openaiStrictSchema(call.request.outputSchema);
   const format = schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } };
   const messages = [
     { role: 'system', content: call.request.system },
@@ -1043,7 +1092,7 @@ async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fet
   // Rozumující modely OpenAI API `max_tokens` i jinou teplotu než výchozí odmítnou
   // čtyřistovkou; ostatní poskytovatelé dokumentují `max_tokens`. Teplota se
   // hostovanému poskytovateli neposílá – gpt-oss ji doporučuje nechat výchozí.
-  const tokenField = hosted && new URL(root).hostname === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens';
+  const tokenField = openaiApi ? 'max_completion_tokens' : 'max_tokens';
   const effort = CHAT_EFFORT[effortForCall(call, config)];
   const body = hosted
     ? { model: config.model, [tokenField]: config.maxOutputTokens, reasoning_effort: effort, messages, response_format: format }
