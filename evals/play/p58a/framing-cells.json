@@ -1,0 +1,1641 @@
+{
+ "catch": {
+  "id": "a01",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "lanes",
+   "controlParams": {
+    "generator": "catch_fall",
+    "tuning": {
+     "items": 30
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "catch",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "count": 30,
+    "description": "Catch 30 falling flies and dodge the bombs.",
+    "kind": "collect",
+    "role": "coin"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "frog"
+    },
+    {
+     "count": 30,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "fly"
+    },
+    {
+     "count": 1,
+     "id": "hazard",
+     "kind": "hazard",
+     "label": "bomb"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 45,
+   "theme": {
+    "look": "underwater",
+    "mood": "playful",
+    "setting": "lily pad"
+   },
+   "title": "Frog Catch",
+   "tutorial": {
+    "controlsHint": "Tap a lane, drag, or use the arrows to move.",
+    "goalLine": "Catch 30 flies. Dodge the bombs!"
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "arena": {
+  "id": "a02",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "move_free",
+   "controlParams": {
+    "generator": "fight",
+    "tuning": {
+     "waves": 5
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "arena",
+    "mode": "fight"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "count": 1,
+    "description": "Dodge the wind-up, strike back and knock out 5 waves of zombies.",
+    "kind": "defeat_targets",
+    "role": "rival"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "explorer"
+    },
+    {
+     "count": 1,
+     "id": "rival",
+     "kind": "hazard",
+     "label": "zombie"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 45,
+   "theme": {
+    "mood": "tense",
+    "setting": "farm at night",
+    "timeOfDay": "night"
+   },
+   "title": "Zombies Attack My Farm",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to move, Attack or J to strike. Step aside when it winds up.",
+    "goalLine": "Knock out 5 waves of zombies."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "control:steer": {
+  "id": "a04",
+  "spec": {
+   "addons": [],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "crashBudget": 3,
+    "difficulty": "normal",
+    "drift": false,
+    "lengthM": 700,
+    "patterns": 1,
+    "rivals": true,
+    "roadEntryWidth": 10000,
+    "roadWidth": 3600,
+    "segments": true,
+    "style": "streets",
+    "turbo": true
+   },
+   "logic": {
+    "phases": [
+     {
+      "id": "calm"
+     },
+     {
+      "id": "rush"
+     }
+    ],
+    "timers": [
+     {
+      "id": "rush"
+     }
+    ]
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Beat the rival vehicles to the finish.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "submarine"
+    },
+    {
+     "count": 1,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "tire barrier"
+    },
+    {
+     "count": 1,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "shark"
+    }
+   ],
+   "rules": [
+    {
+     "do": [
+      {
+       "goPhase": "rush"
+      },
+      {
+       "startTimer": {
+        "ticks": 480,
+        "timer": "rush"
+       }
+      }
+     ],
+     "id": "herald",
+     "if": [
+      {
+       "inPhase": "calm"
+      }
+     ],
+     "verb": "herald",
+     "when": {
+      "every": 300
+     }
+    },
+    {
+     "do": [
+      {
+       "wave": {
+        "at": "player",
+        "count": 3,
+        "role": "turbo"
+       }
+      }
+     ],
+     "id": "shower",
+     "verb": "shower",
+     "when": {
+      "phase": "rush"
+     }
+    },
+    {
+     "do": [
+      {
+       "goPhase": "calm"
+      }
+     ],
+     "id": "settle",
+     "verb": "settle",
+     "when": {
+      "timer": "rush"
+     }
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "fast",
+    "setting": "coral reef"
+   },
+   "title": "Racing a Shark",
+   "tutorial": {
+    "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers.",
+    "goalLine": "Beat the rival vehicles to the finish."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "defense": {
+  "id": "a06",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "lanes",
+   "controlParams": {
+    "generator": "lane_defense",
+    "tuning": {
+     "enemies": 30
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "defense",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "count": 30,
+    "description": "Hold the couch against 30 vacuum robots and their boss.",
+    "kind": "defeat_targets",
+    "role": "chaser"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "cat"
+    },
+    {
+     "count": 30,
+     "id": "chaser",
+     "kind": "chaser",
+     "label": "vacuum robot"
+    },
+    {
+     "count": 1,
+     "id": "castle",
+     "kind": "prop",
+     "label": "couch"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "living_room",
+    "mood": "tense",
+    "setting": "living room"
+   },
+   "title": "Cat Defends Couch",
+   "tutorial": {
+    "controlsHint": "Tap a lane to shoot. Hold a lane to place a guard. Arrows and Space work too.",
+    "goalLine": "Hold the couch! Stop every vacuum robot."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "quest": {
+  "id": "a10",
+  "spec": {
+   "archetype": "switch_puzzle",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "move_free",
+   "controlParams": {
+    "generator": "quest_spatial",
+    "tuning": {
+     "chasers": 2,
+     "count": 5,
+     "rounds": 2,
+     "states": 3,
+     "verb": "cook"
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "quest",
+    "mode": "spatial"
+   },
+   "heroAction": "stir",
+   "mechanics": [
+    {
+     "id": "timer",
+     "params": {
+      "id": "clock",
+      "onEnd": "lose",
+      "seconds": 88
+     }
+    },
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Cook all 5 pancakes in each of 2 rounds before the cat catch you.",
+    "kind": "puzzle",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "chef"
+    },
+    {
+     "count": 5,
+     "id": "target",
+     "kind": "target",
+     "label": "pancake"
+    },
+    {
+     "count": 2,
+     "id": "hunter",
+     "kind": "chaser",
+     "label": "cat"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "tense",
+    "setting": "kitchen"
+   },
+   "title": "Chef Flips Pancakes",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to move, hold Use next to a target.",
+    "goalLine": "Cook all 5 pancakes, 2 rounds."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "rhythm": {
+  "id": "a11",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "rhythm",
+   "controlParams": {
+    "beats": 66,
+    "bpm": 120,
+    "feel": 2,
+    "lanes": true,
+    "ramp": true
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "rhythm",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Hit each tile in its lane on the beat and play the song to the end.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "explorer"
+    },
+    {
+     "count": 12,
+     "id": "note",
+     "kind": "collectible",
+     "label": "tile"
+    },
+    {
+     "count": 1,
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed beat"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "last beat"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "rock concert"
+   },
+   "title": "Drum to the Beat",
+   "tutorial": {
+    "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound.",
+    "goalLine": "Tap each lane as its note hits the line. The song gets busier."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "hop": {
+  "id": "a12",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "hop",
+   "controlParams": {
+    "generator": "hop_rows",
+    "tuning": {
+     "rows": 18
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "hop",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 1
+     }
+    }
+   ],
+   "objective": {
+    "count": 18,
+    "description": "Hop 18 rows across roads, rivers and rails to the meadow. Dodge the ghosts.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "kid"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "ghost"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "meadow"
+    }
+   ],
+   "rules": [
+    {
+     "do": [
+      {
+       "win": true
+      }
+     ],
+     "id": "micro_clock",
+     "verb": "survive",
+     "when": {
+      "every": 480
+     }
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "graveyard",
+    "mood": "playful",
+    "setting": "busy road"
+   },
+   "title": "Haunted Mansion Escape",
+   "tutorial": {
+    "controlsHint": "Tap to hop forward, swipe to hop sideways or back. Arrows work too.",
+    "goalLine": "Cross 18 rows to the meadow!"
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "runner": {
+  "id": "s01",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "feel": 2,
+    "lengthM": 60,
+    "obstacles": [
+     "hurdle",
+     "cone",
+     "crate"
+    ],
+    "patterns": 1,
+    "sections": 3
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "runner",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 1
+     }
+    }
+   ],
+   "objective": {
+    "description": "Run to the finish without hitting a trash can.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "pizza delivery guy"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "trash can"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "tip"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "rules": [
+    {
+     "do": [
+      {
+       "win": true
+      }
+     ],
+     "id": "micro_clock",
+     "verb": "survive",
+     "when": {
+      "every": 360
+     }
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "city",
+    "mood": "energetic",
+    "setting": "house"
+   },
+   "title": "Pizza Delivery Guy Sprint",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "timing": {
+  "id": "s03",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "timing",
+   "controlParams": {
+    "feel": 2,
+    "mode": "precision",
+    "rise": true,
+    "rounds": 10,
+    "speed": "slow"
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "timing",
+    "mode": "precision"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 1
+     }
+    },
+    {
+     "id": "timer",
+     "params": {
+      "id": "clock",
+      "onEnd": "lose",
+      "seconds": 8
+     }
+    }
+   ],
+   "objective": {
+    "description": "Stop the marker in the zone 10 times. It speeds up.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "penguin"
+    },
+    {
+     "count": 10,
+     "id": "block",
+     "kind": "collectible",
+     "label": "marker"
+    },
+    {
+     "count": 1,
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed drop"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "last round"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "snow",
+    "mood": "playful",
+    "setting": "snow"
+   },
+   "title": "Yeti Punch",
+   "tutorial": {
+    "controlsHint": "Tap or Space to stop the marker.",
+    "goalLine": "Stop the marker in the zone 10 times. It speeds up."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "control:walker": {
+  "id": "s04",
+  "spec": {
+   "addons": [],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "walker",
+   "controlParams": {
+    "generator": "walker_labyrinth",
+    "segments": true,
+    "size": 15,
+    "speed": 110
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Find a path through the maze to the exit.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "ghost hunter"
+    },
+    {
+     "count": 1,
+     "id": "wall",
+     "kind": "hazard",
+     "label": "wall"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "star"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "adventurous",
+    "setting": "graveyard"
+   },
+   "title": "Ghost Hunter Relights",
+   "tutorial": {
+    "controlsHint": "Drag in any direction, or use arrows or WASD to walk.",
+    "goalLine": "Find a path through the maze to the exit."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "shooter": {
+  "id": "s08",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "rise": 4,
+    "waves": 6
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "shooter",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "count": 6,
+    "description": "Stop 6 waves of crows before they reach you.",
+    "kind": "defeat_targets",
+    "role": "enemy"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "grumpy farmer"
+    },
+    {
+     "count": 1,
+     "id": "target",
+     "kind": "target",
+     "label": "corn"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "crow"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "tense",
+    "setting": "field"
+   },
+   "title": "Grumpy Farmer",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Stop 6 waves of crows. Each wave is faster."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "push": {
+  "id": "s13",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "push",
+   "controlParams": {
+    "generator": "push_ring"
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "push",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "count": 7,
+    "description": "Push 7 other bumper bots out of the ring in three rounds. Do not fall off yourself.",
+    "kind": "defeat_targets",
+    "role": "rival"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "robot"
+    },
+    {
+     "count": 7,
+     "id": "rival",
+     "kind": "chaser",
+     "label": "other bumper bots"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 89,
+   "theme": {
+    "mood": "playful",
+    "setting": "factory"
+   },
+   "title": "Shoulder-Barge Bumper Bots",
+   "tutorial": {
+    "controlsHint": "Drag to move, tap to lunge. Arrows and Space work too.",
+    "goalLine": "Push every other bumper bot out of the ring!"
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "platformer": {
+  "id": "s14",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "assemblyParts": [
+    {
+     "kind": "hazard",
+     "motion": "fall",
+     "phase": 0,
+     "role": "part_0"
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "platform",
+   "controlParams": {
+    "checkpoints": true,
+    "tuning": {
+     "chunks": 1,
+     "feel": 2,
+     "sections": 3,
+     "segments": true,
+     "style": "tower"
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "platformer",
+    "mode": "default"
+   },
+   "logic": {
+    "phases": [
+     {
+      "id": "calm"
+     },
+     {
+      "id": "rush"
+     }
+    ],
+    "timers": [
+     {
+      "id": "rush"
+     }
+    ]
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Jump across the platforms to the flag without touching a rock.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "little frog"
+    },
+    {
+     "count": 5,
+     "id": "spikes",
+     "kind": "hazard",
+     "label": "rock"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "gem"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "flag"
+    },
+    {
+     "count": 1,
+     "id": "part_0",
+     "kind": "hazard",
+     "label": "lava"
+    }
+   ],
+   "rules": [
+    {
+     "do": [
+      {
+       "goPhase": "rush"
+      },
+      {
+       "startTimer": {
+        "ticks": 480,
+        "timer": "rush"
+       }
+      }
+     ],
+     "id": "herald",
+     "if": [
+      {
+       "inPhase": "calm"
+      }
+     ],
+     "verb": "herald",
+     "when": {
+      "every": 300
+     }
+    },
+    {
+     "do": [
+      {
+       "wave": {
+        "at": "player",
+        "count": 3,
+        "role": "coin"
+       }
+      }
+     ],
+     "id": "shower",
+     "verb": "shower",
+     "when": {
+      "phase": "rush"
+     }
+    },
+    {
+     "do": [
+      {
+       "goPhase": "calm"
+      }
+     ],
+     "id": "settle",
+     "verb": "settle",
+     "when": {
+      "timer": "rush"
+     }
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "lava"
+   },
+   "title": "Little Frog Spring",
+   "tutorial": {
+    "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+    "goalLine": "Dodge the lava. Reach the flag. Jump over gaps and hazards."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "flap": {
+  "id": "s16",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "flap",
+   "controlParams": {
+    "feel": 2,
+    "lengthM": 60,
+    "rise": true
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "flap",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 1
+     }
+    }
+   ],
+   "objective": {
+    "description": "Flap through the gaps between the pipes to the finish.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "chubby pigeon"
+    },
+    {
+     "count": 1,
+     "id": "pipe",
+     "kind": "hazard",
+     "label": "pipe"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "rules": [
+    {
+     "do": [
+      {
+       "win": true
+      }
+     ],
+     "id": "micro_clock",
+     "verb": "survive",
+     "when": {
+      "every": 360
+     }
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "city",
+    "mood": "cheerful",
+    "setting": "city"
+   },
+   "title": "Chubby Pigeon City",
+   "tutorial": {
+    "controlsHint": "Tap or Space to flap.",
+    "goalLine": "Fly through the gaps to the finish. They get tighter."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "throw": {
+  "id": "s18",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "budget": 48,
+    "goal": "tower"
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "throw",
+    "mode": "default"
+   },
+   "heroAction": "throw",
+   "mechanics": [
+    {
+     "id": "timer",
+     "params": {
+      "id": "clock",
+      "onEnd": "lose",
+      "seconds": 87
+     }
+    }
+   ],
+   "objective": {
+    "count": 3,
+    "description": "Hit every tower of pumpkin in 87 seconds before you run out of throws.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "skeleton"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "tower of pumpkin"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "his own"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "graveyard",
+    "mood": "playful",
+    "setting": "air"
+   },
+   "title": "Skeleton Skull Bowling",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Hit every tower of pumpkin in 87 seconds."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "duel": {
+  "id": "s48",
+  "spec": {
+   "abilities": [
+    "dash",
+    "strike"
+   ],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "duel",
+   "controlParams": {
+    "difficulty": "normal",
+    "rounds": 9
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "duel",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Beat 9 rivals in a row. Each one attacks faster.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "samurai rooster"
+    },
+    {
+     "count": 1,
+     "id": "rival",
+     "kind": "hazard",
+     "label": "rival"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "knockout"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "meadow",
+    "mood": "tense",
+    "setting": "barnyard"
+   },
+   "title": "Samurai Rooster Duel",
+   "tutorial": {
+    "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+    "goalLine": "Dodge the wind-up, strike in the opening. Beat 9 rivals."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "whack": {
+  "id": "s53",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "lanes",
+   "controlParams": {
+    "generator": "whack_holes",
+    "tuning": {
+     "targets": 30
+    }
+   },
+   "genre": {
+    "compilerVersion": "genre.v5",
+    "id": "whack",
+    "mode": "default"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "count": 30,
+    "description": "Whack 30 gophers as they pop up, but spare the gophers.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "grumpy gardener"
+    },
+    {
+     "count": 30,
+     "id": "target",
+     "kind": "target",
+     "label": "gopher"
+    },
+    {
+     "count": 1,
+     "id": "hazard",
+     "kind": "hazard",
+     "label": "gophers"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "scoring": {},
+   "targetDurationSec": 45,
+   "theme": {
+    "mood": "playful",
+    "setting": "gardener"
+   },
+   "title": "Grumpy Gardener Smack",
+   "tutorial": {
+    "controlsHint": "Tap a hole to whack. Arrows and Space work too.",
+    "goalLine": "Whack 30 gophers. Spare the gophers!"
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "control:ball": {
+  "id": "s56",
+  "spec": {
+   "addons": [],
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "ball",
+   "controlParams": {
+    "difficulty": "normal",
+    "generator": "ball_pitch",
+    "goal": "goal",
+    "keeper": false,
+    "paceSeconds": 15,
+    "segments": true,
+    "shotRecoveryRiseTicks": 4,
+    "shotRecoveryTicks": 168,
+    "targets": 5
+   },
+   "heroAction": "throw",
+   "mechanics": [],
+   "objective": {
+    "count": 5,
+    "description": "Score in every goal.",
+    "kind": "defeat_targets",
+    "role": "goal"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "player"
+    },
+    {
+     "count": 1,
+     "id": "physics_ball",
+     "kind": "item",
+     "label": "football"
+    },
+    {
+     "count": 5,
+     "id": "goal",
+     "kind": "target",
+     "label": "tin can"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "adventurous",
+    "setting": "pyramid"
+   },
+   "title": "Baseball Can Knockdown",
+   "tutorial": {
+    "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire.",
+    "goalLine": "Score in every goal."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ }
+}

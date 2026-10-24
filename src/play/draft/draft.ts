@@ -159,6 +159,12 @@ export function readingHero(reading: Reading): string | null {
   return hero !== null && !GENERIC_HERO.test(hero) ? hero : null;
 }
 
+/** Protivník čtení bez členu (P58A T6); `null`, když ho čtení nemá nebo je to hrdina čtení. */
+export function readingFoe(reading: Reading): string | null {
+  const foe = cleanLabel(reading.foe);
+  return foe !== null && foe !== readingHero(reading) ? foe : null;
+}
+
 /**
  * Sedí hrdina ze slov věty čtení (P56A T6)? Ne, když čtení vybralo za podmět jiné slovo téže věty („an ogre arm wrestles“),
  * když je to místo („as high as the moon“) nebo ho čtení má za protivníka, věc či roli („zombies attack my farm“) – pak
@@ -1262,8 +1268,9 @@ function draftGenre(
   const escape = choice.genre === 'arena' && choice.mode === 'escape';
   // Přenos: spor má soupeřem člověka věty, útěk to, co děsí – a bez toho věc, které se hrdina brání („refusing to take her medicine“).
   const twistFoe = twist === null ? null : fight ? (twist.person ?? twist.foe) : (twist.foe ?? (escape ? twist.thing : null));
+  // P58A T6: soupeř, kterého čtení jmenuje („one crocodile“), má přednost před slovy věty – ta četla „him back“, „sand“.
   const foe = fight
-    ? (twistFoe ?? roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fillFoe?.label))
+    ? (twistFoe ?? (reading === null ? null : readingFoe(reading)) ?? roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fillFoe?.label))
     : (twistFoe ??
       foeIn(cleanLabel(fillFoe?.label)) ??
       foeIn(roles.threat?.label) ??
@@ -1283,7 +1290,8 @@ function draftGenre(
   // Přenos: věc věty, kterou hrdina nezahnal jako soupeře; kus, který se skládá nebo hraje („pay the electricity bill“, „fold towels“), je předmět slovesa.
   const twistThing = twist === null || twist.thing === twistFoe ? null : twist.thing;
   const piece = twist !== null && (choice.genre === 'timing' || choice.genre === 'rhythm') && object !== null && !isPerson(object) && !isScenery(object) ? object : null;
-  const found = thrown ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? (throwsAt ? null : object) ?? thing(roles.collectible)) : noVerb ? (twistThing ?? heard) : (heard ?? piece ?? twistThing);
+  // P58A T6: hod hází věc čtení („lobs coconuts“), dřív než předmět slovesa ze slov („fling harder“).
+  const found = thrown ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? thing(cleanLabel(reading?.item)) ?? (throwsAt ? null : object) ?? thing(roles.collectible)) : noVerb ? (twistThing ?? heard) : (heard ?? piece ?? twistThing);
   const collectible = found === null ? null : singular(found);
   // P39: každá věc, kterou věta jmenuje se slovesem, i předmět hlavního slovesa – kromě místa, hrdiny a nástroje
   // („shoots arrows at goblins“: šíp letí, terčem je goblin – T7).

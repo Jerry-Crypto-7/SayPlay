@@ -1,0 +1,883 @@
+{
+ "about": "P58A T7 (scripts/p58a/gen-models.mjs): every noun of gen-nouns.json, generated or skipped with the reason; `tried` lists each round with the blind Opus score and the name it gave. Skipped nouns keep the nearest model from T6.",
+ "pass": 7,
+ "results": [
+  {
+   "noun": "gopher",
+   "id": "gen3d-gopher",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Teddy bear",
+     "reason": "Noisy crumpled facets, metallic gold sheen; scan-like rather than toy-like."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "standing bear",
+     "reason": "Readable bear silhouette but dark, noisy, scan-like faceting"
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ]
+  },
+  {
+   "noun": "mole",
+   "id": "gen3d-mole",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "score": 2,
+     "name": "Pink pig blob",
+     "reason": "Melted, jagged pink mesh; subject unreadable."
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ]
+  },
+  {
+   "noun": "vegetable",
+   "id": "gen3d-vegetable",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 3,
+     "score": 1,
+     "name": "Unknown shards",
+     "reason": "Torn shards and loose fragments, unreadable object."
+    }
+   ]
+  },
+  {
+   "noun": "bun",
+   "id": "gen3d-bun",
+   "result": "generated",
+   "score": 7,
+   "name": "Burger bun",
+   "tried": [
+    {
+     "round": 1,
+     "score": 7,
+     "name": "Burger bun",
+     "reason": "Clean bright bun; odd grey base underneath."
+    }
+   ]
+  },
+  {
+   "noun": "fortress",
+   "id": "gen3d-fortress",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Toy castle",
+     "reason": "Clear castle shape but heavily noisy, crumpled grey surface."
+    },
+    {
+     "round": 2,
+     "score": 2,
+     "name": "Rock pile",
+     "reason": "Crumpled, torn dark mesh with no clear form."
+    },
+    {
+     "round": 3,
+     "score": 4,
+     "name": "castle fort",
+     "reason": "Castle silhouette reads, but melted noisy grey surface."
+    }
+   ]
+  },
+  {
+   "noun": "marine",
+   "id": "gen3d-marine",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 6,
+     "name": "Toy soldier",
+     "reason": "Clear soldier figure, but muddy texture and odd face shading."
+    },
+    {
+     "round": 2,
+     "score": 6,
+     "name": "Soldier",
+     "reason": "Readable soldier, decent silhouette; realistic camo texture, not toy-like."
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'soldier' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "patty",
+   "id": "gen3d-patty",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 5,
+     "name": "Cake / cookie",
+     "reason": "Clean chunky shape but ambiguous object; plain brown disc."
+    },
+    {
+     "round": 2,
+     "score": 6,
+     "name": "Wooden platform",
+     "reason": "Chunky clean disc, but generic and plain."
+    },
+    {
+     "round": 3,
+     "score": 7,
+     "name": "Cake / pie",
+     "reason": "Clean chunky shape, solid colours; somewhat plain and generic."
+    }
+   ]
+  },
+  {
+   "noun": "rail",
+   "id": "gen3d-rail",
+   "result": "generated",
+   "score": 7,
+   "name": "Rail track",
+   "tried": [
+    {
+     "round": 1,
+     "score": 7,
+     "name": "Rail track",
+     "reason": "Clean chunky track segment; simple, slightly plain."
+    }
+   ]
+  },
+  {
+   "noun": "shell",
+   "id": "gen3d-shell",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 2,
+     "name": "Pink blob",
+     "reason": "Melted blob, can't tell what object it is."
+    },
+    {
+     "round": 2,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 3,
+     "score": 5,
+     "name": "Cupcake",
+     "reason": "Lumpy blobby frosting with smeared texture."
+    }
+   ]
+  },
+  {
+   "noun": "treetop",
+   "id": "gen3d-treetop",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 6,
+     "name": "Tree",
+     "reason": "Toy-like lollipop tree; canopy surface faceted and noisy."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "round tree",
+     "reason": "Clear tree shape, but noisy dark leaf texture is off-style"
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'tree' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "album",
+   "id": "gen3d-album",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 3,
+     "name": "Metal crate",
+     "reason": "Chaotic shiny noisy texture; unclear object, off-style."
+    },
+    {
+     "round": 2,
+     "score": 3,
+     "name": "wooden crate",
+     "reason": "Ambiguous box with glitchy scan-like texture and odd panel"
+    },
+    {
+     "round": 3,
+     "score": 3,
+     "name": "Metal box",
+     "reason": "Noisy metallic texture, unclear what object it is."
+    }
+   ]
+  },
+  {
+   "noun": "blacksmith",
+   "id": "gen3d-blacksmith",
+   "result": "generated",
+   "score": 8,
+   "name": "Blacksmith",
+   "tried": [
+    {
+     "round": 1,
+     "score": 8,
+     "name": "Blacksmith",
+     "reason": "Chunky charming character with hammer; minor texture smudges."
+    }
+   ]
+  },
+  {
+   "noun": "bongo",
+   "id": "gen3d-bongo",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Conga drums",
+     "reason": "Crumpled metallic gold surface looks noisy, scan-like, off-style."
+    },
+    {
+     "round": 2,
+     "score": 6,
+     "name": "bongo drums",
+     "reason": "Clear chunky drums, but faceted noisy shading on surfaces"
+    },
+    {
+     "round": 3,
+     "score": 5,
+     "name": "Bongo drums",
+     "reason": "Clear bongo shape but lumpy, faceted, shiny metallic surface."
+    }
+   ]
+  },
+  {
+   "noun": "branch",
+   "id": "gen3d-branch",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 7,
+     "name": "Bare tree",
+     "reason": "Clean low-poly sapling; sparse leaves, thin silhouette."
+    },
+    {
+     "round": 2,
+     "score": 7,
+     "name": "Sapling tree",
+     "reason": "Clean low-poly tree, but sparse leaves and spindly branches."
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ]
+  },
+  {
+   "noun": "bulldog",
+   "id": "gen3d-bulldog",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Bulldog",
+     "reason": "Recognisable dog but crumpled, scan-like noisy texture."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "Bulldog",
+     "reason": "Clear bulldog shape but crumpled, faceted noisy surface."
+    },
+    {
+     "round": 3,
+     "score": 5,
+     "name": "Bulldog",
+     "reason": "Recognisable dog but noisy, scan-like patchy texture."
+    }
+   ]
+  },
+  {
+   "noun": "dam",
+   "id": "gen3d-dam",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 3,
+     "name": "Coal block",
+     "reason": "Noisy dark faceted lump; unclear what object it is."
+    },
+    {
+     "round": 2,
+     "score": 2,
+     "name": "Metal barrier",
+     "reason": "Torn crumpled foil-like sheet, open mesh, unreadable object."
+    },
+    {
+     "round": 3,
+     "score": 3,
+     "name": "stone wall",
+     "reason": "Crumpled noisy grey mesh with torn faces; unclear object."
+    }
+   ]
+  },
+  {
+   "noun": "dial",
+   "id": "gen3d-dial",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 6,
+     "name": "Wheel",
+     "reason": "Chunky readable wheel, but untextured grey and soft detail."
+    },
+    {
+     "round": 2,
+     "score": 6,
+     "name": "Wall clock",
+     "reason": "Clean shape but colourless grey, reads as safe dial."
+    },
+    {
+     "round": 3,
+     "score": 5,
+     "name": "combination dial",
+     "reason": "Clean shape but untextured grey, dial reading ambiguous."
+    }
+   ]
+  },
+  {
+   "noun": "dumpling",
+   "id": "gen3d-dumpling",
+   "result": "generated",
+   "score": 7,
+   "name": "Dumpling steamer",
+   "tried": [
+    {
+     "round": 1,
+     "score": 6,
+     "name": "Garlic in basket",
+     "reason": "Chunky and readable; basket texture slightly noisy, odd object pairing."
+    },
+    {
+     "round": 2,
+     "score": 3,
+     "name": "Foil basket",
+     "reason": "Crumpled tub with silver blob; unclear what object it is."
+    },
+    {
+     "round": 3,
+     "score": 7,
+     "name": "Dumpling steamer",
+     "reason": "Clean readable dumpling in basket, toy-like colours."
+    }
+   ]
+  },
+  {
+   "noun": "expense report",
+   "id": "gen3d-expense-report",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Dollar sign bag",
+     "reason": "Crumpled chrome bag is noisy and glassy; dollar sign reads fine."
+    },
+    {
+     "round": 2,
+     "score": 4,
+     "name": "Finance sign",
+     "reason": "Smeared, noisy texture details; scan-like and messy."
+    },
+    {
+     "round": 3,
+     "score": 4,
+     "name": "Sign board",
+     "reason": "Blurry smeared texture, wobbly scan-like surface; vague poster sign."
+    }
+   ]
+  },
+  {
+   "noun": "firecracker",
+   "id": "gen3d-firecracker",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 8,
+     "name": "Dynamite stick",
+     "reason": "Clear chunky dynamite with spark; bright and toy-like."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "Firework rocket",
+     "reason": "Plain red stick with tiny fuse; thin, ambiguous silhouette."
+    },
+    {
+     "round": 3,
+     "score": 7,
+     "name": "dynamite stick",
+     "reason": "Bright clean toy-like shape; thin spark slightly fragile."
+    }
+   ]
+  },
+  {
+   "noun": "hailstone",
+   "id": "gen3d-hailstone",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: pivot not at the base: lowest point y=0.032"
+    },
+    {
+     "round": 2,
+     "score": 4,
+     "name": "snowball / ice blob",
+     "reason": "Clean faceted low-poly, but ambiguous blob; unclear what object"
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'snowball' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "hostage",
+   "id": "gen3d-hostage",
+   "result": "generated",
+   "score": 7,
+   "name": "Tied-up man",
+   "tried": [
+    {
+     "round": 1,
+     "score": 7,
+     "name": "Tied-up man",
+     "reason": "Readable blocky character; dark muted colours, rope slightly messy."
+    }
+   ]
+  },
+  {
+   "noun": "cheetah",
+   "id": "gen3d-cheetah",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 5,
+     "name": "Cheetah",
+     "reason": "Clear animal silhouette but glossy metallic, noisy shading feels off-style."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "leopard",
+     "reason": "Good animal silhouette, but crumpled noisy surface"
+    },
+    {
+     "round": 3,
+     "score": 5,
+     "name": "Cheetah",
+     "reason": "Good silhouette but glossy faceted noisy texture."
+    }
+   ]
+  },
+  {
+   "noun": "lemming",
+   "id": "gen3d-lemming",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 3,
+     "name": "Gold sack",
+     "reason": "Melted faceted blob with dark artifacts; object unclear."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "round creature",
+     "reason": "Cute toy-like character, but blotchy texture and odd face"
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'hamster' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "lid",
+   "id": "gen3d-lid",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 7,
+     "name": "Cooking pot",
+     "reason": "Chunky clean pot with lid; plain white, slightly lumpy."
+    },
+    {
+     "round": 2,
+     "score": 7,
+     "name": "Cooking pot",
+     "reason": "Clean chunky pot with lid; slightly plain, lumpy rim."
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'cooking pot' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "lizard",
+   "id": "gen3d-lizard",
+   "result": "generated",
+   "score": 8,
+   "name": "Green lizard",
+   "tried": [
+    {
+     "round": 1,
+     "score": 8,
+     "name": "Green dinosaur",
+     "reason": "Clean silhouette, bright solid green, toy-like and polished."
+    },
+    {
+     "round": 2,
+     "score": 8,
+     "name": "Green lizard",
+     "reason": "Clean low-poly raptor/lizard, bright solid colour, readable pose."
+    }
+   ]
+  },
+  {
+   "noun": "needle",
+   "id": "gen3d-needle",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 5,
+     "name": "Sword",
+     "reason": "Readable sword but thin, odd ring guard, plain detail."
+    },
+    {
+     "round": 2,
+     "score": 4,
+     "name": "Sword/dagger",
+     "reason": "Thin needle-like blade, ambiguous; clean but weak readability."
+    },
+    {
+     "round": 3,
+     "score": 5,
+     "name": "tent stake",
+     "reason": "Readable spike shape but dull grey, thin and plain."
+    }
+   ]
+  },
+  {
+   "noun": "pinecone",
+   "id": "gen3d-pinecone",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 3,
+     "name": "Egg / nut",
+     "reason": "Noisy crumpled ovoid; unclear object, scan-like facets."
+    },
+    {
+     "round": 2,
+     "score": 4,
+     "name": "Pine cone",
+     "reason": "Egg/cone blob with crumpled noisy facets, lacks scale detail."
+    },
+    {
+     "round": 3,
+     "score": 4,
+     "name": "pine cone",
+     "reason": "Blobby crumpled faceting, reads more like rock than cone."
+    }
+   ]
+  },
+  {
+   "noun": "snowplow",
+   "id": "gen3d-snowplow",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 6,
+     "name": "Snowplow truck",
+     "reason": "Bright readable toy truck; surfaces crumpled and noisy."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "bulldozer",
+     "reason": "Bright toy colour, but crumpled glossy distorted mesh"
+    },
+    {
+     "round": 3,
+     "score": 6,
+     "name": "bulldozer",
+     "reason": "Bright chunky toy vehicle; crumpled noisy surface faceting."
+    }
+   ]
+  },
+  {
+   "noun": "stalactite",
+   "id": "gen3d-stalactite",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Hammer/stake",
+     "reason": "Ambiguous object; blobby head and droopy teal spike."
+    },
+    {
+     "round": 2,
+     "score": 3,
+     "name": "Black cone",
+     "reason": "Ambiguous dark spike; unclear object, could be stake or funnel."
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'nail' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "steamer",
+   "id": "gen3d-steamer",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Steam locomotive",
+     "reason": "Dark, noisy jagged mesh; murky colours off-style."
+    },
+    {
+     "round": 2,
+     "score": 4,
+     "name": "steam train",
+     "reason": "Train readable but dark, muddy, crumpled and noisy"
+    },
+    {
+     "round": 3,
+     "score": 3,
+     "name": "steam sled",
+     "reason": "Messy fragments, torn mesh, unclear vehicle."
+    }
+   ]
+  },
+  {
+   "noun": "termite",
+   "id": "gen3d-termite",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 5,
+     "name": "Larva bug",
+     "reason": "Creature readable but blotchy texture and lumpy body."
+    },
+    {
+     "round": 2,
+     "score": 4,
+     "name": "Spider creature",
+     "reason": "Odd fleshy anatomy; unclear which creature it is."
+    },
+    {
+     "round": 3,
+     "score": 4,
+     "name": "sheep",
+     "reason": "Recognisable sheep but faceted noisy surface, scan-like."
+    }
+   ]
+  },
+  {
+   "noun": "traveler",
+   "id": "gen3d-traveler",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 5,
+     "name": "Hiker",
+     "reason": "Readable hiker but noisy camo texture and dark cluttered details."
+    },
+    {
+     "round": 2,
+     "score": 5,
+     "name": "Hiker explorer",
+     "reason": "Recognisable figure but muddy scan-like textures, noisy shading."
+    },
+    {
+     "round": 3,
+     "score": null,
+     "name": null,
+     "reason": "PrecheckRejected: precheck: image looks like 'hiker' (no)"
+    }
+   ]
+  },
+  {
+   "noun": "trout",
+   "id": "gen3d-trout",
+   "result": "generated",
+   "score": 7,
+   "name": "Trout",
+   "tried": [
+    {
+     "round": 1,
+     "score": 7,
+     "name": "Trout",
+     "reason": "Clean low-poly fish silhouette, simple colours; slightly flat shading."
+    }
+   ]
+  },
+  {
+   "noun": "wire",
+   "id": "gen3d-wire",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": null,
+     "name": null,
+     "reason": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "score": 3,
+     "name": "coiled rope",
+     "reason": "Lumpy melted red blob, hard to identify"
+    },
+    {
+     "round": 3,
+     "score": 2,
+     "name": "Red cushion",
+     "reason": "Crumpled melted red blob, unidentifiable."
+    }
+   ]
+  },
+  {
+   "noun": "snack",
+   "id": "gen3d-snack",
+   "result": "skipped",
+   "reason": "no attempt scored >= 7 under a matching name",
+   "tried": [
+    {
+     "round": 1,
+     "score": 4,
+     "name": "Gold sack",
+     "reason": "Crumpled, noisy faceted mesh; reads as sack but scan-like."
+    },
+    {
+     "round": 2,
+     "score": 1,
+     "name": "fragmented object",
+     "reason": "Shattered loose fragments, no coherent object"
+    },
+    {
+     "round": 3,
+     "score": 3,
+     "name": "Popcorn bucket",
+     "reason": "Crumpled jagged mesh, glossy noisy surfaces, hard to read."
+    }
+   ]
+  }
+ ]
+}

@@ -31,6 +31,8 @@ const labels = new Map(readJson('../../src/assets/catalog.json').assets.map((ass
 const common = Object.values(readJson('../../evals/play/p37d/common-nouns.json').tiers).flat();
 const nounOf = (entry) => (typeof entry === 'string' ? entry : entry.noun).toLowerCase();
 const words = [...new Set([...missing.missing, ...missing.undrawable, ...common].map(nounOf))].sort();
+// P58A T6: slova z vět dev sad, která dostala robota (`evals/play/p58a/missing-nouns.json`) – stejnou branou jako OEWN.
+const p58a = readJson('../../evals/play/p58a/missing-nouns.json').nouns.map(nounOf);
 const abstract = new Set(missing.undrawable.map((entry) => entry.noun.toLowerCase()));
 // P43 T13: nepoznatelný model nebude nejbližším ničeho.
 const assets = index.assets.filter((asset) => !asset.tags.includes('qa:unrecognisable')).map((asset) => ({ id: asset.assetId, text: labels.get(asset.assetId) ?? asset.tags.join(' ') }));
@@ -64,7 +66,7 @@ if (nounRun.status !== 0) {
   console.error(nounRun.stderr);
   process.exit(1);
 }
-const extra = JSON.parse(nounRun.stdout).filter((word) => !(word in table));
+const extra = [...new Set([...JSON.parse(nounRun.stdout), ...p58a])].filter((word) => !(word in table));
 const extraResult = embed(extra);
 const candidates = extra
   .map((word) => [word, extraResult.words[word][0]])

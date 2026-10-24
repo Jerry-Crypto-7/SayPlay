@@ -61,7 +61,8 @@ export const timingGenre: GenreModule<'timing'> = {
   compile: (spec) => {
     const { rounds = TIMING_GENRE.rounds } = spec.params ?? {};
     const text = TEXT[spec.mode];
-    const piece = spec.mode === 'stack' ? (castFor(spec, 'collect')?.label ?? text.piece) : text.piece;
+    // P58A T6: věc z věty nese i ručička lišty („flipping pancakes“) – scéna ji kreslí na ručičce; můstek má prkno.
+    const piece = spec.mode === 'bridge' ? text.piece : (castFor(spec, 'collect')?.label ?? text.piece);
     const goal = text.goal(rounds, piece);
     return legacySpec(spec, {
       control: 'timing',
