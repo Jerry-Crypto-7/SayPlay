@@ -205,32 +205,45 @@ async function readThrough(text: string, config: UpstreamConfig, env: Env, deps:
     const worstCaseUsd = branch.worstCaseUsd(call);
     // Vypínač jen čte, takže na placené cestě letí souběžně s cache (T4-R1); nepřečtený = vypnuto.
     const killed = worstCaseUsd > 0 && deps.caller !== undefined ? killState(env, fetchImpl).then((state) => state.upstream, () => true) : Promise.resolve(false);
-    const cached = store === null ? null : await cachedReading(store, key);
-    if (cached !== null) return cached;
-    const reading = worstCaseUsd <= 0 ? readingOf(await branch.generate(call, signal)) : await paidReading(call, branch, worstCaseUsd, killed, config, env, deps, signal);
-    // Zápis neblokuje: hotové čtení nesmí propadnout rozpočtu kvůli úložišti.
-    if (reading !== null && store !== null) void store.set(key, JSON.stringify(reading), ANSWER_TTL_SECONDS).catch(() => undefined);
-    return reading;
-  } catch {
-    return null;
-  }
-}
-
-async function cachedReading(store: AnswerStore, key: string): Promise<Reading | null> {
-  try {
-    const raw = await store.get(key);
-    if (raw === null) return null;
-    const parsed = readingSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : null;
+    const cached = store === null ? undefined : await cachedReading(store, key);
+    if (cached !== undefined) return cached;
+    // `undefined` = nic neodešlo. Zdarma (lokální čtečka) se `null` nepamatuje: další pokus nic nestojí.
+    const reading = worstCaseUsd <= 0 ? (readingOf(await branch.generate(call, signal)) ?? undefined) : await paidReading(call, branch, worstCaseUsd, killed, config, env, deps, signal);
+    // Zápis neblokuje: hotové čtení nesmí propadnout rozpočtu kvůli úložišti. Zaplacené `null` (vypršení se účtuje
+    // celé, useknutá odpověď) jde do cache nakrátko, ať ho druhý běh režiséra ani opakovaný upgrade nezaplatí znovu (T4a).
+    if (reading !== undefined && store !== null) void store.set(key, JSON.stringify(reading), reading === null ? READER_MISS_TTL_SECONDS : ANSWER_TTL_SECONDS).catch(() => undefined);
+    return reading ?? null;
   } catch {
     return null;
   }
 }
 
 /**
+ * Jak dlouho cache drží zaplacené čtení, které nevyšlo (T4a). AI verze přijde p50 za 57 s (T7) a fronta
+ * na slot ji zdrží o minuty: deset minut kryje druhý běh s pokynem i opakování po dočasné chybě, a tutéž
+ * větu za hodinu čtečka přečte znovu.
+ */
+export const READER_MISS_TTL_SECONDS = 10 * 60;
+
+/** `undefined` = v cache nic použitelného; `null` = zaplacené čtení, které nevyšlo, ještě v `READER_MISS_TTL_SECONDS`. */
+async function cachedReading(store: AnswerStore, key: string): Promise<Reading | null | undefined> {
+  try {
+    const raw = await store.get(key);
+    if (raw === null) return undefined;
+    const value: unknown = JSON.parse(raw);
+    if (value === null) return null;
+    const parsed = readingSchema.safeParse(value);
+    return parsed.success ? parsed.data : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Placené volání (`openai:`) přes vypínač a vlastní strop čtečky: rezervace
  * nejhoršího případu před voláním, vyrovnání skutečnou cenou po něm, bez
- * účtenky celou rezervací. Odmítnutí stropem = `null` bez volání.
+ * účtenky celou rezervací. Odmítnutí stropem = `undefined` bez volání; volání,
+ * které odešlo a čtení nevrátilo (i přerušené rozpočtem), = `null`.
  */
 async function paidReading(
   call: GenerationCall,
@@ -241,28 +254,25 @@ async function paidReading(
   env: Env,
   deps: ReaderDeps,
   signal: AbortSignal,
-): Promise<Reading | null> {
+): Promise<Reading | null | undefined> {
   // Placeně jen za známého volajícího (revize T4): režisér na pozadí ho předá jen u čtečky pro AI verzi (P58B T4),
   // kde route nečetla – jinak by větu, kterou route už četla, zaplatil podruhé.
-  if (deps.caller === undefined) return null;
-  if ((await killed) || signal.aborted) return null;
+  if (deps.caller === undefined) return undefined;
+  if ((await killed) || signal.aborted) return undefined;
   // Kniha stropu a počet volajícího letí souběžně (T4-R1), ať z rozpočtu zbude modelu: před voláním
   // jsou tak dva lety, ne čtyři (první čtení volajícího za den tři: INCR a EXPIRE). Daň: odmítnutí
   // stropem i rozpočet, který vyprší během těch letů, volajícímu spálí jedno čtení dne bez volání.
   const [reservation, mayRead] = await Promise.all([(deps.cap ?? processReaderSpendCap()).reserve(worstCaseUsd), callerMayRead(deps.caller, env)]);
-  if (!reservation.ok) return null;
+  if (!reservation.ok) return undefined;
   // Rozpočet vypršel = volání neodejde, nic se neutratilo.
   if (signal.aborted || !mayRead) {
     await reservation.settle(0);
-    return null;
+    return undefined;
   }
-  let outcome: GenerationOutcome | null = null;
-  try {
-    outcome = await branch.generate(call, signal);
-  } finally {
-    await reservation.settle(outcome === null || outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing));
-  }
-  return readingOf(outcome);
+  // Spadlé nebo přerušené volání odešlo: účtuje se celou rezervací a čtení je `null`, ne „nic neodešlo“.
+  const outcome: GenerationOutcome | null = await branch.generate(call, signal).catch(() => null);
+  await reservation.settle(outcome === null || outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing));
+  return outcome === null ? null : readingOf(outcome);
 }
 
 function readingOf(outcome: GenerationOutcome): Reading | null {

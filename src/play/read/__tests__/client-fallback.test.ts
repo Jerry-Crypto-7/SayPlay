@@ -10,9 +10,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { ANSWER_TTL_SECONDS, type AnswerStore } from '@/server/answer-cache';
 import type { Reservation, SpendCap } from '@/server/spend-cap';
 
-import { DEFAULT_AI_READER_BUDGET_MS, DEFAULT_LOCAL_READER_BUDGET_MS, DEFAULT_READER_BUDGET_MS, readBeforeDraft, readerConfigFromEnv, readerForAiVersion } from '../client';
+import { DEFAULT_AI_READER_BUDGET_MS, DEFAULT_LOCAL_READER_BUDGET_MS, DEFAULT_READER_BUDGET_MS, readBeforeDraft, READER_MISS_TTL_SECONDS, readerConfigFromEnv, readerForAiVersion } from '../client';
 import type { Reading } from '../schema';
 
 const READING: Reading = {
@@ -48,6 +49,20 @@ function bookkeeping() {
     reserve: vi.fn(async (usd: number): Promise<Reservation> => ({ ok: true, reservedUsd: usd, settle: async (actual) => { settled.push(actual); return actual === 'unknown' ? usd : actual; } })),
   };
   return { cap, settled };
+}
+
+function memoryStore() {
+  const map = new Map<string, string>();
+  const writes: { value: string; ttl: number }[] = [];
+  const store: AnswerStore = {
+    id: 'memory',
+    get: async (key) => map.get(key) ?? null,
+    set: async (key, value, ttl) => {
+      writes.push({ value, ttl });
+      map.set(key, value);
+    },
+  };
+  return { store, writes };
 }
 
 afterEach(() => {
@@ -94,6 +109,34 @@ describe('the reader for the AI version (P58B T4)', () => {
     expect(result).toBeNull();
     await vi.waitFor(() => expect(settled).toEqual(['unknown']));
     expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  it('pays a sentence once: a paid reading that failed stays in the cache for ten minutes (T4a)', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const fetchImpl = hanging();
+    const { cap, settled } = bookkeeping();
+    const { store, writes } = memoryStore();
+    const first = readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR });
+    await vi.advanceTimersByTimeAsync(DEFAULT_AI_READER_BUDGET_MS);
+    await expect(first).resolves.toBeNull();
+    await vi.waitFor(() => expect(writes).toEqual([{ value: 'null', ttl: READER_MISS_TTL_SECONDS }]));
+    expect(settled).toEqual(['unknown']);
+    // Druhý běh režiséra s pokynem i opakovaný upgrade: táž věta, žádné další volání ani rezervace.
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR })).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(cap.reserve).toHaveBeenCalledOnce();
+    expect(READER_MISS_TTL_SECONDS).toBeLessThan(ANSWER_TTL_SECONDS);
+  });
+
+  it('remembers nothing when no call went out: a refused cap reads again next time', async () => {
+    const fetchImpl = replying(200);
+    const cap: Pick<SpendCap, 'reserve'> = { reserve: vi.fn(async (): Promise<Reservation> => ({ ok: false }) as Reservation) };
+    const { store, writes } = memoryStore();
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR })).resolves.toBeNull();
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR })).resolves.toBeNull();
+    expect(cap.reserve).toHaveBeenCalledTimes(2);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(writes).toEqual([]);
   });
 
   it('asks nothing and reserves nothing without a key', async () => {
