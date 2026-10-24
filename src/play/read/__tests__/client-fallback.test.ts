@@ -152,6 +152,30 @@ describe('the reader for the AI version (P58B T4)', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
+  // Obráceně (re-revize T4ab-2): `null` B dorazí první, čtení A, které odešlo před ním, uspěje později a značku přepíše.
+  it('a good reading that lands after a failed one replaces its marker', async () => {
+    let open = () => {};
+    const gate = new Promise<void>((resolve) => {
+      open = resolve;
+    });
+    let calls = 0;
+    const fetchImpl = vi.fn(async (..._args: FetchArgs) => {
+      calls += 1;
+      const content = calls === 1 ? JSON.stringify(READING) : '{}';
+      if (calls === 1) await gate;
+      return new Response(JSON.stringify({ choices: [{ message: { content }, finish_reason: 'stop' }], usage: { prompt_tokens: 1900, completion_tokens: 150 } }));
+    });
+    const { cap } = bookkeeping();
+    const store = memoryAnswerStore();
+    const late = readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR });
+    await vi.waitFor(() => expect(fetchImpl).toHaveBeenCalledOnce());
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: '198.51.100.9' })).resolves.toBeNull();
+    open();
+    await expect(late).resolves.toEqual(READING);
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR })).resolves.toEqual(READING);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
   it('remembers nothing when no call went out: a refused cap reads again next time', async () => {
     const fetchImpl = replying(200);
     const cap: Pick<SpendCap, 'reserve'> = { reserve: vi.fn(async (): Promise<Reservation> => ({ ok: false }) as Reservation) };
