@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ANSWER_TTL_SECONDS, type AnswerStore } from '@/server/answer-cache';
+import { ANSWER_TTL_SECONDS, type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 import type { Reservation, SpendCap } from '@/server/spend-cap';
 
 import { DEFAULT_AI_READER_BUDGET_MS, DEFAULT_LOCAL_READER_BUDGET_MS, DEFAULT_READER_BUDGET_MS, readBeforeDraft, READER_MISS_TTL_SECONDS, readerConfigFromEnv, readerForAiVersion } from '../client';
@@ -126,6 +126,30 @@ describe('the reader for the AI version (P58B T4)', () => {
     expect(fetchImpl).toHaveBeenCalledOnce();
     expect(cap.reserve).toHaveBeenCalledOnce();
     expect(READER_MISS_TTL_SECONDS).toBeLessThan(ANSWER_TTL_SECONDS);
+  });
+
+  // Revize T4a/T4b: dva hráči, táž věta. Čtení B odešlo první a selže až po úspěšném čtení A – jeho `null` dobré čtení nepřepíše.
+  it('a failed paid reading never replaces a good one that landed first', async () => {
+    let open = () => {};
+    const gate = new Promise<void>((resolve) => {
+      open = resolve;
+    });
+    let calls = 0;
+    const fetchImpl = vi.fn(async (..._args: FetchArgs) => {
+      calls += 1;
+      const content = calls === 1 ? '{}' : JSON.stringify(READING);
+      if (calls === 1) await gate;
+      return new Response(JSON.stringify({ choices: [{ message: { content }, finish_reason: 'stop' }], usage: { prompt_tokens: 1900, completion_tokens: 150 } }));
+    });
+    const { cap } = bookkeeping();
+    const store = memoryAnswerStore();
+    const late = readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR });
+    await vi.waitFor(() => expect(fetchImpl).toHaveBeenCalledOnce());
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: '198.51.100.9' })).resolves.toEqual(READING);
+    open();
+    await expect(late).resolves.toBeNull();
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR })).resolves.toEqual(READING);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
   it('remembers nothing when no call went out: a refused cap reads again next time', async () => {

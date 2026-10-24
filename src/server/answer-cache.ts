@@ -101,7 +101,8 @@ export interface AnswerStore {
   readonly id: string;
   /** `null` znamená „klíč není". Vyhozená výjimka znamená „nevím" a cache ji čte jako miss. */
   get(key: string): Promise<string | null>;
-  set(key: string, value: string, ttlSeconds: number): Promise<void>;
+  /** `onlyIfAbsent`: zapiš jen do prázdného klíče (Upstash `SET … NX`) – živý záznam, který tam už je, vyhraje. */
+  set(key: string, value: string, ttlSeconds: number, options?: { readonly onlyIfAbsent?: boolean }): Promise<void>;
 }
 
 export interface AnswerCache {
@@ -150,7 +151,9 @@ export function memoryAnswerStore(now: () => number = Date.now, id = 'memory'): 
       }
       return Promise.resolve(entry.value);
     },
-    set(key, value, ttlSeconds) {
+    set(key, value, ttlSeconds, options) {
+      const live = entries.get(key);
+      if (options?.onlyIfAbsent === true && live !== undefined && live.expiresAt > now()) return Promise.resolve();
       entries.set(key, { value, expiresAt: now() + ttlSeconds * 1000 });
       return Promise.resolve();
     },
@@ -203,11 +206,11 @@ export function httpAnswerStore(config: HttpAnswerStoreConfig, fetchImpl: typeof
       if (typeof result !== 'string') throw new Error('answer cache answered a shape this server cannot read');
       return result;
     },
-    async set(key, value, ttlSeconds) {
+    async set(key, value, ttlSeconds, options) {
       const response = await fetchImpl(`${config.url}/`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(['SET', fullKey(key), value, 'EX', String(ttlSeconds)]),
+        body: JSON.stringify(['SET', fullKey(key), value, 'EX', String(ttlSeconds), ...(options?.onlyIfAbsent === true ? ['NX'] : [])]),
         signal: AbortSignal.timeout(config.timeoutMs),
       });
       if (!response.ok) throw new Error(`answer cache answered ${String(response.status)}`);

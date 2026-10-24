@@ -210,8 +210,9 @@ async function readThrough(text: string, config: UpstreamConfig, env: Env, deps:
     // `undefined` = nic neodešlo. Zdarma (lokální čtečka) se `null` nepamatuje: další pokus nic nestojí.
     const reading = worstCaseUsd <= 0 ? (readingOf(await branch.generate(call, signal)) ?? undefined) : await paidReading(call, branch, worstCaseUsd, killed, config, env, deps, signal);
     // Zápis neblokuje: hotové čtení nesmí propadnout rozpočtu kvůli úložišti. Zaplacené `null` (vypršení se účtuje
-    // celé, useknutá odpověď) jde do cache nakrátko, ať ho druhý běh režiséra ani opakovaný upgrade nezaplatí znovu (T4a).
-    if (reading !== undefined && store !== null) void store.set(key, JSON.stringify(reading), reading === null ? READER_MISS_TTL_SECONDS : ANSWER_TTL_SECONDS).catch(() => undefined);
+    // celé, useknutá odpověď) jde do cache nakrátko, ať ho druhý běh režiséra ani opakovaný upgrade nezaplatí znovu (T4a),
+    // a jen do prázdného klíče: souběžné čtení téže věty, které uspělo dřív, nepřepíše (revize T4a/T4b).
+    if (reading !== undefined && store !== null) void store.set(key, JSON.stringify(reading), reading === null ? READER_MISS_TTL_SECONDS : ANSWER_TTL_SECONDS, { onlyIfAbsent: reading === null }).catch(() => undefined);
     return reading ?? null;
   } catch {
     return null;
