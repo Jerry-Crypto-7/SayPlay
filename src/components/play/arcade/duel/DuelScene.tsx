@@ -105,13 +105,13 @@ interface Fighter {
   readonly material: React.RefObject<MeshStandardMaterial | null>;
 }
 
-/** Rameno je kloub: ruka visí dolů a otáčí se k soupeři (`toward` ±1 po z rodičovské skupiny); `tinted` = barvu fáze nese ruka. */
-function Arm({ fighter, color, toward, w, torso, tinted }: { readonly fighter: Fighter; readonly color: string; readonly toward: 1 | -1; readonly w: number; readonly torso: number; readonly tinted: boolean }) {
+/** Rameno je kloub: ruka visí dolů a otáčí se k soupeři (`toward` ±1 po z rodičovské skupiny). */
+function Arm({ fighter, color, toward, w, torso }: { readonly fighter: Fighter; readonly color: string; readonly toward: 1 | -1; readonly w: number; readonly torso: number }) {
   return (
     <group ref={fighter.arm} position={[0, torso * 0.9, toward * w * 0.3]}>
       <mesh position={[0, -torso * 0.35, 0]}>
         <boxGeometry args={[w * 0.2, torso * 0.7, w * 0.2]} />
-        <meshStandardMaterial ref={tinted ? fighter.material : undefined} color={color} roughness={0.6} />
+        <meshStandardMaterial color={color} roughness={0.6} />
       </mesh>
       <mesh position={[0, -torso * 0.72, 0]}>
         <sphereGeometry args={[w * 0.16, 12, 8]} />
@@ -135,7 +135,7 @@ function Figure({ fighter, color, facing, w, h }: { readonly fighter: Fighter; r
         <sphereGeometry args={[head, 16, 12]} />
         <meshStandardMaterial color="#fcd34d" roughness={0.7} />
       </mesh>
-      <Arm fighter={fighter} color={color} toward={facing} w={w} torso={torso} tinted={false} />
+      <Arm fighter={fighter} color={color} toward={facing} w={w} torso={torso} />
     </group>
   );
 }
@@ -143,13 +143,13 @@ function Figure({ fighter, color, facing, w, h }: { readonly fighter: Fighter; r
 /**
  * Bojovník s modelem z popisku (P27A T4, P43 T14b): model leží ve skupině pózy natočené
  * k soupeři (`heading` kolem y), hračkový pohyb (P45D T10) ji posune výpadem po jejím +z.
- * Ruku z primitiv má jen soupeř (`arm` = její barva): nese barvu fáze, podle které hráč uhýbá.
+ * Ruku z primitiv nemá ani soupeř (P58C T6b): u malého modelu stála jako tyč, kterou porotci brali za chybu
+ * kreslení – kdy uhnout a kdy udeřit říká štítek povelu nad ním.
  */
-function ModelFigure({ fighter, heading, w, h, arm, children }: { readonly fighter: Fighter; readonly heading: number; readonly w: number; readonly h: number; readonly arm?: string; readonly children: React.ReactNode }) {
+function ModelFigure({ fighter, heading, children }: { readonly fighter: Fighter; readonly heading: number; readonly children: React.ReactNode }) {
   return (
     <group ref={fighter.body} rotation={[0, heading, 0]}>
       {children}
-      {arm !== undefined && <Arm fighter={fighter} color={arm} toward={1} w={w} torso={h * 0.62} tinted />}
     </group>
   );
 }
@@ -256,7 +256,6 @@ export function DuelScene({
       if (foe.body.current !== null) foe.body.current.rotation.x = foeLeanOf(phase);
     } else {
       // Skupina pózy soupeře s modelem je otočená o π k hráči: úhly kolem x v ní mají opačné znaménko než v ringu.
-      if (foe.arm.current !== null) foe.arm.current.rotation.x = -foeArmOf(phase, left);
       if (foe.body.current !== null) {
         const view = toyViewOf(state, prev, DUEL_FOE);
         const toy = toyPoseOf(
@@ -333,7 +332,7 @@ export function DuelScene({
           {heroModel === undefined ? (
             <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
           ) : (
-            <ModelFigure fighter={player} heading={0} w={hero.w} h={hero.h}>
+            <ModelFigure fighter={player} heading={0}>
               {heroModel(hero.w, hero.h, hero.d)}
             </ModelFigure>
           )}
@@ -347,7 +346,7 @@ export function DuelScene({
         {rivalModel === undefined ? (
           <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} />
         ) : (
-          <ModelFigure fighter={foe} heading={Math.PI} w={rival.w} h={rival.h} arm={PHASE_COLOR[DUEL_PHASE.ready]!}>
+          <ModelFigure fighter={foe} heading={Math.PI}>
             {rivalModel(rival.w, rival.h, rival.d)}
           </ModelFigure>
         )}
