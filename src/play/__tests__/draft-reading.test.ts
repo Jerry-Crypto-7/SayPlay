@@ -17,6 +17,10 @@ import recorded from '../read/__fixtures__/readings.json';
 
 import { legacyDraft } from './legacy-draft';
 
+/**
+ * Čtení lokální čtečky bez pole `genre` (uložené před P56A T3): žánr hry rozhodnou slova a slovesa čtení. Prázdný žánr
+ * (`genre: null`) od P58B T6 znamená „žádný žánr nesedí“ a hraje chůzi – to tu testy neměří.
+ */
 const reading = (over: Partial<Reading>): Reading => ({
   control: 'runner',
   verbs: [],
@@ -25,14 +29,13 @@ const reading = (over: Partial<Reading>): Reading => ({
   setting: null,
   mood: null,
   numbers: { seconds: null, counts: [] },
-  genre: null,
   sure: true,
   foe: null,
   item: null,
   world: null,
   title: null,
   ...over,
-});
+}) as Reading;
 
 const label = (spec: { roles: readonly { id: string; label: string }[] }, id: string) => spec.roles.find((role) => role.id === id)?.label;
 const count = (spec: { roles: readonly { id: string; count?: number }[] }, id: string) => spec.roles.find((role) => role.id === id)?.count;

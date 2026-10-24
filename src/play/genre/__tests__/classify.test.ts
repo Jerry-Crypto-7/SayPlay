@@ -211,8 +211,26 @@ describe('classifyGenre', () => {
       expect(order('Two knights duel in a castle', read({ genre: 'quest', mode: 'station' }), genreDoubles(['quest.station']))[0]).toBe('duel.default');
     });
 
-    it('a null genre leaves the keyword order', () => {
-      expect(order('Two knights duel in a castle', read(null))).toEqual(order('Two knights duel in a castle', null));
+    // P58B T6: „žádný žánr nesedí“ (p56a s68 „rock band“ → rytmus, s74 „race“ → plavba, s80 „shoot pics“ → střílečka).
+    it('a null genre plays the arena collect over the heard keyword, the rest in keyword order', () => {
+      const sentence = 'Two knights duel in a castle';
+      const ranked = classifyGenre(sentence, read(null), genreDoubles()).ranked;
+      expect(ranked[0]).toMatchObject({ genre: 'arena', mode: 'collect' });
+      expect(ranked[0].why).toContain('no genre fits');
+      expect(ranked.slice(1).map((choice) => `${choice.genre}.${choice.mode}`)).toEqual(order(sentence, null).filter((id) => id !== 'arena.collect'));
+    });
+
+    it('a null genre flees only a chaser the reading names, not the word escape', () => {
+      const sentence = 'an escape room in a haunted mansion full of riddles';
+      expect(order(sentence, null, GENRE_MODULES)[0]).toBe('arena.escape');
+      expect(order(sentence, read(null), GENRE_MODULES)[0]).toBe('arena.collect');
+      const chased = { ...read(null), roles: [{ noun: 'ghost', kind: 'chaser' as const, count: null }] };
+      expect(order(sentence, chased, GENRE_MODULES)[0]).toBe('arena.escape');
+    });
+
+    it('a reading stored without the genre field leaves the keyword order', () => {
+      const { genre: _drop, ...stored } = read(null);
+      expect(order('Two knights duel in a castle', stored as Reading)).toEqual(order('Two knights duel in a castle', null));
     });
   });
 

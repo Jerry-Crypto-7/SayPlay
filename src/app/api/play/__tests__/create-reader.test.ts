@@ -32,7 +32,7 @@ const READING: Reading = {
   control: 'shooter',
   verbs: [{ word: 'collect', class: 'aim_shoot' }],
   hero: 'knight',
-  roles: [{ noun: 'dragons', kind: 'threat', count: 6 }],
+  roles: [{ noun: 'dragons', kind: 'obstacle', count: 6 }],
   setting: 'a castle',
   mood: null,
   numbers: { seconds: null, counts: [] },
@@ -124,7 +124,9 @@ describe('create route reads the sentence before drafting', () => {
     expect(String(answering.mock.calls[0]?.[0])).toBe('http://reader.test/v1/chat/completions');
     expect(spec).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
     // This malformed reading invents dragons and misclassifies collect as shooting.
-    // Reading is advisory: an unrequested threat cannot replace collecting keys.
+    // Reading is advisory: an unrequested obstacle cannot replace collecting keys.
+    // P58B T6: its genre null now says "no genre fits" and plays the arena collect; an invented threat would add a
+    // tied arena escape, and a tie under the generic margin plays the micro-game chain (P56C) instead of one game.
     expect(spec).toEqual(draftGameSpec(SENTENCE));
     expect((spec as { roles: { label: string }[] }).roles.map(role => role.label)).toContain('key');
     expect((spec as { roles: { label: string }[] }).roles.map(role => role.label)).not.toContain('dragon');

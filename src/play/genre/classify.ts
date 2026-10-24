@@ -484,9 +484,17 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     const heard = order(null)[0];
     // Čtení uložená před P56A T3 (`read/__fixtures__/readings.json`) pole `genre` nemají, před P58B T5 pole `sure`.
     const read = reading.genre ?? null;
+    // P58B T6: čtení řeklo, že žádný žánr nesedí (tahová hra, rozhovor, focení) – slovo pasti ve větě („card battle“,
+    // „rock band“, „shoot pics“) pak nerozhoduje. Hraje se jako věta bez narážky: chůze po scéně z věty, útěk, jen když
+    // čtení jmenuje pronásledovatele – slovo „escape room“ útěk nespustí. Na dev P58B slovník po takovém čtení 4× zvolil
+    // lákavý žánr; na p30/dev po promptu T6 čte „nic nesedí“ už jen nehry (daně, rande, dopis), dřív i věž z palačinek.
+    const roam = reading.roles.some((role) => role.kind === 'chaser') ? ESCAPE : COLLECT;
     if (read !== null && scores.has(key(read)) && availability(read) === 'ready') {
       add(read, 4, `reading genre "${key(read)}"`);
       decided = reading.sure === false && heard !== undefined && heard.score > 0 ? key(heard) : key(read);
+    } else if (reading.genre === null && scores.has(key(roam)) && availability(roam) === 'ready') {
+      add(roam, 4, 'reading: no genre fits');
+      decided = key(roam);
     }
     reading.verbs.forEach((verb, index) => {
       const pick = READ_CLASS[verb.class];
