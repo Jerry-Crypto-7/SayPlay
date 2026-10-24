@@ -60,3 +60,9 @@ item object stuff
 bank clinic gallery disco prison backroom backyard home sleepover show range
 # názvy her a míst – „nail“ je „nail salon“, „formula“ je „formula 1“
 freddy gta krunker monaco noah crossy doodle royale overcooked geometry formula mahjong nail dash
+
+# P58A T2 (`scripts/p58a/why-unseen.mjs`, missing-nouns.json 23. 10. 2026)
+# terén a části prostředí – ne jeden model
+highway path line hole crater canyon chasm deck rim
+# skupiny a množství bez vlastní podoby – model je člen skupiny
+swarm family crew half overflow

@@ -42,7 +42,7 @@ const WORDS = {
     'shark', 'whale', 'dolphin', 'octopus', 'squid', 'crab', 'lobster', 'seahorse', 'jellyfish', 'narwhal', 'stingray', 'pufferfish', 'blowfish', 'anglerfish', 'betta', 'blobfish',
     'clownfish', 'cowfish', 'flatfish', 'goldfish', 'humphead', 'koi', 'lionfish', 'piranha', 'puffer', 'snapper', 'sunfish', 'swordfish', 'tang', 'tetra', 'tuna', 'turbot',
     'bee', 'wasp', 'butterfly', 'ladybug', 'spider', 'scorpion', 'ant', 'mosquito', 'fly', 'housefly', 'dragonfly', 'beetle', 'caterpillar', 'worm', 'snail', 'bat',
-    'dinosaur', 'dino', 'trex', 'triceratops', 'velociraptor', 'apatosaurus', 'parasaurolophus',
+    'dinosaur', 'dino', 'trex', 'triceratops', 'velociraptor', 'apatosaurus', 'parasaurolophus', 'lizard', 'trout',
   ],
   humanoid: [
     'man', 'woman', 'boy', 'girl', 'kid', 'child', 'person', 'human', 'hero', 'heroine', 'chef', 'firefighter', 'pirate', 'captain', 'knight', 'wizard', 'witch', 'mage', 'princess',
@@ -50,6 +50,7 @@ const WORDS = {
     'soldier', 'guard', 'warrior', 'paladin', 'cowboy', 'dwarf', 'dwarve', 'elf', 'fairy', 'mermaid', 'archer', 'viking', 'samurai', 'superhero', 'villain', 'doctor', 'nurse', 'farmer',
     'detective', 'thief', 'clown', 'baby', 'student', 'teacher', 'scientist', 'magician', 'wrestler', 'fighter', 'goalkeeper', 'goalie', 'grandma', 'granny', 'grandmother',
     'grandpa', 'mom', 'mother', 'sister', 'customer', 'shopper', 'dancer', 'drummer', 'rider', 'biker', 'survivor', 'gangster', 'thug', 'operator', 'fishmonger', 'employee', 'doll',
+    'blacksmith', 'hostage',
   ],
 };
 

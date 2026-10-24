@@ -13,15 +13,15 @@
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  */
 
-import { addAfterEffect, useThree } from '@react-three/fiber';
+import { addAfterEffect, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
+import { Box3, type Camera, Matrix4, Mesh, type Object3D, PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { riggedCharacter } from '@/play/arcade/models';
+import { LEGIBLE_SHARE, type Legible, legibleScale, legibleWrite, riggedCharacter } from '@/play/arcade/models';
 import { duelCue, duelHurlOf } from '@/play/arcade/pieces/duel';
 import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
@@ -32,6 +32,7 @@ import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
 import type { ArcadeGhost } from './GhostSlot';
 import { comboOf } from './effects/feel';
+import { introLeftOf, restCamera } from './look/intro';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
@@ -101,6 +102,10 @@ export interface FrameReport {
   /** Kolik inkoustových obalů (obrys, P36C T6) sítě hrdiny nesou; obrys nezávisí na úrovni kvality. */
   readonly heroInk: number;
   readonly target: FrameBox | null;
+  /** Položka věty (`userData.item`) nejbližšího cíle, nebo `null` – kdo to je, když vyjde mimo záběr. */
+  readonly targetItem: string | null;
+  /** Vizuální měřítko čitelnosti (P58A T3) hrdiny a cíle; 1 = nezvětšené, `LEGIBLE_CAP` = strop, dál neroste. */
+  readonly legible: { readonly hero: number; readonly target: number };
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
   /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
@@ -238,6 +243,44 @@ const shown = (object: Object3D): boolean => {
 
 const cornerOf = new Vector3();
 const inView = new Vector3();
+const posedOf = new Box3();
+const restAt = new Vector3();
+/** Matice kůže po kostech (kost × inverze vazby); pole roste podle největší kostry. */
+const skinOf: Matrix4[] = [];
+
+/**
+ * Kvádr riggované sítě v póze kostí – tytéž počty jako `SkinnedMesh.computeBoundingBox`, jen matici kosti
+ * násobí jednou za kost, ne za každý vrchol a váhu. Three ji násobí až 4× na vrchol: ork a kovboj (13 tisíc
+ * vrcholů) stáli na telefonu (CPU 4×) 50 ms každé měření `LegibleBodies`, scéna ztratila pětinu FPS (P58A T9r1).
+ * Tady ~6× míň; kvádr vyšel do bitu stejný u všech 144 riggovaných postav a jejich klipů. `boundingBox` sítě nepřepisuje.
+ */
+export function posedBox(mesh: SkinnedMesh, box: Box3): Box3 {
+  const { bones, boneInverses } = mesh.skeleton;
+  for (let b = 0; b < bones.length; b += 1) (skinOf[b] ??= new Matrix4()).multiplyMatrices(bones[b]!.matrixWorld, boneInverses[b]!);
+  const bind = mesh.bindMatrix.elements;
+  const { skinIndex, skinWeight, position } = mesh.geometry.attributes;
+  box.makeEmpty();
+  for (let i = 0; i < position!.count; i += 1) {
+    // Klidová poloha i s morfy, pak vazba (afinní: w = 1).
+    Mesh.prototype.getVertexPosition.call(mesh, i, restAt);
+    const bx = bind[0]! * restAt.x + bind[4]! * restAt.y + bind[8]! * restAt.z + bind[12]!;
+    const by = bind[1]! * restAt.x + bind[5]! * restAt.y + bind[9]! * restAt.z + bind[13]!;
+    const bz = bind[2]! * restAt.x + bind[6]! * restAt.y + bind[10]! * restAt.z + bind[14]!;
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    for (let c = 0; c < 4; c += 1) {
+      const weight = skinWeight!.getComponent(i, c);
+      if (weight === 0) continue;
+      const m = skinOf[skinIndex!.getComponent(i, c)]!.elements;
+      x += (m[0]! * bx + m[4]! * by + m[8]! * bz + m[12]!) * weight;
+      y += (m[1]! * bx + m[5]! * by + m[9]! * bz + m[13]!) * weight;
+      z += (m[2]! * bx + m[6]! * by + m[10]! * bz + m[14]!) * weight;
+    }
+    box.expandByPoint(restAt.set(x, y, z).applyMatrix4(mesh.bindMatrixInverse));
+  }
+  return box;
+}
 
 /**
  * Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich.
@@ -257,8 +300,7 @@ export function frameOf(object: Object3D, camera: Camera, width: number, height:
     let box: Box3;
     if (posed && (mesh as SkinnedMesh).isSkinnedMesh === true) {
       // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
-      (mesh as SkinnedMesh).computeBoundingBox();
-      box = (mesh as SkinnedMesh).boundingBox!;
+      box = posedBox(mesh as SkinnedMesh, posedOf);
     } else {
       if (mesh.geometry.boundingBox === null) mesh.geometry.computeBoundingBox();
       box = mesh.geometry.boundingBox!;
@@ -287,10 +329,139 @@ function facingOf(hero: Object3D, at: Vector3, camera: Camera): number {
   return (gaze.angleTo(toCamera) * 180) / Math.PI;
 }
 
-/** Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza. */
+/**
+ * Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza – a dokud úvodní
+ * průlet nedosedne: úvodní karta jinak zamrzla u jeho startu a hrdina stál 2,6× dál (rytíř 9,8 % výšky, P58A T3).
+ */
 function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
-  const invalidate = useThree((three) => three.invalidate);
-  useEffect(() => session.subscribe(() => invalidate()), [session, invalidate]);
+  const get = useThree((three) => three.get);
+  useEffect(() => session.subscribe(() => get().invalidate()), [session, get]);
+  useEffect(() => {
+    let last = 0;
+    return addAfterEffect(() => {
+      const { camera, frameloop, invalidate } = get();
+      const left = introLeftOf(camera);
+      // Stejný zbytek dvakrát po sobě = průlet už žádná scéna nepočítá; nepřekreslovat donekonečna.
+      if (frameloop === 'demand' && left !== 0 && left !== last) invalidate();
+      last = left;
+    });
+  }, [get]);
+  return null;
+}
+
+/** Nejbližší cíl k hrdinovi; na trati jen cíle před ním, když nějaké jsou. */
+function nearestTarget(heroAt: Vector3, candidates: readonly Object3D[], control: string): { node: Object3D; pos: Vector3 } | null {
+  if (candidates.length === 0) return null;
+  const at = candidates.map((node) => ({ node, pos: node.getWorldPosition(new Vector3()) }));
+  const ahead = TRACK_CONTROLS.has(control) ? at.filter((c) => c.pos.z > heroAt.z) : [];
+  const pool = ahead.length > 0 ? ahead : at;
+  return pool.reduce((best, c) => (c.pos.distanceTo(heroAt) < best.pos.distanceTo(heroAt) ? c : best));
+}
+
+/** Jak často se těla měří (snímky): čtyřikrát za sekundu stačí, průchod scénou každý snímek stál na telefonu CPU. */
+const LEGIBLE_EVERY = 15;
+
+/**
+ * Čitelná těla (P58A T3): hrdina na plátně aspoň `LEGIBLE_SHARE.hero` výšky plátna, nejbližší cíl aspoň
+ * `LEGIBLE_SHARE.target` – přepočtený na hloubku hrdiny, ať se překážka nezvětší jen proto, že je zatím daleko.
+ * Zvětšuje jen skupinu se značkou `frame` (vizuál); simulace, kolize a stavový hash ho nevidí. Měří se po
+ * nakresleném snímku (kamera už stojí, jak ji scéna postavila) herní kamerou bez úvodního průletu – široký
+ * záběr průletu by tělo nafoukl a po dosednutí zase splaskl – a v póze, jakou má kostra, stejně jako sonda
+ * `__playFrame` (klidový kvádr riggovaného rytíře je o ~20 % vyšší, zůstal pak na 16,5 %). Měřítko se píše
+ * každý snímek po scénách – přepíše-li scéna měřítko skupiny sama, její hodnota je nový základ.
+ */
+function LegibleBodies({ control }: { readonly control: string }) {
+  const get = useThree((three) => three.get);
+  const bodies = useRef(new Map<Object3D, Legible>());
+  useFrame(() => {
+    for (const [node, body] of bodies.current) {
+      if (node.parent === null) {
+        bodies.current.delete(node);
+        continue;
+      }
+      legibleWrite(node.scale, body);
+    }
+  });
+  useEffect(() => {
+    let frames = 0;
+    const view = new Vector3();
+    const rest = new PerspectiveCamera();
+    return addAfterEffect(() => {
+      frames += 1;
+      const { camera: drawn, scene, size, invalidate, frameloop } = get();
+      // Kreslení na požádání (úvodní karta) dá snímků málo – změří se každý, i ten po dotaženém modelu.
+      if (frameloop === 'always' && frames % LEGIBLE_EVERY !== 1) return;
+      let hero: Object3D | null = null;
+      const candidates: Object3D[] = [];
+      scene.traverseVisible((node) => {
+        if (node.userData.frame === 'hero') hero = node;
+        else if (node.userData.frame === 'target') candidates.push(node);
+      });
+      if (hero === null) return;
+      const heroNode: Object3D = hero;
+      const heroAt = heroNode.getWorldPosition(new Vector3());
+      const target = nearestTarget(heroAt, candidates, control);
+      const perspective = (drawn as PerspectiveCamera).isPerspectiveCamera === true;
+      const camera = perspective ? restCamera(drawn as PerspectiveCamera, rest) : drawn;
+      const depthOf = (at: Vector3): number => -view.copy(at).applyMatrix4(camera.matrixWorldInverse).z;
+      const grow = (node: Object3D, min: number, depthScale: number): void => {
+        const box = frameOf(node, camera, size.width, size.height);
+        if (box === null || box.behind) return;
+        const body = bodies.current.get(node) ?? { scale: 1, base: node.scale.clone(), written: node.scale.clone() };
+        const next = legibleScale(body.scale, ((box.maxY - box.minY) / 2) * depthScale, min);
+        if (next === body.scale) return;
+        body.scale = next;
+        node.userData.legible = next;
+        bodies.current.set(node, body);
+        invalidate();
+      };
+      grow(heroNode, LEGIBLE_SHARE.hero, 1);
+      // Zástupce (`userData.proxy`, nejbližší vozidlo hopu) se nekreslí – zvětšit by šel jen jeho kvádr v sondě.
+      if (target === null || target.node.userData.proxy === true) return;
+      // Perspektiva zmenšuje s hloubkou: cíl se posuzuje, jak velký by byl vedle hrdiny.
+      const heroDepth = depthOf(heroAt);
+      grow(target.node, LEGIBLE_SHARE.target, perspective && heroDepth > 0 ? Math.max(depthOf(target.pos), 0) / heroDepth : 1);
+    });
+  }, [get, control]);
+  return null;
+}
+
+const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+
+/**
+ * Popisek jména (P58A T5) nad tělem, které jmenuje: štítek `.play-name-line` (vrstva nad plátnem) dostane
+ * polohu promítnutého temene hrdiny, nebo nejbližšího těla, jehož slot (`userData.item`) má jméno z věty – a to
+ * jméno. Tělo mimo záběr nebo bez jména = štítek zůstane schovaný. Scénou se prochází jen, když štítek visí
+ * (3 s běhu). Jen obraz; simulace a hash ho nevidí.
+ */
+function NameAnchor({ surface, control, bodies }: { readonly surface: React.RefObject<HTMLDivElement | null>; readonly control: string; readonly bodies: Readonly<Record<string, string>> }) {
+  useFrame(({ camera, scene, size }) => {
+    const tag = surface.current?.querySelector<HTMLElement>('.play-name-line');
+    if (tag == null) return;
+    let hero: Object3D | null = null;
+    // Rytmus a načasování (P58A T8): hrdinou sondy je lišta nebo jezdec, postava z věty stojí vedle – jméno patří nad ni.
+    let figure: Object3D | null = null;
+    const named: Object3D[] = [];
+    scene.traverse((node) => {
+      if (node.userData.frame === 'hero' && shown(node)) hero ??= node;
+      else if (node.userData.toyHero === true && shown(node)) figure ??= node;
+      else if (node.userData.frame === 'target' && bodies[node.userData.item as string] !== undefined && shown(node)) named.push(node);
+    });
+    const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
+    const body = tag.dataset.slot === 'hero' ? (figure ?? hero) : heroAt === null ? null : (nearestTarget(heroAt, named, control)?.node ?? null);
+    const box = body === null ? null : frameOf(body, camera, size.width, size.height, false);
+    if (box === null || box.behind || Math.abs(box.x) > 1 || box.maxY < -1) {
+      tag.style.visibility = 'hidden';
+      return;
+    }
+    if (tag.dataset.slot !== 'hero') {
+      const name = bodies[body!.userData.item as string]!;
+      if (tag.textContent !== name) tag.textContent = name;
+    }
+    tag.style.left = `${(clamp((box.x + 1) / 2, 0.1, 0.9) * 100).toFixed(1)}%`;
+    tag.style.top = `${(clamp((1 - box.maxY) / 2, 0.12, 0.95) * 100).toFixed(1)}%`;
+    tag.style.visibility = 'visible';
+  });
   return null;
 }
 
@@ -316,13 +487,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
       });
       const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
-      let target: { node: Object3D; pos: Vector3 } | null = null;
-      if (heroAt !== null && candidates.length > 0) {
-        const at = candidates.map((node) => ({ node, pos: node.getWorldPosition(new Vector3()) }));
-        const ahead = TRACK_CONTROLS.has(control) ? at.filter((c) => c.pos.z > heroAt.z) : [];
-        const pool = ahead.length > 0 ? ahead : at;
-        target = pool.reduce((best, c) => (c.pos.distanceTo(heroAt) < best.pos.distanceTo(heroAt) ? c : best));
-      }
+      const target = heroAt === null ? null : nearestTarget(heroAt, candidates, control);
       return {
         control,
         width: size.width,
@@ -331,6 +496,8 @@ function FrameProbe({ control }: { readonly control: string }) {
         heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
         heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
+        targetItem: (target?.node.userData.item as string | undefined) ?? null,
+        legible: { hero: (hero as Object3D | null)?.userData.legible ?? 1, target: target?.node.userData.legible ?? 1 },
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
         items,
@@ -726,6 +893,7 @@ const StageCanvas = memo(function StageCanvas({
   host,
   keepFrame,
   sceneKey,
+  names,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -740,6 +908,7 @@ const StageCanvas = memo(function StageCanvas({
   readonly host?: StageTunnel;
   readonly keepFrame?: string;
   readonly sceneKey?: string;
+  readonly names?: Readonly<Record<string, string>>;
 }) {
   // První scéna plátna nemá předchozí snímek, který by mohla držet (`DrawWhenCompiled`).
   const [firstScene] = useState(sceneKey);
@@ -770,6 +939,7 @@ const StageCanvas = memo(function StageCanvas({
     <HostedCanvas host={host} frameloop={live ? 'always' : 'demand'}>
       <RedrawOnChange session={session} />
       <FrameProbe control={control} />
+      {names !== undefined && <NameAnchor surface={surface} control={control} bodies={names} />}
       <RenderProbe />
       {keepFrame !== undefined && <KeepFrame versionId={keepFrame} />}
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
@@ -784,7 +954,7 @@ const StageCanvas = memo(function StageCanvas({
         <>
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
           {stage.scene === 'timing' ? (
-            <TimingScene session={session} look={look} blockModel={blockModel} heroAction={heroAction} ghost={ghost} />
+            <TimingScene session={session} look={look} blockModel={blockModel} heroModel={castHero} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'rhythm' ? (
             <RhythmScene session={session} look={look} heroModel={castHero} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'arena' ? (
@@ -811,6 +981,8 @@ const StageCanvas = memo(function StageCanvas({
       </Fragment>
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
+      {/* Za scénami: měřítko čitelnosti se píše až po jejich snímku (P58A T3). */}
+      <LegibleBodies control={control} />
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
       <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
@@ -832,6 +1004,7 @@ export default function ArcadeStage({
   host,
   keepFrame,
   sceneKey,
+  names,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -861,6 +1034,8 @@ export default function ArcadeStage({
    * obloha a efekty zůstanou i s programy shaderů. Bez klíče se scéna remountuje jen se změnou žánru.
    */
   readonly sceneKey?: string;
+  /** Jména těl z věty podle slotu (`nameLines`, P58A T5) pro popisek jména; bez nich popisek nevisí nad ničím. */
+  readonly names?: Readonly<Record<string, string>>;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -918,7 +1093,7 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} />
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} names={names} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}

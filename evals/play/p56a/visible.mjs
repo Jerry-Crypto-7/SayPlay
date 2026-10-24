@@ -6,8 +6,8 @@
  * věc, se kterou hrdina pracuje). `report` složí obě strany do jednoho souboru. Soudce táhne TS slovník, proto
  * `node --experimental-strip-types --import ./scripts/ts-paths.mjs` před každým příkazem níž.
  *
- *   node evals/play/p56a/visible.mjs play --base http://127.0.0.1:3121 --set evals/play/p56a/audit-12.json --out <dir> [--gpu]
- *   node evals/play/p56a/visible.mjs judge --dir <dir>
+ *   node evals/play/p56a/visible.mjs play --base http://127.0.0.1:3121 --set evals/play/p56a/audit-12.json --out <dir> [--gpu] [--spec]
+ *   node evals/play/p56a/visible.mjs judge --dir <dir> [--judge codex|claude]
  *   node evals/play/p56a/visible.mjs report --a <dir> --b <dir> --set evals/play/p56a/audit-12.json --out evals/play/p56a/visible-dev.json [--a-commit <sha>] [--b-commit <sha>] [--setup <text>]
  */
 
@@ -105,8 +105,10 @@ async function snap(page, base, versionId, file) {
   }
   await page.addStyleTag(SCENE_ONLY);
   await page.waitForTimeout(300);
+  // P58A: obdélníky hrdiny, cíle a položek věty v záběru (`FrameProbe`), ze kterých T2 čte „příliš malé“.
+  const frame = await page.evaluate(() => window.__playFrame?.() ?? null);
   await page.screenshot({ path: file });
-  return { robot, tick: state?.tick ?? null, runState: state?.runState ?? null };
+  return { robot, tick: state?.tick ?? null, runState: state?.runState ?? null, frame: frame === null ? null : { width: frame.width, height: frame.height, hero: frame.hero, target: frame.target, items: frame.items } };
 }
 
 async function play(options) {
@@ -126,6 +128,13 @@ async function play(options) {
       if (existsSync(record)) continue;
       const started = Date.now();
       const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
+      // P58A T9: server odpověděl chybou (návrh hry spadl) – hra nevznikla a soudce nemá co vidět; řádek bez snímku.
+      // Server, který neodpoví vůbec, dál hodí výjimku a `play-sets.mjs` ho restartuje.
+      if (!response.ok) {
+        writeJson(record, { id: sentence.id, text: sentence.text, nouns: nounsOf(sentence), error: `POST ${response.status} ${(await response.text()).slice(0, 200)}` });
+        console.log(`${sentence.id} no game: POST ${response.status}`);
+        continue;
+      }
       const created = await response.json();
       if (!created.versionId) throw new Error(`${sentence.id}: POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
       const draftMs = Date.now() - started;
@@ -146,6 +155,8 @@ async function play(options) {
         roles: roles.filter((role) => role.kind !== 'player').map((role) => `${role.kind}:${role.label}`),
         ...shot,
         pageErrors: [...errors],
+        // P58A T2: modely rolí počítá `scripts/p58a/why-unseen.mjs` ze stejného specu, jaký kreslil server.
+        ...(options.spec === true ? { spec: game.spec } : {}),
       };
       writeJson(record, row);
       console.log(`${sentence.id} ${row.readBy} ${draftMs} ms hero ${row.hero} robot ${shot.robot ? shot.tick : 'no'} errors ${row.pageErrors.length}`);
@@ -155,8 +166,13 @@ async function play(options) {
   }
 }
 
+/** Odpověď podle `SCHEMA` – soudce Claude ji vrací v textu, ne souborem. */
+export const isVisibleAnswer = (value) => typeof value?.scene === 'string' && Array.isArray(value.nouns);
+
+/** `--judge claude` (P58A): Opus 5.5 tam, kde by Codex přetekl denní strop; soudce se zapíše do odpovědi. */
 async function judge(options) {
   const dir = resolve(ROOT, options.dir);
+  const by = options.judge ?? 'codex';
   const schemaFile = join(dir, 'visible-schema.json');
   writeJson(schemaFile, SCHEMA);
   const ids = readdirSync(dir).filter((file) => /^[\w-]+\.json$/.test(file) && !file.endsWith('.answer.json') && file !== 'visible-schema.json').map((file) => file.slice(0, -'.json'.length)).sort();
@@ -164,10 +180,13 @@ async function judge(options) {
     const answerFile = join(dir, `${id}.answer.json`);
     if (existsSync(answerFile)) continue;
     const row = readJson(join(dir, `${id}.json`));
-    const asked = await ask(join(dir, `${id}.png`), schemaFile, answerFile, questionOf(row.nouns));
+    if (row.error !== undefined) continue;
+    const asked = await ask(join(dir, `${id}.png`), schemaFile, answerFile, questionOf(row.nouns), by, isVisibleAnswer);
     // Ztráta přihlášení nebo vyčerpaný limit: zastavit, díra není „nevidím“.
     if (!existsSync(answerFile)) throw new Error(`judge ${id}: no answer (exit ${asked?.code}) ${asked?.stderr ?? ''}`);
-    const verdict = verdictOf(row.nouns, readJson(answerFile));
+    const answer = readJson(answerFile);
+    writeJson(answerFile, { ...answer, judge: by });
+    const verdict = verdictOf(row.nouns, answer);
     console.log(`${id} ${verdict.all ? 'seen' : 'missed'} ${verdict.nouns.map((item) => `${item.noun}=${item.visible ? 'yes' : `no (${item.seenAs})`}`).join(' ')} ${asked.seconds} s`);
   }
 }

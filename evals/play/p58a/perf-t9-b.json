@@ -1,0 +1,554 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "base": "http://127.0.0.1:3182",
+ "interleavedWith": "http://127.0.0.1:3181",
+ "repeats": 3,
+ "windowMs": 10000,
+ "measuredAt": "2026-10-24T00:34:26.731Z",
+ "rows": [
+  {
+   "id": "01-frog",
+   "genre": "race",
+   "fpsMedian": 59.3,
+   "samples": [
+    59.3,
+    58.3,
+    59.4
+   ],
+   "quality": [
+    "high",
+    "medium",
+    "high"
+   ],
+   "calls": 93
+  },
+  {
+   "id": "02-zombie",
+   "genre": "move_free",
+   "fpsMedian": 42.9,
+   "samples": [
+    43.3,
+    39.7,
+    42.9
+   ],
+   "quality": [
+    "medium",
+    "low",
+    "medium"
+   ],
+   "calls": 72
+  },
+  {
+   "id": "03-ninja",
+   "genre": "lanes",
+   "fpsMedian": 55.6,
+   "samples": [
+    55.6,
+    53.6,
+    57.3
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 70
+  },
+  {
+   "id": "04-shark",
+   "genre": "race",
+   "fpsMedian": 50.8,
+   "samples": [
+    51,
+    50.8,
+    47.3
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 82
+  },
+  {
+   "id": "05-pizza",
+   "genre": "timing",
+   "fpsMedian": 59.7,
+   "samples": [
+    59.7,
+    59.5,
+    59.8
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 71
+  },
+  {
+   "id": "06-cat",
+   "genre": "lanes",
+   "fpsMedian": 58.8,
+   "samples": [
+    59,
+    53.9,
+    58.8
+   ],
+   "quality": [
+    "high",
+    "medium",
+    "high"
+   ],
+   "calls": 129
+  },
+  {
+   "id": "07-goalkeeper",
+   "genre": "timing",
+   "fpsMedian": 59.3,
+   "samples": [
+    59.3,
+    59.9,
+    58.7
+   ],
+   "quality": [
+    "medium",
+    "high",
+    "medium"
+   ],
+   "calls": 52
+  },
+  {
+   "id": "08-gems",
+   "genre": "move_free",
+   "fpsMedian": 46.9,
+   "samples": [
+    48.9,
+    44.9,
+    46.9
+   ],
+   "quality": [
+    "low",
+    "low",
+    "medium"
+   ],
+   "calls": 79
+  },
+  {
+   "id": "09-astro",
+   "genre": "crowd",
+   "fpsMedian": 59.8,
+   "samples": [
+    58.4,
+    59.8,
+    59.8
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 55
+  },
+  {
+   "id": "10-chef",
+   "genre": "move_free",
+   "fpsMedian": 46.5,
+   "samples": [
+    46.5,
+    46.2,
+    47.2
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 83
+  },
+  {
+   "id": "11-drum",
+   "genre": "rhythm",
+   "fpsMedian": 59.5,
+   "samples": [
+    59.6,
+    59.2,
+    59.5
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 78
+  },
+  {
+   "id": "12-ghost",
+   "genre": "runner",
+   "fpsMedian": 47.1,
+   "samples": [
+    47.1,
+    47.5,
+    42.4
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 51
+  },
+  {
+   "id": "g-runner",
+   "genre": "runner",
+   "fpsMedian": 44.6,
+   "samples": [
+    47,
+    43.8,
+    44.6
+   ],
+   "quality": [
+    "low",
+    "medium",
+    "medium"
+   ],
+   "calls": 99
+  },
+  {
+   "id": "g-race",
+   "genre": "race",
+   "fpsMedian": 51.1,
+   "samples": [
+    51.1,
+    56,
+    48.1
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 88
+  },
+  {
+   "id": "g-platform",
+   "genre": "platformer",
+   "fpsMedian": 53.4,
+   "samples": [
+    56.1,
+    53.4,
+    48.7
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "low"
+   ],
+   "calls": 52
+  },
+  {
+   "id": "g-arena",
+   "genre": "crowd",
+   "fpsMedian": 59.7,
+   "samples": [
+    59.7,
+    59.6,
+    59.8
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 56
+  },
+  {
+   "id": "g-fight",
+   "genre": "move_free",
+   "fpsMedian": 48.9,
+   "samples": [
+    44.2,
+    48.9,
+    49.8
+   ],
+   "quality": [
+    "low",
+    "medium",
+    "medium"
+   ],
+   "calls": 82
+  },
+  {
+   "id": "g-quest",
+   "genre": "move_free",
+   "fpsMedian": 45.5,
+   "samples": [
+    44,
+    46.7,
+    45.5
+   ],
+   "quality": [
+    "low",
+    "low",
+    "medium"
+   ],
+   "calls": 73
+  },
+  {
+   "id": "g-agar",
+   "genre": "move_free",
+   "fpsMedian": 58.4,
+   "samples": [
+    58.4,
+    58.7,
+    55.9
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 55
+  },
+  {
+   "id": "g-walker",
+   "genre": "walker",
+   "fpsMedian": 52.6,
+   "samples": [
+    52.6,
+    52,
+    53.5
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 68
+  },
+  {
+   "id": "g-glide",
+   "genre": "glide",
+   "fpsMedian": 55.8,
+   "samples": [
+    55.8,
+    54.8,
+    58.8
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 71
+  },
+  {
+   "id": "g-ball",
+   "genre": "ball",
+   "fpsMedian": 48.3,
+   "samples": [
+    45.6,
+    50.1,
+    48.3
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 103
+  },
+  {
+   "id": "g-flap",
+   "genre": "flap",
+   "fpsMedian": 58.8,
+   "samples": [
+    59.2,
+    58.8,
+    53.8
+   ],
+   "quality": [
+    "high",
+    "high",
+    "medium"
+   ],
+   "calls": 77
+  },
+  {
+   "id": "g-shooter",
+   "genre": "shooter",
+   "fpsMedian": 41.9,
+   "samples": [
+    41.9,
+    40,
+    46.2
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 52
+  },
+  {
+   "id": "g-throw",
+   "genre": "throw",
+   "fpsMedian": 56.3,
+   "samples": [
+    56,
+    56.3,
+    56.3
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 89
+  },
+  {
+   "id": "g-timing",
+   "genre": "timing",
+   "fpsMedian": 59.5,
+   "samples": [
+    59,
+    59.8,
+    59.5
+   ],
+   "quality": [
+    "medium",
+    "high",
+    "high"
+   ],
+   "calls": 66
+  },
+  {
+   "id": "g-rhythm",
+   "genre": "rhythm",
+   "fpsMedian": 59.1,
+   "samples": [
+    59.6,
+    56.2,
+    59.1
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 95
+  },
+  {
+   "id": "g-duel",
+   "genre": "duel",
+   "fpsMedian": 53.1,
+   "samples": [
+    53.2,
+    53.1,
+    51.5
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 57
+  },
+  {
+   "id": "g-voyage",
+   "genre": "lanes",
+   "fpsMedian": 59.8,
+   "samples": [
+    59.8,
+    59.8,
+    59.9
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 48
+  },
+  {
+   "id": "g-lander",
+   "genre": "race",
+   "fpsMedian": 59.7,
+   "samples": [
+    59.7,
+    58.4,
+    59.7
+   ],
+   "quality": [
+    "high",
+    "medium",
+    "high"
+   ],
+   "calls": 44
+  },
+  {
+   "id": "g-catch",
+   "genre": "lanes",
+   "fpsMedian": 59.8,
+   "samples": [
+    59.8,
+    59.8,
+    59.7
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 55
+  },
+  {
+   "id": "g-whack",
+   "genre": "lanes",
+   "fpsMedian": 59.8,
+   "samples": [
+    59.5,
+    59.9,
+    59.8
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 58
+  },
+  {
+   "id": "g-defense",
+   "genre": "lanes",
+   "fpsMedian": 48,
+   "samples": [
+    48,
+    47.9,
+    49
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 113
+  },
+  {
+   "id": "g-slice",
+   "genre": "runner",
+   "fpsMedian": 57.5,
+   "samples": [
+    57.5,
+    57.7,
+    53.9
+   ],
+   "quality": [
+    "high",
+    "high",
+    "high"
+   ],
+   "calls": 75
+  }
+ ]
+}

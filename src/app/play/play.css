@@ -1767,8 +1767,11 @@ button.play-version-switch__item:not(:disabled) {
   }
 }
 
-/* Řádek se slovesem (P43 T7): štítek kitu nad hrdinou ve třetině výšky, první tři vteřiny; nezachytává dotyky. */
-.play-verb-line {
+/* Řádek se slovesem (P43 T7): štítek kitu nad hrdinou ve třetině výšky, první tři vteřiny; nezachytává dotyky.
+ * Popisek jména (P58A T5) jde hned po něm; polohu nad tělem mu píše `NameAnchor`, do té doby je schovaný. */
+.play-name-line { visibility: hidden; }
+.play-verb-line,
+.play-name-line {
   top: 32%;
   left: 50%;
   z-index: 2;

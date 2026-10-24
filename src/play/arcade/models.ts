@@ -121,6 +121,49 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   chef: 'waiter',
   bee: 'wasp-nest',
   marine: 'astronaut',
+  // P58A T6: slova dev sad, která dostala robota nebo model jen podle písmen (knedlík → popelnice, pluh → vločka).
+  gopher: 'hamster',
+  mole: 'hamster',
+  lemming: 'hamster',
+  bulldog: 'dog',
+  cheetah: 'cat',
+  shoplifter: 'gen3d-thief',
+  safecracker: 'gen3d-robber',
+  champ: 'gen3d-boxer',
+  lord: 'gen3d-king',
+  honey: 'gen3d-honey-pot',
+  leaf: 'gen3d-maple-leaf',
+  vine: 'gen3d-jungle-vine',
+  branch: 'gen3d-stick',
+  patty: 'cc0-burger',
+  topping: 'gen3d-pizza-slice',
+  snack: 'gen3d-food',
+  veggie: 'gen3d-vegetable-basket',
+  circle: 'hoop',
+  fortress: 'gen3d-castle-tower',
+  heap: 'gen3d-scree-rock-pile',
+  tip: 'cone',
+  album: 'gen3d-vinyl-record',
+  ash: 'gen3d-fire',
+  bongo: 'gen3d-tribal-drum',
+  clue: 'gen3d-magnifying-glass',
+  dam: 'cc0-log-stack',
+  den: 'gen3d-cave-entrance',
+  dial: 'gen3d-wall-clock',
+  report: 'gen3d-paper',
+  hailstone: 'gen3d-snowy-rock',
+  lid: 'cc0-cooking-pot',
+  luna: 'gen3d-moon-rock',
+  spot: 'target',
+  mothership: 'cc0-enemy-ufo',
+  needle: 'gen3d-stick',
+  notch: 'target',
+  pointer: 'cc0-arrow',
+  riddle: 'gen3d-question-block',
+  wire: 'gen3d-rope',
+  snowplow: 'gen3d-snowmobile',
+  snowstorm: 'gen3d-snowflake',
+  starfighter: 'gen3d-fighter-jet',
 };
 
 /** Nejbližší kategorie postavy, kterou katalog nemá. */
@@ -196,14 +239,14 @@ function categoryModel(label: string): string | undefined {
  * Jen pro scénu: do `CATEGORY` nepatří – `modelOf` čte návrh a mřížka, která postavy s kostrou nekreslí.
  */
 export const KIN: ReadonlyArray<readonly [id: string, words: readonly string[]]> = [
-  ['q-businessman', ['boss', 'manager', 'supervisor', 'landlord', 'banker', 'accountant', 'lawyer', 'auditor', 'salesman', 'client', 'interviewer', 'examiner', 'inspector', 'advisor', 'adviser', 'clerk', 'principal', 'professor', 'judge', 'critic', 'coworker', 'co-worker', 'colleague', 'cashier', 'operator', 'telemarketer']],
+  ['q-businessman', ['leader', 'master', 'boss', 'manager', 'supervisor', 'landlord', 'banker', 'accountant', 'lawyer', 'auditor', 'salesman', 'client', 'interviewer', 'examiner', 'inspector', 'advisor', 'adviser', 'clerk', 'principal', 'professor', 'judge', 'critic', 'coworker', 'co-worker', 'colleague', 'cashier', 'operator', 'telemarketer']],
   ['q-businesswoman', ['recruiter', 'receptionist']],
   ['q-casual-woman', ['wife', 'girlfriend', 'sister', 'aunt', 'granny', 'grandmother', 'mum', 'heroine']],
   ['boy-a', ['toddler', 'son', 'teenager']],
   ['girl-a', ['daughter']],
-  ['q-casual-man', ['husband', 'boyfriend', 'dad', 'father', 'brother', 'uncle', 'cousin', 'friend', 'roommate', 'partner', 'neighbor', 'neighbour', 'stranger', 'coach', 'relative', 'bully', 'in-law', 'parent', 'ex', 'skater', 'tourist']],
+  ['q-casual-man', ['husband', 'boyfriend', 'dad', 'father', 'brother', 'uncle', 'cousin', 'friend', 'roommate', 'partner', 'neighbor', 'neighbour', 'stranger', 'coach', 'relative', 'bully', 'in-law', 'parent', 'ex', 'skater', 'tourist', 'traveler', 'citizen', 'guest', 'hostage', 'seeker']],
   ['q-doctor', ['dentist', 'surgeon', 'vet', 'veterinarian', 'paramedic']],
-  ['q-worker', ['plumber', 'mechanic', 'electrician', 'janitor', 'handyman', 'carpenter', 'miner']],
+  ['q-worker', ['blacksmith', 'plumber', 'mechanic', 'electrician', 'janitor', 'handyman', 'carpenter', 'miner']],
   ['q-wolf', ['jackal', 'hyena']],
   ['q-deer', ['antelope', 'gazelle', 'impala']],
   ['q-stag', ['caribou']],
@@ -298,13 +341,69 @@ export function fitScale(model: { x: number; y: number; z: number }, body: { x: 
   return scale || 1;
 }
 
+/**
+ * Nejmenší výška těla na plátně (podíl výšky plátna, P58A T2): nad 20 % soudce hrdinu nazve „malým“ ve 2/20
+ * případů (pod ní 21/39), protivníka či věc nad 10 % v 1/8 (pod ní 7/14). `evals/play/p58a/README.md`.
+ */
+export const LEGIBLE_SHARE = { hero: 0.2, target: 0.1 } as const;
+
+/** Nejvýš kolikrát se tělo vizuálně zvětší: kolizní tělo zůstává a větší rozdíl by hráč viděl jako zásah, který nebyl. */
+export const LEGIBLE_CAP = 2;
+
+/** Doroste tolikrát nad `min`: póza a dojíždějící kamera hýbou výškou o ~1–2 %, přesně na `min` leželo tělo půlku času pod ním. */
+const LEGIBLE_GROW = 1.05;
+/** Zmenšuje se, až když je tělo o tolik nad `min` (kamera po najetí přiblížila) – mezi tím měřítko stojí a nepulzuje. */
+const LEGIBLE_SLACK = 1.3;
+/** Po zmenšení zůstane tělo tolikrát nad `min`, uprostřed klidového pásma. */
+const LEGIBLE_MARGIN = 1.15;
+
+/**
+ * Vizuální měřítko čitelnosti (P58A T3): z dnešního měřítka `scale` a změřeného podílu `share` výšky plátna
+ * (s tímto měřítkem) nové měřítko, nejvýš `LEGIBLE_CAP`, nejmíň 1. Pod `min` tělo hned doroste na
+ * `LEGIBLE_GROW × min`; nad `LEGIBLE_SLACK × min` se zmenší na `LEGIBLE_MARGIN × min` (najetí kamery z dálky
+ * ho jinak nechalo obřím); mezi tím zůstane. Bez měření (`share` 0) zůstane.
+ */
+export function legibleScale(scale: number, share: number, min: number): number {
+  if (!(share > 0)) return scale;
+  const exact = (scale * min) / share;
+  if (exact > scale) return Math.min(LEGIBLE_CAP, exact * LEGIBLE_GROW);
+  if (exact * LEGIBLE_SLACK <= scale) return Math.min(LEGIBLE_CAP, Math.max(1, exact * LEGIBLE_MARGIN));
+  return scale;
+}
+
+interface Xyz {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/** Čitelné tělo: měřítko čitelnosti, základ, který kreslí scéna, a co se naposledy zapsalo. */
+export interface Legible {
+  scale: number;
+  readonly base: Xyz;
+  readonly written: Xyz;
+}
+
+/**
+ * Zapíše měřítko čitelnosti do `scale` skupiny, po osách: osa, kterou od minula přepsala scéna (`World` každý
+ * snímek nastaví hrdinovi `scale.y` podle skluzu), je nový základ; ostatní osy drží starý. Celý vektor jako
+ * základ by na nepřepsaných osách násobil měřítko každý snímek znovu.
+ */
+export function legibleWrite(scale: Xyz, body: Legible): void {
+  for (const axis of ['x', 'y', 'z'] as const) {
+    if (scale[axis] !== body.written[axis]) body.base[axis] = scale[axis];
+    body.written[axis] = body.base[axis] * body.scale;
+    scale[axis] = body.written[axis];
+  }
+}
+
 /** Hrdina z popisku hráče (`heroChoice`); bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
 export function heroModel(spec: GameSpecV1): string {
   return heroChoice(spec.roles.find((role) => role.kind === 'player')?.label ?? '', spec.genre?.id, spec.control).model;
 }
 
 /** Popisek nepřítele střelnice (role `enemy`, kořist, hlídka, soupeř souboje), nebo prázdný. */
-function enemyLabel(spec: GameSpecV1): string {
+export function enemyLabel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
   const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
@@ -383,9 +482,10 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   // „barriers“ je v katalogu překážka běžce; obecný popisek mantinelu nechá pneumatiky.
   barrier: ['tire-barrier', 'hurdle'],
   turbo: ['turbo'],
-  // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je.
+  // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je. Ručička lišty („marker“) je
+  // `checkpoint` – výchozí popisek načasování nesmí na ručičku posadit praporek (P58A T6).
   note: ['hazard-tile'],
-  block: ['wood-block'],
+  block: ['wood-block', 'checkpoint'],
   finish: ['finish-flag'],
   spikes: ['cc0-spike'],
   pipe: ['cc0-pipe'],
