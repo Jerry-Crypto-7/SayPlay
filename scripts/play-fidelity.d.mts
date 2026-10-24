@@ -150,6 +150,7 @@ export interface PairVerdict {
   readonly schema: 'pairwise.v1';
   readonly a: { readonly run: string; readonly commit: string | null };
   readonly b: { readonly run: string; readonly commit: string | null };
+  readonly question: 'fun' | 'match';
   readonly seed: number;
   readonly order: string;
   readonly pairs: readonly { readonly id: string; readonly left: PairSide; readonly winner: PairSide | 'tie'; readonly why: string }[];
@@ -157,6 +158,7 @@ export interface PairVerdict {
 }
 export declare const PAIR_SEED: number;
 export declare const PAIR_QUESTION: string;
+export declare function matchQuestion(sentence: string): string;
 export declare const PAIR_SCHEMA: Record<string, unknown>;
 export declare function pairSides(seed: number, count: number): PairSide[];
 export declare function pairwise(
