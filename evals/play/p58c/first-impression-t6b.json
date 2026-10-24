@@ -1,0 +1,576 @@
+{
+  "date": "2026-10-24T15:30:24.389Z",
+  "base": "http://127.0.0.1:3187",
+  "runs": 3,
+  "profiles": {
+    "pixel7": {
+      "label": "Pixel 7, Chrome",
+      "device": "Pixel 7",
+      "cpuThrottle": 1,
+      "runs": [
+        {
+          "fcpMs": 672,
+          "firstTapMs": 214,
+          "makeToPlayableMs": 2458,
+          "created": 200
+        },
+        {
+          "fcpMs": 728,
+          "firstTapMs": 181,
+          "makeToPlayableMs": 2730,
+          "created": 200
+        },
+        {
+          "fcpMs": 688,
+          "firstTapMs": 119,
+          "makeToPlayableMs": 1502,
+          "created": 200
+        }
+      ],
+      "p50": {
+        "fcpMs": 688,
+        "firstTapMs": 181,
+        "makeToPlayableMs": 2458
+      }
+    },
+    "iphone15": {
+      "label": "iPhone 15, WebKit (Windows)",
+      "device": "iPhone 15",
+      "cpuThrottle": 1,
+      "runs": [
+        {
+          "fcpMs": 198,
+          "firstTapMs": 802,
+          "makeToPlayableMs": 1020,
+          "created": 200
+        },
+        {
+          "fcpMs": 143,
+          "firstTapMs": 271,
+          "makeToPlayableMs": 2818,
+          "created": 200
+        },
+        {
+          "fcpMs": 163,
+          "firstTapMs": 776,
+          "makeToPlayableMs": 2991,
+          "created": 200
+        }
+      ],
+      "p50": {
+        "fcpMs": 163,
+        "firstTapMs": 776,
+        "makeToPlayableMs": 2818
+      }
+    },
+    "desktop": {
+      "label": "Desktop Chrome 1280x720",
+      "device": "Desktop Chrome",
+      "cpuThrottle": 1,
+      "runs": [
+        {
+          "fcpMs": 748,
+          "firstTapMs": 101,
+          "makeToPlayableMs": 2385,
+          "created": 200
+        },
+        {
+          "fcpMs": 636,
+          "firstTapMs": 190,
+          "makeToPlayableMs": 2006,
+          "created": 200
+        },
+        {
+          "fcpMs": 580,
+          "firstTapMs": 172,
+          "makeToPlayableMs": 2557,
+          "created": 200
+        }
+      ],
+      "p50": {
+        "fcpMs": 636,
+        "firstTapMs": 172,
+        "makeToPlayableMs": 2385
+      }
+    }
+  },
+  "film": {
+    "pixel7": {
+      "frames": [
+        784,
+        2008,
+        5009,
+        10002
+      ],
+      "actions": [
+        {
+          "at": 3021,
+          "what": "tapped the first suggestion card (it fills the text box)"
+        },
+        {
+          "at": 3527,
+          "what": "tapped \"Make it!\""
+        },
+        {
+          "at": 5958,
+          "what": "first tap the game accepted (then one every 0.8 s)"
+        }
+      ],
+      "sheet": "evals/play/p58c/first-impression-t6b/pixel7.jpg"
+    },
+    "iphone15": {
+      "frames": [
+        314,
+        2007,
+        5568,
+        10003
+      ],
+      "actions": [
+        {
+          "at": 2287,
+          "what": "tapped the first suggestion card (it fills the text box)"
+        },
+        {
+          "at": 2791,
+          "what": "tapped \"Make it!\""
+        },
+        {
+          "at": 6472,
+          "what": "first tap the game accepted (then one every 0.8 s)"
+        }
+      ],
+      "sheet": "evals/play/p58c/first-impression-t6b/iphone15.jpg"
+    },
+    "desktop": {
+      "frames": [
+        930,
+        2014,
+        5075,
+        10345
+      ],
+      "actions": [
+        {
+          "at": 2546,
+          "what": "tapped the first suggestion card (it fills the text box)"
+        },
+        {
+          "at": 3060,
+          "what": "tapped \"Make it!\""
+        },
+        {
+          "at": 5496,
+          "what": "first key press the game accepted (then one every 0.8 s)"
+        }
+      ],
+      "sheet": "evals/play/p58c/first-impression-t6b/desktop.jpg"
+    }
+  },
+  "judges": {
+    "pixel7": {
+      "codex-juror": {
+        "understood": true,
+        "first_action": "Tap the knight-and-hydra suggestion, then tap “Make it!”.",
+        "losses": [
+          {
+            "frame": 3,
+            "category": "waiting-to-play",
+            "seconds": 2.5,
+            "note": "After tapping “Make it!” at 3.5 seconds, the first accepted game input is at 6 seconds."
+          },
+          {
+            "frame": 3,
+            "category": "unclear-controls",
+            "seconds": 2,
+            "note": "Dodge and Strike are labeled, but the wind-up and attack opening are hard to identify in the visible scene."
+          },
+          {
+            "frame": 4,
+            "category": "other",
+            "seconds": 3,
+            "note": "The run ends after just 4.8 seconds with one point, before I have much chance to learn the timing."
+          }
+        ],
+        "verdict": "I would not keep playing past 10 seconds because the first run ends before I understand how to succeed."
+      },
+      "opus-juror": {
+        "understood": true,
+        "first_action": "I would tap the first suggestion card, \"A knight fights a three-headed hydra at the castle gates,\" and then tap \"Make it!\".",
+        "losses": [
+          {
+            "frame": 3,
+            "category": "unclear-controls",
+            "seconds": 2,
+            "note": "The game drops me into a fight with a 0.6 s countdown and a dense goal banner, and the hydra is only a small red outline, so in that time I can't tell when to press Dodge or Strike."
+          },
+          {
+            "frame": 3,
+            "category": "too-much-text",
+            "seconds": 1,
+            "note": "There are too many things to read at once: the instruction box, the overlapping cut-off yellow banner, the Quick/Full detail toggle, two action buttons and three more controls underneath."
+          },
+          {
+            "frame": 4,
+            "category": "other",
+            "seconds": 3,
+            "note": "I lose after about 4.8 s with 1 point, and the 'Tap right to strike, tap left to dodge' tip only shows up on the game-over screen, when it would have helped before the fight."
+          }
+        ],
+        "verdict": "I would probably tap \"Try again\" once because getting from a sentence to a 3D game in about 5 seconds is impressive, but losing that fast without knowing the timing makes it feel unfair and I might move on."
+      },
+      "opus-player": {
+        "understood": true,
+        "first_action": "I'd tap the knight vs three-headed hydra card and then hit the big orange Make it! button.",
+        "losses": [
+          {
+            "frame": 3,
+            "category": "unclear-controls",
+            "seconds": 3,
+            "note": "The game is already going with a tiny objective line and Dodge/Strike buttons, but nothing tells me when the wind-up happens or what the hydra even is, since it looks like a small red stick thing."
+          },
+          {
+            "frame": 4,
+            "category": "other",
+            "seconds": 4,
+            "note": "I died after 4.8s with 1 point, and the 'tap right to strike, tap left to dodge' tip only shows up after I already lost."
+          },
+          {
+            "frame": 3,
+            "category": "too-much-text",
+            "seconds": 1,
+            "note": "There's a lot going on at once: the hearts, the timer, a sentence of instructions, a banner that gets cut off, the Quick/Full detail toggle and three more buttons."
+          }
+        ],
+        "verdict": "Maybe one Try again since getting into it was super fast, but dying in under 5 seconds without knowing how to fight feels unfair, so I'd probably go back to TikTok soon unless the second try clicks."
+      }
+    },
+    "iphone15": {
+      "codex-juror": {
+        "understood": true,
+        "first_action": "Tap the text box and describe a game, then tap “Make it!”.",
+        "losses": [
+          {
+            "frame": 2,
+            "category": "unclear-next-step",
+            "seconds": 1,
+            "note": "The suggestion cards are mostly hidden beneath the bottom navigation, so the shortcut to starting is easy to miss."
+          },
+          {
+            "frame": 3,
+            "category": "waiting-to-play",
+            "seconds": 3.7,
+            "note": "The first accepted game input comes 3.7 seconds after tapping “Make it!”, consuming a substantial part of my review time."
+          },
+          {
+            "frame": 3,
+            "category": "unclear-controls",
+            "seconds": 2,
+            "note": "Dodge and Strike are clearly labeled, but the scene does not make the three-headed hydras or their attack openings easy to identify."
+          }
+        ],
+        "verdict": "I would not keep playing past 10 seconds because I have already lost a heart without clearly understanding the enemy or the timing."
+      },
+      "opus-juror": {
+        "understood": true,
+        "first_action": "I would tap \"Make it!\", since the gray example sentence looks like it is already filled in. Or I would try \"Surprise me\".",
+        "losses": [
+          {
+            "frame": 1,
+            "category": "unclear-next-step",
+            "seconds": 1.5,
+            "note": "The suggestion cards are hidden behind the bottom Make/Play bar, so only \"castle gates.\" shows, and the gray placeholder looks like text that is already typed in, which leaves me unsure whether I need to type anything."
+          },
+          {
+            "frame": 3,
+            "category": "broken-or-blank",
+            "seconds": 2,
+            "note": "The goal says to beat three-headed hydras, but the enemy is a thin red-outlined pillar with something small at its base, which looks like a missing model or a rendering glitch."
+          },
+          {
+            "frame": 4,
+            "category": "unclear-controls",
+            "seconds": 2,
+            "note": "I lose a heart (3→2) within about 4 seconds, and the \"Dodge!\" hint only shows up around a small orange ball, so the dodge timing isn't clear until I've already been hit."
+          }
+        ],
+        "verdict": "I'd play a few more seconds because the one-sentence-to-game idea is clear and fast (it's playable in about 5.5 s), but the enemy that looks broken and the early hit with no warning would probably make me move on soon after 10 seconds."
+      },
+      "opus-player": {
+        "understood": true,
+        "first_action": "I'd tap \"Surprise me\" or type something dumb in the box and hit the big orange \"Make it!\" button.",
+        "losses": [
+          {
+            "frame": 2,
+            "category": "unclear-next-step",
+            "seconds": 1.5,
+            "note": "The suggestion cards are mostly covered by the Make/Play bar at the bottom, so all I can see is \"castle gates.\" and I can't tell there are cards to tap."
+          },
+          {
+            "frame": 3,
+            "category": "waiting-to-play",
+            "seconds": 2.8,
+            "note": "After I tap Make it! I wait almost 3 seconds, and when the game shows up it's a wall of instructions about wind-ups and hydras I have to read first."
+          },
+          {
+            "frame": 4,
+            "category": "unclear-controls",
+            "seconds": 3,
+            "note": "The 'hydra' is just a tiny red outline and I lost a heart to an orange ball, so I can't tell when to hit Dodge or Strike, and Quick/Full detail means nothing to me."
+          }
+        ],
+        "verdict": "Probably a few more seconds, because making your own game from one sentence is cool, but if I keep losing hearts to a red blob I don't get, I'm going back to TikTok."
+      }
+    },
+    "desktop": {
+      "codex-juror": {
+        "understood": true,
+        "first_action": "I would click the prominent “Tap to play” button to try the visible game.",
+        "losses": [
+          {
+            "frame": 2,
+            "category": "unclear-next-step",
+            "seconds": 2,
+            "note": "“Tap to play,” suggestion cards, and “Make it!” compete as starting points."
+          },
+          {
+            "frame": 3,
+            "category": "unclear-controls",
+            "seconds": 1,
+            "note": "The small “Down” and “Space” key labels take a moment to find beneath the game."
+          },
+          {
+            "frame": 4,
+            "category": "waiting-to-play",
+            "seconds": 4.8,
+            "note": "Despite accepted key presses since 5.5 seconds, the screen at 10.3 seconds says “Tap to start” and shows a 0.0-second timer."
+          }
+        ],
+        "verdict": "I would stop at 10 seconds because the game still appears to need starting after several accepted inputs."
+      },
+      "opus-juror": {
+        "understood": true,
+        "first_action": "I'd click the big yellow \"Tap to play\" on the featured crystal game, since it's the biggest, brightest button on screen, ahead of typing a sentence and pressing \"Make it!\".",
+        "losses": [
+          {
+            "frame": 1,
+            "category": "slow-first-screen",
+            "seconds": 1,
+            "note": "The game preview is an empty dark navy box and all three Up next thumbnails are plain light-blue placeholders, so the first screen looks unfinished."
+          },
+          {
+            "frame": 2,
+            "category": "unclear-next-step",
+            "seconds": 1.5,
+            "note": "Two calls to action compete: \"Tap to play\" on the crystal game and \"Make it!\" with the sentence box, and the suggestion cards the tester used aren't visible above the fold."
+          },
+          {
+            "frame": 4,
+            "category": "broken-or-blank",
+            "seconds": 4,
+            "note": "Almost 5 seconds after the key presses started, the timer still reads 0.0s and a \"Tap to start\" overlay is up with the knight and hydra in the same spots, so my inputs seem to have done nothing."
+          }
+        ],
+        "verdict": "Probably not: going from one sentence to a 3D hydra fight in about 2 seconds is impressive, but at 10 s the game still shows 0.0s and asks me to \"Tap to start\" after I've already been pressing keys, which makes it feel broken."
+      },
+      "opus-player": {
+        "understood": true,
+        "first_action": "I'd hit the big yellow \"Tap to play\" button on the crystal game, since it's the brightest thing on the screen, and ignore the text box on the left.",
+        "losses": [
+          {
+            "frame": 1,
+            "category": "slow-first-screen",
+            "seconds": 1,
+            "note": "The game area is a plain dark navy box and the Up next thumbnails are empty light-blue squares, so for a second it looks like nothing loaded."
+          },
+          {
+            "frame": 1,
+            "category": "unclear-next-step",
+            "seconds": 1.5,
+            "note": "There are two different things to do: 'Tap to play' on the right and 'Say it in one sentence / Make it!' on the left, and I can't tell which one I'm supposed to start with."
+          },
+          {
+            "frame": 4,
+            "category": "broken-or-blank",
+            "seconds": 5,
+            "note": "Almost 5 seconds after I started pressing keys, the screen still says 'Tap to start', the timer is back at 0.0s and the knight and hydra haven't moved, so it looks like my presses did nothing."
+          }
+        ],
+        "verdict": "Probably not: the knight-vs-hydra idea looks cool, but after 10 seconds of pressing keys it's still showing 'Tap to start' and nothing has happened, so I'd think it's broken and go back to TikTok."
+      }
+    }
+  },
+  "understood": {
+    "pixel7": {
+      "yes": 3,
+      "of": 3
+    },
+    "iphone15": {
+      "yes": 3,
+      "of": 3
+    },
+    "desktop": {
+      "yes": 3,
+      "of": 3
+    }
+  },
+  "losses": [
+    {
+      "category": "unclear-controls",
+      "seconds": 15,
+      "judges": [
+        "codex-juror",
+        "opus-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "pixel7",
+        "iphone15",
+        "desktop"
+      ],
+      "notes": [
+        "pixel7/codex-juror #3: Dodge and Strike are labeled, but the wind-up and attack opening are hard to identify in the visible scene.",
+        "pixel7/opus-juror #3: The game drops me into a fight with a 0.6 s countdown and a dense goal banner, and the hydra is only a small red outline, so in that time I can't tell when to press Dodge or Strike.",
+        "pixel7/opus-player #3: The game is already going with a tiny objective line and Dodge/Strike buttons, but nothing tells me when the wind-up happens or what the hydra even is, since it looks like a small red stick thing.",
+        "iphone15/codex-juror #3: Dodge and Strike are clearly labeled, but the scene does not make the three-headed hydras or their attack openings easy to identify.",
+        "iphone15/opus-juror #4: I lose a heart (3→2) within about 4 seconds, and the \"Dodge!\" hint only shows up around a small orange ball, so the dodge timing isn't clear until I've already been hit.",
+        "iphone15/opus-player #4: The 'hydra' is just a tiny red outline and I lost a heart to an orange ball, so I can't tell when to hit Dodge or Strike, and Quick/Full detail means nothing to me.",
+        "desktop/codex-juror #3: The small “Down” and “Space” key labels take a moment to find beneath the game."
+      ]
+    },
+    {
+      "category": "waiting-to-play",
+      "seconds": 13.8,
+      "judges": [
+        "codex-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "pixel7",
+        "iphone15",
+        "desktop"
+      ],
+      "notes": [
+        "pixel7/codex-juror #3: After tapping “Make it!” at 3.5 seconds, the first accepted game input is at 6 seconds.",
+        "iphone15/codex-juror #3: The first accepted game input comes 3.7 seconds after tapping “Make it!”, consuming a substantial part of my review time.",
+        "iphone15/opus-player #3: After I tap Make it! I wait almost 3 seconds, and when the game shows up it's a wall of instructions about wind-ups and hydras I have to read first.",
+        "desktop/codex-juror #4: Despite accepted key presses since 5.5 seconds, the screen at 10.3 seconds says “Tap to start” and shows a 0.0-second timer."
+      ]
+    },
+    {
+      "category": "broken-or-blank",
+      "seconds": 11,
+      "judges": [
+        "opus-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "iphone15",
+        "desktop"
+      ],
+      "notes": [
+        "iphone15/opus-juror #3: The goal says to beat three-headed hydras, but the enemy is a thin red-outlined pillar with something small at its base, which looks like a missing model or a rendering glitch.",
+        "desktop/opus-juror #4: Almost 5 seconds after the key presses started, the timer still reads 0.0s and a \"Tap to start\" overlay is up with the knight and hydra in the same spots, so my inputs seem to have done nothing.",
+        "desktop/opus-player #4: Almost 5 seconds after I started pressing keys, the screen still says 'Tap to start', the timer is back at 0.0s and the knight and hydra haven't moved, so it looks like my presses did nothing."
+      ]
+    },
+    {
+      "category": "other",
+      "seconds": 10,
+      "judges": [
+        "codex-juror",
+        "opus-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "pixel7"
+      ],
+      "notes": [
+        "pixel7/codex-juror #4: The run ends after just 4.8 seconds with one point, before I have much chance to learn the timing.",
+        "pixel7/opus-juror #4: I lose after about 4.8 s with 1 point, and the 'Tap right to strike, tap left to dodge' tip only shows up on the game-over screen, when it would have helped before the fight.",
+        "pixel7/opus-player #4: I died after 4.8s with 1 point, and the 'tap right to strike, tap left to dodge' tip only shows up after I already lost."
+      ]
+    },
+    {
+      "category": "unclear-next-step",
+      "seconds": 9,
+      "judges": [
+        "codex-juror",
+        "opus-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "iphone15",
+        "desktop"
+      ],
+      "notes": [
+        "iphone15/codex-juror #2: The suggestion cards are mostly hidden beneath the bottom navigation, so the shortcut to starting is easy to miss.",
+        "iphone15/opus-juror #1: The suggestion cards are hidden behind the bottom Make/Play bar, so only \"castle gates.\" shows, and the gray placeholder looks like text that is already typed in, which leaves me unsure whether I need to type anything.",
+        "iphone15/opus-player #2: The suggestion cards are mostly covered by the Make/Play bar at the bottom, so all I can see is \"castle gates.\" and I can't tell there are cards to tap.",
+        "desktop/codex-juror #2: “Tap to play,” suggestion cards, and “Make it!” compete as starting points.",
+        "desktop/opus-juror #2: Two calls to action compete: \"Tap to play\" on the crystal game and \"Make it!\" with the sentence box, and the suggestion cards the tester used aren't visible above the fold.",
+        "desktop/opus-player #1: There are two different things to do: 'Tap to play' on the right and 'Say it in one sentence / Make it!' on the left, and I can't tell which one I'm supposed to start with."
+      ]
+    },
+    {
+      "category": "too-much-text",
+      "seconds": 2,
+      "judges": [
+        "opus-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "pixel7"
+      ],
+      "notes": [
+        "pixel7/opus-juror #3: There are too many things to read at once: the instruction box, the overlapping cut-off yellow banner, the Quick/Full detail toggle, two action buttons and three more controls underneath.",
+        "pixel7/opus-player #3: There's a lot going on at once: the hearts, the timer, a sentence of instructions, a banner that gets cut off, the Quick/Full detail toggle and three more buttons."
+      ]
+    },
+    {
+      "category": "slow-first-screen",
+      "seconds": 2,
+      "judges": [
+        "opus-juror",
+        "opus-player"
+      ],
+      "profiles": [
+        "desktop"
+      ],
+      "notes": [
+        "desktop/opus-juror #1: The game preview is an empty dark navy box and all three Up next thumbnails are plain light-blue placeholders, so the first screen looks unfinished.",
+        "desktop/opus-player #1: The game area is a plain dark navy box and the Up next thumbnails are empty light-blue squares, so for a second it looks like nothing loaded."
+      ]
+    }
+  ],
+  "gate": {
+    "note": "Navržená brána T5 (first-impression.md). Strojově: p50 ms nejvýš tyto meze a soudci 'understood' 3/3 na každém profilu (--gate-from). Ručně: kategorie unclear-controls nejvýš 1 soudce na profil.",
+    "metrics": {
+      "pixel7": {
+        "fcpMs": 1000,
+        "firstTapMs": 1000,
+        "makeToPlayableMs": 1500
+      },
+      "iphone15": {
+        "fcpMs": 1000,
+        "firstTapMs": 1000,
+        "makeToPlayableMs": 3500
+      },
+      "desktop": {
+        "fcpMs": 1000,
+        "firstTapMs": 1000,
+        "makeToPlayableMs": 2500
+      }
+    },
+    "understoodAtLeast": 3,
+    "topLosses": [
+      "unclear-controls",
+      "other (game lost in 4.8 s)",
+      "unclear-next-step"
+    ]
+  },
+  "gateMet": {
+    "met": false,
+    "misses": [
+      "pixel7.makeToPlayableMs p50 2458 > 1500"
+    ]
+  }
+}

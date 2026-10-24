@@ -53,3 +53,21 @@ Opravy: `46039323` přepínač verze nad zónami Dodge/Strike + karta „Tap to 
 
 - **Čím si soudci stěžují teď (jiné než v T5):** nevidí, kdy hydra napřahuje a kdy je otevřená (hydra je drobný červený obrys), tip „Tap right to strike, tap left to dodge“ chtějí před bojem, ne až po prohře; na desktopu po startu žádné klávesy (karta zmizí prvním stiskem). Na iPhonu karty nápadů teď leží pod lištou Make/Play.
 - **Časy:** stroj při měření 96–100 % CPU (74 procesů node jiných běhů). Prokládané A/B starý build T5 (3188) × nový (3187), 2 kola po 3 bězích: desktop 2,47 × 2,50 s, Pixel 7 2,29 × 3,07 s (rozptyl 1,0–5,4 s), iPhone 6,4 × 5,0 s. **Inference:** starý build bránu pod stejnou zátěží nesplní taky, měřitelné zhoršení opravami není; mez 1,5 s Pixel 7 je potřeba přeměřit v klidu.
+
+## Po T6b (24. 10., dvě měření: `first-impression-t6b.json` build `210a6fe0`, `first-impression-t6b2.json` build `bb5dc7cf`)
+
+Opravy: `1815aa5e` štítek kitu nad soupeřem „Dodge!“ 0,5 s před zásahem a „Strike!“ v mezeře (kdo jen poslouchá povely, vyhraje bez zásahu – `duel.test.ts`) · `210a6fe0` zóny Dodge/Strike visí celý souboj, na desktopu s klávesami Down/Space, žádaná zóna svítí žlutě · `bb5dc7cf` soupeř s modelem už nemá ruku z kvádru (u malé hydry stála jako tyč, soudci v měření 1 „red stick“, „pillar … missing model“).
+
+| | Po T6 | T6b měření 1 | T6b měření 2 |
+|---|---|---|---|
+| Rozumím do 2 s – Pixel 7 / iPhone / desktop | 3/3 · 3/3 · 3/3 | 3/3 · 3/3 · 3/3 | **3/3 · 3/3 · 3/3** |
+| Ovládání nejasné (soudci na profil) | 3 · 3 · 3 | 3 · 3 · **1** | 3 · **1** · 3 (brána ≤ 1 **nesplněná**) |
+| Ztráta „ovládání“ celkem | 27 s | 15 s | 15 s |
+| p50 „Make it!“ → vstup – Pixel 7 / iPhone / desktop | 1,8 · 1,0 · 2,4 s | 2,5 · 2,8 · 2,4 s | 1,8 · 0,8 · 2,0 s |
+
+- **Co soudci teď vidí:** zóny s klávesami („Dodge and Strike are labeled“, „Dodge Down / Strike Space are visible“) a v měření 1 na iPhonu štítek „Dodge!“. Ztráta „ovládání“ klesla z 27 s na 15 s, ale počet soudců, kteří ji jmenují, skáče mezi měřeními (desktop 1 → 3, iPhone 3 → 1) při stejném chování desktopu.
+- **Proč telefon bránu nesplní (fakta ze snímků):** snímek 3 padne na všech profilech do úvodu souboje (hodiny hry 0,2–1,4 s, `DUEL.lead` = 1,5 s) – soupeř ještě neútočí a povel nesvítí. Snímek 4 je prohra za 4,8 s: skript ťuká doprostřed (= Strike) a nikdy neuhne. Hydra je malý model ještěrky s obrysem („tiny red blob“, „small red lizard, not obviously a three-headed hydra“).
+- **Desktop „Tap to start“ v 10 s není chyba:** ruční pokus – po prohře se běh vrátí na start a mezerník ho znovu spustí (snímek 15: srdce 2, 3,0 s, „Dodge!“ nad hydrou). Snímek trefí chvíli mezi návratem a dalším stiskem; stejný snímek je i v měření „Po T6“.
+- **Časy:** p50 v klidu (CPU 38–53 %, 5 běhů, `bb5dc7cf`): Pixel 7 **1,51 s**, iPhone 0,88 s, desktop 1,69 s. Prokládané A/B starý build T6 `ce6cc9b7` × nový `bb5dc7cf`, 2 kola po 3 bězích (CPU 33–81 %): Pixel 7 1,74 × 1,58 s, iPhone 0,97 × 0,93 s, desktop 1,75 × 1,68 s; rozptyl obou 0,4–2,9 s. **Inference:** rozdíl je v šumu, opravy T6b start nezpomalily; mez Pixel 7 1,5 s leží uprostřed rozptylu jednoho buildu.
+- **Inference – co zbývá a čí to je:** (1) velikost a jmenovka soupeře – P58A má `size hero and foe so a judge can read them` a `name the hero and foe the first time they appear`, sloučení s touto větví dnes konfliktuje v `ArcadePlay.tsx` a `ArcadeStage.tsx`; (2) film měří úvod souboje a prohru skriptu, který neuhýbá – povel uprostřed boje ve snímcích skoro není. Brána „≤ 1 soudce na profil“ je při 3 soudcích a 4 snímcích pod šumem měření (desktop 1 ↔ 3 beze změny kódu).
+- E2e `interface-language` + `p35-perf` 20/20 nad `next start` (`bb5dc7cf`).
