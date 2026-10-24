@@ -620,8 +620,10 @@ export class SpendCap {
    * Odmítl by strop teď každé placené volání? Na rozdíl od `snapshot()` se ptá knihy, ale jen čte:
    * `add(0, 0)` nic nepřičte ani nezapočítá. Režisér se tak zeptá dřív, než kvůli svému volání zaplatí
    * čtení věty (P58B T4). Rozbitý povel, chybějící nebo mlčící kniha = vyčerpáno, táž strana omylu jako `reserve()`.
+   * `worstCaseUsd` je nejhorší cena volání, na které se ptá: soudí se jako v `reserve()` (`usd + worst > cap`),
+   * jinak by kniha těsně pod stropem – kam ji `reserve()` dovede vždy – hlásila volno a volání pak odmítla (revize T4-2).
    */
-  async exhausted(): Promise<boolean> {
+  async exhausted(worstCaseUsd = 0): Promise<boolean> {
     const outcome = await this.#control();
     if (outcome.kind === 'broken' || this.#ledger === null) return true;
     let totals: { usd: number; calls: number };
@@ -631,7 +633,7 @@ export class SpendCap {
       return true;
     }
     const { control } = outcome;
-    return control.enabled && (totals.calls >= (control.callCap ?? DEFAULT_CALL_CAP) || totals.usd >= control.capUsd);
+    return control.enabled && (totals.calls + 1 > (control.callCap ?? DEFAULT_CALL_CAP) || totals.usd + worstCaseUsd > control.capUsd || totals.usd >= control.capUsd);
   }
 
   /**

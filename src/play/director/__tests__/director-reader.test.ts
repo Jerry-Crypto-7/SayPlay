@@ -171,6 +171,16 @@ describe('the director reads the sentence for the AI version (P58B T4)', () => {
       expect(upstreamCalls).toBe(0);
     });
 
+    // Revize T4-2: `reserve()` nikdy nepustí knihu přes strop, takže skončí těsně pod ním – méně než jedno volání volna.
+    it("pays nothing when less than one director call's worst case is left under the dollar cap", async () => {
+      vi.stubEnv('WORLDSMITH_SPEND_CAP_USD', '0.000001');
+      vi.stubEnv('WORLDSMITH_CALL_CAP', '10');
+      resetProcessSpendCap();
+      await getDirector(Date.now(), VISITOR)(SENTENCE);
+      expect(readerCalls).toBe(0);
+      expect(upstreamCalls).toBe(0);
+    });
+
     it('pays nothing when too little of the route budget is left for a director call', async () => {
       await getDirector(Date.now() - DIRECTOR_BUDGET_MS + 1000, VISITOR)(SENTENCE);
       expect(readerCalls).toBe(0);

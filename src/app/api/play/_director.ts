@@ -199,7 +199,10 @@ async function directorWouldCall(env: Record<string, string | undefined>, config
       if (thrown instanceof VersionStoreUnavailable) return false;
       throw thrown;
     });
-  const [exhausted, hasCall] = await Promise.all([processSpendCap().exhausted(), callerHasCall]);
+  // simplified: jen výstupní část nejhorší ceny – vstup zná až sestavený požadavek; kniha o méně než jeho cenu pod stropem
+  // ještě zaplatí čtení naprázdno. Kdyby to bylo vidět v útratě, sestavit požadavek před čtením a předat celý `worstCaseUsd`.
+  const worstOutputUsd = (config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
+  const [exhausted, hasCall] = await Promise.all([processSpendCap().exhausted(worstOutputUsd), callerHasCall]);
   return !exhausted && hasCall;
 }
 
