@@ -15,9 +15,12 @@ export const VERB_LINE_MAX = 50;
 /** Jak dlouho řádek visí: první tři vteřiny hry hráče (cíl P43 – „do 3 s“). */
 export const VERB_LINE_SECONDS = 3;
 
-/** Řádek se ukáže až po prvním tahu (tik 0 patří výzvě „Tap to start“), jen v běhu hráče, ne v ukázce robota. */
-export function verbLineShown(tick: number, hz: number, playerRun: boolean): boolean {
-  return playerRun && tick > 0 && tick < VERB_LINE_SECONDS * hz;
+/**
+ * Řádek se ukáže až po prvním tahu (tik 0 patří výzvě „Tap to start“), jen v běhu hráče, ne v ukázce robota.
+ * `until` (tik) ho ukončí dřív: v souboji první útok – od něj mluví povely nad soupeřem (P58C T6b).
+ */
+export function verbLineShown(tick: number, hz: number, playerRun: boolean, until = VERB_LINE_SECONDS * hz): boolean {
+  return playerRun && tick > 0 && tick < Math.min(until, VERB_LINE_SECONDS * hz);
 }
 
 /** Jak sloveso zní hráči; chybějící sloveso (dojít, přežít, rytmus, „interact“) řádek nemá – to řekne cílová věta. */

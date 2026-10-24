@@ -48,4 +48,10 @@ describe('verbLineShown', () => {
   it('stays hidden while the robot demo plays', () => {
     expect(verbLineShown(30, hz, false)).toBe(false);
   });
+
+  it('ends early when the game says so (the duel cue takes over at the first attack)', () => {
+    expect(verbLineShown(89, hz, true, 90)).toBe(true);
+    expect(verbLineShown(90, hz, true, 90)).toBe(false);
+    expect(verbLineShown(VERB_LINE_SECONDS * hz, hz, true, 10 * hz)).toBe(false);
+  });
 });

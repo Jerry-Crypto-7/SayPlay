@@ -18,6 +18,7 @@ import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
 import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
+import { DUEL } from '@/play/arcade/pieces/duel';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
@@ -649,6 +650,8 @@ function ArcadePlayGame({
   }, [offline, record, versionId]);
   const survive = survives(arcade);
   const verb = useMemo(() => verbLine(spec), [spec]);
+  // Souboj: od prvního útoku řádek přenechá místo povelům nad soupeřem (P58C T6b), jinak by se s nimi překryl.
+  const duel = baseControlOf(arcade.control).id === 'duel';
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
   const goalLabel = challenge === null ? 'best' : 'dare';
   const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
@@ -918,7 +921,7 @@ function ArcadePlayGame({
               />
             )}
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
-            {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
+            {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null, duel ? DUEL.lead : undefined) && <VerbLine line={verb} />}
             <PacingBanner session={session} enabled={running && active} foe={foe} boss={spec.boss?.name} />
             {laneEventView !== null && <LaneEventBanner session={session} enabled={running && active} visible={laneEventView} />}
           </>
