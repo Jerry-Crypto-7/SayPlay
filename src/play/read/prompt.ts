@@ -48,11 +48,11 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'whack.default': 'things pop up from holes for a moment and you hit them before they hide',
   'slice.default': 'things are tossed or fly through the air and you cut them midair',
   'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard, and you hold every path',
-  'quest.spatial': 'you walk to objects one by one and act on each (light, fix, free, clean), even with a chaser',
-  'quest.station': 'you stay at one stove, bench or counter and finish orders',
+  'quest.spatial': 'you walk to objects one by one and act on each (light, fix, pop, free, clean, deliver), even with a chaser',
+  'quest.station': 'you stay at one stove, bench or workplace and cook, brew, fix or craft, order after order',
   'shooter.default': 'you stand, aim and shoot foes or targets coming at you',
   'throw.default': 'you aim an arc and throw at a target, hoop or stack',
-  'timing.stack': 'you drop a swinging block onto a growing tower',
+  'timing.stack': 'you stack a tall tower, dropping each swinging piece onto the last',
   'timing.precision': 'you stop a sweeping marker inside a small zone',
   'timing.bridge': 'you grow a plank long enough to span a gap',
   'rhythm.default': 'you tap notes as they reach a line, in time with music',
@@ -104,7 +104,7 @@ export function readerSystemPrompt(): string {
     ...READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`))
       .sort((a, b) => (MODE_ORDER.indexOf(a) + 1 || 99) - (MODE_ORDER.indexOf(b) + 1 || 99))
       .map((id) => `- ${id}: ${MODE_HINTS[id] ?? ''}`),
-    'genre is null when the play is none of these: turn-based cards, board games or chess, quizzes, riddles, choosing what to say, dating or story choices, managing a shop, farm or city, math or logic puzzles, taking photos, slow fishing. A word of a line inside such a game ("battle", "race", "band", "shoot") does not make that line fit.',
+    'genre is null when the play is none of these: turn-based cards, board games or chess, quizzes, riddles, choosing what to say, dating or story choices, managing a shop, farm or city, math or logic puzzles, taking photos, slow fishing. A word of a line inside such a game ("battle", "race", "band", "shoot") does not make that line fit. Any other sentence that names an action a line plays (stack a tower, cook, fix, pop, deliver) takes the closest line even without its details.',
     'Examples (sentence => genre):',
     ...PROMPT_EXAMPLES.map(({ sentence, genre }) => `"${sentence}" => ${genre ?? 'null'}`),
     'sure: false only when two genre lines fit the play about equally; a lure word alone is no reason; else true.',
