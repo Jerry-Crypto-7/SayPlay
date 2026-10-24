@@ -81,4 +81,8 @@ Majitel 23. 10. zúžil srovnání na dva modely: `opus-5.5@anthropic` (Anthropi
 
 Rozbor a doporučení pro P59: `director.md`, čísla `director.json`. Astra `low` na prvních 30 větách dev: 10 řetězů mikroher (AI verzi nemají), 12 změřeno, 8 nezměřeno kvůli rozpočtu. Robot pustil 12/12, věrnost 0,92 (rychlá 0,88), slepý soud AI 6 : 4 (2 remízy), p50 57 s, 0,62–0,67 USD za hru.
 
+## Brána na zapečetěné sadě (T8)
+
+Otevřena jednou 25. 10. (`final.md`, `final.json`): AI verze cíle 60/60, pasti 20/20, robot, nečinný i replay 80/80, 0 vypršelých čtení. Rychlá hra (slovník) 25/60 a 15/20 – brána nesplněná. **Útrata T8:** ~2,2 USD (strop čtečky 4 USD).
+
 **Útrata T7:** 12,29 USD (zkušební běhy 1,90 + dávka 1 5,00 se stropem 6,05 + dávka 2 4,97 se stropem 7 + čtečka ~0,41).
