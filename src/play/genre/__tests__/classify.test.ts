@@ -264,6 +264,28 @@ describe('classifyGenre', () => {
     expect(scored).toBe(SCORED_READINGS);
   });
 
+  // P58B T6: čtení astry s promptem kola 2 (`compare-dev-t6b.json`, dev p56a + p55) dnešním `classifyGenre` – brána plánu
+  // 48/60 cílů a 18/20 pastí přepočtená na 120 cílů a 40 pastí dev.
+  it('plays the T6 readings of dev at the gate: targets ≥ 96/120, traps ≥ 36/40', () => {
+    const { rows } = JSON.parse(readFileSync(new URL('../../../../evals/play/p58b/compare-dev-t6b.json', import.meta.url), 'utf8')) as { rows: CompareRow[] };
+    const sets = new Map(['p56a/holdout', 'p55/holdout'].map((name) => [name, new Map(loadSet(`evals/play/${name}.json`).sentences.map((row) => [row.id, row]))]));
+    const count = { target: { of: 0, hit: 0 }, trap: { of: 0, hit: 0 } };
+    for (const row of rows) {
+      const sentence = sets.get(row.set)!.get(row.id)!;
+      const reading = row.models['astra@openai']!.reading;
+      const kind = count[row.kind as 'target' | 'trap'];
+      kind.of += 1;
+      // Chybějící čtení je minutá věta jako v měřidle, ne body slovníku.
+      if (reading === null) continue;
+      const first = classifyGenre(sentence.text, reading, GENRE_MODULES).ranked[0];
+      kind.hit += scoreOf(sentence, `${first.genre}.${first.mode}`).hit === true ? 1 : 0;
+    }
+    expect(count.target.of).toBe(120);
+    expect(count.trap.of).toBe(40);
+    expect(count.target.hit).toBeGreaterThanOrEqual(96);
+    expect(count.trap.hit).toBeGreaterThanOrEqual(36);
+  });
+
   // P56A final.md: s02, s03, s09 a s12 – gpt-oss-20b přečetl správně a pravidlo P56A T5 ho přebilo slovem slovníku.
   it.each(['s02', 's03', 's09', 's12'])('plays the right gpt-oss-20b reading of P56A %s that the keywords used to beat', (id) => {
     const json = <T,>(path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/p56a/${path}`, import.meta.url), 'utf8')) as T;

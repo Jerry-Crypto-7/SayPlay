@@ -53,3 +53,26 @@ Majitel 23. 10. zúžil srovnání na dva modely: `opus-5.5@anthropic` (Anthropi
 - **Skládání hry přehodí žánr čtení** (zjištěno pinem v `compose.test.ts`): se stejnými čteními T3 dává `draftGameSpecWithMeta` na p56a jen 50/60 (před T5 49/60), `classifyGenre` 59/60 – úkol **T5a** v plánu. Na p55 60/60.
 
 **Útrata T5:** 4,40 USD (strop 6).
+
+## Prompt a pasti (T6)
+
+**Prompt** (`read/prompt.ts`): u každého z 18 žánrů řádek o tom, co hráč dělá, ne které slovo ve větě stojí; krátké protipříklady pastí; 9 příkladů psaných ručně, ne opsaných ze čtení astry ani Opusu. Test `prompt.test.ts` hlídá, že žádný příklad nesdílí pět slov za sebou s žádnou sadou, ani se zapečetěnou P58B. Délka ~1 310 tokenů (strop 2 000).
+
+**Pravidlo k tomu** (`classifyGenre`, `2939a25c`): čtení, které řekne „žádný náš žánr nesedí“ (žánr `null`), hraje volný sběr v aréně (`arena.collect`) a slovo z pasti hru nevybere. Útěk jen když čtení samo jmenuje pronásledovatele (role `chaser`); slovo „escape“ nestačí.
+
+| | prompt | sada | cíle | pasti | čtení „nic nesedí“ | p50 | p95 | útrata |
+|---|---|---|---|---|---|---|---|---|
+| T5 (výchozí) | `37da7305…` | dev | 118/120 | 35/40 | 11 | 2,9 s | 5,4 s | (T5) |
+| kolo 1 (`compare-dev-t6.json`) | `55672fff…` | dev | 120/120 | 37/40 | 14 | 2,8 s | 5,2 s | 5,00 USD |
+| kolo 1 (`compare-p30-t6.json`) | `55672fff…` | p30/dev | – | – | 16/60 (T3 27/60) | 3,4 s | 5,8 s | 1,83 USD |
+| kolo 2 (`compare-p30-t6b.json`) | `24ae3bab…` | p30/dev | – | – | 10/60 | 3,4 s | 4,9 s | 1,86 USD |
+| **kolo 2** (`compare-dev-t6b.json`) | `24ae3bab…` | dev | **120/120** | **40/40** | 11 (jen pasti) | 2,9 s | 5,8 s | 5,10 USD |
+
+- **Kolo 1** (`e7690a6f`): cíle 120/120, pasti 37/40. Zbylé 3 pasti (`s71`, `s74`, `s80`) četla astra jako „nic nesedí“ a slovník pak vybral lákavý žánr. Odtud pravidlo výše; na týchž čteních offline 40/40.
+- **Slepá ulička:** s promptem kola 1 to pravidlo kazilo jasné hry z `p30/dev` – astra četla „nic nesedí“ u věže z palačinek, kuchaře u plotny a dědy, který opravuje auto. **Kolo 2** (`9e146f78`) proto přidalo řádky pro stohování, stanoviště a hledání v prostoru a pokyn „jinak vezmi nejbližší řádek“. Na `p30/dev` zbylo 10 takových čtení a všechna jsou nehry (daně, rande, dopis, rozpočet).
+- **Kolo 2 na dev** (commit `bb23fb90`, 160 vět, `--cap-usd 7`): cíle i režimy 120/120, pasti 40/40 (`p56a` 60/60 a 20/20, `p55` 60/60 a 20/20), role hrdina 79/80, protivník 76/80, 0 neplatných, 0 chyb. „Nic nesedí“ jen u 11 pastí. Pin v `classify.test.ts` drží bránu přepočtenou na dev: cíle ≥ 96/120, pasti ≥ 36/40.
+- **Pole `sure`:** s novým promptem `false` 0× na 160 větách dev v obou kolech (na `p30/dev` 1× a 2×). Větev v `classifyGenre` zůstala, nic nestojí.
+- **Rychlost:** žádná ze 160 vět pod 1 000 ms (nejrychlejší 2,1 s, nejpomalejší 10,4 s). Hranice p95 ≤ 1 000 ms z plánu tu neplatí – astra čte jen pro AI verzi (rozhodnutí T3).
+- **Výhrada (odvozeno):** prompt i pravidlo se ladily přímo na těchto dev sadách, takže 120/120 a 40/40 jsou horní odhad. Skutečné číslo dá jedině zapečetěná sada v T8.
+
+**Útrata T6:** 13,79 USD (5,00 + 1,83 + 1,86 + 5,10; každý běh se stropem 7 nebo 3 USD). Ceny jsou horní mez – slevu OpenAI za cache měřidlo nevidí.
