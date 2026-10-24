@@ -171,9 +171,9 @@ describe('toy motion for duel fighters with a model (P45D T10)', () => {
     stubPage('');
     const world = duelWorld();
     const { samples, rigs, hash } = play(world, true);
-    // Hrdina s modelem nemá ruku z primitiv, soupeř ano – nese barvu fáze.
+    // Bojovník s modelem nemá ruku z primitiv, hrdina ani soupeř (P58C T6b): kdy uhnout, říká štítek povelu nad soupeřem.
     expect(rigs.hero?.arm).toBeUndefined();
-    expect(rigs.target?.arm).toBeDefined();
+    expect(rigs.target?.arm).toBeUndefined();
 
     const strikes = [...new Set(samples.filter((sample) => sample.struck).map((sample) => sample.tick))];
     const blows = [...new Set(samples.filter((sample) => sample.phase === DUEL_PHASE.open && sample.prevPhase === DUEL_PHASE.windup).map((sample) => sample.tick))];
