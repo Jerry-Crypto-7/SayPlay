@@ -77,6 +77,11 @@ export interface VersionStore {
    */
   takeDirectorCall(caller: string, limit: number): Promise<boolean>;
   /**
+   * Zbývá volajícímu dnes volání režiséra? Jen čte týž čítač jako `takeDirectorCall`, nic nezapočítá –
+   * režisér se ptá dřív, než za volajícího zaplatí čtení věty (P58B T4). Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  hasDirectorCall(caller: string, limit: number): Promise<boolean>;
+  /**
    * Proč návrh zůstal návrhem, když to už jednou někdo spočítal (R10); `null`
    * = neví se, i při výpadku úložiště. Zápis výpadek spolkne – nejhůř se
    * režie zaplatí znovu, jako před R10.
@@ -518,6 +523,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const childrenKey = (parentId: string): string => `${prefix}:play:children:${parentId}`;
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
+  const directorCallKey = (caller: string): string => `${prefix}:play:director:${quotaDay(now())}:${caller}`;
   const recentKey = `${prefix}:play:recent`;
   const remixKey = `${prefix}:play:recent-remix`;
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
@@ -665,10 +671,19 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     },
     async takeDirectorCall(caller, limit) {
       try {
-        return (await raw.incr(`${prefix}:play:director:${quotaDay(now())}:${caller}`, 2 * 24 * 3600)) <= limit;
+        return (await raw.incr(directorCallKey(caller), 2 * 24 * 3600)) <= limit;
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+    },
+    async hasDirectorCall(caller, limit) {
+      let text: string | null;
+      try {
+        text = await raw.get(directorCallKey(caller));
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+      return text === null || Number(text) < limit;
     },
     async upgradeVerdict(draftId) {
       try {

@@ -20,6 +20,7 @@
  */
 
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
+import { readerForAiVersion } from '@/play/read/client';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { UpstreamRequest } from '@/model/prompt';
@@ -180,6 +181,26 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
     if (thrown instanceof VersionStoreUnavailable) return false;
     throw thrown;
   }
+}
+
+/**
+ * Pustil by režisér teď placené volání? Brány `cappedBranch.generate` a `queued` – slot u cesty, která
+ * nečeká, rozpočet trasy, strop utrácení a denní počet volajícího – jen čtené, nic se nezapočítá.
+ * Čtení věty pro AI verzi (P58B T4) se platí před prvním voláním, takže bez téhle otázky by ho volající
+ * zaplatil i za režii, která model nezavolá (revize T4, nález 1). Souběžná věta může poslední volání
+ * vzít mezi otázkou a voláním; pak je čtení zaplacené naprázdno, jednou.
+ */
+async function directorWouldCall(env: Record<string, string | undefined>, config: UpstreamConfig, deadline: number, caller: string, waitForSlot: boolean): Promise<boolean> {
+  if (!waitForSlot && !directorSlotFree()) return false;
+  if (deadline - Date.now() < minCallMs(config)) return false;
+  const callerHasCall = versionStoreFromEnv(env)
+    .hasDirectorCall(caller, callsPerCaller(env))
+    .catch((thrown: unknown) => {
+      if (thrown instanceof VersionStoreUnavailable) return false;
+      throw thrown;
+    });
+  const [exhausted, hasCall] = await Promise.all([processSpendCap().exhausted(), callerHasCall]);
+  return !exhausted && hasCall;
 }
 
 /**
@@ -499,7 +520,9 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
       // P30A T8: ověřené příklady jen na objednávku, dokud T10 nezměří, jestli pomáhají.
       const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
-      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, caller, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
+      // Bez volajícího `direct()` čtení nezaplatí a čte slovník (revize T4, nález 1).
+      const reader = readerForAiVersion() && (await directorWouldCall(process.env, config, deadline, caller, waitForSlot)) ? { caller } : {};
+      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...reader, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
       // `seat` přiřazuje `generate` výš; TypeScript to po `await` nevidí.
       (seat as { readonly release: () => void } | null)?.release();

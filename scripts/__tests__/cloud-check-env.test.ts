@@ -176,11 +176,27 @@ describe('checkEnv – the sentence reader (P58B T4)', () => {
     expect(names({ ...GOOD, ...READER, PLAY_READER_SPEND_CAP_USD: cap })).toEqual(['PLAY_READER_SPEND_CAP_USD']);
   });
 
-  it('measures the reader call cap against its fixed 1024 output tokens, not the director default', () => {
+  it('measures the reader call cap against its default 1024 output tokens, not the director default', () => {
     expect(names({ ...GOOD, ...READER, PLAY_READER_CALL_CAP: '390' })).toEqual(['PLAY_READER_CALL_CAP']);
     expect(names({ ...GOOD, ...READER, PLAY_READER_CALL_CAP: '' })).toEqual(['PLAY_READER_CALL_CAP']);
     const { PLAY_READER_USD_PER_MTOK_OUT: _price, ...unpriced } = READER;
     expect(names({ ...GOOD, ...unpriced })).toEqual(['PLAY_READER_USD_PER_MTOK_OUT']);
+  });
+
+  // Revize T4, nález 3: běžící čtečka bere `PLAY_READER_MAX_OUTPUT_TOKENS` (`hostedConfigFromEnv`), kontrola taky.
+  it('measures it against PLAY_READER_MAX_OUTPUT_TOKENS when that is set', () => {
+    // 512 tokenů × 50 USD/Mtok = 0,0256 USD → 20 USD potřebuje 782 volání.
+    expect(names({ ...GOOD, ...READER, PLAY_READER_MAX_OUTPUT_TOKENS: '512' })).toEqual(['PLAY_READER_CALL_CAP']);
+    expect(checkEnv({ ...GOOD, ...READER, PLAY_READER_MAX_OUTPUT_TOKENS: '512', PLAY_READER_CALL_CAP: '782' })).toEqual([]);
+  });
+
+  it.each(['700', '9099', 'soon', '-1'])('refuses PLAY_READER_BUDGET_MS=%s: under the slowest measured reading, which is billed all the same', (budget) => {
+    expect(names({ ...GOOD, ...READER, PLAY_READER_BUDGET_MS: budget })).toEqual(['PLAY_READER_BUDGET_MS']);
+  });
+
+  it('passes an empty reader budget or one that fits the slowest reading, and checks none while the reader is off', () => {
+    for (const budget of ['', '9100', '15000']) expect(checkEnv({ ...GOOD, ...READER, PLAY_READER_BUDGET_MS: budget })).toEqual([]);
+    expect(checkEnv({ ...GOOD, PLAY_READER: 'off', PLAY_READER_BUDGET_MS: '700' })).toEqual([]);
   });
 
   it('keeps the fixed reader output in step with the client', () => {

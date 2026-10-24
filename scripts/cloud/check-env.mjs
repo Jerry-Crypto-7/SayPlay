@@ -18,7 +18,8 @@
  *   (revize T3, P30A T3a). Mez = strop / (max výstupních tokenů × cena výstupu);
  * - volitelný `PLAY_DIRECTOR_SLOTS` není celé číslo 1..2 (P53 T1);
  * - zapnutá čtečka (`PLAY_READER=on`) nemá dolarový strop a strop volání jako ostatní knihy,
- *   nebo nečte jen pro AI verzi (`PLAY_READER_PATH=ai`, P58B T3/T4).
+ *   nebo nečte jen pro AI verzi (`PLAY_READER_PATH=ai`, P58B T3/T4), nebo má `PLAY_READER_BUDGET_MS`
+ *   kratší než nejpomalejší změřené čtení.
  *
  * 0 = konfigurace nestojí na PC, 2 = chybí argument nebo soubor nejde přečíst.
  * Soubor je ve tvaru `vercel env pull`; vzor, který projde: `env.production.example`.
@@ -47,8 +48,16 @@ const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
  * souhlas obou čísel hlídá `scripts/__tests__/cloud-check-env.test.ts`.
  */
 export const READER_MAX_OUTPUT_TOKENS = 1024;
-/** Kniha čtečky (`readerSpendCapFromEnv`), kontroluje se jen se zapnutou čtečkou (`PLAY_READER=on`). */
-const READER_LEDGER = { cap: 'PLAY_READER_SPEND_CAP_USD', calls: 'PLAY_READER_CALL_CAP', tokens: '', price: 'PLAY_READER_USD_PER_MTOK_OUT', maxTokens: READER_MAX_OUTPUT_TOKENS };
+/**
+ * Kniha čtečky (`readerSpendCapFromEnv`), kontroluje se jen se zapnutou čtečkou (`PLAY_READER=on`).
+ * `PLAY_READER_MAX_OUTPUT_TOKENS` přebije výchozí výstup stejně jako v `hostedConfigFromEnv` (revize T4, nález 3).
+ */
+const READER_LEDGER = { cap: 'PLAY_READER_SPEND_CAP_USD', calls: 'PLAY_READER_CALL_CAP', tokens: 'PLAY_READER_MAX_OUTPUT_TOKENS', price: 'PLAY_READER_USD_PER_MTOK_OUT', maxTokens: READER_MAX_OUTPUT_TOKENS };
+/**
+ * Nejpomalejší čtení astry z 220 vět (`evals/play/p58b/README.md`). Kratší `PLAY_READER_BUDGET_MS` by čtení
+ * AI verze useklo, a useknuté čtení se platí celé (revize T4, nález 3). Prázdné = výchozích 15 s.
+ */
+const MIN_READER_BUDGET_MS = 9100;
 
 /**
  * `MAX_PLAY_DIRECTOR_SLOTS` v `src/server/paid-slots.ts` (P53 T1); skript jede holým Nodem
@@ -93,6 +102,10 @@ export function checkEnv(vars) {
   }
   // P58B T3: žádný změřený hostovaný model nečte pod 1 000 ms – na rychlé cestě by každé čtení vypršelo a stejně se zaplatilo.
   if (reader && vars.PLAY_READER_PATH?.trim() !== 'ai') problems.push({ name: 'PLAY_READER_PATH', reason: 'must be ai: no measured hosted reader fits the fast path (evals/play/p58b/README.md)' });
+  const budget = vars.PLAY_READER_BUDGET_MS?.trim() ?? '';
+  if (reader && budget !== '' && !(/^\d+$/.test(budget) && Number(budget) >= MIN_READER_BUDGET_MS)) {
+    problems.push({ name: 'PLAY_READER_BUDGET_MS', reason: `must be empty or at least ${String(MIN_READER_BUDGET_MS)} ms, the slowest measured reading; a cut-off reading is still billed` });
+  }
   const profile = vars.WORLDSMITH_MODEL_PROFILE?.trim().toLowerCase() ?? '';
   if (!PROFILES.includes(profile)) problems.push({ name: 'WORLDSMITH_MODEL_PROFILE', reason: 'must be metered or api, never the subscription' });
   for (const ledger of ledgers) {

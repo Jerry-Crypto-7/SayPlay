@@ -113,7 +113,7 @@ export interface DirectorDeps {
   /**
    * Volající, jehož věta režii spustila (P58B T4). Čtení věty za něj režisér zaplatí jen u čtečky
    * pro AI verzi (`readerForAiVersion`), kde route nečetla; jinak větu četla route a režisér ji
-   * placeně nečte podruhé (P56A T4-R2).
+   * placeně nečte podruhé (P56A T4-R2). `getDirector` ho předá, jen když by režisér teď model zavolal.
    */
   readonly caller?: string;
 }

@@ -617,6 +617,24 @@ export class SpendCap {
   }
 
   /**
+   * Odmítl by strop teď každé placené volání? Na rozdíl od `snapshot()` se ptá knihy, ale jen čte:
+   * `add(0, 0)` nic nepřičte ani nezapočítá. Režisér se tak zeptá dřív, než kvůli svému volání zaplatí
+   * čtení věty (P58B T4). Rozbitý povel, chybějící nebo mlčící kniha = vyčerpáno, táž strana omylu jako `reserve()`.
+   */
+  async exhausted(): Promise<boolean> {
+    const outcome = await this.#control();
+    if (outcome.kind === 'broken' || this.#ledger === null) return true;
+    let totals: { usd: number; calls: number };
+    try {
+      totals = await this.#ledger.add(0, 0);
+    } catch {
+      return true;
+    }
+    const { control } = outcome;
+    return control.enabled && (totals.calls >= (control.callCap ?? DEFAULT_CALL_CAP) || totals.usd >= control.capUsd);
+  }
+
+  /**
    * Zamluví nejhorší případ ceny. Volání se smí uskutečnit jen po `ok: true`.
    *
    * Vypnutý strop rezervaci **pořád vede** a útratu počítá dál. Bez toho by se
