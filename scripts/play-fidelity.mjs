@@ -996,6 +996,7 @@ const ATTEMPT = /\[play\] upgrade attempt (started|settled) (\S+)/g;
 /** Odmítnutí dveřmi `play` (hlavní slot i slot placené zálohy) a stropem útraty nebo volání (`src/app/api/play/_director.ts`). */
 const DOOR_REFUSAL = /no free (?:play )?slot/;
 const CAP_REFUSAL = /spend cap refused the call|daily director calls are used up/;
+const GET_ATTEMPTS = 5;
 
 /**
  * Příčiny neúspěšných pokusů o upgrade jednoho návrhu z logu serveru
@@ -1025,7 +1026,12 @@ export function attemptsInFlight(log, draftId) {
  * by držel slot dveří a další věta by dostala návrh od dveří (revize hranice
  * fáze 2, nález A). `cause` pak říká, proč věta nemá AI verzi: `door`, `cap`
  * (ty o modelu nic neříkají), nebo `model`; u publikované hry `null`, pokud
- * cestou nenarazila na dveře nebo strop.
+ * cestou nenarazila na dveře nebo strop. Odpověď POST bez `upgrade` (řetěz
+ * mikroher) AI verzi nemá z podstaty: `cause: 'chain'`, režisér se nevolá.
+ *
+ * Dotaz GET po síťové chybě jde znovu, nejvýš `GET_ATTEMPTS`krát: v P58B T7
+ * padly tři zaplacené věty z deseti na „fetch failed“ uprostřed čekání. POST se
+ * neopakuje – druhý by mohl rozběhnout další placený pokus.
  */
 export async function measureSentence(sentence, { base, openGame, leave, log, fetchImpl = fetch, now = Date.now, wait = sleep, pollMs = 1000, timeoutMs = 330_000, settleMs = 300_000 }) {
   const started = now();
@@ -1037,13 +1043,28 @@ export async function measureSentence(sentence, { base, openGame, leave, log, fe
       return { frameMs: null, frameError: thrown.message.slice(0, 200) };
     }
   };
+  const get = async (url) => {
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        return await fetchImpl(url, { cache: 'no-store' });
+      } catch (thrown) {
+        if (attempt >= GET_ATTEMPTS) throw thrown;
+        await wait(pollMs);
+      }
+    }
+  };
   const response = await fetchImpl(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
   const created = await response.json();
   if (!created.versionId) throw new Error(`POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
   const draftFrame = await frame(created.versionId);
+  if (created.upgrade === undefined) {
+    await leave();
+    const draft = await gameOf(base, created.versionId, get);
+    return { id: sentence.id, text: sentence.text, checklist: sentence.checklist, draft: { versionId: created.versionId, spec: draft.spec, ...draftFrame }, upgrade: { status: 'none', reason: 'NO_AI_VERSION', ms: now() - started }, cause: 'chain', ai: null };
+  }
   let upgrade;
   for (;;) {
-    upgrade = await (await fetchImpl(`${base}/api/play/games/${created.versionId}/upgrade`, { cache: 'no-store' })).json();
+    upgrade = await (await get(`${base}/api/play/games/${created.versionId}/upgrade`)).json();
     if (upgrade.status !== 'pending') break;
     if (now() - started > timeoutMs) {
       upgrade = { status: 'timeout' };
@@ -1053,8 +1074,8 @@ export async function measureSentence(sentence, { base, openGame, leave, log, fe
   }
   const upgradeMs = now() - started;
   await leave();
-  const draft = await gameOf(base, created.versionId, fetchImpl);
-  const ai = upgrade.status === 'ready' ? await gameOf(base, upgrade.versionId, fetchImpl) : null;
+  const draft = await gameOf(base, created.versionId, get);
+  const ai = upgrade.status === 'ready' ? await gameOf(base, upgrade.versionId, get) : null;
   const aiFrame = ai === null ? null : await frame(upgrade.versionId);
   if (aiFrame !== null) await leave();
   const settleBy = now() + settleMs;
@@ -1087,7 +1108,9 @@ function modelSummary(name, { results, billed, concurrency }) {
   const authored = results.filter((result) => result.ai?.published === true && result.ai.source === 'authored').length;
   if (authored > 0 && billed.length === 0) throw new Error(`${name}: ${authored} authored games but no billed call in the server log – the cost would read as zero`);
   const refused = { door: results.filter((result) => result.cause === 'door').length, cap: results.filter((result) => result.cause === 'cap').length };
-  const scored = results.filter((result) => !refusedCause(result));
+  // Řetěz mikroher AI verzi nemá z podstaty: o režisérovi neříká nic, jen se počítá zvlášť.
+  const chains = results.filter((result) => result.cause === 'chain').length;
+  const scored = results.filter((result) => !refusedCause(result) && result.cause !== 'chain');
   const played = scored.filter((result) => result.error === undefined);
   const published = played.filter((result) => result.ai?.published === true);
   const failures = {};
@@ -1105,6 +1128,7 @@ function modelSummary(name, { results, billed, concurrency }) {
     concurrency,
     errors: scored.length - played.length,
     refused,
+    chains,
     published: { ok: published.length, of: scored.length, share: share(published.length, scored.length), failures },
     sources: { authored, cached: published.filter((result) => result.ai.source === 'cached').length },
     fidelity: { inSpec: mean(finals.map(inSpec)), read: mean(finals.map((final) => final.score)), drawn: mean(finals.map((final) => final.drawnScore)), role: mean(finals.map((final) => final.roleScore)) },
@@ -1232,7 +1256,7 @@ async function measureAll(sentences, base, concurrency, log, paceDir = null) {
           result = await measureSentence(sentence, { base, openGame: (url) => playableFrame(page, url), leave: () => page.goto('about:blank'), log });
         } catch (thrown) {
           // Odmítnutá věta pod souběhem (429, 503) je výsledek měření, ne pád běhu.
-          result = { id: sentence.id, text: sentence.text, checklist: sentence.checklist, error: thrown.message.slice(0, 300) };
+          result = { id: sentence.id, text: sentence.text, checklist: sentence.checklist, error: `${thrown.message}${thrown.cause?.code ? ` (${thrown.cause.code})` : ''}`.slice(0, 300) };
         }
         results.set(sentence.id, result);
         console.log(`${sentence.id} ${result.error ?? (result.ai?.published ? `ai ${result.ai.frameMs === null ? `no frame: ${result.ai.frameError}` : `${Math.round(result.ai.frameMs / 1000)} s`}` : `draft (${result.upgrade.reason ?? result.upgrade.status})`)}${refusedCause(result) ? ` – refused by the ${result.cause}` : ''}`);

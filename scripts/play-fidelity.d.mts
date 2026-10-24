@@ -86,7 +86,8 @@ export interface MeasuredSentence {
   readonly error?: string;
   readonly draft: { readonly versionId: string; readonly spec: unknown; readonly frameMs: number | null; readonly frameError: string | null };
   readonly upgrade: { readonly status: string; readonly reason: string | null; readonly ms: number };
-  readonly cause: UpgradeCause | null;
+  /** `chain` = řetěz mikroher, AI verzi nemá z podstaty (P58B T7). */
+  readonly cause: UpgradeCause | 'chain' | null;
   readonly ai: {
     readonly versionId: string;
     readonly spec: unknown;
@@ -118,6 +119,7 @@ export interface ModelComparison {
   readonly concurrency: number;
   readonly errors: number;
   readonly refused: { readonly door: number; readonly cap: number };
+  readonly chains: number;
   readonly published: { readonly ok: number; readonly of: number; readonly share: number; readonly failures: Record<string, number> };
   readonly sources: { readonly authored: number; readonly cached: number };
   readonly fidelity: { readonly inSpec: number | null; readonly read: number | null; readonly drawn: number | null; readonly role: number | null };
