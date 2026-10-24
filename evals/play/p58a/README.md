@@ -129,3 +129,18 @@ Na `9b0a37f7` stejně jako T1: tatáž nahraná čtení, tentýž soudce po sad�
 - **Brána dev (0,5 celých vět, 0,75 slov) splněná není a jedna cílená oprava ji nepřiblíží.** Největší třída je teď „look“: správné tělo i model na obrazovce a soudce ho nepozná (generický člověk místo profese, kočka bez znaku DJ, ještěrka jako raptor). Druhá je no-role – věc, kterou hra nedostala do žádné role (zombie, náboj, šperk z věty).
 
 **Inference:** zbylé body neleží v kameře ani velikosti. Profese a přívlastky („opera singer“, „dj cat“, „safecracker“) potřebují znak na modelu (rekvizita, kostým), zvířata přesnější model. To je práce na knihovně modelů, ne na scéně.
+
+## Brána na zapečetěné sadě (T9)
+
+Rozbor v `final.md`, čísla v `final.json`, příčiny po slovech v `final-why.json`. Sada otevřená 24. 10. na `158b1c8d` (`holdout-opened.json`), čtení nahrané jednou (`read-holdout.cmd` → `readings/holdout.gpt-oss-20b.json`), soudce Opus 5.5 pro všech 80.
+
+| | celé věty | slova | hrdina | protivník/věc |
+|---|---|---|---|---|
+| 40 vět mimo katalog | 0/40 | 6/80 | 3/40 | 3/40 |
+| 40 vět uvnitř katalogu | 5/40 | 31/80 | 23/40 | 8/40 |
+| **celkem** | **5/80 = 0,06** | **37/160 = 0,23** | 26/80 | 11/80 |
+
+- Brána 0,5 / 0,75 nesplněná. Uvnitř katalogu jako dev (slova 0,39), mimo katalog skoro nic: 34 ze 40 hrdinů nemá model.
+- Robot, nečinný hráč i replay 79/80; v02 spadne v `compose()` (`walk/escape`), v55 server odmítne (`verbs_proved`). Obojí stejně na `1a3306eb`.
+- FPS Pixel 7 medián B/A 0,993; `02-zombie` −20 % a `g-shooter` −24 % ve všech třech opakováních (T9r1).
+- Velikost tu práh dala: hrdina nad 17 % výšky snímku poznaný 22/33, protivník či věc nad 20 % 4/7 (pod 6/29).

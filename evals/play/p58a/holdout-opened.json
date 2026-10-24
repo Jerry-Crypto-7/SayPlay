@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "84812b185bf2091355d9a06df48863b9f726ab8be857a393a167f0747c7def16",
+ "openedAt": "2026-10-23T22:25:52.089Z",
+ "commit": "158b1c8d",
+ "by": "P58A T9 (read-holdout.cmd, play-sets.mjs, visible.mjs judge claude)",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}
