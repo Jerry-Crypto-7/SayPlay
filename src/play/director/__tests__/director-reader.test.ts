@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DIRECTOR_BUDGET_MS, directorQueueState, getDirector, resetDirectorQueue } from '@/app/api/play/_director';
+import { DIRECTOR_BUDGET_MS, directorQueueState, getDirector, MIN_CALL_MS, resetDirectorQueue } from '@/app/api/play/_director';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { DOOR_CEILING, resetConcurrency } from '@/server/paid-slots';
 import { processSpendCap, resetProcessSpendCap } from '@/server/spend-cap';
@@ -189,6 +189,13 @@ describe('the director reads the sentence for the AI version (P58B T4)', () => {
       await getDirector(Date.now() - DIRECTOR_BUDGET_MS + 1000, VISITOR)(SENTENCE);
       expect(readerCalls).toBe(0);
       expect(upstreamCalls).toBe(0);
+    });
+
+    // Revize testů /ship: čas na volání zbývá, na čtení (15 s) před ním už ne – model se zavolá, čtení se nezaplatí.
+    it('pays nothing when the budget fits a director call but not the reading before it', async () => {
+      await getDirector(Date.now() - DIRECTOR_BUDGET_MS + MIN_CALL_MS + 5000, VISITOR)(SENTENCE);
+      expect(readerCalls).toBe(0);
+      expect(upstreamCalls).toBe(1);
     });
 
     it('pays nothing on a path that does not wait for a slot while every play slot is busy', async () => {

@@ -4,7 +4,7 @@
  * další volání. Route a režisér: `create-reader.test.ts`, `director-reader.test.ts`.
  */
 
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -185,6 +185,39 @@ describe('the reader for the AI version (P58B T4)', () => {
     expect(cap.reserve).toHaveBeenCalledTimes(2);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(writes).toEqual([]);
+  });
+
+  // Revize testů /ship: čtení, které neodešlo kvůli volajícímu, nesmí větu zablokovat pro ostatní značkou „nevyšlo“.
+  it('a visitor over the daily limit leaves no failure marker: another visitor reads the sentence', async () => {
+    const fetchImpl = replying(200);
+    const { cap } = bookkeeping();
+    const { store, writes } = memoryStore();
+    const env = { ...ASTRA, PLAY_READER_CALLS_PER_CALLER: '1', PLAY_STORE_DIR: mkdtempSync(join(tmpdir(), 'p58b-reader-limit-')) };
+    await expect(readBeforeDraft('a corgi runs', env, { fetchImpl, cap, store, caller: 'limit-visitor' })).resolves.toEqual(READING);
+    await expect(readBeforeDraft('a pug swims', env, { fetchImpl, cap, store, caller: 'limit-visitor' })).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    await expect(readBeforeDraft('a pug swims', env, { fetchImpl, cap, store, caller: 'other-visitor' })).resolves.toEqual(READING);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(writes.map((write) => write.value)).not.toContain('null');
+  });
+
+  it('a kill switch leaves no failure marker: the sentence reads once the switch is off', async () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'p58b-reader-kill-')), 'control.json');
+    writeFileSync(file, JSON.stringify({ enabled: true, capUsd: 5, off: ['upstream'] }), 'utf8');
+    const fetchImpl = replying(200);
+    const { cap } = bookkeeping();
+    const { store, writes } = memoryStore();
+    await expect(readBeforeDraft('a corgi runs', { ...ASTRA, WORLDSMITH_CONTROL_FILE: file }, { fetchImpl, cap, store, caller: VISITOR })).resolves.toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(writes).toEqual([]);
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store, caller: VISITOR })).resolves.toEqual(READING);
+  });
+
+  it('a good paid reading stays for the full answer life, not the ten-minute miss life', async () => {
+    const { cap } = bookkeeping();
+    const { store, writes } = memoryStore();
+    await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl: replying(200), cap, store, caller: VISITOR })).resolves.toEqual(READING);
+    await vi.waitFor(() => expect(writes).toEqual([{ value: JSON.stringify(READING), ttl: ANSWER_TTL_SECONDS }]));
   });
 
   it('asks nothing and reserves nothing without a key', async () => {
