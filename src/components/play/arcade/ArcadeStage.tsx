@@ -22,6 +22,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
+import { duelCue, duelHurlOf } from '@/play/arcade/pieces/duel';
 import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
@@ -874,6 +875,11 @@ export default function ArcadeStage({
   // Díl souboje bere i úder akce (P46A T8), takže tlačítko Attack by bylo navíc.
   const actions = useMemo(() => actionsOf(session.world).filter((action) => action !== 'attack' || !abilities.includes('strike')), [session, abilities]);
   const hasAbilities = abilities.length > 0;
+  // Zóna souboje svítí, když hra chce její povel (P58C T6b) – týž povel jako štítek nad soupeřem.
+  const duelZoneCue = useMemo(() => {
+    const hurl = duelHurlOf(session.world.control);
+    return (state: Int32Array) => duelCue(state, hurl);
+  }, [session]);
   // Tlačítko Shoot akce střílí týmž blasterem – druhé tlačítko střelby by bylo navíc.
   const fireButton = fires && !abilities.includes('shoot');
   const abilityBase = actions.length > 0 ? 1 + actions.length : fireButton ? 1 : 0;
@@ -917,7 +923,7 @@ export default function ArcadeStage({
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
-      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
+      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
       {enabled && control === 'ball' && session.world.control.id === 'assembly_control' && <div
         className="play-pause-hint" data-testid="ball-dribble-hint"

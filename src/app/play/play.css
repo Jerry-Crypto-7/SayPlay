@@ -1889,6 +1889,18 @@ button.play-version-switch__item:not(:disabled) {
   height: var(--sp-size-icon-s);
 }
 
+/* Klávesa zóny souboje na desktopu (P58C T6b): klávesa z nápovědy hry za popiskem. */
+.play-touch-zone-key {
+  padding: 0 var(--sp-space-2);
+  border: var(--sp-border-thin) solid var(--sp-outline);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+  font-family: var(--sp-font-body);
+  font-size: var(--sp-text-label-size);
+  font-weight: var(--sp-text-label-weight);
+  line-height: var(--sp-text-label-leading);
+}
+
 /* Joystick arény a úkolu (P36C T2): kroužek tam, kam padl prst, páčka jede s tahem. */
 .play-stick {
   position: absolute;

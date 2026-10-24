@@ -13,6 +13,10 @@ export interface TouchZone {
   readonly label: string;
   /** Ikona před popiskem. Šipku nahoru kit nemá a otáčení mimo nakloněné třídy zakazuje – skok nese jen slovo. */
   readonly icon?: IconName;
+  /** Klávesa za popiskem na desktopu; zóny s klávesou se ukážou i bez dotyku (P58C T6b). */
+  readonly key?: string;
+  /** Povel hry, při kterém zóna svítí (`TouchZones` → `cue`). */
+  readonly cue?: string;
 }
 
 /** Plošinovka: levá čtvrtina drží vlevo, druhá vpravo, pravá polovina skáče – palec vlevo běží, palec vpravo skáče. */
@@ -22,10 +26,10 @@ export const PLATFORM_ZONES = [
   { from: 0.5, to: 1, label: 'Jump' },
 ] as const satisfies readonly TouchZone[];
 
-/** Souboj: levá půlka uhne, pravá udeří. */
+/** Souboj: levá půlka uhne, pravá udeří; klávesy jsou ty z nápovědy hry („Space to strike, Down to dodge“). */
 export const DUEL_ZONES = [
-  { from: 0, to: 0.5, label: 'Dodge' },
-  { from: 0.5, to: 1, label: 'Strike' },
+  { from: 0, to: 0.5, label: 'Dodge', key: 'Down', cue: 'dodge' },
+  { from: 0.5, to: 1, label: 'Strike', key: 'Space', cue: 'strike' },
 ] as const satisfies readonly TouchZone[];
 
 /** Index zóny pod prstem; `at` je poloha prstu jako podíl šířky plochy. */
