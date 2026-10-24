@@ -245,6 +245,7 @@ const cornerOf = new Vector3();
 const inView = new Vector3();
 const posedOf = new Box3();
 const restAt = new Vector3();
+const nameAt = new Vector3();
 /** Matice kůže po kostech (kost × inverze vazby); pole roste podle největší kostry. */
 const skinOf: Matrix4[] = [];
 
@@ -458,7 +459,10 @@ function NameAnchor({ surface, control, bodies }: { readonly surface: React.RefO
       const name = bodies[body!.userData.item as string]!;
       if (tag.textContent !== name) tag.textContent = name;
     }
-    tag.style.left = `${(clamp((box.x + 1) / 2, 0.1, 0.9) * 100).toFixed(1)}%`;
+    // Vodorovně nad kořenem těla, ne nad středem rámečku: rámeček rytíře v souboji drží i meč namířený na soupeře
+    // a jméno pak na telefonu stálo mezi nimi, pod povelem „Dodge!“ / „Strike!“ (P58C T6b).
+    const root = body!.getWorldPosition(nameAt).project(camera);
+    tag.style.left = `${(clamp((root.x + 1) / 2, 0.1, 0.9) * 100).toFixed(1)}%`;
     tag.style.top = `${(clamp((1 - box.maxY) / 2, 0.12, 0.95) * 100).toFixed(1)}%`;
     tag.style.visibility = 'visible';
   });

@@ -266,3 +266,51 @@ test('duel: the Quick | Full detail switch leaves the touch zones readable', asy
   const fits = await goal.evaluate((el) => `${String(el.scrollWidth)}×${String(el.scrollHeight)} in ${String(el.clientWidth)}×${String(el.clientHeight)}: ${String(el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1)}`);
   expect(fits).toMatch(/true$/);
 });
+
+// P58C T6b: povel „Dodge!“ / „Strike!“ visí nad soupeřem, jmenovky hrdiny a soupeře (P58A) ho nesmí zakrýt. Na telefonu
+// stála „Knight“ nad středem rámečku rytíře i s mečem namířeným na hydru – přímo pod povelem. Hraje robot po tiku,
+// takže běh dojde přes obě jmenovky (3–6 s) bez ohledu na zátěž stroje.
+test('duel: the name tags never cover the Dodge!/Strike! cue', async ({ page, request }) => {
+  const created = await request.post('/api/play/games', { data: { sentence: 'A knight fights a three-headed hydra at the castle gates.' } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  const { url } = (await created.json()) as { url: string };
+  await page.goto(url);
+  await page.waitForFunction(() => window.__playFrame?.().hero != null && window.__playShell !== undefined, undefined, { timeout: 90_000 });
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'duel');
+  await page.evaluate(() => (window.__playShell as unknown as HandProbe).byHand(true));
+
+  const names = new Set<string>();
+  let together = 0;
+  let tick = 0;
+  // 6,5 s hry: řádek se slovesem, jméno hrdiny (3–4,5 s), jméno soupeře (4,5–6 s).
+  while (tick < 390) {
+    const sample = await page.evaluate(async (look) => {
+      const shell = window.__playShell as unknown as HandProbe & { press(buttons: number): void; hold(axis: number): void };
+      let now = { runState: 'running', tick: 0 };
+      for (let i = 0; i < 3; i += 1) {
+        const wants = shell.botWants();
+        shell.hold(wants?.axis ?? 0);
+        shell.press(wants?.buttons ?? 0);
+        now = shell.tickByHand();
+      }
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+      const [cue, name] = look.map((selector) => {
+        const el = document.querySelector<HTMLElement>(selector);
+        if (el === null || getComputedStyle(el).visibility !== 'visible') return null;
+        const { x, y, width, height } = el.getBoundingClientRect();
+        return { text: el.textContent, x, y, width, height };
+      });
+      return { ...now, cue, name };
+    }, ['[data-testid="duel-cue"]', '[data-testid="play-name-line"]']);
+    expect(sample.runState, `the bot lost the duel at tick ${String(sample.tick)}`).toBe('running');
+    tick = sample.tick;
+    const { cue, name } = sample;
+    if (name != null) names.add(name.text ?? '');
+    if (cue == null || name == null) continue;
+    together += 1;
+    const overlaps = cue.x < name.x + name.width && name.x < cue.x + cue.width && cue.y < name.y + name.height && name.y < cue.y + cue.height;
+    expect(overlaps, `tick ${String(tick)}: ${JSON.stringify(cue)} under ${JSON.stringify(name)}`).toBe(false);
+  }
+  expect([...names].sort()).toEqual(['Knight', 'Three-headed hydra']);
+  expect(together, 'the cue and a name tag never shared the screen').toBeGreaterThan(0);
+});
