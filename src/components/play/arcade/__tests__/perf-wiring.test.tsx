@@ -9,7 +9,7 @@
  */
 
 import { type ReactElement, type ReactNode, isValidElement } from 'react';
-import { Bone, BoxGeometry, Float32BufferAttribute, Group, Mesh, MeshStandardMaterial, type Object3D, PerspectiveCamera, Scene, Skeleton, SkinnedMesh, Uint16BufferAttribute } from 'three';
+import { Bone, Box3, BoxGeometry, Float32BufferAttribute, Group, Mesh, MeshStandardMaterial, type Object3D, PerspectiveCamera, Scene, Skeleton, SkinnedMesh, Uint16BufferAttribute } from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,7 +17,7 @@ import { buildWorld, instantiate } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import type { RiggedCharacter } from '@/play/arcade/models';
 
-import ArcadeStage from '../ArcadeStage';
+import ArcadeStage, { frameOf, posedBox } from '../ArcadeStage';
 import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 
@@ -211,5 +211,52 @@ describe('arena perf wiring (P36C T9)', () => {
     hooks.after[0]!();
     expect(search).toHaveBeenCalledTimes(2);
     expect(host.dataset.promptAt).toBeUndefined();
+  });
+
+  it('measures the bone pose exactly like three without skinning each vertex per bone (P58A T9r1)', () => {
+    // Čitelná těla (`LegibleBodies`) měří pózu 4× za sekundu; `computeBoundingBox` three násobí matici kosti
+    // u každého vrcholu a váhy – ork a kovboj tak stáli na telefonu pětinu FPS a obraz vypadal stejně.
+    const root = new Bone();
+    const arm = new Bone();
+    arm.position.y = 0.9;
+    root.add(arm);
+    const geometry = new BoxGeometry(0.5, 1.8, 0.3, 2, 4, 2);
+    const position = geometry.getAttribute('position');
+    // Horní půlka dvěma kostmi (0,7 paže, 0,3 kořen), dolní jen kořenem.
+    const index = new Uint16Array(position.count * 4);
+    const weight = new Float32Array(position.count * 4);
+    for (let i = 0; i < position.count; i += 1) {
+      const upper = position.getY(i) > 0;
+      index.set(upper ? [1, 0, 0, 0] : [0, 0, 0, 0], i * 4);
+      weight.set(upper ? [0.7, 0.3, 0, 0] : [1, 0, 0, 0], i * 4);
+    }
+    geometry.setAttribute('skinIndex', new Uint16BufferAttribute(index, 4));
+    geometry.setAttribute('skinWeight', new Float32BufferAttribute(weight, 4));
+    const body = new SkinnedMesh(geometry, new MeshStandardMaterial());
+    body.add(root);
+    const world = new Scene().add(body);
+    // Vazba mimo počátek (`bindMatrix` ≠ jednotková), pak póza: paže se ohne o 60°, kořen se posune.
+    body.position.set(1, 0.4, 6);
+    body.rotation.y = 0.5;
+    world.updateMatrixWorld(true);
+    body.bind(new Skeleton([root, arm]));
+    arm.rotation.z = Math.PI / 3;
+    root.position.x = 0.2;
+    world.updateMatrixWorld(true);
+    const camera = new PerspectiveCamera(50, 0.5, 0.1, 100);
+    camera.lookAt(1, 0.4, 6);
+    camera.updateMatrixWorld();
+
+    // Vzor: kvádr pózy, jak ho spočítá three, na dvojčeti se stejnou kostrou a vazbou.
+    const twin = body.clone(false);
+    twin.computeBoundingBox();
+    const reference = twin.boundingBox;
+    const skin = vi.spyOn(body, 'applyBoneTransform');
+    expect(posedBox(body, new Box3())).toEqual(reference);
+    const frame = frameOf(body, camera, 400, 800);
+    // Póza se opravdu počítá (ohnutá paže ≠ klidový kvádr) – a three ji po vrcholech nepřepočítal.
+    expect(frame).not.toEqual(frameOf(body, camera, 400, 800, false));
+    expect(skin).not.toHaveBeenCalled();
+    expect(body.boundingBox).toBeNull();
   });
 });

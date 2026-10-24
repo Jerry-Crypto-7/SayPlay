@@ -15,7 +15,7 @@
 
 import { addAfterEffect, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Mesh, type Object3D, PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
+import { Box3, type Camera, Matrix4, Mesh, type Object3D, PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -242,6 +242,44 @@ const shown = (object: Object3D): boolean => {
 
 const cornerOf = new Vector3();
 const inView = new Vector3();
+const posedOf = new Box3();
+const restAt = new Vector3();
+/** Matice kůže po kostech (kost × inverze vazby); pole roste podle největší kostry. */
+const skinOf: Matrix4[] = [];
+
+/**
+ * Kvádr riggované sítě v póze kostí – tytéž počty jako `SkinnedMesh.computeBoundingBox`, jen matici kosti
+ * násobí jednou za kost, ne za každý vrchol a váhu. Three ji násobí až 4× na vrchol: ork a kovboj (13 tisíc
+ * vrcholů) stáli na telefonu (CPU 4×) 50 ms každé měření `LegibleBodies`, scéna ztratila pětinu FPS (P58A T9r1).
+ * Tady ~6× míň; kvádr vyšel do bitu stejný u všech 144 riggovaných postav a jejich klipů. `boundingBox` sítě nepřepisuje.
+ */
+export function posedBox(mesh: SkinnedMesh, box: Box3): Box3 {
+  const { bones, boneInverses } = mesh.skeleton;
+  for (let b = 0; b < bones.length; b += 1) (skinOf[b] ??= new Matrix4()).multiplyMatrices(bones[b]!.matrixWorld, boneInverses[b]!);
+  const bind = mesh.bindMatrix.elements;
+  const { skinIndex, skinWeight, position } = mesh.geometry.attributes;
+  box.makeEmpty();
+  for (let i = 0; i < position!.count; i += 1) {
+    // Klidová poloha i s morfy, pak vazba (afinní: w = 1).
+    Mesh.prototype.getVertexPosition.call(mesh, i, restAt);
+    const bx = bind[0]! * restAt.x + bind[4]! * restAt.y + bind[8]! * restAt.z + bind[12]!;
+    const by = bind[1]! * restAt.x + bind[5]! * restAt.y + bind[9]! * restAt.z + bind[13]!;
+    const bz = bind[2]! * restAt.x + bind[6]! * restAt.y + bind[10]! * restAt.z + bind[14]!;
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    for (let c = 0; c < 4; c += 1) {
+      const weight = skinWeight!.getComponent(i, c);
+      if (weight === 0) continue;
+      const m = skinOf[skinIndex!.getComponent(i, c)]!.elements;
+      x += (m[0]! * bx + m[4]! * by + m[8]! * bz + m[12]!) * weight;
+      y += (m[1]! * bx + m[5]! * by + m[9]! * bz + m[13]!) * weight;
+      z += (m[2]! * bx + m[6]! * by + m[10]! * bz + m[14]!) * weight;
+    }
+    box.expandByPoint(restAt.set(x, y, z).applyMatrix4(mesh.bindMatrixInverse));
+  }
+  return box;
+}
 
 /**
  * Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich.
@@ -261,8 +299,7 @@ export function frameOf(object: Object3D, camera: Camera, width: number, height:
     let box: Box3;
     if (posed && (mesh as SkinnedMesh).isSkinnedMesh === true) {
       // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
-      (mesh as SkinnedMesh).computeBoundingBox();
-      box = (mesh as SkinnedMesh).boundingBox!;
+      box = posedBox(mesh as SkinnedMesh, posedOf);
     } else {
       if (mesh.geometry.boundingBox === null) mesh.geometry.computeBoundingBox();
       box = mesh.geometry.boundingBox!;
