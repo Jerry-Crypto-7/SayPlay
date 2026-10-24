@@ -247,11 +247,17 @@ export function assemblyFactory(assembly: RecipeAssembly): 'drive' | 'native' | 
   return ['glide', 'walk', 'ball'].includes(assembly.move) ? 'native' : undefined;
 }
 
-/** Names belong to parts: the content without the things the parts play; a named projectile stays the ammunition. */
-export function withoutPartNames(content: GenreSpec, parts: readonly { readonly label: string }[]): GenreSpec {
+/**
+ * Names belong to parts: the content without the things the parts play; a named projectile stays the ammunition.
+ * `dropped` (P58A T6): the parts were dropped, so a foe the sentence names stays the base genre's foe – the duel's
+ * rival is „rival rooster“, not the genre's default „rival“.
+ */
+export function withoutPartNames(content: GenreSpec, parts: readonly { readonly label: string }[], dropped = false): GenreSpec {
   const head = (label: string) => singular(label.toLowerCase()).split(' ').at(-1);
-  return { ...content, cast: content.cast?.filter(member => member.does === 'scenery' && member.verb === 'shoot' || !parts.some(part => head(part.label) === head(member.label))) };
+  const kept = (does: CastRole, verb: string | undefined) => (does === 'scenery' && verb === 'shoot') || (dropped && PART_FOES.has(does));
+  return { ...content, cast: content.cast?.filter(member => kept(member.does, member.verb) || !parts.some(part => head(part.label) === head(member.label))) };
 }
+const PART_FOES: ReadonlySet<CastRole> = new Set(['fight', 'chase_me', 'avoid', 'shoot_at']);
 
 function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
   const { move } = assembly;

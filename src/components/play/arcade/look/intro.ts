@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { PerspectiveCamera, Vector3 } from 'three';
+import type { Camera, PerspectiveCamera, Vector3 } from 'three';
 
 /**
  * Úvodní průlet (P28D T6, F-29; P37B T6): kamera přijíždí z širokého záběru
@@ -52,6 +52,11 @@ export function applyIntro(camera: PerspectiveCamera, look: Vector3, left: numbe
   camera.lookAt(look);
 }
 
+/** Zbytek průletu, který scéna na kameru naposledy použila (`introLeft`); 0 = herní pohled nebo scéna bez průletu. */
+export function introLeftOf(camera: Camera): number {
+  return (camera.userData.intro as IntroMark | undefined)?.left ?? 0;
+}
+
 /**
  * Herní kamera bez průletu (P54B T8): `out` dostane objektiv a polohu `camera`, a běží-li
  * průlet, polohu vrácenou na herní pohled – orientační bod se staví podle záběru hry, ne
@@ -68,8 +73,8 @@ export function restCamera(camera: PerspectiveCamera, out: PerspectiveCamera): P
   out.up.copy(camera.up);
   out.position.copy(camera.position);
   out.quaternion.copy(camera.quaternion);
-  const mark = camera.userData.intro as IntroMark | undefined;
-  if (mark !== undefined && mark.left !== 0) {
+  if (introLeftOf(camera) !== 0) {
+    const mark = camera.userData.intro as IntroMark;
     const [x, y, z] = mark.look;
     const pull = 1 + INTRO_PULL * mark.left;
     out.position.y -= INTRO_RISE * mark.left;

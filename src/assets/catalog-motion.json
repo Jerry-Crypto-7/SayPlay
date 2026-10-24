@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b2c7e2e0515fe5f80d7f0965b8b2e888b84679885c471edfbc5ba80c52ca6c8b",
+ "catalogHash": "b84974e5e53a96d1360f7f3537019c763bdfc4f3a743de349e13a5b05269f195",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1774,6 +1774,13 @@
   "gen3d-training-dummy": {"class":"prop"},
   "gen3d-pagoda": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-koi-pond": {"class":"prop"},
-  "gen3d-fishing-rod-rack": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-fishing-rod-rack": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-bun": {"class":"prop"},
+  "gen3d-rail": {"class":"prop"},
+  "gen3d-blacksmith": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-hostage": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-lizard": {"class":"quadruped","regions":{"tailZ":-0.246,"legY":0.249}},
+  "gen3d-trout": {"class":"swimmer","regions":{"tailZ":-0.75}},
+  "gen3d-dumpling": {"class":"prop"}
  }
 }

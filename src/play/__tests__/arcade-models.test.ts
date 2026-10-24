@@ -42,7 +42,7 @@ describe('arcade model choice from role labels', () => {
     ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
     ['space bunny', 'rigged:pet-bunny'], // od P35 T1 králík z Cube Pets, ne křeček
     ['grizzly bear', 'gen3d-bear'], // od 28. 9. vlastní model z gen3d
-    ['wild lizard', 'fox'], // kategorie zvíře
+    ['wild badger', 'fox'], // kategorie zvíře (ještěrka má od P58A T7 vlastní model)
     ['mall security guard', 'gen3d-guard'], // vlastní model z gen3d (e5b840b) přebije kategorii člověk
     ['angry bulldozer', 'gen3d-bulldozer'], // od 28. 9. vlastní model z gen3d
     ['angry forklift', 'gen3d-forklift'], // od P37D vlastní model z gen3d

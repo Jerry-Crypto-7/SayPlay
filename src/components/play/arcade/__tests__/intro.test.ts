@@ -17,7 +17,7 @@ vi.mock('react', async (importOriginal) => ({
   useEffect: (effect: () => unknown) => hooks.effects.push(effect),
 }));
 
-const { INTRO_S, applyIntro, introLeft, useIntroClock } = await import('../look/intro');
+const { INTRO_S, applyIntro, introLeft, introLeftOf, restCamera, useIntroClock } = await import('../look/intro');
 
 afterEach(() => {
   hooks.effects.length = 0;
@@ -63,5 +63,28 @@ describe('camera intro', () => {
     expect(introLeft(clock())).toBe(1);
     win.dispatchEvent(new Event('pointerdown'));
     expect(introLeft(clock())).toBe(0);
+  });
+
+  it('reports the intro left on the camera until it lands, so a card drawn on demand redraws to the game view', () => {
+    // P58A T3: úvodní karta kreslí na požádání a průlet na ní zamrzl u startu – rytíř 2,6× dál, 9,8 % výšky.
+    const camera = new PerspectiveCamera();
+    expect(introLeftOf(camera)).toBe(0);
+    applyIntro(camera, new Vector3(), 1);
+    expect(introLeftOf(camera)).toBe(1);
+    // Dosednutí jde krátce pod nulu – i to je ještě průlet.
+    applyIntro(camera, new Vector3(), introLeft(INTRO_S * 0.95));
+    expect(introLeftOf(camera)).toBeLessThan(0);
+    applyIntro(camera, new Vector3(), introLeft(INTRO_S));
+    expect(introLeftOf(camera)).toBe(0);
+  });
+
+  it('gives the game view while the intro still runs, so a body is not sized for the wide shot', () => {
+    const look = new Vector3(1, 0, 2);
+    const camera = new PerspectiveCamera();
+    camera.position.set(1, 5, -6);
+    camera.lookAt(look);
+    const game = camera.position.clone();
+    applyIntro(camera, look, 0.9);
+    expect(restCamera(camera, new PerspectiveCamera()).position.distanceTo(game)).toBeLessThan(1e-9);
   });
 });

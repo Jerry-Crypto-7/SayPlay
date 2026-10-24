@@ -1,5 +1,6 @@
 import { devices, expect, type Page, test } from '@playwright/test';
 
+import { LEGIBLE_CAP, LEGIBLE_SHARE } from '../src/play/arcade/models';
 import { arenaGenre } from '../src/play/genre/arena';
 import { compileGenre, readGenreSpec } from '../src/play/genre/index';
 import { platformerGenre } from '../src/play/genre/platformer';
@@ -9,14 +10,19 @@ import { voyageGenre } from '../src/play/genre/voyage';
 import type { GameSpecV1 } from '../src/play/spec';
 
 /**
- * Čitelný hrdina (P36C T6): v každém z 5 žánrů, na telefonu i na desktopu, je
- * hrdina aspoň 8 % výšky obrazu a nese inkoustový obrys. Výška je promítnutý
+ * Čitelný hrdina (P36C T6, práh P58A T3 `LEGIBLE_SHARE.hero`): v každém z 5 žánrů, na telefonu i na desktopu, je
+ * hrdina aspoň 20 % výšky obrazu a nese inkoustový obrys. Výška je promítnutý
  * kvádr hrdiny skutečnou kamerou scény (`__playFrame().hero`, NDC −1 … 1), obrys
  * počet obalů pod hrdinou (`heroInk`). Obrys je v scéně, ne v postprocessingu,
  * takže drží i na úrovni `low`, která skládač nemá.
+ *
+ * Pod 20 % smí jen hrdina, kterého čitelnost už zvětšila na strop (`LEGIBLE_CAP`): zbytek je záběr kamery –
+ * úvodní karta úkolu rámuje i pronásledovatele a rytíř má při 1× 9,8 % (P58A T4). I ten drží podlahu P36C
+ * (8 % při 1×) krát strop.
  */
 
-const MIN_HERO_SHARE = 0.08;
+const MIN_HERO_SHARE = LEGIBLE_SHARE.hero;
+const CAPPED_HERO_SHARE = 0.08 * LEGIBLE_CAP;
 
 const GAMES = [
   { genre: 'runner', module: runnerGenre, sentence: 'a fox runs through a forest dodging logs and rocks' },
@@ -36,6 +42,7 @@ interface Hero {
   readonly share: number;
   readonly ink: number;
   readonly behind: boolean;
+  readonly legible: number;
 }
 
 /** Počet sítí se 1,5 s nezměnil = modely dotažené; pak změř hrdinu. */
@@ -52,7 +59,7 @@ async function heroOnScreen(page: Page): Promise<Hero> {
   return page.evaluate(() => {
     const frame = window.__playFrame!();
     const hero = frame.hero!;
-    return { share: (hero.maxY - hero.minY) / 2, ink: frame.heroInk, behind: hero.behind };
+    return { share: (hero.maxY - hero.minY) / 2, ink: frame.heroInk, behind: hero.behind, legible: frame.legible.hero };
   });
 }
 
@@ -68,15 +75,15 @@ for (const [device, use] of [
     test.setTimeout(150_000);
 
     for (const game of GAMES) {
-      test(`${game.genre}: hero is at least 8 % of the frame and outlined`, async ({ page, request }) => {
+      test(`${game.genre}: hero is at least 20 % of the frame and outlined`, async ({ page, request }) => {
         const response = await request.post('/api/play/games', { data: { spec: gameSpecOf(game) } });
         expect(response.status(), await response.text()).toBeLessThan(300);
         const { url } = (await response.json()) as { url: string };
         await page.goto(url);
         const hero = await heroOnScreen(page);
-        console.log(`${device} ${game.genre}: hero ${(hero.share * 100).toFixed(1)} % of the height, ${hero.ink} ink hulls`);
+        console.log(`${device} ${game.genre}: hero ${(hero.share * 100).toFixed(1)} % of the height at ${hero.legible.toFixed(2)}x, ${hero.ink} ink hulls`);
         expect(hero.behind).toBe(false);
-        expect(hero.share).toBeGreaterThanOrEqual(MIN_HERO_SHARE);
+        expect(hero.share).toBeGreaterThanOrEqual(hero.legible >= LEGIBLE_CAP ? CAPPED_HERO_SHARE : MIN_HERO_SHARE);
         expect(hero.ink).toBeGreaterThan(0);
       });
     }

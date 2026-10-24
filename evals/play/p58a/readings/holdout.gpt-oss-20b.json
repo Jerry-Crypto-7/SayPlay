@@ -1,0 +1,3305 @@
+{
+  "schema": "p56a-readings.v1",
+  "set": "evals/play/p58a/holdout.json",
+  "model": "gpt-oss-20b",
+  "transport": "llamacpp:http://127.0.0.1:8792",
+  "promptVersion": "beda31d4ee60c875",
+  "budgetMs": 60000,
+  "commit": "158b1c8d",
+  "readAt": "2026-10-23T22:30:31.991Z",
+  "summary": {
+    "n": 80,
+    "valid": 79,
+    "genreAndHero": 77,
+    "withFoe": 43,
+    "withTitle": 79,
+    "p50Ms": 3125,
+    "p95Ms": 4505,
+    "maxMs": 6852
+  },
+  "cache": {
+    "rereads": 79,
+    "sameAgain": 79,
+    "extraCalls": 0
+  },
+  "readings": [
+    {
+      "id": "v01",
+      "text": "make a cat jump between rooftops and catch a fish before it slides into the gutter.",
+      "ms": 4245,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "jump",
+            "class": "platform"
+          },
+          {
+            "word": "catch",
+            "class": "melee"
+          }
+        ],
+        "hero": "cat",
+        "roles": [
+          {
+            "noun": "fish",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "gutter",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "rooftops",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "fish",
+        "world": "city",
+        "title": "Cat Rooftop Fish Catch"
+      }
+    },
+    {
+      "id": "v02",
+      "text": "a dog has to grab a ball and escape from a farmer without getting caught.",
+      "ms": 2690,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "grab",
+            "class": "manipulate"
+          },
+          {
+            "word": "escape",
+            "class": "move_free"
+          }
+        ],
+        "hero": "dog",
+        "roles": [
+          {
+            "noun": "ball",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "farmer",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "farm",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "farmer",
+        "item": "ball",
+        "world": "meadow",
+        "title": "Dog Ball Escape"
+      }
+    },
+    {
+      "id": "v03",
+      "text": "let a rabbit sneak past a fox to steal a carrot from the garden.",
+      "ms": 2481,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "steal",
+            "class": "move_free"
+          }
+        ],
+        "hero": "rabbit",
+        "roles": [
+          {
+            "noun": "fox",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "carrot",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "garden",
+        "mood": "stealth",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": "fox",
+        "item": "carrot",
+        "world": null,
+        "title": "Rabbit Sneak"
+      }
+    },
+    {
+      "id": "v04",
+      "text": "a horse races a tractor down a muddy lane with shortcuts through the field.",
+      "ms": 3901,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          }
+        ],
+        "hero": "horse",
+        "roles": [
+          {
+            "noun": "tractor",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "lane",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "field",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "field",
+        "mood": "racing",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": "tractor",
+        "item": null,
+        "world": "meadow",
+        "title": "Horse Races Tractor"
+      }
+    },
+    {
+      "id": "v05",
+      "text": "a cow balances a milk bottle on its head while walking over a wobbly bridge.",
+      "ms": 6852,
+      "reading": null
+    },
+    {
+      "id": "v06",
+      "text": "a pig rolls a pumpkin uphill while a wolf tries to knock it loose.",
+      "ms": 5024,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "roll",
+            "class": "move_free"
+          },
+          {
+            "word": "knock",
+            "class": "throw"
+          }
+        ],
+        "hero": "pig",
+        "roles": [
+          {
+            "noun": "pumpkin",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "wolf",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "uphill",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "foe": "wolf",
+        "item": "pumpkin",
+        "world": null,
+        "title": "Pig Rolls Pumpkin"
+      }
+    },
+    {
+      "id": "v07",
+      "text": "a sheep has to dodge a lawn mower while finding the opening in a fence.",
+      "ms": 3542,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "dodge",
+            "class": "move_free"
+          }
+        ],
+        "hero": "sheep",
+        "roles": [
+          {
+            "noun": "lawn mower",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "fence opening",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "nervous",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "lawn mower",
+        "item": null,
+        "world": "meadow",
+        "title": "Sheep Fence Escape"
+      }
+    },
+    {
+      "id": "v08",
+      "text": "make a goat carry a cabbage up a mountain without dropping it off the edge.",
+      "ms": 2728,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "carry",
+            "class": "move_free"
+          }
+        ],
+        "hero": "goat",
+        "roles": [
+          {
+            "noun": "cabbage",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "edge",
+            "kind": "hazard",
+            "count": 1
+          }
+        ],
+        "setting": "mountain",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "cabbage",
+        "world": null,
+        "title": "Goat Cabbage Mountain"
+      }
+    },
+    {
+      "id": "v09",
+      "text": "a chicken chases a worm around the yard while avoiding a hungry cat.",
+      "ms": 2381,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "chases",
+            "class": "move_free"
+          },
+          {
+            "word": "avoiding",
+            "class": "move_free"
+          }
+        ],
+        "hero": "chicken",
+        "roles": [
+          {
+            "noun": "worm",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "cat",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "yard",
+        "mood": "chase",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "cat",
+        "item": "worm",
+        "world": "meadow",
+        "title": "Chicken Chases Worm"
+      }
+    },
+    {
+      "id": "v10",
+      "text": "a duck pushes an egg across a pond while a crocodile circles closer.",
+      "ms": 2188,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "push",
+            "class": "move_free"
+          }
+        ],
+        "hero": "duck",
+        "roles": [
+          {
+            "noun": "egg",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "crocodile",
+            "kind": "chaser",
+            "count": null
+          }
+        ],
+        "setting": "pond",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "foe": "crocodile",
+        "item": "egg",
+        "world": null,
+        "title": "Duck Pushes Egg"
+      }
+    },
+    {
+      "id": "v11",
+      "text": "a mouse drags a cheese wedge through a kitchen while a cat patrols the floor.",
+      "ms": 2090,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "drag",
+            "class": "move_free"
+          }
+        ],
+        "hero": "mouse",
+        "roles": [
+          {
+            "noun": "cheese wedge",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "cat",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "kitchen",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "cat",
+        "item": "cheese wedge",
+        "world": null,
+        "title": "Mouse Cheese Drag"
+      }
+    },
+    {
+      "id": "v12",
+      "text": "a rat rides a skateboard through a drain and jumps whenever the water gets too deep.",
+      "ms": 3172,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "rides",
+            "class": "steer"
+          },
+          {
+            "word": "jumps",
+            "class": "timing"
+          }
+        ],
+        "hero": "rat",
+        "roles": [
+          {
+            "noun": "water",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "drain",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": "city",
+        "title": "Rat Skate Drain"
+      }
+    },
+    {
+      "id": "v13",
+      "text": "a squirrel catches an acorn bouncing down a tree before it reaches the ground.",
+      "ms": 3221,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "squirrel",
+        "roles": [
+          {
+            "noun": "acorn",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "tree",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "acorn",
+        "world": "forest",
+        "title": "Squirrel Acorn Catch"
+      }
+    },
+    {
+      "id": "v14",
+      "text": "a fox sneaks around a sleeping dog to reach the other side of a barn.",
+      "ms": 3518,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move_free",
+            "class": "move_free"
+          },
+          {
+            "word": "reach",
+            "class": "move_free"
+          }
+        ],
+        "hero": "fox",
+        "roles": [
+          {
+            "noun": "dog",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "barn",
+        "mood": "stealth",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": "dog",
+        "item": null,
+        "world": null,
+        "title": "Fox Sneaks Barn"
+      }
+    },
+    {
+      "id": "v15",
+      "text": "a wolf races a deer through the woods and has to jump over fallen branches.",
+      "ms": 2159,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          },
+          {
+            "word": "jump",
+            "class": "platform"
+          }
+        ],
+        "hero": "wolf",
+        "roles": [
+          {
+            "noun": "fallen branches",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "woods",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "deer",
+        "item": null,
+        "world": "forest",
+        "title": "Wolf races deer"
+      }
+    },
+    {
+      "id": "v16",
+      "text": "a bear protects a honey jar from a bee by moving it between hiding spots.",
+      "ms": 2395,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move_free",
+            "class": "move_free"
+          }
+        ],
+        "hero": "bear",
+        "roles": [
+          {
+            "noun": "honey jar",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "bee",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "hiding spots",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "forest",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "bee",
+        "item": "honey jar",
+        "world": "forest",
+        "title": "Bear Protects Honey"
+      }
+    },
+    {
+      "id": "v17",
+      "text": "a frog jumps between lily pads to catch a fly that keeps changing direction.",
+      "ms": 2130,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "jumps",
+            "class": "platform"
+          }
+        ],
+        "hero": "frog",
+        "roles": [
+          {
+            "noun": "fly",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "pond",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "fly",
+        "world": null,
+        "title": "Frog Jump Catch"
+      }
+    },
+    {
+      "id": "v18",
+      "text": "a turtle carries a strawberry across a busy garden without letting it roll off its shell.",
+      "ms": 3051,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "carries",
+            "class": "move_free"
+          }
+        ],
+        "hero": "turtle",
+        "roles": [
+          {
+            "noun": "strawberry",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "garden",
+        "mood": "busy",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "strawberry",
+        "world": "meadow",
+        "title": "Turtle Strawberry Carry"
+      }
+    },
+    {
+      "id": "v19",
+      "text": "a fish swims through narrow gaps in a reef to escape a shark.",
+      "ms": 3446,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "move_free",
+            "class": "move_free"
+          }
+        ],
+        "hero": "fish",
+        "roles": [
+          {
+            "noun": "shark",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "reef",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "shark",
+        "item": null,
+        "world": "underwater",
+        "title": "Fish Gap Escape"
+      }
+    },
+    {
+      "id": "v20",
+      "text": "a shark races a speedboat around an island and can cut underneath the dock.",
+      "ms": 3976,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "steer"
+          },
+          {
+            "word": "cut",
+            "class": "steer"
+          }
+        ],
+        "hero": "shark",
+        "roles": [
+          {
+            "noun": "speedboat",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "dock",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "island",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "island",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": "speedboat",
+        "item": null,
+        "world": "ocean",
+        "title": "Shark Races Speedboat"
+      }
+    },
+    {
+      "id": "v21",
+      "text": "a dolphin keeps a beach ball in the air while swimming through floating hoops.",
+      "ms": 5467,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move_free",
+            "class": "move_free"
+          },
+          {
+            "word": "timing",
+            "class": "timing"
+          }
+        ],
+        "hero": "dolphin",
+        "roles": [
+          {
+            "noun": "beach ball",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "floating hoops",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "beach",
+        "mood": "playful",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "collect"
+        },
+        "foe": null,
+        "item": "beach ball",
+        "world": "beach",
+        "title": "Dolphin Keeps Ball"
+      }
+    },
+    {
+      "id": "v22",
+      "text": "a penguin slides downhill after a fish while a seal tries to get there first.",
+      "ms": 2155,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "slides",
+            "class": "runner"
+          }
+        ],
+        "hero": "penguin",
+        "roles": [
+          {
+            "noun": "fish",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "seal",
+            "kind": "chaser",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "competitive",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "seal",
+        "item": "fish",
+        "world": null,
+        "title": "Penguin Slide"
+      }
+    },
+    {
+      "id": "v23",
+      "text": "an owl delivers a letter through a forest without touching any branches.",
+      "ms": 3600,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "delivers",
+            "class": "move_free"
+          }
+        ],
+        "hero": "owl",
+        "roles": [
+          {
+            "noun": "letter",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "branches",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "forest",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "letter",
+        "world": "forest",
+        "title": "Owl Letter Delivery"
+      }
+    },
+    {
+      "id": "v24",
+      "text": "an eagle dodges a helicopter while flying through a canyon with barely any room.",
+      "ms": 3880,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "dodges",
+            "class": "move_free"
+          },
+          {
+            "word": "flying",
+            "class": "move_free"
+          }
+        ],
+        "hero": "eagle",
+        "roles": [
+          {
+            "noun": "helicopter",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "canyon",
+        "mood": "tight",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "helicopter",
+        "item": null,
+        "world": null,
+        "title": "Eagle Dodges Helicopter"
+      }
+    },
+    {
+      "id": "v25",
+      "text": "a bee carries a flower back home while a spider blocks the shortest route.",
+      "ms": 3593,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "carries",
+            "class": "move_free"
+          }
+        ],
+        "hero": "bee",
+        "roles": [
+          {
+            "noun": "spider",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "flower",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "home",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "busy",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": "spider",
+        "item": "flower",
+        "world": "meadow",
+        "title": "Bee Carries Flower Home"
+      }
+    },
+    {
+      "id": "v26",
+      "text": "a butterfly escapes a bird by flying through tiny openings in a greenhouse.",
+      "ms": 2248,
+      "reading": {
+        "control": "flap",
+        "verbs": [
+          {
+            "word": "flap",
+            "class": "flap"
+          }
+        ],
+        "hero": "butterfly",
+        "roles": [
+          {
+            "noun": "bird",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "openings",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "greenhouse",
+        "mood": "tight",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
+        "foe": "bird",
+        "item": null,
+        "world": null,
+        "title": "Butterfly Escapes Greenhouse"
+      }
+    },
+    {
+      "id": "v27",
+      "text": "an ant pushes a sugar cube over a picnic blanket without falling into the folds.",
+      "ms": 2719,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "pushes",
+            "class": "timing"
+          }
+        ],
+        "hero": "an ant",
+        "roles": [
+          {
+            "noun": "sugar cube",
+            "kind": "target",
+            "count": 1
+          },
+          {
+            "noun": "folds",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "picnic blanket",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "sugar cube",
+        "world": "meadow",
+        "title": "Ant Pushes Sugar Cube"
+      }
+    },
+    {
+      "id": "v28",
+      "text": "a spider swings under a table and catches a cookie crumb before it hits the floor.",
+      "ms": 3104,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "swings",
+            "class": "move_free"
+          },
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "spider",
+        "roles": [
+          {
+            "noun": "cookie crumb",
+            "kind": "collectible",
+            "count": 1
+          }
+        ],
+        "setting": "table",
+        "mood": "quick",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "cookie crumb",
+        "world": "living_room",
+        "title": "Spider Cookie Catch"
+      }
+    },
+    {
+      "id": "v29",
+      "text": "a snake dodges a rolling bowling ball inside a twisting tunnel that keeps getting narrower.",
+      "ms": 3562,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "dodges",
+            "class": "melee"
+          }
+        ],
+        "hero": "snake",
+        "roles": [
+          {
+            "noun": "bowling ball",
+            "kind": "threat",
+            "count": 1
+          }
+        ],
+        "setting": "twisting tunnel",
+        "mood": "tight",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "bowling ball",
+        "item": null,
+        "world": "cave",
+        "title": "Snake Tunnel Dodge"
+      }
+    },
+    {
+      "id": "v30",
+      "text": "a monkey swings across a river to grab a banana hanging above the water.",
+      "ms": 4089,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "swings",
+            "class": "timing"
+          }
+        ],
+        "hero": "monkey",
+        "roles": [
+          {
+            "noun": "banana",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "river",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "banana",
+        "world": null,
+        "title": "Monkey Banana Swing"
+      }
+    },
+    {
+      "id": "v31",
+      "text": "a farmer chases a runaway pig through a field without stepping on the crops.",
+      "ms": 3165,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "chase",
+            "class": "runner"
+          }
+        ],
+        "hero": "farmer",
+        "roles": [
+          {
+            "noun": "crops",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "field",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "pig",
+        "item": null,
+        "world": "meadow",
+        "title": "Farmer Chases Pig"
+      }
+    },
+    {
+      "id": "v32",
+      "text": "a chef flips a pancake higher each time and has to catch it while the kitchen floor tilts.",
+      "ms": 3227,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "flip",
+            "class": "throw"
+          },
+          {
+            "word": "catch",
+            "class": "timing"
+          }
+        ],
+        "hero": "chef",
+        "roles": [
+          {
+            "noun": "pancake",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "floor",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "kitchen",
+        "mood": "tilting",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "foe": null,
+        "item": "pancake",
+        "world": "cave",
+        "title": "Chef Pancake Flip"
+      }
+    },
+    {
+      "id": "v33",
+      "text": "a firefighter uses a hose to push a zombie away from the station door.",
+      "ms": 3558,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "push",
+            "class": "timing"
+          }
+        ],
+        "hero": "firefighter",
+        "roles": [
+          {
+            "noun": "zombie",
+            "kind": "threat",
+            "count": 1
+          },
+          {
+            "noun": "station door",
+            "kind": "destination",
+            "count": 1
+          }
+        ],
+        "setting": "fire station",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "foe": "zombie",
+        "item": "hose",
+        "world": null,
+        "title": "Firefighter Hose Push"
+      }
+    },
+    {
+      "id": "v34",
+      "text": "a doctor carries a medicine bottle through a hospital corridor with a slippery floor.",
+      "ms": 2680,
+      "reading": {
+        "control": "move_free",
+        "verbs": [],
+        "hero": "doctor",
+        "roles": [
+          {
+            "noun": "medicine bottle",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "hospital corridor",
+        "mood": "slippery",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "foe": null,
+        "item": "medicine bottle",
+        "world": null,
+        "title": "Doctor Medicine Bottle"
+      }
+    },
+    {
+      "id": "v35",
+      "text": "a nurse catches a falling bandage before it rolls under a moving hospital bed.",
+      "ms": 3745,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "nurse",
+        "roles": [
+          {
+            "noun": "bandage",
+            "kind": "target",
+            "count": 1
+          }
+        ],
+        "setting": "hospital bed",
+        "mood": "urgent",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Nurse Bandage Catch"
+      }
+    },
+    {
+      "id": "v36",
+      "text": "a builder places a brick on a wobbling stack that gets taller after every successful drop.",
+      "ms": 3122,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "places",
+            "class": "build_place"
+          }
+        ],
+        "hero": "builder",
+        "roles": [
+          {
+            "noun": "brick",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "brick",
+        "world": null,
+        "title": "Builder Brick Stack"
+      }
+    },
+    {
+      "id": "v37",
+      "text": "a painter uses a paintbrush to cover moving targets before they disappear behind a wall.",
+      "ms": 3490,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "covers",
+            "class": "tap_go"
+          }
+        ],
+        "hero": "painter",
+        "roles": [
+          {
+            "noun": "targets",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "foe": null,
+        "item": "paintbrush",
+        "world": null,
+        "title": "Painter Covers Targets"
+      }
+    },
+    {
+      "id": "v38",
+      "text": "a teacher protects a book from a ghost by sliding it between desks.",
+      "ms": 3729,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move_free",
+            "class": "move_free"
+          }
+        ],
+        "hero": "teacher",
+        "roles": [
+          {
+            "noun": "book",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "ghost",
+            "kind": "threat",
+            "count": 1
+          },
+          {
+            "noun": "desks",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "classroom",
+        "mood": "protective",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "ghost",
+        "item": "book",
+        "world": null,
+        "title": "Teacher Protects Book"
+      }
+    },
+    {
+      "id": "v39",
+      "text": "a student sneaks past a robot to deliver a backpack to the classroom.",
+      "ms": 2738,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "sneaks",
+            "class": "move_free"
+          }
+        ],
+        "hero": "student",
+        "roles": [
+          {
+            "noun": "robot",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "backpack",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "classroom",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "classroom",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "robot",
+        "item": "backpack",
+        "world": null,
+        "title": "Student Sneaks Past Robot"
+      }
+    },
+    {
+      "id": "v40",
+      "text": "a delivery driver carries a pizza across a courtyard while a dog gives chase.",
+      "ms": 2845,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "carries",
+            "class": "move_free"
+          }
+        ],
+        "hero": "delivery driver",
+        "roles": [
+          {
+            "noun": "dog",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "courtyard",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "dog",
+        "item": "pizza",
+        "world": null,
+        "title": "Delivery Driver Pizza Chase"
+      }
+    },
+    {
+      "id": "v41",
+      "text": "an astronaut catches a floating wrench while bouncing between tiny planets with different gravity.",
+      "ms": 3182,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "astronaut",
+        "roles": [
+          {
+            "noun": "wrench",
+            "kind": "collectible",
+            "count": 1
+          }
+        ],
+        "setting": "tiny planets",
+        "mood": "gravity",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "wrench",
+        "world": "space",
+        "title": "Astronaut Wrench Catch"
+      }
+    },
+    {
+      "id": "v42",
+      "text": "a pirate grabs a coin from a sinking deck while a skeleton blocks the stairs.",
+      "ms": 3911,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "grab",
+            "class": "move_free"
+          }
+        ],
+        "hero": "pirate",
+        "roles": [
+          {
+            "noun": "coin",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "skeleton",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "stairs",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "sinking deck",
+        "mood": "dangerous",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": "skeleton",
+        "item": "coin",
+        "world": null,
+        "title": "Pirate Coin Grab"
+      }
+    },
+    {
+      "id": "v43",
+      "text": "a knight fights a dragon using a shield that can bounce fire back.",
+      "ms": 2720,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "fights",
+            "class": "melee"
+          }
+        ],
+        "hero": "knight",
+        "roles": [
+          {
+            "noun": "shield",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "dragon",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "duel",
+          "mode": "default"
+        },
+        "foe": "dragon",
+        "item": "shield",
+        "world": null,
+        "title": "Knight vs Dragon"
+      }
+    },
+    {
+      "id": "v44",
+      "text": "a wizard uses a wand to freeze a giant spider long enough to escape.",
+      "ms": 3253,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "freeze",
+            "class": "timing"
+          }
+        ],
+        "hero": "wizard",
+        "roles": [
+          {
+            "noun": "giant spider",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "tense",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "giant spider",
+        "item": "wand",
+        "world": null,
+        "title": "Wizard Freezes Spider"
+      }
+    },
+    {
+      "id": "v45",
+      "text": "a robot carries a battery through a factory where the conveyor belts keep reversing.",
+      "ms": 3921,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "carries",
+            "class": "move_free"
+          }
+        ],
+        "hero": "robot",
+        "roles": [
+          {
+            "noun": "battery",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "conveyor belts",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "factory",
+        "mood": "industrial",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "battery",
+        "world": "factory",
+        "title": "Robot Battery Factory"
+      }
+    },
+    {
+      "id": "v46",
+      "text": "a helicopter lifts a rescue basket from a rooftop while weaving between swinging cranes.",
+      "ms": 3463,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "steer",
+            "class": "steer"
+          }
+        ],
+        "hero": "helicopter",
+        "roles": [
+          {
+            "noun": "rescue basket",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "rooftop",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "swinging cranes",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "rooftop",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": null,
+        "item": "rescue basket",
+        "world": "city",
+        "title": "Helicopter Rescue"
+      }
+    },
+    {
+      "id": "v47",
+      "text": "a pangolin curls into a ball and races an armadillo down a spiral ramp.",
+      "ms": 2929,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          },
+          {
+            "word": "curls",
+            "class": "move_free"
+          }
+        ],
+        "hero": "pangolin",
+        "roles": [
+          {
+            "noun": "armadillo",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "spiral ramp",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "armadillo",
+        "item": null,
+        "world": null,
+        "title": "Pangolin Spiral Ramp"
+      }
+    },
+    {
+      "id": "v48",
+      "text": "a quokka carries a sandwich through a campsite while a goose tries to steal it.",
+      "ms": 3130,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "carries",
+            "class": "runner"
+          },
+          {
+            "word": "tries",
+            "class": "move_free"
+          }
+        ],
+        "hero": "quokka",
+        "roles": [
+          {
+            "noun": "sandwich",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "goose",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "campsite",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "goose",
+        "item": "sandwich",
+        "world": null,
+        "title": "Quokka Sandwich Escape"
+      }
+    },
+    {
+      "id": "v49",
+      "text": "an okapi weaves between moving trees to deliver a mango before sunset.",
+      "ms": 1815,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "weaves",
+            "class": "runner"
+          },
+          {
+            "word": "deliver",
+            "class": "move_free"
+          }
+        ],
+        "hero": "okapi",
+        "roles": [
+          {
+            "noun": "trees",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "forest",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "mango",
+        "world": "forest",
+        "title": "Okapi Mango Delivery"
+      }
+    },
+    {
+      "id": "v50",
+      "text": "a binturong balances a teacup on its tail while climbing across a shaky rope.",
+      "ms": 1722,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "balances",
+            "class": "platform"
+          },
+          {
+            "word": "climbing",
+            "class": "move_free"
+          }
+        ],
+        "hero": "binturong",
+        "roles": [
+          {
+            "noun": "teacup",
+            "kind": "item",
+            "count": 1
+          }
+        ],
+        "setting": "rope",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "teacup",
+        "world": "forest",
+        "title": "Binturong Teacup Balance"
+      }
+    },
+    {
+      "id": "v51",
+      "text": "a fossa chases a lemur through treetops where every branch bends under its weight.",
+      "ms": 2305,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "chases",
+            "class": "runner"
+          }
+        ],
+        "hero": "fossa",
+        "roles": [
+          {
+            "noun": "lemur",
+            "kind": "target",
+            "count": 1
+          },
+          {
+            "noun": "branch",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "treetops",
+        "mood": "chase",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": null,
+        "item": null,
+        "world": "forest",
+        "title": "Fossa Chase"
+      }
+    },
+    {
+      "id": "v52",
+      "text": "an aye-aye taps a coconut at the right moment to bounce it up a staircase.",
+      "ms": 1702,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "taps",
+            "class": "tap_go"
+          }
+        ],
+        "hero": "aye-aye",
+        "roles": [
+          {
+            "noun": "coconut",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "foe": null,
+        "item": "coconut",
+        "world": null,
+        "title": "Aye-Aye Coconut Bounce"
+      }
+    },
+    {
+      "id": "v53",
+      "text": "a tarsier leaps between swinging lanterns to catch a moth before dawn.",
+      "ms": 3606,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "leaps",
+            "class": "platform"
+          },
+          {
+            "word": "catch",
+            "class": "timing"
+          }
+        ],
+        "hero": "tarsier",
+        "roles": [
+          {
+            "noun": "lanterns",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "moth",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "dawn",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "moth",
+        "world": null,
+        "title": "Tarsier Lantern Leap"
+      }
+    },
+    {
+      "id": "v54",
+      "text": "a saiga races a dust devil across a salt flat and hides behind rocks when it gets close.",
+      "ms": 3958,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          },
+          {
+            "word": "hides",
+            "class": "move_free"
+          }
+        ],
+        "hero": "saiga",
+        "roles": [
+          {
+            "noun": "dust devil",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "rocks",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "salt flat",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": "dust devil",
+        "item": null,
+        "world": "desert",
+        "title": "Saiga Races Dust Devil"
+      }
+    },
+    {
+      "id": "v55",
+      "text": "a takin pushes a barrel up snowy steps while an avalanche chases it.",
+      "ms": 4505,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "pushes",
+            "class": "move_free"
+          },
+          {
+            "word": "chases",
+            "class": "move_free"
+          }
+        ],
+        "hero": "takin",
+        "roles": [
+          {
+            "noun": "barrel",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "avalanche",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "steps",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "snowy steps",
+        "mood": "chase",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": "avalanche",
+        "item": "barrel",
+        "world": "snow",
+        "title": "Takin Barrel Push"
+      }
+    },
+    {
+      "id": "v56",
+      "text": "a gerenuk stretches to grab an apple while balancing on a slowly spinning platform.",
+      "ms": 3799,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "grab",
+            "class": "idle"
+          },
+          {
+            "word": "stretch",
+            "class": "idle"
+          },
+          {
+            "word": "balance",
+            "class": "idle"
+          }
+        ],
+        "hero": "gerenuk",
+        "roles": [
+          {
+            "noun": "apple",
+            "kind": "collectible",
+            "count": 1
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "apple",
+        "world": null,
+        "title": "Gerenuk Apple Grab"
+      }
+    },
+    {
+      "id": "v57",
+      "text": "a numbat sneaks past a monitor lizard to carry a biscuit into its burrow.",
+      "ms": 3125,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "sneaks",
+            "class": "move_free"
+          },
+          {
+            "word": "carry",
+            "class": "move_free"
+          }
+        ],
+        "hero": "numbat",
+        "roles": [
+          {
+            "noun": "monitor lizard",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "biscuit",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "burrow",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "stealth",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "monitor lizard",
+        "item": "biscuit",
+        "world": "cave",
+        "title": "Numbat Sneak"
+      }
+    },
+    {
+      "id": "v58",
+      "text": "a bilby digs through soft sand to find a bell before its tunnel collapses.",
+      "ms": 1583,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "digs",
+            "class": "move_free"
+          }
+        ],
+        "hero": "bilby",
+        "roles": [
+          {
+            "noun": "bell",
+            "kind": "target",
+            "count": 1
+          },
+          {
+            "noun": "tunnel",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "beach",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "bell",
+        "world": "beach",
+        "title": "Bilby Bell Hunt"
+      }
+    },
+    {
+      "id": "v59",
+      "text": "a quoll jumps across kitchen shelves while a broom sweeps after it.",
+      "ms": 1966,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "jumps",
+            "class": "platform"
+          }
+        ],
+        "hero": "quoll",
+        "roles": [
+          {
+            "noun": "broom",
+            "kind": "chaser",
+            "count": null
+          }
+        ],
+        "setting": "kitchen",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": "broom",
+        "item": null,
+        "world": "living_room",
+        "title": "Quoll Shelf Jump"
+      }
+    },
+    {
+      "id": "v60",
+      "text": "a tenrec rolls a lime through a maze made from giant shoelaces.",
+      "ms": 4188,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "rolls",
+            "class": "throw"
+          }
+        ],
+        "hero": "tenrec",
+        "roles": [
+          {
+            "noun": "lime",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "maze",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "shoelaces",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "maze",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": null,
+        "item": "lime",
+        "world": null,
+        "title": "Tenrec Lime Maze"
+      }
+    },
+    {
+      "id": "v61",
+      "text": "a solenodon carries a candle through a cave and has to keep the flame away from dripping water.",
+      "ms": 3965,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "keep",
+            "class": "timing"
+          },
+          {
+            "word": "carry",
+            "class": "move_free"
+          }
+        ],
+        "hero": "solenodon",
+        "roles": [
+          {
+            "noun": "candle",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "water",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "cave",
+        "mood": "tense",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "foe": null,
+        "item": "candle",
+        "world": null,
+        "title": "Solenodon Candle Cave"
+      }
+    },
+    {
+      "id": "v62",
+      "text": "a colugo glides between towers to snatch a ribbon blowing around in the wind.",
+      "ms": 2042,
+      "reading": {
+        "control": "glide",
+        "verbs": [
+          {
+            "word": "glides",
+            "class": "flap"
+          },
+          {
+            "word": "snatch",
+            "class": "move_free"
+          }
+        ],
+        "hero": "colugo",
+        "roles": [
+          {
+            "noun": "ribbon",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "between towers",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "ribbon",
+        "world": "city",
+        "title": "Colugo Ribbon Glide"
+      }
+    },
+    {
+      "id": "v63",
+      "text": "a kinkajou swings a bucket under a leaking pipe and catches every drop before time runs out.",
+      "ms": 4137,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "swings",
+            "class": "steer"
+          },
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "kinkajou",
+        "roles": [
+          {
+            "noun": "drop",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "drop",
+        "world": null,
+        "title": "Kinkajou Bucket Catch"
+      }
+    },
+    {
+      "id": "v64",
+      "text": "a coati steals a doughnut from a picnic while a raccoon tries to intercept it.",
+      "ms": 3279,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "steals",
+            "class": "move_free"
+          }
+        ],
+        "hero": "coati",
+        "roles": [
+          {
+            "noun": "doughnut",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "picnic",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "raccoon",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "picnic",
+        "mood": "cheeky",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "raccoon",
+        "item": "doughnut",
+        "world": "meadow",
+        "title": "Coati Steals Doughnut"
+      }
+    },
+    {
+      "id": "v65",
+      "text": "a dhole races a jackal through a bamboo maze with gates that keep switching places.",
+      "ms": 2612,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          }
+        ],
+        "hero": "dhole",
+        "roles": [
+          {
+            "noun": "jackal",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "gates",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "bamboo maze",
+        "mood": "competitive",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": "jackal",
+        "item": null,
+        "world": "forest",
+        "title": "Dhole Races Jackal"
+      }
+    },
+    {
+      "id": "v66",
+      "text": "a shoebill catches a rubber duck popping out of different holes in a floating board.",
+      "ms": 2364,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "shoebill",
+        "roles": [
+          {
+            "noun": "rubber duck",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "floating board",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "rubber duck",
+        "world": null,
+        "title": "Shoebill Duck Catch"
+      }
+    },
+    {
+      "id": "v67",
+      "text": "a kakapo waddles through a museum carrying a gem while a security drone searches overhead.",
+      "ms": 3241,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "waddles",
+            "class": "move_free"
+          }
+        ],
+        "hero": "kakapo",
+        "roles": [
+          {
+            "noun": "gem",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "security drone",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "museum",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "security drone",
+        "item": "gem",
+        "world": null,
+        "title": "Kakapo Waddles Museum"
+      }
+    },
+    {
+      "id": "v68",
+      "text": "a kea steals a spoon and slides down a snowy roof before a caretaker notices.",
+      "ms": 5851,
+      "reading": {
+        "control": "glide",
+        "verbs": [
+          {
+            "word": "slides",
+            "class": "flap"
+          }
+        ],
+        "hero": "kea",
+        "roles": [
+          {
+            "noun": "spoon",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "caretaker",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "snowy roof",
+        "mood": "mischievous",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "foe": "caretaker",
+        "item": "spoon",
+        "world": "snow",
+        "title": "Kea's Spoon Slide"
+      }
+    },
+    {
+      "id": "v69",
+      "text": "a hoatzin climbs through a flooded tree to rescue a hat drifting toward a waterfall.",
+      "ms": 2811,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "climbs",
+            "class": "platform"
+          },
+          {
+            "word": "rescue",
+            "class": "move_free"
+          }
+        ],
+        "hero": "hoatzin",
+        "roles": [
+          {
+            "noun": "hat",
+            "kind": "target",
+            "count": 1
+          }
+        ],
+        "setting": "tree",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "hat",
+        "world": "forest",
+        "title": "Hoatzin Tree Rescue"
+      }
+    },
+    {
+      "id": "v70",
+      "text": "a potoo freezes whenever a hawk looks its way and moves closer whenever the hawk turns around.",
+      "ms": 3035,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "freezes",
+            "class": "move_free"
+          },
+          {
+            "word": "moves",
+            "class": "move_free"
+          }
+        ],
+        "hero": "potoo",
+        "roles": [
+          {
+            "noun": "hawk",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": "survival",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "hawk",
+        "item": null,
+        "world": "forest",
+        "title": "Potoo vs Hawk"
+      }
+    },
+    {
+      "id": "v71",
+      "text": "a secretary bird kicks a football through moving gates while a mongoose tries to block each shot.",
+      "ms": 2974,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "kicks",
+            "class": "throw"
+          }
+        ],
+        "hero": "secretary bird",
+        "roles": [
+          {
+            "noun": "mongoose",
+            "kind": "threat",
+            "count": 1
+          },
+          {
+            "noun": "football",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "gates",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "foe": "mongoose",
+        "item": "football",
+        "world": null,
+        "title": "Secretary Bird Kicks Football"
+      }
+    },
+    {
+      "id": "v72",
+      "text": "a cassowary charges through a fruit market after a runaway watermelon without hitting the stalls.",
+      "ms": 2764,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "charges",
+            "class": "runner"
+          }
+        ],
+        "hero": "cassowary",
+        "roles": [
+          {
+            "noun": "watermelon",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "stalls",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "fruit market",
+        "mood": "chaotic",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "watermelon",
+        "world": "city",
+        "title": "Cassowary Market Charge"
+      }
+    },
+    {
+      "id": "v73",
+      "text": "a sunbittern opens its wings at the right moment to scare a crocodile away from a nest.",
+      "ms": 3025,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "opens",
+            "class": "timing"
+          }
+        ],
+        "hero": "sunbittern",
+        "roles": [
+          {
+            "noun": "crocodile",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "nest",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "foe": "crocodile",
+        "item": null,
+        "world": null,
+        "title": "Sunbittern Wings"
+      }
+    },
+    {
+      "id": "v74",
+      "text": "a jacana carries a cherry over sinking lily pads while a catfish bumps them from below.",
+      "ms": 2978,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "carries",
+            "class": "move_free"
+          },
+          {
+            "word": "bumps",
+            "class": "melee"
+          }
+        ],
+        "hero": "jacana",
+        "roles": [
+          {
+            "noun": "cherry",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "catfish",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "lily pads",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "lily pads",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "catfish",
+        "item": "cherry",
+        "world": null,
+        "title": "Jacana Cherry Carry"
+      }
+    },
+    {
+      "id": "v75",
+      "text": "an olm follows echoes through a dark underwater maze to find a ring.",
+      "ms": 1619,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "follows",
+            "class": "move_free"
+          },
+          {
+            "word": "find",
+            "class": "move_free"
+          }
+        ],
+        "hero": "olm",
+        "roles": [
+          {
+            "noun": "ring",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "underwater maze",
+        "mood": "dark",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "ring",
+        "world": "underwater",
+        "title": "Olm Echoes"
+      }
+    },
+    {
+      "id": "v76",
+      "text": "a tuatara guards a crystal from a centipede by turning mirrors around a tiny temple.",
+      "ms": 3654,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "turning",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "tuatara",
+        "roles": [
+          {
+            "noun": "crystal",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "centipede",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "mirrors",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "temple",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "temple",
+        "mood": "guarding",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "foe": "centipede",
+        "item": "crystal",
+        "world": null,
+        "title": "Tuatara Guards Crystal"
+      }
+    },
+    {
+      "id": "v77",
+      "text": "a gharial races an otter along a canal where the current keeps changing direction.",
+      "ms": 2544,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "races",
+            "class": "runner"
+          }
+        ],
+        "hero": "gharial",
+        "roles": [
+          {
+            "noun": "otter",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "canal",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "foe": "otter",
+        "item": null,
+        "world": null,
+        "title": "Gharial Races Otter"
+      }
+    },
+    {
+      "id": "v78",
+      "text": "a mata mata hides under leaves and catches a grape whenever it drifts close enough.",
+      "ms": 2350,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "catches",
+            "class": "timing"
+          }
+        ],
+        "hero": "mata mata",
+        "roles": [
+          {
+            "noun": "grape",
+            "kind": "collectible",
+            "count": 1
+          }
+        ],
+        "setting": "forest",
+        "mood": "hidden",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "foe": null,
+        "item": "grape",
+        "world": "forest",
+        "title": "Mata Mata Grapes"
+      }
+    },
+    {
+      "id": "v79",
+      "text": "a leafy seadragon sneaks past a lionfish by staying still whenever the seaweed stops moving.",
+      "ms": 2764,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "sneaks",
+            "class": "move_free"
+          },
+          {
+            "word": "staying",
+            "class": "idle"
+          }
+        ],
+        "hero": "leafy seadragon",
+        "roles": [
+          {
+            "noun": "lionfish",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "seaweed",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "underwater",
+        "mood": "stealth",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "foe": "lionfish",
+        "item": null,
+        "world": "underwater",
+        "title": "Leafy Seadragon Sneak"
+      }
+    },
+    {
+      "id": "v80",
+      "text": "an oarfish threads through a sunken ship to pull a necklace out of a locked cabin.",
+      "ms": 4174,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "threads",
+            "class": "move_free"
+          },
+          {
+            "word": "pull",
+            "class": "move_free"
+          }
+        ],
+        "hero": "oarfish",
+        "roles": [
+          {
+            "noun": "sunken ship",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "locked cabin",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "necklace",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "underwater",
+        "mood": "mysterious",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "foe": null,
+        "item": "necklace",
+        "world": "underwater",
+        "title": "Oarfish Necklace"
+      }
+    }
+  ]
+}

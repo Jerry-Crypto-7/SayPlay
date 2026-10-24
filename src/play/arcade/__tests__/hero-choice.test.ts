@@ -91,8 +91,9 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice('lizard wolf', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-wolf', level: 'identity' });
     // P54B T4: zástupce kategorie a výchozí model role se kreslí riggovanou postavou (`RIGGED_ALIAS`).
     expect(heroChoice('wild badger', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-fox', level: 'class' });
-    // P37A T6: nejbližší model katalogu nad prahem je před třídou – ještěrka je želva (0,65), ne liška.
-    expect(heroChoice('wild lizard', 'runner', 'runner')).toMatchObject({ model: 'turtle', level: 'near' });
+    // P37A T6: nejbližší model katalogu nad prahem je před třídou – sysel je křeček, ne liška
+    // (ještěrka, dřív želva, má od P58A T7 vlastní model).
+    expect(heroChoice('wild gopher', 'runner', 'runner')).toMatchObject({ model: 'hamster', level: 'near' });
     // Plavba zvíře připouští, stroj ne: vysokozdvižný vozík v závodě zůstane autem.
     expect(heroChoice('wild badger', 'voyage', 'steer')).toMatchObject({ model: 'rigged:q-fox', level: 'class' });
     expect(heroChoice('angry forklift', 'voyage', 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });

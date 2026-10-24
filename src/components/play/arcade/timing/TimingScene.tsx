@@ -29,6 +29,7 @@ import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
 import type { Box } from '../look/ground';
+import type { Volume } from '../look/landmark-places';
 import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -107,6 +108,17 @@ const TIMING_AREA: readonly Box[] = [{ x0: -(TIMING.amplitude / UNIT + 2), x1: T
 /** Model z popisku role vepsaný do kvádru těla (w × h × d, metry), postavený na zem. */
 export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
 
+/**
+ * Hrdina věty (P58A T8) stojí před věží za krajem kyvu, natočený napůl ke kameře a napůl k věži – z profilu
+ * se zvíře pozná líp než zepředu. Na šířku (kamera 8 m) má kolem 25 % výšky snímku; hloubka kvádru nechá
+ * dlouhé zvíře (ještěrka, tuleň) vyrůst do výšky. Kyv jezdce (±3 m, blok věže ±4,2 m) ho míjí za zády.
+ */
+const HERO_M = { w: 1.2, h: 1.8, d: 1.6 };
+const HERO_AT: readonly [number, number, number] = [-(TIMING.amplitude / UNIT + 1), 0, -2.2];
+const HERO_TURN = (3 * Math.PI) / 4;
+/** Místo hrdiny (půdorys natočeného kvádru): rámující kus kulis ho v obraze nezakryje – ledový oblouk schoval tučňáka (s47). */
+const HERO_PLAY: readonly Volume[] = [{ x0: HERO_AT[0] - 1, y0: 0, z0: HERO_AT[2] - 1, x1: HERO_AT[0] + 1, y1: HERO_M.h, z1: HERO_AT[2] + 1 }];
+
 /** Poskok po trefě (P45D T11): tak dlouho (s) je tělo ve vzduchu a tak vysoko (podíl výšky) vyskočí. */
 const BEAT_HOP_S = 0.24;
 const BEAT_HOP = 0.18;
@@ -146,16 +158,21 @@ function standStill(group: Object3D): void {
   group.visible = true;
 }
 
-/** `blockModel` (P30B T4): díl věže z popisku role `block` („pancakes“), vyplní kvádr dílu; jen u stavění věže. */
+/**
+ * `blockModel` (P30B T4): díl věže z popisku role `block` („pancakes“), vyplní kvádr dílu; jen u stavění věže.
+ * `heroModel` (P58A T8): hrdina z věty („grandma“, „monkey“) vedle věže; výchozí průzkumník se nekreslí.
+ */
 export function TimingScene({
   session,
   look: scene,
   blockModel,
+  heroModel,
   ghost,
 }: {
   readonly session: ArcadeSession;
   readonly look: Look;
   readonly blockModel?: BodyModel;
+  readonly heroModel?: BodyModel;
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
 }) {
@@ -173,10 +190,13 @@ export function TimingScene({
   // Hračková póza (P45D T11): vnitřní skupiny jezdce a položených dílů, póza minulého snímku a kolo vrchního dílu.
   const sliderPose = useRef<Group | null>(null);
   const placedPoses = useRef<(Group | null)[]>([]);
+  const heroPose = useRef<Group | null>(null);
   const toyPose = useRef<ToyPose | null>(null);
   const posedRound = useRef(-1);
   // Jehla a prkno můstku nejsou díly věže – model z popisku nese jen `block`.
   const blocks = sliderKind === 'block' ? blockModel : undefined;
+  // P58A T6: věc z věty na liště („pancakes“) jede na ručičce jako čtverec o výšce dílu; ručička zůstává.
+  const rider = sliderKind === 'needle' ? blockModel : undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
@@ -208,6 +228,7 @@ export function TimingScene({
     toyPose.current = pose;
     const pieceH = TIMING.blockH / UNIT;
     if (sliderPose.current !== null) applyToy({ group: sliderPose.current }, pose, pieceH);
+    if (heroPose.current !== null) applyToy({ group: heroPose.current }, pose, HERO_M.h);
     const newest = Math.floor((state[bodyBase(state[HEADER.player] as number) + BODY.z] as number) / UNIT) - 1;
     if (posedRound.current !== newest) {
       const was = placedPoses.current[posedRound.current];
@@ -241,7 +262,7 @@ export function TimingScene({
       </group>
       {/* Kulisa za mlhou (P46G T7) za řadou kulis; vegetace ne – plocha je jen věž a kyv jezdce. */}
       <HorizonBackdrop look={scene} seed={world.seed} clear={0} beyond={BACKDROP_BEYOND} />
-      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} />
+      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} play={heroModel === undefined ? undefined : HERO_PLAY} />
       <mesh position={[0, base.h / 2, 0]}>
         <boxGeometry args={[base.w, base.h, depth]} />
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />
@@ -282,8 +303,20 @@ export function TimingScene({
               <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
             </mesh>
           )}
+          {rider === undefined ? null : (
+            // Ručičku mění jádro v šířce (`scale.x`); věc nad ní tu změnu vrací, ať se nezplacatí.
+            <group position={[0, blockH, 0]} scale={[1 / Math.max(0.001, sliderInit.w), 1, 1]} userData={{ item: 'block' }}>
+              {rider(blockH, blockH, depth)}
+            </group>
+          )}
         </group>
       </group>
+      {heroModel !== undefined && (
+        <group position={HERO_AT} rotation={[0, HERO_TURN, 0]}>
+          {/* Hrdinou sondy zůstává jezdec; hračkovou pózu postavy čte `heroToy` sondy (P45D T14), popisek jména jde nad ni. */}
+          <group ref={heroPose} userData={{ toyHero: true }}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
+        </group>
+      )}
       {/* Slot ducha (P37-0 T3) vedle jezdce, ne v jeho skupině. */}
       <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
     </>

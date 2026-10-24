@@ -71,6 +71,8 @@ export interface ArenaFraming {
  * v záběru i nad strop, nejvýš 1,8×, na výšku 2,1× – hrdina pak pořád ≥ 7,8 % výšky obrazu, na výšku
  * 8,6 % (podlaha `e2e/p32-arena.spec.ts` 7 a 8 %; 2,5× dalo kočce na telefonu 6,4 %).
  * `nearest` se neměnil: s hrdinou do 1,3 m vždy rozhoduje strop pod ním (`arena-camera.test.ts`).
+ * P58A T4 zkusil tažení 1,4×, na výšku 1,8× (hrdina při 1× ≥ 10 %, čitelnost by ho vždy dotáhla na 20 %): 08-gems
+ * na výšku pak měl nepřítele v obraze jen 41 % tiků (podlaha 65 %). Nepřítel v záběru má přednost.
  */
 export const ARENA_FRAMING: ArenaFraming = { nearest: 16, see: 9, seeTall: 5, heroShare: 0.14, heroShareTall: 0.18, stretch: 1.8, stretchTall: 2.1 };
 

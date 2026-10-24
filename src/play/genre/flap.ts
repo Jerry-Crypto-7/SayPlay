@@ -48,7 +48,8 @@ export const flapGenre: GenreModule<'flap'> = {
   },
   draftFill: (sentence, reading) => {
     const { hero, setting, cast } = draftRoles(sentence, reading);
-    const items = cast?.filter((item) => item.does === 'collect') ?? [];
+    // P58A T6: protivník věty nebo čtení („stalactites“) je trubka; protivník z prostředí ji nepřejmenuje (sem nedojde).
+    const items = cast ?? [];
     return {
       genre: 'flap',
       mode: 'default',

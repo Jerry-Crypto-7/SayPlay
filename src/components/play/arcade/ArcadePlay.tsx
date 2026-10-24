@@ -54,6 +54,8 @@ import { pauseWhenAway } from './focus';
 import { bestOnce, type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
 import { heroActionOf } from './action-cue/cues';
+import { nameLines, nameSlotAt } from './action-cue/name-line';
+import { NameLine } from './action-cue/NameLine';
 import { verbLine, verbLineShown } from './action-cue/verb-line';
 import { VerbLine } from './action-cue/VerbLine';
 import { LaneEventBanner, laneEventViewOf } from './LaneEventBanner';
@@ -649,6 +651,8 @@ function ArcadePlayGame({
   }, [offline, record, versionId]);
   const survive = survives(arcade);
   const verb = useMemo(() => verbLine(spec), [spec]);
+  const names = useMemo(() => nameLines(spec), [spec]);
+  const nameSlot = running && active ? nameSlotAt(snapshot.tick, ARCADE_HZ, demo === null, verb !== null) : null;
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
   const goalLabel = challenge === null ? 'best' : 'dare';
   const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
@@ -906,6 +910,7 @@ function ArcadePlayGame({
         abilityWords={spec.abilityWords}
         host={host}
         keepFrame={versionId}
+        names={names.bodies}
         overlay={
           <>
             <Weather session={session} theme={spec.theme} />
@@ -919,6 +924,8 @@ function ArcadePlayGame({
             )}
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
             {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
+            {/* Jméno hrdiny a nejbližšího těla z věty (P58A T5), po řádku se slovesem, každé 1,5 s; `key` přehraje nástup štítku. */}
+            {nameSlot !== null && (nameSlot === 'foe' || names.hero !== null) && <NameLine key={nameSlot} slot={nameSlot} hero={names.hero} />}
             <PacingBanner session={session} enabled={running && active} foe={foe} boss={spec.boss?.name} />
             {laneEventView !== null && <LaneEventBanner session={session} enabled={running && active} visible={laneEventView} />}
           </>

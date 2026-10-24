@@ -75,6 +75,7 @@ const BODY_OF_WORD = {
   ...Object.fromEntries(['mole', 'hippo', 'lizard', 'rhino', 'centaur'].map((word) => [word, 'quadruped'])),
   ...Object.fromEntries(['cyclops', 'golem', 'genie', 'robber', 'spy', 'poacher', 'stickman', 'manager', 'advisor'].map((word) => [word, 'biped'])),
   peacock: 'flyer',
+  trout: 'swimmer',
 };
 
 /** Role dílu podle hlavního (posledního) slova jeho jména. */

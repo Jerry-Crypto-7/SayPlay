@@ -55,6 +55,13 @@ const POOL: Readonly<Record<Kind, number>> = { mole: SLOTS, good: SLOTS, bonus: 
 /** Kamera kouká na řadu děr shora pod tímhle úhlem (rad). */
 const PITCH = 0.7;
 const LOOK = new Vector3(0, 0.6, HOLE_Z / 2 + 0.2);
+/**
+ * Hrdina v krajním pruhu stojí blíž kameře než díry, takže na šířku vyčníval ke kraji obrazu (NDC 0,95, P58A T4).
+ * Jeho střed musí zůstat do `HERO_FIT` NDC; `HERO_GAP` je, o kolik metrů blíž kameře než bod pohledu stojí.
+ */
+const HERO_FIT = 0.8;
+const HERO_LANE = FIELD_HALF - m(LANES.width) / 2;
+const HERO_GAP = LOOK.z * Math.cos(PITCH) - (LOOK.y - HERO.h / 2) * Math.sin(PITCH);
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
@@ -251,7 +258,7 @@ export function WhackScene({ session, cast, surface, scene: look, ghost }: Whack
 
     // Na výšku rozhoduje šíře řady děr, na šířku výška záběru (hrdina, díry, kladivo).
     const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const distance = Math.max((FIELD_HALF + 0.6) / (tan * camera.aspect), 2.8 / tan);
+    const distance = Math.max((FIELD_HALF + 0.6) / (tan * camera.aspect), 2.8 / tan, HERO_LANE / (HERO_FIT * tan * camera.aspect) + HERO_GAP);
     camera.position.set(LOOK.x, LOOK.y + Math.sin(PITCH) * distance, LOOK.z - Math.cos(PITCH) * distance);
     camera.lookAt(look3.copy(LOOK));
     const host = surface.current;
