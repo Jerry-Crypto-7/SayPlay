@@ -71,3 +71,18 @@ Opravy: `1815aa5e` štítek kitu nad soupeřem „Dodge!“ 0,5 s před zásahem
 - **Časy:** p50 v klidu (CPU 38–53 %, 5 běhů, `bb5dc7cf`): Pixel 7 **1,51 s**, iPhone 0,88 s, desktop 1,69 s. Prokládané A/B starý build T6 `ce6cc9b7` × nový `bb5dc7cf`, 2 kola po 3 bězích (CPU 33–81 %): Pixel 7 1,74 × 1,58 s, iPhone 0,97 × 0,93 s, desktop 1,75 × 1,68 s; rozptyl obou 0,4–2,9 s. **Inference:** rozdíl je v šumu, opravy T6b start nezpomalily; mez Pixel 7 1,5 s leží uprostřed rozptylu jednoho buildu.
 - **Inference – co zbývá a čí to je:** (1) velikost a jmenovka soupeře – P58A má `size hero and foe so a judge can read them` a `name the hero and foe the first time they appear`, sloučení s touto větví dnes konfliktuje v `ArcadePlay.tsx` a `ArcadeStage.tsx`; (2) film měří úvod souboje a prohru skriptu, který neuhýbá – povel uprostřed boje ve snímcích skoro není. Brána „≤ 1 soudce na profil“ je při 3 soudcích a 4 snímcích pod šumem měření (desktop 1 ↔ 3 beze změny kódu).
 - E2e `interface-language` + `p35-perf` 20/20 nad `next start` (`bb5dc7cf`).
+
+## Po sloučení P58A (24. 10., build `670c7357`, `first-impression-p58a.json`, listy `first-impression-p58a/*.jpg`)
+
+Sloučení `c9fb5f62` přineslo z P58A větší hrdinu a soupeře a jmenovky („Knight“, „Three-headed hydra“). Oprava `670c7357`: jmenovka hrdiny stála na telefonu nad středem rámečku rytíře i s mečem namířeným na hydru, tedy přímo pod povelem „Dodge!“ / „Strike!“ (e2e po ticích: Pixel 7 tik 192, iPhone tik 183). Teď visí nad kořenem těla; e2e `duel: the name tags never cover the Dodge!/Strike! cue` na obou telefonech zelený, na starém buildu červený.
+
+| | T6b měření 1 | T6b měření 2 | Po sloučení P58A |
+|---|---|---|---|
+| Rozumím do 2 s – Pixel 7 / iPhone / desktop | 3/3 · 3/3 · 3/3 | 3/3 · 3/3 · 3/3 | **3/3 · 3/3 · 3/3** |
+| Ovládání nejasné (soudci na profil) | 3 · 3 · 1 | 3 · 1 · 3 | 3 · 3 · 3 (brána ≤ 1 **nesplněná**) |
+| Ztráta „ovládání“ celkem | 15 s | 15 s | 20 s |
+| p50 „Make it!“ → vstup – Pixel 7 / iPhone / desktop | 2,5 · 2,8 · 2,4 s | 1,8 · 0,8 · 2,0 s | **1,0 · 1,4 · 2,2 s** (CPU 56 % na startu) |
+
+- **Strojová brána splněná** (`gateMet: true`): časy pod mezemi na všech profilech, rozumím 3/3.
+- **Co soudci vidí (fakta ze snímků):** snímek 3 je zase úvod souboje (hodiny 1,3 s, řádek „Beat the three-headed hydras!“, povel ani jmenovka ještě nevisí), snímek 4 prohra skriptu za 4,8 s. Stížnosti na ovládání míří na úvod („wind-up and opening are not visually obvious“) a na nápovědu až po prohře – tedy na chvíle, kdy povel nad soupeřem ze zásady nesvítí.
+- **Inference:** zbytek `unclear-controls` je šum měření a tvar filmu, ne chybějící oprava – desktop skočil 1 → 3 beze změny kódu už mezi měřeními T6b a film chytá jen úvod souboje a prohru skriptu, který neuhýbá. Podle rozhodnutí majitele 24. 10. se T6b uzavírá bez dalších oprav.
