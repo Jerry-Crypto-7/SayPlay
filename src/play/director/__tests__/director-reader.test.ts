@@ -12,7 +12,7 @@ import { draftGameSpecWithMeta } from '../../draft';
 import { readBeforeDraft } from '../../read/client';
 import type { Reading } from '../../read/schema';
 import { fakeBranch } from '../__fixtures__/branch';
-import { direct } from '../index';
+import { direct, type DirectorCache } from '../index';
 
 // P56A T4-R2: čtení v route vypršelo → režisér na pozadí (`_upgrade.ts` → `direct()`) tutéž větu placeně
 // nečte znovu. Strop čtečky je tu kladný a cache vypnutá, takže volání zastaví jen chybějící volající.
@@ -27,11 +27,14 @@ let upstreamCalls = 0;
 /** Placený režisér odpoví až po tomhle slibu: drží slot dveří `play` obsazený. */
 let hold: Promise<void> = Promise.resolve();
 let answer: Reading = READING;
+/** Čtečka odpoví až po tomhle slibu. */
+let readHold: Promise<void> = Promise.resolve();
 
 beforeEach(() => {
   readerCalls = 0;
   upstreamCalls = 0;
   hold = Promise.resolve();
+  readHold = Promise.resolve();
   answer = READING;
   for (const [name, value] of Object.entries({
     PLAY_READER: 'on',
@@ -56,6 +59,7 @@ beforeEach(() => {
     }
     if (!url.startsWith('https://api.groq.com/')) return real(input, init);
     readerCalls += 1;
+    await readHold;
     return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(answer) }, finish_reason: 'stop' }], usage: { prompt_tokens: 900, completion_tokens: 300 } }));
   });
 });
@@ -202,6 +206,61 @@ describe('the director reads the sentence for the AI version (P58B T4)', () => {
       release();
       await Promise.all(busy);
       expect(upstreamCalls).toBe(DOOR_CEILING.play);
+    });
+
+    // Revize opravy T4, nález B (T4b): cesty, kde se po zaplaceném čtení model stejně nezavolá.
+    it('pays nothing when the director cache already has the game', async () => {
+      const words = draftGameSpecWithMeta(SENTENCE, 1).spec;
+      let readsAtLookup: number | null = null;
+      const cache: DirectorCache = {
+        id: 'memory',
+        read: async () => {
+          readsAtLookup = readerCalls;
+          return { spec: words, authoredBy: null };
+        },
+        write: async () => {},
+      };
+      const game = await direct(SENTENCE, { branch: fakeBranch([]), cache, now: () => 0, seed: 1, maxRepairRounds: 0, caller: VISITOR });
+      expect(readsAtLookup).toBe(0);
+      expect(game.source).toBe('cached');
+      expect(readerCalls).toBe(0);
+    });
+
+    it('pays nothing when the seam says the model will not be called', async () => {
+      await direct(SENTENCE, { branch: fakeBranch([]), now: () => 0, seed: 1, maxRepairRounds: 0, caller: VISITOR, mayPayRead: async () => false });
+      expect(readerCalls).toBe(0);
+    });
+
+    it('holds its play slot before it pays, so nobody takes it during the read', async () => {
+      vi.stubEnv('WORLDSMITH_CALL_CAP', '10');
+      resetProcessSpendCap();
+      let release = () => {};
+      readHold = new Promise((resolve) => {
+        release = resolve;
+      });
+      const directed = getDirector(Date.now(), VISITOR, undefined, undefined, undefined, false)(SENTENCE);
+      await vi.waitFor(() => expect(readerCalls).toBe(1), { timeout: 10_000 });
+      expect(directorQueueState().running).toBe(1);
+      release();
+      await directed;
+      expect(upstreamCalls).toBe(1);
+    });
+
+    it('pays nothing on the waiting path when the queue for a slot is full', async () => {
+      vi.stubEnv('WORLDSMITH_CALL_CAP', '10');
+      vi.stubEnv('PLAY_DIRECTOR_QUEUE', '0');
+      resetProcessSpendCap();
+      let release = () => {};
+      hold = new Promise((resolve) => {
+        release = resolve;
+      });
+      const busy = Array.from({ length: DOOR_CEILING.play }, (_, slot) => getDirector(Date.now(), `198.51.100.${String(slot)}`)(SENTENCE));
+      await vi.waitFor(() => expect(directorQueueState().running).toBe(DOOR_CEILING.play), { timeout: 10_000 });
+      const paidByBusy = readerCalls;
+      await getDirector(Date.now(), VISITOR)(SENTENCE);
+      expect(readerCalls).toBe(paidByBusy);
+      release();
+      await Promise.all(busy);
     });
   });
 });
