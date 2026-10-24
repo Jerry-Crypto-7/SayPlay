@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { directorQueueState, getDirector, resetDirectorQueue } from '@/app/api/play/_director';
+import { DIRECTOR_BUDGET_MS, directorQueueState, getDirector, resetDirectorQueue } from '@/app/api/play/_director';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { DOOR_CEILING, resetConcurrency } from '@/server/paid-slots';
 import { processSpendCap, resetProcessSpendCap } from '@/server/spend-cap';
@@ -157,6 +157,22 @@ describe('the director reads the sentence for the AI version (P58B T4)', () => {
     it('pays nothing once the director spend cap is used up', async () => {
       await expect(processSpendCap().reserve(0.01)).resolves.toMatchObject({ ok: true });
       await getDirector(Date.now(), VISITOR)(SENTENCE);
+      expect(readerCalls).toBe(0);
+      expect(upstreamCalls).toBe(0);
+    });
+
+    it('pays nothing once the director has spent its dollar cap, with calls still left', async () => {
+      vi.stubEnv('WORLDSMITH_SPEND_CAP_USD', '0.01');
+      vi.stubEnv('WORLDSMITH_CALL_CAP', '10');
+      resetProcessSpendCap();
+      await expect(processSpendCap().reserve(0.01)).resolves.toMatchObject({ ok: true });
+      await getDirector(Date.now(), VISITOR)(SENTENCE);
+      expect(readerCalls).toBe(0);
+      expect(upstreamCalls).toBe(0);
+    });
+
+    it('pays nothing when too little of the route budget is left for a director call', async () => {
+      await getDirector(Date.now() - DIRECTOR_BUDGET_MS + 1000, VISITOR)(SENTENCE);
       expect(readerCalls).toBe(0);
       expect(upstreamCalls).toBe(0);
     });
