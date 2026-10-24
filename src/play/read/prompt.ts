@@ -32,37 +32,57 @@ const VERB_HINTS: Record<(typeof VERB_CLASSES)[number], string> = {
  * shodí test promptu, ne čtení.
  *
  * P56A T5: čtečka četla chytání, bouchání, krájení, přeskákání, dav a vytlačování jako obecnou Arénu nebo běžce.
- * Žánry se znakem ve větě jdou proto první a řádek říká ten znak – co padá, vykukuje, letí, kudy se přechází –,
- * obecné režimy až za nimi (`MODE_ORDER`). Žánr čtení gpt-oss-20b (`low`): p55 holdout-opened 13 → 35/60,
- * p54c dev 32 → 50/64 (dvě kola, druhé přidalo „ne závěrečný boj ani běh“ a slučování napřed).
+ * Žánry se znakem ve větě jdou proto první, obecné režimy až za nimi (`MODE_ORDER`). Žánr čtení gpt-oss-20b (`low`):
+ * p55 holdout-opened 13 → 35/60, p54c dev 32 → 50/64.
+ *
+ * P58B T6: řádek říká, co hráč ve hře dělá („you …“), ne slovo, které věta použije – past láká slovem („catch the bus“,
+ * „shoot pics“, „card battle“). Obrana od střílečky se liší cestami k bráněnému místu, úkol od útěku předměty, na kterých
+ * hráč něco dělá.
  */
 export const MODE_HINTS: Readonly<Record<string, string>> = {
-  'merge.default': 'two alike or identical items combine into a bigger one',
-  'crowd.default': 'a group grows through gates, doors or portals (x2, +5), then fights',
-  'push.default': 'shove, ram or bump others off a ring, island, edge or plate',
-  'hop.default': 'get across roads, highways, tracks or rivers row by row past traffic',
-  'catch.default': 'things fall, drop or rain down and the hero catches them',
-  'whack.default': 'things pop up, peek or rise from holes and get hit before they hide',
-  'slice.default': 'things fly, drift or are tossed and get cut or swiped in midair',
-  'defense.default': 'many foes march or come at something you protect',
-  'quest.spatial': 'walk to objects and act on each (light, fix, free)',
-  'quest.station': 'stay at a stove or bench, finish orders',
-  'shooter.default': 'aim and shoot what comes at you',
-  'throw.default': 'aim an arc, throw at a target or hoop',
-  'timing.stack': 'drop a swinging block onto a tower',
-  'timing.precision': 'stop a sweeping marker in the zone',
-  'timing.bridge': 'grow a plank across a gap',
-  'rhythm.default': 'tap notes to music',
-  'duel.default': 'one on one fight or argument',
-  'flap.default': 'tap to fly up through gaps',
-  'voyage.race': 'steer a vehicle or animal on a course',
-  'voyage.land': 'fly with thrust, touch down softly',
-  'platformer.default': 'jump ledge to ledge over gaps',
-  'runner.default': 'runs forward by itself in lanes, nothing to cross',
-  'arena.escape': 'roam while something hunts you',
-  'arena.fight': 'roam and beat foes up close, no edge, no growing group',
-  'arena.collect': 'roam and pick things up lying around',
+  'merge.default': 'you drop items into a box and two identical ones fuse into a bigger one',
+  'crowd.default': 'you lead a group through gates (x2, +5) that grow or shrink it, then it fights',
+  'push.default': 'you shove, ram or bump rivals off a ring, island, edge or plate',
+  'hop.default': 'you hop forward row by row across roads, rails or rivers past traffic',
+  'catch.default': 'things fall from above and you move under them to catch them',
+  'whack.default': 'things pop up from holes for a moment and you hit them before they hide',
+  'slice.default': 'things are tossed or fly through the air and you cut them midair',
+  'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard, and you hold every path',
+  'quest.spatial': 'you walk to objects one by one and act on each (light, fix, free, clean), even with a chaser',
+  'quest.station': 'you stay at one stove, bench or counter and finish orders',
+  'shooter.default': 'you stand, aim and shoot foes or targets coming at you',
+  'throw.default': 'you aim an arc and throw at a target, hoop or stack',
+  'timing.stack': 'you drop a swinging block onto a growing tower',
+  'timing.precision': 'you stop a sweeping marker inside a small zone',
+  'timing.bridge': 'you grow a plank long enough to span a gap',
+  'rhythm.default': 'you tap notes as they reach a line, in time with music',
+  'duel.default': 'you fight one rival face to face in real time: dodge the attack, strike back',
+  'flap.default': 'you tap to flap up while flying forward through gaps',
+  'voyage.race': 'you steer a vehicle, animal or board along a course or in a race',
+  'voyage.land': 'you fly with thrust and touch down softly',
+  'platformer.default': 'you jump ledge to ledge over gaps to a goal',
+  'runner.default': 'the hero runs forward by itself; you switch lanes, jump and slide, nothing to cross',
+  'arena.escape': 'you roam an area and survive while something hunts you',
+  'arena.fight': 'you roam and beat several foes up close, no edge, no growing group',
+  'arena.collect': 'you roam and pick up things lying around',
 };
+
+/**
+ * P58B T6: ručně psané příklady – žádný nesdílí pět slov za sebou s dev, otevřenou ani zapečetěnou sadou (test promptu).
+ * Každý učí jeden rozdíl, na kterém čtečka nebo slovník na dev chyboval: slovo pasti, obrana × střílečka, úkol
+ * s pronásledovatelem, tahová nebo rozhovorová hra bez žánru.
+ */
+export const PROMPT_EXAMPLES: readonly { readonly sentence: string; readonly genre: string | null }[] = [
+  { sentence: 'a turtle must catch the ferry, so hop him over the dock lanes between rolling forklifts', genre: 'hop.default' },
+  { sentence: 'a lighthouse keeper fires flares at the ghost ships drifting toward him', genre: 'shooter.default' },
+  { sentence: 'goblins stomp down three trails to the bakery, put a cannon on each trail', genre: 'defense.default' },
+  { sentence: 'a janitor mops every puddle in the dark school while the principal stalks the halls', genre: 'quest.spatial' },
+  { sentence: 'two sumo cats square off on a round mat, shove the other one out', genre: 'push.default' },
+  { sentence: 'a kangaroo bounces down the outback road by itself and i only swap lanes to dodge trucks', genre: 'runner.default' },
+  { sentence: 'chess against a grumpy owl, each captured piece turns into a feather', genre: null },
+  { sentence: 'a talk show where a nervous robot answers the host and you pick every reply', genre: null },
+  { sentence: 'photograph sleepy bats in the attic, the clearest shots earn stars', genre: null },
+];
 
 /** Pořadí řádků žánru v promptu: pořadí `MODE_HINTS`, režim bez řádku na konec (test promptu ho shodí). */
 const MODE_ORDER = Object.keys(MODE_HINTS);
@@ -80,11 +100,14 @@ export function readerSystemPrompt(): string {
     `roles: up to 6 other nouns that matter in play; kind = ${ROLE_KINDS.join('|')}; count = the number the sentence gives, else null.`,
     'setting: where it happens in English, or null. mood: one or two words, or null.',
     'numbers: seconds = a time limit in seconds, else null; counts = the other numbers in order.',
-    'genre: the game the sentence wants, {genre, mode}: the FIRST line below whose sign the sentence shows (the sign decides, not a final fight or the hero running), or null when none fits:',
+    'genre: the game the sentence wants, {genre, mode}. Judge by what the player keeps doing in play, not by a word in the sentence: "catch the bus" is not catching, "shoot photos" is not shooting, a "race" in a story is not racing. Take the FIRST line below that fits (a final fight or the hero running does not decide):',
     ...READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`))
       .sort((a, b) => (MODE_ORDER.indexOf(a) + 1 || 99) - (MODE_ORDER.indexOf(b) + 1 || 99))
       .map((id) => `- ${id}: ${MODE_HINTS[id] ?? ''}`),
-    'sure: false when two genre lines fit about equally or you are guessing, else true.',
+    'genre is null when the play is none of these: turn-based cards, board games or chess, quizzes, riddles, choosing what to say, dating or story choices, managing a shop, farm or city, math or logic puzzles, taking photos, slow fishing. A word of a line inside such a game ("battle", "race", "band", "shoot") does not make that line fit.',
+    'Examples (sentence => genre):',
+    ...PROMPT_EXAMPLES.map(({ sentence, genre }) => `"${sentence}" => ${genre ?? 'null'}`),
+    'sure: false only when two genre lines fit the play about equally; a lure word alone is no reason; else true.',
     'foe: who or what the hero fights, flees or dodges, 1-3 words, or null.',
     'item: the main thing the hero collects, throws or protects, or null.',
     `world: the look of the place, one of ${LOOK_IDS.map((id) => (LOOK_HINTS[id] === undefined ? id : `${id} (${LOOK_HINTS[id]})`)).join(', ')}; null when none fits.`,

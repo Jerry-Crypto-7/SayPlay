@@ -5,7 +5,7 @@
  * otevřel, by z brány udělal měření na tréninkových větách.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { normalizeSentence } from '../../../../scripts/play-fidelity.mjs';
 import { LOOK_IDS } from '../../../../src/play/arcade/look';
 import { GENRES, isGenreMode, type GenreId } from '../../../../src/play/genre/contract';
-import { P58B_HOLDOUT_SHA256, sha256Lf } from '../seal';
+import { knownSets, P58B_HOLDOUT_SHA256, sha256Lf, textsOf } from '../seal';
 
 const PLAY = join(process.cwd(), 'evals', 'play');
 const DIR = join(PLAY, 'p58b');
@@ -24,22 +24,6 @@ interface Sentence {
   readonly hero: string | null; readonly foe: string | null; readonly item: string | null; readonly world: string | null;
 }
 const holdout = (): Sentence[] => (JSON.parse(readLf(join(DIR, 'holdout.json'))) as { sentences: Sentence[] }).sentences;
-
-/** Věty sady, je-li soubor sadou vět (pole `{ text }` nebo `{ sentences: [{ text }] }`); jinak nic. */
-const textsOf = (path: string): string[] => {
-  const json = JSON.parse(readLf(path)) as unknown;
-  const rows = Array.isArray(json) ? json : (json as { sentences?: unknown }).sentences;
-  return Array.isArray(rows) && rows.every((row) => typeof (row as { text?: unknown }).text === 'string') ? rows.map((row) => (row as { text: string }).text) : [];
-};
-
-/** Každá sada vět ve složkách, které plán jmenuje (p58a až po sloučení P58A); prázdné soubory výsledků se nepočítají. */
-const SCANNED_DIRS = ['p30', 'p55', 'p56a', 'p58a'] as const;
-/** Další sady, na kterých se ladilo nebo které kdo otevřel (seznam P56A). */
-const OTHER_SETS = ['p43/panel.json', 'p43/sealed-100.json', 'p45/panel.json', 'p45/sealed-100.json', 'p52/dev.json', 'p52/holdout.json', 'p54c/dev.json', 'p54c/holdout.json', 'demand/corpus.json'] as const;
-const knownSets = (): string[] => [
-  ...SCANNED_DIRS.flatMap((dir) => (existsSync(join(PLAY, dir)) ? readdirSync(join(PLAY, dir)).filter((name) => name.endsWith('.json')).map((name) => `${dir}/${name}`) : [])),
-  ...OTHER_SETS,
-].filter((set) => textsOf(join(PLAY, set)).length > 0);
 
 const validMode = (value: string | null): boolean => {
   if (value === null) return false;
@@ -77,9 +61,9 @@ describe('P58B sealed genre holdout', () => {
     const sets = knownSets();
     // Prohledání složek samo něco najde: bez dev a otevřených sad by nulový průnik nic neříkal.
     expect(sets).toEqual(expect.arrayContaining(['p30/dev.json', 'p30/test-200.json', 'p55/holdout.json', 'p56a/holdout.json', 'p56a/audit-12.json']));
-    const known = new Set(sets.flatMap((set) => textsOf(join(PLAY, set))).map(normalizeSentence));
+    const known = new Set(sets.flatMap(textsOf).map(normalizeSentence));
     // Kontrola sama kolizi pozná: věta otevřené sady se přepisem velikosti a interpunkce neschová.
-    expect(known.has(normalizeSentence(`${textsOf(join(PLAY, 'p56a', 'holdout.json'))[0]!.toUpperCase()}!`))).toBe(true);
+    expect(known.has(normalizeSentence(`${textsOf('p56a/holdout.json')[0]!.toUpperCase()}!`))).toBe(true);
     const sentences = holdout();
     // Jen id, ne věta: sada se do výstupu testu nedostane.
     expect(sentences.filter((s) => known.has(normalizeSentence(s.text))).map((s) => s.id)).toEqual([]);

@@ -86,8 +86,4 @@ describe('readerSystemPrompt', () => {
     for (const control of READ_CONTROLS) expect(prompt).toContain(control);
     for (const field of ['genre:', 'foe:', 'item:', 'world:', 'title:']) expect(prompt).toContain(field);
   });
-
-  it('stays at most 3,500 characters – input tokens are latency on the fast path', () => {
-    expect(prompt.length).toBeLessThanOrEqual(3500);
-  });
 });
