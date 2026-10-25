@@ -5,7 +5,7 @@
  * vstupy a modely začnou u každého kola znovu), mezi koly karta se slovesem, nahoře HUD kola a životů a na
  * konci výsledek se hvězdami proti paru robota řetězu (`starsFor`). Relaci a záznam drží `createChainSession`;
  * tenhle soubor jen kreslí. Duch a výzva jdou přes celý řetěz v globálních ticích (T12); AI verze ani remix
- * řetěz nemá (debata T9).
+ * řetěz nemá (debata T9), hru ze čtení věty ano (P58E T3) – přejde na ni `UpgradeBanner`.
  */
 
 import dynamic from 'next/dynamic';
@@ -29,6 +29,7 @@ import { PostRun, type RunFacts } from '../../PostRun';
 import { useRemixJob } from '../../RemixBox';
 import { type DarePublish, publishDare } from '../../ShareButton';
 import { BuildingScreen, GameHud, type HudCounter, objectiveShown } from '../../ui';
+import { UpgradeBanner, useCommitted } from '../../UpgradeBanner';
 import { heroActionOf } from '../action-cue/cues';
 import type { GhostLabel } from '../Ghost';
 import { type ChainGhostReplay, fetchChainGhost } from './chain-ghost';
@@ -98,7 +99,12 @@ function ChainRun({
   host,
   challenge = null,
   bestDare,
+  upgrade = null,
+  sentence = null,
 }: {
+  /** Adresa `GET …/upgrade` řetězu z věty (P58E T3): přechod na hru ze čtení, AI verzi řetěz nemá. */
+  readonly upgrade?: string | null;
+  readonly sentence?: string | null;
   /** Výzva kamaráda z `?dare=`, ověřená serverem; její běh hraje duch. */
   readonly challenge?: Dare | null;
   /** Id nejlepšího běhu ze stránky pro ducha; `null` = žádný, `undefined` = bez ducha nejlepšího běhu (feed). */
@@ -308,6 +314,7 @@ function ChainRun({
     stars: starsFor({ won, score: session.score(), ticks: session.tick(), lives: session.lives(), livesStart: chain.lives }, par),
   };
   const playing = active && card === 0 && !over && snapshot.runState === 'running';
+  const committed = useCommitted(session.tick() / ARCADE_HZ, over);
 
   return (
     <main ref={shell} className="play-shell" data-chain-round={at + 1} data-chain-view={view} style={{ '--_sky': scene.sky } as CSSProperties}>
@@ -335,7 +342,9 @@ function ChainRun({
         ]}
         clock={clock === null ? { seconds: snapshot.tick / ARCADE_HZ, countdown: false } : { seconds: (clock - snapshot.tick) / ARCADE_HZ, countdown: true }}
         objective={!over && objectiveShown(snapshot.tick, ARCADE_HZ, false)}
-      />
+      >
+        {!inFeed && <UpgradeBanner request={upgrade} sentence={sentence} versionId={versionId} committed={committed} chain />}
+      </GameHud>
       {carding && !over && <ChainCard card={chain.rounds[session.round()]!.card} twist={chain.rounds[session.round()]!.twist} round={session.round() + 1} rounds={rounds} />}
       {over && settled && (
         <PostRun

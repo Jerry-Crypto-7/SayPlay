@@ -25,6 +25,7 @@ import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/p
 import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl, tenseMusicFor } from '@/play/audio/library';
 import { createTension } from '@/play/audio/tension';
+import { CHAIN_RUNTIME_VERSION } from '@/play/chain/contract';
 import type { GameVersion } from '@/play/contracts';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
@@ -985,6 +986,8 @@ function ArcadePlayGame({
           matchedOf={readingVersion && !inFeed ? (lineage.at(-2)?.versionId ?? null) : null}
           versionId={versionId}
           committed={committed}
+          // Hra ze čtení řetězu (P58E T3) se ptá řetězu: konec `CHAIN` bez věty, Quick vede zpátky na řetěz.
+          chain={readingVersion && lineage.at(-2)?.runtimeVersion === CHAIN_RUNTIME_VERSION}
         />
         {running && <RemixReadyChip job={remix} />}
       </ArcadeHud>
