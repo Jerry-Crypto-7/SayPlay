@@ -83,6 +83,15 @@ const load = cache(async (id: string): Promise<Loaded> => {
 });
 
 /**
+ * Kde se hra ptá na AI verzi: návrh z věty u sebe, hra ze čtení (P58D T2) u rychlé hry, ze které vznikla –
+ * AI verze je dítě rychlé hry a přijde stejně. Ostatní hry AI verzi nečekají.
+ */
+function upgradeUrlOf(game: PublishedGame): string | null {
+  if (game.relation === 'reading' && game.version.parentId !== null) return `/api/play/games/${game.version.parentId}/upgrade`;
+  return game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null;
+}
+
+/**
  * Náhled odkazu. `og:image` musí být absolutní adresa a kořenový layout
  * `metadataBase` nemá (a sahat na něj tenhle plán nesmí), proto se základ
  * skládá z hlaviček požadavku – na Vercelu i lokálně je to adresa, na kterou
@@ -145,7 +154,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
         lab={labFacts(game.spec, game.report)}
         read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
         honesty={honesty}
-        upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
+        upgrade={upgradeUrlOf(game)}
         par={game.report.par ?? null}
         challenge={challenge}
         bestDare={bestDare}

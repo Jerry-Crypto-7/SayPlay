@@ -18,8 +18,9 @@ import { answered, fakeBranch } from '@/play/director/__fixtures__/branch';
 import type { LogicAnswerFixture } from '@/play/director/__fixtures__/logic-answers';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import type { Reading } from '@/play/read/schema';
-import { type PublishedGame, memoryVersionStore, type VersionStore } from '@/play/version';
+import { __resetProcessVersionStore, type PublishedGame, memoryVersionStore, type VersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetProcessAnswerStore } from '@/server/answer-cache';
+import { resetRateWindows } from '@/server/rate-limit';
 
 import type { getDirector } from '../_director';
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
@@ -31,7 +32,17 @@ vi.mock('../_director', async (importOriginal) => {
   return { ...actual, getDirector: (...args: Parameters<typeof getDirector>) => (seam.director ?? actual.getDirector)(...args) };
 });
 
+// Stránka hry (T2) mimo Next.js: hlavičky pro bránu, `notFound` jako výjimka a shell bez renderu (vzor `dare-by.test.ts`).
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ 'x-forwarded-for': '203.0.113.58' }) }));
+vi.mock('next/navigation', () => ({
+  notFound: () => {
+    throw new Error('NEXT_NOT_FOUND');
+  },
+}));
+vi.mock('@/components/play/PlayShell', () => ({ PlayShell: () => null }));
+
 const { __resetUpgrades, directUpgrade, readingOf, upgradeOf } = await import('../_upgrade');
+const { default: PlayGamePage } = await import('@/app/play/[id]/page');
 
 const readings = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/readings/p30-dev.gpt-oss-20b.json'), 'utf8')) as { readings: { id: string; text: string; reading: Omit<Reading, 'sure'> }[] }).readings;
 /** Čtení P56A je starší než `sure` (P58B T5): čtečka by ho bez něj odmítla. */
@@ -195,5 +206,27 @@ describe('the reading game (P58D T1)', () => {
     expect(reading).toMatchObject({ relation: 'reading', version: { parentId: quick.version.versionId } });
     release();
     expect((await done).status).toBe('ready');
+  }, 180_000);
+});
+
+describe('the reading game page (P58D T2)', () => {
+  /** `upgrade` z props shellu `/play/[id]`: kde se stránka ptá na AI verzi. */
+  async function upgradeUrlOn(id: string): Promise<unknown> {
+    const element = (await PlayGamePage({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) })) as { props: { children: { props: Record<string, unknown> }[] } };
+    return element.props.children.find((child) => 'upgrade' in child.props)!.props.upgrade;
+  }
+
+  it('asks the quick game it came from for the AI version', async () => {
+    reader(OTHER.reading);
+    __resetProcessVersionStore();
+    resetRateWindows();
+    const store = versionStoreFromEnv(process.env);
+    const quick = await quickGame(store, OTHER.text);
+    let reading = '';
+    const outcome = await directUpgrade(store, quick, request(OTHER.text), director(OTHER.answer).make, (id) => { reading = id; });
+    const parentUpgrade = `/api/play/games/${quick.version.versionId}/upgrade`;
+    expect(await upgradeUrlOn(reading)).toBe(parentUpgrade);
+    expect(await upgradeUrlOn(quick.version.versionId)).toBe(parentUpgrade);
+    expect(await upgradeUrlOn(outcome.status === 'ready' ? outcome.versionId : '')).toBeNull();
   }, 180_000);
 });

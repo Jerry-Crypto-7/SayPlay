@@ -17,6 +17,7 @@ import type { DirectorDeps } from '@/play/director';
 import { answered, failed, fakeBranch, type FakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
 import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
+import { resetProcessAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { recordUpgradeFailure, upgradeAttemptLine } from '../_upgrade';
@@ -29,6 +30,8 @@ const director = vi.hoisted(() => ({
   script: [] as unknown[],
   calls: 0,
   gate: Promise.resolve() as Promise<void>,
+  /** Drží až volání modelu (P58D T2): návrh ze čtení už je venku, AI verze ještě ne. */
+  modelGate: Promise.resolve() as Promise<void>,
   /** Režie odmítnutá vyčerpaným počtem volajícího (R8). */
   callerLimited: false,
   /** Větev poslední režie – test čte, co model dostal. */
@@ -44,13 +47,17 @@ vi.mock('../_director', async (importOriginal) => {
     // Druhý pokus s pokynem (P46E T4, `nudge`) patří k témuž běhu upgradu: `calls` počítá běhy, `branch` drží první.
     // Tady model na pokyn neodpoví (rychlý výpadek, platí první verze): pokyn zkouší `upgrade-adds.test.ts`, a druhé
     // ověření robotem by každý případ zdvojilo nad časový limit.
-    getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check'], nudge?: string) => async (sentence: string) => {
+    // `onDraft` (P58D T1) jde do `direct()` jako u živé režie: bez čtečky je návrh ze slov a hra ze čtení nevznikne.
+    getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check'], nudge?: string, _queueId?: string, _wait?: boolean, onDraft?: DirectorDeps['onDraft']) => async (sentence: string) => {
       if (nudge !== undefined) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check, nudge })), callerLimited: false };
       director.calls += 1;
       await director.gate;
-      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check })), callerLimited: true };
-      director.branch = branchOf(director.script as ScriptedOutcome[]);
-      return { ...(await direct(sentence, { branch: director.branch, now: Date.now, check })), callerLimited: false };
+      const drafted = onDraft === undefined ? {} : { onDraft };
+      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check, ...drafted })), callerLimited: true };
+      const branch = branchOf(director.script as ScriptedOutcome[]);
+      director.branch = branch;
+      const held = { ...branch, generate: async (call: Parameters<typeof branch.generate>[0]) => { await director.modelGate; return branch.generate(call); } };
+      return { ...(await direct(sentence, { branch: held, now: Date.now, check, ...drafted })), callerLimited: false };
     },
   };
 });
@@ -137,6 +144,7 @@ beforeEach(() => {
   director.callerLimited = false;
   director.script = [answered(genreAnswer())];
   director.gate = Promise.resolve();
+  director.modelGate = Promise.resolve();
   genre.unplayable = false;
 });
 
@@ -491,6 +499,62 @@ describe('GET …/upgrade', () => {
     const unknown = await readUpgrade(new Request('http://play.test/x', { headers: CALLER }), params('a'.repeat(32)));
     expect(unknown.status).toBe(404);
   });
+});
+
+/**
+ * Hra ze čtení na dotazu upgradu (P58D T2): `pending` nese `reading: { versionId }`, jakmile hra ze čtení vznikne,
+ * a long-poll procesu, který o návrhu nevěděl, se s ní vrátí hned – ne až po `UPGRADE_WAIT_MS`. `pending` bez ní
+ * (čtečka vypnutá) drží první test souboru přesnou shodou s `PENDING`.
+ */
+describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
+  /** Čtení, které útěk křečka hraje jako hledání (`quest.spatial`); slovník ho hraje jako útěk v Aréně. */
+  const READ = {
+    control: 'move_free', verbs: [{ word: 'escapes', class: 'move_free' }], hero: 'hamster', roles: [{ noun: 'roomba', kind: 'threat', count: null }], setting: 'supermarket',
+    mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'quest', mode: 'spatial' }, sure: true, foe: 'roomba', item: null, world: null, title: null,
+  };
+
+  beforeEach(() => {
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubEnv('PLAY_READER_PATH', 'ai');
+    vi.stubEnv('PLAY_READER_ENDPOINT', 'http://reader.test');
+    resetProcessAnswerStore();
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(READ) } }] })));
+    director.modelGate = new Promise((resolve) => {
+      release = resolve;
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('pending nese hru ze čtení, jakmile vznikne; ready ani draft-final ji nenesou', async () => {
+    const created = await publish({ sentence: SENTENCE });
+    expect((await game(created.body.versionId)).spec.genre).not.toMatchObject({ id: 'quest', mode: 'spatial' });
+    let pending: Record<string, any> = {};
+    await vi.waitFor(async () => {
+      pending = await upgrade(created.body.versionId);
+      expect(pending.reading).toBeDefined();
+    }, { timeout: 30_000 });
+    expect(pending).toEqual({ ...PENDING, reading: { versionId: expect.stringMatching(/^[0-9a-f]{32}$/) } });
+    const reading = await game(pending.reading.versionId);
+    expect(reading.version.parentId).toBe(created.body.versionId);
+    expect(reading.spec.genre).toMatchObject({ id: 'quest', mode: 'spatial' });
+    release();
+    const final = await settled(created.body.versionId);
+    expect(final).not.toHaveProperty('reading');
+  }, 120_000);
+
+  it('long-poll procesu, který o návrhu nevěděl, se s hrou ze čtení vrátí hned', async () => {
+    const created = await publish({ sentence: SENTENCE });
+    // Jiná instance: práci z POST drží jiný proces, dotaz ji spustí sám a čeká nejvýš 25 s.
+    __resetUpgrades();
+    const started = performance.now();
+    const pending = await upgrade(created.body.versionId);
+    expect(pending).toEqual({ ...PENDING, reading: { versionId: expect.stringMatching(/^[0-9a-f]{32}$/) } });
+    expect(performance.now() - started).toBeLessThan(15_000);
+  }, 120_000);
 });
 
 /**

@@ -63,8 +63,11 @@ export type UpgradeOutcome =
 /**
  * `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1).
  * `queued` (P53 T3): pořadí ve frontě na slot režiséra, 1 = další na řadě; chybí, když nečeká.
+ * `reading` (P58D T2): hra ze čtení, jakmile je publikovaná; chybí, dokud není, nebo když hraje žánr rychlé hry.
  */
-export type UpgradeStatus = UpgradeOutcome | { readonly status: 'pending'; readonly deadlineAt: string; readonly queued?: number };
+export type UpgradeStatus =
+  | UpgradeOutcome
+  | { readonly status: 'pending'; readonly deadlineAt: string; readonly queued?: number; readonly reading?: { readonly versionId: string } };
 
 /** Pod jakým id čeká upgrade návrhu ve frontě režiséra; remix má vlastní předponu, takže se id nepotkají. */
 export function upgradeQueueId(draftId: string): string {
@@ -100,6 +103,8 @@ interface Job {
   outcome: UpgradeOutcome | null;
   /** Hra ze čtení (P58D T1), jakmile je publikovaná; `null` = není, nebo hraje týž žánr jako rychlá hra. */
   reading: string | null;
+  /** Splní se, až `reading` přijde (P58D T2): long-poll na ni nečeká do konce svého okna. */
+  readonly readingArrived: Promise<void>;
 }
 
 /**
@@ -475,12 +480,19 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? pendingSince(known.startedAt) : outcome));
 
   console.warn(upgradeAttemptLine(draftId, 'started'));
+  let arrived = (): void => undefined;
+  const readingArrived = new Promise<void>((resolve) => {
+    arrived = resolve;
+  });
   // `job` ještě není, ale hra ze čtení přijde až po prvním `await` práce.
-  const attempt = runUpgrade(versions, draft, request, (versionId) => { job.reading = versionId; }).catch((thrown: unknown): UpgradeOutcome => {
+  const attempt = runUpgrade(versions, draft, request, (versionId) => {
+    job.reading = versionId;
+    arrived();
+  }).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });
-  const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null };
+  const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null, readingArrived };
   const remembered = attempt.then((outcome) => {
     console.warn(upgradeAttemptLine(draftId, 'settled'));
     if (isTransient(outcome)) {
@@ -512,11 +524,16 @@ export function readingOf(draftId: string): string | null {
   return jobs().get(draftId)?.reading ?? null;
 }
 
-/** Stav bez čekání: `null` = proces o návrhu neví. Čekající na slot režiséra nese `queued`. */
+/** Splní se, až práce návrhu publikuje hru ze čtení (P58D T2); bez práce v procesu nikdy. */
+export function readingArrival(draftId: string): Promise<void> {
+  return jobs().get(draftId)?.readingArrived ?? new Promise<void>(() => undefined);
+}
+
+/** Stav bez čekání: `null` = proces o návrhu neví. Čekající na slot režiséra nese `queued`, s hrou ze čtení `reading`. */
 export function knownUpgrade(draftId: string): UpgradeStatus | null {
   const job = jobs().get(draftId);
   if (job === undefined) return null;
   if (job.outcome !== null) return job.outcome;
   const queued = directorQueuePosition(upgradeQueueId(draftId));
-  return queued === null ? pendingSince(job.startedAt) : { ...pendingSince(job.startedAt), queued };
+  return { ...pendingSince(job.startedAt), ...(queued === null ? {} : { queued }), ...(job.reading === null ? {} : { reading: { versionId: job.reading } }) };
 }
