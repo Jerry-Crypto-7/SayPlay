@@ -114,6 +114,12 @@ interface Job {
  */
 export const MAX_REMEMBERED_UPGRADES = 1000;
 
+/**
+ * Jak dlouho počká long-poll s hrou ze čtení, kterou uložil už dřívější pokus, než ji ohlásí (P58D).
+ * simplified: odmítnutí stropem trvá jeden dotaz do sdíleného úložiště; pomalejší úložiště → hráč čeká znovu, pak zvýšit.
+ */
+export const KNOWN_READING_GRACE_MS = 2000;
+
 const JOBS = Symbol.for('worldstream.play.upgrades');
 
 function jobs(): Map<string, Job> {
@@ -172,7 +178,7 @@ export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
 }
 
-async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, onReading: (versionId: string) => void): Promise<UpgradeOutcome> {
+async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draft, request.sentence);
   if (existing !== null) return { status: 'ready', versionId: existing };
@@ -240,11 +246,14 @@ export function playsOtherGenre(quick: GameSpecV1, read: GameSpecV1): boolean {
   return read.genre !== undefined && (read.genre.id !== quick.genre?.id || read.genre.mode !== quick.genre?.mode);
 }
 
-/** Hra ze čtení jako dítě rychlé hry (P58D T1); `null` = nevyšla – jen řádek logu, AI verze na ní nezávisí. */
-async function publishReading(versions: VersionStore, draftId: string, request: UpgradeRequest, spec: GameSpecV1, seeds: readonly number[]): Promise<string | null> {
+/**
+ * Hra ze čtení jako dítě rychlé hry (P58D T1); `null` = nevyšla – jen řádek logu, AI verze na ní nezávisí.
+ * `fresh: false` = uložil ji už dřívější pokus, takže ji hráč zná.
+ */
+async function publishReading(versions: VersionStore, draftId: string, request: UpgradeRequest, spec: GameSpecV1, seeds: readonly number[]): Promise<{ readonly versionId: string; readonly fresh: boolean } | null> {
   try {
     const published = await publishReadSpec(versions, spec, seeds, draftId, { relation: 'reading', origin: { sentence: request.sentence, seed: request.seed, readBy: 'model' } });
-    if (published.ok) return published.value.game.version.versionId;
+    if (published.ok) return { versionId: published.value.game.version.versionId, fresh: published.value.status === 201 };
     console.warn(`[play] reading version of ${draftId} not published: ${published.issues?.[0] ?? String(published.response.status)}`);
   } catch (thrown) {
     console.warn(`[play] reading version of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
@@ -258,13 +267,13 @@ async function publishReading(versions: VersionStore, draftId: string, request: 
  * hraje jiný žánr než rychlá hra. Čtení se tím neplatí znovu a publikace na model nečeká; výsledek upgradu počká jen na
  * dokončení zápisu, aby ho `after()` nezmrazil v půlce.
  */
-export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string) => void): Promise<UpgradeOutcome> {
+export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   let reading: Promise<void> = Promise.resolve();
   const onDraft = (spec: GameSpecV1): void => {
     if (!playsOtherGenre(draft.spec, spec)) return;
-    reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((versionId) => {
-      if (versionId !== null) onReading?.(versionId);
+    reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((published) => {
+      if (published !== null) onReading?.(published.versionId, published.fresh);
     });
   };
   try {
@@ -488,9 +497,13 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
     arrived = resolve;
   });
   // `job` ještě není, ale hra ze čtení přijde až po prvním `await` práce.
-  const attempt = runUpgrade(versions, draft, request, (versionId) => {
+  // Hra ze čtení z dřívějšího pokusu ukončí long-poll až po `KNOWN_READING_GRACE_MS`: přechodné odmítnutí (strop)
+  // ji tak předběhne a hráč ho uvidí. Hned by každý dotaz dostal `pending` s novou lhůtou a spustil nový pokus
+  // a hráč by čekal na AI verzi donekonečna (živá kontrola P58D T4).
+  const attempt = runUpgrade(versions, draft, request, (versionId, fresh) => {
     job.reading = versionId;
-    arrived();
+    if (fresh) arrived();
+    else setTimeout(arrived, KNOWN_READING_GRACE_MS);
   }).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };

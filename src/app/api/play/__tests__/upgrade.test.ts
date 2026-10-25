@@ -20,7 +20,7 @@ import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version'
 import { resetProcessAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
 
-import { recordUpgradeFailure, upgradeAttemptLine } from '../_upgrade';
+import { knownUpgrade, recordUpgradeFailure, upgradeAttemptLine } from '../_upgrade';
 
 // AI verze je jen pro jednu hru: věty těchto testů (útěk s pronásledovatelem) P56C posílá do řetězu mikroher,
 // který AI verzi nemá (`chain-publish.test.ts`). Tady se zkouší vylepšení jedné hry, proto rozhodnutí vždy `single`.
@@ -554,6 +554,17 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     const pending = await upgrade(created.body.versionId);
     expect(pending).toEqual({ ...PENDING, reading: { versionId: expect.stringMatching(/^[0-9a-f]{32}$/) } });
     expect(performance.now() - started).toBeLessThan(15_000);
+  }, 120_000);
+
+  // Živá kontrola T4: strop odmítl AI verzi, každý dotaz našel uloženou hru ze čtení, vrátil `pending` s novou lhůtou
+  // a spustil nový pokus – hráč na hře ze čtení čekal na AI verzi donekonečna.
+  it('odmítnutí stropem předběhne hru ze čtení z dřívějšího pokusu', async () => {
+    director.callerLimited = true;
+    const created = await publish({ sentence: SENTENCE });
+    const versions = versionStoreFromEnv(process.env);
+    await vi.waitFor(async () => expect(await versions.childrenOf(created.body.versionId)).toHaveLength(1), { timeout: 30_000 });
+    await vi.waitFor(() => expect(knownUpgrade(created.body.versionId)).toBeNull(), { timeout: 30_000 });
+    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
   }, 120_000);
 });
 
