@@ -21,6 +21,7 @@ const READING: Reading = {
   mood: 'fast',
   numbers: { seconds: null, counts: [3] },
   genre: { genre: 'runner', mode: 'default' },
+  sure: true,
   foe: null,
   item: 'bone',
   world: 'city',
@@ -74,7 +75,7 @@ describe('readingSchema', () => {
 
   it('gives llama.cpp a schema where every field is required', () => {
     expect(READING_JSON_SCHEMA.$schema).toBeUndefined();
-    expect(READING_JSON_SCHEMA.required).toEqual(['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'foe', 'item', 'world', 'title']);
+    expect(READING_JSON_SCHEMA.required).toEqual(['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'sure', 'foe', 'item', 'world', 'title']);
     expect(READING_JSON_SCHEMA.additionalProperties).toBe(false);
   });
 });

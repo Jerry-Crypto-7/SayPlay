@@ -24,7 +24,7 @@ vi.mock('../../version', async (original) => ({
 
 const READING: Reading = {
   control: 'runner', verbs: [{ word: 'runs', class: 'runner' }], hero: 'corgi', roles: [], setting: 'park', mood: null,
-  numbers: { seconds: null, counts: [] }, genre: null, foe: null, item: null, world: null, title: null,
+  numbers: { seconds: null, counts: [] }, genre: null, sure: true, foe: null, item: null, world: null, title: null,
 };
 const GROQ = {
   PLAY_READER: 'on',

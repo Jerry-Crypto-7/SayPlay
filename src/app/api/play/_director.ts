@@ -20,6 +20,7 @@
  */
 
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
+import { readerConfigFromEnv, readerForAiVersion } from '@/play/read/client';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import { DIRECTOR_PRIMARY_MODEL, type UpstreamRequest } from '@/model/prompt';
@@ -180,6 +181,28 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
     if (thrown instanceof VersionStoreUnavailable) return false;
     throw thrown;
   }
+}
+
+/**
+ * Pustil by režisér po čtení placené volání? Brány `cappedBranch.generate` – rozpočet trasy i na celé
+ * čtení (T4b), strop utrácení a denní počet volajícího – jen čtené, nic se nezapočítá; slot drží režie už
+ * před otázkou. Čtení věty pro AI verzi (P58B T4) se platí před prvním voláním, takže bez téhle otázky by
+ * ho volající zaplatil i za režii, která model nezavolá (revize T4, nález 1). Souběžná věta může poslední
+ * volání dne nebo zbytek stropu vzít mezi otázkou a voláním; pak je čtení zaplacené naprázdno, jednou.
+ */
+async function directorWouldCall(env: Record<string, string | undefined>, config: UpstreamConfig, deadline: number, caller: string): Promise<boolean> {
+  if (deadline - Date.now() < minCallMs(config) + (readerConfigFromEnv(env)?.timeoutMs ?? 0)) return false;
+  const callerHasCall = versionStoreFromEnv(env)
+    .hasDirectorCall(caller, callsPerCaller(env))
+    .catch((thrown: unknown) => {
+      if (thrown instanceof VersionStoreUnavailable) return false;
+      throw thrown;
+    });
+  // simplified: jen výstupní část nejhorší ceny – vstup zná až sestavený požadavek; kniha o méně než jeho cenu pod stropem
+  // ještě zaplatí čtení naprázdno. Kdyby to bylo vidět v útratě, sestavit požadavek před čtením a předat celý `worstCaseUsd`.
+  const worstOutputUsd = (config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
+  const [exhausted, hasCall] = await Promise.all([processSpendCap().exhausted(worstOutputUsd), callerHasCall]);
+  return !exhausted && hasCall;
 }
 
 /**
@@ -479,18 +502,22 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     });
     if (branch === null || config === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
     let seat: { readonly release: () => void } | null = null;
+    /** Slot dveří `play` pro tuto režii; `null` = drží ho, text = proč ho nedostala. */
+    const takeSeat = async (): Promise<string | null> => {
+      if (seat !== null) return null;
+      // `waitForSlot: false` (P53 T3b): odpověď, na kterou hráč kouká, nečeká mlčky ve frontě –
+      // bez volného slotu se model nevolá jako před P53; věta z cache sem nedojde, ta projde.
+      if (!waitForSlot && !directorSlotFree()) return 'no free play slot: this path does not wait in line';
+      const taken = await takePlaySlot(config, startedAt, queueId);
+      if ('refused' in taken) return taken.refused;
+      seat = taken;
+      return null;
+    };
     const queued: GenerationBranch = {
       ...branch,
       async generate(call) {
-        if (seat === null) {
-          // `waitForSlot: false` (P53 T3b): odpověď, na kterou hráč kouká, nečeká mlčky ve frontě –
-          // bez volného slotu se model nevolá jako před P53; věta z cache sem nedojde, ta projde.
-          if (!waitForSlot && !directorSlotFree()) return refusedBy('no free play slot: this path does not wait in line');
-          const taken = await takePlaySlot(config, startedAt, queueId);
-          if ('refused' in taken) return refusedBy(taken.refused);
-          seat = taken;
-        }
-        return branch.generate(call);
+        const refused = await takeSeat();
+        return refused === null ? branch.generate(call) : refusedBy(refused);
       },
     };
     try {
@@ -499,7 +526,10 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
       // P30A T8: ověřené příklady jen na objednávku, dokud T10 nezměří, jestli pomáhají.
       const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
-      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
+      // Čtení se platí jen, když by režisér model zavolal (revize T4, nález 1), a až se slotem v ruce (T4b): plná fronta,
+      // termín ani souběžná věta, která slot vezme během 3–15 s čtení, ho pak nezaplatí naprázdno. Daň: slot je obsazený i po dobu čtení.
+      const reader = readerForAiVersion() ? { caller, mayPayRead: async () => (await takeSeat()) === null && (await directorWouldCall(process.env, config, deadline, caller)) } : {};
+      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...reader, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
       // `seat` přiřazuje `generate` výš; TypeScript to po `await` nevidí.
       (seat as { readonly release: () => void } | null)?.release();

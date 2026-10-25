@@ -61,6 +61,11 @@ export const readingSchema = z
     numbers: z.object({ seconds: z.int().min(1).max(3600).nullable(), counts: z.array(z.int().min(1).max(999)).max(6) }).strict(),
     /** P56A T3: hra, kterou věta chce – žánr a režim, nebo `null`, když žádný nesedí. */
     genre: genreChoice.nullable(),
+    /**
+     * P58B T5: `false`, když věta sedí na dva řádky žánru zhruba stejně nebo čtečka hádá – pak rozhodne slovník, slyší-li
+     * něco (`classifyGenre`). Hned za `genre`, ať ho model píše s žánrem v hlavě.
+     */
+    sure: z.boolean(),
     /** S kým nebo čím hrdina bojuje, před čím utíká nebo čemu se vyhýbá; 1–3 slova z věty. */
     foe: word.nullable(),
     /** Věc, se kterou hrdina hlavně pracuje (sbírá, hází, chrání). */

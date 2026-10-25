@@ -1343,3 +1343,31 @@ describe('vypnutý strop sám vyprší', () => {
     warn.mockRestore();
   });
 });
+
+// P58B T4: režisér se ptá `exhausted()` dřív, než zaplatí čtení věty. Omyl musí padnout na stranu „vyčerpáno“.
+describe('exhausted() jen čte knihu a soudí jako reserve()', () => {
+  it('rozbitý ovládací soubor = vyčerpáno', async () => {
+    const cap = new SpendCap({ enabled: true, capUsd: 100 }, controlFile('{ not json'));
+    expect(await cap.exhausted()).toBe(true);
+  });
+
+  it('kniha, která neodpoví, = vyčerpáno', async () => {
+    const ledger: SpendLedger = { id: 'broken', add: () => Promise.reject(new Error('store down')) };
+    expect(await new SpendCap({ enabled: true, capUsd: 100 }, null, ledger).exhausted()).toBe(true);
+  });
+
+  it('vypnutý strop nehlásí vyčerpáno ani nad utracenou knihou', async () => {
+    const ledger = memoryLedger();
+    await ledger.add(50, 50);
+    expect(await new SpendCap({ enabled: false, capUsd: 0 }, null, ledger).exhausted(10)).toBe(false);
+  });
+
+  it('kniha těsně pod stropem: volno jen pro volání, které se ještě vejde, a nic se nepřičte', async () => {
+    const ledger = memoryLedger();
+    await ledger.add(0.5, 1);
+    const cap = new SpendCap({ enabled: true, capUsd: 1 }, null, ledger);
+    expect(await cap.exhausted(0.5)).toBe(false);
+    expect(await cap.exhausted(0.75)).toBe(true);
+    expect(await ledger.add(0, 0)).toEqual({ usd: 0.5, calls: 1 });
+  });
+});

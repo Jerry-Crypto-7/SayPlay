@@ -160,6 +160,9 @@ describe('síťový adaptér (REST protokol Upstash)', () => {
 
     expect(await store.get('abc')).toBe('{"planner":1,"compiler":2,"storedAt":"t"}');
     expect(calls[1].url).toBe('https://cache.example.com/get/worldsmith%3Aspend%3Aanswer%3Aabc');
+
+    await store.set('abc', 'null', 600, { onlyIfAbsent: true });
+    expect(JSON.parse(String(calls[2].init?.body))).toEqual(['SET', 'worldsmith:spend:answer:abc', 'null', 'EX', '600', 'NX']);
   });
 
   it('chybějící klíč je null, ne výjimka; chybový stav úložiště je výjimka', async () => {

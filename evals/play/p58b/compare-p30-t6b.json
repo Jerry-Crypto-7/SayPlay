@@ -1,0 +1,3646 @@
+{
+ "schema": "p58b-compare.v1",
+ "commit": "e7690a6f",
+ "measuredAt": "2026-10-24T19:18:05.907Z",
+ "from": "local PC -> provider",
+ "promptVersion": "24ae3babe923814f",
+ "sets": [
+  "evals/play/p30/dev.json"
+ ],
+ "models": [
+  {
+   "id": "astra@openai",
+   "kind": "openai",
+   "endpoint": "api.openai.com",
+   "model": "gpt-6-astra",
+   "effort": "low",
+   "pricing": {
+    "usdPerMTokIn": 10,
+    "usdPerMTokOut": 50
+   }
+  }
+ ],
+ "capUsd": 3,
+ "spentUsd": 1.85577,
+ "stopped": null,
+ "summary": {
+  "astra@openai": {
+   "all": {
+    "sentences": 60,
+    "targets": {
+     "of": 0,
+     "hit": 0,
+     "modeHit": 0
+    },
+    "traps": {
+     "of": 0,
+     "offLure": 0
+    },
+    "roles": {
+     "of": 0,
+     "hero": 0,
+     "foe": 0
+    },
+    "invalid": 0,
+    "errors": 0,
+    "latencyMs": {
+     "p50": 3376,
+     "p95": 4865,
+     "max": 11699,
+     "overBudget": 60,
+     "overGate": 60
+    },
+    "firstByteMs": {
+     "p50": 3376,
+     "p95": 4864
+    },
+    "tokens": {
+     "input": 144812,
+     "output": 8153
+    },
+    "usd": 1.85577,
+    "listUsd": null
+   },
+   "perSet": {
+    "p30/dev": {
+     "sentences": 60,
+     "targets": {
+      "of": 0,
+      "hit": 0,
+      "modeHit": 0
+     },
+     "traps": {
+      "of": 0,
+      "offLure": 0
+     },
+     "roles": {
+      "of": 0,
+      "hero": 0,
+      "foe": 0
+     },
+     "invalid": 0,
+     "errors": 0,
+     "latencyMs": {
+      "p50": 3376,
+      "p95": 4865,
+      "max": 11699,
+      "overBudget": 60,
+      "overGate": 60
+     },
+     "firstByteMs": {
+      "p50": 3376,
+      "p95": 4864
+     },
+     "tokens": {
+      "input": 144812,
+      "output": 8153
+     },
+     "usd": 1.85577,
+     "listUsd": null
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "set": "p30/dev",
+   "id": "s039",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "zombie",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "mall",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "shooter",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "zombie",
+      "item": null,
+      "world": "mall",
+      "title": "zombie shooter"
+     },
+     "readGenre": "shooter.default",
+     "classified": "shooter.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2621,
+     "totalMs": 2624,
+     "inputTokens": 2409,
+     "outputTokens": 92,
+     "usd": 0.02869,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s037",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [
+       {
+        "word": "shoots",
+        "class": "aim_shoot"
+       }
+      ],
+      "hero": "space marine",
+      "roles": [
+       {
+        "noun": "alien bugs",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "mining colony",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "shooter",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "alien bugs",
+      "item": null,
+      "world": "space",
+      "title": "Space Marine"
+     },
+     "readGenre": "shooter.default",
+     "classified": "shooter.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2340,
+     "totalMs": 2341,
+     "inputTokens": 2413,
+     "outputTokens": 105,
+     "usd": 0.02938,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s002",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "collect",
+        "class": "move_free"
+       },
+       {
+        "word": "dodging",
+        "class": "melee"
+       }
+      ],
+      "hero": "knight",
+      "roles": [
+       {
+        "noun": "keys",
+        "kind": "collectible",
+        "count": 3
+       },
+       {
+        "noun": "ghosts",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "haunted castle",
+      "mood": "haunted",
+      "numbers": {
+       "seconds": null,
+       "counts": [
+        3
+       ]
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": "ghosts",
+      "item": "keys",
+      "world": "castle",
+      "title": "Three Keys in a Haunted Castle"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2515,
+     "totalMs": 2516,
+     "inputTokens": 2418,
+     "outputTokens": 132,
+     "usd": 0.03078,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s003",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "escaping",
+        "class": "move_free"
+       },
+       {
+        "word": "hunts",
+        "class": "move_free"
+       }
+      ],
+      "hero": "hamster",
+      "roles": [
+       {
+        "noun": "supermarket",
+        "kind": "destination",
+        "count": null
+       },
+       {
+        "noun": "giant Roomba",
+        "kind": "chaser",
+        "count": null
+       }
+      ],
+      "setting": "supermarket",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "escape"
+      },
+      "sure": true,
+      "foe": "giant Roomba",
+      "item": null,
+      "world": "supermarket",
+      "title": "Hamster Escaping a Supermarket"
+     },
+     "readGenre": "arena.escape",
+     "classified": "arena.escape",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4539,
+     "totalMs": 4539,
+     "inputTokens": 2415,
+     "outputTokens": 135,
+     "usd": 0.0309,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s006",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "runner",
+      "verbs": [
+       {
+        "word": "runs",
+        "class": "runner"
+       },
+       {
+        "word": "grabbing",
+        "class": "move_free"
+       },
+       {
+        "word": "jumping",
+        "class": "platform"
+       }
+      ],
+      "hero": "corgi",
+      "roles": [
+       {
+        "noun": "sausages",
+        "kind": "collectible",
+        "count": null
+       },
+       {
+        "noun": "sprinklers",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "park",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "runner",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "sprinklers",
+      "item": "sausages",
+      "world": "meadow",
+      "title": "Corgi Sausages"
+     },
+     "readGenre": "runner.default",
+     "classified": "runner.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3737,
+     "totalMs": 3737,
+     "inputTokens": 2418,
+     "outputTokens": 175,
+     "usd": 0.03293,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s008",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "runner",
+      "verbs": [
+       {
+        "word": "running",
+        "class": "runner"
+       }
+      ],
+      "hero": "banana",
+      "roles": [
+       {
+        "noun": "monkey",
+        "kind": "chaser",
+        "count": null
+       }
+      ],
+      "setting": "temple",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "runner",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "monkey",
+      "item": null,
+      "world": null,
+      "title": "banana running from a monkey"
+     },
+     "readGenre": "runner.default",
+     "classified": "runner.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3627,
+     "totalMs": 3628,
+     "inputTokens": 2414,
+     "outputTokens": 142,
+     "usd": 0.03124,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s022",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "platform",
+      "verbs": [
+       {
+        "word": "climbs",
+        "class": "platform"
+       },
+       {
+        "word": "reach",
+        "class": "platform"
+       }
+      ],
+      "hero": "tiny robot",
+      "roles": [
+       {
+        "noun": "moving platforms",
+        "kind": "obstacle",
+        "count": null
+       },
+       {
+        "noun": "charger",
+        "kind": "destination",
+        "count": null
+       }
+      ],
+      "setting": "a tower of moving platforms",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "platformer",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "robot climbs a tower"
+     },
+     "readGenre": "platformer.default",
+     "classified": "platformer.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2859,
+     "totalMs": 2860,
+     "inputTokens": 2416,
+     "outputTokens": 127,
+     "usd": 0.03051,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s021",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "platform",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "lava",
+        "kind": "hazard",
+        "count": null
+       },
+       {
+        "noun": "spinning bars",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "platformer",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "spinning bars",
+      "item": null,
+      "world": "volcano",
+      "title": "lava obby"
+     },
+     "readGenre": "platformer.default",
+     "classified": "platformer.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4177,
+     "totalMs": 4177,
+     "inputTokens": 2410,
+     "outputTokens": 161,
+     "usd": 0.03215,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s035",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "flap",
+      "verbs": [],
+      "hero": "bird",
+      "roles": [],
+      "setting": "underwater",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "flap",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "underwater",
+      "title": "flappy bird underwater"
+     },
+     "readGenre": "flap.default",
+     "classified": "flap.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3140,
+     "totalMs": 3141,
+     "inputTokens": 2409,
+     "outputTokens": 109,
+     "usd": 0.02954,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s050",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [
+       {
+        "word": "throwing",
+        "class": "throw"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "snowballs",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "kids",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "snow fort",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "behind a snow fort",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "kids",
+      "item": "snowballs",
+      "world": "snow",
+      "title": "throwing snowballs"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2596,
+     "totalMs": 2597,
+     "inputTokens": 2413,
+     "outputTokens": 129,
+     "usd": 0.03058,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s088",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [],
+      "hero": "cats",
+      "roles": [
+       {
+        "noun": "cardboard boxes",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": "angry",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "cats",
+      "world": null,
+      "title": "cats and cardboard boxes"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3997,
+     "totalMs": 3997,
+     "inputTokens": 2412,
+     "outputTokens": 150,
+     "usd": 0.03162,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s069",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "gems",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "a cave",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": "gems",
+      "world": "cave",
+      "title": "gems in a cave"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4066,
+     "totalMs": 4066,
+     "inputTokens": 2412,
+     "outputTokens": 107,
+     "usd": 0.02947,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s056",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "races",
+        "class": "steer"
+       },
+       {
+        "word": "deliver",
+        "class": "tap_go"
+       }
+      ],
+      "hero": "delivery scooter",
+      "roles": [
+       {
+        "noun": "traffic",
+        "kind": "obstacle",
+        "count": null
+       },
+       {
+        "noun": "pizza",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "traffic",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": "traffic",
+      "item": "pizza",
+      "world": null,
+      "title": "Pizza Delivery"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4324,
+     "totalMs": 4324,
+     "inputTokens": 2417,
+     "outputTokens": 181,
+     "usd": 0.03322,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s058",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "race",
+        "class": "steer"
+       }
+      ],
+      "hero": "boat",
+      "roles": [
+       {
+        "noun": "crocodiles",
+        "kind": "hazard",
+        "count": null
+       }
+      ],
+      "setting": "jungle river",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": "crocodiles",
+      "item": null,
+      "world": "jungle",
+      "title": "jungle river boat race"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2571,
+     "totalMs": 2571,
+     "inputTokens": 2413,
+     "outputTokens": 111,
+     "usd": 0.02968,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s111",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "swallows",
+        "class": "move_free"
+       },
+       {
+        "word": "eats",
+        "class": "move_free"
+       }
+      ],
+      "hero": "black hole",
+      "roles": [
+       {
+        "noun": "city",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "city",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "city",
+      "title": "black hole swallows a city"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2413,
+     "totalMs": 2414,
+     "inputTokens": 2419,
+     "outputTokens": 113,
+     "usd": 0.02984,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s095",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [
+       {
+        "word": "throwing",
+        "class": "throw"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "knife",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "log",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "knife",
+      "world": null,
+      "title": "knife throwing"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2289,
+     "totalMs": 2289,
+     "inputTokens": 2409,
+     "outputTokens": 108,
+     "usd": 0.02949,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s188",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "duel",
+      "verbs": [
+       {
+        "word": "fights",
+        "class": "melee"
+       }
+      ],
+      "hero": "grandma",
+      "roles": [
+       {
+        "noun": "pigeons",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "park",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "fight"
+      },
+      "sure": true,
+      "foe": "pigeons",
+      "item": null,
+      "world": "meadow",
+      "title": "grandma karate"
+     },
+     "readGenre": "arena.fight",
+     "classified": "arena.fight",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2424,
+     "totalMs": 2425,
+     "inputTokens": 2415,
+     "outputTokens": 106,
+     "usd": 0.02945,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s144",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "rhythm",
+      "verbs": [
+       {
+        "word": "plays",
+        "class": "rhythm"
+       }
+      ],
+      "hero": "drummer frog",
+      "roles": [
+       {
+        "noun": "lily pads",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "pond",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "rhythm",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "Drummer Frog"
+     },
+     "readGenre": "rhythm.default",
+     "classified": "rhythm.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3893,
+     "totalMs": 3893,
+     "inputTokens": 2418,
+     "outputTokens": 147,
+     "usd": 0.03153,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s155",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [
+       {
+        "word": "defend",
+        "class": "aim_shoot"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "castle",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "goblins",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "castle",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "defense",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "goblins",
+      "item": "castle",
+      "world": "castle",
+      "title": "defend the castle"
+     },
+     "readGenre": "defense.default",
+     "classified": "defense.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2336,
+     "totalMs": 2336,
+     "inputTokens": 2412,
+     "outputTokens": 119,
+     "usd": 0.03007,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "s099",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "timing",
+      "verbs": [
+       {
+        "word": "build",
+        "class": "build_place"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "pancake",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "tower",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "timing",
+       "mode": "stack"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "pancake",
+      "world": null,
+      "title": "Tallest Pancake Tower"
+     },
+     "readGenre": "timing.stack",
+     "classified": "timing.stack",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3585,
+     "totalMs": 3585,
+     "inputTokens": 2412,
+     "outputTokens": 159,
+     "usd": 0.03207,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h01",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "stealing",
+        "class": "move_free"
+       },
+       {
+        "word": "dodging",
+        "class": "melee"
+       }
+      ],
+      "hero": "cat",
+      "roles": [
+       {
+        "noun": "fish",
+        "kind": "collectible",
+        "count": null
+       },
+       {
+        "noun": "fishmonger",
+        "kind": "chaser",
+        "count": null
+       }
+      ],
+      "setting": "market",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": false,
+      "foe": "fishmonger",
+      "item": "fish",
+      "world": null,
+      "title": "cat stealing fish"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.escape",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3637,
+     "totalMs": 3638,
+     "inputTokens": 2417,
+     "outputTokens": 127,
+     "usd": 0.03052,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h02",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "race",
+        "class": "steer"
+       }
+      ],
+      "hero": "shopping cart",
+      "roles": [],
+      "setting": "supermarket",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "supermarket",
+      "title": "shopping cart race"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2543,
+     "totalMs": 2543,
+     "inputTokens": 2409,
+     "outputTokens": 89,
+     "usd": 0.02854,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h03",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [
+       {
+        "word": "defend",
+        "class": "throw"
+       },
+       {
+        "word": "throwing",
+        "class": "throw"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "castle",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "dragons",
+        "kind": "threat",
+        "count": null
+       },
+       {
+        "noun": "snowballs",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "castle",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "dragons",
+      "item": "snowballs",
+      "world": "castle",
+      "title": "defend a castle"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4749,
+     "totalMs": 4749,
+     "inputTokens": 2413,
+     "outputTokens": 205,
+     "usd": 0.03438,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h04",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "collects",
+        "class": "move_free"
+       }
+      ],
+      "hero": "robot",
+      "roles": [
+       {
+        "noun": "batteries",
+        "kind": "collectible",
+        "count": null
+       }
+      ],
+      "setting": "Mars",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "batteries",
+      "world": "space",
+      "title": "robot collects batteries"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2663,
+     "totalMs": 2663,
+     "inputTokens": 2409,
+     "outputTokens": 104,
+     "usd": 0.02929,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h05",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "duel",
+      "verbs": [
+       {
+        "word": "boxing",
+        "class": "melee"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "kangaroo",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "australian outback",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "duel",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "kangaroo",
+      "item": null,
+      "world": "desert",
+      "title": "boxing a kangaroo"
+     },
+     "readGenre": "duel.default",
+     "classified": "duel.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2074,
+     "totalMs": 2074,
+     "inputTokens": 2412,
+     "outputTokens": 108,
+     "usd": 0.02952,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h06",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "collecting",
+        "class": "move_free"
+       },
+       {
+        "word": "repairs",
+        "class": "manipulate"
+       },
+       {
+        "word": "avoiding",
+        "class": "move_free"
+       },
+       {
+        "word": "throws",
+        "class": "throw"
+       }
+      ],
+      "hero": "tiny astronaut",
+      "roles": [
+       {
+        "noun": "broken spaceship",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "glowing crystals",
+        "kind": "collectible",
+        "count": null
+       },
+       {
+        "noun": "cracks",
+        "kind": "hazard",
+        "count": null
+       },
+       {
+        "noun": "grumpy alien",
+        "kind": "threat",
+        "count": null
+       },
+       {
+        "noun": "snowballs",
+        "kind": "hazard",
+        "count": null
+       }
+      ],
+      "setting": "icy moon",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": "grumpy alien",
+      "item": "glowing crystals",
+      "world": "space",
+      "title": "Glowing Crystals"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 5880,
+     "totalMs": 5880,
+     "inputTokens": 2440,
+     "outputTokens": 277,
+     "usd": 0.03825,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h07",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "doing",
+        "class": "manipulate"
+       }
+      ],
+      "hero": "purple elephants",
+      "roles": [
+       {
+        "noun": "taxes",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "volcano",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "volcano",
+      "title": "elephants doing taxes"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4191,
+     "totalMs": 4192,
+     "inputTokens": 2410,
+     "outputTokens": 147,
+     "usd": 0.03145,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h08",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [],
+      "hero": null,
+      "roles": [],
+      "setting": "on the moon",
+      "mood": "romantic",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "space",
+      "title": "dinner date on the moon"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3699,
+     "totalMs": 3699,
+     "inputTokens": 2410,
+     "outputTokens": 74,
+     "usd": 0.0278,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h09",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "escape",
+        "class": "move_free"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "flashlight",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "haunted hospital",
+      "mood": "haunted",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "escape"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "graveyard",
+      "title": "escape from a haunted hospital"
+     },
+     "readGenre": "arena.escape",
+     "classified": "arena.escape",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2250,
+     "totalMs": 2250,
+     "inputTokens": 2411,
+     "outputTokens": 105,
+     "usd": 0.02936,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "h10",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "slides",
+        "class": "steer"
+       },
+       {
+        "word": "jumps",
+        "class": "platform"
+       },
+       {
+        "word": "catches",
+        "class": "move_free"
+       }
+      ],
+      "hero": "penguin",
+      "roles": [
+       {
+        "noun": "glacier",
+        "kind": "destination",
+        "count": null
+       },
+       {
+        "noun": "seals",
+        "kind": "obstacle",
+        "count": null
+       },
+       {
+        "noun": "fish",
+        "kind": "collectible",
+        "count": null
+       }
+      ],
+      "setting": "glacier",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": false,
+      "foe": "seals",
+      "item": "fish",
+      "world": "snow",
+      "title": "penguin slides"
+     },
+     "readGenre": "voyage.race",
+     "classified": "runner.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4367,
+     "totalMs": 4368,
+     "inputTokens": 2418,
+     "outputTokens": 202,
+     "usd": 0.03428,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j01",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [],
+      "hero": null,
+      "roles": [],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "quantum physics"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4864,
+     "totalMs": 4865,
+     "inputTokens": 2410,
+     "outputTokens": 132,
+     "usd": 0.0307,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j02",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "naps",
+        "class": "move_free"
+       }
+      ],
+      "hero": "sleepy cat",
+      "roles": [],
+      "setting": "rainy café",
+      "mood": "cozy",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "sleepy cat naps"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3985,
+     "totalMs": 3985,
+     "inputTokens": 2412,
+     "outputTokens": 137,
+     "usd": 0.03097,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j03",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "investors",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "glass skyscraper",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "city",
+      "title": "startup pitch"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3563,
+     "totalMs": 3563,
+     "inputTokens": 2413,
+     "outputTokens": 124,
+     "usd": 0.03033,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j04",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "walker",
+      "verbs": [
+       {
+        "word": "walk",
+        "class": "tap_go"
+       },
+       {
+        "word": "eating",
+        "class": "move_free"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "dog",
+        "kind": "ally",
+        "count": null
+       },
+       {
+        "noun": "ice cream",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "beach",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": "ice cream",
+      "world": "beach",
+      "title": "Walk My Dog"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4706,
+     "totalMs": 4707,
+     "inputTokens": 2414,
+     "outputTokens": 174,
+     "usd": 0.03284,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j05",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "pop",
+        "class": "manipulate"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "balloons",
+        "kind": "target",
+        "count": 10
+       }
+      ],
+      "setting": "birthday party",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": [
+        10
+       ]
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "spatial"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "pop ten balloons"
+     },
+     "readGenre": "quest.spatial",
+     "classified": "quest.spatial",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2353,
+     "totalMs": 2353,
+     "inputTokens": 2410,
+     "outputTokens": 123,
+     "usd": 0.03025,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j06",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "timing",
+      "verbs": [
+       {
+        "word": "flips",
+        "class": "timing"
+       }
+      ],
+      "hero": "chef",
+      "roles": [
+       {
+        "noun": "pancakes",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "kitchen",
+      "mood": "busy",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "station"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "pancakes",
+      "world": null,
+      "title": "chef flips pancakes"
+     },
+     "readGenre": "quest.station",
+     "classified": "quest.station",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2323,
+     "totalMs": 2323,
+     "inputTokens": 2411,
+     "outputTokens": 104,
+     "usd": 0.02931,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j07",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "hoards",
+        "class": "move_free"
+       }
+      ],
+      "hero": "squirrel",
+      "roles": [
+       {
+        "noun": "acorns",
+        "kind": "collectible",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "acorns",
+      "world": null,
+      "title": "squirrel hoards acorns"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2178,
+     "totalMs": 2178,
+     "inputTokens": 2412,
+     "outputTokens": 106,
+     "usd": 0.02942,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j08",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [
+       {
+        "word": "defends",
+        "class": "aim_shoot"
+       }
+      ],
+      "hero": "wizard",
+      "roles": [
+       {
+        "noun": "crystal tower",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "flying skeletons",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "defense",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "flying skeletons",
+      "item": "crystal tower",
+      "world": null,
+      "title": "Wizard Defends a Crystal Tower"
+     },
+     "readGenre": "defense.default",
+     "classified": "defense.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4318,
+     "totalMs": 4319,
+     "inputTokens": 2414,
+     "outputTokens": 174,
+     "usd": 0.03284,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j09",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "burns",
+        "class": "aim_shoot"
+       },
+       {
+        "word": "dodges",
+        "class": "melee"
+       }
+      ],
+      "hero": "dragon",
+      "roles": [
+       {
+        "noun": "villages",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "arrows",
+        "kind": "hazard",
+        "count": null
+       },
+       {
+        "noun": "knights",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "villages",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "spatial"
+      },
+      "sure": true,
+      "foe": "knights",
+      "item": null,
+      "world": null,
+      "title": "dragon burns down villages"
+     },
+     "readGenre": "quest.spatial",
+     "classified": "quest.spatial",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4673,
+     "totalMs": 4674,
+     "inputTokens": 2414,
+     "outputTokens": 213,
+     "usd": 0.03479,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "j10",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "escapes",
+        "class": "move_free"
+       }
+      ],
+      "hero": "elf princess",
+      "roles": [
+       {
+        "noun": "goblin castle",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "dark forest",
+      "mood": "dark",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "escape"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "forest",
+      "title": "elf princess escapes"
+     },
+     "readGenre": "arena.escape",
+     "classified": "arena.escape",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4694,
+     "totalMs": 4694,
+     "inputTokens": 2415,
+     "outputTokens": 190,
+     "usd": 0.03365,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d01",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "ball",
+      "verbs": [
+       {
+        "word": "rolls",
+        "class": "steer"
+       },
+       {
+        "word": "avoiding",
+        "class": "melee"
+       }
+      ],
+      "hero": "hedgehog",
+      "roles": [
+       {
+        "noun": "foxes",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "mushroom hill",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": "foxes",
+      "item": null,
+      "world": null,
+      "title": "Mushroom Hill"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4737,
+     "totalMs": 4737,
+     "inputTokens": 2415,
+     "outputTokens": 189,
+     "usd": 0.0336,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d02",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "teach",
+        "class": "manipulate"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "little brother",
+        "kind": "ally",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "multiplication table"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3506,
+     "totalMs": 3506,
+     "inputTokens": 2410,
+     "outputTokens": 133,
+     "usd": 0.03075,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d03",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "brews",
+        "class": "manipulate"
+       }
+      ],
+      "hero": "witch",
+      "roles": [
+       {
+        "noun": "potions",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "a crooked tower",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "station"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "potions",
+      "world": null,
+      "title": "witch brews potions"
+     },
+     "readGenre": "quest.station",
+     "classified": "quest.station",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2420,
+     "totalMs": 2421,
+     "inputTokens": 2417,
+     "outputTokens": 106,
+     "usd": 0.02947,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d04",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [
+       {
+        "word": "shoot",
+        "class": "aim_shoot"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "paper planes",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "school playground",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "shooter",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "paper planes",
+      "item": null,
+      "world": null,
+      "title": "shoot down paper planes"
+     },
+     "readGenre": "shooter.default",
+     "classified": "shooter.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 1915,
+     "totalMs": 1915,
+     "inputTokens": 2411,
+     "outputTokens": 104,
+     "usd": 0.02931,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d05",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "walker",
+      "verbs": [
+       {
+        "word": "cross",
+        "class": "move_free"
+       }
+      ],
+      "hero": "sloth",
+      "roles": [
+       {
+        "noun": "highway",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "busy jungle highway",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "hop",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "jungle",
+      "title": "Sloth Cross"
+     },
+     "readGenre": "hop.default",
+     "classified": "hop.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4611,
+     "totalMs": 4611,
+     "inputTokens": 2413,
+     "outputTokens": 173,
+     "usd": 0.03278,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d06",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "race",
+        "class": "steer"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "hot air balloons",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "over a desert canyon",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "desert",
+      "title": "Hot Air Balloons"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2656,
+     "totalMs": 2657,
+     "inputTokens": 2411,
+     "outputTokens": 106,
+     "usd": 0.02941,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d07",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "fixing",
+        "class": "manipulate"
+       }
+      ],
+      "hero": "grandpa",
+      "roles": [
+       {
+        "noun": "old car",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "garage",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "station"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "grandpa fixing his old car"
+     },
+     "readGenre": "quest.station",
+     "classified": "quest.station",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3261,
+     "totalMs": 3261,
+     "inputTokens": 2413,
+     "outputTokens": 143,
+     "usd": 0.03128,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d08",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "collects",
+        "class": "move_free"
+       },
+       {
+        "word": "avoiding",
+        "class": "move_free"
+       }
+      ],
+      "hero": "mermaid",
+      "roles": [
+       {
+        "noun": "pearls",
+        "kind": "collectible",
+        "count": null
+       },
+       {
+        "noun": "jellyfish",
+        "kind": "hazard",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": "jellyfish",
+      "item": "pearls",
+      "world": "underwater",
+      "title": "mermaid collects pearls"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3376,
+     "totalMs": 3376,
+     "inputTokens": 2412,
+     "outputTokens": 132,
+     "usd": 0.03072,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d09",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "timing",
+      "verbs": [
+       {
+        "word": "stack",
+        "class": "timing"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "cheese wheels",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "tower",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "farm market",
+      "mood": "wobbly",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "timing",
+       "mode": "stack"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "cheese wheels",
+      "world": "meadow",
+      "title": "Wobbly Cheese Tower"
+     },
+     "readGenre": "timing.stack",
+     "classified": "timing.stack",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3092,
+     "totalMs": 3092,
+     "inputTokens": 2416,
+     "outputTokens": 121,
+     "usd": 0.03021,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d10",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "duel",
+      "verbs": [
+       {
+        "word": "duels",
+        "class": "melee"
+       }
+      ],
+      "hero": "pirate",
+      "roles": [
+       {
+        "noun": "skeleton captain",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "a sinking ship",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "duel",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "skeleton captain",
+      "item": null,
+      "world": "ocean",
+      "title": "Pirate Duels"
+     },
+     "readGenre": "duel.default",
+     "classified": "duel.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 11698,
+     "totalMs": 11699,
+     "inputTokens": 2414,
+     "outputTokens": 110,
+     "usd": 0.02964,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d11",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "rhythm",
+      "verbs": [
+       {
+        "word": "tap",
+        "class": "rhythm"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "drums",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "jungle festival",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "rhythm",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "jungle",
+      "title": "jungle festival"
+     },
+     "readGenre": "rhythm.default",
+     "classified": "rhythm.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2214,
+     "totalMs": 2214,
+     "inputTokens": 2412,
+     "outputTokens": 103,
+     "usd": 0.02927,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d12",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "swims",
+        "class": "move_free"
+       },
+       {
+        "word": "dodging",
+        "class": "melee"
+       }
+      ],
+      "hero": "goldfish",
+      "roles": [
+       {
+        "noun": "sharks",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "sunken city",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "escape"
+      },
+      "sure": true,
+      "foe": "sharks",
+      "item": null,
+      "world": "underwater",
+      "title": "Goldfish Sunken City"
+     },
+     "readGenre": "arena.escape",
+     "classified": "arena.escape",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2421,
+     "totalMs": 2422,
+     "inputTokens": 2415,
+     "outputTokens": 118,
+     "usd": 0.03005,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d13",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "write",
+        "class": "manipulate"
+       }
+      ],
+      "hero": null,
+      "roles": [],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "thank-you letter"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2843,
+     "totalMs": 2844,
+     "inputTokens": 2411,
+     "outputTokens": 111,
+     "usd": 0.02966,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d14",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "sneaks",
+        "class": "move_free"
+       },
+       {
+        "word": "steal",
+        "class": "move_free"
+       }
+      ],
+      "hero": "bear",
+      "roles": [
+       {
+        "noun": "campsite",
+        "kind": "destination",
+        "count": null
+       },
+       {
+        "noun": "honey",
+        "kind": "collectible",
+        "count": null
+       }
+      ],
+      "setting": "campsite",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "honey",
+      "world": null,
+      "title": "Steal Honey"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4272,
+     "totalMs": 4272,
+     "inputTokens": 2413,
+     "outputTokens": 180,
+     "usd": 0.03313,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d15",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [
+       {
+        "word": "throw",
+        "class": "throw"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "frisbees",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "dog",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "sunny beach",
+      "mood": "sunny",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "frisbees",
+      "world": "beach",
+      "title": "throw frisbees to a dog"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2774,
+     "totalMs": 2774,
+     "inputTokens": 2414,
+     "outputTokens": 122,
+     "usd": 0.03024,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d16",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "delivers",
+        "class": "tap_go"
+       }
+      ],
+      "hero": "owl",
+      "roles": [
+       {
+        "noun": "letters",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "village",
+        "kind": "destination",
+        "count": null
+       }
+      ],
+      "setting": "snowy mountain village",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "spatial"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "letters",
+      "world": "snow",
+      "title": "owl delivers letters"
+     },
+     "readGenre": "quest.spatial",
+     "classified": "quest.spatial",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2401,
+     "totalMs": 2401,
+     "inputTokens": 2412,
+     "outputTokens": 116,
+     "usd": 0.02992,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d17",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "cleans",
+        "class": "tap_go"
+       }
+      ],
+      "hero": "robot vacuum",
+      "roles": [
+       {
+        "noun": "house",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "family",
+        "kind": "ally",
+        "count": null
+       }
+      ],
+      "setting": "house",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "spatial"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "living_room",
+      "title": "robot vacuum cleans the house"
+     },
+     "readGenre": "quest.spatial",
+     "classified": "quest.spatial",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2439,
+     "totalMs": 2439,
+     "inputTokens": 2414,
+     "outputTokens": 116,
+     "usd": 0.02994,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d18",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "duel",
+      "verbs": [
+       {
+        "word": "pushes",
+        "class": "melee"
+       }
+      ],
+      "hero": "sumo wrestler",
+      "roles": [
+       {
+        "noun": "rivals",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "ring",
+        "kind": "destination",
+        "count": null
+       }
+      ],
+      "setting": "bouncy ring",
+      "mood": "bouncy",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "push",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "rivals",
+      "item": null,
+      "world": null,
+      "title": "Bouncy Ring"
+     },
+     "readGenre": "push.default",
+     "classified": "push.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 2488,
+     "totalMs": 2488,
+     "inputTokens": 2415,
+     "outputTokens": 118,
+     "usd": 0.03005,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d19",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "plan",
+        "class": "manipulate"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "budget",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "family",
+        "kind": "ally",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "family vacation"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4337,
+     "totalMs": 4337,
+     "inputTokens": 2410,
+     "outputTokens": 155,
+     "usd": 0.03185,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p30/dev",
+   "id": "d20",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "rides",
+        "class": "steer"
+       },
+       {
+        "word": "rescue",
+        "class": "move_free"
+       }
+      ],
+      "hero": "knight",
+      "roles": [
+       {
+        "noun": "unicorn",
+        "kind": "ally",
+        "count": null
+       },
+       {
+        "noun": "prince",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "cloud castle",
+        "kind": "destination",
+        "count": null
+       }
+      ],
+      "setting": "cloud castle",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "castle",
+      "title": "rescue a prince"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3842,
+     "totalMs": 3842,
+     "inputTokens": 2416,
+     "outputTokens": 174,
+     "usd": 0.03286,
+     "listUsd": null
+    }
+   }
+  }
+ ],
+ "dictionary": {
+  "all": {
+   "targets": {
+    "of": 0,
+    "hit": 0,
+    "modeHit": 0
+   },
+   "traps": {
+    "of": 0,
+    "offLure": 0
+   }
+  },
+  "perSet": {
+   "p30/dev": {
+    "targets": {
+     "of": 0,
+     "hit": 0,
+     "modeHit": 0
+    },
+    "traps": {
+     "of": 0,
+     "offLure": 0
+    }
+   }
+  },
+  "classified": {
+   "p30/dev#s039": "shooter.default",
+   "p30/dev#s037": "shooter.default",
+   "p30/dev#s002": "arena.escape",
+   "p30/dev#s003": "arena.escape",
+   "p30/dev#s006": "runner.default",
+   "p30/dev#s008": "runner.default",
+   "p30/dev#s022": "platformer.default",
+   "p30/dev#s021": "platformer.default",
+   "p30/dev#s035": "flap.default",
+   "p30/dev#s050": "throw.default",
+   "p30/dev#s088": "throw.default",
+   "p30/dev#s069": "quest.station",
+   "p30/dev#s056": "quest.spatial",
+   "p30/dev#s058": "voyage.race",
+   "p30/dev#s111": "arena.collect",
+   "p30/dev#s095": "throw.default",
+   "p30/dev#s188": "arena.fight",
+   "p30/dev#s144": "rhythm.default",
+   "p30/dev#s155": "defense.default",
+   "p30/dev#s099": "timing.stack",
+   "p30/dev#h01": "arena.escape",
+   "p30/dev#h02": "voyage.race",
+   "p30/dev#h03": "defense.default",
+   "p30/dev#h04": "arena.collect",
+   "p30/dev#h05": "arena.fight",
+   "p30/dev#h06": "quest.station",
+   "p30/dev#h07": "arena.collect",
+   "p30/dev#h08": "arena.collect",
+   "p30/dev#h09": "arena.escape",
+   "p30/dev#h10": "runner.default",
+   "p30/dev#j01": "arena.collect",
+   "p30/dev#j02": "arena.collect",
+   "p30/dev#j03": "arena.collect",
+   "p30/dev#j04": "voyage.race",
+   "p30/dev#j05": "quest.spatial",
+   "p30/dev#j06": "quest.station",
+   "p30/dev#j07": "arena.collect",
+   "p30/dev#j08": "defense.default",
+   "p30/dev#j09": "runner.default",
+   "p30/dev#j10": "arena.escape",
+   "p30/dev#d01": "runner.default",
+   "p30/dev#d02": "arena.collect",
+   "p30/dev#d03": "quest.station",
+   "p30/dev#d04": "shooter.default",
+   "p30/dev#d05": "hop.default",
+   "p30/dev#d06": "voyage.race",
+   "p30/dev#d07": "quest.station",
+   "p30/dev#d08": "arena.escape",
+   "p30/dev#d09": "timing.stack",
+   "p30/dev#d10": "duel.default",
+   "p30/dev#d11": "rhythm.default",
+   "p30/dev#d12": "voyage.race",
+   "p30/dev#d13": "timing.stack",
+   "p30/dev#d14": "arena.escape",
+   "p30/dev#d15": "throw.default",
+   "p30/dev#d16": "quest.spatial",
+   "p30/dev#d17": "arena.collect",
+   "p30/dev#d18": "push.default",
+   "p30/dev#d19": "arena.collect",
+   "p30/dev#d20": "quest.spatial"
+  }
+ }
+}

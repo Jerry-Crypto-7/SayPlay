@@ -1,0 +1,4149 @@
+{
+  "schema": "p58b-readings.v1",
+  "set": "evals/play/p58b/holdout.json",
+  "model": "gpt-6-astra",
+  "transport": "openai:https://api.openai.com",
+  "effort": "low",
+  "promptVersion": "24ae3babe923814f",
+  "budgetMs": 15000,
+  "commit": "d0cc66d1",
+  "readAt": "2026-10-24T22:17:44.407Z",
+  "summary": {
+    "n": 80,
+    "valid": 80,
+    "p50Ms": 2724,
+    "p95Ms": 5512,
+    "maxMs": 6495
+  },
+  "readings": [
+    {
+      "id": "s01",
+      "text": "A ferret barrels down three city tram lanes automatically while I swipe around barriers, duck under signs, and scoop up coins.",
+      "ms": 3450,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "barrels",
+            "class": "runner"
+          },
+          {
+            "word": "swipe",
+            "class": "runner"
+          },
+          {
+            "word": "duck",
+            "class": "runner"
+          },
+          {
+            "word": "scoop",
+            "class": "move_free"
+          }
+        ],
+        "hero": "ferret",
+        "roles": [
+          {
+            "noun": "tram lanes",
+            "kind": "destination",
+            "count": 3
+          },
+          {
+            "noun": "barriers",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "signs",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "coins",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "city tram lanes",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            3
+          ]
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "barriers",
+        "item": "coins",
+        "world": "city",
+        "title": "Ferret Tram Lanes"
+      }
+    },
+    {
+      "id": "s02",
+      "text": "Make a toaster zoom through factory conveyor lanes on its own, with quick sideways swipes past presses and jumps for golden bolts.",
+      "ms": 2432,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "zoom",
+            "class": "runner"
+          },
+          {
+            "word": "swipes",
+            "class": "runner"
+          },
+          {
+            "word": "jumps",
+            "class": "platform"
+          }
+        ],
+        "hero": "toaster",
+        "roles": [
+          {
+            "noun": "presses",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "golden bolts",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "factory conveyor lanes",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "presses",
+        "item": "golden bolts",
+        "world": "factory",
+        "title": "Toaster Conveyor Lanes"
+      }
+    },
+    {
+      "id": "s03",
+      "text": "This courier never stops charging down a desert route; I pick between three trails and leap over cacti to snag dates.",
+      "ms": 4240,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "charging",
+            "class": "runner"
+          },
+          {
+            "word": "pick",
+            "class": "runner"
+          },
+          {
+            "word": "leap",
+            "class": "platform"
+          },
+          {
+            "word": "snag",
+            "class": "move_free"
+          }
+        ],
+        "hero": "courier",
+        "roles": [
+          {
+            "noun": "trails",
+            "kind": "destination",
+            "count": 3
+          },
+          {
+            "noun": "cacti",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "dates",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "desert route",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            3
+          ]
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "cacti",
+        "item": "dates",
+        "world": "desert",
+        "title": "Desert Courier"
+      }
+    },
+    {
+      "id": "s04",
+      "text": "i get swept forward along three underwater channels and can only switch channels or duck beneath coral arches while grabbing pearls.",
+      "ms": 2994,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "switch",
+            "class": "runner"
+          },
+          {
+            "word": "duck",
+            "class": "runner"
+          },
+          {
+            "word": "grabbing",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "channels",
+            "kind": "destination",
+            "count": 3
+          },
+          {
+            "noun": "coral arches",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "pearls",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "underwater channels",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            3
+          ]
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "coral arches",
+        "item": "pearls",
+        "world": "underwater",
+        "title": "Underwater Pearls"
+      }
+    },
+    {
+      "id": "s05",
+      "text": "Let me steer a frog left and right across forest branches, choosing jumps between mushroom shelves without dropping into the ravine.",
+      "ms": 4963,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "steer",
+            "class": "steer"
+          },
+          {
+            "word": "dropping",
+            "class": "platform"
+          }
+        ],
+        "hero": "frog",
+        "roles": [
+          {
+            "noun": "branches",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "mushroom shelves",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "ravine",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "forest branches",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "forest",
+        "title": "Frog Across Forest Branches"
+      }
+    },
+    {
+      "id": "s06",
+      "text": "A miner needs careful sideways movement and little jumps between cave ledges, with deep pits underneath every badly judged landing.",
+      "ms": 4548,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "jumps",
+            "class": "platform"
+          }
+        ],
+        "hero": "miner",
+        "roles": [
+          {
+            "noun": "ledges",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "deep pits",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "cave",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "deep pits",
+        "item": null,
+        "world": "cave",
+        "title": "Cave Ledges"
+      }
+    },
+    {
+      "id": "s07",
+      "text": "Can a teapot climb across living room furniture if I control every step and jump, using floating cushions above the floor?",
+      "ms": 2852,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "climb",
+            "class": "platform"
+          },
+          {
+            "word": "step",
+            "class": "tap_go"
+          },
+          {
+            "word": "jump",
+            "class": "platform"
+          }
+        ],
+        "hero": "teapot",
+        "roles": [
+          {
+            "noun": "furniture",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "floating cushions",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "floor",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "living room",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "living_room",
+        "title": "teapot climb"
+      }
+    },
+    {
+      "id": "s08",
+      "text": "I want to move sideways through a ruined castle and jump between crumbling balconies, where missing a foothold sends me into the moat.",
+      "ms": 2473,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "jump",
+            "class": "platform"
+          },
+          {
+            "word": "move",
+            "class": "platform"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "balconies",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "moat",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "ruined castle",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "castle",
+        "title": "Crumbling Balconies"
+      }
+    },
+    {
+      "id": "s09",
+      "text": "Guide a snail anywhere around a wide meadow while a salt golem pursues it, weaving around rocks until the rescue bell rings.",
+      "ms": 4306,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "Guide",
+            "class": "move_free"
+          },
+          {
+            "word": "weaving",
+            "class": "move_free"
+          },
+          {
+            "word": "pursues",
+            "class": "move_free"
+          }
+        ],
+        "hero": "snail",
+        "roles": [
+          {
+            "noun": "salt golem",
+            "kind": "chaser",
+            "count": null
+          },
+          {
+            "noun": "rocks",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "rescue bell",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "wide meadow",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "sure": true,
+        "foe": "salt golem",
+        "item": null,
+        "world": "meadow",
+        "title": "snail rescue"
+      }
+    },
+    {
+      "id": "s10",
+      "text": "Let me wander freely around an abandoned factory yard gathering scattered screws, trying to clear the whole floor before lunch.",
+      "ms": 2452,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "wander",
+            "class": "move_free"
+          },
+          {
+            "word": "gathering",
+            "class": "move_free"
+          },
+          {
+            "word": "clear",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "screws",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "abandoned factory yard",
+        "mood": "abandoned",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "collect"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "screws",
+        "world": "factory",
+        "title": "Scattered Screws"
+      }
+    },
+    {
+      "id": "s11",
+      "text": "A duck is trapped in a jungle clearing with a crocodile chasing it; I steer in any direction and survive until sunrise.",
+      "ms": 2396,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "steer",
+            "class": "move_free"
+          },
+          {
+            "word": "survive",
+            "class": "move_free"
+          },
+          {
+            "word": "chasing",
+            "class": "move_free"
+          }
+        ],
+        "hero": "duck",
+        "roles": [
+          {
+            "noun": "crocodile",
+            "kind": "chaser",
+            "count": null
+          }
+        ],
+        "setting": "jungle clearing",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "sure": true,
+        "foe": "crocodile",
+        "item": null,
+        "world": "jungle",
+        "title": "Survive Until Sunrise"
+      }
+    },
+    {
+      "id": "s12",
+      "text": "Move a blacksmith freely around a graveyard and smack surrounding skeletons with a hammer until none are left standing.",
+      "ms": 2559,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "Move",
+            "class": "move_free"
+          },
+          {
+            "word": "smack",
+            "class": "melee"
+          }
+        ],
+        "hero": "blacksmith",
+        "roles": [
+          {
+            "noun": "skeletons",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "hammer",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "graveyard",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "fight"
+        },
+        "sure": true,
+        "foe": "skeletons",
+        "item": null,
+        "world": "graveyard",
+        "title": "Smack Skeletons"
+      }
+    },
+    {
+      "id": "s13",
+      "text": "Put a crab behind the wheel of a sand buggy and let me steer around beach flags to finish ahead of rival carts.",
+      "ms": 2964,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "steer",
+            "class": "steer"
+          },
+          {
+            "word": "finish",
+            "class": "steer"
+          }
+        ],
+        "hero": "crab",
+        "roles": [
+          {
+            "noun": "sand buggy",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "beach flags",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "rival carts",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "beach",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "sure": true,
+        "foe": "rival carts",
+        "item": null,
+        "world": "beach",
+        "title": "Crab Sand Buggy"
+      }
+    },
+    {
+      "id": "s14",
+      "text": "i steer my motorbike through a closed city circuit, braking for sharp corners and trying to beat the clock over three laps.",
+      "ms": 2285,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "steer",
+            "class": "steer"
+          },
+          {
+            "word": "braking",
+            "class": "steer"
+          },
+          {
+            "word": "beat",
+            "class": "steer"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "motorbike",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "corners",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "closed city circuit",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            3
+          ]
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "race"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "city",
+        "title": "beat the clock"
+      }
+    },
+    {
+      "id": "s15",
+      "text": "An astronaut has a tiny pod above a moon base; I pulse its thrusters against gravity and settle gently onto the marked pad.",
+      "ms": 5380,
+      "reading": {
+        "control": "glide",
+        "verbs": [
+          {
+            "word": "pulse",
+            "class": "flap"
+          },
+          {
+            "word": "settle",
+            "class": "steer"
+          }
+        ],
+        "hero": "astronaut",
+        "roles": [
+          {
+            "noun": "pod",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "pad",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "above a moon base",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "land"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "space",
+        "title": "Tiny Pod"
+      }
+    },
+    {
+      "id": "s16",
+      "text": "Send an electrician around a dark supermarket, visiting each broken fuse box and fixing its wiring until every aisle lights up.",
+      "ms": 3690,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "Send",
+            "class": "tap_go"
+          },
+          {
+            "word": "visiting",
+            "class": "tap_go"
+          },
+          {
+            "word": "fixing",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "electrician",
+        "roles": [
+          {
+            "noun": "broken fuse box",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "wiring",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "dark supermarket",
+        "mood": "dark",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "supermarket",
+        "title": "Every Aisle Lights Up"
+      }
+    },
+    {
+      "id": "s17",
+      "text": "I walk between thirsty saplings in a forest nursery and water each one, finishing only when every planting bed has been tended.",
+      "ms": 2638,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "walk",
+            "class": "tap_go"
+          },
+          {
+            "word": "water",
+            "class": "manipulate"
+          },
+          {
+            "word": "tended",
+            "class": "manipulate"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "saplings",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "planting bed",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "forest nursery",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "forest",
+        "title": "Thirsty Saplings"
+      }
+    },
+    {
+      "id": "s18",
+      "text": "An octopus runs a floating soup kiosk on the ocean, staying behind the counter to assemble each customer's bowl in order.",
+      "ms": 3423,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "assemble",
+            "class": "manipulate"
+          },
+          {
+            "word": "runs",
+            "class": "idle"
+          },
+          {
+            "word": "staying",
+            "class": "move_free"
+          }
+        ],
+        "hero": "octopus",
+        "roles": [
+          {
+            "noun": "counter",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "bowl",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "customer",
+            "kind": "ally",
+            "count": null
+          }
+        ],
+        "setting": "a floating soup kiosk on the ocean",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "station"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "bowl",
+        "world": "ocean",
+        "title": "Floating Soup Kiosk"
+      }
+    },
+    {
+      "id": "s19",
+      "text": "A scarecrow guards a meadow by aiming a water cannon at incoming crows, spraying them before they reach the scarecrow's hat.",
+      "ms": 2993,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "aiming",
+            "class": "aim_shoot"
+          },
+          {
+            "word": "spraying",
+            "class": "aim_shoot"
+          },
+          {
+            "word": "guards",
+            "class": "aim_shoot"
+          },
+          {
+            "word": "reach",
+            "class": "move_free"
+          }
+        ],
+        "hero": "scarecrow",
+        "roles": [
+          {
+            "noun": "water cannon",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "crows",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "hat",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "meadow",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "crows",
+        "item": "hat",
+        "world": "meadow",
+        "title": "Scarecrow's Hat"
+      }
+    },
+    {
+      "id": "s20",
+      "text": "Give me a foam blaster in a closed mall so I can track rolling mannequins and keep firing until they topple.",
+      "ms": 2560,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "firing",
+            "class": "aim_shoot"
+          },
+          {
+            "word": "track",
+            "class": "aim_shoot"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "foam blaster",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "rolling mannequins",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "closed mall",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "rolling mannequins",
+        "item": "foam blaster",
+        "world": "mall",
+        "title": "Foam Blaster"
+      }
+    },
+    {
+      "id": "s21",
+      "text": "A submarine mechanic aims a harpoon gun around an underwater workshop, firing at robot eels as they swim in from every side.",
+      "ms": 2586,
+      "reading": {
+        "control": "shooter",
+        "verbs": [
+          {
+            "word": "aims",
+            "class": "aim_shoot"
+          },
+          {
+            "word": "firing",
+            "class": "aim_shoot"
+          },
+          {
+            "word": "swim",
+            "class": "move_free"
+          }
+        ],
+        "hero": "submarine mechanic",
+        "roles": [
+          {
+            "noun": "harpoon gun",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "robot eels",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "underwater workshop",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "shooter",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "robot eels",
+        "item": null,
+        "world": "underwater",
+        "title": "Harpoon Mechanic"
+      }
+    },
+    {
+      "id": "s22",
+      "text": "A raccoon gets one paper ball per attempt; I choose its angle and strength to arc it into a distant living room wastebasket.",
+      "ms": 2619,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "arc",
+            "class": "throw"
+          },
+          {
+            "word": "choose",
+            "class": "throw"
+          }
+        ],
+        "hero": "raccoon",
+        "roles": [
+          {
+            "noun": "paper ball",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "wastebasket",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "living room",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "paper ball",
+        "world": "living_room",
+        "title": "Paper Ball"
+      }
+    },
+    {
+      "id": "s23",
+      "text": "I want one careful toss at a time, setting the angle and power to lob horseshoes around a stake beside a desert campsite.",
+      "ms": 2521,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "lob",
+            "class": "throw"
+          },
+          {
+            "word": "setting",
+            "class": "throw"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "horseshoes",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "stake",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "beside a desert campsite",
+        "mood": "careful",
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "horseshoes",
+        "world": "desert",
+        "title": "one careful toss"
+      }
+    },
+    {
+      "id": "s24",
+      "text": "Have a baker launch a single dough ball across a supermarket bakery, adjusting the arc and force to land inside a mixing bowl.",
+      "ms": 2499,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "launch",
+            "class": "throw"
+          },
+          {
+            "word": "adjusting",
+            "class": "throw"
+          },
+          {
+            "word": "land",
+            "class": "throw"
+          }
+        ],
+        "hero": "baker",
+        "roles": [
+          {
+            "noun": "dough ball",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "mixing bowl",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "supermarket bakery",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "throw",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "dough ball",
+        "world": "supermarket",
+        "title": "Dough Ball Launch"
+      }
+    },
+    {
+      "id": "s25",
+      "text": "A giraffe builds a lookout in the jungle; tap when each swinging crate is centered above the pile to release it onto the top.",
+      "ms": 2505,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "builds",
+            "class": "build_place"
+          },
+          {
+            "word": "tap",
+            "class": "timing"
+          },
+          {
+            "word": "release",
+            "class": "timing"
+          }
+        ],
+        "hero": "giraffe",
+        "roles": [
+          {
+            "noun": "lookout",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "crate",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "pile",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "jungle",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "stack"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "crate",
+        "world": "jungle",
+        "title": "giraffe builds a lookout"
+      }
+    },
+    {
+      "id": "s26",
+      "text": "A locksmith opens a cave vault when I tap to halt a swinging gauge needle inside its tiny green patch, with faster sweeps each round.",
+      "ms": 2398,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "tap",
+            "class": "timing"
+          },
+          {
+            "word": "halt",
+            "class": "timing"
+          },
+          {
+            "word": "opens",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "locksmith",
+        "roles": [
+          {
+            "noun": "vault",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "gauge needle",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "green patch",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "cave",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "cave",
+        "title": "Cave Vault"
+      }
+    },
+    {
+      "id": "s27",
+      "text": "Help a beetle cross meadow posts by holding to extend a reed and releasing when it's long enough to fall across the next gap.",
+      "ms": 2709,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "extend",
+            "class": "timing"
+          },
+          {
+            "word": "holding",
+            "class": "timing"
+          },
+          {
+            "word": "releasing",
+            "class": "timing"
+          },
+          {
+            "word": "cross",
+            "class": "tap_go"
+          }
+        ],
+        "hero": "beetle",
+        "roles": [
+          {
+            "noun": "posts",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "reed",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "gap",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "meadow",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "bridge"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "reed",
+        "world": "meadow",
+        "title": "beetle cross meadow posts"
+      }
+    },
+    {
+      "id": "s28",
+      "text": "A drummer robot performs in a factory, and I tap glowing pads as notes reach them in time with the clanking soundtrack.",
+      "ms": 2476,
+      "reading": {
+        "control": "rhythm",
+        "verbs": [
+          {
+            "word": "tap",
+            "class": "rhythm"
+          },
+          {
+            "word": "performs",
+            "class": "rhythm"
+          }
+        ],
+        "hero": "drummer robot",
+        "roles": [
+          {
+            "noun": "pads",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "notes",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "factory",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "rhythm",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "factory",
+        "title": "Clanking Soundtrack"
+      }
+    },
+    {
+      "id": "s29",
+      "text": "Let me tap arriving shell symbols right on the music's pulse during a beach concert, with longer streaks making the crowd cheer.",
+      "ms": 2183,
+      "reading": {
+        "control": "rhythm",
+        "verbs": [
+          {
+            "word": "tap",
+            "class": "rhythm"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "shell symbols",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "crowd",
+            "kind": "ally",
+            "count": null
+          }
+        ],
+        "setting": "beach concert",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "rhythm",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "beach",
+        "title": "Beach Concert"
+      }
+    },
+    {
+      "id": "s30",
+      "text": "A jellyfish lights up an ocean disco whenever I press the correct bubbles as musical cues arrive, keeping every tap synced to the bass.",
+      "ms": 2492,
+      "reading": {
+        "control": "rhythm",
+        "verbs": [
+          {
+            "word": "press",
+            "class": "rhythm"
+          },
+          {
+            "word": "lights",
+            "class": "rhythm"
+          },
+          {
+            "word": "keeping",
+            "class": "rhythm"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "jellyfish",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "bubbles",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "musical cues",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "ocean disco",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "rhythm",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "ocean",
+        "title": "Ocean Disco"
+      }
+    },
+    {
+      "id": "s31",
+      "text": "A knight faces one ogre in a snowy courtyard; I watch its shoulder movements, block each axe swing, and counter during openings.",
+      "ms": 2678,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "faces",
+            "class": "melee"
+          },
+          {
+            "word": "watch",
+            "class": "timing"
+          },
+          {
+            "word": "block",
+            "class": "melee"
+          },
+          {
+            "word": "counter",
+            "class": "melee"
+          }
+        ],
+        "hero": "knight",
+        "roles": [
+          {
+            "noun": "ogre",
+            "kind": "threat",
+            "count": 1
+          },
+          {
+            "noun": "axe",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "snowy courtyard",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "duel",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "ogre",
+        "item": null,
+        "world": "snow",
+        "title": "Knight Faces One Ogre"
+      }
+    },
+    {
+      "id": "s32",
+      "text": "I arm wrestle a pirate at a seaside tavern, reading their grip changes and choosing when to resist or push back.",
+      "ms": 4690,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "arm wrestle",
+            "class": "melee"
+          },
+          {
+            "word": "resist",
+            "class": "melee"
+          },
+          {
+            "word": "push back",
+            "class": "melee"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "pirate",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "seaside tavern",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "duel",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "pirate",
+        "item": null,
+        "world": "beach",
+        "title": "Arm Wrestle a Pirate"
+      }
+    },
+    {
+      "id": "s33",
+      "text": "Let a mantis fence against a single wasp on a forest stump, reacting to feints with parries and well timed lunges.",
+      "ms": 2262,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "fence",
+            "class": "melee"
+          },
+          {
+            "word": "reacting",
+            "class": "melee"
+          }
+        ],
+        "hero": "mantis",
+        "roles": [
+          {
+            "noun": "wasp",
+            "kind": "threat",
+            "count": 1
+          }
+        ],
+        "setting": "forest stump",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "duel",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "wasp",
+        "item": null,
+        "world": "forest",
+        "title": "Parries and Lunges"
+      }
+    },
+    {
+      "id": "s34",
+      "text": "Keep a bat airborne through a cave tunnel with little upward boosts per tap, letting it sink between stalactites as it flies forward automatically.",
+      "ms": 2562,
+      "reading": {
+        "control": "flap",
+        "verbs": [
+          {
+            "word": "Keep",
+            "class": "flap"
+          },
+          {
+            "word": "tap",
+            "class": "flap"
+          },
+          {
+            "word": "sink",
+            "class": "flap"
+          },
+          {
+            "word": "flies",
+            "class": "flap"
+          }
+        ],
+        "hero": "bat",
+        "roles": [
+          {
+            "noun": "stalactites",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "cave tunnel",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "stalactites",
+        "item": null,
+        "world": "cave",
+        "title": "Keep a bat airborne"
+      }
+    },
+    {
+      "id": "s35",
+      "text": "i drift forward through a space station automatically, tapping for tiny lifts against gravity to squeeze between paired cargo shutters.",
+      "ms": 2466,
+      "reading": {
+        "control": "flap",
+        "verbs": [
+          {
+            "word": "drift",
+            "class": "flap"
+          },
+          {
+            "word": "tapping",
+            "class": "flap"
+          },
+          {
+            "word": "squeeze",
+            "class": "flap"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "cargo shutters",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "space station",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "cargo shutters",
+        "item": null,
+        "world": "space",
+        "title": "Tiny Lifts"
+      }
+    },
+    {
+      "id": "s36",
+      "text": "A flying sock sails forward across a living room by itself; every tap lifts it briefly before gravity pulls it toward the furniture gaps.",
+      "ms": 2555,
+      "reading": {
+        "control": "flap",
+        "verbs": [
+          {
+            "word": "sails",
+            "class": "flap"
+          },
+          {
+            "word": "tap",
+            "class": "flap"
+          },
+          {
+            "word": "lifts",
+            "class": "flap"
+          },
+          {
+            "word": "pulls",
+            "class": "platform"
+          }
+        ],
+        "hero": "flying sock",
+        "roles": [
+          {
+            "noun": "furniture",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "gaps",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "living room",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "flap",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "furniture",
+        "item": null,
+        "world": "living_room",
+        "title": "flying sock"
+      }
+    },
+    {
+      "id": "s37",
+      "text": "Slide a shopping basket sideways beneath a broken supermarket chute, collecting falling oranges while letting rotten eggs hit the floor.",
+      "ms": 2669,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "Slide",
+            "class": "move_free"
+          },
+          {
+            "word": "collecting",
+            "class": "move_free"
+          }
+        ],
+        "hero": "shopping basket",
+        "roles": [
+          {
+            "noun": "oranges",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "rotten eggs",
+            "kind": "hazard",
+            "count": null
+          },
+          {
+            "noun": "chute",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "beneath a broken supermarket chute",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "rotten eggs",
+        "item": "oranges",
+        "world": "supermarket",
+        "title": "Falling Oranges"
+      }
+    },
+    {
+      "id": "s38",
+      "text": "I move left and right beneath jungle trees to gather falling mangoes in my hands, staying clear of the dropping scorpions.",
+      "ms": 2487,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "move",
+            "class": "move_free"
+          },
+          {
+            "word": "gather",
+            "class": "move_free"
+          },
+          {
+            "word": "staying",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "mangoes",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "scorpions",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "beneath jungle trees",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "scorpions",
+        "item": "mangoes",
+        "world": "jungle",
+        "title": "falling mangoes"
+      }
+    },
+    {
+      "id": "s39",
+      "text": "A seal slides across a snowy dock beneath falling fish, and I steer sideways to collect dinner while avoiding heavy anchors.",
+      "ms": 4785,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "steer",
+            "class": "steer"
+          },
+          {
+            "word": "collect",
+            "class": "move_free"
+          },
+          {
+            "word": "avoiding",
+            "class": "move_free"
+          },
+          {
+            "word": "slides",
+            "class": "move_free"
+          }
+        ],
+        "hero": "seal",
+        "roles": [
+          {
+            "noun": "fish",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "anchors",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "snowy dock",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "catch",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "heavy anchors",
+        "item": "fish",
+        "world": "snow",
+        "title": "Falling Fish"
+      }
+    },
+    {
+      "id": "s40",
+      "text": "A gardener taps mischievous moles with a rubber mallet whenever they briefly poke out of meadow burrows, before they disappear again.",
+      "ms": 3933,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "taps",
+            "class": "timing"
+          },
+          {
+            "word": "poke",
+            "class": "move_free"
+          },
+          {
+            "word": "disappear",
+            "class": "move_free"
+          }
+        ],
+        "hero": "gardener",
+        "roles": [
+          {
+            "noun": "moles",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "rubber mallet",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "burrows",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "meadow",
+        "mood": "mischievous",
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "whack",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "mischievous moles",
+        "item": "rubber mallet",
+        "world": "meadow",
+        "title": "Mischievous Moles"
+      }
+    },
+    {
+      "id": "s41",
+      "text": "Let me bonk tiny ghosts that peek out of graveyard urns for a second, with points only if I get them before they retreat.",
+      "ms": 4406,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "bonk",
+            "class": "melee"
+          },
+          {
+            "word": "peek",
+            "class": "move_free"
+          },
+          {
+            "word": "retreat",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "ghosts",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "urns",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "graveyard",
+        "mood": null,
+        "numbers": {
+          "seconds": 1,
+          "counts": []
+        },
+        "genre": {
+          "genre": "whack",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "tiny ghosts",
+        "item": null,
+        "world": "graveyard",
+        "title": "bonk tiny ghosts"
+      }
+    },
+    {
+      "id": "s42",
+      "text": "A bellhop patrols one screen of hotel windows, tapping gremlins the instant they lean out and before they slam the shutters.",
+      "ms": 3023,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "tapping",
+            "class": "timing"
+          },
+          {
+            "word": "patrols",
+            "class": "move_free"
+          }
+        ],
+        "hero": "bellhop",
+        "roles": [
+          {
+            "noun": "gremlins",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "windows",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "shutters",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "hotel windows",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "whack",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "gremlins",
+        "item": null,
+        "world": null,
+        "title": "Bellhop tapping gremlins"
+      }
+    },
+    {
+      "id": "s43",
+      "text": "A beekeeper protects a meadow hive by placing thorn barricades and guard beetles along paths before successive groups of hungry hornets arrive.",
+      "ms": 2849,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "protects",
+            "class": "build_place"
+          },
+          {
+            "word": "placing",
+            "class": "build_place"
+          },
+          {
+            "word": "arrive",
+            "class": "move_free"
+          }
+        ],
+        "hero": "beekeeper",
+        "roles": [
+          {
+            "noun": "hive",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "thorn barricades",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "guard beetles",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "hornets",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "meadow",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "hungry hornets",
+        "item": "hive",
+        "world": "meadow",
+        "title": "Thorn Barricades"
+      }
+    },
+    {
+      "id": "s44",
+      "text": "I protect a desert well by setting cactus sentries around its approaches, rearranging them between waves of thirsty sand worms.",
+      "ms": 3768,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "protect",
+            "class": "build_place"
+          },
+          {
+            "word": "setting",
+            "class": "build_place"
+          },
+          {
+            "word": "rearranging",
+            "class": "build_place"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "well",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "cactus sentries",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "sand worms",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "desert",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "sand worms",
+        "item": "well",
+        "world": "desert",
+        "title": "Cactus Sentries"
+      }
+    },
+    {
+      "id": "s45",
+      "text": "A mermaid keeps an underwater hatchery safe by placing anemone guards along the routes used by repeated swarms of hungry piranhas.",
+      "ms": 2678,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "placing",
+            "class": "build_place"
+          },
+          {
+            "word": "keeps",
+            "class": "build_place"
+          }
+        ],
+        "hero": "mermaid",
+        "roles": [
+          {
+            "noun": "hatchery",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "anemone guards",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "piranhas",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "underwater hatchery",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "defense",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "hungry piranhas",
+        "item": "hatchery",
+        "world": "underwater",
+        "title": "Anemone Guards"
+      }
+    },
+    {
+      "id": "s46",
+      "text": "A chef swipes a blade through airborne cabbages tossed across a castle kitchen, building combos while leaving the flying iron kettles untouched.",
+      "ms": 4120,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "swipes",
+            "class": "melee"
+          },
+          {
+            "word": "building",
+            "class": "idle"
+          },
+          {
+            "word": "leaving",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "chef",
+        "roles": [
+          {
+            "noun": "blade",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "cabbages",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "iron kettles",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "castle kitchen",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "slice",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "flying iron kettles",
+        "item": null,
+        "world": "castle",
+        "title": "Airborne Cabbages"
+      }
+    },
+    {
+      "id": "s47",
+      "text": "i swipe through floating soap bubbles launched above a mall fountain, cutting several together but keeping my finger away from spiky mines.",
+      "ms": 2642,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "swipe",
+            "class": "manipulate"
+          },
+          {
+            "word": "cutting",
+            "class": "melee"
+          },
+          {
+            "word": "keeping",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "soap bubbles",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "spiky mines",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "above a mall fountain",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "slice",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "spiky mines",
+        "item": null,
+        "world": "mall",
+        "title": "floating soap bubbles"
+      }
+    },
+    {
+      "id": "s48",
+      "text": "A swordfish cuts airborne kelp bundles with my swipes over an ocean lagoon, avoiding explosive barrels mixed into every volley.",
+      "ms": 3902,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "cuts",
+            "class": "melee"
+          },
+          {
+            "word": "avoiding",
+            "class": "melee"
+          }
+        ],
+        "hero": "swordfish",
+        "roles": [
+          {
+            "noun": "kelp bundles",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "explosive barrels",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "ocean lagoon",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "slice",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "explosive barrels",
+        "item": null,
+        "world": "ocean",
+        "title": "Swordfish cuts airborne kelp"
+      }
+    },
+    {
+      "id": "s49",
+      "text": "A tortoise crosses a city boulevard one row per tap, waiting for openings between buses before taking the next little step.",
+      "ms": 2705,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "crosses",
+            "class": "tap_go"
+          },
+          {
+            "word": "waiting",
+            "class": "timing"
+          },
+          {
+            "word": "taking",
+            "class": "tap_go"
+          }
+        ],
+        "hero": "tortoise",
+        "roles": [
+          {
+            "noun": "buses",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "city boulevard",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "hop",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "buses",
+        "item": null,
+        "world": "city",
+        "title": "Tortoise Crosses a Boulevard"
+      }
+    },
+    {
+      "id": "s50",
+      "text": "I cross a factory shipping floor one strip at a time, choosing when to step between passing forklifts and rolling cable reels.",
+      "ms": 2891,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "cross",
+            "class": "timing"
+          },
+          {
+            "word": "step",
+            "class": "timing"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "forklifts",
+            "kind": "hazard",
+            "count": null
+          },
+          {
+            "noun": "cable reels",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "factory shipping floor",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "hop",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "forklifts",
+        "item": null,
+        "world": "factory",
+        "title": "Factory Shipping Floor"
+      }
+    },
+    {
+      "id": "s51",
+      "text": "Guide a llama across snowy resort lanes with single forward steps, waiting out speeding sleds before entering each new row.",
+      "ms": 2727,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "Guide",
+            "class": "tap_go"
+          },
+          {
+            "word": "waiting",
+            "class": "timing"
+          },
+          {
+            "word": "entering",
+            "class": "tap_go"
+          }
+        ],
+        "hero": "llama",
+        "roles": [
+          {
+            "noun": "sleds",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "snowy resort lanes",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "hop",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "speeding sleds",
+        "item": null,
+        "world": "snow",
+        "title": "Llama Across Snowy Resort Lanes"
+      }
+    },
+    {
+      "id": "s52",
+      "text": "Lead a marching pencil army through numbered gates that add or subtract pencils, then crash the surviving squad into hostile erasers on a classroom desk.",
+      "ms": 2724,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "Lead",
+            "class": "steer"
+          },
+          {
+            "word": "add",
+            "class": "manipulate"
+          },
+          {
+            "word": "subtract",
+            "class": "manipulate"
+          },
+          {
+            "word": "crash",
+            "class": "melee"
+          }
+        ],
+        "hero": "pencil army",
+        "roles": [
+          {
+            "noun": "gates",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "pencils",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "erasers",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "classroom desk",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "crowd",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "hostile erasers",
+        "item": null,
+        "world": null,
+        "title": "Pencil Army"
+      }
+    },
+    {
+      "id": "s53",
+      "text": "I guide my squad through +15 and divide by two gates along a space hangar, building enough bodies to overwhelm alien guards at the end.",
+      "ms": 6495,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "guide",
+            "class": "move_free"
+          },
+          {
+            "word": "building",
+            "class": "manipulate"
+          },
+          {
+            "word": "overwhelm",
+            "class": "melee"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "squad",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "gates",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "alien guards",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "space hangar",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            15,
+            2
+          ]
+        },
+        "genre": {
+          "genre": "crowd",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "alien guards",
+        "item": null,
+        "world": "space",
+        "title": "Overwhelm Alien Guards"
+      }
+    },
+    {
+      "id": "s54",
+      "text": "A marshmallow leads its sugary troops through numbered multiplying or subtracting arches in a supermarket, then the whole group collides with licorice monsters.",
+      "ms": 2709,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "leads",
+            "class": "move_free"
+          },
+          {
+            "word": "collides",
+            "class": "melee"
+          }
+        ],
+        "hero": "marshmallow",
+        "roles": [
+          {
+            "noun": "sugary troops",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "arches",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "licorice monsters",
+            "kind": "threat",
+            "count": null
+          }
+        ],
+        "setting": "supermarket",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "crowd",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "licorice monsters",
+        "item": null,
+        "world": "supermarket",
+        "title": "Marshmallow Troops"
+      }
+    },
+    {
+      "id": "s55",
+      "text": "A squirrel drops acorns onto a forest tray where identical pairs fuse into larger nuts, and I need to keep the tray from overflowing.",
+      "ms": 2480,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "drops",
+            "class": "throw"
+          },
+          {
+            "word": "fuse",
+            "class": "manipulate"
+          },
+          {
+            "word": "keep",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "squirrel",
+        "roles": [
+          {
+            "noun": "acorns",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "tray",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "nuts",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "forest",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "acorns",
+        "world": "forest",
+        "title": "Acorns Fuse"
+      }
+    },
+    {
+      "id": "s56",
+      "text": "I slide pebbles around a cave board, combining two identical stones into one larger crystal each time before every space gets clogged.",
+      "ms": 5512,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "slide",
+            "class": "manipulate"
+          },
+          {
+            "word": "combining",
+            "class": "manipulate"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "pebbles",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "stones",
+            "kind": "item",
+            "count": 2
+          },
+          {
+            "noun": "crystal",
+            "kind": "target",
+            "count": 1
+          }
+        ],
+        "setting": "cave board",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            2,
+            1
+          ]
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "pebbles",
+        "world": "cave",
+        "title": "Pebbles and Crystal"
+      }
+    },
+    {
+      "id": "s57",
+      "text": "Let an alchemist drop potions into a desert tray, where two identical bottles become one stronger brew and a full tray ends the attempt.",
+      "ms": 3864,
+      "reading": {
+        "control": "throw",
+        "verbs": [
+          {
+            "word": "drop",
+            "class": "throw"
+          }
+        ],
+        "hero": "alchemist",
+        "roles": [
+          {
+            "noun": "potions",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "tray",
+            "kind": "destination",
+            "count": null
+          },
+          {
+            "noun": "bottles",
+            "kind": "item",
+            "count": 2
+          },
+          {
+            "noun": "brew",
+            "kind": "item",
+            "count": 1
+          }
+        ],
+        "setting": "desert",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            2,
+            1
+          ]
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "potions",
+        "world": "desert",
+        "title": "Alchemist Potions"
+      }
+    },
+    {
+      "id": "s58",
+      "text": "A walrus shoves rival sea lions off a small ice floe, and I steer each body bump while keeping away from the slippery edge.",
+      "ms": 3672,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "shoves",
+            "class": "melee"
+          },
+          {
+            "word": "steer",
+            "class": "steer"
+          },
+          {
+            "word": "keeping",
+            "class": "move_free"
+          }
+        ],
+        "hero": "walrus",
+        "roles": [
+          {
+            "noun": "sea lions",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "slippery edge",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "small ice floe",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "rival sea lions",
+        "item": null,
+        "world": "snow",
+        "title": "walrus body bump"
+      }
+    },
+    {
+      "id": "s59",
+      "text": "I shoulder charging gargoyles off a narrow castle rooftop, trying to send every opponent over the edge without getting knocked down myself.",
+      "ms": 2535,
+      "reading": {
+        "control": "duel",
+        "verbs": [
+          {
+            "word": "shoulder",
+            "class": "melee"
+          },
+          {
+            "word": "send",
+            "class": "melee"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "gargoyles",
+            "kind": "threat",
+            "count": null
+          },
+          {
+            "noun": "edge",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "narrow castle rooftop",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "charging gargoyles",
+        "item": null,
+        "world": "castle",
+        "title": "Over the Edge"
+      }
+    },
+    {
+      "id": "s60",
+      "text": "Control a bumper car on a floating factory deck, ramming rogue shopping carts over the sides while keeping all four wheels aboard.",
+      "ms": 2879,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "ramming",
+            "class": "steer"
+          },
+          {
+            "word": "Control",
+            "class": "steer"
+          },
+          {
+            "word": "keeping",
+            "class": "steer"
+          }
+        ],
+        "hero": "bumper car",
+        "roles": [
+          {
+            "noun": "shopping carts",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "wheels",
+            "kind": "item",
+            "count": 4
+          }
+        ],
+        "setting": "floating factory deck",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            4
+          ]
+        },
+        "genre": {
+          "genre": "push",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "rogue shopping carts",
+        "item": null,
+        "world": "factory",
+        "title": "Bumper Car"
+      }
+    },
+    {
+      "id": "s61",
+      "text": "A tortoise in running shoes builds a pile in the mall by tapping to drop each shoebox sliding overhead directly onto the last.",
+      "ms": 2463,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "builds",
+            "class": "timing"
+          },
+          {
+            "word": "tapping",
+            "class": "timing"
+          },
+          {
+            "word": "drop",
+            "class": "timing"
+          },
+          {
+            "word": "sliding",
+            "class": "timing"
+          }
+        ],
+        "hero": "tortoise",
+        "roles": [
+          {
+            "noun": "running shoes",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "shoebox",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "mall",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "stack"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "shoebox",
+        "world": "mall",
+        "title": "shoebox pile"
+      }
+    },
+    {
+      "id": "s62",
+      "text": "A photographer handles a mall photo shoot from one counter, cropping pictures and printing the requested sizes for a nonstop queue of customers.",
+      "ms": 4658,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "handles",
+            "class": "manipulate"
+          },
+          {
+            "word": "cropping",
+            "class": "manipulate"
+          },
+          {
+            "word": "printing",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "photographer",
+        "roles": [
+          {
+            "noun": "counter",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "pictures",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "customers",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "mall",
+        "mood": "nonstop",
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "mall",
+        "title": "Mall Photo Shoot"
+      }
+    },
+    {
+      "id": "s63",
+      "text": "A chimney sweep beneath a castle tower roams the wide courtyard freely while an angry goose chases him, trying to survive until the bell rings.",
+      "ms": 3162,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "roams",
+            "class": "move_free"
+          },
+          {
+            "word": "chases",
+            "class": "move_free"
+          },
+          {
+            "word": "survive",
+            "class": "move_free"
+          }
+        ],
+        "hero": "chimney sweep",
+        "roles": [
+          {
+            "noun": "goose",
+            "kind": "chaser",
+            "count": null
+          }
+        ],
+        "setting": "courtyard beneath a castle tower",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "escape"
+        },
+        "sure": true,
+        "foe": "angry goose",
+        "item": null,
+        "world": "castle",
+        "title": "Until the Bell Rings"
+      }
+    },
+    {
+      "id": "s64",
+      "text": "At beach catch practice, you swipe through airborne melons to chop them apart while leaving flying anvils untouched.",
+      "ms": 2532,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "chop",
+            "class": "manipulate"
+          },
+          {
+            "word": "swipe",
+            "class": "manipulate"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "melons",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "anvils",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "beach",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "slice",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "flying anvils",
+        "item": null,
+        "world": "beach",
+        "title": "Chop airborne melons"
+      }
+    },
+    {
+      "id": "s65",
+      "text": "A penguin wearing fake wings explores a cave by moving left or right and jumping between rocky shelves, losing a life whenever it falls.",
+      "ms": 5256,
+      "reading": {
+        "control": "platform",
+        "verbs": [
+          {
+            "word": "jumping",
+            "class": "platform"
+          },
+          {
+            "word": "explores",
+            "class": "move_free"
+          },
+          {
+            "word": "moving",
+            "class": "move_free"
+          },
+          {
+            "word": "falls",
+            "class": "platform"
+          }
+        ],
+        "hero": "penguin",
+        "roles": [
+          {
+            "noun": "fake wings",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "rocky shelves",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "cave",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "platformer",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "cave",
+        "title": "Penguin Wearing Fake Wings"
+      }
+    },
+    {
+      "id": "s66",
+      "text": "In a castle, a baker guards a cake by tapping four buttons exactly with the drumbeat, earning points only for staying on beat.",
+      "ms": 2627,
+      "reading": {
+        "control": "rhythm",
+        "verbs": [
+          {
+            "word": "tapping",
+            "class": "rhythm"
+          },
+          {
+            "word": "guards",
+            "class": "rhythm"
+          },
+          {
+            "word": "earning",
+            "class": "idle"
+          },
+          {
+            "word": "staying",
+            "class": "rhythm"
+          }
+        ],
+        "hero": "baker",
+        "roles": [
+          {
+            "noun": "cake",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "buttons",
+            "kind": "target",
+            "count": 4
+          },
+          {
+            "noun": "points",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "castle",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            4
+          ]
+        },
+        "genre": {
+          "genre": "rhythm",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "cake",
+        "world": "castle",
+        "title": "Baker on beat"
+      }
+    },
+    {
+      "id": "s67",
+      "text": "A mechanic fixes a race car by repeatedly stopping a needle sweeping back and forth inside a tiny green band, with closer stops earning more points.",
+      "ms": 4192,
+      "reading": {
+        "control": "timing",
+        "verbs": [
+          {
+            "word": "stopping",
+            "class": "timing"
+          },
+          {
+            "word": "fixes",
+            "class": "manipulate"
+          },
+          {
+            "word": "earning",
+            "class": "idle"
+          }
+        ],
+        "hero": "mechanic",
+        "roles": [
+          {
+            "noun": "race car",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "needle",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "green band",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "points",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "timing",
+          "mode": "precision"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Tiny Green Band"
+      }
+    },
+    {
+      "id": "s68",
+      "text": "You wander anywhere across a meadow scooping up scattered golf balls, scoring one point per ball in your bag.",
+      "ms": 2559,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "wander",
+            "class": "move_free"
+          },
+          {
+            "word": "scooping",
+            "class": "move_free"
+          },
+          {
+            "word": "scoring",
+            "class": "idle"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "golf balls",
+            "kind": "collectible",
+            "count": null
+          },
+          {
+            "noun": "bag",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "meadow",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "collect"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "golf balls",
+        "world": "meadow",
+        "title": "Scattered Golf Balls"
+      }
+    },
+    {
+      "id": "s69",
+      "text": "A crab in boxing gloves crosses rows of beach traffic one step per tap, waiting for safe openings between passing buggies.",
+      "ms": 3618,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "crosses",
+            "class": "tap_go"
+          },
+          {
+            "word": "waiting",
+            "class": "timing"
+          }
+        ],
+        "hero": "crab",
+        "roles": [
+          {
+            "noun": "boxing gloves",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "traffic",
+            "kind": "hazard",
+            "count": null
+          },
+          {
+            "noun": "buggies",
+            "kind": "hazard",
+            "count": null
+          }
+        ],
+        "setting": "beach",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": {
+          "genre": "hop",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "buggies",
+        "item": null,
+        "world": "beach",
+        "title": "Crab Crosses Beach Traffic"
+      }
+    },
+    {
+      "id": "s70",
+      "text": "A librarian settles a book fight by sliding identical books together on a grid so they become bigger volumes before the board fills.",
+      "ms": 3559,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "sliding",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "librarian",
+        "roles": [
+          {
+            "noun": "books",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "volumes",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "a grid",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "merge",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": null,
+        "item": "books",
+        "world": null,
+        "title": "Bigger Volumes"
+      }
+    },
+    {
+      "id": "s71",
+      "text": "A fox pilots a drum-shaped rocket over a volcano, feathering its upward thrust and steering sideways until its feet settle softly onto each pad.",
+      "ms": 2641,
+      "reading": {
+        "control": "steer",
+        "verbs": [
+          {
+            "word": "pilots",
+            "class": "steer"
+          },
+          {
+            "word": "feathering",
+            "class": "steer"
+          },
+          {
+            "word": "steering",
+            "class": "steer"
+          },
+          {
+            "word": "settle",
+            "class": "steer"
+          }
+        ],
+        "hero": "fox",
+        "roles": [
+          {
+            "noun": "drum-shaped rocket",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "pad",
+            "kind": "destination",
+            "count": null
+          }
+        ],
+        "setting": "over a volcano",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "voyage",
+          "mode": "land"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "volcano",
+        "title": "Drum-shaped Rocket"
+      }
+    },
+    {
+      "id": "s72",
+      "text": "An octopus waves eight swords around an underwater courtyard; steer anywhere and slash nearby eels until every eel is down.",
+      "ms": 2472,
+      "reading": {
+        "control": "move_free",
+        "verbs": [
+          {
+            "word": "slash",
+            "class": "melee"
+          },
+          {
+            "word": "steer",
+            "class": "move_free"
+          },
+          {
+            "word": "waves",
+            "class": "melee"
+          }
+        ],
+        "hero": "octopus",
+        "roles": [
+          {
+            "noun": "swords",
+            "kind": "item",
+            "count": 8
+          },
+          {
+            "noun": "eels",
+            "kind": "target",
+            "count": null
+          }
+        ],
+        "setting": "underwater courtyard",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            8
+          ]
+        },
+        "genre": {
+          "genre": "arena",
+          "mode": "fight"
+        },
+        "sure": true,
+        "foe": "eels",
+        "item": "swords",
+        "world": "underwater",
+        "title": "Eight Swords"
+      }
+    },
+    {
+      "id": "s73",
+      "text": "An astronaut in jump boots walks between broken moon base antennas, reconnecting wires at each one until all antennas work.",
+      "ms": 2415,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "walks",
+            "class": "tap_go"
+          },
+          {
+            "word": "reconnecting",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "astronaut",
+        "roles": [
+          {
+            "noun": "antennas",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "wires",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "jump boots",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "moon base",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": {
+          "genre": "quest",
+          "mode": "spatial"
+        },
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "space",
+        "title": "Moon Base Antennas"
+      }
+    },
+    {
+      "id": "s74",
+      "text": "A sheep leads a painted cardboard army automatically along three forest lanes; switch lanes or duck to avoid hanging branches and grab acorns.",
+      "ms": 2499,
+      "reading": {
+        "control": "runner",
+        "verbs": [
+          {
+            "word": "leads",
+            "class": "runner"
+          },
+          {
+            "word": "switch",
+            "class": "runner"
+          },
+          {
+            "word": "duck",
+            "class": "runner"
+          },
+          {
+            "word": "grab",
+            "class": "move_free"
+          }
+        ],
+        "hero": "sheep",
+        "roles": [
+          {
+            "noun": "painted cardboard army",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "lanes",
+            "kind": "destination",
+            "count": 3
+          },
+          {
+            "noun": "hanging branches",
+            "kind": "obstacle",
+            "count": null
+          },
+          {
+            "noun": "acorns",
+            "kind": "collectible",
+            "count": null
+          }
+        ],
+        "setting": "forest",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            3
+          ]
+        },
+        "genre": {
+          "genre": "runner",
+          "mode": "default"
+        },
+        "sure": true,
+        "foe": "hanging branches",
+        "item": "acorns",
+        "world": "forest",
+        "title": "Painted Cardboard Army"
+      }
+    },
+    {
+      "id": "s75",
+      "text": "To escape a jungle temple, you answer geography questions by choosing one of four answers, and each correct answer unlocks the next question.",
+      "ms": 3232,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "answer",
+            "class": "manipulate"
+          },
+          {
+            "word": "choosing",
+            "class": "manipulate"
+          },
+          {
+            "word": "escape",
+            "class": "move_free"
+          }
+        ],
+        "hero": null,
+        "roles": [
+          {
+            "noun": "geography questions",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "answers",
+            "kind": "item",
+            "count": 4
+          }
+        ],
+        "setting": "jungle temple",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1,
+            4
+          ]
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "jungle",
+        "title": "Escape a Jungle Temple"
+      }
+    },
+    {
+      "id": "s76",
+      "text": "A beaver builds a bridge across an ocean by solving anagrams, typing one rearranged word per plank while the construction happens automatically.",
+      "ms": 4623,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "builds",
+            "class": "build_place"
+          },
+          {
+            "word": "solving",
+            "class": "manipulate"
+          },
+          {
+            "word": "typing",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "beaver",
+        "roles": [
+          {
+            "noun": "bridge",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "anagrams",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "word",
+            "kind": "item",
+            "count": 1
+          },
+          {
+            "noun": "plank",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": "ocean",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            1
+          ]
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "ocean",
+        "title": "Beaver builds a bridge"
+      }
+    },
+    {
+      "id": "s77",
+      "text": "A witch defends her castle's reputation by choosing polite or savage replies in text conversations with a nosy florist, changing their friendship score.",
+      "ms": 2584,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "choosing",
+            "class": "manipulate"
+          },
+          {
+            "word": "defends",
+            "class": "manipulate"
+          },
+          {
+            "word": "changing",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "witch",
+        "roles": [
+          {
+            "noun": "replies",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "florist",
+            "kind": "ally",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": "castle",
+        "title": "Polite or Savage Replies"
+      }
+    },
+    {
+      "id": "s78",
+      "text": "A snail enters a desert race where each turn you play a numbered card, and the lowest total after five cards wins.",
+      "ms": 5636,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "play",
+            "class": "manipulate"
+          },
+          {
+            "word": "enters",
+            "class": "move_free"
+          }
+        ],
+        "hero": "snail",
+        "roles": [
+          {
+            "noun": "cards",
+            "kind": "item",
+            "count": 5
+          }
+        ],
+        "setting": "desert",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": [
+            5
+          ]
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": "numbered card",
+        "world": "desert",
+        "title": "lowest total wins"
+      }
+    },
+    {
+      "id": "s79",
+      "text": "A crocodile prepares for a laser shootout by choosing jackets, boots, and hats from a wardrobe, then submitting outfits for style scores.",
+      "ms": 6101,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "choosing",
+            "class": "manipulate"
+          },
+          {
+            "word": "submitting",
+            "class": "manipulate"
+          }
+        ],
+        "hero": "crocodile",
+        "roles": [
+          {
+            "noun": "jackets",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "boots",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "hats",
+            "kind": "item",
+            "count": null
+          },
+          {
+            "noun": "outfits",
+            "kind": "item",
+            "count": null
+          }
+        ],
+        "setting": null,
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "crocodile style"
+      }
+    },
+    {
+      "id": "s80",
+      "text": "An owl manages a flying school by assigning instructors to weekly calendar slots, resolving schedule conflicts to earn a perfect timetable.",
+      "ms": 5245,
+      "reading": {
+        "control": "tap_go",
+        "verbs": [
+          {
+            "word": "manages",
+            "class": "manipulate"
+          },
+          {
+            "word": "assigning",
+            "class": "build_place"
+          },
+          {
+            "word": "resolving",
+            "class": "manipulate"
+          },
+          {
+            "word": "earn",
+            "class": "idle"
+          }
+        ],
+        "hero": "owl",
+        "roles": [
+          {
+            "noun": "instructors",
+            "kind": "ally",
+            "count": null
+          },
+          {
+            "noun": "calendar slots",
+            "kind": "target",
+            "count": null
+          },
+          {
+            "noun": "schedule conflicts",
+            "kind": "obstacle",
+            "count": null
+          }
+        ],
+        "setting": "flying school",
+        "mood": null,
+        "numbers": {
+          "seconds": null,
+          "counts": []
+        },
+        "genre": null,
+        "sure": true,
+        "foe": null,
+        "item": null,
+        "world": null,
+        "title": "Perfect Timetable"
+      }
+    }
+  ]
+}

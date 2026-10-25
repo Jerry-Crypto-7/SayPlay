@@ -3,3 +3,5 @@
 export declare function checkEnv(vars: Readonly<Record<string, string>>): { name: string; reason: string }[];
 
 export declare function parseEnvFile(text: string): Record<string, string>;
+
+export declare const READER_MAX_OUTPUT_TOKENS: number;

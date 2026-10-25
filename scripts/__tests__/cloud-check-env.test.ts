@@ -12,8 +12,9 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { READER_MAX_OUTPUT_TOKENS as CLIENT_READER_MAX_OUTPUT_TOKENS } from '../../src/play/read/client';
 import { MAX_PLAY_DIRECTOR_SLOTS } from '../../src/server/paid-slots';
-import { checkEnv, parseEnvFile } from '../cloud/check-env.mjs';
+import { checkEnv, parseEnvFile, READER_MAX_OUTPUT_TOKENS } from '../cloud/check-env.mjs';
 
 const SCRIPT = 'scripts/cloud/check-env.mjs';
 const EXAMPLE = 'scripts/cloud/env.production.example';
@@ -155,6 +156,51 @@ describe('checkEnv – optional play director slots (P53 T1)', () => {
 
   it.each(['0', String(MAX_PLAY_DIRECTOR_SLOTS + 1), 'two', '1.5'])('refuses PLAY_DIRECTOR_SLOTS=%s, which the server would replace with 2', (raw) => {
     expect(names({ ...GOOD, PLAY_DIRECTOR_SLOTS: raw })).toEqual(['PLAY_DIRECTOR_SLOTS']);
+  });
+});
+
+describe('checkEnv – the sentence reader (P58B T4)', () => {
+  // Čtečka astra jen pro AI verzi: 1024 tokenů × 50 USD/Mtok = 0,0512 USD → 20 USD potřebuje 391 volání.
+  const READER = { PLAY_READER: 'on', PLAY_READER_PATH: 'ai', PLAY_READER_SPEND_CAP_USD: '20', PLAY_READER_USD_PER_MTOK_OUT: '50', PLAY_READER_CALL_CAP: '391' } as const;
+
+  it('passes a reader that reads for the AI version under its own caps, and checks nothing while it is off', () => {
+    expect(checkEnv({ ...GOOD, ...READER })).toEqual([]);
+    expect(checkEnv({ ...GOOD, PLAY_READER: 'off', PLAY_READER_PATH: 'fast' })).toEqual([]);
+  });
+
+  it.each(['', 'fast', 'AI'])('refuses PLAY_READER_PATH=%s: no measured hosted reader fits the fast path', (path) => {
+    expect(names({ ...GOOD, ...READER, PLAY_READER_PATH: path })).toEqual(['PLAY_READER_PATH']);
+  });
+
+  it.each(['', 'twenty', '-1'])('refuses a reader spend cap of "%s"', (cap) => {
+    expect(names({ ...GOOD, ...READER, PLAY_READER_SPEND_CAP_USD: cap })).toEqual(['PLAY_READER_SPEND_CAP_USD']);
+  });
+
+  it('measures the reader call cap against its default 1024 output tokens, not the director default', () => {
+    expect(names({ ...GOOD, ...READER, PLAY_READER_CALL_CAP: '390' })).toEqual(['PLAY_READER_CALL_CAP']);
+    expect(names({ ...GOOD, ...READER, PLAY_READER_CALL_CAP: '' })).toEqual(['PLAY_READER_CALL_CAP']);
+    const { PLAY_READER_USD_PER_MTOK_OUT: _price, ...unpriced } = READER;
+    expect(names({ ...GOOD, ...unpriced })).toEqual(['PLAY_READER_USD_PER_MTOK_OUT']);
+  });
+
+  // Revize T4, nález 3: běžící čtečka bere `PLAY_READER_MAX_OUTPUT_TOKENS` (`hostedConfigFromEnv`), kontrola taky.
+  it('measures it against PLAY_READER_MAX_OUTPUT_TOKENS when that is set', () => {
+    // 512 tokenů × 50 USD/Mtok = 0,0256 USD → 20 USD potřebuje 782 volání.
+    expect(names({ ...GOOD, ...READER, PLAY_READER_MAX_OUTPUT_TOKENS: '512' })).toEqual(['PLAY_READER_CALL_CAP']);
+    expect(checkEnv({ ...GOOD, ...READER, PLAY_READER_MAX_OUTPUT_TOKENS: '512', PLAY_READER_CALL_CAP: '782' })).toEqual([]);
+  });
+
+  it.each(['700', '9099', 'soon', '-1'])('refuses PLAY_READER_BUDGET_MS=%s: under the slowest measured reading, which is billed all the same', (budget) => {
+    expect(names({ ...GOOD, ...READER, PLAY_READER_BUDGET_MS: budget })).toEqual(['PLAY_READER_BUDGET_MS']);
+  });
+
+  it('passes an empty reader budget or one that fits the slowest reading, and checks none while the reader is off', () => {
+    for (const budget of ['', '9100', '15000']) expect(checkEnv({ ...GOOD, ...READER, PLAY_READER_BUDGET_MS: budget })).toEqual([]);
+    expect(checkEnv({ ...GOOD, PLAY_READER: 'off', PLAY_READER_BUDGET_MS: '700' })).toEqual([]);
+  });
+
+  it('keeps the fixed reader output in step with the client', () => {
+    expect(READER_MAX_OUTPUT_TOKENS).toBe(CLIENT_READER_MAX_OUTPUT_TOKENS);
   });
 });
 
