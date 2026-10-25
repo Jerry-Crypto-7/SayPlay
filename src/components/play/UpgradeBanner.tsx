@@ -301,6 +301,10 @@ export function UpgradeBanner({
     arrivals.add(switchTo);
     router.replace(`/play/${switchTo}`);
   }, [switchTo, router]);
+  // Na hru ze čtení se dá přijít i klepnutím na nabídku: návrat tlačítkem Quick pak taky jen nabízí, nepřepne zpátky.
+  useEffect(() => {
+    if (matchedOf !== null && versionId !== null) switched.add(versionId);
+  }, [matchedOf, versionId]);
   const [matched, setMatched] = useState(false);
   useEffect(() => {
     if (versionId !== null && arrivals.delete(versionId)) setMatched(true);
@@ -369,6 +373,12 @@ export function UpgradeBanner({
       {matchedOf === null ? QUICK_LABEL : MATCHED_LABEL}
     </span>
   );
+  // Z hry ze čtení vede Quick zpátky i po konci bez AI verze.
+  const backToQuick = matchedOf !== null && (
+    <button type="button" className="play-version-switch__item" data-testid="version-quick" onClick={() => router.push(`/play/${matchedOf}`)}>
+      {QUICK_LABEL}
+    </button>
+  );
   if (view.kind === 'working' || view.kind === 'ready') {
     const ready = view.kind === 'ready';
     const offer = move?.kind === 'offer' ? move.versionId : null;
@@ -378,11 +388,7 @@ export function UpgradeBanner({
         <span className="play-sr-only" role="status">
           {text}
         </span>
-        {matchedOf !== null && (
-          <button type="button" className="play-version-switch__item" data-testid="version-quick" onClick={() => router.push(`/play/${matchedOf}`)}>
-            {QUICK_LABEL}
-          </button>
-        )}
+        {backToQuick}
         {current}
         {offer !== null && (
           <button type="button" className="play-version-switch__item is-ready" data-testid="reading-action" title={MATCHED_OFFER} onClick={() => router.push(`/play/${offer}`)}>
@@ -412,6 +418,7 @@ export function UpgradeBanner({
     return (
       <aside className="sp-status play-upgrade-status play-version-switch" data-testid="upgrade-state" data-kind={view.kind}>
         <span className="play-sr-only">{notice.text}</span>
+        {backToQuick}
         {current}
         {notice.action !== null ? (
           <button type="button" className="play-version-switch__item" data-testid="upgrade-action" title={notice.text} onClick={act}>
