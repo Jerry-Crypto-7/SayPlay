@@ -277,6 +277,8 @@ const CHAIN_FINAL: UpgradeOutcome = { status: 'draft-final', reason: 'CHAIN' };
  * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
  * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když se čtením `chainOrSingle` řekne jedna hra, publikuje návrh
  * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`.
+ * simplified: jedno čtení na řetěz drží mapa v procesu – dvě instance se souběžným dotazem zaplatí čtení obě (cache
+ * odpovědí se plní až po čtení, dítě vznikne jednou); kdyby to bylo vidět v útratě, rezervovat čtení v úložišti.
  */
 async function runChainReading(versions: VersionStore, chain: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const chainId = chain.version.versionId;
