@@ -204,6 +204,29 @@ describe('checkEnv – the sentence reader (P58B T4)', () => {
   });
 });
 
+describe('checkEnv – one model, one price in every ledger (P59)', () => {
+  const ASTRA_TWICE = {
+    ...GOOD,
+    WORLDSMITH_FALLBACK_MODEL: 'gpt-6-astra', WORLDSMITH_FALLBACK_USD_PER_MTOK_IN: '10', WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT: '50', WORLDSMITH_FALLBACK_CALL_CAP: '60',
+    PLAY_READER: 'on', PLAY_READER_PATH: 'ai', PLAY_READER_MODEL: 'gpt-6-astra', PLAY_READER_SPEND_CAP_USD: '20',
+    PLAY_READER_USD_PER_MTOK_IN: '10', PLAY_READER_USD_PER_MTOK_OUT: '50', PLAY_READER_CALL_CAP: '400',
+  } as const;
+
+  it('passes the same model priced the same in the fallback and the reader', () => {
+    expect(checkEnv(ASTRA_TWICE)).toEqual([]);
+  });
+
+  it('names the price that differs, input or output', () => {
+    expect(names({ ...ASTRA_TWICE, PLAY_READER_USD_PER_MTOK_OUT: '10', PLAY_READER_CALL_CAP: '2000' })).toEqual(['PLAY_READER_USD_PER_MTOK_OUT']);
+    expect(names({ ...ASTRA_TWICE, PLAY_READER_USD_PER_MTOK_IN: '1.25' })).toEqual(['PLAY_READER_USD_PER_MTOK_IN']);
+  });
+
+  it('compares nothing across different models or a ledger that is off', () => {
+    expect(checkEnv({ ...ASTRA_TWICE, PLAY_READER_MODEL: 'other-model', PLAY_READER_USD_PER_MTOK_IN: '1' })).toEqual([]);
+    expect(checkEnv({ ...ASTRA_TWICE, PLAY_READER: 'off', PLAY_READER_USD_PER_MTOK_IN: '1' })).toEqual([]);
+  });
+});
+
 describe('parseEnvFile', () => {
   it('reads dotenv lines the way vercel env pull writes them', () => {
     const text = ['# comment', '', 'export A=1', 'B="two words"', "C='x'", 'D=plain # note', 'E=', '  F = spaced  ', 'not a line'].join('\n');

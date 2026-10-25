@@ -37,8 +37,8 @@ const PROFILES = ['', 'api', 'metered'];
 
 /** Primár a záloha: dolarový strop, počet volání, výstupní tokeny a cena výstupu za Mtok. */
 const LEDGERS = [
-  { cap: 'WORLDSMITH_SPEND_CAP_USD', calls: 'WORLDSMITH_CALL_CAP', tokens: 'WORLDSMITH_MAX_OUTPUT_TOKENS', price: 'WORLDSMITH_USD_PER_MTOK_OUT' },
-  { cap: 'WORLDSMITH_FALLBACK_SPEND_CAP_USD', calls: 'WORLDSMITH_FALLBACK_CALL_CAP', tokens: 'WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS', price: 'WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT' },
+  { cap: 'WORLDSMITH_SPEND_CAP_USD', calls: 'WORLDSMITH_CALL_CAP', tokens: 'WORLDSMITH_MAX_OUTPUT_TOKENS', price: 'WORLDSMITH_USD_PER_MTOK_OUT', model: 'WORLDSMITH_MODEL', priceIn: 'WORLDSMITH_USD_PER_MTOK_IN' },
+  { cap: 'WORLDSMITH_FALLBACK_SPEND_CAP_USD', calls: 'WORLDSMITH_FALLBACK_CALL_CAP', tokens: 'WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS', price: 'WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT', model: 'WORLDSMITH_FALLBACK_MODEL', priceIn: 'WORLDSMITH_FALLBACK_USD_PER_MTOK_IN' },
 ];
 /** `DEFAULT_MAX_OUTPUT_TOKENS` v `src/server/upstream.ts`; placená záloha má týž. */
 const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
@@ -52,7 +52,7 @@ export const READER_MAX_OUTPUT_TOKENS = 1024;
  * Kniha čtečky (`readerSpendCapFromEnv`), kontroluje se jen se zapnutou čtečkou (`PLAY_READER=on`).
  * `PLAY_READER_MAX_OUTPUT_TOKENS` přebije výchozí výstup stejně jako v `hostedConfigFromEnv` (revize T4, nález 3).
  */
-const READER_LEDGER = { cap: 'PLAY_READER_SPEND_CAP_USD', calls: 'PLAY_READER_CALL_CAP', tokens: 'PLAY_READER_MAX_OUTPUT_TOKENS', price: 'PLAY_READER_USD_PER_MTOK_OUT', maxTokens: READER_MAX_OUTPUT_TOKENS };
+const READER_LEDGER = { cap: 'PLAY_READER_SPEND_CAP_USD', calls: 'PLAY_READER_CALL_CAP', tokens: 'PLAY_READER_MAX_OUTPUT_TOKENS', price: 'PLAY_READER_USD_PER_MTOK_OUT', model: 'PLAY_READER_MODEL', priceIn: 'PLAY_READER_USD_PER_MTOK_IN', maxTokens: READER_MAX_OUTPUT_TOKENS };
 /**
  * Nejpomalejší čtení astry z 220 vět (`evals/play/p58b/README.md`). Kratší `PLAY_READER_BUDGET_MS` by čtení
  * AI verze useklo, a useknuté čtení se platí celé (revize T4, nález 3). Prázdné = výchozích 15 s.
@@ -111,6 +111,20 @@ export function checkEnv(vars) {
   for (const ledger of ledgers) {
     const problem = callCapProblem(vars, ledger);
     if (problem !== null) problems.push(problem);
+  }
+  // P59: týž model účtovaný v jedné knize levněji než v druhé – levnější kniha pustí strop několikrát dál, než říká.
+  const priced = new Map();
+  for (const ledger of ledgers) {
+    const model = vars[ledger.model]?.trim() ?? '';
+    if (model === '') continue;
+    const first = priced.get(model);
+    if (first === undefined) {
+      priced.set(model, ledger);
+      continue;
+    }
+    for (const side of ['price', 'priceIn']) {
+      if (amount(vars[ledger[side]]) !== amount(vars[first[side]])) problems.push({ name: ledger[side], reason: `same model as ${first.model}, so the price must match ${first[side]}` });
+    }
   }
   // Volitelná: prázdná = 2. Hodnotu mimo mez by server zahodil a jel na 2, tady se to řekne dřív.
   const slots = vars.PLAY_DIRECTOR_SLOTS?.trim() ?? '';
