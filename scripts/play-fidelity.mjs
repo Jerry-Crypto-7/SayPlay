@@ -1081,13 +1081,15 @@ export async function measureSentence(sentence, { base, openGame, leave, log, fe
   const settleBy = now() + settleMs;
   while (attemptsInFlight(log(), created.versionId) > 0 && now() < settleBy) await wait(pollMs);
   const published = ai?.report?.publishEligible === true;
+  // Od P58E nese POST řetězu `upgrade` taky (jeho čtení); konec `CHAIN` je pořád řetěz bez AI verze, ne selhání modelu.
+  const chain = upgrade.reason === 'CHAIN';
   return {
     id: sentence.id,
     text: sentence.text,
     checklist: sentence.checklist,
     draft: { versionId: created.versionId, spec: draft.spec, ...draftFrame },
     upgrade: { status: upgrade.status, reason: upgrade.reason ?? null, ms: upgradeMs },
-    cause: upgradeEnds(log(), created.versionId).find((end) => end !== 'model') ?? (published ? null : 'model'),
+    cause: chain ? 'chain' : upgradeEnds(log(), created.versionId).find((end) => end !== 'model') ?? (published ? null : 'model'),
     ai: ai === null ? null : { versionId: upgrade.versionId, spec: ai.spec, published, source: ai.timings?.source ?? null, ...aiFrame },
   };
 }

@@ -271,6 +271,16 @@ describe('measureSentence', () => {
     expect(compareVerdict(summary).valid).toBe(true);
   });
 
+  it('books a chain whose POST carries the upgrade URL of its reading (P58E) as chain, not as a model failure', async () => {
+    const clock = { t: 0 };
+    const recorded = { ...RECORDED.astra, s002: { upgrades: [pending, { status: 'draft-final', reason: 'CHAIN', reading: { versionId: 'r-s002' } }] } };
+    const server = recordedServer(recorded, clock);
+    const result = await measureSentence(SENTENCES[2]!, { base: 'http://127.0.0.1:3331', fetchImpl: server.fetch, log: server.log, leave: async () => {}, now: () => clock.t, wait: async () => {}, openGame: async () => {} });
+    expect(result).toMatchObject({ cause: 'chain', upgrade: { status: 'draft-final', reason: 'CHAIN' }, ai: null });
+    const summary = compareSummary({ astra: { buildId: 'b1', concurrency: 1, results: [...(await replay('astra')).slice(0, 2), result], billed: billedFromLog(BILLED_LOG.astra) } }, 'b1');
+    expect(summary.astra).toMatchObject({ n: 3, chains: 1, published: { ok: 2, of: 2, share: 1, failures: {} } });
+  });
+
   it('asks again after a dropped GET, and gives up after five drops in a row', async () => {
     const measureWithDrops = async (drops: number) => {
       const clock = { t: 0 };
