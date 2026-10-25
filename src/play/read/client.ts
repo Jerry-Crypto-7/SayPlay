@@ -41,6 +41,8 @@ export interface ReaderDeps {
   readonly caller?: string;
   /** Volající čtení vzdal (route spadla, T10-R1): jako vypršený rozpočet – `null`, placené volání neodejde. */
   readonly signal?: AbortSignal;
+  /** Placené volání odešlo (P58E T5): práce řetězu si pak drží i prázdné čtení, ať ho nezaplatí podruhé. */
+  readonly onPaid?: () => void;
 }
 
 /** Placených čtení na volajícího za den, když `PLAY_READER_CALLS_PER_CALLER` chybí nebo nedává smysl. */
@@ -271,6 +273,7 @@ async function paidReading(
     return undefined;
   }
   // Spadlé nebo přerušené volání odešlo: účtuje se celou rezervací a čtení je `null`, ne „nic neodešlo“.
+  deps.onPaid?.();
   const outcome: GenerationOutcome | null = await branch.generate(call, signal).catch(() => null);
   await reservation.settle(outcome === null || outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing));
   return outcome === null ? null : readingOf(outcome);

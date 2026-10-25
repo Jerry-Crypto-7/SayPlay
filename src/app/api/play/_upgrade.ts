@@ -276,6 +276,11 @@ async function publishReading(versions: VersionStore, draftId: string, request: 
 }
 
 const CHAIN_FINAL: Extract<UpgradeOutcome, { readonly status: 'draft-final' }> = { status: 'draft-final', reason: 'CHAIN' };
+/**
+ * Konec řetězu, jehož čtení odmítla brána nebo strop a nic se nezaplatilo (T5): hráč dostane `CHAIN` jako vždy, ale
+ * proces si ho nedrží (`upgradeOf` ho pozná podle identity) – další dotaz zkusí čtení znovu přes tytéž brány.
+ */
+const CHAIN_REFUSED: Extract<UpgradeOutcome, { readonly status: 'draft-final' }> = { status: 'draft-final', reason: 'CHAIN' };
 
 /**
  * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
@@ -297,8 +302,14 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   }
   if (!readerForAiVersion() || chain.origin?.readBy === 'model') return CHAIN_FINAL;
   const { sentence } = request;
-  const reading = await readBeforeDraft(sentence, process.env, (await mayPayChainRead(request.caller)) ? { caller: request.caller } : {});
-  if (reading === null) return CHAIN_FINAL;
+  let paid = false;
+  const onPaid = (): void => {
+    paid = true;
+  };
+  const reading = await readBeforeDraft(sentence, process.env, (await mayPayChainRead(request.caller)) ? { caller: request.caller, onPaid } : {});
+  // Zaplacené prázdné čtení se drží, ať se neplatí dvakrát; odmítnuté se zkusí znovu. Prázdné čtení z cache (zaplatil
+  // ho jiný proces) se taky nedrží – další dotaz ho z cache dostane zdarma znovu, dokud nevyprší.
+  if (reading === null) return paid ? CHAIN_FINAL : CHAIN_REFUSED;
   // Čtení, ze kterého vyjde míč, se bez fyziky nepřeloží (P56C T17e); návrh jedné hry ji potřebuje tak jako tak.
   await loadRapier();
   if (chainOrSingle(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading)) === 'chain') return CHAIN_FINAL;
@@ -558,7 +569,7 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null, readingArrived };
   const remembered = attempt.then((outcome) => {
     console.warn(upgradeAttemptLine(draftId, 'settled'));
-    if (isTransient(outcome)) {
+    if (isTransient(outcome) || outcome === CHAIN_REFUSED) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;
     }

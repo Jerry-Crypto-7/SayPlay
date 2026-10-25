@@ -98,6 +98,18 @@ async function settled(chainId: string): Promise<void> {
   await vi.waitFor(() => expect(knownUpgrade(chainId)).toMatchObject({ status: 'draft-final', reason: 'CHAIN' }), { timeout: 30_000 });
 }
 
+/** Práce řetězu doběhla s konci, který si proces nedrží (T5: čtení odmítla brána) – v mapě už není. */
+async function forgotten(chainId: string): Promise<void> {
+  await vi.waitFor(() => expect(knownUpgrade(chainId)).toBeNull(), { timeout: 30_000 });
+}
+
+/** Práce řetězu doběhla, ať si konec drží (`settled`), nebo ne (`forgotten`). */
+async function ended(chainId: string): Promise<void> {
+  await vi.waitFor(() => expect(knownUpgrade(chainId) ?? { status: 'draft-final', reason: 'CHAIN' }).toMatchObject({ status: 'draft-final', reason: 'CHAIN' }), { timeout: 30_000 });
+}
+
+const again = { seed: null, ackMs: null, draftReadyMs: null, caller: 'chain-reading-test' } as const;
+
 async function children(store: VersionStore, parentId: string): Promise<PublishedGame[]> {
   return (await Promise.all((await store.childrenOf(parentId)).map((id) => store.get(id)))).filter((child) => child !== null);
 }
@@ -142,7 +154,7 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
   ])('%s: the chain stays and nothing is paid', async (_name, env) => {
     for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
     const { body } = await create(SINGLE.text);
-    await settled(body.versionId);
+    await ended(body.versionId);
     expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
     expect(reader.calls).toEqual([]);
   });
@@ -152,7 +164,7 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
     const caller = freshCaller();
     expect(await versionStoreFromEnv(process.env).takeDirectorCall(directorCallerOf(post('/api/play/games', {}, caller)), 1)).toBe(true);
     const { body } = await create(SINGLE.text, caller);
-    await settled(body.versionId);
+    await ended(body.versionId);
     expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
     expect(reader.calls).toEqual([]);
   });
@@ -215,6 +227,44 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
     await settled(body.versionId);
     expect(reader.calls).toHaveLength(1);
     expect(readingOf(body.versionId)).not.toBeNull();
+  });
+});
+
+describe('a chain refused by a closed gate is read once the gate opens (P58E T5)', () => {
+  // Brána před čtečkou (`mayPayChainRead`) i strop uvnitř placeného čtení: ani jedno nic nezaplatí.
+  it.each([
+    ['the paid branch not ordered', 'WORLDSMITH_BRANCH', '', 'live'],
+    ['the reader call cap used up', 'PLAY_READER_CALL_CAP', '0', '10'],
+  ])('%s: CHAIN, not kept, and the next ask after the gate opens reads once', async (_name, name, closed, open) => {
+    vi.stubEnv(name, closed);
+    const { body } = await create(SINGLE.text);
+    await forgotten(body.versionId);
+    expect(reader.calls).toEqual([]);
+    vi.stubEnv(name, open);
+    // Strop čtečky čte prostředí jednou za proces.
+    resetProcessSpendCap();
+    const store = versionStoreFromEnv(process.env);
+    const chain = (await store.get(body.versionId))!;
+    const outcome = await upgradeOf(store, chain, { ...again, sentence: SINGLE.text, startedAt: Date.now() });
+    expect(outcome).toEqual({ status: 'draft-final', reason: 'CHAIN', reading: { versionId: expect.any(String) } });
+    expect(reader.calls).toHaveLength(1);
+    expect(await upgradeOf(store, chain, { ...again, sentence: SINGLE.text, startedAt: Date.now() })).toEqual(outcome);
+    expect(reader.calls).toHaveLength(1);
+    expect(await children(store, body.versionId)).toHaveLength(1);
+  });
+
+  it('a paid reading that came back empty is kept: the next ask does not pay again', async () => {
+    reader.reading = null;
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    expect(reader.calls).toHaveLength(1);
+    // Zaplacené prázdné čtení drží i cache odpovědí; bez ní ho drží jen práce v procesu.
+    resetProcessAnswerStore();
+    const store = versionStoreFromEnv(process.env);
+    const outcome = await upgradeOf(store, (await store.get(body.versionId))!, { ...again, sentence: SINGLE.text, startedAt: Date.now() });
+    expect(outcome).toEqual({ status: 'draft-final', reason: 'CHAIN' });
+    expect(reader.calls).toHaveLength(1);
+    expect(await children(store, body.versionId)).toEqual([]);
   });
 });
 
