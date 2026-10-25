@@ -3,7 +3,7 @@
  * nejnovějších dětí z `childrenOf` jako `{ versionId, title, chips, top }`. `chips` = rozdíl
  * proti téhle hře (`remixChips`), `top` = první řádek **vlastního** žebříčku remixu
  * (`{ nickname, score, ticks }`, `null` = bez běhů nebo nečitelný). Autorská verze od AI
- * (`relation: 'upgrade'`) remix hráče není. Id hráče do těla nejde.
+ * (`relation: 'upgrade'`) ani hra ze čtení (`'reading'`) remix hráče není. Id hráče do těla nejde.
  *
  * Táž brána jako čtení hry (páka `snapshots`). Odpověď je pro všechny stejná a jde o navigaci,
  * ne o pravdu o hře – smí se minutu cachovat na hraně jako hra sama.
@@ -44,12 +44,12 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (game === null) return markVolatileStore(notFound());
 
   // simplified: až 4 čtení úložiště na remix (hra, žebříček, běh, hráč), ~50 příkazů Upstash za odpověď bez hrany; dávka přes `getMany`, až se list otevírá často.
-  // O jedno dítě víc: autorská verze od AI vzniká z návrhu jednou a místo remixu nezabere.
-  const newest = (await versions.childrenOf(id)).slice(-(REMIXES_SHOWN + 1)).reverse();
+  // O dvě děti víc: autorská verze od AI a hra ze čtení (P58D T1) vznikají z návrhu jednou a místo remixu nezaberou.
+  const newest = (await versions.childrenOf(id)).slice(-(REMIXES_SHOWN + 2)).reverse();
   const children = await Promise.all(newest.map((childId) => versions.get(childId)));
   const remixes = await Promise.all(
     children
-      .filter((child) => child !== null && child.relation !== 'upgrade')
+      .filter((child) => child !== null && child.relation !== 'upgrade' && child.relation !== 'reading')
       .slice(0, REMIXES_SHOWN)
       .map(async (child) => ({
         versionId: child!.version.versionId,

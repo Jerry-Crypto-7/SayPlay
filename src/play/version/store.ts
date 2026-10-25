@@ -312,7 +312,7 @@ export interface LoopHeat {
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
   /** Chybí jen u hry ze seedu feedu a z vestavěné sady (P37C T6), ta má místo toho `curated`. */
-  readonly relation?: 'upgrade' | 'remix';
+  readonly relation?: PublishedGame['relation'];
   /** Věta provozovatele, hra ověřená robotem (P37C T6, `feature` a vestavěná sada). */
   readonly curated?: true;
   /** `spec.tutorial.goalLine` a `spec.theme.mood` pro kartu; řádky zapsané před D-R1 je nemají. */
@@ -354,7 +354,7 @@ export interface WriteLimits {
    * jednorázově `scripts/play-extend-ttl.mjs`.
    */
   readonly ttlSeconds: number;
-  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */
+  /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; dítě od serveru (`relation: 'upgrade'` a `'reading'`) se nepočítá. */
   readonly dailyCap: number;
   /**
    * Kolik výzev Dare (pokusů o zápis) za den napříč všemi volajícími (P36B T5);
@@ -602,9 +602,10 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       try {
         // Autorské dítě se do kvóty nepočítá (R11): stojí placené volání a drží
         // ho strop utrácení a denní počet volajícího. Jinak by věta zapsala dvě
-        // hry a strop by pustil jen polovinu vět. Vestavěná hra (P37C T6) není publikace
+        // hry a strop by pustil jen polovinu vět. Totéž hra ze čtení (P58D T1): stojí placené
+        // čtení pod týmiž stropy a vznikne jen na serveru. Vestavěná hra (P37C T6) není publikace
         // návštěvníka: obal ji ukládá při první události, a ta by ubrala z jejich stropu.
-        if (game.relation !== 'upgrade' && !BUILTIN_IDS.has(game.version.versionId) && (await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
+        if (game.relation !== 'upgrade' && game.relation !== 'reading' && !BUILTIN_IDS.has(game.version.versionId) && (await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
         if (!(await raw.setNx(key, text, limits.ttlSeconds))) {
           const existing = await raw.get(key);
           if (existing === text) return 'exists';
@@ -630,7 +631,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         throw new VersionStoreUnavailable(thrown);
       }
       // Trychtýř (P44B T12): hra je nová právě jednou (`SET NX` výš); výpadek čítače publikaci neshodí.
-      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, ...(game.relation === 'upgrade' ? { relation: 'upgrade' as const } : {}) });
+      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, ...(game.relation === undefined ? {} : { relation: game.relation }) });
       if (stage !== null) await raw.incr(funnelKey(funnelDayOf(now()), stage), FUNNEL_TTL_SECONDS).catch(() => undefined);
       // Do feedu autorská verze od režiséra a od P54A T10 i remix, který postavil server
       // (`relation: 'remix'`, `feedEligible`). Ruční spec ani návrh ze slov ne, ani s

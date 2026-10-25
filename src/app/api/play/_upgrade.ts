@@ -1,7 +1,8 @@
 /**
  * Progresivní hra (P23-D T2): návrh ze slov se publikuje hned, režisér běží
  * na pozadí a jeho autorská verze se publikuje jako dítě návrhu
- * (`parentId = draftId`, `relation: 'upgrade'`).
+ * (`parentId = draftId`, `relation: 'upgrade'`). Návrh, který režie postaví ze čtení věty, jde
+ * hned jako druhé dítě (`relation: 'reading'`, P58D T1), když hraje jiný žánr než rychlá hra.
  *
  * Práce v letu drží mapa na `globalThis` – routy `POST /api/play/games`
  * a `GET …/:id/upgrade` jsou v Next.js oddělené moduly a modulová proměnná by
@@ -97,6 +98,8 @@ interface Job {
   readonly done: Promise<UpgradeOutcome>;
   readonly startedAt: number;
   outcome: UpgradeOutcome | null;
+  /** Hra ze čtení (P58D T1), jakmile je publikovaná; `null` = není, nebo hraje týž žánr jako rychlá hra. */
+  reading: string | null;
 }
 
 /**
@@ -164,7 +167,7 @@ export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
 }
 
-async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
+async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, onReading: (versionId: string) => void): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const existing = await publishedUpgrade(versions, draft, request.sentence);
   if (existing !== null) return { status: 'ready', versionId: existing };
@@ -173,7 +176,7 @@ async function runUpgrade(versions: VersionStore, draft: PublishedGame, request:
   const remembered = await versions.upgradeVerdict(draftId);
   if (remembered !== null && SENTENCE_VERDICTS.has(remembered as DraftFinalReason)) return { status: 'draft-final', reason: remembered as DraftFinalReason };
 
-  const outcome = await directUpgrade(versions, draft, request);
+  const outcome = await directUpgrade(versions, draft, request, getDirector, onReading);
   if (outcome.status === 'draft-final' && !isTransient(outcome)) await versions.rememberUpgradeVerdict(draftId, outcome.reason, DRAFT_FINAL_TTL_SECONDS);
   return outcome;
 }
@@ -224,8 +227,49 @@ export function recordUpgradeFailure(draftId: string, sentence: string, reason: 
   }
 }
 
-/** `director` mimo produkt jen pro měřidlo P46E (`evals/play/p46e/upgrade.ts`): nahraná odpověď místo živé větve. */
-export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector): Promise<UpgradeOutcome> {
+/**
+ * Hraje návrh ze čtení jiný žánr než rychlá hra (P58D T1)? Žánr i režim – past P58B láká i režimem
+ * (`runner.chase` místo `runner.dodge`). Návrh bez žánru (mřížka) rychlou hru nenahradí.
+ */
+export function playsOtherGenre(quick: GameSpecV1, read: GameSpecV1): boolean {
+  return read.genre !== undefined && (read.genre.id !== quick.genre?.id || read.genre.mode !== quick.genre?.mode);
+}
+
+/** Hra ze čtení jako dítě rychlé hry (P58D T1); `null` = nevyšla – jen řádek logu, AI verze na ní nezávisí. */
+async function publishReading(versions: VersionStore, draftId: string, request: UpgradeRequest, spec: GameSpecV1, seeds: readonly number[]): Promise<string | null> {
+  try {
+    const published = await publishReadSpec(versions, spec, seeds, draftId, { relation: 'reading', origin: { sentence: request.sentence, seed: request.seed, readBy: 'model' } });
+    if (published.ok) return published.value.game.version.versionId;
+    console.warn(`[play] reading version of ${draftId} not published: ${published.issues?.[0] ?? String(published.response.status)}`);
+  } catch (thrown) {
+    console.warn(`[play] reading version of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
+  }
+  return null;
+}
+
+/**
+ * `director` mimo produkt jen pro měřidlo P46E (`evals/play/p46e/upgrade.ts`): nahraná odpověď místo živé větve.
+ * `onReading` (P58D T1): id hry ze čtení – návrh, který režie postaví ze čtení pro AI verzi, publikovaný hned, když
+ * hraje jiný žánr než rychlá hra. Čtení se tím neplatí znovu a publikace na model nečeká; výsledek upgradu počká jen na
+ * dokončení zápisu, aby ho `after()` nezmrazil v půlce.
+ */
+export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string) => void): Promise<UpgradeOutcome> {
+  const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
+  let reading: Promise<void> = Promise.resolve();
+  const onDraft = (spec: GameSpecV1): void => {
+    if (!playsOtherGenre(draft.spec, spec)) return;
+    reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((versionId) => {
+      if (versionId !== null) onReading?.(versionId);
+    });
+  };
+  try {
+    return await directorUpgrade(versions, draft, request, director, seeds, onDraft);
+  } finally {
+    await reading;
+  }
+}
+
+async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: (spec: GameSpecV1) => void): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
     if (failure !== undefined) recordUpgradeFailure(draftId, request.sentence, reason, failure);
@@ -241,11 +285,10 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
     throw thrown;
   }
 
-  const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const directorStarted = performance.now();
   // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
   const check = (spec: GameSpecV1) => playabilityIssues(spec, seeds);
-  const directed = await director(request.startedAt, request.caller, check, undefined, upgradeQueueId(draftId))(request.sentence);
+  const directed = await director(request.startedAt, request.caller, check, undefined, upgradeQueueId(draftId), true, onDraft)(request.sentence);
   // Hra režiséra, kterou kontrola odmítla (demo 15. 10., 4 z 10: běžec ani auto nehrají honičku a zóny), nese pořád
   // bosse, úseky a vzhled – zkusí se už jen roub na rychlou hru, sama hra režiséra ne.
   const rejected = directed.source === 'draft' ? rejectedSpecOf(directed.failure) : null;
@@ -432,11 +475,12 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? pendingSince(known.startedAt) : outcome));
 
   console.warn(upgradeAttemptLine(draftId, 'started'));
-  const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): UpgradeOutcome => {
+  // `job` ještě není, ale hra ze čtení přijde až po prvním `await` práce.
+  const attempt = runUpgrade(versions, draft, request, (versionId) => { job.reading = versionId; }).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });
-  const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null };
+  const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null };
   const remembered = attempt.then((outcome) => {
     console.warn(upgradeAttemptLine(draftId, 'settled'));
     if (isTransient(outcome)) {
@@ -461,6 +505,11 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
     void remembered;
   }
   return job.done;
+}
+
+/** Hra ze čtení návrhu (P58D T1), jak ji zná práce v procesu; `null` = není, nebo o ní proces neví. */
+export function readingOf(draftId: string): string | null {
+  return jobs().get(draftId)?.reading ?? null;
 }
 
 /** Stav bez čekání: `null` = proces o návrhu neví. Čekající na slot režiséra nese `queued`. */

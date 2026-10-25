@@ -36,9 +36,9 @@ export function funnelStageOf(name: LoopEventName): FunnelStage | null {
   }
 }
 
-/** Stupeň nové hry: bez rodiče `say`, s rodičem `remix`; autorská verze od AI (`upgrade`) není ani jedno. */
-export function publishStageOf(game: { readonly parentId: string | null; readonly relation?: 'upgrade' }): FunnelStage | null {
-  if (game.relation === 'upgrade') return null;
+/** Stupeň nové hry: bez rodiče `say`, s rodičem `remix`; autorská verze od AI (`upgrade`) ani hra ze čtení (`reading`) není ani jedno. */
+export function publishStageOf(game: { readonly parentId: string | null; readonly relation?: 'upgrade' | 'remix' | 'reading' }): FunnelStage | null {
+  if (game.relation === 'upgrade' || game.relation === 'reading') return null;
   return game.parentId === null ? 'say' : 'remix';
 }
 

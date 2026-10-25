@@ -90,10 +90,14 @@ describe('GET /api/play/games/:id/remixes (P44B T11)', () => {
     }
     const upgrade = 'b'.repeat(32);
     expect(await versions().put({ ...child, version: { ...child.version, versionId: upgrade }, relation: 'upgrade' })).toBe('stored');
+    // P58D T1: ani hra ze čtení remix není a místo remixu nezabere.
+    const reading = 'c'.repeat(32);
+    expect(await versions().put({ ...child, version: { ...child.version, versionId: reading }, relation: 'reading' })).toBe('stored');
 
     const { remixes } = await read(parent);
     expect(remixes.map(({ versionId }) => versionId)).toEqual(ids.slice(-12).reverse());
     expect(remixes.map(({ versionId }) => versionId)).not.toContain(upgrade);
+    expect(remixes.map(({ versionId }) => versionId)).not.toContain(reading);
   });
 
   it('hra bez remixů → prázdný seznam; neznámá hra a vadné id → 404', async () => {

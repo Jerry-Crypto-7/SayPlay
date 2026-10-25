@@ -50,8 +50,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (game === null) return markVolatileStore(notFound());
   if (BUILTIN_IDS.has(id)) return new Response(null, { status: 204 });
   // Hru, která do feedu nesmí, feed neukáže: hlas se přijme a nezapíše, jinak by vlastní hry
-  // vytlačily skutečné hlasy ze seznamu provozovatele (`REPORTED_KEPT`).
-  if (game.relation === undefined && !(await versions.recent(RECENT_CAP)).some((row) => row.versionId === id && row.curated === true)) {
+  // vytlačily skutečné hlasy ze seznamu provozovatele (`REPORTED_KEPT`). Hra ze čtení (P58D T1) do feedu nesmí.
+  if ((game.relation === undefined || game.relation === 'reading') && !(await versions.recent(RECENT_CAP)).some((row) => row.versionId === id && row.curated === true)) {
     return new Response(null, { status: 204 });
   }
   try {
