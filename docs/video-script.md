@@ -10,7 +10,7 @@ Příběh je jedna smyčka: **věta → hra → AI verze → výzva kamarádovi 
 
 | Čas | Scéna | Věta k zadání | Co je vidět | Titulek |
 |---|---|---|---|---|
-| 0:00–0:15 | `say-to-play` | `A knight fights a three-headed hydra at the castle gates.` (`JUDGE_PICKS` f22) | `/play`, do pole se píše věta (ne klepnutí na kartu), **Make it!**. Adresa přejde na `/play/<id>` a hra hned běží: rytíř bojuje s hydrou, sloveso se poprvé ukáže jako krátký popisek. | `Say a game.` → `One sentence in. A game you can play, right away.` |
+| 0:00–0:15 | `say-to-play` | `A knight fights a three-headed hydra at the castle gates.` (`JUDGE_PICKS` f22) | `/play`, do pole se píše věta (ne klepnutí na kartu), **Make it!**. Adresa přejde na `/play/<id>` a hra hned běží: rytíř bojuje s hydrou, nad oběma se při prvním objevení krátce ukáže jméno (P58A), sloveso jako krátký popisek, nápověda ovládání hned po startu a povely Dodge!/Strike! v souboji (P58C). | `Say a game.` → `One sentence in. A game you can play, right away.` |
 | 0:15–0:35 | `ai-version` | stejná hra | Proužek „Full-detail version ready“ s tlačítkem **Play it**; otevře se nová hra, kterou navrhl AI režisér, s odkazem na rychlou verzi. Hra se dohraje do „You did it!“. | `Meanwhile an AI director designs a full-detail version of your sentence.` |
 | 0:35–1:05 | `dare-friend` | stejná hra | Po výhře **Dare a friend to beat it** → „Link copied. Go dare someone.“ Odkaz otevře druhé okno na telefonu bez účtu, kamarád hraje proti duchovi vítězného běhu, „You beat it!“ a **Dare back**. | `Win, then dare a friend. The link plays anywhere, no account.` → `They race your ghost.` |
 | 1:05–1:20 | `leaderboard` | stejná hra | Po výhře kamaráda žebříček hry: nejlepší ověřené běhy, vlastní řádek zvýrazněný, „You're #2 of 3“. | `Every run is replayed on the server before it counts.` |
@@ -24,7 +24,8 @@ Příběh je jedna smyčka: **věta → hra → AI verze → výzva kamarádovi 
 ## Co platí při natáčení
 
 - **AI verze potřebuje klíče a nasazení.** Bez nich `ai-version` natočí rychlou verzi a skript vypíše `AI version unavailable – re-run after deploy`; finální klip se točí proti nasazenému demu (`FALLBACK_SMOKE_URL=<demoUrl>`).
-- **Žebříček přichází se sloučením P44B.** Do té doby klip `leaderboard` ukáže jen obrazovku po výhře kamaráda; natáčí se znovu po sloučení.
+- **AI verze přijde až za minutu** (p50 57 s, p95 93 s, `evals/play/p58b/director.md`). Čekání se v `ai-version` stříhá s viditelným označením („a minute later“), nikdy se nevydává za okamžité.
+- **Telefonní klipy jdou natočit i na iPhonu** – Safari a WebKit jsou od P58C zelené (`e2e` WebKit 42/42).
 - **Věty jsou doslova ty měřené**, i s malým písmenem na začátku – jiný zápis měřený není. Pět vět z `JUDGE_PICKS` (`src/components/play/starters.ts`) dalo v měření hru za 0,5–0,65 s na telefonu i na desktopu (`e2e/first-visit.spec.ts`, `@measure`).
 - **Psaní věty se nezrychluje.** Zrychlit smí jen montáž `more-sentences`, a pak s viditelným označením.
 
