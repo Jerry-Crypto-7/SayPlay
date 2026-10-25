@@ -27,6 +27,8 @@ const builtin = games[0]!;
 const said: PublishedGame = { ...builtin, version: { ...builtin.version, versionId: 'b'.repeat(32), parentId: null } };
 const remixed: PublishedGame = { ...builtin, version: { ...builtin.version, versionId: 'c'.repeat(32), parentId: said.version.versionId } };
 const upgraded: PublishedGame = { ...remixed, version: { ...remixed.version, versionId: 'd'.repeat(32) }, relation: 'upgrade' };
+/** Hra ze čtení (P58D T1). */
+const read: PublishedGame = { ...remixed, version: { ...remixed.version, versionId: 'e'.repeat(32) }, relation: 'reading' };
 
 const dirs: string[] = [];
 
@@ -91,6 +93,7 @@ describe('countFunnel / funnel (P44B T12)', () => {
       expect(await store.put(said), label).toBe('exists');
       expect(await store.put(remixed), label).toBe('stored');
       expect(await store.put(upgraded), label).toBe('stored');
+      expect(await store.put(read), label).toBe('stored');
       expect(await today(store), label).toEqual({ say: 1, play: 0, finish: 0, share: 0, open: 0, beat: 0, remix: 1 });
     }
   });

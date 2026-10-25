@@ -26,7 +26,7 @@ import { type LoopHeat, RECENT_CAP, type RecentGame } from './store';
 /** Co feed o hře potřebuje vědět, aby rozhodl, jestli ji ukáže. */
 export interface FeedCandidate {
   readonly versionId: string;
-  readonly relation?: 'upgrade' | 'remix';
+  readonly relation?: 'upgrade' | 'remix' | 'reading';
   /** Hra ze seedu feedu nebo z vestavěné sady (P37C T6); nese ji jen řádek seznamu. */
   readonly curated?: true;
   readonly publishEligible: boolean;

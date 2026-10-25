@@ -6,7 +6,8 @@
  * `{ status: 'draft-final', reason }`. Proces, který POST viděl, odpoví
  * z paměti hned. Proces, který o návrhu neví (serverless, restart), práci
  * **sám spustí** z věty uložené u návrhu a počká nejvýš `UPGRADE_WAIT_MS`;
- * potom `pending` a další dotaz ji najde v paměti.
+ * potom `pending` a další dotaz ji najde v paměti. `pending` nese i hru ze čtení
+ * (`reading: { versionId }`, P58D T2), jakmile vznikne – čekání se pak vrátí hned.
  *
  * Dotaz může spustit placenou režii, proto jde přes páku `sessions` (zápis),
  * ne `snapshots` – vypínač publikací zastaví i upgrade.
@@ -14,7 +15,7 @@
 
 import { fail, notFound, VERSION_ID_PATTERN } from '../../../_errors';
 import { admit, directorCallerOf, store } from '../../../_publish';
-import { knownUpgrade, pendingSince, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
+import { knownUpgrade, pendingSince, readingArrival, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
 
 const UPGRADE_WAIT_MS = 25_000;
 
@@ -49,8 +50,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     timer = setTimeout(() => resolve(knownUpgrade(id) ?? pendingSince(startedAt)), UPGRADE_WAIT_MS);
   });
   const done = upgradeOf(versions, draft, { ...draft.origin, ackMs: null, draftReadyMs: null, startedAt, caller: directorCallerOf(request) });
+  const reading = readingArrival(id).then(() => knownUpgrade(id) ?? pendingSince(startedAt));
   try {
-    return answer(await Promise.race([done, waited]));
+    return answer(await Promise.race([done, waited, reading]));
   } finally {
     clearTimeout(timer);
   }

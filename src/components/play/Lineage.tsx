@@ -55,12 +55,15 @@ function useRemixChips(parentId: string | null, childId: string): readonly strin
   return chips;
 }
 
-/** `aiVersion`: hra je vylepšení návrhu od AI (`relation: 'upgrade'`), ne remix hráče (P26 T8). */
-export function Lineage({ lineage, remixes, aiVersion = false }: { readonly lineage: readonly GameVersion[]; readonly remixes: number; readonly aiVersion?: boolean }) {
+/**
+ * `aiVersion`: hra je vylepšení návrhu od AI (`relation: 'upgrade'`), ne remix hráče (P26 T8).
+ * `reading`: hra ze čtení věty (`relation: 'reading'`, P58D T3) – taky verze rychlé hry, ne remix.
+ */
+export function Lineage({ lineage, remixes, aiVersion = false, reading = false }: { readonly lineage: readonly GameVersion[]; readonly remixes: number; readonly aiVersion?: boolean; readonly reading?: boolean }) {
   const parent = lineage.length >= 2 ? lineage[lineage.length - 2]! : null;
   // Vylepšení od AI není remix hráče – rozdíl proti návrhu by vyjmenoval detaily, ne změnu.
   const self = lineage.at(-1)?.versionId ?? '';
-  const chips = useRemixChips(aiVersion || parent === null ? null : parent.versionId, self);
+  const chips = useRemixChips(aiVersion || reading || parent === null ? null : parent.versionId, self);
   // Řetěz remixů (P44B T11) jen v listu „About this game“: ve feedu je rodokmen skrytý a nic navíc nečte.
   const remixChain = useInInfoSheet() && remixes > 0 && self !== '';
   const line = useMemo(
@@ -70,7 +73,7 @@ export function Lineage({ lineage, remixes, aiVersion = false }: { readonly line
           <span>Original</span>
         ) : (
           <span data-testid="play-lineage-chain">
-            {aiVersion ? 'Full-detail version of' : 'Remixed from'}{' '}
+            {aiVersion ? 'Full-detail version of' : reading ? 'Matched to your idea from' : 'Remixed from'}{' '}
             {chainOf(lineage).map((step, index) => (
               <Fragment key={step?.versionId ?? `gap-${String(index)}`}>
                 {index > 0 && ' → '}
@@ -92,7 +95,7 @@ export function Lineage({ lineage, remixes, aiVersion = false }: { readonly line
         {remixChain && <RemixChain versionId={self} />}
       </p>
     ),
-    [parent, lineage, remixes, aiVersion, chips, remixChain, self],
+    [parent, lineage, remixes, aiVersion, reading, chips, remixChain, self],
   );
   return useInfoPart('lineage', line) ? null : line;
 }

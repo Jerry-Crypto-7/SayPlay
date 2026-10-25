@@ -131,6 +131,24 @@ describe('getDirector – brány placené větve', () => {
   });
 });
 
+// P58D T1: návrh ze čtení jde z režie ven přes `onDraft` – s placenou větví i bez ní.
+describe('getDirector – návrh ze čtení', () => {
+  const READ = { control: 'move_free', verbs: [{ word: 'escapes', class: 'move_free' }], hero: 'hamster', roles: [{ noun: 'roomba', kind: 'threat', count: null }], setting: 'supermarket', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'quest', mode: 'spatial' }, sure: true, foe: 'roomba', item: null, world: null, title: null };
+
+  it.each([['bez placené větve', { ...LIVE, WORLDSMITH_BRANCH: '' }], ['s placenou větví', LIVE]])('%s předá návrh ze čtení', async (_label, env) => {
+    stubEnv({ ...env, PLAY_READER: 'on', PLAY_READER_ENDPOINT: 'http://reader.test' });
+    vi.stubGlobal('fetch', (url: string) => {
+      if (String(url).startsWith('http://reader.test')) return Promise.resolve(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(READ) } }] })));
+      fetchCalls += 1;
+      return Promise.resolve(new Response('upstream down', { status: 503 }));
+    });
+    const drafts: GameSpecV1[] = [];
+    await getDirector(Date.now(), 'test-caller', undefined, undefined, undefined, true, (spec) => drafts.push(spec))(SENTENCE);
+    expect(drafts).toEqual([draftGameSpecWithMeta(SENTENCE, 1, { reading: READ as never }).spec]);
+    expect(drafts[0]!.genre).toMatchObject({ id: 'quest', mode: 'spatial' });
+  });
+});
+
 describe('getDirector – rozpočet času režie (R7)', () => {
   it('nasazený timeout 285 s, delší než rozpočet, volání nezavře – zkrátí se na zbytek (revize R7)', async () => {
     stubEnv({ ...LIVE, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '285000' });

@@ -403,6 +403,16 @@ describe('VersionStore http', () => {
     expect(await store.put(publish(2, null))).toBe('quota');
     expect(await store.get(publish(2, null).version.versionId)).toBeNull();
   });
+
+  // P58D T1: hru ze čtení i AI verzi zapíše server za placené volání pod jeho stropy – kvóta patří dál návrhům.
+  it('children the server writes (upgrade, reading) do not count against the daily cap', async () => {
+    const store = memoryVersionStore({ ttlSeconds: 60, dailyCap: 1 }, () => 0);
+    const root = publish(1, null);
+    expect(await store.put(root)).toBe('stored');
+    expect(await store.put({ ...publish(2, root.version.versionId), relation: 'reading' })).toBe('stored');
+    expect(await store.put({ ...publish(3, root.version.versionId), relation: 'upgrade' })).toBe('stored');
+    expect(await store.put(publish(4, root.version.versionId))).toBe('quota');
+  });
 });
 
 describe('writeLimitsFromEnv', () => {

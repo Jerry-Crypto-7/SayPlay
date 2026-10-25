@@ -49,7 +49,7 @@ import { gridOf } from './sight';
 import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
 import { BuildingScreen, Button, CHANGE_LABEL, Icon, PauseCard, Sheet, useHudKeys } from './ui';
-import { UpgradeBanner } from './UpgradeBanner';
+import { UpgradeBanner, useCommitted } from './UpgradeBanner';
 import { avoidCards, idleProps, keyAction, playerActor, roleKinds, tapAction, type TargetCard, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
@@ -115,7 +115,7 @@ function witnessOps(witness: unknown): readonly { readonly tick: number; readonl
     .sort((a, b) => a.tick - b.tick);
 }
 
-export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, lab, read, upgrade }: PlayShellProps) {
+export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, readingVersion = false, lab, read, upgrade }: PlayShellProps) {
   // Restart z HUD (P34 T5) je nová relace runtime: `observeAt(0)` by přehrál hráčův záznam, ne začal znovu.
   const [controller, setController] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
@@ -139,6 +139,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     [controller, blueprint, spec, avoid],
   );
   const running = snapshot.runState === 'running';
+  const committed = useCommitted(snapshot.tick / TICKS_PER_SECOND, !running);
   const remix = useRemixJob(versionId, !running);
   const built = world?.kind === 'built';
 
@@ -493,11 +494,18 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
             send(hit.action, hit.selected);
           }} />
         )}
-        <UpgradeBanner request={upgrade} sentence={read.sentence} quick={aiVersion ? (lineage.at(-2)?.versionId ?? null) : null} />
+        <UpgradeBanner
+          request={upgrade}
+          sentence={read.sentence}
+          quick={aiVersion ? (lineage.at(-2)?.versionId ?? null) : null}
+          matchedOf={readingVersion ? (lineage.at(-2)?.versionId ?? null) : null}
+          versionId={versionId}
+          committed={committed}
+        />
         {running && <RemixReadyChip job={remix} />}
       </Hud>
       {running && waiting && <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" />}
-      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
+      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (

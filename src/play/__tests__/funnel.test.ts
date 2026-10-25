@@ -31,6 +31,9 @@ describe('funnel stages (P44B T12)', () => {
     expect(publishStageOf({ parentId: null })).toBe('say');
     expect(publishStageOf({ parentId: 'a'.repeat(32) })).toBe('remix');
     expect(publishStageOf({ parentId: 'a'.repeat(32), relation: 'upgrade' })).toBeNull();
+    // P58D T1: hra ze čtení je návrh téže věty, ne nová věta ani remix.
+    expect(publishStageOf({ parentId: 'a'.repeat(32), relation: 'reading' })).toBeNull();
+    expect(publishStageOf({ parentId: 'a'.repeat(32), relation: 'remix' })).toBe('remix');
   });
 
   it('den v UTC', () => {

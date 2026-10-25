@@ -490,8 +490,9 @@ export function directorCalls(startedAt: number, caller: string, queueId?: strin
  * Opravné kolo jede na slotu, který režie už drží.
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
+ * `onDraft` (P58D T1): návrh, který `direct()` postaví ze čtení, dřív než zavolá model.
  */
-export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string, waitForSlot = true): Director {
+export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string, waitForSlot = true, onDraft?: DirectorDeps['onDraft']): Director {
   return async (sentence) => {
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
@@ -500,7 +501,8 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     const branch = await cappedBranch(process.env, deadline, caller, () => {
       callerLimited = true;
     });
-    if (branch === null || config === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
+    const drafted = onDraft === undefined ? {} : { onDraft };
+    if (branch === null || config === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now, ...drafted })), callerLimited };
     let seat: { readonly release: () => void } | null = null;
     /** Slot dveří `play` pro tuto režii; `null` = drží ho, text = proč ho nedostala. */
     const takeSeat = async (): Promise<string | null> => {
@@ -529,7 +531,7 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       // Čtení se platí jen, když by režisér model zavolal (revize T4, nález 1), a až se slotem v ruce (T4b): plná fronta,
       // termín ani souběžná věta, která slot vezme během 3–15 s čtení, ho pak nezaplatí naprázdno. Daň: slot je obsazený i po dobu čtení.
       const reader = readerForAiVersion() ? { caller, mayPayRead: async () => (await takeSeat()) === null && (await directorWouldCall(process.env, config, deadline, caller)) } : {};
-      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...reader, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
+      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...reader, ...drafted, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
       // `seat` přiřazuje `generate` výš; TypeScript to po `await` nevidí.
       (seat as { readonly release: () => void } | null)?.release();

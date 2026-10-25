@@ -158,3 +158,49 @@ test('working → final: the banner says why, and one double-clicked retry asks 
   expect(retried()).toBe(2);
   expect(asked()).toBe(2);
 });
+
+// P58D T3: hra ze čtení přijde v `pending` ~3 s po větě. Atrapa čtečky je podvržený `…/upgrade`: první 3 s bez čtení,
+// pak `reading` míří na skutečně publikovanou hru jiného žánru. Skutečné dítě `relation: 'reading'` (přepínač
+// Quick | Matched | Full detail na hře ze čtení) veřejné API nevyrobí – tu cestu měří živá kontrola P58D T4.
+const READING_AFTER_MS = 3_000;
+
+async function readingGame(page: Page, request: APIRequestContext): Promise<{ draft: Created; reading: string; arrive: () => void }> {
+  const draft = await draftFromSentence(request);
+  const reading = await publishedSpec(request);
+  let arrived = false;
+  await page.route(`**${draft.upgrade}`, async (route) => {
+    await route.fulfill({ json: arrived ? { ...pending, reading: { versionId: reading } } : pending, headers: { 'cache-control': 'no-store' } });
+  });
+  return { draft, reading, arrive: () => (arrived = true) };
+}
+
+test('the reading game arrives: a player who has not pressed anything moves to it within one poll', async ({ page, request }) => {
+  const { draft, reading, arrive } = await readingGame(page, request);
+  await page.goto(draft.url);
+  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  const quickTitle = await page.locator('h1').first().textContent();
+  await page.waitForTimeout(READING_AFTER_MS);
+  arrive();
+  const arrivedAt = Date.now();
+  await page.waitForURL(`**/play/${reading}`, { timeout: 15_000 });
+  // Jeden dotaz po 2 s + odpověď a navigace; rezerva na emulovaný telefon.
+  expect(Date.now() - arrivedAt).toBeLessThan(2_000 + 3_000);
+  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  await expect(page.locator('h1').first()).not.toHaveText(quickTitle ?? '');
+});
+
+test('the reading game arrives after six seconds of play: the switch offers it and the game is not swapped', async ({ page, request }) => {
+  const { draft, reading, arrive } = await readingGame(page, request);
+  await page.goto(draft.url);
+  await running(page);
+  await page.waitForTimeout(6_500);
+  arrive();
+  const offer = page.getByTestId('reading-action');
+  await expect(offer).toBeVisible({ timeout: 10_000 });
+  await expect(offer).toHaveText('Matched');
+  await expect(page.getByTestId('upgrade-state')).toHaveAttribute('data-reading', 'offer');
+  await page.waitForTimeout(2_500);
+  expect(new URL(page.url()).pathname).toBe(draft.url);
+  await offer.click();
+  await page.waitForURL(`**/play/${reading}`);
+});

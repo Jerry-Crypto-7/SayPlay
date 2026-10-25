@@ -43,6 +43,8 @@ export interface PlayShellProps {
   readonly remixes: number;
   /** Hra je AI verze návrhu (`relation: 'upgrade'`); rodokmen to řekne místo „Remixed from“. */
   readonly aiVersion?: boolean;
+  /** Hra ze čtení věty (`relation: 'reading'`, P58D) – verze rychlé hry podle čtení, ne remix hráče. */
+  readonly readingVersion?: boolean;
   readonly lab: LabFacts;
   readonly read: ReadFacts;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
