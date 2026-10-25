@@ -3,6 +3,10 @@
  * mají vlastní test. Neplatná odpověď je chyba, ne slovník – jinak by model, který neodpovídá, sbíral body slovníku.
  */
 
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { classifyGenre } from '../../../../src/play/genre/classify';
@@ -250,7 +254,11 @@ describe('P58B reader comparison', () => {
   });
 
   it('refuses a sealed holdout and reads an opened one', () => {
-    expect(() => loadSet('evals/play/p58b/holdout.json')).toThrow(/sealed/);
+    // Sadu P58B otevřela T8 (`holdout-opened.json`), pečeť se proto zkouší na dočasné zavřené sadě.
+    const sealed = join(mkdtempSync(join(tmpdir(), 'p58b-sealed-')), 'holdout.json');
+    writeFileSync(sealed, JSON.stringify({ sentences: [{ id: 's01', text: 'a corgi runs' }] }), 'utf8');
+    expect(() => loadSet(sealed)).toThrow(/sealed/);
+    expect(loadSet('evals/play/p58b/holdout.json').sentences).toHaveLength(80);
     expect(loadSet('evals/play/p56a/holdout.json').sentences).toHaveLength(80);
   });
 
