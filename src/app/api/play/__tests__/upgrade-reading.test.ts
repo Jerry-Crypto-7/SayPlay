@@ -148,6 +148,28 @@ describe('the reading game (P58D T1)', () => {
     expect(announced).toEqual([]);
   }, 120_000);
 
+  // T2a (review fáze 1): id verze je ze specu, semínka a rodiče, ne ze vztahu – AI verze rovná návrhu ze čtení by
+  // jinak dostala uložené dítě `'reading'` jako `ready`, mimo feed a bez štítku AI verze.
+  // Kolize se vynutí: hra ze čtení uložená přesně se specem a semínkem, které AI cesta publikuje (z běhu bez čtení).
+  it('an AI version that lands on the stored reading game ends UNCHANGED, not as the reading child', async () => {
+    reader(null);
+    const first = memoryVersionStore();
+    const firstQuick = await quickGame(first, OTHER.text);
+    const ai = await directUpgrade(first, firstQuick, request(OTHER.text), director(OTHER.answer).make);
+    const aiGame = await first.get(ai.status === 'ready' ? ai.versionId : '');
+    if (aiGame === null) throw new Error(`the AI version did not publish: ${JSON.stringify(ai)}`);
+
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, OTHER.text);
+    const reading = await publishReadSpec(store, aiGame.spec, [aiGame.version.seed], quick.version.versionId, { relation: 'reading', origin: { sentence: OTHER.text, seed: null, readBy: 'model' } });
+    expect(reading.ok && reading.value.game.version.versionId).toBe(aiGame.version.versionId);
+    resetProcessAnswerStore();
+    __resetUpgrades();
+    const outcome = await directUpgrade(store, quick, request(OTHER.text), director(OTHER.answer).make);
+    expect(outcome).toMatchObject({ status: 'draft-final', reason: 'UNCHANGED' });
+    expect((await childrenOf(store, quick.version.versionId)).map((child) => child.relation)).toEqual(['reading']);
+  }, 180_000);
+
   it('publishes nothing without a reading, and the AI version runs as before', async () => {
     reader(null);
     const store = memoryVersionStore();

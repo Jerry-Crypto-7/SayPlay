@@ -337,6 +337,9 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
     const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');
     return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: upgraded });
   }
+  // Stejné id jako uložená hra ze čtení (P58D T2a; id je ze specu, semínka a rodiče, ne ze vztahu): model k návrhu ze
+  // čtení nic nepřidal. Jako `ready` by AI verze byla dítě `'reading'` – mimo feed, bez štítku a `publishedUpgrade` ji nenajde.
+  if (published.value.game.relation === 'reading') return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the reading draft', raw: upgraded });
   return { status: 'ready', versionId: published.value.game.version.versionId, ...(adds === undefined ? {} : { adds }) };
 }
 
