@@ -40,7 +40,7 @@ import type { DirectorSource } from '@/play/contracts';
 import { type DirectorFailure, withDraftRules } from '@/play/director';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { classifyGenre } from '@/play/genre/classify';
-import { readBeforeDraft } from '@/play/read/client';
+import { readBeforeDraft, readerForAiVersion } from '@/play/read/client';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
@@ -68,7 +68,11 @@ export type DraftFinalReason =
 export type UpgradeOutcome =
   /** `adds` (P46E T4): co AI verze přidala, jak to spočítal `directUpgrade`; dítě z úložiště ho nenese. */
   | { readonly status: 'ready'; readonly versionId: string; readonly adds?: readonly UpgradeAdd[] }
-  | { readonly status: 'draft-final'; readonly reason: DraftFinalReason };
+  /**
+   * `reading` (P58E T2) jen u `CHAIN`: práce řetězu doběhne hned po čtení, takže `pending` s hrou ze čtení klient
+   * mezi dvěma dotazy snadno mine – konec ji nese sám.
+   */
+  | { readonly status: 'draft-final'; readonly reason: DraftFinalReason; readonly reading?: { readonly versionId: string } };
 
 /**
  * `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1).
@@ -271,23 +275,27 @@ async function publishReading(versions: VersionStore, draftId: string, request: 
   return null;
 }
 
-const CHAIN_FINAL: UpgradeOutcome = { status: 'draft-final', reason: 'CHAIN' };
+const CHAIN_FINAL: Extract<UpgradeOutcome, { readonly status: 'draft-final' }> = { status: 'draft-final', reason: 'CHAIN' };
 
 /**
  * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
  * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když se čtením `chainOrSingle` řekne jedna hra, publikuje návrh
- * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`.
+ * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`, s hrou
+ * ze čtení, když je (T2). Řetěz, který route stavěla už se čtením (čtečka před návrhem, `readBy: 'model'`), se nečte znovu.
  * simplified: jedno čtení na řetěz drží mapa v procesu – dvě instance se souběžným dotazem zaplatí čtení obě (cache
  * odpovědí se plní až po čtení, dítě vznikne jednou); kdyby to bylo vidět v útratě, rezervovat čtení v úložišti.
  */
 async function runChainReading(versions: VersionStore, chain: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const chainId = chain.version.versionId;
+  const found = (versionId: string, fresh: boolean): UpgradeOutcome => {
+    onReading(versionId, fresh);
+    return { ...CHAIN_FINAL, reading: { versionId } };
+  };
   for (const childId of await versions.childrenOf(chainId)) {
     const child = await versions.get(childId);
-    if (child?.relation !== 'reading' || child.version.parentId !== chainId) continue;
-    onReading(childId, false);
-    return CHAIN_FINAL;
+    if (child?.relation === 'reading' && child.version.parentId === chainId) return found(childId, false);
   }
+  if (!readerForAiVersion() || chain.origin?.readBy === 'model') return CHAIN_FINAL;
   const { sentence } = request;
   const reading = await readBeforeDraft(sentence, process.env, (await mayPayChainRead(request.caller)) ? { caller: request.caller } : {});
   if (reading === null) return CHAIN_FINAL;
@@ -296,8 +304,7 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   if (chainOrSingle(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading)) === 'chain') return CHAIN_FINAL;
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(sentence.trim()));
   const published = await publishReading(versions, chainId, request, draftGameSpecWithMeta(sentence, 1, { reading }).spec, seeds);
-  if (published !== null) onReading(published.versionId, published.fresh);
-  return CHAIN_FINAL;
+  return published === null ? CHAIN_FINAL : found(published.versionId, published.fresh);
 }
 
 /**

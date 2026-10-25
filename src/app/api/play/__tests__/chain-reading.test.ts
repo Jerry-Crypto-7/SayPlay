@@ -26,8 +26,9 @@ import { resetProcessSpendCap } from '@/server/spend-cap';
 
 import { derivedSeeds, directorCallerOf, publishChain, seedFrom } from '../_publish';
 import { __resetUpgrades, knownUpgrade, readingOf, upgradeOf } from '../_upgrade';
+import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { POST as createGame } from '../games/route';
-import { freshCaller, post } from './dare-fixtures';
+import { freshCaller, params, post } from './dare-fixtures';
 
 const DEV = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/holdout.json'), 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
 const READ = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p58b/compare-dev-t6b.json'), 'utf8')) as { rows: { set: string; id: string; models: Record<string, { reading: Reading | null }> }[] }).rows;
@@ -94,7 +95,7 @@ async function create(sentence: string, caller = freshCaller()): Promise<{ statu
 
 /** Práce řetězu doběhla: `CHAIN` je jediný konec, který má. */
 async function settled(chainId: string): Promise<void> {
-  await vi.waitFor(() => expect(knownUpgrade(chainId)).toEqual({ status: 'draft-final', reason: 'CHAIN' }), { timeout: 30_000 });
+  await vi.waitFor(() => expect(knownUpgrade(chainId)).toMatchObject({ status: 'draft-final', reason: 'CHAIN' }), { timeout: 30_000 });
 }
 
 async function children(store: VersionStore, parentId: string): Promise<PublishedGame[]> {
@@ -214,5 +215,50 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
     await settled(body.versionId);
     expect(reader.calls).toHaveLength(1);
     expect(readingOf(body.versionId)).not.toBeNull();
+  });
+});
+
+describe('the upgrade route reports a chain reading game (P58E T2)', () => {
+  async function asked(id: string): Promise<{ status: number; body: Record<string, unknown> }> {
+    const response = await readUpgrade(new Request(`http://play.test/api/play/games/${id}/upgrade`, { headers: freshCaller() }), params(id));
+    return { status: response.status, body: (await response.json()) as Record<string, unknown> };
+  }
+
+  /** Proces, který práci zná, odpoví hned (bez long-pollu) – klient se ptá znovu. */
+  async function final(id: string): Promise<{ status: number; body: Record<string, unknown> }> {
+    let last = await asked(id);
+    await vi.waitFor(async () => {
+      last = await asked(id);
+      expect(last.body.status).not.toBe('pending');
+    }, { timeout: 30_000 });
+    return last;
+  }
+
+  it('pending without the reading while it is read, then CHAIN carrying the reading game', async () => {
+    reader.delayMs = 1500;
+    const { body } = await create(SINGLE.text);
+    expect(body.upgrade).toBe(`/api/play/games/${body.versionId}/upgrade`);
+    expect(await asked(body.versionId)).toEqual({ status: 200, body: { status: 'pending', deadlineAt: expect.stringMatching(/^\d{4}-/) } });
+    const ended = await final(body.versionId);
+    const [child] = await children(versionStoreFromEnv(process.env), body.versionId);
+    expect(ended).toEqual({ status: 200, body: { status: 'draft-final', reason: 'CHAIN', reading: { versionId: child!.version.versionId } } });
+  });
+
+  it('a chain the reading confirms ends CHAIN with no reading game', async () => {
+    reader.reading = CHAIN.reading;
+    const { body } = await create(CHAIN.text);
+    expect(await final(body.versionId)).toEqual({ status: 200, body: { status: 'draft-final', reason: 'CHAIN' } });
+  });
+
+  it('a process that never saw the chain finds the stored reading game at once and reads nothing', async () => {
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    __resetUpgrades();
+    resetProcessAnswerStore();
+    const started = performance.now();
+    const final = await asked(body.versionId);
+    expect(performance.now() - started).toBeLessThan(5000);
+    expect(final.body).toMatchObject({ status: 'draft-final', reason: 'CHAIN', reading: { versionId: readingOf(body.versionId) } });
+    expect(reader.calls).toHaveLength(1);
   });
 });

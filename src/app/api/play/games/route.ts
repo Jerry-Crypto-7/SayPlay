@@ -182,7 +182,8 @@ export async function POST(request: Request): Promise<Response> {
         if (chained.ok) {
           // P58E T1: čtečka jen pro AI verzi řetěz nečetla – přečte ho na pozadí, a když se čtením nehraje řetěz, přijde hra ze čtení.
           if (readerForAiVersion()) void upgradeOf(versions, chained.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
-          return publishedResponse(chained.value);
+          // T2: `upgrade` jako stránka řetězu (`upgradeUrlOf`) – tam se klient dozví o hře ze čtení.
+          return publishedResponse(chained.value, true);
         }
         if (chained.response.status !== 422 || chained.issues?.[0] === 'CONTENT_REJECTED') return chained.response;
       }
