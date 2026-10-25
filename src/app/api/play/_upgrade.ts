@@ -3,6 +3,8 @@
  * na pozadí a jeho autorská verze se publikuje jako dítě návrhu
  * (`parentId = draftId`, `relation: 'upgrade'`). Návrh, který režie postaví ze čtení věty, jde
  * hned jako druhé dítě (`relation: 'reading'`, P58D T1), když hraje jiný žánr než rychlá hra.
+ * Řetěz mikroher AI verzi nemá: jeho práce větu jen přečte a hru ze čtení publikuje jako dítě
+ * řetězu, když se čtením nehraje řetěz (P58E T1).
  *
  * Práce v letu drží mapa na `globalThis` – routy `POST /api/play/games`
  * a `GET …/:id/upgrade` jsou v Next.js oddělené moduly a modulová proměnná by
@@ -30,15 +32,21 @@ import { abilityIdsOf } from '@/play/arcade/abilities/state';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { ABILITIES, type ArcadeWorld } from '@/play/arcade/contract';
 import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
+import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain } from '@/play/chain/read';
 import type { DirectorSource } from '@/play/contracts';
 import { type DirectorFailure, withDraftRules } from '@/play/director';
+import { draftGameSpecWithMeta } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import { readBeforeDraft } from '@/play/read/client';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector } from './_director';
+import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector, mayPayChainRead } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -53,6 +61,8 @@ export type DraftFinalReason =
   | 'NOT_FROM_SENTENCE'
   /** Text AI verze trefil zakázané téma (P40 T2) – do feedu nejde, rychlá verze zůstane. */
   | 'BLOCKED'
+  /** Řetěz mikroher AI verzi nemá (P56C T10); práce řetězu jen přečte větu a případně publikuje hru ze čtení (P58E T1). */
+  | 'CHAIN'
   | 'FAILED';
 
 export type UpgradeOutcome =
@@ -172,7 +182,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
  * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED']);
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED', 'CHAIN']);
 
 export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
@@ -259,6 +269,33 @@ async function publishReading(versions: VersionStore, draftId: string, request: 
     console.warn(`[play] reading version of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
   }
   return null;
+}
+
+const CHAIN_FINAL: UpgradeOutcome = { status: 'draft-final', reason: 'CHAIN' };
+
+/**
+ * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
+ * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když se čtením `chainOrSingle` řekne jedna hra, publikuje návrh
+ * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`.
+ */
+async function runChainReading(versions: VersionStore, chain: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
+  const chainId = chain.version.versionId;
+  for (const childId of await versions.childrenOf(chainId)) {
+    const child = await versions.get(childId);
+    if (child?.relation !== 'reading' || child.version.parentId !== chainId) continue;
+    onReading(childId, false);
+    return CHAIN_FINAL;
+  }
+  const { sentence } = request;
+  const reading = await readBeforeDraft(sentence, process.env, (await mayPayChainRead(request.caller)) ? { caller: request.caller } : {});
+  if (reading === null) return CHAIN_FINAL;
+  // Čtení, ze kterého vyjde míč, se bez fyziky nepřeloží (P56C T17e); návrh jedné hry ji potřebuje tak jako tak.
+  await loadRapier();
+  if (chainOrSingle(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading)) === 'chain') return CHAIN_FINAL;
+  const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(sentence.trim()));
+  const published = await publishReading(versions, chainId, request, draftGameSpecWithMeta(sentence, 1, { reading }).spec, seeds);
+  if (published !== null) onReading(published.versionId, published.fresh);
+  return CHAIN_FINAL;
 }
 
 /**
@@ -500,11 +537,12 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   // Hra ze čtení z dřívějšího pokusu ukončí long-poll až po `KNOWN_READING_GRACE_MS`: přechodné odmítnutí (strop)
   // ji tak předběhne a hráč ho uvidí. Hned by každý dotaz dostal `pending` s novou lhůtou a spustil nový pokus
   // a hráč by čekal na AI verzi donekonečna (živá kontrola P58D T4).
-  const attempt = runUpgrade(versions, draft, request, (versionId, fresh) => {
+  const onReading = (versionId: string, fresh: boolean): void => {
     job.reading = versionId;
     if (fresh) arrived();
     else setTimeout(arrived, KNOWN_READING_GRACE_MS);
-  }).catch((thrown: unknown): UpgradeOutcome => {
+  };
+  const attempt = (draft.chain === undefined ? runUpgrade(versions, draft, request, onReading) : runChainReading(versions, draft, request, onReading)).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });

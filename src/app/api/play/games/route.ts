@@ -11,7 +11,8 @@
  * (`_upgrade.ts`, P23-D T2). Věta, kterou knihovna ovládání neumí, dostane
  * navíc `honesty: { reason, closest }` (P25E T2) – hra se publikuje i tak.
  * Věta, kterou `chainOrSingle` pošle do řetězu mikroher (P56C T10), dostane hru
- * s `chain` a odpověď bez `upgrade` – řetěz AI verzi nemá.
+ * s `chain` a odpověď bez `upgrade` – řetěz AI verzi nemá. Se čtečkou jen pro AI verzi se řetězová věta
+ * přečte na pozadí a hra ze čtení přijde jako dítě řetězu (P58E T1, `_upgrade.ts`).
  */
 
 import { z } from 'zod';
@@ -178,7 +179,11 @@ export async function POST(request: Request): Promise<Response> {
       const built = buildChain(sentence, read, seeds[0]!);
       if (built.ok) {
         const chained = await publishChain(versions, built.chain, parentId, { origin: { sentence, seed: seed ?? null, ...(read.source === 'llm' ? { readBy: 'model' as const } : {}) } });
-        if (chained.ok) return publishedResponse(chained.value);
+        if (chained.ok) {
+          // P58E T1: čtečka jen pro AI verzi řetěz nečetla – přečte ho na pozadí, a když se čtením nehraje řetěz, přijde hra ze čtení.
+          if (readerForAiVersion()) void upgradeOf(versions, chained.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
+          return publishedResponse(chained.value);
+        }
         if (chained.response.status !== 422 || chained.issues?.[0] === 'CONTENT_REJECTED') return chained.response;
       }
     }

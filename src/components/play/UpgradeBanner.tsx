@@ -216,6 +216,7 @@ export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
   STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
   NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",
   BLOCKED: "We can't show the full-detail version. The quick one stays.",
+  CHAIN: "This game is a run of rounds, so there's no full-detail version.",
   FAILED: "Couldn't finish the full-detail version. The quick one stays.",
 };
 

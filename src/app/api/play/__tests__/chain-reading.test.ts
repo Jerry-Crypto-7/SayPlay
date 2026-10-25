@@ -1,0 +1,218 @@
+/**
+ * Řetěz dostane čtení (P58E T1): se čtečkou jen pro AI verzi route řetězovou větu nečte, takže řetěz čtení neměl.
+ * Po publikaci řetězu se věta přečte na pozadí přes tytéž brány jako čtení AI verze (`mayPayChainRead`, strop
+ * a počet čtečky) a když se čtením `chainOrSingle` řekne jedna hra, publikuje se hra ze čtení jako dítě řetězu.
+ *
+ * Skutečná route a skutečná placená čtečka (`openai:`); dvojník je jen `fetch` poskytovatele s uloženým čtením astry
+ * z dev sady P58B (`compare-dev-t6b.json`, p56a/holdout – otevřená, ladí se na ní).
+ */
+
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { loadRapier } from '@/play/arcade/physics/world';
+import { buildChain } from '@/play/chain/build';
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain } from '@/play/chain/read';
+import { draftGameSpecWithMeta } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import type { Reading } from '@/play/read/schema';
+import { __resetProcessVersionStore, memoryVersionStore, type PublishedGame, type VersionStore, versionStoreFromEnv } from '@/play/version';
+import { resetProcessAnswerStore } from '@/server/answer-cache';
+import { resetRateWindows } from '@/server/rate-limit';
+import { resetProcessSpendCap } from '@/server/spend-cap';
+
+import { derivedSeeds, directorCallerOf, publishChain, seedFrom } from '../_publish';
+import { __resetUpgrades, knownUpgrade, readingOf, upgradeOf } from '../_upgrade';
+import { POST as createGame } from '../games/route';
+import { freshCaller, post } from './dare-fixtures';
+
+const DEV = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/holdout.json'), 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
+const READ = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p58b/compare-dev-t6b.json'), 'utf8')) as { rows: { set: string; id: string; models: Record<string, { reading: Reading | null }> }[] }).rows;
+const devRow = (id: string) => ({ text: DEV.find((row) => row.id === id)!.text, reading: READ.find((row) => row.set === 'p56a/holdout' && row.id === id)!.models['astra@openai']!.reading! });
+
+/** s12: slovník hraje řetěz, čtení `rhythm.default` – jedna hra. */
+const SINGLE = devRow('s12');
+/** s01: slovník i čtení hrají řetěz. */
+const CHAIN = devRow('s01');
+
+/** Placená čtečka (cena astry) a objednaná placená větev režiséra – `mayPayChainRead` je pak otevřená. */
+const PAID = {
+  PLAY_READER: 'on',
+  PLAY_READER_PATH: 'ai',
+  PLAY_READER_ENDPOINT: 'openai:https://reader.invalid/openai',
+  PLAY_READER_KEY: 'sk-test',
+  PLAY_READER_MODEL: 'gpt-6-astra',
+  PLAY_READER_USD_PER_MTOK_IN: '10',
+  PLAY_READER_USD_PER_MTOK_OUT: '50',
+  PLAY_READER_SPEND_CAP_USD: '1',
+  WORLDSMITH_BRANCH: 'live',
+  WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages',
+  WORLDSMITH_MODEL_KEY: 'test-key',
+  WORLDSMITH_USD_PER_MTOK_OUT: '15',
+  WORLDSMITH_SPEND_CAP_USD: '5',
+};
+
+const reader = vi.hoisted(() => ({ reading: null as Reading | null, delayMs: 0, silent: false, calls: [] as string[] }));
+
+function answer(): Promise<Response> {
+  const body = JSON.stringify({ choices: [{ message: { content: JSON.stringify(reader.reading) }, finish_reason: 'stop' }], usage: { prompt_tokens: 2400, completion_tokens: 170 } });
+  return new Promise((resolve) => setTimeout(() => resolve(new Response(body)), reader.delayMs));
+}
+
+beforeEach(async () => {
+  await loadRapier();
+  __resetProcessVersionStore();
+  __resetUpgrades();
+  resetRateWindows();
+  resetProcessAnswerStore();
+  resetProcessSpendCap();
+  Object.assign(reader, { reading: SINGLE.reading, delayMs: 0, silent: false, calls: [] });
+  for (const [name, value] of Object.entries(PAID)) vi.stubEnv(name, value);
+  vi.stubGlobal('fetch', (url: string, init?: RequestInit) => {
+    reader.calls.push(String(url));
+    if (!reader.silent) return answer();
+    return new Promise<Response>((_resolve, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))));
+  });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  resetProcessSpendCap();
+});
+
+async function create(sentence: string, caller = freshCaller()): Promise<{ status: number; body: { versionId: string; upgrade?: string }; ms: number }> {
+  const started = performance.now();
+  const response = await createGame(post('/api/play/games', { sentence }, caller));
+  const ms = performance.now() - started;
+  return { status: response.status, body: (await response.json()) as { versionId: string; upgrade?: string }, ms };
+}
+
+/** Práce řetězu doběhla: `CHAIN` je jediný konec, který má. */
+async function settled(chainId: string): Promise<void> {
+  await vi.waitFor(() => expect(knownUpgrade(chainId)).toEqual({ status: 'draft-final', reason: 'CHAIN' }), { timeout: 30_000 });
+}
+
+async function children(store: VersionStore, parentId: string): Promise<PublishedGame[]> {
+  return (await Promise.all((await store.childrenOf(parentId)).map((id) => store.get(id)))).filter((child) => child !== null);
+}
+
+describe('a chain sentence gets the reading (P58E T1)', () => {
+  it('the dev sentences: the words play a chain, the reading one game or a chain again', () => {
+    for (const { text } of [SINGLE, CHAIN]) expect(chainOrSingle(text, readForChain(text, null), classifyGenre(text, null))).toBe('chain');
+    expect(chainOrSingle(SINGLE.text, readForChain(SINGLE.text, SINGLE.reading), classifyGenre(SINGLE.text, SINGLE.reading))).toBe('single');
+    expect(chainOrSingle(CHAIN.text, readForChain(CHAIN.text, CHAIN.reading), classifyGenre(CHAIN.text, CHAIN.reading))).toBe('chain');
+  });
+
+  it('publishes the reading game as a reading child of the chain when the reading plays one game', async () => {
+    const { status, body } = await create(SINGLE.text);
+    expect(status).toBe(201);
+    const store = versionStoreFromEnv(process.env);
+    expect((await store.get(body.versionId))?.chain).toBeDefined();
+    await settled(body.versionId);
+    const reading = await children(store, body.versionId);
+    expect(reading).toHaveLength(1);
+    expect(reading[0]).toMatchObject({ relation: 'reading', version: { parentId: body.versionId }, origin: { sentence: SINGLE.text, seed: null, readBy: 'model' } });
+    expect(reading[0]!.spec).toEqual(draftGameSpecWithMeta(SINGLE.text, 1, { reading: SINGLE.reading }).spec);
+    expect(reading[0]!.spec.genre).toMatchObject({ id: 'rhythm', mode: 'default' });
+    expect(readingOf(body.versionId)).toBe(reading[0]!.version.versionId);
+    expect(reader.calls).toHaveLength(1);
+  });
+
+  it('publishes nothing when the reading plays a chain again', async () => {
+    reader.reading = CHAIN.reading;
+    const { body } = await create(CHAIN.text);
+    await settled(body.versionId);
+    expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
+    expect(reader.calls).toHaveLength(1);
+  });
+
+  // Čtení `null` – řetěz zůstane, nic se nepublikuje a nic dalšího se nevolá.
+  it.each([
+    ['no reader key', { PLAY_READER_KEY: '' }],
+    ['the paid branch not ordered (mayPayChainRead closed)', { WORLDSMITH_BRANCH: '' }],
+    ['the director spend cap used up (mayPayChainRead closed)', { WORLDSMITH_SPEND_CAP_USD: '0' }],
+    ['the reader spend cap used up', { PLAY_READER_SPEND_CAP_USD: '0' }],
+    ['the reader call cap used up', { PLAY_READER_CALL_CAP: '0' }],
+  ])('%s: the chain stays and nothing is paid', async (_name, env) => {
+    for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
+    expect(reader.calls).toEqual([]);
+  });
+
+  it("the caller's director calls used up (mayPayChainRead closed): the chain stays and nothing is paid", async () => {
+    vi.stubEnv('PLAY_DIRECTOR_CALLS_PER_CALLER', '1');
+    const caller = freshCaller();
+    expect(await versionStoreFromEnv(process.env).takeDirectorCall(directorCallerOf(post('/api/play/games', {}, caller)), 1)).toBe(true);
+    const { body } = await create(SINGLE.text, caller);
+    await settled(body.versionId);
+    expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
+    expect(reader.calls).toEqual([]);
+  });
+
+  it('a reading past its budget: the chain stays, one call and no other', async () => {
+    vi.stubEnv('PLAY_READER_BUDGET_MS', '300');
+    reader.silent = true;
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
+    expect(reader.calls).toHaveLength(1);
+  });
+
+  it('the POST does not wait for the reading: a reader 3 s late, the chain back under 1 s', async () => {
+    reader.delayMs = 3000;
+    const { status, body, ms } = await create(SINGLE.text);
+    expect(status).toBe(201);
+    expect(ms).toBeLessThan(1000);
+    expect(readingOf(body.versionId)).toBeNull();
+    await settled(body.versionId);
+    expect(readingOf(body.versionId)).not.toBeNull();
+  });
+
+  it('two concurrent POSTs of one chain read once', async () => {
+    reader.delayMs = 500;
+    const [a, b] = await Promise.all([create(SINGLE.text), create(SINGLE.text)]);
+    expect(a.body.versionId).toBe(b.body.versionId);
+    await settled(a.body.versionId);
+    expect(reader.calls).toHaveLength(1);
+    expect(await children(versionStoreFromEnv(process.env), a.body.versionId)).toHaveLength(1);
+  });
+
+  it('a failed reading publication is a log line: the chain is unchanged', async () => {
+    const store = memoryVersionStore();
+    const seeds = derivedSeeds(seedFrom(SINGLE.text.trim()));
+    const built = buildChain(SINGLE.text, readForChain(SINGLE.text, null), seeds[0]!);
+    if (!built.ok) throw new Error(`chain not built: ${built.issues.join('; ')}`);
+    const chain = await publishChain(store, built.chain, null, { origin: { sentence: SINGLE.text, seed: null } });
+    if (!chain.ok) throw new Error('chain not published');
+    const failing: VersionStore = { ...store, put: (game) => (game.relation === 'reading' ? Promise.reject(new Error('disk on fire')) : store.put(game)) };
+    const warned = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const chainId = chain.value.game.version.versionId;
+    const outcome = await upgradeOf(failing, chain.value.game, { sentence: SINGLE.text, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'chain-reading-test' });
+    expect(outcome).toEqual({ status: 'draft-final', reason: 'CHAIN' });
+    expect(warned.mock.calls.map((call) => String(call[0]))).toContainEqual(expect.stringContaining(`reading version of ${chainId} failed: disk on fire`));
+    expect(await children(store, chainId)).toEqual([]);
+    expect((await store.get(chainId))?.chain).toEqual(chain.value.game.chain);
+    expect(readingOf(chainId)).toBeNull();
+  });
+
+  it('a reading game an earlier attempt published is found in the store: no second read', async () => {
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    expect(reader.calls).toHaveLength(1);
+    // Jiná instance (restart, serverless): práce v paměti není a cache odpovědí taky ne.
+    __resetUpgrades();
+    resetProcessAnswerStore();
+    const again = await create(SINGLE.text);
+    expect(again.status).toBe(200);
+    await settled(body.versionId);
+    expect(reader.calls).toHaveLength(1);
+    expect(readingOf(body.versionId)).not.toBeNull();
+  });
+});

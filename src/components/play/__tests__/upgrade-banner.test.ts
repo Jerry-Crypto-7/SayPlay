@@ -62,10 +62,11 @@ describe('noticeOf', () => {
     expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) })).toEqual({ text: 'Full-detail version ready', action: { kind: 'open', label: 'Play it' } });
   });
 
-  it('všech 10 důvodů má vlastní větu', () => {
-    expect(REASONS).toHaveLength(11);
+  // P58E T1 přidal `CHAIN`: řetěz mikroher AI verzi nemá.
+  it('každý důvod má vlastní větu', () => {
+    expect(REASONS).toHaveLength(12);
     expect(REASONS).toContain('ACTION_LOST');
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(11);
+    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(12);
     expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
     expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
   });
