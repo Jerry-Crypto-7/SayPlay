@@ -27,6 +27,7 @@ import type { RuntimeAction } from '@/worldstream/runtime-input';
 
 import { installSoundControls, playMusic, playSfx, setSoundLook } from '@/play/audio';
 import { musicFor } from '@/play/audio/library';
+import { CHAIN_RUNTIME_VERSION } from '@/play/chain/contract';
 
 import { isTyping } from './arcade/input';
 import { wakesGame } from './arcade/ready-gate';
@@ -501,6 +502,8 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
           matchedOf={readingVersion ? (lineage.at(-2)?.versionId ?? null) : null}
           versionId={versionId}
           committed={committed}
+          // Hra ze čtení řetězu (P58E T3) může být i mřížková (`voyage.race`): konec `CHAIN` bez věty, Quick zpátky na řetěz.
+          chain={readingVersion && lineage.at(-2)?.runtimeVersion === CHAIN_RUNTIME_VERSION}
         />
         {running && <RemixReadyChip job={remix} />}
       </Hud>
