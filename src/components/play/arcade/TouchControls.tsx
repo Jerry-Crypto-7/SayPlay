@@ -6,7 +6,7 @@
  * dotek, a ještě 3 s hry, pak zhasnou. `TouchStick`: v aréně a úkolu kroužek
  * joysticku s páčkou pod prstem – kreslí tah, který `useArenaInput` čte
  * (střed = místo dotyku, každý nový prst střed přenese, puštění vše skončí).
- * Obojí jen na dotyku; kit: papír a inkoustový obrys, žádná průhledná plocha.
+ * Obojí jen na dotyku (zóny souboje i na desktopu, s klávesami); kit: papír a inkoustový obrys, žádná průhledná plocha.
  */
 
 import { useEffect, useRef, useSyncExternalStore } from 'react';
@@ -21,22 +21,32 @@ import type { TouchZone } from './touch-zones';
 export const ZONES_MS = 3000;
 const ZONES_TICKS = Math.round(ZONES_MS / TICK_MS);
 
-export function TouchZones({ session, zones }: { readonly session: ArcadeSession; readonly zones: readonly TouchZone[] }) {
+/**
+ * `cue` (souboj, P58C T6b): zóny visí celý běh – porotce bez nich nevěděl, čím uhnout – a slunečně svítí ta,
+ * jejíž povel hra právě chce. Zóny s klávesou (`key`) se ukážou i na desktopu, s klávesou za popiskem.
+ */
+export function TouchZones({ session, zones, cue }: { readonly session: ArcadeSession; readonly zones: readonly TouchZone[]; readonly cue?: (state: Int32Array) => string | null }) {
   const coarse = useCoarsePointer();
   const shown = useSyncExternalStore(
     session.subscribe,
-    () => session.demo() === null && session.snapshot().tick < ZONES_TICKS,
+    () => session.demo() === null && (cue === undefined ? session.snapshot().tick < ZONES_TICKS : session.snapshot().runState === 'running'),
     () => false,
   );
-  if (!coarse) return null;
+  const lit = useSyncExternalStore(session.subscribe, () => cue?.(session.state()) ?? null, () => null);
+  const keys = !coarse && zones.every((zone) => zone.key !== undefined);
+  if (!coarse && !keys) return null;
   return (
     <div className="play-touch-zones" data-testid="touch-zones" data-shown={shown ? 'true' : 'false'} aria-hidden="true">
-      {zones.map((zone) => (
-        <span key={`${zone.from}`} className="sp-hud-pill play-touch-zone" style={{ left: `${((zone.from + zone.to) / 2) * 100}%` }}>
-          {zone.icon !== undefined && <Icon name={zone.icon} />}
-          {zone.label}
-        </span>
-      ))}
+      {zones.map((zone) => {
+        const on = zone.cue !== undefined && zone.cue === lit;
+        return (
+          <span key={`${zone.from}`} className={on ? 'sp-hud-pill sp-hud-pill--sun play-touch-zone' : 'sp-hud-pill play-touch-zone'} data-lit={on ? 'true' : undefined} style={{ left: `${((zone.from + zone.to) / 2) * 100}%` }}>
+            {zone.icon !== undefined && <Icon name={zone.icon} />}
+            {zone.label}
+            {keys && <kbd className="play-touch-zone-key">{zone.key}</kbd>}
+          </span>
+        );
+      })}
     </div>
   );
 }

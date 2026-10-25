@@ -51,10 +51,16 @@ function gameSpecOf(game: (typeof GAMES)[number]): GameSpecV1 {
   return compileGenre(read.value);
 }
 
-/** Prsty na skle: CDP dostane vždy celou sadu, co se změnilo, dopočítá sám. */
+/**
+ * Prsty na skle: CDP dostane vždy celou sadu, co se změnilo, dopočítá sám. WebKit CDP nemá (P58C T4) –
+ * tam jde každý prst jako dotykové `PointerEvent` na prvek pod ním, tytéž události, které hra čte.
+ */
 class Fingers {
   private readonly down = new Map<number, { x: number; y: number }>();
-  constructor(private readonly cdp: CDPSession) {}
+  constructor(
+    private readonly cdp: CDPSession | null,
+    private readonly page: Page,
+  ) {}
   has(id: number): boolean {
     return this.down.has(id);
   }
@@ -64,18 +70,46 @@ class Fingers {
   private points() {
     return [...this.down].map(([id, at]) => ({ id, x: at.x, y: at.y }));
   }
+  /** Dotyk drží cíl z položení prstu (implicitní zachycení), proto pohyb i zvednutí jdou tam, ne pod prst. */
+  private pointer(type: 'pointerdown' | 'pointermove' | 'pointerup', id: number, x: number, y: number): Promise<void> {
+    return this.page.evaluate(
+      ({ type, id, x, y }) => {
+        const own = window as unknown as { __fingers?: Map<number, Element> };
+        if (own.__fingers === undefined) {
+          // Skutečný prst je aktivní ukazatel; syntetický WebKit nezná a `setPointerCapture` (držené tlačítko akce)
+          // by na něm hodil `NotFoundError`. Zachycení tu dělá sám ovladač – pohyb a zvednutí jdou na cíl položení.
+          const capture = Element.prototype.setPointerCapture;
+          Element.prototype.setPointerCapture = function (this: Element, pointerId: number) {
+            if (!own.__fingers?.has(pointerId)) capture.call(this, pointerId);
+          };
+        }
+        const held = (own.__fingers ??= new Map());
+        const target = type === 'pointerdown' ? document.elementFromPoint(x, y) : held.get(id);
+        if (target == null) return;
+        if (type === 'pointerdown') held.set(id, target);
+        if (type === 'pointerup') held.delete(id);
+        const isPrimary = type === 'pointerdown' ? held.size === 1 : [...held.keys()][0] === id;
+        target.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', isPrimary, clientX: x, clientY: y, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true }));
+      },
+      { type, id, x, y },
+    );
+  }
   async press(id: number, x: number, y: number): Promise<void> {
     this.down.set(id, { x, y });
+    if (this.cdp === null) return this.pointer('pointerdown', id, x, y);
     await this.cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: this.points() });
   }
   async move(id: number, x: number, y: number): Promise<void> {
     const at = this.down.get(id);
     if (at === undefined || (at.x === x && at.y === y)) return;
     this.down.set(id, { x, y });
+    if (this.cdp === null) return this.pointer('pointermove', id, x, y);
     await this.cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: this.points() });
   }
   async lift(id: number): Promise<void> {
+    const at = this.down.get(id);
     if (!this.down.delete(id)) return;
+    if (this.cdp === null) return this.pointer('pointerup', id, at!.x, at!.y);
     // `touchEnd` pustí v Chromu všechny prsty: po ťuku druhým palcem by běžící palec plošinovky „zvedl“ i ten
     // držený a hra by stála (prohra na čas ve 39 %). Prst, který zbývá na skle, pošle CDP jako `touchMove`
     // – chybějící bod pak pustí sám (rozdíl proti předchozí události).
@@ -157,7 +191,7 @@ test.describe('touch only', () => {
   test.setTimeout(300_000);
 
   for (const game of GAMES) {
-    test(`${game.genre}: won with gestures alone, or at least half the way`, async ({ page, request, context }) => {
+    test(`${game.genre}: won with gestures alone, or at least half the way`, async ({ page, request, context, browserName }) => {
       const response = await request.post('/api/play/games', { data: { spec: gameSpecOf(game) } });
       expect(response.status(), await response.text()).toBeLessThan(300);
       const { url } = (await response.json()) as { url: string };
@@ -166,8 +200,7 @@ test.describe('touch only', () => {
       const stageEl = page.getByTestId('arcade-stage');
       await expect(stageEl).toHaveAttribute('data-control', game.control);
       const stage = (await stageEl.boundingBox())!;
-      const cdp = await context.newCDPSession(page);
-      const fingers = new Fingers(cdp);
+      const fingers = new Fingers(browserName === 'chromium' ? await context.newCDPSession(page) : null, page);
       const wants0 = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;
         shell.byHand(true);
@@ -197,4 +230,87 @@ test.describe('touch only', () => {
       expect(last.runState === 'won' || last.progress >= 50, `${last.runState} at tick ${last.tick}, ${last.progress} % of the way`).toBe(true);
     });
   }
+});
+
+// P58C T6: souboj ukáže zóny „Dodge“ a „Strike“ na výšce, kde stál i přepínač Quick | Full detail – porotce
+// ovládání neviděl (T5, 3/3 soudci). Překryv je vidět jen s dotykem: bez něj zóny nejsou.
+test('duel: the Quick | Full detail switch leaves the touch zones readable', async ({ page, request }) => {
+  const created = await request.post('/api/play/games', { data: { sentence: 'A knight fights a three-headed hydra at the castle gates.' } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  const { url } = (await created.json()) as { url: string };
+  await page.route('**/api/play/games/*/upgrade', (route) =>
+    route.request().method() === 'GET' ? route.fulfill({ json: { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() } }) : route.continue(),
+  );
+  await page.goto(url);
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'duel', { timeout: 90_000 });
+  const notice = page.getByTestId('upgrade-state');
+  await expect(notice).toHaveAttribute('data-kind', 'working', { timeout: 15_000 });
+  const zones = page.locator('.play-touch-zone');
+  await expect(zones).toHaveCount(2);
+  // Karta „Tap to start“ se staví podle hrdiny každý snímek tiku 0 – pod hrdinou na přepínač ani zóny nesmí.
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-prompt-at', /.+/, { timeout: 15_000 });
+  await page.waitForTimeout(500);
+  const named = async (name: string, locator: typeof notice) => ({ name, ...(await locator.boundingBox())! });
+  const pieces = [await named('switch', notice), await named('Tap to start', page.getByTestId('play-first-prompt'))];
+  for (const zone of await zones.all()) pieces.push(await named(`zone ${String(await zone.textContent())}`, zone));
+  for (const [i, a] of pieces.entries()) {
+    for (const b of pieces.slice(i + 1)) {
+      const overlaps = a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      expect(overlaps, `${a.name} ${JSON.stringify(a)} overlaps ${b.name} ${JSON.stringify(b)}`).toBe(false);
+    }
+  }
+  // Cíl souboje (69 znaků) uťala na telefonu výpustka uprostřed pokynu („Beat 9 three-…“) – celý se vejde do dvou řádků.
+  const goal = page.getByTestId('play-goal');
+  await expect(goal).toContainText('three-headed');
+  // Výpustka jednoho řádku ořízne do šířky, dvou řádků do výšky – celý text nepřeteče ani jedním směrem.
+  const fits = await goal.evaluate((el) => `${String(el.scrollWidth)}×${String(el.scrollHeight)} in ${String(el.clientWidth)}×${String(el.clientHeight)}: ${String(el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1)}`);
+  expect(fits).toMatch(/true$/);
+});
+
+// P58C T6b: povel „Dodge!“ / „Strike!“ visí nad soupeřem, jmenovky hrdiny a soupeře (P58A) ho nesmí zakrýt. Na telefonu
+// stála „Knight“ nad středem rámečku rytíře i s mečem namířeným na hydru – přímo pod povelem. Hraje robot po tiku,
+// takže běh dojde přes obě jmenovky (3–6 s) bez ohledu na zátěž stroje.
+test('duel: the name tags never cover the Dodge!/Strike! cue', async ({ page, request }) => {
+  const created = await request.post('/api/play/games', { data: { sentence: 'A knight fights a three-headed hydra at the castle gates.' } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  const { url } = (await created.json()) as { url: string };
+  await page.goto(url);
+  await page.waitForFunction(() => window.__playFrame?.().hero != null && window.__playShell !== undefined, undefined, { timeout: 90_000 });
+  await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'duel');
+  await page.evaluate(() => (window.__playShell as unknown as HandProbe).byHand(true));
+
+  const names = new Set<string>();
+  let together = 0;
+  let tick = 0;
+  // 6,5 s hry: řádek se slovesem, jméno hrdiny (3–4,5 s), jméno soupeře (4,5–6 s).
+  while (tick < 390) {
+    const sample = await page.evaluate(async (look) => {
+      const shell = window.__playShell as unknown as HandProbe & { press(buttons: number): void; hold(axis: number): void };
+      let now = { runState: 'running', tick: 0 };
+      for (let i = 0; i < 3; i += 1) {
+        const wants = shell.botWants();
+        shell.hold(wants?.axis ?? 0);
+        shell.press(wants?.buttons ?? 0);
+        now = shell.tickByHand();
+      }
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+      const [cue, name] = look.map((selector) => {
+        const el = document.querySelector<HTMLElement>(selector);
+        if (el === null || getComputedStyle(el).visibility !== 'visible') return null;
+        const { x, y, width, height } = el.getBoundingClientRect();
+        return { text: el.textContent, x, y, width, height };
+      });
+      return { ...now, cue, name };
+    }, ['[data-testid="duel-cue"]', '[data-testid="play-name-line"]']);
+    expect(sample.runState, `the bot lost the duel at tick ${String(sample.tick)}`).toBe('running');
+    tick = sample.tick;
+    const { cue, name } = sample;
+    if (name != null) names.add(name.text ?? '');
+    if (cue == null || name == null) continue;
+    together += 1;
+    const overlaps = cue.x < name.x + name.width && name.x < cue.x + cue.width && cue.y < name.y + name.height && name.y < cue.y + cue.height;
+    expect(overlaps, `tick ${String(tick)}: ${JSON.stringify(cue)} under ${JSON.stringify(name)}`).toBe(false);
+  }
+  expect([...names].sort()).toEqual(['Knight', 'Three-headed hydra']);
+  expect(together, 'the cue and a name tag never shared the screen').toBeGreaterThan(0);
 });

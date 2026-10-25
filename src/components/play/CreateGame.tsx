@@ -57,6 +57,12 @@ export function CreateGame() {
   useLayoutEffect(() => {
     if (!isFirstVisit()) setFirstVisit(false);
   }, []);
+  // Safari (P58C T4): hydratace nechá v poli větu napsanou před ní, ale stav zůstane prázdný – první
+  // překreslení by ji smazalo a „Make it!“ by hlásil prázdné pole. Převzít ji dřív, než se cokoli překreslí.
+  useLayoutEffect(() => {
+    const typed = field.current?.value ?? '';
+    if (typed !== '') setSentence(typed);
+  }, []);
 
   const trimmed = sentence.trim();
   const over = sentence.length > SENTENCE_LIMIT;
@@ -101,6 +107,11 @@ export function CreateGame() {
   useEffect(() => {
     if (!offline) return;
     const back = (): void => void create(trimmed);
+    // Síť se může vrátit dřív, než se posluchač přihlásí (WebKit, P58C T4) – `online` by pak už nepřišlo.
+    if (navigator.onLine) {
+      back();
+      return;
+    }
     window.addEventListener('online', back);
     return () => window.removeEventListener('online', back);
     // `create` je nová každým renderem; znovu se přihlásit stačí při změně věty.

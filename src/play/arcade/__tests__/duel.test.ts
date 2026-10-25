@@ -2,13 +2,14 @@ import { createHash } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
 
+import { draftGameSpecWithMeta } from '../../draft';
 import { type GameSpecV1, readGameSpec } from '../../spec';
 import flapFixture from '../__fixtures__/flap.json';
 import { arcadeWorldOf } from '../compile';
-import { type ArcadeWorld, BODY, BUTTON, COUNTER, HEADER, bodyBase } from '../contract';
+import { type ArcadeWorld, BODY, BUTTON, COUNTER, HEADER, RUN_STATE, bodyBase } from '../contract';
 import { buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { DUEL, DUEL_COUNTER, DUEL_DIFFICULTIES, DUEL_FOE, DUEL_PHASE, type DuelAttack, checkDuelPattern, duelArena, duelPattern } from '../pieces/duel';
+import { DUEL, DUEL_COUNTER, DUEL_DIFFICULTIES, DUEL_FOE, DUEL_PHASE, type DuelAttack, type DuelCue, checkDuelPattern, duelArena, duelCue, duelHurlOf, duelPattern } from '../pieces/duel';
 import { judgeRules } from '../pieces/timing';
 import { runBot, verifyArcade } from '../verify';
 
@@ -154,5 +155,56 @@ describe('souboj – robot a ověření', () => {
     expect(made.world.initial[HEADER.counters + COUNTER.health]).toBe(DUEL.lives);
     expect(readGameSpec(duelSpec({ difficulty: 'hard' })).ok).toBe(true);
     expect(readGameSpec(duelSpec({ pattern: [] })).ok).toBe(false);
+  });
+});
+
+/** Hráč, který dělá jen to, co mu povel řekne, `reaction` tiků po tom, co se povel ukázal; vrátí konec a ztracené životy. */
+function followCues(world: ArcadeWorld, reaction: number): { readonly runState: number; readonly livesLost: number; readonly tick: number } {
+  const program = loadProgram(world, ARCADE_LIBRARY);
+  const state = instantiate(world);
+  const hurl = duelHurlOf(world.control);
+  const lives = state[HEADER.counters + COUNTER.health] as number;
+  const due = new Map<number, number>();
+  let shown: DuelCue = null;
+  while ((state[HEADER.runState] as number) === RUN_STATE.running && (state[HEADER.tick] as number) < 120 * 60) {
+    const cue = duelCue(state, hurl);
+    if (cue !== null && cue !== shown) due.set((state[HEADER.tick] as number) + reaction, cue === 'dodge' ? BUTTON.DOWN : BUTTON.TAP);
+    shown = cue;
+    const now = (state[HEADER.tick] as number) + 1;
+    step(state, { buttons: due.get(now) ?? 0, axis: 0 }, program);
+    due.delete(now);
+  }
+  return { runState: state[HEADER.runState] as number, livesLost: lives - (state[HEADER.counters + COUNTER.health] as number), tick: state[HEADER.tick] as number };
+}
+
+describe('souboj – povel chvíle (P58C T6b)', () => {
+  // Porotce viděl jen drobný obrys hydry a nevěděl, kdy uhnout (T5, T6). „Dodge!“ / „Strike!“ nad soupeřem musí
+  // přijít tak, aby ho člověk s reakcí 0,2–0,27 s stihl: dřív by úhyb vypršel před zásahem, později nestihne.
+  for (const sentence of ['A knight fights a three-headed hydra at the castle gates.', 'boxing a kangaroo in the australian outback']) {
+    it(`kdo jen poslouchá povely, vyhraje bez zásahu: ${sentence}`, () => {
+      for (const seed of [1, 2, 3, 4, 5]) {
+        const world = arcadeWorldOf(draftGameSpecWithMeta(sentence, seed).spec, seed);
+        if (!world.ok) throw new Error(world.issues.join('; '));
+        if (sentence.startsWith('boxing')) expect(duelHurlOf(world.world.control), 'the kangaroo throws things').toBeDefined();
+        for (const reaction of [12, 16]) {
+          const run = followCues(world.world, reaction);
+          expect(run, `seed ${seed}, reaction ${reaction} ticks`).toMatchObject({ runState: RUN_STATE.won, livesLost: 0 });
+        }
+      }
+    });
+  }
+
+  it('povel mlčí před prvním útokem a po konci běhu', () => {
+    const made = arcadeWorldOf(duelSpec({}), 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const program = loadProgram(made.world, ARCADE_LIBRARY);
+    const state = instantiate(made.world);
+    for (let tick = 0; tick < DUEL.lead; tick += 1) {
+      expect(duelCue(state, undefined)).toBeNull();
+      step(state, still, program);
+    }
+    while ((state[HEADER.runState] as number) === RUN_STATE.running) step(state, still, program);
+    state[bodyBase(DUEL_FOE) + BODY.aux0] = DUEL_PHASE.open;
+    expect(duelCue(state, undefined)).toBeNull();
   });
 });

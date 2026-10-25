@@ -1,3 +1,6 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect, test } from '@playwright/test';
 
 import { startGame } from './play-start';
@@ -50,6 +53,28 @@ test.describe('/play/[id] – share landing', () => {
     const bytes = await png.body();
     expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([1200, 630]);
     expect(await page.locator('meta[property="og:image:alt"]').getAttribute('content')).toBe(`${gameTitle} – cover image`);
+    // P58C T2: Messenger a WhatsApp čtou `og:image` s rozměry, X velkou kartu z `twitter:*`.
+    expect(await page.locator('meta[property="og:image:width"]').getAttribute('content')).toBe('1200');
+    expect(await page.locator('meta[property="og:image:height"]').getAttribute('content')).toBe('630');
+    expect(await page.locator('meta[name="twitter:card"]').getAttribute('content')).toBe('summary_large_image');
+    expect(await page.locator('meta[name="twitter:image"]').getAttribute('content')).toBe(image);
+  });
+
+  // P58C T2: náhled kreslí vlastní rastr. Kdyby trasa znovu sáhla po `next/og`, Next přibalí do
+  // stopy funkce `@vercel/og` (satori, resvg.wasm – MPL-2.0); stopa `*.nft.json` je to, co se nasadí.
+  test('the production build ships no @vercel/og, satori or resvg', () => {
+    const server = join(process.cwd(), '.next', 'server');
+    expect(existsSync(server), 'e2e runs over `npm run build`').toBe(true);
+    const traced: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (/resvg|satori/i.test(entry.name) || (entry.name.endsWith('.nft.json') && /compiled\/@vercel\/og|resvg|satori/.test(readFileSync(path, 'utf8')))) traced.push(path);
+      }
+    };
+    walk(server);
+    expect(traced).toEqual([]);
   });
 
   test('sharing mid-game keeps the game running and a second browser opens the same version (P27B T5)', async ({ browser }) => {

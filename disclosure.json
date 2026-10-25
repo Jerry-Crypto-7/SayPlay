@@ -789,7 +789,7 @@
         "zdroje modifikovaných souborů, pokud se modifikují"
       ],
       "attribution": "resvg-js © yisibl, MPL-2.0",
-      "reviewNote": "Rasterises the preview SVG to PNG inside @vercel/og (P27B T6); WASM on the /og route only, never on the path to a game's first frame; unmodified, not in package-lock.json."
+      "reviewNote": "Vendored inside next, not used by the product: since P58C T2 the game link preview is drawn by our own rasteriser (src/app/api/og/raster.ts), nothing in src/ imports next/og, and the production build carries no resvg.wasm. Listed because the file ships inside the next package; unmodified, not in package-lock.json."
     },
     {
       "name": "@rolldown/binding-android-arm64@1.2.4",
@@ -1242,7 +1242,7 @@
       "kind": "library",
       "manual": true,
       "scope": "prod",
-      "source": "node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0, imported as next/og)",
+      "source": "node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0)",
       "authorOrProvider": "Vercel, Inc.",
       "license": "MPL-2.0",
       "requiredNotices": [
@@ -1250,7 +1250,7 @@
         "zdroje modifikovaných souborů, pokud se modifikují"
       ],
       "attribution": "@vercel/og © Vercel, Inc., MPL-2.0",
-      "reviewNote": "Draws the game link preview (GET /api/play/games/<id>/og, P27B T6) on the server only; used unmodified. Vendored in next, so invisible to package-lock.json. It also bundles yoga.wasm (MIT, Meta) and the default font Geist-Regular.ttf (SIL OFL-1.1, Vercel), which renders the preview text; OFL permits bundling and use, the font is not sold on its own."
+      "reviewNote": "Vendored inside next, not used by the product: since P58C T2 the game link preview (GET /api/play/games/<id>/og) is drawn by our own rasteriser (src/app/api/og/raster.ts) and nothing in src/ imports next/og. Listed because it ships inside the next package, together with yoga.wasm (MIT, Meta) and Geist-Regular.ttf (SIL OFL-1.1, Vercel), neither used either; unmodified, not in package-lock.json."
     },
     {
       "name": "@vitest/expect@4.1.10",
@@ -2606,7 +2606,7 @@
         "zdroje modifikovaných souborů, pokud se modifikují"
       ],
       "attribution": "satori © Vercel, Inc., MPL-2.0",
-      "reviewNote": "Turns the preview layout into SVG inside @vercel/og for the game link preview (P27B T6); server-only, unmodified, not in package-lock.json."
+      "reviewNote": "Vendored inside next, not used by the product: since P58C T2 the game link preview is drawn by our own rasteriser (src/app/api/og/raster.ts) and nothing in src/ imports next/og. Listed because it ships inside the next package; unmodified, not in package-lock.json."
     },
     {
       "name": "semver@7.8.5",
@@ -92742,7 +92742,7 @@
       "name": "public/fonts/roboto/Roboto-Black.ttf",
       "kind": "asset",
       "firstParty": false,
-      "reason": "Roboto 900 for the game title, the time and the question on the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "reason": "Roboto 900 for the game title, the time and the question on the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); since P58C T2 the source of the glyph atlas src/app/api/og/glyphs.json (scripts/p58c/og-glyphs.mjs), not read at runtime.",
       "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf)",
       "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
       "license": "Apache-2.0",
@@ -92752,7 +92752,7 @@
         "soubor NOTICE, pokud balíček nějaký nese",
         "označení změn"
       ],
-      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion.",
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion. Its glyphs are rasterised to 8-bit alpha masks at 80 px in src/app/api/og/glyphs.json (P58C T2, with the Sayplay logo).",
       "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
       "scope": "prod"
     },
@@ -92778,7 +92778,7 @@
       "name": "public/fonts/roboto/Roboto-Bold.ttf",
       "kind": "asset",
       "firstParty": false,
-      "reason": "Roboto 700 for the word on the time badge of the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "reason": "Roboto 700 for the word on the time badge of the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); since P58C T2 the source of the glyph atlas src/app/api/og/glyphs.json (scripts/p58c/og-glyphs.mjs), not read at runtime.",
       "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf)",
       "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
       "license": "Apache-2.0",
@@ -92788,7 +92788,7 @@
         "soubor NOTICE, pokud balíček nějaký nese",
         "označení změn"
       ],
-      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion.",
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion. Its ASCII glyphs are rasterised to 8-bit alpha masks at 80 px in src/app/api/og/glyphs.json (P58C T2).",
       "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
       "scope": "prod"
     },
@@ -93833,6 +93833,10 @@
     {
       "name": "gpt-oss-20b",
       "kind": "model",
+      "aliases": [
+        "gpt-oss",
+        "gpt-oss-20b-mxfp4"
+      ],
       "scope": "tool",
       "source": "https://huggingface.co/ggml-org/gpt-oss-20b-GGUF gpt-oss-20b-MXFP4.gguf; license https://huggingface.co/openai/gpt-oss-20b/blob/main/LICENSE",
       "authorOrProvider": "OpenAI (weights), ggml-org (GGUF conversion)",
@@ -94060,19 +94064,67 @@
       "name": "vlastní zdroje nad prahem literálů",
       "kind": "dataset",
       "firstParty": true,
-      "reason": "Testy, fixtury, prompty, texty rozhraní a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.",
+      "reason": "Testy, fixtury, prompty, slovníky žánrů a záměru, sady vzhledu, texty rozhraní, měřicí a asset skripty i samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní; asset skripty jmenují jen CC0 zdroje, jejichž soubory mají vlastní položky kind: asset (P58C T1 prošel 48 nově zapsaných cest). V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.",
       "paths": [
+        "e2e/p32-heroes.spec.ts",
+        "e2e/play-feed-reels.spec.ts",
+        "evals/play/p41/final.measure.ts",
+        "evals/play/p56c/judge.mjs",
         "scripts/__tests__/blind-check.test.ts",
         "scripts/__tests__/codex-subscription.test.ts",
         "scripts/__tests__/license-gate.test.ts",
+        "scripts/__tests__/p32-shots.test.ts",
+        "scripts/__tests__/play-fidelity-compare.test.ts",
         "scripts/__tests__/submission-check-gate.test.ts",
+        "scripts/assets/cc0/__tests__/select.test.ts",
+        "scripts/assets/cc0/select.mjs",
+        "scripts/assets/originals.mjs",
+        "scripts/assets/qa-sheets.mjs",
+        "scripts/assets/rigged/build.mjs",
+        "scripts/assets/rigged/import-cc0.mjs",
         "scripts/license-gate.mjs",
+        "scripts/p30b-losses.mjs",
+        "scripts/p37d/__tests__/promote-batch.test.ts",
+        "scripts/p37d/judge-sheet.mjs",
+        "scripts/p37d/promote-batch.mjs",
+        "scripts/p45h/build-setting-kits.mjs",
+        "scripts/play-fidelity.mjs",
+        "scripts/play-p39-blind.mjs",
+        "scripts/play-p46g-blind.mjs",
         "scripts/submission-check.mjs",
+        "src/app/api/play/__tests__/dare.test.ts",
+        "src/app/api/play/__tests__/remix-sentence.test.ts",
+        "src/app/api/play/__tests__/routes.test.ts",
+        "src/app/api/play/__tests__/upgrade.test.ts",
         "src/app/page.tsx",
+        "src/components/play/arcade/look/Ambient.tsx",
         "src/ir/__tests__/two-revisions.test.ts",
         "src/model/prompt.ts",
         "src/model/worldstream-intent.ts",
         "src/model/worldstream-refine.ts",
+        "src/play/__tests__/compile-all.test.ts",
+        "src/play/__tests__/compile-p25d.test.ts",
+        "src/play/__tests__/director-answer-roles.test.ts",
+        "src/play/__tests__/director-repair.test.ts",
+        "src/play/__tests__/director.test.ts",
+        "src/play/__tests__/draft.test.ts",
+        "src/play/__tests__/look.test.ts",
+        "src/play/arcade/__tests__/kernel.test.ts",
+        "src/play/arcade/__tests__/lane-defense.test.ts",
+        "src/play/arcade/__tests__/placed-and-pipe-witness.test.ts",
+        "src/play/arcade/__tests__/rules-logic-compile.test.ts",
+        "src/play/arcade/__tests__/slice.test.ts",
+        "src/play/arcade/__tests__/verify-logic.test.ts",
+        "src/play/arcade/look/index.ts",
+        "src/play/director/critic.ts",
+        "src/play/director/prompt.ts",
+        "src/play/draft/draft.ts",
+        "src/play/genre/__tests__/classify.test.ts",
+        "src/play/genre/__tests__/contract.test.ts",
+        "src/play/genre/__tests__/shooter-throw.test.ts",
+        "src/play/genre/classify.ts",
+        "src/play/intent/__tests__/extract.test.ts",
+        "src/play/intent/extract.ts",
         "src/server/__tests__/admission.test.ts",
         "src/server/__tests__/upstream.test.ts",
         "src/sim/__tests__/totality.test.ts"
@@ -94191,6 +94243,19 @@
       ],
       "attribution": "Kenney, https://kenney.nl/support",
       "reviewNote": "Called only by scripts/assets/cc0/fetch.mjs at authoring time to read a pack page and download its zip into a local cache outside the repo; never called by the product at runtime."
+    },
+    {
+      "name": "llama.cpp local HTTP API (llama-server, llama-bench)",
+      "kind": "api",
+      "scope": "tool",
+      "source": "https://github.com/ggml-org/llama.cpp (release b11200 win-cuda-12.4-x64, installed to D:/tools/llama.cpp by ops/llm/install.ps1)",
+      "authorOrProvider": "ggml-org and the llama.cpp contributors",
+      "license": "MIT",
+      "requiredNotices": [
+        "none while it only runs locally; nothing from llama.cpp is copied into this repository or the demo"
+      ],
+      "attribution": "llama.cpp, ggml-org, https://github.com/ggml-org/llama.cpp",
+      "reviewNote": "Standalone tool outside the repository, like ComfyUI: ops/llm/start.ps1 runs llama-server on the owner's RTX 3090 and the code talks to it only over its local OpenAI-compatible HTTP API (llamacpp:<root> in src/server/upstream.ts, the optional reader in src/play/read/client.ts); ops/llm/check.mjs looks for the llama-server and llama-bench binaries. It served the gpt-oss-20b and Qwen3 GGUF weights during development; the deployed demo never calls it. No llama.cpp code is imported, vendored or distributed. MIT per the LICENSE file of the ggml-org/llama.cpp repository."
     },
     {
       "name": "Meshy API (prepared adapter only)",

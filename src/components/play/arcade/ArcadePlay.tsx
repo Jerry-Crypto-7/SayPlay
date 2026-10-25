@@ -18,6 +18,7 @@ import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
 import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
+import { DUEL } from '@/play/arcade/pieces/duel';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
@@ -651,6 +652,8 @@ function ArcadePlayGame({
   }, [offline, record, versionId]);
   const survive = survives(arcade);
   const verb = useMemo(() => verbLine(spec), [spec]);
+  // Souboj: od prvního útoku řádek přenechá místo povelům nad soupeřem (P58C T6b), jinak by se s nimi překryl.
+  const duel = baseControlOf(arcade.control).id === 'duel';
   const names = useMemo(() => nameLines(spec), [spec]);
   const nameSlot = running && active ? nameSlotAt(snapshot.tick, ARCADE_HZ, demo === null, verb !== null) : null;
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
@@ -923,7 +926,7 @@ function ArcadePlayGame({
               />
             )}
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
-            {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
+            {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null, duel ? DUEL.lead : undefined) && <VerbLine line={verb} />}
             {/* Jméno hrdiny a nejbližšího těla z věty (P58A T5), po řádku se slovesem, každé 1,5 s; `key` přehraje nástup štítku. */}
             {nameSlot !== null && (nameSlot === 'foe' || names.hero !== null) && <NameLine key={nameSlot} slot={nameSlot} hero={names.hero} />}
             <PacingBanner session={session} enabled={running && active} foe={foe} boss={spec.boss?.name} />
@@ -1028,6 +1031,7 @@ function ArcadePlayGame({
           challenge={challenge}
           offline={offline}
           record={record}
+          controlsHint={spec.tutorial.controlsHint}
           onReplay={(via) => {
             if (!offline && session.humanRun()) loopEvent('restart', versionId);
             session.restart();

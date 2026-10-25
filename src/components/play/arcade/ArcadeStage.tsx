@@ -22,6 +22,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { LEGIBLE_SHARE, type Legible, legibleScale, legibleWrite, riggedCharacter } from '@/play/arcade/models';
+import { duelCue, duelHurlOf } from '@/play/arcade/pieces/duel';
 import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
@@ -244,6 +245,7 @@ const cornerOf = new Vector3();
 const inView = new Vector3();
 const posedOf = new Box3();
 const restAt = new Vector3();
+const nameAt = new Vector3();
 /** Matice kůže po kostech (kost × inverze vazby); pole roste podle největší kostry. */
 const skinOf: Matrix4[] = [];
 
@@ -457,7 +459,10 @@ function NameAnchor({ surface, control, bodies }: { readonly surface: React.RefO
       const name = bodies[body!.userData.item as string]!;
       if (tag.textContent !== name) tag.textContent = name;
     }
-    tag.style.left = `${(clamp((box.x + 1) / 2, 0.1, 0.9) * 100).toFixed(1)}%`;
+    // Vodorovně nad kořenem těla, ne nad středem rámečku: rámeček rytíře v souboji drží i meč namířený na soupeře
+    // a jméno pak na telefonu stálo mezi nimi, pod povelem „Dodge!“ / „Strike!“ (P58C T6b).
+    const root = body!.getWorldPosition(nameAt).project(camera);
+    tag.style.left = `${(clamp((root.x + 1) / 2, 0.1, 0.9) * 100).toFixed(1)}%`;
     tag.style.top = `${(clamp((1 - box.maxY) / 2, 0.12, 0.95) * 100).toFixed(1)}%`;
     tag.style.visibility = 'visible';
   });
@@ -554,22 +559,50 @@ function PromptSpot({ session, surface }: { readonly session: ArcadeSession; rea
         delete host.dataset.promptAt;
         return;
       }
-      const top = (1 - box.maxY) / 2;
-      const bottom = (1 - box.minY) / 2;
+      const spot = { top: (1 - box.maxY) / 2, bottom: (1 - box.minY) / 2, left: (1 + box.minX) / 2, right: (1 + box.maxX) / 2 };
       const stage = host.getBoundingClientRect();
       const bars = hudBars(host, stage);
-      const card = host.querySelector<HTMLElement>('.play-first-prompt')?.offsetHeight ?? 0;
-      const above = top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
-      const below = bars.bottom - bottom * stage.height - 2 * PROMPT_GAP_PX;
-      const room = Math.max(above, below, 0);
-      setStyleVar(host, '--_hero-top', `${(top * 100).toFixed(1)}%`);
-      setStyleVar(host, '--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
-      setStyleVar(host, '--_prompt-scale', card > room ? (room / card).toFixed(3) : '1');
-      const side = above >= below ? 'above' : 'below';
-      if (host.dataset.promptAt !== side) host.dataset.promptAt = side;
+      const element = host.querySelector<HTMLElement>('.play-first-prompt');
+      const card = { width: element?.offsetWidth ?? 0, height: element?.offsetHeight ?? 0 };
+      const { at, scale } = promptPlacement(spot, stage, bars, card);
+      setStyleVar(host, '--_hero-top', `${(spot.top * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_hero-bottom', `${(spot.bottom * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_hero-left', `${(spot.left * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_hero-right', `${(spot.right * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_prompt-mid', `${(((bars.top + bars.bottom) / 2 / stage.height) * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_prompt-scale', scale === 1 ? '1' : scale.toFixed(3));
+      if (host.dataset.promptAt !== at) host.dataset.promptAt = at;
     });
   }, [get, session, surface]);
   return null;
+}
+
+/** Pod tímhle zmenšením se karta nad ani pod hrdinou nečte (desktop, rytíř přes půl výšky: 0,3 – P58C T6). */
+const MIN_PROMPT_SCALE = 0.8;
+
+const fit = (size: number, room: number): number => (size > room ? Math.max(room, 0) / size : 1);
+
+/**
+ * Kam s úvodní kartou (`PromptSpot`): nad, nebo pod hrdinu, kde je víc místa. Kde by se tam musela
+ * zmenšit pod `MIN_PROMPT_SCALE`, jde vedle hrdiny na širší stranu, mezi lišty HUD – na širokém
+ * desktopu je místa vedle dost, na telefonu ne a karta zůstane nad, nebo pod ním zmenšená.
+ * Hrdina v podílech stage od levého horního rohu, lišty a karta v px.
+ */
+export function promptPlacement(
+  hero: { readonly top: number; readonly bottom: number; readonly left: number; readonly right: number },
+  stage: { readonly width: number; readonly height: number },
+  bars: { readonly top: number; readonly bottom: number },
+  card: { readonly width: number; readonly height: number },
+): { readonly at: 'above' | 'below' | 'left' | 'right'; readonly scale: number } {
+  const above = hero.top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
+  const below = bars.bottom - hero.bottom * stage.height - 2 * PROMPT_GAP_PX;
+  const vertical = { at: above >= below ? 'above' : 'below', scale: fit(card.height, Math.max(above, below)) } as const;
+  if (vertical.scale >= MIN_PROMPT_SCALE) return vertical;
+  const left = hero.left * stage.width - 2 * PROMPT_GAP_PX;
+  const right = (1 - hero.right) * stage.width - 2 * PROMPT_GAP_PX;
+  const band = bars.bottom - bars.top - 2 * PROMPT_GAP_PX;
+  const beside = { at: left >= right ? 'left' : 'right', scale: Math.min(fit(card.width, Math.max(left, right)), fit(card.height, band)) } as const;
+  return beside.scale > vertical.scale ? beside : vertical;
 }
 
 /** Uzel je ve scéně a viditelný i se všemi předky. */
@@ -596,8 +629,11 @@ function hudBars(host: HTMLElement, stage: DOMRect): { readonly top: number; rea
     const rect = bar.getBoundingClientRect();
     if (rect.height > 0) top = Math.max(top, rect.bottom - stage.top);
   }
-  const actions = shell?.querySelector('.play-hud-bottom')?.getBoundingClientRect();
-  if (actions !== undefined && actions.height > 0) bottom = Math.min(bottom, actions.top - stage.top);
+  // Nad dolní řadou stojí přepínač verze a štítky dotykových zón (P58C T6) – karta pod hrdinou na ně nesmí.
+  for (const bar of shell?.querySelectorAll('.play-hud-bottom, .play-hud > :is(.play-upgrade-status, .play-upgrade-toast), .play-touch-zone') ?? []) {
+    const rect = bar.getBoundingClientRect();
+    if (rect.height > 0) bottom = Math.min(bottom, rect.top - stage.top);
+  }
   return { top, bottom };
 }
 
@@ -1018,6 +1054,11 @@ export default function ArcadeStage({
   // Díl souboje bere i úder akce (P46A T8), takže tlačítko Attack by bylo navíc.
   const actions = useMemo(() => actionsOf(session.world).filter((action) => action !== 'attack' || !abilities.includes('strike')), [session, abilities]);
   const hasAbilities = abilities.length > 0;
+  // Zóna souboje svítí, když hra chce její povel (P58C T6b) – týž povel jako štítek nad soupeřem.
+  const duelZoneCue = useMemo(() => {
+    const hurl = duelHurlOf(session.world.control);
+    return (state: Int32Array) => duelCue(state, hurl);
+  }, [session]);
   // Tlačítko Shoot akce střílí týmž blasterem – druhé tlačítko střelby by bylo navíc.
   const fireButton = fires && !abilities.includes('shoot');
   const abilityBase = actions.length > 0 ? 1 + actions.length : fireButton ? 1 : 0;
@@ -1061,7 +1102,7 @@ export default function ArcadeStage({
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
-      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
+      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
       {enabled && control === 'ball' && session.world.control.id === 'assembly_control' && <div
         className="play-pause-hint" data-testid="ball-dribble-hint"

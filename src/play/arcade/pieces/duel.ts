@@ -26,7 +26,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, type PieceRef, RUN_STATE, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
 import { judgeRules } from './timing';
 
 export const DUEL_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -54,6 +54,11 @@ export const DUEL = {
   /** Kratší nápřah a mezeru zrychlení neudělá: obojí nad reakcí robota a mezera + nápřah stačí na úhyb i zotavení. */
   minWindup: 18,
   minRecover: 17,
+  /**
+   * Povel „Dodge!“ (P58C T6b) se ukáže tolik tiků před zásahem: úhyb zmáčknutý reakcí 11–30 tiků (0,18–0,5 s)
+   * potom zásah ještě zastihne (úhyb trvá `dodge` tiků). Dřív by úhyb vypršel, později nestihne.
+   */
+  cue: 30,
 } as const;
 
 /**
@@ -130,6 +135,30 @@ const S = BODY;
 
 /** Hází soupeř v útoku pořadí `attack` (od 0) věc? Každý `every`-tý, první až `every`-tý. */
 export const hurlsAt = (hurl: DuelControlParams['hurl'], attack: number): boolean => hurl !== undefined && attack % hurl.every === hurl.every - 1;
+
+/** Za kolik tiků zásah přijde (0 = žádný nejde): úder se švihem, věc v ruce (`held`) až po letu. Kdo o `hurl` neví, letící věc nevidí. */
+export const duelLandsIn = (phase: number, left: number, hurl: { readonly flight: number } | undefined, held: boolean): number =>
+  phase === DUEL_PHASE.windup ? left + (held && hurl !== undefined ? hurl.flight : 0) : phase === DUEL_PHASE.hurl && hurl !== undefined ? left : 0;
+
+/** Hozená věc souboje (`duel.hurl`) pod obaly průběhu a doplňků; souboj bez ní `undefined`. */
+export function duelHurlOf(control: PieceRef): DuelControlParams['hurl'] {
+  if (control.id === 'duel') return (control.params as DuelControlParams).hurl;
+  const base = control.params.base as PieceRef | undefined;
+  return base === undefined ? undefined : duelHurlOf(base);
+}
+
+/** Povel chvíle pro hráče (P58C T6b): úder v mezeře, úhyb `DUEL.cue` tiků před zásahem, jinak nic. */
+export type DuelCue = 'dodge' | 'strike' | null;
+
+export function duelCue(state: ArcadeState, hurl: { readonly body: number; readonly flight: number } | undefined): DuelCue {
+  if ((state[HEADER.runState] as number) !== RUN_STATE.running) return null;
+  const foe = bodyBase(DUEL_FOE);
+  const phase = state[foe + S.aux0] as number;
+  if (phase === DUEL_PHASE.open) return 'strike';
+  const held = hurl !== undefined && ((state[bodyBase(hurl.body) + S.flags] as number) & FLAG.alive) !== 0;
+  const lands = duelLandsIn(phase, state[foe + S.aux1] as number, hurl, held);
+  return lands >= 1 && lands <= DUEL.cue ? 'dodge' : null;
+}
 
 /** Věc v ruce soupeře: tělo předlohy ožije nad jeho hlavou. */
 function holdHurl(state: ArcadeState, body: number): void {

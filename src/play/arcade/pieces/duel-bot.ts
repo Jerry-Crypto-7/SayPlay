@@ -12,7 +12,7 @@
 import { z } from 'zod';
 
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, NO_INPUT, bodyBase } from '../contract';
-import { DUEL, DUEL_FOE, DUEL_PHASE } from './duel';
+import { DUEL, DUEL_FOE, DUEL_PHASE, duelLandsIn } from './duel';
 
 const botParams = z.object({ hurl: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1), flight: z.int().min(1).max(ARCADE_HZ) }).strict().optional() }).strict();
 
@@ -40,7 +40,7 @@ export const duelBot: BotPiece<z.infer<typeof botParams>> = {
     // Za kolik tiků zásah přijde: úder se švihem, hozená věc (v nápřahu ji soupeř drží v ruce) až po letu.
     const { hurl } = params;
     const held = hurl !== undefined && ((state[bodyBase(hurl.body) + BODY.flags] as number) & FLAG.alive) !== 0;
-    const lands = phase === DUEL_PHASE.windup ? left + (held ? hurl.flight : 0) : phase === DUEL_PHASE.hurl && hurl !== undefined ? left : 0;
+    const lands = duelLandsIn(phase, left, hurl, held);
     if (lands >= 1 && lands <= DUEL.dodge - DUEL.margin) {
       // Úhyb teď: časovač po tomto tiku (dekrement, pak stisk) musí být na nule.
       const now = timerAfter(state[bodyBase(player) + BODY.aux1] as number, recent);

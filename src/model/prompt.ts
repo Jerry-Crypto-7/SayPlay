@@ -149,6 +149,9 @@ export interface UpstreamRequest {
  */
 export const EMISSION_MODEL = 'gpt-6-astra';
 
+/** Primár režiséra `/play` (P30A): gpt-oss-20b u hostovaného poskytovatele nebo lokálně. */
+export const DIRECTOR_PRIMARY_MODEL = 'gpt-oss-20b';
+
 /**
  * Řádek, za kterým ve zprávě stojí příklad a nic jiného.
  *

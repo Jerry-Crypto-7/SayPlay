@@ -592,9 +592,39 @@ function scanSource(source) {
 export function modelIdsIn(source) {
   const found = new Set();
   for (const match of stripComments(source).matchAll(/\b(?:gpt|claude|gemini|llama|mistral|deepseek)-[a-z0-9][-a-z0-9.]*/gi)) {
-    found.add(match[0].toLowerCase().replace(/[.\-]+$/, ''));
+    const id = match[0].toLowerCase().replace(/[.\-]+$/, '').replace(MODEL_FILE_EXTENSION, '');
+    if (!LLAMA_CPP_BINARIES.has(id)) found.add(id);
   }
   return found;
+}
+
+/**
+ * Soubor pojmenovaný po modelu (`audit-12.gpt-oss-20b.json`, `gpt-oss-20b-MXFP4.gguf`)
+ * jmenuje ten model; přípona do jména nepatří a bez jejího odříznutí byl každý
+ * takový soubor „neregistrovaný model“ (P58C T1, 9 nálezů ze 14).
+ */
+const MODEL_FILE_EXTENSION = /\.(json|jsonl|gguf|safetensors)$/;
+
+/**
+ * Binárky llama.cpp mají tvar jména modelu Llama, ale jsou to nástroje – sám
+ * llama.cpp je v registru jako `kind: api` (lokální HTTP server). Výčet, ne
+ * prefix: `llama-*` je i rodina modelů, a ta z kontroly zmizet nesmí.
+ */
+const LLAMA_CPP_BINARIES = new Set(['llama-server', 'llama-bench', 'llama-cli', 'llama-quantize']);
+
+/**
+ * Jména, pod kterými registr zná modely: `name` a `aliases` položek `kind: model`.
+ * Alias je jiné jméno **téhož** modelu (rodina `gpt-oss`, soubor vah
+ * `gpt-oss-20b-MXFP4.gguf`), aby kvůli němu nevznikala druhá položka se stejnou
+ * licencí. Alias u jiné třídy nekryje nic.
+ */
+export function registeredModelNames(entries) {
+  const names = new Set();
+  for (const entry of entries ?? []) {
+    if (entry?.kind !== 'model') continue;
+    for (const name of [entry.name, ...(entry.aliases ?? [])]) names.add(String(name).toLowerCase());
+  }
+  return names;
 }
 
 /**
@@ -1229,9 +1259,7 @@ check(5, 'každý volaný endpoint má v registru položku kind: api', ({ regist
  */
 check(7, 'každý model jmenovaný v kódu má v registru položku kind: model', ({ registry }) => {
   if (registry.error) return registry.error;
-  const known = new Set(
-    registry.entries.filter((entry) => entry.kind === 'model').map((entry) => String(entry.name).toLowerCase()),
-  );
+  const known = registeredModelNames(registry.entries);
   const unknown = [];
   for (const [model, file] of namedModels()) if (!known.has(model)) unknown.push(`${model} (${file})`);
   return summarize(unknown);

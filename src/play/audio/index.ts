@@ -460,6 +460,8 @@ export function playTone(frequency: number, volume: number): void {
 const typing = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
 
+const GESTURES = ['pointerdown', 'pointerup', 'touchend'] as const;
+
 let installed = 0;
 let removeControls: (() => void) | null = null;
 
@@ -476,7 +478,9 @@ export function installSoundControls(): () => void {
       if (event.key.toLowerCase() === 'm' && !event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey) setMuted(!isMuted());
       unlockAudio();
     };
-    window.addEventListener('pointerdown', onPointer, true);
+    // Prst je gesto až při zvednutí (HTML „activation-triggering input event“) – bez `pointerup` a `touchend`
+    // by iPhone kontext z `pointerdown` nepustil (P58C T4). Myš dává gesto už stiskem.
+    for (const type of GESTURES) window.addEventListener(type, onPointer, true);
     window.addEventListener('keydown', onKey, true);
     window.__playAudio = {
       state: () => context?.state ?? 'none',
@@ -489,7 +493,7 @@ export function installSoundControls(): () => void {
       loaded: () => [...files].filter(([, file]) => typeof file === 'object').map(([url]) => url),
     };
     removeControls = () => {
-      window.removeEventListener('pointerdown', onPointer, true);
+      for (const type of GESTURES) window.removeEventListener(type, onPointer, true);
       window.removeEventListener('keydown', onKey, true);
       delete window.__playAudio;
     };

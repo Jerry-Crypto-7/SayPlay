@@ -15,19 +15,22 @@ import { renderHeld } from '../effects/render-feel';
  * vezme celého – bez animace, změna přijde s úderem, který porazil předposledního.
  * Hozená věc (P51 T6, `duel.hurl`): míček z primitiv střelnice v poloze svého těla, dokud žije –
  * v nápřahu nad hlavou soupeře, po švihu letí k hráči.
+ * Povel chvíle (P58C T6b): štítek kitu nad soupeřem „Dodge!“ těsně před zásahem a „Strike!“ v mezeře – porotce
+ * barvu ruky modelu nepostřehl (`duelCue`, načasování hlídá `duel.test.ts`).
  *
  * Vstup: mezerník / Enter / šipka nahoru nebo ťuk do pravé půlky = úder;
  * šipka dolů / S nebo ťuk do levé půlky = úhyb.
  */
 
+import { Html } from '@react-three/drei/web/Html';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
-import { BODY, BUTTON, FLAG, HEADER, type PieceRef, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, BUTTON, FLAG, HEADER, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
-import { DUEL, DUEL_FOE, DUEL_PHASE, type DuelControlParams } from '@/play/arcade/pieces/duel';
+import { DUEL, DUEL_FOE, DUEL_PHASE, type DuelCue, duelCue, duelHurlOf } from '@/play/arcade/pieces/duel';
 import { type BodyClass, type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
@@ -102,13 +105,13 @@ interface Fighter {
   readonly material: React.RefObject<MeshStandardMaterial | null>;
 }
 
-/** Rameno je kloub: ruka visí dolů a otáčí se k soupeři (`toward` ±1 po z rodičovské skupiny); `tinted` = barvu fáze nese ruka. */
-function Arm({ fighter, color, toward, w, torso, tinted }: { readonly fighter: Fighter; readonly color: string; readonly toward: 1 | -1; readonly w: number; readonly torso: number; readonly tinted: boolean }) {
+/** Rameno je kloub: ruka visí dolů a otáčí se k soupeři (`toward` ±1 po z rodičovské skupiny). */
+function Arm({ fighter, color, toward, w, torso }: { readonly fighter: Fighter; readonly color: string; readonly toward: 1 | -1; readonly w: number; readonly torso: number }) {
   return (
     <group ref={fighter.arm} position={[0, torso * 0.9, toward * w * 0.3]}>
       <mesh position={[0, -torso * 0.35, 0]}>
         <boxGeometry args={[w * 0.2, torso * 0.7, w * 0.2]} />
-        <meshStandardMaterial ref={tinted ? fighter.material : undefined} color={color} roughness={0.6} />
+        <meshStandardMaterial color={color} roughness={0.6} />
       </mesh>
       <mesh position={[0, -torso * 0.72, 0]}>
         <sphereGeometry args={[w * 0.16, 12, 8]} />
@@ -132,7 +135,7 @@ function Figure({ fighter, color, facing, w, h }: { readonly fighter: Fighter; r
         <sphereGeometry args={[head, 16, 12]} />
         <meshStandardMaterial color="#fcd34d" roughness={0.7} />
       </mesh>
-      <Arm fighter={fighter} color={color} toward={facing} w={w} torso={torso} tinted={false} />
+      <Arm fighter={fighter} color={color} toward={facing} w={w} torso={torso} />
     </group>
   );
 }
@@ -140,13 +143,13 @@ function Figure({ fighter, color, facing, w, h }: { readonly fighter: Fighter; r
 /**
  * Bojovník s modelem z popisku (P27A T4, P43 T14b): model leží ve skupině pózy natočené
  * k soupeři (`heading` kolem y), hračkový pohyb (P45D T10) ji posune výpadem po jejím +z.
- * Ruku z primitiv má jen soupeř (`arm` = její barva): nese barvu fáze, podle které hráč uhýbá.
+ * Ruku z primitiv nemá ani soupeř (P58C T6b): u malého modelu stála jako tyč, kterou porotci brali za chybu
+ * kreslení – kdy uhnout a kdy udeřit říká štítek povelu nad ním.
  */
-function ModelFigure({ fighter, heading, w, h, arm, children }: { readonly fighter: Fighter; readonly heading: number; readonly w: number; readonly h: number; readonly arm?: string; readonly children: React.ReactNode }) {
+function ModelFigure({ fighter, heading, children }: { readonly fighter: Fighter; readonly heading: number; readonly children: React.ReactNode }) {
   return (
     <group ref={fighter.body} rotation={[0, heading, 0]}>
       {children}
-      {arm !== undefined && <Arm fighter={fighter} color={arm} toward={1} w={w} torso={h * 0.62} tinted />}
     </group>
   );
 }
@@ -154,12 +157,13 @@ function ModelFigure({ fighter, heading, w, h, arm, children }: { readonly fight
 /** Model bojovníka vepsaný do jeho těla (m); scéna arkády ho dodá, když popisek model jmenuje. */
 export type RivalModel = (w: number, h: number, d: number) => React.ReactNode;
 
-/** Předloha hozené věci (`duel.hurl`) pod obaly průběhu a doplňků; souboj bez ní `undefined`. */
-function hurlBodyOf(control: PieceRef): number | undefined {
-  if (control.id === 'duel') return (control.params as DuelControlParams).hurl?.body;
-  const base = control.params.base as PieceRef | undefined;
-  return base === undefined ? undefined : hurlBodyOf(base);
-}
+/** Štítek povelu nad soupeřem (kit `.sp-world-tag`): úhyb rajčatově jako hrozba, úder slunečně jako cíl. */
+const CUE_TAG: Readonly<Record<NonNullable<DuelCue>, { readonly text: string; readonly className: string }>> = {
+  dodge: { text: 'Dodge!', className: 'sp-world-tag' },
+  strike: { text: 'Strike!', className: 'sp-world-tag sp-world-tag--goal' },
+};
+/** Štítek nad hlavou soupeře (m): nad zdviženou rukou, pod bannerem průběhu (24 % výšky) i na desktopu. */
+const CUE_OVER_HEAD = 0.25;
 
 export function DuelScene({
   session,
@@ -197,9 +201,12 @@ export function DuelScene({
   const ring = useMemo(() => [{ x0: -2, x1: 2, z0: midZ - 4.5, z1: midZ + 4.5 }], [midZ]);
   /** Rytíři chodí po celém ringu: bod nesmí stát v obraze za kterýmkoli místem, kde mohou být (P54B T15a), ne jen za tím, kde začali. */
   const ringPlay = useMemo<Volume[]>(() => [{ x0: -2, y0: 0, z0: midZ - 4.5, x1: 2, y1: 1.25 * Math.max(hero.h, rival.h), z1: midZ + 4.5 }], [midZ, hero.h, rival.h]);
-  const hurlBody = hurlBodyOf(world.control);
+  const hurl = duelHurlOf(world.control);
+  const hurlBody = hurl?.body;
   const hurlSize = hurlBody === undefined ? null : initialBody(world, hurlBody);
   const hurled = useRef<Group>(null);
+  const cueAt = useRef<Group>(null);
+  const cueTag = useRef<HTMLSpanElement>(null);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -249,7 +256,6 @@ export function DuelScene({
       if (foe.body.current !== null) foe.body.current.rotation.x = foeLeanOf(phase);
     } else {
       // Skupina pózy soupeře s modelem je otočená o π k hráči: úhly kolem x v ní mají opačné znaménko než v ringu.
-      if (foe.arm.current !== null) foe.arm.current.rotation.x = -foeArmOf(phase, left);
       if (foe.body.current !== null) {
         const view = toyViewOf(state, prev, DUEL_FOE);
         const toy = toyPoseOf(
@@ -284,6 +290,16 @@ export function DuelScene({
     // nese skupina soupeře v ringu (rodič skupiny pózy): pózu a její zmáčknutí si skupina pózy píše sama (`applyToy`).
     const foeH = (state[f + BODY.h] as number) / UNIT;
     foe.body.current?.parent?.scale.set((state[f + BODY.w] as number) / UNIT / rival.w, foeH / rival.h, (state[f + BODY.d] as number) / UNIT / rival.d);
+    // Povel chvíle (P58C T6b) nad hlavou soupeře – i šampiona, který mezitím vyrostl.
+    cueAt.current?.position.setY(foeH + CUE_OVER_HEAD);
+    const tag = cueTag.current;
+    if (tag !== null) {
+      const cue = duelCue(state, hurl);
+      const text = cue === null ? '' : CUE_TAG[cue].text;
+      if (tag.textContent !== text) tag.textContent = text;
+      if (cue !== null && tag.className !== CUE_TAG[cue].className) tag.className = CUE_TAG[cue].className;
+      tag.style.visibility = cue === null ? 'hidden' : 'visible';
+    }
 
     const tan = Math.tan((camera.fov * Math.PI) / 360);
     const tall = Math.max(FRAME.tall, foeH + FRAME.overHead);
@@ -316,7 +332,7 @@ export function DuelScene({
           {heroModel === undefined ? (
             <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
           ) : (
-            <ModelFigure fighter={player} heading={0} w={hero.w} h={hero.h}>
+            <ModelFigure fighter={player} heading={0}>
               {heroModel(hero.w, hero.h, hero.d)}
             </ModelFigure>
           )}
@@ -330,7 +346,7 @@ export function DuelScene({
         {rivalModel === undefined ? (
           <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} />
         ) : (
-          <ModelFigure fighter={foe} heading={Math.PI} w={rival.w} h={rival.h} arm={PHASE_COLOR[DUEL_PHASE.ready]!}>
+          <ModelFigure fighter={foe} heading={Math.PI}>
             {rivalModel(rival.w, rival.h, rival.d)}
           </ModelFigure>
         )}
@@ -340,6 +356,11 @@ export function DuelScene({
           <ShotPrimitive id="ball" w={hurlSize.w} h={hurlSize.h} d={hurlSize.d} />
         </group>
       )}
+      <group ref={cueAt} position={[0, rival.h + CUE_OVER_HEAD, rival.z]}>
+        <Html center pointerEvents="none" zIndexRange={[10, 0]}>
+          <span ref={cueTag} className="sp-world-tag" data-testid="duel-cue" style={{ visibility: 'hidden' }} />
+        </Html>
+      </group>
     </>
   );
 }

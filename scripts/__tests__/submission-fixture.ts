@@ -164,6 +164,7 @@ function manifest(): string {
       backendUrl: BACKEND_URL,
       videoPath: 'video/final.mp4',
       descriptionPath: 'docs/submission/description.md',
+      focusCategory: 'Games',
       modelTablePath: 'src/model/prompt.ts',
       monitoringPath: 'ops/monitoring/uptime.json',
       dataDirs: ['data'],
@@ -289,7 +290,6 @@ export function buildTemplate(): string {
 
   write(dir, 'data/corpus.jsonl', '{"prompt":"a"}\n');
   write(dir, 'DESIGN-BOOK.md', `# Design book\n\n## 5. Gramatika\n\nNěco.\n\n## 6. Garance\n\n> **${GUARANTEE}**\n\nDál.\n`);
-  write(dir, 'plans/P8-odevzdani.md', '# P8\n\n<!-- registrace: focus-kategorie = Games -->\n\n- [ ] něco\n');
   write(dir, 'docs/submission/description.md', description());
   write(dir, 'docs/submission/submission.json', manifest());
   write(dir, 'evals/gates/report.md', 'rawPatchPassRate 2/27 = 7,4 %\n');

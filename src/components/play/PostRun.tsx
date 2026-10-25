@@ -47,6 +47,7 @@ import { type BestOutcome, type Dare, dareVerdict } from './best';
 import { dareResult } from './board-client';
 import { beatText } from './Feed';
 import { FeedNext } from './feed/feed-next';
+import { touchHint, useCoarsePointer } from './FirstPrompt';
 import { Leaderboard } from './Leaderboard';
 import { PlayingAs } from './NicknameSheet';
 import { RemixBox, type RemixJob } from './RemixBox';
@@ -170,6 +171,19 @@ export function runResult(facts: RunFacts, record: BestOutcome | null = null, ch
   };
 }
 
+/** Prohra do tolika sekund (P58C T6): porotce umřel za 4,8 s dřív, než zjistil, jak uhnout. */
+export const QUICK_LOSS_S = 10;
+
+/**
+ * Řádek pod výsledkem rychlé prohry: nápověda ovládání hry, jak ji hráč měl na startu – na dotyku bez
+ * kláves (`touchHint`). Žádný nový text, jen slova, která hra už má; výhra a delší běh ho nemají.
+ */
+export function quickLossTip(facts: RunFacts, controlsHint: string | undefined, coarse: boolean): string | null {
+  if (facts.won || controlsHint === undefined || facts.tick / facts.hz >= QUICK_LOSS_S) return null;
+  const tip = coarse ? touchHint(controlsHint) : controlsHint.trim();
+  return tip === '' ? null : tip;
+}
+
 /** „N% beat this“ podle verze (P37C T5): detail hry se stáhne jednou za načtení stránky, ne po každém běhu. */
 const beats = new Map<string, Promise<number | null>>();
 
@@ -260,8 +274,11 @@ export function PostRun({
   offline = false,
   remixable = true,
   record = null,
+  controlsHint,
   onReplay,
 }: {
+  /** Nápověda ovládání hry – po rychlé prohře ji karta zopakuje (`quickLossTip`). */
+  readonly controlsHint?: string;
   /** Řetěz mikroher (P56C T12) remix nemá – server ho odmítne (422), tlačítko by vedlo do chyby. */
   readonly remixable?: boolean;
   readonly versionId: string;
@@ -281,6 +298,7 @@ export function PostRun({
   readonly onReplay: (via: ReplayVia) => void;
 }) {
   const router = useRouter();
+  const tip = quickLossTip(facts, controlsHint, useCoarsePointer());
   const [beat, setBeat] = useState<number | null>(null);
   useEffect(() => {
     if (offline) return;
@@ -411,6 +429,11 @@ export function PostRun({
         <p className="play-result-summary play-outcome-detail" data-tick={facts.tick}>
           {result.summary}
         </p>
+        {tip !== null && (
+          <p className="play-result-best play-result-tip" data-testid="play-result-tip">
+            {tip}
+          </p>
+        )}
         {result.best !== null && (
           <p className="play-result-best" data-testid="play-best" data-new={String(result.best.isNew)}>
             {result.best.text}

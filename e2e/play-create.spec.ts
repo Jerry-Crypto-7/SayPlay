@@ -37,6 +37,27 @@ test.describe('/play – create', () => {
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
   });
 
+  // P58C T4: Safari hydratuje pomaleji než Chromium a hráč stihne psát dřív. Věta napsaná před
+  // hydratací musí přežít a odejít celá – dřív stav zůstal prázdný a „Make it!“ hlásil prázdné pole.
+  test('a sentence typed before the page hydrates survives and is sent', async ({ page }) => {
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route('**/_next/static/chunks/**', async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto('/play', { waitUntil: 'domcontentloaded' });
+    const text = 'Collect five glowing mushrooms then open a portal.';
+    await page.getByTestId('play-sentence').fill(text);
+    release();
+    await page.waitForFunction(() => Object.keys(document.querySelector('[data-testid="play-sentence"]') ?? {}).some((key) => key.startsWith('__reactFiber')));
+    await expect(page.getByTestId('play-counter')).toHaveText(`${String(text.length)}/140`);
+
+    const sent = page.waitForRequest((request) => request.url().endsWith('/api/play/games') && request.method() === 'POST');
+    await page.getByTestId('play-create').click();
+    expect((await sent).postDataJSON()).toEqual({ sentence: text });
+  });
+
   // P34 T3 (kit, Idea card): karta větu jen vloží, hru spustí až odeslání – tady Enter.
   test('an idea card fills the prompt without starting, Enter sends it', async ({ page }) => {
     await page.goto('/play');
@@ -194,6 +215,23 @@ test.describe('/play – create', () => {
     await expect(sentence).toBeInViewport();
     await expect(sentence).toBeFocused();
     await expect(make).toHaveAttribute('aria-current', 'true');
+  });
+
+  // P58C T6: karta tipu „Tap one, then Make it!“ stála nad polem a odsunula „Make it!“ pod lištu telefonu,
+  // porotce ho hledal (T5, 7 s). Na nejmenším telefonu porotce (iPhone 15 v Safari, 393×659) musí být podtitul,
+  // pole i „Make it!“ vidět bez posunu nad lištou a karta tipu až pod nimi.
+  test('phone 393×659: the subhead and Make it! sit above the tab bar, the first-visit tip below them', async ({ page }) => {
+    await page.setViewportSize({ width: 393, height: 659 });
+    await page.goto('/play');
+    const create = page.getByTestId('play-create');
+    await expect(page.getByTestId('play-first-visit')).toBeVisible();
+    await expect(page.locator('.play-subhead')).toBeInViewport({ ratio: 1 });
+    await expect(create).toBeInViewport({ ratio: 1 });
+    const button = (await create.boundingBox())!;
+    const tabbar = (await page.locator('.play-tabbar').first().boundingBox())!;
+    const tip = (await page.getByTestId('play-first-visit').boundingBox())!;
+    expect(button.y + button.height, `Make it! ends at ${String(button.y + button.height)}, tab bar starts at ${String(tabbar.y)}`).toBeLessThanOrEqual(tabbar.y);
+    expect(tip.y).toBeGreaterThan(button.y);
   });
 
   // P54A T12: od 1024 px pole v levém sloupci vedle feedu, viditelné i s tipem prvního návštěvníka.
