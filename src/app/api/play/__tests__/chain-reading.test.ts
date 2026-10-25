@@ -266,6 +266,34 @@ describe('a chain refused by a closed gate is read once the gate opens (P58E T5)
     expect(reader.calls).toHaveLength(1);
     expect(await children(store, body.versionId)).toEqual([]);
   });
+
+  it('an empty reading another process paid (in the answer cache) is kept: not paid again once it expires', async () => {
+    reader.reading = null;
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    expect(reader.calls).toHaveLength(1);
+    // Jiný proces: práce v paměti není, prázdné čtení zaplacené prvním leží v cache odpovědí.
+    __resetUpgrades();
+    const store = versionStoreFromEnv(process.env);
+    const chain = (await store.get(body.versionId))!;
+    expect(await upgradeOf(store, chain, { ...again, sentence: SINGLE.text, startedAt: Date.now() })).toEqual({ status: 'draft-final', reason: 'CHAIN' });
+    expect(knownUpgrade(body.versionId)).toEqual({ status: 'draft-final', reason: 'CHAIN' });
+    // Prázdné čtení v cache vypršelo; konec drží práce v procesu.
+    resetProcessAnswerStore();
+    expect(await upgradeOf(store, chain, { ...again, sentence: SINGLE.text, startedAt: Date.now() })).toEqual({ status: 'draft-final', reason: 'CHAIN' });
+    expect(reader.calls).toHaveLength(1);
+  });
+
+  it('a free local reader that came back empty is kept: no new call on the next ask', async () => {
+    vi.stubEnv('PLAY_READER_ENDPOINT', 'llamacpp:http://127.0.0.1:8792');
+    reader.reading = null;
+    const { body } = await create(SINGLE.text);
+    await settled(body.versionId);
+    expect(reader.calls).toHaveLength(1);
+    const store = versionStoreFromEnv(process.env);
+    expect(await upgradeOf(store, (await store.get(body.versionId))!, { ...again, sentence: SINGLE.text, startedAt: Date.now() })).toEqual({ status: 'draft-final', reason: 'CHAIN' });
+    expect(reader.calls).toHaveLength(1);
+  });
 });
 
 describe('the upgrade route reports a chain reading game (P58E T2)', () => {

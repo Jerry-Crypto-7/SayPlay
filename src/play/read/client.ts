@@ -41,8 +41,11 @@ export interface ReaderDeps {
   readonly caller?: string;
   /** Volající čtení vzdal (route spadla, T10-R1): jako vypršený rozpočet – `null`, placené volání neodejde. */
   readonly signal?: AbortSignal;
-  /** Placené volání odešlo (P58E T5): práce řetězu si pak drží i prázdné čtení, ať ho nezaplatí podruhé. */
-  readonly onPaid?: () => void;
+  /**
+   * Model se ptal – placeně i zdarma – nebo cache vrátila zaplacené prázdné čtení (P58E T5): práce řetězu si pak drží
+   * i prázdné čtení, ať ho nezaplatí podruhé. Bez tohohle čtení odmítla brána nebo strop a nic se neutratilo.
+   */
+  readonly onCalled?: () => void;
 }
 
 /** Placených čtení na volajícího za den, když `PLAY_READER_CALLS_PER_CALLER` chybí nebo nedává smysl. */
@@ -208,8 +211,13 @@ async function readThrough(text: string, config: UpstreamConfig, env: Env, deps:
     // Vypínač jen čte, takže na placené cestě letí souběžně s cache (T4-R1); nepřečtený = vypnuto.
     const killed = worstCaseUsd > 0 && deps.caller !== undefined ? killState(env, fetchImpl).then((state) => state.upstream, () => true) : Promise.resolve(false);
     const cached = store === null ? undefined : await cachedReading(store, key);
-    if (cached !== undefined) return cached;
+    if (cached !== undefined) {
+      // Prázdné čtení v cache je vždy zaplacené (zdarma se `null` nepamatuje) – jiným procesem nebo před restartem.
+      if (cached === null) deps.onCalled?.();
+      return cached;
+    }
     // `undefined` = nic neodešlo. Zdarma (lokální čtečka) se `null` nepamatuje: další pokus nic nestojí.
+    if (worstCaseUsd <= 0) deps.onCalled?.();
     const reading = worstCaseUsd <= 0 ? (readingOf(await branch.generate(call, signal)) ?? undefined) : await paidReading(call, branch, worstCaseUsd, killed, config, env, deps, signal);
     // Zápis neblokuje: hotové čtení nesmí propadnout rozpočtu kvůli úložišti. Zaplacené `null` (vypršení se účtuje
     // celé, useknutá odpověď) jde do cache nakrátko, ať ho druhý běh režiséra ani opakovaný upgrade nezaplatí znovu (T4a),
@@ -273,7 +281,7 @@ async function paidReading(
     return undefined;
   }
   // Spadlé nebo přerušené volání odešlo: účtuje se celou rezervací a čtení je `null`, ne „nic neodešlo“.
-  deps.onPaid?.();
+  deps.onCalled?.();
   const outcome: GenerationOutcome | null = await branch.generate(call, signal).catch(() => null);
   await reservation.settle(outcome === null || outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing));
   return outcome === null ? null : readingOf(outcome);

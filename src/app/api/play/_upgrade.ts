@@ -302,14 +302,14 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   }
   if (!readerForAiVersion() || chain.origin?.readBy === 'model') return CHAIN_FINAL;
   const { sentence } = request;
-  let paid = false;
-  const onPaid = (): void => {
-    paid = true;
+  let called = false;
+  const onCalled = (): void => {
+    called = true;
   };
-  const reading = await readBeforeDraft(sentence, process.env, (await mayPayChainRead(request.caller)) ? { caller: request.caller, onPaid } : {});
-  // Zaplacené prázdné čtení se drží, ať se neplatí dvakrát; odmítnuté se zkusí znovu. Prázdné čtení z cache (zaplatil
-  // ho jiný proces) se taky nedrží – další dotaz ho z cache dostane zdarma znovu, dokud nevyprší.
-  if (reading === null) return paid ? CHAIN_FINAL : CHAIN_REFUSED;
+  const reading = await readBeforeDraft(sentence, process.env, { ...((await mayPayChainRead(request.caller)) ? { caller: request.caller } : {}), onCalled });
+  // Prázdné čtení, na které se model ptal (i zaplacené jiným procesem, z cache), se drží, ať se neplatí dvakrát;
+  // odmítnuté branou nebo stropem se zkusí znovu.
+  if (reading === null) return called ? CHAIN_FINAL : CHAIN_REFUSED;
   // Čtení, ze kterého vyjde míč, se bez fyziky nepřeloží (P56C T17e); návrh jedné hry ji potřebuje tak jako tak.
   await loadRapier();
   if (chainOrSingle(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading)) === 'chain') return CHAIN_FINAL;
