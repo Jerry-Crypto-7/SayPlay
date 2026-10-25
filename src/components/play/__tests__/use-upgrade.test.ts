@@ -58,6 +58,31 @@ describe('followUpgrade', () => {
     run.stop();
   });
 
+  // P58D T3: hra ze čtení přijde v `pending` dřív než AI verze; ta pak přijde stejně jako dnes.
+  it('pending → pending s hrou ze čtení → ready', async () => {
+    const reading = 'd'.repeat(32);
+    serve((elapsed) => (elapsed < 3_000 ? pending : elapsed < 30_000 ? { ...pending, reading: { versionId: reading } } : { status: 'ready', versionId: 'b'.repeat(32) }));
+    const run = follow();
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(run.last()).toEqual({ kind: 'working', since: T0, deadlineAt: DEADLINE });
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(run.last()).toEqual({ kind: 'working', since: T0, deadlineAt: DEADLINE, reading });
+    const heard = run.views.length;
+    await vi.advanceTimersByTimeAsync(POLL_MS * 3);
+    expect(run.views).toHaveLength(heard);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(run.last()).toEqual({ kind: 'ready', versionId: 'b'.repeat(32) });
+    run.stop();
+  });
+
+  it('nečitelné čtení se nepočítá', async () => {
+    serve(() => ({ ...pending, reading: { versionId: '../evil' } }));
+    const run = follow();
+    await vi.advanceTimersByTimeAsync(POLL_MS * 2);
+    expect(run.last()).toEqual({ kind: 'working', since: T0, deadlineAt: DEADLINE });
+    run.stop();
+  });
+
   it('pending → draft-final nese důvod', async () => {
     serve((elapsed) => (elapsed < 6_000 ? pending : { status: 'draft-final', reason: 'NOT_PLAYABLE' }));
     const run = follow();

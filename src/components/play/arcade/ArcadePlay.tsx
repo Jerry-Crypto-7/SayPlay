@@ -46,7 +46,7 @@ import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
-import { UpgradeBanner } from '../UpgradeBanner';
+import { UpgradeBanner, useCommitted } from '../UpgradeBanner';
 
 import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
@@ -257,6 +257,7 @@ export interface ArcadePlayProps {
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
   readonly aiVersion?: boolean;
+  readonly readingVersion?: boolean;
   /** Feed (P27B T4) je nemá – počítají se na serveru z registru – a hraje bez nich. */
   readonly lab?: LabFacts;
   readonly read?: ReadFacts;
@@ -383,6 +384,7 @@ function ArcadePlayGame({
   lineage,
   remixes,
   aiVersion = false,
+  readingVersion = false,
   lab,
   read,
   upgrade,
@@ -435,6 +437,8 @@ function ArcadePlayGame({
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
+  // Hra ze čtení (P58D T3) přepne sama jen hráče, který ještě nehraje – ukázka se nepočítá.
+  const committed = useCommitted(demo === null ? snapshot.tick / ARCADE_HZ : 0, demo === null && !running);
   const remix = useRemixJob(versionId, !running && demo === null);
   const live = useLivePublish(versionId, spec, arcade, session, !offline);
   // Živá změna (P29D T9) jen v běžící hře hráče; s koncem běhu se pole zavře, ať se v další nevynoří samo.
@@ -974,10 +978,17 @@ function ArcadePlayGame({
         {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
         {canChange && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} open={liveOpen} setOpen={setLiveOpen} />}
         {/* AI verze vede přepínačem zpátky na rychlou (P38); feed mezi verzemi nepřepíná. */}
-        <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} quick={aiVersion && !inFeed ? (lineage.at(-2)?.versionId ?? null) : null} />
+        <UpgradeBanner
+          request={upgrade}
+          sentence={read?.sentence ?? null}
+          quick={aiVersion && !inFeed ? (lineage.at(-2)?.versionId ?? null) : null}
+          matchedOf={readingVersion && !inFeed ? (lineage.at(-2)?.versionId ?? null) : null}
+          versionId={versionId}
+          committed={committed}
+        />
         {running && <RemixReadyChip job={remix} />}
       </ArcadeHud>
-      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
+      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       {read !== undefined && <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {cardShown && (

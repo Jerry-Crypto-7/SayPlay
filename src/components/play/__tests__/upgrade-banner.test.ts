@@ -8,9 +8,37 @@ import { describe, expect, it } from 'vitest';
 
 import { type DraftFinalReason, isTransient } from '@/app/api/play/_upgrade';
 
-import { FINAL_REASON_TEXT, noticeOf } from '../UpgradeBanner';
+import { COMMITTED_MS, committedNow, FINAL_REASON_TEXT, noticeOf, readingMove, type UpgradeView } from '../UpgradeBanner';
 
 const REASONS = Object.keys(FINAL_REASON_TEXT) as DraftFinalReason[];
+
+// P58D T3: hra ze čtení přijde ~3 s po větě; kdo ještě nehraje, přejde sám, rozehranou hru nikdo nevymění.
+describe('readingMove', () => {
+  const quick = 'q'.repeat(32);
+  const reading = 'r'.repeat(32);
+  const working = (more: Partial<Extract<UpgradeView, { kind: 'working' }>> = {}): UpgradeView => ({ kind: 'working', since: 0, deadlineAt: 285_000, ...more });
+
+  it('auto přechod před vstupem i v prvních sekundách hraní', () => {
+    expect(readingMove(working({ reading }), quick, committedNow(0, false), new Set())).toEqual({ kind: 'switch', versionId: reading });
+    expect(readingMove(working({ reading }), quick, committedNow((COMMITTED_MS - 1) / 1000, false), new Set())).toEqual({ kind: 'switch', versionId: reading });
+  });
+
+  it('nabídka po 6 s hraní, po výhře i po prohře', () => {
+    expect(readingMove(working({ reading }), quick, committedNow(COMMITTED_MS / 1000, false), new Set())).toEqual({ kind: 'offer', versionId: reading });
+    expect(readingMove(working({ reading }), quick, committedNow(2, true), new Set())).toEqual({ kind: 'offer', versionId: reading });
+  });
+
+  it('hráč, který se z hry ze čtení vrátil na rychlou, už jen dostane nabídku', () => {
+    expect(readingMove(working({ reading }), quick, false, new Set([reading]))).toEqual({ kind: 'offer', versionId: reading });
+  });
+
+  it('bez čtení, na hře ze čtení samé a mimo práci nic', () => {
+    expect(readingMove(working(), quick, false, new Set())).toBeNull();
+    expect(readingMove(working({ reading }), reading, false, new Set())).toBeNull();
+    expect(readingMove({ kind: 'ready', versionId: 'a'.repeat(32) }, quick, false, new Set())).toBeNull();
+    expect(readingMove({ kind: 'final', reason: 'UNCHANGED' }, quick, false, new Set())).toBeNull();
+  });
+});
 
 describe('noticeOf', () => {
   it('an unchanged upgrade never claims all requested actions are present', () => {
