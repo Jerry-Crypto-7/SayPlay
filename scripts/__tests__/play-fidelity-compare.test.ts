@@ -48,6 +48,8 @@ interface Recorded {
   readonly failure?: { readonly stage: 'model' | 'publish'; readonly reason: string; readonly detail: string };
   /** Pokus, který stránka návrhu spustila těsně před koncem a který doběhne `afterMs` po poslední odpovědi. */
   readonly lingering?: { readonly afterMs: number; readonly detail: string };
+  /** Řetěz mikroher: POST odpoví bez `upgrade` a pokus se nerozběhne. */
+  readonly chain?: true;
 }
 
 const pending = { status: 'pending', deadlineAt: '2026-09-27T12:05:00.000Z' };
@@ -99,11 +101,12 @@ function recordedServer(recorded: Record<string, Recorded>, clock: { t: number }
       const text = JSON.parse(String(init.body)).sentence as string;
       const id = SENTENCES.find((sentence) => sentence.text === text)!.id;
       games.set(id, { spec: draftGameSpec(text), report: { publishEligible: true }, timings: { source: 'draft' } });
+      if (recorded[id]!.chain === true) return json({ versionId: id });
       upgrades.set(id, [...recorded[id]!.upgrades]);
       lines.push({ at: clock.t, text: upgradeAttemptLine(id, 'started') });
       const ai = recorded[id]!.ai;
       if (ai !== undefined) games.set(`ai-${id}`, { spec: ai.spec, report: { publishEligible: ai.publishEligible }, timings: { source: ai.source } });
-      return json({ versionId: id });
+      return json({ versionId: id, upgrade: `/api/play/games/${id}/upgrade` });
     }
     if (path.endsWith('/upgrade')) {
       const id = path.split('/')[4]!;
@@ -241,6 +244,58 @@ describe('measureSentence', () => {
     expect(clock.t).toBeGreaterThanOrEqual(2100 + 30_000);
     expect(clock.t).toBeLessThan(2100 + 32_000);
     expect(result.cause).toBe('model');
+  });
+
+  it('books a chain of microgames as chain without asking for an upgrade, and keeps it out of the model score', async () => {
+    const asked: string[] = [];
+    const recorded = { ...RECORDED.astra, s002: { upgrades: [], chain: true as const } };
+    const clock = { t: 0 };
+    const server = recordedServer(recorded, clock);
+    const result = await measureSentence(SENTENCES[2]!, {
+      base: 'http://127.0.0.1:3331',
+      fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => {
+        asked.push(new URL(String(input)).pathname);
+        return server.fetch(input, init);
+      }) as typeof fetch,
+      log: server.log,
+      leave: async () => {},
+      now: () => clock.t,
+      wait: async () => {},
+      openGame: async () => {},
+    });
+    expect(result).toMatchObject({ cause: 'chain', upgrade: { status: 'none', reason: 'NO_AI_VERSION' }, ai: null, draft: { versionId: 's002' } });
+    expect(asked.some((path) => path.endsWith('/upgrade'))).toBe(false);
+    const results = [...(await replay('astra')).slice(0, 2), result];
+    const summary = compareSummary({ astra: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.astra) } }, 'b1');
+    expect(summary.astra).toMatchObject({ n: 3, chains: 1, refused: { door: 0, cap: 0 }, published: { ok: 2, of: 2, share: 1, failures: {} } });
+    expect(compareVerdict(summary).valid).toBe(true);
+  });
+
+  it('asks again after a dropped GET, and gives up after five drops in a row', async () => {
+    const measureWithDrops = async (drops: number) => {
+      const clock = { t: 0 };
+      const server = recordedServer(RECORDED.astra, clock);
+      let left = drops;
+      return measureSentence(SENTENCES[0]!, {
+        base: 'http://127.0.0.1:3331',
+        fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => {
+          if (String(input).endsWith('/upgrade') && left > 0) {
+            left -= 1;
+            return Promise.reject(new TypeError('fetch failed', { cause: { code: 'UND_ERR_SOCKET' } }));
+          }
+          return server.fetch(input, init);
+        }) as typeof fetch,
+        log: server.log,
+        leave: async () => {},
+        now: () => clock.t,
+        wait: async (ms) => {
+          clock.t += ms;
+        },
+        openGame: async () => {},
+      });
+    };
+    expect(await measureWithDrops(4)).toMatchObject({ upgrade: { status: 'ready' }, ai: { published: true } });
+    await expect(measureWithDrops(5)).rejects.toThrow('fetch failed');
   });
 });
 

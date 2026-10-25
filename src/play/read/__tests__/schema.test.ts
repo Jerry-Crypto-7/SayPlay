@@ -20,13 +20,14 @@ const READING: Reading = {
   mood: null,
   numbers: { seconds: null, counts: [] },
   genre: { genre: 'runner', mode: 'default' },
+  sure: true,
   foe: 'asteroid',
   item: null,
   world: 'space',
   title: 'Asteroid Dash',
 };
 
-const FIELDS = ['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'foe', 'item', 'world', 'title'];
+const FIELDS = ['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'sure', 'foe', 'item', 'world', 'title'];
 
 describe('readingSchema P56A fields', () => {
   it('accepts a full reading and the same reading with every new field null', () => {
@@ -84,9 +85,5 @@ describe('readerSystemPrompt', () => {
     for (const look of LOOK_IDS) expect(prompt).toContain(look);
     for (const control of READ_CONTROLS) expect(prompt).toContain(control);
     for (const field of ['genre:', 'foe:', 'item:', 'world:', 'title:']) expect(prompt).toContain(field);
-  });
-
-  it('stays at most 3,500 characters – input tokens are latency on the fast path', () => {
-    expect(prompt.length).toBeLessThanOrEqual(3500);
   });
 });

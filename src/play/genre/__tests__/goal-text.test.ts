@@ -26,8 +26,9 @@ const SETS = { 'p55/holdout': 'p55-holdout', 'p54c/dev': 'p54c-dev', 'p54c/holdo
 const sentences: Entry[] = Object.keys(SETS).flatMap((set) => (evals(`${set}.json`) as { sentences: Entry[] }).sentences);
 const readings = new Map<string, Reading>(
   Object.values(SETS).flatMap((file) =>
-    (evals(`p56a/readings/${file}.gpt-oss-20b.json`) as { readings: { text: string; reading: unknown }[] }).readings.flatMap((row) => {
-      const parsed = readingSchema.safeParse(row.reading);
+    (evals(`p56a/readings/${file}.gpt-oss-20b.json`) as { readings: { text: string; reading: object | null }[] }).readings.flatMap((row) => {
+      // Čtení jsou uložená před P58B T5, pole `sure` nemají – `classifyGenre` je bere jako jistá.
+      const parsed = readingSchema.safeParse(row.reading === null ? null : { sure: true, ...row.reading });
       return parsed.success ? [[row.text, parsed.data] as const] : [];
     }),
   ),

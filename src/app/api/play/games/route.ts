@@ -23,7 +23,7 @@ import { chainOrSingle } from '@/play/chain/decide';
 import { readForChain, type SentenceRead } from '@/play/chain/read';
 import { honestyOf } from '@/play/draft/unsupported';
 import { classifyGenre } from '@/play/genre/classify';
-import { readBeforeDraft } from '@/play/read/client';
+import { readBeforeDraft, readerForAiVersion } from '@/play/read/client';
 import { beatOf, decodeCursor, feedPage, hiddenFromEnv, keptFromEnv, RECENT_CAP, remixParents } from '@/play/version';
 
 import { getDirector } from '../_director';
@@ -149,8 +149,9 @@ export async function POST(request: Request): Promise<Response> {
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     // P29B T5: zapnutá čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`; P56A T10: souběžně
     // s načítáním fyziky, ne za ním – jinak by její rozpočet přibyl ke studenému startu. Nikdy neodmítne (`null`).
+    // P58B T4: čtečka jen pro AI verzi (`PLAY_READER_PATH=ai`) se tu neptá – rychlá hra na ni nečeká, čte až režisér.
     const abandoned = new AbortController();
-    const reading = readBeforeDraft(sentence, process.env, { caller, signal: abandoned.signal });
+    const reading = readerForAiVersion() ? Promise.resolve(null) : readBeforeDraft(sentence, process.env, { caller, signal: abandoned.signal });
     // Ball composition verifies a real physics run before returning a draft.
     // Await the cold engine here; background preloading alone is a race. Always, not only
     // when the sentence says ball: the model reader may pick a ball game the words missed.

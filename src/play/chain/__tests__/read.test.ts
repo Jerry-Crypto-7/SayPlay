@@ -98,6 +98,7 @@ describe('readForChain with a model reading (P56A, T17)', () => {
       mood: null,
       numbers: { seconds: null, counts: [] },
       genre: null,
+      sure: true,
       foe: 'comet',
       item: 'fish',
       world: 'space',

@@ -725,6 +725,9 @@ export const PAIR_SCHEMA = {
 
 export const PAIR_QUESTION = `The attached image shows two small 3D video games side by side, each played by the same robot player. Game A is the left column, game B the right column. Rows go down in time: the first row is 1.5 seconds after the start, then one row every 6 seconds of play; a grey cell means that game had already ended. Page text is hidden, so judge only what the 3D scenes show. Which game would be more fun to play: its pace (something keeps happening), danger (threats close to the player), what goes on in the scene, and whether it builds up towards the end? Answer "tie" only when neither would be more fun. Reply only with the JSON the schema asks for: winner = "A", "B" or "tie"; why = one or two sentences naming what you see in each game.`;
 
+/** Otázka `--question match` (P58B T7): která ze dvou her z téže věty jí víc odpovídá – rychlá verze proti AI verzi. */
+export const matchQuestion = (sentence) => `The attached image shows two small 3D video games side by side, each played by the same robot player. Game A is the left column, game B the right column. Rows go down in time: the first row is 1.5 seconds after the start, then one row every 6 seconds of play; a grey cell means that game had already ended. Page text is hidden, so judge only what the 3D scenes show. Both games were made from this sentence: "${sentence}". Which game matches the sentence better: the characters and things it names, where it happens, and what the player does? Answer "tie" only when neither matches better. Reply only with the JSON the schema asks for: winner = "A", "B" or "tie"; why = one or two sentences naming what you see in each game.`;
+
 /** Kdo je vlevo (A) v každém páru: jeden stream `pure-rand` ze seedu, losuje se v pořadí id (vzor `sides` v `play-p39-blind.mjs`). */
 export function pairSides(seed, count) {
   const rng = xoroshiro128plus(seed);
@@ -765,10 +768,14 @@ async function pairSheet(page, left, right, path) {
  * list, stranu vlevo losuje `pairSides` ze seedu a soudce (`ask` ze
  * `p37d/judge-sheet.mjs`, prázdný adresář jen se `sheet.png` a schématem) řekne,
  * která hra by ho víc bavila. Hotová odpověď se při opakování nepřeptává.
+ * `--question match` (P58B T7) se místo zábavy ptá, která hra víc odpovídá
+ * větě (`text` v `<id>.json` běhu A), a odpovědi drží v adresáři `…-match`.
  * `ask` a `compose` jdou vstříknout (test bez Codexu a bez prohlížeče).
  */
 export async function pairwise(options, { ask, compose } = {}) {
   if (typeof options.a !== 'string' || typeof options.b !== 'string' || typeof options.out !== 'string') throw new Error('pairwise: --a <runId> --b <runId> --out <file> are required');
+  if (options.question !== undefined && options.question !== 'match') throw new Error('pairwise: --question takes only match');
+  const match = options.question === 'match';
   const runsDir = options.runsDir ?? join(DIR, 'runs');
   const seed = options.seed === undefined ? PAIR_SEED : Number(options.seed);
   const paceOf = (run, id) => {
@@ -782,7 +789,13 @@ export async function pairwise(options, { ask, compose } = {}) {
     .filter((id) => (wanted === null || wanted.has(id)) && paceOf(options.a, id).length > 0 && paceOf(options.b, id).length > 0)
     .sort();
   const left = pairSides(seed, ids.length);
-  const pairDir = join(runsDir, `pair-${options.a}--${options.b}-${seed}`);
+  const pairDir = join(runsDir, `pair-${options.a}--${options.b}-${seed}${match ? '-match' : ''}`);
+  const questionOf = (id) => {
+    if (!match) return PAIR_QUESTION;
+    const text = readJson(join(runsDir, options.a, `${id}.json`)).text;
+    if (typeof text !== 'string' || text.trim() === '') throw new Error(`pairwise ${id}: --question match needs the sentence text in ${options.a}/${id}.json`);
+    return matchQuestion(text);
+  };
   mkdirSync(pairDir, { recursive: true });
   const schemaFile = join(pairDir, 'pair-schema.json');
   writeJson(schemaFile, PAIR_SCHEMA);
@@ -806,7 +819,7 @@ export async function pairwise(options, { ask, compose } = {}) {
         const sheet = join(pairDir, `${id}-sheet.png`);
         const [l, r] = side === 'a' ? [paceOf(options.a, id), paceOf(options.b, id)] : [paceOf(options.b, id), paceOf(options.a, id)];
         await composeOf(l, r, sheet);
-        const asked = await judgeOf(sheet, schemaFile, answerFile, PAIR_QUESTION);
+        const asked = await judgeOf(sheet, schemaFile, answerFile, questionOf(id));
         // Ztráta přihlášení nebo vyčerpaný limit: zastavit, ne počítat díru jako remízu.
         if (!existsSync(answerFile)) throw new Error(`pairwise ${id}: the judge gave no answer (exit ${asked?.code}) ${asked?.stderr ?? ''}`);
       }
@@ -824,6 +837,7 @@ export async function pairwise(options, { ask, compose } = {}) {
     schema: 'pairwise.v1',
     a: { run: options.a, commit: options['a-commit'] ?? null },
     b: { run: options.b, commit: options['b-commit'] ?? null },
+    question: match ? 'match' : 'fun',
     seed,
     order: `pure-rand xoroshiro128plus(${seed}), uniformInt(0, 1) per pair in id order: 0 = a on the left (column A), 1 = b`,
     pairs,
@@ -982,6 +996,7 @@ const ATTEMPT = /\[play\] upgrade attempt (started|settled) (\S+)/g;
 /** Odmítnutí dveřmi `play` (hlavní slot i slot placené zálohy) a stropem útraty nebo volání (`src/app/api/play/_director.ts`). */
 const DOOR_REFUSAL = /no free (?:play )?slot/;
 const CAP_REFUSAL = /spend cap refused the call|daily director calls are used up/;
+const GET_ATTEMPTS = 5;
 
 /**
  * Příčiny neúspěšných pokusů o upgrade jednoho návrhu z logu serveru
@@ -1011,7 +1026,12 @@ export function attemptsInFlight(log, draftId) {
  * by držel slot dveří a další věta by dostala návrh od dveří (revize hranice
  * fáze 2, nález A). `cause` pak říká, proč věta nemá AI verzi: `door`, `cap`
  * (ty o modelu nic neříkají), nebo `model`; u publikované hry `null`, pokud
- * cestou nenarazila na dveře nebo strop.
+ * cestou nenarazila na dveře nebo strop. Odpověď POST bez `upgrade` (řetěz
+ * mikroher) AI verzi nemá z podstaty: `cause: 'chain'`, režisér se nevolá.
+ *
+ * Dotaz GET po síťové chybě jde znovu, nejvýš `GET_ATTEMPTS`krát: v P58B T7
+ * padly tři zaplacené věty z deseti na „fetch failed“ uprostřed čekání. POST se
+ * neopakuje – druhý by mohl rozběhnout další placený pokus.
  */
 export async function measureSentence(sentence, { base, openGame, leave, log, fetchImpl = fetch, now = Date.now, wait = sleep, pollMs = 1000, timeoutMs = 330_000, settleMs = 300_000 }) {
   const started = now();
@@ -1023,13 +1043,28 @@ export async function measureSentence(sentence, { base, openGame, leave, log, fe
       return { frameMs: null, frameError: thrown.message.slice(0, 200) };
     }
   };
+  const get = async (url) => {
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        return await fetchImpl(url, { cache: 'no-store' });
+      } catch (thrown) {
+        if (attempt >= GET_ATTEMPTS) throw thrown;
+        await wait(pollMs);
+      }
+    }
+  };
   const response = await fetchImpl(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
   const created = await response.json();
   if (!created.versionId) throw new Error(`POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
   const draftFrame = await frame(created.versionId);
+  if (created.upgrade === undefined) {
+    await leave();
+    const draft = await gameOf(base, created.versionId, get);
+    return { id: sentence.id, text: sentence.text, checklist: sentence.checklist, draft: { versionId: created.versionId, spec: draft.spec, ...draftFrame }, upgrade: { status: 'none', reason: 'NO_AI_VERSION', ms: now() - started }, cause: 'chain', ai: null };
+  }
   let upgrade;
   for (;;) {
-    upgrade = await (await fetchImpl(`${base}/api/play/games/${created.versionId}/upgrade`, { cache: 'no-store' })).json();
+    upgrade = await (await get(`${base}/api/play/games/${created.versionId}/upgrade`)).json();
     if (upgrade.status !== 'pending') break;
     if (now() - started > timeoutMs) {
       upgrade = { status: 'timeout' };
@@ -1039,8 +1074,8 @@ export async function measureSentence(sentence, { base, openGame, leave, log, fe
   }
   const upgradeMs = now() - started;
   await leave();
-  const draft = await gameOf(base, created.versionId, fetchImpl);
-  const ai = upgrade.status === 'ready' ? await gameOf(base, upgrade.versionId, fetchImpl) : null;
+  const draft = await gameOf(base, created.versionId, get);
+  const ai = upgrade.status === 'ready' ? await gameOf(base, upgrade.versionId, get) : null;
   const aiFrame = ai === null ? null : await frame(upgrade.versionId);
   if (aiFrame !== null) await leave();
   const settleBy = now() + settleMs;
@@ -1073,7 +1108,9 @@ function modelSummary(name, { results, billed, concurrency }) {
   const authored = results.filter((result) => result.ai?.published === true && result.ai.source === 'authored').length;
   if (authored > 0 && billed.length === 0) throw new Error(`${name}: ${authored} authored games but no billed call in the server log – the cost would read as zero`);
   const refused = { door: results.filter((result) => result.cause === 'door').length, cap: results.filter((result) => result.cause === 'cap').length };
-  const scored = results.filter((result) => !refusedCause(result));
+  // Řetěz mikroher AI verzi nemá z podstaty: o režisérovi neříká nic, jen se počítá zvlášť.
+  const chains = results.filter((result) => result.cause === 'chain').length;
+  const scored = results.filter((result) => !refusedCause(result) && result.cause !== 'chain');
   const played = scored.filter((result) => result.error === undefined);
   const published = played.filter((result) => result.ai?.published === true);
   const failures = {};
@@ -1091,6 +1128,7 @@ function modelSummary(name, { results, billed, concurrency }) {
     concurrency,
     errors: scored.length - played.length,
     refused,
+    chains,
     published: { ok: published.length, of: scored.length, share: share(published.length, scored.length), failures },
     sources: { authored, cached: published.filter((result) => result.ai.source === 'cached').length },
     fidelity: { inSpec: mean(finals.map(inSpec)), read: mean(finals.map((final) => final.score)), drawn: mean(finals.map((final) => final.drawnScore)), role: mean(finals.map((final) => final.roleScore)) },
@@ -1196,8 +1234,12 @@ export function buildStamp(nextDir, commitMs) {
   return `${readFileSync(file, 'utf8').trim()}@${new Date(builtMs).toISOString()}`;
 }
 
-/** Věty přes `concurrency` porotců naráz; každý má vlastní kontext prohlížeče. `log` = log serveru, ze kterého se čtou příčiny. */
-async function measureAll(sentences, base, concurrency, log) {
+/**
+ * Věty přes `concurrency` porotců naráz; každý má vlastní kontext prohlížeče. `log` = log serveru, ze kterého se čtou příčiny.
+ * `paceDir(side)` (P58B T7, `--pace-clip`): u publikované AI verze klip průběhu rychlé (`fast`) i AI verze (`ai`) do
+ * `<dir>/<id>.json` s větou, pro `pairwise --question match`; čas věty tím neroste, klip jde až po jejím měření.
+ */
+async function measureAll(sentences, base, concurrency, log, paceDir = null) {
   const require = createRequire(import.meta.url);
   const { chromium } = require('@playwright/test');
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -1214,10 +1256,25 @@ async function measureAll(sentences, base, concurrency, log) {
           result = await measureSentence(sentence, { base, openGame: (url) => playableFrame(page, url), leave: () => page.goto('about:blank'), log });
         } catch (thrown) {
           // Odmítnutá věta pod souběhem (429, 503) je výsledek měření, ne pád běhu.
-          result = { id: sentence.id, text: sentence.text, checklist: sentence.checklist, error: thrown.message.slice(0, 300) };
+          result = { id: sentence.id, text: sentence.text, checklist: sentence.checklist, error: `${thrown.message}${thrown.cause?.code ? ` (${thrown.cause.code})` : ''}`.slice(0, 300) };
         }
         results.set(sentence.id, result);
         console.log(`${sentence.id} ${result.error ?? (result.ai?.published ? `ai ${result.ai.frameMs === null ? `no frame: ${result.ai.frameError}` : `${Math.round(result.ai.frameMs / 1000)} s`}` : `draft (${result.upgrade.reason ?? result.upgrade.status})`)}${refusedCause(result) ? ` – refused by the ${result.cause}` : ''}`);
+        if (paceDir !== null && result.ai?.published === true) {
+          for (const [side, versionId] of [['fast', result.draft.versionId], ['ai', result.ai.versionId]]) {
+            const dir = paceDir(side);
+            mkdirSync(dir, { recursive: true });
+            // Zaplacená věta nesmí padnout na klipu: bez snímků ji párový soud jen vynechá.
+            let pace;
+            try {
+              pace = await paceClip(page, base, versionId, join(dir, sentence.id));
+            } catch (thrown) {
+              pace = { error: thrown.message.slice(0, 200), frames: [] };
+            }
+            await page.goto('about:blank');
+            writeJson(join(dir, `${sentence.id}.json`), { id: sentence.id, text: sentence.text, versionId, pace });
+          }
+        }
       }
     } finally {
       await context.close();
@@ -1235,8 +1292,10 @@ async function measureAll(sentences, base, concurrency, log) {
  * `--models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331] [--run <id>]`:
  * každý model po řadě na vlastním `next start` nad TÝMŽ `.next` (nejdřív
  * `npm run build`), tytéž věty, tatáž publikace robotem jako produkce. Surová
- * data do `fidelity/runs/compare-<id>/`, souhrn do `evals/play/p30/compare-<id>.json`.
- * Strop `--cap-usd` se dělí rovným dílem mezi modely.
+ * data do `fidelity/runs/compare-<id>/`, souhrn do `evals/play/p30/compare-<id>.json` (jinam `--out`).
+ * Strop `--cap-usd` se dělí rovným dílem mezi modely. `--pace-clip` (P58B T7) přidá klipy
+ * průběhu do `fidelity/runs/compare-<id>-<model>-fast|ai/` pro slepý soud rychlá × AI verze:
+ * `pairwise --a compare-<id>-<model>-fast --b compare-<id>-<model>-ai --question match`.
  */
 async function compare(options) {
   const names = options.models.split(',').map((name) => name.trim()).filter((name) => name !== '');
@@ -1259,7 +1318,7 @@ async function compare(options) {
   for (const name of names) {
     const server = await startServer(port, envs[name]);
     try {
-      const results = await measureAll(sentences, server.base, concurrency, server.log);
+      const results = await measureAll(sentences, server.base, concurrency, server.log, options['pace-clip'] === true ? (side) => join(DIR, 'runs', `compare-${runId}-${name}-${side}`) : null);
       runs[name] = { buildId: null, concurrency, results, billed: billedFromLog(server.log()) };
     } finally {
       await server.stop();
@@ -1296,7 +1355,7 @@ async function compare(options) {
   }));
   const models = compareSummary(runs, buildId);
   const verdict = compareVerdict(models);
-  const path = join(P30, `compare-${runId}.json`);
+  const path = typeof options.out === 'string' ? resolve(ROOT, options.out) : join(P30, `compare-${runId}.json`);
   writeJson(path, { header, valid: verdict.valid, invalid: verdict.reason, models, sentences: sentenceRows });
   console.log(`compare -> ${path}`);
   if (!verdict.valid) console.error(`INVALID RUN: ${verdict.reason}`);
@@ -1532,8 +1591,8 @@ if (isMain) {
   else if (step === 'roles') roles(options);
   else {
     console.error('usage: node scripts/play-fidelity.mjs fun --set p45-panel|p45-sealed --base-a <url main> --base-b <url HEAD> --run <id> [--open-sealed-once] [--seed 45045] [--target-b 0.55] [--commit-a 0714a352] [--gpu]');
-    console.error('usage: node scripts/play-fidelity.mjs pairwise --a <runId> --b <runId> --out <file> [--seed 45045] [--a-commit <sha>] [--b-commit <sha>] [--only <ids>] [--concurrency 2]');
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip [--idle]] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
+    console.error('usage: node scripts/play-fidelity.mjs pairwise --a <runId> --b <runId> --out <file> [--question match] [--seed 45045] [--a-commit <sha>] [--b-commit <sha>] [--only <ids>] [--concurrency 2]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip [--idle]] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331] [--pace-clip] [--out <file>]');
     process.exit(2);
   }
 }

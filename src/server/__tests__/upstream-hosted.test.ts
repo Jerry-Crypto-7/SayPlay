@@ -14,6 +14,8 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { genreAnswer } from '@/play/director/__fixtures__';
+import { GENRE_ANSWER_SCHEMA } from '@/play/director/answer-schema';
+import { READING_JSON_SCHEMA } from '@/play/read/schema';
 import { __resetProcessVersionStore } from '@/play/version';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 
@@ -30,7 +32,7 @@ import { resetConcurrency } from '../paid-slots';
 import type { GenerationCall } from '../pipeline';
 import { resetRateWindows } from '../rate-limit';
 import { costUsd, processFallbackSpendCap, processSpendCap, resetProcessSpendCap } from '../spend-cap';
-import { upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { OPENAI_ENUM_LIMIT, openaiStrictSchema, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 const HOSTED = {
   WORLDSMITH_BRANCH: 'live',
@@ -175,6 +177,42 @@ describe('openai: generate', () => {
     expect(seen[0].body).toMatchObject({ model: 'gpt-6-astra', reasoning_effort: 'low', max_completion_tokens: 8000 });
     expect(seen[0].body).not.toHaveProperty('max_tokens');
     expect(seen[0].body).not.toHaveProperty('temperature');
+  });
+
+  // P58B T7: schéma režiséra má ~2 200 hodnot výčtů a OpenAI API nad 1 000 odmítlo každé volání astry čtyřistovkou.
+  describe('the strict schema the OpenAI API accepts', () => {
+    const enumValues = (node: unknown): number =>
+      Array.isArray(node) ? node.reduce((sum: number, child) => sum + enumValues(child), 0)
+      : node === null || typeof node !== 'object' ? 0
+      : Array.isArray((node as { enum?: unknown }).enum) ? ((node as { enum: unknown[] }).enum).length
+      : Object.values(node).reduce((sum: number, child) => sum + enumValues(child), 0);
+    const resolve = (node: unknown, defs: Record<string, unknown>): unknown =>
+      Array.isArray(node) ? node.map((child) => resolve(child, defs))
+      : node === null || typeof node !== 'object' ? node
+      : typeof (node as { $ref?: unknown }).$ref === 'string' ? defs[(node as { $ref: string }).$ref.replace('#/$defs/', '')]
+      : Object.fromEntries(Object.entries(node).map(([key, value]) => [key, resolve(value, defs)]));
+    const sentSchema = async (config: UpstreamConfig, outputSchema: Readonly<Record<string, unknown>>) => {
+      let schema: Record<string, unknown> = {};
+      const fake = ((_url: string, init: RequestInit) => {
+        schema = (JSON.parse(String(init.body)) as { response_format: { json_schema: { schema: Record<string, unknown> } } }).response_format.json_schema.schema;
+        return Promise.resolve(new Response(chat('{"plan":"run"}')));
+      }) as unknown as typeof fetch;
+      await upstreamBranch(config, fake).generate({ ...CALL, request: { ...CALL.request, outputSchema } });
+      return schema;
+    };
+
+    it('shares the repeated enums of the director schema under the limit, meaning the same', async () => {
+      expect(enumValues(GENRE_ANSWER_SCHEMA)).toBeGreaterThan(OPENAI_ENUM_LIMIT);
+      const { $defs, ...sent } = await sentSchema(backupOf(), GENRE_ANSWER_SCHEMA);
+      expect(enumValues([sent, $defs])).toBeLessThanOrEqual(OPENAI_ENUM_LIMIT);
+      expect(resolve(sent, $defs as Record<string, unknown>)).toEqual(GENRE_ANSWER_SCHEMA);
+    });
+
+    it('sends a schema under the limit, and any schema to another provider, unchanged', async () => {
+      expect(await sentSchema(backupOf(), READING_JSON_SCHEMA)).toEqual(READING_JSON_SCHEMA);
+      expect(openaiStrictSchema(READING_JSON_SCHEMA)).toBe(READING_JSON_SCHEMA);
+      expect(await sentSchema(configOf({}), GENRE_ANSWER_SCHEMA)).toEqual(GENRE_ANSWER_SCHEMA);
+    });
   });
 
   it('lowers xhigh and max to high, the top effort hosted gpt-oss knows', async () => {

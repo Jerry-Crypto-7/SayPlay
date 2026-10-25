@@ -32,11 +32,12 @@ const READING: Reading = {
   control: 'shooter',
   verbs: [{ word: 'collect', class: 'aim_shoot' }],
   hero: 'knight',
-  roles: [{ noun: 'dragons', kind: 'threat', count: 6 }],
+  roles: [{ noun: 'dragons', kind: 'obstacle', count: 6 }],
   setting: 'a castle',
   mood: null,
   numbers: { seconds: null, counts: [] },
   genre: null,
+  sure: true,
   foe: null,
   item: null,
   world: null,
@@ -123,7 +124,9 @@ describe('create route reads the sentence before drafting', () => {
     expect(String(answering.mock.calls[0]?.[0])).toBe('http://reader.test/v1/chat/completions');
     expect(spec).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
     // This malformed reading invents dragons and misclassifies collect as shooting.
-    // Reading is advisory: an unrequested threat cannot replace collecting keys.
+    // Reading is advisory: an unrequested obstacle cannot replace collecting keys.
+    // P58B T6: its genre null now says "no genre fits" and plays the arena collect; an invented threat would add a
+    // tied arena escape, and a tie under the generic margin plays the micro-game chain (P56C) instead of one game.
     expect(spec).toEqual(draftGameSpec(SENTENCE));
     expect((spec as { roles: { label: string }[] }).roles.map(role => role.label)).toContain('key');
     expect((spec as { roles: { label: string }[] }).roles.map(role => role.label)).not.toContain('dragon');
@@ -221,6 +224,16 @@ describe('create route reads the sentence before drafting', () => {
       expect(paid).not.toHaveBeenCalled();
     });
 
+    // P58B T4: astra čte p95 6,4 s – čtečka jen pro AI verzi rychlou hru nebrzdí a route ji vůbec nezavolá.
+    it('reading for the AI version only, publishes the keyword draft and asks nothing', async () => {
+      vi.stubEnv('PLAY_READER_PATH', 'ai');
+      // Úložiště her je tu souborové a sdílené s testy výš – věta, kterou ještě nikdo nepublikoval.
+      const sentence = 'a knight collects gems in a tower';
+      expect(await publishedSpec(await create(sentence))).toEqual(draftGameSpec(sentence));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(paid).not.toHaveBeenCalled();
+    });
+
     it('sends nothing when the physics load fails', async () => {
       const broken = Promise.reject(new Error('rapier wasm failed'));
       broken.catch(() => undefined);
@@ -234,11 +247,14 @@ describe('create route reads the sentence before drafting', () => {
 
   // P56C T17e: čtení řetězu staví návrh věty, který se s míčem bez fyziky nepřeloží – route na ni počká jako jedna hra.
   describe('on a cold server, before the physics loads', () => {
-    /** Uložené čtení P56A (`p30-dev` d01): model říká běžec, návrh z něj staví míč. */
+    /**
+     * Uložené čtení P56A (`p30-dev` d01) se žánrem hodu: návrh z něj staví míč. S žánrem běžce, jak ho model přečetl,
+     * od P58B T5a hraje běžec (d01 ho povoluje) a míč, na jehož fyziku se čeká, nevznikne.
+     */
     const ROLLS = 'a hedgehog rolls down a mushroom hill avoiding foxes';
     const ROLLS_READING: Reading = {
       control: 'runner', verbs: [{ word: 'rolls', class: 'runner' }], hero: 'hedgehog', roles: [{ noun: 'foxes', kind: 'threat', count: null }],
-      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'runner', mode: 'default' },
+      setting: 'mushroom hill', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'throw', mode: 'default' }, sure: true,
       foe: 'foxes', item: null, world: 'forest', title: 'Hedgehog Hill Roll',
     };
     const readerOf = (reading: Reading) => vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 }));
@@ -275,7 +291,7 @@ describe('create route reads the sentence before drafting', () => {
       const reader = readerOf({
         control: 'tap_go', verbs: [{ word: 'drop', class: 'timing' }, { word: 'merge', class: 'timing' }], hero: null,
         roles: [{ noun: 'fruit', kind: 'collectible', count: null }, { noun: 'watermelon', kind: 'destination', count: null }],
-        setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'merge', mode: 'default' }, foe: null, item: 'watermelon', world: null, title: 'Fruit Merge',
+        setting: null, mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'merge', mode: 'default' }, sure: true, foe: null, item: 'watermelon', world: null, title: 'Fruit Merge',
       });
       vi.stubGlobal('fetch', reader);
       const pending = create(merge);

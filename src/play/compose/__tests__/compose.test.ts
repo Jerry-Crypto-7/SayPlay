@@ -61,37 +61,41 @@ describe('compose a live recipe from the full intent', () => {
   });
 });
 
-// P56A T5: žánr hry se čtením gpt-oss-20b z `evals/play/p56a/readings/` (lokálně, tytéž váhy jako demo). Slovník rozhodne,
-// když první slyší nový žánr, jinak čtení – pin nad otevřeným holdoutem P55 a nad dev P54C, kde slovník trefí 64/64.
-// Pasti se prahem nehlídají (majitel 21. 10. přijal pokles), jen se vypíšou.
-describe('the sentence reading decides the genre unless the keywords hear a new one (P56A T5)', () => {
-  const fresh = new Set(['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push']);
-  const played = (set: string, reads: string) => {
-    const sentences = (JSON.parse(readFileSync(set, 'utf8')) as { sentences: { id: string; family: string; genre?: string | null; expect?: string | null; text: string }[] }).sentences;
-    const readings = new Map((JSON.parse(readFileSync(reads, 'utf8')) as { readings: { id: string; reading: Reading | null }[] }).readings.map(row => [row.id, row.reading]));
+// P58B T5: žánr hry se čtením astry z T3 (`evals/play/p58b/compare-dev.json`). Rozhoduje čtení, slovník jen u nejistého
+// (`sure: false`). Do P58B tu bylo čtení gpt-oss-20b a slovník rozhodl, kdykoli první slyšel nový žánr – astra čte nové
+// žánry líp než slovník (T3), takže pin nad P54C dev se čtením odpadl; P54C dev bez čtení (rychlá hra) hlídá
+// `genre/__tests__/classify.test.ts`. Pasti se prahem nehlídají, jen se vypíšou.
+describe('the sentence reading decides the genre (P58B T5)', () => {
+  const compare = JSON.parse(readFileSync('evals/play/p58b/compare-dev.json', 'utf8')) as { rows: { set: string; id: string; models: Record<string, { reading: Reading | null }> }[] };
+  const played = (set: string) => {
+    const sentences = (JSON.parse(readFileSync(`evals/play/${set}.json`, 'utf8')) as { sentences: { id: string; family: string; genre?: string | null; text: string }[] }).sentences;
+    const readings = new Map(compare.rows.filter(row => row.set === set).map(row => [row.id, row.models['astra@openai']!.reading]));
     expect(readings.size).toBe(sentences.length);
     const missed: string[] = [];
-    const strayed: string[] = [];
+    const traps: string[] = [];
     for (const row of sentences) {
       const genre = draftGameSpecWithMeta(row.text, 1, { reading: readings.get(row.id) ?? null }).genre;
       const got = genre === null ? 'none' : `${genre.genre}.${genre.mode}`;
-      const wanted = row.expect ?? `${row.genre}.default`;
-      if (row.family === 'target' && got !== wanted) missed.push(`${row.id}: ${wanted} -> ${got}`);
-      if (row.family !== 'target' && fresh.has(got.split('.')[0]!)) strayed.push(`${row.id}: ${got}`);
+      if (row.family !== 'target') traps.push(`${row.id}: ${got}`);
+      else if (got !== (row.genre!.includes('.') ? row.genre : `${row.genre}.default`)) missed.push(`${row.id}: ${row.genre} -> ${got}`);
     }
-    const targets = sentences.filter(row => row.family === 'target').length;
-    console.info(`${set}: targets ${targets - missed.length}/${targets}, traps kept ${sentences.length - targets - strayed.length}/${sentences.length - targets}\n${strayed.join('\n')}`);
+    const targets = sentences.length - traps.length;
+    console.info(`${set}: targets ${targets - missed.length}/${targets}\n${traps.join('\n')}`);
     return { hit: targets - missed.length, missed };
   };
 
-  it('plays the read genre on the opened P55 holdout: targets ≥ 40/60', () => {
-    const { hit, missed } = played('evals/play/p55/holdout.json', 'evals/play/p56a/readings/p55-holdout.gpt-oss-20b.json');
-    expect(hit, missed.join('\n')).toBeGreaterThanOrEqual(40);
+  it('plays the read genre on the opened P55 holdout: targets 60/60', () => {
+    const { missed } = played('p55/holdout');
+    expect(missed).toEqual([]);
   }, 300_000);
 
-  it('keeps every P54C dev target the keywords hear: 64/64', () => {
-    const { missed } = played('evals/play/p54c/dev.json', 'evals/play/p56a/readings/p54c-dev.gpt-oss-20b.json');
-    expect(missed).toEqual([]);
+  // `classifyGenre` dá se stejnými čteními 59/60 (s08 čtení samo plete). Do T5a skládání 9 z nich přehodilo jinam: řadilo
+  // zdroje podle `missing` a `sourceFor` přepsal žánr čtení akcí věty (duel s „punch“ → arena.fight). Před T5 49/60.
+  it('plays the read genre on the opened P56A holdout: targets ≥ 58/60, s02 and the T5a nine among them', () => {
+    const { hit, missed } = played('p56a/holdout');
+    expect(hit, missed.join('\n')).toBeGreaterThanOrEqual(58);
+    const recast = ['s02', 's03', 's06', 's09', 's12', 's23', 's26', 's32', 's41', 's54'];
+    expect(missed.filter(line => recast.includes(line.split(':')[0]!))).toEqual([]);
   }, 300_000);
 });
 

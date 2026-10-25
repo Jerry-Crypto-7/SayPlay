@@ -18,6 +18,7 @@
  * větu přepne žánr (`switchGenre`) a co neprojde ničím, dohraje žánr draftu.
  */
 
+import { EMISSION_MODEL } from '@/model/prompt';
 import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
@@ -41,7 +42,7 @@ import type { Reading } from '../read/schema';
 import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
-import { readBeforeDraft, readerEnabled } from '../read/client';
+import { readBeforeDraft, readerEnabled, readerForAiVersion } from '../read/client';
 import { type GameSpecV1, readGameSpec } from '../spec';
 import { vocabVersion } from '../vocab';
 
@@ -110,6 +111,17 @@ export interface DirectorDeps {
   readonly modules?: GenreModules;
   /** Pokyn modelu za zadáním (P46E T4: upgrade, který nic nepřidal, požádá o bosse nebo akci). */
   readonly nudge?: string;
+  /**
+   * Volající, jehož věta režii spustila (P58B T4). Čtení věty za něj režisér zaplatí jen u čtečky
+   * pro AI verzi (`readerForAiVersion`), kde route nečetla; jinak větu četla route a režisér ji
+   * placeně nečte podruhé (P56A T4-R2).
+   */
+  readonly caller?: string;
+  /**
+   * Smí čtení za `caller` odejít (P58B T4b)? Ptá se až po missu cache režiséra; `getDirector` tu ověří, že by
+   * režisér model zavolal, a vezme slot dveří `play` dřív, než se čtení zaplatí. Chybí = smí.
+   */
+  readonly mayPayRead?: () => Promise<boolean>;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -231,13 +243,44 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
   const started = deps.now();
   const intent = extractIntent(sentence);
   if (intent.items.some(item => item.essential && item.axis === 'move' && item.verb === 'ball')) await loadRapier();
+  const compact = deps.compact === true;
+  const examples = compact && deps.examples === true;
+  // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí. Totéž jiná tabulka sloves.
+  const vocab = vocabVersion();
+  const promptVersion = `${compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION}${vocab === null ? '' : `+vocab:${vocab}`}${deps.nudge === undefined ? '' : '+nudge'}`;
+  // Model obou požadavků (`buildCompactRequest`, `buildDirectorRequest`); klíč ho zná dřív, než čtení rozhodne žánr návrhu.
+  const key = directorKey({ sentence, promptVersion, model: EMISSION_MODEL, endpoint: deps.branch.id });
+  let calls = 0;
+
+  const fromCache = async (): Promise<DirectedGame | null> => {
+    const cached = deps.cache === undefined ? null : await deps.cache.read(key);
+    // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
+    if (cached === null || blockingIssues(critique(cached.spec)).length > 0 || (deps.modules === undefined && !(await verifyDirectorSpec(cached.spec, intent, deps.seed ?? 1)).complete)) return null;
+    return {
+      ok: true,
+      spec: cached.spec,
+      source: 'cached',
+      repairRounds: 0,
+      fallbackReason: null,
+      warnings: warningsOf(cached.spec),
+      ms: deps.now() - started,
+      calls,
+      ...(cached.authoredBy === null ? {} : { authoredBy: cached.authoredBy }),
+    };
+  };
+
+  // Placené čtení pro AI verzi (P58B T4b) až po cache režiséra a po `mayPayRead`: věta z cache model nevolá
+  // a čtení by bylo zaplacené naprázdno. Na zásahu tady se `onDraft` nevolá – hotová hra je dřív než návrh.
+  const paid = readerForAiVersion() && deps.caller !== undefined;
+  const early = paid ? await fromCache() : null;
+  if (early !== null) return early;
   // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
-  const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
+  const paidFor = paid && (deps.mayPayRead === undefined || (await deps.mayPayRead())) ? { caller: deps.caller } : {};
+  const reading = readerEnabled() ? await readBeforeDraft(sentence, process.env, paidFor) : null;
   const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
   const drafted = draftGameSpecWithMeta(sentence, deps.seed, genreOptions);
   const draft = drafted.spec;
   deps.onDraft?.(draft);
-  let calls = 0;
 
   const fallback = (reason: FallbackReason, failure: DirectorFailure): DirectedGame => ({
     ok: true,
@@ -252,8 +295,6 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
     ...(drafted.composition === undefined ? {} : { unmet: drafted.composition.unmet }),
   });
 
-  const compact = deps.compact === true;
-  const examples = compact && deps.examples === true;
   const startingRequest = compact ? buildCompactRequest(sentence, drafted.genre, examples) : buildDirectorRequest(sentence, drafted.genre);
   // Slovesa, která tabulka P44C přiblížila („stabs“ → fight), režisér vidí jmenovitě – stejně jako je návrh přizná.
   const approximations = intent.items.filter((item) => item.mapped === true).map((item) => ({ said: item.said, as: item.verb }));
@@ -261,25 +302,8 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
   const intended = deps.modules === undefined ? { ...startingRequest, user: `${startingRequest.user}\n\nFULL INTENT:\n${JSON.stringify(fullIntent)}` } : startingRequest;
   // Pokyn navíc (P46E T4, druhý pokus upgradu bez novinky) jde za zadání a má vlastní klíč cache.
   const request = deps.nudge === undefined ? intended : { ...intended, user: `${intended.user}\n\n${deps.nudge}` };
-  // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí. Totéž jiná tabulka sloves.
-  const vocab = vocabVersion();
-  const promptVersion = `${compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION}${vocab === null ? '' : `+vocab:${vocab}`}${deps.nudge === undefined ? '' : '+nudge'}`;
-  const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
-  const cached = deps.cache === undefined ? null : await deps.cache.read(key);
-  // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
-  if (cached !== null && blockingIssues(critique(cached.spec)).length === 0 && (deps.modules !== undefined || (await verifyDirectorSpec(cached.spec, intent, deps.seed ?? 1)).complete)) {
-    return {
-      ok: true,
-      spec: cached.spec,
-      source: 'cached',
-      repairRounds: 0,
-      fallbackReason: null,
-      warnings: warningsOf(cached.spec),
-      ms: deps.now() - started,
-      calls,
-      ...(cached.authoredBy === null ? {} : { authoredBy: cached.authoredBy }),
-    };
-  }
+  const cached = paid ? null : await fromCache();
+  if (cached !== null) return cached;
 
   // Kdo psal (P29B R2): primár, nebo lokální záloha – u každého volání, které spec pohnulo.
   const authors: string[] = [];

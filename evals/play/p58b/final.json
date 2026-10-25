@@ -1,0 +1,2656 @@
+{
+ "schema": "p58b-final.v1",
+ "commit": "d0cc66d1",
+ "sha256": "578463714c9cee6540eb7c4755a68ecfbb883905388ad741c3f0648058c117e8",
+ "model": "gpt-6-astra",
+ "transport": "openai:https://api.openai.com",
+ "effort": "low",
+ "capUsd": 4,
+ "seed": 1,
+ "valid": true,
+ "invalid": null,
+ "holdout": {
+  "gates": {
+   "targetGenre": 48,
+   "trapOffLure": 18,
+   "bot": 80,
+   "idleLoses": 80,
+   "replayEqual": 80,
+   "readerP50Ms": 700,
+   "readerP95Ms": 1000
+  },
+  "met": {
+   "targetGenre": true,
+   "trapOffLure": true,
+   "bot": true,
+   "idleLoses": true,
+   "replayEqual": true,
+   "readerP50Ms": false,
+   "readerP95Ms": false,
+   "fastTargetGenre": false,
+   "fastTrapOffLure": false
+  },
+  "summary": {
+   "targetGenre": {
+    "hit": 60,
+    "of": 60
+   },
+   "targetMode": {
+    "hit": 60,
+    "of": 60
+   },
+   "targetReadingAlone": {
+    "hit": 60,
+    "of": 60
+   },
+   "trapOffLure": {
+    "hit": 20,
+    "of": 20
+   },
+   "trapGenre": {
+    "hit": 19,
+    "of": 20
+   },
+   "trapPlaysItsGenre": {
+    "hit": 13,
+    "of": 14
+   },
+   "bot": {
+    "hit": 80,
+    "of": 80
+   },
+   "idleLoses": {
+    "hit": 80,
+    "of": 80
+   },
+   "replayEqual": {
+    "hit": 80,
+    "of": 80
+   },
+   "specNames": {
+    "hero": {
+     "hit": 58,
+     "of": 59
+    },
+    "foe": {
+     "hit": 41,
+     "of": 43
+    },
+    "item": {
+     "hit": 23,
+     "of": 25
+    }
+   },
+   "worldMatches": {
+    "hit": 73,
+    "of": 74
+   },
+   "cast": {
+    "sentences": 80,
+    "foxHeroNotSaid": [],
+    "heroFallback": 10,
+    "templateTitles": 0,
+    "distinctTitles": 80,
+    "looks": {
+     "meadow": 10,
+     "castle": 6,
+     "factory": 5,
+     "desert": 5,
+     "forest": 5,
+     "cave": 5,
+     "living_room": 5,
+     "beach": 5,
+     "underwater": 4,
+     "jungle": 4,
+     "space": 4,
+     "supermarket": 4,
+     "ocean": 4,
+     "mall": 4,
+     "snow": 4,
+     "city": 3,
+     "graveyard": 2,
+     "volcano": 1
+    }
+   },
+   "reader": {
+    "n": 80,
+    "valid": 80,
+    "p50Ms": 2724,
+    "p95Ms": 5512,
+    "maxMs": 6495
+   },
+   "targetMisses": [],
+   "trapsOnLure": [],
+   "botFailures": []
+  },
+  "fast": {
+   "about": "fast game: draft without a reading (vocabulary with the T5 rule); the reader is too slow for it (T3)",
+   "targetGenre": {
+    "hit": 25,
+    "of": 60
+   },
+   "trapOffLure": {
+    "hit": 15,
+    "of": 20
+   },
+   "targetMisses": [
+    "s02: runner.default -> voyage.race",
+    "s03: runner.default -> platformer.default",
+    "s04: runner.default -> arena.collect",
+    "s05: platformer.default -> voyage.race",
+    "s09: arena.escape -> runner.default",
+    "s10: arena.collect -> quest.spatial",
+    "s11: arena.escape -> voyage.race",
+    "s15: voyage.land -> arena.collect",
+    "s18: quest.station -> runner.default",
+    "s21: shooter.default -> voyage.race",
+    "s22: throw.default -> arena.collect",
+    "s25: timing.stack -> quest.station",
+    "s26: timing.precision -> quest.station",
+    "s27: timing.bridge -> quest.station",
+    "s28: rhythm.default -> quest.station",
+    "s30: rhythm.default -> quest.spatial",
+    "s31: duel.default -> timing.stack",
+    "s33: duel.default -> arena.escape",
+    "s34: flap.default -> voyage.race",
+    "s35: flap.default -> voyage.race",
+    "s36: flap.default -> voyage.race",
+    "s39: catch.default -> runner.default",
+    "s42: whack.default -> arena.collect",
+    "s44: defense.default -> arena.escape",
+    "s45: defense.default -> arena.escape",
+    "s46: slice.default -> voyage.race",
+    "s48: slice.default -> arena.escape",
+    "s49: hop.default -> arena.escape",
+    "s50: hop.default -> quest.station",
+    "s51: hop.default -> runner.default",
+    "s53: crowd.default -> quest.station",
+    "s54: crowd.default -> arena.escape",
+    "s57: merge.default -> quest.station",
+    "s59: push.default -> arena.collect",
+    "s60: push.default -> quest.station"
+   ],
+   "trapsOnLure": [
+    "s61: lure runner.default played",
+    "s62: lure shooter.default played",
+    "s67: lure voyage.race played",
+    "s73: lure platformer.default played",
+    "s78: lure voyage.race played"
+   ]
+  },
+  "rows": [
+   {
+    "id": "s01",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Ferret Tram Lanes",
+    "look": "city",
+    "world": "city",
+    "heroLabel": "ferret",
+    "cast": [
+     "barrier",
+     "coin"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s02",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Toaster Conveyor Lanes",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "toaster",
+    "cast": [
+     "press",
+     "golden bolt"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s03",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "platformer.default",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Desert Courier",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "courier",
+    "cast": [
+     "cacti",
+     "date"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s04",
+    "family": "target",
+    "genre": "runner.default",
+    "lure": null,
+    "draft": "runner.default",
+    "wordsDraft": "arena.collect",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": true
+    },
+    "title": "Underwater Pearls",
+    "look": "underwater",
+    "world": "underwater",
+    "heroLabel": "fish",
+    "cast": [
+     "pearl",
+     "coral arch"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s05",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "platformer.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "platformer.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Frog Across Forest Branches",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "frog",
+    "cast": [
+     "ravine",
+     "acorn"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s06",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "platformer.default",
+    "wordsDraft": "platformer.default",
+    "readGenre": "platformer.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Cave Ledges",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "miner",
+    "cast": [
+     "deep pit",
+     "crystal"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s07",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "platformer.default",
+    "wordsDraft": "platformer.default",
+    "readGenre": "platformer.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "teapot climb",
+    "look": "living_room",
+    "world": "living_room",
+    "heroLabel": "teapot",
+    "cast": [
+     "floor",
+     "floating cushion"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s08",
+    "family": "target",
+    "genre": "platformer.default",
+    "lure": null,
+    "draft": "platformer.default",
+    "wordsDraft": "platformer.default",
+    "readGenre": "platformer.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "Crumbling Balconies",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "knight",
+    "cast": [
+     "moat",
+     "gem"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s09",
+    "family": "target",
+    "genre": "arena.escape",
+    "lure": null,
+    "draft": "arena.escape",
+    "wordsDraft": "runner.default",
+    "readGenre": "arena.escape",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "snail rescue",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "snail",
+    "cast": [
+     "salt golem",
+     "rescue bell",
+     "bell ring"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s10",
+    "family": "target",
+    "genre": "arena.collect",
+    "lure": null,
+    "draft": "arena.collect",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "arena.collect",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "Scattered Screws",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "robot",
+    "cast": [
+     "screw",
+     "saw blade"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s11",
+    "family": "target",
+    "genre": "arena.escape",
+    "lure": null,
+    "draft": "arena.escape",
+    "wordsDraft": "voyage.race",
+    "readGenre": "arena.escape",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Survive Until Sunrise",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "duck",
+    "cast": [
+     "crocodile"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s12",
+    "family": "target",
+    "genre": "arena.fight",
+    "lure": null,
+    "draft": "arena.fight",
+    "wordsDraft": "arena.collect",
+    "readGenre": "arena.fight",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Smack Skeletons",
+    "look": "graveyard",
+    "world": "graveyard",
+    "heroLabel": "blacksmith",
+    "cast": [
+     "skeleton",
+     "hammer"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s13",
+    "family": "target",
+    "genre": "voyage.race",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": "voyage.race",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Crab Sand Buggy",
+    "look": "beach",
+    "world": "beach",
+    "heroLabel": "crab",
+    "cast": [
+     "rival cart",
+     "sand buggy"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s14",
+    "family": "target",
+    "genre": "voyage.race",
+    "lure": null,
+    "draft": "voyage.race",
+    "wordsDraft": "voyage.race",
+    "readGenre": "voyage.race",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "beat the clock",
+    "look": "city",
+    "world": "city",
+    "heroLabel": "car",
+    "cast": [
+     "corner",
+     "motorbike"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s15",
+    "family": "target",
+    "genre": "voyage.land",
+    "lure": null,
+    "draft": "voyage.land",
+    "wordsDraft": "arena.collect",
+    "readGenre": "voyage.land",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Tiny Pod",
+    "look": "space",
+    "world": "space",
+    "heroLabel": "astronaut",
+    "cast": [
+     "asteroid",
+     "pod"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s16",
+    "family": "target",
+    "genre": "quest.spatial",
+    "lure": null,
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.station",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Every Aisle Lights Up",
+    "look": "supermarket",
+    "world": "supermarket",
+    "heroLabel": "electrician",
+    "cast": [
+     "broken fuse box",
+     "cheese",
+     "wiring"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s17",
+    "family": "target",
+    "genre": "quest.spatial",
+    "lure": null,
+    "draft": "quest.spatial",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "Thirsty Saplings",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "explorer",
+    "cast": [
+     "water",
+     "acorn",
+     "star"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s18",
+    "family": "target",
+    "genre": "quest.station",
+    "lure": null,
+    "draft": "quest.station",
+    "wordsDraft": "runner.default",
+    "readGenre": "quest.station",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Floating Soup Kiosk",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "octopus",
+    "cast": [
+     "shark",
+     "counter",
+     "star"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s19",
+    "family": "target",
+    "genre": "shooter.default",
+    "lure": null,
+    "draft": "shooter.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": "shooter.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Scarecrow's Hat",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "scarecrow",
+    "cast": [
+     "crow",
+     "hat",
+     "water cannon"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s20",
+    "family": "target",
+    "genre": "shooter.default",
+    "lure": null,
+    "draft": "shooter.default",
+    "wordsDraft": "shooter.default",
+    "readGenre": "shooter.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Foam Blaster",
+    "look": "mall",
+    "world": "mall",
+    "heroLabel": "foam",
+    "cast": [
+     "rolling mannequin",
+     "foam blaster"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s21",
+    "family": "target",
+    "genre": "shooter.default",
+    "lure": null,
+    "draft": "shooter.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "shooter.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Harpoon Mechanic",
+    "look": "underwater",
+    "world": "underwater",
+    "heroLabel": "submarine mechanic",
+    "cast": [
+     "robot eel",
+     "harpoon gun"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s22",
+    "family": "target",
+    "genre": "throw.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "arena.collect",
+    "readGenre": "throw.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Paper Ball",
+    "look": "living_room",
+    "world": "living_room",
+    "heroLabel": "raccoon",
+    "cast": [
+     "wastebasket",
+     "paper ball",
+     "distant"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s23",
+    "family": "target",
+    "genre": "throw.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "throw.default",
+    "readGenre": "throw.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "one careful toss",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "explorer",
+    "cast": [
+     "scorpion",
+     "horsesho",
+     "stake",
+     "time"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s24",
+    "family": "target",
+    "genre": "throw.default",
+    "lure": null,
+    "draft": "throw.default",
+    "wordsDraft": "throw.default",
+    "readGenre": "throw.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Dough Ball Launch",
+    "look": "supermarket",
+    "world": "supermarket",
+    "heroLabel": "baker",
+    "cast": [
+     "dough ball",
+     "cat",
+     "mixing bowl",
+     "single dough"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s25",
+    "family": "target",
+    "genre": "timing.stack",
+    "lure": null,
+    "draft": "timing.stack",
+    "wordsDraft": "quest.station",
+    "readGenre": "timing.stack",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "giraffe builds a lookout",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "giraffe",
+    "cast": [
+     "snake",
+     "crate",
+     "lookout"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s26",
+    "family": "target",
+    "genre": "timing.precision",
+    "lure": null,
+    "draft": "timing.precision",
+    "wordsDraft": "quest.station",
+    "readGenre": "timing.precision",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Cave Vault",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "locksmith",
+    "cast": [
+     "vault"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s27",
+    "family": "target",
+    "genre": "timing.bridge",
+    "lure": null,
+    "draft": "timing.bridge",
+    "wordsDraft": "quest.station",
+    "readGenre": "timing.bridge",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "beetle cross meadow posts",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "beetle",
+    "cast": [
+     "gap",
+     "reed"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s28",
+    "family": "target",
+    "genre": "rhythm.default",
+    "lure": null,
+    "draft": "rhythm.default",
+    "wordsDraft": "quest.station",
+    "readGenre": "rhythm.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Clanking Soundtrack",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "drummer robot",
+    "cast": [
+     "saw blade",
+     "pad"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s29",
+    "family": "target",
+    "genre": "rhythm.default",
+    "lure": null,
+    "draft": "rhythm.default",
+    "wordsDraft": "rhythm.default",
+    "readGenre": "rhythm.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "Beach Concert",
+    "look": "beach",
+    "world": "beach",
+    "heroLabel": "turtle",
+    "cast": [
+     "shell symbol"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s30",
+    "family": "target",
+    "genre": "rhythm.default",
+    "lure": null,
+    "draft": "rhythm.default",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "rhythm.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": false,
+     "foe": null,
+     "item": null
+    },
+    "title": "Ocean Disco",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "pirate",
+    "cast": [
+     "bubble"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s31",
+    "family": "target",
+    "genre": "duel.default",
+    "lure": null,
+    "draft": "duel.default",
+    "wordsDraft": "timing.stack",
+    "readGenre": "duel.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Knight Faces One Ogre",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "knight",
+    "cast": [
+     "ogre"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s32",
+    "family": "target",
+    "genre": "duel.default",
+    "lure": null,
+    "draft": "duel.default",
+    "wordsDraft": "duel.default",
+    "readGenre": "duel.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Arm Wrestle a Pirate",
+    "look": "beach",
+    "world": null,
+    "heroLabel": "explorer",
+    "cast": [
+     "pirate"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s33",
+    "family": "target",
+    "genre": "duel.default",
+    "lure": null,
+    "draft": "duel.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "duel.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Parries and Lunges",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "mantis",
+    "cast": [
+     "wasp"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s34",
+    "family": "target",
+    "genre": "flap.default",
+    "lure": null,
+    "draft": "flap.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "flap.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Keep a bat airborne",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "bat",
+    "cast": [
+     "stalactite",
+     "crystal"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s35",
+    "family": "target",
+    "genre": "flap.default",
+    "lure": null,
+    "draft": "flap.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "flap.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Tiny Lifts",
+    "look": "space",
+    "world": "space",
+    "heroLabel": "astronaut",
+    "cast": [
+     "cargo shutter",
+     "star"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s36",
+    "family": "target",
+    "genre": "flap.default",
+    "lure": null,
+    "draft": "flap.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "flap.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "flying sock",
+    "look": "living_room",
+    "world": "living_room",
+    "heroLabel": "flying sock",
+    "cast": [
+     "furniture",
+     "toy block"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s37",
+    "family": "target",
+    "genre": "catch.default",
+    "lure": null,
+    "draft": "catch.default",
+    "wordsDraft": "catch.default",
+    "readGenre": "catch.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Falling Oranges",
+    "look": "supermarket",
+    "world": "supermarket",
+    "heroLabel": "shopping basket",
+    "cast": [
+     "rotten eggs",
+     "oranges",
+     "falling orange"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s38",
+    "family": "target",
+    "genre": "catch.default",
+    "lure": null,
+    "draft": "catch.default",
+    "wordsDraft": "catch.default",
+    "readGenre": "catch.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": true
+    },
+    "title": "falling mangoes",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "monkey",
+    "cast": [
+     "scorpions",
+     "mangoes",
+     "falling mango"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s39",
+    "family": "target",
+    "genre": "catch.default",
+    "lure": null,
+    "draft": "catch.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "catch.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Falling Fish",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "seal",
+    "cast": [
+     "anchors",
+     "fish"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s40",
+    "family": "target",
+    "genre": "whack.default",
+    "lure": null,
+    "draft": "whack.default",
+    "wordsDraft": "whack.default",
+    "readGenre": "whack.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Mischievous Moles",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "gardener",
+    "cast": [
+     "mischievous mole"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s41",
+    "family": "target",
+    "genre": "whack.default",
+    "lure": null,
+    "draft": "whack.default",
+    "wordsDraft": "whack.default",
+    "readGenre": "whack.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "bonk tiny ghosts",
+    "look": "graveyard",
+    "world": "graveyard",
+    "heroLabel": "kid",
+    "cast": [
+     "tiny ghost"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s42",
+    "family": "target",
+    "genre": "whack.default",
+    "lure": null,
+    "draft": "whack.default",
+    "wordsDraft": "arena.collect",
+    "readGenre": "whack.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Bellhop tapping gremlins",
+    "look": "meadow",
+    "world": "city",
+    "heroLabel": "bellhop",
+    "cast": [
+     "shutters"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s43",
+    "family": "target",
+    "genre": "defense.default",
+    "lure": null,
+    "draft": "defense.default",
+    "wordsDraft": "defense.default",
+    "readGenre": "defense.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Thorn Barricades",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "beekeeper",
+    "cast": [
+     "hornets",
+     "meadow hive"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s44",
+    "family": "target",
+    "genre": "defense.default",
+    "lure": null,
+    "draft": "defense.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "defense.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": true
+    },
+    "title": "Cactus Sentries",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "explorer",
+    "cast": [
+     "sand worms",
+     "desert well"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s45",
+    "family": "target",
+    "genre": "defense.default",
+    "lure": null,
+    "draft": "defense.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "defense.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": false
+    },
+    "title": "Anemone Guards",
+    "look": "underwater",
+    "world": "underwater",
+    "heroLabel": "mermaid",
+    "cast": [
+     "piranhas"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s46",
+    "family": "target",
+    "genre": "slice.default",
+    "lure": null,
+    "draft": "slice.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "slice.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Airborne Cabbages",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "chef",
+    "cast": [
+     "iron kettles",
+     "blade"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s47",
+    "family": "target",
+    "genre": "slice.default",
+    "lure": null,
+    "draft": "slice.default",
+    "wordsDraft": "slice.default",
+    "readGenre": "slice.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "floating soap bubbles",
+    "look": "mall",
+    "world": "mall",
+    "heroLabel": "kid",
+    "cast": [
+     "spiky mines",
+     "floating soap"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s48",
+    "family": "target",
+    "genre": "slice.default",
+    "lure": null,
+    "draft": "slice.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "slice.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Swordfish cuts airborne kelp",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "swordfish",
+    "cast": [
+     "airborne kelp bundle",
+     "explosive barrels"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s49",
+    "family": "target",
+    "genre": "hop.default",
+    "lure": null,
+    "draft": "hop.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "hop.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Tortoise Crosses a Boulevard",
+    "look": "city",
+    "world": "city",
+    "heroLabel": "tortoise",
+    "cast": [
+     "buses"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s50",
+    "family": "target",
+    "genre": "hop.default",
+    "lure": null,
+    "draft": "hop.default",
+    "wordsDraft": "quest.station",
+    "readGenre": "hop.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Factory Shipping Floor",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "robot",
+    "cast": [
+     "forklifts"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s51",
+    "family": "target",
+    "genre": "hop.default",
+    "lure": null,
+    "draft": "hop.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "hop.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Llama Across Snowy Resort Lanes",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "llama",
+    "cast": [
+     "sleds"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s52",
+    "family": "target",
+    "genre": "crowd.default",
+    "lure": null,
+    "draft": "crowd.default",
+    "wordsDraft": "crowd.default",
+    "readGenre": "crowd.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Pencil Army",
+    "look": "living_room",
+    "world": null,
+    "heroLabel": "pencil army",
+    "cast": [
+     "erasers",
+     "gate"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s53",
+    "family": "target",
+    "genre": "crowd.default",
+    "lure": null,
+    "draft": "crowd.default",
+    "wordsDraft": "quest.station",
+    "readGenre": "crowd.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Overwhelm Alien Guards",
+    "look": "space",
+    "world": "space",
+    "heroLabel": "astronaut",
+    "cast": [
+     "alien guards"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s54",
+    "family": "target",
+    "genre": "crowd.default",
+    "lure": null,
+    "draft": "crowd.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "crowd.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Marshmallow Troops",
+    "look": "supermarket",
+    "world": "supermarket",
+    "heroLabel": "marshmallow",
+    "cast": [
+     "licorice monsters"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s55",
+    "family": "target",
+    "genre": "merge.default",
+    "lure": null,
+    "draft": "merge.default",
+    "wordsDraft": "merge.default",
+    "readGenre": "merge.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Acorns Fuse",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "squirrel",
+    "cast": [
+     "acorns onto a",
+     "acorns"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s56",
+    "family": "target",
+    "genre": "merge.default",
+    "lure": null,
+    "draft": "merge.default",
+    "wordsDraft": "merge.default",
+    "readGenre": "merge.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "Pebbles and Crystal",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "kid",
+    "cast": [
+     "pebbles"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s57",
+    "family": "target",
+    "genre": "merge.default",
+    "lure": null,
+    "draft": "merge.default",
+    "wordsDraft": "quest.station",
+    "readGenre": "merge.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Alchemist Potions",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "alchemist",
+    "cast": [
+     "potion",
+     "potions"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s58",
+    "family": "target",
+    "genre": "push.default",
+    "lure": null,
+    "draft": "push.default",
+    "wordsDraft": "push.default",
+    "readGenre": "push.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "walrus body bump",
+    "look": "snow",
+    "world": "snow",
+    "heroLabel": "walrus",
+    "cast": [
+     "rival sea lion"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s59",
+    "family": "target",
+    "genre": "push.default",
+    "lure": null,
+    "draft": "push.default",
+    "wordsDraft": "arena.collect",
+    "readGenre": "push.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Over the Edge",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "knight",
+    "cast": [
+     "gargoyles"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s60",
+    "family": "target",
+    "genre": "push.default",
+    "lure": null,
+    "draft": "push.default",
+    "wordsDraft": "quest.station",
+    "readGenre": "push.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": false,
+     "item": null
+    },
+    "title": "Bumper Car",
+    "look": "factory",
+    "world": "factory",
+    "heroLabel": "bumper car",
+    "cast": [],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s61",
+    "family": "trap",
+    "genre": "timing.stack",
+    "lure": "runner.default",
+    "draft": "timing.stack",
+    "wordsDraft": "runner.default",
+    "readGenre": "timing.stack",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "shoebox pile",
+    "look": "mall",
+    "world": "mall",
+    "heroLabel": "tortoise",
+    "cast": [
+     "shopping cart",
+     "shoebox",
+     "pile"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s62",
+    "family": "trap",
+    "genre": "quest.station",
+    "lure": "shooter.default",
+    "draft": "arena.collect",
+    "wordsDraft": "shooter.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Mall Photo Shoot",
+    "look": "mall",
+    "world": "mall",
+    "heroLabel": "photographer",
+    "cast": [
+     "counter",
+     "customer"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s63",
+    "family": "trap",
+    "genre": "arena.escape",
+    "lure": "timing.stack",
+    "draft": "arena.escape",
+    "wordsDraft": "arena.escape",
+    "readGenre": "arena.escape",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Until the Bell Rings",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "chimney sweep",
+    "cast": [
+     "goose"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s64",
+    "family": "trap",
+    "genre": "slice.default",
+    "lure": "catch.default",
+    "draft": "slice.default",
+    "wordsDraft": "voyage.race",
+    "readGenre": "slice.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": true,
+     "item": null
+    },
+    "title": "Chop airborne melons",
+    "look": "beach",
+    "world": "beach",
+    "heroLabel": "turtle",
+    "cast": [
+     "anvils"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s65",
+    "family": "trap",
+    "genre": "platformer.default",
+    "lure": "flap.default",
+    "draft": "platformer.default",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "platformer.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Penguin Wearing Fake Wings",
+    "look": "cave",
+    "world": "cave",
+    "heroLabel": "penguin",
+    "cast": [
+     "fake wing"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s66",
+    "family": "trap",
+    "genre": "rhythm.default",
+    "lure": "defense.default",
+    "draft": "rhythm.default",
+    "wordsDraft": "arena.fight",
+    "readGenre": "rhythm.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": false
+    },
+    "title": "Baker on beat",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "baker",
+    "cast": [
+     "button",
+     "point"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s67",
+    "family": "trap",
+    "genre": "timing.precision",
+    "lure": "voyage.race",
+    "draft": "timing.precision",
+    "wordsDraft": "voyage.race",
+    "readGenre": "timing.precision",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Tiny Green Band",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "mechanic",
+    "cast": [
+     "wind",
+     "point",
+     "race car"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s68",
+    "family": "trap",
+    "genre": "arena.collect",
+    "lure": "throw.default",
+    "draft": "arena.collect",
+    "wordsDraft": "quest.spatial",
+    "readGenre": "arena.collect",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": true
+    },
+    "title": "Scattered Golf Balls",
+    "look": "meadow",
+    "world": "meadow",
+    "heroLabel": "explorer",
+    "cast": [
+     "scattered",
+     "bee",
+     "golf ball"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s69",
+    "family": "trap",
+    "genre": "hop.default",
+    "lure": "duel.default",
+    "draft": "hop.default",
+    "wordsDraft": "arena.fight",
+    "readGenre": "hop.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Crab Crosses Beach Traffic",
+    "look": "beach",
+    "world": "beach",
+    "heroLabel": "crab",
+    "cast": [
+     "buggies",
+     "boxing gloves"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s70",
+    "family": "trap",
+    "genre": "merge.default",
+    "lure": "arena.fight",
+    "draft": "merge.default",
+    "wordsDraft": "runner.default",
+    "readGenre": "merge.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "Bigger Volumes",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "librarian",
+    "cast": [
+     "books"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s71",
+    "family": "trap",
+    "genre": "voyage.land",
+    "lure": "rhythm.default",
+    "draft": "voyage.land",
+    "wordsDraft": "voyage.race",
+    "readGenre": "voyage.land",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Drum-shaped Rocket",
+    "look": "volcano",
+    "world": "volcano",
+    "heroLabel": "fox",
+    "cast": [
+     "fireball",
+     "drum-shaped rocket"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s72",
+    "family": "trap",
+    "genre": "arena.fight",
+    "lure": "slice.default",
+    "draft": "arena.fight",
+    "wordsDraft": "voyage.race",
+    "readGenre": "arena.fight",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": null
+    },
+    "title": "Eight Swords",
+    "look": "underwater",
+    "world": "underwater",
+    "heroLabel": "octopus",
+    "cast": [
+     "eel",
+     "sword"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s73",
+    "family": "trap",
+    "genre": "quest.spatial",
+    "lure": "platformer.default",
+    "draft": "quest.spatial",
+    "wordsDraft": "platformer.default",
+    "readGenre": "quest.spatial",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Moon Base Antennas",
+    "look": "space",
+    "world": "space",
+    "heroLabel": "astronaut",
+    "cast": [
+     "antenna",
+     "wire",
+     "boots walk"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s74",
+    "family": "trap",
+    "genre": "runner.default",
+    "lure": "crowd.default",
+    "draft": "runner.default",
+    "wordsDraft": "arena.escape",
+    "readGenre": "runner.default",
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": true,
+     "item": true
+    },
+    "title": "Painted Cardboard Army",
+    "look": "forest",
+    "world": "forest",
+    "heroLabel": "sheep",
+    "cast": [
+     "hanging branch",
+     "acorn"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s75",
+    "family": "trap",
+    "genre": null,
+    "lure": "arena.escape",
+    "draft": "arena.collect",
+    "wordsDraft": "runner.default",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": false,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": null,
+     "foe": null,
+     "item": null
+    },
+    "title": "Escape a Jungle Temple",
+    "look": "jungle",
+    "world": "jungle",
+    "heroLabel": "monkey",
+    "cast": [
+     "jungle temple",
+     "answer"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s76",
+    "family": "trap",
+    "genre": null,
+    "lure": "timing.bridge",
+    "draft": "arena.collect",
+    "wordsDraft": "quest.station",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Beaver builds a bridge",
+    "look": "ocean",
+    "world": "ocean",
+    "heroLabel": "beaver",
+    "cast": [
+     "shark",
+     "word",
+     "bridge"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s77",
+    "family": "trap",
+    "genre": null,
+    "lure": "defense.default",
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Polite or Savage Replies",
+    "look": "castle",
+    "world": "castle",
+    "heroLabel": "witch",
+    "cast": [
+     "ghost",
+     "reply"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s78",
+    "family": "trap",
+    "genre": null,
+    "lure": "voyage.race",
+    "draft": "arena.collect",
+    "wordsDraft": "voyage.race",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": false,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": true
+    },
+    "title": "lowest total wins",
+    "look": "desert",
+    "world": "desert",
+    "heroLabel": "snail",
+    "cast": [
+     "scorpion",
+     "card"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s79",
+    "family": "trap",
+    "genre": null,
+    "lure": "shooter.default",
+    "draft": "arena.collect",
+    "wordsDraft": "arena.collect",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "crocodile style",
+    "look": "meadow",
+    "world": null,
+    "heroLabel": "crocodile",
+    "cast": [
+     "laser",
+     "jacket"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   },
+   {
+    "id": "s80",
+    "family": "trap",
+    "genre": null,
+    "lure": "flap.default",
+    "draft": "arena.collect",
+    "wordsDraft": "quest.station",
+    "readGenre": null,
+    "genreOk": true,
+    "modeOk": true,
+    "wordsGenreOk": true,
+    "spec": {
+     "hero": true,
+     "foe": null,
+     "item": null
+    },
+    "title": "Perfect Timetable",
+    "look": "living_room",
+    "world": null,
+    "heroLabel": "owl",
+    "cast": [
+     "schedule conflict",
+     "toy block"
+    ],
+    "bot": {
+     "wins": true,
+     "idleLoses": true,
+     "replayEqual": true,
+     "why": null
+    }
+   }
+  ]
+ }
+}

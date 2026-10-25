@@ -1,0 +1,220 @@
+{
+  "about": "P58B T7: astra (gpt-6-astra) via the OpenAI API as the director of the AI version, on the first 30 dev sentences (originals of corpus.json). Two paid batches merged; numbers from scripts/play-fidelity.mjs (compareSummary, specFidelity, pairwise --question match). See director.md.",
+  "model": {
+    "model": "gpt-6-astra",
+    "endpoint": "openai:https://api.openai.com",
+    "effort": "low",
+    "maxOutputTokens": 8000,
+    "usdPerMtok": {
+      "in": 10,
+      "out": 50
+    },
+    "reader": "astra low, path ai"
+  },
+  "batches": {
+    "b1": {
+      "runId": "p58b-t7-b1",
+      "commit": "9fe4a172",
+      "buildId": "unbuilt@2026-10-24T20:51:22.547Z",
+      "measuredAt": "2026-10-24T21:16:00.330Z",
+      "capUsd": 6.05,
+      "sentences": 10,
+      "note": "before 1d6f0c9f: 3 microgame chains booked as model failures, 3 paid sentences lost to \"fetch failed\" while polling (s003, s008, s021, re-measured in b2); only its 4 published sentences enter the merge"
+    },
+    "b2": {
+      "runId": "p58b-t7-b2",
+      "commit": "1d6f0c9f",
+      "buildId": "unbuilt@2026-10-24T21:25:13.794Z",
+      "measuredAt": "2026-10-24T21:59:56.293Z",
+      "capUsd": 7,
+      "sentences": 8,
+      "note": "after 1d6f0c9f (GET retry, chains apart); server code identical to b1"
+    }
+  },
+  "set": {
+    "first30": 30,
+    "chains": {
+      "n": 10,
+      "ids": [
+        "s002",
+        "s006",
+        "s022",
+        "s056",
+        "h01",
+        "h03",
+        "h06",
+        "h07",
+        "h08",
+        "h10"
+      ],
+      "note": "microgame chain: POST answers without upgrade, no AI version by design – checked on an unpaid server, nothing billed"
+    },
+    "measured": {
+      "n": 12,
+      "ids": [
+        "s039",
+        "s037",
+        "s035",
+        "s050",
+        "s003",
+        "s008",
+        "s021",
+        "s088",
+        "s069",
+        "s058",
+        "s111",
+        "s095"
+      ]
+    },
+    "unmeasured": {
+      "n": 8,
+      "ids": [
+        "s188",
+        "s144",
+        "s155",
+        "s099",
+        "h02",
+        "h04",
+        "h05",
+        "h09"
+      ],
+      "note": "budget: the T7 cap is 15 USD; b1 lost 3 paid sentences to the measuring tool"
+    },
+    "lostInB1": [
+      "s003",
+      "s008",
+      "s021"
+    ]
+  },
+  "director": {
+    "published": {
+      "ok": 12,
+      "of": 12,
+      "share": 1,
+      "failures": {}
+    },
+    "fidelity": {
+      "ai": {
+        "inSpec": 0.972,
+        "read": 0.924,
+        "drawn": 0.924,
+        "role": 0.896
+      },
+      "fast": {
+        "inSpec": 0.924,
+        "read": 0.875,
+        "drawn": 0.875,
+        "role": 0.847
+      }
+    },
+    "firstPlayableFrameMs": {
+      "aiP50": 56740,
+      "aiP95": 92542,
+      "draftP50": 1353,
+      "draftP95": 7875
+    },
+    "pairwiseMatch": {
+      "question": "which game matches the sentence better (blind, sides by pure-rand seed 45045 per batch)",
+      "n": 12,
+      "ai": 6,
+      "fast": 4,
+      "tie": 2,
+      "aiShare": 0.583,
+      "b1": {
+        "n": 4,
+        "aWins": 2,
+        "bWins": 1,
+        "ties": 1,
+        "bShare": 0.375,
+        "leftWinShare": 0.375
+      },
+      "b2": {
+        "n": 8,
+        "aWins": 2,
+        "bWins": 5,
+        "ties": 1,
+        "bShare": 0.688,
+        "leftWinShare": 0.563
+      },
+      "pairs": [
+        {
+          "id": "s035",
+          "winner": "fast",
+          "why": "Both games show a fish swimming underwater through gaps between upper and lower obstacles. Game A’s solid green pipe-like barriers more clearly reproduce Flappy Bird’s defining obstacle course, while Game B uses stacks of coral-like objects."
+        },
+        {
+          "id": "s037",
+          "winner": "ai",
+          "why": "Game B shows an armored space marine firing across red alien terrain toward bug-like creatures, with industrial towers and machinery suggesting a mining colony. Game A also shows an armored shooter and small creatures, but its hazy skyline and scattered crates make the space-colony setting less clear."
+        },
+        {
+          "id": "s039",
+          "winner": "fast",
+          "why": "Both games show a sparse shopping area with storefronts, kiosks, and aiming reticles, though neither clearly looks like an indoor mall. Game B more clearly shows shooting at approaching humanoid enemies with health bars, while Game A mostly shows the player aiming across an empty scene."
+        },
+        {
+          "id": "s050",
+          "winner": "tie",
+          "why": "Both games show a snowy field with an igloo, small distant characters, and projectiles thrown toward them, but neither clearly shows kids sheltering behind a snow fort. Game A has a larger igloo, while Game B adds foreground snowmen; neither difference improves the match."
+        },
+        {
+          "id": "s003",
+          "winner": "tie",
+          "why": "Both games show an orange hamster fleeing a large black-and-red Roomba along an aisle filled with groceries, shopping carts, and supermarket shelves. The characters, setting, and escape action appear equivalent in both."
+        },
+        {
+          "id": "s008",
+          "winner": "ai",
+          "why": "Both games show a banana running ahead of a monkey along a path with obstacles and collectibles. Game B’s stone towers and ruins better match Temple Run’s setting, while Game A runs through green countryside with windmills."
+        },
+        {
+          "id": "s021",
+          "winner": "ai",
+          "why": "Game A shows an obstacle course of dark platforms over glowing lava, with volcanoes and bars across the route. Game B shows sandy platforms over blue water among palm trees, so it matches the lava setting much less closely."
+        },
+        {
+          "id": "s058",
+          "winner": "ai",
+          "why": "Game A shows a boat racing along a teal river through dense jungle with crocodile-like creatures beside the course. Game B has similar boats and jungle scenery, but its brown course looks more like a dirt track than a river."
+        },
+        {
+          "id": "s069",
+          "winner": "fast",
+          "why": "Game B shows colored gem-like pieces on tiles inside a rocky cave, with groups sparkling and disappearing, closer to Candy Crush’s matching action. Game A shows fruit-like objects falling into a tall bin beneath a crystal, with little visible matching or cave setting."
+        },
+        {
+          "id": "s088",
+          "winner": "ai",
+          "why": "Game B shows a cat-shaped launcher facing stacks of brown cardboard-like boxes with small cat figures, better matching Angry Birds-style target destruction. Game A has a similar launcher and grassy setting, but mostly scattered small targets and floating robot-like enemies, with no clear box structures."
+        },
+        {
+          "id": "s095",
+          "winner": "ai",
+          "why": "Game A shows a horizontal wooden log as the target, with knives flying toward it. Game B shows a similar throwing scene, but its target looks like a vertical stack of colorful blocks rather than a spinning log."
+        },
+        {
+          "id": "s111",
+          "winner": "fast",
+          "why": "Both games show a black vortex moving through a paved city area with cars, trees, and street furniture. In A, the vortex becomes visibly larger over time; B’s stays relatively small and more prominently encounters red robots, making A better match growth through swallowing the city."
+        }
+      ]
+    },
+    "cost": {
+      "billedCalls": 58,
+      "billedUsd": 9.97788,
+      "attempts": 15,
+      "perAttempt": 0.665,
+      "perGameCleanBatch": 0.621628,
+      "callsPerAttempt": 3.9,
+      "note": "every attempt opens with a ~0.39 USD call (~32k input tokens are the shared director schema alone, ~0.32 USD) and continues with ~0.05 USD calls; prices are an upper bound – the cap ledger does not see the OpenAI cache discount; reader not in the billed log, estimated 0.027 USD per read (T3)"
+    }
+  },
+  "spendT7Usd": {
+    "dryRuns": 1.9,
+    "b1": 5.00486,
+    "b2": 4.97302,
+    "readerEstimate": 0.41,
+    "note": "dry runs: upper bound from the previous session",
+    "total": 12.29
+  }
+}

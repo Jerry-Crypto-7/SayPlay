@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { blindQuestion } from '../../../../scripts/p37d/judge-sheet.mjs';
-import { PAIR_QUESTION, pairSides, pairwise } from '../../../../scripts/play-fidelity.mjs';
+import { PAIR_QUESTION, matchQuestion, pairSides, pairwise } from '../../../../scripts/play-fidelity.mjs';
 
 const IDS = Array.from({ length: 40 }, (_, i) => `s${String(i + 1).padStart(2, '0')}`);
 
@@ -136,5 +136,25 @@ describe('pairwise judge', () => {
       expect(question).toBe(PAIR_QUESTION);
       expect(question).not.toMatch(/main-a|head-b|0714a352|\bmain\b|\bHEAD\b/);
     }
+  });
+
+  // P58B T7: rychlá verze proti AI verzi – soudce dostane větu obou her a jeho odpovědi nesplynou s odpověďmi o zábavě.
+  it('asks which game matches the sentence of run A, apart from the fun answers', async () => {
+    const { runsDir } = runs();
+    for (const run of ['main-a', 'head-b']) writeFileSync(join(runsDir, run, 's01.json'), JSON.stringify({ id: 's01', text: run === 'main-a' ? 'a fox jumps over logs' : 'ignored', pace: { robot: true, frames: ['s01-pace-1.png'], endedAtTick: null } }));
+    const out = join(runsDir, 'verdict.json');
+    const questions: string[] = [];
+    const ask = async (_sheet: string, _schema: string, answerFile: string, question: string): Promise<{ code: number }> => {
+      questions.push(question);
+      writeFileSync(answerFile, JSON.stringify({ winner: 'A', why: 'test' }));
+      return { code: 0 };
+    };
+    await pairwise({ ...options(runsDir, out), only: 's01' }, { ask, compose: composer().compose });
+    await pairwise({ ...options(runsDir, out), only: 's01', question: 'match' }, { ask, compose: composer().compose });
+    expect(questions).toEqual([PAIR_QUESTION, matchQuestion('a fox jumps over logs')]);
+    expect(questions[1]).toContain('"a fox jumps over logs"');
+    expect(read(out).question).toBe('match');
+    await expect(pairwise({ ...options(runsDir, out), only: 's02', question: 'match' }, { ask, compose: composer().compose })).rejects.toThrow(/needs the sentence text/);
+    await expect(pairwise({ ...options(runsDir, out), question: 'speed' }, { ask, compose: composer().compose })).rejects.toThrow(/only match/);
   });
 });
