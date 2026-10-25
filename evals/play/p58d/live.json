@@ -1,0 +1,253 @@
+{
+ "schema": "p58d-live.v1",
+ "measuredAt": "2026-10-25T18:29:04.452Z",
+ "baseUrl": "http://127.0.0.1:3131",
+ "server": "next start (production build), PLAY_READER_PATH=ai, reader gpt-6-astra low via openai:https://api.openai.com, director gpt-6-astra low",
+ "capsUsd": {
+  "reader": 0.44,
+  "director": 0.06,
+  "fallback": 0,
+  "total": 0.5
+ },
+ "summary": {
+  "sentences": 6,
+  "readingGames": 3,
+  "sendToReadingMs": {
+   "n": 3,
+   "p50": 4976,
+   "max": 8324
+  },
+  "finals": [
+   "s003: draft-final MODEL_UNAVAILABLE",
+   "h09: draft-final MODEL_UNAVAILABLE",
+   "j06: draft-final MODEL_UNAVAILABLE",
+   "d16: draft-final MODEL_UNAVAILABLE",
+   "h02: draft-final MODEL_UNAVAILABLE",
+   "s002: no-upgrade CHAIN"
+  ]
+ },
+ "spend": {
+  "source": "provider usage of every api.openai.com call, logged inside the server process; usd = tokens × server prices",
+  "calls": 5,
+  "callsWithoutUsage": 0,
+  "usd": 0.14663,
+  "byKind": {
+   "reader": 0.14663,
+   "director": 0
+  },
+  "detail": [
+   {
+    "at": "2026-10-25T18:28:44.345Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2415,
+    "tokensOut": 120,
+    "usd": 0.03015
+   },
+   {
+    "at": "2026-10-25T18:28:50.414Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2411,
+    "tokensOut": 105,
+    "usd": 0.02936
+   },
+   {
+    "at": "2026-10-25T18:28:54.075Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2411,
+    "tokensOut": 104,
+    "usd": 0.02931
+   },
+   {
+    "at": "2026-10-25T18:28:57.491Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2412,
+    "tokensOut": 103,
+    "usd": 0.02927
+   },
+   {
+    "at": "2026-10-25T18:29:00.977Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2409,
+    "tokensOut": 89,
+    "usd": 0.02854
+   }
+  ]
+ },
+ "rows": [
+  {
+   "id": "s003",
+   "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "quickMs": 3874,
+   "quickId": "c21981c9febaa52d83fc110bf9558d0c",
+   "chain": false,
+   "quickGenre": "runner.default",
+   "readingId": "ead80c025221d6370cf6245f0a028c85",
+   "readingMs": 8324,
+   "readingPublishedMs": 8158,
+   "readingRelation": "reading",
+   "readingParent": "c21981c9febaa52d83fc110bf9558d0c",
+   "readingGenre": "arena.escape",
+   "final": {
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "stage": "model",
+    "detail": "UPSTREAM_REJECTED – spend cap refused the call",
+    "ms": 8325
+   },
+   "finalMs": 8325,
+   "firstAttemptSettledMs": 8325,
+   "aiId": null,
+   "aiGenre": null,
+   "aiFellBackToQuickGenre": null,
+   "routeStatusesSeen": [
+    "pending",
+    "pending+reading"
+   ],
+   "upgradeAttemptsStarted": 2
+  },
+  {
+   "id": "h09",
+   "sentence": "escape from a haunted hospital with a flashlight",
+   "quickMs": 1609,
+   "quickId": "76e834add7ad92f72bac409fb40bf61b",
+   "chain": false,
+   "quickGenre": "runner.default",
+   "readingId": "e1f74b5373396cfe51cbb0341f728f7c",
+   "readingMs": 4976,
+   "readingPublishedMs": 4821,
+   "readingRelation": "reading",
+   "readingParent": "76e834add7ad92f72bac409fb40bf61b",
+   "readingGenre": "arena.escape",
+   "final": {
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "stage": "model",
+    "detail": "UPSTREAM_REJECTED – spend cap refused the call",
+    "ms": 4977
+   },
+   "finalMs": 4977,
+   "firstAttemptSettledMs": 4977,
+   "aiId": null,
+   "aiGenre": null,
+   "aiFellBackToQuickGenre": null,
+   "routeStatusesSeen": [
+    "pending",
+    "pending+reading"
+   ],
+   "upgradeAttemptsStarted": 2
+  },
+  {
+   "id": "j06",
+   "sentence": "a chef flips pancakes in a busy kitchen",
+   "quickMs": 283,
+   "quickId": "7e3459690fd57b0afb0956da6a97f074",
+   "chain": false,
+   "quickGenre": "quest.station",
+   "readingId": null,
+   "readingMs": null,
+   "readingPublishedMs": null,
+   "readingRelation": null,
+   "readingParent": null,
+   "readingGenre": null,
+   "final": {
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "versionId": null,
+    "ms": 3177
+   },
+   "finalMs": 3177,
+   "firstAttemptSettledMs": null,
+   "aiId": null,
+   "aiGenre": null,
+   "aiFellBackToQuickGenre": null,
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final"
+   ],
+   "upgradeAttemptsStarted": 2
+  },
+  {
+   "id": "d16",
+   "sentence": "an owl delivers letters across a snowy mountain village",
+   "quickMs": 520,
+   "quickId": "0617f672602166407b7378bf9c1abbf9",
+   "chain": false,
+   "quickGenre": "arena.collect",
+   "readingId": "aab1552160f3cd9cf8f75b181b4b49c2",
+   "readingMs": 3185,
+   "readingPublishedMs": 3041,
+   "readingRelation": "reading",
+   "readingParent": "0617f672602166407b7378bf9c1abbf9",
+   "readingGenre": "quest.spatial",
+   "final": {
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "stage": "model",
+    "detail": "UPSTREAM_REJECTED – spend cap refused the call",
+    "ms": 3186
+   },
+   "finalMs": 3186,
+   "firstAttemptSettledMs": 3186,
+   "aiId": null,
+   "aiGenre": null,
+   "aiFellBackToQuickGenre": null,
+   "routeStatusesSeen": [
+    "pending",
+    "pending+reading"
+   ],
+   "upgradeAttemptsStarted": 2
+  },
+  {
+   "id": "h02",
+   "sentence": "shopping cart race in a supermarket",
+   "quickMs": 814,
+   "quickId": "88ac1590f530b94b844dd6602a05ca4e",
+   "chain": false,
+   "quickGenre": null,
+   "readingId": null,
+   "readingMs": null,
+   "readingPublishedMs": null,
+   "readingRelation": null,
+   "readingParent": null,
+   "readingGenre": null,
+   "final": {
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "versionId": null,
+    "ms": 3586
+   },
+   "finalMs": 3586,
+   "firstAttemptSettledMs": null,
+   "aiId": null,
+   "aiGenre": null,
+   "aiFellBackToQuickGenre": null,
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final"
+   ],
+   "upgradeAttemptsStarted": 2
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "quickMs": 699,
+   "quickId": "bda5067d2f21057c20528b6d0d3efec7",
+   "chain": true,
+   "quickGenre": "crowd.default",
+   "final": {
+    "status": "no-upgrade",
+    "reason": "CHAIN"
+   }
+  }
+ ]
+}
