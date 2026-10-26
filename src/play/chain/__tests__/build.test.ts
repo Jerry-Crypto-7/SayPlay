@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { VERB_CLASSES } from '@/play/read/schema';
 
-import { buildChain, VERB_MICROS, WORLD_MICROS } from '../build';
+import { buildChain, mainVerb, VERB_MICROS, WORLD_MICROS } from '../build';
 import type { ChainWorld } from '../contract';
 import { MICRO } from '../micro';
 import { MUTATOR_COMPAT, MUTATORS, type MutatorId } from '../mutators';
@@ -27,18 +27,34 @@ describe('buildChain', () => {
   const ROBOT = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
   const chain = built(ROBOT);
 
-  it('plays a verb of the sentence in round 1, and not always the first verb (T19)', () => {
+  it('plays a verb of the sentence in round 1 (T19)', () => {
     for (const sentence of [ROBOT, 'dodge pies then throw pies', 'bonk the gophers popping out of the lawn']) {
       const heard = readForChain(sentence, null).verbs.flatMap((verb) => VERB_MICROS[verb.class]);
       expect(heard.length).toBeGreaterThan(0);
       for (const seed of [1, 2, 3, 4, 5, 6]) expect(heard).toContain(built(sentence, seed).rounds[0]!.key);
     }
-    // Dvě slovesa s různým ovládáním: podle semínka začíná řetěz jedním i druhým.
+  });
+
+  // P61 T4: kolo 1 je mikrohra hlavního slovesa (`classifyGenre` +4) na každém semínku, ne los mezi slovesy věty.
+  it('leads with the microgame of the main verb, not the first verb of the sentence (P61 T4)', () => {
+    const CORGI = 'A corgi runs through a park grabbing sausages and jumping over sprinklers';
+    expect(readForChain(CORGI, null).verbs.map((verb) => verb.class)).toEqual(['runner', 'move_free', 'platform']);
+    expect(mainVerb(CORGI, readForChain(CORGI, null))).toBe('runner');
+    for (const seed of [1, 2, 3, 4, 5, 6]) expect(built(CORGI, seed).rounds[0]!.key).toBe('runner.default');
+    // Hlavní je hod, druhé sloveso věty; dřív začínalo podle semínka i uhýbání.
     const TWO = 'dodge pies then throw pies';
-    const [first, second] = readForChain(TWO, null).verbs.map((verb) => VERB_MICROS[verb.class]);
-    const leads = [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => built(TWO, seed).rounds[0]!.key);
-    expect(leads.some((key) => first!.includes(key))).toBe(true);
-    expect(leads.some((key) => second!.includes(key))).toBe(true);
+    expect(readForChain(TWO, null).verbs.map((verb) => verb.class)).toEqual(['steer', 'throw']);
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) expect(built(TWO, seed).rounds[0]!.key).toBe('shooter.default');
+    // „wall-jumps“ ve větě je sloveso „jumps“ slovníku.
+    const NINJA = 'ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way';
+    expect(mainVerb(NINJA, readForChain(NINJA, null))).toBe('platform');
+  });
+
+  it('a sentence without a main verb keeps the drawn lead (T19)', () => {
+    const GHOST = 'a goth teenage ghost with a skateboard and a bad attitude';
+    expect(mainVerb(GHOST, readForChain(GHOST, null))).toBeNull();
+    // Čtení modelem: hlavní je první sloveso čtení.
+    expect(mainVerb(GHOST, { ...readForChain(GHOST, null), verbs: [{ word: 'skates', class: 'runner' }, { word: 'jumps', class: 'platform' }], source: 'llm' })).toBe('runner');
   });
 
   it('plays the world of a sentence without verbs in round 1 (T19)', () => {

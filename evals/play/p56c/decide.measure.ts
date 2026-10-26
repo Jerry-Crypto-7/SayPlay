@@ -1,6 +1,6 @@
 /**
  * „Řetěz, nebo jedna hra“ na dev sadě (P56C T8) → `decide.md`: rozdělení po rodinách a větev pravidla u každé věty.
- * Práh `GENERIC_MARGIN` se ladí jen tady; zapečetěná sada se neotvírá.
+ * Pravidlo se ladí jen tady; zapečetěná sada se neotvírá. P61 T4 práh `GENERIC_MARGIN` zrušil (`generic` = neslyšená věta).
  *
  * `npx vitest run --config vitest.measure.mts evals/play/p56c/decide.measure.ts`
  */
@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { expect, it } from 'vitest';
 
-import { chainReasons, GENERIC_MARGIN } from '../../../src/play/chain/decide';
+import { chainReasons } from '../../../src/play/chain/decide';
 import { loadRapier } from '../../../src/play/arcade/physics/world';
 import { readForChain } from '../../../src/play/chain/read';
 import { classifyGenre, type GenreRanking } from '../../../src/play/genre/classify';
@@ -60,7 +60,7 @@ it('splits the dev set into chains and single games', async () => {
   const lines = [
     '# P56C T8 – řetěz, nebo jedna hra (dev)',
     '',
-    `Změřeno ${new Date().toISOString().slice(0, 10)} \`decide.measure.ts\`, čtení slovníkem, \`classifyGenre(věta, null)\`. Práh náskoku obecné buňky \`GENERIC_MARGIN\` = ${GENERIC_MARGIN}: na dev leží mezi „a goth teenage ghost with a skateboard“ (\`runner.default\`, náskok 2 → řetěz) a „steer a hot air balloon…“, „catch snowflakes…“, „herd the runaway sheep…“ (obecná buňka, náskok 4 → jedna hra). Platí každá hodnota 3–4; zapečetěná sada ho potvrdí nebo vyvrátí.`,
+    `Změřeno ${new Date().toISOString().slice(0, 10)} \`decide.measure.ts\`, čtení slovníkem, \`classifyGenre(věta, null)\`. Od P61 T4 je větev \`generic\` jen neslyšená věta (první buňka 0 bodů, nebo čtení bez hratelného slovesa); práh náskoku obecné buňky (\`GENERIC_MARGIN\` = 3, P56C T8) zmizel – slyšená obecná buňka hraje jednu hru („a goth teenage ghost with a skateboard“, \`runner.default\` 2). Slyšená obecná buňka s počítaným cílem („collect three keys … while dodging ghosts“) hraje jednu hru i se dvěma slovesy.`,
     '',
     '| Rodina | AC | Výsledek |',
     '|---|---|---|',
@@ -104,7 +104,7 @@ it('splits the dev set into chains and single games', async () => {
       return `| ${set} | ${count(list, (row) => row.read)} | ${count(list, (row) => row.word)} | ${count(list, (row) => row.read, 'generic')} | ${count(list, (row) => row.word, 'generic')} | ${count(list, (row) => row.read, 'multi_verb')} | ${count(list, (row) => row.word, 'multi_verb')} |`;
     }),
     '',
-    `**Rozhodnutí (T17b, 2026-10-22): práh \`GENERIC_MARGIN\` = ${GENERIC_MARGIN} zůstává i pro čtení.** Větev \`generic\` není u čtení vzácnější kvůli prahu – kde čtení přistane na obecné buňce, má náskok ≥ 7 jen u vět s jasným slovesem čtení (běžec „hedgehog rolls … avoiding foxes“); práh 7 (= 3 + bonus čtení 4) by přepnul jen a09 a x13, obě slovník už řetězem posílá. Rozdíl „řetěz se čtením / slovníkem“ dělá \`multi_verb\`: model u „chef catches eggs … while avoiding bombs“, „squash the bugs“, „tower defense against robots“ slyší jedno hlavní sloveso s vlastním žánrem – podle pravidla správně jedna hra; slovník z „avoid“ dělá druhé sloveso. Skutečná díra byla jinde: bonus čtení dělá z každé věty „slyšenou“, takže věta bez hratelného slovesa („purple elephants doing taxes“, „grandpa fixing his old car“ – sloveso \`idle\`, žánr \`quest\`) šla do jedné hry. Oprava v \`decide.ts\`: se čtením je věta neslyšená, když čtení nemá hratelné sloveso a první buňka není mikrohra řetězu – „wizard defends his tower“ (\`idle\`, ale \`defense.default\`) zůstane jednou hrou. Slovníková cesta se nemění.`,
+    `**Rozhodnutí (T17b, 2026-10-22; práh zrušil P61 T4): práh \`GENERIC_MARGIN\` = 3 zůstává i pro čtení.** Větev \`generic\` není u čtení vzácnější kvůli prahu – kde čtení přistane na obecné buňce, má náskok ≥ 7 jen u vět s jasným slovesem čtení (běžec „hedgehog rolls … avoiding foxes“); práh 7 (= 3 + bonus čtení 4) by přepnul jen a09 a x13, obě slovník už řetězem posílá. Rozdíl „řetěz se čtením / slovníkem“ dělá \`multi_verb\`: model u „chef catches eggs … while avoiding bombs“, „squash the bugs“, „tower defense against robots“ slyší jedno hlavní sloveso s vlastním žánrem – podle pravidla správně jedna hra; slovník z „avoid“ dělá druhé sloveso. Skutečná díra byla jinde: bonus čtení dělá z každé věty „slyšenou“, takže věta bez hratelného slovesa („purple elephants doing taxes“, „grandpa fixing his old car“ – sloveso \`idle\`, žánr \`quest\`) šla do jedné hry. Oprava v \`decide.ts\`: se čtením je věta neslyšená, když čtení nemá hratelné sloveso a první buňka není mikrohra řetězu – „wizard defends his tower“ (\`idle\`, ale \`defense.default\`) zůstane jednou hrou. Slovníková cesta se nemění.`,
     '',
     `Věty, kde čtení rozhodne jinak než slovník (${differ.length}):`,
     '',

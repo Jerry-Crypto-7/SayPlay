@@ -35,6 +35,32 @@ Hra ze čtení vznikla jen u 3 z 12 vět (s002, s006, s022 – všechny tři ře
 
 Snímky `main` na zapečetěné sadě: 24/24 v `D:/caches/p61/main-holdout/`, nesouzené.
 
+## T4 – řetěz a jedna hra
+
+Zjištění: „knight … three keys … dodging ghosts“ nešel do řetězu přes `generic`, ale přes `multi_verb` – slovník čte collect (`move_free`) a dodging (`steer`), dvě ovládání; první buňka `arena.escape` 6 bodů s náskokem 5. Samotné zúžení `generic` by ho nechalo řetězem.
+
+- `decide.ts`: `generic` jen pro neslyšenou větu (první buňka 0 bodů, nebo čtení bez hratelného slovesa); práh `GENERIC_MARGIN` zrušen. Slyšená obecná buňka s počítaným cílem hraje jednu hru i se dvěma slovesy – počet musí patřit sbírané věci věty (`readCountedNouns` ↔ `item`: „three keys“ ano, „two swords“ u sbírání klíčů ne).
+- `build.ts`: kolo 1 = mikrohra hlavního slovesa (`classifyGenre` +4, u čtení modelem první sloveso čtení), zbytek losem jako T19. Corgi → běh, robot na věži → plošinovka, „dodge pies then throw pies“ → střelba na každém semínku.
+
+Měřeno 26. 10. bez čtečky, 0 volání. Před = `30a0efc8` přeměřený týmž dnem (uložený `decide.md` z 22. 10. byl zastaralý).
+
+| Měřidlo | Brána | Před | Po |
+|---|---|---|---|
+| P56C dev: `multi_verb` → řetěz | ≥ 10/12 | 11/12 | 11/12 |
+| P56C dev: `no_verb` + `world_only` → řetěz | ≥ 15/18 | 18/18 | 17/18 (d31 „ghost with a skateboard“ → běžec) |
+| P56C dev: `single_verb` → jedna hra | ≥ 8/10 | 10/10 | 10/10 |
+| P56C 150 vět se čtením: řetěz slovníkem | – | 40 | 37 (`multi_verb` 29 → 28, jen knight) |
+| P56C 150 vět: řetěz se čtením | – | 35 | 26 (`generic` 20 → 9) |
+| P58B rychlá hra: cíle se žánrem věty | ≥ 25/60 | 25/60 | 25/60 |
+| P58B rychlá hra: pasti mimo návnadu | ≥ 15/20 | 15/20 | 15/20 |
+| P58B: věty do řetězu | – | 40/80 | 36/80 |
+| P58B: první hra, kterou hráč vidí (u řetězu žánr kola 1) – cíle / pasti | – | 20/60 · 14/20 | 24/60 · 16/20 |
+| P58B: řetězy, které začínají běžcem | – | 14/40 | 11/36 |
+
+- Cíl P56C (víc sloves vidět) neklesl: `multi_verb` na dev beze změny, ze 150 vět ho ztratil jen knight. Omezení na počítaná podstatná jména tedy jen pro výjimku `multi_verb`, ne pro `generic`.
+- P58B rychlá hra (`fast` = návrh bez čtení) se změnou nehne z konstrukce – návrh řetěz nevolá. `holdout.measure.ts` offline cestu nemá (chce `OPENAI_API_KEY` a `openSealedOnce` zapisuje `holdout-opened.json`), proto neběžel. Čísla dal jednorázový skript nad otevřenou `p58b/holdout.json` (`rowOf` bez čtení + `chainReasons`/`buildChain` jako route), pečeť nedotčená.
+- Pozor: zúžení počtu na sbíranou věc přišlo po pohledu na P58B s72, s74, s75 („eight swords“, „three forest lanes“, „four answers“ by jinak řetěz zrušily). Ta sada je otevřená od P58B T8; zapečetěná sada P61 neotevřená.
+
 ## Útrata čtení
 
 Strop celého plánu 4 USD. Čtečka astra (`gpt-6-astra`), ceny 10 / 50 USD za Mtok, tokeny od poskytovatele z `usage-preload.mjs`.
