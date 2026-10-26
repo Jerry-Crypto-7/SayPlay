@@ -1,6 +1,6 @@
 {
  "schema": "p61-result.v1",
- "task": "P61 T8 part A – sealed quality gate",
+ "task": "P61 T8 – sealed quality gate (part A: G1–G6, robot) and speed and phone FPS (part B: timing G7, fps G8)",
  "holdout": {
   "file": "evals/play/p61/holdout.json",
   "sha256": "e15ce81f8bb6b17c9411314419054ec8771ebbdb0fb8d30df96672b6ad3e4e0b",
@@ -1287,7 +1287,8 @@
   "pass": false,
   "unmet": [
    "G3",
-   "G4"
+   "G4",
+   "G7"
   ]
  },
  "robot": {
@@ -1317,6 +1318,427 @@
   "total": 2.262,
   "cap": 4
  },
- "timing": null,
- "fps": null
+ "timing": {
+  "tool": "scripts/measure/first-playable-ab.mjs",
+  "measuredAt": "2026-10-26T21:46:35.584Z",
+  "a": {
+   "side": "main",
+   "commit": "5692b987",
+   "url": "http://127.0.0.1:3162"
+  },
+  "b": {
+   "side": "p61",
+   "commit": "8d495d74",
+   "url": "http://127.0.0.1:3161"
+  },
+  "sentences": "evals/play/p30/dev.json [0..4] (the first five dev sentences, as in evals/play/first-playable)",
+  "metric": "ms from tapping \"Make it!\" on /play to the game canvas answering two inputs in a row (time-to-playable.mjs); firstFrame = ms to the first drawn game frame",
+  "order": "run is the outer loop; each sentence gets an A+B pair back to back, the side going first alternates per pair; 5 s pause between runs",
+  "runs": 3,
+  "reader": "off (servers without reader env, 0 paid calls); every sentence published on both servers before measuring",
+  "server": "npm run build + next start, fresh PLAY_STORE_DIR per server, both servers up during the run",
+  "failed": 0,
+  "profiles": {
+   "desktop": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [3079, 2548, 2497],
+     "B": [2727, 2492, 1960],
+     "firstFrameA": [2000, 1489, 1507],
+     "firstFrameB": [1574, 1434, 808]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [2300, 2037, 1990],
+     "B": [2097, 1375, 2197],
+     "firstFrameA": [1579, 1456, 1465],
+     "firstFrameB": [1589, 832, 1478]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [2454, 2313, 2377],
+     "B": [2575, 2367, 2609],
+     "firstFrameA": [1992, 1905, 1966],
+     "firstFrameB": [1741, 1502, 1643]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [2878, 3199, 2997],
+     "B": [2842, 2181, 3207],
+     "firstFrameA": [2000, 2321, 2029],
+     "firstFrameB": [1992, 1300, 2232]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [2481, 1497, 1714],
+     "B": [2874, 2117, 1896],
+     "firstFrameA": [1918, 908, 1122],
+     "firstFrameB": [2017, 1292, 1028]
+    }
+   ],
+   "pixel7-cpu4": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [7414, 7599, 7928],
+     "B": [7507, 7768, 9916],
+     "firstFrameA": [3736, 3996, 3927],
+     "firstFrameB": [3689, 4216, 3859]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [5415, 5534, 5469],
+     "B": [5657, 5636, 5649],
+     "firstFrameA": [3825, 3764, 3846],
+     "firstFrameB": [4038, 4048, 3960]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [4852, 4990, 4835],
+     "B": [6312, 6403, 6275],
+     "firstFrameA": [3795, 3881, 3733],
+     "firstFrameB": [3849, 3769, 3876]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [6593, 7233, 6594],
+     "B": [6435, 6940, 6479],
+     "firstFrameA": [4213, 4772, 4233],
+     "firstFrameB": [4373, 4282, 4414]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [4602, 5402, 4761],
+     "B": [6319, 6355, 6506],
+     "firstFrameA": [3484, 4060, 3548],
+     "firstFrameB": [4504, 4531, 4573]
+    }
+   ]
+  },
+  "medians": {
+   "desktop": {
+    "A": 2454,
+    "B": 2367,
+    "diff": -87,
+    "pairedDiff": 54,
+    "pass": true
+   },
+   "pixel7-cpu4": {
+    "A": 5469,
+    "B": 6403,
+    "diff": 934,
+    "pairedDiff": 242,
+    "pass": false
+   }
+  },
+  "gate": {
+   "id": "G7",
+   "label": "Sentence to playable: branch median <= main median + 200 ms in every profile the script measures",
+   "thresholdMs": 200,
+   "pass": false
+  }
+ },
+ "fps": {
+  "a": {
+   "side": "main",
+   "commit": "5692b987"
+  },
+  "b": {
+   "side": "p61",
+   "commit": "8d495d74"
+  },
+  "rule": "per scene: median FPS of B / median FPS of A over its rounds; gate value = median of those ratios over the scenes; every run must pass",
+  "runs": [
+   {
+    "tool": "e2e/play-perf.spec.ts @measure (unchanged), driven per scene: PERF_GAMES=<scene> PERF_PROFILES=moto-g-power-emulated PERF_REPEATS=1, one Playwright process at a time",
+    "profile": "the spec phone profile moto-g-power-emulated: 412x823, DPR 1.75, touch, CPU 4x, Fast 4G; the spec has no Pixel 7 profile",
+    "metric": "playing.fpsP50 (FPS from the median frame interval, 10 s robot demo)",
+    "order": "round is the outer loop; each scene gets an A+B pair back to back, the side going first alternates per pair",
+    "measuredAt": "2026-10-26T21:46:49.373Z",
+    "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "excluded": {
+     "drive": "failed 3/3 on both sides: main chain shell has no playWitness (spec throws after the play window), branch chain starts with a shooter round that __playShell.start() does not start (tick stays 0 for 120 s; a real tap starts it)"
+    },
+    "scenes": [
+     {
+      "scene": "runner",
+      "A": [59.9, 59.9, 59.9],
+      "B": [59.9, 59.9, 59.9],
+      "callsA": [67, 66, 66],
+      "callsB": [66, 67, 66]
+     },
+     {
+      "scene": "arena",
+      "A": [59.9, 59.9, 59.9],
+      "B": [59.9, 59.9, 59.9],
+      "callsA": [53, 53, 53],
+      "callsB": [53, 53, 53]
+     },
+     {
+      "scene": "grid-collect",
+      "A": [59.9, 59.9, 59.9],
+      "B": [59.9, 59.9, 59.9],
+      "callsA": [51, 51, 51],
+      "callsB": [47, 47, 47]
+     },
+     {
+      "scene": "drive",
+      "A": [null, null, null],
+      "B": [null, null, null],
+      "callsA": [null, null, null],
+      "callsB": [null, null, null]
+     },
+     {
+      "scene": "glide",
+      "A": [59.9, 59.9, 59.9],
+      "B": [59.9, 59.9, 59.9],
+      "callsA": [67, 67, 67],
+      "callsB": [68, 67, 67]
+     },
+     {
+      "scene": "walker",
+      "A": [59.9, 59.9, 59.9],
+      "B": [59.9, 59.9, 59.9],
+      "callsA": [63, 63, 63],
+      "callsB": [63, 63, 63]
+     },
+     {
+      "scene": "ball",
+      "A": [59.9, 59.9, 59.9],
+      "B": [59.9, 59.9, 59.9],
+      "callsA": [112, 112, 112],
+      "callsB": [113, 112, 112]
+     }
+    ],
+    "scenesMeasured": 6,
+    "ratioMedian": 1,
+    "pass": true
+   },
+   {
+    "tool": "scripts/play-look-shots.mjs perf --vs --set genres --repeats 3",
+    "profile": "Playwright Pixel 7, CPU 4x, d3d11",
+    "metric": "rAF FPS over a 10 s robot demo window",
+    "order": "scene by scene; repeats alternate A B, B A, A B",
+    "measuredAt": "2026-10-26T22:51:00.690Z",
+    "scenes": [
+     {
+      "scene": "g-runner",
+      "A": [54.3, 50.5, 55.4],
+      "B": [50.8, 52.8, 55.8],
+      "callsA": 99,
+      "callsB": 99,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-race",
+      "A": [56.1, 57.9, 57.2],
+      "B": [56.9, 56.9, 57.6],
+      "callsA": 85,
+      "callsB": 84,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-platform",
+      "A": [57.8, 57.7, 57.4],
+      "B": [58.1, 56.7, 54.9],
+      "callsA": 87,
+      "callsB": 87,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-arena",
+      "A": [59.7, 59.7, 59.9],
+      "B": [54.2, 53.9, 52.7],
+      "callsA": 56,
+      "callsB": 70,
+      "qualityA": ["high", "high", "high"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-fight",
+      "A": [56.4, 56.9, 52.3],
+      "B": [56.6, 56.8, 53.7],
+      "callsA": 79,
+      "callsB": 80,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-quest",
+      "A": [54.7, 54.6, 54.7],
+      "B": [55.8, 51.9, 55.2],
+      "callsA": 74,
+      "callsB": 74,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-agar",
+      "A": [58.2, 59.2, 59],
+      "B": [56.4, 59.2, 58],
+      "callsA": 55,
+      "callsB": 55,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-walker",
+      "A": [57.6, 54.2, 58.3],
+      "B": [57.4, 58.2, 58.1],
+      "callsA": 68,
+      "callsB": 68,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-glide",
+      "A": [57.8, 58.1, 58],
+      "B": [56.6, 57.7, 57.4],
+      "callsA": 70,
+      "callsB": 70,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-ball",
+      "A": [56.8, 56.7, 56.2],
+      "B": [56.6, 56.9, 56.1],
+      "callsA": 103,
+      "callsB": 103,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-flap",
+      "A": [58.5, 58.4, 58.5],
+      "B": [58.1, 58.1, 58.9],
+      "callsA": 81,
+      "callsB": 90,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "high"]
+     },
+     {
+      "scene": "g-shooter",
+      "A": [54.6, 54.1, 55.5],
+      "B": [54.2, 51.8, 46.6],
+      "callsA": 80,
+      "callsB": 80,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-throw",
+      "A": [57, 58.2, 57.5],
+      "B": [58.6, 58.2, 58.1],
+      "callsA": 81,
+      "callsB": 80,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-timing",
+      "A": [59.7, 59.5, 59.3],
+      "B": [57.9, 58.4, 59.4],
+      "callsA": 66,
+      "callsB": 67,
+      "qualityA": ["high", "medium", "high"],
+      "qualityB": ["medium", "high", "medium"]
+     },
+     {
+      "scene": "g-rhythm",
+      "A": [58, 58.6, 58.4],
+      "B": [58, 58.7, 58.6],
+      "callsA": 93,
+      "callsB": 93,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["high", "medium", "medium"]
+     },
+     {
+      "scene": "g-duel",
+      "A": [58.9, 59.5, 58.9],
+      "B": [59.5, 59.1, 59.1],
+      "callsA": 51,
+      "callsB": 50,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["high", "medium", "high"]
+     },
+     {
+      "scene": "g-voyage",
+      "A": [59.8, 59.9, 59.9],
+      "B": [59.6, 59.8, 59.8],
+      "callsA": 48,
+      "callsB": 48,
+      "qualityA": ["high", "high", "high"],
+      "qualityB": ["high", "high", "high"]
+     },
+     {
+      "scene": "g-lander",
+      "A": [59.8, 59.5, 59.8],
+      "B": [59.9, 59.8, 59.9],
+      "callsA": 45,
+      "callsB": 45,
+      "qualityA": ["high", "medium", "high"],
+      "qualityB": ["high", "high", "high"]
+     },
+     {
+      "scene": "g-catch",
+      "A": [59.6, 58.9, 59],
+      "B": [59.7, 59.7, 58.3],
+      "callsA": 56,
+      "callsB": 56,
+      "qualityA": ["high", "medium", "medium"],
+      "qualityB": ["high", "high", "medium"]
+     },
+     {
+      "scene": "g-whack",
+      "A": [60, 60, 59.9],
+      "B": [59.9, 60.1, 59.9],
+      "callsA": 58,
+      "callsB": 58,
+      "qualityA": ["high", "high", "high"],
+      "qualityB": ["high", "high", "high"]
+     },
+     {
+      "scene": "g-defense",
+      "A": [56.6, 56.9, 57.2],
+      "B": [57.1, 55.3, 55.8],
+      "callsA": 117,
+      "callsB": 117,
+      "qualityA": ["medium", "medium", "medium"],
+      "qualityB": ["medium", "medium", "medium"]
+     },
+     {
+      "scene": "g-slice",
+      "A": [59.3, 58.6, 59.5],
+      "B": [59.4, 59.2, 59.4],
+      "callsA": 75,
+      "callsB": 75,
+      "qualityA": ["high", "medium", "high"],
+      "qualityB": ["high", "high", "high"]
+     }
+    ],
+    "scenesMeasured": 22,
+    "ratioMedian": 0.998,
+    "pass": true
+   }
+  ],
+  "gate": {
+   "id": "G8",
+   "label": "Phone FPS: median over scenes of B/A >= 0.95 in every run",
+   "threshold": 0.95,
+   "pass": true
+  }
+ }
 }

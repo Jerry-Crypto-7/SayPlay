@@ -123,8 +123,10 @@ Sada otevřená jednou 26. 10. 2026 ve 20:58 UTC na větvi `f3b6caa5` (`holdout-
 | G4 po čtení: medián „hrál bych“ ≥ 0,70 | 0,585 | 0,535 | nesplněna |
 | G5 rychlá hra lepší než `main` (věrnost i „hrál bych“) | 0,625 / 0,57 | 0,445 / 0,525 | splněna |
 | G6 po čtení lepší než `main` (věrnost i „hrál bych“) | 0,68 / 0,585 | 0,63 / 0,535 | splněna |
+| G7 věta → hratelná: medián větve ≤ `main` + 0,2 s (desktop i telefon) | 2,37 s / 6,40 s | 2,45 s / 5,47 s | nesplněna |
+| G8 FPS na telefonu: medián B/A přes scény ≥ 0,95 (oba běhy) | 1,00 / 0,998 | – | splněna |
 
-Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json`; prahy má z plánu, ne z výsledku.
+Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json` (G7 a G8 ze surových běhů v `timing` a `fps`); prahy má z plánu, ne z výsledku. Celkový verdikt T8 (`result.json` → `verdict`): nesplněny G3, G4 a G7.
 
 - T8 soudil Codex, dev listy (T1, T7) Claude. Čísla T8 se proto se staršími tabulkami nesrovnávají, jen `main` proti větvi na týchž listech.
 - Rozptyl Codexu mezi dvěma běhy se neměřil (jeden běh). Odvozeno: náskok „hrál bych“ v G5 (0,045) a obě čísla G6 (0,05 / 0,05) leží v pásmu, které u Claude v T1 dělal soudce sám (největší rozdíl 0,10); pevný je náskok věrnosti rychlé hry (0,18).
@@ -176,7 +178,46 @@ Všech 32 her, které větev na sadě publikovala (24 rychlých, z toho 8 řetě
 - publikační brána (robot vyhraje, nečinný hráč nevyhraje, dvě přehrání skončí ve stavu běhu robota; u řetězu každé kolo i celý řetěz) prošla 32/32, zpráva o kvalitě to nese;
 - znovu offline v novém procesu nad publikovaným světem (`verifyArcade` / `verifyChain`, dočasný skript mimo repo): robot vyhrál 32/32, nečinný nevyhrál 32/32, přehrání shodná 32/32, otisk běhu robota i nečinného shodný se zprávou serveru 32/32.
 
-Hry `main` z T1 zmizely se serverem (hry žijí v jeho paměti), proto se tu nesrovnává „beze změny proti `main`“ – jen to, že větev drží robota, nečinného a replay na všech hrách sady. Čas do hratelné hry a FPS na telefonu měří část B (`result.json` → `timing`, `fps`).
+Hry `main` z T1 zmizely se serverem (hry žijí v jeho paměti), proto se tu nesrovnává „beze změny proti `main`“ – jen to, že větev drží robota, nečinného a replay na všech hrách sady.
+
+### Čas do hratelné hry (G7) – na telefonu nesplněna
+
+`scripts/measure/first-playable-ab.mjs`, 26. 10. 2026 večer: A = `main` `5692b987` (worktree `demo-main-2026-10-23`), B = větev `8d495d74` (kód hry jako `f3b6caa5`). Oba `npm run build` a `next start` s prázdným úložištěm her, bez čtečky (0 placených volání), servery běžely souběžně na dvou portech. Prvních 5 dev vět (`p30/dev.json` [0..4], tytéž jako `evals/play/first-playable`), 3 běhy na stranu, dvojice A+B těsně po sobě se střídavým začátkem, oba profily, které skript měří. Hratelná = plátno hry odpoví na dva vstupy po sobě; hratelných 60 z 60 běhů. Surové časy a první snímek v `result.json` → `timing`, HAR mimo repo v `D:/caches/p61/t8b/ttp-raw/`.
+
+| Profil | `main` medián | P61 medián | rozdíl mediánů | párový rozdíl | Brána ≤ +200 ms |
+|---|---|---|---|---|---|
+| desktop 1280×720 | 2454 ms | 2367 ms | −87 ms | +54 ms | splněna |
+| Pixel 7, CPU 4× | 5469 ms | 6403 ms | +934 ms | +242 ms | nesplněna |
+
+Po větách, medián 3 běhů v ms, `main` → P61:
+
+| Věta | Desktop | Telefon | Telefon, první snímek | Hra `main` → P61 |
+|---|---|---|---|---|
+| s039 zombie shooter in a mall | 2548 → 2492 | 7599 → 7768 | 3927 → 3859 | střílečka → střílečka |
+| s037 space marine, alien bugs | 2037 → 2097 | 5469 → 5649 | 3825 → 4038 | střílečka → střílečka |
+| s002 knight, three keys, ghosts | 2377 → 2575 | 4852 → 6312 | 3795 → 3849 | řetěz (kolo 1 sestřelování cílů) → jedna hra: sbírání s pronásledovatelem (T4) |
+| s003 hamster, Roomba | 2997 → 2842 | 6594 → 6479 | 4233 → 4373 | tatáž hra (stejné id) |
+| s006 corgi, sausages, sprinklers | 1714 → 2117 | 4761 → 6355 | 3548 → 4531 | řetěz → řetěz s jiným kolem 1 (T4: běh místo přechodu silnic) |
+
+- Na desktopu se větev nezhoršila. Brána platí pro oba profily, které skript ve výchozím nastavení měří; samotný desktop by prošel.
+- Na telefonu leží zhoršení ve dvou větách, s002 (+1,46 s) a s006 (+1,59 s), v každém ze tří běhů. Jsou to právě ty dvě, u kterých T4 změnil, jakou hru hráč dostane. Tatáž hra (s003) je o 0,1 s rychlejší, střílečky s039 a s037 o 0,17 a 0,18 s pomalejší. Bez s002 a s006 by medián telefonu z týchž běhů byl 6594 → 6479 ms.
+- s002: první snímek beze změny (3,80 → 3,85 s), roste čas od prvního snímku do hratelnosti (1,06 → 2,46 s). s006: první snímek +0,98 s a zbytek +0,6 s.
+- Odvozeno, neověřeno profilem: větev nezpomaluje tutéž hru, ale u dvou z pěti vět dává na pomalém telefonu jinou hru, která se rozbíhá déle. U s002 to sedí na blokované hlavní vlákno při startu scény („Náhradní kvádr na startu“ v T7 výš). Podle sady se nic neladilo; další krok je CPU profil startu s002 na Pixel 7 (CPU 4×), A proti B.
+
+### FPS na telefonu (G8) – splněna
+
+Dva běhy, oba A/B prokládaně scénu po scéně, `main` `5692b987` proti větvi `8d495d74`, tytéž servery jako G7. Stroj byl vytížený, na klid se nečekalo. Brána: medián poměrů B/A přes scény (poměr = medián FPS větve / medián FPS `main` ve scéně) ≥ 0,95 v každém běhu. Surová čísla v `result.json` → `fps`.
+
+| Běh | Scén | Medián B/A | Brána ≥ 0,95 |
+|---|---|---|---|
+| `e2e/play-perf.spec.ts @measure`, telefonní profil specu (Moto G Power, 412 × 823, CPU 4×, Fast 4G), 3 kola | 6 | 1,00 | splněna |
+| `scripts/play-look-shots.mjs perf --vs --set genres`, Pixel 7, CPU 4×, 3 opakování | 22 | 0,998 | splněna |
+
+- Spec nemá profil Pixel 7, měří jen svou emulaci Moto G Power. Proto druhý běh na Pixel 7 nad 22 žánry (nástroj P54B). Kreslicích volání mají ve scénách specu obě strany stejně, až na `grid-collect` (51 → 47); odvozeno: P61 tyhle scény skoro nemění, kdežto scény žánrů nesou vzhled z věty.
+- Metrika specu (`fpsP50`, FPS z mediánu délky snímku) stojí na tomhle stroji (RTX 3090) na stropu 60 Hz ve všech 36 bězích obou stran. Ten běh tedy pozná jen pokles pod strop.
+- Scéna `drive` padla 3 ze 3 na obou stranách a nemá číslo. Na `main` řetěz nemá `playWitness` a spec spadne až po měřicím okně. Na větvi začíná řetěz kolem střílečky, které `__playShell.start()` nespustí (tik stojí na 0 celých 120 s); skutečný ťuk ho spustí (sonda: tři ťuky, tik 0 → 1020 za 20 s). Je to mezera sondy specu, ne cesty hráče.
+- Nejhorší scéna druhého běhu: `g-arena` („Collect ten acorns in a forest while avoiding a fox“) 59,7 → 53,9 FPS (0,903), kreslicích volání 56 → 70 a úroveň kvality `high` → `medium` ve všech třech opakováních. Odvozeno: volání navíc je vzhled arény z věty (P61), adaptivní kvalita kvůli nim spadla o stupeň. `g-shooter` 0,949 při stejných 80 voláních – rozptyl jednoho opakování (46,6 FPS), ne nový obsah.
+- Medián v obou bězích daleko od 0,95, proto se dvojice neopakovala.
 
 ## T4 – řetěz a jedna hra
 
@@ -214,6 +255,7 @@ Strop celého plánu 4 USD. Čtečka astra (`gpt-6-astra`), ceny 10 / 50 USD za 
 | T7 – větev dev 12 vět | 12 | 0,364 |
 | T7 – snímky s039 a s003 po opravě (3 sestavení, 5 vět) | 5 | 0,149 |
 | T8 – větev na zapečetěné sadě, 24 vět (21 placených čtení) | 21 | 0,648 |
+| T8 – čas do hratelné hry a FPS (čtečka vypnutá) | 0 | 0 |
 | **Celkem** | 74 | **2,262** |
 
 ## T6 – rámování na výšku
