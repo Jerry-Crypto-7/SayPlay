@@ -1,0 +1,29 @@
+{
+ "about": "P61 T1 sealed quality set: 24 new English sentences written 26. 10. 2026 before the first P61 code change, from the plan's mix only (no lexicon, no run). Families: shooter = shooting or fighting with a distinct setting; collect = collect N things; multi = 2-3 verbs; other = everything else. hero, foe, item, world and count are the sentence's own words, labelled when written. Opened once in T8 (holdout-opened.json); nothing is tuned on it.",
+ "sentences": [
+  { "id": "h01", "family": "shooter", "text": "A cowboy shoots skeleton bandits in a dusty desert town", "hero": "cowboy", "foe": "skeleton bandit", "item": null, "world": "desert town", "count": null },
+  { "id": "h02", "family": "shooter", "text": "Pirates fight sea monsters on the deck of a sinking ship", "hero": "pirate", "foe": "sea monster", "item": null, "world": "ship deck", "count": null },
+  { "id": "h03", "family": "shooter", "text": "A robot blasts space slugs inside a frozen moon base", "hero": "robot", "foe": "space slug", "item": null, "world": "moon base", "count": null },
+  { "id": "h04", "family": "shooter", "text": "A ninja battles giant crabs on a tropical beach", "hero": "ninja", "foe": "giant crab", "item": null, "world": "beach", "count": null },
+  { "id": "h05", "family": "shooter", "text": "A samurai duels shadow warriors in a bamboo forest", "hero": "samurai", "foe": "shadow warrior", "item": null, "world": "bamboo forest", "count": null },
+  { "id": "h06", "family": "shooter", "text": "A police drone zaps runaway robots in a neon city at night", "hero": "drone", "foe": "robot", "item": null, "world": "neon city", "count": null },
+  { "id": "h07", "family": "collect", "text": "A squirrel gathers five acorns before winter comes", "hero": "squirrel", "foe": null, "item": "acorn", "world": null, "count": 5 },
+  { "id": "h08", "family": "collect", "text": "Find seven lost puppies in a snowy village", "hero": null, "foe": null, "item": "puppy", "world": "snowy village", "count": 7 },
+  { "id": "h09", "family": "collect", "text": "A diver collects four pearls from a coral reef while avoiding sharks", "hero": "diver", "foe": "shark", "item": "pearl", "world": "coral reef", "count": 4 },
+  { "id": "h10", "family": "collect", "text": "Grab ten gold coins in a haunted castle without waking the bats", "hero": null, "foe": "bat", "item": "gold coin", "world": "haunted castle", "count": 10 },
+  { "id": "h11", "family": "collect", "text": "A little witch picks six glowing mushrooms in a dark swamp", "hero": "witch", "foe": null, "item": "mushroom", "world": "swamp", "count": 6 },
+  { "id": "h12", "family": "collect", "text": "An astronaut recovers three fuel cells scattered across Mars", "hero": "astronaut", "foe": null, "item": "fuel cell", "world": "Mars", "count": 3 },
+  { "id": "h13", "family": "multi", "text": "A kangaroo hops over logs, grabs berries and punches snakes", "hero": "kangaroo", "foe": "snake", "item": "berry", "world": null, "count": null },
+  { "id": "h14", "family": "multi", "text": "A skier races down the mountain, dodges pine trees and jumps over cliffs", "hero": "skier", "foe": "pine tree", "item": null, "world": "mountain", "count": null },
+  { "id": "h15", "family": "multi", "text": "A firefighter climbs the tower, sprays the flames and rescues a cat", "hero": "firefighter", "foe": "flame", "item": "cat", "world": "tower", "count": null },
+  { "id": "h16", "family": "multi", "text": "A penguin slides across the ice, catches fish and avoids seals", "hero": "penguin", "foe": "seal", "item": "fish", "world": "ice", "count": null },
+  { "id": "h17", "family": "multi", "text": "A farmer plants carrots, waters them and scares away crows", "hero": "farmer", "foe": "crow", "item": "carrot", "world": "farm", "count": null },
+  { "id": "h18", "family": "multi", "text": "A knight rides through the forest and slays a dragon", "hero": "knight", "foe": "dragon", "item": null, "world": "forest", "count": null },
+  { "id": "h19", "family": "other", "text": "Stack pancakes as high as you can in a busy diner", "hero": null, "foe": null, "item": "pancake", "world": "diner", "count": null },
+  { "id": "h20", "family": "other", "text": "A goldfish escapes from its bowl in a messy kitchen", "hero": "goldfish", "foe": null, "item": "bowl", "world": "kitchen", "count": null },
+  { "id": "h21", "family": "other", "text": "Guide a paper boat down a rainy street gutter", "hero": "paper boat", "foe": null, "item": null, "world": "rainy street", "count": null },
+  { "id": "h22", "family": "other", "text": "A bee pollinates flowers in a sunny meadow", "hero": "bee", "foe": null, "item": "flower", "world": "meadow", "count": null },
+  { "id": "h23", "family": "other", "text": "Bounce a beach ball on a seal's nose at the circus", "hero": "seal", "foe": null, "item": "beach ball", "world": "circus", "count": null },
+  { "id": "h24", "family": "other", "text": "Steer a hot air balloon between thunderclouds above the ocean", "hero": "hot air balloon", "foe": "thundercloud", "item": null, "world": "ocean sky", "count": null }
+ ]
+}
