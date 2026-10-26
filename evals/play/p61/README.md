@@ -35,6 +35,45 @@ Hra ze čtení vznikla jen u 3 z 12 vět (s002, s006, s022 – všechny tři ře
 
 Snímky `main` na zapečetěné sadě: 24/24 v `D:/caches/p61/main-holdout/`, nesouzené.
 
+## Větev na dev po T2–T6 (T7, 26. 10.)
+
+Větev = `b71cea97`, tytéž dev věty, desktop, soudce Claude Opus 5.5 (`claude -p --safe-mode`), seed 61026, jeden běh → `after-dev.json`. Snímky `D:/caches/p61/p61-dev/`, listy `D:/caches/p61/sheets-p61-dev/`. List nese jen řádky větve, jako list T1 jen řádky `main` – srovnává se číslo s číslem, ne řádky na jednom listu (to dělá až T8).
+
+| Strana | Věrnost | Hrál bych | Vět |
+|---|---|---|---|
+| rychlá hra | 0,45 (`main` 0,375) | 0,35 (0,325) | 12 |
+| hra ze čtení (jen kde vznikla) | 0,375 (0,55) | 0,40 (0,55) | 2 (3) |
+| po čtení (hra ze čtení, jinak rychlá) | 0,425 (0,45) | 0,35 (0,35) | 12 |
+
+Po větách, věrnost / hrál bych, `main` (1. běh T1) → větev:
+
+| Věta | Rychlá hra | Po čtení | Hlavní výtka soudce u větve |
+|---|---|---|---|
+| s039 zombie shooter in a mall | 0,30 / 0,25 → 0,45 / 0,35 | = rychlá | zombie a zaměřovač ano, ale „hazy open outdoor area with a city skyline … not the inside of a mall“ |
+| s037 space marine, alien bugs | 0,60 / 0,35 → 0,60 / 0,35 | = rychlá | brouci malí, scéna prázdná |
+| s002 knight, three keys | 0,15 / 0,45 → 0,55 / 0,35 | 0,55 / 0,35 → 0,55 / 0,35 | rytíř a klíče ano; hrad jako prázdné nádvoří, duchové jako kameny |
+| s003 hamster, supermarket | 0,50 / 0,40 → 0,35 / 0,35 | = rychlá | „snowy outdoor slope rather than a supermarket“, Roomba není vidět |
+| s006 corgi, park | 0,10 / 0,30 → 0,45 / 0,50 | 0,40 / 0,55 → 0,40 / 0,45 | kameny místo postřikovačů, bez párků, v jednom snímku modrý náhradní válec |
+| s008 banana, temple run | 0,40 / 0,45 → 0,60 / 0,55 | = rychlá | chrám v džungli ano; opice jako červená kostka a oranžová skvrna |
+| s022 tiny robot, tower | 0,15 / 0,30 → 0,45 / 0,45 | 0,60 / 0,55 → 0,35 / 0,35 | žádná věž ani pohyblivé plošiny; ve hře ze čtení modrý náhradní kvádr |
+| s021 obby, lava | 0,35 / 0,45 → 0,55 / 0,45 | = rychlá | láva ano, rotující tyče ne |
+| s035 flappy underwater | 0,60 / 0,30 → 0,60 / 0,30 | = rychlá | 2 ze 3 snímků konec hry po 0,9 s |
+| s050 snowballs at kids | 0,40 / 0,30 → 0,40 / 0,35 | = rychlá | místo dětí tučňák a modrý kvádr, iglú místo pevnosti |
+| s088 angry birds, cats | 0,50 / 0,35 → 0,40 / 0,30 | = rychlá | věže krabic malé a daleko, žádný prak |
+| s069 candy crush, cave | 0,20 / 0,12 → 0,15 / 0,10 | = rychlá | match-3 neumíme, místo něj quest |
+
+- Rychlá hra: 6 vět o 0,15–0,40 lepších (s039, s002, s006, s008, s022, s021), s003 −0,15 (2. běh T1 dal `main` 0,40, tedy −0,05), ostatní v rozptylu soudce (T1: max 0,10).
+- Hra ze čtení vznikla jen u řetězů s006 a s022. s002 už řetěz není (T4), čtení dalo týž žánr a svět, takže „po čtení“ = rychlá hra u 10 z 12 vět.
+- s022 hra ze čtení má tytéž snímky jako `main` (táž hra ze čtení), přesto 0,60 → 0,35. Odvozeno: soudce známkuje řádek proti ostatním na listu – v T1 stála vedle chytání jablek, teď vedle skoro stejné rychlé plošinovky; a vytkl náhradní kvádr. Pokles „po čtení“ 0,45 → 0,425 je hlavně tahle věta. T8 proto soudí `main` i větev na jednom listu.
+
+Ztráty podle důvodů soudce (14 řádků), seskupené podle příčiny:
+1. **Náhradní kvádr místo postavy v prvním snímku** – s006 rychlá i ze čtení, s022 ze čtení, s008, s050: 5 řádků, vždy jako vedlejší výtka. Sonda nad s039 (studený prohlížeč): 17 modelů GLB se začne stahovat 0,87 s po startu stránky, všechny doběhnou až ve 2,9 s, hlavní vlákno je mezitím zablokované (dotaz na stránku trval 1,2 → 2,4 s); hrdina je kvádr ještě ve snímku za 3 s.
+2. **Hala jako venku** – s039 a s003, u obou hlavní výtka (věrnost 0,45 a 0,35): obchoďák i supermarket mají otevřenou oblohu a za mlhou panorama města (`skyline: blocks`), supermarket k tomu světlé svahy údolí běžce.
+3. **Protivník nebo věc věty nečitelná** – s002 duchové (tmaví, zezadu), s003 Roomba (za hrdinou), s006 párky a postřikovače (model chybí), s008 opice (zezadu), s037 brouci (malí), s050 děti (terč na sloupku): 6 řádků, každý s jinou příčinou.
+4. **Chybí mechanika věty** – s069 match-3, s088 prak a věž k převrácení, s021 rotující tyče, s022 věž a pohyblivé plošiny, s035 konec hry po 0,9 s: 6 řádků, každá jiná hra.
+
+Jedno kolo opravy dostala ztráta 2: největší ztráta s jednou příčinou, kterou jde opravit v jednom kole bez sahání na čas do hratelné a FPS (brány T8). Ztráta 1 se objeví ve víc řádcích, ale jako vedlejší výtka a její příčina je start scény (stahování a hlavní vlákno), ne kresba; 3 a 4 jsou souhrny různých příčin.
+
 ## T4 – řetěz a jedna hra
 
 Zjištění: „knight … three keys … dodging ghosts“ nešel do řetězu přes `generic`, ale přes `multi_verb` – slovník čte collect (`move_free`) a dodging (`steer`), dvě ovládání; první buňka `arena.escape` 6 bodů s náskokem 5. Samotné zúžení `generic` by ho nechalo řetězem.
@@ -68,7 +107,8 @@ Strop celého plánu 4 USD. Čtečka astra (`gpt-6-astra`), ceny 10 / 50 USD za 
 | Krok | Volání | USD |
 |---|---|---|
 | T1 – `main` dev 12 vět + holdout 24 vět (jedna věta holdoutu dvakrát po pádu serveru) | 36 | 1,101 |
-| **Celkem** | 36 | **1,101** |
+| T7 – větev dev 12 vět | 12 | 0,364 |
+| **Celkem** | 48 | **1,465** |
 
 ## T6 – rámování na výšku
 
