@@ -1,0 +1,1546 @@
+{
+ "about": {
+  "plan": "P61 T6",
+  "measure": "e2e/p61-portrait.spec.ts",
+  "heroShare": "median share of the canvas area covered by the hero box (clipped), robot play, 180 ticks, every 6th",
+  "foeSeen": "share of frames with the nearest target centre on the canvas; null = no target in the scene",
+  "fixed": [
+   "timing",
+   "push"
+  ]
+ },
+ "results": {
+  "before": {
+   "Pixel 7": {
+    "runner": {
+     "cell": "s01",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0432,
+      "foeShare": 0.0034,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0088,
+      "foeShare": 0.0007,
+      "foeSeen": 1
+     },
+     "ratio": 4.9091
+    },
+    "platformer": {
+     "cell": "s14",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.1361,
+      "foeShare": 0.0053,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0308,
+      "foeShare": 0.0031,
+      "foeSeen": 1
+     },
+     "ratio": 4.4188
+    },
+    "arena": {
+     "cell": "a02",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0868,
+      "foeShare": 0.065,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0101,
+      "foeShare": 0.0075,
+      "foeSeen": 1
+     },
+     "ratio": 8.5941
+    },
+    "voyage": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0945,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0216,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 4.375
+    },
+    "quest": {
+     "cell": "a10",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0484,
+      "foeShare": 0.0131,
+      "foeSeen": 0.9667
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0102,
+      "foeShare": 0.0027,
+      "foeSeen": 1
+     },
+     "ratio": 4.7451
+    },
+    "shooter": {
+     "cell": "s08",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0214,
+      "foeShare": 0.0041,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0165,
+      "foeShare": 0.0009,
+      "foeSeen": 1
+     },
+     "ratio": 1.297
+    },
+    "throw": {
+     "cell": "s18",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0581,
+      "foeShare": 0.0081,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0237,
+      "foeShare": 0.0063,
+      "foeSeen": 1
+     },
+     "ratio": 2.4515
+    },
+    "timing": {
+     "cell": "s03",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0076,
+      "foeShare": 0.01,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0126,
+      "foeShare": 0.0064,
+      "foeSeen": 1
+     },
+     "ratio": 0.6032
+    },
+    "rhythm": {
+     "cell": "a11",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.106,
+      "foeShare": 0.0023,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.1206,
+      "foeShare": 0.0004,
+      "foeSeen": 1
+     },
+     "ratio": 0.8789
+    },
+    "duel": {
+     "cell": "s48",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0338,
+      "foeShare": 0.0153,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0191,
+      "foeShare": 0.0157,
+      "foeSeen": 1
+     },
+     "ratio": 1.7696
+    },
+    "flap": {
+     "cell": "s16",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.022,
+      "foeShare": 0.024,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0098,
+      "foeShare": 0.0263,
+      "foeSeen": 1
+     },
+     "ratio": 2.2449
+    },
+    "catch": {
+     "cell": "a01",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0695,
+      "foeShare": 0.0068,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0218,
+      "foeShare": 0.0065,
+      "foeSeen": 1
+     },
+     "ratio": 3.1881
+    },
+    "whack": {
+     "cell": "s53",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0297,
+      "foeShare": 0.0152,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.072,
+      "foeShare": 0.0185,
+      "foeSeen": 1
+     },
+     "ratio": 0.4125
+    },
+    "defense": {
+     "cell": "a06",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0475,
+      "foeShare": 0.1272,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0115,
+      "foeShare": 0.0915,
+      "foeSeen": 1
+     },
+     "ratio": 4.1304
+    },
+    "slice": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0514,
+      "foeShare": 0.0027,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0257,
+      "foeShare": 0.0037,
+      "foeSeen": 1
+     },
+     "ratio": 2
+    },
+    "hop": {
+     "cell": "a12",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0145,
+      "foeShare": 0.0064,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0232,
+      "foeShare": 0.0087,
+      "foeSeen": 1
+     },
+     "ratio": 0.625
+    },
+    "crowd": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0419,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0125,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.352
+    },
+    "merge": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0502,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0157,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.1975
+    },
+    "push": {
+     "cell": "s13",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0119,
+      "foeShare": 0.0072,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0146,
+      "foeShare": 0.0034,
+      "foeSeen": 1
+     },
+     "ratio": 0.8151
+    }
+   },
+   "iPhone 15": {
+    "runner": {
+     "cell": "s01",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0356,
+      "foeShare": 0.0028,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0102,
+      "foeShare": 0.001,
+      "foeSeen": 1
+     },
+     "ratio": 3.4902
+    },
+    "platformer": {
+     "cell": "s14",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.1136,
+      "foeShare": 0.0043,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0349,
+      "foeShare": 0.0035,
+      "foeSeen": 1
+     },
+     "ratio": 3.255
+    },
+    "arena": {
+     "cell": "a02",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0713,
+      "foeShare": 0.0582,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0122,
+      "foeShare": 0.0091,
+      "foeSeen": 1
+     },
+     "ratio": 5.8443
+    },
+    "voyage": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0991,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0242,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 4.095
+    },
+    "quest": {
+     "cell": "a10",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0387,
+      "foeShare": 0.0109,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0114,
+      "foeShare": 0.0031,
+      "foeSeen": 1
+     },
+     "ratio": 3.3947
+    },
+    "shooter": {
+     "cell": "s08",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0176,
+      "foeShare": 0.0034,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0184,
+      "foeShare": 0.0011,
+      "foeSeen": 1
+     },
+     "ratio": 0.9565
+    },
+    "throw": {
+     "cell": "s18",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0474,
+      "foeShare": 0.0067,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.025,
+      "foeShare": 0.0071,
+      "foeSeen": 1
+     },
+     "ratio": 1.896
+    },
+    "timing": {
+     "cell": "s03",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0111,
+      "foeShare": 0.0086,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0142,
+      "foeShare": 0.0071,
+      "foeSeen": 1
+     },
+     "ratio": 0.7817
+    },
+    "rhythm": {
+     "cell": "a11",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.1357,
+      "foeShare": 0.002,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.1351,
+      "foeShare": 0.0005,
+      "foeSeen": 1
+     },
+     "ratio": 1.0044
+    },
+    "duel": {
+     "cell": "s48",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0283,
+      "foeShare": 0.019,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0214,
+      "foeShare": 0.0175,
+      "foeSeen": 1
+     },
+     "ratio": 1.3224
+    },
+    "flap": {
+     "cell": "s16",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0181,
+      "foeShare": 0.0197,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0085,
+      "foeShare": 0.0222,
+      "foeSeen": 1
+     },
+     "ratio": 2.1294
+    },
+    "catch": {
+     "cell": "a01",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0695,
+      "foeShare": 0.0086,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0193,
+      "foeShare": 0.0074,
+      "foeSeen": 1
+     },
+     "ratio": 3.601
+    },
+    "whack": {
+     "cell": "s53",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0379,
+      "foeShare": 0.0109,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0625,
+      "foeShare": 0.0179,
+      "foeSeen": 1
+     },
+     "ratio": 0.6064
+    },
+    "defense": {
+     "cell": "a06",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0615,
+      "foeShare": 0.1516,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0134,
+      "foeShare": 0.1025,
+      "foeSeen": 1
+     },
+     "ratio": 4.5896
+    },
+    "slice": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.063,
+      "foeShare": 0.0026,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0288,
+      "foeShare": 0.0034,
+      "foeSeen": 1
+     },
+     "ratio": 2.1875
+    },
+    "hop": {
+     "cell": "a12",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0187,
+      "foeShare": 0.008,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0263,
+      "foeShare": 0.0098,
+      "foeSeen": 1
+     },
+     "ratio": 0.711
+    },
+    "crowd": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0502,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0138,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.6377
+    },
+    "merge": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0615,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0176,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.4943
+    },
+    "push": {
+     "cell": "s13",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.015,
+      "foeShare": 0.0091,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0164,
+      "foeShare": 0.0039,
+      "foeSeen": 1
+     },
+     "ratio": 0.9146
+    }
+   }
+  },
+  "after": {
+   "Pixel 7": {
+    "runner": {
+     "cell": "s01",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0439,
+      "foeShare": 0.0034,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0088,
+      "foeShare": 0.0008,
+      "foeSeen": 1
+     },
+     "ratio": 4.9886
+    },
+    "platformer": {
+     "cell": "s14",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.1408,
+      "foeShare": 0.0053,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0311,
+      "foeShare": 0.0031,
+      "foeSeen": 1
+     },
+     "ratio": 4.5273
+    },
+    "arena": {
+     "cell": "a02",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0863,
+      "foeShare": 0.0649,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0101,
+      "foeShare": 0.0076,
+      "foeSeen": 1
+     },
+     "ratio": 8.5446
+    },
+    "voyage": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.1192,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0213,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 5.5962
+    },
+    "quest": {
+     "cell": "a10",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0478,
+      "foeShare": 0.013,
+      "foeSeen": 0.9667
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0101,
+      "foeShare": 0.0027,
+      "foeSeen": 1
+     },
+     "ratio": 4.7327
+    },
+    "shooter": {
+     "cell": "s08",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0214,
+      "foeShare": 0.0041,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0165,
+      "foeShare": 0.0009,
+      "foeSeen": 1
+     },
+     "ratio": 1.297
+    },
+    "throw": {
+     "cell": "s18",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0645,
+      "foeShare": 0.0081,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0237,
+      "foeShare": 0.0063,
+      "foeSeen": 1
+     },
+     "ratio": 2.7215
+    },
+    "timing": {
+     "cell": "s03",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0166,
+      "foeShare": 0.0106,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0126,
+      "foeShare": 0.0064,
+      "foeSeen": 1
+     },
+     "ratio": 1.3175
+    },
+    "rhythm": {
+     "cell": "a11",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.106,
+      "foeShare": 0.0023,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.1206,
+      "foeShare": 0.0004,
+      "foeSeen": 1
+     },
+     "ratio": 0.8789
+    },
+    "duel": {
+     "cell": "s48",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0339,
+      "foeShare": 0.0153,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0191,
+      "foeShare": 0.0157,
+      "foeSeen": 1
+     },
+     "ratio": 1.7749
+    },
+    "flap": {
+     "cell": "s16",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.022,
+      "foeShare": 0.024,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0098,
+      "foeShare": 0.0263,
+      "foeSeen": 1
+     },
+     "ratio": 2.2449
+    },
+    "catch": {
+     "cell": "a01",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0695,
+      "foeShare": 0.0068,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0218,
+      "foeShare": 0.0065,
+      "foeSeen": 1
+     },
+     "ratio": 3.1881
+    },
+    "whack": {
+     "cell": "s53",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0297,
+      "foeShare": 0.0151,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.072,
+      "foeShare": 0.0185,
+      "foeSeen": 1
+     },
+     "ratio": 0.4125
+    },
+    "defense": {
+     "cell": "a06",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0476,
+      "foeShare": 0.1272,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0116,
+      "foeShare": 0.0915,
+      "foeSeen": 1
+     },
+     "ratio": 4.1034
+    },
+    "slice": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0514,
+      "foeShare": 0.0019,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0257,
+      "foeShare": 0.0035,
+      "foeSeen": 1
+     },
+     "ratio": 2
+    },
+    "hop": {
+     "cell": "a12",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0145,
+      "foeShare": 0.0064,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0231,
+      "foeShare": 0.0087,
+      "foeSeen": 1
+     },
+     "ratio": 0.6277
+    },
+    "crowd": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.042,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0125,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.36
+    },
+    "merge": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0495,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0158,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.1329
+    },
+    "push": {
+     "cell": "s13",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "heroShare": 0.0146,
+      "foeShare": 0.0089,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "heroShare": 0.0144,
+      "foeShare": 0.0031,
+      "foeSeen": 1
+     },
+     "ratio": 1.0139
+    }
+   },
+   "iPhone 15": {
+    "runner": {
+     "cell": "s01",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0347,
+      "foeShare": 0.0035,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0099,
+      "foeShare": 0.0009,
+      "foeSeen": 1
+     },
+     "ratio": 3.5051
+    },
+    "platformer": {
+     "cell": "s14",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.1136,
+      "foeShare": 0.0043,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0331,
+      "foeShare": 0.0035,
+      "foeSeen": 1
+     },
+     "ratio": 3.432
+    },
+    "arena": {
+     "cell": "a02",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0713,
+      "foeShare": 0.0576,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0121,
+      "foeShare": 0.0091,
+      "foeSeen": 1
+     },
+     "ratio": 5.8926
+    },
+    "voyage": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0986,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0242,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 4.0744
+    },
+    "quest": {
+     "cell": "a10",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.038,
+      "foeShare": 0.0109,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0105,
+      "foeShare": 0.0031,
+      "foeSeen": 1
+     },
+     "ratio": 3.619
+    },
+    "shooter": {
+     "cell": "s08",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0176,
+      "foeShare": 0.0033,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0184,
+      "foeShare": 0.0011,
+      "foeSeen": 1
+     },
+     "ratio": 0.9565
+    },
+    "throw": {
+     "cell": "s18",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0581,
+      "foeShare": 0.0067,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0251,
+      "foeShare": 0.0071,
+      "foeSeen": 1
+     },
+     "ratio": 2.3147
+    },
+    "timing": {
+     "cell": "s03",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0233,
+      "foeShare": 0.0104,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0142,
+      "foeShare": 0.0071,
+      "foeSeen": 1
+     },
+     "ratio": 1.6408
+    },
+    "rhythm": {
+     "cell": "a11",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.1357,
+      "foeShare": 0.002,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.1351,
+      "foeShare": 0.0005,
+      "foeSeen": 1
+     },
+     "ratio": 1.0044
+    },
+    "duel": {
+     "cell": "s48",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0283,
+      "foeShare": 0.019,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0215,
+      "foeShare": 0.0175,
+      "foeSeen": 1
+     },
+     "ratio": 1.3163
+    },
+    "flap": {
+     "cell": "s16",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0181,
+      "foeShare": 0.0197,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0085,
+      "foeShare": 0.0222,
+      "foeSeen": 1
+     },
+     "ratio": 2.1294
+    },
+    "catch": {
+     "cell": "a01",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0884,
+      "foeShare": 0.0086,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0244,
+      "foeShare": 0.0074,
+      "foeSeen": 1
+     },
+     "ratio": 3.623
+    },
+    "whack": {
+     "cell": "s53",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0379,
+      "foeShare": 0.0097,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0626,
+      "foeShare": 0.018,
+      "foeSeen": 1
+     },
+     "ratio": 0.6054
+    },
+    "defense": {
+     "cell": "a06",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0612,
+      "foeShare": 0.1516,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0135,
+      "foeShare": 0.1025,
+      "foeSeen": 1
+     },
+     "ratio": 4.5333
+    },
+    "slice": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0631,
+      "foeShare": 0.0028,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0288,
+      "foeShare": 0.0035,
+      "foeSeen": 1
+     },
+     "ratio": 2.191
+    },
+    "hop": {
+     "cell": "a12",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0187,
+      "foeShare": 0.008,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0259,
+      "foeShare": 0.0098,
+      "foeSeen": 1
+     },
+     "ratio": 0.722
+    },
+    "crowd": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0504,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.014,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.6
+    },
+    "merge": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0608,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0175,
+      "foeShare": null,
+      "foeSeen": null
+     },
+     "ratio": 3.4743
+    },
+    "push": {
+     "cell": "s13",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "heroShare": 0.0186,
+      "foeShare": 0.0111,
+      "foeSeen": 1
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "heroShare": 0.0161,
+      "foeShare": 0.0039,
+      "foeSeen": 1
+     },
+     "ratio": 1.1553
+    }
+   }
+  }
+ }
+}

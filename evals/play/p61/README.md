@@ -69,3 +69,25 @@ Strop celého plánu 4 USD. Čtečka astra (`gpt-6-astra`), ceny 10 / 50 USD za 
 |---|---|---|
 | T1 – `main` dev 12 vět + holdout 24 vět (jedna věta holdoutu dvakrát po pádu serveru) | 36 | 1,101 |
 | **Celkem** | 36 | **1,101** |
+
+## T6 – rámování na výšku
+
+Měřidlo `e2e/p61-portrait.spec.ts` (projekty `pixel7-touch`, `iphone-touch`): 19 žánrů, týž telefon na výšku a na šířku (Pixel 7 412 × 839 / 863 × 360, iPhone 15 393 × 659 / 734 × 343), robot hraje 180 tiků ručními hodinami jako `p58a-framing`. Podíl hrdiny = medián plochy jeho obdélníku na plátně / plocha plátna – plocha, protože obrazovka je v obou polohách tatáž. Čísla `before` a `after` v `portrait.json`; 15 her z `p58a/framing-cells.json`, plavba, krájení, dav a slučování složené z věty bez modelu.
+
+Nejmenší podíl hrdiny na výšku měly na obou telefonech **načasování** (jehla na liště) a **vytlačování z ringu**:
+
+| Žánr | Telefon | Na výšku před | Na výšku po | Na šířku před / po | Výška / šířka před → po |
+|---|---|---|---|---|---|
+| načasování | Pixel 7 | 0,76 % | 1,66 % | 1,26 / 1,26 % | 0,60 → 1,32 |
+| načasování | iPhone 15 | 1,11 % | 2,33 % | 1,42 / 1,42 % | 0,78 → 1,64 |
+| vytlačování | Pixel 7 | 1,19 % | 1,46 % | 1,46 / 1,44 % | 0,82 → 1,01 |
+| vytlačování | iPhone 15 | 1,50 % | 1,86 % | 1,64 / 1,61 % | 0,91 → 1,16 |
+
+Cíl (zelený sloupec tolerance, soupeř) zůstal v obraze ve 100 % snímků před i po. Na šířku se kamera nezměnila (rozdíly do 2 % jsou šum běhu).
+
+- **Načasování**: šířku záběru na výšku dával pevný kyv 10 m, jehla (0,2 m) ale kyvuje ±3,1 m – kamera teď rámuje kyv, jaký jezdec opravdu má (`timingDistance`), na Pixelu 7 13,7 m místo 17,7 m. Hrdina věty (tučňák) stál za krajem kyvu a z těsnější kamery by vypadl celý – na výšku stojí v popředí pod věží (`timingHeroAt`), dřív z něj byla vidět půlka. Blok věže (stavění) zůstal skoro, kde byl.
+- **Vytlačování**: ring se na výšku vešel do 85 % šířky; do stran teď jen 0,6 m místo 1,3 m – střed soupeře na kraji ringu drží ve 0,9 šířky (bezpečná zóna `p58a-framing`).
+
+Ostatní žánry: měřidlo je drží proti `before` (podíl na výšku ≥ 0,8× – šum plavby a chytání až 27 %, ostatních do 3 %; cíl v obraze nejvýš o 0,1 méně). Nejmenší poměr výška / šířka teď mají bouchání (0,41 / 0,61), přeskákání silnice (0,62 / 0,72) a rytmus (0,88 / 1,00) – nesahalo se na ně.
+
+Kontrola: vrácená oprava (kyv zase 10 m, ring 1,3 m do stran) → měřidlo červené na obou opravených žánrech. `p58a-framing` a `play-phone` zelené na `pixel7-touch` i `iphone-touch` (oba specy tam od T6 běží; `p58a-framing` měří telefon projektu jako profil `touch`).

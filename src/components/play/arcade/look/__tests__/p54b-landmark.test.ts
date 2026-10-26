@@ -26,6 +26,7 @@ import { isPurple, toSrgb } from '../../../../../../scripts/assets/cc0/palette.m
 import { placeBall } from '../../ball/camera';
 import { placeGlide } from '../../glide/camera';
 import { placeChase, placeLander } from '../../steer/SteerScene';
+import { timingDistance } from '../../timing/TimingScene';
 import { placeAngled, placePlatform, placeRunner, placeSide } from '../../track-camera';
 import { placeWalker } from '../../walker/view';
 import type { Box } from '../ground';
@@ -327,8 +328,8 @@ const PLAY_GENRES: readonly PlayGenre[] = [
     // `TimingScene`: kamera před věží, výš na výšku; průsvitný sloupec tolerance (`frame = 'target'`) do výšky celé věže.
     id: 'timing',
     place: (camera, look) => {
-      const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const dist = Math.max(10 / (2 * tan * camera.aspect), 7 / (2 * tan), 8);
+      // Nejširší jezdec (blok věže) – kamera nejdál.
+      const dist = timingDistance(camera.fov, camera.aspect, TIMING.blockW / UNIT);
       const y = TIMING.baseH / UNIT;
       camera.position.set(0, y + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
       look.set(0, y, 0);
