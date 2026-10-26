@@ -8,8 +8,11 @@ import { type Played, type UpgradeRow, addsOf, keptOf, upgradeRow, upgradeSummar
 
 /** Běžec P46B: pravidla, logika a boss finále. */
 const RUNNER = "temple run but you're a banana running from a monkey";
-/** Sběr v aréně: jako uložená `genre.v3` bez bosse (od `genre.v4`, P47A T3, ho rychlá verze má). */
-const ARENA = 'Collect five acorns in a moonlit forest';
+/**
+ * Sběr v aréně: jako uložená `genre.v3` bez bosse (od `genre.v4`, P47A T3, ho rychlá verze má). Bez počtu:
+ * věta s počtem („five acorns“) hraje od P61 T5 sběr s počtem, jehož poslední vlnu nese boss v každé verzi.
+ */
+const ARENA = 'Collect acorns in a moonlit forest';
 
 function playedOf(spec: GameSpecV1): Played {
   const made = arcadeWorldOf(spec, 1);
