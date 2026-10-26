@@ -195,6 +195,8 @@ export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: n
 const honesties = new Map<string, Honesty | null>();
 
 const LABELS: Readonly<Record<string, string>> = { drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
+/** Hrozby se jmenují v množném čísle – sloveso hlášky se s nimi shoduje („The obstacles aren't here yet“). */
+const PLURAL_LABELS: ReadonlySet<string> = new Set(['guard', 'hazard', 'obstacle', 'rival'].map(verb => LABELS[verb]!));
 /** Co hra hraje místo slovesa z věty („Stab plays as a fight.“, „Flip plays as a tap.“); jinak popisek kusu. */
 const PLAYED_AS: Readonly<Record<string, string>> = { fight: 'a fight', duel: 'a duel', race: 'a race', deliver: 'a delivery', interact: 'a tap' };
 
@@ -231,7 +233,8 @@ async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, 
     return item === undefined ? (LABELS[triple.verb] ?? gerund(triple.verb)) : gerund(lemmaOf(item));
   }))];
   const closest = spec.control === 'steer' && !witnesses.some(w => w.verb === 'race') ? 'a driving game' : closestOf(spec);
-  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${missing.length === 1 ? "isn't" : "aren't"} here yet – here's ${closest}.` };
+  const plural = missing.length > 1 || PLURAL_LABELS.has(missing[0]!);
+  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${plural ? "aren't" : "isn't"} here yet – here's ${closest}.` };
 }
 
 export async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
