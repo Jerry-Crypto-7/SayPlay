@@ -1,24 +1,26 @@
 # P58E T4 – řetěz dostane čtení: hra od příchodu čtení na zapečetěné sadě P58B
 
-**Brána nesplněna.** Hra, kterou hráč hraje od příchodu čtení, má žánr věty u **46/60** cílů (brána 48) a pasti obchází u **20/20** (brána 18). P58D bez čtení řetězu: 32/60 a 20/20. Všech 14 chybějících cílů je řetěz, kterému čtení řetěz potvrdilo – hráč dál hraje řetěz mikroher. Hra ze čtení by u všech 14 měla žánr věty; nevznikne, protože pravidlo `chainOrSingle` se čtením řekne znovu řetěz (možnost (b) majitele přepíná jen tam, kde se čtením řetěz nevznikne).
+**Brána splněna (P58F, 26. 10.).** Hra, kterou hráč hraje od příchodu čtení, má žánr věty u **60/60** cílů (brána 48) a pasti obchází u **20/20** (brána 18). Řetěz mikroher přejde na hru ze čtení vždy; řetězem zůstane jen věta, která o víc her výslovně žádá (`CHAIN_CUES`: levels, rounds, mini-games, challenges, party) – na sadě žádná. Útrata stejná jako v P58E: čtení řetězové věty se platilo už tam.
+
+První běh P58E (pravidlo `chainOrSingle` se čtením, možnost (b)) dal 46/60 a 20/20: 14 cílů zůstalo řetězem, ač čtení dalo správný žánr (tabulka níž). Majitel 26. 10. zvolil přecházet vždy.
 
 ## Výsledek (`result.json`)
 
-| | P58E | P58D | rychlá hra | brána |
-|---|---|---|---|---|
-| cíle se žánrem věty | 46/60 | 32/60 | 25/60 | ≥ 48 |
-| pasti mimo lákavý žánr | 20/20 | 20/20 | 15/20 | ≥ 18 |
-| věty v řetězu bez čtení (= placené čtení navíc) | 39/80 | 40/80 | – | – |
-| řetěz → hra ze čtení | 19 (14 cílů, 5 pastí) | 0 | – | – |
-| řetěz zůstane řetězem | 20 (14 cílů, 6 pastí) | 40 | – | – |
-| robot vyhraje / nečinný prohraje / replay | 60/60 her (19 ze řetězu) | 40/40 | – | každá |
+| | P58F | P58E (b) | P58D | rychlá hra | brána |
+|---|---|---|---|---|---|
+| cíle se žánrem věty | 60/60 | 46/60 | 32/60 | 25/60 | ≥ 48 |
+| pasti mimo lákavý žánr | 20/20 | 20/20 | 20/20 | 15/20 | ≥ 18 |
+| věty v řetězu bez čtení (= placené čtení navíc) | 39/80 | 39/80 | 40/80 | – | – |
+| řetěz → hra ze čtení | 39 (28 cílů, 11 pastí) | 19 | 0 | – | – |
+| řetěz zůstane řetězem | 0 | 20 | 40 | – | – |
+| robot vyhraje / nečinný prohraje / replay | 80/80 her (39 ze řetězu) | 60/60 | 40/40 | – | každá |
 
-- Všech 19 her ze čtení řetězu prošlo publikací jako dítě řetězu; 14 cílů má žánr věty, žádná z 5 pastí nehraje lákavý žánr.
-- Čtení dorazí u řetězů, které přejdou, za p50 2,6 s, max 4,5 s (uložené časy P58B).
+- Všech 39 her ze čtení řetězu prošlo publikací jako dítě řetězu; 21 z nich přešlo ze špatného žánru na správný, žádná past nehraje lákavý žánr.
+- Čtení dorazí u řetězů, které přejdou, za p50 2,7 s, max 6,1 s (uložené časy P58B).
 - s68 počítal P58D jako řetěz. Jeho řetěz ale neprojde vlastní kontrolou (hraje 28,1 s, povoleno 30–90 s), route ho zahodí a hraje jednu hru – měřidlo teď publikuje řetěz jako route, proto 39 řetězů místo 40.
 - **Kdyby řetěz přešel na hru ze čtení vždy** (možnost (a) z P58D): 60/60 a 20/20. Čtení je zaplacené v obou případech, takže (a) by nestála nic navíc.
 
-### Proč brána nepadla – věty
+### Proč P58E (b) bránu nesplnil – věty (P58F je přepíná)
 
 Čtení dá u všech 14 správný žánr, `chainOrSingle` se čtením přesto řekne řetěz:
 
@@ -37,7 +39,7 @@
 | s54 | crowd | crowd.default | řetěz |
 | s58 | push | push.default | řetěz |
 
-Podle sady se nic neladilo; změna pravidla `chainOrSingle` je mimo rozsah P58E.
+Podle sady se nic neladilo: P58F pravidlo `chainOrSingle` nemění, jen ho po čtení nepoužívá (rozhodnutí majitele z možností v P58E, ne ladění na větách).
 
 ## Útrata navíc
 
@@ -69,6 +71,6 @@ Produkční build (`next start`), čtečka astra přes klíč z worktree P58B (d
 - **Bez `VERCEL_ENV` se čtení řetězu na místním serveru nikdy nezaplatí.** Kniha útraty režiséra vznikne místně jen s `VERCEL_ENV=production|preview` (`spend-store.ts:459`); bez ní strop režiséra odmítá všechno, brána `mayPayChainRead` je zavřená a řetěz zůstane bez čtení. První běh tak skončil 5× `CHAIN` bez jediného volání. Na Vercelu proměnnou nastavuje platforma, produkci se to netýká; místní měření ji potřebuje.
 - Telefon přešel na hru ze čtení 7,2 s po otevření stránky, i když čtení bylo hotové dřív. Čas zahrnuje první načtení stránky na čerstvém serveru a první dotaz; rozložený není.
 
-## Rozhodnutí pro majitele
+## Rozhodnutí majitele
 
-Brána 48/60 se možností (b) na této sadě nesplní (46/60). Možnosti: (a) přecházet z řetězu na hru ze čtení vždy, když čtení dá hru – 60/60 a 20/20, útrata stejná, jen se změní pravidlo; (b) nechat dnešní stav, 46/60; (c) upravit pravidlo `chainOrSingle` tak, aby se čtením řetěz vznikal méně často – samostatná úloha s laděním na dev sadě.
+Možnost (b) dala 46/60. Majitel 26. 10. zvolil (a): přecházet z řetězu na hru ze čtení vždy (P58F) – 60/60 a 20/20, útrata stejná. Řetěz mikroher hráč od té doby vidí jen do příchodu čtení, pokud věta o víc her výslovně nežádá. Živá kontrola P58E (4/4 přechody) platí i pro P58F: přecházející cesta se nezměnila, přibyly jen věty, které dřív zůstaly řetězem.

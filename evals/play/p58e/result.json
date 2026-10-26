@@ -1,6 +1,6 @@
 {
  "schema": "p58e-result.v1",
- "commit": "f550f6cf",
+ "commit": "d802a289",
  "sha256": "578463714c9cee6540eb7c4755a68ecfbb883905388ad741c3f0648058c117e8",
  "readings": "evals/play/p58b/readings/holdout.astra.json",
  "reader": {
@@ -15,7 +15,7 @@
   "trapOffLure": 18
  },
  "met": {
-  "targetGenre": false,
+  "targetGenre": true,
   "trapOffLure": true,
   "bot": true,
   "idleLoses": true,
@@ -23,7 +23,7 @@
  },
  "summary": {
   "targetGenre": {
-   "hit": 46,
+   "hit": 60,
    "of": 60
   },
   "trapOffLure": {
@@ -46,65 +46,50 @@
    "s68: NOT_PUBLISHABLE chain_length: the chain plays 28.1 s, outside 30–90 s, plays arena.collect"
   ],
   "chainReads": 39,
-  "chainSteps": 19,
+  "chainSteps": 39,
   "chainStaysChain": {
-   "hit": 20,
+   "hit": 0,
    "of": 39
   },
   "chainStaysChainTargets": {
-   "hit": 14,
+   "hit": 0,
    "of": 28
   },
   "chainStaysChainTraps": {
-   "hit": 6,
+   "hit": 0,
    "of": 11
   },
   "singleSteps": 25,
   "stepsNotPublished": [],
   "bot": {
-   "hit": 60,
-   "of": 60
+   "hit": 80,
+   "of": 80
   },
   "idleLoses": {
-   "hit": 60,
-   "of": 60
+   "hit": 80,
+   "of": 80
   },
   "replayEqual": {
-   "hit": 60,
-   "of": 60
+   "hit": 80,
+   "of": 80
   },
   "chainStepBot": {
-   "hit": 19,
-   "of": 19
+   "hit": 39,
+   "of": 39
   },
   "chainStepReadMs": {
-   "n": 19,
-   "p50": 2641,
-   "max": 4548
+   "n": 39,
+   "p50": 2678,
+   "max": 6101
   },
   "singleStepReadMs": {
    "n": 25,
    "p50": 2994,
    "max": 6495
   },
-  "chainStepsWrongToRight": 10,
+  "chainStepsWrongToRight": 21,
   "chainStepTrapsOnLure": [],
-  "targetMisses": [
-   "s01: runner.default -> chain (quick runner.default, reading runner.default, chain with reading chain)",
-   "s02: runner.default -> chain (quick voyage.race, reading runner.default, chain with reading chain)",
-   "s05: platformer.default -> chain (quick voyage.race, reading platformer.default, chain with reading chain)",
-   "s11: arena.escape -> chain (quick voyage.race, reading arena.escape, chain with reading chain)",
-   "s12: arena.fight -> chain (quick arena.collect, reading arena.fight, chain with reading chain)",
-   "s15: voyage.land -> chain (quick arena.collect, reading voyage.land, chain with reading chain)",
-   "s19: shooter.default -> chain (quick shooter.default, reading shooter.default, chain with reading chain)",
-   "s21: shooter.default -> chain (quick voyage.race, reading shooter.default, chain with reading chain)",
-   "s27: timing.bridge -> chain (quick quest.station, reading timing.bridge, chain with reading chain)",
-   "s36: flap.default -> chain (quick voyage.race, reading flap.default, chain with reading chain)",
-   "s39: catch.default -> chain (quick runner.default, reading catch.default, chain with reading chain)",
-   "s42: whack.default -> chain (quick arena.collect, reading whack.default, chain with reading chain)",
-   "s54: crowd.default -> chain (quick arena.escape, reading crowd.default, chain with reading chain)",
-   "s58: push.default -> chain (quick push.default, reading push.default, chain with reading chain)"
-  ],
+  "targetMisses": [],
   "trapsOnLure": [],
   "botFailures": []
  },
@@ -119,18 +104,23 @@
    "read": "runner.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "runner.default",
    "specGenre": {
     "quick": "runner.default",
     "read": "runner.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s02",
@@ -142,18 +132,23 @@
    "read": "runner.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "runner.default",
    "specGenre": {
     "quick": null,
     "read": "runner.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s03",
@@ -221,18 +216,23 @@
    "read": "platformer.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "platformer.default",
    "specGenre": {
     "quick": null,
     "read": "platformer.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s06",
@@ -384,18 +384,23 @@
    "read": "arena.escape",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "arena.escape",
    "specGenre": {
     "quick": null,
     "read": "arena.escape"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s12",
@@ -407,18 +412,23 @@
    "read": "arena.fight",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "arena.fight",
    "specGenre": {
     "quick": "arena.collect",
     "read": "arena.fight"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s13",
@@ -486,18 +496,23 @@
    "read": "voyage.land",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "voyage.land",
    "specGenre": {
     "quick": "arena.collect",
     "read": null
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s16",
@@ -593,18 +608,23 @@
    "read": "shooter.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "shooter.default",
    "specGenre": {
     "quick": "shooter.default",
     "read": "shooter.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s20",
@@ -644,18 +664,23 @@
    "read": "shooter.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "shooter.default",
    "specGenre": {
     "quick": null,
     "read": "shooter.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s22",
@@ -807,18 +832,23 @@
    "read": "timing.bridge",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "timing.bridge",
    "specGenre": {
     "quick": "quest.station",
     "read": "timing.bridge"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s28",
@@ -1054,18 +1084,23 @@
    "read": "flap.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "flap.default",
    "specGenre": {
     "quick": null,
     "read": "flap.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s37",
@@ -1133,18 +1168,23 @@
    "read": "catch.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "catch.default",
    "specGenre": {
     "quick": "runner.default",
     "read": "catch.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s40",
@@ -1212,18 +1252,23 @@
    "read": "whack.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "whack.default",
    "specGenre": {
     "quick": "arena.collect",
     "read": "whack.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s43",
@@ -1543,18 +1588,23 @@
    "read": "crowd.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "crowd.default",
    "specGenre": {
     "quick": "arena.escape",
     "read": "crowd.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s55",
@@ -1650,18 +1700,23 @@
    "read": "push.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "push.default",
    "specGenre": {
     "quick": "push.default",
     "read": "push.default"
    },
-   "genreOk": false,
+   "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s59",
@@ -1841,10 +1896,10 @@
    "read": "platformer.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "platformer.default",
    "specGenre": {
     "quick": null,
     "read": "platformer.default"
@@ -1852,7 +1907,12 @@
    "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s66",
@@ -2032,10 +2092,10 @@
    "read": "arena.fight",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "arena.fight",
    "specGenre": {
     "quick": null,
     "read": "arena.fight"
@@ -2043,7 +2103,12 @@
    "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s73",
@@ -2055,10 +2120,10 @@
    "read": "quest.spatial",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "quest.spatial",
    "specGenre": {
     "quick": "platformer.default",
     "read": "quest.spatial"
@@ -2066,7 +2131,12 @@
    "genreOk": true,
    "quickGenreOk": false,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s74",
@@ -2078,10 +2148,10 @@
    "read": "runner.default",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "runner.default",
    "specGenre": {
     "quick": "arena.escape",
     "read": "runner.default"
@@ -2089,7 +2159,12 @@
    "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s75",
@@ -2101,10 +2176,10 @@
    "read": "arena.collect",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "arena.collect",
    "specGenre": {
     "quick": "runner.default",
     "read": "arena.collect"
@@ -2112,7 +2187,12 @@
    "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s76",
@@ -2208,10 +2288,10 @@
    "read": "arena.collect",
    "chained": true,
    "chainIssue": null,
-   "chainWithReading": "chain",
-   "step": false,
+   "chainWithReading": "single",
+   "step": true,
    "publishIssue": null,
-   "played": "chain",
+   "played": "arena.collect",
    "specGenre": {
     "quick": "arena.collect",
     "read": "arena.collect"
@@ -2219,7 +2299,12 @@
    "genreOk": true,
    "quickGenreOk": true,
    "readGenreOk": true,
-   "bot": null
+   "bot": {
+    "wins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "why": null
+   }
   },
   {
    "id": "s80",

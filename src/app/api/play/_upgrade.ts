@@ -34,12 +34,10 @@ import { ABILITIES, type ArcadeWorld } from '@/play/arcade/contract';
 import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
-import { chainOrSingle } from '@/play/chain/decide';
-import { readForChain } from '@/play/chain/read';
+import { CHAIN_CUES } from '@/play/chain/decide';
 import type { DirectorSource } from '@/play/contracts';
 import { type DirectorFailure, withDraftRules } from '@/play/director';
 import { draftGameSpecWithMeta } from '@/play/draft';
-import { classifyGenre } from '@/play/genre/classify';
 import { readBeforeDraft, readerForAiVersion } from '@/play/read/client';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
@@ -284,7 +282,7 @@ const CHAIN_REFUSED: Extract<UpgradeOutcome, { readonly status: 'draft-final' }>
 
 /**
  * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
- * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když se čtením `chainOrSingle` řekne jedna hra, publikuje návrh
+ * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když věta o víc her výslovně nežádá (P58F), publikuje návrh
  * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`, s hrou
  * ze čtení, když je (T2). Řetěz, který route stavěla už se čtením (čtečka před návrhem, `readBy: 'model'`), se nečte znovu.
  * simplified: jedno čtení na řetěz drží mapa v procesu – dvě instance se souběžným dotazem zaplatí čtení obě (cache
@@ -312,7 +310,9 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   if (reading === null) return called ? CHAIN_FINAL : CHAIN_REFUSED;
   // Čtení, ze kterého vyjde míč, se bez fyziky nepřeloží (P56C T17e); návrh jedné hry ji potřebuje tak jako tak.
   await loadRapier();
-  if (chainOrSingle(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading)) === 'chain') return CHAIN_FINAL;
+  // P58F (majitel 26. 10.): hra ze čtení nahradí řetěz vždy – na sadě P58B dalo čtení správný žánr i u 14 řetězů, které
+  // `chainOrSingle` se čtením potvrdil. Řetězem zůstane jen věta, která o víc her výslovně žádá.
+  if (CHAIN_CUES.test(sentence.toLowerCase())) return CHAIN_FINAL;
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(sentence.trim()));
   const published = await publishReading(versions, chainId, request, draftGameSpecWithMeta(sentence, 1, { reading }).spec, seeds);
   return published === null ? CHAIN_FINAL : found(published.versionId, published.fresh);

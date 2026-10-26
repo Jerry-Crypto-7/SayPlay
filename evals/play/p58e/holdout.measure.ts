@@ -10,9 +10,9 @@
  *
  * Cesta je ta produktová. Věta jedné hry jako P58D T4 (`directUpgrade`): rychlá hra je návrh bez čtení (semínko 1), návrh
  * se čtením ji nahradí, když `playsOtherGenre` a projde `publishReadSpec`. Věta, kterou rozhodnutí bez čtení pošle do
- * řetězu, jde přes `publishChain` jako route a potom jako `runChainReading` (`_upgrade.ts`): se čtením `chainOrSingle`
- * znovu; řekne-li jedna hra, návrh ze čtení (semínko 1) projde `publishReadSpec` jako dítě řetězu (`relation: 'reading'`)
- * bez porovnání žánru. Řetěz, kterému čtení řetěz potvrdí, zůstane řetězem. Cíl a past jako P58B (`genreOk`).
+ * řetězu, jde přes `publishChain` jako route a potom jako `runChainReading` (`_upgrade.ts`): od P58F návrh ze čtení
+ * (semínko 1) projde `publishReadSpec` jako dítě řetězu (`relation: 'reading'`) vždy, bez porovnání žánru; řetězem zůstane
+ * jen věta, která o víc her výslovně žádá (`CHAIN_CUES`). Cíl a past jako P58B (`genreOk`).
  */
 
 import { execFileSync } from 'node:child_process';
@@ -27,7 +27,7 @@ import { arcadeWorldOf, preloadPhysics } from '../../../src/play/arcade/compile'
 import { loadRapier } from '../../../src/play/arcade/physics/world';
 import { verifyArcade } from '../../../src/play/arcade/verify';
 import { buildChain } from '../../../src/play/chain/build';
-import { chainOrSingle } from '../../../src/play/chain/decide';
+import { CHAIN_CUES, chainOrSingle } from '../../../src/play/chain/decide';
 import { readForChain } from '../../../src/play/chain/read';
 import { draftGameSpecWithMeta } from '../../../src/play/draft/draft';
 import { classifyGenre } from '../../../src/play/genre/classify';
@@ -98,7 +98,8 @@ it('measures the game played from the reading on the sealed P58B set, chains inc
     const chained = chainId !== null;
     const readMeta = reading === null ? null : draftGameSpecWithMeta(sentence.text, SEED, { reading });
     // Řetěz se čtením rozhodne znovu (`runChainReading`); věta jedné hry má čtení z AI verze a řetěz už neřeší.
-    const chainWithReading = chained && reading !== null ? chainOrSingle(sentence.text, readForChain(sentence.text, reading), classifyGenre(sentence.text, reading)) : null;
+    // P58F: řetěz přejde na hru ze čtení vždy, kromě věty, která o víc her výslovně žádá (`runChainReading`).
+    const chainWithReading = chained && reading !== null ? (CHAIN_CUES.test(sentence.text.toLowerCase()) ? 'chain' : 'single') : null;
     const read = chained ? (chainWithReading === 'single' ? readMeta!.spec : null) : (readMeta?.spec ?? null);
     // Hra ze čtení řetězu nahradí řetěz vždy; hra ze čtení jedné hry jen tam, kde hraje jiný žánr než rychlá hra.
     const candidate = read !== null && (chained || playsOtherGenre(quick, read));
