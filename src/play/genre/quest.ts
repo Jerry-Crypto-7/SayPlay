@@ -6,7 +6,7 @@
  * dílna, s přetečením); stav cíle posouvá pravidlo `interact`.
  */
 
-import { readCountedNouns, nounPhrase, plural, singular } from '../draft/lexicon';
+import { goalNoun, readCountedNouns, nounPhrase, plural, singular } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
 import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
@@ -151,9 +151,15 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   const hold = station && states === 2 ? QUEST.rounds.stationHold : undefined;
   // Čas z věty (nebo `timeLimit` režiséra, `compileWith`) jsou hodiny: kol jen tolik, kolik se do nich vejde (F3).
   const clock = spec.params?.seconds;
+  // Věta s počtem (P61 T5): „light five candles“ = jedno kolo právě tolika cílů, HUD je počítá slovem věty (`counted`, `noun`).
+  const counted = !station && spec.counts?.target !== undefined;
+  const noun = counted ? goalNoun(label) : null;
+  const spatialRound = (k: number): number => spatialRoundSeconds(count, states, wavesChasers(chasers, k));
   const plan = station
     ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }), clock)
-    : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)), clock);
+    : counted
+      ? { rounds: 1, seconds: spatialRound(0) }
+      : questRounds(steps, spatialRound, clock);
   // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
   const plannedSeconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
   const seconds = spec.params?.paceBudgetPct === undefined ? plannedSeconds : Math.floor(plannedSeconds * spec.params.paceBudgetPct / 100);
@@ -174,6 +180,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
         ...(hold === undefined ? {} : { hold }),
         ...(station ? {} : { chasers }),
         ...patrol,
+        ...(counted ? { counted: true, ...(noun === null ? {} : { noun }) } : {}),
       },
     },
     // Změnit stav každého cíle je hádanka nad rolí cílů; počet nese `tuning` i role.

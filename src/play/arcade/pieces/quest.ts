@@ -50,7 +50,7 @@ import {
 } from '../contract';
 import type { CompiledRule } from '../rules/compile';
 import type { CompiledInteract } from '../rules/interact';
-import { verbSchema } from '../rules/schema';
+import { nounSchema, verbSchema } from '../rules/schema';
 import { ARENA, type ChaseParams, DIRECTIONS, ESCAPE, GRACE_COUNTER, checkEscapeLevel, fairReach } from './arena';
 import { WAVE_LIMITS, WAVE_PLAN, entrySpots, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
@@ -139,6 +139,10 @@ const spatialParams = z
     rounds: z.int().min(2).max(WAVE_LIMITS.rounds).optional(),
     /** Hlídka (P36A T8, píše žánr): pronásledovatelé honí až hráče v dohledu (`ChaseParams.patrol`). */
     patrol: z.int().min(UNIT).max(40 * UNIT).optional(),
+    /** Věta s počtem (P61 T5, píše žánr): hotový cíl → `items` + 1 a HUD počítá cíl `finish_collected`. */
+    counted: z.literal(true).optional(),
+    /** Slovo věty pro počítadlo HUD (`candles 0/5`), jen s `counted`. */
+    noun: nounSchema.optional(),
   })
   .strict();
 export type QuestSpatialParams = z.infer<typeof spatialParams>;
@@ -396,19 +400,19 @@ export const boilOver: RulePiece<z.infer<typeof boilParams>> = {
 // ---------------------------------------------------------------------------
 // Díly režimů
 
-const interactRule = (verb: string, interact: CompiledInteract): PieceRef => {
-  const params: CompiledRule = { id: 'quest', verb, when: { interact }, if: [], do: [] };
+const interactRule = (verb: string, interact: CompiledInteract, done: CompiledRule['do']): PieceRef => {
+  const params: CompiledRule = { id: 'quest', verb, when: { interact }, if: [], do: done };
   return { id: 'interact', params };
 };
 
-/** Hráč má pevnou velikost jako v útěku: skóre z `do` pravidla ho nezvětší. */
-function questParts(level: ArcadeLevel, half: number, verb: string, interact: CompiledInteract, chase: ChaseParams | undefined, catchRules: PieceRef[], issues: readonly string[]): ModeParts {
+/** Hráč má pevnou velikost jako v útěku: skóre z `do` pravidla ho nezvětší. `done` = efekty hotového cíle. */
+function questParts(level: ArcadeLevel, half: number, verb: string, interact: CompiledInteract, chase: ChaseParams | undefined, catchRules: PieceRef[], issues: readonly string[], done: CompiledRule['do'] = []): ModeParts {
   const moving = { half, size: ESCAPE.playerSize, ...(chase === undefined ? {} : { chase }) };
   return {
     control: { id: 'move_free', params: moving },
     bot: { id: 'quest_bot', params: { half, interact, ...(chase === undefined ? {} : { chase }) } },
     level,
-    rules: [interactRule(verb, interact), ...catchRules],
+    rules: [interactRule(verb, interact, done), ...catchRules],
     ...(issues.length > 0 ? { issues } : {}),
   };
 }
@@ -427,8 +431,8 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
   // Kola: předlohy a sloty jednoho kola, pravidlo kol a chycení i bez pronásledovatelů na startu.
   cost: (params) =>
     params.rounds === undefined
-      ? { bodies: 1 + params.count + params.rocks + params.chasers, rules: 1 + (params.chasers > 0 ? 1 : 0) }
-      : { bodies: 3 + 2 * params.count + params.rocks + params.chasers + WAVE_PLAN.escapeChasers, rules: 3 },
+      ? { bodies: 1 + params.count + params.rocks + params.chasers, rules: 1 + (params.chasers > 0 ? 1 : 0) + (params.counted === true ? 1 : 0) }
+      : { bodies: 3 + 2 * params.count + params.rocks + params.chasers + WAVE_PLAN.escapeChasers, rules: 3 + (params.counted === true ? 1 : 0) },
   generate: (seed, params) => spatialLevel(seed, params).level,
   parts: (seed, params, health) => {
     const { level, issues, rocks, templates } = spatialLevel(seed, params);
@@ -457,7 +461,11 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
       }));
       catches.push({ id: 'arena_waves', params: { until: 'targets', done: params.states - 1, item: templates.target, chaser: templates.chaser, spots, waves } });
     }
-    return questParts(level, QUEST.half, params.verb, interact, chase, [...catches, ...livesRules(health)], issues);
+    // Věta s počtem (P61 T5): hotový cíl přičte `items`, HUD je počítá proti všem cílům hry. Výhru dál dává `interact`
+    // po posledním cíli; `finish_collected` je jen cíl pro HUD – tělo cíle úkol nemá, takže nevystřelí.
+    const counted = params.counted === true;
+    const goal: PieceRef[] = counted ? [{ id: 'finish_collected', params: { need: params.count * (rounds ?? 1), ...(params.noun === undefined ? {} : { noun: params.noun }) } }] : [];
+    return questParts(level, QUEST.half, params.verb, interact, chase, [...catches, ...livesRules(health), ...goal], issues, counted ? [{ count: { counter: 'items', amount: 1 } }] : []);
   },
 };
 

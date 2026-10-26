@@ -38,7 +38,7 @@ import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression, loopTouch } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
 import { MoreGames } from '../MoreGames';
-import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, Icon, PauseCard, objectiveShown, useHudKeys } from '../ui';
+import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, type HudGoal, Icon, PauseCard, objectiveShown, useHudKeys } from '../ui';
 import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { AboutButton, SentenceRead } from '../SentenceRead';
@@ -139,6 +139,14 @@ export function collectNeed(world: ArcadeWorld): number | null {
   return Number.isFinite(need) && need > 0 ? need : null;
 }
 
+/** Počítadlo cíle (P61 T5): slovo věty s počtem (`finish_collected.noun`, „keys“) vidět v pilulce, jinak „collected“ jen čtečce. */
+export function collectGoal(world: ArcadeWorld, count: number): HudGoal | null {
+  const need = collectNeed(world);
+  if (need === null) return null;
+  const noun = nativeRule(world.rules, 'finish_collected')?.params.noun;
+  return typeof noun === 'string' ? { label: noun, count, need, said: true } : { label: 'collected', count, need };
+}
+
 const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true || spec.control === 'steer' && typeof spec.controlParams?.crashBudget === 'number';
 
 /**
@@ -149,7 +157,7 @@ const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id 
  * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
  */
 function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, par: Par | null, livesStart: number): RunFacts {
-  const need = collectNeed(world);
+  const goal = collectGoal(world, snapshot.items);
   const extra: ResultStat[] = [];
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
   if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
@@ -159,7 +167,7 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
     tick: snapshot.tick,
     hz: ARCADE_HZ,
     survive: survives(world),
-    goal: need === null ? null : { count: snapshot.items, need, label: 'collected' },
+    goal: goal === null ? null : { count: goal.count, need: goal.need, label: goal.label },
     extra,
     score: scoring ? { value: snapshot.score, unit: scoreUnit(spec) } : null,
     stars: starsFor(runOf(snapshot, livesStart), par),
@@ -211,7 +219,6 @@ function ArcadeHud({
 }) {
   const lives = hasLives(spec) ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
-  const need = collectNeed(world);
   const counters: HudCounter[] = [];
   if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
   if (countsAmmo(world)) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
@@ -224,7 +231,7 @@ function ArcadeHud({
       title={spec.title}
       heading={heading}
       goalLine={spec.tutorial.goalLine}
-      goal={need === null ? null : { label: 'collected', count: snapshot.items, need }}
+      goal={collectGoal(world, snapshot.items)}
       counters={counters}
       clock={limit === null ? { seconds: elapsed, countdown: false } : { seconds: limit + bonus - elapsed, countdown: true }}
       objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, ARCADE_HZ, paused)}

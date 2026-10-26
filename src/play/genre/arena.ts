@@ -17,7 +17,7 @@ import { ARCADE_HZ } from '../arcade/contract';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { FIGHT, fightWaveCount } from '../arcade/pieces/fight';
 import { WAVE_PLAN, itemWaveCount, survivalSeconds } from '../arcade/pieces/waves';
-import { plural, singular } from '../draft/lexicon';
+import { goalNoun, plural, singular } from '../draft/lexicon';
 import { type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Klíče `spec.params`, které režim předá generátoru v `tuning`. */
@@ -62,14 +62,18 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     // Vlny: `items` věcí v každé, od druhé vbíhají pronásledovatelé, hodiny ukáže HUD.
     const waves = itemWaveCount(items, 0);
     const things = plural(singular(thing), items);
+    // Věta s počtem (P61 T5): „collect three keys“ = právě tolik věcí celkem, sebraná poslední vyhraje a HUD je počítá slovem věty.
+    const counted = spec.counts?.collectible !== undefined;
+    const noun = counted ? goalNoun(thing) : null;
+    const goal = counted ? { items, counted: true, ...(noun === null ? {} : { noun }) } : { items, waves };
     return legacySpec(spec, {
       control: 'move_free',
-      controlParams: { generator: 'arena_collect', tuning: { items, waves, ...(spec.params?.pursuitCeiling === undefined ? {} : { pursuitCeiling: spec.params.pursuitCeiling }), ...(spec.params?.itemSizePct === undefined ? {} : { itemSizePct: spec.params.itemSizePct }) } },
+      controlParams: { generator: 'arena_collect', tuning: { ...goal, ...(spec.params?.pursuitCeiling === undefined ? {} : { pursuitCeiling: spec.params.pursuitCeiling }), ...(spec.params?.itemSizePct === undefined ? {} : { itemSizePct: spec.params.itemSizePct }) } },
       archetype: 'collect_exit',
       title: `${title} Hunt`,
-      objective: { kind: 'collect', description: `Collect ${String(items)} ${things} in each of ${String(waves)} waves before time runs out.`, count: items, role: 'item' },
+      objective: { kind: 'collect', description: `Collect ${String(items)} ${things}${counted ? '' : ` in each of ${String(waves)} waves`} before time runs out.`, count: items, role: 'item' },
       roles: [{ id: 'item', kind: 'collectible', label: thing, count: items }],
-      tutorial: { goalLine: `Collect ${String(items)} ${things} per wave, ${String(waves)} waves.`, controlsHint: 'Drag or arrows to move.' },
+      tutorial: { goalLine: counted ? `Collect ${String(items)} ${things}.` : `Collect ${String(items)} ${things} per wave, ${String(waves)} waves.`, controlsHint: 'Drag or arrows to move.' },
       mechanics: [livesMechanic()],
       mood: 'playful',
     });

@@ -35,7 +35,8 @@ const DEV: Readonly<Record<string, readonly string[]>> = {
     'A kid collects candy on Halloween night while ghosts follow',
     'A robot vacuum collects coins under the sofa while the cat attacks',
     'Gather apples in an orchard while angry wasps buzz around',
-    'Explore an old castle to find three treasure chests',
+    // P61 T5: s počtem („three treasure chests“) hraje věta právě tolik věcí bez průběhu (`goal-count.test.ts`).
+    'Explore an old castle to find treasure chests',
   ],
   arena_escape: [
     'Pick up glowing mushrooms in a dark forest and avoid the wolves',

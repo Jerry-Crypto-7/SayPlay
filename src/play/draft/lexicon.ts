@@ -683,6 +683,16 @@ export function plural(phrase: string, count: number): string {
   return [...words.slice(0, -1), many].join(' ');
 }
 
+/**
+ * Slovo počítadla cíle v HUD (P61 T5, `keys 0/3`): poslední slovo popisku věci v množném čísle,
+ * „golden key“ → „keys“. Tvar jako `nounSchema` (`arcade/rules/schema.ts`); popisek, ze kterého
+ * takové slovo nevyjde (číslice, pomlčka, diakritika), dá `null` a HUD ukáže „collected“.
+ */
+export function goalNoun(label: string): string | null {
+  const word = plural(singular(label.trim().toLowerCase().split(/\s+/).at(-1) ?? ''), 2);
+  return /^[a-z]{2,24}$/.test(word) ? word : null;
+}
+
 /** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí a cílové řádky). */
 export function withArticle(noun: string): string {
   return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;

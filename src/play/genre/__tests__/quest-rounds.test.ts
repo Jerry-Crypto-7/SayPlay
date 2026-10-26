@@ -91,8 +91,9 @@ function roundsOf(world: ArcadeWorld): { rounds: Round[]; wonInRound: number } {
   return { rounds, wonInRound: state[HEADER.runState] === 1 ? waveOf(state) : -1 };
 }
 
+// Úkol v prostoru tu řádek nemá: počet z věty je od P61 T5 počet cílů jediného kola (`goal-count.test.ts`) – dvě
+// svíčky trvají pár sekund. Kola staví úkol v prostoru bez počtu (níž) a stanoviště.
 const PAIRS = [
-  ['quest.spatial', 'light two candles before the ghost catches you', 'light eight candles before the ghost catches you'],
   ['quest.station', 'flip one pancake in the kitchen', 'flip three pancakes in the kitchen'],
 ] as const;
 
@@ -112,7 +113,8 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
   });
 
   it('spatial: the win comes only in the last round, every round lays fresh targets elsewhere and brings more or faster chasers', () => {
-    const sentence = 'light five candles before the ghost catches you';
+    // Bez počtu: věta s počtem hraje od P61 T5 jediné kolo (`goal-count.test.ts`).
+    const sentence = 'light the candles before the ghost catches you';
     // Ve `genre.v4` (P47A T4) nese cíle posledního kola boss a pronásledovatelé s ním odejdou (`quest-boss.test.ts`):
     // kolo začne bez cílů. Kola, jak je staví generátor, měří táž hra uložená jako `genre.v3`.
     const fresh = publish(sentence);
@@ -237,7 +239,8 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
 
   it('a quest without seconds builds the same world as before', () => {
     // Hra uložená před průběhem (`genre.v1`, P45C): nová hra má od T12 strážce a nová chování.
-    const fresh = legacySpec('light five candles before the ghost catches you');
+    // Uložená hra je spec z doby před P61 T5: počty věty v něm nejsou, `count` nese doplněk modulu – tentýž svět jako dřív.
+    const fresh = legacySpec('light five candles before the ghost catches you', false);
     const spec = { ...fresh, genre: { ...fresh.genre!, compilerVersion: 'genre.v1' } };
     const compiled = compileArcade(spec, 624372740);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
@@ -245,10 +248,11 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
   });
 });
 
-/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. */
-function legacySpec(sentence: string): GameSpecV1 {
+/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. `counts: false` = spec bez počtů věty. */
+function legacySpec(sentence: string, counts = true): GameSpecV1 {
   const pick = classifyGenre(sentence, null).ranked[0];
   const genre = draftGenreFor(sentence, pick.genre, pick.mode);
   if (genre === null) throw new Error(`missing legacy fixture: ${sentence}`);
-  return compileGenre(genre);
+  const { counts: _counts, ...plain } = genre;
+  return compileGenre(counts ? genre : plain);
 }

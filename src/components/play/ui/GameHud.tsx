@@ -18,6 +18,8 @@ export interface HudGoal {
   readonly label: string;
   readonly count: number;
   readonly need: number;
+  /** `label` je podstatné jméno z věty (P61 T5): pilulka ho ukáže před počtem (`keys 0/3`), ne jen čtečce. */
+  readonly said?: boolean;
 }
 
 /** Další skutečné počítadlo hry (životy, rány, náboje) – jen tam, kde ho hra má. */
@@ -73,9 +75,10 @@ function Goal({ goal }: { readonly goal: HudGoal }) {
         <Egg key={index} collected={collected} />
       ))}
       <span className="play-hud-num">
+        {goal.said === true && `${goal.label} `}
         {goal.count}/{goal.need}
       </span>
-      <span className="play-sr-only"> {goal.label}</span>
+      {goal.said !== true && <span className="play-sr-only"> {goal.label}</span>}
     </span>
   );
 }
