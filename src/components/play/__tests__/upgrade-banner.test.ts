@@ -4,11 +4,11 @@
  * serverový `isTransient`, jinak by tlačítko slibovalo, co server neudělá.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { type DraftFinalReason, isTransient } from '@/app/api/play/_upgrade';
 
-import { COMMITTED_MS, committedNow, FINAL_REASON_TEXT, noticeOf, readingMove, type UpgradeView } from '../UpgradeBanner';
+import { chainSwitchOf, COMMITTED_MS, committedNow, FINAL_REASON_TEXT, followUpgrade, noticeOf, POLL_MS, readingMove, type UpgradeView } from '../UpgradeBanner';
 
 const REASONS = Object.keys(FINAL_REASON_TEXT) as DraftFinalReason[];
 
@@ -40,6 +40,64 @@ describe('readingMove', () => {
   });
 });
 
+// P58E T3: řetěz skončí `CHAIN` hned po čtení a hru ze čtení nese až konec – přechod je týž jako v P58D.
+describe('a chain and its reading game', () => {
+  const chain = 'c'.repeat(32);
+  const reading = 'r'.repeat(32);
+  const chainEnd = (more: { reading?: string } = {}): UpgradeView => ({ kind: 'final', reason: 'CHAIN', ...more });
+
+  it('the chain page moves to the reading game the end names, or offers it after six seconds of play', () => {
+    expect(readingMove(chainEnd({ reading }), chain, false, new Set())).toEqual({ kind: 'switch', versionId: reading });
+    const offered = readingMove(chainEnd({ reading }), chain, true, new Set());
+    expect(offered).toEqual({ kind: 'offer', versionId: reading });
+    expect(chainSwitchOf(offered, null)).toEqual({ offer: reading });
+  });
+
+  it('the chain page shows nothing while the reading is out and when the reading kept the chain', () => {
+    expect(chainSwitchOf(readingMove({ kind: 'working', since: 0, deadlineAt: 285_000 }, chain, true, new Set()), null)).toBeNull();
+    expect(chainSwitchOf(readingMove(chainEnd(), chain, true, new Set()), null)).toBeNull();
+  });
+
+  it('the reading game of a chain keeps its switch, with Quick back to the chain and nothing offered', () => {
+    expect(chainSwitchOf(readingMove(chainEnd({ reading }), reading, false, new Set()), chain)).toEqual({ offer: null });
+  });
+
+  it('a chain end offers no Try again', () => {
+    expect(noticeOf(chainEnd())?.action).toBeNull();
+  });
+});
+
+describe('followUpgrade', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  async function viewsOf(answers: readonly unknown[]): Promise<UpgradeView[]> {
+    vi.useFakeTimers();
+    const queue = [...answers];
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(queue.shift()))));
+    const views: UpgradeView[] = [];
+    const stop = followUpgrade('/api/play/games/x/upgrade', (view) => views.push(view));
+    for (let poll = 0; poll < answers.length; poll += 1) await vi.advanceTimersByTimeAsync(POLL_MS);
+    stop();
+    return views;
+  }
+
+  // Id z odpovědi serveru projde jen tvarem hex (`readingOf`).
+  const reading = 'b'.repeat(32);
+  const deadlineAt = new Date(Date.now() + 285_000).toISOString();
+
+  it('keeps the reading game a chain end names, and the end is CHAIN, not FAILED', async () => {
+    expect((await viewsOf([{ status: 'draft-final', reason: 'CHAIN', reading: { versionId: reading } }])).at(-1)).toEqual({ kind: 'final', reason: 'CHAIN', reading });
+  });
+
+  it('an AI-version end after a pending reading carries no reading: the quick page does not move on a failure (P58D)', async () => {
+    const views = await viewsOf([{ status: 'pending', deadlineAt, reading: { versionId: reading } }, { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }]);
+    expect(views.at(-1)).toEqual({ kind: 'final', reason: 'MODEL_UNAVAILABLE' });
+  });
+});
+
 describe('noticeOf', () => {
   it('an unchanged upgrade never claims all requested actions are present', () => {
     expect(noticeOf({ kind: 'final', reason: 'UNCHANGED' })?.text).toBe("The full-detail version didn't add more. Keep playing the quick one.");
@@ -62,10 +120,11 @@ describe('noticeOf', () => {
     expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) })).toEqual({ text: 'Full-detail version ready', action: { kind: 'open', label: 'Play it' } });
   });
 
-  it('všech 10 důvodů má vlastní větu', () => {
-    expect(REASONS).toHaveLength(11);
+  // P58E T1 přidal `CHAIN`: řetěz mikroher AI verzi nemá.
+  it('každý důvod má vlastní větu', () => {
+    expect(REASONS).toHaveLength(12);
     expect(REASONS).toContain('ACTION_LOST');
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(11);
+    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(12);
     expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
     expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
   });

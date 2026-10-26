@@ -3,6 +3,8 @@
  * na pozadí a jeho autorská verze se publikuje jako dítě návrhu
  * (`parentId = draftId`, `relation: 'upgrade'`). Návrh, který režie postaví ze čtení věty, jde
  * hned jako druhé dítě (`relation: 'reading'`, P58D T1), když hraje jiný žánr než rychlá hra.
+ * Řetěz mikroher AI verzi nemá: jeho práce větu jen přečte a hru ze čtení publikuje jako dítě
+ * řetězu, když se čtením nehraje řetěz (P58E T1).
  *
  * Práce v letu drží mapa na `globalThis` – routy `POST /api/play/games`
  * a `GET …/:id/upgrade` jsou v Next.js oddělené moduly a modulová proměnná by
@@ -30,15 +32,21 @@ import { abilityIdsOf } from '@/play/arcade/abilities/state';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { ABILITIES, type ArcadeWorld } from '@/play/arcade/contract';
 import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
+import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
+import { chainOrSingle } from '@/play/chain/decide';
+import { readForChain } from '@/play/chain/read';
 import type { DirectorSource } from '@/play/contracts';
 import { type DirectorFailure, withDraftRules } from '@/play/director';
+import { draftGameSpecWithMeta } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import { readBeforeDraft, readerForAiVersion } from '@/play/read/client';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector } from './_director';
+import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector, mayPayChainRead } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -53,12 +61,18 @@ export type DraftFinalReason =
   | 'NOT_FROM_SENTENCE'
   /** Text AI verze trefil zakázané téma (P40 T2) – do feedu nejde, rychlá verze zůstane. */
   | 'BLOCKED'
+  /** Řetěz mikroher AI verzi nemá (P56C T10); práce řetězu jen přečte větu a případně publikuje hru ze čtení (P58E T1). */
+  | 'CHAIN'
   | 'FAILED';
 
 export type UpgradeOutcome =
   /** `adds` (P46E T4): co AI verze přidala, jak to spočítal `directUpgrade`; dítě z úložiště ho nenese. */
   | { readonly status: 'ready'; readonly versionId: string; readonly adds?: readonly UpgradeAdd[] }
-  | { readonly status: 'draft-final'; readonly reason: DraftFinalReason };
+  /**
+   * `reading` (P58E T2) jen u `CHAIN`: práce řetězu doběhne hned po čtení, takže `pending` s hrou ze čtení klient
+   * mezi dvěma dotazy snadno mine – konec ji nese sám.
+   */
+  | { readonly status: 'draft-final'; readonly reason: DraftFinalReason; readonly reading?: { readonly versionId: string } };
 
 /**
  * `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1).
@@ -172,7 +186,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
  * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED']);
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED', 'CHAIN']);
 
 export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
@@ -259,6 +273,49 @@ async function publishReading(versions: VersionStore, draftId: string, request: 
     console.warn(`[play] reading version of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
   }
   return null;
+}
+
+const CHAIN_FINAL: Extract<UpgradeOutcome, { readonly status: 'draft-final' }> = { status: 'draft-final', reason: 'CHAIN' };
+/**
+ * Konec řetězu, jehož čtení odmítla brána nebo strop a nic se nezaplatilo (T5): hráč dostane `CHAIN` jako vždy, ale
+ * proces si ho nedrží (`upgradeOf` ho pozná podle identity) – další dotaz zkusí čtení znovu přes tytéž brány.
+ */
+const CHAIN_REFUSED: Extract<UpgradeOutcome, { readonly status: 'draft-final' }> = { status: 'draft-final', reason: 'CHAIN' };
+
+/**
+ * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
+ * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když se čtením `chainOrSingle` řekne jedna hra, publikuje návrh
+ * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`, s hrou
+ * ze čtení, když je (T2). Řetěz, který route stavěla už se čtením (čtečka před návrhem, `readBy: 'model'`), se nečte znovu.
+ * simplified: jedno čtení na řetěz drží mapa v procesu – dvě instance se souběžným dotazem zaplatí čtení obě (cache
+ * odpovědí se plní až po čtení, dítě vznikne jednou); kdyby to bylo vidět v útratě, rezervovat čtení v úložišti.
+ */
+async function runChainReading(versions: VersionStore, chain: PublishedGame, request: UpgradeRequest, onReading: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
+  const chainId = chain.version.versionId;
+  const found = (versionId: string, fresh: boolean): UpgradeOutcome => {
+    onReading(versionId, fresh);
+    return { ...CHAIN_FINAL, reading: { versionId } };
+  };
+  for (const childId of await versions.childrenOf(chainId)) {
+    const child = await versions.get(childId);
+    if (child?.relation === 'reading' && child.version.parentId === chainId) return found(childId, false);
+  }
+  if (!readerForAiVersion() || chain.origin?.readBy === 'model') return CHAIN_FINAL;
+  const { sentence } = request;
+  let called = false;
+  const onCalled = (): void => {
+    called = true;
+  };
+  const reading = await readBeforeDraft(sentence, process.env, { ...((await mayPayChainRead(request.caller)) ? { caller: request.caller } : {}), onCalled });
+  // Prázdné čtení, na které se model ptal (i zaplacené jiným procesem, z cache), se drží, ať se neplatí dvakrát;
+  // odmítnuté branou nebo stropem se zkusí znovu.
+  if (reading === null) return called ? CHAIN_FINAL : CHAIN_REFUSED;
+  // Čtení, ze kterého vyjde míč, se bez fyziky nepřeloží (P56C T17e); návrh jedné hry ji potřebuje tak jako tak.
+  await loadRapier();
+  if (chainOrSingle(sentence, readForChain(sentence, reading), classifyGenre(sentence, reading)) === 'chain') return CHAIN_FINAL;
+  const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(sentence.trim()));
+  const published = await publishReading(versions, chainId, request, draftGameSpecWithMeta(sentence, 1, { reading }).spec, seeds);
+  return published === null ? CHAIN_FINAL : found(published.versionId, published.fresh);
 }
 
 /**
@@ -500,18 +557,19 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   // Hra ze čtení z dřívějšího pokusu ukončí long-poll až po `KNOWN_READING_GRACE_MS`: přechodné odmítnutí (strop)
   // ji tak předběhne a hráč ho uvidí. Hned by každý dotaz dostal `pending` s novou lhůtou a spustil nový pokus
   // a hráč by čekal na AI verzi donekonečna (živá kontrola P58D T4).
-  const attempt = runUpgrade(versions, draft, request, (versionId, fresh) => {
+  const onReading = (versionId: string, fresh: boolean): void => {
     job.reading = versionId;
     if (fresh) arrived();
     else setTimeout(arrived, KNOWN_READING_GRACE_MS);
-  }).catch((thrown: unknown): UpgradeOutcome => {
+  };
+  const attempt = (draft.chain === undefined ? runUpgrade(versions, draft, request, onReading) : runChainReading(versions, draft, request, onReading)).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });
   const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null, reading: null, readingArrived };
   const remembered = attempt.then((outcome) => {
     console.warn(upgradeAttemptLine(draftId, 'settled'));
-    if (isTransient(outcome)) {
+    if (isTransient(outcome) || outcome === CHAIN_REFUSED) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;
     }

@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test';
 
 /**
@@ -132,5 +135,102 @@ test.describe('/play/[id] – a microgame chain (P56C T13)', () => {
     await expect(friend.getByTestId('play-ghost-tag')).toHaveText('Friend', { timeout: 30_000 });
     await expect(friend.getByTestId('play-ghost-tag')).toBeVisible({ timeout: 30_000 });
     await b.close();
+  });
+});
+
+/**
+ * P58E T3: řetěz dostane čtení věty na pozadí; vyjde-li z něj jedna hra, konec `CHAIN` nese `reading`. Atrapa čtečky
+ * je podvržený `…/upgrade` řetězu: první 3 s `pending` bez čtení, pak konec – s hrou ze čtení (skutečně publikovanou
+ * hrou jiného žánru), nebo bez ní. Skutečné dítě `relation: 'reading'` řetězu veřejné API nevyrobí (čtečka v e2e není);
+ * jeho přepínač (Quick zpátky na řetěz, žádná věta o konci) pinuje `upgrade-banner.test.ts`.
+ */
+test.describe('/play/[id] – a chain moves to the reading game (P58E T3)', () => {
+  const READING_AFTER_MS = 3_000;
+  /** Toast konce bez AI verze trvá 3 s (`TOAST_MS`); po něm i po dalším dotazu musí být řetěz pořád bez ničeho. */
+  const TOAST_AND_MARGIN_MS = 3_000 + 2_500;
+  /** 6,5 s hraní při 60 Hz – nad `COMMITTED_MS` (6 s), kdy hra ze čtení už jen nabízí. */
+  const COMMITTED_TICKS = 6.5 * 60;
+
+  /** Snímek do složky testu (oracle úlohy – člověk je prohlédne), přiložený i k výsledku. */
+  async function snap(page: Page, info: TestInfo, name: string): Promise<void> {
+    const path = info.outputPath(`${name}.png`);
+    await page.screenshot({ path });
+    await info.attach(name, { path, contentType: 'image/png' });
+  }
+
+  async function chainAndReading(page: Page, request: APIRequestContext, reads: 'game' | 'chain'): Promise<{ url: string; reading: string; arrive: () => void; asked: () => number }> {
+    const created = await request.post('/api/play/games', { data: { sentence: SENTENCE } });
+    expect(created.status(), await created.text()).toBeLessThan(300);
+    const body = (await created.json()) as { url: string; versionId: string; upgrade?: string };
+    expect(body.upgrade).toBe(`/api/play/games/${body.versionId}/upgrade`);
+    const spec = JSON.parse(readFileSync(join(process.cwd(), 'src/play/__fixtures__/collect_exit.json'), 'utf8')) as unknown;
+    const published = await request.post('/api/play/games', { data: { spec } });
+    expect(published.status(), await published.text()).toBeLessThan(300);
+    const reading = ((await published.json()) as { versionId: string }).versionId;
+    const end = reads === 'game' ? { status: 'draft-final', reason: 'CHAIN', reading: { versionId: reading } } : { status: 'draft-final', reason: 'CHAIN' };
+    let arrived = false;
+    let asked = 0;
+    await page.route(`**${body.upgrade}`, async (route) => {
+      asked += 1;
+      await route.fulfill({ json: arrived ? end : { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() }, headers: { 'cache-control': 'no-store' } });
+    });
+    return { url: body.url, reading, arrive: () => (arrived = true), asked: () => asked };
+  }
+
+  test('chain sentence → chain → the reading game, within one poll, for a player not into the chain yet', async ({ page, request }, info) => {
+    const { url, reading, arrive } = await chainAndReading(page, request, 'game');
+    await page.goto(url);
+    await probeReady(page);
+    // Dokud čtení běží, řetěz nic neslibuje: žádné Full detail, žádná tečka.
+    await expect(page.getByTestId('upgrade-state')).toHaveCount(0);
+    await snap(page, info, 'chain-while-reading');
+    await page.waitForTimeout(READING_AFTER_MS);
+    arrive();
+    const arrivedAt = Date.now();
+    await page.waitForURL(`**/play/${reading}`, { timeout: 15_000 });
+    // Jeden dotaz po 2 s + odpověď a navigace; rezerva na emulovaný telefon.
+    expect(Date.now() - arrivedAt).toBeLessThan(2_000 + 3_000);
+    await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    await expect(page.locator('main[data-chain-round]')).toHaveCount(0);
+    await snap(page, info, 'reading-game');
+  });
+
+  test('the reading keeps the chain: nothing offered, no error, the chain plays on', async ({ page, request }, info) => {
+    const { url, arrive, asked } = await chainAndReading(page, request, 'chain');
+    arrive();
+    await page.goto(url);
+    await probeReady(page);
+    await expect.poll(asked, { timeout: 15_000 }).toBeGreaterThan(0);
+    await page.waitForTimeout(TOAST_AND_MARGIN_MS);
+    await expect(page.getByTestId('upgrade-state')).toHaveCount(0);
+    await expect(page.getByText(/run of rounds/)).toHaveCount(0);
+    expect(new URL(page.url()).pathname).toBe(url);
+    await snap(page, info, 'chain-kept');
+  });
+
+  test('after six seconds of play the chain offers the reading game and is not swapped', async ({ page, request }, info) => {
+    const { url, reading, arrive } = await chainAndReading(page, request, 'game');
+    await page.goto(url);
+    await probeReady(page);
+    await page.evaluate(() => (window.__playShell as unknown as ChainProbe).start());
+    await page.waitForFunction(
+      (ticks) => {
+        const probe = window.__playShell as unknown as ChainProbe;
+        return probe.tick() >= ticks || probe.outcome() !== 'running';
+      },
+      COMMITTED_TICKS,
+      { timeout: 60_000 },
+    );
+    arrive();
+    const offer = page.getByTestId('reading-action');
+    await expect(offer).toBeVisible({ timeout: 10_000 });
+    await expect(offer).toHaveText('Matched');
+    await expect(page.getByTestId('upgrade-state')).toHaveAttribute('data-reading', 'offer');
+    await expect(page.getByTestId('upgrade-action')).toHaveCount(0);
+    await snap(page, info, 'chain-offer');
+    await page.waitForTimeout(2_500);
+    expect(new URL(page.url()).pathname).toBe(url);
+    await offer.click();
+    await page.waitForURL(`**/play/${reading}`);
   });
 });

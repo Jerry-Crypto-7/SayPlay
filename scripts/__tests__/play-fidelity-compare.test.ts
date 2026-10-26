@@ -48,7 +48,7 @@ interface Recorded {
   readonly failure?: { readonly stage: 'model' | 'publish'; readonly reason: string; readonly detail: string };
   /** Pokus, který stránka návrhu spustila těsně před koncem a který doběhne `afterMs` po poslední odpovědi. */
   readonly lingering?: { readonly afterMs: number; readonly detail: string };
-  /** Řetěz mikroher: POST odpoví bez `upgrade` a pokus se nerozběhne. */
+  /** Řetěz mikroher ze staršího buildu: POST odpoví bez `upgrade` a pokus se nerozběhne. */
   readonly chain?: true;
 }
 
@@ -269,6 +269,28 @@ describe('measureSentence', () => {
     const summary = compareSummary({ astra: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.astra) } }, 'b1');
     expect(summary.astra).toMatchObject({ n: 3, chains: 1, refused: { door: 0, cap: 0 }, published: { ok: 2, of: 2, share: 1, failures: {} } });
     expect(compareVerdict(summary).valid).toBe(true);
+  });
+
+  it('books a chain whose POST carries the upgrade URL of its reading (P58E) as chain, not as a model failure', async () => {
+    const clock = { t: 0 };
+    const recorded = { ...RECORDED.astra, s002: { upgrades: [pending, { status: 'draft-final', reason: 'CHAIN', reading: { versionId: 'r-s002' } }] } };
+    const server = recordedServer(recorded, clock);
+    const result = await measureSentence(SENTENCES[2]!, { base: 'http://127.0.0.1:3331', fetchImpl: server.fetch, log: server.log, leave: async () => {}, now: () => clock.t, wait: async () => {}, openGame: async () => {} });
+    expect(result).toMatchObject({ cause: 'chain', upgrade: { status: 'draft-final', reason: 'CHAIN' }, ai: null });
+    const summary = compareSummary({ astra: { buildId: 'b1', concurrency: 1, results: [...(await replay('astra')).slice(0, 2), result], billed: billedFromLog(BILLED_LOG.astra) } }, 'b1');
+    expect(summary.astra).toMatchObject({ n: 3, chains: 1, published: { ok: 2, of: 2, share: 1, failures: {} } });
+  });
+
+  it('books a chain whose reading job failed as chain: the stored game says chain, no model was called', async () => {
+    const clock = { t: 0 };
+    const recorded = { ...RECORDED.astra, s002: { upgrades: [{ status: 'draft-final', reason: 'FAILED' }] } };
+    const server = recordedServer(recorded, clock);
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method !== 'POST' && new URL(String(input)).pathname === '/api/play/games/s002') return json({ game: { ...(await (await server.fetch(input, init)).json()).game, chain: { rounds: [] } } });
+      return server.fetch(input, init);
+    }) as typeof fetch;
+    const result = await measureSentence(SENTENCES[2]!, { base: 'http://127.0.0.1:3331', fetchImpl, log: server.log, leave: async () => {}, now: () => clock.t, wait: async () => {}, openGame: async () => {} });
+    expect(result).toMatchObject({ cause: 'chain', upgrade: { status: 'draft-final', reason: 'FAILED' }, ai: null });
   });
 
   it('asks again after a dropped GET, and gives up after five drops in a row', async () => {

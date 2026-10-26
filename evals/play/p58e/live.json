@@ -1,0 +1,207 @@
+{
+ "schema": "p58e-live.v1",
+ "measuredAt": "2026-10-25T22:10:13.178Z",
+ "baseUrl": "http://127.0.0.1:3131",
+ "server": "next start (production build), PLAY_READER_PATH=ai, reader gpt-6-astra via openai:https://api.openai.com; director endpoint unreachable on purpose (a chain never calls it)",
+ "capUsd": 0.5,
+ "summary": {
+  "sentences": 5,
+  "chains": 5,
+  "readingGames": 4,
+  "sendToReadingMs": {
+   "n": 4,
+   "p50": 3412,
+   "max": 5906
+  },
+  "finals": [
+   "s12: draft-final CHAIN -> rhythm.default",
+   "s16: draft-final CHAIN -> flap.default",
+   "s25: draft-final CHAIN -> catch.default",
+   "s63: draft-final CHAIN -> throw.default",
+   "s01: draft-final CHAIN"
+  ],
+  "screenshot": {
+   "id": "s12",
+   "movedMs": 7225,
+   "reading": "current",
+   "text": "Matched your idea Quick Matched Matched your idea",
+   "chainLines": 0,
+   "chainRound": 0
+  }
+ },
+ "spend": {
+  "source": "provider usage of every api.openai.com call, logged inside the server process; usd = tokens × server prices",
+  "calls": 5,
+  "callsWithoutUsage": 0,
+  "usd": 0.15725,
+  "perReadingUsd": 0.03145,
+  "byKind": {
+   "reader": 0.15725,
+   "director": 0
+  },
+  "detail": [
+   {
+    "at": "2026-10-25T22:09:45.893Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2429,
+    "tokensOut": 123,
+    "usd": 0.03044
+   },
+   {
+    "at": "2026-10-25T22:09:49.134Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2432,
+    "tokensOut": 125,
+    "usd": 0.03057
+   },
+   {
+    "at": "2026-10-25T22:09:52.784Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2426,
+    "tokensOut": 146,
+    "usd": 0.03156
+   },
+   {
+    "at": "2026-10-25T22:09:55.695Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2426,
+    "tokensOut": 152,
+    "usd": 0.03186
+   },
+   {
+    "at": "2026-10-25T22:09:58.963Z",
+    "model": "gpt-6-astra",
+    "kind": "reader",
+    "status": 200,
+    "tokensIn": 2437,
+    "tokensOut": 169,
+    "usd": 0.03282
+   }
+  ]
+ },
+ "rows": [
+  {
+   "id": "s12",
+   "sentence": "a dj cat slaps the right button every time a glowing arrow slides down to the bottom, all perfectly in sync with the song",
+   "chainMs": 2023,
+   "chainId": "5ab551b8aabe155fb24bd95c9e12ae97",
+   "chain": true,
+   "upgrade": "/api/play/games/5ab551b8aabe155fb24bd95c9e12ae97/upgrade",
+   "readingId": "17efe44b7b0c59a3f5d2734bee6ab625",
+   "readingMs": 5906,
+   "readingRelation": "reading",
+   "readingParentIsChain": true,
+   "readingGenre": "rhythm.default",
+   "readingIsChain": false,
+   "final": {
+    "status": "draft-final",
+    "reason": "CHAIN",
+    "ms": 5906
+   },
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final+reading"
+   ]
+  },
+  {
+   "id": "s16",
+   "sentence": "a chubby pigeon wobbles forward through the city on its own, every click bumps it up a bit so it slips between pairs of pipes",
+   "chainMs": 308,
+   "chainId": "b944ae73bf158ea26378a6d539502a4a",
+   "chain": true,
+   "upgrade": "/api/play/games/b944ae73bf158ea26378a6d539502a4a/upgrade",
+   "readingId": "3d48af797fb88e012c4c36e6e1986baf",
+   "readingMs": 3239,
+   "readingRelation": "reading",
+   "readingParentIsChain": true,
+   "readingGenre": "flap.default",
+   "readingIsChain": false,
+   "final": {
+    "status": "draft-final",
+    "reason": "CHAIN",
+    "ms": 3239
+   },
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final+reading"
+   ]
+  },
+  {
+   "id": "s25",
+   "sentence": "a kid with a bucket at the foot of a volcano gathering gemstones that rain down while staying away from the lava rocks",
+   "chainMs": 461,
+   "chainId": "8a584fb0572797c907ec03f14421c029",
+   "chain": true,
+   "upgrade": "/api/play/games/8a584fb0572797c907ec03f14421c029/upgrade",
+   "readingId": "1c53a091a78b2d8bd65f6989fa4e362f",
+   "readingMs": 3585,
+   "readingRelation": "reading",
+   "readingParentIsChain": true,
+   "readingGenre": "catch.default",
+   "readingIsChain": false,
+   "final": {
+    "status": "draft-final",
+    "reason": "CHAIN",
+    "ms": 3585
+   },
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final+reading"
+   ]
+  },
+  {
+   "id": "s63",
+   "sentence": "a seal shoots hoops on an iceberg, hold to power up and lob the beach ball in a curve into the net",
+   "chainMs": 122,
+   "chainId": "eba6d4f5d1eb8a1dd690bbeb45eb5e65",
+   "chain": true,
+   "upgrade": "/api/play/games/eba6d4f5d1eb8a1dd690bbeb45eb5e65/upgrade",
+   "readingId": "9485ff9260cd1ad95715796d484a5cdd",
+   "readingMs": 2843,
+   "readingRelation": "reading",
+   "readingParentIsChain": true,
+   "readingGenre": "throw.default",
+   "readingIsChain": false,
+   "final": {
+    "status": "draft-final",
+    "reason": "CHAIN",
+    "ms": 2843
+   },
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final+reading"
+   ]
+  },
+  {
+   "id": "s01",
+   "sentence": "pizza delivery guy sprints down a busy street nonstop, i swerve left and right around taxis, leap over trash cans and grab tips till i reach the last house",
+   "chainMs": 370,
+   "chainId": "60c3b3d595fb2e751d6f089a20a5d522",
+   "chain": true,
+   "upgrade": "/api/play/games/60c3b3d595fb2e751d6f089a20a5d522/upgrade",
+   "readingId": null,
+   "readingMs": null,
+   "readingRelation": null,
+   "readingParentIsChain": null,
+   "readingGenre": null,
+   "readingIsChain": null,
+   "final": {
+    "status": "draft-final",
+    "reason": "CHAIN",
+    "ms": 4365
+   },
+   "routeStatusesSeen": [
+    "pending",
+    "draft-final"
+   ]
+  }
+ ]
+}

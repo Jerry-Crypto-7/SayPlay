@@ -192,6 +192,11 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
  */
 async function directorWouldCall(env: Record<string, string | undefined>, config: UpstreamConfig, deadline: number, caller: string): Promise<boolean> {
   if (deadline - Date.now() < minCallMs(config) + (readerConfigFromEnv(env)?.timeoutMs ?? 0)) return false;
+  return directorWouldPay(env, config, caller);
+}
+
+/** Peněžní část `directorWouldCall`: strop utrácení nevyčerpaný a volající má volání režiséra – jen čtené. */
+async function directorWouldPay(env: Record<string, string | undefined>, config: UpstreamConfig, caller: string): Promise<boolean> {
   const callerHasCall = versionStoreFromEnv(env)
     .hasDirectorCall(caller, callsPerCaller(env))
     .catch((thrown: unknown) => {
@@ -203,6 +208,17 @@ async function directorWouldCall(env: Record<string, string | undefined>, config
   const worstOutputUsd = (config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
   const [exhausted, hasCall] = await Promise.all([processSpendCap().exhausted(worstOutputUsd), callerHasCall]);
   return !exhausted && hasCall;
+}
+
+/**
+ * Smí čtení řetězové věty (P58E T1) odejít placeně za `caller`? Tytéž brány jako `mayPayRead` čtení pro AI verzi:
+ * placená větev objednaná (`WORLDSMITH_BRANCH=live`) a nakonfigurovaná, strop utrácení nevyčerpaný a volající má
+ * volání režiséra. Bez slotu dveří `play` a bez rozpočtu volání: po čtení řetězu se model nevolá.
+ */
+export async function mayPayChainRead(caller: string): Promise<boolean> {
+  const config = upstreamConfigFromEnv(process.env);
+  if (process.env.WORLDSMITH_BRANCH !== 'live' || config === null) return false;
+  return directorWouldPay(process.env, config, caller);
 }
 
 /**

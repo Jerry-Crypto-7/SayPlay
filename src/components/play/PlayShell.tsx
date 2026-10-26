@@ -72,7 +72,7 @@ export function PlayShell({
   if (blueprint === null && arcade === undefined && chain === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
   // Řetěz mikroher (P56C T11) nemá `arcade`; hraje ho `ChainPlay`.
   const game =
-    chain !== undefined ? <ChainPlay versionId={rest.versionId} spec={rest.spec} chain={chain} par={rest.par ?? null} challenge={rest.challenge ?? null} bestDare={rest.bestDare} />
+    chain !== undefined ? <ChainPlay versionId={rest.versionId} spec={rest.spec} chain={chain} par={rest.par ?? null} challenge={rest.challenge ?? null} bestDare={rest.bestDare} upgrade={rest.upgrade} sentence={rest.read?.sentence ?? null} />
     : arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} />
     : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
   // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.

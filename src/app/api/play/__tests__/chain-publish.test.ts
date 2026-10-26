@@ -57,7 +57,8 @@ describe('POST /api/play/games publishes a chain of microgames (P56C T10)', () =
   it('a multi-verb sentence gets a verified chain of 3–5 rounds with different controls and no AI version', async () => {
     const { status, body, game } = await publish(MULTI);
     expect(status).toBe(201);
-    expect(body).not.toHaveProperty('upgrade');
+    // P58E T2: řetěz nese `upgrade` – dotaz skončí `CHAIN`, s hrou ze čtení, když vznikla.
+    expect(body.upgrade).toBe(`/api/play/games/${String(body.versionId)}/upgrade`);
     const chain = game.chain as ChainWorld;
     expect(chain.rounds.length).toBeGreaterThanOrEqual(3);
     expect(chain.rounds.length).toBeLessThanOrEqual(5);
@@ -124,7 +125,8 @@ describe('POST /api/play/games publishes a chain of microgames (P56C T10)', () =
     const { body } = await publish(MULTI);
     const id = String(body.versionId);
     const asked = await upgrade(new Request(`http://play.test/api/play/games/${id}/upgrade`, { headers: freshCaller() }), params(id));
-    expect(asked.status).toBe(422);
+    expect(asked.status).toBe(200);
+    expect(await asked.json()).toEqual({ status: 'draft-final', reason: 'CHAIN' });
     const remixed = await remix(post(`/api/play/games/${id}/remix`, { sentence: 'add snow' }, freshCaller()), params(id));
     expect(remixed.status).toBe(422);
     // Obecné dveře s `parentId` nejsou zadní vrátka k remixu (revize T10).

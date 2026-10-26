@@ -1026,8 +1026,9 @@ export function attemptsInFlight(log, draftId) {
  * by držel slot dveří a další věta by dostala návrh od dveří (revize hranice
  * fáze 2, nález A). `cause` pak říká, proč věta nemá AI verzi: `door`, `cap`
  * (ty o modelu nic neříkají), nebo `model`; u publikované hry `null`, pokud
- * cestou nenarazila na dveře nebo strop. Odpověď POST bez `upgrade` (řetěz
- * mikroher) AI verzi nemá z podstaty: `cause: 'chain'`, režisér se nevolá.
+ * cestou nenarazila na dveře nebo strop. Řetěz mikroher AI verzi nemá z podstaty:
+ * `cause: 'chain'`, režisér se nevolá. Od P58E nese jeho POST `upgrade` (čtení
+ * řetězu), takže o řetězu rozhoduje uložená hra; POST bez `upgrade` je starší build.
  *
  * Dotaz GET po síťové chybě jde znovu, nejvýš `GET_ATTEMPTS`krát: v P58B T7
  * padly tři zaplacené věty z deseti na „fetch failed“ uprostřed čekání. POST se
@@ -1081,13 +1082,15 @@ export async function measureSentence(sentence, { base, openGame, leave, log, fe
   const settleBy = now() + settleMs;
   while (attemptsInFlight(log(), created.versionId) > 0 && now() < settleBy) await wait(pollMs);
   const published = ai?.report?.publishEligible === true;
+  // Od P58E nese POST řetězu `upgrade` taky (jeho čtení); řetěz je pořád bez AI verze, ne selhání modelu – i když práce čtení spadne (`FAILED`).
+  const chain = draft.chain !== undefined || upgrade.reason === 'CHAIN';
   return {
     id: sentence.id,
     text: sentence.text,
     checklist: sentence.checklist,
     draft: { versionId: created.versionId, spec: draft.spec, ...draftFrame },
     upgrade: { status: upgrade.status, reason: upgrade.reason ?? null, ms: upgradeMs },
-    cause: upgradeEnds(log(), created.versionId).find((end) => end !== 'model') ?? (published ? null : 'model'),
+    cause: chain ? 'chain' : upgradeEnds(log(), created.versionId).find((end) => end !== 'model') ?? (published ? null : 'model'),
     ai: ai === null ? null : { versionId: upgrade.versionId, spec: ai.spec, published, source: ai.timings?.source ?? null, ...aiFrame },
   };
 }

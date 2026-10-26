@@ -25,7 +25,8 @@ export type UpgradeView =
   // `reading` (P58D T3): id hry ze čtení – jiný žánr než rychlá hra, hraje se, než dorazí AI verze.
   | { readonly kind: 'working'; readonly since: number; readonly deadlineAt: number; readonly queued?: number; readonly reading?: string }
   | { readonly kind: 'ready'; readonly versionId: string }
-  | { readonly kind: 'final'; readonly reason: DraftFinalReason }
+  // `reading` (P58E T3): řetěz skončí `CHAIN` hned po čtení, hra ze čtení přijde až s koncem.
+  | { readonly kind: 'final'; readonly reason: DraftFinalReason; readonly reading?: string }
   | { readonly kind: 'offline' }
   | { readonly kind: 'lost' };
 
@@ -49,13 +50,14 @@ const REASONS: ReadonlySet<string> = new Set<DraftFinalReason>([
   'STORE_UNAVAILABLE',
   'NOT_FROM_SENTENCE',
   'BLOCKED',
+  'CHAIN',
   'FAILED',
 ]);
 
 type Answer =
   | { readonly status: 'pending'; readonly deadlineAt: number | null; readonly queued: number | null; readonly reading: string | null }
   | { readonly status: 'ready'; readonly versionId: string }
-  | { readonly status: 'final'; readonly reason: DraftFinalReason };
+  | { readonly status: 'final'; readonly reason: DraftFinalReason; readonly reading: string | null };
 
 /** `pending.reading.versionId` (P58D T2) jako id hry, jinak `null` – adresa z něj vznikne, tak jen tvar id. */
 function readingOf(value: unknown): string | null {
@@ -79,7 +81,7 @@ function answerOf(body: unknown): Answer | null {
   if (typeof body !== 'object' || body === null) return null;
   const { status, versionId, reason, deadlineAt, queued, reading } = body as Record<string, unknown>;
   if (status === 'ready' && typeof versionId === 'string') return { status, versionId };
-  if (status === 'draft-final') return { status: 'final', reason: typeof reason === 'string' && REASONS.has(reason) ? (reason as DraftFinalReason) : 'FAILED' };
+  if (status === 'draft-final') return { status: 'final', reason: typeof reason === 'string' && REASONS.has(reason) ? (reason as DraftFinalReason) : 'FAILED', reading: readingOf(reading) };
   if (status === 'pending') {
     const deadline = typeof deadlineAt === 'string' ? Date.parse(deadlineAt) : Number.NaN;
     return { status, deadlineAt: Number.isFinite(deadline) ? deadline : null, queued: queuedOf(queued), reading: readingOf(reading) };
@@ -128,7 +130,8 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
     const recovered = failures >= OFFLINE_AFTER;
     failures = 0;
     if (answer.status === 'ready') return onView({ kind: 'ready', versionId: answer.versionId });
-    if (answer.status === 'final') return onView({ kind: 'final', reason: answer.reason });
+    // Konec nese hru ze čtení jen u řetězu (`CHAIN`, P58E T3); konec AI verze ji nemá a stránka nepřejde.
+    if (answer.status === 'final') return onView({ kind: 'final', reason: answer.reason, ...(answer.reading === null ? {} : { reading: answer.reading }) });
     // Hra ze čtení jednou známá se nezapomene – pozdější `pending` bez ní je jiná instance, ne zrušení.
     const known = answer.reading ?? reading;
     if ((answer.deadlineAt !== null && answer.deadlineAt !== deadlineAt) || answer.queued !== queued || known !== reading || recovered) {
@@ -195,10 +198,22 @@ export function useCommitted(seconds: number, ended: boolean): boolean {
 const switched = new Set<string>();
 const arrivals = new Set<string>();
 
-/** Co udělat s hrou ze čtení na stránce hry `versionId`: přejít, nabídnout, nebo nic. */
-export function readingMove(view: UpgradeView, versionId: string | null, committed: boolean, switchedBefore: ReadonlySet<string> = switched): { readonly kind: 'switch' | 'offer'; readonly versionId: string } | null {
-  if (view.kind !== 'working' || view.reading === undefined || view.reading === versionId) return null;
+type ReadingMove = { readonly kind: 'switch' | 'offer'; readonly versionId: string };
+
+/** Co udělat s hrou ze čtení na stránce hry `versionId`: přejít, nabídnout, nebo nic. Konec s hrou ze čtení (řetěz, P58E T3) jako práce. */
+export function readingMove(view: UpgradeView, versionId: string | null, committed: boolean, switchedBefore: ReadonlySet<string> = switched): ReadingMove | null {
+  if ((view.kind !== 'working' && view.kind !== 'final') || view.reading === undefined || view.reading === versionId) return null;
   return { kind: committed || switchedBefore.has(view.reading) ? 'offer' : 'switch', versionId: view.reading };
+}
+
+/**
+ * Přepínač nad řetězem a nad hrou ze čtení řetězu (P58E T3). Řetěz AI verzi nemá, takže bez Full detail a bez věty
+ * o konci `CHAIN`: na řetězu jen nabídka hry ze čtení, na hře ze čtení (`matchedOf` = řetěz) Quick zpátky.
+ * `null` = nic – řetěz, ke kterému hra ze čtení nevznikla nebo ještě nedorazila.
+ */
+export function chainSwitchOf(move: ReadingMove | null, matchedOf: string | null): { readonly offer: string | null } | null {
+  const offer = move?.kind === 'offer' ? move.versionId : null;
+  return matchedOf === null && offer === null ? null : { offer };
 }
 
 /**
@@ -216,6 +231,7 @@ export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
   STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
   NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",
   BLOCKED: "We can't show the full-detail version. The quick one stays.",
+  CHAIN: "This game is a run of rounds, so there's no full-detail version.",
   FAILED: "Couldn't finish the full-detail version. The quick one stays.",
 };
 
@@ -275,6 +291,9 @@ function draftIdOf(request: string): string | null {
  * P58D T3: hra ze čtení (`view.reading`) hraje žánr věty o minutu dřív než AI verze. Kdo ještě nehraje (`committed`),
  * přejde na ni sám (`router.replace`) a stránka ohlásí „Matched your idea“; rozehraná hra se nevymění, přepínač
  * nabídne Matched. Na hře ze čtení (`matchedOf` = rychlá hra) vede Quick zpátky a Full detail čeká dál.
+ *
+ * P58E T3: `chain` = `request` patří řetězu mikroher (stránka řetězu, nebo hra ze čtení, jejímž rodičem je řetěz).
+ * Přechod na hru ze čtení je týž; přepínač ukáže `chainSwitchOf` a práce se do `/play` karet nepamatuje.
  */
 export function UpgradeBanner({
   request,
@@ -283,6 +302,7 @@ export function UpgradeBanner({
   matchedOf = null,
   versionId = null,
   committed = false,
+  chain = false,
 }: {
   readonly request: string | null;
   readonly sentence: string | null;
@@ -290,6 +310,7 @@ export function UpgradeBanner({
   readonly matchedOf?: string | null;
   readonly versionId?: string | null;
   readonly committed?: boolean;
+  readonly chain?: boolean;
 }) {
   const router = useRouter();
   const { view, retry } = useUpgrade(request);
@@ -326,9 +347,9 @@ export function UpgradeBanner({
 
   useEffect(() => {
     if (draftId === null) return;
-    if (since !== null && sentence !== null) rememberPending({ draftId, sentence, startedAt: since });
+    if (since !== null && sentence !== null && !chain) rememberPending({ draftId, sentence, startedAt: since });
     if (view.kind === 'final') forgetPending(draftId);
-  }, [draftId, sentence, since, view.kind]);
+  }, [draftId, sentence, since, view.kind, chain]);
 
   // Název AI verze (P28D T7): porotce má vědět, co se otevře; bez něj proužek nečeká.
   const readyId = view.kind === 'ready' ? view.versionId : null;
@@ -360,13 +381,6 @@ export function UpgradeBanner({
     );
   }
 
-  const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
-  if (notice === null) return null;
-  const act = (): void => {
-    if (view.kind !== 'ready') return retry();
-    if (draftId !== null) forgetPending(draftId);
-    router.push(`/play/${view.versionId}`);
-  };
   // Aktivní položka přepínače: na hře ze čtení Matched, jinde Quick.
   const current = (
     <span className="play-version-switch__item is-active" aria-current="true">
@@ -379,9 +393,44 @@ export function UpgradeBanner({
       {QUICK_LABEL}
     </button>
   );
+  const offer = move?.kind === 'offer' ? move.versionId : null;
+  const offerButton = offer !== null && (
+    <button type="button" className="play-version-switch__item is-ready" data-testid="reading-action" title={MATCHED_OFFER} onClick={() => router.push(`/play/${offer}`)}>
+      <Icon name="check" />
+      {MATCHED_LABEL}
+    </button>
+  );
+  const matchedNote = matched && (
+    <span className="play-version-switch__note" data-testid="reading-matched" aria-hidden="true">
+      {MATCHED_NOTE}
+    </span>
+  );
+
+  if (chain) {
+    const shown = chainSwitchOf(move, matchedOf);
+    if (shown === null) return null;
+    return (
+      <aside className="sp-status play-upgrade-status play-version-switch" data-testid="upgrade-state" data-kind={view.kind} data-reading={matchedOf !== null ? 'current' : 'offer'}>
+        <span className="play-sr-only" role="status">
+          {matchedOf !== null ? MATCHED_NOTE : MATCHED_OFFER}
+        </span>
+        {backToQuick}
+        {current}
+        {offerButton}
+        {matchedNote}
+      </aside>
+    );
+  }
+
+  const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
+  if (notice === null) return null;
+  const act = (): void => {
+    if (view.kind !== 'ready') return retry();
+    if (draftId !== null) forgetPending(draftId);
+    router.push(`/play/${view.versionId}`);
+  };
   if (view.kind === 'working' || view.kind === 'ready') {
     const ready = view.kind === 'ready';
-    const offer = move?.kind === 'offer' ? move.versionId : null;
     const text = matchedOf !== null && !ready ? MATCHED_NOTE + QUICK_VERSION_REST : notice.text;
     return (
       <aside className="sp-status play-upgrade-status play-version-switch" data-testid="upgrade-state" data-kind={view.kind} data-reading={matchedOf !== null ? 'current' : offer !== null ? 'offer' : undefined}>
@@ -390,20 +439,13 @@ export function UpgradeBanner({
         </span>
         {backToQuick}
         {current}
-        {offer !== null && (
-          <button type="button" className="play-version-switch__item is-ready" data-testid="reading-action" title={MATCHED_OFFER} onClick={() => router.push(`/play/${offer}`)}>
-            <Icon name="check" />
-            {MATCHED_LABEL}
-          </button>
-        )}
+        {offerButton}
         <button type="button" className={ready ? 'play-version-switch__item is-ready' : 'play-version-switch__item'} data-testid="upgrade-action" disabled={!ready} title={text} onClick={act}>
           {ready ? <Icon name="check" /> : <span className="sp-status__dot" aria-hidden="true" />}
           {FULL_LABEL}
         </button>
         {matched ? (
-          <span className="play-version-switch__note" data-testid="reading-matched" aria-hidden="true">
-            {MATCHED_NOTE}
-          </span>
+          matchedNote
         ) : (
           notice.note !== undefined && (
             <span className="play-version-switch__note" data-testid="upgrade-queued" aria-hidden="true">

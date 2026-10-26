@@ -8,6 +8,8 @@
  * **sám spustí** z věty uložené u návrhu a počká nejvýš `UPGRADE_WAIT_MS`;
  * potom `pending` a další dotaz ji najde v paměti. `pending` nese i hru ze čtení
  * (`reading: { versionId }`, P58D T2), jakmile vznikne – čekání se pak vrátí hned.
+ * Řetěz mikroher (P58E T2) končí `{ status: 'draft-final', reason: 'CHAIN', reading? }` – AI verzi nemá, hra ze čtení
+ * jde s koncem, protože práce řetězu doběhne hned po čtení.
  *
  * Dotaz může spustit placenou režii, proto jde přes páku `sessions` (zápis),
  * ne `snapshots` – vypínač publikací zastaví i upgrade.
@@ -40,8 +42,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const versions = store();
   const draft = await versions.get(id);
   if (draft === null) return notFound();
-  // Řetěz mikroher AI verzi nemá (P56C T10, debata T9): režisér by z věty postavil jednu hru jen podle kola 1.
-  if (draft.chain !== undefined) return fail(422, 'SPEC_REJECTED', 'a chain of microgames has no full-detail version');
+  // Řetěz mikroher AI verzi nemá (P56C T10, debata T9) – jeho práce jen přečte větu a skončí `CHAIN`, s hrou ze čtení (P58E T2).
   // Hra z hotového specu, remix nebo sama autorská verze: není co vylepšit.
   if (draft.origin === undefined || draft.relation !== undefined) return answer({ status: 'draft-final', reason: 'NOT_FROM_SENTENCE' });
 
