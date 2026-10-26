@@ -55,7 +55,8 @@ const ITEM_GAMES: readonly [string, () => GameSpecV1][] = [
   ['cell arena.collect', () => cellSpec('arena.collect')],
   ['cell arena.escape+collect', () => cellSpec('arena.escape+collect')],
   ['c02 bee', () => draft('A bee collects pollen in a meadow full of hungry frogs')],
-  // P61 T5: „three treasure chests“ s počtem hraje právě tři truhly bez vln a bosse (`goal-count.test.ts`); finále hlídá táž věta bez počtu.
+  // P61 T5: „three treasure chests“ s počtem má od T5-R1 vlny i bosse s poslední truhlou, ale výhru dává počet (`catch_goal`,
+  // `goal-count.test.ts`), ne `grow_to` s bránou bosse – tu měří táž věta bez počtu.
   ['c08 castle', () => draft('Explore an old castle to find treasure chests')],
   ['e01 mushrooms', () => draft('Pick up glowing mushrooms in a dark forest and avoid the wolves')],
   ['e02 pyramid', () => draft('Collect three keys in a pyramid while mummies chase you')],
@@ -144,7 +145,8 @@ describe('collect and item escape: the boss is the last step to the win (genre.v
   }, 600_000);
 
   it('once the score is reached the bot goes for the boss: the publication bot wins where it circled an item until the clock', () => {
-    // P61 T5: s počtem („five glowing mushrooms“) hraje věta právě pět hub bez bosse (`goal-count.test.ts`); brána skóre se měří bez počtu.
+    // P61 T5: s počtem („five glowing mushrooms“) hraje věta právě pět hub bez šablony a bez brány skóre – výhru dává počet
+    // (`goal-count.test.ts`); brána skóre se měří bez počtu.
     const spec = draft('Collect glowing mushrooms in a moonlit forest');
     expect(spec.rules?.map((rule) => rule.id)).toEqual(['herald', 'shower', 'settle']);
     for (const seed of [4, 33]) {

@@ -391,11 +391,15 @@ const waveStart = (index: number, count: number): number => Math.floor((index * 
  * Ve `genre.v4` (P47A T3) výhra `grow_to` počká na pád bosse: overlay šablona (`treasure_rush`) jinak přinese
  * věci navíc a robot dosáhl cíle bez věcí bosse (boss padl v 7/8, u hry se čtyřmi vlnami ve 3/8 semínek).
  * Poslední vlna bez věcí nebo bez předlohy věci: boss vydá `score` místo věcí (ve v3 finále vlna, bez bosse).
+ *
+ * Sběr věty s počtem (P61 T5-R1, `catch_goal` místo `grow_to`): postup = vlny – vlny jdou na čas (`at`), takže
+ * boss přijde s poslední vlnou, ne s počtem sebraných. Výhru bez bosse nedá: nese poslední z `need` věcí.
  */
 const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
   const points = (ruleOf(parts, 'grow_to')?.params as { readonly points: number } | undefined)?.points;
-  if (waves === undefined || points === undefined || waves.until !== 'items') return null;
+  const counted = ruleOf(parts, 'catch_goal') !== undefined;
+  if (waves === undefined || (points === undefined && !counted) || waves.until !== 'items') return null;
   const count = waves.waves.length + 1;
   const clock = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
   const lastItems = waves.waves.at(-1)?.items ?? [];
@@ -404,8 +408,9 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const at = waveStart(count - 1, count);
   const loot = carried > 0 && waves.item !== undefined ? { drop: { template: waves.item, count: carried } } : gated ? { score: FIELD.bossScore } : undefined;
   const boss = loot === undefined ? undefined : { body: BEHAVIOURS.boss.body, at, ...loot, clears: 'chaser' as const };
+  const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ);
   return {
-    goal: { by: 'score', need: points, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
+    goal: points === undefined ? { by: 'wave', need: count, limit } : { by: 'score', need: points, limit },
     space: 'plane',
     spots: waves.spots,
     ...fieldCast(foes, spec),

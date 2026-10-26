@@ -91,9 +91,9 @@ function roundsOf(world: ArcadeWorld): { rounds: Round[]; wonInRound: number } {
   return { rounds, wonInRound: state[HEADER.runState] === 1 ? waveOf(state) : -1 };
 }
 
-// Úkol v prostoru tu řádek nemá: počet z věty je od P61 T5 počet cílů jediného kola (`goal-count.test.ts`) – dvě
-// svíčky trvají pár sekund. Kola staví úkol v prostoru bez počtu (níž) a stanoviště.
+// Úkol v prostoru: počet z věty je od P61 T5 počet cílů celkem; kola na čas (T5-R1, `goal-count.test.ts`) drží délku i růst s počtem.
 const PAIRS = [
+  ['quest.spatial', 'light two candles before the ghost catches you', 'light eight candles before the ghost catches you'],
   ['quest.station', 'flip one pancake in the kitchen', 'flip three pancakes in the kitchen'],
 ] as const;
 
@@ -113,7 +113,7 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
   });
 
   it('spatial: the win comes only in the last round, every round lays fresh targets elsewhere and brings more or faster chasers', () => {
-    // Bez počtu: věta s počtem hraje od P61 T5 jediné kolo (`goal-count.test.ts`).
+    // Bez počtu: věta s počtem dělí od P61 T5 své cíle do kol různé velikosti (`goal-count.test.ts`), tady kola po pěti.
     const sentence = 'light the candles before the ghost catches you';
     // Ve `genre.v4` (P47A T4) nese cíle posledního kola boss a pronásledovatelé s ním odejdou (`quest-boss.test.ts`):
     // kolo začne bez cílů. Kola, jak je staví generátor, měří táž hra uložená jako `genre.v3`.

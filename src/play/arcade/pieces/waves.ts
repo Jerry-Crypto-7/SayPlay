@@ -127,6 +127,25 @@ export function itemWaveCount(items: number, start: number): number {
 export const collectClock = (items: number, waves: number): number =>
   Math.min(WAVE_PLAN.clockMax, Math.round(itemWaveSeconds(items, 0, waves) * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
 
+/**
+ * Věta s počtem (P61 T5-R1): věci (cíle) z věty přicházejí po vlnách na čas, ne všechny hned. Poslední vlna – tu
+ * nese boss – přijde nejdřív v `last + perItem × N` s, dřívější rovnoměrně před ní, a vždy až po sebrání předchozí
+ * (`at` vlny). Bez rozvrhu tři klíče robot sebral za 9 s (medián 40 semínek), tři vězně za 7 s – pravidlo
+ * P36A chce 30–90 s a delší hru pro víc věcí; s ním 42 s a 47 s. `boss` = rezerva hodin na bosse poslední vlny:
+ * robot ho porazí za 12–14 s (sběr), 16–20 s (úkol); s hodinami jen podle rozvrhu prohrával úkol na čase.
+ */
+export const COUNTED_PLAN = { last: 26, perItem: 1, boss: 12 } as const;
+
+/** Nejdřívější tik vln od druhé (`at`) věty s počtem `need` rozdělené do `waves` vln. */
+export function countedTicks(waves: number, need: number): number[] {
+  const last = (COUNTED_PLAN.last + COUNTED_PLAN.perItem * need) * ARCADE_HZ;
+  return Array.from({ length: waves - 1 }, (_, k) => Math.round(((k + 1) * last) / (waves - 1)));
+}
+
+/** Hodiny věty s počtem (s): rozvrh vln a boss s rezervou, pod horizontem ověření. */
+export const countedClock = (need: number): number =>
+  Math.min(WAVE_PLAN.clockMax, Math.round((COUNTED_PLAN.last + COUNTED_PLAN.perItem * need) * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin + COUNTED_PLAN.boss));
+
 /** O kolik zrychlí každá další vlna, aby poslední byla o `speedRise` rychlejší. */
 export const waveSpeedStep = (waves: number): number => Math.max(1, Math.round(WAVE_PLAN.speedRise / (waves - 1)));
 
@@ -177,6 +196,7 @@ const waveParams = z
      * Kdy přijde další vlna: `items` = hráč sebral všechny věci vlny, `ticks` =
      * nastal tik vlny (`at`), `enemies` = všichni soupeři leží a doběhla přestávka,
      * `targets` = všechny cíle úkolu jsou v konečném stavu `done` (kolo úkolu).
+     * Vlna s `at` u věcí a cílů (věta s počtem, P61 T5-R1) čeká i na svůj tik.
      */
     until: z.enum(['items', 'ticks', 'enemies', 'targets']),
     /** Kolo úkolu: konečný stav cíle (`states − 1`). */
@@ -284,6 +304,8 @@ export const arenaWaves: RulePiece<WaveParams> = {
   fire: ({ state, player }, params): readonly ArcadeEffect[] => {
     const next = params.waves[waveOf(state)];
     if (next === undefined) return [];
+    // Tik vlny: u `ticks` jediná podmínka, u věcí a cílů nejdřívější začátek (věta s počtem, P61 T5-R1). Vlny bez `at` jako dřív.
+    if (next.at !== undefined && (state[HEADER.tick] as number) + 1 < next.at) return [];
     const effects: ArcadeEffect[] = [];
     if (params.until === 'items' && aliveWith(state, ROLE.collectible).some((i) => !isSpark(state, i, params.spark))) return [];
     if (params.until === 'targets') {
@@ -292,7 +314,6 @@ export const arenaWaves: RulePiece<WaveParams> = {
       // Hotové cíle: s předlohou zmizí (nové přijdou níž), bez ní začnou znovu od stavu 0.
       for (const i of targets) effects.push(params.item === undefined ? { kind: 'stateChange', body: i, state: 0 } : { kind: 'despawn', body: i });
     }
-    if (params.until === 'ticks' && (state[HEADER.tick] as number) + 1 < (next.at ?? 0)) return [];
     if (params.until === 'enemies') {
       const enemies = aliveWith(state, ROLE.enemy);
       if (enemies.length === 0 || enemies.some((i) => bodyHp(state, i) > 0)) return [];

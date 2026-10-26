@@ -54,7 +54,7 @@ import {
 } from '../contract';
 import { guardParams, guardedHit } from '../abilities/state';
 import { nounSchema } from '../rules/schema';
-import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
+import { WAVE_LIMITS, WAVE_PLAN, collectClock, countedClock, countedTicks, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -890,6 +890,8 @@ interface WaveSetup {
   readonly patrol?: number;
   /** Věcí v každé vlně zvlášť (věta s počtem, `countedWaves`); bez nich `items` v každé. První nesmí být menší než další. */
   readonly sizes?: readonly number[];
+  /** Nejdřívější tik vln od druhé (věta s počtem, `countedTicks`): vlna věcí počká i na něj. */
+  readonly at?: readonly number[];
 }
 
 /** Sběr nemá na startu pronásledovatele: předloha těch z dalších vln leží mrtvá za zády hráče. */
@@ -919,7 +921,7 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   const edge = ARENA.half - ESCAPE.itemSize / 2 - WAVE_PLAN.itemInset;
   const chase: ChaseParams = { speed, lead: setup.chaseLead ?? ESCAPE.lead, step: setup.pursuitCeiling === undefined ? waveSpeedStep(waves) : Math.min(40, Math.ceil((setup.pursuitCeiling - speed) / 2)), ...(setup.pursuitCeiling === undefined ? {} : { ceiling: setup.pursuitCeiling }), ...(setup.patrol === undefined ? {} : { patrol: setup.patrol }) };
   const later = Array.from({ length: waves - 1 }, (_, k) => ({
-    ...(items > 0 ? { items: wavePositions(rng, setup.sizes?.[k + 1] ?? items, edge, ESCAPE.itemClearance.item) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
+    ...(items > 0 ? { items: wavePositions(rng, setup.sizes?.[k + 1] ?? items, edge, ESCAPE.itemClearance.item), ...(setup.at?.[k] === undefined ? {} : { at: setup.at[k] }) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
     chasers: wavesChasers(chasers, k + 1) - wavesChasers(chasers, k),
   }));
   const rules: PieceRef[] = [
@@ -989,9 +991,8 @@ const collectSetup = (items: number, waves: number, params: Pick<CollectParams, 
 /** Věta s počtem rozdělí věci nejvýš do tolika vln: od druhé vbíhají pronásledovatelé jako ve sběru ve vlnách. */
 export const COUNTED_WAVES = 3;
 
-/** Věcí v každé vlně věty s počtem: `need` co nejrovnoměrněji, větší vlny napřed (první leží na startu, sloty má podle ní). */
-export function countedWaves(need: number): number[] {
-  const waves = Math.min(need, COUNTED_WAVES);
+/** Věcí v každé vlně (kole úkolu) věty s počtem: `need` co nejrovnoměrněji, větší vlny napřed (první leží na startu, sloty má podle ní). */
+export function countedWaves(need: number, waves = Math.min(need, COUNTED_WAVES)): number[] {
   return Array.from({ length: waves }, (_, k) => Math.floor(need / waves) + (k < need % waves ? 1 : 0));
 }
 
@@ -1010,8 +1011,10 @@ function countedGoal(level: ArcadeLevel, need: number, noun: string | undefined)
 }
 
 /**
- * Sběr věty s počtem: „collect three keys“ = tři věci po vlnách (`countedWaves`), sebraná poslední vyhraje;
- * hodiny jako u sběru ve vlnách (podle největší vlny, tedy s rezervou). Jedna věc leží sama, bez vln.
+ * Sběr věty s počtem: „collect three keys“ = tři věci po vlnách (`countedWaves`), sebraná poslední vyhraje.
+ * Vlny jdou na čas (`countedTicks`, P61 T5-R1): další přijde až po sebrání předchozí a nejdřív ve svém tiku,
+ * takže hra drží 30–90 s a roste s počtem; poslední vlnu nese boss průběhu (`itemField`). Hodiny kryjí rozvrh
+ * i bosse (`countedClock`). Jedna věc leží sama, bez vln (počet z věty čte jen množné číslo, takže ji dá jen režisér).
  */
 function countedCollect(seed: number, params: CollectParams, health: number | undefined): ModeParts {
   const need = params.items;
@@ -1023,8 +1026,12 @@ function countedCollect(seed: number, params: CollectParams, health: number | un
     if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
     return { control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize } }, bot: { id: 'arena_bot', params: { half: ARENA.half } }, level, rules, issues: checkEscapeLevel(level, { items: first, chaserSpeed: 0 }), health };
   }
-  const parts = waveParts(seed, { ...collectSetup(first, sizes.length, params), sizes }, health);
-  return { ...parts, rules: parts.rules.flatMap((rule) => (rule.id === 'grow_to' ? countedGoal(parts.level, need, params.noun) : [rule])) };
+  const parts = waveParts(seed, { ...collectSetup(first, sizes.length, params), sizes, at: countedTicks(sizes.length, need) }, health);
+  const rules = parts.rules.flatMap((rule): PieceRef[] => {
+    if (rule.id === 'grow_to') return countedGoal(parts.level, need, params.noun);
+    return rule.id === 'time_limit' ? [{ ...rule, params: { seconds: countedClock(need) } }] : [rule];
+  });
+  return { ...parts, rules };
 }
 
 /**

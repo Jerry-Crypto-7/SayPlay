@@ -114,9 +114,9 @@ function wavesOf(world: ArcadeWorld): Wave[] {
   return waves;
 }
 
-// Sběr (`arena.collect`) tu řádek nemá: počet z věty je od P61 T5 počet věcí celkem a výhra po poslední, ne věcí
-// ve vlně – tři baterie trvají pod 30 s (`goal-count.test.ts`). Sběr bez počtu staví pevný plán vln.
+// Sběr: počet z věty je od P61 T5 počet věcí celkem a výhra po poslední; vlny na čas (T5-R1) drží délku i růst s počtem.
 const PAIRS = [
+  ['arena.collect', 'a robot collects 3 batteries on Mars', 'a robot collects 20 batteries on Mars'],
   ['arena.escape', 'A knight must collect three keys in a haunted castle while dodging ghosts.', 'A knight must collect 20 keys in a haunted castle while dodging ghosts.'],
   ['arena.escape', 'escape from one ghost in a haunted house', 'escape from 4 ghosts in a haunted house'],
   ['arena.fight', 'a ninja fights a robot on a rooftop', 'a ninja fights three robots on a rooftop'],

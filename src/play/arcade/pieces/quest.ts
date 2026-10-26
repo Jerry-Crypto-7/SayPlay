@@ -51,8 +51,8 @@ import {
 import type { CompiledRule } from '../rules/compile';
 import type { CompiledInteract } from '../rules/interact';
 import { nounSchema, verbSchema } from '../rules/schema';
-import { ARENA, type ChaseParams, DIRECTIONS, ESCAPE, GRACE_COUNTER, checkEscapeLevel, fairReach } from './arena';
-import { WAVE_LIMITS, WAVE_PLAN, entrySpots, waveOf, waveSpeedStep, wavesChasers } from './waves';
+import { ARENA, type ChaseParams, DIRECTIONS, ESCAPE, GRACE_COUNTER, checkEscapeLevel, countedWaves, fairReach } from './arena';
+import { WAVE_LIMITS, WAVE_PLAN, countedTicks, entrySpots, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const QUEST = {
   /** Dosah „Use“: mezera mezi obrysy hráče a cíle. */
@@ -139,7 +139,10 @@ const spatialParams = z
     rounds: z.int().min(2).max(WAVE_LIMITS.rounds).optional(),
     /** Hlídka (P36A T8, píše žánr): pronásledovatelé honí až hráče v dohledu (`ChaseParams.patrol`). */
     patrol: z.int().min(UNIT).max(40 * UNIT).optional(),
-    /** Věta s počtem (P61 T5, píše žánr): hotový cíl → `items` + 1 a HUD počítá cíl `finish_collected`. */
+    /**
+     * Věta s počtem (P61 T5, píše žánr): hotový cíl → `items` + 1 a HUD počítá cíl `finish_collected`. S `rounds`
+     * (T5-R1) je `count` cílů celkem: kola po `countedWaves`, další nejdřív v tiku `countedTicks`.
+     */
     counted: z.literal(true).optional(),
     /** Slovo věty pro počítadlo HUD (`candles 0/5`), jen s `counted`. */
     noun: nounSchema.optional(),
@@ -424,6 +427,16 @@ function questParts(level: ArcadeLevel, half: number, verb: string, interact: Co
  */
 const livesRules = (health: number | undefined): PieceRef[] => (health === undefined ? [] : [{ id: 'out_of_health', params: {} }]);
 
+/** Cílů v každém kole věty s počtem v kolech (P61 T5-R1, `count` = celkem); jinak `undefined` – každé kolo `count`. */
+const countedRounds = (params: QuestSpatialParams): number[] | undefined =>
+  params.counted === true && params.rounds !== undefined ? countedWaves(params.count, params.rounds) : undefined;
+
+/** Parametry první úrovně: věta s počtem v kolech položí jen cíle prvního kola (největší podíl, sloty podle něj). */
+const firstRound = (params: QuestSpatialParams): QuestSpatialParams => {
+  const sizes = countedRounds(params);
+  return sizes === undefined ? params : { ...params, count: sizes[0] as number };
+};
+
 export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
   id: 'quest_spatial',
   params: spatialParams,
@@ -431,12 +444,14 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
   // Kola: předlohy a sloty jednoho kola, pravidlo kol a chycení i bez pronásledovatelů na startu.
   cost: (params) =>
     params.rounds === undefined
-      ? { bodies: 1 + params.count + params.rocks + params.chasers, rules: 1 + (params.chasers > 0 ? 1 : 0) + (params.counted === true ? 1 : 0) }
-      : { bodies: 3 + 2 * params.count + params.rocks + params.chasers + WAVE_PLAN.escapeChasers, rules: 3 + (params.counted === true ? 1 : 0) },
-  generate: (seed, params) => spatialLevel(seed, params).level,
+      ? { bodies: 1 + params.count + params.rocks + params.chasers, rules: 1 + (params.chasers > 0 ? 1 : 0) + (params.counted === true ? 2 : 0) }
+      : { bodies: 3 + 2 * params.count + params.rocks + params.chasers + WAVE_PLAN.escapeChasers, rules: 3 + (params.counted === true ? 2 : 0) },
+  generate: (seed, params) => spatialLevel(seed, firstRound(params)).level,
   parts: (seed, params, health) => {
-    const { level, issues, rocks, templates } = spatialLevel(seed, params);
+    const { level, issues, rocks, templates } = spatialLevel(seed, firstRound(params));
     const { rounds } = params;
+    const sizes = countedRounds(params);
+    const ticks = sizes === undefined ? undefined : countedTicks(sizes.length, params.count);
     const interact: CompiledInteract = { role: ROLE.target, radius: QUEST.radius, hold: params.hold, states: params.states, ...(rounds === undefined ? {} : { rounds }) };
     // Kdo drží „Use“, stojí u cíle: pronásledovatelé zatím běží poloviční rychlostí (G-R1). V kolech každé další zrychlí.
     const patrol = params.patrol === undefined ? {} : { patrol: params.patrol };
@@ -456,16 +471,23 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
       const rng = createCompileRng(seed, 'spawn');
       const spots = entrySpots(rng, QUEST.half - ESCAPE.chaserSize);
       const waves = Array.from({ length: rounds - 1 }, (_, k) => ({
-        items: roundTargets(rng, params.count, rocks),
+        items: roundTargets(rng, sizes?.[k + 1] ?? params.count, rocks),
         chasers: wavesChasers(params.chasers, k + 1) - wavesChasers(params.chasers, k),
+        ...(ticks?.[k] === undefined ? {} : { at: ticks[k] }),
       }));
       catches.push({ id: 'arena_waves', params: { until: 'targets', done: params.states - 1, item: templates.target, chaser: templates.chaser, spots, waves } });
     }
-    // Věta s počtem (P61 T5): hotový cíl přičte `items`, HUD je počítá proti všem cílům hry. Výhru dál dává `interact`
-    // po posledním cíli; `finish_collected` je jen cíl pro HUD – tělo cíle úkol nemá, takže nevystřelí.
+    // Věta s počtem (P61 T5): hotový cíl přičte `items`, HUD je počítá proti všem cílům hry (`count` = celkem);
+    // `finish_collected` je jen cíl pro HUD – tělo cíle úkol nemá, takže nevystřelí. Výhru dává `interact` po posledním
+    // cíli a od T5-R1 i `count` hotových (`catch_goal`): boss, kterého postup podle času pošle dřív než poslední kolo,
+    // vydá cíle posledního kola do běžícího a poslední kolo pak nemá co dokončit (věta „five candles“, semínko 6).
     const counted = params.counted === true;
-    const goal: PieceRef[] = counted ? [{ id: 'finish_collected', params: { need: params.count * (rounds ?? 1), ...(params.noun === undefined ? {} : { noun: params.noun }) } }] : [];
-    return questParts(level, QUEST.half, params.verb, interact, chase, [...catches, ...livesRules(health), ...goal], issues, counted ? [{ count: { counter: 'items', amount: 1 } }] : []);
+    const goal: PieceRef[] = counted
+      ? [{ id: 'finish_collected', params: { need: params.count, ...(params.noun === undefined ? {} : { noun: params.noun }) } }, { id: 'catch_goal', params: { need: params.count } }]
+      : [];
+    const parts = questParts(level, QUEST.half, params.verb, interact, chase, [...catches, ...livesRules(health), ...goal], issues, counted ? [{ count: { counter: 'items', amount: 1 } }] : []);
+    // Kola na čas: mezi hotovým kolem a tikem dalšího robot uhýbá (`quest_bot.wait`).
+    return ticks === undefined ? parts : { ...parts, bot: { ...parts.bot, params: { ...parts.bot.params, wait: true } } };
   },
 };
 
