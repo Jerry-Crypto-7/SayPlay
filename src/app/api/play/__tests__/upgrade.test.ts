@@ -12,11 +12,14 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
+import { lookOf } from '@/play/arcade/look';
 import { answerFixture, genreAnswer } from '@/play/director/__fixtures__';
 import type { DirectorDeps } from '@/play/director';
 import { answered, failed, fakeBranch, type FakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
-import { draftGameSpec } from '@/play/draft';
-import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
+import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
+import type { Reading } from '@/play/read/schema';
+import type { GameSpecV1 } from '@/play/spec';
+import { __resetProcessVersionStore, memoryVersionStore, type PublishedGame, versionStoreFromEnv } from '@/play/version';
 import { resetProcessAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -78,7 +81,8 @@ vi.mock('../_report', async (importOriginal) => {
 const { POST: createGame } = await import('../games/route');
 const { GET: readGame } = await import('../games/[id]/route');
 const { GET: readUpgrade } = await import('../games/[id]/upgrade/route');
-const { __resetUpgrades } = await import('../_upgrade');
+const { __resetUpgrades, directUpgrade, readingDiffers } = await import('../_upgrade');
+const { derivedSeeds, publishReadSpec, seedFrom } = await import('../_publish');
 
 const { DIRECTOR_BUDGET_MS } = await import('../_director');
 const { UPGRADE_DEADLINE_SLACK_MS } = await import('../_upgrade');
@@ -506,19 +510,29 @@ describe('GET …/upgrade', () => {
  * a long-poll procesu, který o návrhu nevěděl, se s ní vrátí hned – ne až po `UPGRADE_WAIT_MS`. `pending` bez ní
  * (čtečka vypnutá) drží první test souboru přesnou shodou s `PENDING`.
  */
-describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
-  /** Čtení, které útěk křečka hraje jako hledání (`quest.spatial`); slovník ho hraje jako útěk v Aréně. */
-  const READ = {
-    control: 'move_free', verbs: [{ word: 'escapes', class: 'move_free' }], hero: 'hamster', roles: [{ noun: 'roomba', kind: 'threat', count: null }], setting: 'supermarket',
-    mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'quest', mode: 'spatial' }, sure: true, foe: 'roomba', item: null, world: null, title: null,
-  };
+/** Čtení, které útěk křečka (`SENTENCE`) hraje jako hledání (`quest.spatial`); slovník ho hraje jako útěk v Aréně. */
+const READ: Reading = {
+  control: 'move_free', verbs: [{ word: 'escapes', class: 'move_free' }], hero: 'hamster', roles: [{ noun: 'roomba', kind: 'threat', count: null }], setting: 'supermarket',
+  mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'quest', mode: 'spatial' }, sure: true, foe: 'roomba', item: null, world: null, title: null,
+};
 
+/** Čtečka za místní adresou (nic se neplatí): odpoví `reading`; `calls` počítá dotazy, ať test bez čtení neprojde naprázdno. */
+function stubReader(reading: Reading): { readonly calls: () => number } {
+  let calls = 0;
+  vi.stubEnv('PLAY_READER', 'on');
+  vi.stubEnv('PLAY_READER_PATH', 'ai');
+  vi.stubEnv('PLAY_READER_ENDPOINT', 'http://reader.test');
+  resetProcessAnswerStore();
+  vi.stubGlobal('fetch', async () => {
+    calls += 1;
+    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }));
+  });
+  return { calls: () => calls };
+}
+
+describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
   beforeEach(() => {
-    vi.stubEnv('PLAY_READER', 'on');
-    vi.stubEnv('PLAY_READER_PATH', 'ai');
-    vi.stubEnv('PLAY_READER_ENDPOINT', 'http://reader.test');
-    resetProcessAnswerStore();
-    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(READ) } }] })));
+    stubReader(READ);
     director.modelGate = new Promise((resolve) => {
       release = resolve;
     });
@@ -566,6 +580,98 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     await vi.waitFor(() => expect(knownUpgrade(created.body.versionId)).toBeNull(), { timeout: 30_000 });
     expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
   }, 120_000);
+});
+
+/**
+ * Hra ze čtení i ve stejném žánru (P61 T2): čtení „zombie shooter in a mall“ zná obchodní centrum i zombie, hraje ale
+ * týž žánr – dřív se hra ze čtení nepublikovala (`playsOtherGenre`). `readingDiffers` srovná specy rychlé hry a návrhu
+ * ze čtení: svět a nepřítele či sbíranou věc z věty, ne název, čísla ani výchozí věci.
+ */
+describe('hra ze čtení i ve stejném žánru, když ukáže svět nebo věc z věty (P61 T2)', () => {
+  const ZOMBIE = 'zombie shooter in a mall';
+  /** Čtení věty (p30 dev s039): střílečka, nepřítel zombie, sada obchodního centra. */
+  const MALL: Reading = {
+    control: 'shooter', verbs: [{ word: 'shooter', class: 'aim_shoot' }], hero: null, roles: [{ noun: 'zombie', kind: 'threat', count: null }], setting: 'mall',
+    mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'shooter', mode: 'default' }, sure: true, foe: 'zombie', item: null, world: 'mall', title: null,
+  };
+  /** Běžec (p30 dev s006), jehož sbíraná věc je z věty: klobása, ne výchozí věc parku. */
+  const CORGI = 'A corgi runs through a park grabbing sausages and jumping over sprinklers';
+  const relabel = (spec: GameSpecV1, id: string, label: string): GameSpecV1 => ({ ...spec, roles: spec.roles.map((role) => (role.id === id ? { ...role, label } : role)) });
+  const read = draftGameSpecWithMeta(ZOMBIE, 1, { reading: MALL }).spec;
+  /** Rychlá hra jiného vzhledu (P60: aréna bez obchodního centra a bez zombie): bez sady, výchozí robot střílečky. */
+  const plain = relabel({ ...read, theme: { setting: 'arena', mood: read.theme.mood } }, 'enemy', 'robot');
+
+  it('hra ze čtení v obchodním centru se zombie se liší od rychlé hry na louce s robotem', () => {
+    expect(read.genre).toEqual(plain.genre);
+    expect([lookOf(plain.theme), lookOf(read.theme)]).toEqual(['meadow', 'mall']);
+    expect(read.roles).toContainEqual(expect.objectContaining({ id: 'enemy', label: 'zombie' }));
+    expect(readingDiffers(plain, read)).toBe(true);
+  });
+
+  /** Rychlá hra a návrh ze čtení; páry se staví až v testu. */
+  type Pair = [name: string, pair: () => readonly [quick: GameSpecV1, read: GameSpecV1]];
+
+  it.each<Pair>([
+    ['jen svět: obchodní centrum místo louky', () => [relabel(plain, 'enemy', 'zombie'), read]],
+    ['jen nepřítel: zombie místo robota', () => [relabel(read, 'enemy', 'robot'), read]],
+    ['jen sbíraná věc: klobásy místo mince', () => [relabel(draftGameSpec(CORGI), 'coin', 'coin'), draftGameSpec(CORGI)]],
+    ['jiný žánr jako dřív: hledání místo útěku', () => [draftGameSpec(SENTENCE), draftGameSpecWithMeta(SENTENCE, 1, { reading: READ }).spec]],
+  ])('liší se – %s', (_name, pair) => {
+    const [quick, reading] = pair();
+    expect(readingDiffers(quick, reading)).toBe(true);
+  });
+
+  it.each<Pair>([
+    ['rychlá hra věty už ukazuje obchodní centrum i zombie', () => [draftGameSpec(ZOMBIE), read]],
+    ['jen název, počty a čísla žánru', () => [read, { ...read, title: 'Mall Of The Dead', scoring: { target: 500 }, controlParams: { ...read.controlParams, waves: 5 }, roles: read.roles.map((role) => ({ ...role, count: role.count + 4 })) }]],
+    ['týž model nepřítele pod jiným tvarem jména', () => [read, relabel(read, 'enemy', 'zombies')]],
+    ['výchozí nepřítel za jiný výchozí', () => [plain, relabel(plain, 'enemy', 'wolf')]],
+    ['čtení vymění zombie z věty za výchozího robota', () => [read, relabel(read, 'enemy', 'robot')]],
+    ['návrh ze čtení bez žánru (mřížka)', () => [plain, (({ genre: _genre, ...grid }: GameSpecV1) => grid)(read)]],
+  ])('neliší se – %s', (_name, pair) => {
+    const [quick, reading] = pair();
+    expect(readingDiffers(quick, reading)).toBe(false);
+  });
+
+  /** Upgrade, jak ho spustí dotaz: model nedostupný (prázdný scénář), takže publikuje jen hra ze čtení. */
+  async function readingChildren(quickSpec: GameSpecV1): Promise<{ readonly reading: PublishedGame[]; readonly announced: string[] }> {
+    const store = memoryVersionStore();
+    const quick = await publishReadSpec(store, quickSpec, derivedSeeds(seedFrom(ZOMBIE)), null, { origin: { sentence: ZOMBIE, seed: null } });
+    if (!quick.ok) throw new Error(`quick version did not publish: ${JSON.stringify(quick.issues)}`);
+    const announced: string[] = [];
+    const request = { sentence: ZOMBIE, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'p61-t2-test' };
+    await directUpgrade(store, quick.value.game, request, undefined, (id) => announced.push(id));
+    const children = await Promise.all((await store.childrenOf(quick.value.game.version.versionId)).map((id) => store.get(id)));
+    return { reading: children.filter((child): child is PublishedGame => child?.relation === 'reading'), announced };
+  }
+
+  describe('publikace', () => {
+    let reader: ReturnType<typeof stubReader>;
+    beforeEach(() => {
+      reader = stubReader(MALL);
+      director.script = [];
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+      vi.unstubAllGlobals();
+    });
+
+    it('rychlá hra jiného vzhledu dostane hru ze čtení jako dítě `reading`', async () => {
+      const { reading, announced } = await readingChildren(plain);
+      expect(reader.calls()).toBe(1);
+      expect(reading).toHaveLength(1);
+      expect(reading[0]!.spec).toEqual(read);
+      expect(announced).toEqual([reading[0]!.version.versionId]);
+    }, 120_000);
+
+    it('rychlá hra, která už ukazuje obchodní centrum i zombie, hru ze čtení nedostane', async () => {
+      const { reading, announced } = await readingChildren(draftGameSpec(ZOMBIE, 1));
+      expect(reader.calls()).toBe(1);
+      expect(reading).toEqual([]);
+      expect(announced).toEqual([]);
+    }, 120_000);
+  });
 });
 
 /**

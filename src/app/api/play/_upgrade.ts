@@ -2,7 +2,8 @@
  * Progresivní hra (P23-D T2): návrh ze slov se publikuje hned, režisér běží
  * na pozadí a jeho autorská verze se publikuje jako dítě návrhu
  * (`parentId = draftId`, `relation: 'upgrade'`). Návrh, který režie postaví ze čtení věty, jde
- * hned jako druhé dítě (`relation: 'reading'`, P58D T1), když hraje jiný žánr než rychlá hra.
+ * hned jako druhé dítě (`relation: 'reading'`, P58D T1), když ji hráč od rychlé hry pozná – jiný žánr, svět, nepřítel
+ * nebo sbíraná věc (`readingDiffers`, P61 T2).
  * Řetěz mikroher AI verzi nemá: jeho práce větu jen přečte a hru ze čtení publikuje jako dítě
  * řetězu, když se čtením nehraje řetěz (P58E T1).
  *
@@ -31,6 +32,8 @@ import { after } from 'next/server';
 import { abilityIdsOf } from '@/play/arcade/abilities/state';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { ABILITIES, type ArcadeWorld } from '@/play/arcade/contract';
+import { lookFor, lookOf } from '@/play/arcade/look';
+import { sceneModelOf } from '@/play/arcade/models';
 import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
@@ -38,8 +41,10 @@ import { CHAIN_CUES } from '@/play/chain/decide';
 import type { DirectorSource } from '@/play/contracts';
 import { type DirectorFailure, withDraftRules } from '@/play/director';
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { singular } from '@/play/draft/lexicon';
+import { DEFAULT_LABELS } from '@/play/genre/roles';
 import { readBeforeDraft, readerForAiVersion } from '@/play/read/client';
-import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
+import { type GameRole, type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
@@ -75,7 +80,7 @@ export type UpgradeOutcome =
 /**
  * `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1).
  * `queued` (P53 T3): pořadí ve frontě na slot režiséra, 1 = další na řadě; chybí, když nečeká.
- * `reading` (P58D T2): hra ze čtení, jakmile je publikovaná; chybí, dokud není, nebo když hraje žánr rychlé hry.
+ * `reading` (P58D T2): hra ze čtení, jakmile je publikovaná; chybí, dokud není, nebo když se od rychlé hry neliší (`readingDiffers`).
  */
 export type UpgradeStatus =
   | UpgradeOutcome
@@ -113,7 +118,7 @@ interface Job {
   readonly done: Promise<UpgradeOutcome>;
   readonly startedAt: number;
   outcome: UpgradeOutcome | null;
-  /** Hra ze čtení (P58D T1), jakmile je publikovaná; `null` = není, nebo hraje týž žánr jako rychlá hra. */
+  /** Hra ze čtení (P58D T1), jakmile je publikovaná; `null` = není, nebo se od rychlé hry neliší (`readingDiffers`). */
   reading: string | null;
   /** Splní se, až `reading` přijde (P58D T2): long-poll na ni nečeká do konce svého okna. */
   readonly readingArrived: Promise<void>;
@@ -252,10 +257,53 @@ export function recordUpgradeFailure(draftId: string, sentence: string, reason: 
 
 /**
  * Hraje návrh ze čtení jiný žánr než rychlá hra (P58D T1)? Žánr i režim – past P58B láká i režimem
- * (`runner.chase` místo `runner.dodge`). Návrh bez žánru (mřížka) rychlou hru nenahradí.
+ * (`runner.chase` místo `runner.dodge`). Návrh bez žánru (mřížka) rychlou hru nenahradí. Od P61 T2 jen část
+ * `readingDiffers`; měření P58D a P58E (`evals/play/p58{d,e}`) ho volají samotné – měří pravidlo, které tehdy rozhodovalo.
  */
 export function playsOtherGenre(quick: GameSpecV1, read: GameSpecV1): boolean {
   return read.genre !== undefined && (read.genre.id !== quick.genre?.id || read.genre.mode !== quick.genre?.mode);
+}
+
+/** Role, které hráč vidí jako nepřítele nebo věc z věty (P61 T2): nástraha, honič, hlídka a terč; sbíraná věc, předmět a klíč. */
+const SHOWN_KINDS: ReadonlySet<GameRole['kind']> = new Set(['hazard', 'chaser', 'patrol', 'target', 'collectible', 'item', 'key']);
+
+/**
+ * Věc z věty, kterou scéna v roli nakreslí: model pro popisek – „giant roomba“ a „roomba“ jsou týž nepřítel. `null` =
+ * výchozí věc smlouvy rolí (`DEFAULT_LABELS`: mušle pláže, mince, robot střílečky), nebo popisek bez modelu, za který
+ * scéna kreslí náhradu („run over“, „crowd“) – ani jedno hráči větu neukáže. Věc z věty, která je zároveň výchozí věcí
+ * místa (žalud v lese), dostane i rychlá hra na tomtéž místě; na jiném místě rozhodne jiný svět.
+ */
+function sentenceThing(label: string): string | null {
+  return DEFAULT_LABELS.has(singular(label.toLowerCase())) ? null : (sceneModelOf(label, true) ?? null);
+}
+
+/**
+ * Ukáže hra ze čtení ve stejném žánru něco z věty, co rychlá hra nemá (P61 T2)? Jinou sadu světa (`theme.look`, bez ní
+ * podle slov `theme.setting` – co kreslí `lookOf`), nebo v některé roli nepřítele či sbírané věci (`SHOWN_KINDS`, podle
+ * id role) věc z věty (`sentenceThing`), kterou tam rychlá hra nekreslí. Jen to, co čtení zná: výchozí louka ani výchozí
+ * věc (mince místo „investora“ nebo drahokamu) hráči z věty nic neukáže. Hrdina, název, počty, čísla žánru a semínko se
+ * nesrovnávají.
+ */
+function showsMore(quick: GameSpecV1, read: GameSpecV1): boolean {
+  const look = read.theme.look ?? lookFor(read.theme.setting, read.theme.mood);
+  if (look !== null && look !== lookOf(quick.theme)) return true;
+  const before = new Map(quick.roles.map((role) => [role.id, role]));
+  return read.roles.some((role) => {
+    const thing = SHOWN_KINDS.has(role.kind) ? sentenceThing(role.label) : null;
+    const was = before.get(role.id);
+    return thing !== null && (was === undefined || sceneModelOf(was.label, true) !== thing);
+  });
+}
+
+/**
+ * Pozná hráč hru ze čtení od rychlé hry (P61 T2)? Jiný žánr nebo režim (`playsOtherGenre`, P58D T1), nebo stejný žánr
+ * s jiným světem, nepřítelem či sbíranou věcí z věty (`showsMore`) – srovnávají se oba specy, ne text čtení.
+ * Dřív jen žánr: čtení „zombie shooter in a mall“ znalo obchodní centrum i zombie, hrálo ale týž žánr a hra ze čtení
+ * nevznikla (P60; P61 T1: hru ze čtení dostaly jen 3 z 12 dev vět, všechny řetězy). Návrh bez žánru (mřížka) rychlou
+ * hru nenahradí.
+ */
+export function readingDiffers(quick: GameSpecV1, read: GameSpecV1): boolean {
+  return read.genre !== undefined && (playsOtherGenre(quick, read) || showsMore(quick, read));
 }
 
 /**
@@ -321,14 +369,14 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
 /**
  * `director` mimo produkt jen pro měřidlo P46E (`evals/play/p46e/upgrade.ts`): nahraná odpověď místo živé větve.
  * `onReading` (P58D T1): id hry ze čtení – návrh, který režie postaví ze čtení pro AI verzi, publikovaný hned, když
- * hraje jiný žánr než rychlá hra. Čtení se tím neplatí znovu a publikace na model nečeká; výsledek upgradu počká jen na
- * dokončení zápisu, aby ho `after()` nezmrazil v půlce.
+ * se od rychlé hry liší (`readingDiffers`: žánr, svět, nepřítel nebo sbíraná věc). Čtení se tím neplatí znovu a publikace
+ * na model nečeká; výsledek upgradu počká jen na dokončení zápisu, aby ho `after()` nezmrazil v půlce.
  */
 export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   let reading: Promise<void> = Promise.resolve();
   const onDraft = (spec: GameSpecV1): void => {
-    if (!playsOtherGenre(draft.spec, spec)) return;
+    if (!readingDiffers(draft.spec, spec)) return;
     reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((published) => {
       if (published !== null) onReading?.(published.versionId, published.fresh);
     });

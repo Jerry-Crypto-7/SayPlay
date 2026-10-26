@@ -1,6 +1,7 @@
 /**
  * Hra ze čtení (P58D T1): návrh, který režie AI verze postaví ze čtení věty, se publikuje jako dítě rychlé hry
- * (`relation: 'reading'`), když hraje jiný žánr – hráč ho dostane za ~3 s místo za minutu. Čtení se neplatí znovu,
+ * (`relation: 'reading'`), když hraje jiný žánr (od P61 T2 i jiný svět nebo věc z věty, `readingDiffers`) – hráč ho
+ * dostane za ~3 s místo za minutu. Čtení se neplatí znovu,
  * publikace AI verzi nezdrží ani neshodí a AI verze zůstává dítětem rychlé hry.
  *
  * Skutečná cesta upgradu (`directUpgrade` → `direct()` → publikace) nad uloženými čteními P56A; dvojníky jsou
@@ -136,7 +137,7 @@ describe('the reading game (P58D T1)', () => {
     expect(ai).toMatchObject({ relation: 'upgrade', version: { parentId: quick.version.versionId } });
   }, 180_000);
 
-  it('publishes nothing when the reading plays the quick game genre', async () => {
+  it('publishes nothing when the reading plays the quick game genre in the same world with the same foe', async () => {
     reader(SAME.reading);
     const store = memoryVersionStore();
     const quick = await quickGame(store, SAME.text);
