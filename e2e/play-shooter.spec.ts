@@ -2,16 +2,19 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 
 /**
  * Střelba a hod na `/play/[id]` (P25G T6): věta projde skutečnými dveřmi
- * (návrh ze slov → `shooter` / `throw`), hra se načte v arkádovém plátně,
+ * (návrh ze slov → `shooter` / `ball`), hra se načte v arkádovém plátně,
  * vstup se zapíše do záznamu (klik = výstřel, držení a puštění = hod),
  * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
  * kitu, dřív „You won“) a mobil nescrolluje
  * do strany.
+ *
+ * Hod basketbalem do koše hraje od P41 fyzikální míč (`ball`, cíl `hoop`):
+ * tah do strany míří, držení nabíjí, puštění hodí skutečný míč obloukem do koše.
  */
 
 const GAMES = [
   { control: 'shooter', sentence: 'zombie shooter in a mall' },
-  { control: 'throw', sentence: 'throw a basketball into a hoop from crazy angles' },
+  { control: 'ball', sentence: 'throw a basketball into a hoop from crazy angles' },
 ] as const;
 
 async function publish(request: APIRequestContext, sentence: string): Promise<string> {
@@ -84,9 +87,11 @@ for (const game of GAMES) {
         // Další klik doprostřed = zamíří a vystřelí.
         await page.mouse.click(x, y);
       } else {
+        // Míč míří tahem do strany a sílu bere z tahu svisle (`ball-input.ts`); bez Rapieru hod nevyletí.
+        await page.waitForFunction(() => (window.__playShell as unknown as { physicsReady(): boolean }).physicsReady());
         await page.mouse.move(x, y);
         await page.mouse.down();
-        await page.mouse.move(x, y + 30, { steps: 5 });
+        await page.mouse.move(x + 20, y + 30, { steps: 5 });
         await page.waitForTimeout(400);
         await page.mouse.up();
       }
