@@ -2,7 +2,7 @@
  * Kulisa za mlhou (P46G T6). Cesta dřív mizela do prázdné mlhy. Teď za scénou
  * stojí 2–3 prstence siluet kolem kamery podle sady (`Look.skyline`): hory se
  * špičkami, oblé kopce, duny, linie jehličnanů nebo korun, stolové hory,
- * panorama domů, pobřeží s mysy.
+ * panorama domů, pobřeží s mysy, od P61 T7 stěny haly.
  *
  * Barvy jsou z mlhy: barva mlhy (`horizon`, i po náladě a v noci) vynásobená
  * odstínem sady, takže silueta je vždy tmavší než mlha a „temný les“ má temnou
@@ -129,6 +129,9 @@ function around<T extends { readonly width: number }>(make: () => T): { readonly
 const shaped = (shape: readonly (readonly [number, number])[], start: number, width: number, height: (at: number, share: number) => number): ProfilePoint[] =>
   shape.map(([along, share]) => [start + along * width, height(start + along * width, share)]);
 
+/** Výška stěny haly na metr poloměru: nejnižší a nejvyšší úsek. */
+const WALL_TOP = [0.18, 0.22] as const;
+
 const CROWN = [[0, 0.35], [0.1, 0.65], [0.25, 0.88], [0.5, 1], [0.75, 0.88], [0.9, 0.65]] as const;
 const MESA = [[0, 0], [0.06, 0.45], [0.14, 1], [0.86, 1], [0.94, 0.45]] as const;
 const HEADLAND = [[0, 0], [0.05, 0.8], [0.2, 1], [0.45, 0.85], [0.7, 0.6], [0.88, 0.25]] as const;
@@ -186,6 +189,16 @@ function shapeOf(kind: Silhouette, next: Next): ProfilePoint[] {
       });
       return [...points, [TAU, points[0]![1]]];
     }
+    case 'walls': {
+      // Stěna haly (P61 T7): úseky výloh s malým schodem v římse, nahoře zhruba tam, kde je v té dálce strop
+      // (`Look.ceiling`). Body hustě jako kopce, ať zůstane kulatá.
+      const fronts = around(() => ({ width: between(next, 0.15, 0.35), top: between(next, WALL_TOP[0], WALL_TOP[1]) }));
+      const step = TAU / SAMPLES;
+      return [
+        ...fronts.flatMap(({ item, start, width }) => Array.from({ length: Math.ceil(width / step) }, (_, j): ProfilePoint => [start + (j * width) / Math.ceil(width / step), item.top])),
+        [TAU, fronts[0]!.item.top],
+      ];
+    }
     case 'coast': {
       const SEA = 0.005;
       const rough = waveOf(next, 20, 34);
@@ -237,7 +250,8 @@ export function backdropLayers(look: Look, seed: number, clear: number, beyond =
     const toward = (far: number, near: number): number => far + (near - far) * u;
     const radius = Math.max(fogNear + toward(FAR.fog, NEAR.fog) * (fogFar - fogNear), beyond > 0 ? beyond + (last - index) * BEYOND_STEP_M : 0);
     const follow = toward(FAR.follow, NEAR.follow);
-    const notch = index === last && last > 0 ? clear / radius : 0;
+    // Stěna haly průsek nemá: náběh průseku ve stěně kreslil po stranách cesty svahy kopců (P61 T7).
+    const notch = index === last && last > 0 && kind !== 'walls' ? clear / radius : 0;
     const profile = shapeOf(kind, next).map(([angle, height]): ProfilePoint => {
       const off = Math.min(angle, TAU - angle);
       const keep = notch === 0 ? 1 : 1 - NOTCH.depth * (1 - smoothstep(notch, notch * NOTCH.ramp, off));

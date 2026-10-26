@@ -74,6 +74,34 @@ Ztráty podle důvodů soudce (14 řádků), seskupené podle příčiny:
 
 Jedno kolo opravy dostala ztráta 2: největší ztráta s jednou příčinou, kterou jde opravit v jednom kole bez sahání na čas do hratelné a FPS (brány T8). Ztráta 1 se objeví ve víc řádcích, ale jako vedlejší výtka a její příčina je start scény (stahování a hlavní vlákno), ne kresba; 3 a 4 jsou souhrny různých příčin.
 
+### Oprava: obchod pod střechou
+
+- Sady `mall` a `supermarket` mají `ceiling` (`look/index.ts`). Obloha (`StyleRig.tsx`, `paintSky`) nad nimi kreslí strop: paprsek z kamery k rovině 9 m nad zemí, světla v mřížce 6 m ukotvené ve světě, v dálce mizí do barvy obzoru jako mlha scény.
+- Kulisa za mlhou je u nich `walls` (`backdrop-shapes.ts`): rovná stěna dokola s malým schodem v římse místo panoramatu města, bez průseku nad cestou – náběh průseku kreslil po stranách cesty svahy.
+- Běžec v hale běží po rovné podlaze (`valleyHeights(…, hall)`), ne mezi svahy údolí.
+- Obývák a továrna zůstaly beze změny: mřížka světel by z obýváku udělala kancelář a továrna bývá i venkovní dvůr (s037 „mining colony“ kreslí průmyslový dvůr).
+- Test `src/components/play/arcade/look/__tests__/indoor-hall.test.ts`: z dev věty s039 a s003 přes návrh a `sceneLook` až k uniformám oblohy, vrstvám kulisy a výškám údolí; venkovní sady a město strop nemají; noc a mlha strop nechají. Rozbité schválně: obloha bez stropu, údolí bez roviny, stěna s průsekem – každé zčervená aspoň jeden test.
+
+Snímky po opravě `D:/caches/p61/t7-after/` (rychlá hra, desktop i Pixel 7), prohlédnuté: s039 má nahoře strop s řadami světel a za střelnicí béžovou stěnu místo panoramatu města; s003 běží po rovné podlaze ke stěně v dálce pod stropem se světly, zasněžené svahy zmizely. Na telefonu na výšku kamera střelnice kouká dolů a strop je vidět jen u horního okraje.
+
+Orientační soud, jeden běh na listech jen s řádkem větve (`D:/caches/p61/t7-after/judge.json`, mimo repo), věrnost / hrál bych:
+
+| Věta | Před opravou | Po opravě | Výtka soudce po opravě |
+|---|---|---|---|
+| s039 | 0,45 / 0,35 | 0,60 / 0,40 | „the mall is only hinted at by a ceiling with lights and a few store props in a big hazy empty space, and the zombies are tiny“ |
+| s003 | 0,35 / 0,35 | 0,40 / 0,40 | „reads more as an open road than a supermarket, and there is no giant Roomba anywhere“ |
+
+Výtka „venku“ zmizela u obou vět. Druhé kolo se nedělá; co zbývá, jsou nálezy níže.
+
+### Nálezy T7 (bez druhého kola)
+
+- **Náhradní kvádr na startu** (5 řádků): modely postav se na tomhle stroji objeví 2–4 s po plátně, protože hlavní vlákno je první dvě sekundy zablokované a modely se zpracují až po něm. Oprava je výkon startu scény – měřit spolu s bránou času do hratelné a FPS (T8), ne přidávat čekání před první snímek.
+- **Hala je prázdná a mlhavá**: s039 má jen pár rekvizit obchodu ve velkém prázdném prostoru, s003 čte pás cesty běžce jako silnici. Chtělo by to řady regálů a výloh podél cesty z modelů katalogu.
+- **Protivník mimo záběr nebo nečitelný**: s003 Roomba jede za hrdinou pod okrajem snímku, s002 duchové a s008 opice jsou vidět zezadu a tmaví, s037 a s039 nepřátelé jsou malí (~6 % snímku).
+- **Hod kreslí terč místo věci věty**: s050 – návrh i `propModels` dávají terč `kid` (`dressing.test.ts`), scéna ale kreslí kotouč na sloupku a dítě stojí jen vzadu; s088 věže krabic jsou malé a daleko.
+- **Mechaniky, které hra neumí**: match-3 (s069), prak (s088), rotující tyče (s021), věž s pohyblivými plošinami (s022), flappy končí po 0,9 s (s035).
+- **Gramatika v oznámení**: s002 ukazuje „The obstacles isn't here yet – here's a chase game.“ (`src/play/draft/unsupported.ts` skládá „<podstatné jméno> isn't here yet“ i pro množné číslo).
+
 ## T4 – řetěz a jedna hra
 
 Zjištění: „knight … three keys … dodging ghosts“ nešel do řetězu přes `generic`, ale přes `multi_verb` – slovník čte collect (`move_free`) a dodging (`steer`), dvě ovládání; první buňka `arena.escape` 6 bodů s náskokem 5. Samotné zúžení `generic` by ho nechalo řetězem.
@@ -108,7 +136,8 @@ Strop celého plánu 4 USD. Čtečka astra (`gpt-6-astra`), ceny 10 / 50 USD za 
 |---|---|---|
 | T1 – `main` dev 12 vět + holdout 24 vět (jedna věta holdoutu dvakrát po pádu serveru) | 36 | 1,101 |
 | T7 – větev dev 12 vět | 12 | 0,364 |
-| **Celkem** | 48 | **1,465** |
+| T7 – snímky s039 a s003 po opravě (3 sestavení, 5 vět) | 5 | 0,149 |
+| **Celkem** | 53 | **1,614** |
 
 ## T6 – rámování na výšku
 

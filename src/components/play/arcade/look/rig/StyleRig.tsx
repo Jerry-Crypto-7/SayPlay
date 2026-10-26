@@ -17,7 +17,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
-import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector3 } from 'three';
+import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector2, Vector3 } from 'three';
 
 import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
 
@@ -72,12 +72,18 @@ void main() {
 }`;
 
 // Přechod a slunce z ukázky B; tón a barevný prostor jako u ostatních materiálů scény.
+// Hala (P61 T7, `Look.ceiling`): nahoře strop – paprsek z kamery k rovině stropu, světla v mřížce světa (jedou
+// kolem, když kamera jede), v dálce mizí do barvy obzoru jako mlha scény. Slepý soudce četl halu bez stropu jako venku.
 const SKY_FRAGMENT = /* glsl */ `
 uniform vec3 top;
 uniform vec3 horizon;
 uniform vec3 sunColor;
 uniform vec3 sunDir;
 uniform float glow;
+uniform float indoor;
+uniform vec3 ceiling;
+uniform vec3 lamp;
+uniform vec2 haze;
 varying vec3 vDir;
 void main() {
   vec3 dir = normalize(vDir);
@@ -85,38 +91,72 @@ void main() {
   vec3 color = mix(horizon, top, pow(h, 0.7));
   float s = max(dot(dir, sunDir), 0.0);
   color += sunColor * glow * (pow(s, 600.0) * 1.5 + pow(s, 12.0) * 0.25);
+  if (indoor > 0.5 && dir.y > 0.0) {
+    float t = max(CEILING_Y - cameraPosition.y, CEILING_MIN) / dir.y;
+    vec2 off = abs(fract((cameraPosition.xz + dir.xz * t) / LAMP_GRID) - 0.5) * LAMP_GRID;
+    float edge = 0.015 * t;
+    float lit = (1.0 - smoothstep(LAMP_HALF.x - edge, LAMP_HALF.x + edge, off.x)) * (1.0 - smoothstep(LAMP_HALF.y - edge, LAMP_HALF.y + edge, off.y));
+    color = mix(mix(ceiling, lamp * 1.5, lit), horizon, smoothstep(haze.x, haze.y, t));
+  }
   gl_FragColor = vec4(color, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
 
+/**
+ * Strop haly (m): výška nad zemí, nejmenší odstup nad kamerou (kamera arény nad stropem), rozteč světel a půl
+ * rozměru světla napříč a podél. simplified: rovina se světly v mřížce, bez trámů a stěn až ke kameře.
+ */
+const CEILING = { y: 9, min: 3, grid: 6, half: [1.4, 0.45] } as const;
+
 /** Kreslí se první, bez hloubky: všechno ostatní leží před ní, i zem pod panoramatem (`UNDER_PANORAMA`). */
 const SKY_ORDER = -10;
 
+/** Materiál oblohy; barvy nastaví `paintSky`. */
+export function skyMaterial(): ShaderMaterial {
+  return new ShaderMaterial({
+    uniforms: {
+      top: { value: new Color() },
+      horizon: { value: new Color() },
+      sunColor: { value: new Color() },
+      sunDir: { value: new Vector3() },
+      glow: { value: 0 },
+      indoor: { value: 0 },
+      ceiling: { value: new Color() },
+      lamp: { value: new Color() },
+      haze: { value: new Vector2() },
+    },
+    defines: { CEILING_Y: CEILING.y.toFixed(1), CEILING_MIN: CEILING.min.toFixed(1), LAMP_GRID: CEILING.grid.toFixed(1), LAMP_HALF: `vec2(${CEILING.half.map((m) => m.toFixed(2)).join(', ')})` },
+    vertexShader: SKY_VERTEX,
+    fragmentShader: SKY_FRAGMENT,
+    // Kamera je uvnitř koule.
+    side: BackSide,
+    depthTest: false,
+    depthWrite: false,
+    fog: false,
+  });
+}
+
+/** Barvy sady do uniforem oblohy; hala (`Look.ceiling`) zapne strop, mlha sady ho v dálce rozpustí. */
+export function paintSky(material: ShaderMaterial, look: Look, control: string): void {
+  const { uniforms } = material;
+  (uniforms.top!.value as Color).set(look.skyTop);
+  (uniforms.horizon!.value as Color).set(look.horizon);
+  (uniforms.sunColor!.value as Color).set(look.sunColor);
+  (uniforms.sunDir!.value as Vector3).copy(glowDirOf(look.sunDir, control));
+  uniforms.glow!.value = look.glow;
+  uniforms.indoor!.value = look.ceiling === undefined ? 0 : 1;
+  if (look.ceiling !== undefined) {
+    (uniforms.ceiling!.value as Color).set(look.ceiling.color);
+    (uniforms.lamp!.value as Color).set(look.ceiling.lamp);
+  }
+  (uniforms.haze!.value as Vector2).set(look.fog[0], look.fog[1]);
+}
+
 function Sky({ look, control }: { readonly look: Look; readonly control: string }) {
   const geometry = useMemo(() => new SphereGeometry(1, 32, 16), []);
-  const material = useMemo(
-    () =>
-      new ShaderMaterial({
-        uniforms: { top: { value: new Color() }, horizon: { value: new Color() }, sunColor: { value: new Color() }, sunDir: { value: new Vector3() }, glow: { value: 0 } },
-        vertexShader: SKY_VERTEX,
-        fragmentShader: SKY_FRAGMENT,
-        // Kamera je uvnitř koule.
-        side: BackSide,
-        depthTest: false,
-        depthWrite: false,
-        fog: false,
-      }),
-    [],
-  );
-  useEffect(() => {
-    const { uniforms } = material;
-    (uniforms.top!.value as Color).set(look.skyTop);
-    (uniforms.horizon!.value as Color).set(look.horizon);
-    (uniforms.sunColor!.value as Color).set(look.sunColor);
-    (uniforms.sunDir!.value as Vector3).copy(glowDirOf(look.sunDir, control));
-    uniforms.glow!.value = look.glow;
-  }, [material, look, control]);
+  const material = useMemo(skyMaterial, []);
+  useEffect(() => paintSky(material, look, control), [material, look, control]);
   useEffect(
     () => () => {
       geometry.dispose();
