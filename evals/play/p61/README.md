@@ -6,7 +6,7 @@ Plán: `plans/P61-kvalita-hry-2026-10-26.md` (gitignorovaný). Měřidlo: snímk
 
 `holdout.json` – 24 nových anglických vět (6 stříleček nebo bojovek s výrazným prostředím, 6 „sbírej N věcí“, 6 se 2–3 slovesy, 6 ostatních), napsaných 26. 10. 2026 před první změnou kódu P61. Žádná se neshoduje s `p30/*.json`, `p58b/holdout.json`, `p56c/*.json` ani další známou sadou (`__tests__/seal.test.ts`).
 
-SHA-256 nad LF bajty: `e15ce81f8bb6b17c9411314419054ec8771ebbdb0fb8d30df96672b6ad3e4e0b` (`seal.ts`). Otevře se jednou v T8; nic se podle ní neladí. Snímky `main` na ní nafotí T1 do `D:/caches/p61/main-holdout/`, souzené nejsou – soudí se až v T8 na společných listech s větví.
+SHA-256 nad LF bajty: `e15ce81f8bb6b17c9411314419054ec8771ebbdb0fb8d30df96672b6ad3e4e0b` (`seal.ts`). Otevře se jednou v T8; nic se podle ní neladí. Snímky `main` na ní nafotí T1 do `D:/caches/p61/main-holdout/`, souzené nejsou – soudí se až v T8 na společných listech s větví. Otevřená v T8 26. 10. 2026 na větvi `f3b6caa5` (`holdout-opened.json`), otisk při otevření seděl.
 
 ## Měřidlo
 
@@ -102,6 +102,82 @@ Výtka „venku“ zmizela u obou vět. Druhé kolo se nedělá; co zbývá, jso
 - **Mechaniky, které hra neumí**: match-3 (s069), prak (s088), rotující tyče (s021), věž s pohyblivými plošinami (s022), flappy končí po 0,9 s (s035).
 - **Gramatika v oznámení**: s002 ukazuje „The obstacles isn't here yet – here's a chase game.“ (`src/play/draft/unsupported.ts` skládá „<podstatné jméno> isn't here yet“ i pro množné číslo).
 
+## T8 – zapečetěná brána
+
+Sada otevřená jednou 26. 10. 2026 ve 20:58 UTC na větvi `f3b6caa5` (`holdout-opened.json`). Větev nafocená do `D:/caches/p61/p61-holdout/` týmž `shots.mjs` a nastavením jako `main` v T1 (`5692b987`, `D:/caches/p61/main-holdout/`): snímky v 1, 3 a 5 s, desktop 1280 × 720 i Pixel 7, čtečka astra zapnutá, upgrade cesta při focení zablokovaná; 24 z 24 vět bez chyby. Na větu jeden list (desktop) s řádky `main` rychlá, `main` ze čtení, P61 rychlá, P61 ze čtení – co vzniklo, 2 až 4 řádky; pořadí `pure-rand` se seedem 61026. Soudce **Codex** (`codex exec`, obrázek jen jako `sheet.png` v prázdném `mkdtemp`), souběh 1, jeden běh, 24 volání, všechny odpovědi platné napoprvé → `result.json`. Listy a odpovědi leží v `D:/caches/p61/sheets-t8-holdout/`.
+
+| Strana | Věrnost | Hrál bych | Vět |
+|---|---|---|---|
+| `main` rychlá hra | 0,445 | 0,525 | 24 |
+| `main` po čtení | 0,63 | 0,535 | 24 |
+| P61 rychlá hra | 0,625 | 0,57 | 24 |
+| P61 po čtení | 0,68 | 0,585 | 24 |
+
+„Po čtení“ = hra ze čtení, a když nevznikla, rychlá hra. Hra ze čtení sama (jen kde vznikla): `main` 0,74 / 0,57 (9 vět), P61 0,68 / 0,66 (8 vět).
+
+| Brána | P61 | `main` | Výsledek |
+|---|---|---|---|
+| G1 rychlá hra: medián věrnosti ≥ 0,50 | 0,625 | 0,445 | splněna |
+| G2 rychlá hra: medián „hrál bych“ ≥ 0,50 | 0,57 | 0,525 | splněna |
+| G3 po čtení: medián věrnosti ≥ 0,75 | 0,68 | 0,63 | nesplněna |
+| G4 po čtení: medián „hrál bych“ ≥ 0,70 | 0,585 | 0,535 | nesplněna |
+| G5 rychlá hra lepší než `main` (věrnost i „hrál bych“) | 0,625 / 0,57 | 0,445 / 0,525 | splněna |
+| G6 po čtení lepší než `main` (věrnost i „hrál bych“) | 0,68 / 0,585 | 0,63 / 0,535 | splněna |
+
+Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json`; prahy má z plánu, ne z výsledku.
+
+- T8 soudil Codex, dev listy (T1, T7) Claude. Čísla T8 se proto se staršími tabulkami nesrovnávají, jen `main` proti větvi na týchž listech.
+- Rozptyl Codexu mezi dvěma běhy se neměřil (jeden běh). Odvozeno: náskok „hrál bych“ v G5 (0,045) a obě čísla G6 (0,05 / 0,05) leží v pásmu, které u Claude v T1 dělal soudce sám (největší rozdíl 0,10); pevný je náskok věrnosti rychlé hry (0,18).
+- Hra sama ukazuje přepínač verze („Quick“ / „Matched“ nebo „Full-detail“), takže soudce může poznat, který řádek je rychlá hra. Jméno produktu, větev ani cestu nevidí; u `main` i větve je přepínač stejný.
+
+### Verdikt: G3 a G4 nesplněny
+
+Hra po čtení má medián věrnosti 0,68 místo 0,75 a „hrál bych“ 0,585 místo 0,70. Věrnost ≥ 0,75 má 10 z 24 vět, „hrál bych“ ≥ 0,70 jen 5, obojí 4 (h04, h12, h16, h22). V 10 větách má větev po čtení stejné skóre jako `main` nebo o 0,01 jiné (h02, h10, h11, h12, h14, h15, h19, h22, h23, h24) – zlepšení leží ve zbylých 14. Podle sady se nic neladilo.
+
+Po větách, věrnost / hrál bych; „(ze čtení)“ = výtka platí pro hru ze čtení, jinak pro rychlou hru:
+
+| Věta | `main` rychlá | P61 rychlá | `main` po čtení | P61 po čtení | Pod branou | Výtka soudce u hry P61 po čtení |
+|---|---|---|---|---|---|---|
+| h01 kovboj, kostliví bandité, pouštní město | 0,64 / 0,47 | 0,77 / 0,59 | 0,64 / 0,47 | 0,77 / 0,59 | hrál bych | kovboj proti banditům v poušti; kostlivci a budovy města slabé |
+| h02 piráti, mořské příšery, potápějící se loď | 0,45 / 0,58 | 0,45 / 0,58 | 0,45 / 0,58 | 0,45 / 0,58 | obojí | souboj čitelný, ale písek místo paluby, žádná loď ani nebezpečí moře |
+| h03 robot, vesmírní slimáci, zamrzlá základna | 0,57 / 0,45 | 0,65 / 0,53 | 0,57 / 0,45 | 0,65 / 0,53 | obojí | robot, žlutí slimáci a měsíční základna ano, zamrzlý interiér chybí |
+| h04 ninja, obří krabi, tropická pláž | 0,78 / 0,65 | 0,84 / 0,70 | 0,78 / 0,65 | 0,84 / 0,70 | – | ninja proti obřímu krabovi na písku, málo pestrosti |
+| h05 samuraj, stínoví válečníci, bambusový les | 0,62 / 0,54 | 0,60 / 0,51 | 0,62 / 0,54 | 0,60 / 0,51 | obojí | bambus a meč ano; stínoví válečníci nečitelní, hráč v posledním snímku zmizel |
+| h06 policejní dron, roboti, neonové město v noci | 0,25 / 0,35 | 0,57 / 0,66 | 0,73 / 0,57 | 0,78 / 0,62 | hrál bych | (ze čtení) dron míří na roboty v tmavém městě; neon a policie skoro nevidět, akce řídká |
+| h07 veverka, pět žaludů před zimou | 0,62 / 0,43 | 0,78 / 0,49 | 0,62 / 0,43 | 0,78 / 0,49 | hrál bych | počítadlo pěti žaludů a sníh ano; veverka nečitelná, terén se opakuje |
+| h08 sedm štěňat, zasněžená vesnice | 0,61 / 0,51 | 0,68 / 0,55 | 0,61 / 0,51 | 0,68 / 0,55 | obojí | sníh a počítadlo sedmi štěňat; vesnice a štěňata nerozlišitelné, výrazný tučňák, řídká scéna |
+| h09 potápěč, čtyři perly, žraloci | 0,12 / 0,65 | 0,80 / 0,60 | 0,75 / 0,53 | 0,80 / 0,60 | hrál bych | potápěč na útesu, cíl čtyř perel a žralok; řídká scéna, nejasné hrozby |
+| h10 deset mincí, strašidelný hrad, netopýři | 0,65 / 0,56 | 0,65 / 0,56 | 0,65 / 0,56 | 0,65 / 0,56 | obojí | tmavé bludiště hradu a netopýři; deset mincí a „nevzbudit netopýry“ nejsou vidět |
+| h11 čarodějka, šest zářících hub, bažina | 0,80 / 0,64 | 0,80 / 0,64 | 0,80 / 0,64 | 0,80 / 0,64 | hrál bych | čarodějka sbírá houby v bažině; cíl ukazuje deset místo šesti, terén řídký |
+| h12 astronaut, tři palivové články, Mars | 0,20 / 0,35 | 0,20 / 0,35 | 0,93 / 0,76 | 0,93 / 0,76 | – | (ze čtení) červený Mars, rozházené články, cíl tři články |
+| h13 klokan: klády, bobule, hadi | 0,44 / 0,30 | 0,44 / 0,30 | 0,44 / 0,30 | 0,58 / 0,73 | věrnost | (ze čtení) klokan, hadi a údery ano; klády a bobule nejasné |
+| h14 lyžař, borovice, skoky z útesů | 0,30 / 0,60 | 0,25 / 0,65 | 0,40 / 0,50 | 0,40 / 0,50 | obojí | (ze čtení) zasněžené hory a borovice, ale auto na silnici – žádné lyžování ani skoky |
+| h15 hasič: věž, plameny, kočka | 0,12 / 0,22 | 0,12 / 0,22 | 0,30 / 0,47 | 0,30 / 0,48 | obojí | (ze čtení) hasič a překážky v aréně; věž, plameny, stříkání ani kočka nejsou |
+| h16 tučňák: led, ryby, tuleni | 0,52 / 0,70 | 0,48 / 0,67 | 0,74 / 0,64 | 0,80 / 0,70 | – | (ze čtení) tučňák v ledové aréně, ryby a tuleni |
+| h17 farmář: mrkev, zalévání, vrány | 0,74 / 0,65 | 0,74 / 0,67 | 0,74 / 0,65 | 0,74 / 0,67 | obojí | farmář, pole, cíl sázení a vrány; zalévání a mrkev nejasné |
+| h18 rytíř v lese, drak | 0,20 / 0,55 | 0,65 / 0,75 | 0,25 / 0,35 | 0,25 / 0,30 | obojí | (ze čtení) les ano, ale auto na prázdné trati, žádný drak ani boj |
+| h19 palačinky, rušná jídelna | 0,12 / 0,22 | 0,12 / 0,22 | 0,12 / 0,22 | 0,12 / 0,22 | obojí | venkovní scéna a shazování, žádné palačinky ani jídelna |
+| h20 akvarijní rybka, nepořádek v kuchyni | 0,65 / 0,57 | 0,68 / 0,62 | 0,65 / 0,57 | 0,68 / 0,62 | obojí | rybka, akvárium a jídlo; kuchyně nejasná, překážky se opakují |
+| h21 papírová loďka, deštivá ulice | 0,12 / 0,24 | 0,78 / 0,63 | 0,78 / 0,63 | 0,78 / 0,63 | hrál bych | deštivý odtok, loďka a cíl; řídké překážky, opakuje se |
+| h22 včela, slunná louka | 0,40 / 0,64 | 0,30 / 0,43 | 0,92 / 0,77 | 0,92 / 0,77 | – | (ze čtení) včela mezi květy na slunné louce s cílem opylit |
+| h23 tuleň, míč, cirkus | 0,02 / 0,39 | 0,02 / 0,39 | 0,02 / 0,39 | 0,02 / 0,39 | obojí | želví plošinovka na ostrovech, žádný tuleň, míč ani cirkus |
+| h24 balón, bouřkové mraky, oceán | 0,35 / 0,48 | 0,35 / 0,48 | 0,35 / 0,48 | 0,35 / 0,48 | obojí | balón a oceán ano, bouřkové mraky chybí, opakuje se |
+
+Příčiny podle výtek soudce, seskupené:
+1. **Hra nehraje, co věta říká** – 7 vět s věrností ≤ 0,45 táhne medián dolů: h15 (bouchání do děr, ze čtení aréna), h19 (shazování bez palačinek), h23 (želva na ostrovech), h14 a h18 (hra ze čtení je jízda autem), h24 (bez bouřkových mraků), h02 (písek místo lodi). U všech sedmi je skóre větve po čtení stejné nebo skoro stejné jako u `main`.
+2. **Hra ze čtení horší než rychlá hra** – h18: rychlá hra větve (rytíř na koni v lese, drak vpředu) 0,65 / 0,75, hra ze čtení (auto v lese) 0,25 / 0,30; hráč po příchodu čtení přejde na horší hru. `main` má tutéž hru ze čtení.
+3. **„Hrál bych“ pod 0,70 i u věrných her** – h01, h06, h07, h09, h11, h21 mají věrnost ≥ 0,75 a „hrál bych“ 0,49–0,64; u pěti z nich (mimo h01) soudce píše „sparse“ nebo „repetitive“ (řídká scéna, opakující se terén), u h07 navíc nečitelnou postavu, u h01 slabé kostlivce a budovy.
+4. **Prostředí nebo nepřítel z věty slabé** – h03 (zamrzlý interiér), h05 (stínoví válečníci), h06 (neon), h08 (vesnice, štěňata), h10 (mince, netopýři), h13 (klády, bobule), h20 (kuchyně).
+5. **Počet z věty v HUD nesedí** – h11 „six glowing mushrooms“: `main` i větev ukazují „Collect 10 mushrooms per wave, 3 waves.“ (ověřeno na listu). Počet z věty (T5) se u téhle věty do cíle nepropsal.
+
+### Robot / nečinný / replay
+
+Všech 32 her, které větev na sadě publikovala (24 rychlých, z toho 8 řetězů, a 8 her ze čtení):
+- publikační brána (robot vyhraje, nečinný hráč nevyhraje, dvě přehrání skončí ve stavu běhu robota; u řetězu každé kolo i celý řetěz) prošla 32/32, zpráva o kvalitě to nese;
+- znovu offline v novém procesu nad publikovaným světem (`verifyArcade` / `verifyChain`, dočasný skript mimo repo): robot vyhrál 32/32, nečinný nevyhrál 32/32, přehrání shodná 32/32, otisk běhu robota i nečinného shodný se zprávou serveru 32/32.
+
+Hry `main` z T1 zmizely se serverem (hry žijí v jeho paměti), proto se tu nesrovnává „beze změny proti `main`“ – jen to, že větev drží robota, nečinného a replay na všech hrách sady. Čas do hratelné hry a FPS na telefonu měří část B (`result.json` → `timing`, `fps`).
+
 ## T4 – řetěz a jedna hra
 
 Zjištění: „knight … three keys … dodging ghosts“ nešel do řetězu přes `generic`, ale přes `multi_verb` – slovník čte collect (`move_free`) a dodging (`steer`), dvě ovládání; první buňka `arena.escape` 6 bodů s náskokem 5. Samotné zúžení `generic` by ho nechalo řetězem.
@@ -137,7 +213,8 @@ Strop celého plánu 4 USD. Čtečka astra (`gpt-6-astra`), ceny 10 / 50 USD za 
 | T1 – `main` dev 12 vět + holdout 24 vět (jedna věta holdoutu dvakrát po pádu serveru) | 36 | 1,101 |
 | T7 – větev dev 12 vět | 12 | 0,364 |
 | T7 – snímky s039 a s003 po opravě (3 sestavení, 5 vět) | 5 | 0,149 |
-| **Celkem** | 53 | **1,614** |
+| T8 – větev na zapečetěné sadě, 24 vět (21 placených čtení) | 21 | 0,648 |
+| **Celkem** | 74 | **2,262** |
 
 ## T6 – rámování na výšku
 
