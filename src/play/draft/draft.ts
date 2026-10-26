@@ -65,7 +65,7 @@ import { extractIntent } from '../intent/extract';
 import type { Intent } from '../intent/contract';
 import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { AMMO_VERB } from '../genre/throw';
-import { lookFor, lookWords, sentenceSky } from '../arcade/look';
+import { lookFor, lookWords, sentenceLook, sentenceSky } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { steerStyleFor } from '../arcade/pieces/steer';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -1039,7 +1039,7 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
   if (pickup !== null && collectible !== null) role(spec, collectible).label = cap(pickup, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
   // Místo bez předložky („flappy bird but underwater“, „a snow fort“) sada najde v celé větě (nález T11).
-  const place = lookFor(spec.theme.setting) === null ? lookFor(sentence.toLowerCase()) : null;
+  const place = lookFor(spec.theme.setting) === null ? sentenceLook(sentence) : null;
   if (place !== null) spec.theme.look = place;
   const rival = choice.control === 'duel' ? (roles.target ?? duelFoe(sentence) ?? second) : null;
   if (rival !== null) role(spec, 'rival').label = cap(rival, 60);
@@ -1309,8 +1309,11 @@ function draftGenre(
   // P56A T7: místo, které věta jmenuje a sady znají, rozhodne; jinak svět čtení – před slovy celé věty i místem slovesa
   // nebo žánru („my cat defends the couch“ je obývák, ne hradby obrany).
   const world = saidPlace !== null && lookFor(saidPlace) !== null ? null : (reading?.world ?? null);
-  const setting = saidPlace ?? world?.replace(/_/g, ' ') ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
-  const place = world ?? (lookFor(setting) === null ? lookFor(text) : null);
+  // P61 T3: věta bez místa, jejíž slova sada zná („obby game with lava“, „zombie shooter“), hraje ve svém světě, ne ve
+  // výchozím místě žánru – plošinovka s lávou stála na plážových ostrovech. Místo, které věta řekne, má přednost dál.
+  const sentenceWorld = saidPlace === null && world === null && VERB_SETTING[verb] === undefined ? sentenceLook(text) : null;
+  const setting = saidPlace ?? world?.replace(/_/g, ' ') ?? VERB_SETTING[verb] ?? sentenceWorld?.replace(/_/g, ' ') ?? GENRE_SETTING[choice.genre];
+  const place = world ?? (lookFor(setting) === null ? sentenceLook(text) : null);
   const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence, reading !== null);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);

@@ -5,7 +5,7 @@
  * `readRoles`, `lookFor` a položky záměru z `extractIntent`. Bez sítě a bez stavu – stejná věta dává stejné čtení.
  */
 
-import { lookFor, type LookId } from '../arcade/look';
+import { lookFor, type LookId, sentenceLook } from '../arcade/look';
 import { readRoles } from '../draft/lexicon';
 import { draftRoles } from '../genre/contract';
 import { extractIntent } from '../intent';
@@ -102,7 +102,7 @@ export function readForChain(sentence: string, reading: Reading | null): Sentenc
     hero: hero === null ? null : short(hero),
     foe,
     item,
-    look: lookFor(roles.setting ?? '') ?? lookFor(sentence),
+    look: lookFor(roles.setting ?? '') ?? sentenceLook(sentence),
     verbs,
     title: null,
     source: 'lexicon',

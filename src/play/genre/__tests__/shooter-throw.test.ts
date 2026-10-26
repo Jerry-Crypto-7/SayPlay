@@ -170,8 +170,10 @@ describe('shooter and throw read the cast', () => {
     expect(roleOf(mansion, 'enemy')).toBe('bat');
     expect(roleOf(mansion, 'target')).toBe('coin');
     expect(roleOf(shooter([{ label: 'bat', does: 'shoot_at' }, { label: 'ghost', does: 'avoid' }]), 'target')).toBe('ghost');
-    // Nepřítel vln na střelnici podruhé nestojí.
-    expect(roleOf(shooter([{ label: 'wolf', does: 'chase_me' }]), 'target')).toBe('target');
+    // P61 T3: jediný protivník věty stojí i na střelnici – holé kotouče soudce četl jako střelnici bez vlka.
+    expect(roleOf(shooter([{ label: 'wolf', does: 'chase_me' }]), 'target')).toBe('wolf');
+    // Kotouč zůstane jen hře, kde věta nejmenuje nic.
+    expect(roleOf(shooter([]), 'target')).toBe('target');
     const drafted = draftGameSpecWithMeta('collect coins, dodge ghosts and shoot bats in a haunted mansion', 1).spec;
     expect(drafted.roles.map((role) => role.label)).toEqual(expect.arrayContaining(['bat', 'coin']));
   });

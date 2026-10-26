@@ -616,6 +616,8 @@ const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
   // Věž až za městem a kuchyní: „pancake tower in a kitchen“ je kuchyně, samotná věž hrad (P30B T6).
   ['castle', /\btower\b/],
   ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill/],
+  // Chrám a ruiny až úplně naposled (P61 T3): „temple run“ je džungle se zříceninou, ne louka; „a temple in the desert“ poušť.
+  ['jungle', /\btemples?\b|\bruins?\b/],
 ];
 
 const match = (text: string): LookId | null => KEYWORDS.find(([, pattern]) => pattern.test(text.toLowerCase()))?.[0] ?? null;
@@ -633,6 +635,42 @@ export function lookWords(text: string): number[] {
  */
 export function lookFor(setting: string, mood = ''): LookId | null {
   return match(setting) ?? match(mood);
+}
+
+/** Předložky místa: fráze za nimi jmenuje, kde se hraje („gates in a city“, „kids behind a snow fort“). */
+const LOCATIVE: ReadonlySet<string> = new Set(['in', 'inside', 'on', 'at', 'across', 'through', 'around', 'into', 'onto', 'along', 'over', 'under', 'behind', 'near', 'up', 'down']);
+/** Slova, kterými fráze místa končí: spojka, další předložka, míra („a city full of zombies“). */
+const PHRASE_END: ReadonlySet<string> = new Set(['and', 'or', 'while', 'but', 'with', 'to', 'from', 'before', 'after', 'then', 'as', 'so', 'because', 'that', 'who', 'which', 'of', 'full', 'filled', ...LOCATIVE]);
+/** Tvor, podle kterého sady hádají svět („shoots at zombies“), místem ale není. */
+const CREATURE = /^(?:aliens?|zombies?|ghosts?|pirates?|toys?)$/;
+
+/** Jmenuje fráze místo? Rozhoduje hlava („a snow fort“, „a haunted house“), nebo dvojslovné místo („living room“). */
+function namesPlace(phrase: readonly string[]): boolean {
+  const head = phrase.at(-1);
+  if (head === undefined || CREATURE.test(head)) return false;
+  if (match(head) !== null) return true;
+  const before = phrase.at(-2);
+  return before !== undefined && match(before) === null && match(`${before} ${head}`) !== null;
+}
+
+/**
+ * Sada celé věty (P61 T3): místo za předložkou má přednost před tvorem nebo náladou kdekoli ve větě – „a horde of
+ * zombies … in a city“ je město, ne hřbitov podle zombií. Věta bez takového místa vezme první slovo, které sady znají
+ * („obby game with lava“ → sopka, „zombie shooter“ → hřbitov). `null` = sady větu neznají.
+ */
+export function sentenceLook(text: string): LookId | null {
+  const words = text.toLowerCase().match(/[a-z']+/g) ?? [];
+  for (const [index, word] of words.entries()) {
+    if (!LOCATIVE.has(word)) continue;
+    const phrase: string[] = [];
+    for (const next of words.slice(index + 1, index + 6)) {
+      if (PHRASE_END.has(next)) break;
+      phrase.push(next);
+    }
+    if (namesPlace(phrase)) return match(phrase.join(' '));
+  }
+  // Bez předložky místo dřív než tvor („stop the zombies before they reach the farmhouse“ je farma).
+  return match(words.filter((word) => !CREATURE.test(word)).join(' ')) ?? match(text);
 }
 
 /** Sada, kterou scéna vykreslí: volba modelu, jinak slova, jinak louka. */
