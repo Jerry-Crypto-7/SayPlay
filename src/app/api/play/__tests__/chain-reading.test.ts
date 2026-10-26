@@ -38,6 +38,8 @@ const devRow = (id: string) => ({ text: DEV.find((row) => row.id === id)!.text, 
 const SINGLE = devRow('s12');
 /** s01: slovník i čtení hrají řetěz. */
 const CHAIN = devRow('s01');
+/** Věta, která o víc her výslovně žádá (`CHAIN_CUES`): řetězem zůstane i se čtením (P58F). */
+const CUE = { text: `${CHAIN.text} across three levels`, reading: CHAIN.reading };
 
 /** Placená čtečka (cena astry) a objednaná placená větev režiséra – `mayPayChainRead` je pak otevřená. */
 const PAID = {
@@ -136,9 +138,22 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
     expect(reader.calls).toHaveLength(1);
   });
 
-  it('publishes nothing when the reading plays a chain again', async () => {
+  // P58F: dřív tu řetěz zůstal (`chainOrSingle` se čtením řekl znovu řetěz); čtení dá hru správného žánru, tak ji hraje.
+  it('publishes the reading game even when the reading alone would play a chain again', async () => {
     reader.reading = CHAIN.reading;
     const { body } = await create(CHAIN.text);
+    await settled(body.versionId);
+    const reading = await children(versionStoreFromEnv(process.env), body.versionId);
+    expect(reading).toHaveLength(1);
+    expect(reading[0]).toMatchObject({ relation: 'reading', version: { parentId: body.versionId } });
+    expect(reading[0]!.spec).toEqual(draftGameSpecWithMeta(CHAIN.text, 1, { reading: CHAIN.reading }).spec);
+    expect(reader.calls).toHaveLength(1);
+  });
+
+  it('publishes nothing when the sentence asks for several games', async () => {
+    reader.reading = CUE.reading;
+    const { body } = await create(CUE.text);
+    expect((await versionStoreFromEnv(process.env).get(body.versionId))?.chain).toBeDefined();
     await settled(body.versionId);
     expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
     expect(reader.calls).toHaveLength(1);
@@ -322,9 +337,9 @@ describe('the upgrade route reports a chain reading game (P58E T2)', () => {
     expect(ended).toEqual({ status: 200, body: { status: 'draft-final', reason: 'CHAIN', reading: { versionId: child!.version.versionId } } });
   });
 
-  it('a chain the reading confirms ends CHAIN with no reading game', async () => {
-    reader.reading = CHAIN.reading;
-    const { body } = await create(CHAIN.text);
+  it('a chain the sentence asks for ends CHAIN with no reading game', async () => {
+    reader.reading = CUE.reading;
+    const { body } = await create(CUE.text);
     expect(await final(body.versionId)).toEqual({ status: 200, body: { status: 'draft-final', reason: 'CHAIN' } });
   });
 
