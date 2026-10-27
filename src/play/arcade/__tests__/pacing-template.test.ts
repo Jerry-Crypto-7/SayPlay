@@ -35,6 +35,7 @@ const DEV: Readonly<Record<string, readonly string[]>> = {
     'A kid collects candy on Halloween night while ghosts follow',
     'A robot vacuum collects coins under the sofa while the cat attacks',
     'Gather apples in an orchard while angry wasps buzz around',
+    // P61 T5-R1: věta s počtem má zase průběh (vlny na čas, boss nese poslední truhlu) – šablonu ne, ta by přinesla věci navíc.
     'Explore an old castle to find three treasure chests',
   ],
   arena_escape: [

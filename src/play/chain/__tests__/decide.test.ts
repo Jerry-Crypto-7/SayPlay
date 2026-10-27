@@ -20,9 +20,38 @@ describe('chainOrSingle', () => {
     expect(reasons('ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way')).toEqual(['multi_verb']);
   });
 
-  it('b) a sentence the classifier hears nothing in, or only a generic cell by a small margin, makes a chain', () => {
+  it('b) a sentence the classifier hears nothing in makes a chain', () => {
     expect(reasons('a sleepy dragon in fuzy pink slippers')).toEqual(['generic']);
-    expect(reasons('a goth teenage ghost with a skateboard and a bad attitude')).toEqual(['generic']);
+    expect(decide('a desert of pink sand under three moons')).toBe('chain');
+  });
+
+  // P61 T4: slyšená obecná buňka hraje jednu hru (dřív `generic` s náskokem pod 3), počítaný cíl i se dvěma slovesy.
+  describe('a heard sentence plays one game (P61 T4)', () => {
+    const KNIGHT = 'A knight must collect three keys in a haunted castle while dodging ghosts.';
+
+    it('a generic cell heard by a small margin stays a single game', () => {
+      const ranking = classifyGenre('a goth teenage ghost with a skateboard and a bad attitude', null);
+      expect(`${ranking.ranked[0]!.genre}.${ranking.ranked[0]!.mode}`).toBe('runner.default');
+      expect(ranking.ranked[0]!.score - ranking.ranked[1]!.score).toBeLessThan(3);
+      expect(reasons('a goth teenage ghost with a skateboard and a bad attitude')).toEqual([]);
+    });
+
+    it('collecting a counted item on a heard generic cell is one game even with a second verb', () => {
+      const ranking = classifyGenre(KNIGHT, null);
+      expect(`${ranking.ranked[0]!.genre}.${ranking.ranked[0]!.mode}`).toBe('arena.escape');
+      expect(readForChain(KNIGHT, null).verbs.map((verb) => verb.class)).toEqual(['move_free', 'steer']);
+      expect(reasons(KNIGHT)).toEqual([]);
+      // Bez počtu, nebo s počtem jiné věci než té sbírané, zůstanou dvě slovesa řetězem.
+      expect(reasons('A knight must collect keys in a haunted castle while dodging ghosts.')).toEqual(['multi_verb']);
+      expect(reasons('A knight with two swords collects keys in a haunted castle while dodging ghosts.')).toEqual(['multi_verb']);
+    });
+
+    it('two verbs without a counted goal, an unheard sentence and asking for rounds still make a chain', () => {
+      expect(reasons('A corgi runs through a park grabbing sausages and jumping over sprinklers')).toEqual(['multi_verb']);
+      expect(reasons('Captain Biscuit, a very serious corgi astronaut.')).toEqual(['generic']);
+      expect(decide(`${KNIGHT} Make it five levels.`)).toBe('chain');
+      expect(reasons(`${KNIGHT} Make it five levels.`)).toEqual(['cue']);
+    });
   });
 
   it('c) asking for rounds, levels, minigames, challenges or a party makes a chain', () => {

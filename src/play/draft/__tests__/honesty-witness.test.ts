@@ -2,6 +2,9 @@
 
 import { publishReadSpec } from '@/app/api/play/_publish';
 import * as arcade from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
+import { nativeSpec } from '@/play/compose/native';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import { compileGenre } from '@/play/genre';
 import { memoryVersionStore } from '@/play/version';
 
@@ -82,5 +85,33 @@ describe('P41 honesty follows witnesses of the final game', () => {
       unmet: [{ actor: 'robot', verb: 'shoot', object: 'zombie' }],
     });
     expect(await honestyOf(store, current.value.game)).toBeNull();
+  });
+
+  it('credits a basketball thrown through the hoop, never a kick into a goal or a target the game lacks', async () => {
+    await loadRapier();
+    // P61: the physics hoop game really throws into the hoop; the banner „Throwing isn't here yet“ lied.
+    const sentence = 'throw a basketball into a hoop from crazy angles';
+    const hoop = draftGameSpecWithMeta(sentence, 1).spec;
+    expect(hoop.controlParams).toMatchObject({ goal: 'hoop' });
+    expect(await honestyForSpec(sentence, hoop, 1)).toBeNull();
+    // The same hoop game has no window to throw at.
+    expect(await honestyForSpec('throw a basketball at a window', hoop, 1)).toMatchObject({
+      kind: 'actions', unmet: [{ actor: 'hero', verb: 'throw', object: 'window' }],
+    });
+    // A football scored in a goal is kicked, not thrown – the banner stays.
+    const goal = nativeSpec({ move: 'ball', objective: 'score', actions: [], threats: [] }, {
+      genre: 'throw', mode: 'default', hero: 'hero', setting: 'stadium',
+      cast: [{ label: 'football', does: 'scenery' }, { label: 'goal', does: 'throw_at' }],
+    });
+    expect(await honestyForSpec('throw a football into a goal', goal, 1)).toMatchObject({
+      kind: 'actions', unmet: [{ actor: 'hero', verb: 'throw', object: 'goal' }], reason: "Throwing isn't here yet – here's a ball game.",
+    });
+  }, 120000);
+
+  it('agrees the banner verb in number with what is missing', async () => {
+    // P61 s002 showed „The obstacles isn't here yet“: a threat label is plural even alone.
+    expect((await honestyForSpec('a robot runs and dodges ghosts', running(), 7))?.reason).toBe("The obstacles aren't here yet – here's an endless runner.");
+    expect((await honestyForSpec(SENTENCE, running(), 7))?.reason).toBe("Shooting isn't here yet – here's an endless runner.");
+    expect((await honestyForSpec('a robot runs and shoots zombies and knits a scarf', running(), 7))?.reason).toBe("Shooting and knitting aren't here yet – here's an endless runner.");
   });
 });

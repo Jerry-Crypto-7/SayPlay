@@ -47,8 +47,12 @@ const FALL_S = 0.7;
 const SHRINK_TAG_S = 2.2;
 /** Skok dál než tohle (m) mezi tiky je návrat nebo odstavení, ne pohyb – neinterpoluje se. */
 const JUMP = 2.5;
-/** Kamera: náklon, kolik kolem ringu se musí vejít (m). */
-const CAMERA = { elevation: (58 * Math.PI) / 180, margin: 1.3 } as const;
+/**
+ * Kamera: náklon, kolik kolem ringu se musí vejít (m) nad a pod ním a do stran. Do stran jen `side` (P61 T6): na
+ * výšku telefonu rozhoduje šíře ringu a s 1,3 m měl hrdina na Pixelu 7 1,2 % plochy obrazu proti 1,5 % na šířku;
+ * 0,6 m drží střed soupeře na kraji ringu ve 0,9 šířky obrazu (bezpečná zóna `e2e/p58a-framing`).
+ */
+const CAMERA = { elevation: (58 * Math.PI) / 180, margin: 1.3, side: 0.6 } as const;
 /** Výchozí soupeř, když popisek model nemá: rozzlobený býk z katalogu. */
 const DEFAULT_RIVAL = 'gen3d-angry-bull';
 
@@ -198,8 +202,7 @@ export function PushScene({ session, cast, surface, scene: look, ghost }: PushSc
 
     // Kamera: celý ring shora zezadu; na výšku telefonu rozhoduje šíře ringu.
     const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const fit = RING + CAMERA.margin;
-    const distance = Math.max(fit / (tan * camera.aspect), (fit * 0.9) / tan);
+    const distance = Math.max((RING + CAMERA.side) / (tan * camera.aspect), ((RING + CAMERA.margin) * 0.9) / tan);
     camera.position.set(0, distance * Math.sin(CAMERA.elevation), -distance * Math.cos(CAMERA.elevation) - 0.6);
     camera.lookAt(scratch.look.set(0, 0, 0.4));
     const host = surface.current;

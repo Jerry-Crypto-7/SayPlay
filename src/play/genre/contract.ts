@@ -377,17 +377,18 @@ const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partia
 /**
  * Počty → parametry modulu, jak je modul čte. Parametr, který spec nese sám,
  * má přednost; počet role, kterou režim nepočítá, se zahodí (přepnutý žánr ho nemusí znát).
+ * Počty ve specu zůstanou: modul z nich pozná, že počet řekla věta (P61 T5 – sběr a úkol
+ * pak hrají právě tolik věcí a HUD je počítá slovem věty).
  */
 export function withCounts(spec: GenreSpec): GenreSpec {
   if (spec.counts === undefined) return spec;
   const table = countParamsOf(spec);
-  const { counts, ...rest } = spec;
-  const from = Object.entries(counts).flatMap(([role, value]) => {
+  const from = Object.entries(spec.counts).flatMap(([role, value]) => {
     const key = table[role as CountRole];
     return key === undefined || value === undefined ? [] : [[key, value] as const];
   });
   const params = { ...Object.fromEntries(from), ...spec.params };
-  return (Object.keys(params).length === 0 ? rest : { ...rest, params }) as GenreSpec;
+  return (Object.keys(params).length === 0 ? spec : { ...spec, params }) as GenreSpec;
 }
 
 /**

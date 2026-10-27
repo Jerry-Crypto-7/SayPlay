@@ -114,6 +114,7 @@ function wavesOf(world: ArcadeWorld): Wave[] {
   return waves;
 }
 
+// Sběr: počet z věty je od P61 T5 počet věcí celkem a výhra po poslední; vlny na čas (T5-R1) drží délku i růst s počtem.
 const PAIRS = [
   ['arena.collect', 'a robot collects 3 batteries on Mars', 'a robot collects 20 batteries on Mars'],
   ['arena.escape', 'A knight must collect three keys in a haunted castle while dodging ghosts.', 'A knight must collect 20 keys in a haunted castle while dodging ghosts.'],

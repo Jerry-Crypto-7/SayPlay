@@ -84,12 +84,21 @@ describe('the world of the game comes from the sentence and its reading (P56A T7
   }, 900_000);
 
   it('keeps every world of the baseline without a reading', () => {
+    // P61 T3: věta bez místa hraje ve světě svých slov (láva, chrám, hroby, vetřelci), místo za předložkou přebije tvora
+    // („along the beach … ice cream“, „my farm at night“ se zombiemi) a místo bez předložky taky („the farmhouse“).
+    // Každý posun je tu jmenovaný i s cílem; jiný posun test dál chytí.
+    const MOVED_P61: Readonly<Record<string, string>> = {
+      'audit12 a02': 'meadow', 'p43Panel s021': 'volcano', 'p30Dev s008': 'jungle', 'p30Dev s021': 'volcano', 'p30Dev j04': 'beach',
+      'p54cDev w03': 'graveyard', 'p54cDev x08': 'space', 'p54cDev x14': 'city', 'p54cHoldoutOpened h03': 'meadow',
+      'p54cHoldoutOpened h06': 'graveyard', 'p54cHoldoutOpened h14': 'space', 'p55HoldoutOpened h10': 'graveyard',
+    };
     const moved: string[] = [];
     for (const [name, path] of DEV) {
       const was = new Map(baseline.sets[name]!.rows.map((row) => [row.id, row.look]));
       for (const sentence of sentencesOf(path)) {
         const look = lookOfText(sentence.text, null);
-        if (was.get(sentence.id) !== undefined && was.get(sentence.id) !== look) moved.push(`${name} ${sentence.id}: ${was.get(sentence.id)} -> ${look}`);
+        const want = MOVED_P61[`${name} ${sentence.id}`] ?? was.get(sentence.id);
+        if (want !== undefined && want !== look) moved.push(`${name} ${sentence.id}: ${want} -> ${look}`);
       }
     }
     expect(moved).toEqual([]);

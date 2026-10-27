@@ -34,8 +34,8 @@ const DEV = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/holdou
 const READ = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p58b/compare-dev-t6b.json'), 'utf8')) as { rows: { set: string; id: string; models: Record<string, { reading: Reading | null }> }[] }).rows;
 const devRow = (id: string) => ({ text: DEV.find((row) => row.id === id)!.text, reading: READ.find((row) => row.set === 'p56a/holdout' && row.id === id)!.models['astra@openai']!.reading! });
 
-/** s12: slovník hraje řetěz, čtení `rhythm.default` – jedna hra. */
-const SINGLE = devRow('s12');
+/** s57: slovník hraje řetěz (`multi_verb`), čtení `rhythm.default` – jedna hra. Dřív s12, tu od P61 T4 slovník hraje jako jednu hru. */
+const SINGLE = devRow('s57');
 /** s01: slovník i čtení hrají řetěz. */
 const CHAIN = devRow('s01');
 /** Věta, která o víc her výslovně žádá (`CHAIN_CUES`): řetězem zůstane i se čtením (P58F). */

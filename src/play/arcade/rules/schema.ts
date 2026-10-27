@@ -33,6 +33,9 @@ export type RuleCounter = (typeof RULE_COUNTERS)[number];
 /** Sloveso z věty, malými písmeny anglicky („carry“, „throw“, „push“). */
 export const verbSchema = z.string().regex(/^[a-z][a-z-]{1,23}$/, 'verb: one lowercase English word');
 
+/** Podstatné jméno cíle z věty v množném čísle pro počítadlo HUD (P61 T5, `keys 0/3`); tvar hlídá i `goalNoun` v `draft/lexicon.ts`. */
+export const nounSchema = z.string().regex(/^[a-z]{2,24}$/, 'noun: one lowercase English word');
+
 /**
  * Blok `logic` (P45B): stav, který hra nese mezi tiky – proměnné, časovače, fáze
  * a události. Jen deklarace se jmény; čte a mění je pravidlo. Fáze tu je stavový

@@ -452,9 +452,10 @@ export function landmarks(look: Look): readonly SceneryKind[] {
 
 /**
  * Obrys jedné vrstvy kulisy za mlhou (P46G T6, `look/backdrop-shapes.ts`): hory se špičkami,
- * oblé kopce, duny, linie jehličnanů, linie korun, stolové hory, panorama domů, pobřeží s mysy.
+ * oblé kopce, duny, linie jehličnanů, linie korun, stolové hory, panorama domů, pobřeží s mysy
+ * a od P61 T7 stěny haly (obchod pod střechou: rovná zeď dokola místo panoramatu města).
  */
-export const SILHOUETTES = ['peaks', 'hills', 'dunes', 'pines', 'crowns', 'mesas', 'blocks', 'coast'] as const;
+export const SILHOUETTES = ['peaks', 'hills', 'dunes', 'pines', 'crowns', 'mesas', 'blocks', 'coast', 'walls'] as const;
 export type Silhouette = (typeof SILHOUETTES)[number];
 
 /**
@@ -538,6 +539,11 @@ export interface Look {
   /** Kulisa za mlhou (P46G T6); bez ní je za scénou jen mlha. */
   readonly skyline?: Skyline;
   /**
+   * Strop haly místo oblohy (P61 T7): obloha nahoře kreslí strop s řadami světel (`StyleRig`), kulisa stěny
+   * (`walls`). Slepý soudce četl obchoďák a supermarket pod otevřenou oblohou s panoramatem města jako venku.
+   */
+  readonly ceiling?: { readonly color: string; readonly lamp: string };
+  /**
    * Orientační bod sady (P54B T8, `Landmark.tsx`): 1–3 kandidáti, scéna postaví jednoho ze semínka
    * hry do středu záběru za hrou. Jen modely gen3d – jedna síť, jeden materiál, jedno kreslicí volání.
    */
@@ -570,8 +576,8 @@ const OVERHEAD = [0.2, 1, -0.15] as const;
 export const LOOKS: Readonly<Record<LookId, Look>> = {
   meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'gen3d-picnic-table', 'gen3d-wooden-stile', 'gen3d-wooden-gate', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#d7ecf8', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt', flora: MEADOW_FLORA, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6a9a5c' }, landmark: ['gen3d-windmill', 'gen3d-standing-stone', 'gen3d-stone-water-well'], ambient: ['birds', 'butterflies'] },
   city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'gen3d-telephone-pole', 'cc0-fire-hydrant', 'building', 'gen3d-traffic-light', 'gen3d-bus-stop', 'gen3d-flower-stall'], tint: ['#94a3b8', '#fbbf24'], skyTop: '#5b8fc7', horizon: '#dfe6ee', sunColor: '#fff1dc', sunDir: [0.45, 0.75, -0.5], exposure: 1, glow: 0.8, terrain: { lane: '#2b3036', shade: '#56606e', rock: '#8b9098' }, cover: 'paving', surface: 'asphalt', flora: CITY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6c7686' }, landmark: ['gen3d-crane', 'gen3d-fountain'], ambient: [] },
-  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: MALL_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#b09c80' }, landmark: ['gen3d-fountain', 'gen3d-gumball-machine'], ambient: ['dust'] },
-  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: SUPERMARKET_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#9aa6b0' }, landmark: ['gen3d-vending-machine', 'gen3d-fruit-stand'], ambient: ['dust'] },
+  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: MALL_FILL, skyline: { layers: ['walls', 'walls'], tone: '#b09c80' }, ceiling: { color: '#cdbfa6', lamp: '#fffaf0' }, landmark: ['gen3d-fountain', 'gen3d-gumball-machine'], ambient: ['dust'] },
+  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: SUPERMARKET_FILL, skyline: { layers: ['walls', 'walls'], tone: '#9aa6b0' }, ceiling: { color: '#bcc5cf', lamp: '#ffffff' }, landmark: ['gen3d-vending-machine', 'gen3d-fruit-stand'], ambient: ['dust'] },
   living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'gen3d-gramophone', 'gen3d-bookshelf', 'gen3d-television'], tint: ['#0f766e', '#f59e0b'], skyTop: '#f2d27e', horizon: '#fde68a', sunColor: '#ffe8c2', sunDir: [0.35, 0.9, -0.25], exposure: 1, glow: 0, cover: 'paving', surface: 'planks', flora: LIVING_ROOM_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#a07850' }, landmark: ['gen3d-bookshelf', 'gen3d-television'], ambient: ['dust'] },
   factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'gen3d-smokestack', 'gen3d-industrial-fan', 'gen3d-crane', 'gen3d-container'], tint: ['#78716c', '#ea580c'], skyTop: '#86807a', horizon: '#b8b1aa', sunColor: '#ffe2c2', sunDir: [0.5, 0.7, -0.4], exposure: 1, glow: 0.5, cover: 'paving', surface: 'asphalt', flora: FACTORY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6e665e' }, landmark: ['gen3d-smokestack', 'gen3d-crane'], ambient: ['dust'] },
   forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'gen3d-forest-shrine', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-standing-stone'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: FOREST_FLORA, skyline: { layers: ['peaks', 'crowns', 'pines'], tone: '#3f6e4c' }, landmark: ['gen3d-treehouse', 'gen3d-standing-stone', 'gen3d-forest-shrine'], ambient: ['birds'] },
@@ -616,6 +622,8 @@ const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
   // Věž až za městem a kuchyní: „pancake tower in a kitchen“ je kuchyně, samotná věž hrad (P30B T6).
   ['castle', /\btower\b/],
   ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill/],
+  // Chrám a ruiny až úplně naposled (P61 T3): „temple run“ je džungle se zříceninou, ne louka; „a temple in the desert“ poušť.
+  ['jungle', /\btemples?\b|\bruins?\b/],
 ];
 
 const match = (text: string): LookId | null => KEYWORDS.find(([, pattern]) => pattern.test(text.toLowerCase()))?.[0] ?? null;
@@ -633,6 +641,42 @@ export function lookWords(text: string): number[] {
  */
 export function lookFor(setting: string, mood = ''): LookId | null {
   return match(setting) ?? match(mood);
+}
+
+/** Předložky místa: fráze za nimi jmenuje, kde se hraje („gates in a city“, „kids behind a snow fort“). */
+const LOCATIVE: ReadonlySet<string> = new Set(['in', 'inside', 'on', 'at', 'across', 'through', 'around', 'into', 'onto', 'along', 'over', 'under', 'behind', 'near', 'up', 'down']);
+/** Slova, kterými fráze místa končí: spojka, další předložka, míra („a city full of zombies“). */
+const PHRASE_END: ReadonlySet<string> = new Set(['and', 'or', 'while', 'but', 'with', 'to', 'from', 'before', 'after', 'then', 'as', 'so', 'because', 'that', 'who', 'which', 'of', 'full', 'filled', ...LOCATIVE]);
+/** Tvor, podle kterého sady hádají svět („shoots at zombies“), místem ale není. */
+const CREATURE = /^(?:aliens?|zombies?|ghosts?|pirates?|toys?)$/;
+
+/** Jmenuje fráze místo? Rozhoduje hlava („a snow fort“, „a haunted house“), nebo dvojslovné místo („living room“). */
+function namesPlace(phrase: readonly string[]): boolean {
+  const head = phrase.at(-1);
+  if (head === undefined || CREATURE.test(head)) return false;
+  if (match(head) !== null) return true;
+  const before = phrase.at(-2);
+  return before !== undefined && match(before) === null && match(`${before} ${head}`) !== null;
+}
+
+/**
+ * Sada celé věty (P61 T3): místo za předložkou má přednost před tvorem nebo náladou kdekoli ve větě – „a horde of
+ * zombies … in a city“ je město, ne hřbitov podle zombií. Věta bez takového místa vezme první slovo, které sady znají
+ * („obby game with lava“ → sopka, „zombie shooter“ → hřbitov). `null` = sady větu neznají.
+ */
+export function sentenceLook(text: string): LookId | null {
+  const words = text.toLowerCase().match(/[a-z']+/g) ?? [];
+  for (const [index, word] of words.entries()) {
+    if (!LOCATIVE.has(word)) continue;
+    const phrase: string[] = [];
+    for (const next of words.slice(index + 1, index + 6)) {
+      if (PHRASE_END.has(next)) break;
+      phrase.push(next);
+    }
+    if (namesPlace(phrase)) return match(phrase.join(' '));
+  }
+  // Bez předložky místo dřív než tvor („stop the zombies before they reach the farmhouse“ je farma).
+  return match(words.filter((word) => !CREATURE.test(word)).join(' ')) ?? match(text);
 }
 
 /** Sada, kterou scéna vykreslí: volba modelu, jinak slova, jinak louka. */

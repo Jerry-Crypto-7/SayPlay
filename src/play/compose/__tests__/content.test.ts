@@ -43,6 +43,10 @@ describe('P41 composition preserves named content and fallback intent', () => {
     const intent = extractIntent(sentence);
     expect(intent.items).toContainEqual(expect.objectContaining({ verb: 'throw', object: 'hoop', essential: true }));
     const draft = draftGameSpecWithMeta(sentence, 1);
+    // P41: a basketball thrown into a hoop is the physics ball game, the same as „basketball free throws“
+    // (e2e `play-shooter` publishes this sentence and expects `ball`).
+    expect(draft.spec.control).toBe('ball');
+    expect(draft.spec.controlParams).toMatchObject({ goal: 'hoop' });
     expect(draft.genre?.cast?.find(item => item.does === 'throw_at')?.label).toBe('hoop');
     expect(draft.genre?.cast).toContainEqual(expect.objectContaining({ label: 'basketball', does: 'scenery', verb: 'throw' }));
   });

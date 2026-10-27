@@ -65,7 +65,8 @@ export interface PublishedGame {
    * které postavil server – čip, ověřený recept nebo věta přes model (P54A T10, nález
    * revize T10-1); remix z hotového specu nebo `parentId` v `POST /api/play/games` ho nemá.
    * `'reading'` = hra ze čtení věty (P58D T1): návrh `version.parentId` postavený znovu ze čtení
-   * pro AI verzi, když hraje jiný žánr – mezistupeň, ne remix ani AI verze; do feedu nejde.
+   * pro AI verzi, když se od něj liší žánrem, světem nebo věcí z věty (`readingDiffers`, P61 T2) – mezistupeň, ne remix
+   * ani AI verze; do feedu nejde.
    */
   readonly relation?: 'upgrade' | 'remix' | 'reading';
   readonly timings?: PlayTimings;

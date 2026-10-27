@@ -22,7 +22,7 @@ export const CROWD_DEFAULTS = { obstacle: 'saw', boss: 'ogre' } as const;
 const OBSTACLE_DOES = ['avoid', 'chase_me', 'shoot_at', 'throw_at'] as const;
 
 /** Soupeř na konci trati z věty: „beat the giant“, „defeat the dragon“, „storm the castle“. */
-const BOSS_OBJECT = /\b(?:beat|defeat|fight|attack|storm|conquer|crush|topple|take down)s?\s+(?:the\s+|a\s+|an\s+)?([a-z][a-z-]*(?:\s+[a-z][a-z-]*)?)/;
+const BOSS_OBJECT = /\b(?:beat|defeat|fight|attack|storm|conquer|crush|topple|take down|against(?!\s+(?:the\s+)?(?:clock|time|odds|wind|tide|current)\b))s?\s+(?:the\s+|a\s+|an\s+)?([a-z][a-z-]*(?:\s+[a-z][a-z-]*)?)/;
 
 /** Slova, kterými jméno soupeře z věty nekončí. */
 const TAIL = /\s+(?:at|in|on|with|and|while|before|after|to|by)$/;

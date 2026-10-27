@@ -556,7 +556,8 @@ const NAMED: readonly (readonly [RegExp, CastRole | null])[] = [
   [new RegExp(String.raw`\b(?:throw|toss|fling|hurl|lob|launch)(?:s|es|ing)? (?:[a-z]+ ){0,2}?(?:at|into|onto) ${NOT_AIMED}${OBJECT}`), 'throw_at'],
   // Honí hráče: „a ghost hunts you“, „chased by a T-rex“, „runs from a bear“, „before the ghosts catch him“.
   [/\b([a-z]+(?: [a-z]+)?) (?:hunts|chases|pursues|catches|follows|stalks) (?:it|you|me|them|him|her|us|the player)\b/, 'chase_me'],
-  [new RegExp(String.raw`\b(?:hunted|chased|pursued|followed|stalked) by ${OBJECT}`), 'chase_me'],
+  // P61 T3: „a dungeon guarded by skeletons“ – stráž je protivník věty, ne výchozí duch hradu.
+  [new RegExp(String.raw`\b(?:hunted|chased|pursued|followed|stalked|guarded|patrolled) by ${OBJECT}`), 'chase_me'],
   [new RegExp(String.raw`\b(?:flee|flees|fleeing|escape|escapes|escaping|outrun|outruns|outrunning|(?:run|runs|running)(?: away)? from) (?:from )?${OBJECT}`), 'chase_me'],
   [/\bbefore (?:the |a |an )?([a-z]+(?: [a-z]+)?) (?:catch|catches|get|gets|reach|reaches|grab|grabs) (?:him|her|you|me|them|us|it|the player)\b/, 'chase_me'],
   // Vyhýbá se: „dodge ghosts“, „sneak past the guards“, „jump over logs“.
@@ -604,7 +605,7 @@ export function readRoles(sentence: string): SentenceRoles {
     ], 2)) ?? subjectOf(text);
   const chaser = first(text, [
     /\b([a-z]+(?: [a-z]+)?) (?:hunts|chases|pursues|catches|follows|stalks) (?:it|you|me|them|him|her|the player)\b/,
-    /\b(?:hunted|chased|pursued|followed) by (?:a |an |the )?([a-z][a-z -]*)/,
+    /\b(?:hunted|chased|pursued|followed|guarded|patrolled) by (?:a |an |the )?([a-z][a-z -]*)/,
     /\b(?:flees|escapes|escape|flee|run from|runs from|outrun|outruns) (?:from )?(?:a |an |the )?([a-z][a-z -]*)/,
   ], 2);
   const collectible = first(text, [/\b(?:collect|gather|hoard|find|pick up|grab|steal)(?:s|ing)? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
@@ -681,6 +682,16 @@ export function plural(phrase: string, count: number): string {
   const last = words[words.length - 1];
   const many = PLURAL_OF[last] ?? (/[^aeiou]y$/.test(last) ? `${last.slice(0, -1)}ies` : /(?:s|x|ch|sh)$/.test(last) ? `${last}es` : `${last}s`);
   return [...words.slice(0, -1), many].join(' ');
+}
+
+/**
+ * Slovo počítadla cíle v HUD (P61 T5, `keys 0/3`): poslední slovo popisku věci v množném čísle,
+ * „golden key“ → „keys“. Tvar jako `nounSchema` (`arcade/rules/schema.ts`); popisek, ze kterého
+ * takové slovo nevyjde (číslice, pomlčka, diakritika), dá `null` a HUD ukáže „collected“.
+ */
+export function goalNoun(label: string): string | null {
+  const word = plural(singular(label.trim().toLowerCase().split(/\s+/).at(-1) ?? ''), 2);
+  return /^[a-z]{2,24}$/.test(word) ? word : null;
 }
 
 /** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí a cílové řádky). */

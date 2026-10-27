@@ -1,9 +1,10 @@
 /**
  * Řetěz, nebo jedna hra (P56C T8). Řetěz míří na díru „obecná hra“ a na víceslovesné věty, kde dnes sloveso
- * zmizí; věta s jedním jasným slovesem chce hloubku té jedné hry. Pravidlo a důvod: plán P56C, oddíl „Rozhodnutí“.
- * Práh náskoku je nastavený jednou na dev sadě (`evals/play/p56c/decide.md`).
+ * zmizí; věta s jedním jasným slovesem chce hloubku té jedné hry. Pravidlo a důvod: plán P56C, oddíl „Rozhodnutí“;
+ * P61 T4 zúžil `generic` na neslyšenou větu (`evals/play/p56c/decide.md`, `evals/play/p61/README.md`).
  */
 
+import { readCountedNouns, singular } from '../draft/lexicon';
 import type { GenreRanking } from '../genre/classify';
 import { VERB_MICROS } from './build';
 import { MICRO } from './micro';
@@ -14,9 +15,6 @@ export const GENERIC_CELLS: ReadonlySet<string> = new Set(['arena.collect', 'are
 
 /** Věta, která o víc her výslovně žádá. „party“ jako přívlastek věci („to a party table“, startovní věta) ne. */
 export const CHAIN_CUES = /\b(?:levels|rounds|mini-?games|challenges|party(?!\s+(?:tables?|hats?|food|guests?|dress)\b))\b/;
-
-/** Náskok obecné buňky před druhou, pod kterým věta hraje řetěz (dev: „skateboard“ 2 → řetěz, „steer a balloon“ 4 → jedna hra). */
-export const GENERIC_MARGIN = 3;
 
 export type ChainReason = 'multi_verb' | 'generic' | 'cue';
 
@@ -33,14 +31,20 @@ function verbControls(read: SentenceRead): number {
 /** Proč věta hraje řetěz; prázdné = jedna hra. */
 export function chainReasons(sentence: string, read: SentenceRead, ranking: GenreRanking): ChainReason[] {
   const reasons: ChainReason[] = [];
-  if (verbControls(read) >= 2) reasons.push('multi_verb');
-  const [top, second] = ranking.ranked;
+  const [top] = ranking.ranked;
   // T17b: čtení modelem dává svému žánru +4, takže klasifikátor slyší vždy. Neslyšená věta je u něj čtení bez hratelného
   // slovesa, které nepřistálo ani na mikrohře řetězu („doing taxes“ → quest); „defends his tower“ s `idle` → obrana slyšená.
   const arcade = top !== undefined && MICRO.some((entry) => entry.key === `${top.genre}.${top.mode}`);
   const playable = read.source !== 'llm' || arcade || read.verbs.some((verb) => VERB_MICROS[verb.class].length > 0);
   const heard = top !== undefined && top.score > 0 && playable;
-  if (!heard || (GENERIC_CELLS.has(`${top.genre}.${top.mode}`) && top.score - (second?.score ?? 0) < GENERIC_MARGIN)) reasons.push('generic');
+  // P61 T4: slyšená obecná buňka s počítaným cílem („seber N věcí“) hraje jednu hru i se dvěma slovesy – „collect three keys
+  // … while dodging ghosts“ je `arena.escape` celá (sbírat a uhýbat), řetěz z ní dělal běžce s branami (soudce 0,15).
+  // Počet musí patřit věci, kterou věta sbírá: „eight swords“, „three forest lanes“ cíl nejsou.
+  const item = read.item === null ? null : singular(read.item.toLowerCase()).split(' ').at(-1);
+  const counted = heard && GENERIC_CELLS.has(`${top.genre}.${top.mode}`) && readCountedNouns(sentence).some(({ noun }) => singular(noun) === item);
+  if (verbControls(read) >= 2 && !counted) reasons.push('multi_verb');
+  // P61 T4: `generic` jen pro neslyšenou větu. Dřív i slyšená obecná buňka s náskokem pod 3 („skateboard“ → běžec 2).
+  if (!heard) reasons.push('generic');
   if (CHAIN_CUES.test(sentence.toLowerCase())) reasons.push('cue');
   return reasons;
 }

@@ -416,6 +416,9 @@ export class WitnessRecorder {
         // The goal course launches a ground-level shot. Require the same real
         // launch, travel and goal evidence as scoring; a label cannot prove a kick.
         if (scored.goal === 'goal') this.add('kick', player, scored.ball, tick, 'physical-ball-kicked-into-goal', state);
+        // A hoop shot is a throw at the hoop (P61): the same launch, travel and fall through the hoop as scoring.
+        // Its object is the hoop, as for a thrown projectile hitting its target; a goal or a hole proves no throw.
+        if (scored.goal === 'hoop') this.add('throw', player, scored.target, tick, 'physical-ball-thrown-into-hoop', state);
       }
     }
     if (ref.id === 'assembly_part') {

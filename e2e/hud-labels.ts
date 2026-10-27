@@ -1,3 +1,5 @@
+import { readCountedNouns } from '../src/play/draft/lexicon';
+
 /**
  * Uzavřený anglický seznam popisků počítadel HUD (`data-testid="hud-counter-…"`).
  * Nový popisek se sem dopisuje, nedetekuje – proč, je u `expectEnglishCounters`
@@ -9,3 +11,11 @@
  * `round` je kolo řetězu mikroher `2/5` (P56C T11, `ChainPlay.tsx`), `ghost` kolo ducha, když je v jiném (T12).
  */
 export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare', 'powerup', 'combo', 'round', 'ghost'];
+
+/**
+ * Popisky, které smí ukázat hra z věty `sentence`: uzavřený seznam a podstatná jména, která věta počítá
+ * (P61 T5: „collect three keys“ → `keys 0/3`). Ta píše věta, ne autor rozhraní – věty jsou anglicky.
+ */
+export function counterLabelsFor(sentence: string): readonly string[] {
+  return [...HUD_COUNTER_LABELS, ...readCountedNouns(sentence).map((entry) => entry.noun)];
+}

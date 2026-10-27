@@ -53,7 +53,8 @@ import {
   bodyBase,
 } from '../contract';
 import { guardParams, guardedHit } from '../abilities/state';
-import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
+import { nounSchema } from '../rules/schema';
+import { WAVE_LIMITS, WAVE_PLAN, collectClock, countedClock, countedTicks, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -887,6 +888,10 @@ interface WaveSetup {
   readonly seconds: number;
   readonly waves: number;
   readonly patrol?: number;
+  /** Věcí v každé vlně zvlášť (věta s počtem, `countedWaves`); bez nich `items` v každé. První nesmí být menší než další. */
+  readonly sizes?: readonly number[];
+  /** Nejdřívější tik vln od druhé (věta s počtem, `countedTicks`): vlna věcí počká i na něj. */
+  readonly at?: readonly number[];
 }
 
 /** Sběr nemá na startu pronásledovatele: předloha těch z dalších vln leží mrtvá za zády hráče. */
@@ -916,7 +921,7 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   const edge = ARENA.half - ESCAPE.itemSize / 2 - WAVE_PLAN.itemInset;
   const chase: ChaseParams = { speed, lead: setup.chaseLead ?? ESCAPE.lead, step: setup.pursuitCeiling === undefined ? waveSpeedStep(waves) : Math.min(40, Math.ceil((setup.pursuitCeiling - speed) / 2)), ...(setup.pursuitCeiling === undefined ? {} : { ceiling: setup.pursuitCeiling }), ...(setup.patrol === undefined ? {} : { patrol: setup.patrol }) };
   const later = Array.from({ length: waves - 1 }, (_, k) => ({
-    ...(items > 0 ? { items: wavePositions(rng, items, edge, ESCAPE.itemClearance.item) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
+    ...(items > 0 ? { items: wavePositions(rng, setup.sizes?.[k + 1] ?? items, edge, ESCAPE.itemClearance.item), ...(setup.at?.[k] === undefined ? {} : { at: setup.at[k] }) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
     chasers: wavesChasers(chasers, k + 1) - wavesChasers(chasers, k),
   }));
   const rules: PieceRef[] = [
@@ -973,11 +978,61 @@ const collectParams = z
     items: z.int().min(1).max(ESCAPE.items.max).default(ESCAPE.items.collectDefault),
     /** Vlny (P36A T4, píše je žánr): `items` věcí v každé vlně, pronásledovatelé od druhé, hodiny; bez nich jako dřív. */
     waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
+    /** Věta s počtem (P61 T5, píše žánr): `items` je počet věcí celkem (`countedWaves`), sebraná poslední vyhraje; `waves` pak neplatí. */
+    counted: z.literal(true).optional(),
+    /** Slovo věty pro počítadlo HUD (`keys 0/3`), jen s `counted`. */
+    noun: nounSchema.optional(),
   })
   .strict();
 export type CollectParams = z.infer<typeof collectParams>;
 
 const collectSetup = (items: number, waves: number, params: Pick<CollectParams, 'pursuitCeiling' | 'itemSizePct'>): WaveSetup => ({ chasers: 0, speed: WAVE_PLAN.collectSpeed, items, seconds: 0, waves, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) });
+
+/** Věta s počtem rozdělí věci nejvýš do tolika vln: od druhé vbíhají pronásledovatelé jako ve sběru ve vlnách. */
+export const COUNTED_WAVES = 3;
+
+/** Věcí v každé vlně (kole úkolu) věty s počtem: `need` co nejrovnoměrněji, větší vlny napřed (první leží na startu, sloty má podle ní). */
+export function countedWaves(need: number, waves = Math.min(need, COUNTED_WAVES)): number[] {
+  return Array.from({ length: waves }, (_, k) => Math.floor(need / waves) + (k < need % waves ? 1 : 0));
+}
+
+/**
+ * Cíl věty s počtem (P61 T5) místo `grow_to`, které počítá body: sebraná věc → `items` + 1 (`collect_count`),
+ * `need` sebraných = výhra (`catch_goal`). `finish_collected` nese cíl a slovo věty pro HUD – tělo cíle
+ * aréna nemá, takže nevystřelí.
+ */
+function countedGoal(level: ArcadeLevel, need: number, noun: string | undefined): PieceRef[] {
+  const kinds = [...new Set(level.bodies.map((body) => body.kind))];
+  return [
+    { id: 'collect_count', params: { kind: kinds.indexOf('item') } },
+    { id: 'catch_goal', params: { need } },
+    { id: 'finish_collected', params: { need, ...(noun === undefined ? {} : { noun }) } },
+  ];
+}
+
+/**
+ * Sběr věty s počtem: „collect three keys“ = tři věci po vlnách (`countedWaves`), sebraná poslední vyhraje.
+ * Vlny jdou na čas (`countedTicks`, P61 T5-R1): další přijde až po sebrání předchozí a nejdřív ve svém tiku,
+ * takže hra drží 30–90 s a roste s počtem; poslední vlnu nese boss průběhu (`itemField`). Hodiny kryjí rozvrh
+ * i bosse (`countedClock`). Jedna věc leží sama, bez vln (počet z věty čte jen množné číslo, takže ji dá jen režisér).
+ */
+function countedCollect(seed: number, params: CollectParams, health: number | undefined): ModeParts {
+  const need = params.items;
+  const sizes = countedWaves(need);
+  const first = sizes[0] as number;
+  if (sizes.length === 1) {
+    const level = openArena(seed, 0, 0, first, first);
+    const rules: PieceRef[] = [{ id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage' } }, ...countedGoal(level, need, params.noun), { id: 'time_limit', params: { seconds: collectClock(first, 1) } }];
+    if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
+    return { control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize } }, bot: { id: 'arena_bot', params: { half: ARENA.half } }, level, rules, issues: checkEscapeLevel(level, { items: first, chaserSpeed: 0 }), health };
+  }
+  const parts = waveParts(seed, { ...collectSetup(first, sizes.length, params), sizes, at: countedTicks(sizes.length, need) }, health);
+  const rules = parts.rules.flatMap((rule): PieceRef[] => {
+    if (rule.id === 'grow_to') return countedGoal(parts.level, need, params.noun);
+    return rule.id === 'time_limit' ? [{ ...rule, params: { seconds: countedClock(need) } }] : [rule];
+  });
+  return { ...parts, rules };
+}
 
 /**
  * Režim `arena.collect`: sbírej N věcí, v první vlně tě nikdo nehoní. Ve vlnách
@@ -988,9 +1043,11 @@ export const arenaCollect: ModeGeneratorPiece<CollectParams> = {
   id: 'arena_collect',
   params: collectParams,
   roles: ['player', 'collectible'],
-  cost: (params) => ({ bodies: 1 + itemCount(params.items), rules: 2 }),
-  generate: (seed, params) => (params.waves === undefined ? openArena(seed, 0, 0, params.items) : waveLevel(seed, collectSetup(params.items, params.waves, params))),
+  cost: (params) => ({ bodies: 1 + itemCount(params.items), rules: params.counted === true ? 5 : 2 }),
+  generate: (seed, params) =>
+    params.counted === true ? countedCollect(seed, params, undefined).level : params.waves === undefined ? openArena(seed, 0, 0, params.items) : waveLevel(seed, collectSetup(params.items, params.waves, params)),
   parts: (seed, params, health) => {
+    if (params.counted === true) return countedCollect(seed, params, health);
     if (params.waves !== undefined) return waveParts(seed, collectSetup(params.items, params.waves, params), health);
     const level = arenaCollect.generate(seed, params);
     const rules: PieceRef[] = [

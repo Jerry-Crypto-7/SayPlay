@@ -1,5 +1,5 @@
 /**
- * Řetěz mikroher z jedné věty (P56C T7). Kola se berou v pořadí: slovesa věty (`VERB_MICROS`), svět věty
+ * Řetěz mikroher z jedné věty (P56C T7). Kola se berou v pořadí: hlavní sloveso (P61 T4), slovesa věty (`VERB_MICROS`), svět věty
  * (`WORLD_MICROS`), výplň z `MICRO` losem ze streamu `chain`; žádné ovládání dvakrát, boss na konec.
  * Každé kolo je návrh žánru téže věty (`draftGenreFor`) se stejným hrdinou, místem a vzhledem, pak `microSpec`.
  * Stavba bere jen kola, která robot vyhraje (`runBot`); plnou bránu dělá `verifyChain` u volajícího (publikace, měření).
@@ -11,6 +11,7 @@ import { ARCADE_LIBRARY } from '../arcade/library';
 import { lookFor, type LookId } from '../arcade/look';
 import { runBot } from '../arcade/verify';
 import { draftGenreFor } from '../draft/draft';
+import { classifyGenre } from '../genre/classify';
 import { CAST_MAX, FOE_DOES, type GenreSpec } from '../genre/contract';
 import type { VerbClass } from '../read/schema';
 import { createStreams, nextInt } from '../../sim/rng';
@@ -156,6 +157,21 @@ const draftOf = (sentence: string, entry: MicroEntry): GenreSpec | null => {
 };
 
 /**
+ * Hlavní sloveso věty (P61 T4): u čtení modelem první sloveso čtení, u slovníku to, kterému `classifyGenre` dá +4 –
+ * slovo věty těsně před zbytkem za hlavním slovesem (`after`). `null` = věta hlavní sloveso nemá, nebo ho čtení nezná.
+ */
+export function mainVerb(sentence: string, read: SentenceRead): VerbClass | null {
+  if (read.source === 'llm') return read.verbs[0]?.class ?? null;
+  const ranking = classifyGenre(sentence, null);
+  if (ranking.verb === null) return null;
+  // Slova bez spojovníku: „wall-jumps“ ve větě je sloveso čtení „jumps“.
+  const words = (text: string): string[] => text.toLowerCase().split(/[^a-z']+/).filter((word) => word !== '');
+  const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
+  const said = words(text.slice(0, text.length - (ranking.after?.length ?? 0))).at(-1);
+  return read.verbs.find((verb) => words(verb.word)[0] === said)?.class ?? null;
+}
+
+/**
  * `mutators`: kola 2 až N−1 s mutátorem; výchozí `CHAIN_MUTATORS`, `PLAY_CHAIN_MUTATORS=0` vypne i zapnuté
  * (druhá strana slepého soudu `judge-mutators.mjs` na témž buildu).
  */
@@ -168,7 +184,9 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number, m
   const world = read.look === null ? [] : WORLD_MICROS[read.look];
   // T19: kolo 1 losem z mikroher, které hrají slovesa věty (bez sloves ze světa věty) – jinak by
   // první mikrohra prvního slovesa začínala většinu řetězů (běžec 40 % sady řetězu, krtky u obou vět z telefonu).
-  const lead = shuffled([...new Set(heard.length > 0 ? heard : world)], stream);
+  // P61 T4: věta s hlavním slovesem začíná jeho mikrohrou („corgi runs … grabbing … jumping“ → běh, ne přecházení silnic).
+  const main = mainVerb(sentence, read);
+  const lead = [...(main === null ? [] : VERB_MICROS[main]), ...shuffled([...new Set(heard.length > 0 ? heard : world)], stream)];
   const order = [...new Set([...lead, ...heard, ...world, ...plain])].map(entryOf);
 
   const first = order.map((entry) => draftOf(sentence, entry)).find((draft) => draft !== null);

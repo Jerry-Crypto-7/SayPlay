@@ -46,8 +46,10 @@ export const shooterGenre: GenreModule<'shooter'> = {
     const enemy = foe?.label ?? 'invader';
     // Volné místo terče bere další věc z věty – sbíraná dřív než protivník (T14): „collect coins, dodge ghosts and shoot bats“
     // by jinak mince i duchy zahodilo a na střelnici stál holý terč.
+    // P61 T3: věta s jediným protivníkem staví na střelnici jeho – „zombie shooter in a mall“ s holými kotouči soudce četl
+    // jako střelnici bez zombií (věrnost 0,30). Kotouč zůstane jen hře, kde věta nejmenuje nic.
     const rest = { cast: (spec.cast ?? []).filter((item) => item !== foe) };
-    const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1] ?? castFor(rest, 'collect', 'avoid', 'chase_me', 'fight'))?.label ?? 'target';
+    const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1] ?? castFor(rest, 'collect', 'avoid', 'chase_me', 'fight') ?? foe)?.label ?? 'target';
     const { waves = SHOOTER_GENRE.waves, enemies, targets } = spec.params ?? {};
     const foes = plural(singular(enemy), 2);
     return legacySpec(spec, {

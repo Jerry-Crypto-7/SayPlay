@@ -51,7 +51,9 @@ const inside = (box: Sample['hero']): boolean => box !== null && !box.behind && 
 const held = (sample: Sample): boolean => inside(sample.hero) && (sample.targets === 0 || inside(sample.target));
 
 const { defaultBrowserType: _phone, ...PIXEL_7 } = devices['Pixel 7']!;
-const PROFILES = { desktop: { viewport: { width: 1280, height: 800 } }, phone: PIXEL_7 } as const;
+/** `touch` = telefon projektu, jak ho dá config (P61 T6: `pixel7-touch`, `iphone-touch`); desktop a emulovaný Pixel 7 měří `chromium`. */
+const PROFILES = { desktop: { viewport: { width: 1280, height: 800 } }, phone: PIXEL_7, touch: {} } as const;
+const TOUCH_PROJECTS: ReadonlySet<string> = new Set(['pixel7-touch', 'iphone-touch']);
 
 for (const [device, use] of Object.entries(PROFILES)) {
   test.describe(`hero and foe framed on ${device}`, () => {
@@ -59,7 +61,8 @@ for (const [device, use] of Object.entries(PROFILES)) {
     test.setTimeout(150_000);
 
     for (const [genre, cell] of CELLS) {
-      test(`${genre} (${cell.id}): hero and nearest foe inside the safe zone`, async ({ page, request }) => {
+      test(`${genre} (${cell.id}): hero and nearest foe inside the safe zone`, async ({ page, request }, testInfo) => {
+        test.skip(TOUCH_PROJECTS.has(testInfo.project.name) !== (device === 'touch'), 'another project measures this profile');
         const response = await request.post('/api/play/games', { data: { spec: cell.spec } });
         expect(response.status(), await response.text()).toBeLessThan(300);
         const { url } = (await response.json()) as { url: string };

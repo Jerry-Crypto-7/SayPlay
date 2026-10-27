@@ -2,6 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { ALL_ABILITY_WORDS } from '../src/play/draft/controls';
 
+import { HUD_COUNTER_LABELS, counterLabelsFor } from './hud-labels';
+
 /**
  * Oracle T27r — **rozhraní na demo cestě je anglicky.**
  *
@@ -28,6 +30,9 @@ import { ALL_ABILITY_WORDS } from '../src/play/draft/controls';
 
 /** Věta z `play-create.spec.ts` — vede na hru bez klíčů. */
 const SENTENCE = 'Collect five glowing mushrooms then open a portal.';
+
+/** Věta s počtem (P61 T5): sběr tří klíčů, počítadlo HUD nese slovo věty. */
+const COUNTED = 'A knight must collect three keys in a haunted castle';
 
 /** Písmena, která v anglické mědi nemají co dělat. */
 const CZECH_LETTERS = /[ěščřžýáíéúůňťďóĚŠČŘŽÝÁÍÉÚŮŇŤĎÓ]/u;
@@ -91,6 +96,28 @@ test('hra z věty mluví anglicky', async ({ page }) => {
   await expect(page.locator('.play-shell')).toBeVisible({ timeout: 60_000 });
 
   await expectEnglish(page, 'hra');
+});
+
+/**
+ * Počítadlo cíle věty s počtem (P61 T5) nese podstatné jméno věty (`keys 0/3`) – text, který píše věta,
+ * ne autor rozhraní. Smí jen tohle slovo navíc k uzavřenému seznamu `HUD_COUNTER_LABELS`.
+ */
+test('počítadlo cíle nese slovo věty, ostatní popisky jsou z uzavřeného seznamu', async ({ page }) => {
+  test.setTimeout(120_000);
+
+  await page.goto('/play');
+  await page.getByLabel('Say it in one sentence').fill(COUNTED);
+  await page.getByTestId('play-create').click();
+  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  const counter = page.getByTestId('hud-counter-keys');
+  await expect(counter).toBeVisible({ timeout: 60_000 });
+  await expect(counter).toContainText('keys 0/3');
+
+  const shown = await page.locator('[data-testid^="hud-counter-"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-testid')!.slice('hud-counter-'.length)));
+  const allowed = counterLabelsFor(COUNTED);
+  for (const label of shown) expect(allowed, `${label} mimo seznam`).toContain(label);
+  expect(allowed.filter((label) => !HUD_COUNTER_LABELS.includes(label))).toEqual(['keys']);
+  await expectEnglish(page, 'hra s počítadlem věty');
 });
 
 /**

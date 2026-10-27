@@ -12,6 +12,7 @@ Kit v `docs/brand/` je zdroj pravdy pro vzhled, texty a pohyb celého produktu (
 | Tab bar Make · Play · My games · Me | jen položky, které produkt umí | účty a profil v produktu nejsou; prázdnou položku nevymýšlet |
 | Odkaz `sayplay.[tld]/g/{id}` | dnešní `/play/{id}` | doména není rozhodnutá |
 | Toast chyby `.sp-toast--error` zůstává, dokud ho hráč nezavře | **konec bez AI verze: toast 3 s**, pak tečka a „Try again“ v přepínači verze `.play-version-switch` | selhání AI verze není chyba hráče, ale stav na pozadí (`.sp-status`); toast přes spodní třetinu ležel celou hru (audit P56B, 21. 10. 2026) |
+| Pilulka postupu: ikony cílových předmětů, pak počet `3/5` (`08-game-hud.md`) | věta s počtem (P61 T5) dá před počet své slovo – `mushrooms 0/5`; **na telefonu (≤ 480 px) takový cíl bez ikon** a životy či další počítadla na řádek pod něj | vejce, slovo, počet a životy v jednom řádku měly 336 px, roh s časovačem nechá pilulce 211 z 390 px a životy se uřízly; slovo s počtem říká totéž co vejce (27. 10. 2026) |
 | Sada 31 ikon (`10-icons.md`) | **36**: navíc `shoot`, `strike`, `dash`, `shield`, `grab` | tlačítka akcí hrdiny (P46A, 13. 10. 2026); dokreslené podle `10-icons.md` na mřížce 24 × 24 s tahem 2,2 px, v `icons/` i `sprite.svg` |
 
 ## Pohyb ve 3D scéně (rozhodnutí majitele 19. 10. 2026)

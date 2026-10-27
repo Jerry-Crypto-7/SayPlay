@@ -6,10 +6,10 @@
  * dílna, s přetečením); stav cíle posouvá pravidlo `interact`.
  */
 
-import { readCountedNouns, nounPhrase, plural, singular } from '../draft/lexicon';
-import { ESCAPE } from '../arcade/pieces/arena';
+import { goalNoun, readCountedNouns, nounPhrase, plural, singular } from '../draft/lexicon';
+import { ESCAPE, countedWaves } from '../arcade/pieces/arena';
 import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
-import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
+import { WAVE_PLAN, countedClock, wavesChasers } from '../arcade/pieces/waves';
 import { type CastItem, type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Výchozí počty generátorů: bez `count` ve specu hraje, co by postavil generátor sám. */
@@ -151,15 +151,25 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   const hold = station && states === 2 ? QUEST.rounds.stationHold : undefined;
   // Čas z věty (nebo `timeLimit` režiséra, `compileWith`) jsou hodiny: kol jen tolik, kolik se do nich vejde (F3).
   const clock = spec.params?.seconds;
+  // Věta s počtem (P61 T5): „light five candles“ = právě tolik cílů celkem, HUD je počítá slovem věty (`counted`, `noun`).
+  // Od T5-R1 po kolech na čas (`countedWaves`, `countedTicks`), poslední nese boss – hra drží 30–90 s. Hodiny z věty,
+  // do kterých se rozvrh nevejde, hrají jedno kolo jako dřív.
+  const counted = !station && spec.counts?.target !== undefined;
+  const noun = counted ? goalNoun(label) : null;
+  const scheduled = counted && count > 1 && (clock === undefined || countedClock(count) <= clock);
+  const spatialRound = (k: number): number => spatialRoundSeconds(count, states, wavesChasers(chasers, k));
   const plan = station
     ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }), clock)
-    : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)), clock);
+    : counted
+      ? { rounds: scheduled ? countedWaves(count).length : 1, seconds: spatialRound(0) }
+      : questRounds(steps, spatialRound, clock);
   // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
-  const plannedSeconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
+  const plannedSeconds = clock ?? (scheduled ? countedClock(count) : Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin)));
   const seconds = spec.params?.paceBudgetPct === undefined ? plannedSeconds : Math.floor(plannedSeconds * spec.params.paceBudgetPct / 100);
   const hunter = foe?.label ?? 'hunter';
   const verbText = capital(verb);
-  const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
+  // Kola věty s počtem hráč nepočítá – text říká jen cíle věty („Light all 5 candles“).
+  const each = plan.rounds > 1 && !counted ? ` in each of ${String(plan.rounds)} rounds` : '';
   const targets = questTargets(label, count);
   return legacySpec(spec, {
     control: 'move_free',
@@ -174,6 +184,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
         ...(hold === undefined ? {} : { hold }),
         ...(station ? {} : { chasers }),
         ...patrol,
+        ...(counted ? { counted: true, ...(noun === null ? {} : { noun }) } : {}),
       },
     },
     // Změnit stav každého cíle je hádanka nad rolí cílů; počet nese `tuning` i role.
@@ -191,7 +202,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
     mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],
     roles: [{ id: 'target', kind: 'target', label, count }, ...(chasers > 0 ? [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }] : [])],
     tutorial: {
-      goalLine: `${verbText} ${targets}${plan.rounds > 1 ? `, ${String(plan.rounds)} rounds` : ''}.`,
+      goalLine: `${verbText} ${targets}${each === '' ? '' : `, ${String(plan.rounds)} rounds`}.`,
       // Druhá věta jen pro kartu pauzy: výzva na startu bere první (`FirstPrompt`).
       controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready. Stall and it boils over.' : 'Drag or arrows to move, hold Use next to a target.',
     },

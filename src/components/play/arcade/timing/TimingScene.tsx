@@ -116,8 +116,36 @@ export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
 const HERO_M = { w: 1.2, h: 1.8, d: 1.6 };
 const HERO_AT: readonly [number, number, number] = [-(TIMING.amplitude / UNIT + 1), 0, -2.2];
 const HERO_TURN = (3 * Math.PI) / 4;
+/**
+ * Na výšku (P61 T6) stojí hrdina v popředí pod věží: `front` = podíl vzdálenosti kamery od věže, `x` = kousek
+ * stranou (m). Za krajem kyvu by ho těsná kamera na výšku uřízla celého – dřív z něj byla vidět půlka.
+ */
+const HERO_TALL = { front: 0.55, x: -0.5 } as const;
 /** Místo hrdiny (půdorys natočeného kvádru): rámující kus kulis ho v obraze nezakryje – ledový oblouk schoval tučňáka (s47). */
-const HERO_PLAY: readonly Volume[] = [{ x0: HERO_AT[0] - 1, y0: 0, z0: HERO_AT[2] - 1, x1: HERO_AT[0] + 1, y1: HERO_M.h, z1: HERO_AT[2] + 1 }];
+const heroPlayOf = ([x, , z]: readonly [number, number, number]): readonly Volume[] => [{ x0: x - 1, y0: 0, z0: z - 1, x1: x + 1, y1: HERO_M.h, z1: z + 1 }];
+
+/** Rezerva kyvu do stran (m) – i nad zaokrouhlení amplitudy sudou periodou (nejvýš polovina dráhy za tik). */
+const SWING_PAD = 0.4;
+
+/**
+ * Jak daleko před věží kamera stojí (m): vidět celý kyv jezdce (amplituda, půl jezdce, rezerva) k přední stěně
+ * jezdce, ať jeho roh na kraji kyvu nevyjede ze záběru. P61 T6: šířka z kyvu, jaký jezdec opravdu má, místo
+ * pevných 10 m – na výšku rozhoduje šířka, jehla (0,2 m) tak stála na Pixelu 7 17,7 m daleko a měla 0,8 % plochy
+ * obrazu proti 1,3 % na šířku. Blok věže (2,4 m) zůstal skoro, kde byl (17,4 m); na šířku rozhoduje výška (7 m)
+ * a spodní mez 8 m, tam se nic nemění. simplified: jezdce zvětšeného čitelností (až `LEGIBLE_CAP`×) kamera
+ * nepočítá – jeho přední roh na kraji kyvu se na výšku dotkne kraje obrazu; se stropem v šířce by blok věže
+ * odjel o 30 % dál než dřív. Až bude vadit, rámovat kyv podle měřítka, které jezdec opravdu má.
+ */
+export function timingDistance(fov: number, aspect: number, sliderW: number): number {
+  const tan = Math.tan((fov * Math.PI) / 360);
+  const swing = 2 * (TIMING.amplitude / UNIT + sliderW / 2 + SWING_PAD);
+  return Math.max(swing / (2 * tan * aspect) + TIMING.depth / UNIT / 2, 7 / (2 * tan), 8);
+}
+
+/** Kde stojí hrdina věty: na šířku za krajem kyvu, na výšku v popředí pod věží (`HERO_TALL`). */
+function timingHeroAt(aspect: number, distance: number): readonly [number, number, number] {
+  return aspect < 1 ? [HERO_TALL.x, 0, -HERO_TALL.front * distance] : HERO_AT;
+}
 
 /** Poskok po trefě (P45D T11): tak dlouho (s) je tělo ve vzduchu a tak vysoko (podíl výšky) vyskočí. */
 const BEAT_HOP_S = 0.24;
@@ -198,8 +226,13 @@ export function TimingScene({
   // P58A T6: věc z věty na liště („pancakes“) jede na ručičce jako čtverec o výšce dílu; ručička zůstává.
   const rider = sliderKind === 'needle' ? blockModel : undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  // Poměr stran kamery: R3F ho po změně velikosti plátna přepíše dřív, než se ptá selektorů scén.
+  const aspect = useThree((three) => (three.camera as PerspectiveCamera).aspect);
   const look = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
+  // Hrdina a jeho místo pro kulisy podle poměru stran: na výšku ho kamera má v popředí (P61 T6).
+  const heroAt = useMemo(() => timingHeroAt(aspect, timingDistance(camera.fov, aspect, sliderInit.w)), [aspect, camera.fov, sliderInit.w]);
+  const heroPlay = useMemo(() => heroPlayOf(heroAt), [heroAt]);
   const top = (TIMING.baseH + marks * (baseKind === 'base' ? TIMING.blockH : 0)) / UNIT;
 
   useFrame((_, delta) => {
@@ -239,9 +272,8 @@ export function TimingScene({
     if (topPiece !== null && topPiece !== undefined) applyToy({ group: topPiece }, pose, pieceH);
     const y = (state[s + BODY.y] as number) / UNIT;
     followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 3));
-    // Vidět celý kyv (±amplituda + blok) i na výšku: vzdálenost z poměru stran.
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const dist = Math.max(10 / (2 * tan * camera.aspect), 7 / (2 * tan), 8);
+    // Vidět celý kyv i na výšku: vzdálenost z poměru stran (`timingDistance`).
+    const dist = timingDistance(camera.fov, camera.aspect, sliderInit.w);
     // Na výšku je kamera daleko a díl by měl pod 4 % výšky obrazu: víc shora je vidět i jeho
     // vršek, takže je na snímku vyšší a pozná se (P30B T5).
     camera.position.set(0, followY.current + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
@@ -262,7 +294,7 @@ export function TimingScene({
       </group>
       {/* Kulisa za mlhou (P46G T7) za řadou kulis; vegetace ne – plocha je jen věž a kyv jezdce. */}
       <HorizonBackdrop look={scene} seed={world.seed} clear={0} beyond={BACKDROP_BEYOND} />
-      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} play={heroModel === undefined ? undefined : HERO_PLAY} />
+      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} play={heroModel === undefined ? undefined : heroPlay} />
       <mesh position={[0, base.h / 2, 0]}>
         <boxGeometry args={[base.w, base.h, depth]} />
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />
@@ -312,7 +344,7 @@ export function TimingScene({
         </group>
       </group>
       {heroModel !== undefined && (
-        <group position={HERO_AT} rotation={[0, HERO_TURN, 0]}>
+        <group position={heroAt} rotation={[0, HERO_TURN, 0]}>
           {/* Hrdinou sondy zůstává jezdec; hračkovou pózu postavy čte `heroToy` sondy (P45D T14), popisek jména jde nad ni. */}
           <group ref={heroPose} userData={{ toyHero: true }}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
         </group>

@@ -52,6 +52,7 @@ import { walkerShot } from './pieces/walker-bot';
 import { census, shotHit } from './pieces/shots';
 import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
 import { powerupControlParams, tickPowerup } from './powerups/state';
+import { nounSchema } from './rules/schema';
 
 // Sloty jednou za modul: import pod vitestem čte každý přístup getterem a pronásledovatel jde přes všechna těla každý tik.
 const FIRST_BODY = bodyBase(0);
@@ -239,7 +240,13 @@ export const collectCount: RulePiece<z.infer<typeof countParams>> = {
   },
 };
 
-const needParams = z.object({ need: z.int().min(1).max(ARCADE_LIMITS.maxBodies) }).strict();
+const needParams = z
+  .object({
+    need: z.int().min(1).max(ARCADE_LIMITS.maxBodies),
+    /** Slovo věty s počtem (P61 T5): HUD počítá `keys 0/3` místo `collected`. Jádro ho nečte. */
+    noun: nounSchema.optional(),
+  })
+  .strict();
 
 /** Cíl s mincemi: aspoň `need` sebraných = výhra, míň = prohra (hráč vidí, kolik chybělo). */
 export const finishCollected: RulePiece<z.infer<typeof needParams>> = {

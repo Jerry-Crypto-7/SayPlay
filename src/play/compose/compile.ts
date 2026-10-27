@@ -138,9 +138,11 @@ function withTemplate(game: GameSpecV1, assembly: RecipeAssembly): { readonly sp
   // Quest v prostoru od `genre.v4` (P47A T2, varianta B): hustotu nese průběh, overlay šablona ne – pod průběhem
   // vyhrál robot intermediate 6–7/8 (bez šablony 8/8, začátečník 3–5/8, `evals/play/p47a/README.md`).
   const pacedQuest = game.genre?.id === 'quest' && game.genre.mode === 'spatial' && genreAtLeast(game, FINALE_GENRE_VERSION);
+  // Věta s počtem (P61 T5, `tuning.counted`) hraje právě tolik věcí, kolik řekla – sprška šablony by přinesla další.
+  const counted = (game.controlParams as { readonly tuning?: { readonly counted?: boolean } } | undefined)?.tuning?.counted === true;
   const overlays = TEMPLATE_NAMES.filter((name) => {
     const template: RuleTemplate = RULE_TEMPLATES[name];
-    return template.kind === 'overlay' && !pacedQuest && template.budget <= budget && (template.axes.some((axis) => axes.includes(axis)) || template.verbs.some((verb) => says(intent.words, verb)));
+    return template.kind === 'overlay' && !pacedQuest && !counted && template.budget <= budget && (template.axes.some((axis) => axes.includes(axis)) || template.verbs.some((verb) => says(intent.words, verb)));
   });
   const taken = new Set(['ammunition', ...(game.assemblyParts ?? []).map((part) => part.role)]);
   for (const name of [...goals, ...overlays]) {

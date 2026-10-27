@@ -85,14 +85,18 @@ const SHIFTS = XS.map((_, column) => shiftOf(column));
 const rowsOf = (from: number, to: number): number => Math.max(1, Math.ceil((to - from) / ROW));
 const zOf = (from: number, column: number, row: number): number => from + row * ROW + SHIFTS[column]!;
 
-/** Výšky vrcholů údolí: řada `row` sloupce `column` na indexu `row * XS.length + column`. */
-export function valleyHeights(from: number, to: number): Float32Array {
+/**
+ * Výšky vrcholů údolí: řada `row` sloupce `column` na indexu `row * XS.length + column`.
+ * `hall` (P61 T7, sada se stropem `Look.ceiling`): rovná podlaha až ke stěnám kulisy – svahy pod stropem
+ * soudce četl jako zasněžený kopec venku.
+ */
+export function valleyHeights(from: number, to: number, hall = false): Float32Array {
   const rows = rowsOf(from, to);
   const heights = new Float32Array((rows + 1) * XS.length);
   for (let row = 0; row <= rows; row += 1) {
     for (let column = 0; column < XS.length; column += 1) {
       const x = XS[column]!;
-      heights[row * XS.length + column] = Math.abs(x) <= PLAYABLE_HALF ? 0 : reliefAt(x, zOf(from, column, row));
+      heights[row * XS.length + column] = hall || Math.abs(x) <= PLAYABLE_HALF ? 0 : reliefAt(x, zOf(from, column, row));
     }
   }
   return heights;
@@ -124,7 +128,7 @@ export function valleyHeightAt(from: number, to: number, heights: Float32Array):
 export function buildValley({ look, from, to }: ValleyOptions): Valley & { readonly heights: Float32Array } {
   const rows = rowsOf(from, to);
   const zAt = (column: number, row: number): number => zOf(from, column, row);
-  const heights = valleyHeights(from, to);
+  const heights = valleyHeights(from, to, look.ceiling !== undefined);
   const h = (column: number, row: number): number => heights[row * XS.length + column]!;
 
   const palette = valleyPalette(look);

@@ -219,7 +219,8 @@ describe('field heartbeat (genre.v4)', () => {
 
   it('the spark does not cost a game its overlay template: c08 "castle" keeps treasure_rush (T11)', () => {
     // Dřív strážce šel za slotem, který jiskry posunuly, robot publikace na semínku 1 prohrál a šablona vypadla (začátečník 1/8).
-    expect(draftGameSpecWithMeta('Explore an old castle to find three treasure chests', 1).composition?.template).toBe('treasure_rush');
+    // P61 T5: věta s počtem („three treasure chests“) šablonu nedostane – hraje právě tolik věcí; jiskra a šablona se měří bez počtu.
+    expect(draftGameSpecWithMeta('Explore an old castle to find treasure chests', 1).composition?.template).toBe('treasure_rush');
   });
 
   it('v4 quest targets of every round lie within questReach of the centre (≤ 2.4 s apart); stored v3 keeps the generator ring', () => {

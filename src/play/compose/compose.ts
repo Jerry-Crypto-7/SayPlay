@@ -1,6 +1,6 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
-import { lookFor, timeOfDayFor } from '../arcade/look';
+import { lookFor, sentenceLook, timeOfDayFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingFoe, readingHero } from '../draft/draft';
@@ -68,7 +68,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     // P54C T13: a lanes genre (T13b: every whole-game genre) reads its own roles (`draftFill`: what falls, pops up,
     // marches or flies); the intent's verbs name another game's roles there – its `catch` is a chase prey, a bear
     // catching jars would turn into a hazard.
-    const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
+    const palette = draft.palette ?? (lookFor(setting) === null ? (sentenceLook(intent.sentence) ?? undefined) : undefined);
     return { ...draft, setting, ...(palette === undefined ? {} : { palette }), cast: cast.slice(0, 8) };
   }
   const spoken: string[] = [];
@@ -211,7 +211,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
   // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
   // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
-  const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
+  const palette = draft.palette ?? (lookFor(setting) === null ? (sentenceLook(intent.sentence) ?? undefined) : undefined);
   return { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
 }
 

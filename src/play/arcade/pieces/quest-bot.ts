@@ -51,6 +51,11 @@ const botParams = z
     chase: chaseParams.optional(),
     /** Stanoviště s nepřáteli (`genre.v5`, P51 T6): stát u pultu a výstřelům uhýbat podél něj (`closeRow`, `rowStep`). */
     close: z.literal(true).optional(),
+    /**
+     * Kola čekají na svůj tik (věta s počtem, P61 T5-R1): bez otevřeného cíle robot uhýbá pronásledovatelům
+     * u středu, kde přijdou cíle dalšího kola. Bez něj stojí – další kolo přijde hned.
+     */
+    wait: z.literal(true).optional(),
   })
   .strict();
 type QuestBotParams = z.infer<typeof botParams>;
@@ -283,7 +288,7 @@ function decide(state: Int32Array, player: number, recent: readonly ArcadeInput[
   const lag = recent.length;
   const me = predict(state, player, recent);
   const { size, rocks, chasers, open } = bodiesOf(state, player, lag, interact);
-  if (open.length === 0) return NO_INPUT;
+  if (open.length === 0 && (params.wait !== true || chasers.length === 0)) return NO_INPUT;
   // V kolech (P36A T4) plánuje proti rychlosti kola, kterou vidí.
   const pursuit: Pursuit = { chasers, speed: params.chase === undefined ? 1 : chaseSpeedOf(params.chase, state), lead: params.chase?.lead ?? 0, asleep: Math.max(0, graceLeft(state) - lag) };
   const record = interactRecord(state);
@@ -313,7 +318,7 @@ function decide(state: Int32Array, player: number, recent: readonly ArcadeInput[
   };
 
   const byDistance = [...open].sort((a, b) => gapOf(me, size, a) - gapOf(me, size, b));
-  const goal = (interact.order === true ? [open[0]!] : byDistance).find(safe);
+  const goal = open.length === 0 ? undefined : (interact.order === true ? [open[0]!] : byDistance).find(safe);
   if (goal !== undefined) {
     // Zámek po kroku: pustit, pokud robot od té doby ještě nepustil.
     const released = recent.some((input) => (input.buttons & BUTTON.INTERACT) === 0);
@@ -336,6 +341,8 @@ function decide(state: Int32Array, player: number, recent: readonly ArcadeInput[
   // Pás u stěny náskok snižuje (u stěny není kam uhnout) a dosavadní směr ho zvyšuje – jinak robot
   // mezi dvěma skoro stejnými směry kmitá na místě, než ho dostihnou.
   const last = directionOfAxis(recent.at(-1)?.axis ?? 0);
+  // Čekání na kolo (`wait`): náskok ke středu, kolem něj leží cíle dalšího kola.
+  const aims: readonly Point[] = open.length > 0 ? open : [{ x: 0, z: 0 }];
   let best = -1;
   let bestClear = Number.NEGATIVE_INFINITY;
   let bestLead = Number.NEGATIVE_INFINITY;
@@ -347,7 +354,7 @@ function decide(state: Int32Array, player: number, recent: readonly ArcadeInput[
     const clear = clearance(me, to, PLAN.horizon, pursuit, Math.min(bestClear, PLAN.cap - 1), at);
     if (clear < PLAN.cap ? bestClear >= PLAN.cap || clear <= bestClear : false) continue;
     let lead = Number.NEGATIVE_INFINITY;
-    for (const t of open) lead = Math.max(lead, Math.min(...at.map((c) => distance(c, t) / pursuit.speed)) - distance(to, t) / ARENA.speed);
+    for (const t of aims) lead = Math.max(lead, Math.min(...at.map((c) => distance(c, t) / pursuit.speed)) - distance(to, t) / ARENA.speed);
     lead -= Math.max(0, PLAN.wallBand - (limit - Math.max(Math.abs(to.x), Math.abs(to.z)))) / PLAN.wallCost;
     if (k === last) lead += PLAN.keep;
     if (clear >= PLAN.cap && bestClear >= PLAN.cap && lead <= bestLead) continue;
