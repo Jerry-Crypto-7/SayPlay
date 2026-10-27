@@ -127,7 +127,15 @@ Kreslicí volání scény (Pixel 7, hra stojí na tiku 60, medián 9 vzorků, ku
 | aréna souboj | 16,6 → 16,6 % | 22,0 → 22,0 % |
 | úkol | 14,8 → 17,0 % | – → 11,4 % |
 
-Zbývá (kamera arény, už na `main`): v útěku je duch v 60–96 % snímků useknutý spodní hranou, ve sběru na telefonu je nepřítel v záběru jen 1–4 z 30 snímků – kamera ho nesleduje.
+**Kamera arény na výšku (T5-R1).** Kamera na telefonu drží nepřítele v záběru celým tělem (po zvětšení z T5) a sleduje i přepadníka ve sběru; když se celé tělo nevejde, zůstane starý záběr. Desktop beze změny.
+
+| Hra | Pixel 7: v záběru, useknutý | iPhone: v záběru, useknutý |
+|---|---|---|
+| útěk | 20/29, 65 % → 23/29, 0 % | 26/29, 88 % → 27/29, 0 % |
+| sběr | 1/30, 100 % → 24/30, 4 % | – → 29/30, 3 % |
+
+- **Nesplněno:** nepřítel ve sběru má na telefonu 9,1–9,7 % výšky záběru místo 10 % – udržet v záběru nepřítele 15–33 m daleko chce kameru 14–18 m vzadu a zvětšení končí na 2×. Přednost dostal záběr; práh v `e2e/p58a-framing.spec.ts` je pro sběr na telefonu 8,5 % s důvodem u něj.
+- Úkol je z nových kontrol na telefonu vyjmutý: stráže stojí 6–10 m do strany, v záběru byly 18/30 už před změnou, teď 16–18/30.
 
 ## Útrata
 
