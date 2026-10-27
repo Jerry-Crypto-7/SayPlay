@@ -39,7 +39,7 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
 import { CHAIN_CUES } from '@/play/chain/decide';
 import type { DirectorSource } from '@/play/contracts';
-import { type DirectorFailure, withDraftRules } from '@/play/director';
+import { type DirectorDeps, type DirectorFailure, withDraftRules } from '@/play/director';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { singular } from '@/play/draft/lexicon';
 import { DEFAULT_LABELS } from '@/play/genre/roles';
@@ -302,8 +302,11 @@ function showsMore(quick: GameSpecV1, read: GameSpecV1): boolean {
  * nevznikla (P60; P61 T1: hru ze čtení dostaly jen 3 z 12 dev vět, všechny řetězy). Návrh bez žánru (mřížka) rychlou
  * hru nenahradí.
  */
-export function readingDiffers(quick: GameSpecV1, read: GameSpecV1): boolean {
-  return read.genre !== undefined && (playsOtherGenre(quick, read) || showsMore(quick, read));
+export function readingDiffers(quick: GameSpecV1, read: GameSpecV1, grid = read.genre === undefined): boolean {
+  // P63 T2: mřížka (`grid`, stará cesta návrhu) rychlou hru nenahradí; sestavená jízda nenese `spec.genre`, mřížka ale
+  // není – dřív se proto hra ze čtení jízdy nezveřejnila nikdy (P63 T1, h24: balón zůstal na rychlé jízdě se žraloky).
+  // Bez `grid` platí dřívější odhad podle `spec.genre`.
+  return !grid && (playsOtherGenre(quick, read) || showsMore(quick, read));
 }
 
 /**
@@ -375,8 +378,8 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
 export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   let reading: Promise<void> = Promise.resolve();
-  const onDraft = (spec: GameSpecV1): void => {
-    if (!readingDiffers(draft.spec, spec)) return;
+  const onDraft = (spec: GameSpecV1, grid: boolean): void => {
+    if (!readingDiffers(draft.spec, spec, grid)) return;
     reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((published) => {
       if (published !== null) onReading?.(published.versionId, published.fresh);
     });
@@ -388,7 +391,7 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   }
 }
 
-async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: (spec: GameSpecV1) => void): Promise<UpgradeOutcome> {
+async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: NonNullable<DirectorDeps['onDraft']>): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
     if (failure !== undefined) recordUpgradeFailure(draftId, request.sentence, reason, failure);

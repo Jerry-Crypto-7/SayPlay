@@ -608,6 +608,25 @@ describe('hra ze čtení i ve stejném žánru, když ukáže svět nebo věc z 
     expect(readingDiffers(plain, read)).toBe(true);
   });
 
+  /**
+   * P63 T2 (P61 h24): sestavená jízda nenese `spec.genre`, mřížka ale není. Čtení zná bouřkové mraky, rychlá hra
+   * kreslí žraloky – hra ze čtení se zveřejní; tentýž návrh ze staré cesty mřížky ne.
+   */
+  it('sestavená jízda ze čtení s bouřkovými mraky se liší od rychlé jízdy se žraloky, mřížka ne', () => {
+    const BALLOON = 'Steer a hot air balloon between thunderclouds above the ocean';
+    const STORM: Reading = {
+      control: 'steer', verbs: [{ word: 'Steer', class: 'steer' }], hero: 'hot air balloon', roles: [{ noun: 'thunderclouds', kind: 'obstacle', count: null }], setting: 'above the ocean',
+      mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'voyage', mode: 'race' }, sure: true, foe: 'thunderclouds', item: null, world: 'ocean', title: 'Hot Air Balloon',
+    };
+    const quick = draftGameSpec(BALLOON);
+    const drafted = draftGameSpecWithMeta(BALLOON, 1, { reading: STORM });
+    expect(drafted.spec.genre).toBeUndefined();
+    expect(drafted.genre).not.toBeNull();
+    expect(drafted.spec.roles).toContainEqual(expect.objectContaining({ label: 'thundercloud' }));
+    expect(readingDiffers(quick, drafted.spec, drafted.genre === null)).toBe(true);
+    expect(readingDiffers(quick, drafted.spec, true)).toBe(false);
+  });
+
   /** Rychlá hra a návrh ze čtení; páry se staví až v testu. */
   type Pair = [name: string, pair: () => readonly [quick: GameSpecV1, read: GameSpecV1]];
 

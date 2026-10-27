@@ -136,7 +136,7 @@ export function gamesOf(sentence, reading, deps) {
   const quickSpec = quickMeta.spec;
   const readingGame = { ...gameOf(readMeta), goal: readSpec.tutorial?.goalLine ?? null, objective: readSpec.objective ?? null };
   // Řetěz hru po čtení publikuje vždy (P58F), jedna hra jen když se od rychlé liší (`readingDiffers`, P61 T2).
-  return { quickGame, readingGame, published: chain || deps.readingDiffers(quickSpec, readSpec) };
+  return { quickGame, readingGame, published: chain || deps.readingDiffers(quickSpec, readSpec, readMeta.genre === null) };
 }
 
 /** Celá diagnóza věty: čtení, klasifikátor, obě hry, krok rozchodu a místo v kódu. */

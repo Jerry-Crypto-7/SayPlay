@@ -93,8 +93,11 @@ export interface DirectorDeps {
   readonly cache?: DirectorCache;
   readonly now: () => number;
   readonly seed?: number;
-  /** Návrh ze slov, synchronně před prvním `await` – obálka ho může hned kompilovat. */
-  readonly onDraft?: (spec: GameSpecV1) => void;
+  /**
+   * Návrh ze slov, synchronně před prvním `await` – obálka ho může hned kompilovat. `grid` = návrh ze staré cesty
+   * mřížky (`DraftMeta.genre === null`); sestavená jízda nese `spec.genre` také ne, mřížka ale není (P63 T2, h24).
+   */
+  readonly onDraft?: (spec: GameSpecV1, grid: boolean) => void;
   readonly maxRepairRounds?: number;
   /**
    * Ověření hry robotem nad specem, který kritik pustil (P26 T10a): neprošlý
@@ -280,7 +283,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
   const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
   const drafted = draftGameSpecWithMeta(sentence, deps.seed, genreOptions);
   const draft = drafted.spec;
-  deps.onDraft?.(draft);
+  deps.onDraft?.(draft, drafted.genre === null);
 
   const fallback = (reason: FallbackReason, failure: DirectorFailure): DirectedGame => ({
     ok: true,
