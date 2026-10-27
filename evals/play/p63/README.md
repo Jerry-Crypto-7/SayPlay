@@ -358,3 +358,17 @@ Po větách, medián 3 běhů v ms, `main` → P63:
 - Na desktopu ji celé měření mediánem nesplnilo o 206 ms. Párový rozdíl byl +96 ms, rozptyl jedné strany ve stejné větě až 2 s (s039 B 1691–4522 ms). Druhé kolo hned potom na týchž serverech a hrách dalo −18 ms, obě kola dohromady +154,5 ms. Brána v `result.json` zůstává nesplněná podle celého měření.
 - Čtyři z pěti vět hrají na obou stranách tutéž verzi hry, takže rozdíl dělá kód klienta nebo zátěž stroje, ne jiná hra.
 - **Nález, neprofilováno:** s006 (řetěz) je na desktopu pomalejší v 5 ze 6 dvojic, medián +0,34 s v prvním a +0,33 s ve druhém kole, první snímek +0,52 / +0,19 s. Na telefonu je táž věta o 0,85 s rychlejší. Odvozeno: buď skutečná práce navíc při startu řetězu na desktopu, nebo zátěž – rozhodne CPU profil startu s006 na desktopu, A proti B. Podle sady se nic neladilo, kód se neměnil.
+
+### Cílené testy a e2e
+
+**Vitest** `src/play src/components/play src/app/api/play src/app/play evals/play/p63` na `d03aa1c1`: 14 007 / 14 012. Pět pádů:
+- `field-finale.test.ts` (2) a `p46-fixtures.test.ts` s002 – červené i samostatně, na `main` zelené. Příčina T4: „Collect three keys … while mummies chase you“ je od T4 útěk se sběrem počtu (vyhrává počtem, bez šablony pravidel). Opraveno v testech, ne v produktu: `field-finale` měří bránu bosse na útěku s klíči bez počtu („Pick up keys in a pyramid and avoid the mummies“ – bez počtu by věta „Collect keys … chase you“ dala běžce), stejně jako precedens c08 z P61 T5; `evals/play/p46e/after.json` přeměřen offline měřidlem `upgrade.measure.ts`, změnil se jen řádek s002 `rules [3, 3] → [0, 0]`. Oba soubory pak 34/34.
+- `swarm.test.ts` (výkon 0,061 > 0,05 ms na tik) a `runner-sections.test.ts` (`STACK_TRACE_ERROR`) – časové pod zátěží, samostatně zelené.
+
+Produktový kód se po celém běhu neměnil, celá sada se proto znovu nepouštěla.
+
+**e2e** (`chromium`, `pixel7-touch`, `iphone-touch`):
+- `play-phone` 12/12, `play-feed-phone` 2/2.
+- `play-perf` (`@measure`, jen chromium): červený. Hra „drive“ („game in a car with shooting and racing“, řetěz o 5 kolech) na desktopu nedá do 120 s první tik sondy výkonu. **Totéž na `main` `495bbc77`:** týž spec jen pro drive/desktop proti serveru `main` i větve padá stejně (120 s, bez prvního tiku). Hra má na obou stranách tentýž hash a ručně spuštěná se rozjede (HUD „1/5“, chyba hydratace React #418 na obou). Není to regrese P63; nález pro sondu výkonu řetězu (inference: sonda čeká na tik, který řetěz nehlásí).
+
+**Úklid:** servery zastavené podle PID, junction `D:/caches/p63/main/node_modules` odpojen (`rmdir`), worktree `D:/caches/p63/main` odstraněn, `node_modules` hlavního checkoutu netknutý.
