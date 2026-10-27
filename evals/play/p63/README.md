@@ -220,6 +220,12 @@ Přesně tyhle tři hry předpověděla diagnóza nad `readings.p63.astra.json` 
 - Duch je díl nebezpečí z T2 (`compose/assemble.ts`, `foeless`: pronásledovatel věty v aréně bez hrozby jde jako `hazard`). Soubor P63, ne P62.
 - **Návrh:** díl nebezpečí v aréně startuje od hrdiny aspoň tak daleko jako pronásledovatelé.
 - Odvozeno ze snímků, pozice v kódu neověřená. Robot hru vyhraje, nečinný hráč ne, takže publikační brána to nechytí.
+- **Opraveno v T7 (`e9a1887e`):**
+  - Příčina: aréna nemá délku trati, takže díl nebezpečí dopadl 2,8 m od startu hrdiny (`arcade/pieces/assembly-parts.ts`). Nečinný hráč u něj přežije i bez opravy (uložená hra s002 přehraná v jádře: 3 životy po 6 s).
+  - Životy bral pohyb: snímkovač klepne doprostřed a stiskne šipku vpravo a nahoru. Kamera arény míří k nejbližší hrozbě, takže hrdina jde rovnou k duchovi.
+  - Oprava: nové hry (`genre.v5`) mají nebezpečí v aréně stejně daleko jako pronásledovatele, tedy 8 m, a před hrdinou. Uložené hry `genre.v4` stavějí tentýž svět.
+  - Test `compose/__tests__/p63-hazard-start.test.ts` pokrývá s002, h10, h16 a h09 na pěti semínkách. Bez opravy je červený (2,78 m < 8 m). Nečinný hráč 5 s i výhra robota zůstávají zelené.
+  - Snímky po opravě se nefotily (čtečka by stála peníze). Ověřeno jen v jádře, ne v prohlížeči.
 
 ## T6: zapečetěná brána
 
