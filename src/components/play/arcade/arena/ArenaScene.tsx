@@ -57,7 +57,7 @@ import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Landmark } from '../look/Landmark';
 import type { DecorKeep } from '../look/rig/terrain/arenaDecor';
 import { ARENA_WALL_END } from '../look/rig/terrain/arenaFloor';
-import { Scenery } from '../look/Scenery';
+import { FieldDressing, Scenery } from '../look/Scenery';
 import { VegetationAround } from '../look/Vegetation';
 import { LOW_TOWARD_CAMERA } from '../look/vegetation-places';
 import { questTargets } from '../quest/TargetStates';
@@ -726,6 +726,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   return (
     <>
       <ArenaFloor look={scene} half={half / UNIT} seed={session.world.seed} keep={keep} hero={heroHeight} />
+      <FieldDressing look={scene} world={session.world} />
       <Landmark look={scene} seed={session.world.seed} area={arenaArea} follow="camera" />
       {views.map((view) => {
         if (view.role === ROLE.target) return null; // Cíl úkolu kreslí vrstva cílů (`TargetsMount`), ne kvádr.

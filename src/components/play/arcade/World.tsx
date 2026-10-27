@@ -725,7 +725,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
         ) : (
           <WorldBackdrop control={control} length={session.world.length / UNIT} look={scene} seed={session.world.seed} />
         ))}
-      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
+      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} look={scene} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
