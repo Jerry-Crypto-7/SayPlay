@@ -68,7 +68,8 @@ export const defenseGenre: GenreModule<'defense'> = {
         { id: 'chaser', kind: 'chaser', label: foe, count: enemies },
         { id: 'castle', kind: 'prop', label: keep },
       ],
-      tutorial: { goalLine: fit(50, `Hold the ${keep}! Stop every ${singular(foe)}.`, `Stop every ${singular(foe)}!`, 'Hold the line!'), controlsHint: 'Tap a lane to shoot. Hold a lane to place a guard. Arrows and Space work too.' },
+      // P63 T4: věta s počtem („from ten zombies“) ho řekne i v cíli HUD; bez počtu cíl jako dřív.
+      tutorial: { goalLine: spec.counts?.enemy === undefined ? fit(50, `Hold the ${keep}! Stop every ${singular(foe)}.`, `Stop every ${singular(foe)}!`, 'Hold the line!') : fit(50, `Hold the ${keep}! Stop ${String(enemies)} ${many}.`, `Stop ${String(enemies)} ${many}!`, `Stop ${String(enemies)} of them!`), controlsHint: 'Tap a lane to shoot. Hold a lane to place a guard. Arrows and Space work too.' },
       mood: 'tense',
       targetDurationSec: 60,
     });

@@ -1456,6 +1456,27 @@ function boundedCounts(spec: GenreSpec, counts: Partial<Record<CountRole, number
   return kept.length === 0 ? null : Object.fromEntries(kept);
 }
 
+/** Popisek role, která nese počet (`countsOf`): první věc obsazení v té roli. */
+function countLabels(spec: GenreSpec): Record<CountRole, string | null> {
+  const first = (roles: readonly CastRole[]): string | null => spec.cast?.find((item) => roles.includes(item.does))?.label ?? null;
+  return { enemy: first([...FOE_ROLES]), collectible: first(['collect']), target: first(['reach', 'throw_at']) };
+}
+
+/**
+ * P63 T4: počty rolí, které skladba (`compose.ts` `contentOf`) vzala ze slov věty, když je návrh neslyšel –
+ * „picks six glowing mushrooms“: sloveso návrh nezná, sbíral banány z bažiny a houby přidal až záměr; počet věty
+ * zůstal ležet a cíl ukázal „10 per wave, 3 waves“. Role, kterou návrh obsadil touž věcí, drží jeho rozhodnutí
+ * (i vynechání: „two knights duel“ počítá hrdinu, ne soupeře).
+ */
+export function composedCounts(sentence: string, reading: Reading | null, drafted: GenreSpec, content: GenreSpec): GenreSpec['counts'] {
+  const before = countLabels(drafted);
+  const after = countLabels(content);
+  const head = (label: string | null): string | null => (label === null ? null : singular(label.split(' ').at(-1)!));
+  const added = Object.fromEntries(GENRE_COUNT_ROLES.map((role) => [role, drafted.counts?.[role] !== undefined || head(after[role]) === head(before[role]) ? null : after[role]])) as Record<CountRole, string | null>;
+  const bounded = boundedCounts(content, countsOf(sentence, reading, added), GENRE_MODULES[content.genre] as GenreModule);
+  return bounded === null ? drafted.counts : { ...bounded, ...drafted.counts };
+}
+
 /**
  * Návrh, to, co věta řekne o světle (P54B T11) – počasí a denní doba do uloženého `theme` – a název z věty místo
  * šablony modulu (P56A T8). Čtení, ze kterého návrh nic nevzal (mřížka `readBy: 'keywords'`), název nedá.
