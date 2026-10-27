@@ -112,6 +112,23 @@ Kreslicí volání scény (Pixel 7, hra stojí na tiku 60, medián 9 vzorků, ku
 | aréna obchoďák | 23 → 25 | 48 → 56 |
 | střelnice obchoďák | 43 → 49 | 86 → 95 |
 
+**Kulisy hned (T4-R1).** Stránka si kulisy u workeru vyžádá už při hydrataci, první úloha jde ve jménu workeru. Medián 15 načtení: na Pixel 7 s CPU 4× stojí kusy ve scéně 2,3 s před prvním snímkem (dřív 8,2 s po něm), na desktopu 1,4 s po něm (dřív 5,3 s; cíl 1 s nesplněn – scéna se připojí 0,3 s po hydrataci, dřív než worker doběhne). V 1 s není v headless Chromiu načtený žádný model scény, ani hrdina; modely kulis přicházejí spolu s ostatními. Levnější zakázaná zóna bez robota nejde: cesta robota v útěku a sběru pokryje 47–78 % arény.
+
+**Typ rytmu (T1-R1).** První levý kus řady kulis rytmu stál v pruzích (záporný zbytek v `sceneryPlaces`); teď stojí za `inner` jako ostatní.
+
+**Čitelný nepřítel (T5).** Nepřítel z věty ve střílečce a aréně se zvětšuje podle toho, kolik zabírá na obrazovce (nejvýš 2×, cíl 10 % výšky nebo šířky záběru). Terč na střelnici kreslí stejnou postavu jako vlny nepřátel a kamera střelnice je blíž (na šířku 48° místo 60°, na výšku níž a blíž). Kolize, robot ani přehrání se nemění.
+
+| Hra | Desktop | Pixel 7 |
+|---|---|---|
+| střelnice zombie | 4,7 → 11,4 % | 4,5 → 11,3 % |
+| střelnice brouci | 2,5 → 12,7 % | 5,0 → 10,7 % |
+| aréna sběr | 6,5 → 10,4 % | 6,3 → 10,6 % |
+| aréna útěk | 24,8 → 24,0 % | 23,5 → 19,6 % |
+| aréna souboj | 16,6 → 16,6 % | 22,0 → 22,0 % |
+| úkol | 14,8 → 17,0 % | – → 11,4 % |
+
+Zbývá (kamera arény, už na `main`): v útěku je duch v 60–96 % snímků useknutý spodní hranou, ve sběru na telefonu je nepřítel v záběru jen 1–4 z 30 snímků – kamera ho nesleduje.
+
 ## Útrata
 
 Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946). Strop plánu 4 USD; zbývá 2,91 USD.
