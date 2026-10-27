@@ -137,9 +137,55 @@ Kreslicí volání scény (Pixel 7, hra stojí na tiku 60, medián 9 vzorků, ku
 - **Nesplněno:** nepřítel ve sběru má na telefonu 9,1–9,7 % výšky záběru místo 10 % – udržet v záběru nepřítele 15–33 m daleko chce kameru 14–18 m vzadu a zvětšení končí na 2×. Přednost dostal záběr; práh v `e2e/p58a-framing.spec.ts` je pro sběr na telefonu 8,5 % s důvodem u něj.
 - Úkol je z nových kontrol na telefonu vyjmutý: stráže stojí 6–10 m do strany, v záběru byly 18/30 už před změnou, teď 16–18/30.
 
+## Větev na dev po T2–T5 (T6, 27. 10.)
+
+Větev = `6beb49d3` (T2–T5 a opravy T1-R1, T4-R1, T5-R1), tytéž dev věty `p30/dev.json` [0..11], desktop, soudce Claude Opus 5.5 (`claude -p --safe-mode`), seed 61026, dva běhy na týchž listech → `after-dev.json`. Snímky `D:/caches/p62/p62-dev/`, listy `D:/caches/p62/sheets-p62-dev/`. List nese jen řádky větve, jako list T1 jen řádky `main` – srovnává se číslo s číslem, na jednom listu soudí až T7. Žánr a sada vyšly u všech 12 vět stejně jako na `main`; hra ze čtení vznikla zase jen u řetězů s006 a s022.
+
+| Strana | Věrnost | Hrál bych | Vět |
+|---|---|---|---|
+| rychlá hra | 0,50 (2. běh 0,50; `main` 0,525 / 0,525) | 0,40 (0,425; `main` 0,375 / 0,40) | 12 |
+| hra ze čtení (jen kde vznikla) | 0,40 (0,375; `main` 0,40 / 0,45) | 0,40 (0,425; `main` 0,45 / 0,45) | 2 |
+| po čtení (hra ze čtení, jinak rychlá) | 0,50 (0,50; `main` 0,525 / 0,525) | 0,425 (0,425; `main` 0,375 / 0,40) | 12 |
+
+- Rozptyl soudce mezi běhy větve (14 dvojic věta × strana): medián rozdílu 0,05 / 0,05, největší 0,05 / 0,05.
+- Průměr rychlé hry (doplněk k mediánu, oba běhy): věrnost 0,475 / 0,479 → 0,513 / 0,508, hrál bych 0,375 / 0,385 → 0,396 / 0,400.
+
+Po větách, věrnost / hrál bych, `main` → větev, 1. běh (2. běh v závorce):
+
+| Věta | Rychlá hra | Po čtení | Hlavní výtka soudce u větve |
+|---|---|---|---|
+| s039 zombie shooter in a mall | 0,60 / 0,40 (0,60 / 0,40) → 0,75 / 0,55 (0,75 / 0,50) | = rychlá | „reads as a mall, but the setting is a washed-out, sparse open space and the zombies are small“ |
+| s037 space marine, alien bugs | 0,60 / 0,40 (0,60 / 0,40) → 0,70 / 0,50 (0,70 / 0,45) | = rychlá | brouci malí, scéna kalná a statická |
+| s002 knight, three keys | 0,60 / 0,35 (0,55 / 0,35) → 0,75 / 0,50 (0,75 / 0,50) | = rychlá | sedí s větou; tmavé a řídké, postavy malé |
+| s003 hamster, supermarket | 0,40 / 0,40 (0,45 / 0,40) → 0,45 / 0,40 (0,40 / 0,40) | = rychlá | „looks like an outdoor road over pale hills rather than a supermarket“, Roomba není vidět |
+| s006 corgi, park | 0,30 / 0,40 (0,25 / 0,35) → 0,30 / 0,30 (0,25 / 0,30) | 0,45 / 0,55 (0,45 / 0,50) → 0,40 / 0,45 (0,35 / 0,50) | corgi, párky ani postřikovače nejsou poznat; 2 ze 3 snímků tmavé a šedé |
+| s008 banana, temple run | 0,60 / 0,55 (0,55 / 0,55) → 0,55 / 0,50 (0,60 / 0,55) | = rychlá | opice není vidět, jen červený kvádr a oranžová skvrna |
+| s022 tiny robot, tower | 0,35 / 0,30 (0,45 / 0,45) → 0,45 / 0,40 (0,45 / 0,45) | 0,35 / 0,35 (0,45 / 0,40) → 0,40 / 0,35 (0,40 / 0,35) | žádná věž, plošiny se nehýbou; ve hře ze čtení modrý náhradní kvádr |
+| s021 obby, lava | 0,55 / 0,50 (0,55 / 0,50) → 0,55 / 0,50 (0,50 / 0,45) | = rychlá | rotující tyče nejsou |
+| s035 flappy underwater | 0,60 / 0,35 (0,60 / 0,35) → 0,60 / 0,30 (0,60 / 0,35) | = rychlá | 2 ze 3 snímků konec hry po 0,9 s |
+| s050 snowballs at kids | 0,45 / 0,35 (0,50 / 0,40) → 0,40 / 0,35 (0,45 / 0,40) | = rychlá | děti malé, tučňák a iglú místo pevnosti |
+| s088 angry birds, cats | 0,50 / 0,35 (0,50 / 0,35) → 0,45 / 0,30 (0,50 / 0,30) | = rychlá | krabice malé a daleko, prak chybí |
+| s069 candy crush, cave | 0,15 / 0,15 (0,15 / 0,12) → 0,20 / 0,15 (0,15 / 0,15) | = rychlá | match-3 chybí |
+
+- Tři věty, na které opravy P62 míří (střelnice s039 a s037, hrad v aréně s002), stouply v obou bězích o 0,10–0,20 věrnosti a 0,05–0,15 „hrál bych“ – víc, než soudce kolísá. Výtka „prázdná scéna, malí nepřátelé“ z T1 u nich zůstala jen jako vedlejší.
+- Ostatních 9 vět se pohnulo nejvýš o 0,05 (rozptyl soudce). Medián věrnosti klesl o 0,025, protože leží mezi 6. a 7. větou: s050, s088 a s008 o 0,05 níž ho posunuly, zlepšené věty byly nad ním už předtím (odvozeno z pořadí hodnot).
+
+Ztráty podle důvodů soudce u větve (14 řádků 1. běhu, 2. běh totéž), seskupené podle příčiny:
+1. **Hala jako venek** – s003 hlavní výtka v obou bězích (věrnost 0,40–0,45, nejnižší ze scénických vět), s039 vedlejší („washed-out, sparse open space“, ve 2. běhu „hazy, empty, beige setting“). Dlažbu interiéru klade jen aréna (T3); údolí běžce a zem ostatních žánrů malují zem sady – u supermarketu světlé skvrny jako sníh a štěrk krajnice podél šedého pásu cesty, u obchoďáku béžovou plochu. Podle auditu T1 je bez vnitřní podlahy 35 z 56 interiérových her a T3 změnil jen arénu.
+2. **Postava nebo věc malá či nečitelná** – s039, s037, s002, s050, s088, s008, s003, s006: 8 řádků, u všech kromě s006 vedlejší výtka a každý žánr z jiné příčiny (cíle hodu, pronásledovatel běžce za hrdinou, model hrdiny běžce). Nepřátele střelnice a arény už zvětšil T5.
+3. **Kalná nebo tmavá scéna** – s037, s002, s006: 3 řádky.
+4. **Chybí mechanika věty** – s069 match-3, s022 věž a pohyblivé plošiny, s021 rotující tyče, s035 konec po 0,9 s, s088 prak: 5 řádků, mimo scénu.
+5. **Náhradní kvádr ve hře ze čtení** – s022: 1 řádek.
+
+Jedno kolo opravy dostala ztráta 1: jediná hlavní výtka s jednou příčinou ve scéně, kterou jde opravit na jednom místě (zem interiéru) pro všechny žánry naráz. Ztráta 2 má víc řádků, ale jako vedlejší výtku a s jinou příčinou v každém žánru; 4 je mimo scénu.
+
 ## Útrata
 
-Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946). Strop plánu 4 USD; zbývá 2,91 USD.
+Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946).
+
+T6, focení větve na dev: **0,36 USD** za 12 volání (`--usage-log D:/caches/p62/usage-t6.jsonl` → 0,3626, strop serveru 1 USD).
+
+Celkem 1,46 USD ze stropu plánu 4 USD; zbývá 2,54 USD.
 
 ## Jak to zopakovat
 
@@ -149,6 +195,10 @@ node <demo-main>/evals/play/p61/shots.mjs shoot --set evals/play/p30/dev.json --
 node evals/play/p61/judge.mjs --shots main=D:/caches/p62/main-dev --out evals/play/p62/baseline-dev.json --judge claude --runs 2 --sheets D:/caches/p62/sheets-dev
 node <demo-main>/evals/play/p61/shots.mjs shoot --set evals/play/p62/holdout.json --out D:/caches/p62/main-holdout --label main --base http://127.0.0.1:3162
 node evals/play/p62/audit.mjs
+# T6: větev na dev (build větve, server na 3168)
+node --env-file=<worktree P58B>/.env.local evals/play/p61/shots.mjs serve --port 3168 --usage-log D:/caches/p62/usage-t6.jsonl --cap-usd 1
+node evals/play/p61/shots.mjs shoot --set evals/play/p30/dev.json --range 0..11 --out D:/caches/p62/p62-dev --label p62 --commit 6beb49d3 --base http://127.0.0.1:3168
+node evals/play/p61/judge.mjs --shots p62=D:/caches/p62/p62-dev --out evals/play/p62/after-dev.json --judge claude --runs 2 --sheets D:/caches/p62/sheets-p62-dev
 ```
 
 Server jen jeden proces naráz, zastavit podle PID z prvního řádku.
