@@ -18,6 +18,8 @@ const IWER_BUNDLE = join(process.cwd(), 'node_modules/iwer/build/iwer.min.js');
 declare global {
   interface Window {
     IWER?: { XRDevice: new (config: unknown) => { installRuntime(options?: { forceInstall?: boolean }): void }; metaQuest2: unknown };
+    /** Poslední relace, kterou stránka dostala – e2e ji ukončí jako systémové tlačítko brýlí. */
+    __iwerSession?: XRSession;
   }
 }
 
@@ -26,6 +28,13 @@ async function withQuest2(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const device = new window.IWER!.XRDevice(window.IWER!.metaQuest2);
     device.installRuntime({ forceInstall: true });
+    const xr = navigator.xr!;
+    const request = xr.requestSession.bind(xr);
+    xr.requestSession = async (...args) => {
+      const session = await request(...args);
+      window.__iwerSession = session;
+      return session;
+    };
   });
 }
 
@@ -54,6 +63,8 @@ async function drawnInVr(page: Page): Promise<void> {
 }
 
 test.beforeEach(async ({ page }) => {
+  // Dvě hry z věty, sestavení scény a relace se do výchozích 30 s nevejdou.
+  test.setTimeout(120_000);
   await withQuest2(page);
 });
 
@@ -66,7 +77,7 @@ test('without ?vr=1 there is no Enter VR and no XR code runs', async ({ page, re
   expect(await xr(page)).toBeNull();
 });
 
-test('with ?vr=1 Enter VR starts a session that draws both eyes, survives the AI version, and Exit VR returns the 2D game', async ({ page, request }) => {
+test('with ?vr=1 Enter VR starts a session that draws both eyes, survives the AI version, and leaving VR returns the 2D game', async ({ page, request }) => {
   const quick = await gameFrom(request, 'A hamster escapes a supermarket while a giant Roomba hunts it.');
   const arrived = await gameFrom(request, 'A penguin slides down an icy hill collecting fish.');
   let ready = false;
@@ -93,12 +104,14 @@ test('with ?vr=1 Enter VR starts a session that draws both eyes, survives the AI
   expect((await xr(page))?.presenting).toBe(true);
   await drawnInVr(page);
 
-  await page.getByTestId('exit-vr').click();
+  // Ven z VR systémovým tlačítkem brýlí: relace skončí zvenku. DOM tlačítko v relaci nejde (plátno brýlí ho kryje).
+  await page.evaluate(() => window.__iwerSession!.end());
   await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(false);
+  // 2D hra po výstupu běží a stránka reaguje; „Enter VR“ je zpět v HUD (AI verze z věty je řetěz mikroher) a vede znovu do VR.
   await expect(page.getByTestId('enter-vr')).toBeVisible();
-  // 2D hra po výstupu běží dál a stránka reaguje.
   await running(page);
   const tick = await page.evaluate(() => window.__playShell!.tick());
   await expect.poll(() => page.evaluate(() => window.__playShell!.tick()), { timeout: 15_000 }).toBeGreaterThan(tick);
-  await page.getByTestId('play-hud-restart').click();
+  await page.getByTestId('enter-vr').click();
+  await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
 });

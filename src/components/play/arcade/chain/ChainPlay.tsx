@@ -30,6 +30,8 @@ import { useRemixJob } from '../../RemixBox';
 import { type DarePublish, publishDare } from '../../ShareButton';
 import { BuildingScreen, GameHud, type HudCounter, objectiveShown } from '../../ui';
 import { UpgradeBanner, useCommitted } from '../../UpgradeBanner';
+import { EnterVrButton } from '../../xr/EnterVrButton';
+import { useXrControls } from '../../xr/xr-context';
 import { heroActionOf } from '../action-cue/cues';
 import type { GhostLabel } from '../Ghost';
 import { type ChainGhostReplay, fetchChainGhost } from './chain-ghost';
@@ -274,6 +276,8 @@ function ChainRun({
   }, [active, session]);
 
   const over = outcome !== 'running';
+  // VR (P65 T1): „Enter VR“ jen s `?vr=1` a prohlížečem, který VR umí; jinak dolní řada HUD nevznikne, jako dřív.
+  const vrOffered = useXrControls()?.presenting === false && !inFeed && !over;
   // Výhra pošle záznam s globálními tiky jako výzvu hned, ne až po stisku – nabídka sdílení chce čerstvé gesto.
   const [dare, setDare] = useState<DarePublish | undefined>(undefined);
   useEffect(() => {
@@ -342,6 +346,7 @@ function ChainRun({
         ]}
         clock={clock === null ? { seconds: snapshot.tick / ARCADE_HZ, countdown: false } : { seconds: (clock - snapshot.tick) / ARCADE_HZ, countdown: true }}
         objective={!over && objectiveShown(snapshot.tick, ARCADE_HZ, false)}
+        bottom={vrOffered && <EnterVrButton />}
       >
         {!inFeed && <UpgradeBanner request={upgrade} sentence={sentence} versionId={versionId} committed={committed} chain />}
       </GameHud>

@@ -3,15 +3,15 @@
 import { Button } from '../ui';
 import { useXrControls } from './xr-context';
 
-/** „Enter VR“ (P65 T1): jen s `?vr=1` a prohlížečem, který VR umí (`XrGate`); v relaci z něj je „Exit VR“. */
+/**
+ * „Enter VR“ (P65 T1) v HUD hry: jen s `?vr=1` a prohlížečem, který VR umí (`XrGate`), a mimo relaci. DOM v relaci
+ * vidět není (Quest ho nekreslí, emulátor ho překryje plátnem brýlí), proto ven vede systémové tlačítko brýlí
+ * a 3D panel „Exit VR“ (T5), ne tlačítko tady.
+ */
 export function EnterVrButton() {
   const xr = useXrControls();
-  if (xr === null) return null;
-  return xr.presenting ? (
-    <Button variant="secondary" size="s" className="play-hud-vr" data-testid="exit-vr" onClick={xr.exit}>
-      Exit VR
-    </Button>
-  ) : (
+  if (xr === null || xr.presenting) return null;
+  return (
     <Button variant="secondary" size="s" className="play-hud-vr" data-testid="enter-vr" onClick={() => void xr.enter()}>
       Enter VR
     </Button>

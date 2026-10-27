@@ -45,10 +45,14 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 
+/** Trvalé plátno XR relace z layoutu (P65 T1); `null` = stránka bez VR, jako dřív. */
+const xr = vi.hoisted(() => ({ host: null as StageTunnel | null }));
+vi.mock('../../xr/xr-context', () => ({ useXrHost: () => xr.host }));
+
 type Element = ReactElement<Record<string, unknown>>;
 
 /** Komponenty, do kterých test vstoupí: `ArcadeStage` až po místo plátna. */
-const ENTER = new Set(['StageCanvas', 'HostedCanvas', 'HostCanvas', 'StageCanvasRoot']);
+const ENTER = new Set(['StageCanvas', 'HostedCanvas', 'StagePortal', 'HostCanvas', 'StageCanvasRoot']);
 
 /** Všechny elementy stromu, i za hranicí `memo`, portálu a komponent z `ENTER`. */
 function elementsOf(node: ReactNode): Element[] {
@@ -199,5 +203,30 @@ describe('jedno plátno feedu (P54A T5)', () => {
     const a = host.content()?.owner;
     mountSlot(host, 'scene B');
     expect(host.content()?.owner).not.toBe(a);
+  });
+});
+
+describe('trvalé plátno VR (P65 T1)', () => {
+  // XR relace je svázaná s kontextem WebGL: feed ani hra s vlastním plátnem by ji při výměně za AI verzi ztratily.
+  it('ve VR nemá feed ani samostatná hra vlastní plátno, obě kreslí do plátna relace', () => {
+    const shared = createStageTunnel(null);
+    xr.host = shared;
+    try {
+      const world = fixtureWorld('runner');
+      let given: StageTunnel | null = null;
+      const feed = StageHost({
+        children: (host) => {
+          given = host;
+          return ArcadeStage({ session: sessionOf(world), cast, enabled: false, host });
+        },
+      });
+      expect(given).toBe(shared);
+      expect(canvases(feed)).toBe(0);
+      const alone = elementsOf(ArcadeStage({ session: sessionOf(world), cast, enabled: false }));
+      expect(alone.filter((element) => element.type === Canvas)).toHaveLength(0);
+      expect(alone.filter((element) => element.props.host === shared).length).toBeGreaterThan(0);
+    } finally {
+      xr.host = null;
+    }
   });
 });
