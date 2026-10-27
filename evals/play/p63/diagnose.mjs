@@ -3,7 +3,7 @@
  * P63 T1: proč hra po čtení hraje jinou hru, než věta říká. Pro každou větu projde cestu čtení krok po kroku, jak ji
  * jde server: čtečka (`Reading` z `readings.astra.json`, jedno čtení astry na větu) → klasifikátor
  * (`classifyGenre(věta, čtení)`) → skladba (`draftGameSpecWithMeta(věta, 1, { reading })`, žánr hry) → překlad rolí
- * (hrdina a hlavní role věty ve specifikaci) → publikace (`readingDiffers` proti rychlé hře). Krok rozchodu je první,
+ * (hrdina a hlavní role věty ve specifikaci) → publikace (`readingDiffers` a od P63 T3 `namesNoLess` proti rychlé hře). Krok rozchodu je první,
  * kde hra přestane hrát sloveso věty (`EXPECT`: přípustné žánry a role, ručně podle slov věty, ne podle slovníku).
  *
  *   node evals/play/p63/diagnose.mjs [--readings evals/play/p63/readings.astra.json] [--out evals/play/p63/diagnosis.json]
@@ -100,17 +100,20 @@ export function divergeStep({ expect, readGenre, classified, readingGame, quickG
 
 /** Moduly aplikace, které diagnóza volá; test je dosadí přímo, skript je načte za zavaděčem `ts-paths`. */
 export async function loadDeps() {
-  const [{ draftGameSpecWithMeta }, { classifyGenre }, { readForChain }, { chainOrSingle }, { readingDiffers }, { loadRapier }] = await Promise.all([
+  const [{ draftGameSpecWithMeta }, { classifyGenre }, { readForChain }, { chainOrSingle }, { buildChain }, { readingDiffers }, { derivedSeeds, seedFrom }, { coverage, namesNoLess }, { loadRapier }] = await Promise.all([
     import('../../../src/play/draft/index.ts'),
     import('../../../src/play/genre/classify.ts'),
     import('../../../src/play/chain/read.ts'),
     import('../../../src/play/chain/decide.ts'),
+    import('../../../src/play/chain/build.ts'),
     import('../../../src/app/api/play/_upgrade.ts'),
+    import('../../../src/app/api/play/_publish.ts'),
+    import('../../../src/play/read/coverage.ts'),
     import('../../../src/play/arcade/physics/world.ts'),
   ]);
   // Server čeká na fyziku před každým návrhem (route i práce řetězu); bez ní se míčová hra nepřeloží.
   await loadRapier();
-  return { draftGameSpecWithMeta, classifyGenre, readForChain, chainOrSingle, readingDiffers };
+  return { draftGameSpecWithMeta, classifyGenre, readForChain, chainOrSingle, buildChain, readingDiffers, derivedSeeds, seedFrom, coverage, namesNoLess };
 }
 
 /**
@@ -124,19 +127,26 @@ function gameOf(meta) {
 
 /**
  * Rychlá hra a hra po čtení věty jako na serveru (`route.ts`, `_upgrade.ts`): rychlá ze slov – řetěz podle
- * `chain/read.ts`, jinak návrh –, po čtení návrh ze čtení.
+ * `chain/read.ts` se semínkem věty, a když se nepostaví, návrh –, po čtení návrh ze čtení. `covered`: kolik rolí čtení
+ * ukáže rychlá hra (řetěz všemi koly) a hra po čtení (`coverage`, P63 T3).
  */
 export function gamesOf(sentence, reading, deps) {
   const quickMeta = deps.draftGameSpecWithMeta(sentence, 1, { reading: null });
-  const chain = deps.chainOrSingle(sentence, deps.readForChain(sentence, null), deps.classifyGenre(sentence, null)) === 'chain';
+  const chainRead = deps.readForChain(sentence, null);
+  const built = deps.chainOrSingle(sentence, chainRead, deps.classifyGenre(sentence, null)) === 'chain' ? deps.buildChain(sentence, chainRead, deps.derivedSeeds(deps.seedFrom(sentence.trim()))[0]) : null;
+  const chain = built?.ok === true;
   const quickGame = { ...gameOf(quickMeta), ...(chain ? { genre: 'chain' } : {}), chain };
   if (reading === null) return { quickGame, readingGame: null, published: false };
   const readMeta = deps.draftGameSpecWithMeta(sentence, 1, { reading });
   const readSpec = readMeta.spec;
   const quickSpec = quickMeta.spec;
+  const quick = chain ? built.chain.rounds.map((round) => round.spec) : [quickSpec];
   const readingGame = { ...gameOf(readMeta), goal: readSpec.tutorial?.goalLine ?? null, objective: readSpec.objective ?? null };
-  // Řetěz hru po čtení publikuje vždy (P58F), jedna hra jen když se od rychlé liší (`readingDiffers`, P61 T2).
-  return { quickGame, readingGame, published: chain || deps.readingDiffers(quickSpec, readSpec, readMeta.genre === null) };
+  const covered = { quick: deps.coverage(quick, reading), reading: deps.coverage([readSpec], reading) };
+  // Hra po čtení, která z rolí čtení ukáže méně než rychlá hra, ji nenahradí (`namesNoLess`, P63 T3). Jinak ji řetěz
+  // publikuje vždy (P58F), jedna hra jen když se od rychlé liší (`readingDiffers`, P61 T2).
+  const published = deps.namesNoLess(quick, readSpec, reading) && (chain || deps.readingDiffers(quickSpec, readSpec, readMeta.genre === null));
+  return { quickGame, readingGame, published, covered };
 }
 
 /** Celá diagnóza věty: čtení, klasifikátor, obě hry, krok rozchodu a místo v kódu. */

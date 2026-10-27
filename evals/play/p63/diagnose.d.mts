@@ -49,5 +49,11 @@ export function divergeStep(input: {
   readonly published: boolean;
 }): Step;
 export function loadDeps(): Promise<unknown>;
-export function gamesOf(sentence: string, reading: unknown, deps: unknown): { readonly quickGame: Game; readonly readingGame: Game | null; readonly published: boolean };
+export function gamesOf(sentence: string, reading: unknown, deps: unknown): {
+  readonly quickGame: Game;
+  readonly readingGame: Game | null;
+  readonly published: boolean;
+  /** Kolik rolí čtení ukáže rychlá hra a hra po čtení (P63 T3); chybí bez čtení. */
+  readonly covered?: { readonly quick: number; readonly reading: number };
+};
 export function diagnoseSentence(row: { readonly id: string; readonly text: string }, reading: unknown, expect: Expect, deps: unknown): Diagnosis;

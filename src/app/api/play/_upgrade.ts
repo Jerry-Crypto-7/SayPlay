@@ -6,6 +6,8 @@
  * nebo sbíraná věc (`readingDiffers`, P61 T2).
  * Řetěz mikroher AI verzi nemá: jeho práce větu jen přečte a hru ze čtení publikuje jako dítě
  * řetězu, když se čtením nehraje řetěz (P58E T1).
+ * Hra ze čtení, která z rolí čtení (hrdina, hrozba, cíl, místo) ukáže méně než rychlá hra, se nepublikuje nikdy
+ * (`namesNoLess`, P63 T3) – klient přejde na každou publikovanou (`UpgradeBanner.readingMove`), tak rozhoduje tady.
  *
  * Práce v letu drží mapa na `globalThis` – routy `POST /api/play/games`
  * a `GET …/:id/upgrade` jsou v Next.js oddělené moduly a modulová proměnná by
@@ -44,7 +46,9 @@ import { draftGameSpecWithMeta } from '@/play/draft';
 import { singular } from '@/play/draft/lexicon';
 import { DEFAULT_LABELS } from '@/play/genre/roles';
 import { readBeforeDraft, readerForAiVersion } from '@/play/read/client';
-import { type GameRole, type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
+import { namesNoLess, SHOWN_KINDS } from '@/play/read/coverage';
+import type { Reading } from '@/play/read/schema';
+import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
@@ -264,9 +268,6 @@ export function playsOtherGenre(quick: GameSpecV1, read: GameSpecV1): boolean {
   return read.genre !== undefined && (read.genre.id !== quick.genre?.id || read.genre.mode !== quick.genre?.mode);
 }
 
-/** Role, které hráč vidí jako nepřítele nebo věc z věty (P61 T2): nástraha, honič, hlídka a terč; sbíraná věc, předmět a klíč. */
-const SHOWN_KINDS: ReadonlySet<GameRole['kind']> = new Set(['hazard', 'chaser', 'patrol', 'target', 'collectible', 'item', 'key']);
-
 /**
  * Věc z věty, kterou scéna v roli nakreslí: model pro popisek – „giant roomba“ a „roomba“ jsou týž nepřítel. `null` =
  * výchozí věc smlouvy rolí (`DEFAULT_LABELS`: mušle pláže, mince, robot střílečky), nebo popisek bez modelu, za který
@@ -334,7 +335,7 @@ const CHAIN_REFUSED: Extract<UpgradeOutcome, { readonly status: 'draft-final' }>
 /**
  * Práce řetězu (P58E T1): čtečka jen pro AI verzi řetězovou větu na route nečetla, tak ji přečte tady – placeně jen přes
  * `mayPayChainRead` a brány čtečky, uložené čtení zdarma. Když věta o víc her výslovně nežádá (P58F), publikuje návrh
- * ze čtení jako dítě řetězu. Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`, s hrou
+ * ze čtení jako dítě řetězu, když z věty neukáže méně než jeho kola (P63 T3). Čtení `null`, znovu řetěz i neprošlá publikace nechají řetěz – konec je vždy `CHAIN`, s hrou
  * ze čtení, když je (T2). Řetěz, který route stavěla už se čtením (čtečka před návrhem, `readBy: 'model'`), se nečte znovu.
  * simplified: jedno čtení na řetěz drží mapa v procesu – dvě instance se souběžným dotazem zaplatí čtení obě (cache
  * odpovědí se plní až po čtení, dítě vznikne jednou); kdyby to bylo vidět v útratě, rezervovat čtení v úložišti.
@@ -364,22 +365,26 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   // P58F (majitel 26. 10.): hra ze čtení nahradí řetěz vždy – na sadě P58B dalo čtení správný žánr i u 14 řetězů, které
   // `chainOrSingle` se čtením potvrdil. Řetězem zůstane jen věta, která o víc her výslovně žádá.
   if (CHAIN_CUES.test(sentence.toLowerCase())) return CHAIN_FINAL;
+  const spec = draftGameSpecWithMeta(sentence, 1, { reading }).spec;
+  // P63 T3: ne hra, která z rolí čtení ukáže méně než kola řetězu – rytíř s drakem (h18) jako jízda bez draka.
+  if (!namesNoLess(chain.chain!.rounds.map((round) => round.spec), spec, reading)) return CHAIN_FINAL;
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(sentence.trim()));
-  const published = await publishReading(versions, chainId, request, draftGameSpecWithMeta(sentence, 1, { reading }).spec, seeds);
+  const published = await publishReading(versions, chainId, request, spec, seeds);
   return published === null ? CHAIN_FINAL : found(published.versionId, published.fresh);
 }
 
 /**
  * `director` mimo produkt jen pro měřidlo P46E (`evals/play/p46e/upgrade.ts`): nahraná odpověď místo živé větve.
  * `onReading` (P58D T1): id hry ze čtení – návrh, který režie postaví ze čtení pro AI verzi, publikovaný hned, když
- * se od rychlé hry liší (`readingDiffers`: žánr, svět, nepřítel nebo sbíraná věc). Čtení se tím neplatí znovu a publikace
+ * se od rychlé hry liší (`readingDiffers`: žánr, svět, nepřítel nebo sbíraná věc) a z věty neukáže méně (`namesNoLess`, P63 T3). Čtení se tím neplatí znovu a publikace
  * na model nečeká; výsledek upgradu počká jen na dokončení zápisu, aby ho `after()` nezmrazil v půlce.
  */
 export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   let reading: Promise<void> = Promise.resolve();
-  const onDraft = (spec: GameSpecV1, grid: boolean): void => {
-    if (!readingDiffers(draft.spec, spec, grid)) return;
+  const onDraft = (spec: GameSpecV1, grid: boolean, read: Reading | null): void => {
+    // P63 T3: ani hra, která z rolí čtení ukáže méně než rychlá hra; návrh bez čtení (vypnutá čtečka) se nemá s čím srovnat.
+    if (!readingDiffers(draft.spec, spec, grid) || (read !== null && !namesNoLess([draft.spec], spec, read))) return;
     reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((published) => {
       if (published !== null) onReading?.(published.versionId, published.fresh);
     });

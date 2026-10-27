@@ -43,7 +43,7 @@ const reading = (genre: string, sure: boolean) => {
   };
 };
 
-/** Server v malém: klasifikátor, rychlá hra a hra po čtení zadané ručně, jedna hra (bez řetězu). */
+/** Server v malém: klasifikátor, rychlá hra a hra po čtení zadané ručně, jedna hra (bez řetězu), stejné pokrytí (P63 T3). */
 const deps = ({ classified, quick, read, differs }: { classified: string; quick: Game; read: Game; differs: boolean }) => ({
   classifyGenre: (_sentence: string, given: unknown) => {
     const [genre, mode] = (given === null ? quick.genre : classified).split('.');
@@ -53,6 +53,8 @@ const deps = ({ classified, quick, read, differs }: { classified: string; quick:
   readForChain: () => null,
   chainOrSingle: () => 'single',
   readingDiffers: () => differs,
+  coverage: () => 0,
+  namesNoLess: () => true,
 });
 
 const RACE: Game = { genre: 'voyage.race', hero: 'car', roles: ['obstacle:rock'] };

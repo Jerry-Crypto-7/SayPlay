@@ -42,7 +42,7 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('@/components/play/PlayShell', () => ({ PlayShell: () => null }));
 
-const { __resetUpgrades, directUpgrade, readingOf, upgradeOf } = await import('../_upgrade');
+const { __resetUpgrades, directUpgrade, readingDiffers, readingOf, upgradeOf } = await import('../_upgrade');
 const { default: PlayGamePage } = await import('@/app/play/[id]/page');
 
 const readings = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/readings/p30-dev.gpt-oss-20b.json'), 'utf8')) as { readings: { id: string; text: string; reading: Omit<Reading, 'sure'> }[] }).readings;
@@ -144,6 +144,23 @@ describe('the reading game (P58D T1)', () => {
     expect(draftGameSpecWithMeta(SAME.text, 1, { reading: SAME.reading }).spec.genre).toEqual(quick.spec.genre);
     const announced: string[] = [];
     await directUpgrade(store, quick, request(SAME.text), director(undefined).make, (id) => announced.push(id));
+    expect(reads).toBe(1);
+    expect((await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading')).toEqual([]);
+    expect(announced).toEqual([]);
+  }, 120_000);
+
+  // P63 T3: jiný žánr nestačí, když hra ze čtení ukáže z rolí čtení méně – čtení jako stohování ztratí duchy rychlé hry.
+  it('publishes nothing when the reading game, though different, names less of the reading than the quick game', async () => {
+    const stack: Reading = { ...OTHER.reading, genre: { genre: 'timing', mode: 'stack' } };
+    reader(stack);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, OTHER.text);
+    const drafted = draftGameSpecWithMeta(OTHER.text, 1, { reading: stack });
+    expect(readingDiffers(quick.spec, drafted.spec, drafted.genre === null)).toBe(true);
+    expect(quick.spec.roles.map((role) => role.label)).toContain('ghost');
+    expect(drafted.spec.roles.map((role) => role.label)).not.toContain('ghost');
+    const announced: string[] = [];
+    await directUpgrade(store, quick, request(OTHER.text), director(undefined).make, (id) => announced.push(id));
     expect(reads).toBe(1);
     expect((await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading')).toEqual([]);
     expect(announced).toEqual([]);
