@@ -18,7 +18,10 @@ export interface HudGoal {
   readonly label: string;
   readonly count: number;
   readonly need: number;
-  /** `label` je podstatné jméno z věty (P61 T5): pilulka ho ukáže před počtem (`keys 0/3`), ne jen čtečce. */
+  /**
+   * `label` je podstatné jméno z věty (P61 T5): pilulka ho ukáže před počtem (`keys 0/3`), ne jen čtečce.
+   * Na telefonu pak cíl stojí bez vajec na prvním řádku pilulky a další počítadla pod ním (`play.css`).
+   */
   readonly said?: boolean;
 }
 
@@ -70,7 +73,7 @@ function Egg({ collected }: { readonly collected: boolean }) {
 function Goal({ goal }: { readonly goal: HudGoal }) {
   const eggs = goal.need <= MAX_EGGS ? Array.from({ length: goal.need }, (_, index) => index < goal.count) : [goal.count > 0];
   return (
-    <span className="play-hud-count" data-testid={`hud-counter-${goal.label}`} data-count={goal.count}>
+    <span className={goal.said === true ? 'play-hud-count is-said' : 'play-hud-count'} data-testid={`hud-counter-${goal.label}`} data-count={goal.count}>
       {eggs.map((collected, index) => (
         <Egg key={index} collected={collected} />
       ))}
