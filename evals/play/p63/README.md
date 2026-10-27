@@ -59,9 +59,10 @@ Odhad (inference, ne měření): při 200 návštěvnících denně a nikom vrac
 | T1 čtení pro diagnózu (36 vět, compare.measure) | 1,103 |
 | T1 server `main`: 12 dev + 24 zapečetěných vět (`shots.mjs spend`, 36 volání) | 1,090 |
 | T2 nový prompt čtečky: 7 vět P61 + 12 dev (`reread-set.json`, compare.measure) | 0,592 |
-| **Celkem** | **2,785** |
+| T6 server větve `55f1a838`: 12 dev vět, 10 placených čtení (`shots.mjs spend`; s088 a s069 nečteny, viz T6) | 0,310 |
+| **Celkem** | **3,095** |
 
-Zbývá 1,215 USD. T6 potřebuje ~1,09 (server větve: 12 dev + 24 zapečetěných vět), proto T2 nečetl znovu všech 36 vět, jen 19.
+Zbývá 0,905 USD na zapečetěnou sadu (24 vět ≈ 0,74). Strop serveru rezervuje před každým čtením nejhorší případ volání (znak = token, 0,09–0,12 USD), proto `--cap-usd` musí ležet aspoň ~0,12 nad očekávanou útratou, jinak poslední věty zůstanou nečtené.
 
 ## T2: nový prompt čtečky (`readings.p63.astra.json`)
 
@@ -142,3 +143,78 @@ Nejdražší položky, průměr vlastního času na jeden start (s002 A / B; s00
 - **Odhad (inference):** až ~0,6 s z úseku „první snímek → hratelná“ na Pixel 7.
 
 **Návrh mimo P62, neprovedeno:** `sumOf` v `runner/path.ts` počítá sinusy při každém dotazu na trať, na startu běžce to je 0,14–0,25 s. Tabulka po metrech by to stáhla na zlomek. Nejde o regresi proti `main`, proto se pro bránu neměnilo.
+
+## T6: dev po opravách T2–T4 (`after-dev.json`)
+
+Měřeno 27. 10. večer stejně jako `main` v T1:
+- větev `55f1a838`, `npm run build`, `shots.mjs serve` (astra jen pro AI verzi, režisér bez dosažitelného modelu) na portu 3163;
+- `shots.mjs shoot` nad `read-set.json` [24..35], snímky `D:/caches/p63/p63-dev/`;
+- `judge.mjs --judge claude` (Opus 5.5, `claude -p --safe-mode`), list desktop jen s řádky větve jako list T1 jen s řádky `main`, seed 61026, souběh 1, jeden běh, `sheet.png` v prázdném `mkdtemp`; listy `D:/caches/p63/sheets-p63-dev/`.
+
+| Strana | `main` (T1) | P63 | P63 bez s069 |
+|---|---|---|---|
+| rychlá hra | 0,50 / 0,40 (11 vět) | 0,475 / 0,35 (12) | 0,50 / 0,35 (11) |
+| po čtení (hra ze čtení, jinak rychlá) | 0,50 / 0,40 (11) | 0,50 / 0,375 (12) | 0,50 / 0,40 (11) |
+| hra ze čtení (jen kde vznikla) | 0,425 / 0,40 (2) | 0,50 / 0,475 (2) | – |
+
+Věrnost / hrál bych. s069 v T1 nemá platnou odpověď soudce, proto sloupec bez ní.
+
+| Věta | Rychlá `main` → P63 | Po čtení `main` → P63 | Výtka soudce u P63 po čtení |
+|---|---|---|---|
+| s039 zombie shooter in a mall | 0,60 / 0,40 → 0,60 / 0,40 | = rychlá | zombie malé, hala mlhavá a prázdná |
+| s037 space marine, alien bugs | 0,60 / 0,40 → 0,60 / 0,35 | = rychlá | brouci malí, scéna kalná a statická |
+| s002 knight, three keys, ghosts | 0,70 / 0,45 → 0,70 / 0,45 | = rychlá (hra ze čtení uložená, neohlášená) | hrdina začíná jako modrý kvádr, rytíř nečitelný, pruh „obstacles aren't here yet“ |
+| s003 hamster, supermarket, Roomba | 0,50 / 0,35 → 0,40 / 0,35 | = rychlá (hra ze čtení uložená, neohlášená) | bílá prázdnota místo supermarketu, žádná Roomba |
+| s006 corgi, sausages, sprinklers | 0,25 / 0,30 → 0,30 / 0,30 | 0,40 / 0,40 → 0,60 / 0,55 (ze čtení) | corgi na cestě parkem, postřikovač s popiskem, kombo; párky a pes nečitelné |
+| s008 banana temple run | 0,45 / 0,50 → 0,50 / 0,50 | = rychlá | banán jako žlutá láhev, opice nečitelná |
+| s022 tiny robot, tower | 0,45 / 0,45 → 0,45 / 0,45 | 0,45 / 0,40 → 0,40 / 0,40 (ze čtení) | tytéž ostrovy jako rychlá, žádná věž ani pohyblivé plošiny |
+| s021 obby, lava, spinning bars | 0,50 / 0,45 → 0,50 / 0,45 | = rychlá (hra ze čtení uložená, neohlášená) | láva ano, rotující tyče ne |
+| s035 flappy underwater | 0,25 / 0,15 → 0,40 / 0,25 | = rychlá | 2 ze 3 snímků konec hry po 1,4 s |
+| s050 snowballs, kids, fort | 0,45 / 0,30 → 0,50 / 0,35 | = rychlá | děti malé, koule v letu nevidět |
+| s088 angry birds, cats, boxes | 0,50 / 0,35 → 0,40 / 0,25 | = rychlá | žádný prak ani věže krabic, nic neletí |
+| s069 candy crush, gems, cave | – → 0,15 / 0,15 | = rychlá | žádná mřížka match-3 („swapping isn't supported“) |
+
+- Mimo rozptyl soudce (T1 P61: nejvýš 0,10) se pohnuly jen s006 po čtení (+0,20 / +0,15) a s035 (+0,15 / +0,10). s003 a s088 −0,10 leží na hraně rozptylu.
+- Hra ze čtení vznikla podle měřidla jen u řetězů s006 a s022, jako v T1. U s002, s003 a s021 ji ale server vytvořil – viz „Největší zbývající ztráta“.
+- s088 a s069 se nečetly: strop 0,40 USD rezervuje před čtením nejhorší případ volání (znak = token), po deseti čteních (0,31 USD) se další nevešlo. Druhý server se stropem 0,09 nečetl nic.
+- Provoz: výstup prvního serveru šel přes filtr v rouře, filtr skončil a každý zápis serveru do výstupu pak hodil EPIPE. Logování té chyby psalo do téhož výstupu – smyčka (CPU profil: zdrojové mapy chyb Next.js) zasekla server u s069. Chyba prostředí, ne produktu. s069 dofocena na druhém serveru bez roury; obě instance zastavené podle PID.
+
+### Největší zbývající ztráta: hra ze čtení k hráči nedojde, když AI verze skončí bez hry
+
+**Fakt:** souborové úložiště her (`data/play/store`, gitignorované) má po běhu u s002, s003 a s021 dítě `relation: 'reading'` rychlé hry:
+- s002 `arena.collect`: rytíř, klíče, duch jako nebezpečí;
+- s003 `arena.escape`: křeček a pronásledovatel „giant roomba“;
+- s021 `platformer.default`: robot, rotující tyč a láva.
+
+Přesně tyhle tři hry předpověděla diagnóza nad `readings.p63.astra.json` (s069 by byla čtvrtá, ale nečetla se). Měřidlo přitom dostalo `draft-final MODEL_UNAVAILABLE` bez hry ze čtení.
+
+**Příčina** (`src/app/api/play/_upgrade.ts`, `directUpgrade`):
+- Práce počká na publikaci hry ze čtení a vrátí konec režiséra bez jejího id.
+- Režisér s nedostupným modelem skončí za 1–2 s po čtení, takže `job.reading` a `job.outcome` vzniknou v téže chvíli. `pending` s hrou ze čtení tak existuje jen mezi dvěma dotazy – táž mezera, kterou P58E T2 zavřel u řetězu.
+- Stejně v T1 na `main`: „Rozptyl čtečky“ výš (s002, s003, s021, s069) nebyl rozptyl čtečky, ale tahle mezera.
+- S živým režisérem (~57 s) přijde hra ze čtení v `pending` a klient na ni přejde. Měřidlo tedy u jedné hry měřilo něco jiného, než dostane hráč. Hráč, jehož AI verze skončí bez hry (strop, výpadek, odmítnutí), nedostal nic.
+
+**Oprava `6d5ac168`:**
+- Konec `draft-final` práce, která hru ze čtení publikovala, ji nese jako konec řetězu (`reading: { versionId }`). Hotová AI verze (`ready`) má přednost.
+- Klient (`UpgradeBanner.readingMove`) přechod na konec s hrou ze čtení už uměl, mění se jen komentář.
+- Test `upgrade-reading.test.ts` „an AI version that ends without a game still hands the player the reading game“: před opravou červený (dítě v úložišti, konec bez id), po opravě zelený. Druhý test: bez hry ze čtení konec nic nenese.
+- Test P58D T4 v `upgrade.test.ts` (odmítnutí stropem předběhne uloženou hru ze čtení) dál chce konec, ne `pending`; nově s id uložené hry.
+- `npx vitest run src/app/api/play src/components/play`: 1958 / 1959 před úpravou testu P58D T4, oba upgrade soubory potom 58 / 58. `tsc` čistý.
+
+**Ověření bez nového čtení (0 USD):** tři uložené hry ze čtení nafocené týmž postupem jako `shots()` na serveru s vypnutou čtečkou (`D:/caches/p63/p63-dev-fix/`). Soud na listu s řádky rychlá + ze čtení (`D:/caches/p63/sheets-p63-dev-fix/`, seed 61026, Claude, jeden běh), věrnost / hrál bych:
+
+| Věta | P63 rychlá | P63 ze čtení | Výtka soudce u hry ze čtení |
+|---|---|---|---|
+| s002 | 0,60 / 0,50 | 0,40 / 0,30 | „no keys ever appear, and the run fades to a grey game-over“ |
+| s003 | 0,50 / 0,55 | 0,60 / 0,50 | Roomby honí křečka po dlaždicích obchodu, ale nejsou obří a cíl je přežít, ne utéct |
+| s021 | 0,50 / 0,50 | 0,45 / 0,45 | táž láva, tyče pořád nejsou, v prvním snímku náhradní zelený kvádr |
+
+- Hra ze čtení vyhrála věrností jen u s003. Odvozeno: zařazená do mediánu by „po čtení“ zůstalo 0,50 / 0,40 bez s069 (0,475 / 0,375 s ní).
+- Rychlá s002 má na tomto listu 0,60 / 0,50, na listu jen s rychlou hrou 0,70 / 0,45 – tytéž snímky. Vliv sousedního řádku na listu je tedy kolem 0,10, jak zjistil už P61 T7.
+- Oprava dev číslo nezvedá. Mění, co měřidlo a zapečetěná sada uvidí: u jedné hry teď soudí hru ze čtení, kterou hráč se živým režisérem dostává už dnes.
+
+**Nález pro další kolo (neopraveno, druhé kolo se nedělá):**
+- **s002:** duch hry ze čtení stojí hned u startu hrdiny. Ve snímcích životy 3 → 1 → 0 za ~4 s, konec hry dřív, než je vidět klíč; rychlá hra má duchy daleko.
+- Duch je díl nebezpečí z T2 (`compose/assemble.ts`, `foeless`: pronásledovatel věty v aréně bez hrozby jde jako `hazard`). Soubor P63, ne P62.
+- **Návrh:** díl nebezpečí v aréně startuje od hrdiny aspoň tak daleko jako pronásledovatelé.
+- Odvozeno ze snímků, pozice v kódu neověřená. Robot hru vyhraje, nečinný hráč ne, takže publikační brána to nechytí.
