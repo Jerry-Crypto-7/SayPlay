@@ -14,6 +14,7 @@ import { createPortal } from 'react-dom';
 import { type Camera, type PerspectiveCamera, type Scene, type WebGLRenderer, WebGLRenderTarget } from 'three';
 
 import { loadsPending, loadsSettled } from '../arcade/look/pending-loads';
+import { useXrHost } from '../xr/xr-context';
 import { captureFrame } from './snapshot-cache';
 import { createStageTunnel, type Frameloop, type StageTunnel } from './stage-tunnel';
 
@@ -188,11 +189,21 @@ function StageCanvasRoot({ frameloop, onCreated, children }: { readonly frameloo
   );
 }
 
-function HostCanvas({ host, keepPrograms, deferScenes }: { readonly host: StageTunnel; readonly keepPrograms: boolean; readonly deferScenes: boolean }) {
+/** Obal scény uvnitř `<Canvas>` – XR relace a rig hráče (P65 T1, `xr/XrRoot.tsx`). */
+export type SceneWrap = (scene: ReactNode) => ReactNode;
+
+interface HostCanvasProps {
+  readonly host: StageTunnel;
+  readonly keepPrograms: boolean;
+  readonly deferScenes: boolean;
+  readonly wrap?: SceneWrap;
+}
+
+function HostCanvas({ host, keepPrograms, deferScenes, wrap }: HostCanvasProps) {
   const content = useSyncExternalStore(host.subscribe, host.content, () => null);
   useLayoutEffect(() => () => host.bind(null), [host]);
-  return (
-    <StageCanvasRoot frameloop={content?.frameloop ?? 'demand'} onCreated={(state) => host.bind(() => captureFrame(state))}>
+  const scene = (
+    <>
       {keepPrograms && <KeepPrograms />}
       {content !== null && (
         <Fragment key={content.owner}>
@@ -200,14 +211,34 @@ function HostCanvas({ host, keepPrograms, deferScenes }: { readonly host: StageT
           {deferScenes ? <DeferredScene node={content.node} /> : content.node}
         </Fragment>
       )}
+    </>
+  );
+  return (
+    <StageCanvasRoot frameloop={content?.frameloop ?? 'demand'} onCreated={(state) => host.bind(() => captureFrame(state))}>
+      {wrap === undefined ? scene : wrap(scene)}
     </StageCanvasRoot>
   );
+}
+
+/** Tunel s vlastním kontejnerem plátna; na serveru bez kontejneru. */
+export function createHostTunnel(): StageTunnel {
+  if (typeof document === 'undefined') return createStageTunnel(null);
+  const element = document.createElement('div');
+  element.className = 'play-stage-host';
+  element.style.cssText = 'width:100%;height:100%';
+  return createStageTunnel(element);
+}
+
+/** Plátno hostitele, vykreslené do jeho kontejneru. */
+export function StagePortal({ host, ...props }: HostCanvasProps) {
+  return host.element === null ? null : createPortal(<HostCanvas host={host} {...props} />, host.element);
 }
 
 /**
  * Drží jedno plátno, dokud je feed na stránce; `children` dostanou hostitele pro `ArcadeStage`.
  * `onLeave` dostane snímek scény, která z plátna odchází (T8). `keepPrograms` drží programy shaderů přes výměny scén
  * (řetěz mikroher, `KeepPrograms`); `deferScenes` staví změněnou scénu odloženě (`DeferredScene`).
+ * Ve VR (P65 T1) vlastní plátno nevznikne: hostitelem je trvalé plátno XR relace z layoutu (`XrGate`).
  */
 export function StageHost({
   children,
@@ -220,17 +251,13 @@ export function StageHost({
   readonly keepPrograms?: boolean;
   readonly deferScenes?: boolean;
 }) {
-  const [host] = useState(() => {
-    if (typeof document === 'undefined') return createStageTunnel(null);
-    const element = document.createElement('div');
-    element.className = 'play-stage-host';
-    element.style.cssText = 'width:100%;height:100%';
-    return createStageTunnel(element);
-  });
+  const shared = useXrHost();
+  const [own] = useState(createHostTunnel);
+  const host = shared ?? own;
   useEffect(() => (onLeave === undefined ? undefined : host.onLeave(onLeave)), [host, onLeave]);
   return (
     <>
-      {host.element !== null && createPortal(<HostCanvas host={host} keepPrograms={keepPrograms} deferScenes={deferScenes} />, host.element)}
+      {shared === null && <StagePortal host={own} keepPrograms={keepPrograms} deferScenes={deferScenes} />}
       {children(host)}
     </>
   );
@@ -250,11 +277,16 @@ function StageSlot({ host, frameloop, children }: { readonly host: StageTunnel; 
   return <div ref={slot} style={{ width: '100%', height: '100%' }} />;
 }
 
-/** Plátno scény `ArcadeStage`: s `host` tunel do trvalého plátna feedu, bez něj vlastní `<Canvas>` jako dnes. */
+/**
+ * Plátno scény `ArcadeStage`: s `host` tunel do trvalého plátna feedu, ve VR (P65 T1) do trvalého plátna XR relace,
+ * jinak vlastní `<Canvas>` jako dnes.
+ */
 export function HostedCanvas({ host, frameloop, children }: { readonly host?: StageTunnel; readonly frameloop: Frameloop; readonly children: ReactNode }) {
-  if (host !== undefined) {
+  const shared = useXrHost();
+  const target = host ?? shared;
+  if (target !== null) {
     return (
-      <StageSlot host={host} frameloop={frameloop}>
+      <StageSlot host={target} frameloop={frameloop}>
         {children}
       </StageSlot>
     );

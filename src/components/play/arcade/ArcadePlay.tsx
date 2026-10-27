@@ -45,6 +45,7 @@ import { AboutButton, SentenceRead } from '../SentenceRead';
 import { type DarePublish, type LivePublish, publishDare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
+import { EnterVrButton } from '../xr/EnterVrButton';
 import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner, useCommitted } from '../UpgradeBanner';
@@ -970,6 +971,8 @@ function ArcadePlayGame({
                 </Button>
               )}
               {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} recording={filming} />}
+              {/* VR (P65 T1): jen s `?vr=1` a prohlížečem, který VR umí; feed zůstává 2D. */}
+              {!inFeed && <EnterVrButton />}
             </>
           )
         }
