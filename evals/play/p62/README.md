@@ -179,13 +179,41 @@ Ztráty podle důvodů soudce u větve (14 řádků 1. běhu, 2. běh totéž), 
 
 Jedno kolo opravy dostala ztráta 1: jediná hlavní výtka s jednou příčinou ve scéně, kterou jde opravit na jednom místě (zem interiéru) pro všechny žánry naráz. Ztráta 2 má víc řádků, ale jako vedlejší výtku a s jinou příčinou v každém žánru; 4 je mimo scénu.
 
+### Oprava: podlaha interiéru i mimo arénu
+
+- Dlažba interiéru (`Look.interior.floor`, T3) se klade i v údolí běžce (`buildValley`) a v zemi ostatních žánrů (`buildFieldGround` → `FieldGround`: střelnice, hod, plošinovka, načasování, rytmus, souboj a další). Tytéž dílce jako v aréně (`INTERIOR_LAYOUTS`), tentokrát jako textura 256 × 256 px s jednou periodou kladení (`look/interior-floor.ts`); síť nese UV v metrech a bílé vrcholy, takže barvu dá jen dlažba – žádné světlé skvrny jako sníh ani štěrk krajnice.
+- Proč textura a ne síť jako v aréně: trať běžce má stovky metrů a dílce po 1,25 m by byly desítky tisíc trojúhelníků navíc; textura je bez dalšího kreslicího volání.
+- Běžec v interiéru běží po rovné podlaze (jako hala z P61) a ulička je ta podlaha: šedý pás cesty se nekreslí, okraje uličky zůstaly jako pruh v barvě spáry.
+- Aréna se nemění (svou podlahu klade sítí). Venkovní sady beze změny – otisk údolí, pásů cesty a země je v testu připíchnutý z `6beb49d3`.
+- Test `src/components/play/arcade/look/__tests__/indoor-ground.test.ts` (20 případů): z dev vět s003 a s039 přes návrh a `sceneLook` až k tomu, co kreslí `RunnerValley` a `WorldBackdrop` → `FieldGround` – textura je dlažba povrchu (dílce, spáry, u šachovnice druhá barva, žádná fialová), UV = metry, vrcholy bílé, údolí rovné, pás cesty chybí a okraj má barvu spáry; totéž pro všech šest interiérů; 12 venkovních sad proti otiskům. Před opravou 20/20 červených (interiéry „floor texture: expected null“, venkovní jen chybějící otisky, které se pak zapsaly z nezměněného kódu), po ní 20/20 zelených. Rozbité schválně: údolí interiéru se zemí sady místo bílých vrcholů – 7 červených; pás cesty kreslený i v interiéru – první verze testu ho pustila (pás měl barvu dlažby, ne cesty), test teď chce jen okraje uličky a mutant je červený.
+
+Které dev věty se mění (sada a scéna z auditu T1): s003 (běžec, supermarket), s039 (střelnice, obchoďák), s037 (střelnice v „mining colony“ = továrna) a s022 (plošinovka na hradě, břeh za ostrůvky). s002 a s069 jsou aréna, ta se nemění.
+
+Snímky po opravě (čerstvý build, týž server a nastavení) `D:/caches/p62/t6-after/`, prohlédnuté proti `D:/caches/p62/p62-dev/`:
+- **s003:** před – světle šedá plocha z trojúhelníků jako zasněžená pláň a šedá silnice s tmavou krajnicí; po – šachovnicová podlaha supermarketu až k regálům a stánkům, ulička vyznačená dvěma šedými pruhy, strop se světly; na telefonu totéž.
+- **s039:** před – béžová hladká plocha; po – velké krémové dlaždice se spárami až k fontáně a stojanům s oblečením.
+- **s037:** před – tmavě hnědá pláň; po – šedé kovové pláty se spárami. Těžba je teď průmyslová plošina; scéna je světlejší, ne kalnější.
+- **s022:** břeh za ostrůvky byl tráva, teď kamenná dlažba hradu; ostrůvky a voda beze změny.
+
+Znovu se nesoudilo (jedno kolo, bez druhého soudu).
+
+Testy: `src/play` + `src/components/play` 13 464 / 13 466 – dva pády jsou časové limity pod zátěží (`director.test.ts` 92 s, `runner-sections.test.ts` 125 s, STACK_TRACE_ERROR), samostatně 58/58; `tsc` čistý. E2e proti buildu s opravou (server bez čtečky na 3168): `play-shooter` chromium 7/7, `p58a-framing` 48 + 24 + 24 (chromium, Pixel 7, iPhone; zbytek přeskočený podle profilu), `p61-portrait` 19 + 19 na obou telefonech, 0 pádů.
+
+### Nálezy T6 (bez druhého kola)
+
+- **Postava nebo věc malá či nečitelná** (8 řádků, vedlejší výtka): cíle hodu (s050 děti, s088 krabice) stojí malé a daleko; pronásledovatel běžce (s003 Roomba, s008 opice) je za hrdinou nebo pod spodní hranou; hrdina běžce s006 není poznat jako corgi.
+- **Kalná scéna** (s037, s002, s006): po opravě je s037 světlejší, hrad v aréně a park ve dvou snímcích s006 zůstávají tmavé.
+- **Mechaniky, které hra neumí** (s069 match-3, s022 věž s pohyblivými plošinami, s021 rotující tyče, s035 konec po 0,9 s, s088 prak) – mimo scénu.
+- **Náhradní kvádr ve hře ze čtení** (s022) – start scény, jako nález T7 v P61.
+- **Bílý kopec za lednicí** v supermarketu běžce (snímek 2 před i po) zůstal; podle tvaru jde o kulisu, ne o zem – neměřeno.
+
 ## Útrata
 
 Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946).
 
-T6, focení větve na dev: **0,36 USD** za 12 volání (`--usage-log D:/caches/p62/usage-t6.jsonl` → 0,3626, strop serveru 1 USD).
+T6: **0,45 USD** za 15 volání (`--usage-log D:/caches/p62/usage-t6.jsonl` → 0,4508, strop serveru 1 USD) – focení větve na dev 0,36 USD za 12 volání, snímky po opravě (4 věty) 0,09 USD za 3 volání.
 
-Celkem 1,46 USD ze stropu plánu 4 USD; zbývá 2,54 USD.
+Celkem 1,54 USD ze stropu plánu 4 USD; zbývá 2,46 USD.
 
 ## Jak to zopakovat
 
@@ -199,6 +227,8 @@ node evals/play/p62/audit.mjs
 node --env-file=<worktree P58B>/.env.local evals/play/p61/shots.mjs serve --port 3168 --usage-log D:/caches/p62/usage-t6.jsonl --cap-usd 1
 node evals/play/p61/shots.mjs shoot --set evals/play/p30/dev.json --range 0..11 --out D:/caches/p62/p62-dev --label p62 --commit 6beb49d3 --base http://127.0.0.1:3168
 node evals/play/p61/judge.mjs --shots p62=D:/caches/p62/p62-dev --out evals/play/p62/after-dev.json --judge claude --runs 2 --sheets D:/caches/p62/sheets-p62-dev
+# T6 po opravě: jen dotčené dev věty (s039, s037, s003, s022 v D:/caches/p62/t6-set.json)
+node evals/play/p61/shots.mjs shoot --set D:/caches/p62/t6-set.json --out D:/caches/p62/t6-after --label p62-t6 --base http://127.0.0.1:3168
 ```
 
 Server jen jeden proces naráz, zastavit podle PID z prvního řádku.

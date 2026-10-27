@@ -11,6 +11,7 @@ import { useEffect, useMemo } from 'react';
 import type { Look } from '@/play/arcade/look';
 
 import { type Box, buildFieldGround } from './ground';
+import { interiorFloorMap } from './interior-floor';
 import { UNDER_PANORAMA } from './under-panorama';
 
 export interface FieldGroundProps {
@@ -31,13 +32,15 @@ export interface FieldGroundProps {
 export function FieldGround({ look, area, edge, y = 0, under = false }: FieldGroundProps) {
   const geometry = useMemo(() => buildFieldGround(look, area, edge), [look, area, edge]);
   useEffect(() => () => geometry.dispose(), [geometry]);
+  // Interiér (P62 T6): dlažba povrchu sady jako textura, síť má bílé vrcholy a UV v metrech.
+  const map = look.interior === undefined ? null : interiorFloorMap(look.interior.floor);
   return under ? (
     <mesh geometry={geometry} position={[0, y, 0]} renderOrder={UNDER_PANORAMA}>
-      <meshStandardMaterial vertexColors roughness={1} depthWrite={false} />
+      <meshStandardMaterial vertexColors map={map} roughness={1} depthWrite={false} />
     </mesh>
   ) : (
     <mesh geometry={geometry} position={[0, y, 0]} receiveShadow>
-      <meshStandardMaterial vertexColors roughness={1} />
+      <meshStandardMaterial vertexColors map={map} roughness={1} />
     </mesh>
   );
 }

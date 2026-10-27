@@ -81,7 +81,7 @@ const STONE = [2, 1.25] as const;
 const SEAM = 0.08;
 
 /** Kladení dlažby: dílec (m) podél x a z, posun každé další řady o podíl dílce, spára (m), šachovnice. */
-interface Layout {
+export interface Layout {
   readonly size: readonly [number, number];
   readonly bond: number;
   readonly seam: number;
@@ -89,8 +89,11 @@ interface Layout {
 }
 /** Hradní dlažba z P32A: kámen na vazbu o půl kamene. */
 const CASTLE_PAVING: Layout = { size: STONE, bond: 0.5, seam: SEAM };
-/** Podlahy interiéru (P62 T3): velké dlaždice obchodu, šachovnice, prkna s posunutými spoji, kámen, břidlice, plechy. */
-const INTERIOR_LAYOUTS: Readonly<Record<InteriorFloor, Layout>> = {
+/**
+ * Podlahy interiéru (P62 T3): velké dlaždice obchodu, šachovnice, prkna s posunutými spoji, kámen, břidlice, plechy.
+ * Mimo arénu je klade textura (`interior-floor.ts`, P62 T6) z týchž dílců.
+ */
+export const INTERIOR_LAYOUTS: Readonly<Record<InteriorFloor, Layout>> = {
   tiles: { size: [1.6, 1.6], bond: 0, seam: 0.05 },
   checker: { size: [1.25, 1.25], bond: 0, seam: 0.03, checker: true },
   planks: { size: [2.6, 0.34], bond: 0.37, seam: 0.035 },

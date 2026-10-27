@@ -22,6 +22,7 @@ import { type GhostPlacement, worldPlacement } from '../Ghost';
 import { type GhostPose, GhostSlot } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
 import type { Box } from '../look/ground';
+import { interiorFloorMap } from '../look/interior-floor';
 import { Landmark } from '../look/Landmark';
 import { PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { Scenery } from '../look/Scenery';
@@ -43,16 +44,19 @@ const VEGETATION_CLEAR = PLAYABLE_HALF - PATH_HALF + 0.5;
 const RUNNER_AREA: readonly Box[] = [{ x0: -PLAYABLE_HALF, x1: PLAYABLE_HALF, z0: -Infinity, z1: Infinity }];
 
 /** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy, kulisy i vegetace (P46G T4) jdou zatáčkou a kopcem spolu s těly. */
-function RunnerValley({ look, world, terrain, path }: { readonly look: Look; readonly world: ArcadeWorld; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
+export function RunnerValley({ look, world, terrain, path }: { readonly look: Look; readonly world: ArcadeWorld; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
   const length = world.length / UNIT;
   const seed = world.seed;
   // Kolo řetězu má terén postavený workerem (P56C T18); jinak se staví tady, jako dřív.
   const { valley, lane } = useMemo(() => prebuiltRunnerTerrain(world, look) ?? buildRunnerTerrain(look, length, path), [world, look, length, path]);
-  const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
+  // Interiér (P62 T6): údolí je podlaha z dlažby povrchu (textura, síť má UV v metrech) a ulička je ta podlaha –
+  // šedý pás cesty se nekreslí, okraje uličky jsou ve spáře dlažby. Soudce s pásem četl supermarket jako silnici.
+  const floor = look.interior?.floor;
+  const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95, map: floor === undefined ? null : interiorFloorMap(floor) }), [floor]);
   useEffect(() => () => valley.geometry.dispose(), [valley]);
   useEffect(() => () => material.dispose(), [material]);
   // Cesta jako jeden pás s hladkými okraji (P46G T2), ohnutý po křivce trati jako údolí; vedle ní krajnice údolí (T3).
-  const surface = SURFACES[look.surface];
+  const surface = SURFACES[floor ?? look.surface];
   useEffect(() => () => { lane?.surface.dispose(); lane?.edges.dispose(); lane?.marks?.dispose(); }, [lane]);
   const trackHeight = useMemo(() => (path === null ? undefined : (z: number) => path(z).y), [path]);
   // Terén údolí ohnutého po křivce v místě (x, z) scény: `heightAt` platí pro rovné údolí.
@@ -71,14 +75,16 @@ function RunnerValley({ look, world, terrain, path }: { readonly look: Look; rea
       {lane !== null && (
         <>
           {/* Pás leží na zemi: stín jen přijímá, rig by ho jinak kreslil i do stínové mapy (P54B T15d). */}
-          <mesh geometry={lane.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
-            <meshStandardMaterial color={surface.color} roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-          </mesh>
+          {floor === undefined && (
+            <mesh geometry={lane.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
+              <meshStandardMaterial color={surface.color} roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+            </mesh>
+          )}
           <mesh geometry={lane.edges} receiveShadow userData={{ rigShadow: 'receive' }}>
             <meshStandardMaterial color={surface.edge} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
           </mesh>
-          {/* Spáry prken ano, středová čára asfaltu ne: ta by vedla pod hrdinou prostředním pruhem. */}
-          {lane.marks !== null && 'marks' in surface && surface.marks.kind === 'seams' && (
+          {/* Spáry prken ano, středová čára asfaltu ne: ta by vedla pod hrdinou prostředním pruhem. Podlaha interiéru má spáry v textuře. */}
+          {floor === undefined && lane.marks !== null && 'marks' in surface && surface.marks.kind === 'seams' && (
             <mesh geometry={lane.marks} receiveShadow userData={{ rigShadow: 'receive' }}>
               <meshStandardMaterial color={surface.marks.color} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
             </mesh>
