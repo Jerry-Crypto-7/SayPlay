@@ -46,6 +46,12 @@ Souhrn: čtečka 2 (h18, h23), překlad rolí 2 (h15, s002), publikace 1 (h24), 
 
 Snímky `main` na zapečetěné sadě: `D:/caches/p63/main-holdout/` (24/24, nesouzené, otevře je T6). Hra ze čtení vznikla u 8 z 24 vět.
 
+## Návrat hráčů (T5)
+
+Klíče v Upstash na návštěvníka: jeden s dnem prvního příchodu (90 dní) a jeden „viděn dnes“ na každý den, kdy přišel (2 dny). Navíc 4 denní čítače × 31 dní = 124 klíčů celkem.
+
+Odhad (inference, ne měření): při 200 návštěvnících denně a nikom vracejícím se je nejvýš 18 000 klíčů prvního dne a ~400 denních, řádově 2 MB. Příkazy: první událost dne stojí 3–5 příkazů, každá další téhož dne jeden. Na demo provoz Upstash unese.
+
 ## Útrata čtení
 
 | Krok | USD |

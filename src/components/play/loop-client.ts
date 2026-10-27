@@ -9,12 +9,15 @@
  */
 
 import type { LoopEventName } from '@/play/loop-events';
+import { visitorId } from '@/play/visitor';
 
 export const SHARE_MARK = 'via=share';
 
 const ONCE: ReadonlySet<LoopEventName> = new Set(['impression', 'first_input', 'shared_open', 'bounce']);
 const sent = new Set<string>();
 let memorySession: string | null = null;
+/** Id návštěvníka, jednou za načtení stránky; `''` = úložiště ho nedrží. */
+let visitor: string | null = null;
 /** Naposledy zobrazená hra – zavřená stránka se počítá za ni. */
 let shown: string | null = null;
 /**
@@ -55,7 +58,9 @@ export function loopEvent(name: LoopEventName, versionId: string, extra?: { read
     if (sent.has(key)) return;
     sent.add(key);
   }
-  const body = JSON.stringify({ name, versionId, session: id, ...extra });
+  // Návrat hráče (P63 T5): id návštěvníka jde s každou událostí; bez úložiště chybí.
+  visitor ??= visitorId(() => window.localStorage) ?? '';
+  const body = JSON.stringify({ name, versionId, session: id, ...extra, ...(visitor === '' ? {} : { visitor }) });
   try {
     if (typeof navigator.sendBeacon === 'function' && navigator.sendBeacon('/api/play/events', new Blob([body], { type: 'application/json' }))) return;
     void fetch('/api/play/events', { method: 'POST', headers: { 'content-type': 'application/json' }, body, keepalive: true }).catch(() => {});
