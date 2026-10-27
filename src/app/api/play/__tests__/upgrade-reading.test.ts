@@ -247,6 +247,28 @@ describe('the reading game (P58D T1)', () => {
     release();
     expect((await done).status).toBe('ready');
   }, 180_000);
+
+  // P63 T6: AI verze, která skončí bez hry (model nedostupný, strop), doběhne hned po publikaci hry ze čtení – `pending`
+  // s ní klient mezi dvěma dotazy mine a konec ji nenesl. Živě na dev větách s002, s003 a s021: hra ze čtení uložená
+  // jako dítě rychlé hry, hráč i měřidlo zůstali na rychlé hře. Konec ji teď nese jako konec řetězu.
+  it('an AI version that ends without a game still hands the player the reading game', async () => {
+    reader(OTHER.reading);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, OTHER.text);
+    seam.director = director(undefined).make;
+    const outcome = await upgradeOf(store, quick, request(OTHER.text));
+    const [reading] = (await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading');
+    expect(reading).toBeDefined();
+    expect(outcome).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE', reading: { versionId: reading!.version.versionId } });
+  }, 180_000);
+
+  it('an AI version that ends without a game and without a reading game hands over nothing', async () => {
+    reader(SAME.reading);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, SAME.text);
+    seam.director = director(undefined).make;
+    expect(await upgradeOf(store, quick, request(SAME.text))).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+  }, 120_000);
 });
 
 describe('the reading game page (P58D T2)', () => {

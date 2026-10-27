@@ -130,7 +130,7 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
     const recovered = failures >= OFFLINE_AFTER;
     failures = 0;
     if (answer.status === 'ready') return onView({ kind: 'ready', versionId: answer.versionId });
-    // Konec nese hru ze čtení jen u řetězu (`CHAIN`, P58E T3); konec AI verze ji nemá a stránka nepřejde.
+    // Konec nese hru ze čtení u řetězu (`CHAIN`, P58E T3) a od P63 T6 i u AI verze, která skončila bez hry.
     if (answer.status === 'final') return onView({ kind: 'final', reason: answer.reason, ...(answer.reading === null ? {} : { reading: answer.reading }) });
     // Hra ze čtení jednou známá se nezapomene – pozdější `pending` bez ní je jiná instance, ne zrušení.
     const known = answer.reading ?? reading;
@@ -200,7 +200,7 @@ const arrivals = new Set<string>();
 
 type ReadingMove = { readonly kind: 'switch' | 'offer'; readonly versionId: string };
 
-/** Co udělat s hrou ze čtení na stránce hry `versionId`: přejít, nabídnout, nebo nic. Konec s hrou ze čtení (řetěz, P58E T3) jako práce. */
+/** Co udělat s hrou ze čtení na stránce hry `versionId`: přejít, nabídnout, nebo nic. Konec s hrou ze čtení (řetěz, P58E T3; AI verze bez hry, P63 T6) jako práce. */
 export function readingMove(view: UpgradeView, versionId: string | null, committed: boolean, switchedBefore: ReadonlySet<string> = switched): ReadingMove | null {
   if ((view.kind !== 'working' && view.kind !== 'final') || view.reading === undefined || view.reading === versionId) return null;
   return { kind: committed || switchedBefore.has(view.reading) ? 'offer' : 'switch', versionId: view.reading };

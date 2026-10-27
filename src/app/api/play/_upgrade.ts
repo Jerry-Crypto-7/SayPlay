@@ -76,8 +76,8 @@ export type UpgradeOutcome =
   /** `adds` (P46E T4): co AI verze přidala, jak to spočítal `directUpgrade`; dítě z úložiště ho nenese. */
   | { readonly status: 'ready'; readonly versionId: string; readonly adds?: readonly UpgradeAdd[] }
   /**
-   * `reading` (P58E T2) jen u `CHAIN`: práce řetězu doběhne hned po čtení, takže `pending` s hrou ze čtení klient
-   * mezi dvěma dotazy snadno mine – konec ji nese sám.
+   * `reading` (P58E T2): práce řetězu doběhne hned po čtení, takže `pending` s hrou ze čtení klient mezi dvěma dotazy
+   * snadno mine – konec ji nese sám. Od P63 T6 i konec AI verze, která skončila bez hry (`directUpgrade`).
    */
   | { readonly status: 'draft-final'; readonly reason: DraftFinalReason; readonly reading?: { readonly versionId: string } };
 
@@ -381,19 +381,22 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
  */
 export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
-  let reading: Promise<void> = Promise.resolve();
+  let reading: Promise<string | null> = Promise.resolve(null);
   const onDraft = (spec: GameSpecV1, grid: boolean, read: Reading | null): void => {
     // P63 T3: ani hra, která z rolí čtení ukáže méně než rychlá hra; návrh bez čtení (vypnutá čtečka) se nemá s čím srovnat.
     if (!readingDiffers(draft.spec, spec, grid) || (read !== null && !namesNoLess([draft.spec], spec, read))) return;
     reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((published) => {
-      if (published !== null) onReading?.(published.versionId, published.fresh);
+      if (published === null) return null;
+      onReading?.(published.versionId, published.fresh);
+      return published.versionId;
     });
   };
-  try {
-    return await directorUpgrade(versions, draft, request, director, seeds, onDraft);
-  } finally {
-    await reading;
-  }
+  const outcome = await directorUpgrade(versions, draft, request, director, seeds, onDraft).finally(() => reading);
+  // P63 T6: konec bez AI verze nese hru ze čtení jako konec řetězu. Režie, která skončí hned po čtení (model nedostupný,
+  // strop), doběhne v téže chvíli jako publikace – `pending` s hrou ze čtení klient mezi dvěma dotazy mine a zůstal by
+  // na rychlé hře (živě dev s002, s003, s021: hra ze čtení uložená, hráč ji nedostal). Hotová AI verze má přednost.
+  const readingId = await reading;
+  return outcome.status === 'draft-final' && readingId !== null ? { ...outcome, reading: { versionId: readingId } } : outcome;
 }
 
 async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: NonNullable<DirectorDeps['onDraft']>): Promise<UpgradeOutcome> {

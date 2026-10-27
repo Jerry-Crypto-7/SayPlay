@@ -543,7 +543,7 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('pending nese hru ze čtení, jakmile vznikne; ready ani draft-final ji nenesou', async () => {
+  it('pending nese hru ze čtení, jakmile vznikne; hotová AI verze (ready) ji nenese', async () => {
     const created = await publish({ sentence: SENTENCE });
     expect((await game(created.body.versionId)).spec.genre).not.toMatchObject({ id: 'quest', mode: 'spatial' });
     let pending: Record<string, any> = {};
@@ -578,7 +578,9 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     const versions = versionStoreFromEnv(process.env);
     await vi.waitFor(async () => expect(await versions.childrenOf(created.body.versionId)).toHaveLength(1), { timeout: 30_000 });
     await vi.waitFor(() => expect(knownUpgrade(created.body.versionId)).toBeNull(), { timeout: 30_000 });
-    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+    // Konec, ne `pending`; od P63 T6 nese uloženou hru ze čtení – hráč na ní zůstane, hráč na rychlé hře ji dostane.
+    const [reading] = await versions.childrenOf(created.body.versionId);
+    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE', reading: { versionId: reading } });
   }, 120_000);
 });
 
