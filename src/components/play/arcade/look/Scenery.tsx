@@ -77,9 +77,10 @@ export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayo
       const n = index * 7 + (side + 1) * 3;
       const kind = props[n % props.length] as SceneryKind;
       const scale = 0.8 + ((index * 29 + side * 7) % 5) * 0.12;
+      // Kladný zbytek (P62 T1-R1): `-11 % 5` je v JS −1, první levý kus pak stál 1,3 m uvnitř `inner` – u rytmu v pruzích.
       places.push({
         kind,
-        x: side * (inner + ((index * 37 + side * 11) % 5) * 1.3),
+        x: side * (inner + ((((index * 37 + side * 11) % 5) + 5) % 5) * 1.3),
         z: z + ((index * 13) % 3),
         scale: cap?.side === side ? Math.min(scale, cap.height / sceneryHeight(kind)) : scale,
         turn: (index % 4) * (Math.PI / 2),
