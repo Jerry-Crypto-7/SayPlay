@@ -55,6 +55,7 @@ import { boxEdge } from '../look/ground';
 import { glowingCopy } from '../look/load';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Landmark } from '../look/Landmark';
+import type { DecorKeep } from '../look/rig/terrain/arenaDecor';
 import { ARENA_WALL_END } from '../look/rig/terrain/arenaFloor';
 import { Scenery } from '../look/Scenery';
 import { VegetationAround } from '../look/Vegetation';
@@ -102,6 +103,8 @@ const AIRBORNE_M = 0.05;
 const SCENERY_MARGIN = 1.5;
 /** Kam zem agaru sahá za hranu (m): za kulisy do mlhy. */
 const AGAR_LAND_M = 50;
+/** Agar nemá výzdobu podlahy, takže ani místa, kam nesmí (stálý seznam: podlaha a stěna se nepočítají znovu každý snímek). */
+const NO_KEEP: readonly DecorKeep[] = [];
 
 /** Sklon kamery nad vodorovnou (rad): 48° – hrdina pořád zřetelně shora, horní třetina obrazu už za hranou arény (58° ukázalo kulisy jen v rozích). */
 const PITCH = (48 * Math.PI) / 180;
@@ -221,23 +224,32 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
     const field = { x0: -side / 2, x1: side / 2, z0: -side / 2, z1: side / 2 };
     return { box: field, land: { x0: field.x0 - AGAR_LAND_M, x1: field.x1 + AGAR_LAND_M, z0: field.z0 - AGAR_LAND_M, z1: field.z1 + AGAR_LAND_M }, edge: boxEdge(field) };
   }, [side]);
-  const area = useMemo(() => [box], [box]);
+  // Interiér má za hranou stěnu z kulis: orientační bod stojí až za ní, jako ve stylu B.
+  const indoor = scene.interior !== undefined;
+  const area = useMemo(() => [indoor ? { x0: box.x0 - ARENA_WALL_END, x1: box.x1 + ARENA_WALL_END, z0: box.z0 - ARENA_WALL_END, z1: box.z1 + ARENA_WALL_END } : box], [box, indoor]);
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
-        <planeGeometry args={[side, side]} />
-        {/* Podlaha v barvě dráhy sady, ne země: zelená kořist by na trávě splynula. Prostředí ukazují kulisy za hranou. */}
-        <meshStandardMaterial color={scene.track} roughness={0.8} />
-      </mesh>
-      <FieldGround look={scene} area={land} edge={edge} y={-0.08} under />
-      {/* Kamera pod 48° obzor nevidí: kulisu za mlhou nahrazuje vzdálená linie stromů; na straně kamery jen drobnosti. */}
-      {scene.flora !== undefined && <VegetationAround flora={scene.flora} seed={session.world.seed} box={box} clear={SCENERY_MARGIN} layers={LOW_TOWARD_CAMERA} />}
-      {/* Kulisy sady prostředí (P27A T3) za hranou arény ze všech čtyř stran – jen vzhled, jádro o nich neví. */}
-      {[0, Math.PI / 2].map((turn) => (
-        <group key={turn} rotation={[0, turn, 0]}>
-          <Scenery look={scene} layout="sides" inner={side / 2 + SCENERY_MARGIN} from={-side / 2} to={side / 2} vegetation />
-        </group>
-      ))}
+      {indoor ? (
+        // Interiér (P62 T3): podlaha a stěna z kulis jako ve stylu B, bez výzdoby podlahy – kostička by tu vypadala jako potrava.
+        <ArenaFloor look={scene} half={side / 2} seed={session.world.seed} keep={NO_KEEP} hero={HERO_DRAWN_M} decor={false} />
+      ) : (
+        <>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
+            <planeGeometry args={[side, side]} />
+            {/* Podlaha v barvě dráhy sady, ne země: zelená kořist by na trávě splynula. Prostředí ukazují kulisy za hranou. */}
+            <meshStandardMaterial color={scene.track} roughness={0.8} />
+          </mesh>
+          <FieldGround look={scene} area={land} edge={edge} y={-0.08} under />
+          {/* Kamera pod 48° obzor nevidí: kulisu za mlhou nahrazuje vzdálená linie stromů; na straně kamery jen drobnosti. */}
+          {scene.flora !== undefined && <VegetationAround flora={scene.flora} seed={session.world.seed} box={box} clear={SCENERY_MARGIN} layers={LOW_TOWARD_CAMERA} />}
+          {/* Kulisy sady prostředí (P27A T3) za hranou arény ze všech čtyř stran – jen vzhled, jádro o nich neví. */}
+          {[0, Math.PI / 2].map((turn) => (
+            <group key={turn} rotation={[0, turn, 0]}>
+              <Scenery look={scene} layout="sides" inner={side / 2 + SCENERY_MARGIN} from={-side / 2} to={side / 2} vegetation />
+            </group>
+          ))}
+        </>
+      )}
       {/* Orientační bod za hranou v horní části záběru, jede s kamerou za hráčem (P54B T8). */}
       <Landmark look={scene} seed={session.world.seed} area={area} follow="camera" />
       {discs.map((disc) => {

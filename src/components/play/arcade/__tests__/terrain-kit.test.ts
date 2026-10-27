@@ -224,7 +224,11 @@ describe('arena floor', () => {
   });
 
   it('rings the arena with walls beyond the edge, and the scenery beyond the walls', () => {
-    const position = arena.walls.getAttribute('position');
+    // Zeď z kvádrů má venkovní sada; interiér (hrad od P62 T3) staví stěnu z kulis sady (`interiorWallPlaces`).
+    expect(arena.walls.getAttribute('position').count).toBe(0);
+    expect(drawnAt(arena.floor, arena.sceneryInner + 6, 0)).not.toBeNull();
+    const outdoor = buildArenaFloor({ look: LOOKS.city, half });
+    const position = outdoor.walls.getAttribute('position');
     let outer = 0;
     const sides = new Set<string>();
     let tallest = 0;
@@ -241,11 +245,12 @@ describe('arena floor', () => {
     }
     expect([...sides].sort()).toEqual(['+x', '+z', '-x', '-z']);
     expect(tallest).toBeGreaterThan(1);
-    expect(arena.sceneryInner).toBeGreaterThan(outer);
+    expect(outdoor.sceneryInner).toBeGreaterThan(outer);
     // Za stěnami a kulisami je pořád zem, ne díra do oblohy.
-    expect(drawnAt(arena.floor, arena.sceneryInner + 6, 0)).not.toBeNull();
+    expect(drawnAt(outdoor.floor, outdoor.sceneryInner + 6, 0)).not.toBeNull();
     expectFlat(arena.floor);
-    expectFlat(arena.walls);
+    expectFlat(outdoor.floor);
+    expectFlat(outdoor.walls);
   });
 
   it('paves a castle, freezes a snow arena to ice and covers grass and sand with their ground', () => {

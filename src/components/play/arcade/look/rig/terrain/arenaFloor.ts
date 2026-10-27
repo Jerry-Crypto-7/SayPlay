@@ -11,11 +11,15 @@
  *
  * Bez indexů, flat shading, barvy ve vrcholech z palety sady. Čistá funkce
  * vstupu: žádná náhoda, tatáž aréna vypadá pokaždé stejně.
+ *
+ * Interiér (P62 T3, `Look.interior`) má podlahu z povrchu – dlažbu, šachovnici,
+ * prkna, kámen, břidlici, plechy – až pod stěnu a zeď z kvádrů nemá: stěnu staví
+ * `ArenaFloor` z kulis sady (`interiorWallPlaces`).
  */
 
 import { type BufferGeometry, Color } from 'three';
 
-import type { Look } from '@/play/arcade/look';
+import { type Cover, type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 
 import { groundPainter, groundPalette } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
@@ -31,8 +35,18 @@ export interface ArenaPalette {
   readonly wallTop: string;
 }
 
-/** Barvy arény podle `cover`: dlažba z hmoty bloků sady, led z ledové dráhy, jinak souš sady. */
+/**
+ * Barvy arény podle `cover`: dlažba z hmoty bloků sady, led z ledové dráhy, jinak souš sady.
+ * Interiér má podlahu a spáru z povrchu; zem za stěnami, kámen a kamínky výzdoby zůstanou z krytu.
+ */
 export function arenaPalette(look: Look): ArenaPalette {
+  const cover = coverPalette(look);
+  if (look.interior === undefined) return cover;
+  const surface = SURFACES[look.interior.floor];
+  return { ...cover, floor: surface.color, seam: surface.edge };
+}
+
+function coverPalette(look: Look): ArenaPalette {
   const land = look.land ?? look.ground;
   const rock = look.terrain?.rock ?? look.block?.[0] ?? mix(land, '#57534e', 0.6);
   switch (look.cover) {
@@ -65,6 +79,27 @@ const BEYOND = 50;
 /** Dlaždice hradní dlažby na vazbu (m) a šířka spáry. */
 const STONE = [2, 1.25] as const;
 const SEAM = 0.08;
+
+/** Kladení dlažby: dílec (m) podél x a z, posun každé další řady o podíl dílce, spára (m), šachovnice. */
+interface Layout {
+  readonly size: readonly [number, number];
+  readonly bond: number;
+  readonly seam: number;
+  readonly checker?: true;
+}
+/** Hradní dlažba z P32A: kámen na vazbu o půl kamene. */
+const CASTLE_PAVING: Layout = { size: STONE, bond: 0.5, seam: SEAM };
+/** Podlahy interiéru (P62 T3): velké dlaždice obchodu, šachovnice, prkna s posunutými spoji, kámen, břidlice, plechy. */
+const INTERIOR_LAYOUTS: Readonly<Record<InteriorFloor, Layout>> = {
+  tiles: { size: [1.6, 1.6], bond: 0, seam: 0.05 },
+  checker: { size: [1.25, 1.25], bond: 0, seam: 0.03, checker: true },
+  planks: { size: [2.6, 0.34], bond: 0.37, seam: 0.035 },
+  stone: CASTLE_PAVING,
+  slate: { size: [1.7, 1.15], bond: 0.31, seam: 0.1 },
+  metal: { size: [2, 2], bond: 0, seam: 0.07 },
+};
+/** Kam za hranu sahá podlaha interiéru (m): pod celou stěnu z kulis (`interiorWallPlaces`), za ní zem sady. */
+const INTERIOR_UNDER = 4;
 
 /** Obdélník v y = 0 s normálou nahoru. */
 function rect(faces: Faces, x0: number, z0: number, x1: number, z1: number, color: Color): void {
@@ -108,22 +143,25 @@ function grid(faces: Faces, x0: number, z0: number, x1: number, z1: number, cell
   }
 }
 
-/** Hradní dlažba na vazbu: řady kamenů posunuté o půl kamene, mezi nimi spáry. */
-function paving(faces: Faces, half: number, stone: Color, seam: Color, face: Color): void {
-  const [w, d] = STONE;
+/**
+ * Dlažba na vazbu ve čtverci ±`half`: řady dílců posunuté o `bond`, mezi nimi spáry. Šachovnice
+ * střídá dílec s barvou na půl cesty ke spáře.
+ */
+function paving(faces: Faces, half: number, stone: Color, seam: Color, face: Color, { size: [w, d], bond, seam: gap, checker }: Layout): void {
+  const other = checker === true ? stone.clone().lerp(seam, 0.5) : stone;
   for (let row = 0, z0 = -half; z0 < half; row += 1, z0 += d) {
     const z1 = Math.min(half, z0 + d);
-    const top = z1 < half ? z1 - SEAM : z1;
+    const top = z1 < half ? z1 - gap : z1;
     rect(faces, -half, top, half, z1, seam);
-    for (let k = 0, x0 = -half - (row % 2) * (w / 2); x0 < half; k += 1, x0 += w) {
+    for (let k = 0, x0 = -half - ((row * bond) % 1) * w; x0 < half; k += 1, x0 += w) {
       const x1 = x0 + w;
-      const edge = x1 < half ? x1 - SEAM : half;
+      const edge = x1 < half ? x1 - gap : half;
       const tone = hash(row * 97 + k, 5);
-      face.copy(stone).multiplyScalar(0.86 + 0.2 * hash(row, k));
+      face.copy((row + k) % 2 === 1 ? other : stone).multiplyScalar(0.86 + 0.2 * hash(row, k));
       // Tu a tam tmavší kámen, ať dlažba není vzorník.
       if (tone < 0.08) face.lerp(seam, 0.35);
       rect(faces, Math.max(-half, x0), z0, Math.min(half, edge), top, face);
-      if (x1 < half) rect(faces, x1 - SEAM, z0, x1, top, seam);
+      if (x1 < half) rect(faces, x1 - gap, z0, x1, top, seam);
     }
   }
 }
@@ -156,8 +194,10 @@ function block(faces: Faces, x: number, z: number, w: number, d: number, from: n
 export interface ArenaFloor {
   /** Hrací plocha a zem za ní až do mlhy, celá v y = 0. */
   readonly floor: BufferGeometry;
-  /** Prstenec stěn za hranou arény. */
+  /** Prstenec stěn za hranou arény; interiér je nemá (stěnu staví kulisy sady). */
   readonly walls: BufferGeometry;
+  /** Čím je hrací plocha položená: povrch interiéru, jinak kryt sady. */
+  readonly surface: InteriorFloor | Cover;
   /** Odkud za stěnami stojí kulisy (m od středu, `Scenery` po stranách). */
   readonly sceneryInner: number;
   /** Výška podlahy, kterou síť kreslí (m) – všude zem jádra. */
@@ -180,7 +220,10 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
 
   // --- Podlaha ---
   const ground = new Faces();
-  if (look.cover === 'paving') paving(ground, half, floor, seam, face);
+  // Podlaha interiéru sahá pod stěnu z kulis; zem sady začíná až za ní.
+  const inside = look.interior === undefined ? half : half + INTERIOR_UNDER;
+  if (look.interior !== undefined) paving(ground, inside, floor, seam, face, INTERIOR_LAYOUTS[look.interior.floor]);
+  else if (look.cover === 'paving') paving(ground, half, floor, seam, face, CASTLE_PAVING);
   else {
     const cell = look.cover === 'snow' ? 2.4 : 1.6;
     grid(ground, -half, -half, half, half, cell, 11, (x, z, index) => {
@@ -203,44 +246,46 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
       return earth(x, z, null, face).multiplyScalar(tone);
     });
   }
-  // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka; krajnice se měří od hrany arény.
+  // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka; krajnice se měří od hrany arény (interiér od kraje podlahy).
   const outer = half + BEYOND;
-  const paintLand = (x: number, z: number, index: number): Color => earth(x, z, Math.max(Math.abs(x), Math.abs(z)) - half, face).multiplyScalar(0.96 + 0.06 * hash(index, 13));
-  grid(ground, -outer, half, outer, outer, 3, 21, paintLand);
-  grid(ground, -outer, -outer, outer, -half, 3, 22, paintLand);
-  grid(ground, -outer, -half, -half, half, 3, 23, paintLand);
-  grid(ground, half, -half, outer, half, 3, 24, paintLand);
+  const paintLand = (x: number, z: number, index: number): Color => earth(x, z, Math.max(Math.abs(x), Math.abs(z)) - inside, face).multiplyScalar(0.96 + 0.06 * hash(index, 13));
+  grid(ground, -outer, inside, outer, outer, 3, 21, paintLand);
+  grid(ground, -outer, -outer, outer, -inside, 3, 22, paintLand);
+  grid(ground, -outer, -inside, -inside, inside, 3, 23, paintLand);
+  grid(ground, inside, -inside, outer, inside, 3, 24, paintLand);
 
   // --- Stěny ---
   const walls = new Faces();
   const inner = half + ARENA_WALL_GAP;
-  const middle = inner + WALL_DEPTH / 2;
-  const castle = look.cover === 'paving';
-  const rough = castle ? 0.015 : 0.14;
-  const [low, high] = castle ? [2, 2] : look.cover === 'rock' ? [1.3, 2.4] : [0.9, 1.7];
-  const paintWall = (seed: number) => (up: number) => (up > 0.7 ? shade(wallTop, 0.95 + 0.1 * hash(seed, 1)) : shade(wall, 0.85 + 0.2 * hash(seed, 2)));
-  let seed = 100;
-  for (const [sign, along] of [[1, true], [-1, true], [1, false], [-1, false]] as const) {
-    // Stěna jde po straně od rohu k rohu; rohy drží věže nebo největší balvany.
-    let t = -inner;
-    while (t < inner - 0.2) {
+  if (look.interior === undefined) {
+    const middle = inner + WALL_DEPTH / 2;
+    const castle = look.cover === 'paving';
+    const rough = castle ? 0.015 : 0.14;
+    const [low, high] = castle ? [2, 2] : look.cover === 'rock' ? [1.3, 2.4] : [0.9, 1.7];
+    const paintWall = (seed: number) => (up: number) => (up > 0.7 ? shade(wallTop, 0.95 + 0.1 * hash(seed, 1)) : shade(wall, 0.85 + 0.2 * hash(seed, 2)));
+    let seed = 100;
+    for (const [sign, along] of [[1, true], [-1, true], [1, false], [-1, false]] as const) {
+      // Stěna jde po straně od rohu k rohu; rohy drží věže nebo největší balvany.
+      let t = -inner;
+      while (t < inner - 0.2) {
+        seed += 1;
+        const length = Math.min(inner - t, castle ? 2 : 1.3 + hash(seed, 3));
+        const height = low + (high - low) * hash(seed, 4);
+        const [x, z] = along ? [t + length / 2, sign * middle] : [sign * middle, t + length / 2];
+        block(walls, x, z, length - (castle ? 0.04 : 0), WALL_DEPTH, -0.15, height, along, rough, seed, paintWall(seed));
+        // Cimbuří: zub na každém druhém kvádru hradby.
+        if (castle && seed % 2 === 0) block(walls, x, z, length * 0.45, WALL_DEPTH * 0.8, height - 0.02, height + 0.55, along, rough, seed + 5000, paintWall(seed));
+        t += length;
+      }
+    }
+    const size = castle ? 2.6 : 2;
+    // Věž v rohu sahá za roh stěn, ne do rohu arény.
+    const corner = inner + size / 2 - 0.3;
+    for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]] as const) {
       seed += 1;
-      const length = Math.min(inner - t, castle ? 2 : 1.3 + hash(seed, 3));
-      const height = low + (high - low) * hash(seed, 4);
-      const [x, z] = along ? [t + length / 2, sign * middle] : [sign * middle, t + length / 2];
-      block(walls, x, z, length - (castle ? 0.04 : 0), WALL_DEPTH, -0.15, height, along, rough, seed, paintWall(seed));
-      // Cimbuří: zub na každém druhém kvádru hradby.
-      if (castle && seed % 2 === 0) block(walls, x, z, length * 0.45, WALL_DEPTH * 0.8, height - 0.02, height + 0.55, along, rough, seed + 5000, paintWall(seed));
-      t += length;
+      block(walls, sx * corner, sz * corner, size, size, -0.15, castle ? 3.2 : high + 0.4, true, rough, seed, paintWall(seed));
     }
   }
-  const size = castle ? 2.6 : 2;
-  // Věž v rohu sahá za roh stěn, ne do rohu arény.
-  const corner = inner + size / 2 - 0.3;
-  for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]] as const) {
-    seed += 1;
-    block(walls, sx * corner, sz * corner, size, size, -0.15, castle ? 3.2 : high + 0.4, true, rough, seed, paintWall(seed));
-  }
 
-  return { floor: ground.geometry(), walls: walls.geometry(), sceneryInner: inner + WALL_DEPTH + SCENERY_GAP, heightAt: () => 0 };
+  return { floor: ground.geometry(), walls: walls.geometry(), surface: look.interior?.floor ?? look.cover, sceneryInner: inner + WALL_DEPTH + SCENERY_GAP, heightAt: () => 0 };
 }
