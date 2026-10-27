@@ -29,7 +29,9 @@ const GAMES = [
   { id: 'runner', sentence: 'jumping arcade game with a lot of obstacles', arcade: true },
   { id: 'arena', sentence: 'like agar.io but you are a fish eating smaller fish', arcade: true },
   { id: 'grid-collect', sentence: 'Collect five glowing mushrooms then open a portal.', arcade: false },
-  { id: 'drive', sentence: 'game in a car with shooting and racing', arcade: true },
+  // „game in a car with shooting and racing“ dává od základu větve řetěz mikroher bez hodin
+  // `tick()` – buňka by visela na prvním tiku. Tahle věta je jízda (`steer`) jako dřív.
+  { id: 'drive', sentence: 'car racing game', arcade: true },
   { id: 'glide', sentence: 'a fish swims through a coral reef', arcade: true },
   { id: 'walker', sentence: 'a cat sneaks past guards to steal a fish', arcade: true },
   { id: 'ball', sentence: 'a penguin plays football against a walrus', arcade: true },
