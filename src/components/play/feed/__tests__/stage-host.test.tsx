@@ -47,7 +47,7 @@ vi.mock('react', async (importOriginal) => {
 
 /** Trvalé plátno XR relace z layoutu (P65 T1); `null` = stránka bez VR, jako dřív. */
 const xr = vi.hoisted(() => ({ host: null as StageTunnel | null }));
-vi.mock('../../xr/xr-context', () => ({ useXrHost: () => xr.host }));
+vi.mock('../../xr/xr-context', () => ({ useXrHost: () => xr.host, XrGame: () => null }));
 
 type Element = ReactElement<Record<string, unknown>>;
 

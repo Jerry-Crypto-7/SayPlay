@@ -89,6 +89,29 @@ Když za celou dobu nepřijde jediný údaj, skript nic nezapíše a skončí ch
 
 Cíl: **`median` ≥ 72 a `p5` ≥ 65**. Quest 2 obnovuje obraz 72× za sekundu, takže 72 je plynulý chod.
 
+## Ovládání ovladači
+
+Ovladače dělají totéž co klávesnice: páčka = šipky, spoušť = mezerník. Obě ruce platí stejně; páčka levého ovladače má přednost, když je vychýlená. Drift páčky pod 0,15 se nepočítá, jako šipka páčka platí až za polovinou výchylky.
+
+| Ovládání hry | Páčka | Spoušť | A / X |
+|---|---|---|---|
+| runner | do strany = pruh, dolů = skluz, nahoru = skok | skok | skok |
+| platform | běh vlevo a vpravo | skok | skok |
+| flap, timing, rhythm | nahoru = ťuk | ťuk | ťuk |
+| steer | plynulé zatáčení, dolů = brzda | stoupání (`land`) nebo střelba (`shoot`) | – |
+| move_free, fight, push | směr pohybu | akce | střelba (E) |
+| shooter | míření vlevo a vpravo | výstřel | výstřel |
+| throw | nahoru a dolů = úhel | držet = nabíjení, pustit = hod | – |
+| duel | dolů = úhyb | úder | úhyb |
+| lanes, crowd, catch, whack, defense, slice | do strany = pruh | ťuk a držení | ťuk |
+| hop | skok do čtyř směrů | ťuk | ťuk |
+| merge | posun dávkovače | pustit předmět, až je připravený | – |
+| glide, walker | do strany = zatáčení, nahoru a dolů = výška | střelba (glide s blasterem) | plachtění (glide) |
+
+Pro všechny hry: schopnosti hrdiny jsou na A/X a B/Y, blaster na B/Y, úder v souboji na A/X a použití (`interact`) na gripu. Míč (`ball`) zatím umí jen spoušť; míření paprskem dodá T3.
+
+**Mutace (T2):** otočená osa páčky (8 testů červených), ztracená mrtvá zóna (2) a spoušť na špatném tlačítku (10) – `src/play/xr/__tests__/input-map.test.ts`.
+
 ## Měření a známá omezení
 
 ### První JS bez `?vr=1` (27. 10. 2026)

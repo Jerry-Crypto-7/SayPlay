@@ -5,6 +5,9 @@ import { useXR } from '@react-three/xr';
 import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import { ACESFilmicToneMapping } from 'three';
 
+import { useXrGame } from './xr-context';
+import { XrInput } from './XrInput';
+
 /**
  * Hráč ve VR (P65 T1). Kameru vlastní hlava: kamery žánrů dál nastavují kameru R3F, jenže tou je v relaci kamera
  * brýlí a její pozici každý snímek přepíše póza hlavy. Svět se v relaci zmenší na stůl (diorama) 0,9 m před hráčem
@@ -66,6 +69,7 @@ function XrProbe({ presenting, calls }: { readonly presenting: boolean; readonly
 
 export function XrRig({ children }: { readonly children: ReactNode }) {
   const presenting = useXR((xr) => xr.session != null);
+  const game = useXrGame();
   const calls = useRef(0);
   return (
     <>
@@ -73,6 +77,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
         {children}
       </group>
       {presenting && <DirectRender calls={calls} />}
+      {presenting && game !== null && <XrInput session={game} />}
       <XrProbe presenting={presenting} calls={calls} />
     </>
   );
