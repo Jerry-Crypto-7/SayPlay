@@ -1332,8 +1332,10 @@ function draftGenre(
   const shotAt = caught?.items.some((item) => item.verb === 'catch') === true && saidAbilities(sentence, caught).includes('shoot') ? singular(roles.target!) : null;
   // Protivník, kterého hra sestřelí, zůstává zvířetem prostředí; jen ten, kterému se uhýbá, je překážka trati (P46D T6).
   // P56A T6: obsazení ze čtení před výchozím místem – role, kterou čtečka ve větě našla („from travelers“), dřív než vlk.
+  // P63 T2: protivník čtení, kterého už hraje jiná role („sprays the flames“ je cíl úkolu), místo protivníkovi
+  // z prostředí neuvolní – duch, kterého věta neříká, by plamenům vzal pronásledování.
   const readFoe = reading?.roles.find((entry) => READ_FOE_KINDS.has(entry.kind))?.noun ?? null;
-  const placeFoe = (): string | null => (readFoe === null ? null : spare(singular(bare(readFoe) ?? readFoe), [singular(hero)])) ?? spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]);
+  const placeFoe = (): string | null => (readFoe === null ? spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]) : spare(singular(bare(readFoe) ?? readFoe), [singular(hero)]));
   const foeLabel = enemy ?? saidFoe ?? (ownHazard || ownRival || shotAt !== null ? null : placeFoe());
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.

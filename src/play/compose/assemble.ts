@@ -112,9 +112,13 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
   if (wholeGame(source.recipe)) return { ...source.recipe, preset: 'assembled', content };
   const parts: (AssemblyPart & { label: string })[] = [];
   const phaseAt = intent.sentence.toLowerCase().search(/\band then\b|\bthen\b/);
+  // P63 T2: a roam cell with no threat and no fight (the arena collect a reading decided) has nobody on the field, so
+  // the pursuer, guard or obstacle the sentence names comes as the hazard part the bot proves there (sharks, ghosts);
+  // left in the cast, the arena collect drops it.
+  const foeless = source.recipe.move === 'roam' && source.recipe.threats.length === 0 && !source.recipe.actions.includes('fight');
   for (const item of intent.items) {
     if (!item.essential) continue;
-    const kind = item.verb as AssemblyPart['kind'];
+    const kind = (foeless && ['chaser', 'guard', 'obstacle'].includes(item.verb) ? 'hazard' : item.verb) as AssemblyPart['kind'];
     if (!['catch', 'rival', 'hazard', 'chaser', 'fight', 'duel', 'deliver', 'interact', 'escape'].includes(kind)) continue;
     if (kind === 'escape' && (item.object === null || intent.items.some(other => other.axis === 'threat' && other.actor === item.object))) continue;
     // Mechanics already implemented by the movement keep their native rules.
