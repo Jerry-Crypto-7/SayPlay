@@ -3,11 +3,12 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR } from '@react-three/xr';
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
-import { ACESFilmicToneMapping, type ArrayCamera, Box3, type Group, type Object3D, Vector3 } from 'three';
+import { ACESFilmicToneMapping, type ArrayCamera, Box3, DynamicDrawUsage, type Group, InstancedMesh, Material, Matrix4, type Mesh, Object3D, type SkinnedMesh, Sphere, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
-import { type Point, deskOfWorld } from '@/play/xr/diorama-scale';
+import { type Point, deskOfWorld, onDesk } from '@/play/xr/diorama-scale';
 import { REACH, type XrControl, type XrMotion } from '@/play/xr/input-map';
+import { cutOf } from '@/play/xr/quality';
 
 import { frameOf } from '../arcade/ArcadeStage';
 import type { ArcadeSession } from '../arcade/session';
@@ -50,6 +51,192 @@ function DirectRender({ calls }: { readonly calls: RefObject<number> }) {
     gl.toneMapping = before.toneMapping;
   }, XR_RENDER_PRIORITY);
   return null;
+}
+
+/** Vrstva, kterou kamera nevidí: sem jdou uzly, které profil Questu 2 nekreslí (`XrCull`). */
+const CULLED_LAYER = 31;
+/** Jak často (snímky) se znovu skládají skupiny stejných sítí ke sloučení – jako řez dioramy (`Diorama`, `SWEEP_EVERY`). */
+const CULL_SWEEP = 10;
+/** Rezerva poloměru (m): matice sítí jsou ze snímku předtím, trať se mezitím posune (~2 cm na 1:12). */
+const DESK_MARGIN = 0.05;
+/** Od kolika stejných sítí (geometrie i materiál) je kreslí jedna instancovaná síť. */
+const BATCH_FROM = 4;
+/** Materiály three bez vlastního shaderu: instancování jim přidá jen matici instance. */
+const PLAIN_MATERIALS: ReadonlySet<string> = new Set(['MeshBasicMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'MeshStandardMaterial', 'MeshPhysicalMaterial', 'MeshToonMaterial']);
+
+const isShown = (node: Object3D, root: Object3D): boolean => {
+  for (let at: Object3D | null = node; at !== null && at !== root; at = at.parent) if (!at.visible) return false;
+  return true;
+};
+
+/**
+ * Smí síť kreslit jedna instancovaná síť se stejnými? Jen neprůhledný materiál three bez úprav shaderu a bez vlastní
+ * práce před kreslením – průhlednost se třídí po sítích a úprava shaderu nemusí s maticí instance počítat.
+ */
+function batchable(mesh: Mesh): boolean {
+  const { material } = mesh;
+  return (
+    !Array.isArray(material) &&
+    PLAIN_MATERIALS.has(material.type) &&
+    !material.transparent &&
+    material.onBeforeCompile === Material.prototype.onBeforeCompile &&
+    mesh.onBeforeRender === Object3D.prototype.onBeforeRender &&
+    Object.keys(mesh.geometry.morphAttributes).length === 0
+  );
+}
+
+/** Stejné sítě kreslené jednou instancovanou (`instanced`), `drawn` = které v tomto snímku. */
+interface Batch {
+  readonly instanced: InstancedMesh;
+  members: readonly Mesh[];
+  drawn: Mesh[];
+  frame: number;
+}
+
+/**
+ * Srážení profilu Questu 2 (P65 T6): co scéna má, ale VR nekreslí, a co kreslí levněji.
+ *
+ * - **Podle značek** (`cutOf`): vegetace, obrysy nepřátel, prstenec arény.
+ * - **Mimo desku** (diorama): síť, jejíž obalová koule leží celá mimo prostor nad deskou, by roviny řezu stejně
+ *   ořízly – trať běžce i závodu je delší než stůl a kulisy podél ní stály většinu volání.
+ * - **Sloučení:** aspoň `BATCH_FROM` sítí se stejnou geometrií a materiálem (díly postav nepřátel, řady kulis)
+ *   kreslí jedna instancovaná síť. Matice dílů se do ní přepíšou až při kreslení, kdy jsou z tohoto snímku.
+ *
+ * Skrývá se vrstvou, ne `visible`: to přepínají scény samy (okno kulis v `StyleRig`, mrtvá těla) a přepsaly by to.
+ * Instancované a riggované sítě zůstávají, jak jsou: jejich koule nekryje instance ani pózu.
+ */
+function XrCull({ world, desk, diorama }: { readonly world: RefObject<Group | null>; readonly desk: RefObject<DeskReport | null>; readonly diorama: boolean }) {
+  const root = useRef<Group>(null);
+  // Skrytý uzel → jeho původní maska vrstev.
+  const hidden = useMemo(() => new Map<Object3D, number>(), []);
+  const batches = useMemo(() => new Map<string, Batch>(), []);
+  const at = useMemo(() => ({ frames: 0, placed: [] as Mesh[], sphere: new Sphere(), inverse: new Matrix4(), matrix: new Matrix4() }), []);
+  useEffect(
+    () => () => {
+      for (const [node, mask] of hidden) node.layers.mask = mask;
+      hidden.clear();
+      for (const batch of batches.values()) {
+        batch.instanced.removeFromParent();
+        batch.instanced.dispose();
+      }
+      batches.clear();
+    },
+    [hidden, batches],
+  );
+
+  /** Instancovaná síť pro skupinu; geometrie a materiál jsou scény, ta je i uvolní. */
+  const batchOf = (key: string, members: readonly Mesh[]): Batch => {
+    const kept = batches.get(key);
+    if (kept !== undefined && kept.instanced.instanceMatrix.count >= members.length) {
+      kept.members = members;
+      return kept;
+    }
+    kept?.instanced.removeFromParent();
+    kept?.instanced.dispose();
+    const { geometry, material } = members[0]!;
+    const instanced = new InstancedMesh(geometry, material, members.length * 2);
+    instanced.instanceMatrix.setUsage(DynamicDrawUsage);
+    instanced.frustumCulled = false;
+    instanced.matrixAutoUpdate = false;
+    instanced.count = 0;
+    const batch: Batch = { instanced, members, drawn: [], frame: -1 };
+    // Obě oči kreslí v jednom `render`: matice jednou za snímek, až po přepočtu světových matic scény.
+    instanced.onBeforeRender = (renderer) => {
+      if (batch.frame === renderer.info.render.frame) return;
+      batch.frame = renderer.info.render.frame;
+      at.inverse.copy(instanced.matrixWorld).invert();
+      batch.drawn.forEach((member, index) => instanced.setMatrixAt(index, at.matrix.multiplyMatrices(at.inverse, member.matrixWorld)));
+      instanced.count = batch.drawn.length;
+      instanced.instanceMatrix.needsUpdate = true;
+    };
+    root.current?.add(instanced);
+    batches.set(key, batch);
+    return batch;
+  };
+
+  useFrame(() => {
+    const group = world.current;
+    if (group === null) return;
+    const hide = (node: Object3D) => {
+      if (hidden.has(node)) return;
+      hidden.set(node, node.layers.mask);
+      node.layers.set(CULLED_LAYER);
+    };
+    const show = (node: Object3D) => {
+      const mask = hidden.get(node);
+      if (mask === undefined) return;
+      node.layers.mask = mask;
+      hidden.delete(node);
+    };
+    const pose = diorama ? desk.current : null;
+    const inside = (mesh: Mesh): boolean => {
+      if (pose === null) return true;
+      const { geometry } = mesh;
+      if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
+      const sphere = at.sphere.copy(geometry.boundingSphere!).applyMatrix4(mesh.matrixWorld);
+      return onDesk(deskOfWorld(pose, sphere.center), sphere.radius + DESK_MARGIN);
+    };
+
+    // Svět se prochází každý snímek: scéna sítě i staví znovu (prstenec arény po změně volných míst) a nová síť
+    // by do dalšího průchodu stála celé volání. Skupiny sloučení se skládají jen občas, nové díly do té doby
+    // kreslí každý sám.
+    // simplified: průchod je O(uzlů) za snímek (aréna ~400, běžec ~850); nad několika tisíci uzlů sledovat přidané.
+    at.frames += 1;
+    const regroup = at.frames % CULL_SWEEP === 1;
+    const seen = new Set<Object3D>();
+    const batched = new Set<Mesh>();
+    if (!regroup) for (const batch of batches.values()) for (const member of batch.members) batched.add(member);
+    const alike = new Map<string, Mesh[]>();
+    at.placed = [];
+    const walk = (node: Object3D, cut: boolean) => {
+      const off = cut || cutOf(node, diorama) !== null;
+      const mesh = node as Mesh;
+      if (off) {
+        hide(node);
+        seen.add(node);
+      } else if (batched.has(mesh)) {
+        seen.add(mesh);
+      } else if (mesh.isMesh === true && (node as InstancedMesh).isInstancedMesh !== true && (node as SkinnedMesh).isSkinnedMesh !== true) {
+        if (regroup && batchable(mesh)) {
+          const key = `${mesh.geometry.uuid}|${(mesh.material as Material).uuid}`;
+          alike.set(key, [...(alike.get(key) ?? []), mesh]);
+        } else if (diorama) {
+          at.placed.push(mesh);
+          seen.add(mesh);
+        }
+      }
+      for (const child of node.children) walk(child, off);
+    };
+    walk(group, false);
+    if (regroup) {
+      for (const [key, members] of alike) {
+        if (members.length >= BATCH_FROM) batchOf(key, members);
+        else if (diorama) at.placed.push(...members);
+        if (diorama || members.length >= BATCH_FROM) for (const member of members) seen.add(member);
+      }
+      for (const [key, batch] of batches) {
+        if ((alike.get(key)?.length ?? 0) >= BATCH_FROM) continue;
+        batch.instanced.removeFromParent();
+        batch.instanced.dispose();
+        batches.delete(key);
+      }
+    }
+    // Uzel, který ze scény zmizel nebo přestal splňovat pravidlo, se vrátí.
+    for (const node of [...hidden.keys()]) if (!seen.has(node)) show(node);
+
+    for (const mesh of at.placed) {
+      if (inside(mesh)) show(mesh);
+      else hide(mesh);
+    }
+    for (const batch of batches.values()) {
+      batch.drawn = [];
+      for (const member of batch.members) {
+        hide(member);
+        if (member.parent !== null && isShown(member, group) && inside(member)) batch.drawn.push(member);
+      }
+    }
+  }, XR_RENDER_PRIORITY - 1);
+  return <group ref={root} />;
 }
 
 /** Co e2e o VR čte (`e2e/vr-enter.spec.ts`). */
@@ -245,6 +432,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {presenting && diorama && <Diorama world={world} session={shown} report={desk} />}
       {presenting && !diorama && <XrPlace world={world} session={shown} control={control} />}
       {presenting && <DirectRender calls={calls} />}
+      {presenting && shown !== null && <XrCull key={diorama ? 'desk' : 'free'} world={world} desk={desk} diorama={diorama} />}
       {presenting && game !== null && control !== null && aims && <XrAim session={game} control={control} world={world} motion={motion} />}
       {presenting && game !== null && swings && <XrSwing session={game} world={world} motion={motion} />}
       {presenting && game !== null && <XrInput session={game} motion={motion} aim={aim} />}

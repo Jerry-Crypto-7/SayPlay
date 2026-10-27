@@ -10,23 +10,21 @@
  */
 
 import { useThree } from '@react-three/fiber';
-import { createXRStore, XR } from '@react-three/xr';
-import { type ReactNode, useEffect } from 'react';
+import { createXRStore, useXR, XR } from '@react-three/xr';
+import { EffectComposer } from 'postprocessing';
+import { type ReactNode, useEffect, useMemo } from 'react';
+import type { Light } from 'three';
+
+import { fpsHudWanted } from '@/play/xr/flag';
+import { type FrameMeter, XR_QUALITY, createFrameMeter, framebufferScaleOf, nearestRate } from '@/play/xr/quality';
 
 import { createHostTunnel, StagePortal } from '../feed/StageHost';
+import { XrFpsHud } from './XrFpsHud';
 import { PANEL_ORDER } from './XrPanel';
 import { XrRig } from './XrRig';
 
-/** Quest 2 umí 72, 80, 90 a 120 Hz; plán cílí na 72. */
-const TARGET_HZ = 72;
-
-function nearestRate(rates: ArrayLike<number>): number | false {
-  let best: number | false = false;
-  for (const rate of Array.from(rates)) {
-    if (best === false || Math.abs(rate - TARGET_HZ) < Math.abs(best - TARGET_HZ)) best = rate;
-  }
-  return best;
-}
+/** Adresa, kterou stránka otevřela – jako brána `?vr=1` (`XrGate`), tedy i po přechodu na AI verzi. */
+const opened = window.location.href;
 
 const store = createXRStore({
   // Emulátor IWER vstřikuje jen e2e; produkt ho nenačte ani na localhostu.
@@ -58,8 +56,16 @@ const store = createXRStore({
   planeDetection: false,
   hitTest: false,
   domOverlay: false,
+  // Profil Questu 2 (`quality.ts`): 72 Hz, pevná foveace, rozlišení relace.
   frameRate: nearestRate,
+  foveation: XR_QUALITY.foveation,
+  frameBufferScaling: framebufferScaleOf(opened),
 });
+
+/** Panel FPS (`?vrhud=1`) pro ruční bránu T8. */
+const fpsHud = fpsHudWanted(opened);
+/** Snímky relace pro panel FPS; měří `KeepXrFrames`. */
+const meter: FrameMeter = createFrameMeter();
 
 /** Tunel trvalého plátna VR; kontejner plátna se stěhuje do místa hry, která právě hraje. */
 export const host = createHostTunnel();
@@ -69,6 +75,7 @@ export const host = createHostTunnel();
  * brýle o další snímek a obraz v nich zamrzne (Quest ho jen dál přepočítává podle hlavy). Snímek s chybou se proto
  * zahodí a další jede; chyba jde jednou do konzole. Nález T5 (`docs/vr/README.md`): `look/Ambient.tsx` (P62) ve VR
  * padá, když žádné umístění života není v obraze hlavy – opravit tam, tohle je jen pojistka relace.
+ * Zároveň měří, kdy snímek začal a kolik ms práce CPU stál (panel FPS, `XrFpsHud`).
  */
 function KeepXrFrames() {
   const xr = useThree((three) => three.gl.xr);
@@ -81,6 +88,7 @@ function KeepXrFrames() {
         callback === null
           ? null
           : (time, frame) => {
+              const start = performance.now();
               try {
                 callback(time, frame);
               } catch (error) {
@@ -88,6 +96,7 @@ function KeepXrFrames() {
                 if (!seen.has(message)) console.error(error);
                 seen.add(message);
               }
+              meter.record(start, performance.now() - start);
             },
       );
     return () => {
@@ -97,11 +106,64 @@ function KeepXrFrames() {
   return null;
 }
 
+/**
+ * Profil Questu 2 v relaci (`quality.ts`), zvenku, bez souborů P62:
+ *
+ * - **Bez postprocessingu.** Skládač (`look/rig/Post.tsx`) ve VR stereo rozbije, proto scénu kreslí `XrRig`
+ *   napřímo; skládač by dál kreslil celou scénu podruhé a AO, bloom a SMAA v rozlišení brýlí naprázdno. V relaci
+ *   se jeho `render` i `setSize` přeskočí (i cíle kreslení zůstanou v 2D velikosti); po odchodu z VR jede jako dřív.
+ * - **Bez stínů.** Three předá stínovému průchodu světla se stínem dřív, než skládá světla pro materiály: světlo
+ *   tam ztratí `castShadow` a materiály se přeloží bez stínu hned v prvním snímku – i se sluncem nové hry
+ *   po výměně za AI verzi. Po odchodu z VR světla stín vrhají znovu.
+ *
+ * simplified: přepsaná metoda knihovny `postprocessing`; až půjde měnit `Post.tsx` (P62), patří tam
+ * `enabled={!presenting}` skládače a tohle zmizí.
+ */
+function XrQuality() {
+  const gl = useThree((three) => three.gl);
+  const presenting = useXR((xr) => xr.session != null);
+  useEffect(() => {
+    if (!presenting) return undefined;
+    const composer = EffectComposer.prototype;
+    const { render, setSize } = composer;
+    composer.render = function (this: EffectComposer, delta?: number) {
+      if (!this.getRenderer().xr.isPresenting) render.call(this, delta);
+    };
+    composer.setSize = function (this: EffectComposer, width: number, height: number, updateStyle?: boolean) {
+      if (!this.getRenderer().xr.isPresenting) setSize.call(this, width, height, updateStyle);
+    };
+    const shadows = gl.shadowMap;
+    const shadowPass = shadows.render;
+    const unlit = new Set<Light>();
+    shadows.render = (lights) => {
+      for (const light of lights) {
+        light.castShadow = false;
+        unlit.add(light);
+      }
+    };
+    return () => {
+      composer.render = render;
+      composer.setSize = setSize;
+      shadows.render = shadowPass;
+      for (const light of unlit) light.castShadow = true;
+    };
+  }, [gl, presenting]);
+  return null;
+}
+
+function FpsHud() {
+  const presenting = useXR((xr) => xr.session != null);
+  const aim = useMemo(() => new Map(), []);
+  return presenting ? <XrFpsHud meter={meter} aim={aim} /> : null;
+}
+
 function wrapScene(scene: ReactNode): ReactNode {
   return (
     <XR store={store}>
       <KeepXrFrames />
+      <XrQuality />
       <XrRig>{scene}</XrRig>
+      {fpsHud && <FpsHud />}
     </XR>
   );
 }

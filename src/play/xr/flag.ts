@@ -9,6 +9,11 @@ export function xrWanted(url: string | URL): boolean {
   return new URL(url, 'http://play.invalid/').searchParams.get('vr') === '1';
 }
 
+/** Adresa žádá panel FPS ve VR (`?vrhud=1`, P65 T6) – pro měření v brýlích, ruční brána T8. */
+export function fpsHudWanted(url: string | URL): boolean {
+  return new URL(url, 'http://play.invalid/').searchParams.get('vrhud') === '1';
+}
+
 /** Část `navigator.xr`, na kterou se brána ptá. */
 export interface XrSystemLike {
   isSessionSupported(mode: 'immersive-vr'): Promise<boolean>;

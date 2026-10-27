@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { xrSupported, xrWanted } from '../flag';
+import { fpsHudWanted, xrSupported, xrWanted } from '../flag';
+
+describe('fpsHudWanted', () => {
+  it('shows the FPS panel only with vrhud=1', () => {
+    expect(fpsHudWanted('http://localhost:3165/play?vr=1&vrhud=1')).toBe(true);
+    expect(fpsHudWanted('http://localhost:3165/play?vr=1')).toBe(false);
+    expect(fpsHudWanted('/play?vrhud=0')).toBe(false);
+  });
+});
 
 describe('xrWanted', () => {
   it('wants VR only with vr=1', () => {

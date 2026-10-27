@@ -57,7 +57,10 @@ Skript:
 
 1. Stránka se otevře sama, s `?vr=1&vrhud=1` v adrese.
 2. Stiskni „Enter VR“.
-3. Hraj. FPS panel (`?vrhud=1`) přidá úloha T6, do té doby ukazuje FPS jen měření níž.
+3. Hraj. Vlevo dole v zorném poli visí malý panel FPS (zapíná ho `?vrhud=1` v adrese). Ukazuje za poslední sekundu:
+   - `fps` – kolik snímků brýle nakreslily; plynulý chod je 72;
+   - `worst ms` – nejdelší mezera mezi dvěma snímky; nad 14 ms je to cuknutí;
+   - `cpu ms` – kolik ms stál snímek procesor (medián); nad 14 ms nestačí sám procesor, ne grafika.
 4. Ven z VR: tlačítko „Exit VR“ na panelu hry (paprsek pravého ovladače a spoušť, viz „Panely ve VR“ níž), nebo systémové tlačítko Meta na pravém ovladači. Stránka se vrátí do 2D, hra běží dál a „Enter VR“ je zpět. Tlačítko na 2D stránce v relaci nejde, protože ji brýle nekreslí.
 
 ### 7. Měření FPS
@@ -88,6 +91,10 @@ Když za celou dobu nepřijde jediný údaj, skript nic nezapíše a skončí ch
 - `samples` – kolik sekund se změřilo. Výrazně méně než `seconds` znamená, že brýle část doby nehrály (sundané, uspané, mimo VR).
 
 Cíl: **`median` ≥ 72 a `p5` ≥ 65**. Quest 2 obnovuje obraz 72× za sekundu, takže 72 je plynulý chod.
+
+### 9. Ostrost proti plynulosti (`?vrscale`)
+
+Hra ve VR kreslí v plném rozlišení prohlížeče Questu. Když některá hra nedrží 72, zkus ji s nižším rozlišením: v adrese v brýlích připiš `&vrscale=0.8` a změř znovu. Rozsah je 0,8–1,0 (`0.9` je mezi). Pokud je při 0,8 hra plynulá a text na panelech pořád čitelný, napiš to do zápisu brány – profil se pak přepne na 0,8.
 
 ## Ovládání ovladači
 
@@ -223,8 +230,27 @@ Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produk
 - **Nález v T5 (neopraveno, soubor P62): život na pozadí padá ve VR.** `src/components/play/arcade/look/Ambient.tsx` rozmisťuje život kolem orientačního bodu podle kamery. Ve VR je kamerou hlava. Když žádný pokus o umístění neleží v jejím obraze, `placeLife` vrátí v poli `null` (`best!`) a `writeLife` spadne na `l.x`. Výjimka ve snímku VR dřív zastavila kreslení relace natrvalo: obraz zamrzl, panely ani ovladače nereagovaly. Emulátor to ukázal asi v každém čtvrtém běhu střílečky (`e2e/vr-hud.spec.ts`) a nejspíš to stálo i za občasnými pády `vr-native`.
   - **Pojistka v `XrRoot.tsx` (T5):** snímek s výjimkou se zahodí a relace kreslí dál.
   - **Co zbývá:** dokud `Ambient` padá, vypadne každý 10. snímek, protože tolikrát se pokus opakuje. V brýlích to bude cuknutí asi 7× za sekundu.
-  - **Oprava patří do `Ambient.tsx` (P62):** v `placeLife` vzít nejlepší pokus i tehdy, když žádný není v obraze, nebo ve VR život nerozmisťovat. Ověřit v T6 nebo T8.
+  - **Oprava patří do `Ambient.tsx` (P62):** v `placeLife` vzít nejlepší pokus i tehdy, když žádný není v obraze, nebo ve VR život nerozmisťovat. Ověřit v T8.
+  - **T6:** v měření všech 19 her (po 10 s hry) se výjimka do konzole neozvala ani jednou (`errors` v `evals/vr/budget.json`). Chyba je ale náhodná, takže to opravu nenahrazuje.
 
 ### Postprocessing ve VR
 
-Skládač postprocessingu scény kreslí přes celou obrazovku jedním trojúhelníkem, takže do obou očí dá tentýž obraz a stereo se rozpadne. Ve VR se proto scéna po skládači kreslí znovu napřímo (`XrRig.tsx`). Skládač ale dál běží naprázdno a stojí výkon GPU brýlí. Vypnout ho ve VR jde jen v `src/components/play/arcade/look/rig/Post.tsx`; to je úkol pro profil výkonu (T6), jakmile ten soubor půjde měnit.
+Skládač postprocessingu scény kreslí přes celou obrazovku jedním trojúhelníkem, takže do obou očí dá tentýž obraz a stereo se rozpadne. Ve VR se proto scéna po skládači kreslí znovu napřímo (`XrRig.tsx`).
+
+- **Od T6 skládač ve VR nekreslí.** `XrQuality` v `XrRoot.tsx` po dobu relace přeskočí jeho kresbu i změnu velikosti cílů; po odchodu z VR jede jako dřív.
+- **Je to přepsaná metoda knihovny `postprocessing`.** Čisté místo je `src/components/play/arcade/look/rig/Post.tsx` (P62): `enabled={!presenting}` u `EffectComposer`. Až ten soubor půjde měnit, přepis zmizí.
+- **Cíle skládače zůstávají v paměti** ve velikosti 2D obrazovky, i když se nekreslí. Uvolnit je jde také jen v `Post.tsx`.
+
+### Profil Questu 2 a rozpočet snímku (T6, 27. 10. 2026, emulátor)
+
+Podrobnosti, čísla všech her a návod na měření jsou v `evals/vr/README.md`. Ve VR (mimo VR se nic nemění):
+
+- **Bez skládače a bez stínů.** Skládač kreslil celou scénu podruhé a stínový průchod potřetí. Jen tohle srazilo draw cally 4–10×.
+- **Rozpočet:** ≤ 150 draw callů a ≤ 300 tisíc trojúhelníků za snímek, obě oči dohromady. Je to odhad z doporučení Mety pro Quest 2, ruční brána T8 ho upřesní. Hlídá ho `evals/vr/__tests__/budget.test.ts` nad měřením.
+- **Nejhorší hry po profilu:** hod 112 volání, závod 282 tisíc trojúhelníků. Před T6 bylo nejhorší 1182 volání (střílečka) a 29 milionů trojúhelníků (běžec).
+- **Ve VR nejsou rostliny.** Vegetace si vybírá rostliny podle kamery hry ve 2D. Ve VR bez stínového průchodu kreslila všechny rostliny svého okna: 0,74–1,37 milionu trojúhelníků. Oprava patří do `src/components/play/arcade/look/Vegetation.tsx` (P62): výběr počítat z hlavy hráče převedené do souřadnic scény. Pak se rostliny do VR vrátí.
+- **Bez obrysů nepřátel.** Obrys kreslil každý díl postavy podruhé. Obrys hrdiny zůstal.
+- **Na stole se nekreslí, co je mimo něj.** Kulisy za okrajem desky a prstenec rostlin za stěnami arény by roviny řezu stejně ořízly.
+- **Stejné díly se kreslí najednou.** Aspoň 4 sítě se stejnou geometrií a materiálem kreslí jedna instancovaná síť (díly nepřátel střílečky).
+- **Částice:** nejvýš 500 živých, jako telefon na nejnižší úrovni kvality.
+- **Co emulátor neměří:** FPS, rozlišení relace a foveaci (IWER je přejde). Profil startuje na rozlišení 1,0 a foveaci 1; porovnání s 0,8 je v bodě 9 návodu výš.

@@ -40,6 +40,7 @@ import {
 import { HEADER } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { playSfx } from '@/play/audio';
+import { XR_QUALITY } from '@/play/xr/quality';
 
 import { HeroCueFx } from '../action-cue/HeroCueFx';
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
@@ -113,6 +114,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
   useEffect(() => installRenderFeel(session), [session]);
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
+  const xr = useThree((three) => three.gl.xr);
   const bus = useRef<EffectsBus | null>(null);
   /** Hodiny kresby (ms) a chvíle výhry na nich (P36C T7); −∞ = bez výhry. */
   const clock = useRef(0);
@@ -192,7 +194,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
         const at = path?.(event.z);
         return at === undefined ? event : { ...event, x: event.x - at.x, y: event.y + at.y };
       };
-      director.emit(events.flatMap((event) => burstsOf(bent(event), colors)), now, PARTICLE_CAP[tierOf()]);
+      // Ve VR strop profilu Questu 2 (P65 T6, `xr/quality.ts`): úroveň kvality tam měří FPS relace, ne telefonu.
+      director.emit(events.flatMap((event) => burstsOf(bent(event), colors)), now, xr.isPresenting ? XR_QUALITY.particles : PARTICLE_CAP[tierOf()]);
     });
     // Restart (tik zpět) zahodí i částice, které ještě letí.
     let seen = session.state()[HEADER.tick] as number;
@@ -217,7 +220,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
       wonAt.current = -Infinity;
       if (surface.current !== null) delete surface.current.dataset.fx;
     };
-  }, [session, look, scene, batch, materials, surface]);
+  }, [session, look, scene, xr, batch, materials, surface]);
 
   useFrame(() => {
     camera.position.sub(offset);
