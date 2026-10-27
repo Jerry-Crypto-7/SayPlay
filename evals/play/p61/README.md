@@ -219,6 +219,70 @@ Dva běhy, oba A/B prokládaně scénu po scéně, `main` `5692b987` proti větv
 - Nejhorší scéna druhého běhu: `g-arena` („Collect ten acorns in a forest while avoiding a fox“) 59,7 → 53,9 FPS (0,903), kreslicích volání 56 → 70 a úroveň kvality `high` → `medium` ve všech třech opakováních. Odvozeno: volání navíc je vzhled arény z věty (P61), adaptivní kvalita kvůli nim spadla o stupeň. `g-shooter` 0,949 při stejných 80 voláních – rozptyl jednoho opakování (46,6 FPS), ne nový obsah.
 - Medián v obou bězích daleko od 0,95, proto se dvojice neopakovala.
 
+### Celá sada a e2e na třech projektech – e2e nezelené, jedna regrese otevřená
+
+**Vitest.** Celá sada sama (`npx vitest run`, JSON reporter) před `91d769af`: 19 726 / 19 730, jediný červený soubor `evals/play/p46e/__tests__/upgrade-gauge.test.ts` (jeho počítaná aréna dostala od T5 bosse). Opraveno v `91d769af`; soubor sám 27. 10. 4/4. Celá sada se po opravě znovu nepouštěla.
+
+**E2E, 27. 10.** Build `63bb5694` (`npm run build`), `next start` na portu 3161 bez čtečky (`PLAY_READER=off`, 0 placených volání), prázdné úložiště her, `FALLBACK_SMOKE_URL`, jeden worker, `--grep-invert @measure` jako `npm run test:e2e`. `chromium` běžel ve čtyřech dávkách (`--shard=1/4` … `4/4`), protože celý běh trvá přes 2 h, strop úlohy na pozadí; server s prázdným úložištěm znovu před dávkou 1, 3 a před telefony. JSON výstupy leží v `D:/caches/p61/t8c/`.
+
+| Projekt | Prošlo | Červené | Přeskočil spec | Neběželo | Celkem |
+|---|---|---|---|---|---|
+| `chromium` | 457 | 118 | 58 | 27 | 660 |
+| `pixel7-touch` | 51 | 1 | 36 | 0 | 88 |
+| `iphone-touch` | 68 | 1 | 36 | 0 | 105 |
+
+- Přeskočil spec: `play-scenery-gallery` 36 (chce `P28_SCENERY_DIR`), `p58a-framing` 18 v `chromium` a 36 v každém telefonu (profil měří jiný projekt), `p32-split` 4. Neběželo: sériové bloky `p33-shots` (9) a `p34-shots` (18) po svém prvním červeném testu.
+- Po bězích `git status` ukázal 116 přepsaných souborů pod `evals/` (112 PNG, 3 JSON včetně smazaného `p41/env/manifest.json`, generovaný `p32/heroes/README.md`), vrácené `git checkout HEAD`; totéž v worktree `main` (34 souborů).
+
+**Třídění.** Každý červený test znovu sám (jen červené, po jednom, bez zbytku sady); co zůstalo červené, tentýž test proti `main` `5692b987` (jeho build z 26. 10. a jeho specy, které se od větve neliší; port 3162, tytéž podmínky, server větve vypnutý).
+- **Zátěž** (sám zelený): 1 – `play-chain.spec.ts:198` (`net::ERR_NO_BUFFER_SPACE` v plném běhu).
+- **Červené i na `main`** (stav před P61): 114 v `chromium` (tabulka níž), k tomu `play-sentence-read.spec.ts:58` (puštěný se stubem čtečky na :8799, jak spec chce; na obou stranách se nedočká `play-pause`) a `play-segments.spec.ts:182` desktop „A knight duels a dragon in a castle courtyard“ (šampion vyjede ze záběru, `maxY` 25 až 21 082; na větvi 2 ze 2 běhů červený, na `main` 1 ze 3 – kolísá i tam).
+- **Regrese, otevřená:** `play-phone.spec.ts:40` „the grid game keeps ≥ 85 % of the height“ ve všech třech projektech. Na `main` zelený v `chromium` i s konfigurací větve v obou telefonech (6/6); telefonům ho přidal T6.
+- Opačně: `play-segments.spec.ts:182` „Collect three keys in a pyramid while mummies chase you“ (3 testy) je červený jen na `main` (`shell.byHand` chybí), větev ho hraje jako arénu se sběrem a prochází.
+
+**Regrese `play-phone`.** Věta „Collect five glowing mushrooms then open a portal.“ má na větvi počet z věty (T5): pilulka vlevo nahoře nese počítadlo cíle (pět vajec a „mushrooms 0/5“, 250 px) a „3 lives“ (40 px). Na `main` tatáž hra počítadlo cíle nemá, pilulka je jen „3 lives“, 76 px. Mřížka HUD pilulku na telefonu 390 px zastaví na 211 px a zbytek ořízne – „3 lives“ není vidět. Spec bere prvek širší než půl obrazovky jako pruh přes šířku, takže hře zbývá 704 z 844 px místo ≥ 717. Neopraveno: zkouška s jedním vejcem místo pěti (počítadlo 154 px) nechala pilulku pořád oříznutou na 211 px a test červený. Oprava znamená rozhodnout rozvržení pilulky (kratší slovo, druhý řádek, nebo cíl a životy zvlášť), to není malá změna v souborech větve.
+
+Červené i na `main`, příčina ze zprávy testu (na větvi i na `main` stejná, jen `play-movements` dostane na větvi `shooter`, na `main` `runner`, a `p54b-landmark` vyprší na větvi u `g-voyage`, na `main` u `g-arena`):
+
+| Spec (testů) | Příčina |
+|---|---|
+| `first-visit:74` (1) | nápověda leží pod polem věty (y 569 px, čeká < 307) |
+| `p32-arena:458`, `:531` (2) | soupeř po KO „0 of 6“, spec čeká „0 of 7“ |
+| `p32-first-seconds:89` (4) | barva pod plátnem před prvním snímkem není obloha vzhledu |
+| `p32-penguin:458`, `p32-voyage:255` (2) | fialové pixely ve snímku ≥ 0,1 % |
+| `p32-platform:174`, `:215` (2) | `waitForFunction` 60 s vyprší |
+| `p32-terrain-gallery:37` (12) | `terrain-lab` nedojde do stavu „1“ |
+| `p33-shots:88` (1, dalších 9 neběželo) | chybí výzva „Tap to start“ |
+| `p34-shots:212` (1, dalších 18 neběželo) | `upgrade-state` nikdy „working“ (čtečka vypnutá) |
+| `p37-seams:62` (4) | snímek se od reference liší v 8–53 % pixelů |
+| `p37a-off-topic:32` (1) | n19 ukáže „Fight! … Beat 1 long queues.“ místo „Dodge the long queues!“ |
+| `p37c-ghost:58`, `p37c-roundtrip:49` (2) | `ghost-lab` nedojde do „ready“ |
+| `p37c-share:121` (1) | sdílení prohry bez „So close.“ |
+| `p45d-toy-motion:171` (1) | na Pixel 7 s CPU 4× se hýbe méně než 5 ze 6 hrdinů |
+| `p54b-landmark:163`, `:175` (2) | jedna scéna vyprší |
+| `p56b-first-frame:86` (2) | 09-astro: pod plátnem skoro černá (rgb 2, 6, 23) |
+| `p56b-look:58` (1) | `waitForFunction` 30 s vyprší |
+| `play-abilities:248` (1) | hra se soubojem nemá tlačítko Strike |
+| `play-audio:144` (2) | `waitForFunction` 60 s vyprší |
+| `play-cast:195` (1) | úvodní karta `play-first-prompt` není vidět |
+| `play-drive:25` (2), `play-env:211` (1), `play-movements:81` (1), `play-p42:24` (3), `play-platform:33` platform (1), `play-rules:24`, `:33` (2) | věta dostane jiné ovládání, než spec P41/P42 čeká (např. ne `steer`) |
+| `play-env:176` (1) | vlastní panorama se nevymění |
+| `play-honest:85` (1) | věta bez slovesa nemá pruh upřímnosti |
+| `play-live:66` (1) | „more enemies“ nepřidá hrozby |
+| `play-merge:203` (1) | test vyprší po 30 s |
+| `play-motion:14` (1) | v konzoli React chyba #418 (hydratace) |
+| `play-p42:60` (8) | „Expected a published arcade world“ |
+| `play-physics-determinism` (8), `play-physics-replay:13` (1), `play-rapier-lazy:41` (1) | fyzikální laboratoř (Rapier) nedoběhne do 30 s |
+| `play-platform:33` flap (1), `play-push:219` (1) | výsledek prohry bez „So close.“ |
+| `play-platform:64`, `:79` (2) | `__playShell.inputs` / `playWitness` chybí |
+| `play-powerups:92`, `:112` (2), `play-segments:182` králík (3) | `shell.byHand` chybí |
+| `play-progression:10` (1) | přehrání `walk.reach` se liší (27 řádků) |
+| `play-remix-sentence:35` (1) | vlastní věta neotevře novou verzi |
+| `play-sentence-visible:42` (24) | chce místní čtečku `llama-server` na :8792, ta neběží |
+| `play-upgrade-live:106` (3) | AI verze od režiséra se neukáže (bez čtečky) |
+
+Verdikt e2e části T8: nesplněna. Ze 118 červených v `chromium` je 116 červených i na `main`, jeden zátěž a jeden regrese větve; telefony mají po jednom červeném testu a je to tatáž regrese.
+
 ## T4 – řetěz a jedna hra
 
 Zjištění: „knight … three keys … dodging ghosts“ nešel do řetězu přes `generic`, ale přes `multi_verb` – slovník čte collect (`move_free`) a dodging (`steer`), dvě ovládání; první buňka `arena.escape` 6 bodů s náskokem 5. Samotné zúžení `generic` by ho nechalo řetězem.
