@@ -60,9 +60,10 @@ Odhad (inference, ne měření): při 200 návštěvnících denně a nikom vrac
 | T1 server `main`: 12 dev + 24 zapečetěných vět (`shots.mjs spend`, 36 volání) | 1,090 |
 | T2 nový prompt čtečky: 7 vět P61 + 12 dev (`reread-set.json`, compare.measure) | 0,592 |
 | T6 server větve `55f1a838`: 12 dev vět, 10 placených čtení (`shots.mjs spend`; s088 a s069 nečteny, viz T6) | 0,310 |
-| **Celkem** | **3,095** |
+| T6 server větve `17e8715a`: 24 zapečetěných vět, 24 placených čtení (`shots.mjs spend`, strop 0,86) | 0,747 |
+| **Celkem** | **3,842** |
 
-Zbývá 0,905 USD na zapečetěnou sadu (24 vět ≈ 0,74). Strop serveru rezervuje před každým čtením nejhorší případ volání (znak = token, 0,09–0,12 USD), proto `--cap-usd` musí ležet aspoň ~0,12 nad očekávanou útratou, jinak poslední věty zůstanou nečtené.
+Před zapečetěnou sadou zbývalo 0,905 USD, po ní 0,158 USD ze 4 USD. Strop serveru rezervuje před každým čtením nejhorší případ volání (znak = token, 0,09–0,12 USD), proto `--cap-usd` musí ležet aspoň ~0,12 nad očekávanou útratou, jinak poslední věty zůstanou nečtené.
 
 ## T2: nový prompt čtečky (`readings.p63.astra.json`)
 
@@ -218,3 +219,90 @@ Přesně tyhle tři hry předpověděla diagnóza nad `readings.p63.astra.json` 
 - Duch je díl nebezpečí z T2 (`compose/assemble.ts`, `foeless`: pronásledovatel věty v aréně bez hrozby jde jako `hazard`). Soubor P63, ne P62.
 - **Návrh:** díl nebezpečí v aréně startuje od hrdiny aspoň tak daleko jako pronásledovatelé.
 - Odvozeno ze snímků, pozice v kódu neověřená. Robot hru vyhraje, nečinný hráč ne, takže publikační brána to nechytí.
+
+## T6: zapečetěná brána
+
+**Jak se měřilo:**
+- Sada otevřená jednou 27. 10. 2026 v 18:27 UTC na větvi `17e8715a` (`holdout-opened.json`), otisk při otevření seděl.
+- Větev nafocená do `D:/caches/p63/p63-holdout/` týmž `shots.mjs` jako `main` v T1 (`495bbc77`, `D:/caches/p63/main-holdout/`): `npm run build`, `shots.mjs serve` na portu 3163 (astra jen pro AI verzi, režisér bez dosažitelného modelu, strop 0,86 USD), snímky v 1, 3 a 5 s, desktop i Pixel 7, upgrade cesta při focení zablokovaná. 24 z 24 vět bez chyby, všech 24 přečtených.
+- Na větu jeden list (desktop) s řádky `main` rychlá, `main` ze čtení, P63 rychlá, P63 ze čtení – co vzniklo, 2 až 4 řádky. Pořadí `pure-rand` se seedem 61026.
+- Soudce Claude Opus 5.5 (`claude -p --safe-mode`), obrázek jen jako `sheet.png` v prázdném `mkdtemp`, souběh 1, jeden běh. 24 volání, všechny odpovědi platné napoprvé → `result.json`. Listy a odpovědi v `D:/caches/p63/sheets-t6b-holdout/`.
+
+| Strana | Věrnost | Hrál bych | Vět |
+|---|---|---|---|
+| `main` rychlá hra | 0,29 | 0,30 | 24 |
+| `main` po čtení | 0,375 | 0,35 | 24 |
+| P63 rychlá hra | 0,35 | 0,34 | 24 |
+| P63 po čtení | 0,40 | 0,375 | 24 |
+
+„Po čtení“ = hra ze čtení, a když nevznikla, rychlá hra. Hra ze čtení sama (jen kde vznikla): `main` 0,375 / 0,425 (8 vět, jen řetězy), P63 0,40 / 0,40 (19 vět).
+
+| Brána | P63 | `main` | Výsledek |
+|---|---|---|---|
+| G1 po čtení: medián věrnosti ≥ 0,75 | 0,40 | 0,375 | nesplněna |
+| G2 po čtení: medián věrnosti ≥ `main` | 0,40 | 0,375 | splněna |
+| G3 po čtení: medián „hrál bych“ ≥ 0,70 | 0,375 | 0,35 | nesplněna |
+| G4 po čtení: medián „hrál bych“ ≥ `main` | 0,375 | 0,35 | splněna |
+| G5 rychlá hra: medián věrnosti ≥ `main` − 0,02 | 0,35 | 0,29 | splněna |
+| G6 rychlá hra: medián „hrál bych“ ≥ `main` − 0,02 | 0,34 | 0,30 | splněna |
+
+Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json`, prahy má z plánu. Celkový verdikt (`result.json` → `verdict`): nesplněny G1 a G3. Čas do hratelné hry a robot / nečinný / replay jsou samostatné kroky T6, tady nejsou.
+
+**Co brána srovnává:**
+- Na `main` hra ze čtení u jedné hry k měřidlu nikdy nedošla. Režisér bez modelu skončí hned a jeho konec nenesl id hry ze čtení; větev to opravila v `6d5ac168` (T6 dev výš).
+- `main` má proto řádek ze čtení jen u 8 řetězů. P63 ho má u 19 vět: 8 řetězů a 11 jedné hry. U těch 11 vět „po čtení“ srovnává hru ze čtení P63 s rychlou hrou `main`.
+- Se živým režisérem by hráč `main` hru ze čtení dostal také. Jestli by byla stejná, nevíme: T2 a T3 mění čtečku, role i publikaci.
+
+**Rozklad podle skupin vět** (věrnost / hrál bych, mediány):
+- **Řetězy (8 vět):** hra ze čtení `main` 0,375 / 0,425, P63 0,325 / 0,40. Šest z osmi má stejné skóre, p06 −0,10. Leží v rozptylu soudce (T1 P61: nejvýš 0,10).
+- **Jedna hra, kde větev nově předá hru ze čtení (11 vět):** `main` rychlá 0,35 / 0,30, P63 rychlá 0,35 / 0,30, P63 ze čtení 0,40 / 0,35. Hra ze čtení byla věrnější než vlastní rychlá hra u 4 vět (p02, p07, p16, p22) a méně věrná u 6 (p03, p04, p12, p15, p17, p20). Hráč tedy častěji přejde na hru, kterou soudce vidí hůř.
+- **Bez hry ze čtení (5 vět – p01, p08, p11, p13, p21):** čtení dalo tutéž hru, skóre beze změny.
+- **Rychlá hra:** 20 z 24 vět má na obou stranách tutéž hru (shodné id verze). Na nich `main` 0,25 / 0,275, P63 0,30 / 0,30. Odvozeno: náskok G5 a G6 dělá rozptyl snímků a soudce, ne jiná hra. Příklad p04: tatáž hra, na `main` všechny tři snímky obrazovka prohry (0,02), na větvi kopání na branku (0,35).
+- Věrnost ≥ 0,75 má po čtení 1 věta z 24 (p16), „hrál bych“ ≥ 0,70 žádná.
+
+### Verdikt: G1 a G3 nesplněny
+
+Hra po čtení má medián věrnosti 0,40 místo 0,75 a „hrál bych“ 0,375 místo 0,70. Proti `main` je o 0,025 lepší v obou číslech (G2, G4), což je pod rozptylem soudce. Podle sady se nic neladilo.
+
+Po větách, věrnost / hrál bych. „(ze čtení)“ = výtka platí pro hru ze čtení, jinak pro rychlou hru.
+
+| Věta | `main` rychlá | P63 rychlá | `main` po čtení | P63 po čtení | Hra ze čtení P63 | Výtka soudce u hry P63 po čtení |
+|---|---|---|---|---|---|---|
+| p01 kuchař obrací burgery | 0,25 / 0,20 | 0,27 / 0,20 | 0,25 / 0,20 | 0,27 / 0,20 | – | pult s věcmi, žádný gril, burgery ani zákazníci |
+| p02 klaun žongluje s pochodněmi | 0,15 / 0,20 | 0,15 / 0,20 | 0,15 / 0,20 | 0,35 / 0,30 | `catch` | (ze čtení) chytání hořících pochodní s klaunem, ale prázdná louka místo šapitó a pochodně drobné |
+| p03 plavčík tahá plavce z bouřlivého moře | 0,25 / 0,15 | 0,35 / 0,25 | 0,25 / 0,15 | 0,10 / 0,35 | `quest.spatial` | (ze čtení) plavčík sbírá hvězdy na suché písčité ploše, žádné moře, bouře ani plavci; rychlá hra moře měla |
+| p04 brankář chytá penalty | 0,02 / 0,05 | 0,35 / 0,35 | 0,02 / 0,05 | 0,10 / 0,30 | `catch` | (ze čtení) chytání jablek a uhýbání bombám na prázdné louce, z věty jen štítek „Goalkeeper“ |
+| p05 rybář na zamrzlém jezeře | 0,25 / 0,40 | 0,25 / 0,40 | 0,50 / 0,45 | 0,50 / 0,45 | řetěz → `arena.collect` | (ze čtení) rybář sbírá ryby na zamrzlém jezeře, bez díry v ledu a navíjení |
+| p06 instalatér v zatopeném sklepě | 0,10 / 0,30 | 0,10 / 0,25 | 0,40 / 0,45 | 0,30 / 0,40 | řetěz → `quest.spatial` | (ze čtení) instalatér sbírá záplaty na otevřené louce, žádný sklep, voda ani trubky |
+| p07 myč oken mrakodrapu | 0,28 / 0,22 | 0,30 / 0,25 | 0,28 / 0,22 | 0,40 / 0,40 | `quest.spatial` | (ze čtení) cíl drhnout holubí trus a hrozba, ale rovná podlaha místo oken mrakodrapu |
+| p08 baristka a zamračení roboti | 0,25 / 0,15 | 0,27 / 0,17 | 0,25 / 0,15 | 0,27 / 0,17 | – | šálky na pultu a cíl nalévat, žádní roboti ani baristka |
+| p09 pirát, čtyři truhly | 0,70 / 0,55 | 0,60 / 0,45 | 0,70 / 0,55 | 0,60 / 0,40 | `quest.spatial` | (ze čtení) ostrov, truhly a počítadlo 0/4; pirát začíná jako modrý náhradní kvádr, hrozba nejasná |
+| p10 dvanáct balónků nad poutí | 0,15 / 0,20 | 0,25 / 0,30 | 0,30 / 0,30 | 0,30 / 0,30 | řetěz → `quest.spatial` | (ze čtení) 8 balónků na zemi místo 12 vznášejících se, žádná pouť |
+| p11 myš, 5 kousků sýra | 0,45 / 0,35 | 0,45 / 0,35 | 0,45 / 0,35 | 0,45 / 0,35 | – | myš sbírá sýr (1/5), žádná spící kočka, kuchyně nečitelná |
+| p12 víla, devět luceren | 0,60 / 0,45 | 0,60 / 0,47 | 0,60 / 0,45 | 0,45 / 0,35 | `quest.spatial` | (ze čtení) víla a lucerny, hrozba ale červený náhradní kvádr a pak zelená skvrna; 8 luceren místo 9 |
+| p13 štěně, tři kosti | 0,45 / 0,35 | 0,45 / 0,33 | 0,45 / 0,35 | 0,45 / 0,33 | – | zahrada, kosti a 0/3; štěně nevypadá jako pes, kopání chybí |
+| p14 duch, osm táborníků | 0,15 / 0,20 | 0,15 / 0,20 | 0,50 / 0,45 | 0,50 / 0,50 | řetěz → `quest.spatial` | (ze čtení) duch honí 8 cílů v noci; táborníci jako hvězdy, oheň chybí |
+| p15 robot, dva satelity na oběžné dráze | 0,50 / 0,40 | 0,50 / 0,35 | 0,50 / 0,40 | 0,40 / 0,50 | `quest.spatial` | (ze čtení) robot na červené skalnaté pláni s 0/2 a nepřátelským robotem; povrch planety místo oběžné dráhy, satelity skoro nevidět |
+| p16 žába, jedenáct much | 0,25 / 0,20 | 0,25 / 0,20 | 0,25 / 0,20 | 0,75 / 0,50 | `arena.collect` | (ze čtení) žába sbírá 11 much v mlze na čas; vodu rybníka nevidět, plocha prázdná |
+| p17 ježek v houbové jeskyni | 0,45 / 0,30 | 0,45 / 0,30 | 0,45 / 0,30 | 0,40 / 0,35 | `arena.collect` | (ze čtení) ježek sbírá krystaly v tmavé jeskyni, svítících hub málo, pruh přiznává, že kutálení není |
+| p18 ponorka v hlubinném příkopu | 0,35 / 0,30 | 0,35 / 0,35 | 0,30 / 0,40 | 0,30 / 0,40 | řetěz → `arena.collect` | (ze čtení) ponorka sbírá perly na světlém písku, žádný příkop ani ďasové |
+| p19 viking ve fjordech, mořští hadi | 0,20 / 0,30 | 0,30 / 0,50 | 0,15 / 0,35 | 0,12 / 0,30 | řetěz → jízda | (ze čtení) auto na zasněžené silnici, žádná loď ani hadi; na `main` táž hra |
+| p20 opice na liánách, kokosy | 0,60 / 0,65 | 0,60 / 0,60 | 0,60 / 0,65 | 0,40 / 0,40 | `platformer` | (ze čtení) opice na plovoucích blocích v džungli, žádné liány ani kokosy, skoro se nehýbe |
+| p21 závodní auto v poušti | 0,60 / 0,50 | 0,62 / 0,52 | 0,60 / 0,50 | 0,62 / 0,52 | – | auto na pouštní trati, chrastavce nečitelné |
+| p22 sova nosí dopisy | 0,35 / 0,30 | 0,30 / 0,25 | 0,35 / 0,30 | 0,40 / 0,35 | `quest.spatial` | (ze čtení) sova na tmavém poli, víc rekvizit a akce Use; žádná vesnice ani dopisy |
+| p23 dinosaurus drtí auta | 0,30 / 0,25 | 0,40 / 0,35 | 0,55 / 0,45 | 0,55 / 0,45 | řetěz → `quest.spatial` | (ze čtení) dinosaurus na náměstí s auty jako cíli, ničení skoro nevidět |
+| p24 šnek závodí s broukem | 0,55 / 0,50 | 0,60 / 0,65 | 0,35 / 0,40 | 0,35 / 0,40 | řetěz → jízda | (ze čtení) deštivá cesta a cíl „Beat the beetle“, ale auto místo šneka a žádný brouk; na `main` táž hra |
+
+**Tři největší ztráty proti `main` po čtení:**
+1. **p20 opice** (−0,20 / −0,25): hráč přejde z běžce (0,60 / 0,60, opice i padající kokos) na plošinovku ze čtení bez lián a kokosů. Pravidlo T3 (`namesNoLess`) počítá role čtení proti rolím specifikace, ne co scéna ukáže. Odvozeno: kokos jako role ve hře je, vidět není.
+2. **p03 plavčík** (−0,15 věrnost, +0,20 hrál bych): rychlá hra má bouřlivé moře s majáky, hra ze čtení `quest.spatial` suchou písčitou plochu. Místo věty má hra ze čtení ve specifikaci, scéna úkolu ho ale nenakreslí. Odvozeno, kód nesledován; vzhled scény jsou soubory P62.
+3. **p12 víla** (−0,15 / −0,10): hra ze čtení nese nepřítele, kterého scéna kreslí jako červený náhradní kvádr a pak zelenou skvrnu; rychlá hra měla vlka. Na obou stranách 8 luceren místo devíti.
+
+**Příčiny podle výtek soudce, seskupené:**
+1. **Hra ze čtení kreslí prázdnou plochu místo místa věty** – p02 šapitó, p03 moře, p04 stadion, p06 sklep, p15 oběžná dráha, p18 příkop, p22 vesnice: hra hraje sloveso a nese role, scéna úkolu, arény nebo chytání ale ukáže louku nebo písek. Tohle drží věrnost po čtení kolem 0,40 a je to vzhled (soubory P62).
+2. **Sloveso, které hra neumí** – p01 obracet, p05 navíjet, p08 nalévat, p13 kopat, p17 kutálet, p20 houpat se: pruh „… isn't here yet“ a náhradní žánr.
+3. **Auto místo hrdiny** – p19 viking, p24 šnek: hra ze čtení je jízda a kreslí auto (P62 `heroModel`, týž nález jako h14 a h18 v T1). `main` má tutéž hru.
+4. **Počet nad osm se ořízne na osm** – p10 „twelve“ → 8, p12 „nine“ → 8, na `main` i větvi. Kandidáti: `src/play/draft/draft.ts:638` (`clamp(…, 2, 8)`) a `THING_MAX_COUNT = 8` (`src/play/arcade/rules/compile.ts:66`). Který z nich to dělá, neověřeno.
+5. **Náhradní kvádr na startu** – p09 pirát, p12 nepřítel: známý nález P61 T7 (start modelů).
+
+Duch u startu hrdiny (s002, T6 dev výš) jde jako T7 po bráně, tady se neopravoval.
