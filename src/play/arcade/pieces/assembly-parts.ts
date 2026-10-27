@@ -7,7 +7,8 @@ import { guardParts } from '../abilities';
 import { abilityButton, abilityIdsOf, guardParams, guardedHit } from '../abilities/state';
 import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, graceOf, targetStateOf,
   type ArcadeEffect, type ArcadeInput, type BodyInit, type BotPiece, type ControlPiece, type PieceRef, type RulePiece, type RuleTrigger } from '../contract';
-import { DIRECTIONS, arenaAxis, directionOfAxis } from './arena';
+import { ARENA, DIRECTIONS, ESCAPE, arenaAxis, directionOfAxis } from './arena';
+import { FINALE5_GENRE_VERSION, genreAtLeast } from './pacing-parts';
 import { RUNNER, RUNNER_STRUCTURE_D } from './runner';
 import { centerAt, courseSchema } from './steer';
 import { GLIDE } from './glide';
@@ -344,6 +345,10 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
   const runtime: Part[] = spec.assemblyParts.map((part, i) => {
     let z = part.kind === 'rival' ? player.z : part.kind === 'chaser' ? player.z + (['runner', 'flap', 'platform'].includes(control) ? 8000 : -4000) : Math.max(player.z + 2400, Math.round(length * (0.12 + 0.035 * i + part.phase * 0.35)));
     if (control === 'glide' && part.kind === 'hazard') z = Math.round((player.z + path[0]!.z) / 2);
+    // Aréna nemá délku trati (P63 T7): nebezpečí by dopadlo 2,8 m od startu a hráč, kterého kamera k hrozbě stočí, do něj
+    // vejde prvním krokem (s002: tři životy za 4 s). Startuje od hrdiny jako pronásledovatel arény, jen před ním, kde je vidět.
+    // Uložené hry `genre.v4` staví tentýž svět.
+    if (control === 'move_free' && part.kind === 'hazard' && genreAtLeast(spec, FINALE5_GENRE_VERSION)) z =player.z + Math.round(Number(base.params.half ?? ARENA.half) * ESCAPE.minDistancePct / 100);
     // Trať ze vzorů (P46D T2) má stavby přes desítky metrů: věc jde doprostřed volné mezery, ne do zdi ani těsně za řadu.
     if (patterned && part.kind !== 'rival' && part.kind !== 'chaser') z = runnerGapZ(parts.level.bodies, z, length);
     let point = pointAt(path, z);
