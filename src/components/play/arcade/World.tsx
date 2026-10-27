@@ -30,9 +30,10 @@ import { color as brand } from '@/brand/tokens';
 import { ARCADE_HZ, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { baseControlOf } from '@/play/arcade/addons';
 import type { Look } from '@/play/arcade/look';
-import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
+import { type PropRole, fitScale, foeTarget, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
+import { SHOOTER } from '@/play/arcade/pieces/shooter';
 import { STRUCTURE_KINDS } from '@/play/arcade/pieces/runner-sections';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
@@ -480,6 +481,15 @@ const inkOf = (view: BodyView): Ink | undefined =>
   view.role === ROLE.player ? 'hero' : view.role === ROLE.enemy || view.role === ROLE.chaser || PACING_KINDS.has(view.kind) ? 'foe' : undefined;
 
 /**
+ * Tělo kreslí nepřítele věty (P62 T5, `userData.foe`: měřítko čitelnosti nepřítele a sonda záběru): nepřítel,
+ * pronásledovatel a terč střelnice s modelem nepřítele.
+ */
+const foeOf = (view: BodyView, rangeFoe: boolean): boolean => inkOf(view) === 'foe' || (rangeFoe && view.role === ROLE.target);
+
+/** Nepřítel na střelnici je týž tvor jako ve vlnách (P62 T5): výška jeho kresby, ne nižšího terče; kolize se nemění. */
+const RANGE_FOE_M = SHOOTER.enemyH / UNIT;
+
+/**
  * Role věty, jejíž popisek tělo kreslí (P30B T5) – totéž rozhodnutí jako `modelIdOf`
  * a `arcadeScene` v `fidelity/chain.ts`. Nota, díl věže a soupeř souboje mají vlastní scény.
  */
@@ -533,6 +543,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     }
     return { ...baseCast, objectives };
   }, [baseCast, session]);
+  const rangeFoe = control === 'shooter' && foeTarget(cast);
+  const foeOnRange = (view: BodyView): boolean => rangeFoe && view.role === ROLE.target;
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -730,7 +742,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
         (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) || (control === 'steer' && STEER_SCENE_KINDS.has(view.kind)) ? null : (
-          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
+          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view), foe: foeOf(view, rangeFoe) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
             {path !== null && view.kind === 'divider' && cast.kit?.block !== undefined ? (
@@ -754,7 +766,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
               // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
               <RiggedModel
                 character={rigged[view.index]!}
-                h={view.h}
+                h={foeOnRange(view) ? RANGE_FOE_M : view.h}
                 clip={() => clips.current[view.index] ?? 'idle'}
                 fallback={fallbackOf(view, scene)}
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
@@ -770,16 +782,17 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
                 {/* Totéž cíl skákačky z věty (P35 T3): páska 0,4 m by měsíc zmenšila na kamínek; vlajka zůstává v pásce. */}
                 {/* Postava stojí ve výšce těla (P30B T3); vozidlo má tělo nízké a dlouhé, to se dál vepisuje celé. */}
+                {/* Terč střelnice s nepřítelem věty (P62 T5) se kreslí jako nepřítel vln: brouk vepsaný celý do kotouče měl 0,3 m. */}
                 <FittedModel
                   id={modelIdOf(view, cast)}
                   w={view.w}
-                  h={view.h}
+                  h={foeOnRange(view) ? RANGE_FOE_M : view.h}
                   d={view.kind === 'target' || ((view.kind === 'finish' || view.kind === 'goal') && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
                   fallback={fallbackOf(view, scene)}
                   fill={view.kind === 'slide-bar' && modelIdOf(view, cast) !== view.kind}
-                  character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
+                  character={foeOnRange(view) || (POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d))}
                   posed={POSED_ROLES.has(view.role)}
-                  rim={POSED_ROLES.has(view.role)}
+                  rim={POSED_ROLES.has(view.role) || foeOnRange(view)}
                 />
               </group>
             )}

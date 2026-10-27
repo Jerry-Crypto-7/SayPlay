@@ -94,9 +94,23 @@ export function ShooterRig({
   const reticle = useRef<Group | null>(null);
   const look = useMemo(() => new Vector3(), []);
   const yaw = useRef(0);
+  // Zorný úhel plátna (60°): na šířku ho střelnice zúží (`WIDE.fov`, P62 T5), na výšku a po odchodu vrátí.
+  const baseFov = useRef(camera.fov);
+  useEffect(() => {
+    const fov = baseFov.current;
+    return () => {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    };
+  }, [camera]);
 
   useFrame((_, delta) => {
     if (renderHeld(session)) return;
+    const fov = camera.aspect < 1 ? baseFov.current : WIDE.fov;
+    if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
     const state = session.state();
     const player = state[HEADER.player] as number;
     const p = bodyBase(player);

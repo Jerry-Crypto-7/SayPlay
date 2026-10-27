@@ -99,3 +99,105 @@ for (const [device, use] of Object.entries(PROFILES)) {
     }
   });
 }
+
+/**
+ * Nepřítel z věty čitelný (P62 T5): soudce rychlé hry psal „small zombie figures“ a „bugs are barely visible“.
+ * Rychlá hra z věty (dveře `/api/play/games`, jako ji fotí soudce) pro střílečku a každý arénový žánr s nepřítelem;
+ * robot hraje ručními hodinami jako výš. Od snímku, kdy je nepřítel poprvé vidět (sběr ho přivede až druhou vlnou),
+ * se 180 tiků každý šestý čte `__playFrame().foe` – nejbližší tělo se značkou nepřítele. Podíl = větší z výšky
+ * a šířky jeho obdélníku / výška plátna (`foeShare` v `ArcadeStage.tsx`), jen ze snímků, kde střed nepřítele leží
+ * na plátně; medián ≥ `LEGIBLE_SHARE.target`. Oříznutí: nejvýš `FOE_CROPPED` těch snímků smí mít obdélník
+ * nepřítele přes horní nebo dolní hranu plátna – zvětšený nepřítel nesmí lézt z obrazu.
+ */
+const FOE_SHARE = 0.1;
+const FOE_CROPPED = 0.2;
+/**
+ * Výjimky oříznutí, záběr arény (P56B T9) se tu nemění. Útěk: duch stojí na startu za hrdinou u kamery a kamera
+ * rámuje hrozbu středem (`threatReach`), dolní půlka ducha leží pod hranou (desktop 90 %, Pixel 7 60 % snímků už
+ * na 004514b0, kde se nepřítel nezvětšoval). Sběr: nepřítel průběhu (P45C) kameru netáhne a vchází do arény od zadní stěny přes horní hranu.
+ */
+const FOE_CROPPED_BY_CELL: Readonly<Record<string, number>> = { 'arena.escape': 1, 'arena.collect': 1 };
+/** Nejvíc tiků čekání na první nepřítel (sběr: druhá vlna). */
+const FOE_WAIT = 2400;
+
+interface FoeCell {
+  readonly genre: string;
+  readonly sentence: string;
+}
+const FOE_CELLS: readonly FoeCell[] = [
+  // Dev věty P30 s výtkou soudce (s039, s037): nepřítel stojí na střelnici i jde ve vlnách.
+  { genre: 'shooter.default', sentence: 'zombie shooter in a mall' },
+  { genre: 'shooter.default', sentence: 'A space marine shoots alien bugs in a mining colony' },
+  // s002: útěk před duchy.
+  { genre: 'arena.escape', sentence: 'A knight must collect three keys in a haunted castle while dodging ghosts.' },
+  { genre: 'arena.fight', sentence: 'a knight fights skeletons in a castle' },
+  { genre: 'arena.collect', sentence: 'collect coins in a park' },
+  { genre: 'quest.spatial', sentence: 'a knight frees five prisoners in a dungeon guarded by skeletons' },
+];
+
+interface FoeSample {
+  readonly tick: number;
+  readonly share: number;
+  /** Jen výška, do hlášky: plochý nepřítel má podíl ze šířky. */
+  readonly tall: number;
+  readonly cropped: boolean;
+}
+
+const { defaultBrowserType: _phoneFoe, ...PIXEL_7_FOE } = devices['Pixel 7']!;
+/** Desktop jako snímky soudce (`evals/play/p61/shots.mjs`: 1280 × 720); telefon jako výš. */
+const FOE_PROFILES = { desktop: { viewport: { width: 1280, height: 720 } }, phone: PIXEL_7_FOE, touch: {} } as const;
+
+for (const [device, use] of Object.entries(FOE_PROFILES)) {
+  test.describe(`the sentence's foe is legible on ${device}`, () => {
+    test.use(use);
+    test.setTimeout(240_000);
+
+    for (const cell of FOE_CELLS) {
+      test(`${cell.genre}: "${cell.sentence}" – the nearest foe is at least ${String(FOE_SHARE * 100)} % of the canvas height`, async ({ page, request }, testInfo) => {
+        test.skip(TOUCH_PROJECTS.has(testInfo.project.name) !== (device === 'touch'), 'another project measures this profile');
+        const response = await request.post('/api/play/games', { data: { sentence: cell.sentence } });
+        expect(response.status(), await response.text()).toBeLessThan(300);
+        const { url, versionId } = (await response.json()) as { url: string; versionId: string };
+        const game = (await (await request.get(`/api/play/games/${versionId}`)).json()) as { spec?: { genre?: { id: string; mode: string } } };
+        expect(`${game.spec?.genre?.id}.${game.spec?.genre?.mode}`, 'the sentence drafts that genre').toBe(cell.genre);
+        await page.route('**/upgrade**', (route) => route.abort());
+        await page.goto(url);
+        await page.locator('canvas').first().waitFor({ timeout: 60_000 });
+        await page.waitForFunction(() => typeof (window.__playShell as unknown as HandProbe | undefined)?.byHand === 'function' && typeof window.__playFrame === 'function', undefined, { timeout: 60_000 });
+        await page.evaluate(() => (window.__playShell as unknown as HandProbe).byHand(true));
+        await page.getByTestId('play-pause').click();
+        await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
+        const samples = await page.evaluate(
+          async ({ ticks, every, wait }) => {
+            const frame = () => new Promise((done) => requestAnimationFrame(() => done(undefined)));
+            const out: FoeSample[] = [];
+            let first: number | null = null;
+            for (let tick = 1; tick <= wait + ticks; tick += 1) {
+              const state = (window.__playShell as unknown as HandProbe).tickByHand();
+              await frame();
+              if (tick % every === 0) {
+                const report = window.__playFrame!();
+                const foe = report.foe;
+                const onCanvas = foe !== null && !foe.behind && Math.abs(foe.x) <= 1 && Math.abs(foe.y) <= 1;
+                if (onCanvas) first ??= tick;
+                if (first !== null && tick - first >= ticks) break;
+                if (onCanvas) out.push({ tick, share: foe.sizePx / report.height, tall: (foe.maxY - foe.minY) / 2, cropped: foe.maxY > 1 || foe.minY < -1 });
+              }
+              if (state.runState !== 'running') break;
+            }
+            return out;
+          },
+          { ticks: TICKS, every: EVERY, wait: FOE_WAIT },
+        );
+        const medianOf = (values: readonly number[]): number => (values.length === 0 ? 0 : [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!);
+        const shares = samples.map((sample) => sample.share).sort((a, b) => a - b);
+        const median = medianOf(shares);
+        const cropped = samples.filter((sample) => sample.cropped).length / Math.max(1, samples.length);
+        console.log(`foe ${device} ${testInfo.project.name} ${cell.genre} "${cell.sentence}": median ${(median * 100).toFixed(1)} % (min ${((shares[0] ?? 0) * 100).toFixed(1)}, max ${((shares.at(-1) ?? 0) * 100).toFixed(1)}; height only ${(medianOf(samples.map((sample) => sample.tall)) * 100).toFixed(1)}) of ${samples.length} frames from t${samples[0]?.tick ?? '-'}, cropped ${(cropped * 100).toFixed(0)} %`);
+        expect(samples.length, 'the foe shows up on the canvas').toBeGreaterThan(0);
+        expect(median, `median foe share, samples ${shares.map((s) => s.toFixed(3)).join(' ')}`).toBeGreaterThanOrEqual(FOE_SHARE);
+        expect(cropped, 'foe box over the top or bottom edge').toBeLessThanOrEqual(FOE_CROPPED_BY_CELL[cell.genre] ?? FOE_CROPPED);
+      });
+    }
+  });
+}

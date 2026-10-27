@@ -21,7 +21,7 @@ import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { LEGIBLE_SHARE, type Legible, legibleScale, legibleWrite, riggedCharacter } from '@/play/arcade/models';
+import { LEGIBLE_SHARE, type Legible, foeScale, legibleScale, legibleWrite, riggedCharacter } from '@/play/arcade/models';
 import { duelCue, duelHurlOf } from '@/play/arcade/pieces/duel';
 import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
@@ -106,6 +106,11 @@ export interface FrameReport {
   readonly targetItem: string | null;
   /** Vizuální měřítko čitelnosti (P58A T3) hrdiny a cíle; 1 = nezvětšené, `LEGIBLE_CAP` = strop, dál neroste. */
   readonly legible: { readonly hero: number; readonly target: number };
+  /**
+   * Nejbližší viditelný nepřítel z věty k hrdinovi (P62 T5): tělo se značkou `userData.foe` – pronásledovatel,
+   * nepřítel, soupeř arény a terč střelnice, který kreslí model nepřítele. `null` = žádný není vidět.
+   */
+  readonly foe: FrameBox | null;
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
   /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
@@ -323,6 +328,12 @@ export function frameOf(object: Object3D, camera: Camera, width: number, height:
   return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, minX, maxX, minY, maxY, widthPx, heightPx, sizePx: Math.max(widthPx, heightPx), behind };
 }
 
+/**
+ * Podíl nepřítele na plátně (P62 T5): větší z výšky a šířky jeho obdélníku (`sizePx`) k výšce plátna. Plochý brouk
+ * 2,5× širší než vysoký by výškou 10 % (`LEGIBLE_SHARE.target`) zabral čtvrtinu šířky obrazu; postava měří výškou.
+ */
+export const foeShare = (box: FrameBox, height: number): number => box.sizePx / Math.max(1, height);
+
 /** `FrameReport.heroFacing`: úhel mezi pohledem hrdiny (+z) a směrem ke kameře ve vodorovné rovině (°). */
 function facingOf(hero: Object3D, at: Vector3, camera: Camera): number {
   const gaze = new Vector3(0, 0, 1).applyQuaternion(hero.getWorldQuaternion(new Quaternion())).setY(0);
@@ -361,6 +372,29 @@ function nearestTarget(heroAt: Vector3, candidates: readonly Object3D[], control
 
 /** Jak často se těla měří (snímky): čtyřikrát za sekundu stačí, průchod scénou každý snímek stál na telefonu CPU. */
 const LEGIBLE_EVERY = 15;
+/** Kolik z rozdílu k `foeScale` nepřítel dojede za jedno měření (P62 T5): ~1 s na 90 %, póza kostry ho nerozkmitá. */
+const FOE_EASE = 0.5;
+/** Menší změnu měřítka nepřítele nepíše – scéna by se zbytečně překreslovala. */
+const FOE_STILL = 0.005;
+/**
+ * Kolik nepřátel změří jeden průchod `LegibleBodies`. Kvádr riggované postavy v póze prochází každý vrchol (ork
+ * a kovboj ~13 tisíc, na telefonu s CPU 4× jednotky ms za kus, `posedBox`) – deset riggovaných zombie naráz by každé
+ * čtvrt sekundy zadrhlo snímek.
+ * simplified: pevný počet za průchod; kdyby nepřátel v obraze bylo přes ~10 a dojížděli pozdě, měřit klidový kvádr.
+ */
+const FOE_PER_PASS = 2;
+
+/**
+ * Nepřátelé k měření v tomto průchodu: napřed ti, kdo se ještě neměřili (nově viditelní), pak nejbližší k hrdinovi –
+ * ten je na snímku největší a jde do styku –, pak nejdéle neměřený.
+ */
+function foesToMeasure(foes: readonly Object3D[], heroAt: Vector3, control: string, measured: WeakMap<Object3D, number>): Object3D[] {
+  const pick = foes.filter((node) => !measured.has(node)).slice(0, FOE_PER_PASS);
+  const nearest = nearestTarget(heroAt, foes, control)?.node;
+  if (pick.length < FOE_PER_PASS && nearest !== undefined && !pick.includes(nearest)) pick.push(nearest);
+  const stale = foes.filter((node) => !pick.includes(node)).sort((a, b) => (measured.get(a) ?? 0) - (measured.get(b) ?? 0));
+  return [...pick, ...stale].slice(0, FOE_PER_PASS);
+}
 
 /**
  * Čitelná těla (P58A T3): hrdina na plátně aspoň `LEGIBLE_SHARE.hero` výšky plátna, nejbližší cíl aspoň
@@ -371,9 +405,11 @@ const LEGIBLE_EVERY = 15;
  * `__playFrame` (klidový kvádr riggovaného rytíře je o ~20 % vyšší, zůstal pak na 16,5 %). Měřítko se píše
  * každý snímek po scénách – přepíše-li scéna měřítko skupiny sama, její hodnota je nový základ.
  */
-function LegibleBodies({ control }: { readonly control: string }) {
+function LegibleBodies({ control, foes }: { readonly control: string; readonly foes: boolean }) {
   const get = useThree((three) => three.get);
   const bodies = useRef(new Map<Object3D, Legible>());
+  /** Nepřítel → průchod `LegibleBodies`, kdy se naposledy měřil (`foesToMeasure`). */
+  const measured = useRef(new WeakMap<Object3D, number>());
   useFrame(() => {
     for (const [node, body] of bodies.current) {
       if (node.parent === null) {
@@ -394,9 +430,13 @@ function LegibleBodies({ control }: { readonly control: string }) {
       if (frameloop === 'always' && frames % LEGIBLE_EVERY !== 1) return;
       let hero: Object3D | null = null;
       const candidates: Object3D[] = [];
+      const foeNodes: Object3D[] = [];
       scene.traverseVisible((node) => {
         if (node.userData.frame === 'hero') hero = node;
-        else if (node.userData.frame === 'target') candidates.push(node);
+        else if (node.userData.frame === 'target') {
+          candidates.push(node);
+          if (foes && node.userData.foe === true) foeNodes.push(node);
+        }
       });
       if (hero === null) return;
       const heroNode: Object3D = hero;
@@ -405,25 +445,41 @@ function LegibleBodies({ control }: { readonly control: string }) {
       const perspective = (drawn as PerspectiveCamera).isPerspectiveCamera === true;
       const camera = perspective ? restCamera(drawn as PerspectiveCamera, rest) : drawn;
       const depthOf = (at: Vector3): number => -view.copy(at).applyMatrix4(camera.matrixWorldInverse).z;
-      const grow = (node: Object3D, min: number, depthScale: number): void => {
-        const box = frameOf(node, camera, size.width, size.height);
-        if (box === null || box.behind) return;
-        const body = bodies.current.get(node) ?? { scale: 1, base: node.scale.clone(), written: node.scale.clone() };
-        const next = legibleScale(body.scale, ((box.maxY - box.minY) / 2) * depthScale, min);
-        if (next === body.scale) return;
+      const write = (node: Object3D, body: Legible, next: number): void => {
         body.scale = next;
         node.userData.legible = next;
         bodies.current.set(node, body);
         invalidate();
       };
+      const grow = (node: Object3D, min: number, depthScale: number): void => {
+        const box = frameOf(node, camera, size.width, size.height);
+        if (box === null || box.behind) return;
+        const body = bodies.current.get(node) ?? { scale: 1, base: node.scale.clone(), written: node.scale.clone() };
+        const next = legibleScale(body.scale, ((box.maxY - box.minY) / 2) * depthScale, min);
+        if (next !== body.scale) write(node, body, next);
+      };
       grow(heroNode, LEGIBLE_SHARE.hero, 1);
+      // Nepřátelé věty ve střílečce a aréně (P62 T5): každý podle podílu, jaký má na plátně on sám, ne přepočtený na
+      // hloubku hrdiny – na střelnici stojí 12–36 m daleko a hráč na ně míří odtud. Podíl = větší z výšky a šířky
+      // obdélníku (`foeShare`); v měřítku 1 = změřený / dnešní měřítko.
+      for (const node of foesToMeasure(foeNodes, heroAt, control, measured.current)) {
+        measured.current.set(node, frames);
+        const box = frameOf(node, camera, size.width, size.height);
+        if (box === null || box.behind) continue;
+        const known = bodies.current.get(node);
+        const body = known ?? { scale: 1, base: node.scale.clone(), written: node.scale.clone() };
+        const goal = foeScale(foeShare(box, size.height) / body.scale);
+        // Nový nepřítel hned, známý dojíždí: póza kostry hýbe obdélníkem o pár procent a měřítko by s ní pulzovalo.
+        const next = known === undefined ? goal : body.scale + (goal - body.scale) * FOE_EASE;
+        if (Math.abs(next - body.scale) > FOE_STILL) write(node, body, next);
+      }
       // Zástupce (`userData.proxy`, nejbližší vozidlo hopu) se nekreslí – zvětšit by šel jen jeho kvádr v sondě.
-      if (target === null || target.node.userData.proxy === true) return;
+      if (target === null || target.node.userData.proxy === true || (foes && target.node.userData.foe === true)) return;
       // Perspektiva zmenšuje s hloubkou: cíl se posuzuje, jak velký by byl vedle hrdiny.
       const heroDepth = depthOf(heroAt);
       grow(target.node, LEGIBLE_SHARE.target, perspective && heroDepth > 0 ? Math.max(depthOf(target.pos), 0) / heroDepth : 1);
     });
-  }, [get, control]);
+  }, [get, control, foes]);
   return null;
 }
 
@@ -478,6 +534,7 @@ function FrameProbe({ control }: { readonly control: string }) {
       camera.updateMatrixWorld();
       let hero: Object3D | null = null;
       const candidates: Object3D[] = [];
+      const foes: Object3D[] = [];
       const items: Record<string, { count: number; box: FrameBox | null }> = {};
       scene.traverse((node) => {
         const item = node.userData.item as string | undefined;
@@ -488,10 +545,14 @@ function FrameProbe({ control }: { readonly control: string }) {
           if (box !== null && (entry.box === null || offCenter(box) < offCenter(entry.box))) entry.box = box;
         }
         if (node.userData.frame === 'hero' && shown(node)) hero = node;
-        else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
+        else if (node.userData.frame === 'target' && shown(node)) {
+          candidates.push(node);
+          if (node.userData.foe === true) foes.push(node);
+        }
       });
       const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
       const target = heroAt === null ? null : nearestTarget(heroAt, candidates, control);
+      const foe = heroAt === null ? null : nearestTarget(heroAt, foes, control);
       return {
         control,
         width: size.width,
@@ -502,6 +563,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targetItem: (target?.node.userData.item as string | undefined) ?? null,
         legible: { hero: (hero as Object3D | null)?.userData.legible ?? 1, target: target?.node.userData.legible ?? 1 },
+        foe: foe === null ? null : frameOf(foe.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
         items,
@@ -986,7 +1048,8 @@ const StageCanvas = memo(function StageCanvas({
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
       {/* Za scénami: měřítko čitelnosti se píše až po jejich snímku (P58A T3). */}
-      <LegibleBodies control={control} />
+      {/* Nepřítel věty čitelný podle vlastního podílu na plátně jen ve střílečce a aréně (P62 T5). */}
+      <LegibleBodies control={control} foes={control === 'shooter' || stage.scene === 'arena'} />
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
       <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}

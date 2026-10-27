@@ -368,6 +368,26 @@ export function legibleScale(scale: number, share: number, min: number): number 
   return scale;
 }
 
+/**
+ * Vizuální měřítko nepřítele z věty (P62 T5) z podílu `share`, který by měl na plátně v měřítku 1 (větší z výšky
+ * a šířky jeho obdélníku k výšce plátna – plochý brouk měří šířkou): pod `LEGIBLE_MARGIN × min` doroste právě na
+ * něj (rezerva na pózu, která tělo přikrčí), nejvýš `LEGIBLE_CAP`.
+ * Bez paměti a spojité: nepřítel jde k hrdinovi a na plátně cestou jen roste, nikdy neskočí menší – `legibleScale`
+ * s pásmem klidu by ho po každém překročení pásma zmenšil skokem. Bez měření (`share` 0) zůstane 1.
+ */
+export function foeScale(share: number, min: number = LEGIBLE_SHARE.target): number {
+  if (!(share > 0)) return 1;
+  return Math.min(LEGIBLE_CAP, Math.max(1, (min * LEGIBLE_MARGIN) / share));
+}
+
+/**
+ * Terč střelnice kreslí nepřítele věty (P61 T3: věta s jediným protivníkem ho staví i na střelnici): model terče
+ * je model nepřítele. Kotouč věty bez nepřítele a věc, kterou věta sbírá, nepřítelem nejsou.
+ */
+export function foeTarget(cast: { readonly enemy: string; readonly props: Partial<Record<PropRole, string>> }): boolean {
+  return cast.props.target !== undefined && cast.props.target === cast.enemy;
+}
+
 interface Xyz {
   x: number;
   y: number;

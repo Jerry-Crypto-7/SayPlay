@@ -762,7 +762,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
         return (
           // `frame` a `item` čte sonda záběru (`__playFrame`): hrdina, cíle a hrozby, pronásledovatel pod vlastním jménem.
           // Jiskra tepu nekreslí věc z věty, takže ani nenese její jméno (`item`).
-          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' || spark ? undefined : part === 'item' ? 'coin' : part }}>
+          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' || spark ? undefined : part === 'item' ? 'coin' : part, foe: part === 'chaser' || part === 'foe' || (part === 'enemy' && view.kind !== 'prey') }}>
             <group ref={(group) => { turned.current[view.index] = group; }}>
               {part === 'item' ? (
                 spark ? <Spark size={size.h} /> : model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
