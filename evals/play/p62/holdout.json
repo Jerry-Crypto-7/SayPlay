@@ -1,0 +1,29 @@
+{
+ "about": "P62 T1 sealed scene set: 24 new English sentences written 27. 10. 2026 before the first P62 scene change, from nouns only (no competitor game, no run on these sentences). Families: interior = the game is played inside a building or a cave; outdoor = an open-air place; missing-foe = a named foe that main draws without its own model (the head noun is in evals/play/p62/missing-nouns.json; checked once against the library lookup, never by playing). Every sentence names a distinct place and a foe or an item. hero, foe, item and world are the sentence's own words, labelled when written. Opened once in T7 (holdout-opened.json); nothing is tuned on it.",
+ "sentences": [
+  { "id": "p01", "family": "interior", "text": "A security guard chases rats through an empty shopping mall at night", "hero": "security guard", "foe": "rat", "item": null, "world": "shopping mall" },
+  { "id": "p02", "family": "interior", "text": "Grab ten cereal boxes off the shelves of a supermarket before it closes", "hero": null, "foe": null, "item": "cereal box", "world": "supermarket" },
+  { "id": "p03", "family": "interior", "text": "A kitten knocks the vases off every shelf in a cozy living room", "hero": "kitten", "foe": null, "item": "vase", "world": "living room" },
+  { "id": "p04", "family": "interior", "text": "A welder dodges runaway forklifts in a car factory", "hero": "welder", "foe": "forklift", "item": null, "world": "car factory" },
+  { "id": "p05", "family": "interior", "text": "A jester battles armored guards in the great hall of a castle", "hero": "jester", "foe": "armored guard", "item": null, "world": "castle hall" },
+  { "id": "p06", "family": "interior", "text": "A gem hunter gathers glowing crystals deep in a cave while bats swoop down", "hero": "gem hunter", "foe": "bat", "item": "crystal", "world": "cave" },
+  { "id": "p07", "family": "interior", "text": "A busboy collects coffee mugs left all over a cozy cafe", "hero": "busboy", "foe": null, "item": "coffee mug", "world": "cafe" },
+  { "id": "p08", "family": "interior", "text": "A janitor dodges runaway wheelchairs in a hospital corridor", "hero": "janitor", "foe": "wheelchair", "item": null, "world": "hospital corridor" },
+  { "id": "p09", "family": "outdoor", "text": "A farmer chases escaped pigs back into the barn on a muddy farm", "hero": "farmer", "foe": null, "item": "pig", "world": "farm" },
+  { "id": "p10", "family": "outdoor", "text": "A sandcastle builder fends off stinging jellyfish on a sunny beach", "hero": "sandcastle builder", "foe": "jellyfish", "item": null, "world": "beach" },
+  { "id": "p11", "family": "outdoor", "text": "A yak carries supplies over a windy mountain pass while boulders tumble down", "hero": "yak", "foe": "boulder", "item": "supplies", "world": "mountain pass" },
+  { "id": "p12", "family": "outdoor", "text": "A park ranger puts out campfires left burning in a pine forest", "hero": "park ranger", "foe": null, "item": "campfire", "world": "pine forest" },
+  { "id": "p13", "family": "outdoor", "text": "A window cleaner collects lost kites from the rooftops of a rainy city", "hero": "window cleaner", "foe": null, "item": "kite", "world": "city rooftops" },
+  { "id": "p14", "family": "outdoor", "text": "A moon rover scoops up moon rocks on a crater field while meteors rain down", "hero": "moon rover", "foe": "meteor", "item": "moon rock", "world": "crater field" },
+  { "id": "p15", "family": "outdoor", "text": "A nomad collects water jugs while crossing the dunes of a desert", "hero": "nomad", "foe": null, "item": "water jug", "world": "desert dunes" },
+  { "id": "p16", "family": "outdoor", "text": "A sea witch hurls fireballs at pirate ships on a stormy ocean", "hero": "sea witch", "foe": "pirate ship", "item": null, "world": "stormy ocean" },
+  { "id": "p17", "family": "missing-foe", "text": "A sea otter zaps electric eels that invade a rocky tide pool", "hero": "sea otter", "foe": "electric eel", "item": null, "world": "tide pool" },
+  { "id": "p18", "family": "missing-foe", "text": "A groundskeeper guards a soccer pitch from moles digging holes before the big match", "hero": "groundskeeper", "foe": "mole", "item": null, "world": "soccer pitch" },
+  { "id": "p19", "family": "missing-foe", "text": "A spelunker crawls through a flooded mine shaft while stalactites crash down", "hero": "spelunker", "foe": "stalactite", "item": null, "world": "mine shaft" },
+  { "id": "p20", "family": "missing-foe", "text": "A lost tourist runs through a red canyon from angry walking cacti", "hero": "tourist", "foe": "walking cacti", "item": null, "world": "canyon" },
+  { "id": "p21", "family": "missing-foe", "text": "A dog walker hurries through a stormy park dodging falling branches", "hero": "dog walker", "foe": "falling branch", "item": null, "world": "park" },
+  { "id": "p22", "family": "missing-foe", "text": "A rusty tin can escapes the hydraulic presses of a scrapyard", "hero": "tin can", "foe": "hydraulic press", "item": null, "world": "scrapyard" },
+  { "id": "p23", "family": "missing-foe", "text": "A puppy fights living cardboard boxes in a post office sorting room", "hero": "puppy", "foe": "cardboard box", "item": null, "world": "post office sorting room" },
+  { "id": "p24", "family": "missing-foe", "text": "A shopkeeper dodges slamming metal shutters in a night market", "hero": "shopkeeper", "foe": "metal shutter", "item": null, "world": "night market" }
+ ]
+}

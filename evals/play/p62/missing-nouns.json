@@ -1,0 +1,40 @@
+{
+ "schema": "p62-missing-nouns.v1",
+ "about": "P62 T1: head nouns of foes, collected items and scenery (obstacles, checklist scenery) that main draws without their own model (modifier, substitute or core shape), from evals/play/p62/audit.json: the quick game roles named by the sentence (from game) and the nouns the set wrote by hand (from set). Words in ops/gen3d/not-nouns.txt are dropped. Sorted foe > item > scenery, then by sentence count. drawnAs = how main draws it today (via:model).",
+ "srcCommit": "495bbc77484d70a261c5c12d4d9c6be8094e6f27",
+ "counts": {
+  "foe": 10,
+  "item": 11,
+  "scenery": 7
+ },
+ "nouns": [
+  {"noun":"eel","tier":"foe","sentences":2,"from":["game","set"],"drawnAs":{"modifier:rigged:blocky-robot":2,"default:rigged:blocky-robot":1},"examples":["p58b/holdout:s21","p58b/holdout:s72"]},
+  {"noun":"box","tier":"foe","sentences":1,"from":["set"],"drawnAs":{"modifier:rigged:blocky-robot":1},"examples":["p30/dev:s088"]},
+  {"noun":"branch","tier":"foe","sentences":1,"from":["game","set"],"drawnAs":{"modifier:cc0-lantern-hanging":2},"examples":["p58b/holdout:s74"]},
+  {"noun":"cacti","tier":"foe","sentences":1,"from":["game","set"],"drawnAs":{"none":1,"default:rigged:blocky-robot":1},"examples":["p58b/holdout:s03"]},
+  {"noun":"counter","tier":"foe","sentences":1,"from":["game"],"drawnAs":{"nearest:gen3d-bar-counter":1},"examples":["p58b/holdout:s62"]},
+  {"noun":"mixed","tier":"foe","sentences":1,"from":["game"],"drawnAs":{"default:rigged:blocky-robot":1},"examples":["p58b/holdout:s48"]},
+  {"noun":"mole","tier":"foe","sentences":1,"from":["set"],"drawnAs":{"near-word:hamster":1},"examples":["p58b/holdout:s40"]},
+  {"noun":"press","tier":"foe","sentences":1,"from":["game","set"],"drawnAs":{"none":1,"default:rigged:blocky-robot":1},"examples":["p58b/holdout:s02"]},
+  {"noun":"shutter","tier":"foe","sentences":1,"from":["set"],"drawnAs":{"modifier:crate":1},"examples":["p58b/holdout:s35"]},
+  {"noun":"stalactite","tier":"foe","sentences":1,"from":["set"],"drawnAs":{"nearest:gen3d-stalagmite":1},"examples":["p58b/holdout:s34"]},
+  {"noun":"card","tier":"item","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p58b/holdout:s78"]},
+  {"noun":"date","tier":"item","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p58b/holdout:s03"]},
+  {"noun":"firewood","tier":"item","sentences":1,"from":["game"],"drawnAs":{"none":1},"examples":["p56c/holdout:h03"]},
+  {"noun":"grocery","tier":"item","sentences":1,"from":["game"],"drawnAs":{"nearest:gen3d-grocery-bag":1},"examples":["p56c/chain-sentences:d06"]},
+  {"noun":"hatchery","tier":"item","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p58b/holdout:s45"]},
+  {"noun":"honey","tier":"item","sentences":1,"from":["game","set"],"drawnAs":{"nearest:gen3d-honey-pot":2},"examples":["p30/dev:d14"]},
+  {"noun":"mango","tier":"item","sentences":1,"from":["game","set"],"drawnAs":{"none":2},"examples":["p58b/holdout:s38"]},
+  {"noun":"pebble","tier":"item","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p58b/holdout:s56"]},
+  {"noun":"plan","tier":"item","sentences":1,"from":["game"],"drawnAs":{"none":1},"examples":["p30/dev:d19"]},
+  {"noun":"reed","tier":"item","sentences":1,"from":["set"],"drawnAs":{"nearest:gen3d-cattail-reed":1},"examples":["p58b/holdout:s27"]},
+  {"noun":"shoebox","tier":"item","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p58b/holdout:s61"]},
+  {"noun":"budget","tier":"scenery","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p30/dev:d19"]},
+  {"noun":"crack","tier":"scenery","sentences":1,"from":["game"],"drawnAs":{"none":1},"examples":["p30/dev:h06"]},
+  {"noun":"frisbee","tier":"scenery","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p30/dev:d15"]},
+  {"noun":"charger","tier":"scenery","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p30/dev:s022"]},
+  {"noun":"physics","tier":"scenery","sentences":1,"from":["set"],"drawnAs":{"none":1},"examples":["p30/dev:j01"]},
+  {"noun":"pit","tier":"scenery","sentences":1,"from":["game"],"drawnAs":{"none":1},"examples":["p58b/holdout:s06"]},
+  {"noun":"tax","tier":"scenery","sentences":1,"from":["game"],"drawnAs":{"none":1},"examples":["p30/dev:h07"]}
+ ]
+}
