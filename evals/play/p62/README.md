@@ -92,6 +92,26 @@ Největší výtky soudce u rychlé hry (1. běh, věrnost / hrál bych):
 - **Interiér jako venek:** s003 supermarket 0,40 / 0,40 – „outdoor road through a snowy landscape, not a supermarket interior“.
 - **Chybí, co věta jmenuje:** s022 věž 0,35 / 0,30 – „no tower to climb“; s069 match-3 v jeskyni 0,15 / 0,15 – „just a few crates and a crystal gem on a dim surface“.
 
+## Opravy (T2–T4, 27. 10.)
+
+**Knihovna (T2).**
+- Povýšeno 6 modelů (cheetah, snowplow, firecracker, pinecone, termite, stalactite), všechny prošly kontrolou kvality `ops/gen3d/quality_gate.py` (LOD0 ≤ 4742 trojúhelníků, bez fialové) i slepým soudem čtyř pohledů (6/6). Leží v `gen3d-p37d/` vedle dřívějších povýšených modelů.
+- Aliasy 2: sentry a marine kreslí existujícího vojáka `gen3d-guard` (dřív robot a astronaut).
+- Odmítnuto 4 už při výrobě: gopher a bulldog (rozsekané střepy), mango (vypadá jako citron), mole (rozbitá síť).
+- Proti `missing-nouns.json`: z 28 chybějících jmen pokrývá T2 jen `stalactite`. Nepokrytí nepřátelé: eel, box, branch, cacti, mole, press, shutter (counter a mixed jsou špatně přečtené věty); předměty a kulisy viz seznam výš. Nový model jen v T6.
+
+**Interiéry (T3).** Šest interiérů má v arénových žánrech vlastní podlahu (obchoďák krémová dlažba, supermarket šachovnice, obývák prkna, továrna kovové pláty, hrad kamenné desky, jeskyně břidlice) a prstenec stěn z kulis své sady místo blokových stěn a pásu rostlin. Přední řada u kamery jen do 1,2 m, aby hrdina zůstal vidět. `space` beze změny – arénu má skalnatou s balvany, ne prázdnou plochu. Podle auditu T3 zasáhne nejvýš 15 z 56 interiérových her; zbytek (pruhy, střelnice, plošinovka) zůstává pro T6.
+
+**Hrací plocha (T4).** Aréna (útěk, sběr, souboj, úkol) a střelnice má 4–10 kulis ze sady místa (stojany, figuríny, trůny…), rozmístěných ze semínka hry mimo cestu robota, spawny a dráhy nepřátel i ran. Jsou to jen dekorace, hash hry je stejný jako na `main`. Cestu robota počítá worker v prohlížeči, takže se kulisy objeví až kolem 3 s po načtení scény (při CPU 4× 10–14 s).
+
+Kreslicí volání scény (Pixel 7, hra stojí na tiku 60, medián 9 vzorků, kulisy skryté → ukázané přes `window.__playField`):
+
+| Scéna | Pixel 7 | Desktop |
+|---|---|---|
+| aréna hrad | 38 → 46 | 60 → 72 |
+| aréna obchoďák | 23 → 25 | 48 → 56 |
+| střelnice obchoďák | 43 → 49 | 86 → 95 |
+
 ## Útrata
 
 Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946). Strop plánu 4 USD; zbývá 2,91 USD.
