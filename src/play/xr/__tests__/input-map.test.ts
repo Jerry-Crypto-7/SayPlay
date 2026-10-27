@@ -205,4 +205,13 @@ describe('driver', () => {
     driver.frame(IDLE);
     expect(calls).toHaveLength(1);
   });
+
+  it('merge drops at once an item that has been waiting (clock below 0), like the key', () => {
+    // Hodiny pod nulou = předmět je připravený a čeká (`mergeDropRule`); e2e `vr-diorama` tu VR pust ztratilo.
+    const { calls, session } = recorder();
+    session.state()[HEADER.counters + COUNTER[CLOCK_COUNTER]] = -12;
+    const driver = createXrDriver(session, control('merge'));
+    driver.frame(TRIGGER);
+    expect(calls).toEqual([`press ${BUTTON.TAP} 0`]);
+  });
 });

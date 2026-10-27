@@ -37,7 +37,10 @@ export function xrControlOf(world: ArcadeWorld): XrControl | null {
 
 const pressed = (controller: XRControllerState | undefined, id: string): boolean => controller?.gamepad[id]?.state === 'pressed';
 
-/** Oba ovladače jako jedna „klávesnice“; páčka levého, když je vychýlená, jinak pravého. `null` = žádný ovladač. */
+/**
+ * Oba ovladače jako jedna „klávesnice“; páčka levého, když je vychýlená, jinak pravého. `null` = žádný ovladač.
+ * Grip jen pravého: levý nese desku dioramy (T4, `Diorama`), a to je pohled, ne vstup hry.
+ */
 function padOf(left: XRControllerState | undefined, right: XRControllerState | undefined): Pad | null {
   if (left === undefined && right === undefined) return null;
   const leftStick = left?.gamepad['xr-standard-thumbstick'];
@@ -49,7 +52,7 @@ function padOf(left: XRControllerState | undefined, right: XRControllerState | u
     trigger: pressed(left, 'xr-standard-trigger') || pressed(right, 'xr-standard-trigger'),
     a: pressed(right, 'a-button') || pressed(left, 'x-button'),
     b: pressed(right, 'b-button') || pressed(left, 'y-button'),
-    grip: pressed(left, 'xr-standard-squeeze') || pressed(right, 'xr-standard-squeeze'),
+    grip: pressed(right, 'xr-standard-squeeze'),
   };
 }
 

@@ -27,7 +27,7 @@ export interface Pad {
   readonly a: boolean;
   /** B (pravý) nebo Y (levý). */
   readonly b: boolean;
-  /** Grip kteréhokoli ovladače. */
+  /** Grip pravého ovladače; levý nese desku dioramy (T4). */
   readonly grip: boolean;
 }
 
@@ -346,7 +346,8 @@ export function createXrDriver(session: XrDrivenSession, control: XrControl) {
       }
       if (press !== 0) session.press(press, pressAxis);
       if (step.drop) drop = true;
-      if (drop && clockOf(session.state()) === 0) {
+      // Připravený předmět má hodiny ≤ 0 (záporné = tiky čekání, `mergeDropRule`), jako u klávesy (`dropNow`).
+      if (drop && clockOf(session.state()) <= 0) {
         drop = false;
         session.press(BUTTON.TAP);
       }
