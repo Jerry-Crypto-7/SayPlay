@@ -1,0 +1,360 @@
+{
+ "schema": "p61-judge.v1",
+ "judgedAt": "2026-10-27T11:09:06.891Z",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+ "view": "desktop",
+ "seed": 61026,
+ "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": "495bbc77",
+   "measuredAt": "2026-10-27T10:59:11.725Z",
+   "base": "http://127.0.0.1:3163"
+  }
+ ],
+ "plan": [
+  {
+   "id": "s039",
+   "sentence": "zombie shooter in a mall",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s037",
+   "sentence": "A space marine shoots alien bugs in a mining colony",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s003",
+   "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s006",
+   "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s008",
+   "sentence": "temple run but you're a banana running from a monkey",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s022",
+   "sentence": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s021",
+   "sentence": "obby game with lava and spinning bars",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s035",
+   "sentence": "like flappy bird but underwater",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s050",
+   "sentence": "throwing snowballs at kids behind a snow fort",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s088",
+   "sentence": "angry birds but with cats and cardboard boxes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s069",
+   "sentence": "candy crush but with gems in a cave",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    }
+   ]
+  }
+ ],
+ "runs": [
+  {
+   "run": 1,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4,
+     "n": 11
+    },
+    "main-quick": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4,
+     "n": 11
+    },
+    "main-reading": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.4,
+     "n": 2
+    }
+   },
+   "sentences": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "It's a third-person shooter with a crosshair, an ammo count and small zombie figures coming in waves, under a ceiling of mall-style lights with a few kiosks, but the hazy, empty floor barely looks like a mall and the zombies are tiny and hard to make out."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "It's a third-person shooter with a crosshair, an ammo count and small zombie figures coming in waves, under a ceiling of mall-style lights with a few kiosks, but the hazy, empty floor barely looks like a mall and the zombies are tiny and hard to make out."
+      }
+     }
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "An armored soldier aims a laser at small orange alien bugs across a hazy industrial/mining-like landscape with machinery and wave-based shooting, but the bugs are tiny, the colony setting is vague, and the scene looks sparse and static."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "An armored soldier aims a laser at small orange alien bugs across a hazy industrial/mining-like landscape with machinery and wave-based shooting, but the bugs are tiny, the colony setting is vague, and the scene looks sparse and static."
+      }
+     }
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.45,
+       "reason": "It shows a dark stone castle courtyard with collectible keys, pale ghosts chasing the player and a dark armored figure that could be the knight, but the placeholder blue-block player, the empty floor and the 'obstacles aren't here yet' banner make it look like a bare, unfinished chase prototype."
+      },
+      "main-after-reading": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.45,
+       "reason": "It shows a dark stone castle courtyard with collectible keys, pale ghosts chasing the player and a dark armored figure that could be the knight, but the placeholder blue-block player, the empty floor and the 'obstacles aren't here yet' banner make it look like a bare, unfinished chase prototype."
+      }
+     }
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.35,
+       "reason": "A hamster runs down a lane, there's a shopping cart, and the goal says to escape the supermarket, but the scene looks like a bare white outdoor space and the round dark object that might be the Roomba is small and doesn't look like it's hunting anyone, so the runner gameplay looks plain and generic."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.35,
+       "reason": "A hamster runs down a lane, there's a shopping cart, and the goal says to escape the supermarket, but the scene looks like a bare white outdoor space and the round dark object that might be the Roomba is small and doesn't look like it's hunting anyone, so the runner gameplay looks plain and generic."
+      }
+     }
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "It's a generic forest lane runner with a blue capsule and a blocky brown character, and there are no visible sausages, sprinklers or recognizable corgi; two of the frames are greyed out."
+      },
+      "main-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.4,
+       "reason": "It's a similar park-path runner, but a 'Sprinkler' label, a jump arc and a +3 pickup show the sentence's threats and collecting goal, although the corgi and sausages are still just placeholder blocks."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.4,
+       "reason": "It's a similar park-path runner, but a 'Sprinkler' label, a jump arc and a +3 pickup show the sentence's threats and collecting goal, although the corgi and sausages are still just placeholder blocks."
+      }
+     }
+    },
+    {
+     "id": "s008",
+     "sentence": "temple run but you're a banana running from a monkey",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "A nice-looking jungle temple-run lane runner with obstacles, but the banana is just a small upright yellow shape, the other characters are a red cube and an orange blob, and no monkey can be seen chasing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "A nice-looking jungle temple-run lane runner with obstacles, but the banana is just a small upright yellow shape, the other characters are a red cube and an orange blob, and no monkey can be seen chasing."
+      }
+     }
+    },
+    {
+     "id": "s022",
+     "sentence": "A tiny robot climbs a tower of moving platforms to reach its charger",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.45,
+       "reason": "A small robot hops between floating rock islands with a 'Reach the charger' goal and a platform counter, but the layout is a flat horizontal row rather than a tower, and nothing visibly shows the platforms moving."
+      },
+      "main-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "It uses the same robot, island scene and charger goal, adds a teal block that may be the charger and a gem pickup, but there's still no vertical tower or visibly moving platforms, and the large bottom UI bar clutters the screen."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "It uses the same robot, island scene and charger goal, adds a teal block that may be the charger and a gem pickup, but there's still no vertical tower or visibly moving platforms, and the large bottom UI bar clutters the screen."
+      }
+     }
+    },
+    {
+     "id": "s021",
+     "sentence": "obby game with lava and spinning bars",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "Shows a lava-themed obby with a robot jumping between rock platforms and a timer, but none of the spinning bars appear and the course looks sparse and static across all three frames."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "Shows a lava-themed obby with a robot jumping between rock platforms and a timer, but none of the spinning bars appear and the course looks sparse and static across all three frames."
+      }
+     }
+    },
+    {
+     "id": "s035",
+     "sentence": "like flappy bird but underwater",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.15,
+       "reason": "All three screenshots show the same game-over dialog over a dim, murky grey-green scene with vague pillars and blobs, so it only loosely hints at underwater flap-through-gaps play and shows no clear character or obstacles."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.15,
+       "reason": "All three screenshots show the same game-over dialog over a dim, murky grey-green scene with vague pillars and blobs, so it only loosely hints at underwater flap-through-gaps play and shows no clear character or obstacles."
+      }
+     }
+    },
+    {
+     "id": "s050",
+     "sentence": "throwing snowballs at kids behind a snow fort",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "The snowy setting, throw counter, timer and 'Throw at the kids!' goal fit the sentence, but the kids are barely visible (a tiny marked object by an igloo), there's no clear snow fort or flying snowballs, and the scene looks static from one frame to the next."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "The snowy setting, throw counter, timer and 'Throw at the kids!' goal fit the sentence, but the kids are barely visible (a tiny marked object by an igloo), there's no clear snow fort or flying snowballs, and the scene looks static from one frame to the next."
+      }
+     }
+    },
+    {
+     "id": "s088",
+     "sentence": "angry birds but with cats and cardboard boxes",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.35,
+       "reason": "There's a cube-shaped cat, a limited number of throws and a goal of hitting cardboard boxes, but I can't see a slingshot or towers to knock down, and the boxes are tiny, far away and hard to read, so it doesn't feel much like Angry Birds."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.35,
+       "reason": "There's a cube-shaped cat, a limited number of throws and a goal of hitting cardboard boxes, but I can't see a slingshot or towers to knock down, and the boxes are tiny, far away and hard to read, so it doesn't feel much like Angry Birds."
+      }
+     }
+    }
+   ],
+   "skipped": [
+    "s069"
+   ]
+  }
+ ]
+}

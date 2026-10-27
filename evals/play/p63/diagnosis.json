@@ -1,0 +1,1091 @@
+{
+ "schema": "p63-diagnosis.v1",
+ "readings": "evals/play/p63/readings.astra.json",
+ "promptVersion": "24ae3babe923814f",
+ "steps": [
+  "reader",
+  "classifier",
+  "compose",
+  "translation",
+  "publish",
+  "none"
+ ],
+ "sentences": [
+  {
+   "id": "h02",
+   "sentence": "Pirates fight sea monsters on the deck of a sinking ship",
+   "expect": {
+    "genres": [
+     "arena.fight",
+     "duel.default"
+    ],
+    "hero": "pirate",
+    "roles": [
+     "monster"
+    ]
+   },
+   "reading": {
+    "genre": "arena.fight",
+    "sure": true,
+    "control": "duel",
+    "verbs": [
+     "fight:melee"
+    ],
+    "hero": "Pirates",
+    "foe": "sea monsters",
+    "item": null,
+    "world": "ocean",
+    "roles": [
+     "threat:sea monsters",
+     "hazard:sinking ship"
+    ]
+   },
+   "classified": {
+    "first": "arena.fight",
+    "why": "main verb \"fight\", cue \"fight\", reading genre \"arena.fight\", reading \"fight\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "arena.fight",
+    "specGenre": "arena.fight",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "pirate",
+     "roles": [
+      "hazard:sea monster"
+     ]
+    },
+    "look": "ocean",
+    "chain": false
+   },
+   "readingGame": {
+    "genre": "arena.fight",
+    "specGenre": "arena.fight",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "pirates",
+     "roles": [
+      "hazard:sea monster"
+     ]
+    },
+    "look": "ocean",
+    "goal": "Knock out 5 waves of sea monsters.",
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Dodge the wind-up, strike back and knock out 5 waves of sea monsters.",
+     "count": 1,
+     "role": "rival"
+    }
+   },
+   "published": false,
+   "step": "none",
+   "location": null
+  },
+  {
+   "id": "h11",
+   "sentence": "A little witch picks six glowing mushrooms in a dark swamp",
+   "expect": {
+    "genres": [
+     "arena.collect",
+     "arena.escape",
+     "quest.spatial"
+    ],
+    "hero": "witch",
+    "roles": [
+     "mushroom"
+    ]
+   },
+   "reading": {
+    "genre": "arena.collect",
+    "sure": true,
+    "control": "move_free",
+    "verbs": [
+     "picks:move_free"
+    ],
+    "hero": "little witch",
+    "foe": null,
+    "item": "glowing mushrooms",
+    "world": null,
+    "roles": [
+     "collectible:glowing mushrooms×6"
+    ]
+   },
+   "classified": {
+    "first": "arena.collect",
+    "why": "main verb \"collect\", reading genre \"arena.collect\", reading \"picks\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "arena.collect",
+    "specGenre": "arena.collect",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "little witch",
+     "roles": [
+      "collectible:mushroom"
+     ]
+    },
+    "look": "dark swamp",
+    "chain": false
+   },
+   "readingGame": {
+    "genre": "arena.collect",
+    "specGenre": "arena.collect",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "little witch",
+     "roles": [
+      "collectible:glowing mushroom"
+     ]
+    },
+    "look": "dark swamp",
+    "goal": "Collect 6 glowing mushrooms.",
+    "objective": {
+     "kind": "collect",
+     "description": "Collect 6 glowing mushrooms before time runs out.",
+     "count": 6,
+     "role": "item"
+    }
+   },
+   "published": true,
+   "step": "none",
+   "location": null
+  },
+  {
+   "id": "h14",
+   "sentence": "A skier races down the mountain, dodges pine trees and jumps over cliffs",
+   "expect": {
+    "genres": [
+     "runner",
+     "voyage.race"
+    ],
+    "hero": "skier",
+    "roles": [
+     "tree"
+    ]
+   },
+   "reading": {
+    "genre": "voyage.race",
+    "sure": true,
+    "control": "steer",
+    "verbs": [
+     "races:steer",
+     "dodges:melee",
+     "jumps:platform"
+    ],
+    "hero": "skier",
+    "foe": "pine trees",
+    "item": null,
+    "world": "snow",
+    "roles": [
+     "obstacle:pine trees",
+     "hazard:cliffs"
+    ]
+   },
+   "classified": {
+    "first": "voyage.race",
+    "why": "main verb \"drive\", reading genre \"voyage.race\", reading \"races\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "chain",
+    "specGenre": "platformer.default",
+    "cell": "assembled.jump",
+    "cast": {
+     "hero": "skier",
+     "roles": [
+      "hazard:pine tree",
+      "collectible:coin",
+      "exit:flag"
+     ]
+    },
+    "look": "mountain",
+    "chain": true
+   },
+   "readingGame": {
+    "genre": "voyage.race",
+    "specGenre": null,
+    "cell": "assembled.drive",
+    "cast": {
+     "hero": "skier",
+     "roles": [
+      "hazard:pine tree",
+      "collectible:turbo",
+      "exit:finish line"
+     ]
+    },
+    "look": "snow",
+    "goal": "Reach the finish line.",
+    "objective": {
+     "kind": "reach",
+     "description": "Reach the finish line.",
+     "role": "finish"
+    }
+   },
+   "published": true,
+   "step": "none",
+   "location": null
+  },
+  {
+   "id": "h15",
+   "sentence": "A firefighter climbs the tower, sprays the flames and rescues a cat",
+   "expect": {
+    "genres": [
+     "quest.spatial",
+     "platformer.default"
+    ],
+    "hero": "firefighter",
+    "roles": [
+     "flame"
+    ]
+   },
+   "reading": {
+    "genre": "quest.spatial",
+    "sure": true,
+    "control": "tap_go",
+    "verbs": [
+     "climbs:tap_go",
+     "sprays:aim_shoot",
+     "rescues:tap_go"
+    ],
+    "hero": "firefighter",
+    "foe": "flames",
+    "item": null,
+    "world": null,
+    "roles": [
+     "destination:tower",
+     "hazard:flames",
+     "target:cat"
+    ]
+   },
+   "classified": {
+    "first": "quest.spatial",
+    "why": "verb \"free\", cue \"spray\", cue \"rescue\", reading genre \"quest.spatial\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "chain",
+    "specGenre": "platformer.default",
+    "cell": "assembled.jump",
+    "cast": {
+     "hero": "firefighter",
+     "roles": [
+      "hazard:spikes",
+      "collectible:gem",
+      "exit:flag",
+      "hazard:flame",
+      "item:cat"
+     ]
+    },
+    "look": "tower",
+    "chain": true
+   },
+   "readingGame": {
+    "genre": "quest.spatial",
+    "specGenre": "quest.spatial",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "firefighter",
+     "roles": [
+      "target:cat",
+      "chaser:ghost"
+     ]
+    },
+    "look": "tower",
+    "goal": "Use all 5 cats, 3 rounds.",
+    "objective": {
+     "kind": "puzzle",
+     "description": "Use all 5 cats in each of 3 rounds before the ghost catches you.",
+     "role": "target"
+    }
+   },
+   "published": true,
+   "step": "translation",
+   "location": "src/play/compose/compose.ts:250"
+  },
+  {
+   "id": "h18",
+   "sentence": "A knight rides through the forest and slays a dragon",
+   "expect": {
+    "genres": [
+     "arena.fight",
+     "duel.default"
+    ],
+    "hero": "knight",
+    "roles": [
+     "dragon"
+    ]
+   },
+   "reading": {
+    "genre": "voyage.race",
+    "sure": true,
+    "control": "steer",
+    "verbs": [
+     "rides:steer",
+     "slays:melee"
+    ],
+    "hero": "knight",
+    "foe": "dragon",
+    "item": null,
+    "world": "forest",
+    "roles": [
+     "threat:dragon"
+    ]
+   },
+   "classified": {
+    "first": "voyage.race",
+    "why": "main verb \"ride\", cue \"ride\", reading genre \"voyage.race\", reading \"rides\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "chain",
+    "specGenre": null,
+    "cell": "assembled.drive",
+    "cast": {
+     "hero": "knight",
+     "roles": [
+      "hazard:log",
+      "collectible:turbo",
+      "exit:finish line"
+     ]
+    },
+    "look": "forest",
+    "chain": true
+   },
+   "readingGame": {
+    "genre": "voyage.race",
+    "specGenre": null,
+    "cell": "assembled.drive",
+    "cast": {
+     "hero": "knight",
+     "roles": [
+      "hazard:dragon",
+      "collectible:turbo",
+      "exit:finish line"
+     ]
+    },
+    "look": "forest",
+    "goal": "Reach the finish line.",
+    "objective": {
+     "kind": "reach",
+     "description": "Reach the finish line.",
+     "role": "finish"
+    }
+   },
+   "published": true,
+   "step": "reader",
+   "location": "src/play/read/prompt.ts:103"
+  },
+  {
+   "id": "h19",
+   "sentence": "Stack pancakes as high as you can in a busy diner",
+   "expect": {
+    "genres": [
+     "timing.stack"
+    ],
+    "hero": null,
+    "roles": [
+     "pancake"
+    ]
+   },
+   "reading": {
+    "genre": "timing.stack",
+    "sure": true,
+    "control": "timing",
+    "verbs": [
+     "Stack:timing"
+    ],
+    "hero": null,
+    "foe": null,
+    "item": "pancakes",
+    "world": null,
+    "roles": [
+     "item:pancakes"
+    ]
+   },
+   "classified": {
+    "first": "timing.stack",
+    "why": "main verb \"stack\", cue \"stack\", reading genre \"timing.stack\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "timing.stack",
+    "specGenre": "timing.stack",
+    "cell": "assembled.stationary",
+    "cast": {
+     "hero": "explorer",
+     "roles": [
+      "collectible:pancake",
+      "hazard:missed drop",
+      "exit:of the tower"
+     ]
+    },
+    "look": "busy diner",
+    "chain": false
+   },
+   "readingGame": {
+    "genre": "timing.stack",
+    "specGenre": "timing.stack",
+    "cell": "assembled.stationary",
+    "cast": {
+     "hero": "explorer",
+     "roles": [
+      "collectible:pancake",
+      "hazard:missed drop",
+      "exit:of the tower"
+     ]
+    },
+    "look": "busy diner",
+    "goal": "Stack 36 pancakes. Each one swings faster.",
+    "objective": {
+     "kind": "reach",
+     "description": "Stack 36 pancakes. Each one swings faster.",
+     "role": "finish"
+    }
+   },
+   "published": false,
+   "step": "none",
+   "location": null
+  },
+  {
+   "id": "h23",
+   "sentence": "Bounce a beach ball on a seal's nose at the circus",
+   "expect": {
+    "genres": [
+     "catch.default",
+     "timing.precision"
+    ],
+    "hero": "seal",
+    "roles": [
+     "ball"
+    ]
+   },
+   "reading": {
+    "genre": null,
+    "sure": true,
+    "control": "ball",
+    "verbs": [
+     "Bounce:timing"
+    ],
+    "hero": "seal",
+    "foe": null,
+    "item": "beach ball",
+    "world": null,
+    "roles": [
+     "item:beach ball"
+    ]
+   },
+   "classified": {
+    "first": "arena.collect",
+    "why": "reading: no genre fits",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "platformer.default",
+    "specGenre": "platformer.default",
+    "cell": "assembled.jump",
+    "cast": {
+     "hero": "turtle",
+     "roles": [
+      "hazard:spikes",
+      "collectible:coin",
+      "exit:flag"
+     ]
+    },
+    "look": "beach",
+    "chain": false
+   },
+   "readingGame": {
+    "genre": "arena.collect",
+    "specGenre": "arena.collect",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "seal",
+     "roles": [
+      "collectible:beach ball"
+     ]
+    },
+    "look": "beach",
+    "goal": "Collect 10 beach balls per wave, 3 waves.",
+    "objective": {
+     "kind": "collect",
+     "description": "Collect 10 beach balls in each of 3 waves before time runs out.",
+     "count": 10,
+     "role": "item"
+    }
+   },
+   "published": true,
+   "step": "reader",
+   "location": "src/play/read/prompt.ts:103"
+  },
+  {
+   "id": "h24",
+   "sentence": "Steer a hot air balloon between thunderclouds above the ocean",
+   "expect": {
+    "genres": [
+     "flap.default",
+     "voyage.race"
+    ],
+    "hero": "balloon",
+    "roles": [
+     "cloud"
+    ]
+   },
+   "reading": {
+    "genre": "voyage.race",
+    "sure": true,
+    "control": "steer",
+    "verbs": [
+     "Steer:steer"
+    ],
+    "hero": "hot air balloon",
+    "foe": "thunderclouds",
+    "item": null,
+    "world": "ocean",
+    "roles": [
+     "obstacle:thunderclouds"
+    ]
+   },
+   "classified": {
+    "first": "voyage.race",
+    "why": "main verb \"drive\", reading genre \"voyage.race\", reading \"Steer\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "voyage.race",
+    "specGenre": null,
+    "cell": "assembled.drive",
+    "cast": {
+     "hero": "balloon",
+     "roles": [
+      "hazard:shark",
+      "collectible:turbo",
+      "exit:finish line"
+     ]
+    },
+    "look": "ocean",
+    "chain": false
+   },
+   "readingGame": {
+    "genre": "voyage.race",
+    "specGenre": null,
+    "cell": "assembled.drive",
+    "cast": {
+     "hero": "hot air balloon",
+     "roles": [
+      "hazard:thundercloud",
+      "collectible:turbo",
+      "exit:finish line"
+     ]
+    },
+    "look": "above the ocean",
+    "goal": "Reach the finish line.",
+    "objective": {
+     "kind": "reach",
+     "description": "Reach the finish line.",
+     "role": "finish"
+    }
+   },
+   "published": false,
+   "step": "publish",
+   "location": "src/app/api/play/_upgrade.ts:305"
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "expect": {
+    "genres": [
+     "arena.escape",
+     "arena.collect",
+     "quest.spatial"
+    ],
+    "hero": "knight",
+    "roles": [
+     "key",
+     "ghost"
+    ]
+   },
+   "reading": {
+    "genre": "arena.collect",
+    "sure": true,
+    "control": "move_free",
+    "verbs": [
+     "collect:move_free",
+     "dodging:melee"
+    ],
+    "hero": "knight",
+    "foe": "ghosts",
+    "item": "keys",
+    "world": "castle",
+    "roles": [
+     "collectible:keys×3",
+     "threat:ghosts"
+    ]
+   },
+   "classified": {
+    "first": "arena.collect",
+    "why": "cue \"collect\", reading genre \"arena.collect\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "arena.escape",
+    "specGenre": "arena.escape",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "knight",
+     "roles": [
+      "chaser:ghost",
+      "collectible:key"
+     ]
+    },
+    "look": "haunted castle",
+    "chain": false
+   },
+   "readingGame": {
+    "genre": "arena.collect",
+    "specGenre": "arena.collect",
+    "cell": "assembled.roam",
+    "cast": {
+     "hero": "knight",
+     "roles": [
+      "collectible:key"
+     ]
+    },
+    "look": "haunted castle",
+    "goal": "Collect 3 keys.",
+    "objective": {
+     "kind": "collect",
+     "description": "Collect 3 keys before time runs out.",
+     "count": 3,
+     "role": "item"
+    }
+   },
+   "published": true,
+   "step": "translation",
+   "location": "src/play/compose/compose.ts:250"
+  },
+  {
+   "id": "s006",
+   "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "expect": {
+    "genres": [
+     "runner",
+     "platformer.default"
+    ],
+    "hero": "corgi",
+    "roles": [
+     "sausage"
+    ]
+   },
+   "reading": {
+    "genre": "runner.default",
+    "sure": true,
+    "control": "runner",
+    "verbs": [
+     "runs:runner",
+     "grabbing:move_free",
+     "jumping:platform"
+    ],
+    "hero": "corgi",
+    "foe": "sprinklers",
+    "item": "sausages",
+    "world": "meadow",
+    "roles": [
+     "collectible:sausages",
+     "obstacle:sprinklers"
+    ]
+   },
+   "classified": {
+    "first": "runner.default",
+    "why": "main verb \"run\", verb \"collect\", cue \"run\", reading genre \"runner.default\", reading \"runs\", reading \"grabbing\"",
+    "decided": true
+   },
+   "quickGame": {
+    "genre": "chain",
+    "specGenre": "runner.default",
+    "cell": "assembled.run",
+    "cast": {
+     "hero": "corgi",
+     "roles": [
+      "hazard:sprinkler",
+      "collectible:sausage",
+      "exit:finish line"
+     ]
+    },
+    "look": "meadow",
+    "chain": true
+   },
+   "readingGame": {
+    "genre": "runner.default",
+    "specGenre": "runner.default",
+    "cell": "assembled.run",
+    "cast": {
+     "hero": "corgi",
+     "roles": [
+      "hazard:sprinkler",
+      "collectible:sausage",
+      "exit:finish line"
+     ]
+    },
+    "look": "meadow",
+    "goal": "Reach the finish line. Jump, slide and switch lanes.",
+    "objective": {
+     "kind": "reach",
+     "description": "Run to the finish without hitting a sprinkler.",
+     "role": "finish"
+    }
+   },
+   "published": true,
+   "step": "none",
+   "location": null
+  }
+ ],
+ "byStep": {
+  "reader": [
+   "h18",
+   "h23"
+  ],
+  "classifier": [],
+  "compose": [],
+  "translation": [
+   "h15",
+   "s002"
+  ],
+  "publish": [
+   "h24"
+  ],
+  "none": [
+   "h02",
+   "h11",
+   "h14",
+   "h19",
+   "s006"
+  ]
+ },
+ "all": [
+  {
+   "id": "h01",
+   "readGenre": "shooter.default",
+   "quick": "shooter.default",
+   "quickCell": "assembled.stationary",
+   "reading": "shooter.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "h02",
+   "readGenre": "arena.fight",
+   "quick": "arena.fight",
+   "quickCell": "assembled.roam",
+   "reading": "arena.fight",
+   "readingCell": "assembled.roam",
+   "published": false
+  },
+  {
+   "id": "h03",
+   "readGenre": "shooter.default",
+   "quick": "shooter.default",
+   "quickCell": "assembled.stationary",
+   "reading": "shooter.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "h04",
+   "readGenre": "arena.fight",
+   "quick": "arena.fight",
+   "quickCell": "assembled.roam",
+   "reading": "arena.fight",
+   "readingCell": "assembled.roam",
+   "published": false
+  },
+  {
+   "id": "h05",
+   "readGenre": "duel.default",
+   "quick": "duel.default",
+   "quickCell": "assembled.stationary",
+   "reading": "duel.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "h06",
+   "readGenre": "shooter.default",
+   "quick": "chain",
+   "quickCell": "assembled.glide",
+   "reading": "shooter.default",
+   "readingCell": "assembled.stationary",
+   "published": true
+  },
+  {
+   "id": "h07",
+   "readGenre": "arena.collect",
+   "quick": "arena.collect",
+   "quickCell": "assembled.roam",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": false
+  },
+  {
+   "id": "h08",
+   "readGenre": "arena.collect",
+   "quick": "arena.collect",
+   "quickCell": "assembled.roam",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": false
+  },
+  {
+   "id": "h09",
+   "readGenre": "arena.collect",
+   "quick": "arena.collect",
+   "quickCell": "assembled.roam",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": false
+  },
+  {
+   "id": "h10",
+   "readGenre": "arena.collect",
+   "quick": "quest.spatial",
+   "quickCell": "assembled.walk",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h11",
+   "readGenre": "arena.collect",
+   "quick": "arena.collect",
+   "quickCell": "assembled.roam",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h12",
+   "readGenre": "arena.collect",
+   "quick": "chain",
+   "quickCell": "assembled.roam",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h13",
+   "readGenre": "platformer.default",
+   "quick": "chain",
+   "quickCell": "assembled.jump",
+   "reading": "platformer.default",
+   "readingCell": "assembled.jump",
+   "published": true
+  },
+  {
+   "id": "h14",
+   "readGenre": "voyage.race",
+   "quick": "chain",
+   "quickCell": "assembled.jump",
+   "reading": "voyage.race",
+   "readingCell": "assembled.drive",
+   "published": true
+  },
+  {
+   "id": "h15",
+   "readGenre": "quest.spatial",
+   "quick": "chain",
+   "quickCell": "assembled.jump",
+   "reading": "quest.spatial",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h16",
+   "readGenre": "arena.collect",
+   "quick": "chain",
+   "quickCell": "assembled.run",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h17",
+   "readGenre": "quest.spatial",
+   "quick": "quest.spatial",
+   "quickCell": "assembled.roam",
+   "reading": "quest.spatial",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h18",
+   "readGenre": "voyage.race",
+   "quick": "chain",
+   "quickCell": "assembled.drive",
+   "reading": "voyage.race",
+   "readingCell": "assembled.drive",
+   "published": true
+  },
+  {
+   "id": "h19",
+   "readGenre": "timing.stack",
+   "quick": "timing.stack",
+   "quickCell": "assembled.stationary",
+   "reading": "timing.stack",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "h20",
+   "readGenre": "arena.escape",
+   "quick": "runner.default",
+   "quickCell": "assembled.run",
+   "reading": "arena.escape",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h21",
+   "readGenre": "voyage.race",
+   "quick": "voyage.race",
+   "quickCell": "assembled.drive",
+   "reading": "voyage.race",
+   "readingCell": "assembled.drive",
+   "published": false
+  },
+  {
+   "id": "h22",
+   "readGenre": "quest.spatial",
+   "quick": "chain",
+   "quickCell": "assembled.roam",
+   "reading": "quest.spatial",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h23",
+   "readGenre": null,
+   "quick": "platformer.default",
+   "quickCell": "assembled.jump",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "h24",
+   "readGenre": "voyage.race",
+   "quick": "voyage.race",
+   "quickCell": "assembled.drive",
+   "reading": "voyage.race",
+   "readingCell": "assembled.drive",
+   "published": false
+  },
+  {
+   "id": "s039",
+   "readGenre": "shooter.default",
+   "quick": "shooter.default",
+   "quickCell": "assembled.stationary",
+   "reading": "shooter.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "s037",
+   "readGenre": "shooter.default",
+   "quick": "shooter.default",
+   "quickCell": "assembled.stationary",
+   "reading": "shooter.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "s002",
+   "readGenre": "arena.collect",
+   "quick": "arena.escape",
+   "quickCell": "assembled.roam",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "s003",
+   "readGenre": "arena.escape",
+   "quick": "runner.default",
+   "quickCell": "assembled.run",
+   "reading": "arena.escape",
+   "readingCell": "assembled.roam",
+   "published": true
+  },
+  {
+   "id": "s006",
+   "readGenre": "runner.default",
+   "quick": "chain",
+   "quickCell": "assembled.run",
+   "reading": "runner.default",
+   "readingCell": "assembled.run",
+   "published": true
+  },
+  {
+   "id": "s008",
+   "readGenre": "runner.default",
+   "quick": "runner.default",
+   "quickCell": "assembled.run",
+   "reading": "runner.default",
+   "readingCell": "assembled.run",
+   "published": false
+  },
+  {
+   "id": "s022",
+   "readGenre": "platformer.default",
+   "quick": "chain",
+   "quickCell": "assembled.jump",
+   "reading": "platformer.default",
+   "readingCell": "assembled.jump",
+   "published": true
+  },
+  {
+   "id": "s021",
+   "readGenre": "platformer.default",
+   "quick": "platformer.default",
+   "quickCell": "assembled.jump",
+   "reading": "platformer.default",
+   "readingCell": "assembled.jump",
+   "published": true
+  },
+  {
+   "id": "s035",
+   "readGenre": "flap.default",
+   "quick": "flap.default",
+   "quickCell": "assembled.flap",
+   "reading": "flap.default",
+   "readingCell": "assembled.flap",
+   "published": false
+  },
+  {
+   "id": "s050",
+   "readGenre": "throw.default",
+   "quick": "throw.default",
+   "quickCell": "assembled.stationary",
+   "reading": "throw.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "s088",
+   "readGenre": "throw.default",
+   "quick": "throw.default",
+   "quickCell": "assembled.stationary",
+   "reading": "throw.default",
+   "readingCell": "assembled.stationary",
+   "published": false
+  },
+  {
+   "id": "s069",
+   "readGenre": null,
+   "quick": "quest.station",
+   "quickCell": "assembled.stationary",
+   "reading": "arena.collect",
+   "readingCell": "assembled.roam",
+   "published": true
+  }
+ ]
+}
