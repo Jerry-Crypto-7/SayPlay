@@ -120,13 +120,11 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   wolf: 'dog',
   chef: 'waiter',
   bee: 'wasp-nest',
-  marine: 'astronaut',
   // P58A T6: slova dev sad, která dostala robota nebo model jen podle písmen (knedlík → popelnice, pluh → vločka).
   gopher: 'hamster',
   mole: 'hamster',
   lemming: 'hamster',
   bulldog: 'dog',
-  cheetah: 'cat',
   shoplifter: 'gen3d-thief',
   safecracker: 'gen3d-robber',
   champ: 'gen3d-boxer',
@@ -161,7 +159,6 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   pointer: 'cc0-arrow',
   riddle: 'gen3d-question-block',
   wire: 'gen3d-rope',
-  snowplow: 'gen3d-snowmobile',
   snowstorm: 'gen3d-snowflake',
   starfighter: 'gen3d-fighter-jet',
 };

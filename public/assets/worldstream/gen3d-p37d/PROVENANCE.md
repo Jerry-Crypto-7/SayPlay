@@ -1005,6 +1005,12 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-lizard` | lizard | 4728 / 2362 |
 | `gen3d-trout` | trout | 4728 / 2354 |
 | `gen3d-dumpling` | dumpling | 4748 / 2374 |
+| `gen3d-cheetah` | cheetah | 4510 / 2117 |
+| `gen3d-snowplow` | snowplow, snow plow, snowplough | 4204 / 1985 |
+| `gen3d-firecracker` | firecracker, fire cracker | 4742 / 2370 |
+| `gen3d-pinecone` | pinecone, pine cone | 4408 / 2051 |
+| `gen3d-stalactite` | stalactite | 4715 / 2318 |
+| `gen3d-termite` | termite | 4540 / 2149 |
 
 ## Replaced in P57 under the same id
 

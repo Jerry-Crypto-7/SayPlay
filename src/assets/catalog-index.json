@@ -10328,7 +10328,9 @@
       "assetId": "gen3d-guard",
       "tags": [
         "guard",
-        "soldier"
+        "soldier",
+        "sentry",
+        "marine"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-guard-lod1.glb",
       "bounds": {
@@ -35691,6 +35693,124 @@
           0.67606,
           0.99989,
           0.67616
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cheetah",
+      "tags": [
+        "cheetah"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cheetah-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23539,
+          0,
+          -0.74237
+        ],
+        "max": [
+          0.23539,
+          0.99738,
+          0.74237
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowplow",
+      "tags": [
+        "snowplow",
+        "snow plow",
+        "snowplough"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowplow-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47136,
+          0,
+          -0.89182
+        ],
+        "max": [
+          0.47136,
+          0.9992,
+          0.89182
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firecracker",
+      "tags": [
+        "firecracker",
+        "fire cracker"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firecracker-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12324,
+          0,
+          -0.14108
+        ],
+        "max": [
+          0.12324,
+          0.99971,
+          0.14108
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pinecone",
+      "tags": [
+        "pinecone",
+        "pine cone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pinecone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29812,
+          0,
+          -0.30182
+        ],
+        "max": [
+          0.29812,
+          1.00001,
+          0.30182
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stalactite",
+      "tags": [
+        "stalactite"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stalactite-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21362,
+          0,
+          -0.18056
+        ],
+        "max": [
+          0.21362,
+          0.99899,
+          0.18056
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-termite",
+      "tags": [
+        "termite"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-termite-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47095,
+          0,
+          -0.59153
+        ],
+        "max": [
+          0.47095,
+          0.98319,
+          0.59153
         ]
       }
     }

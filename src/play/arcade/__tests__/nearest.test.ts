@@ -18,8 +18,9 @@ describe('nearest catalog model', () => {
 
   it('draws the nearest model for a noun the catalog has no tag for', () => {
     expect(modelOf('luxury yacht', false)).toBe('gen3d-yacht');
-    expect(modelOf('pinecone', false)).toBeUndefined();
-    expect(sceneModelOf('pinecone', false)).toBe('cc0-pine');
+    // Šiška (dřív `cc0-pine`) má od P62 T2 vlastní model, příkladem je patník.
+    expect(modelOf('bollard', false)).toBeUndefined();
+    expect(sceneModelOf('bollard', false)).toBe('gen3d-street-bollard');
     expect(sceneModelOf('luxury yacht', false)).toBe('gen3d-yacht');
     expect(sceneModelOf('hockey puck', false)).toBe('gen3d-hockey-puck');
     expect(sceneModelOf('acorns', false)).toBe('gen3d-acorn');

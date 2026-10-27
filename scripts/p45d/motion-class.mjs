@@ -72,6 +72,7 @@ export const FLYERS = new Set(['bat', 'bee', 'wasp', 'butterfly', 'dragon', 'dra
 const BODY_OF_WORD = {
   roomba: 'vehicle',
   snowmobile: 'vehicle',
+  snowplow: 'vehicle',
   ...Object.fromEntries(['mole', 'hippo', 'lizard', 'rhino', 'centaur'].map((word) => [word, 'quadruped'])),
   ...Object.fromEntries(['cyclops', 'golem', 'genie', 'robber', 'spy', 'poacher', 'stickman', 'manager', 'advisor'].map((word) => [word, 'biped'])),
   peacock: 'flyer',
