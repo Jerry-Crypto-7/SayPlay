@@ -3,7 +3,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR } from '@react-three/xr';
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
-import { ACESFilmicToneMapping, type Group, Vector3 } from 'three';
+import { ACESFilmicToneMapping, type ArrayCamera, Box3, type Group, type Object3D, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { type Point, deskOfWorld } from '@/play/xr/diorama-scale';
@@ -12,9 +12,11 @@ import { REACH, type XrControl, type XrMotion } from '@/play/xr/input-map';
 import { frameOf } from '../arcade/ArcadeStage';
 import type { ArcadeSession } from '../arcade/session';
 import { Diorama, type DeskReport, heroNodeOf } from './Diorama';
-import { useXrGame } from './xr-context';
+import { useXrGame, useXrHud } from './xr-context';
 import { MOTION_PRIORITY, XrAim } from './XrAim';
+import { XrHud } from './XrHud';
 import { XrInput, xrControlOf } from './XrInput';
+import type { PanelAim } from './XrPanel';
 import { XrSwing } from './XrSwing';
 
 /**
@@ -68,6 +70,55 @@ export interface XrReport {
   readonly heroOnDesk: Point | null;
   /** Deska dioramy (poloha, otočení, měřítko světa); `null` = VR-nativní žánr nebo mimo relaci. */
   readonly desk: DeskReport | null;
+  /** 3D panely HUD v relaci (T5, `vr-hud.spec.ts`). */
+  readonly panels: readonly PanelReport[];
+}
+
+/** Panel HUD, jak ho vidí hráč: co na něm stojí, kde jsou tlačítka a kam padne do obrazu každého oka. */
+export interface PanelReport {
+  /** `hud`, `result` nebo `notice`. */
+  readonly id: string;
+  /** Řádky textu a počítadla („0/3 keys“). */
+  readonly text: readonly string[];
+  /** Popisky počítadel jako v DOM HUD (`hud-counter-…`). */
+  readonly labels: readonly string[];
+  /** Tlačítka, jejich středy ve skutečném prostoru (m) – kam e2e namíří paprsek – a stav (`aimed` = paprsek na něm). */
+  readonly buttons: readonly { readonly id: string; readonly label: string; readonly at: Point; readonly state: 'rest' | 'aimed' | 'pressed' }[];
+  /** Obdélník panelu v obraze každého oka (NDC −1…1); `behind` = některý roh je za okem. */
+  readonly eyes: readonly ({ readonly minX: number; readonly maxX: number; readonly minY: number; readonly maxY: number; readonly behind: boolean } | null)[];
+  /** Nejmenší text panelu jako úhel od očí (rad): text kitu 13 px na 1 m = 0,026. */
+  readonly smallest: number;
+}
+
+/** Panely HUD ve scéně (`userData.xrPanel` z `XrPanel`) promítnuté do očí. */
+function panelsOf(scene: Object3D, xr: ArrayCamera): PanelReport[] {
+  const panels: PanelReport[] = [];
+  // Mezi očima z matic posledního snímku; `getWorldPosition` by kameru XR přeskládal.
+  const head = new Vector3();
+  for (const eye of xr.cameras) head.add(new Vector3().setFromMatrixPosition(eye.matrixWorld).divideScalar(xr.cameras.length));
+  scene.traverse((node) => {
+    const id = node.userData.xrPanel as string | undefined;
+    if (id === undefined) return;
+    const buttons: PanelReport['buttons'][number][] = [];
+    node.traverse((child) => {
+      if (child.userData.xrButton === undefined) return;
+      const at = child.getWorldPosition(new Vector3());
+      buttons.push({ id: child.userData.xrButton as string, label: child.userData.label as string, at: { x: at.x, y: at.y, z: at.z }, state: child.userData.state as PanelReport['buttons'][number]['state'] });
+    });
+    const center = new Box3().setFromObject(node).getCenter(new Vector3());
+    panels.push({
+      id,
+      text: node.userData.text as string[],
+      labels: node.userData.labels as string[],
+      buttons,
+      eyes: xr.cameras.map((eye) => {
+        const box = frameOf(node, eye, 1, 1);
+        return box === null ? null : { minX: box.minX, maxX: box.maxX, minY: box.minY, maxY: box.maxY, behind: box.behind };
+      }),
+      smallest: ((node.userData.minText as number) * node.getWorldScale(new Vector3()).x) / head.distanceTo(center),
+    });
+  });
+  return panels;
 }
 
 declare global {
@@ -97,7 +148,7 @@ function XrProbe({
       const body = state === null ? null : bodyBase(state[HEADER.player] as number);
       const heroAt = state === null || body === null ? null : { x: state[body + BODY.x] as number, y: state[body + BODY.y] as number, z: state[body + BODY.z] as number };
       const hero = presenting ? heroNodeOf(scene) : null;
-      if (hero !== null) scene.updateMatrixWorld();
+      if (presenting) scene.updateMatrixWorld();
       const at = hero?.getWorldPosition(new Vector3()) ?? null;
       return {
         presenting,
@@ -115,6 +166,7 @@ function XrProbe({
               }),
         heroOnDesk: at === null || desk.current === null ? null : deskOfWorld(desk.current, at),
         desk: presenting ? desk.current : null,
+        panels: presenting ? panelsOf(scene, gl.xr.getCamera()) : [],
       };
     };
     window.__playXr = probe;
@@ -175,23 +227,28 @@ function XrPlace({ world, session, control }: { readonly world: RefObject<Group 
 export function XrRig({ children }: { readonly children: ReactNode }) {
   const presenting = useXR((xr) => xr.session != null);
   const game = useXrGame();
-  const control = useMemo(() => (game === null ? null : xrControlOf(game.world)), [game]);
+  // Hra na obrazovce: po konci běhu ji `XrGame` neohlašuje (vstup stojí), ale stůl i výsledek (T5) na ní zůstávají.
+  const hud = useXrHud();
+  const shown = game ?? hud?.session ?? null;
+  const control = useMemo(() => (shown === null ? null : xrControlOf(shown.world)), [shown]);
   const world = useRef<Group>(null);
   const motion = useRef<XrMotion>({ aim: null, velocity: null, laneAxis: null });
   const calls = useRef(0);
   const desk = useRef<DeskReport | null>(null);
+  const aim = useMemo<PanelAim>(() => new Map(), []);
   const aims = control?.input === 'shooter-rig' || control?.input === 'lanes';
   const swings = control?.input === 'throw-rig' || control?.swing !== undefined;
-  const diorama = game !== null && !nativeOf(control);
+  const diorama = shown !== null && !nativeOf(control);
   return (
     <>
       <group ref={world}>{children}</group>
-      {presenting && diorama && <Diorama world={world} session={game} report={desk} />}
-      {presenting && !diorama && <XrPlace world={world} session={game} control={control} />}
+      {presenting && diorama && <Diorama world={world} session={shown} report={desk} />}
+      {presenting && !diorama && <XrPlace world={world} session={shown} control={control} />}
       {presenting && <DirectRender calls={calls} />}
       {presenting && game !== null && control !== null && aims && <XrAim session={game} control={control} world={world} motion={motion} />}
       {presenting && game !== null && swings && <XrSwing session={game} world={world} motion={motion} />}
-      {presenting && game !== null && <XrInput session={game} motion={motion} />}
+      {presenting && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
+      {presenting && shown !== null && <XrHud diorama={diorama} desk={desk} aim={aim} />}
       <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} />
     </>
   );

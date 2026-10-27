@@ -10,7 +10,7 @@ import { arenaAxis } from '@/play/arcade/pieces/arena';
 import { CLOCK_COUNTER } from '@/play/arcade/pieces/merge-drop';
 import { STAGES, type Stage } from '@/play/compose/stage-registry';
 
-import { DEAD_ZONE, IDLE, type Pad, type XrControl, analog, createXrDriver, mapPad } from '../input-map';
+import { DEAD_ZONE, IDLE, type Pad, type XrControl, analog, createTriggerOwner, createXrDriver, mapPad } from '../input-map';
 
 const control = (input: Stage['input'], extra: Partial<XrControl> = {}): XrControl => ({ input, fire: false, attack: false, use: false, abilities: 0, ...extra });
 const pad = (over: Partial<Pad>): Pad => ({ ...IDLE, ...over });
@@ -213,5 +213,30 @@ describe('driver', () => {
     const driver = createXrDriver(session, control('merge'));
     driver.frame(TRIGGER);
     expect(calls).toEqual([`press ${BUTTON.TAP} 0`]);
+  });
+});
+
+describe('the trigger is either a click on a HUD panel or a game input, never both (T5)', () => {
+  it('a press that starts on a panel button stays the panel’s until release, even when the ray slides off', () => {
+    const trigger = createTriggerOwner();
+    expect(trigger('right', true, true)).toBe(false);
+    expect(trigger('right', true, false)).toBe(false);
+    expect(trigger('right', false, false)).toBe(false);
+    // Další stisk mimo panel už je hry.
+    expect(trigger('right', true, false)).toBe(true);
+  });
+
+  it('a press that starts off the panels stays the game’s, even when the ray slides onto a button', () => {
+    const trigger = createTriggerOwner();
+    expect(trigger('right', true, false)).toBe(true);
+    expect(trigger('right', true, true)).toBe(true);
+    expect(trigger('right', false, true)).toBe(false);
+    expect(trigger('right', true, true)).toBe(false);
+  });
+
+  it('each hand owns its own press', () => {
+    const trigger = createTriggerOwner();
+    expect(trigger('right', true, true)).toBe(false);
+    expect(trigger('left', true, false)).toBe(true);
   });
 });

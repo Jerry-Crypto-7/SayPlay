@@ -9,10 +9,12 @@
  * jednoho plátna tady (`host`), které žije s layoutem.
  */
 
+import { useThree } from '@react-three/fiber';
 import { createXRStore, XR } from '@react-three/xr';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 import { createHostTunnel, StagePortal } from '../feed/StageHost';
+import { PANEL_ORDER } from './XrPanel';
 import { XrRig } from './XrRig';
 
 /** Quest 2 umí 72, 80, 90 a 120 Hz; plán cílí na 72. */
@@ -31,8 +33,19 @@ const store = createXRStore({
   emulate: false,
   // Relaci začíná jen „Enter VR“, ne nabídka prohlížeče.
   offerSession: false,
-  // Ovladače bez modelu: výchozí model se stahuje z cizího CDN. Paprsek zůstává.
-  controller: { model: false, grabPointer: false, teleportPointer: false },
+  // Ovladače bez modelu: výchozí model se stahuje z cizího CDN. Paprsek zůstává – ovládá panely HUD (T5).
+  controller: {
+    model: false,
+    grabPointer: false,
+    teleportPointer: false,
+    rayPointer: {
+      // Klik = stisk a puštění spouště na tlačítku; výchozích 300 ms je na dlouhý chod spouště Questu málo.
+      clickThresholdMs: 1000,
+      // Paprsek a kurzor přes panely, které se kreslí přes scénu (`PANEL_ORDER`), jinak by je panel zakryl.
+      rayModel: { renderOrder: PANEL_ORDER + 10 },
+      cursorModel: { renderOrder: PANEL_ORDER + 10 },
+    },
+  },
   hand: false,
   gaze: false,
   screenInput: false,
@@ -51,9 +64,43 @@ const store = createXRStore({
 /** Tunel trvalého plátna VR; kontejner plátna se stěhuje do místa hry, která právě hraje. */
 export const host = createHostTunnel();
 
+/**
+ * Výjimka v jednom snímku VR by zastavila kreslení relace natrvalo: three po chybě v `setAnimationLoop` nepožádá
+ * brýle o další snímek a obraz v nich zamrzne (Quest ho jen dál přepočítává podle hlavy). Snímek s chybou se proto
+ * zahodí a další jede; chyba jde jednou do konzole. Nález T5 (`docs/vr/README.md`): `look/Ambient.tsx` (P62) ve VR
+ * padá, když žádné umístění života není v obraze hlavy – opravit tam, tohle je jen pojistka relace.
+ */
+function KeepXrFrames() {
+  const xr = useThree((three) => three.gl.xr);
+  useEffect(() => {
+    const set = xr.setAnimationLoop;
+    const seen = new Set<string>();
+    xr.setAnimationLoop = (callback) =>
+      set.call(
+        xr,
+        callback === null
+          ? null
+          : (time, frame) => {
+              try {
+                callback(time, frame);
+              } catch (error) {
+                const message = String(error);
+                if (!seen.has(message)) console.error(error);
+                seen.add(message);
+              }
+            },
+      );
+    return () => {
+      xr.setAnimationLoop = set;
+    };
+  }, [xr]);
+  return null;
+}
+
 function wrapScene(scene: ReactNode): ReactNode {
   return (
     <XR store={store}>
+      <KeepXrFrames />
       <XrRig>{scene}</XrRig>
     </XR>
   );

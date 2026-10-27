@@ -58,7 +58,7 @@ Skript:
 1. Stránka se otevře sama, s `?vr=1&vrhud=1` v adrese.
 2. Stiskni „Enter VR“.
 3. Hraj. FPS panel (`?vrhud=1`) přidá úloha T6, do té doby ukazuje FPS jen měření níž.
-4. Ven z VR: systémové tlačítko Meta na pravém ovladači a odchod z relace. Stránka se vrátí do 2D, hra běží dál a „Enter VR“ je zpět. Panel „Exit VR“ uvnitř VR přidá úloha T5; tlačítko na 2D stránce v relaci nejde, protože ji brýle nekreslí.
+4. Ven z VR: tlačítko „Exit VR“ na panelu hry (paprsek pravého ovladače a spoušť, viz „Panely ve VR“ níž), nebo systémové tlačítko Meta na pravém ovladači. Stránka se vrátí do 2D, hra běží dál a „Enter VR“ je zpět. Tlačítko na 2D stránce v relaci nejde, protože ji brýle nekreslí.
 
 ### 7. Měření FPS
 
@@ -153,6 +153,31 @@ Ostatních 15 her se ve VR hraje jako zmenšený svět na stole: runner, platfor
 - `src/play/xr/__tests__/diorama-scale.test.ts` nechá robota dohrát každou živou hru (mimo čtyři hry rukou) a v každém tiku ověří, že hrdina je na stole a v zorném poli hlavy.
 - **Mutace:** stůl, který za hrdinou na trati nejede, test pozná (37 testů červených). Test sám obsahuje i kontrolu se zamrzlým stolem, která musí hrdinu ztratit.
 
+### Panely ve VR (cíl, počítadla, výsledek)
+
+Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podle kitu Sayplay: papírová karta s inkoustovým obrysem a tvrdým stínem, písmo Roboto, jedno rajčatové tlačítko na panel. Ukazují totéž co 2D HUD a výsledek: cíl hry, počítadla s popisky jako ve 2D (`HUD_COUNTER_LABELS`, u věty s počtem slovo věty, třeba `keys`) a životy.
+
+| Panel | Kdy | Hry na stole | Hry rukou |
+|---|---|---|---|
+| cíl a počítadla, „Exit VR“ | během hry | tabule za vzdáleným okrajem stolu, nad scénou | nad levým zápěstím |
+| výsledek „You did it!“ / „So close.“, „Again“, „Exit VR“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
+| „AI version ready“ | příchod AI verze | visí z bližšího okraje stolu | nad levým zápěstím |
+
+- **Ovládání:** paprsek pravého (nebo levého) ovladače na tlačítko a spoušť: stisknout a pustit. Tlačítko pod paprskem má silnější obrys, stisknuté se zamáčkne. Spoušť stisknutá na tlačítku do hry nejde, ani když paprsek mezitím z tlačítka sjede. Stisk, který začal mimo panely, patří hře.
+- **„Again“** začne hru znovu od začátku. Hra pak čeká na první pohyb ovladače, stejně jako po „Play again“ ve 2D.
+- **„Exit VR“** ukončí relaci. Stránka ukáže 2D výsledek hry, odkud jde sdílet (Dare, Copy link) a remixovat („Remix it“).
+- **„AI version ready“:** když stránka sama přejde na hru podle věty, panel to na 3 s oznámí. Když je hotová verze s plnými detaily, panel nabídne „Play it“, stejně jako tlačítko „Full detail“ ve 2D. Hra se vymění bez opuštění VR.
+- **Čitelnost:** text má od očí úhlovou velikost jako text kitu na 1 m (1 px kitu = 2 mm na 1 m). Tabule je od očí asi 1,7 m, proto je 1,75× větší. Výsledek je zvětšený 1,1×, zápěstí je blízko, proto 0,45×. Panely se natáčejí k hlavě a kreslí se přes scénu, takže je kulisa nezakryje.
+- **Stůl zůstává po konci hry:** výsledek leží na zamrzlé scéně. Dřív se po konci hry svět vrátil do výchozí polohy bez ořezu stolu.
+
+**Ověření (T5):** `e2e/vr-hud.spec.ts` v emulátoru IWER, klikání skutečným paprskem a spouští:
+
+- Stolní hra z věty „A knight must collect three keys…“: tabule s cílem a počítadlem `0/3 keys` je celá v obraze obou očí a čitelná. Robot vyhraje, výsledek „You did it!“ je v obraze. „Again“ vrátí hru na tik 0 bez vstupu. Druhá výhra a „Exit VR“ vrátí 2D výsledek, z něj funguje sdílení (odkaz ve schránce) i „Remix it“.
+- Spoušť na tlačítku nejde do hry: stisk na „Exit VR“, paprsek z tlačítka pryč, puštění, hra nedostala nic. Týž stisk mimo panely do hry jde (kontrola, že test měří spoušť).
+- Střílečka: panel na levém zápěstí v obraze, prohra ukáže „So close.“, „Again“ hru restartuje.
+- AI verze: panel „AI version ready“ s „Play it“ vymění hru a relace trvá. Přechod na hru podle věty ukáže panel krátce bez tlačítka.
+- Unit: `src/play/xr/__tests__/input-map.test.ts` drží, komu patří spoušť (panel, nebo hra).
+
 ## Měření a známá omezení
 
 ### První JS bez `?vr=1` (27. 10. 2026)
@@ -184,6 +209,21 @@ Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produk
 - **Výška stolu je pevná:** 0,8 m pro stojícího hráče. Kdo hraje vsedě, posune si stůl levým gripem níž.
 - **Ořez nových věcí:** prostor nad stolem se ořezává rovinami řezu na materiálech světa. Nový kus (vystřelená věc, dotažený model) dostane ořez do 10 snímků, do té doby může být krátce vidět i mimo stůl. Materiál s vlastním shaderem, který ořez nepodporuje, se neořeže vůbec. Které to ve scénách jsou, emulátor neměřil; ukáže to pohled v brýlích (T8).
 - **Nález v T4:** emulátor ukázal, že VR v merge nepustilo předmět, který už na pust čekal (hodiny pod nulou). Klávesnice ho pustila hned. Opraveno v `src/play/xr/input-map.ts`, pokryto testem.
+
+### Panely HUD (27. 10. 2026, emulátor)
+
+- **Řetěz mikroher nemá panely cíle a výsledku.** Hra z věty, která je řetězem kol (`ChainPlay`), má ve VR jen panel „AI version ready“. Počítadlo kol a výsledek řetězu kreslí jen 2D HUD; přenést je do VR je samostatná úloha.
+- **Časovač ve VR chybí.** Panel ukazuje cíl, počítadla a životy, ne uběhlý čas ani odpočet. Jestli ho hry na čas ve VR potřebují, ukáže T8.
+- **Výsledek her rukou je na zápěstí.** Hráč střílečky, hodu, krtků a krájení ho uvidí, až se podívá na levou ruku. Jestli to stačí, nebo má výsledek stát před hráčem, rozhodne T8.
+- **Text je obrázek na ploše.** Karta se kreslí do plátna 2D (asi 2000 px na metr) a ve scéně je to textura. Ostrost v brýlích ověří T8.
+- **Klik do 1 s.** Stisk a puštění spouště na tlačítku musí být do 1 s, jinak se klik nepočítá (výchozí 0,3 s bylo na chod spouště Questu málo).
+- **Nález v T5 (opraveno):**
+  - Ovladač pouštěl hodiny jen v prvním běhu. Po „Again“ by hra čekala navždy, protože ve VR není dotyk ani klávesa. Teď vstup ovladače pustí každý běh, který čeká.
+  - Po konci hry hra přestala ohlašovat, že hraje, a stolní svět skočil do výchozí polohy (1:15) bez ořezu stolu – celá trať by se rozložila po pokoji. Teď stůl, měřítko i ořez zůstávají, dokud je hra na obrazovce; ovladače do skončené hry dál nic neposílají.
+- **Nález v T5 (neopraveno, soubor P62): život na pozadí padá ve VR.** `src/components/play/arcade/look/Ambient.tsx` rozmisťuje život kolem orientačního bodu podle kamery. Ve VR je kamerou hlava. Když žádný pokus o umístění neleží v jejím obraze, `placeLife` vrátí v poli `null` (`best!`) a `writeLife` spadne na `l.x`. Výjimka ve snímku VR dřív zastavila kreslení relace natrvalo: obraz zamrzl, panely ani ovladače nereagovaly. Emulátor to ukázal asi v každém čtvrtém běhu střílečky (`e2e/vr-hud.spec.ts`) a nejspíš to stálo i za občasnými pády `vr-native`.
+  - **Pojistka v `XrRoot.tsx` (T5):** snímek s výjimkou se zahodí a relace kreslí dál.
+  - **Co zbývá:** dokud `Ambient` padá, vypadne každý 10. snímek, protože tolikrát se pokus opakuje. V brýlích to bude cuknutí asi 7× za sekundu.
+  - **Oprava patří do `Ambient.tsx` (P62):** v `placeLife` vzít nejlepší pokus i tehdy, když žádný není v obraze, nebo ve VR život nerozmisťovat. Ověřit v T6 nebo T8.
 
 ### Postprocessing ve VR
 

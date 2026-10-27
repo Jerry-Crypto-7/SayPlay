@@ -117,6 +117,23 @@ export function createSwing(threshold: number): (speed: number) => boolean {
 }
 
 /**
+ * Spoušť jedné ruky pro hru (P65 T5): spoušť je zároveň „klik“ paprsku na panelu HUD. Stisk, který začal
+ * s paprskem na tlačítku panelu, patří panelu až do puštění, i když paprsek mezitím z tlačítka sjede; stisk, který
+ * začal jinde, patří hře, i když paprsek najede na panel. Vrací, jestli je spoušť ruky `hand` stisknutá pro hru.
+ */
+export function createTriggerOwner(): (hand: string, down: boolean, onPanel: boolean) => boolean {
+  const owner = new Map<string, 'game' | 'panel'>();
+  return (hand, down, onPanel) => {
+    if (!down) {
+      owner.delete(hand);
+      return false;
+    }
+    if (!owner.has(hand)) owner.set(hand, onPanel ? 'panel' : 'game');
+    return owner.get(hand) === 'game';
+  };
+}
+
+/**
  * Bod hry pod paprskem (jednotky jádra, osy jádra) → osa míření, kterou dá prst na témž místě: střílečka míří
  * z hlavně (`aimAt`, jako `ShooterRig`), pruhy berou pruh, ve kterém bod leží. `null` = paprsek nemíří nikam.
  */

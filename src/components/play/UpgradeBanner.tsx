@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import type { DraftFinalReason } from '@/app/api/play/_upgrade';
 
 import { forgetPending, type PendingUpgrade, pendingUpgrades, rememberPending } from './pending-upgrades';
+import { useXrNoticeSource } from './xr/xr-context';
 import { FULL_LABEL, FULL_READY, PLAY_FULL, QUICK_LABEL, QUICK_VERSION, QUICK_VERSION_REST } from './starters';
 import { Button, Icon } from './ui';
 
@@ -336,6 +337,16 @@ export function UpgradeBanner({
     return () => clearTimeout(timer);
   }, [matched]);
   const draftId = request === null ? null : draftIdOf(request);
+  const act = (): void => {
+    if (view.kind !== 'ready') return retry();
+    if (draftId !== null) forgetPending(draftId);
+    router.push(`/play/${view.versionId}`);
+  };
+  const offer = move?.kind === 'offer' ? move.versionId : null;
+  // VR (P65 T5): v relaci DOM vidět není – příchod hry a hotovou verzi ohlásí 3D panel „AI version ready“ (`XrHud`).
+  useXrNoticeSource(
+    matched ? { kind: 'arrived' } : quick === null && !chain && view.kind === 'ready' ? { kind: 'ready', open: act } : offer !== null ? { kind: 'ready', open: () => router.push(`/play/${offer}`) } : null,
+  );
   const since = view.kind === 'working' ? view.since : null;
   // Konec bez AI verze (P56B T5) je stav na pozadí, ne chyba hráče: toast `TOAST_MS`, pak se schová do přepínače verze.
   const [toasted, setToasted] = useState<UpgradeView | null>(null);
@@ -393,7 +404,6 @@ export function UpgradeBanner({
       {QUICK_LABEL}
     </button>
   );
-  const offer = move?.kind === 'offer' ? move.versionId : null;
   const offerButton = offer !== null && (
     <button type="button" className="play-version-switch__item is-ready" data-testid="reading-action" title={MATCHED_OFFER} onClick={() => router.push(`/play/${offer}`)}>
       <Icon name="check" />
@@ -424,11 +434,6 @@ export function UpgradeBanner({
 
   const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
   if (notice === null) return null;
-  const act = (): void => {
-    if (view.kind !== 'ready') return retry();
-    if (draftId !== null) forgetPending(draftId);
-    router.push(`/play/${view.versionId}`);
-  };
   if (view.kind === 'working' || view.kind === 'ready') {
     const ready = view.kind === 'ready';
     const text = matchedOf !== null && !ready ? MATCHED_NOTE + QUICK_VERSION_REST : notice.text;
