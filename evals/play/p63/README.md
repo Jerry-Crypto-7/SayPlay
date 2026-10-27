@@ -58,4 +58,13 @@ Odhad (inference, ne měření): při 200 návštěvnících denně a nikom vrac
 |---|---|
 | T1 čtení pro diagnózu (36 vět, compare.measure) | 1,103 |
 | T1 server `main`: 12 dev + 24 zapečetěných vět (`shots.mjs spend`, 36 volání) | 1,090 |
-| **Celkem** | **2,193** |
+| T2 nový prompt čtečky: 7 vět P61 + 12 dev (`reread-set.json`, compare.measure) | 0,592 |
+| **Celkem** | **2,785** |
+
+Zbývá 1,215 USD. T6 potřebuje ~1,09 (server větve: 12 dev + 24 zapečetěných vět), proto T2 nečetl znovu všech 36 vět, jen 19.
+
+## T2: nový prompt čtečky (`readings.p63.astra.json`)
+
+Prompt: jak se hrdina někam dostane (běží, jede, letí), žánr nerozhoduje; rozhoduje, když věta říká porazit nebo zabít jmenovaného nepřítele (mimo závod, který boj jen končí). Nápověda `catch.default` zná i odrážení zpátky nahoru. Jeden nový příklad (jízda údolím a souboj s yetim → `duel.default`).
+
+Změna žánru čtečky proti `readings.astra.json` na 19 větách: jen h18 `voyage.race` → `duel.default` a h23 `null` → `catch.default`. Zbylých 17 beze změny.
