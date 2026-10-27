@@ -68,3 +68,9 @@ Zbývá 1,215 USD. T6 potřebuje ~1,09 (server větve: 12 dev + 24 zapečetěný
 Prompt: jak se hrdina někam dostane (běží, jede, letí), žánr nerozhoduje; rozhoduje, když věta říká porazit nebo zabít jmenovaného nepřítele (mimo závod, který boj jen končí). Nápověda `catch.default` zná i odrážení zpátky nahoru. Jeden nový příklad (jízda údolím a souboj s yetim → `duel.default`).
 
 Změna žánru čtečky proti `readings.astra.json` na 19 větách: jen h18 `voyage.race` → `duel.default` a h23 `null` → `catch.default`. Zbylých 17 beze změny.
+
+**Překlad rolí (`82bb9481`):** výplňový nepřítel z knihovny jen když čtení žádného nejmenuje (`draft.ts` `placeFoe`); hrozba volně chodící hry bez boje dostane díl nebezpečí (`assemble.ts`). Na 36 větách beze změny žánru i buňky; obsazení se změnilo jen přidáním nepřítele čtení: h15 `chaser:ghost` → `chaser:flame`, s002 + `hazard:ghost`, h10 + `hazard:bat`, h16 + `hazard:seal`.
+
+**Zbývá (inference):** netopýři h10 („without waking the bats“) a tuleni h16 padají jako překážky – mají místo ve hře, ale ne roli z věty. h15 má cíl „Use all 5 cats“ (počet je T4). h16 nese minci a hlídku „fish“, které věta neříká.
+
+**Test:** `src/play/read/__tests__/p63-verbs.test.ts` – sedm vět P61 proti tabulce sloveso → žánry, hrdina a role z věty; 36 vět P61 proti `diagnosis.json` (cíleně mění žánr h18, h23 a publikaci h24).
