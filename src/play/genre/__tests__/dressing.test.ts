@@ -82,6 +82,16 @@ describe('P61 T3: the quick game wears the sentence’s setting and foe', () => 
     for (const [slot, word] of Object.entries(row.slots)) expect(slots[slot], `${slot} draws the sentence's ${word}`).toContain(word);
   });
 
+  // „against“ jmenuje soupeře, „against the clock“ ne – soupeř zůstane ten, koho věta porazí.
+  it.each([
+    ['a horde of zombies grows through gates in a city and marches against a dragon', 'dragon'],
+    ['a horde of zombies grows through gates in a city against the clock and attacks a dragon', 'dragon'],
+  ])('crowd boss from "%s" is %s', (sentence, boss) => {
+    const meta = draftGameSpecWithMeta(sentence, 1);
+    expect(meta.genre?.genre).toBe('crowd');
+    expect(sceneSlots(meta.spec)['thing.boss']).toContain(boss);
+  });
+
   // Věta bez místa: svět dají její slova, ne výchozí místo žánru („desert outpost“ střílečky).
   it('a sentence without a place plays in the world its words name', () => {
     const spec = draftGameSpecWithMeta('zombie shooter', 1).spec;
