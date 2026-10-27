@@ -8,9 +8,12 @@
  * podle kterých `ArcadeStage` zapíná klávesnici.
  */
 
-import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
+import { AXIS_MAX, BODY, BUTTON, HEADER, bodyBase } from '@/play/arcade/contract';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
+import { axisOfLane, laneOfX } from '@/play/arcade/pieces/lanes';
 import { clockOf } from '@/play/arcade/pieces/merge-drop';
+import { SHOOTER, aimAt } from '@/play/arcade/pieces/shooter';
+import { THROW } from '@/play/arcade/pieces/throw';
 import type { Stage } from '@/play/compose/stage-registry';
 
 /** Stav obou ovladačů sloučený do jedné „klávesnice“. */
@@ -53,7 +56,82 @@ export interface XrControl {
   readonly drive?: DriveMode;
   /** Let střílí (`glideShoots`); jen `glide`. */
   readonly glideShoots?: boolean;
+  /** Pruhy, ve kterých ruka seká (`slice_cut`) nebo bouchá (`whack_hit`) máchnutím (T3). */
+  readonly swing?: 'slice' | 'whack';
 }
+
+/**
+ * Pohyb pravého ovladače v prostoru hry (T3), přepisovaný každý snímek. `aim` = osa míření z paprsku,
+ * `velocity` = rychlost ruky v m/s skutečného prostoru, otočená do os hry (+y nahoru, +z dopředu),
+ * `laneAxis` = osa pruhu pod rukou. Nic z toho nejde do hashovaného stavu – jen tlačítka a osa, které z něj vzejdou.
+ */
+export interface XrMotion {
+  aim: number | null;
+  velocity: { readonly x: number; readonly y: number; readonly z: number } | null;
+  laneAxis: number | null;
+}
+
+/**
+ * Svět krájení a bouchání ve VR (T3): pět pruhů v dosahu ruky. Měřítko 1:10 dá pruhy 0,2 m od sebe, obal stojí
+ * ve výšce pasu a řada děr (`WHACK.holeZ`) vyjde ~0,5 m před hráče. Obal je otočený o půl kruhu jako diorama.
+ */
+export const REACH = { scale: 1 / 10, at: [0, 0.85, -0.26] } as const;
+
+/** Prahy pohybu ruky (T3) v m/s skutečného prostoru – měřítko světa je nemění. Doladí T8 v brýlích. */
+export const SWING = {
+  /** Hod: pod `throwMin` žádný hod (puštění spouště bez máchnutí), od `throwMax` plná síla. */
+  throwMin: 1,
+  throwMax: 6,
+  /** Švih krájení (kterýkoli směr) a úder do díry (dolů). */
+  slice: 1.5,
+  whack: 1.2,
+} as const;
+
+/**
+ * Hod z rychlosti ruky v rovině hry (nahoru `vy`, dopředu `vz`, m/s) → úhel a nabití, které jinak dá tah
+ * a držení prstu: síla roste s rychlostí od 1 tiku nabití po plné, nad `throwMax` se ořízne; úhel je směr ruky
+ * v mezích hodu (5°–85°). `null` = žádný hod (pomalá ruka, nebo ruka nejde dopředu).
+ */
+export function throwOf(vy: number, vz: number): { readonly aim: number; readonly charge: number } | null {
+  const speed = Math.hypot(vy, vz);
+  if (vz <= 0 || speed < SWING.throwMin) return null;
+  const power = (Math.min(speed, SWING.throwMax) - SWING.throwMin) / (SWING.throwMax - SWING.throwMin);
+  const angle = (Math.atan2(vy, vz) * 180) / Math.PI;
+  const clipped = Math.min(THROW.baseDeg + THROW.spanDeg, Math.max(THROW.baseDeg - THROW.spanDeg, angle));
+  const aim = Math.round(((clipped - THROW.baseDeg) * AXIS_MAX) / THROW.spanDeg);
+  // Osa 0 = „beze změny“, proto 45° je 1.
+  return { aim: aim === 0 ? 1 : aim, charge: 1 + Math.round(power * (THROW.maxCharge - 1)) };
+}
+
+/** Švih nad prahem sekne jednou; další až po zpomalení ruky pod polovinu prahu (chvění na vrcholu nesekne dvakrát). */
+export function createSwing(threshold: number): (speed: number) => boolean {
+  let armed = true;
+  return (speed) => {
+    if (armed && speed >= threshold) {
+      armed = false;
+      return true;
+    }
+    if (speed < threshold / 2) armed = true;
+    return false;
+  };
+}
+
+/**
+ * Bod hry pod paprskem (jednotky jádra, osy jádra) → osa míření, kterou dá prst na témž místě: střílečka míří
+ * z hlavně (`aimAt`, jako `ShooterRig`), pruhy berou pruh, ve kterém bod leží. `null` = paprsek nemíří nikam.
+ */
+export function aimOfPoint(input: Stage['input'], x: number, z: number, state: Int32Array): number | null {
+  const player = bodyBase(state[HEADER.player] as number);
+  if (input === 'shooter-rig') {
+    const muzzleZ = (state[player + BODY.z] as number) + SHOOTER.playerD / 2;
+    return z > muzzleZ ? aimAt(x - (state[player + BODY.x] as number), z - muzzleZ) : null;
+  }
+  if (input === 'lanes') return axisOfLane(laneOfX(x));
+  return null;
+}
+
+/** Nabití hodu v těle hráče (`aux1`; v tiku puštění záporné). */
+const chargeOf = (state: Int32Array): number => Math.max(0, state[bodyBase(state[HEADER.player] as number) + BODY.aux1] as number);
 
 /** Jeden snímek vstupu: držená osa a tlačítka a stisk do nejbližšího tiku. */
 export interface XrStep {
@@ -219,20 +297,54 @@ export function createXrDriver(session: XrDrivenSession, control: XrControl) {
   let axis = 0;
   let held = 0;
   let drop = false;
+  // Hod máchnutím: nejsilnější švih, dokud spoušť drží míček, a hod, který po puštění čeká na nabití.
+  let peak: ReturnType<typeof throwOf> = null;
+  let pending: ReturnType<typeof throwOf> = null;
+  const swung = control.swing === undefined ? null : createSwing(control.swing === 'whack' ? SWING.whack : SWING.slice);
   return {
-    frame(pad: Pad | null, aim: number | null = null): void {
+    frame(pad: Pad | null, motion: XrMotion | null = null): void {
       const now = pad ?? IDLE;
-      const step = mapPad(control, now, before, aim);
+      const step = mapPad(control, now, before, motion?.aim ?? null);
+      let stepHeld = step.held;
+      let { press, pressAxis } = step;
+      const velocity = motion?.velocity ?? null;
+      if (control.input === 'throw-rig' && velocity !== null) {
+        // Spoušť drží míček a nabíjí jen do síly nejrychlejšího švihu; puštění hodí jeho směrem, až je nabito –
+        // tutéž cestou jako prst (`HOLD` nabíjí, `TAP` s osou úhlu hodí).
+        stepHeld &= ~BUTTON.HOLD;
+        press &= ~BUTTON.TAP;
+        if (now.trigger) {
+          const sample = throwOf(velocity.y, velocity.z);
+          if (sample !== null && (peak === null || sample.charge >= peak.charge)) peak = sample;
+        } else if (before.trigger) {
+          pending = peak;
+          peak = null;
+        }
+        const target = now.trigger ? peak : pending;
+        if (target !== null && chargeOf(session.state()) < target.charge) stepHeld |= BUTTON.HOLD;
+        else if (!now.trigger && pending !== null) {
+          press |= BUTTON.TAP;
+          pressAxis = pending.aim;
+          pending = null;
+        }
+      }
+      if (swung !== null && velocity !== null && motion?.laneAxis != null) {
+        const speed = control.swing === 'whack' ? -velocity.y : Math.hypot(velocity.x, velocity.y, velocity.z);
+        if (swung(speed)) {
+          press |= BUTTON.TAP;
+          pressAxis = motion.laneAxis;
+        }
+      }
       before = now;
       if (step.axis !== axis) {
         axis = step.axis;
         session.hold(axis);
       }
-      if (step.held !== held) {
-        held = step.held;
+      if (stepHeld !== held) {
+        held = stepHeld;
         session.holdButtons(held);
       }
-      if (step.press !== 0) session.press(step.press, step.pressAxis);
+      if (press !== 0) session.press(press, pressAxis);
       if (step.drop) drop = true;
       if (drop && clockOf(session.state()) === 0) {
         drop = false;

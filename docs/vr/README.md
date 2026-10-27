@@ -108,7 +108,31 @@ Ovladače dělají totéž co klávesnice: páčka = šipky, spoušť = mezerní
 | merge | posun dávkovače | pustit předmět, až je připravený | – |
 | glide, walker | do strany = zatáčení, nahoru a dolů = výška | střelba (glide s blasterem) | plachtění (glide) |
 
-Pro všechny hry: schopnosti hrdiny jsou na A/X a B/Y, blaster na B/Y, úder v souboji na A/X a použití (`interact`) na gripu. Míč (`ball`) zatím umí jen spoušť; míření paprskem dodá T3.
+Pro všechny hry: schopnosti hrdiny jsou na A/X a B/Y, blaster na B/Y, úder v souboji na A/X a použití (`interact`) na gripu. Míč (`ball`) zatím umí jen spoušť.
+
+### Hry, které se hrají rukou
+
+Čtyři hry se ve VR hrají pohybem pravého ovladače. Páčka a spoušť z tabulky výše fungují dál.
+
+| Hra | Kde hráč stojí | Jak se hraje |
+|---|---|---|
+| shooter | v plné velikosti, 5,5 m za hrdinou | paprsek z pravého ovladače míří a zaměřovač je tam, kam paprsek dopadne; spoušť = výstřel |
+| throw | v plné velikosti, 3 m za hrdinou, čelem ke hřišti | stisknout spoušť, máchnout dopředu a pustit; rychlost ruky = síla, směr ruky = úhel (5°–85°) |
+| whack | díry v dosahu ruky, ve výšce pasu | úder ovladačem dolů nad dírou, nebo paprsek na díru a spoušť |
+| slice | pruhy v dosahu ruky, ve výšce pasu | švih ovladačem nad pruhem, kterýmkoli směrem |
+
+- **Prahy rychlosti ruky:**
+  - hod začíná na 1 m/s, plnou sílu má od 6 m/s;
+  - úder dolů od 1,2 m/s;
+  - švih od 1,5 m/s.
+
+  Jeden švih sekne jednou. Další sekne až po zpomalení ruky pod polovinu prahu.
+- **Hod po puštění:** když se spoušť pustí dřív, než se míček nabil na sílu švihu, hod počká, až se nabití dokončí.
+- **Vibrace:** při zásahu (přibydou body nebo zásah) pravý ovladač krátce zavibruje.
+- **Odkud je rychlost ruky:** hlásí ji brýle. Kde ji nehlásí, spočte se z poloh ovladače mezi dvěma snímky.
+- **Co se teprve ověří:** prahy se doladí v ruční bráně T8. Emulátor ověří, že ovladač pohne hrou, ale ne, jak se švih cítí v ruce.
+
+**Ověření (T3):** `e2e/vr-native.spec.ts` hraje každou ze čtyř her dvakrát s robotem, který říká, co stisknout. Jednou ve 2D prstem, jednou ve VR skriptovaným ovladačem. Po 5 s mají obě hry stejné body i zásahy.
 
 **Mutace (T2):** otočená osa páčky (8 testů červených), ztracená mrtvá zóna (2) a spoušť na špatném tlačítku (10) – `src/play/xr/__tests__/input-map.test.ts`.
 

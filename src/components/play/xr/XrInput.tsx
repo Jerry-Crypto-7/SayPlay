@@ -2,12 +2,12 @@
 
 import { useFrame } from '@react-three/fiber';
 import { type XRControllerState, useXRInputSourceState } from '@react-three/xr';
-import { useEffect, useMemo, useRef } from 'react';
+import { type RefObject, useEffect, useMemo, useRef } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import type { ArcadeWorld } from '@/play/arcade/contract';
+import { type ArcadeWorld, nativeRule } from '@/play/arcade/contract';
 import { stageOf } from '@/play/compose/stage-registry';
-import { DEAD_ZONE, type Pad, type XrControl, createXrDriver } from '@/play/xr/input-map';
+import { DEAD_ZONE, type Pad, type XrControl, type XrMotion, createXrDriver } from '@/play/xr/input-map';
 
 import { abilitiesOf, actionsOf } from '../arcade/ActionButton';
 import { hasBlaster } from '../arcade/ArcadeStage';
@@ -31,6 +31,7 @@ export function xrControlOf(world: ArcadeWorld): XrControl | null {
     abilities: abilities.length,
     drive: input === 'steer' ? driveModeOf(world) : undefined,
     glideShoots: input === 'glide' ? glideShoots(world) : undefined,
+    swing: input !== 'lanes' ? undefined : nativeRule(world.rules, 'slice_cut') !== undefined ? 'slice' : nativeRule(world.rules, 'whack_hit') !== undefined ? 'whack' : undefined,
   };
 }
 
@@ -59,7 +60,7 @@ const active = (pad: Pad): boolean => pad.trigger || pad.a || pad.b || pad.grip 
  * přes `input-map`, jako klávesnice; čas dál vlastní akumulátor relace. První vstup pustí hodiny jako první
  * ťuk nebo klávesa (`ReadyGate.begin`).
  */
-export function XrInput({ session }: { readonly session: ArcadeSession }) {
+export function XrInput({ session, motion }: { readonly session: ArcadeSession; readonly motion: RefObject<XrMotion> }) {
   const left = useXRInputSourceState('controller', 'left');
   const right = useXRInputSourceState('controller', 'right');
   const driver = useMemo(() => {
@@ -75,7 +76,7 @@ export function XrInput({ session }: { readonly session: ArcadeSession }) {
       started.current = true;
       (session as Partial<ReadyGate>).begin?.();
     }
-    driver.frame(pad);
+    driver.frame(pad, motion.current);
   });
   return null;
 }
