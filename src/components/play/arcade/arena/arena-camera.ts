@@ -22,7 +22,7 @@ export const STYLED_TILT = tiltOf(40);
 export const FIGHT_TILT = tiltOf(60);
 /** Předstih: pohled míří tam, kam hráč dojede za tolik sekund. */
 export const LEAD_S = 0.35;
-/** Hrozba blíž než tolik metrů táhne záběr k sobě, ať je vidět hráč i ona. */
+/** Hrozba blíž než tolik metrů táhne záběr k sobě, ať je vidět hráč i ona. Jen na šířku – na výšku rozhoduje strop (`arenaGoal`). */
 export const THREAT_M = 22;
 /** Kam do obrazu (NDC) se musí vejít hrdina a nejbližší hrozba. */
 const HERO_EDGE = 0.8;
@@ -89,8 +89,13 @@ export interface ArenaView {
   readonly heroSize: Size;
   /** Kam hrdina dojede za `LEAD_S`. */
   readonly lead: Spot;
-  /** Nejbližší viditelná hrozba (pronásledovatel, nepřítel), nebo `null`. */
-  readonly threat: { readonly at: Spot; readonly size: Size } | null;
+  /**
+   * Nejbližší viditelná hrozba (pronásledovatel, nepřítel; na výšku i nepřítel průběhu), nebo `null`.
+   * `scale` = kolikrát ji zvětšila čitelnost (`foeScale`); záběr na výšku rámuje tělo, jak je nakreslené.
+   */
+  readonly threat: { readonly at: Spot; readonly size: Size; readonly scale?: number } | null;
+  /** Kolikrát čitelnost zvětšila hrdinu (`legibleScale`); jen pro rámování celým tělem na výšku. */
+  readonly heroScale?: number;
   readonly tan: number;
   readonly aspect: number;
   readonly tilt: Tilt;
@@ -99,11 +104,61 @@ export interface ArenaView {
 const heroReach = (view: ArenaView, from: Spot): number =>
   reachOf(view.hero.x - from.x, view.heroSize.h / 2, view.hero.z - from.z, Math.max(view.heroSize.w, view.heroSize.d) / 2, view.tan, view.aspect, HERO_EDGE, view.tilt);
 
-/** Hrozba se rámuje středem, ne celým tělem: na výšku by celé tělo kameru oddálilo pod podlahu hrdiny. */
-const threatReach = (view: ArenaView, from: Spot): number => {
+/** Na šířku se hrozba rámuje středem (P56B T9). */
+const centreReach = (view: ArenaView, from: Spot): number => {
   const threat = view.threat!;
   return reachOf(threat.at.x - from.x, threat.size.h / 2, threat.at.z - from.z, 0, view.tan, view.aspect, THREAT_EDGE, view.tilt);
 };
+
+/** Horní okraj (NDC) pro celé tělo na výšku: pod pruhem HUD (10 % výšky, bezpečná zóna `e2e/p58a-framing`). */
+const TALL_TOP = 0.8;
+
+/** Nejmenší vzdálenost kamery, aby všechny rohy kvádru (zvětšeného `scale`, stojí na zemi) ležely v obraze na výšku. */
+function boxReach(view: ArenaView, from: Spot, at: Spot, size: Size, scale: number): number {
+  const w = (size.w * scale) / 2;
+  const d = (size.d * scale) / 2;
+  const { tan, aspect, tilt } = view;
+  let reach = -Infinity;
+  for (const x of [at.x - from.x - w, at.x - from.x + w]) {
+    for (const y of [0, size.h * scale]) {
+      for (const z of [at.z - from.z - d, at.z - from.z + d]) {
+        const along = z * tilt.cos - y * tilt.sin;
+        const up = y * tilt.cos + z * tilt.sin;
+        reach = Math.max(reach, Math.max(Math.abs(x) / (THREAT_EDGE * tan * aspect), up >= 0 ? up / (TALL_TOP * tan) : -up / (THREAT_EDGE * tan)) - along);
+      }
+    }
+  }
+  return reach;
+}
+
+/**
+ * Na výšku celým tělem (P62 T5-R1): hrdina i hrozba všemi rohy kvádru, jak je kreslí čitelnost, pod pruhem HUD.
+ * Středem byl duch útěku za zády hrdiny useknutý spodní hranou v 60–96 % snímků; hrdina rámovaný středem by se
+ * s hrozbou dole vytlačil hlavou pod HUD.
+ */
+const bodyReach = (view: ArenaView, from: Spot): number => {
+  const threat = view.threat!;
+  return Math.max(boxReach(view, from, view.hero, view.heroSize, view.heroScale ?? 1), boxReach(view, from, threat.at, threat.size, threat.scale ?? 1));
+};
+
+/** Kroky hledání bodu pohledu mezi hrdinou a hrozbou na výšku (`tallAim`). */
+const AIM_STEPS = 10;
+
+/**
+ * Bod pohledu na výšku: místo na úsečce předstih → hrozba, odkud se hrdina i celé tělo hrozby vejdou s kamerou
+ * nejblíž. Půl cesty nestačí: hrozba u kamery (útěk, duch za zády) je na snímku větší a níž, než je hrdina výš.
+ */
+function tallAim(view: ArenaView): { readonly aim: Spot; readonly need: number } {
+  const threat = view.threat!;
+  let best = { aim: view.lead, need: Infinity };
+  for (let step = 0; step <= AIM_STEPS; step += 1) {
+    const t = step / AIM_STEPS;
+    const aim = { x: view.lead.x + (threat.at.x - view.lead.x) * t, z: view.lead.z + (threat.at.z - view.lead.z) * t };
+    const need = bodyReach(view, aim);
+    if (need < best.need) best = { aim, need };
+  }
+  return best;
+}
 
 /** Strop vzdálenosti: hrdina drží `heroShare` výšky obrazu. */
 function capOf(view: ArenaView, framing: ArenaFraming): number {
@@ -114,25 +169,37 @@ function capOf(view: ArenaView, framing: ArenaFraming): number {
 /** Kam smí kamera s taženou hrozbou: strop krát `stretch`. */
 const limitOf = (view: ArenaView, framing: ArenaFraming): number => capOf(view, framing) * (view.aspect < 1 ? framing.stretchTall : framing.stretch);
 
+/** Jak hrozba táhne záběr: celým tělem (jen na výšku), středem, nebo vůbec. */
+export type Framed = 'body' | 'centre' | false;
+
 /**
  * Kam kamera míří: předstih hrdiny, a když je hrozba blíž než `THREAT_M` a vejde se s hrdinou
- * pod strop krát `stretch`, půl cesty k ní. `framed` = hrozba táhne záběr.
+ * pod strop krát `stretch`, půl cesty k ní. `framed` = jak hrozba táhne záběr.
+ * Na výšku (P62 T5-R1) napřed celé tělo z bodu `tallAim` a bez `THREAT_M`, rozhoduje jen strop: úzký obraz sahá do
+ * hloubky dál než do stran a přepadník sběru, který čeká v rohu arény 15–37 m od hrdiny, byl v obraze v 1–4 z 30
+ * snímků. Celé tělo, které se nevejde, rámuje středem jako na šířku – stráž úkolu 8 m do strany by jinak z obrazu
+ * zmizela úplně.
  */
-export function arenaGoal(view: ArenaView, framing: ArenaFraming): { readonly goal: Spot; readonly framed: boolean } {
+export function arenaGoal(view: ArenaView, framing: ArenaFraming): { readonly goal: Spot; readonly framed: Framed } {
   const threat = view.threat;
-  if (threat === null || Math.hypot(threat.at.x - view.hero.x, threat.at.z - view.hero.z) >= THREAT_M) return { goal: view.lead, framed: false };
+  if (threat === null) return { goal: view.lead, framed: false };
+  const limit = limitOf(view, framing);
+  if (view.aspect < 1) {
+    const { aim, need } = tallAim(view);
+    if (need <= limit) return { goal: aim, framed: 'body' };
+  }
+  if (Math.hypot(threat.at.x - view.hero.x, threat.at.z - view.hero.z) >= THREAT_M) return { goal: view.lead, framed: false };
   const mid = { x: (view.lead.x + threat.at.x) / 2, z: (view.lead.z + threat.at.z) / 2 };
-  const framed = Math.max(heroReach(view, mid), threatReach(view, mid)) <= limitOf(view, framing);
-  return framed ? { goal: mid, framed } : { goal: view.lead, framed };
+  return Math.max(heroReach(view, mid), centreReach(view, mid)) <= limit ? { goal: mid, framed: 'centre' } : { goal: view.lead, framed: false };
 }
 
 /**
  * Jak daleko od bodu pohledu `aim` kamera stojí: aspoň `see` do strany, dál, dokud se hrdina
  * (a tažená hrozba) nevejdou, nejvýš po strop – s taženou hrozbou po strop krát `stretch`.
  */
-export function arenaDistance(view: ArenaView, aim: Spot, framed: boolean, framing: ArenaFraming): number {
-  const need = Math.max(heroReach(view, aim), framed ? threatReach(view, aim) : 0);
+export function arenaDistance(view: ArenaView, aim: Spot, framed: Framed, framing: ArenaFraming): number {
+  const need = Math.max(heroReach(view, aim), framed === 'body' ? bodyReach(view, aim) : framed === 'centre' ? centreReach(view, aim) : 0);
   const least = Math.max(framing.nearest, (view.aspect < 1 ? framing.seeTall : framing.see) / (view.tan * Math.min(1, view.aspect)));
   const cap = capOf(view, framing);
-  return framed ? Math.min(limitOf(view, framing), Math.max(Math.min(cap, least), need)) : Math.min(cap, Math.max(least, need));
+  return framed !== false ? Math.min(limitOf(view, framing), Math.max(Math.min(cap, least), need)) : Math.min(cap, Math.max(least, need));
 }

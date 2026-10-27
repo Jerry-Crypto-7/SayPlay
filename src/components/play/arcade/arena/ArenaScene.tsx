@@ -692,7 +692,9 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     let threat = -1;
     let nearest = Infinity;
     for (const view of views) {
-      if (parts[view.index] !== 'chaser' && parts[view.index] !== 'enemy') continue;
+      // Na výšku (P62 T5-R1) i nepřítel průběhu (P45C): přepadník sběru jinak kameru nikdy netáhl.
+      const part = parts[view.index];
+      if (part !== 'chaser' && part !== 'enemy' && (part !== 'foe' || aspect >= 1)) continue;
       const other = groups.current[view.index];
       if (other === null || other === undefined || !other.visible) continue;
       const gap = Math.hypot(other.position.x - me.position.x, other.position.z - me.position.z);
@@ -705,7 +707,10 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     const threatSize = threat < 0 ? null : drawn[threat]!;
     // Záběr (P56B T9, `arena-camera.ts`): hrozba, která se s hrdinou nevejde ani pod strop krát `stretch`, pohled netáhne – ukáže ji šipka na okraji.
     const tilt = fight ? FIGHT_TILT : STYLED_TILT;
-    const shot: ArenaView = { hero: me.position, heroSize: drawn[player]!, lead: goal, threat: threatAt === null ? null : { at: threatAt, size: threatSize! }, tan, aspect, tilt };
+    // Měřítko čitelnosti (`LegibleBodies`, `userData.legible`): na výšku kamera rámuje těla, jak jsou nakreslená.
+    const legible = (group: Group): number => (group.userData.legible as number | undefined) ?? 1;
+    const threatScale = threat < 0 ? 1 : legible(groups.current[threat]!);
+    const shot: ArenaView = { hero: me.position, heroSize: drawn[player]!, heroScale: legible(me), lead: goal, threat: threatAt === null ? null : { at: threatAt, size: threatSize!, scale: threatScale }, tan, aspect, tilt };
     const { goal: target, framed } = arenaGoal(shot, ARENA_FRAMING);
     const snap = follow.current === null || restarted;
     const k = snap ? 1 : 1 - Math.exp(-delta * FOLLOW);
