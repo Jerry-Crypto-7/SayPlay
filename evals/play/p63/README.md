@@ -61,6 +61,7 @@ Odhad (inference, ne měření): při 200 návštěvnících denně a nikom vrac
 | T2 nový prompt čtečky: 7 vět P61 + 12 dev (`reread-set.json`, compare.measure) | 0,592 |
 | T6 server větve `55f1a838`: 12 dev vět, 10 placených čtení (`shots.mjs spend`; s088 a s069 nečteny, viz T6) | 0,310 |
 | T6 server větve `17e8715a`: 24 zapečetěných vět, 24 placených čtení (`shots.mjs spend`, strop 0,86) | 0,747 |
+| T6 čas do hratelné hry, robot, cílené testy a e2e: servery bez klíče čtečky (`PLAY_READER=off`) | 0,000 |
 | **Celkem** | **3,842** |
 
 Před zapečetěnou sadou zbývalo 0,905 USD, po ní 0,158 USD ze 4 USD. Strop serveru rezervuje před každým čtením nejhorší případ volání (znak = token, 0,09–0,12 USD), proto `--cap-usd` musí ležet aspoň ~0,12 nad očekávanou útratou, jinak poslední věty zůstanou nečtené.
@@ -245,8 +246,9 @@ Přesně tyhle tři hry předpověděla diagnóza nad `readings.p63.astra.json` 
 | G4 po čtení: medián „hrál bych“ ≥ `main` | 0,375 | 0,35 | splněna |
 | G5 rychlá hra: medián věrnosti ≥ `main` − 0,02 | 0,35 | 0,29 | splněna |
 | G6 rychlá hra: medián „hrál bych“ ≥ `main` − 0,02 | 0,34 | 0,30 | splněna |
+| G7 věta → hratelná: medián větve ≤ `main` + 0,2 s (desktop i Pixel 7) | 3,04 s / 9,31 s | 2,64 s / 9,69 s | nesplněna |
 
-Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json`, prahy má z plánu. Celkový verdikt (`result.json` → `verdict`): nesplněny G1 a G3. Čas do hratelné hry a robot / nečinný / replay jsou samostatné kroky T6, tady nejsou.
+Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json` (G7 ze surových běhů v `timing`), prahy má z plánu. Celkový verdikt (`result.json` → `verdict`): nesplněny G1, G3 a G7. G7 je čas do hratelné hry, rozbor níž; robot / nečinný / replay taky níž.
 
 **Co brána srovnává:**
 - Na `main` hra ze čtení u jedné hry k měřidlu nikdy nedošla. Režisér bez modelu skončí hned a jeho konec nenesl id hry ze čtení; větev to opravila v `6d5ac168` (T6 dev výš).
@@ -306,3 +308,53 @@ Po větách, věrnost / hrál bych. „(ze čtení)“ = výtka platí pro hru z
 5. **Náhradní kvádr na startu** – p09 pirát, p12 nepřítel: známý nález P61 T7 (start modelů).
 
 Duch u startu hrdiny (s002, T6 dev výš) jde jako T7 po bráně, tady se neopravoval.
+
+### Robot / nečinný / replay
+
+Všech 60 her sady, jak je P63 postavil:
+- zapečetěná sada: 24 rychlých her (z toho 8 řetězů) a 19 her ze čtení, větev `17e8715a`;
+- dev: 12 rychlých her (z toho 2 řetězy) a 5 her ze čtení – s006 a s022 z řetězu, s002, s003 a s021 z ověření opravy `6d5ac168`, větev `55f1a838`. s069 a s088 hru ze čtení nemají, nečetly se.
+
+Hry vrátil server větve `d03aa1c1` nad týmž souborovým úložištěm, ve kterém vznikly (`next start`, čtečka vypnutá, 0 USD), přes `/api/play/games/<id>` jako v P61. Dvě kontroly:
+- **publikační brána** (zpráva serveru u každé hry): robot vyhraje, nečinný hráč nevyhraje, dvě přehrání skončí ve stavu běhu robota; u řetězu každé kolo i celý řetěz;
+- **znovu offline** v novém procesu nad publikovaným světem (`verifyArcade` / `verifyChain`, dočasný skript `t6c-robot.measure.ts` přes `vitest.measure.mts`, mimo repo v `D:/caches/p63/`), otisk běhu robota i nečinného proti zprávě serveru.
+
+| Sada | Her | Robot vyhraje | Nečinný nevyhraje | Přehrání shodné | Otisk běhu = server |
+|---|---|---|---|---|---|
+| zapečetěná (24 vět) | 43 | 43 | 43 | 43 | 43 |
+| dev (12 vět) | 17 | 17 | 17 | 17 | 17 |
+| Celkem | 60 | 60 | 60 | 60 | 60 |
+
+Publikační brána prošla 60/60 ve všech čtyřech bodech. Hry `main` se znovu nekontrolovaly, jen to, že větev drží robota, nečinného a replay na všech hrách sady. Počty jsou v `result.json` → `robot`.
+
+### Čas do hratelné hry (G7) – na desktopu nesplněna mediánem, ve druhém kole splněna
+
+**Měření** – 27. 10. večer, `scripts/measure/first-playable-ab.mjs`:
+- A = `main` `495bbc77` (`D:/caches/p63/main`, port 3164), B = větev `d03aa1c1` (port 3163).
+- Oba `npm run build` a `next start`, každý s prázdným `PLAY_STORE_DIR`, `PLAY_READER=off`, žádný klíč čtečky ani režiséra, 0 placených volání.
+- Prvních 5 dev vět (`p30/dev.json` [0..4], tytéž jako P61 T8), 3 běhy na stranu, dvojice A+B těsně po sobě se střídavým začátkem, desktop 1280×720 i Pixel 7 s CPU 4×. Hratelná = plátno hry odpoví na dva vstupy po sobě; hratelných 60 z 60 běhů.
+- Stroj byl vytížený jinými agenty (~90 procesů node), na klid se nečekalo. První pokus o měření skončil po 34 bězích bez výstupu (dva běhy telefonu na obou stranách vypršely po 120 s, telefon tehdy kolem 12 s místo 9 s); do výsledku nejde.
+- Surová data: `D:/caches/p63/t6c-ttp2.json` (celé měření), `t6c-ttp3.json` (druhé kolo desktopu), běhy v `result.json` → `timing`.
+
+| Profil | `main` medián | P63 medián | rozdíl mediánů | párový rozdíl | Brána ≤ +200 ms |
+|---|---|---|---|---|---|
+| desktop 1280×720 | 2635 ms | 3041 ms | +406 ms | +96 ms | nesplněna |
+| Pixel 7, CPU 4× | 9687 ms | 9313 ms | −374 ms | −853 ms | splněna |
+| desktop, druhé kolo hned po prvním | 2487 ms | 2469 ms | −18 ms | +98 ms | splněna |
+| desktop, obě kola 6 + 6 | 2597 ms | 2751,5 ms | +154,5 ms | +97 ms | splněna |
+
+Po větách, medián 3 běhů v ms, `main` → P63:
+
+| Věta | Desktop | Desktop, druhé kolo | Telefon | Hra `main` → P63 |
+|---|---|---|---|---|
+| s039 zombie shooter in a mall | 2570 → 3172 | 2647 → 2469 | 14 615 → 9280 | tatáž střílečka (stejné id) |
+| s037 space marine, alien bugs | 2137 → 2233 | 2069 → 2208 | 12 236 → 10 960 | tatáž střílečka (stejné id) |
+| s002 knight, three keys, ghosts | 2635 → 2503 | 2281 → 2335 | 9356 → 8057 | `arena.escape` na obou stranách, jiná verze (počet z T4) |
+| s003 hamster, Roomba | 3163 → 3401 | 2791 → 2809 | 9058 → 9313 | tentýž běžec (stejné id) |
+| s006 corgi, sausages, sprinklers | 2852 → 3190 | 2743 → 3069 | 9261 → 8408 | tentýž řetěz o 5 kolech (stejné id) |
+
+**Verdikt:**
+- Na telefonu větev bránu splňuje (−0,37 s, párově −0,85 s).
+- Na desktopu ji celé měření mediánem nesplnilo o 206 ms. Párový rozdíl byl +96 ms, rozptyl jedné strany ve stejné větě až 2 s (s039 B 1691–4522 ms). Druhé kolo hned potom na týchž serverech a hrách dalo −18 ms, obě kola dohromady +154,5 ms. Brána v `result.json` zůstává nesplněná podle celého měření.
+- Čtyři z pěti vět hrají na obou stranách tutéž verzi hry, takže rozdíl dělá kód klienta nebo zátěž stroje, ne jiná hra.
+- **Nález, neprofilováno:** s006 (řetěz) je na desktopu pomalejší v 5 ze 6 dvojic, medián +0,34 s v prvním a +0,33 s ve druhém kole, první snímek +0,52 / +0,19 s. Na telefonu je táž věta o 0,85 s rychlejší. Odvozeno: buď skutečná práce navíc při startu řetězu na desktopu, nebo zátěž – rozhodne CPU profil startu s006 na desktopu, A proti B. Podle sady se nic neladilo, kód se neměnil.

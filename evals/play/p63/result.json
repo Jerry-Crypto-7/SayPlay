@@ -1,6 +1,6 @@
 {
  "schema": "p63-result.v1",
- "task": "P63 T6 – sealed reading gate: main vs P63 on shared sheets (quick game and the game after reading)",
+ "task": "P63 T6 – sealed reading gate: main vs P63 on shared sheets (quick game and the game after reading), robot on every game of the set, and time to playable",
  "holdout": {
   "file": "evals/play/p63/holdout.json",
   "sha256": "e03e39a08c2a3e4ba2ea98054ce367b08e2ffcd9f66dc815d92222740538051b",
@@ -1366,8 +1366,491 @@
   "pass": false,
   "unmet": [
    "G1",
-   "G3"
+   "G3",
+   "G7"
   ]
+ },
+ "robot": {
+  "scope": "P63 branch only: every game of the set as P63 built it – the 24 sealed sentences (quick + reading, shot at 17e8715a) and the 12 dev sentences (quick + reading, shot at 55f1a838; reading games of s002, s003, s021 from the dev-fix shoot). main games of T1 are not re-checked.",
+  "harness": "publish gate (verifyArcade / verifyChain: bot wins, idle loses, two replays equal the bot run) at publish time, read back from the server report; re-run offline on the published world in a fresh process (temporary evals/play/p63/t6c-robot.measure.ts run with vitest.measure.mts, copy in D:/caches/p63/)",
+  "games": 60,
+  "quick": 36,
+  "reading": 24,
+  "chains": 10,
+  "server": {
+   "publishEligible": 60,
+   "botWins": 60,
+   "idleLoses": 60,
+   "replayEqual": 60
+  },
+  "offline": {
+   "botWins": 60,
+   "idleLoses": 60,
+   "replayEqual": 60,
+   "sameHashesAsServer": 60
+  },
+  "sets": {
+   "holdout": {
+    "games": 43,
+    "quick": 24,
+    "reading": 19,
+    "chains": 8,
+    "server": {
+     "publishEligible": 43,
+     "botWins": 43,
+     "idleLoses": 43,
+     "replayEqual": 43
+    },
+    "offline": {
+     "botWins": 43,
+     "idleLoses": 43,
+     "replayEqual": 43,
+     "sameHashesAsServer": 43
+    }
+   },
+   "dev": {
+    "games": 17,
+    "quick": 12,
+    "reading": 5,
+    "chains": 2,
+    "server": {
+     "publishEligible": 17,
+     "botWins": 17,
+     "idleLoses": 17,
+     "replayEqual": 17
+    },
+    "offline": {
+     "botWins": 17,
+     "idleLoses": 17,
+     "replayEqual": 17,
+     "sameHashesAsServer": 17
+    }
+   }
+  }
+ },
+ "timing": {
+  "tool": "scripts/measure/first-playable-ab.mjs",
+  "measuredAt": "2026-10-27T19:53:30.260Z",
+  "a": {
+   "side": "main",
+   "commit": "495bbc77",
+   "url": "http://127.0.0.1:3164"
+  },
+  "b": {
+   "side": "p63",
+   "commit": "d03aa1c1",
+   "url": "http://127.0.0.1:3163"
+  },
+  "sentences": "evals/play/p30/dev.json [0..4] (the first five dev sentences, as in evals/play/first-playable and P61 T8)",
+  "metric": "ms from tapping \"Make it!\" on /play to the game canvas answering two inputs in a row (time-to-playable.mjs); firstFrame = ms to the first drawn game frame",
+  "order": "run is the outer loop; each sentence gets an A+B pair back to back, the side going first alternates per pair; 5 s pause between runs",
+  "runs": 3,
+  "reader": "off (PLAY_READER=off, no reader or director key in either server, 0 paid calls); every sentence published on both servers before measuring",
+  "server": "npm run build + next start, fresh empty PLAY_STORE_DIR per server, both servers up during the run; machine loaded by other agents, no waiting for calm",
+  "failed": 0,
+  "profiles": {
+   "desktop": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      2570,
+      1850,
+      2879
+     ],
+     "B": [
+      1691,
+      3172,
+      4522
+     ],
+     "firstFrameA": [
+      1486,
+      667,
+      1599
+     ],
+     "firstFrameB": [
+      550,
+      1696,
+      2321
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      1085,
+      2137,
+      2459
+     ],
+     "B": [
+      2136,
+      2233,
+      2877
+     ],
+     "firstFrameA": [
+      576,
+      1591,
+      1544
+     ],
+     "firstFrameB": [
+      1469,
+      1511,
+      2194
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      2418,
+      2635,
+      4653
+     ],
+     "B": [
+      2493,
+      2503,
+      3608
+     ],
+     "firstFrameA": [
+      1463,
+      1699,
+      2175
+     ],
+     "firstFrameB": [
+      1447,
+      1575,
+      2035
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      2919,
+      3163,
+      4925
+     ],
+     "B": [
+      2671,
+      3401,
+      4245
+     ],
+     "firstFrameA": [
+      1965,
+      2154,
+      3046
+     ],
+     "firstFrameB": [
+      1910,
+      2347,
+      2852
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      2225,
+      2852,
+      4177
+     ],
+     "B": [
+      3041,
+      3190,
+      3192
+     ],
+     "firstFrameA": [
+      1333,
+      1589,
+      3256
+     ],
+     "firstFrameB": [
+      2121,
+      2112,
+      1978
+     ]
+    }
+   ],
+   "pixel7-cpu4": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      9687,
+      14615,
+      21668
+     ],
+     "B": [
+      9119,
+      9280,
+      18345
+     ],
+     "firstFrameA": [
+      5054,
+      7985,
+      9867
+     ],
+     "firstFrameB": [
+      4586,
+      4869,
+      8402
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      7637,
+      12236,
+      14143
+     ],
+     "B": [
+      10960,
+      11266,
+      10206
+     ],
+     "firstFrameA": [
+      5267,
+      7893,
+      9172
+     ],
+     "firstFrameB": [
+      5458,
+      6226,
+      4708
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      7707,
+      16526,
+      9356
+     ],
+     "B": [
+      7692,
+      10476,
+      8057
+     ],
+     "firstFrameA": [
+      4658,
+      9848,
+      5138
+     ],
+     "firstFrameB": [
+      4488,
+      6220,
+      4824
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      9058,
+      18189,
+      8443
+     ],
+     "B": [
+      9313,
+      22433,
+      8711
+     ],
+     "firstFrameA": [
+      5941,
+      11516,
+      5506
+     ],
+     "firstFrameB": [
+      6195,
+      9290,
+      5630
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      9261,
+      11296,
+      7573
+     ],
+     "B": [
+      8408,
+      10271,
+      7954
+     ],
+     "firstFrameA": [
+      6377,
+      7849,
+      5245
+     ],
+     "firstFrameB": [
+      5682,
+      5716,
+      5669
+     ]
+    }
+   ]
+  },
+  "medians": {
+   "desktop": {
+    "A": 2635,
+    "B": 3041,
+    "diff": 406,
+    "pairedDiff": 96,
+    "pass": false
+   },
+   "pixel7-cpu4": {
+    "A": 9687,
+    "B": 9313,
+    "diff": -374,
+    "pairedDiff": -853,
+    "pass": true
+   }
+  },
+  "games": "the same version on both servers for s039, s037, s003 and s006 (s006 a 5-round chain); s002 a different version of the same genre (arena.escape with the count from T4)",
+  "desktopSecondRound": {
+   "measuredAt": "2026-10-27T19:59:25.370Z",
+   "why": "desktop missed the gate by medians in the full run while the paired difference was +96 ms; the same desktop measurement repeated once right after, same servers and games",
+   "failed": 0,
+   "rows": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      2647,
+      2720,
+      2487
+     ],
+     "B": [
+      2115,
+      2469,
+      2814
+     ],
+     "firstFrameA": [
+      1529,
+      1638,
+      1451
+     ],
+     "firstFrameB": [
+      970,
+      1432,
+      1708
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      2138,
+      2069,
+      1528
+     ],
+     "B": [
+      2236,
+      2208,
+      1638
+     ],
+     "firstFrameA": [
+      1509,
+      1578,
+      831
+     ],
+     "firstFrameB": [
+      1531,
+      1550,
+      921
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      1711,
+      2624,
+      2281
+     ],
+     "B": [
+      2341,
+      2335,
+      1687
+     ],
+     "firstFrameA": [
+      867,
+      1668,
+      1436
+     ],
+     "firstFrameB": [
+      1405,
+      1411,
+      853
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      2244,
+      2791,
+      2808
+     ],
+     "B": [
+      2694,
+      2809,
+      2834
+     ],
+     "firstFrameA": [
+      1388,
+      2002,
+      1932
+     ],
+     "firstFrameB": [
+      1888,
+      1857,
+      1929
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      2996,
+      2743,
+      2401
+     ],
+     "B": [
+      3074,
+      2916,
+      3069
+     ],
+     "firstFrameA": [
+      2054,
+      1875,
+      1402
+     ],
+     "firstFrameB": [
+      2062,
+      2015,
+      2122
+     ]
+    }
+   ],
+   "medians": {
+    "A": 2487,
+    "B": 2469,
+    "diff": -18,
+    "pairedDiff": 98,
+    "pass": true
+   }
+  },
+  "gate": {
+   "id": "G7",
+   "label": "Sentence to playable: branch median <= main median + 200 ms in every profile the script measures (desktop and Pixel 7, CPU 4x)",
+   "thresholdMs": 200,
+   "pass": false
+  }
  },
  "spend": {
   "t6": {
