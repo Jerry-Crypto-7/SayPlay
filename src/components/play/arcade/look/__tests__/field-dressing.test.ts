@@ -7,9 +7,19 @@
  *
  * Kusy jsou jen vzhled: hash startu i běhu robota je týž jako na `main` (495bbc77), robot vyhraje,
  * nečinný hráč ne a přehrání sedí.
+ *
+ * P62 T4-R1: kusy naskočily 4–6 s po prvním snímku, protože worker začal až s montáží scény a hlavní
+ * vlákno ho do konce prvního snímku nepustilo. Ze snímku v 5 s ani z testu rozmístění se to nepozná.
+ * Pinuje se proto, že stránka o kusy požádá při hydrataci (`ArcadePlay` → `prefetchFieldDressing`)
+ * právě u her se zdobenou plochou, a že kusy hotové před montáží stojí už v první montáži
+ * `FieldDressing` – v témž rozmístění jako T4.
  */
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+import { type ReactElement, isValidElement } from 'react';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeWorldOf } from '@/play/arcade/compile';
@@ -24,8 +34,23 @@ import { draftGameSpecWithMeta } from '@/play/draft/draft';
 
 import { bodiesOf, bodiesStale, drawsNothing } from '../../bodies';
 import { FIELD_LEAST, FIELD_MOST, FIELD_TALLEST_M, type FieldPiece, START_CLEAR_M, fieldDressing, fieldPool } from '../field-dressing';
-import { fieldJob } from '../field-dressing-worker';
+import { fieldPiecesNow, fieldPiecesOf, prefetchFieldDressing } from '../field-dressing-client';
+import { type FieldWorkerRequest, type FieldWorkerResponse, fieldJob, handleFieldJob } from '../field-dressing-worker';
 import { landmarkPicks } from '../landmark-places';
+import { FieldDressing } from '../Scenery';
+
+// První montáž `FieldDressing` bez Reactu (vzor `shoot-throw.test.tsx`): stav z líné inicializace, efekty nic.
+vi.mock('react', async (importOriginal) => {
+  const react = await importOriginal<typeof import('react')>();
+  return {
+    ...react,
+    useState: (init: unknown) => [typeof init === 'function' ? (init as () => unknown)() : init, () => undefined],
+    useEffect: () => undefined,
+    useLayoutEffect: () => undefined,
+    useRef: (current: unknown) => ({ current }),
+    useMemo: (make: () => unknown) => make(),
+  };
+});
 
 interface Row {
   readonly genre: string;
@@ -206,9 +231,95 @@ describe('P62 T4: the play area itself is dressed', () => {
   });
 
   it('only arenas and the shooting range get a field', () => {
-    const { spec } = draftGameSpecWithMeta('a hamster escaping a supermarket while a giant Roomba hunts me', 1);
-    const made = arcadeWorldOf(spec, 1);
-    if (!made.ok) throw new Error(made.issues.join('; '));
-    expect(fieldJob(made.world)).toBeNull();
+    expect(fieldJob(runnerWorld())).toBeNull();
+  });
+});
+
+function runnerWorld(): ArcadeWorld {
+  const { spec } = draftGameSpecWithMeta('a hamster escaping a supermarket while a giant Roomba hunts me', 1);
+  const made = arcadeWorldOf(spec, 1);
+  if (!made.ok) throw new Error(made.issues.join('; '));
+  return made.world;
+}
+
+/**
+ * Worker jako v prohlížeči: úlohu dostane ve jménu (`name`, JSON) nebo kopií zprávy (`structuredClone`),
+ * spočte ji `handleFieldJob` a odpoví později.
+ */
+class FakeWorker {
+  /** Úlohy v pořadí, jak je worker dostal; `named` = ty, které přišly ve jménu nového workeru. */
+  static readonly posted: FieldWorkerRequest[] = [];
+  static readonly named: FieldWorkerRequest[] = [];
+  onmessage: ((event: { readonly data: FieldWorkerResponse }) => void) | null = null;
+  onerror: (() => void) | null = null;
+  constructor(_url: URL, options?: { readonly name?: string }) {
+    if (options?.name === undefined || options.name === '') return;
+    const request = JSON.parse(options.name) as FieldWorkerRequest;
+    FakeWorker.named.push(request);
+    this.answer(request);
+  }
+  postMessage(request: FieldWorkerRequest): void {
+    this.answer(structuredClone(request));
+  }
+  private answer(request: FieldWorkerRequest): void {
+    FakeWorker.posted.push(request);
+    void handleFieldJob(request).then((response) => this.onmessage?.({ data: response }));
+  }
+}
+
+/** Kusy, které vrátí první montáž `FieldDressing` (skupina, dítě na kus). */
+function mountedPieces(look: Look, world: ArcadeWorld): readonly ReactElement<{ position: readonly number[] }>[] {
+  const group = FieldDressing({ look, world });
+  if (!isValidElement<{ children: unknown }>(group)) throw new Error('FieldDressing renders a group');
+  return (group.props.children as unknown[]).filter((child): child is ReactElement<{ position: readonly number[] }> => isValidElement(child));
+}
+
+describe('P62 T4-R1: the dressing is there on the first frames', () => {
+  beforeAll(() => {
+    vi.stubGlobal('Worker', FakeWorker);
+  });
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each(ROWS.map((row) => [`${row.genre}/${row.mode}`, row] as const))('%s: asked for once before the scene mounts, it stands in the first mount, placed as in T4', async (_, row) => {
+    const { world, look, pieces } = gameOf(row, 1);
+    const before = FakeWorker.posted.length;
+    expect(fieldPiecesNow(world, look), 'nothing before the page asks').toBeUndefined();
+    // Bez hotového výpočtu první montáž nic nestaví (T4): kusy by naskočily až po workeru.
+    prefetchFieldDressing(world, look);
+    expect(FakeWorker.posted.length - before, 'the page itself started the job').toBe(1);
+    expect(mountedPieces(look, world)).toEqual([]);
+    prefetchFieldDressing(world, look);
+    const found = await fieldPiecesOf(world, look);
+    expect(FakeWorker.posted.length - before, 'one job per game, however often the page renders').toBe(1);
+    // Táž místa jako T4: worker na kopii světa = `fieldJob` + `fieldDressing` nad originálem.
+    expect(found).toEqual(pieces);
+    expect(fieldPiecesNow(world, look)).toBe(found);
+    // Scéna se montuje až po výpočtu: kusy jsou v jejím prvním renderu, žádný další dotaz na worker.
+    const mounted = mountedPieces(look, world);
+    expect(mounted.map((child) => child.props.position)).toEqual(pieces.map((piece) => [piece.x, 0, piece.z]));
+    expect(FakeWorker.posted.length - before).toBe(1);
+  });
+
+  it('the first job rides in the new worker’s name, not in a message the busy main thread would forward', () => {
+    expect(FakeWorker.named).toHaveLength(1);
+    expect(FakeWorker.posted[0]).toBe(FakeWorker.named[0]);
+    expect(FakeWorker.named[0]!.world).toEqual(gameOf(ROWS[0]!, 1).world);
+  });
+
+  it('a game without a dressed field never wakes the worker', () => {
+    const world = runnerWorld();
+    const before = FakeWorker.posted.length;
+    prefetchFieldDressing(world, LOOKS.mall);
+    expect(FakeWorker.posted.length).toBe(before);
+  });
+
+  it('the page asks while it renders, before it mounts the stage', () => {
+    // Hydratace má mezery na start workeru, scéna od montáže do konce prvního snímku ne (27. 10.: 2–3 s).
+    const source = readFileSync(path.join(__dirname, '../../ArcadePlay.tsx'), 'utf8');
+    const asked = source.indexOf('prefetchFieldDressing(arcade, scene);');
+    expect(asked).toBeGreaterThan(source.indexOf('const scene = useMemo(() => sceneLook(spec.theme)'));
+    expect(asked).toBeLessThan(source.indexOf('<ArcadeStage'));
   });
 });

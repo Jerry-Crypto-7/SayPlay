@@ -141,6 +141,7 @@ export async function handleFieldJob({ id, world, look }: FieldWorkerRequest): P
 
 /** Jen ta část `self`, kterou worker používá (knihovna `webworker` se s `dom` v jednom `tsconfig` nesnese). */
 interface FieldWorkerScope {
+  readonly name: string;
   postMessage(message: FieldWorkerResponse): void;
   onmessage: ((event: { data: FieldWorkerRequest }) => void) | null;
 }
@@ -150,7 +151,10 @@ const workerScope: FieldWorkerScope | undefined =
   typeof self !== 'undefined' && typeof self.postMessage === 'function' && !('document' in self) ? (self as unknown as FieldWorkerScope) : undefined;
 
 if (workerScope !== undefined) {
-  workerScope.onmessage = (event) => {
-    void handleFieldJob(event.data).then((response) => workerScope.postMessage(response));
+  const answer = (request: FieldWorkerRequest): void => {
+    void handleFieldJob(request).then((response) => workerScope.postMessage(response));
   };
+  workerScope.onmessage = (event) => answer(event.data);
+  // První úloha přijde ve jménu workeru (`field-dressing-client.ts`, P62 T4-R1): počítá se hned po startu.
+  if (workerScope.name !== '') answer(JSON.parse(workerScope.name) as FieldWorkerRequest);
 }

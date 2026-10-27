@@ -18,7 +18,7 @@ import type { ArcadeWorld } from '@/play/arcade/contract';
 import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel, sparseLandmarks } from '@/play/arcade/look';
 
 import type { FieldPiece } from './field-dressing';
-import type { FieldWorkerRequest, FieldWorkerResponse } from './field-dressing-worker';
+import { fieldPiecesNow, fieldPiecesOf } from './field-dressing-client';
 import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
 import { PlayEnv } from './play-env';
@@ -381,47 +381,6 @@ function SceneryPiece({ kind, look, plants, cap }: { readonly kind: SceneryKind;
 // ---------------------------------------------------------------------------
 // Kulisy uvnitř hrací plochy (P62 T4)
 
-let fieldWorker: Worker | null = null;
-let fieldJobId = 0;
-const fieldWaiting = new Map<number, (pieces: readonly FieldPiece[]) => void>();
-const fieldJobs = new WeakMap<ArcadeWorld, WeakMap<Look, Promise<readonly FieldPiece[]>>>();
-
-function fieldWorkerOf(): Worker {
-  if (fieldWorker !== null) return fieldWorker;
-  // `new URL(..., import.meta.url)` webpack pozná a worker zabalí (vzor `feed/preview.ts`).
-  const created = new Worker(new URL('./field-dressing-worker.ts', import.meta.url), { type: 'module' });
-  created.onmessage = (event: MessageEvent<FieldWorkerResponse>) => {
-    fieldWaiting.get(event.data.id)?.(event.data.pieces);
-    fieldWaiting.delete(event.data.id);
-  };
-  created.onerror = () => {
-    for (const resolve of fieldWaiting.values()) resolve([]);
-    fieldWaiting.clear();
-    fieldWorker = null;
-  };
-  fieldWorker = created;
-  return created;
-}
-
-/** Kusy hrací plochy hry; worker je spočte jednou na svět a sadu. Bez workeru (Node, SSR) žádné. */
-function fieldPiecesOf(world: ArcadeWorld, look: Look): Promise<readonly FieldPiece[]> {
-  const byLook = fieldJobs.get(world) ?? new WeakMap<Look, Promise<readonly FieldPiece[]>>();
-  fieldJobs.set(world, byLook);
-  const known = byLook.get(look);
-  if (known !== undefined) return known;
-  const job = new Promise<readonly FieldPiece[]>((resolve) => {
-    if (typeof Worker === 'undefined') {
-      resolve([]);
-      return;
-    }
-    fieldJobId += 1;
-    fieldWaiting.set(fieldJobId, resolve);
-    fieldWorkerOf().postMessage({ id: fieldJobId, world, look } satisfies FieldWorkerRequest);
-  });
-  byLook.set(look, job);
-  return job;
-}
-
 /** Sonda kusů plochy (`window.__playField`): kolik jich je a kolik sítí kreslí; `show(false)` je schová (A/B kreslicích volání). */
 interface FieldProbe {
   readonly report: () => { readonly pieces: number; readonly meshes: number; readonly kinds: readonly string[] };
@@ -436,15 +395,16 @@ declare global {
 
 /**
  * 4–10 kulis sady uvnitř hrací plochy arény a střelnice (P62 T4). Kde stojí, spočítá
- * `field-dressing.ts` ve workeru z běhu robota (`field-dressing-worker.ts`): kusy se objeví,
- * až worker doběhne (desetiny sekundy), a cestě robota, spawnům ani dráhám nepřátel se vyhnou.
- * Jen vzhled: jádro o nich neví.
+ * `field-dressing.ts` ve workeru z běhu robota (`field-dressing-worker.ts`), takže se cestě
+ * robota, spawnům ani dráhám nepřátel vyhnou. Worker běží od hydratace stránky
+ * (`prefetchFieldDressing` v `ArcadePlay`, P62 T4-R1): hotové kusy stojí už v první montáži,
+ * jinak se objeví, až doběhne. Jen vzhled: jádro o nich neví.
  */
 export function FieldDressing({ look, world }: { readonly look: Look; readonly world: ArcadeWorld }) {
-  const [pieces, setPieces] = useState<readonly FieldPiece[]>([]);
+  const [pieces, setPieces] = useState<readonly FieldPiece[]>(() => fieldPiecesNow(world, look) ?? []);
   useEffect(() => {
     let live = true;
-    setPieces([]);
+    setPieces(fieldPiecesNow(world, look) ?? []);
     void fieldPiecesOf(world, look).then((found) => {
       if (live) setPieces(found);
     });
