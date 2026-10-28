@@ -71,7 +71,7 @@ export default defineConfig({
     // na lokální server a certifikoval by `localhost` místo nasazení.
     {
       name: 'chromium',
-      testIgnore: /(webgpu-detect|deployed-smoke|play-touch|p61-portrait)\.spec\.ts/,
+      testIgnore: /(webgpu-detect|deployed-smoke|play-touch|p61-portrait|p64-portrait-audit)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     // Telefon s dotykem (P36C T4): hry jen gesty, žádná klávesnice. Mimo `chromium`, ať dotyk nehraje desktop.
@@ -79,7 +79,8 @@ export default defineConfig({
       name: 'pixel7-touch',
       // Řetěz mikroher (P56C T13) jede i tady: přechod kola a první kolo na telefonu. Rámování a plocha hry na
       // telefonu (P61 T6) taky – `p58a-framing` tu měří telefon projektu, `p61-portrait` výšku proti šířce.
-      testMatch: /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait)\.spec\.ts/,
+      // Audit na výšku a stráž kamery na šířku (P64 T1).
+      testMatch: /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard)\.spec\.ts/,
       use: { ...devices['Pixel 7'], hasTouch: true },
     },
     // Safari a iPhone (P58C T3): hlavní cesta věta → hra → výhra → výzva na WebKitu. Přepínače
@@ -91,7 +92,7 @@ export default defineConfig({
     },
     {
       name: 'iphone-touch',
-      testMatch: /(play-create|play-touch|play-chain|p36-dare|play-phone|p58a-framing|p61-portrait)\.spec\.ts/,
+      testMatch: /(play-create|play-touch|play-chain|p36-dare|play-phone|p58a-framing|p61-portrait|p64-portrait-audit)\.spec\.ts/,
       // Rozložení vedle feedu je desktopové; mobilní profil z něj změna velikosti okna neudělá.
       grepInvert: /desktop \d+×\d+/,
       use: { ...devices['iPhone 15'], hasTouch: true, launchOptions: { args: [] } },

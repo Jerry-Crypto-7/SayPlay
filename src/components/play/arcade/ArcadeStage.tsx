@@ -131,6 +131,74 @@ export interface FrameReport {
    * `userData.toyHero`, jinak první hračkovou skupinu pod hrdinou sondy; `null` = bez pózy.
    */
   readonly heroToy: Readonly<Record<'pitch' | 'roll' | 'sx' | 'sy' | 'sz' | 'hop' | 'lunge' | 'parts' | 'flap' | 'sway' | 'stride', number>> | null;
+  /** Rozsah hry v obraze (P64 T1): hrdina a všechny živé cíle a nebezpečí před kamerou; `null` = žádné tělo. */
+  readonly spread: FrameSpread | null;
+  /** Otisk kamery (P64 T1): stráž rámování na šířku ho porovnává přesně. */
+  readonly camera: CameraPrint;
+}
+
+export interface FrameSpread {
+  /** Obdélník NDC přes klidové kvádry všech těl před kamerou (může přesahovat plátno). */
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  /** Kolik těl je před kamerou. */
+  readonly bodies: number;
+  /** Kolik z nich má střed mimo plátno do stran (`|x| > 1`) a nahoru či dolů (`|y| > 1`). */
+  readonly outX: number;
+  readonly outY: number;
+}
+
+export interface CameraPrint {
+  readonly position: readonly [number, number, number];
+  readonly quaternion: readonly [number, number, number, number];
+  /** Svislé zorné pole (°); ortografická kamera `null`. */
+  readonly fov: number | null;
+  readonly aspect: number | null;
+  /** Projekční matice po sloupcích – chytí i posun záběru (`setViewOffset`) a přiblížení. */
+  readonly projection: readonly number[];
+}
+
+/**
+ * Rozsah hry v obraze (P64 T1): obdélník NDC přes klidové kvádry těl, která neleží za kamerou. Klidový kvádr, ne
+ * póza kostí – sonda ho počítá pro každý cíl a desítky riggovaných zombie by ji zdržely; rozsah snese pár procent.
+ */
+export function spreadOf(bodies: readonly Object3D[], camera: Camera, width: number, height: number): FrameSpread | null {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let count = 0;
+  let outX = 0;
+  let outY = 0;
+  for (const body of bodies) {
+    const box = frameOf(body, camera, width, height, false);
+    if (box === null || box.behind) continue;
+    count += 1;
+    minX = Math.min(minX, box.minX);
+    maxX = Math.max(maxX, box.maxX);
+    minY = Math.min(minY, box.minY);
+    maxY = Math.max(maxY, box.maxY);
+    if (Math.abs(box.x) > 1) outX += 1;
+    if (Math.abs(box.y) > 1) outY += 1;
+  }
+  return count === 0 ? null : { minX, maxX, minY, maxY, bodies: count, outX, outY };
+}
+
+/** Otisk kamery ve světě (P64 T1); matice světa musí být aktuální. */
+export function cameraOf(camera: Camera): CameraPrint {
+  const position = new Vector3();
+  const quaternion = new Quaternion();
+  camera.matrixWorld.decompose(position, quaternion, new Vector3());
+  const perspective = (camera as PerspectiveCamera).isPerspectiveCamera === true;
+  return {
+    position: [position.x, position.y, position.z],
+    quaternion: [quaternion.x, quaternion.y, quaternion.z, quaternion.w],
+    fov: perspective ? (camera as PerspectiveCamera).fov : null,
+    aspect: perspective ? (camera as PerspectiveCamera).aspect : null,
+    projection: [...camera.projectionMatrix.elements],
+  };
 }
 
 /** Hračková póza hrdiny pro `FrameReport.heroToy`. */
@@ -594,6 +662,8 @@ function FrameProbe({ control }: { readonly control: string }) {
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
         items,
         heroToy: heroToyOf(scene, hero),
+        spread: spreadOf(hero === null ? candidates : [hero, ...candidates], camera, size.width, size.height),
+        camera: cameraOf(camera),
       };
     };
     // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.
