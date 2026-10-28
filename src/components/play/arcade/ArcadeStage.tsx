@@ -55,6 +55,7 @@ import { useBallInput } from './ball/BallScene';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
 import { TouchStick, TouchZones } from './TouchControls';
+import { type PlayRect, PlayRectContext, playRect } from './portrait-frame';
 import { type ToyTarget, appliedToyOf } from './toy/applyToy';
 import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
@@ -792,21 +793,76 @@ export function setStyleVar(host: HTMLElement, name: string, value: string): voi
 /** Mezera mezi kartou a hrdinou i lištou HUD (`--sp-space-4` v `play.css`). */
 const PROMPT_GAP_PX = 16;
 
-/** Spodní hrana horní lišty HUD a horní hrana dolní, v px od horní hrany stage. */
-function hudBars(host: HTMLElement, stage: DOMRect): { readonly top: number; readonly bottom: number } {
+/** Horní lišty HUD: jejich spodní hrana je horní pás karty na startu i `playRect` (a auditu `p64-portrait-audit`). */
+const TOP_BARS = '.play-hud-progress, .play-hud-corner, .play-hud-goal';
+/** Nad dolní řadou stojí přepínač verze a štítky dotykových zón (P58C T6) – karta pod hrdinou na ně nesmí. */
+const PROMPT_FLOOR = '.play-hud-bottom, .play-hud > :is(.play-upgrade-status, .play-upgrade-toast), .play-touch-zone';
+/** Dolní pás `playRect` (P64 T2): totéž a tlačítka palce na `--_stack` – tytéž prvky jako audit `p64-portrait-audit`. */
+const PLAY_FLOOR = `${PROMPT_FLOOR}, .play-fire, .play-action, .play-ability`;
+
+/** Spodní hrana horní lišty HUD a horní hrana dolní (prvky `floor`), v px od horní hrany stage. */
+function hudBars(host: HTMLElement, stage: DOMRect, floor = PROMPT_FLOOR): { readonly top: number; readonly bottom: number } {
   const shell = host.parentElement;
   let top = 0;
   let bottom = stage.height;
-  for (const bar of shell?.querySelectorAll('.play-hud-progress, .play-hud-corner, .play-hud-goal') ?? []) {
+  for (const bar of shell?.querySelectorAll(TOP_BARS) ?? []) {
     const rect = bar.getBoundingClientRect();
     if (rect.height > 0) top = Math.max(top, rect.bottom - stage.top);
   }
-  // Nad dolní řadou stojí přepínač verze a štítky dotykových zón (P58C T6) – karta pod hrdinou na ně nesmí.
-  for (const bar of shell?.querySelectorAll('.play-hud-bottom, .play-hud > :is(.play-upgrade-status, .play-upgrade-toast), .play-touch-zone') ?? []) {
+  for (const bar of shell?.querySelectorAll(floor) ?? []) {
     const rect = bar.getBoundingClientRect();
     if (rect.height > 0) bottom = Math.min(bottom, rect.top - stage.top);
   }
   return { top, bottom };
+}
+
+/**
+ * Hrací obdélník plátna pro kamery na výšku (P64 T2, `portrait-frame.ts`) v ref, který scény čtou ve `useFrame` přes
+ * `PlayRectContext`. Pásy jako audit `e2e/p64-portrait-audit.spec.ts`, ať cíle T3–T5 znamenají totéž: nahoře spodní
+ * hrana `TOP_BARS`, dole horní hrana `PLAY_FLOOR` – dolní řady, stavu AI verze a ovládání palce, které stojí na
+ * `--_stack`. Lišta se počítá, dokud má rozměr, i skrytá: cíl pod pilulkami po 4 s zhasne (`objectiveShown`) a kamera
+ * by uprostřed hry poskočila; audit měří prvních 180 tiků, kdy cíl svítí, takže pás je týž.
+ *
+ * Měří se jen při změně, nikdy v každém snímku a nikdy do relace: `ResizeObserver` na stage, `.play-shell`, `.play-hud`
+ * a každé liště (`.play-hud-bottom` je mezi nimi), `MutationObserver` na přímých dětech shellu, stage a HUD – tlačítka,
+ * zóny, dolní řada a hlášky se připojují za běhu. Obojí jen naplánuje jedno měření na příští snímek.
+ */
+function usePlayRect(surface: React.RefObject<HTMLDivElement | null>): React.RefObject<PlayRect | null> {
+  const rect = useRef<PlayRect | null>(null);
+  useEffect(() => {
+    const stage = surface.current;
+    const shell = stage?.parentElement ?? null;
+    // Bez prohlížeče (jsdom) není co měřit: ref zůstane `null` a kamery jako dřív.
+    if (stage === null || shell === null || typeof ResizeObserver === 'undefined') return;
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const box = stage.getBoundingClientRect();
+      if (box.width === 0 || box.height === 0) return;
+      const bars = hudBars(stage, box, PLAY_FLOOR);
+      rect.current = playRect(box, bars.top, bars.bottom);
+    };
+    const later = () => {
+      if (frame === 0) frame = requestAnimationFrame(measure);
+    };
+    const sizes = new ResizeObserver(later);
+    const watch = (mounts: MutationObserver) => {
+      sizes.disconnect();
+      mounts.disconnect();
+      const hud = shell.querySelector('.play-hud');
+      for (const node of [stage, shell, ...shell.querySelectorAll(`.play-hud, ${TOP_BARS}, ${PLAY_FLOOR}`)]) sizes.observe(node);
+      // Znovu sledovaný prvek ohlásí rozměr v příštím snímku sám – to je měření po každém připojení i odpojení.
+      for (const node of [stage, shell, hud]) if (node !== null) mounts.observe(node, { childList: true });
+    };
+    const mounts = new MutationObserver((_records, self) => watch(self));
+    watch(mounts);
+    return () => {
+      mounts.disconnect();
+      sizes.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [surface]);
+  return rect;
 }
 
 /** Jak dlouho po konci běhu plátno ještě kreslí naplno: klip pádu či oslavy a pauza výsledku (600 ms). */
@@ -1088,6 +1144,8 @@ const StageCanvas = memo(function StageCanvas({
 }) {
   // První scéna plátna nemá předchozí snímek, který by mohla držet (`DrawWhenCompiled`).
   const [firstScene] = useState(sceneKey);
+  // Hrací obdélník mezi HUD a ovládáním (P64 T2) pro kamery scén na výšku; měří se z DOM jen při změně.
+  const playArea = usePlayRect(surface);
   const base = baseControlOf(session.world.control);
   const control = base.id;
   const stage = stageOf(control);
@@ -1121,6 +1179,8 @@ const StageCanvas = memo(function StageCanvas({
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
       {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
+      {/* Kontext uvnitř plátna, ne nad ním: s hostitelem feedu a ve VR jde scéna tunelem do cizího stromu. */}
+      <PlayRectContext.Provider value={playArea}>
       <Fragment key={sceneKey}>
       {sceneKey !== undefined && <FreshCamera />}
       {sceneKey !== undefined && sceneKey !== firstScene && <DrawWhenCompiled />}
@@ -1155,6 +1215,7 @@ const StageCanvas = memo(function StageCanvas({
         </>
       )}
       </Fragment>
+      </PlayRectContext.Provider>
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
       {/* Za scénami: měřítko čitelnosti se píše až po jejich snímku (P58A T3). */}
