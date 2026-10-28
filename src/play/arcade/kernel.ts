@@ -68,6 +68,7 @@ import {
   powerupCode,
   underlyingRule,
 } from './contract';
+import { isHookEffect } from './hooks/contract';
 import { releasePhysics, stepPhysics } from './physics/step';
 
 /** Gravitace v jednotkách za tik² (8 → ~28,8 m/s², arkádově rychlý dopad). */
@@ -812,6 +813,8 @@ function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: T
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
     else if (isLogicEffect(effect)) changed = applyLogic(state, effect);
+    // Zprávy háčků (P66 T2) stav nemění – jdou jen ven v efektech tiku; stav háčků píšou pravidla háčků (T3).
+    else if (isHookEffect(effect)) changed = false;
     else if (effect.kind === 'powerup') {
       // Power-up (P46C): nový nahradí starý, odpočet a konec drží obal ovládání (`tickPowerup`).
       const base = baseOf(effect.keeper);

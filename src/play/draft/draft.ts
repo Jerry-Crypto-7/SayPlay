@@ -274,8 +274,11 @@ function titleFrom(sentence: string, fallback: string): string {
   return cap(title, 80);
 }
 
-/** Šablona názvu modulu nebo skladatele („Corgi Run“, „Bee Defense“): postava a druh hry. */
-const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase)$/i;
+/**
+ * Šablona názvu modulu nebo skladatele („Corgi Run“, „Bee Defense“): postava a druh hry. Druhy nových žánrů P66
+ * (T2) předem – názvy jejich modulů (T5–T9) končí jedním z nich: `survivor`, `hole`, `heist`, `sort`, `arrows`.
+ */
+const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|survivor|hole|heist|sort|arrows)$/i;
 
 /**
  * Název hry z věty (P56A T8): název čtení, když projde – nejvýš 32 znaků, filtr obsahu feedu (`blockedText` v
@@ -1146,6 +1149,12 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   crowd: 'race track',
   merge: 'candy shop',
   push: 'sumo ring',
+  // P66 T2: výchozí místa nových žánrů (T12 je smí změnit).
+  survivor: 'ruined town',
+  hole: 'busy city',
+  steal: 'rival base',
+  sort: 'toy shop',
+  arrows: 'parking lot',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 

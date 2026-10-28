@@ -14,6 +14,7 @@ import { loadRapier } from '../../arcade/physics/world';
 import { draftGameSpecWithMeta } from '../../draft/draft';
 import type { GameSpecV1 } from '../../spec';
 import { GENRES, type GenreId } from '../contract';
+import { GENRE_MODULES } from '../modules';
 
 /** Slot scény → model, jak ho skládá `ArcadePlay` (`cast`): nepřítel střelnice, pronásledovatel, rekvizity, věci pravidel. */
 function sceneSlots(spec: GameSpecV1): Readonly<Record<string, string | undefined>> {
@@ -68,8 +69,10 @@ beforeAll(async () => {
 });
 
 describe('P61 T3: the quick game wears the sentence’s setting and foe', () => {
-  it('covers every genre once', () => {
-    expect(ROWS.map((row) => row.genre).sort()).toEqual([...GENRES].sort());
+  it('covers every genre that plays once', () => {
+    // Kostry P66 (T2, `staged`) návrh nevybere; řádek dostanou, až je klasifikátor začne vybírat (P66 T12).
+    const playing = GENRES.filter((genre) => GENRE_MODULES[genre].modes.some((mode) => GENRE_MODULES[genre].availability(mode as never) !== 'staged'));
+    expect(ROWS.map((row) => row.genre).sort()).toEqual([...playing].sort());
   });
 
   it.each([...ROWS, ...DEV_ROWS].map((row) => [row.genre, row.sentence, row] as const))('%s: %s', (genre, sentence, row) => {

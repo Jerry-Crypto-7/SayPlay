@@ -139,5 +139,11 @@ export function genreDoubles(fallback: readonly string[] = []): { readonly [G in
     crowd: stagedGenre('crowd', []),
     merge: stagedGenre('merge', []),
     push: stagedGenre('push', []),
+    // Kostry P66 (T2), ze stejného důvodu.
+    survivor: stagedGenre('survivor', []),
+    hole: stagedGenre('hole', []),
+    steal: stagedGenre('steal', []),
+    sort: stagedGenre('sort', []),
+    arrows: stagedGenre('arrows', []),
   };
 }

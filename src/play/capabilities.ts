@@ -137,6 +137,12 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   merge: arcade({ setting: true, cues: 'drop and merge, suika, 2048', roles: ['item'], finish: false, labels: ['player', 'item'], mechanics: LIVES_AND_TIMER }),
   // T12 vytlačování: soupeř v ringu (`rival`) nese model z popisku; životy bere pád hrdiny z ringu.
   push: arcade({ setting: true, cues: 'push rivals out of the ring, sumo', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER }),
+  // P66 T2: ovládání pěti koster ještě nemají svět, takže nic nečtou; co jeho svět čte, doplní úloha žánru (T5–T9).
+  survivor: arcade({ cues: 'move, the hero fires on its own at waves of foes, pick an upgrade between waves, a boss at the end', roles: [], finish: false, labels: [], mechanics: [] }),
+  hole: arcade({ cues: 'steer a hole that swallows things smaller than itself and grows', roles: [], finish: false, labels: [], mechanics: [] }),
+  steal: arcade({ cues: 'grab the loot from the rival base and carry it home while guards chase you', roles: [], finish: false, labels: [], mechanics: [] }),
+  sort: arcade({ cues: 'tap a queue to send its front item to the bin of the same kind or colour', roles: [], finish: false, labels: [], mechanics: [] }),
+  arrows: arcade({ cues: 'tap a piece and it flies off along its arrow if the way out is clear', roles: [], finish: false, labels: [], mechanics: [] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

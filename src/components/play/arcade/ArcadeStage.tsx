@@ -42,6 +42,11 @@ import { HopScene } from './genres/hop/HopScene';
 import { CrowdScene } from './genres/crowd/CrowdScene';
 import { MergeScene } from './genres/merge/MergeScene';
 import { PushScene } from './genres/push/PushScene';
+import { SurvivorScene } from './genres/survivor/SurvivorScene';
+import { HoleScene } from './genres/hole/HoleScene';
+import { StealScene } from './genres/steal/StealScene';
+import { SortScene } from './genres/sort/SortScene';
+import { ArrowsScene } from './genres/arrows/ArrowsScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -1079,6 +1084,16 @@ const StageCanvas = memo(function StageCanvas({
             <MergeScene {...world} />
           ) : stage.scene === 'push' ? (
             <PushScene {...world} />
+          ) : stage.scene === 'survivor' ? (
+            <SurvivorScene {...world} />
+          ) : stage.scene === 'hole' ? (
+            <HoleScene {...world} />
+          ) : stage.scene === 'steal' ? (
+            <StealScene {...world} />
+          ) : stage.scene === 'sort' ? (
+            <SortScene {...world} />
+          ) : stage.scene === 'arrows' ? (
+            <ArrowsScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}

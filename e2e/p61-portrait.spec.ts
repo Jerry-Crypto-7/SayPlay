@@ -188,6 +188,8 @@ test.describe('portrait framing on the phone', () => {
     test(`${genre}: the hero keeps its share of the screen in portrait`, async ({ browser, request }, testInfo) => {
       const phone = PHONES[testInfo.project.name];
       test.skip(phone === undefined, 'phone projects only');
+      // Kostra P66 (T2) hru nepostaví; řádek dostane úloha žánru (T5–T9) se svou buňkou.
+      test.skip(GENRE_MODULES[genre].availability('default' as never) === 'staged', 'staged genre');
       const cell = specOf(genre);
       const url = await publish(request, cell.spec);
       const baseURL = testInfo.project.use.baseURL!;

@@ -1,10 +1,12 @@
 import { arenaGenre } from './arena';
+import { arrowsGenre } from './arrows';
 import { catchGenre } from './catch';
 import type { GenreId, GenreModule } from './contract';
 import { crowdGenre } from './crowd';
 import { defenseGenre } from './defense';
 import { duelGenre } from './duel';
 import { flapGenre } from './flap';
+import { holeGenre } from './hole';
 import { hopGenre } from './hop';
 import { mergeGenre } from './merge';
 import { platformerGenre } from './platformer';
@@ -14,6 +16,9 @@ import { rhythmGenre } from './rhythm';
 import { runnerGenre } from './runner';
 import { shooterGenre } from './shooter';
 import { sliceGenre } from './slice';
+import { sortGenre } from './sort';
+import { stealGenre } from './steal';
+import { survivorGenre } from './survivor';
 import { throwGenre } from './throw';
 import { timingGenre } from './timing';
 import { voyageGenre } from './voyage';
@@ -39,5 +44,11 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   crowd: crowdGenre,
   merge: mergeGenre,
   push: pushGenre,
+  // P66 T2: kostry, které nehrají – každá úloha žánru (T5–T9) přepíše jen svůj soubor.
+  survivor: survivorGenre,
+  hole: holeGenre,
+  steal: stealGenre,
+  sort: sortGenre,
+  arrows: arrowsGenre,
 };
 

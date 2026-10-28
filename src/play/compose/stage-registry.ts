@@ -22,6 +22,14 @@ export const STAGES = {
   // P54C T11: vstup slučování (tah posouvá dávkovač, puštění prstu pustí předmět) si zapíná scéna sama.
   merge: { scene: 'merge', input: 'merge' },
   push: { scene: 'push', input: 'arena' },
+  // P66 T2: kostry nových žánrů, scény `genres/<žánr>/` (zatím jen podlaha). Pohyb po ploše bere joystick arény;
+  // třídění a šipky klepnutím přes vstup pruhů – sloupec je fronta, buňku mřížky nese osa (`cellAxisAt`), takže
+  // záznam, ovládání VR ani `InputEvent` nový vstup nepotřebují.
+  survivor: { scene: 'survivor', input: 'arena' },
+  hole: { scene: 'hole', input: 'arena' },
+  steal: { scene: 'steal', input: 'arena' },
+  sort: { scene: 'sort', input: 'lanes' },
+  arrows: { scene: 'arrows', input: 'lanes' },
 } as const;
 export type Stage = (typeof STAGES)[keyof typeof STAGES];
 export function stageOf(control: string): Stage | null {
