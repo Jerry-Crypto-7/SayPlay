@@ -42,14 +42,16 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     // Vlny: ležící soupeři vstanou silnější a přidají se noví; víc soupeřů z věty = delší zápas.
     const waves = fightWaveCount({ enemies, enemyHp: spec.params?.enemyHp ?? FIGHT.enemyHp.default });
     const rivals = plural(singular(rival), 2);
+    // P63 T4: „fights three wolves“ – počet věty je soupeřů v aréně naráz, cíl ho řekne („Knock out 5 waves of 3 wolves.“).
+    const said = spec.counts?.enemy === undefined ? rivals : `${String(enemies)} ${plural(singular(rival), enemies)}`;
     return legacySpec(spec, {
       control: 'move_free',
       controlParams: { generator: 'fight', tuning: tuningOf(spec, { waves }) },
       archetype: 'combat_lite',
       title: `${title} Duel`,
-      objective: { kind: 'defeat_targets', description: `Dodge the wind-up, strike back and knock out ${String(waves)} waves of ${rivals}.`, count: enemies, role: 'rival' },
+      objective: { kind: 'defeat_targets', description: `Dodge the wind-up, strike back and knock out ${String(waves)} waves of ${said}.`, count: enemies, role: 'rival' },
       roles: [{ id: 'rival', kind: 'hazard', label: rival, count: enemies }],
-      tutorial: { goalLine: `Knock out ${String(waves)} waves of ${rivals}.`, controlsHint: 'Drag or arrows to move, Attack or J to strike. Step aside when it winds up.' },
+      tutorial: { goalLine: `Knock out ${String(waves)} waves of ${said}.`, controlsHint: 'Drag or arrows to move, Attack or J to strike. Step aside when it winds up.' },
       // Životy souboje jsou knockouty: na 0 HP hrdina ztratí život a vstane s plným HP (P36A T2).
       mechanics: [livesMechanic()],
       mood: 'tense',
@@ -84,6 +86,25 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
   const chasers = spec.params?.chasers ?? ESCAPE.chasers.default;
   const roles = [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }];
   const collectible = castFor(spec, 'collect', 'reach')?.label;
+  if (collectible !== undefined && spec.counts?.collectible !== undefined) {
+    // P63 T4: věta s počtem („collect three keys … while dodging ghosts“) sbírá právě tolik věcí jako sběr s počtem
+    // (P61 T5) – ve vlnách útěku hrála 3 klíče v každé ze 4 vln. Pronásledovatelé věty honí od začátku (`countedEscape`).
+    const items = spec.params?.items ?? spec.counts.collectible;
+    const things = plural(singular(collectible), items);
+    const noun = goalNoun(collectible);
+    const patrol: Record<string, number> = foe?.patrol === true ? { patrol: ESCAPE.patrolSight } : {};
+    return legacySpec(spec, {
+      control: 'move_free',
+      controlParams: { generator: 'arena_escape', tuning: { ...tuningOf(spec, { items, ...patrol }), counted: true, ...(noun === null ? {} : { noun }) } },
+      archetype: 'collect_exit',
+      title: `${title} Escape`,
+      objective: { kind: 'collect', description: `Collect ${String(items)} ${things} before the ${hunter} catches you.`, count: items, role: 'item' },
+      roles: [...roles, { id: 'item', kind: 'collectible', label: collectible, count: items }],
+      tutorial: { goalLine: `Grab ${String(items)} ${things}. Don't get caught.`, controlsHint: 'Drag or arrows to move.' },
+      mechanics: [livesMechanic()],
+      mood: 'tense',
+    });
+  }
   if (collectible !== undefined) {
     // Uteč a sbírej ve vlnách: `items` věcí v každé, každá vlna přivede pronásledovatele navíc a zrychlí.
     const items = spec.params?.items ?? ESCAPE.items.collectDefault;

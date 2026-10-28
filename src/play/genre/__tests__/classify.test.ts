@@ -56,6 +56,12 @@ describe('classifyGenre', () => {
     expect(result.fallback).toBe(false);
   });
 
+  // P63 T2 (P61 h18): „slays a dragon“ je souboj jako „defeats“ – dřív sloveso slovník neznal.
+  it('reads "slay" as the defeat verb of an arena fight', () => {
+    const result = classifyGenre('A knight slays a dragon in a cave', null, GENRE_MODULES);
+    expect([result.ranked[0].genre, result.ranked[0].mode, result.verb]).toEqual(['arena', 'fight', 'defeat']);
+  });
+
   it('never puts a fallback mode first while a ready mode scored', () => {
     // Úkol hraje náhradu: čaroděj dostane hratelný ready žánr, ne pahýl.
     const wizard = classifyGenre('A tiny wizard rides a broom through a haunted castle and must light five candles before the ghosts catch him', null, genreDoubles(['quest.spatial', 'quest.station']));

@@ -42,7 +42,7 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('@/components/play/PlayShell', () => ({ PlayShell: () => null }));
 
-const { __resetUpgrades, directUpgrade, readingOf, upgradeOf } = await import('../_upgrade');
+const { __resetUpgrades, directUpgrade, readingDiffers, readingOf, upgradeOf } = await import('../_upgrade');
 const { default: PlayGamePage } = await import('@/app/play/[id]/page');
 
 const readings = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p56a/readings/p30-dev.gpt-oss-20b.json'), 'utf8')) as { readings: { id: string; text: string; reading: Omit<Reading, 'sure'> }[] }).readings;
@@ -149,6 +149,23 @@ describe('the reading game (P58D T1)', () => {
     expect(announced).toEqual([]);
   }, 120_000);
 
+  // P63 T3: jiný žánr nestačí, když hra ze čtení ukáže z rolí čtení méně – čtení jako stohování ztratí duchy rychlé hry.
+  it('publishes nothing when the reading game, though different, names less of the reading than the quick game', async () => {
+    const stack: Reading = { ...OTHER.reading, genre: { genre: 'timing', mode: 'stack' } };
+    reader(stack);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, OTHER.text);
+    const drafted = draftGameSpecWithMeta(OTHER.text, 1, { reading: stack });
+    expect(readingDiffers(quick.spec, drafted.spec, drafted.genre === null)).toBe(true);
+    expect(quick.spec.roles.map((role) => role.label)).toContain('ghost');
+    expect(drafted.spec.roles.map((role) => role.label)).not.toContain('ghost');
+    const announced: string[] = [];
+    await directUpgrade(store, quick, request(OTHER.text), director(undefined).make, (id) => announced.push(id));
+    expect(reads).toBe(1);
+    expect((await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading')).toEqual([]);
+    expect(announced).toEqual([]);
+  }, 120_000);
+
   // T2a (review fáze 1): id verze je ze specu, semínka a rodiče, ne ze vztahu – AI verze rovná návrhu ze čtení by
   // jinak dostala uložené dítě `'reading'` jako `ready`, mimo feed a bez štítku AI verze.
   // Kolize se vynutí: hra ze čtení uložená přesně se specem a semínkem, které AI cesta publikuje (z běhu bez čtení).
@@ -230,6 +247,28 @@ describe('the reading game (P58D T1)', () => {
     release();
     expect((await done).status).toBe('ready');
   }, 180_000);
+
+  // P63 T6: AI verze, která skončí bez hry (model nedostupný, strop), doběhne hned po publikaci hry ze čtení – `pending`
+  // s ní klient mezi dvěma dotazy mine a konec ji nenesl. Živě na dev větách s002, s003 a s021: hra ze čtení uložená
+  // jako dítě rychlé hry, hráč i měřidlo zůstali na rychlé hře. Konec ji teď nese jako konec řetězu.
+  it('an AI version that ends without a game still hands the player the reading game', async () => {
+    reader(OTHER.reading);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, OTHER.text);
+    seam.director = director(undefined).make;
+    const outcome = await upgradeOf(store, quick, request(OTHER.text));
+    const [reading] = (await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading');
+    expect(reading).toBeDefined();
+    expect(outcome).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE', reading: { versionId: reading!.version.versionId } });
+  }, 180_000);
+
+  it('an AI version that ends without a game and without a reading game hands over nothing', async () => {
+    reader(SAME.reading);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, SAME.text);
+    seam.director = director(undefined).make;
+    expect(await upgradeOf(store, quick, request(SAME.text))).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+  }, 120_000);
 });
 
 describe('the reading game page (P58D T2)', () => {

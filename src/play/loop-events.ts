@@ -1,12 +1,14 @@
 /**
  * Události herní smyčky (P27D T4, B4): co hráč s hrou udělal, bez jediného
- * slova, které napsal. Událost je jméno z uzavřeného seznamu, id verze a
- * náhodné id relace záložky – nic dalšího dveře nepřijmou, takže věta, jméno
- * ani adresa do záznamu cestou nepropadne.
+ * slova, které napsal. Událost je jméno z uzavřeného seznamu, id verze,
+ * náhodné id relace záložky a volitelně náhodné id návštěvníka (P63 T5) – nic
+ * dalšího dveře nepřijmou, takže věta, jméno ani adresa do záznamu cestou nepropadne.
  *
  * Robot ověřovače a ukázka „Show me how“ nejsou hráč: klient za ně nic
  * nepošle (`ArcadePlay`, `PlayShell`), tady se jen počítá.
  */
+
+import { VISITOR_PATTERN } from './visitor';
 
 /**
  * `bounce` (P40 T4) je odchod od zobrazené hry bez jediného vstupu – další hra
@@ -24,27 +26,31 @@ export interface LoopEvent {
   readonly withClip?: boolean;
   /** Jen u `share` (P36B T6): odkaz nesl výzvu Dare s ověřeným skóre. */
   readonly dare?: boolean;
+  /** Anonymní id návštěvníka (P63 T5, `src/play/visitor.ts`), u kterékoli události; bez úložiště chybí. */
+  readonly visitor?: string;
 }
 
 const VERSION = /^[a-f0-9]{8,64}$/;
 const SESSION = /^[a-z0-9]{12,32}$/;
-const KEYS = new Set(['name', 'versionId', 'session', 'withClip', 'dare']);
+const KEYS = new Set(['name', 'versionId', 'session', 'withClip', 'dare', 'visitor']);
 
 /** Tělo z dveří → událost, nebo `null`. Klíč navíc (třeba `sentence`) celé tělo odmítne. */
 export function readLoopEvent(raw: unknown): LoopEvent | null {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null;
   const body = raw as Record<string, unknown>;
   if (Object.keys(body).some((key) => !KEYS.has(key))) return null;
-  const { name, versionId, session } = body;
+  const { name, versionId, session, visitor } = body;
   if (typeof name !== 'string' || !(LOOP_EVENTS as readonly string[]).includes(name)) return null;
   if (typeof versionId !== 'string' || !VERSION.test(versionId)) return null;
   if (typeof session !== 'string' || !SESSION.test(session)) return null;
+  if (visitor !== undefined && (typeof visitor !== 'string' || !VISITOR_PATTERN.test(visitor))) return null;
+  const who = visitor === undefined ? {} : { visitor };
   const { withClip, dare } = body;
-  if (withClip === undefined && dare === undefined) return { name: name as LoopEventName, versionId, session };
+  if (withClip === undefined && dare === undefined) return { name: name as LoopEventName, versionId, session, ...who };
   if (name !== 'share') return null;
   if (withClip !== undefined && typeof withClip !== 'boolean') return null;
   if (dare !== undefined && typeof dare !== 'boolean') return null;
-  return { name, versionId, session, ...(withClip === undefined ? {} : { withClip }), ...(dare === undefined ? {} : { dare }) };
+  return { name, versionId, session, ...(withClip === undefined ? {} : { withClip }), ...(dare === undefined ? {} : { dare }), ...who };
 }
 
 /**

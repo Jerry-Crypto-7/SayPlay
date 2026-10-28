@@ -1332,8 +1332,10 @@ function draftGenre(
   const shotAt = caught?.items.some((item) => item.verb === 'catch') === true && saidAbilities(sentence, caught).includes('shoot') ? singular(roles.target!) : null;
   // Protivník, kterého hra sestřelí, zůstává zvířetem prostředí; jen ten, kterému se uhýbá, je překážka trati (P46D T6).
   // P56A T6: obsazení ze čtení před výchozím místem – role, kterou čtečka ve větě našla („from travelers“), dřív než vlk.
+  // P63 T2: protivník čtení, kterého už hraje jiná role („sprays the flames“ je cíl úkolu), místo protivníkovi
+  // z prostředí neuvolní – duch, kterého věta neříká, by plamenům vzal pronásledování.
   const readFoe = reading?.roles.find((entry) => READ_FOE_KINDS.has(entry.kind))?.noun ?? null;
-  const placeFoe = (): string | null => (readFoe === null ? null : spare(singular(bare(readFoe) ?? readFoe), [singular(hero)])) ?? spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]);
+  const placeFoe = (): string | null => (readFoe === null ? spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]) : spare(singular(bare(readFoe) ?? readFoe), [singular(hero)]));
   const foeLabel = enemy ?? saidFoe ?? (ownHazard || ownRival || shotAt !== null ? null : placeFoe());
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
@@ -1452,6 +1454,27 @@ function boundedCounts(spec: GenreSpec, counts: Partial<Record<CountRole, number
     return range === undefined || value === undefined ? [] : [[role, clamp(value, range.min, range.max)] as const];
   });
   return kept.length === 0 ? null : Object.fromEntries(kept);
+}
+
+/** Popisek role, která nese počet (`countsOf`): první věc obsazení v té roli. */
+function countLabels(spec: GenreSpec): Record<CountRole, string | null> {
+  const first = (roles: readonly CastRole[]): string | null => spec.cast?.find((item) => roles.includes(item.does))?.label ?? null;
+  return { enemy: first([...FOE_ROLES]), collectible: first(['collect']), target: first(['reach', 'throw_at']) };
+}
+
+/**
+ * P63 T4: počty rolí, které skladba (`compose.ts` `contentOf`) vzala ze slov věty, když je návrh neslyšel –
+ * „picks six glowing mushrooms“: sloveso návrh nezná, sbíral banány z bažiny a houby přidal až záměr; počet věty
+ * zůstal ležet a cíl ukázal „10 per wave, 3 waves“. Role, kterou návrh obsadil touž věcí, drží jeho rozhodnutí
+ * (i vynechání: „two knights duel“ počítá hrdinu, ne soupeře).
+ */
+export function composedCounts(sentence: string, reading: Reading | null, drafted: GenreSpec, content: GenreSpec): GenreSpec['counts'] {
+  const before = countLabels(drafted);
+  const after = countLabels(content);
+  const head = (label: string | null): string | null => (label === null ? null : singular(label.split(' ').at(-1)!));
+  const added = Object.fromEntries(GENRE_COUNT_ROLES.map((role) => [role, drafted.counts?.[role] !== undefined || head(after[role]) === head(before[role]) ? null : after[role]])) as Record<CountRole, string | null>;
+  const bounded = boundedCounts(content, countsOf(sentence, reading, added), GENRE_MODULES[content.genre] as GenreModule);
+  return bounded === null ? drafted.counts : { ...bounded, ...drafted.counts };
 }
 
 /**

@@ -27,7 +27,13 @@ export async function resolve(specifier, context, next) {
     const found = complete(local);
     if (found !== null) return next(pathToFileURL(found).href, context);
   }
-  return next(specifier, context);
+  try {
+    return await next(specifier, context);
+  } catch (error) {
+    // Podcesta balíčku bez mapy `exports` („next/server“): bundler doplní `.js`, holý Node ne (P63 T1).
+    if (error?.code !== 'ERR_MODULE_NOT_FOUND' || local !== null || /^(?:node:|\/|[a-z]:)/i.test(specifier) || !specifier.includes('/')) throw error;
+    return next(`${specifier}.js`, context);
+  }
 }
 
 export async function load(url, context, next) {

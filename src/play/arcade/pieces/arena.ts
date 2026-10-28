@@ -587,6 +587,19 @@ export const surviveTime: RulePiece<z.infer<typeof surviveParams>> = {
   },
 };
 
+/**
+ * Jen probuzení (P63 T4): útěk věty s počtem vyhrává počtem sebraných (`catch_goal`), ne skóre – `grow_to`, které
+ * pronásledovatele budí, by průběh četl jako cíl skóre. Tentýž průchod čítačů, takže probudí ve stejném tiku.
+ */
+export const arenaWake: RulePiece<Record<string, never>> = {
+  id: 'arena_wake',
+  params: z.object({}).strict(),
+  roles: ['player'],
+  trigger: 'counter',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state }) => wakeChasers(state),
+};
+
 // ---------------------------------------------------------------------------
 // Generátor
 
@@ -869,9 +882,14 @@ const escapeParams = z
     waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
     /** Hlídka (P36A T8, píše žánr): pronásledovatelé honí až hráče v dohledu (`ChaseParams.patrol`). */
     patrol: z.int().min(UNIT).max(40 * UNIT).optional(),
+    /** Věta s počtem (P63 T4, píše žánr): `items` je počet věcí celkem jako u sběru (`countedEscape`); `waves` pak neplatí. */
+    counted: z.literal(true).optional(),
+    /** Slovo věty pro počítadlo HUD (`keys 0/3`), jen s `counted`. */
+    noun: nounSchema.optional(),
   })
   .strict().superRefine((params, context) => {
-    if (params.entryDistance !== undefined && params.waves === undefined) context.addIssue({ code: 'custom', path: ['entryDistance'], message: 'entryDistance requires reinforcement waves' });
+    if (params.entryDistance !== undefined && params.waves === undefined && params.counted === undefined) context.addIssue({ code: 'custom', path: ['entryDistance'], message: 'entryDistance requires reinforcement waves' });
+    if (params.counted === true && params.items < 1) context.addIssue({ code: 'custom', path: ['items'], message: 'a counted escape collects at least one item' });
   });
 export type EscapeParams = z.infer<typeof escapeParams>;
 
@@ -943,15 +961,41 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   };
 }
 
+/** Vlny útěku věty s počtem (P63 T4): `need` věcí po vlnách jako sběr s počtem (`countedWaves`, `countedTicks`). */
+function countedEscapeSetup(params: EscapeParams): WaveSetup {
+  const sizes = countedWaves(params.items);
+  return {
+    chasers: params.chasers, speed: params.chaserSpeed, items: sizes[0] as number, seconds: params.seconds, waves: sizes.length, sizes, at: countedTicks(sizes.length, params.items),
+    ...(params.patrol === undefined ? {} : { patrol: params.patrol }),
+    ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }),
+    ...(params.entryDistance === undefined ? {} : { entryDistance: params.entryDistance }),
+    ...(params.chaseLead === undefined ? {} : { chaseLead: params.chaseLead }),
+    ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }),
+  };
+}
+
+/**
+ * Útěk věty s počtem (P63 T4): „collect three keys … while dodging ghosts“ = tři klíče celkem, ne tři v každé ze
+ * čtyř vln. Pronásledovatelé honí od začátku jako v útěku po vlnách; výhru dá `need` sebraných (`countedGoal`) a
+ * pronásledovatele budí `arena_wake` místo `grow_to`. Jedna věc hraje útěk bez vln (`grow_to` jedné věci).
+ */
+function countedEscape(seed: number, params: EscapeParams, health: number | undefined): ModeParts {
+  const parts = waveParts(seed, countedEscapeSetup(params), health);
+  const rules = parts.rules.flatMap((rule): PieceRef[] => (rule.id === 'grow_to' ? [{ id: 'arena_wake', params: {} }, ...countedGoal(parts.level, params.items, params.noun)] : [rule]));
+  return { ...parts, rules };
+}
+
 /** Režim `arena.escape`: sbírej N věcí (nebo přežij N s), než tě pronásledovatelé chytí; s `waves` ve vlnách. */
 export const arenaEscape: ModeGeneratorPiece<EscapeParams> = {
   id: 'arena_escape',
   params: escapeParams,
   roles: ['player', 'chaser', 'collectible'],
-  cost: (params) => ({ bodies: 1 + 2 * params.chasers + itemCount(params.items), rules: 3 }),
+  cost: (params) => ({ bodies: 1 + 2 * params.chasers + itemCount(params.items), rules: params.counted === true ? 6 : 3 }),
   generate: (seed, params) =>
+    params.counted === true && params.items > 1 ? waveLevel(seed, countedEscapeSetup(params)) :
     params.waves === undefined ? openArena(seed, params.chasers, params.chaserSpeed, params.items) : waveLevel(seed, { chasers: params.chasers, speed: params.chaserSpeed, items: params.items, seconds: params.seconds, waves: params.waves, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.entryDistance === undefined ? {} : { entryDistance: params.entryDistance }), ...(params.chaseLead === undefined ? {} : { chaseLead: params.chaseLead }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) }),
   parts: (seed, params, health) => {
+    if (params.counted === true && params.items > 1) return countedEscape(seed, params, health);
     const patrol = params.patrol === undefined ? {} : { patrol: params.patrol };
     if (params.waves !== undefined) return waveParts(seed, { chasers: params.chasers, speed: params.chaserSpeed, items: params.items, seconds: params.seconds, waves: params.waves, ...patrol, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.entryDistance === undefined ? {} : { entryDistance: params.entryDistance }), ...(params.chaseLead === undefined ? {} : { chaseLead: params.chaseLead }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) }, health);
     const level = arenaEscape.generate(seed, params);

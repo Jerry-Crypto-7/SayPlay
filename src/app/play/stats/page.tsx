@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { FUNNEL_STAGES, type FunnelDay, type FunnelStage } from '@/play/funnel';
+import { FUNNEL_STAGES, type FunnelDay, type FunnelStage, RETENTION_AFTER, retention } from '@/play/funnel';
 import { RECENT_CAP, versionStoreFromEnv } from '@/play/version';
 import { statsAccess } from '@/server/stats-access';
 
@@ -72,6 +72,34 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
           </section>
         );
       })}
+      <section className="play-stats-window">
+        <h2 className="sp-title-m">Returning players</h2>
+        <p className="sp-body-s sp-muted">One browser counts once a day. D1 and D7: of the players new on a day, how many came back 1 or 7 days later.</p>
+        <p className="sp-body">
+          {RETENTION_AFTER.map((after) => {
+            const rate = retention(days, after);
+            return <span key={after}>{`D${String(after)} ${rate === null ? '–' : `${String(Math.round((100 * rate.hit) / rate.of))}% (${String(rate.hit)} of ${String(rate.of)})`}`}{after === 1 ? ' · ' : ''}</span>;
+          })}
+        </p>
+        <table className="play-stats-table">
+          <thead>
+            <tr>
+              <th scope="col">Day</th>
+              <th scope="col">New</th>
+              <th scope="col">Returning</th>
+            </tr>
+          </thead>
+          <tbody>
+            {days.map((day) => (
+              <tr key={day.day}>
+                <th scope="row">{day.day}</th>
+                <td>{day.visitors.first.toLocaleString('en-US')}</td>
+                <td>{day.visitors.return.toLocaleString('en-US')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
       <section className="play-stats-window">
         <h2 className="sp-title-m">Strongest game in the feed</h2>
         {strongest === null ? (

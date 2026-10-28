@@ -195,12 +195,12 @@ const many = (label: string): string => (label.endsWith('in-laws') || MASS.has(l
 
 type Said = { readonly thing: string | null; readonly foe: string | null; readonly rival: string | null };
 
-/** Uzavřený anglický vzor cíle podle režimu; `null` = role, kterou vzor jmenuje, věta neříká. */
+/** Uzavřený anglický vzor cíle podle režimu; `null` = role, kterou vzor jmenuje, věta neříká. Věc přijde se členem nebo počtem. */
 const GOALS: Readonly<Record<string, (said: Said) => string | null>> = {
-  'arena.escape': ({ thing, foe }) => (foe === null ? null : thing === null ? `Dodge the ${foe}!` : `Grab the ${thing} and dodge the ${foe}!`),
-  'arena.collect': ({ thing }) => (thing === null ? null : `Collect the ${thing}!`),
-  'timing.stack': ({ thing }) => (thing === null ? null : `Stack the ${thing}!`),
-  'rhythm.default': ({ thing }) => (thing === null ? null : `Hit the ${thing} on the beat!`),
+  'arena.escape': ({ thing, foe }) => (foe === null ? null : thing === null ? `Dodge the ${foe}!` : `Grab ${thing} and dodge the ${foe}!`),
+  'arena.collect': ({ thing }) => (thing === null ? null : `Collect ${thing}!`),
+  'timing.stack': ({ thing }) => (thing === null ? null : `Stack ${thing}!`),
+  'rhythm.default': ({ thing }) => (thing === null ? null : `Hit ${thing} on the beat!`),
   'duel.default': ({ rival }) => (rival === null ? null : `Out-talk the ${rival}!`),
 };
 
@@ -217,6 +217,9 @@ export function twistGoal(spec: GenreSpec, sentence: string): string | null {
   const foe = spec.cast?.find((item) => item.does === 'chase_me' || item.does === 'avoid' || item.does === 'fight' || item.does === 'shoot_at')?.label;
   const item = spec.cast?.find((entry) => entry.does === 'collect')?.label;
   const enemy = said(foe, sentence) ? foe : null;
-  const goal = rule({ thing: said(item, sentence) ? many(item) : null, foe: enemy === null ? null : many(enemy), rival: enemy });
+  // P63 T4: věc s počtem z věty („recovers three fuel cells“) cíl počítá – „Collect 3 cells!“, ne „Collect the cells!“.
+  const count = spec.counts?.collectible;
+  const thing = !said(item, sentence) ? null : count === undefined ? `the ${many(item)}` : `${String(count)} ${plural(singular(item), count)}`;
+  const goal = rule({ thing, foe: enemy === null ? null : many(enemy), rival: enemy });
   return goal === null || goal.length > 80 ? null : goal;
 }

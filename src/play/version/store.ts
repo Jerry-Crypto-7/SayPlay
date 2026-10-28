@@ -25,6 +25,8 @@
  *   `<prefix>:play:new-player:<hodina UTC>:<hash volajícího>` a `<prefix>:play:new-player-day:<den UTC>:<hash volajícího>` (T3b).
  * - `<prefix>:play:funnel:<den UTC>:<stupeň>` – denní čítač trychtýře (P44B T12), započtené
  *   `<prefix>:play:funnel-seen:<den>:<stupeň>:<hra>:<relace>` (`SET NX`, dva dny).
+ * - `<prefix>:play:visitors:<den UTC>:<first|return|d1|d7>` – návrat hráče (P63 T5), denní čítač jako trychtýř;
+ *   `<prefix>:play:visitor-first:<UUID>` = den prvního příchodu (90 dní), `<prefix>:play:visitor-seen:<den>:<UUID>` (dva dny).
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -46,7 +48,7 @@ import { join } from 'node:path';
 
 import { canonical } from '@/ir/worlddoc';
 import type { LiveEntry } from '@/play/arcade/live';
-import { FUNNEL_MAX_DAYS, FUNNEL_STAGES, funnelDayOf, type FunnelDay, type FunnelStage, publishStageOf } from '@/play/funnel';
+import { FUNNEL_MAX_DAYS, FUNNEL_STAGES, funnelDayOf, funnelDaysBetween, type FunnelDay, type FunnelStage, publishStageOf, type VisitorDay } from '@/play/funnel';
 import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
@@ -172,12 +174,21 @@ export interface VersionStore {
    * u výzvy hráč nebo hash volajícího. Výpadek spolkne – trychtýř hru ani událost nezdrží.
    */
   countFunnel(stage: FunnelStage, versionId: string, session: string): Promise<void>;
+  /**
+   * Návštěvník (P63 T5, anonymní UUID klienta) nejvýš jednou za den (UTC): první den `first`, pozdější `return`,
+   * přesně 1. a 7. den po prvním ještě `d1` / `d7` dne prvního. U id se drží jen den prvního příchodu
+   * (`VISITOR_TTL_SECONDS`). Výpadek spolkne – trychtýř hru ani událost nezdrží.
+   */
+  countVisitor(visitor: string): Promise<void>;
   /** Trychtýř za posledních `min(days, FUNNEL_MAX_DAYS)` dní od nejstaršího po dnešek. Výpadek je `VersionStoreUnavailable`. */
   funnel(days: number): Promise<FunnelDay[]>;
 }
 
 /** Jak dlouho žije denní čítač trychtýře: celé okno `funnel` a den rezervy. */
 const FUNNEL_TTL_SECONDS = (FUNNEL_MAX_DAYS + 1) * 24 * 3600;
+/** Jak dlouho úložiště pamatuje první den návštěvníka; kdo přijde po ní, počítá se znovu jako nový. */
+export const VISITOR_TTL_SECONDS = 90 * 24 * 3600;
+const VISITOR_FIELDS = ['first', 'return', 'd1', 'd7'] as const;
 
 /** Hráč žebříčku (P44B T3): jen přezdívka, kterou si sám zvolil. Id je klíč, do záznamu nejde. */
 export interface PlayerRecord {
@@ -579,6 +590,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const boardQuotaKey = (playerId: string): string => `${prefix}:play:board-quota:${quotaDay(now())}:${playerId}`;
   const funnelKey = (day: string, stage: FunnelStage): string => `${prefix}:play:funnel:${day}:${stage}`;
   const funnelSeenKey = (day: string, stage: FunnelStage, versionId: string, session: string): string => `${prefix}:play:funnel-seen:${day}:${stage}:${versionId}:${session}`;
+  const visitorDayKey = (day: string, field: (typeof VISITOR_FIELDS)[number]): string => `${prefix}:play:visitors:${day}:${field}`;
+  const visitorSeenKey = (day: string, visitor: string): string => `${prefix}:play:visitor-seen:${day}:${visitor}`;
+  const visitorFirstKey = (visitor: string): string => `${prefix}:play:visitor-first:${visitor}`;
 
   const store: VersionStore = {
     id,
@@ -975,23 +989,43 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         // Trychtýř je statistika: nezapočtená událost hru nezdrží.
       }
     },
+    async countVisitor(visitor) {
+      const day = funnelDayOf(now());
+      try {
+        // Jednou za den: další události téhož dne stojí jediný příkaz.
+        if (!(await raw.setNx(visitorSeenKey(day, visitor), '1', 2 * 24 * 3600))) return;
+        if (await raw.setNx(visitorFirstKey(visitor), day, VISITOR_TTL_SECONDS)) {
+          await raw.incr(visitorDayKey(day, 'first'), FUNNEL_TTL_SECONDS);
+          return;
+        }
+        const first = await raw.get(visitorFirstKey(visitor));
+        if (first === null || first >= day) return;
+        await raw.incr(visitorDayKey(day, 'return'), FUNNEL_TTL_SECONDS);
+        const after = funnelDaysBetween(first, day);
+        if (after === 1 || after === 7) await raw.incr(visitorDayKey(first, after === 1 ? 'd1' : 'd7'), FUNNEL_TTL_SECONDS);
+      } catch {
+        // Trychtýř je statistika: nezapočtený návštěvník hru nezdrží.
+      }
+    },
     async funnel(days) {
       const count = Math.max(0, Math.min(Math.trunc(days), FUNNEL_MAX_DAYS));
       const dayList = Array.from({ length: count }, (_, back) => funnelDayOf(now() - (count - 1 - back) * 24 * 3600 * 1000));
+      const width = FUNNEL_STAGES.length + VISITOR_FIELDS.length;
       let texts: (string | null)[];
       try {
-        texts = count === 0 ? [] : await raw.getMany(dayList.flatMap((day) => FUNNEL_STAGES.map((stage) => funnelKey(day, stage))));
+        texts =
+          count === 0 ? [] : await raw.getMany(dayList.flatMap((day) => [...FUNNEL_STAGES.map((stage) => funnelKey(day, stage)), ...VISITOR_FIELDS.map((field) => visitorDayKey(day, field))]));
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+      const counter = (at: number): number => {
+        const value = Number(texts[at] ?? 0);
+        return Number.isSafeInteger(value) && value > 0 ? value : 0;
+      };
       return dayList.map((day, index) => ({
         day,
-        counts: Object.fromEntries(
-          FUNNEL_STAGES.map((stage, at) => {
-            const value = Number(texts[index * FUNNEL_STAGES.length + at] ?? 0);
-            return [stage, Number.isSafeInteger(value) && value > 0 ? value : 0];
-          }),
-        ) as Record<FunnelStage, number>,
+        counts: Object.fromEntries(FUNNEL_STAGES.map((stage, at) => [stage, counter(index * width + at)])) as Record<FunnelStage, number>,
+        visitors: Object.fromEntries(VISITOR_FIELDS.map((field, at) => [field, counter(index * width + FUNNEL_STAGES.length + at)])) as unknown as VisitorDay,
       }));
     },
   };

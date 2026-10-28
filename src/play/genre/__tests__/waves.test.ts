@@ -215,7 +215,8 @@ describe('stored arena games without waves', () => {
     // Uložená hra neměla ani `scoring` (T5).
     const { scoring: _scoring, ...spec } = legacySpec(sentence);
     const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly tuning: Record<string, unknown> };
-    const { waves: _waves, ...old } = tuning;
+    // Ani útěk věty s počtem (P63 T4, `counted`, `noun`) uložená hra neznala.
+    const { waves: _waves, counted: _counted, noun: _noun, ...old } = tuning;
     // Uložená hra je `genre.v2`, bez power-upů (P46C).
     const compiled = compileArcade({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v2' }, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
     expect(compiled.ok).toBe(true);
