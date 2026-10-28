@@ -151,6 +151,27 @@ function XrQuality() {
   return null;
 }
 
+/**
+ * Plátno s `<XR>` je připojené k three: `<XR>` předá správce WebXR už při renderu, efekt dítěte běží po něm.
+ * Do té doby `store.enterVR` odmítne („not connected to three.js“) a klepnutí na „Enter VR“ by tiše nic neudělalo –
+ * tlačítko se proto ukáže až teď (`XrControls.ready`). Naměřeno 28. 10.: tlačítko bylo vidět ~200 ms před připojením.
+ */
+let connected = false;
+const connectedListeners = new Set<(ready: boolean) => void>();
+
+function setConnected(next: boolean): void {
+  connected = next;
+  connectedListeners.forEach((listener) => listener(next));
+}
+
+function XrConnected() {
+  useEffect(() => {
+    setConnected(true);
+    return () => setConnected(false);
+  }, []);
+  return null;
+}
+
 function FpsHud() {
   const presenting = useXR((xr) => xr.session != null);
   const aim = useMemo(() => new Map(), []);
@@ -160,6 +181,7 @@ function FpsHud() {
 function wrapScene(scene: ReactNode): ReactNode {
   return (
     <XR store={store}>
+      <XrConnected />
       <KeepXrFrames />
       <XrQuality />
       <XrRig>{scene}</XrRig>
@@ -179,6 +201,15 @@ export async function enterVr(): Promise<void> {
 
 export function exitVr(): void {
   void store.getState().session?.end();
+}
+
+/** Hlásí, jestli `enterVr` umí relaci začít (plátno s `<XR>` připojené); hned i aktuální stav. */
+export function onReady(listener: (ready: boolean) => void): () => void {
+  listener(connected);
+  connectedListeners.add(listener);
+  return () => {
+    connectedListeners.delete(listener);
+  };
 }
 
 /** Hlásí vstup do relace a odchod z ní; hned i aktuální stav. */

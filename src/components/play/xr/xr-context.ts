@@ -19,6 +19,8 @@ export const XrHostContext = createContext<StageTunnel | null>(null);
 /** Ovládání relace pro „Enter VR“ / „Exit VR“. `null` = VR na stránce není. */
 export interface XrControls {
   readonly presenting: boolean;
+  /** Plátno s relací je připojené: `enter` teprve teď relaci začne (dřív by klepnutí tiše propadlo). */
+  readonly ready: boolean;
   enter(): Promise<void>;
   exit(): void;
 }

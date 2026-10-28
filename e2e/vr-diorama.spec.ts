@@ -1,12 +1,14 @@
 import { join } from 'node:path';
 
-import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 
 import type { XrReport } from '../src/components/play/xr/XrRig';
 import { BUTTON } from '../src/play/arcade/contract';
 import { assemblyOfCell, liveCells } from '../src/play/compose/allowed';
 import { compileRecipe } from '../src/play/compose/compile';
 import { DESK, TABLE } from '../src/play/xr/diorama-scale';
+
+import { expect, test } from './vr-pages';
 
 /**
  * Diorama (P65 T4) v emulátoru IWER: 15 žánrů mimo čtyři VR-nativní se hraje na desce před hráčem. Každý žánr
@@ -222,10 +224,10 @@ test.beforeEach(async () => {
 });
 
 for (const [id, script] of Object.entries(GENRES)) {
-  test(`${id}: the table-top diorama plays like the keyboard and keeps the hero in view`, async ({ browser, request }) => {
+  test(`${id}: the table-top diorama plays like the keyboard and keeps the hero in view`, async ({ openPage, request }) => {
     const url = await publish(request, id);
 
-    const flat = await browser.newPage();
+    const flat = await openPage();
     await flat.goto(url);
     await ready(flat);
     const reference = await play2d(flat, script);
@@ -233,7 +235,7 @@ for (const [id, script] of Object.entries(GENRES)) {
     console.log(`${id} 2D: ${JSON.stringify(reference.end)} ${String(reference.captured.inputs.length)} inputs`);
     expect(reference.captured.inputs.length, 'the keyboard script reaches the game').toBeGreaterThan(0);
 
-    const page = await browser.newPage();
+    const page = await openPage();
     await withQuest2(page);
     await page.goto(`${url}?vr=1`);
     await ready(page);

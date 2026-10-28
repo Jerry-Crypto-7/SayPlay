@@ -137,12 +137,23 @@ async function enterVr(page: Page): Promise<void> {
 
 const ids = async (page: Page): Promise<string[]> => ((await xr(page))?.panels ?? []).map((panel) => panel.id).sort();
 
-/** Panel `id`, jakmile ho scéna kreslí (a písmo je načtené – rozvržení se pak ustálí). */
+/**
+ * Panel `id`, jakmile ho scéna kreslí (a písmo je načtené – rozvržení se pak ustálí). Hledá se ve stránce každý
+ * snímek: dotazy testu chodí po 100 ms až 1 s a krátký panel („AI version ready“ na 3 s) by pod zátěží minuly.
+ */
 async function panelOf(page: Page, id: string): Promise<PanelReport> {
-  await expect.poll(async () => (await ids(page)).includes(id), { timeout: 15_000 }).toBe(true);
-  // Dva snímky na dokreslení po rozvržení s načteným písmem.
-  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
-  return (await xr(page))!.panels.find((panel) => panel.id === id)!;
+  const panel = await page.evaluate(async (id) => {
+    const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const find = () => window.__playXr?.().panels.find((candidate) => candidate.id === id) ?? null;
+    const until = performance.now() + 15_000;
+    while (find() === null && performance.now() < until) await frame();
+    // Dva snímky na dokreslení po rozvržení s načteným písmem.
+    await frame();
+    await frame();
+    return find();
+  }, id);
+  expect(panel, `${id} panel in the scene`).not.toBeNull();
+  return panel!;
 }
 
 /** Celý panel v obraze obou očí (ne za okem) a nejmenší text čitelný jako text kitu na 1 m. */
@@ -205,22 +216,43 @@ async function aim(page: Page, at: Point | null, from: Hand = HAND): Promise<voi
 const trigger = (page: Page, value: 0 | 1): Promise<void> =>
   page.evaluate((value) => (window as unknown as QuestWindow).__quest.controllers.right!.updateButtonValue('trigger', value), value);
 
-/** Stav tlačítka podle panelu (`aimed` = paprsek na něm, `pressed` = spoušť na něm dole); `null` = panel není. */
-const stateOf = async (page: Page, panel: string, button: string): Promise<string | null> =>
-  (await xr(page))?.panels.find((candidate) => candidate.id === panel)?.buttons.find((candidate) => candidate.id === button)?.state ?? null;
+type KeyState = PanelReport['buttons'][number]['state'];
+
+/**
+ * Snímek po snímku ve stránce čeká, až tlačítko hlásí stav `want` (`aimed` = paprsek na něm, `pressed` = spoušť na něm
+ * dole). `trigger` nastaví spoušť pravé ruky před čekáním; `release` ji pustí hned ve snímku, kdy tlačítko stisk
+ * ohlásí – klik je stisk a puštění na tlačítku do 1 s (`clickThresholdMs` v `XrRoot`) a dotazy testu po 100 ms
+ * až 1 s by puštění pod zátěží odsunuly za tu mez.
+ */
+async function untilState(page: Page, panel: string, button: string, want: KeyState, options: { readonly trigger?: 0 | 1; readonly release?: boolean } = {}): Promise<void> {
+  const seen = await page.evaluate(
+    async ({ panel, button, want, trigger, release }) => {
+      const right = (window as unknown as QuestWindow).__quest.controllers.right!;
+      const state = () => window.__playXr?.().panels.find((candidate) => candidate.id === panel)?.buttons.find((candidate) => candidate.id === button)?.state ?? null;
+      if (trigger !== undefined) right.updateButtonValue('trigger', trigger);
+      const until = performance.now() + 5_000;
+      while (state() !== want && performance.now() < until) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const last = state();
+      if (release === true && last === want) right.updateButtonValue('trigger', 0);
+      return last;
+    },
+    { panel, button, want, trigger: options.trigger, release: options.release },
+  );
+  expect(seen, `${panel}:${button}`).toBe(want);
+}
 
 /** Paprsek na tlačítko a počkat, až ho tlačítko ucítí; pak spoušť dolů a počkat na stisk. */
 async function press(page: Page, panel: PanelReport, button: string, from: Hand = HAND): Promise<void> {
   await aim(page, buttonOf(panel, button).at, from);
-  await expect.poll(() => stateOf(page, panel.id, button), { timeout: 5_000 }).toBe('aimed');
-  await trigger(page, 1);
-  await expect.poll(() => stateOf(page, panel.id, button), { timeout: 5_000 }).toBe('pressed');
+  await untilState(page, panel.id, button, 'aimed');
+  await untilState(page, panel.id, button, 'pressed', { trigger: 1 });
 }
 
-/** Klik paprskem: stisk na tlačítku a puštění spouště na něm. */
+/** Klik paprskem: stisk na tlačítku a puštění spouště na něm, hned jak tlačítko stisk ohlásí. */
 async function click(page: Page, panel: PanelReport, button: string, from: Hand = HAND): Promise<void> {
-  await press(page, panel, button, from);
-  await trigger(page, 0);
+  await aim(page, buttonOf(panel, button).at, from);
+  await untilState(page, panel.id, button, 'aimed');
+  await untilState(page, panel.id, button, 'pressed', { trigger: 1, release: true });
 }
 
 /** Jeden tik ručními hodinami; vrací, kolik vstupů hra zatím dostala. */
@@ -272,7 +304,7 @@ test('table-top: the goal board is in view, a bot win shows You did it!, Again r
   // a hra nedostane nic. Týž stisk s paprskem mimo panely do hry jde – kontrola, že test měří spoušť.
   await press(page, hud, 'exit');
   await aim(page, null);
-  await expect.poll(() => stateOf(page, 'hud', 'exit'), { timeout: 5_000 }).toBe('rest');
+  await untilState(page, 'hud', 'exit', 'rest');
   await trigger(page, 0);
   await frames(page);
   expect(await tickInputs(page)).toBe(0);
@@ -386,12 +418,15 @@ test('the full-detail version ready: an AI version ready panel offers Play it, a
 test('the game switches to the one that matches the idea: AI version ready shows briefly in VR', async ({ page, request }) => {
   const quick = await publish(request, { sentence: QUICK });
   const matched = await publish(request, { spec: specOf('runner.default') });
-  await fakeUpgrade(page, quick, () => ({ ...pending(), reading: { versionId: matched.versionId } }));
+  // Čtení dorazí až v relaci: přechod před vstupem do VR by panel (3 s od příchodu hry) odbyl ještě ve 2D.
+  let read = false;
+  await fakeUpgrade(page, quick, () => (read ? { ...pending(), reading: { versionId: matched.versionId } } : pending()));
   await withQuest2(page, AT_DESK);
   await page.goto(`${quick.url}?vr=1`);
   await ready(page);
   await enterVr(page);
 
+  read = true;
   await page.waitForURL(`**/play/${matched.versionId}`, { timeout: 20_000 });
   const notice = await panelOf(page, 'notice');
   expect(notice.text).toEqual(['AI version ready']);

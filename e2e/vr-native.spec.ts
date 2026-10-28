@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 
 import type { XrReport } from '../src/components/play/xr/XrRig';
 import { AXIS_MAX, BUTTON } from '../src/play/arcade/contract';
@@ -10,6 +10,8 @@ import { THROW } from '../src/play/arcade/pieces/throw';
 import { assemblyOfCell, liveCells } from '../src/play/compose/allowed';
 import { compileRecipe } from '../src/play/compose/compile';
 import { REACH, SWING } from '../src/play/xr/input-map';
+
+import { expect, test } from './vr-pages';
 
 /**
  * VR-nativní žánry (P65 T3) v emulátoru IWER: střílečka paprskem a spouští, hod máchnutím, bouchání úderem dolů
@@ -232,10 +234,10 @@ test.beforeEach(async () => {
 });
 
 for (const kind of ['shooter', 'throw', 'whack', 'slice'] as const) {
-  test(`${kind}: the controller scores in VR exactly as the finger does in 2D`, async ({ browser, request }) => {
+  test(`${kind}: the controller scores in VR exactly as the finger does in 2D`, async ({ openPage, request }) => {
     const url = await publish(request, kind);
 
-    const flat = await browser.newPage();
+    const flat = await openPage();
     await flat.goto(url);
     await ready(flat);
     const reference = await play2d(flat);
@@ -243,18 +245,25 @@ for (const kind of ['shooter', 'throw', 'whack', 'slice'] as const) {
     console.log(`${kind} 2D: ${JSON.stringify(reference.end)}`);
     expect(reference.end.score + reference.end.items, 'the bot scores within 5 s in 2D').toBeGreaterThan(0);
 
-    const page = await browser.newPage();
+    const page = await openPage();
     await withQuest2(page);
     await page.goto(`${url}?vr=1`);
     await ready(page);
     await page.getByTestId('enter-vr').click();
     await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
 
-    if (kind === 'whack' || kind === 'slice') {
-      // Ruka nad krajním pruhem je opravdu nad ním: svět krájení stojí v dosahu ruky. Bez tiku, hra zůstává na 0.
-      await vrStep(page, { at: [laneHandX(0), HAND_Y, HAND_Z], yaw: 0, trigger: false, stick: 0, velocity: [0, 0, 0] }, null, false);
-      expect((await xr(page))?.laneAxis).toBe(axisOfLane(0));
-    }
+    // Pravý ovladač už v relaci míří: osu dá paprsek (střílečka) nebo ruka (hod, krájení, bouchání), až scéna ovladač
+    // i prostor relace dostane – v relaci to jsou až další snímky, ne hned `presenting`. Bez tiku, hra zůstává na 0.
+    // Ruka nad krajním pruhem je opravdu nad ním: svět krájení stojí v dosahu ruky.
+    const lanes = kind === 'whack' || kind === 'slice';
+    const at: Hand['at'] = lanes ? [laneHandX(0), HAND_Y, HAND_Z] : kind === 'shooter' ? [0.2, 1.3, -0.2] : [0.2, 1.2, -0.3];
+    await vrStep(page, { at, yaw: 0, trigger: false, stick: 0, velocity: [0, 0, 0] }, null, false);
+    await expect
+      .poll(async () => {
+        const report = await xr(page);
+        return kind === 'shooter' ? (report?.aim ?? null) : (report?.laneAxis ?? null);
+      }, { timeout: 10_000 })
+      .toEqual(lanes ? axisOfLane(0) : expect.any(Number));
 
     const played = await playVr(page, kind, throwsOf(reference.wants));
     console.log(`${kind} VR: ${JSON.stringify(played)}`);

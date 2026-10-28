@@ -17,6 +17,7 @@ type XrModule = typeof import('./XrRoot');
 export function XrGate({ children }: { readonly children: ReactNode }) {
   const [xr, setXr] = useState<XrModule | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!xrWanted(window.location.href)) return undefined;
     let live = true;
@@ -30,7 +31,8 @@ export function XrGate({ children }: { readonly children: ReactNode }) {
     };
   }, []);
   useEffect(() => (xr === null ? undefined : xr.onPresenting(setPresenting)), [xr]);
-  const controls = useMemo<XrControls | null>(() => (xr === null ? null : { presenting, enter: xr.enterVr, exit: xr.exitVr }), [xr, presenting]);
+  useEffect(() => (xr === null ? undefined : xr.onReady(setReady)), [xr]);
+  const controls = useMemo<XrControls | null>(() => (xr === null ? null : { presenting, ready, enter: xr.enterVr, exit: xr.exitVr }), [xr, presenting, ready]);
   return (
     <XrHostContext.Provider value={xr?.host ?? null}>
       <XrControlsContext.Provider value={controls}>
