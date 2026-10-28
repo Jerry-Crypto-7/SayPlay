@@ -543,7 +543,7 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('pending nese hru ze čtení, jakmile vznikne; ready ani draft-final ji nenesou', async () => {
+  it('pending nese hru ze čtení, jakmile vznikne; hotová AI verze (ready) ji nenese', async () => {
     const created = await publish({ sentence: SENTENCE });
     expect((await game(created.body.versionId)).spec.genre).not.toMatchObject({ id: 'quest', mode: 'spatial' });
     let pending: Record<string, any> = {};
@@ -578,7 +578,9 @@ describe('dotaz upgradu hlásí hru ze čtení (P58D T2)', () => {
     const versions = versionStoreFromEnv(process.env);
     await vi.waitFor(async () => expect(await versions.childrenOf(created.body.versionId)).toHaveLength(1), { timeout: 30_000 });
     await vi.waitFor(() => expect(knownUpgrade(created.body.versionId)).toBeNull(), { timeout: 30_000 });
-    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
+    // Konec, ne `pending`; od P63 T6 nese uloženou hru ze čtení – hráč na ní zůstane, hráč na rychlé hře ji dostane.
+    const [reading] = await versions.childrenOf(created.body.versionId);
+    expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE', reading: { versionId: reading } });
   }, 120_000);
 });
 
@@ -606,6 +608,25 @@ describe('hra ze čtení i ve stejném žánru, když ukáže svět nebo věc z 
     expect([lookOf(plain.theme), lookOf(read.theme)]).toEqual(['meadow', 'mall']);
     expect(read.roles).toContainEqual(expect.objectContaining({ id: 'enemy', label: 'zombie' }));
     expect(readingDiffers(plain, read)).toBe(true);
+  });
+
+  /**
+   * P63 T2 (P61 h24): sestavená jízda nenese `spec.genre`, mřížka ale není. Čtení zná bouřkové mraky, rychlá hra
+   * kreslí žraloky – hra ze čtení se zveřejní; tentýž návrh ze staré cesty mřížky ne.
+   */
+  it('sestavená jízda ze čtení s bouřkovými mraky se liší od rychlé jízdy se žraloky, mřížka ne', () => {
+    const BALLOON = 'Steer a hot air balloon between thunderclouds above the ocean';
+    const STORM: Reading = {
+      control: 'steer', verbs: [{ word: 'Steer', class: 'steer' }], hero: 'hot air balloon', roles: [{ noun: 'thunderclouds', kind: 'obstacle', count: null }], setting: 'above the ocean',
+      mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'voyage', mode: 'race' }, sure: true, foe: 'thunderclouds', item: null, world: 'ocean', title: 'Hot Air Balloon',
+    };
+    const quick = draftGameSpec(BALLOON);
+    const drafted = draftGameSpecWithMeta(BALLOON, 1, { reading: STORM });
+    expect(drafted.spec.genre).toBeUndefined();
+    expect(drafted.genre).not.toBeNull();
+    expect(drafted.spec.roles).toContainEqual(expect.objectContaining({ label: 'thundercloud' }));
+    expect(readingDiffers(quick, drafted.spec, drafted.genre === null)).toBe(true);
+    expect(readingDiffers(quick, drafted.spec, true)).toBe(false);
   });
 
   /** Rychlá hra a návrh ze čtení; páry se staví až v testu. */

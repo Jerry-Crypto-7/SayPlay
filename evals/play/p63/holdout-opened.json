@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "e03e39a08c2a3e4ba2ea98054ce367b08e2ffcd9f66dc815d92222740538051b",
+ "openedAt": "2026-10-27T18:27:47.984Z",
+ "commit": "17e8715a",
+ "by": "P63 T6 sealed reading gate (shots.mjs + judge.mjs, main vs P63 on shared sheets)",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}

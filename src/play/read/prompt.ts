@@ -44,7 +44,7 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'crowd.default': 'you lead a group through gates (x2, +5) that grow or shrink it, then it fights',
   'push.default': 'you shove, ram or bump rivals off a ring, island, edge or plate',
   'hop.default': 'you hop forward row by row across roads, rails or rivers past traffic',
-  'catch.default': 'things fall from above and you move under them to catch them',
+  'catch.default': 'things fall from above and you move under them to catch them or bounce them back up',
   'whack.default': 'things pop up from holes for a moment and you hit them before they hide',
   'slice.default': 'things are tossed or fly through the air and you cut them midair',
   'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard, and you hold every path',
@@ -79,6 +79,7 @@ export const PROMPT_EXAMPLES: readonly { readonly sentence: string; readonly gen
   { sentence: 'a janitor mops every puddle in the dark school while the principal stalks the halls', genre: 'quest.spatial' },
   { sentence: 'two sumo cats square off on a round mat, shove the other one out', genre: 'push.default' },
   { sentence: 'a kangaroo bounces down the outback road by itself and i only swap lanes to dodge trucks', genre: 'runner.default' },
+  { sentence: 'a ranger hikes up the frozen valley and defeats the yeti waiting at the top', genre: 'duel.default' },
   { sentence: 'chess against a grumpy owl, each captured piece turns into a feather', genre: null },
   { sentence: 'a talk show where a nervous robot answers the host and you pick every reply', genre: null },
   { sentence: 'photograph sleepy bats in the attic, the clearest shots earn stars', genre: null },
@@ -100,7 +101,7 @@ export function readerSystemPrompt(): string {
     `roles: up to 6 other nouns that matter in play; kind = ${ROLE_KINDS.join('|')}; count = the number the sentence gives, else null.`,
     'setting: where it happens in English, or null. mood: one or two words, or null.',
     'numbers: seconds = a time limit in seconds, else null; counts = the other numbers in order.',
-    'genre: the game the sentence wants, {genre, mode}. Judge by what the player keeps doing in play, not by a word in the sentence: "catch the bus" is not catching, "shoot photos" is not shooting, a "race" in a story is not racing. Take the FIRST line below that fits (a final fight or the hero running does not decide):',
+    'genre: the game the sentence wants, {genre, mode}. Judge by what the player keeps doing in play, not by a word in the sentence: "catch the bus" is not catching, "shoot photos" is not shooting, a "race" in a story is not racing. Take the FIRST line below that fits. How the hero gets somewhere (runs, rides, flies) does not decide; slaying or beating the foe the sentence names does, unless the sentence is a race and the fight only ends it:',
     ...READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`))
       .sort((a, b) => (MODE_ORDER.indexOf(a) + 1 || 99) - (MODE_ORDER.indexOf(b) + 1 || 99))
       .map((id) => `- ${id}: ${MODE_HINTS[id] ?? ''}`),

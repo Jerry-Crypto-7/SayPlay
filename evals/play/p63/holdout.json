@@ -1,0 +1,29 @@
+{
+ "about": "P63 T1 sealed reading-game set: 24 new English sentences written 27. 10. 2026 before the first P63 code change, from the plan's mix only (no lexicon, no run). Families: verb = a verb that names a game the library may not have (cook, juggle, block, fish…); count = a goal with a number (word or digit); general = everything else. verb, hero, foe, item, world and count are the sentence's own words, labelled when written. Opened once in T6 (holdout-opened.json); nothing is tuned on it.",
+ "sentences": [
+  {"id": "p01", "family": "verb", "text": "A chef flips burgers on a sizzling grill before the customers get angry", "verb": "flip", "hero": "chef", "foe": null, "item": "burger", "world": "grill", "count": null},
+  {"id": "p02", "family": "verb", "text": "A clown juggles flaming torches under the big top", "verb": "juggle", "hero": "clown", "foe": null, "item": "flaming torch", "world": "big top", "count": null},
+  {"id": "p03", "family": "verb", "text": "A lifeguard swims out to pull tired swimmers from a stormy sea", "verb": "swim", "hero": "lifeguard", "foe": null, "item": "swimmer", "world": "stormy sea", "count": null},
+  {"id": "p04", "family": "verb", "text": "A goalkeeper blocks penalty kicks in a packed stadium", "verb": "block", "hero": "goalkeeper", "foe": null, "item": "penalty kick", "world": "stadium", "count": null},
+  {"id": "p05", "family": "verb", "text": "A fisherman reels in giant fish through a hole in a frozen lake", "verb": "reel", "hero": "fisherman", "foe": null, "item": "giant fish", "world": "frozen lake", "count": null},
+  {"id": "p06", "family": "verb", "text": "A plumber patches leaking pipes in a flooding basement", "verb": "patch", "hero": "plumber", "foe": "leaking pipe", "item": null, "world": "flooding basement", "count": null},
+  {"id": "p07", "family": "verb", "text": "A window cleaner scrubs pigeon mess off the windows of a skyscraper", "verb": "scrub", "hero": "window cleaner", "foe": null, "item": "pigeon mess", "world": "skyscraper", "count": null},
+  {"id": "p08", "family": "verb", "text": "A barista pours hot coffee for a line of grumpy robots", "verb": "pour", "hero": "barista", "foe": null, "item": "coffee", "world": "cafe", "count": null},
+  {"id": "p09", "family": "count", "text": "A pirate digs up four treasure chests on a sandy island", "verb": "dig", "hero": "pirate", "foe": null, "item": "treasure chest", "world": "sandy island", "count": 4},
+  {"id": "p10", "family": "count", "text": "Pop twelve balloons floating over a carnival", "verb": "pop", "hero": null, "foe": null, "item": "balloon", "world": "carnival", "count": 12},
+  {"id": "p11", "family": "count", "text": "A mouse steals 5 cheese wedges from a sleeping cat's kitchen", "verb": "steal", "hero": "mouse", "foe": "sleeping cat", "item": "cheese wedge", "world": "kitchen", "count": 5},
+  {"id": "p12", "family": "count", "text": "A fairy lights nine lanterns in an enchanted forest", "verb": "light", "hero": "fairy", "foe": null, "item": "lantern", "world": "enchanted forest", "count": 9},
+  {"id": "p13", "family": "count", "text": "A puppy digs up three buried bones in the backyard", "verb": "dig", "hero": "puppy", "foe": null, "item": "bone", "world": "backyard", "count": 3},
+  {"id": "p14", "family": "count", "text": "A ghost scares eight campers around a spooky campfire", "verb": "scare", "hero": "ghost", "foe": null, "item": "camper", "world": "campfire", "count": 8},
+  {"id": "p15", "family": "count", "text": "A robot repairs two broken satellites in orbit", "verb": "repair", "hero": "robot", "foe": null, "item": "broken satellite", "world": "orbit", "count": 2},
+  {"id": "p16", "family": "count", "text": "A frog snaps up eleven flies over a misty pond", "verb": "snap up", "hero": "frog", "foe": null, "item": "fly", "world": "misty pond", "count": 11},
+  {"id": "p17", "family": "general", "text": "A hedgehog rolls through a glowing mushroom cave", "verb": "roll", "hero": "hedgehog", "foe": null, "item": null, "world": "mushroom cave", "count": null},
+  {"id": "p18", "family": "general", "text": "A tiny submarine explores a deep ocean trench full of anglerfish", "verb": "explore", "hero": "tiny submarine", "foe": "anglerfish", "item": null, "world": "ocean trench", "count": null},
+  {"id": "p19", "family": "general", "text": "A viking sails through icy fjords while sea serpents attack", "verb": "sail", "hero": "viking", "foe": "sea serpent", "item": null, "world": "icy fjord", "count": null},
+  {"id": "p20", "family": "general", "text": "A monkey swings through jungle vines dodging falling coconuts", "verb": "swing", "hero": "monkey", "foe": "falling coconut", "item": null, "world": "jungle", "count": null},
+  {"id": "p21", "family": "general", "text": "A race car speeds around a desert track full of tumbleweeds", "verb": "speed", "hero": "race car", "foe": "tumbleweed", "item": null, "world": "desert track", "count": null},
+  {"id": "p22", "family": "general", "text": "An owl delivers letters across a moonlit village", "verb": "deliver", "hero": "owl", "foe": null, "item": "letter", "world": "moonlit village", "count": null},
+  {"id": "p23", "family": "general", "text": "A dinosaur stomps through a city smashing parked cars", "verb": "stomp", "hero": "dinosaur", "foe": "parked car", "item": null, "world": "city", "count": null},
+  {"id": "p24", "family": "general", "text": "A snail slides along a garden path after the rain, racing a beetle", "verb": "slide", "hero": "snail", "foe": "beetle", "item": null, "world": "garden path", "count": null}
+ ]
+}

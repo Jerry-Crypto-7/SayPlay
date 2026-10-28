@@ -14,6 +14,8 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import { castFor } from '@/play/genre/contract';
 import type { Reading } from '@/play/read/schema';
 
+import { EXPECT, gamesOf, loadDeps, namesCast } from '../../../../evals/play/p63/diagnose.mjs';
+
 import { draftGameSpecWithMeta } from '../draft';
 import { singular } from '../lexicon';
 
@@ -102,6 +104,26 @@ describe('the hero is the subject, the foe the object, the fox the last resort (
       expect(foxes.length, `${name}: ${foxes.join(' ')}`).toBeLessThanOrEqual(baseline.sets[name]!.cast.foxHeroNotSaid.length);
     }
   }, 900_000);
+});
+
+describe('the reading game gives every foe the reading names a place (P63 T2)', () => {
+  // Uložená čtení astry (`evals/play/p63/readings.astra.json`) cestou serveru (`gamesOf`): ztracený protivník čtení
+  // a duch z prostředí místo plamenů byly krok „překlad rolí“ diagnózy T1.
+  const set = (JSON.parse(readFileSync('evals/play/p63/read-set.json', 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
+  const readings = JSON.parse(readFileSync('evals/play/p63/readings.astra.json', 'utf8')) as { rows: { id: string; models: Record<string, { reading: Reading | null }> }[] };
+  const readingGameOf = async (id: 'h15' | 's002') => {
+    const row = set.find((sentence) => sentence.id === id)!;
+    const reading = readings.rows.find((entry) => entry.id === id)!.models['astra@openai']!.reading;
+    return gamesOf(row.text, reading, await loadDeps()).readingGame!;
+  };
+
+  it('h15 sprays the flames with no ghost the sentence never says; s002 collects the keys and dodges the ghosts', async () => {
+    const firefighter = await readingGameOf('h15');
+    expect(namesCast(firefighter.cast, EXPECT.h15), JSON.stringify(firefighter.cast)).toBe(true);
+    expect(firefighter.cast.roles.filter((role) => role.includes('ghost'))).toEqual([]);
+    const knight = await readingGameOf('s002');
+    expect(namesCast(knight.cast, EXPECT.s002), JSON.stringify(knight.cast)).toBe(true);
+  }, 120_000);
 });
 
 beforeAll(async () => { await loadRapier(); });

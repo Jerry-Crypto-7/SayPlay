@@ -3,7 +3,7 @@ import { verifyArcade } from '../arcade/verify';
 import { lookFor, sentenceLook, timeOfDayFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
-import { draftChoiceOrder, draftGenreFor, heroFitsReading, readingFoe, readingHero } from '../draft/draft';
+import { composedCounts, draftChoiceOrder, draftGenreFor, heroFitsReading, readingFoe, readingHero } from '../draft/draft';
 import { nounPhrase, singular, toolsOf } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
@@ -212,7 +212,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
   // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
   const palette = draft.palette ?? (lookFor(setting) === null ? (sentenceLook(intent.sentence) ?? undefined) : undefined);
-  return { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
+  const content: GenreSpec = { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
+  // P63 T4: věc, kterou přidala slova věty, si nese i počet věty („picks six glowing mushrooms“ = 6, ne 10 ve vlně).
+  const counts = composedCounts(intent.sentence, reading, draft, content);
+  return counts === undefined ? content : { ...content, counts };
 }
 
 export function compose(intent: Intent, seed = 1, reading: Reading | null = null): Composition {
