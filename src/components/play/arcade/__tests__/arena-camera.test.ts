@@ -91,7 +91,8 @@ function framesOf(world: ArcadeWorld, aspect: number, framing: ArenaFraming): Fr
     let nearest = Infinity;
     for (const view of views) {
       const part = partOf(view);
-      if (part !== 'chaser' && part !== 'enemy') continue;
+      // Jako scéna: na výšku i nepřítel průběhu (P62 T5-R1).
+      if (part !== 'chaser' && part !== 'enemy' && (part !== 'foe' || aspect >= 1)) continue;
       if (((state[bodyBase(view.index) + BODY.flags] as number) & FLAG.alive) === 0) continue;
       const other = at(view.index);
       const gap = Math.hypot(other.x - hero.x, other.z - hero.z);

@@ -17,21 +17,22 @@ import { useEffect, useMemo, useRef } from 'react';
 import { type Group, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
 
 import { type ArcadeState, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import type { Look } from '@/play/arcade/look';
 import { SHOOTER, aimAt, aimVelocity } from '@/play/arcade/pieces/shooter';
 import type { HeroAction } from '@/play/spec';
 
 import { ShootThrowFx } from '../action-cue/ShootThrowFx';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
+import { FieldDressing } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { TALL, WIDE } from './view';
 
 const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
 const RETICLE_M = 20;
 const FIRE_KEYS = new Set([' ', 'arrowup', 'w']);
 /** Značka pro `ShadowFlags` rigu: síť stín nevrhá ani nepřijímá. */
 const AID = { rigShadow: 'none' } as const;
-/** Kamera na výšku: tolik metrů nad hráčem a za ním, kouká tolik před něj. */
-const TALL = { up: 20, back: 9, ahead: 13 } as const;
 const TALL_AXIS = Math.hypot(TALL.up, TALL.back + TALL.ahead);
 /**
  * Na výšku je záběr úzký a nepřítel jde k hráči až pod 35° (`laneSpread`) – stál za bokem obrazu (P58A T4).
@@ -79,20 +80,37 @@ export function ShooterRig({
   surface,
   enabled,
   ghost,
+  look: scene,
 }: {
   readonly session: ArcadeSession;
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly enabled: boolean;
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
+  /** Sada prostředí: kulisy uvnitř kuželu míření (P62 T4). */
+  readonly look: Look;
 }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const reticle = useRef<Group | null>(null);
   const look = useMemo(() => new Vector3(), []);
   const yaw = useRef(0);
+  // Zorný úhel plátna (60°): na šířku ho střelnice zúží (`WIDE.fov`, P62 T5), na výšku a po odchodu vrátí.
+  const baseFov = useRef(camera.fov);
+  useEffect(() => {
+    const fov = baseFov.current;
+    return () => {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    };
+  }, [camera]);
 
   useFrame((_, delta) => {
     if (renderHeld(session)) return;
+    const fov = camera.aspect < 1 ? baseFov.current : WIDE.fov;
+    if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
     const state = session.state();
     const player = state[HEADER.player] as number;
     const p = bodyBase(player);
@@ -106,8 +124,8 @@ export function ShooterRig({
       camera.position.set(x - TALL.back * sin, TALL.up, z - TALL.back * cos);
       look.set(x + TALL.ahead * sin, 0, z + TALL.ahead * cos);
     } else {
-      camera.position.set(0, 3.6, z - 5.5);
-      look.set(0, 1, z + 14);
+      camera.position.set(0, WIDE.up, z - WIDE.back);
+      look.set(0, WIDE.aim, z + WIDE.ahead);
     }
     camera.lookAt(look);
     camera.updateMatrixWorld();
@@ -214,6 +232,8 @@ export function ShooterRig({
       <GhostSlot ghost={ghost} session={session} />
       {/* Výstřel vidět (P43 T5): záblesk u hlavně a stopa střely. */}
       <ShootThrowFx session={session} verb="shoot" />
+      {/* Kulisy sady v kuželu míření mimo dráhy nepřátel a terčů (P62 T4). */}
+      <FieldDressing look={scene} world={session.world} />
       <group ref={reticle}>
         <mesh position={[0, 0, RETICLE_M / 2]} userData={AID}>
           <boxGeometry args={[0.03, 0.03, RETICLE_M]} />

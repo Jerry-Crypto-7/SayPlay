@@ -139,23 +139,32 @@ const FIELD_CELL_M = 2.5;
  * Rovná zem pod hrou bez cesty (P46G T7: bludiště, hřiště, střelnice, ring…):
  * mřížka v y = 0 přes `area` s barvami ve vrcholech z `groundPainter`, normála
  * nahoru. `edge` = kraj hrací plochy (`boxEdge`); bez něj jen odstíny a skvrny.
+ *
+ * Interiér (P62 T6, `Look.interior`) má bílé vrcholy a UV v metrech: dlažbu dá
+ * textura povrchu (`interiorFloorMap`), ne zem sady – ta se skvrnami a krajnicí
+ * četla jako venek.
  */
 export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: number) => number | null = () => null): BufferGeometry {
-  const paint = groundPainter(groundPalette(look));
+  const paint = look.interior === undefined ? groundPainter(groundPalette(look)) : null;
   const columns = Math.max(1, Math.ceil((area.x1 - area.x0) / FIELD_CELL_M));
   const rows = Math.max(1, Math.ceil((area.z1 - area.z0) / FIELD_CELL_M));
   const count = (rows + 1) * (columns + 1);
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(positions.length);
   const normals = new Float32Array(positions.length);
-  const color = new Color();
+  const uvs = paint === null ? new Float32Array(count * 2) : null;
+  const color = new Color(1, 1, 1);
   // Zápis po složkách, ne `set([…])`: pole na vrchol stálo na telefonu při montáži scény kola desítky ms (T13a).
   let at = 0;
   for (let row = 0; row <= rows; row += 1) {
     const z = area.z0 + ((area.z1 - area.z0) * row) / rows;
     for (let column = 0; column <= columns; column += 1) {
       const x = area.x0 + ((area.x1 - area.x0) * column) / columns;
-      paint(x, z, edge(x, z), color);
+      if (paint !== null) paint(x, z, edge(x, z), color);
+      if (uvs !== null) {
+        uvs[(at / 3) * 2] = x;
+        uvs[(at / 3) * 2 + 1] = z;
+      }
       positions[at] = x;
       positions[at + 2] = z;
       colors[at] = color.r;
@@ -185,6 +194,7 @@ export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: num
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
   geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+  if (uvs !== null) geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
   geometry.setIndex(new BufferAttribute(index, 1));
   return geometry;
 }

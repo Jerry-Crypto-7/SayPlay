@@ -14,13 +14,15 @@ import { type Flora, type Look, LOOK_WIND, type LookId } from '@/play/arcade/loo
 import { modelPath } from '@/play/arcade/models';
 
 import type { ToyPart } from '../toy/applyToy';
-import { trackLoad } from './pending-loads';
+import { afterBodies, trackBody, trackLoad } from './pending-loads';
 import { type MotionPart, motionOf } from '../toy/body-class';
 import type { QualityTier } from './rig/quality';
 import { toonPatch } from './rig/toon';
 import { plantPaint } from './vegetation-places';
 
 const modelCache = new Map<string, Promise<Object3D | null>>();
+/** Rozbalené modely podle id: tělo z nich jde postavit hned při montáži (`loadedBody`). */
+const modelReady = new Map<string, Object3D | null>();
 
 /**
  * Průhledný oboustranný materiál kreslí three dvěma průchody (rub, líc) a před každým
@@ -48,9 +50,21 @@ export function loadModel(id: string): Promise<Object3D | null> {
         .then((gltf) => singlePass(gltf.scene as Object3D))
         .catch(() => null),
     );
+    void pending.then((model) => modelReady.set(id, model));
     modelCache.set(id, pending);
   }
   return pending;
+}
+
+/**
+ * Model těla obsazení hned s kódem scény (P62 T11): hrdina se stáhne a rozbalí dřív, než scéna požádá o podlahu,
+ * stěny a kulisy, a kulisy na něj počkají (`afterBodies`). Montáž ho pak nakreslí prvním snímkem (`loadedBody`).
+ */
+export function preloadBody(id: string): Promise<Object3D | null> {
+  const known = modelCache.has(id);
+  const load = loadModel(id);
+  if (!known) void trackBody(load);
+  return load;
 }
 
 /** Jedna síť na materiál; geometrie, které spolu slít nejdou, zůstanou samy. */
@@ -81,7 +95,11 @@ const flatCache = new Map<string, Promise<Object3D | null>>();
 export function loadFlatModel(id: string): Promise<Object3D | null> {
   let pending = flatCache.get(id);
   if (pending === undefined) {
-    pending = trackLoad(loadModel(id).then((model) => (model === null ? null : flatten(model))));
+    pending = trackLoad(
+      afterBodies()
+        .then(() => loadModel(id))
+        .then((model) => (model === null ? null : flatten(model))),
+    );
     flatCache.set(id, pending);
   }
   return pending;
@@ -209,7 +227,11 @@ export function paintedPlant(id: string, flora: Flora, simple = false): Promise<
   if (pending === undefined) {
     let baked = plantCache.get(id);
     if (baked === undefined) {
-      baked = loadModel(id).then((model) => (model === null ? null : bakePlant(model)));
+      baked = trackLoad(
+        afterBodies()
+          .then(() => loadModel(id))
+          .then((model) => (model === null ? null : bakePlant(model))),
+      );
       plantCache.set(id, baked);
     }
     pending = baked.then(async (plant) => {
@@ -730,14 +752,32 @@ export function bodyFor(model: Object3D, id: string, posed: boolean): Object3D {
 }
 
 const bodyCache = new Map<string, Promise<Object3D | null>>();
+const bodyReady = new Map<string, Object3D | null>();
+const bodyKey = (id: string, posed: boolean): string => (posed && motionOf(id)?.parts !== undefined ? `${id}:posed` : id);
 
 /** Model těla role (`World.tsx`), slitý `mergeBody`; `posed` = role, která se hýbe (hrdina, nepřítel). */
 export function loadBodyModel(id: string, { posed = false }: { readonly posed?: boolean } = {}): Promise<Object3D | null> {
-  const key = posed && motionOf(id)?.parts !== undefined ? `${id}:posed` : id;
+  const key = bodyKey(id, posed);
   let pending = bodyCache.get(key);
   if (pending === undefined) {
-    pending = trackLoad(loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed))));
+    pending = trackBody(loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed))));
+    void pending.then((body) => bodyReady.set(key, body));
     bodyCache.set(key, pending);
   }
   return pending;
+}
+
+/**
+ * Tělo, které jde nakreslit hned při montáži (P62 T11): hotové, nebo postavené teď z modelu, který už je rozbalený
+ * (`preloadBody`). `undefined` = model se ještě načítá a scéna zatím kreslí náhradní kvádr.
+ */
+export function loadedBody(id: string, { posed = false }: { readonly posed?: boolean } = {}): Object3D | null | undefined {
+  const key = bodyKey(id, posed);
+  if (bodyReady.has(key) || bodyCache.has(key)) return bodyReady.get(key);
+  const model = modelReady.get(id);
+  if (model === undefined) return undefined;
+  const body = model === null ? null : bodyFor(model, id, posed);
+  bodyReady.set(key, body);
+  bodyCache.set(key, Promise.resolve(body));
+  return body;
 }

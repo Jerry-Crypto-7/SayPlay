@@ -9,6 +9,7 @@ import { PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { LOOKS } from '@/play/arcade/look';
 
 import type { ArcadeSession } from '../../session';
 import { ShooterRig } from '../../shooter/ShooterRig';
@@ -111,7 +112,7 @@ describe('rigs mount the effect', () => {
   const session = { state: () => stateWith(false), prev: () => stateWith(false) } as unknown as ArcadeSession;
   const surface = { current: null };
   it('ShooterRig shows shots, ThrowRig shows throws', () => {
-    expect(findAll(ShooterRig({ session, surface, enabled: false, heroAction: 'none' }), ShootThrowFx).map((fx) => fx.props.verb)).toEqual(['shoot']);
+    expect(findAll(ShooterRig({ session, surface, enabled: false, heroAction: 'none', look: LOOKS.mall }), ShootThrowFx).map((fx) => fx.props.verb)).toEqual(['shoot']);
     expect(findAll(ThrowRig({ session, surface, enabled: false, heroAction: 'none' }), ShootThrowFx).map((fx) => fx.props.verb)).toEqual(['throw']);
   });
 });

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b84974e5e53a96d1360f7f3537019c763bdfc4f3a743de349e13a5b05269f195",
+ "catalogHash": "8d74e91efd9db0e3ebdd29b6b6dd72e2756286e1d56df3afebe33fd3d351102a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1781,6 +1781,12 @@
   "gen3d-hostage": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-lizard": {"class":"quadruped","regions":{"tailZ":-0.246,"legY":0.249}},
   "gen3d-trout": {"class":"swimmer","regions":{"tailZ":-0.75}},
-  "gen3d-dumpling": {"class":"prop"}
+  "gen3d-dumpling": {"class":"prop"},
+  "gen3d-cheetah": {"class":"quadruped","regions":{"tailZ":-0.371,"legY":0.249}},
+  "gen3d-snowplow": {"class":"vehicle"},
+  "gen3d-firecracker": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pinecone": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-stalactite": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-termite": {"class":"quadruped","regions":{"tailZ":-0.296,"legY":0.246}}
  }
 }

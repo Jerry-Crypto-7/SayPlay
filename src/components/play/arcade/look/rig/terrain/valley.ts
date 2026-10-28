@@ -125,10 +125,16 @@ export function valleyHeightAt(from: number, to: number, heights: Float32Array):
   };
 }
 
+/**
+ * Interiér (P62 T6, `Look.interior`) je rovná podlaha jako hala, s bílými vrcholy a UV v metrech (x, z před ohnutím
+ * po trati): dlažbu dá textura povrchu (`interiorFloorMap`). Zem sady se světlými skvrnami a krajnicí soudce četl
+ * jako „outdoor road over pale hills“.
+ */
 export function buildValley({ look, from, to }: ValleyOptions): Valley & { readonly heights: Float32Array } {
   const rows = rowsOf(from, to);
   const zAt = (column: number, row: number): number => zOf(from, column, row);
-  const heights = valleyHeights(from, to, look.ceiling !== undefined);
+  const indoor = look.interior !== undefined;
+  const heights = valleyHeights(from, to, indoor || look.ceiling !== undefined);
   const h = (column: number, row: number): number => heights[row * XS.length + column]!;
 
   const palette = valleyPalette(look);
@@ -147,6 +153,10 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley & { reado
   };
   /** Barva trojúhelníku z posledních devíti souřadnic: zem s kresbou (`ground.ts`), na svahu stín, na srázu skála. */
   const paint = (index: number): void => {
+    if (indoor) {
+      tints.fill(1, at - 9, at);
+      return;
+    }
     const p = positions;
     const o = at - 9;
     const [ax, ay, az, bx, by, bz, cx, cy, cz] = [p[o]!, p[o + 1]!, p[o + 2]!, p[o + 3]!, p[o + 4]!, p[o + 5]!, p[o + 6]!, p[o + 7]!, p[o + 8]!];
@@ -190,6 +200,14 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley & { reado
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new Float32BufferAttribute(tints, 3));
+  if (indoor) {
+    const uvs = new Float32Array((positions.length / 3) * 2);
+    for (let i = 0; i < uvs.length; i += 2) {
+      uvs[i] = positions[(i / 2) * 3]!;
+      uvs[i + 1] = positions[(i / 2) * 3 + 2]!;
+    }
+    geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
+  }
   geometry.computeVertexNormals();
   return { geometry, heights, heightAt: valleyHeightAt(from, to, heights) };
 }

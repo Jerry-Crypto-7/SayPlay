@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "d62f5010f3dcabe025f4cb9f74449095273a51a11e41c04e7a03312d62719ece",
+ "openedAt": "2026-10-28T12:12:05.814Z",
+ "commit": "3d51f03c",
+ "by": "P62 T12 (sealed place set B gate: shots.mjs + judge.mjs, main c1dfd552 vs P62 on shared sheets)",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}

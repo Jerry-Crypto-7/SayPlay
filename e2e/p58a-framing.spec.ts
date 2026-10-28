@@ -99,3 +99,136 @@ for (const [device, use] of Object.entries(PROFILES)) {
     }
   });
 }
+
+/**
+ * Nepřítel z věty čitelný (P62 T5): soudce rychlé hry psal „small zombie figures“ a „bugs are barely visible“.
+ * Rychlá hra z věty (dveře `/api/play/games`, jako ji fotí soudce) pro střílečku a každý arénový žánr s nepřítelem;
+ * robot hraje ručními hodinami jako výš. Od snímku, kdy je nepřítel poprvé vidět (sběr ho přivede až druhou vlnou),
+ * se 180 tiků každý šestý čte `__playFrame().foe` – nejbližší tělo se značkou nepřítele. Podíl = větší z výšky
+ * a šířky jeho obdélníku / výška plátna (`foeShare` v `ArcadeStage.tsx`), jen ze snímků, kde střed nepřítele leží
+ * na plátně; medián ≥ `LEGIBLE_SHARE.target`. Oříznutí: nejvýš `FOE_CROPPED` těch snímků smí mít obdélník
+ * nepřítele přes horní nebo dolní hranu plátna – zvětšený nepřítel nesmí lézt z obrazu.
+ * V záběru (P62 T5-R1): ze všech snímků od prvního objevení, kdy scéna nepřítele má, leží jeho střed na plátně
+ * aspoň ve `FOE_SEEN`; hrdina (má-li ho scéna) v každém z nich.
+ */
+const FOE_SHARE = 0.1;
+const FOE_CROPPED = 0.2;
+const FOE_SEEN = 2 / 3;
+/**
+ * Výjimky oříznutí na desktopu, záběr arény na šířku (P56B T9) se tu nemění. Útěk: duch stojí na startu za hrdinou
+ * u kamery a kamera rámuje hrozbu středem (`centreReach`), dolní půlka ducha leží pod hranou (90 % snímků už na
+ * 004514b0, kde se nepřítel nezvětšoval). Sběr: nepřítel průběhu (P45C) kameru na šířku netáhne a vchází do arény
+ * od zadní stěny přes horní hranu. Na výšku (telefon) obojí rámuje kamera arény celým tělem (T5-R1).
+ */
+const FOE_CROPPED_BY_CELL: Readonly<Record<string, number>> = { 'desktop arena.escape': 1, 'desktop arena.collect': 1 };
+/**
+ * Sběr na výšku (T5-R1): přepadník čeká v rohu arény a robot od něj odchází na 15–33 m; v záběru je jen s kamerou
+ * 14–18 m daleko (bez něj 8,8 m) a čitelnost ho dotáhne nejvýš na `LEGIBLE_CAP` (2×). 27. 10.: medián Pixel 7
+ * 9,1–9,2 %, iPhone 9,7–10,1 % ve 24–30 z 30 snímků; před T5-R1 10,4 % z 1–2 snímků, kdy byl v obraze. V záběru
+ * má přednost.
+ */
+const FOE_SHARE_BY_CELL: Readonly<Record<string, number>> = { 'phone arena.collect': 0.085, 'touch arena.collect': 0.085 };
+/**
+ * Bez kontroly v záběru a hrdiny (T5-R1): úkol na výšku. Stráže stojí 6–10 m do strany a do úzkého obrazu se
+ * s hrdinou vejdou jen v části hry. Na 3478a8b8: Pixel 7 stráž v obraze v 18–19 z 30 snímků, iPhone 29 z 30
+ * a hrdina mimo v 1 snímku; po T5-R1 Pixel 7 16–18, iPhone 29–30 z 30, hrdina mimo v 0.
+ */
+const FRAMING_FREE: ReadonlySet<string> = new Set(['phone quest.spatial', 'touch quest.spatial']);
+/** Nejvíc tiků čekání na první nepřítel (sběr: druhá vlna). */
+const FOE_WAIT = 2400;
+
+interface FoeCell {
+  readonly genre: string;
+  readonly sentence: string;
+}
+const FOE_CELLS: readonly FoeCell[] = [
+  // Dev věty P30 s výtkou soudce (s039, s037): nepřítel stojí na střelnici i jde ve vlnách.
+  { genre: 'shooter.default', sentence: 'zombie shooter in a mall' },
+  { genre: 'shooter.default', sentence: 'A space marine shoots alien bugs in a mining colony' },
+  // s002: útěk před duchy.
+  { genre: 'arena.escape', sentence: 'A knight must collect three keys in a haunted castle while dodging ghosts.' },
+  { genre: 'arena.fight', sentence: 'a knight fights skeletons in a castle' },
+  { genre: 'arena.collect', sentence: 'collect coins in a park' },
+  { genre: 'quest.spatial', sentence: 'a knight frees five prisoners in a dungeon guarded by skeletons' },
+];
+
+interface FoeSample {
+  readonly tick: number;
+  /** Střed nepřítele leží na plátně; podíl a oříznutí se počítají jen z takových snímků. */
+  readonly seen: boolean;
+  /** Střed hrdiny na plátně; `null` = scéna hrdinu nemá. */
+  readonly hero: boolean | null;
+  readonly share: number;
+  /** Jen výška, do hlášky: plochý nepřítel má podíl ze šířky. */
+  readonly tall: number;
+  readonly cropped: boolean;
+}
+
+const { defaultBrowserType: _phoneFoe, ...PIXEL_7_FOE } = devices['Pixel 7']!;
+/** Desktop jako snímky soudce (`evals/play/p61/shots.mjs`: 1280 × 720); telefon jako výš. */
+const FOE_PROFILES = { desktop: { viewport: { width: 1280, height: 720 } }, phone: PIXEL_7_FOE, touch: {} } as const;
+
+for (const [device, use] of Object.entries(FOE_PROFILES)) {
+  test.describe(`the sentence's foe is legible on ${device}`, () => {
+    test.use(use);
+    test.setTimeout(240_000);
+
+    for (const cell of FOE_CELLS) {
+      test(`${cell.genre}: "${cell.sentence}" – the nearest foe is at least ${String(FOE_SHARE * 100)} % of the canvas height`, async ({ page, request }, testInfo) => {
+        test.skip(TOUCH_PROJECTS.has(testInfo.project.name) !== (device === 'touch'), 'another project measures this profile');
+        const response = await request.post('/api/play/games', { data: { sentence: cell.sentence } });
+        expect(response.status(), await response.text()).toBeLessThan(300);
+        const { url, versionId } = (await response.json()) as { url: string; versionId: string };
+        const game = (await (await request.get(`/api/play/games/${versionId}`)).json()) as { spec?: { genre?: { id: string; mode: string } } };
+        expect(`${game.spec?.genre?.id}.${game.spec?.genre?.mode}`, 'the sentence drafts that genre').toBe(cell.genre);
+        await page.route('**/upgrade**', (route) => route.abort());
+        await page.goto(url);
+        await page.locator('canvas').first().waitFor({ timeout: 60_000 });
+        await page.waitForFunction(() => typeof (window.__playShell as unknown as HandProbe | undefined)?.byHand === 'function' && typeof window.__playFrame === 'function', undefined, { timeout: 60_000 });
+        await page.evaluate(() => (window.__playShell as unknown as HandProbe).byHand(true));
+        await page.getByTestId('play-pause').click();
+        await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
+        const samples = await page.evaluate(
+          async ({ ticks, every, wait }) => {
+            const frame = () => new Promise((done) => requestAnimationFrame(() => done(undefined)));
+            const out: FoeSample[] = [];
+            let first: number | null = null;
+            for (let tick = 1; tick <= wait + ticks; tick += 1) {
+              const state = (window.__playShell as unknown as HandProbe).tickByHand();
+              await frame();
+              if (tick % every === 0) {
+                const report = window.__playFrame!();
+                const foe = report.foe;
+                const onCanvas = (box: typeof foe): boolean => box !== null && !box.behind && Math.abs(box.x) <= 1 && Math.abs(box.y) <= 1;
+                const seen = onCanvas(foe);
+                if (seen) first ??= tick;
+                if (first !== null && tick - first >= ticks) break;
+                if (first !== null && foe !== null) {
+                  out.push({ tick, seen, hero: report.hero === null ? null : onCanvas(report.hero), share: foe.sizePx / report.height, tall: (foe.maxY - foe.minY) / 2, cropped: foe.maxY > 1 || foe.minY < -1 });
+                }
+              }
+              if (state.runState !== 'running') break;
+            }
+            return out;
+          },
+          { ticks: TICKS, every: EVERY, wait: FOE_WAIT },
+        );
+        const medianOf = (values: readonly number[]): number => (values.length === 0 ? 0 : [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!);
+        const visible = samples.filter((sample) => sample.seen);
+        const shares = visible.map((sample) => sample.share).sort((a, b) => a - b);
+        const median = medianOf(shares);
+        const cropped = visible.filter((sample) => sample.cropped).length / Math.max(1, visible.length);
+        const seenShare = visible.length / Math.max(1, samples.length);
+        const heroLost = samples.filter((sample) => sample.hero === false).map((sample) => `t${sample.tick}`);
+        console.log(`foe ${device} ${testInfo.project.name} ${cell.genre} "${cell.sentence}": median ${(median * 100).toFixed(1)} % (min ${((shares[0] ?? 0) * 100).toFixed(1)}, max ${((shares.at(-1) ?? 0) * 100).toFixed(1)}; height only ${(medianOf(visible.map((sample) => sample.tall)) * 100).toFixed(1)}) of ${visible.length} frames from t${samples[0]?.tick ?? '-'}, in frame ${visible.length}/${samples.length}, cropped ${(cropped * 100).toFixed(0)} %, hero out ${heroLost.length}`);
+        expect(visible.length, 'the foe shows up on the canvas').toBeGreaterThan(0);
+        const key = `${device} ${cell.genre}`;
+        expect(median, `median foe share, samples ${shares.map((s) => s.toFixed(3)).join(' ')}`).toBeGreaterThanOrEqual(FOE_SHARE_BY_CELL[key] ?? FOE_SHARE);
+        expect(cropped, 'foe box over the top or bottom edge').toBeLessThanOrEqual(FOE_CROPPED_BY_CELL[key] ?? FOE_CROPPED);
+        if (FRAMING_FREE.has(key)) return;
+        expect(seenShare, `foe centre on the canvas from its first appearance, out at ${samples.filter((sample) => !sample.seen).map((sample) => `t${sample.tick}`).join(' ')}`).toBeGreaterThanOrEqual(FOE_SEEN);
+        expect(heroLost, 'hero centre off the canvas').toEqual([]);
+      });
+    }
+  });
+}

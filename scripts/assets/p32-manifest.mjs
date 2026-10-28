@@ -43,6 +43,7 @@ const WORDS = {
     'clownfish', 'cowfish', 'flatfish', 'goldfish', 'humphead', 'koi', 'lionfish', 'piranha', 'puffer', 'snapper', 'sunfish', 'swordfish', 'tang', 'tetra', 'tuna', 'turbot',
     'bee', 'wasp', 'butterfly', 'ladybug', 'spider', 'scorpion', 'ant', 'mosquito', 'fly', 'housefly', 'dragonfly', 'beetle', 'caterpillar', 'worm', 'snail', 'bat',
     'dinosaur', 'dino', 'trex', 'triceratops', 'velociraptor', 'apatosaurus', 'parasaurolophus', 'lizard', 'trout',
+    'cheetah', 'termite',
   ],
   humanoid: [
     'man', 'woman', 'boy', 'girl', 'kid', 'child', 'person', 'human', 'hero', 'heroine', 'chef', 'firefighter', 'pirate', 'captain', 'knight', 'wizard', 'witch', 'mage', 'princess',
@@ -110,6 +111,8 @@ const CLASS_OF_MODEL = {
   // P57 T10: kulisy sad světů pojmenované po zvířeti.
   'gen3d-duck-pond': null,
   'gen3d-koi-pond': null,
+  // P62 T2: termit je zvíře, termitiště kulisa.
+  'gen3d-termite-hill': null,
 };
 
 /** Barva náhradního tvaru podle třídy, dokud se model nenačte. */

@@ -17,14 +17,18 @@
  * u předních rohů, blíž kameře. Strana kamery (−z) prstenec nemá: co by bylo nižší
  * než přední stěna, ta zakryje, a co vyšší, zakrylo by paty hrdiny u přední hrany.
  * Druh je jedna instancovaná síť bez stínu (`ringMesh`), druhů nejvýš `RING_KINDS`.
+ *
+ * Interiér (P62 T3) má místo prstence a zdi z kvádrů stěnu z kulis sady (`interiorWallPlaces`): regály,
+ * nábytek, hradby nebo krápníky v řadě těsně za hranou, na straně kamery jen nízké kusy.
  */
 
 import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import { type BufferGeometry, Color, InstancedMesh, type Material, Matrix4, Vector3 } from 'three';
 
+import catalog from '@/assets/catalog-index.json';
 import { color as brand } from '@/brand/tokens';
-import type { Look } from '@/play/arcade/look';
+import { type Look, modelHeight } from '@/play/arcade/look';
 
 import { reachOf } from '../../vegetation-places';
 import { ARENA_WALL_GAP, arenaPalette } from './arenaFloor';
@@ -264,9 +268,106 @@ export function arenaRingPlaces({ look, half, seed, keep }: ArenaDecorOptions): 
   return pieces;
 }
 
+/** Kus stěny interiéru (P62 T3): model kulisy sady čelem k hrací ploše, delší stranou podél stěny. */
+export interface WallPiece {
+  readonly id: string;
+  /** Střed půdorysu ve scéně (m). */
+  readonly x: number;
+  readonly z: number;
+  /** Výška kusu (m). */
+  readonly height: number;
+  readonly turn: number;
+  /** Půdorys (m): podél stěny a napříč ní. */
+  readonly along: number;
+  readonly across: number;
+  /** Strana: +z vzadu, ±x po stranách, −z na straně kamery. */
+  readonly side: WallSide;
+}
+export type WallSide = '+z' | '-x' | '+x' | '-z';
+
+/** Nejvýš tolik druhů stěny: druh = instancovaná síť na materiál = kreslicí volání. */
+export const WALL_KINDS = 6;
+/**
+ * Strop kusu na straně kamery (m). Kamera pod 40–62° kouká přes přední řadu na hrdinu u přední hrany:
+ * kus 0,8 m před hranou (`ARENA_WALL_GAP`) mu zakryje nejvýš paty – zeď z kvádrů tu měla 1,7–2 m.
+ */
+export const FRONT_TALLEST = 1.2;
+/** Do přední řady smí i kus do tolikanásobku stropu, stažený na strop – jinak by tam stál jediný nízký druh dokola. */
+const FRONT_SHRINK = 1.4;
+/** Nejhlubší kus (m napříč): stěna končí 2,5 m za hranou, pod podlahou interiéru a před orientačním bodem (≥ 3 m). */
+const WALL_DEEPEST = 2.2;
+const WALL_TALLEST = 4;
+/** Odstup kusu od hrany vzadu a po stranách (m): tam kus nic nezakryje, stojí těsně jako regál u uličky. */
+const WALL_GAP = 0.3;
+/** Mezera mezi kusy (m): nejmenší a rozpětí. */
+const WALL_SPACING = [0.1, 0.45] as const;
+/** Sůl stěny – stream jiný než výzdoba, prstenec, vegetace i orientační bod. */
+const WALL_SALT = 0x2c51f0b3;
+/** Natočení, které obrátí čelo modelu (+z) k hrací ploše. */
+const FACING: Readonly<Record<WallSide, number>> = { '+z': Math.PI, '-z': 0, '+x': -Math.PI / 2, '-x': Math.PI / 2 };
+/** Půdorys modelu na metr výšky – šířka (x) a hloubka (z) z rozměrů v katalogu. */
+const FOOTPRINT: ReadonlyMap<string, readonly [number, number]> = new Map(
+  catalog.assets.map(({ assetId, bounds: { min, max } }) => [assetId, [(max[0]! - min[0]!) / (max[1]! - min[1]!), (max[2]! - min[2]!) / (max[1]! - min[1]!)] as const]),
+);
+
+/**
+ * Stěna interiéru z kulis sady (P62 T3, `Look.interior.walls`): vzadu přes oba rohy, po stranách a na straně
+ * kamery řada kusů rameno na rameni, druhy z balíčku ze semínka hry. Půdorys žádného kusu nesahá na hrací plochu –
+ * jádro o stěně neví, hranou zůstává hrana jádra. Přední kus nestojí v kruhu `keep` (věc u přední hrany by zakryl);
+ * vzadu a po stranách kus nic nezakryje. Venkovní sada stěnu nemá (prázdný seznam).
+ */
+export function interiorWallPlaces({ look, half, seed, keep }: ArenaDecorOptions): WallPiece[] {
+  if (look.interior === undefined) return [];
+  const rng = xoroshiro128plus((seed ^ WALL_SALT) | 0);
+  const next = (): number => uniformFloat64(rng);
+  // První výstupy xoroshiro nasoleného blízkými semínky jsou skoro stejné: dva se zahodí (jako u prstence).
+  next();
+  next();
+  const kinds = look.interior.walls.slice(0, WALL_KINDS).map((id) => {
+    const [w, d] = FOOTPRINT.get(id)!;
+    const long = w >= d;
+    const [along, across] = long ? [w, d] : [d, w];
+    const height = Math.min(modelHeight(id), WALL_TALLEST, WALL_DEEPEST / across);
+    return { id, height, along: along * height, across: across * height, turn: long ? 0 : Math.PI / 2 };
+  });
+  const pieces: WallPiece[] = [];
+  for (const side of ['+z', '-x', '+x', '-z'] as const) {
+    const front = side === '-z';
+    const pool = front
+      ? kinds.filter((kind) => kind.height <= FRONT_TALLEST * FRONT_SHRINK).map((kind) => {
+          const k = Math.min(1, FRONT_TALLEST / kind.height);
+          return { ...kind, height: kind.height * k, along: kind.along * k, across: kind.across * k };
+        })
+      : kinds;
+    if (pool.length === 0) continue;
+    const gap = front ? ARENA_WALL_GAP : WALL_GAP;
+    const end = side === '+z' ? half + WALL_GAP + WALL_DEEPEST : half;
+    let deck: typeof pool = [];
+    for (let t = -end; ; ) {
+      if (deck.length === 0) deck = shuffled(pool, next);
+      let kind = deck.pop()!;
+      if (t + kind.along > end) {
+        // Konec strany: vejde se ještě menší kus?
+        const fit = pool.filter((other) => t + other.along <= end);
+        if (fit.length === 0) break;
+        kind = fit[Math.floor(next() * fit.length)]!;
+      }
+      const mid = t + kind.along / 2;
+      const out = half + gap + kind.across / 2;
+      const [x, z] = side === '+z' ? [mid, out] : front ? [mid, -out] : [side === '+x' ? out : -out, mid];
+      const reach = Math.hypot(kind.along, kind.across) / 2;
+      if (!front || !keep.some((spot) => Math.hypot(x - spot.x, z - spot.z) < spot.r + reach)) {
+        pieces.push({ id: kind.id, x, z, height: kind.height, turn: FACING[side] + kind.turn, along: kind.along, across: kind.across, side });
+      }
+      t += kind.along + WALL_SPACING[0] + WALL_SPACING[1] * next();
+    }
+  }
+  return pieces;
+}
+
 /** Kusy po druzích: scéna kreslí každý druh jednou instancovanou sítí. */
-export function ringKindsOf(pieces: readonly RingPiece[]): Map<string, RingPiece[]> {
-  const kinds = new Map<string, RingPiece[]>();
+export function ringKindsOf<T extends { readonly id: string }>(pieces: readonly T[]): Map<string, T[]> {
+  const kinds = new Map<string, T[]>();
   for (const piece of pieces) {
     const list = kinds.get(piece.id);
     if (list === undefined) kinds.set(piece.id, [piece]);

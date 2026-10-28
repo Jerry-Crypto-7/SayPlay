@@ -230,8 +230,19 @@ export const SURFACES = {
   snow: { color: '#e6edf4', edge: '#bccbd9' },
   planks: { color: '#a07a4e', edge: '#6e5034', marks: { kind: 'seams', color: '#6e5034' } },
   paving: { color: '#a29d93', edge: '#7d786f' },
+  // Podlahy interiéru v aréně (P62 T3, `Look.interior`): `edge` je spára. Dlažba obchodu, šachovnice supermarketu
+  // (druhá barva je mezi dílcem a spárou), kámen hradu, břidlice jeskyně, plechy továrny; obývák má prkna.
+  tiles: { color: '#eadfcb', edge: '#b8a68a' },
+  checker: { color: '#f1f5f9', edge: '#94a3b8' },
+  stone: { color: '#a8a29e', edge: '#57534e' },
+  slate: { color: '#5f5a55', edge: '#2b2724' },
+  metal: { color: '#8a9096', edge: '#4b5157' },
 } as const satisfies Record<string, Surface>;
 export type SurfaceKind = keyof typeof SURFACES;
+
+/** Povrchy, které aréna umí položit jako podlahu interiéru (P62 T3, vzor dílců v `arenaFloor.ts`). */
+export const INTERIOR_FLOORS = ['tiles', 'checker', 'planks', 'stone', 'slate', 'metal'] as const satisfies readonly SurfaceKind[];
+export type InteriorFloor = (typeof INTERIOR_FLOORS)[number];
 
 /** Druh vegetace (P46G T4): model katalogu a jeho výška (m) při velikosti 1. Opakované id = častější druh. */
 export interface PlantSpecies {
@@ -544,6 +555,14 @@ export interface Look {
    */
   readonly ceiling?: { readonly color: string; readonly lamp: string };
   /**
+   * Interiér v aréně (P62 T3): podlaha z povrchu místo krytu `cover` a po obvodu hrací plochy řada kulis sady
+   * (regály, nábytek, hradby, krápníky) místo zdi z kvádrů. Slepý soudce o obchoďáku napsal „řídké béžové
+   * prostředí“ – aréna byla otevřená plocha v barvě země. `walls` jsou kity prostředí (`setting-kits.json`)
+   * a kulisy katalogu, nejvýš 6 druhů (druh = kreslicí volání). Skoro černé modely (eskalátor, hradba z cimbuří,
+   * knihovna, televize) na snímku arény splývaly v tmavé střepy – stěna je ze světlejších. Venkovní sady ho nemají.
+   */
+  readonly interior?: { readonly floor: InteriorFloor; readonly walls: readonly SceneryModel[] };
+  /**
    * Orientační bod sady (P54B T8, `Landmark.tsx`): 1–3 kandidáti, scéna postaví jednoho ze semínka
    * hry do středu záběru za hrou. Jen modely gen3d – jedna síť, jeden materiál, jedno kreslicí volání.
    */
@@ -576,10 +595,10 @@ const OVERHEAD = [0.2, 1, -0.15] as const;
 export const LOOKS: Readonly<Record<LookId, Look>> = {
   meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'gen3d-picnic-table', 'gen3d-wooden-stile', 'gen3d-wooden-gate', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#d7ecf8', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt', flora: MEADOW_FLORA, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6a9a5c' }, landmark: ['gen3d-windmill', 'gen3d-standing-stone', 'gen3d-stone-water-well'], ambient: ['birds', 'butterflies'] },
   city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'gen3d-telephone-pole', 'cc0-fire-hydrant', 'building', 'gen3d-traffic-light', 'gen3d-bus-stop', 'gen3d-flower-stall'], tint: ['#94a3b8', '#fbbf24'], skyTop: '#5b8fc7', horizon: '#dfe6ee', sunColor: '#fff1dc', sunDir: [0.45, 0.75, -0.5], exposure: 1, glow: 0.8, terrain: { lane: '#2b3036', shade: '#56606e', rock: '#8b9098' }, cover: 'paving', surface: 'asphalt', flora: CITY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6c7686' }, landmark: ['gen3d-crane', 'gen3d-fountain'], ambient: [] },
-  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: MALL_FILL, skyline: { layers: ['walls', 'walls'], tone: '#b09c80' }, ceiling: { color: '#cdbfa6', lamp: '#fffaf0' }, landmark: ['gen3d-fountain', 'gen3d-gumball-machine'], ambient: ['dust'] },
-  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: SUPERMARKET_FILL, skyline: { layers: ['walls', 'walls'], tone: '#9aa6b0' }, ceiling: { color: '#bcc5cf', lamp: '#ffffff' }, landmark: ['gen3d-vending-machine', 'gen3d-fruit-stand'], ambient: ['dust'] },
-  living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'gen3d-gramophone', 'gen3d-bookshelf', 'gen3d-television'], tint: ['#0f766e', '#f59e0b'], skyTop: '#f2d27e', horizon: '#fde68a', sunColor: '#ffe8c2', sunDir: [0.35, 0.9, -0.25], exposure: 1, glow: 0, cover: 'paving', surface: 'planks', flora: LIVING_ROOM_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#a07850' }, landmark: ['gen3d-bookshelf', 'gen3d-television'], ambient: ['dust'] },
-  factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'gen3d-smokestack', 'gen3d-industrial-fan', 'gen3d-crane', 'gen3d-container'], tint: ['#78716c', '#ea580c'], skyTop: '#86807a', horizon: '#b8b1aa', sunColor: '#ffe2c2', sunDir: [0.5, 0.7, -0.4], exposure: 1, glow: 0.5, cover: 'paving', surface: 'asphalt', flora: FACTORY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6e665e' }, landmark: ['gen3d-smokestack', 'gen3d-crane'], ambient: ['dust'] },
+  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: MALL_FILL, skyline: { layers: ['walls', 'walls'], tone: '#b09c80' }, ceiling: { color: '#cdbfa6', lamp: '#fffaf0' }, landmark: ['gen3d-fountain', 'gen3d-gumball-machine'], ambient: ['dust'], interior: { floor: 'tiles', walls: ['gen3d-mall-kiosk', 'gen3d-clothing-rack', 'gen3d-mannequin', 'gen3d-food-kiosk', 'gen3d-gumball-machine', 'cc0-bench'] } },
+  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: SUPERMARKET_FILL, skyline: { layers: ['walls', 'walls'], tone: '#9aa6b0' }, ceiling: { color: '#bcc5cf', lamp: '#ffffff' }, landmark: ['gen3d-vending-machine', 'gen3d-fruit-stand'], ambient: ['dust'], interior: { floor: 'checker', walls: ['cc0-cabinet-shelves', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-magazine-rack', 'gen3d-checkout-counter', 'gen3d-deli-counter'] } },
+  living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'gen3d-gramophone', 'gen3d-bookshelf', 'gen3d-television'], tint: ['#0f766e', '#f59e0b'], skyTop: '#f2d27e', horizon: '#fde68a', sunColor: '#ffe8c2', sunDir: [0.35, 0.9, -0.25], exposure: 1, glow: 0, cover: 'paving', surface: 'planks', flora: LIVING_ROOM_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#a07850' }, landmark: ['gen3d-bookshelf', 'gen3d-television'], ambient: ['dust'], interior: { floor: 'planks', walls: ['cc0-couch', 'cc0-armchair', 'cc0-lamp-standing', 'gen3d-cat-tree', 'gen3d-monstera-plant', 'gen3d-gramophone'] } },
+  factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'gen3d-smokestack', 'gen3d-industrial-fan', 'gen3d-crane', 'gen3d-container'], tint: ['#78716c', '#ea580c'], skyTop: '#86807a', horizon: '#b8b1aa', sunColor: '#ffe2c2', sunDir: [0.5, 0.7, -0.4], exposure: 1, glow: 0.5, cover: 'paving', surface: 'asphalt', flora: FACTORY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6e665e' }, landmark: ['gen3d-smokestack', 'gen3d-crane'], ambient: ['dust'], interior: { floor: 'metal', walls: ['steam-machine', 'gen3d-container', 'cc0-barrel-stack', 'gen3d-industrial-fan', 'gen3d-tool-chest', 'gen3d-oil-drum'] } },
   forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'gen3d-forest-shrine', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-standing-stone'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: FOREST_FLORA, skyline: { layers: ['peaks', 'crowns', 'pines'], tone: '#3f6e4c' }, landmark: ['gen3d-treehouse', 'gen3d-standing-stone', 'gen3d-forest-shrine'], ambient: ['birds'] },
   jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'gen3d-bamboo-hut', 'gen3d-jungle-waterfall', 'gen3d-ruin'], tint: ['#15803d', '#65a30d'], skyTop: '#3f9fb0', horizon: '#c3f0dc', sunColor: '#fff5d0', sunDir: [0.4, 0.85, -0.3], exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: JUNGLE_FLORA, skyline: { layers: ['hills', 'crowns', 'crowns'], tone: '#3c7a4e' }, landmark: ['gen3d-jungle-waterfall', 'gen3d-ruin', 'gen3d-bamboo-hut'], ambient: ['butterflies'] },
   desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['gen3d-western-saloon', 'gen3d-buried-statue-head', 'cactus', 'gen3d-abandoned-mine-entrance', 'gen3d-camel'], tint: ['#65a30d', '#92400e'], skyTop: '#2f7dd1', horizon: '#fbe3a8', sunColor: '#ffe6b8', sunDir: [0.55, 0.7, -0.35], exposure: 0.95, glow: 1, terrain: { lane: '#e6c38c', shade: '#c47f33', rock: '#8f5530' }, cover: 'sand', surface: 'sand', flora: DESERT_FLORA, skyline: { layers: ['mesas', 'dunes', 'dunes'], tone: '#d09a5e' }, landmark: ['gen3d-western-saloon', 'gen3d-buried-statue-head', 'gen3d-abandoned-mine-entrance'], ambient: [] },
@@ -589,10 +608,10 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
   underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['gen3d-staghorn-coral', 'cc0-clownfish', 'gen3d-kelp', 'cc0-tang', 'gen3d-barnacle-rock', 'gen3d-jellyfish', 'gen3d-seahorse', 'gen3d-octopus'], tint: ['#fb7185', '#22c55e'], skyTop: '#3fb6cf', horizon: '#0e7490', sunColor: '#bff4ff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'sand', surface: 'sand', flora: UNDERWATER_FILL, skyline: { layers: ['hills', 'crowns'], tone: '#2f6f73' }, landmark: ['gen3d-ruin', 'gen3d-staghorn-coral', 'gen3d-octopus'], ambient: ['fish'] },
   // Ukázka B (`D:/caches/p32-style/page.html`, `renderVariant('B')`): obloha, polokoule, slunce 2,2 a expozice 0,9.
   snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#bcd6ff', '#7d8ea8', 0.9], sun: 2.2, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'gen3d-snowy-bench', 'cc0-sled', 'gen3d-ice-igloo', 'gen3d-snowman-with-hat', 'gen3d-ice-arch'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'], skyTop: '#3d7bd9', horizon: '#e4eef8', sunColor: '#ffe9cc', sunDir: BEHIND_LEFT, exposure: 0.9, glow: 1, terrain: { lane: '#a7cde4', shade: '#c7d5e6', rock: '#66727f', cap: '#f4f8fc' }, cover: 'snow', surface: 'snow', flora: SNOW_FLORA, skyline: { layers: ['peaks', 'peaks', 'pines'], tone: '#9fb4cc' }, landmark: ['gen3d-iceberg', 'gen3d-ice-arch', 'gen3d-ice-igloo'], ambient: [] },
-  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'cc0-torch-lit', 'gen3d-glowing-mushroom', 'gen3d-crystal-cluster', 'gen3d-mine-cart'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'], skyTop: '#0c0a09', horizon: '#292524', sunColor: '#ffd9a8', sunDir: OVERHEAD, exposure: 1.05, glow: 0, cover: 'rock', surface: 'dirt', flora: CAVE_FILL, skyline: { layers: ['peaks', 'peaks'], tone: '#6b625a' }, landmark: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'gen3d-crystal-cluster'], ambient: ['bats'] },
+  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'cc0-torch-lit', 'gen3d-glowing-mushroom', 'gen3d-crystal-cluster', 'gen3d-mine-cart'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'], skyTop: '#0c0a09', horizon: '#292524', sunColor: '#ffd9a8', sunDir: OVERHEAD, exposure: 1.05, glow: 0, cover: 'rock', surface: 'dirt', flora: CAVE_FILL, skyline: { layers: ['peaks', 'peaks'], tone: '#6b625a' }, landmark: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'gen3d-crystal-cluster'], ambient: ['bats'], interior: { floor: 'slate', walls: ['gen3d-stalagmite', 'gen3d-rock-pillar', 'gen3d-glowing-mushroom', 'cc0-torch-lit', 'gen3d-crystal-geode', 'gen3d-mine-cart'] } },
   volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['volcano', 'gen3d-magma-rock', 'gen3d-steam-vent', 'gen3d-volcano', 'gen3d-crystal-cluster'], tint: ['#1c1917', '#f97316'], skyTop: '#2a0e0a', horizon: '#a4431d', sunColor: '#ffb27a', sunDir: [0.4, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'rock', surface: 'dirt', flora: VOLCANO_FILL, skyline: { layers: ['peaks', 'hills'], tone: '#5a3a2e' }, landmark: ['gen3d-volcano'], ambient: ['sparks'] },
   space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['cc0-asteroid', 'gen3d-fuel-silo', 'rocket', 'gen3d-moon-flag', 'gen3d-moon-lander', 'gen3d-satellite-radar-dish'], tint: ['#22d3ee', '#78350f'], skyTop: '#01030c', horizon: '#0b1730', sunColor: '#fff6e8', sunDir: [0.6, 0.55, -0.5], exposure: 1, glow: 1, cover: 'rock', surface: 'dirt', flora: SPACE_FILL, skyline: { layers: ['peaks', 'mesas'], tone: '#8a6a50' }, landmark: ['gen3d-fuel-silo', 'gen3d-satellite-radar-dish', 'gen3d-moon-lander'], ambient: ['meteors'] },
-  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['gen3d-castle-tower', 'stone-wall', 'cc0-torch-lit', 'gen3d-stone-gatehouse', 'gen3d-drawbridge', 'gen3d-stone-water-well'], tint: ['#a8a29e', '#dc2626'], block: ['#57534e', '#a8a29e'], skyTop: '#3f7fd4', horizon: '#d6e6f7', sunColor: '#fff0d2', sunDir: [0.5, 0.75, -0.4], exposure: 1, glow: 1, cover: 'paving', surface: 'paving', flora: CASTLE_FILL, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6f8a62' }, landmark: ['gen3d-castle-tower', 'gen3d-stone-gatehouse', 'gen3d-stone-water-well'], ambient: ['birds'] },
+  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['gen3d-castle-tower', 'stone-wall', 'cc0-torch-lit', 'gen3d-stone-gatehouse', 'gen3d-drawbridge', 'gen3d-stone-water-well'], tint: ['#a8a29e', '#dc2626'], block: ['#57534e', '#a8a29e'], skyTop: '#3f7fd4', horizon: '#d6e6f7', sunColor: '#fff0d2', sunDir: [0.5, 0.75, -0.4], exposure: 1, glow: 1, cover: 'paving', surface: 'paving', flora: CASTLE_FILL, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6f8a62' }, landmark: ['gen3d-castle-tower', 'gen3d-stone-gatehouse', 'gen3d-stone-water-well'], ambient: ['birds'], interior: { floor: 'stone', walls: ['stone-wall', 'gen3d-castle-banner', 'gen3d-stone-column', 'gen3d-armor-rack', 'cc0-torch-lit', 'gen3d-gargoyle'] } },
   // Noc: slunce je měsíc – studené, slabé, záře nízko.
   graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['gen3d-iron-fence', 'pine', 'cc0-pumpkin', 'gen3d-grave-lantern', 'gen3d-gravestone'], tint: ['#64748b', '#14532d'], skyTop: '#060b16', horizon: '#1e2a3d', sunColor: '#c9d8ee', sunDir: [0.45, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'grass', surface: 'dirt', flora: GRAVEYARD_FILL, skyline: { layers: ['hills', 'pines'], tone: '#4a5a52' }, landmark: ['gen3d-ruin', 'gen3d-castle-tower'], ambient: ['bats'] },
 };
@@ -602,26 +621,36 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
  * („icy moon“ je vesmír, „jungle river“ džungle, „snow fort“ sníh).
  */
 const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
+  // Složená místa celá dřív než po slovech (P62 T10): „night market“ není supermarket, „post office“ obývák,
+  // „magic school“ třída, „hospital corridor“ hřbitov, „school playground“ třída.
+  ['city', /(?:night|street|flea|floating) market|bazaar|post office/],
+  ['castle', /(?:magic|wizard) school/],
+  ['mall', /hospital (?:corridor|hallway|ward)/],
+  ['meadow', /playground|schoolyard/],
   ['underwater', /under ?water|sea ?floor|seabed|reef|coral|aquarium|submarine|sunken|deep sea/],
-  ['space', /space|mars|\bmoon|planet|asteroid|galax|orbit|alien|comet|\bstars?\b|cosmic/],
+  // „marshmallows“ nejsou Mars (P62 T10).
+  ['space', /space|\bmars\b|\bmoon|planet|asteroid|galax|orbit|alien|comet|\bstars?\b|cosmic/],
   ['volcano', /volcan|lava|magma|inferno/],
-  ['cave', /\bcaves?\b|cavern|underground|grotto|tunnel/],
+  // Kráter až za sopkou: „volcano crater“ je sopka, „crater field“ vesmír.
+  ['space', /crater/],
+  ['cave', /\bcaves?\b|cavern|underground|grotto|tunnel|cellar|basement/],
   ['jungle', /jungle|rainforest|swamp|amazon/],
-  ['snow', /snow|\bice\b|\bicy\b|glacier|arctic|frozen|winter|polar|igloo|tundra/],
+  // Lyžař je sníh (P62 T10). Hora ne: čtení dělá horu i z útesu („a seaside cliff“).
+  ['snow', /snow|\bice\b|\bicy\b|glacier|arctic|frozen|winter|polar|igloo|tundra|\bski(?:er|ers|ing)?\b/],
   ['desert', /desert|dune|sahara|outback|canyon|oasis|pyramid/],
   ['beach', /beach|coast|shore|island|tropic|vacation|holiday/],
   ['ocean', /ocean|\bsea\b|harbou?r|pirate|\blake\b|river|\bboat/],
-  ['castle', /castle|kingdom|medieval|dungeon|fortress|\bfort\b|throne/],
+  ['castle', /castle|kingdom|medieval|dungeon|fortress|\bfort\b|throne|ballroom/],
   ['graveyard', /haunted|graveyard|cemetery|ghost|spooky|crypt|hospital|horror|zombie/],
-  ['forest', /forest|woods|woodland|grove|campsite|camp\b/],
-  ['factory', /factory|warehouse|workshop|laborator|\blab\b|construction|\bmine\b|mining|colony|garage/],
-  ['supermarket', /supermarket|grocery|market|\bstore\b|bakery|kitchen|restaurant/],
-  ['mall', /\bmall\b|shopping|arcade hall|plaza/],
-  ['living_room', /living room|\bhouses?\b|\bhome\b|bedroom|apartment|office|classroom|school|toy/],
-  ['city', /city|street|town|downtown|road|traffic|rooftop|neon|subway|highway|urban|skyscraper/],
+  ['forest', /forest|woods|woodland|grove|campsite|camp\b|campfire/],
+  ['factory', /factory|warehouse|workshop|laborator|\blab\b|construction|\bmine\b|mining|colony|garage|scrapyard|junkyard|giant clock|clockwork/],
+  ['supermarket', /supermarket|grocery|market|\bstore\b|bakery|kitchen|restaurant|\bdiners?\b/],
+  ['mall', /\bmall\b|shopping|arcade hall|plaza|museum/],
+  ['living_room', /living room|\bhouses?\b|\bhome\b|bedroom|apartment|office|classroom|school|toy|\bsofa\b|\bcouch\b|sleepover|\bcaf[eé]?s?\b/],
+  ['city', /city|street|town|downtown|road|traffic|rooftop|neon|subway|highway|urban|skyscraper|hotel|gutter|sewer/],
   // Věž až za městem a kuchyní: „pancake tower in a kitchen“ je kuchyně, samotná věž hrad (P30B T6).
   ['castle', /\btower\b/],
-  ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill/],
+  ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill|soccer|football|picnic|circus|carnival/],
   // Chrám a ruiny až úplně naposled (P61 T3): „temple run“ je džungle se zříceninou, ne louka; „a temple in the desert“ poušť.
   ['jungle', /\btemples?\b|\bruins?\b/],
 ];

@@ -44,7 +44,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-goat` | goat | goat | 4743 / 2350 |
 | `gen3d-golf` | golf | golf, golf club | 4748 / 2372 |
 | `gen3d-grandma` | grandma | grandma, granny, grandmother | 4649 / 2307 |
-| `gen3d-guard` | guard | guard, soldier | 4705 / 2260 |
+| `gen3d-guard` | guard | guard, soldier, sentry, marine | 4705 / 2260 |
 | `gen3d-helix` | helix | helix, dna | 4613 / 2264 |
 | `gen3d-horse` | horse | horse | 4387 / 2145 |
 | `gen3d-hotel` | hotel | hotel | 4508 / 2245 |

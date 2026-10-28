@@ -26,8 +26,9 @@ import { assetEntrySchema } from '../manifest';
  * 7. 10.: −1 ze slepého soudu P43 T13 (`gen3d-stage-magician` nepoznatelný, hrdinu nehraje).
  * 7. 10.: +1 z P43 T12 (`gen3d-caveman`; ostatních 16 nových jmen třídu nemá).
  * 23. 10.: +4 z P58A T7 (lizard, trout, blacksmith, hostage; bun, rail a dumpling třídu nemají).
+ * 27. 10.: +2 z P62 T2 (cheetah, termite; snowplow, firecracker, pinecone a stalactite třídu nemají).
  */
-const COUNT = 265;
+const COUNT = 267;
 
 const LICENSES = new Map(disclosure.entries.map((entry) => [entry.name, entry.license]));
 const TAGS = new Map(catalog.assets.map((asset) => [asset.path, asset.tags]));
@@ -73,7 +74,7 @@ describe('manifest entries of the catalog (P32C T1)', () => {
     expect(classOf('gen3d-polar-bear')).toBe('animal');
     expect(classOf('cc0-shark')).toBe('animal');
     // Kulisa se slovem třídy hrdinou není.
-    for (const id of ['cc0-bear-trap', 'gen3d-wizard-hat', 'gen3d-bus-stop', 'bird-nest', 'gen3d-hot-dog', 'gen3d-cat-tree', 'gen3d-fish-tank', 'gen3d-hamster-wheel', 'gen3d-robot-arm']) {
+    for (const id of ['cc0-bear-trap', 'gen3d-wizard-hat', 'gen3d-bus-stop', 'bird-nest', 'gen3d-hot-dog', 'gen3d-cat-tree', 'gen3d-fish-tank', 'gen3d-hamster-wheel', 'gen3d-robot-arm', 'gen3d-termite-hill']) {
       expect(classOf(id), id).toBeUndefined();
     }
   });

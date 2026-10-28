@@ -6,13 +6,19 @@
  * primitivy hodnotitel jako prostředí nepoznal. Rozmístění je čistá funkce délky trati –
  * žádná náhoda, táž hra vypadá pokaždé stejně. Na hru nesahají: stojí mimo
  * trať a jádro o nich neví.
+ *
+ * Od P62 T4 i kulisy uvnitř hrací plochy arény a střelnice (`FieldDressing`): místa ze
+ * semínka hry mimo cestu robota a věci hry (`field-dressing.ts`), počítá je worker.
  */
 
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, Mesh, type Object3D, Vector3 } from 'three';
 
+import type { ArcadeWorld } from '@/play/arcade/contract';
 import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel, sparseLandmarks } from '@/play/arcade/look';
 
+import type { FieldPiece } from './field-dressing';
+import { fieldPiecesNow, fieldPiecesOf } from './field-dressing-client';
 import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
 import { PlayEnv } from './play-env';
@@ -71,9 +77,10 @@ export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayo
       const n = index * 7 + (side + 1) * 3;
       const kind = props[n % props.length] as SceneryKind;
       const scale = 0.8 + ((index * 29 + side * 7) % 5) * 0.12;
+      // Kladný zbytek (P62 T1-R1): `-11 % 5` je v JS −1, první levý kus pak stál 1,3 m uvnitř `inner` – u rytmu v pruzích.
       places.push({
         kind,
-        x: side * (inner + ((index * 37 + side * 11) % 5) * 1.3),
+        x: side * (inner + ((((index * 37 + side * 11) % 5) + 5) % 5) * 1.3),
         z: z + ((index * 13) % 3),
         scale: cap?.side === side ? Math.min(scale, cap.height / sceneryHeight(kind)) : scale,
         turn: (index % 4) * (Math.PI / 2),
@@ -250,7 +257,7 @@ export function SceneryModelProp({ id, cap, cast = true }: { readonly id: Scener
  * Rostlina vegetace sady jako kulisa (P46G T4): barvy jako ve vegetaci (`paintedPlant`),
  * takže jehličnan v lese je zelený i ve scéně bez vegetace a šedé listí katalogu dostane barvu sady.
  */
-function PlantProp({ id, flora, cap }: { readonly id: SceneryModel; readonly flora: Flora; readonly cap?: string }) {
+function PlantProp({ id, flora, height, cap }: { readonly id: string; readonly flora: Flora; readonly height: number; readonly cap?: string }) {
   const [plant, setPlant] = useState<PlantModel | null>(null);
   useEffect(() => {
     let live = true;
@@ -264,13 +271,13 @@ function PlantProp({ id, flora, cap }: { readonly id: SceneryModel; readonly flo
   const mesh = useMemo(() => {
     if (plant === null) return null;
     const made = new Mesh(plant.geometry, plantMaterial(plant.double));
-    made.scale.setScalar(modelHeight(id));
+    made.scale.setScalar(height);
     // Zasněžená rostlina má vlastní materiál bez větru (`snowcapped`) a stojí, stín s ní.
     if (cap !== undefined) capSnow(made, cap);
     else made.customDepthMaterial = plantDepthMaterial();
     freeze(made);
     return made;
-  }, [plant, id, cap]);
+  }, [plant, height, cap]);
   return mesh === null ? null : <primitive object={mesh} />;
 }
 
@@ -358,12 +365,89 @@ export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground
     <group ref={root} userData={{ scenery: true }}>
       {places.map((place, index) => (
         <group key={index} position={[place.x + (bend?.(place.z).x ?? 0), heights[index]! + (bend?.(place.z).y ?? 0), place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
-          {!isSceneryModel(place.kind) ? (
-            <Prop kind={place.kind} tint={look.tint} />
-          ) : plants.has(place.kind) ? (
-            <PlantProp id={place.kind} flora={look.flora!} cap={cap} />
+          <SceneryPiece kind={place.kind} look={look} plants={plants} cap={cap} />
+        </group>
+      ))}
+    </group>
+  );
+}
+
+/** Kulisa sady: primitiva, rostlina vegetace v barvách sady, nebo model katalogu. */
+function SceneryPiece({ kind, look, plants, cap }: { readonly kind: SceneryKind; readonly look: Look; readonly plants: ReadonlySet<string>; readonly cap?: string }) {
+  if (!isSceneryModel(kind)) return <Prop kind={kind} tint={look.tint} />;
+  return plants.has(kind) ? <PlantProp id={kind} flora={look.flora!} height={modelHeight(kind)} cap={cap} /> : <SceneryModelProp id={kind} cap={cap} />;
+}
+
+// ---------------------------------------------------------------------------
+// Kulisy uvnitř hrací plochy (P62 T4)
+
+/** Sonda kusů plochy (`window.__playField`): kolik jich je a kolik sítí kreslí; `show(false)` je schová (A/B kreslicích volání). */
+interface FieldProbe {
+  readonly report: () => { readonly pieces: number; readonly meshes: number; readonly kinds: readonly string[] };
+  readonly show: (on: boolean) => void;
+}
+
+declare global {
+  interface Window {
+    __playField?: FieldProbe;
+  }
+}
+
+/**
+ * 4–10 kulis sady uvnitř hrací plochy arény a střelnice (P62 T4). Kde stojí, spočítá
+ * `field-dressing.ts` ve workeru z běhu robota (`field-dressing-worker.ts`), takže se cestě
+ * robota, spawnům ani dráhám nepřátel vyhnou. Worker běží od hydratace stránky
+ * (`prefetchFieldDressing` v `ArcadePlay`, P62 T4-R1): hotové kusy stojí už v první montáži,
+ * jinak se objeví, až doběhne. Jen vzhled: jádro o nich neví.
+ */
+export function FieldDressing({ look, world }: { readonly look: Look; readonly world: ArcadeWorld }) {
+  const [pieces, setPieces] = useState<readonly FieldPiece[]>(() => fieldPiecesNow(world, look) ?? []);
+  useEffect(() => {
+    let live = true;
+    setPieces(fieldPiecesNow(world, look) ?? []);
+    void fieldPiecesOf(world, look).then((found) => {
+      if (live) setPieces(found);
+    });
+    return () => {
+      live = false;
+    };
+  }, [world, look]);
+  const cap = look.terrain?.cap;
+  const root = useRef<Group>(null);
+  useLayoutEffect(() => {
+    if (root.current === null) return;
+    if (cap !== undefined) capSnow(root.current, cap);
+    freeze(root.current);
+    root.current.updateWorldMatrix(true, true);
+  }, [pieces, cap]);
+  useEffect(() => {
+    const probe: FieldProbe = {
+      report: () => {
+        let meshes = 0;
+        root.current?.traverse((node) => {
+          if ((node as Mesh).isMesh === true) meshes += 1;
+        });
+        return { pieces: pieces.length, meshes, kinds: pieces.map((piece) => piece.kind) };
+      },
+      show: (on) => {
+        if (root.current !== null) root.current.visible = on;
+      },
+    };
+    window.__playField = probe;
+    return () => {
+      if (window.__playField === probe) delete window.__playField;
+    };
+  }, [pieces]);
+  return (
+    <group ref={root} userData={{ scenery: true }}>
+      {pieces.map((piece, index) => (
+        <group key={index} position={[piece.x, 0, piece.z]} rotation={[0, piece.turn, 0]}>
+          {piece.plant ? (
+            <PlantProp id={piece.kind} flora={look.flora!} height={piece.height} cap={cap} />
           ) : (
-            <SceneryModelProp id={place.kind} cap={cap} />
+            <group scale={piece.height / modelHeight(piece.kind)}>
+              <SceneryModelProp id={piece.kind} cap={cap} />
+            </group>
           )}
         </group>
       ))}

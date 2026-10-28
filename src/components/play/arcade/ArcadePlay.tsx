@@ -65,6 +65,7 @@ import { VerbLine } from './action-cue/VerbLine';
 import { LaneEventBanner, laneEventViewOf } from './LaneEventBanner';
 import { PacingBanner } from './PacingBanner';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
+import { prefetchFieldDressing } from './look/field-dressing-client';
 import { holdUntilTouch, wakesGame } from './ready-gate';
 import { ZONE_HINTS } from './touch-zones';
 import { Weather } from './Weather';
@@ -744,6 +745,8 @@ function ArcadePlayGame({
   useEffect(() => installSoundControls(), []);
   // Sada upravená místem z věty (P30B T6): bloky, plošiny a hladina pod závodem.
   const scene = useMemo(() => sceneLook(spec.theme), [spec.theme]);
+  // Kulisy hrací plochy (P62 T4-R1): worker je počítá od hydratace, ne až s namontovanou scénou, která hlavní vlákno nepustí.
+  prefetchFieldDressing(arcade, scene);
   // Vlastní hudba a zvuky looku (P29D T5) – ve feedu jen aktivní hra; bez gesta nic nestahuje.
   useEffect(() => {
     if (!active) return;
