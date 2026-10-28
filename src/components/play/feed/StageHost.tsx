@@ -11,7 +11,7 @@
 import { Canvas, type RootState, useFrame, useThree } from '@react-three/fiber';
 import { Fragment, type ReactNode, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { type Camera, type PerspectiveCamera, type Scene, type WebGLRenderer, WebGLRenderTarget } from 'three';
+import { type Camera, type Object3D, type PerspectiveCamera, type Scene, type WebGLRenderer, WebGLRenderTarget } from 'three';
 
 import { loadsPending, loadsSettled } from '../arcade/look/pending-loads';
 import { captureFrame } from './snapshot-cache';
@@ -83,12 +83,13 @@ export function holdDrawing(get: () => DrawLoop, ready: () => Promise<unknown>):
  * obrazovku (sRGB) by skládač nepoužil. Čekání je `compileAsync` three až na jedno: materiál, který React mezitím
  * uvolnil (odcházející scéna, náhrada načteného modelu), už program nemá a vypadne – `compileAsync` se na něj ptá dál
  * a hodí `reading 'isReady'` (T18, přechod do kola Run! na Pixelu 7).
+ * `part` = jen tahle část (P62 T11: stěna interiéru před vstupem do scény), světla a mlhu dá `scene`.
  */
-export function compileForComposer({ gl, scene, camera }: { readonly gl: WebGLRenderer; readonly scene: Scene; readonly camera: Camera }): Promise<void> {
+export function compileForComposer({ gl, scene, camera }: { readonly gl: WebGLRenderer; readonly scene: Scene; readonly camera: Camera }, part: Object3D = scene): Promise<void> {
   const target = new WebGLRenderTarget(1, 1);
   const previous = gl.getRenderTarget();
   gl.setRenderTarget(target);
-  const pending = gl.compile(scene, camera);
+  const pending = gl.compile(part, camera, scene);
   gl.setRenderTarget(previous);
   target.dispose();
   return new Promise((resolve) => {

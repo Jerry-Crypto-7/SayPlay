@@ -44,7 +44,7 @@ import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadBodyModel, rimLit, toonLit, toyPartsOf } from './look/load';
+import { loadBodyModel, loadedBody, rimLit, toonLit, toyPartsOf } from './look/load';
 import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
@@ -250,7 +250,8 @@ export function FittedModel(props: Fit & { readonly fallback: string }) {
 }
 
 function StaticModel({ id, w, h, d, fallback, character = false, fill = false, posed = false, rim = false }: Fit & { readonly fallback: string }) {
-  const [model, setModel] = useState<Object3D | null | undefined>(undefined);
+  // Načtený model (hrdina z `preloadBody`, P62 T11) kreslí už první snímek montáže, ne až po efektu.
+  const [model, setModel] = useState<Object3D | null | undefined>(() => loadedBody(id, { posed }));
   useEffect(() => {
     let live = true;
     void loadBodyModel(id, { posed }).then((loaded) => {
@@ -274,7 +275,8 @@ function FallbackPiece({ w, h, d, color }: { readonly w: number; readonly h: num
   const geometry = useMemo(() => new RoundedBoxGeometry(w, h, d, 2, Math.min(w, h, d) * 0.25), [w, h, d]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return (
-    <mesh position={[0, h / 2, 0]} geometry={geometry}>
+    // `standIn` čte sonda záběru (`FrameReport.heroStandIn`, P62 T11).
+    <mesh position={[0, h / 2, 0]} geometry={geometry} userData={{ standIn: true }}>
       <meshStandardMaterial color={color} roughness={0.6} />
     </mesh>
   );

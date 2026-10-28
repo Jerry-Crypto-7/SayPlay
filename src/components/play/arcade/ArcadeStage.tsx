@@ -33,6 +33,7 @@ import { Effects } from './effects/Effects';
 import type { ArcadeGhost } from './GhostSlot';
 import { comboOf } from './effects/feel';
 import { introLeftOf, restCamera } from './look/intro';
+import { preloadBody } from './look/load';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
@@ -45,7 +46,7 @@ import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
 import { RhythmScene } from './rhythm/RhythmScene';
-import { RiggedModel } from './RiggedModel';
+import { loadRigged, RiggedModel } from './RiggedModel';
 import { RunnerWorld } from './runner/RunnerWorld';
 import type { ArcadeSession } from './session';
 import { useGlideInput } from './glide/GlideScene';
@@ -94,6 +95,8 @@ export interface FrameReport {
   readonly width: number;
   readonly height: number;
   readonly hero: FrameBox | null;
+  /** Hrdinu kreslí náhradní kvádr (`userData.standIn`), protože se jeho model ještě načítá (P62 T11). */
+  readonly heroStandIn: boolean;
   /**
    * Úhel (°) mezi tím, kam hrdina kouká (jeho +z), a směrem od něj ke kameře, ve vodorovné
    * rovině: 0 = hledí do kamery, 180 = je k ní zády (P35 T12).
@@ -245,6 +248,27 @@ const shown = (object: Object3D): boolean => {
   for (let node: Object3D | null = object; node !== null; node = node.parent) if (!node.visible) return false;
   return true;
 };
+
+/** Kolik prvních snímků hledá sonda hrdinu prvního snímku; scéna bez něj (poletování, míč) by ho jinak hledala pořád. */
+const HERO_FRAME_TRIES = 30;
+
+/** Viditelný hrdina scény (`userData.frame`), nebo `null`. */
+function heroOf(scene: Object3D): Object3D | null {
+  let hero: Object3D | null = null;
+  scene.traverse((node) => {
+    if (node.userData.frame === 'hero' && shown(node)) hero = node;
+  });
+  return hero;
+}
+
+/** Hrdinu kreslí náhradní kvádr načítání (`FallbackPiece`, `RiggedModel`), ne jeho model. */
+function standInOf(hero: Object3D): boolean {
+  let found = false;
+  hero.traverseVisible((node) => {
+    if (node.userData.standIn === true) found = true;
+  });
+  return found;
+}
 
 const cornerOf = new Vector3();
 const inView = new Vector3();
@@ -558,6 +582,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         width: size.width,
         height: size.height,
         hero: hero === null ? null : frameOf(hero, camera, size.width, size.height),
+        heroStandIn: hero !== null && standInOf(hero),
         heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
         heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
@@ -576,6 +601,20 @@ function FrameProbe({ control }: { readonly control: string }) {
       if (window.__playFrame === probe) delete window.__playFrame;
     };
   }, [get, control]);
+  useEffect(() => {
+    const stage = get().gl.domElement.closest<HTMLElement>('[data-testid="arcade-stage"]');
+    if (stage === null) return;
+    // První nakreslený snímek s hrdinou (P62 T11): `model`, nebo `stand-in`, když ho kreslil náhradní kvádr.
+    // Scéna bez hrdiny (`userData.frame`) se prohledává jen prvních `HERO_FRAME_TRIES` snímků, ne celou hru.
+    let tries = 0;
+    const stop = addAfterEffect(() => {
+      tries += 1;
+      const hero = heroOf(get().scene);
+      if (hero !== null) stage.dataset.heroFirstFrame = standInOf(hero) ? 'stand-in' : 'model';
+      if (hero !== null || tries >= HERO_FRAME_TRIES) stop();
+    });
+    return stop;
+  }, [get]);
   return null;
 }
 
@@ -1127,6 +1166,10 @@ export default function ArcadeStage({
   const abilityBase = actions.length > 0 ? 1 + actions.length : fireButton ? 1 : 0;
   const look = scene ?? LOOKS[lookId];
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
+  // Hrdina se načítá s kódem scény (P62 T11), dřív než scéna požádá o podlahu a kulisy; druhé volání je z cache.
+  // Bez držení prvního snímku: na Pixel 7 s CPU 4× ho čekání na rozbaleného rytíře posunulo o 0,7 s a start s ním.
+  const heroRig = riggedCharacter(cast.player);
+  void (heroRig === undefined ? preloadBody(cast.player) : loadRigged(heroRig.path));
   useFireInput(session, fires && enabled, hasAbilities);
   useActionInput(session, actions, enabled && !hasAbilities);
   useAbilityInput(session, abilities, enabled);

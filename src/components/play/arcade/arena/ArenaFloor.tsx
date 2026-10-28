@@ -28,11 +28,13 @@
  * obýváku, hradby. Slepý soudce o obchoďáku viděl „řídké béžové prostředí“ s kulisami až daleko na okraji.
  */
 
+import { useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useState } from 'react';
 import { Box3, Group, InstancedMesh, Matrix4, type Mesh, MeshStandardMaterial, type Object3D, Vector3 } from 'three';
 
 import type { Flora, Look } from '@/play/arcade/look';
 
+import { compileForComposer } from '../../feed/StageHost';
 import { loadFlatModel, type PlantModel, paintedPlant, plantMaterial, toonMaterial } from '../look/load';
 import { arenaRingPlaces, buildArenaDecor, type DecorKeep, interiorWallPlaces, type RingPiece, ringKindsOf, ringMesh, type WallPiece } from '../look/rig/terrain/arenaDecor';
 import { ARENA_WALL_END, buildArenaFloor } from '../look/rig/terrain/arenaFloor';
@@ -135,7 +137,21 @@ export function InteriorWall({ id, pieces }: { readonly id: string; readonly pie
   const group = useMemo(() => (model === null ? null : wallMeshes(model, pieces)), [model, pieces]);
   // Geometrie a materiály patří cache modelů; skupina uvolní jen své instance.
   useEffect(() => () => group?.children.forEach((mesh) => (mesh as InstancedMesh).dispose()), [group]);
-  return group === null ? null : <primitive object={group} />;
+  // Do scény až s přeloženými programy (P62 T11): instancovaná toon stěna přidá hradu tři programy shaderů a jejich
+  // první kresba na ně hlavní vlákno čekala – na Pixel 7 s CPU 4× o 0,39 s víc než `main`. Překlad běží mimo něj.
+  const get = useThree((three) => three.get);
+  const [compiled, setCompiled] = useState<Group | null>(null);
+  useEffect(() => {
+    if (group === null) return;
+    let live = true;
+    void compileForComposer(get(), group).then(() => {
+      if (live) setCompiled(group);
+    });
+    return () => {
+      live = false;
+    };
+  }, [get, group]);
+  return group === null || compiled !== group ? null : <primitive object={group} />;
 }
 
 /** Instance kusů: model vysoký 1 s patou uprostřed v počátku, kus ho natočí, zvětší na svou výšku a postaví. */

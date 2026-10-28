@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { loadsPending, loadsSettled, trackLoad } from '../pending-loads';
+import { afterBodies, loadsPending, loadsSettled, trackBody, trackLoad } from '../pending-loads';
 
 function later<T>(): { promise: Promise<T>; resolve: (value: T) => void; reject: (error: Error) => void } {
   let resolve = (_value: T): void => undefined;
@@ -35,5 +35,42 @@ describe('pending model loads', () => {
     await loadsSettled();
     expect(settled).toBe(true);
     expect(loadsPending()).toBe(0);
+  });
+});
+
+/**
+ * Těla před kulisami (P62 T11): kdyby kulisa nečekala, hrad v aréně rozbalí 27 modelů a rytíř přijde poslední –
+ * hrdina stojí sekundy jako modrý kvádr a obraz za běhu vypadá jinak jen tím, že je pozdě.
+ */
+describe('bodies before scenery', () => {
+  const tick = (): Promise<void> => new Promise((done) => setTimeout(done, 5));
+
+  it('scenery asked for before the hero in the same task starts only after the hero is in', async () => {
+    const order: string[] = [];
+    // Scéna žádá podlahu a stěny dřív než těla: kulisa jde první, hrdina až za ní, v pozdějším efektu téže úlohy.
+    const scenery = afterBodies().then(() => order.push('scenery'));
+    const hero = later<string>();
+    queueMicrotask(() => void trackBody(hero.promise).then(() => order.push('hero')));
+    await tick();
+    expect(loadsPending()).toBe(1);
+    expect(order).toEqual([]);
+    hero.resolve('knight');
+    await scenery;
+    expect(order).toEqual(['hero', 'scenery']);
+    expect(loadsPending()).toBe(0);
+  });
+
+  it('a body that fails to load does not hold the scenery', async () => {
+    const hero = later<string>();
+    trackBody(hero.promise).catch(() => undefined);
+    let started = false;
+    const scenery = afterBodies().then(() => {
+      started = true;
+    });
+    await tick();
+    expect(started).toBe(false);
+    hero.reject(new Error('404'));
+    await scenery;
+    expect(started).toBe(true);
   });
 });

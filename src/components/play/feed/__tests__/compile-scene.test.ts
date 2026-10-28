@@ -6,7 +6,7 @@
  * Repo nemá WebGL: skutečný `WebGLRenderer` three dostane náhradní kontext, který na všechno odpoví a hotovost
  * překladu (`COMPLETION_STATUS_KHR`) řídí test.
  */
-import { BoxGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { BoxGeometry, InstancedMesh, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { compileForComposer } from '../StageHost';
@@ -94,6 +94,25 @@ describe('compileForComposer', () => {
     const { gl, scene, camera } = stage(compiled);
     let settled = false;
     void compileForComposer({ gl, scene, camera }).then(() => (settled = true));
+    await vi.advanceTimersByTimeAsync(100);
+    expect(settled).toBe(false);
+    compiled.done = true;
+    await vi.advanceTimersByTimeAsync(10);
+    expect(settled).toBe(true);
+  });
+
+  // Stěna interiéru (P62 T11) se přeloží dřív, než vstoupí do scény: jen ona, s instancemi a pro lineární cíl skládače.
+  it('compiles a part that is not in the scene yet, for the composer target, and waits for it', async () => {
+    const compiled = { done: false };
+    const { gl, scene, camera, staying } = stage(compiled);
+    const wallMaterial = new MeshStandardMaterial();
+    const wall = new InstancedMesh(new BoxGeometry(), wallMaterial, 4);
+    let settled = false;
+    void compileForComposer({ gl, scene, camera }, wall).then(() => (settled = true));
+    const program = (gl.properties.get(wallMaterial) as { currentProgram?: { cacheKey: string } }).currentProgram;
+    // Program pro obrazovku (sRGB) by skládač nepoužil a první kresba by ho přeložila znovu, na hlavním vlákně.
+    expect(program?.cacheKey.split(',')).toContain(LinearSRGBColorSpace);
+    expect((gl.properties.get(staying) as { currentProgram?: unknown }).currentProgram).toBeUndefined();
     await vi.advanceTimersByTimeAsync(100);
     expect(settled).toBe(false);
     compiled.done = true;

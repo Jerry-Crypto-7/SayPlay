@@ -86,6 +86,35 @@ for (const game of GAMES) {
   });
 }
 
+/**
+ * Hrdina je od prvního snímku svůj model (P62 T11). Na listu soudce T7 stál hrdina arény v 1 i 3 s jako modrý
+ * kvádr: scéna montuje podlahu, stěny a kulisy dřív než těla a jejich modely se stahovaly a rozbalovaly první.
+ * Hrad v aréně (riggovaný rytíř, 27 modelů) a běžec v supermarketu (model katalogu): první nakreslený snímek
+ * s hrdinou (`data-hero-first-frame` na `arcade-stage`) a sonda záběru 1 s a 3 s po objevení plátna (`heroStandIn`).
+ */
+const HERO_GAMES = [
+  { kind: 'castle arena, rigged hero', sentence: 'A knight must collect three keys in a haunted castle while dodging ghosts.' },
+  { kind: 'supermarket runner, catalog hero', sentence: 'A hamster escaping a supermarket while a giant Roomba hunts me' },
+] as const;
+
+for (const game of HERO_GAMES) {
+  test(`the hero is its model from the first frame: ${game.kind}`, async ({ page, request }) => {
+    const response = await request.post('/api/play/games', { data: { sentence: game.sentence } });
+    expect(response.status(), await response.text()).toBeLessThan(300);
+    const { url } = (await response.json()) as { url: string };
+    await page.goto(url);
+    await page.locator('canvas').first().waitFor({ timeout: 60_000 });
+    const shownAt = Date.now();
+    const stage = page.getByTestId('arcade-stage');
+    await expect(stage).toHaveAttribute('data-hero-first-frame', /.+/, { timeout: 30_000 });
+    expect(await stage.getAttribute('data-hero-first-frame'), 'hero in the first drawn frame').toBe('model');
+    for (const at of [1000, 3000]) {
+      await page.waitForTimeout(Math.max(0, shownAt + at - Date.now()));
+      expect(await page.evaluate(() => window.__playFrame!().heroStandIn), `hero ${at} ms after the canvas appeared`).toBe(false);
+    }
+  });
+}
+
 /** Co z HUD, lišty cílů a karty výsledku leží pod štítkem AI verze. */
 async function underNotice(page: Page): Promise<string[]> {
   return page.evaluate(() => {

@@ -24,7 +24,7 @@ import { type ToyPose, type ToyView, toyPoseOf } from '@/play/arcade/toy-motion'
 
 import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
 import { dropRestTracks, mergeRig, rimLit } from './look/load';
-import { trackLoad } from './look/pending-loads';
+import { trackBody } from './look/pending-loads';
 import { applyToy, toyMotionOn } from './toy/applyToy';
 import { bodyClassOf } from './toy/body-class';
 
@@ -125,6 +125,10 @@ export function unclippedView(view: ToyView, hasClip: (state: ClipState) => bool
 }
 
 const cache = new Map<string, Promise<GLTF | null>>();
+const ready = new Map<string, GLTF | null>();
+
+/** Načtená postava, kterou montáž nakreslí hned prvním snímkem (P62 T11); `undefined` = ještě se načítá. */
+export const loadedRigged = (path: string): GLTF | null | undefined => ready.get(path);
 
 export function loadRigged(path: string): Promise<GLTF | null> {
   let pending = cache.get(path);
@@ -132,7 +136,8 @@ export function loadRigged(path: string): Promise<GLTF | null> {
     // Slít jednou na načtený model (P36C T9): klony z `cloneSkinned` pak nesou jednu síť na materiál.
     // Klipy bez klidových stop (P54B T15c): míchač každé postavy počítá jen kosti, které se hýbou.
     // Okrajový svit (T14): riggovaná je vždy postava, klony sdílejí materiály se svitem.
-    pending = trackLoad(
+    // Postava je tělo: kulisy počkají, až doběhne (`afterBodies`, P62 T11).
+    pending = trackBody(
       new GLTFLoader()
         .loadAsync(path)
         .then((gltf) => {
@@ -143,6 +148,7 @@ export function loadRigged(path: string): Promise<GLTF | null> {
         })
         .catch(() => null),
     );
+    void pending.then((loaded) => ready.set(path, loaded));
     cache.set(path, pending);
   }
   return pending;
@@ -179,7 +185,7 @@ export function RiggedModel({
    */
   readonly toy?: () => ToyFrame;
 }) {
-  const [gltf, setGltf] = useState<GLTF | null | undefined>(undefined);
+  const [gltf, setGltf] = useState<GLTF | null | undefined>(() => loadedRigged(character.path));
   useEffect(() => {
     let live = true;
     void loadRigged(character.path).then((loaded) => {
@@ -267,7 +273,8 @@ export function RiggedModel({
     );
   }
   return (
-    <mesh position={[0, h / 2, 0]}>
+    // `standIn` čte sonda záběru (`FrameReport.heroStandIn`, P62 T11).
+    <mesh position={[0, h / 2, 0]} userData={{ standIn: true }}>
       <boxGeometry args={[h * 0.4, h, h * 0.4]} />
       <meshStandardMaterial color={fallback} roughness={0.6} />
     </mesh>
