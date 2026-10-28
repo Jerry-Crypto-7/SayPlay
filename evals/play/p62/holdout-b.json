@@ -1,0 +1,29 @@
+{
+ "about": "P62 T9 sealed set B: 24 new English sentences written 28. 10. 2026 before any place fix (T10), from nouns only (no competitor game, no run on these sentences). Families: interior = the game is played inside a building or underground; outdoor = an open-air place; compound = a place named by two words that the library has no set for. Every sentence names a place. hero, foe, item and world are the sentence's own words, labelled when written. Opened once in T12 (holdout-b-opened.json); nothing is tuned on it.",
+ "sentences": [
+  { "id": "b01", "family": "interior", "text": "A librarian shushes noisy goblins hiding between the bookshelves of an old library", "hero": "librarian", "foe": "goblin", "item": null, "world": "library" },
+  { "id": "b02", "family": "interior", "text": "A waiter catches falling plates before they smash in a busy sushi restaurant", "hero": "waiter", "foe": null, "item": "plate", "world": "sushi restaurant" },
+  { "id": "b03", "family": "interior", "text": "A night nurse switches off beeping alarm clocks in every room of a sleepy apartment", "hero": "night nurse", "foe": null, "item": "alarm clock", "world": "apartment" },
+  { "id": "b04", "family": "interior", "text": "A plumber stomps giant cockroaches crawling out of the drains in a school bathroom", "hero": "plumber", "foe": "cockroach", "item": null, "world": "school bathroom" },
+  { "id": "b05", "family": "interior", "text": "A miner rides a rail cart through a gold mine and grabs every nugget", "hero": "miner", "foe": null, "item": "nugget", "world": "gold mine" },
+  { "id": "b06", "family": "interior", "text": "A knight battles fire-breathing dragons for a pile of gold deep in a dungeon", "hero": "knight", "foe": "dragon", "item": "gold", "world": "dungeon" },
+  { "id": "b07", "family": "interior", "text": "A ballerina twirls across the stage of an opera house while roses rain down", "hero": "ballerina", "foe": null, "item": "rose", "world": "opera house" },
+  { "id": "b08", "family": "interior", "text": "A scientist zaps escaped slime blobs inside a secret laboratory", "hero": "scientist", "foe": "slime blob", "item": null, "world": "laboratory" },
+  { "id": "b09", "family": "outdoor", "text": "A rodeo rider ropes wild horses that bolt across a dusty ranch", "hero": "rodeo rider", "foe": null, "item": "wild horse", "world": "ranch" },
+  { "id": "b10", "family": "outdoor", "text": "A mountain goat leaps between ledges on a steep rocky cliff while eagles dive", "hero": "mountain goat", "foe": "eagle", "item": null, "world": "rocky cliff" },
+  { "id": "b11", "family": "outdoor", "text": "A gardener squashes slugs before they eat the lettuce in a vegetable garden", "hero": "gardener", "foe": "slug", "item": "lettuce", "world": "vegetable garden" },
+  { "id": "b12", "family": "outdoor", "text": "A kid on an inflatable duck dodges water cannons at a crowded water park", "hero": "kid", "foe": "water cannon", "item": null, "world": "water park" },
+  { "id": "b13", "family": "outdoor", "text": "A pilot dodges lightning bolts while flying a biplane above the clouds", "hero": "pilot", "foe": "lightning bolt", "item": null, "world": "clouds" },
+  { "id": "b14", "family": "outdoor", "text": "A camper scares raccoons away from the tents at a lakeside campsite", "hero": "camper", "foe": "raccoon", "item": "tent", "world": "lakeside campsite" },
+  { "id": "b15", "family": "outdoor", "text": "A zookeeper chases escaped monkeys around the zoo before closing time", "hero": "zookeeper", "foe": null, "item": "monkey", "world": "zoo" },
+  { "id": "b16", "family": "outdoor", "text": "A pirate captain sinks navy warships with cannonballs on the open sea", "hero": "pirate captain", "foe": "navy warship", "item": null, "world": "open sea" },
+  { "id": "b17", "family": "compound", "text": "A fishmonger tosses slippery fish into buckets at a busy fish market", "hero": "fishmonger", "foe": null, "item": "fish", "world": "fish market" },
+  { "id": "b18", "family": "compound", "text": "A porter catches falling suitcases on the platform of a train station", "hero": "porter", "foe": null, "item": "suitcase", "world": "train station" },
+  { "id": "b19", "family": "compound", "text": "A hockey player slaps pucks past the goalie on an indoor ice rink", "hero": "hockey player", "foe": "goalie", "item": "puck", "world": "ice rink" },
+  { "id": "b20", "family": "compound", "text": "A golfer chips balls past sand traps and ponds on a seaside golf course", "hero": "golfer", "foe": null, "item": "golf ball", "world": "golf course" },
+  { "id": "b21", "family": "compound", "text": "A bowler rolls a ball at wobbling pins in a neon bowling alley", "hero": "bowler", "foe": null, "item": "pin", "world": "bowling alley" },
+  { "id": "b22", "family": "compound", "text": "A mechanic stacks tires as high as possible in a car repair garage", "hero": "mechanic", "foe": null, "item": "tire", "world": "car repair garage" },
+  { "id": "b23", "family": "compound", "text": "A skateboarder grinds rails and dodges traffic cones in a skate park", "hero": "skateboarder", "foe": "traffic cone", "item": null, "world": "skate park" },
+  { "id": "b24", "family": "compound", "text": "A kid grabs falling lollipops before they hit the floor of a candy store", "hero": "kid", "foe": null, "item": "lollipop", "world": "candy store" }
+ ]
+}

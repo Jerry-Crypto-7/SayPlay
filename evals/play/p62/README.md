@@ -369,6 +369,38 @@ Dva běhy, oba A/B prokládaně scénu po scéně, `main` `495bbc77` proti větv
   - `play-shooter` a `play-perf` v dotykových projektech konfigurace nemá. `play-perf` má jen test `@measure`; ten běžel jako měření FPS (G5).
 - Po bězích `git status` v obou worktree bez přepsaných artefaktů.
 
+## Místo z věty (fáze 4, od 28. 10.)
+
+Brána T7 neprošla hlavně kvůli špatně zvolenému místu. Fáze 4 nejdřív změří, jak často rychlá hra kreslí jiné místo, než věta jmenuje (T9), pak výběr místa opraví (T10) a změří znovu na nové zapečetěné sadě (T12). Srovnávací `main` je od T8 P63 (`c1dfd552`); větev ho má sloučený (`d67dd4ce`).
+
+### Zapečetěná sada B (T9)
+
+`holdout-b.json` – 24 nových anglických vět, napsaných 28. 10. 2026 před jakoukoli opravou místa, jen z podstatných jmen (žádná cizí hra). Každá věta jmenuje místo:
+- **8 interiérů:** knihovna, sushi restaurace, byt, školní záchody, zlatý důl, kobka, opera, laboratoř;
+- **8 venkovních míst:** ranč, skalní útes, zeleninová zahrada, aquapark, nad mraky, kemp u jezera, zoo, otevřené moře;
+- **8 dvouslovných míst, pro která knihovna sadu nemá:** rybí trh, nádraží, kluziště, golfové hřiště, bowling, autoservis, skatepark, cukrárna.
+
+Slovesa míchají žánry jako sada T1 (chytání, sběr, útěk, střelba, hod, skládání, běh) – záměr při psaní, žánr se neověřoval, aby se věty nehrály. Žádná věta se neshoduje, ani skoro (podíl společných slov ≥ 0,3), se sadou T1, žádnou sadou P61 a P63 ani další známou sadou (`__tests__/seal.test.ts`). Nejbližší dvojice přes všech 58 sad vět v `evals/play` je 0,27 („porter … train station“ proti „Snow falling … train station“ z `p51/holdout.json`). Čtyři věty, které se s dřívějšími sadami potkaly (hasič a koťata, rytíř a spící draci, kovboj a dobytek, pastevecký pes), se přepsaly ještě před zapečetěním. Věty se nehrály ani nečetly kódem.
+
+SHA-256 nad LF bajty: `d62f5010f3dcabe025f4cb9f74449095273a51a11e41c04e7a03312d62719ece` (`seal.ts` → `P62_HOLDOUT_B_SHA256`). Otevře se jednou v T12 (`holdout-b-opened.json`); nic se podle ní neladí.
+
+### Audit místa (T9, `place-audit.json`)
+
+**Co se měří.** 268 otevřených vět: 220 vět auditu T1 (s dev větami P62) a otevřené holdouty `p61/holdout.json` a `p62/holdout.json`. Sada B se nečte. U každé věty ruční štítek (`place-labels.json`): místo, jak ho věta jmenuje, a sady, ve kterých by ho divák poznal. Místo bez vlastní sady má ve štítku nejbližší venkovní nebo neutrální sadu, interiér jen tehdy, když věta interiér jmenuje (podle plánu: noční trh → město, fotbalové hřiště → louka, pošta → město). Proti tomu sada, kterou kreslí rychlá hra z dveří `/api/play/games` (`lookOf`, recept auditu T1). Štítky vznikly z textu věty, ne z výsledku kódu.
+
+**Výsledek na větvi po sloučení P63** (`d67dd4ce`): 206 vět místo jmenuje, **180 trefí, 26 ne** (13 %). Cíl T10: nejvýš 13 špatných a žádná ze 180 správných se nezhorší.
+
+| Třída | Vět | Příklady (místo → kreslená sada) |
+|---|---|---|
+| Místo žádná sada nezná, scéna kreslí zálohu (louka nebo výchozí místo žánru) | 13 | kavárna → louka (2×), sklep, pohovka, obří hodiny, muzeum, taneční sál, hora, jídelna → louka; lekníny a deka na piknik → pláž; hotel → poušť; vrakoviště → les |
+| Dvouslovné místo čtené po slovech | 7 | noční trh → supermarket, pošta → obývák, nemocniční chodba → hřbitov, školní hřiště a kouzelnická škola → obývák, kráterové pole → louka, plovoucí trh v mracích → supermarket |
+| Místo přebilo jiné slovo věty | 5 | hrad + sněhové koule → sníh, okap + papírová loďka → oceán, cirkus + plážový míč → pláž, přespání + duch → hřbitov, táborák + „marshmallows“ → vesmír (regulární výraz chytí „mars“ uvnitř slova) |
+| Cizí interiér místo venkovního místa | 1 | fotbalové hřiště v obraně → hrad (výchozí místo žánru „castle walls“) |
+
+Třídu dává první pravidlo, které sedí (pořadí v hlavičce `place-audit.mjs`). 62 vět místo nejmenuje („Explain quantum physics“, postavy bez prostředí) a do počtu nejdou. Nová sada podle plánu jen pro místo, které jmenuje ≥ 3 % otevřených vět (≥ 7 z 206): z 26 špatných jmenuje stejné místo nejvýš dvojice (kavárna), takže T10 žádnou novou sadu nedělá.
+
+`__tests__/place-audit.test.ts` drží, že audit čte jen otevřené sady, každá věta má právě jeden štítek se sadami, které existují, třídy dávají pravidla z hlavičky, a že řádky i počty v `place-audit.json` vycházejí ze štítků a kreslené sady.
+
 ## Útrata
 
 Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946).
@@ -406,6 +438,8 @@ node scripts/play-look-shots.mjs perf --base http://127.0.0.1:3162 --out D:/cach
 node D:/caches/p62/t7/fetch-games.mjs publish evals/play/p62/holdout.json http://127.0.0.1:3162 D:/caches/p62/t7/main-quick-games
 P62_GAMES_DIRS="D:/caches/p62/p62-holdout/games;D:/caches/p62/t7/main-quick-games" npx vitest run --config vitest.measure.mts evals/play/p62/t7-robot.measure.ts   # soubor dočasně z D:/caches/p62/t7/
 node D:/caches/p62/t7/compose-result.mjs <worktree> '{"calls":24,"usd":0.7393}'
+# T9: audit místa (bez serveru a bez čtečky); --list vypíše věty bez štítku
+node evals/play/p62/place-audit.mjs
 ```
 
 Server jen jeden proces naráz, zastavit podle PID z prvního řádku.
