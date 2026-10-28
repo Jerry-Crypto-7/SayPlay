@@ -91,6 +91,8 @@ describe('the world of the game comes from the sentence and its reading (P56A T7
       'audit12 a02': 'meadow', 'p43Panel s021': 'volcano', 'p30Dev s008': 'jungle', 'p30Dev s021': 'volcano', 'p30Dev j04': 'beach',
       'p54cDev w03': 'graveyard', 'p54cDev x08': 'space', 'p54cDev x14': 'city', 'p54cHoldoutOpened h03': 'meadow',
       'p54cHoldoutOpened h06': 'graveyard', 'p54cHoldoutOpened h14': 'space', 'p55HoldoutOpened h10': 'graveyard',
+      // P62 T10: pohovka a kavárna jsou obývák, ne hradby obrany ani louka.
+      'audit12 a06': 'living_room', 'p30Dev j02': 'living_room',
     };
     const moved: string[] = [];
     for (const [name, path] of DEV) {

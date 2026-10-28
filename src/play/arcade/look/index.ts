@@ -621,26 +621,36 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
  * („icy moon“ je vesmír, „jungle river“ džungle, „snow fort“ sníh).
  */
 const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
+  // Složená místa celá dřív než po slovech (P62 T10): „night market“ není supermarket, „post office“ obývák,
+  // „magic school“ třída, „hospital corridor“ hřbitov, „school playground“ třída.
+  ['city', /(?:night|street|flea|floating) market|bazaar|post office/],
+  ['castle', /(?:magic|wizard) school/],
+  ['mall', /hospital (?:corridor|hallway|ward)/],
+  ['meadow', /playground|schoolyard/],
   ['underwater', /under ?water|sea ?floor|seabed|reef|coral|aquarium|submarine|sunken|deep sea/],
-  ['space', /space|mars|\bmoon|planet|asteroid|galax|orbit|alien|comet|\bstars?\b|cosmic/],
+  // „marshmallows“ nejsou Mars (P62 T10).
+  ['space', /space|\bmars\b|\bmoon|planet|asteroid|galax|orbit|alien|comet|\bstars?\b|cosmic/],
   ['volcano', /volcan|lava|magma|inferno/],
-  ['cave', /\bcaves?\b|cavern|underground|grotto|tunnel/],
+  // Kráter až za sopkou: „volcano crater“ je sopka, „crater field“ vesmír.
+  ['space', /crater/],
+  ['cave', /\bcaves?\b|cavern|underground|grotto|tunnel|cellar|basement/],
   ['jungle', /jungle|rainforest|swamp|amazon/],
-  ['snow', /snow|\bice\b|\bicy\b|glacier|arctic|frozen|winter|polar|igloo|tundra/],
+  // Lyžař je sníh (P62 T10). Hora ne: čtení dělá horu i z útesu („a seaside cliff“).
+  ['snow', /snow|\bice\b|\bicy\b|glacier|arctic|frozen|winter|polar|igloo|tundra|\bski(?:er|ers|ing)?\b/],
   ['desert', /desert|dune|sahara|outback|canyon|oasis|pyramid/],
   ['beach', /beach|coast|shore|island|tropic|vacation|holiday/],
   ['ocean', /ocean|\bsea\b|harbou?r|pirate|\blake\b|river|\bboat/],
-  ['castle', /castle|kingdom|medieval|dungeon|fortress|\bfort\b|throne/],
+  ['castle', /castle|kingdom|medieval|dungeon|fortress|\bfort\b|throne|ballroom/],
   ['graveyard', /haunted|graveyard|cemetery|ghost|spooky|crypt|hospital|horror|zombie/],
-  ['forest', /forest|woods|woodland|grove|campsite|camp\b/],
-  ['factory', /factory|warehouse|workshop|laborator|\blab\b|construction|\bmine\b|mining|colony|garage/],
-  ['supermarket', /supermarket|grocery|market|\bstore\b|bakery|kitchen|restaurant/],
-  ['mall', /\bmall\b|shopping|arcade hall|plaza/],
-  ['living_room', /living room|\bhouses?\b|\bhome\b|bedroom|apartment|office|classroom|school|toy/],
-  ['city', /city|street|town|downtown|road|traffic|rooftop|neon|subway|highway|urban|skyscraper/],
+  ['forest', /forest|woods|woodland|grove|campsite|camp\b|campfire/],
+  ['factory', /factory|warehouse|workshop|laborator|\blab\b|construction|\bmine\b|mining|colony|garage|scrapyard|junkyard|giant clock|clockwork/],
+  ['supermarket', /supermarket|grocery|market|\bstore\b|bakery|kitchen|restaurant|\bdiners?\b/],
+  ['mall', /\bmall\b|shopping|arcade hall|plaza|museum/],
+  ['living_room', /living room|\bhouses?\b|\bhome\b|bedroom|apartment|office|classroom|school|toy|\bsofa\b|\bcouch\b|sleepover|\bcaf[eé]?s?\b/],
+  ['city', /city|street|town|downtown|road|traffic|rooftop|neon|subway|highway|urban|skyscraper|hotel|gutter|sewer/],
   // Věž až za městem a kuchyní: „pancake tower in a kitchen“ je kuchyně, samotná věž hrad (P30B T6).
   ['castle', /\btower\b/],
-  ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill/],
+  ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill|soccer|football|picnic|circus|carnival/],
   // Chrám a ruiny až úplně naposled (P61 T3): „temple run“ je džungle se zříceninou, ne louka; „a temple in the desert“ poušť.
   ['jungle', /\btemples?\b|\bruins?\b/],
 ];

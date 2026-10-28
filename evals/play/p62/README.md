@@ -401,6 +401,12 @@ Třídu dává první pravidlo, které sedí (pořadí v hlavičce `place-audit.
 
 `__tests__/place-audit.test.ts` drží, že audit čte jen otevřené sady, každá věta má právě jeden štítek se sadami, které existují, třídy dávají pravidla z hlavičky, a že řádky i počty v `place-audit.json` vycházejí ze štítků a kreslené sady.
 
+### Oprava místa (T10, 28. 10.)
+
+Oprava je jen v tabulce slov → sada (`KEYWORDS` v `src/play/arcade/look/index.ts`); do řetězu dojde přes `lookFor ?? sentenceLook`, do návrhu přes totéž. Složená místa stojí na začátku tabulky (noční / pouliční / plovoucí trh a pošta → město, kouzelnická škola → hrad, nemocniční chodba → obchoďák, školní hřiště → louka). Místa bez sady dostala nejbližší sadu: kavárna, pohovka, přespání → obývák; sklep → jeskyně; taneční sál → hrad; lyžař → sníh; jídelna → supermarket; muzeum → obchoďák; hotel, okap → město; vrakoviště, obří hodiny → továrna; táborák → les; fotbal, piknik, cirkus → louka; kráter → vesmír (až za sopkou). „Mars“ jen jako celé slovo.
+
+**Výsledek** (`place-audit.json` přepočtený): **201 z 206 trefí, 5 špatně** (cíl ≤ 13), žádná ze 180 vět, které T9 trefil, místo neztratila. Zbývá: hrad + sněhové koule → sníh, školní hřiště → obývák, nemocniční chodba → hřbitov (návrh ze slov bere místo jinou cestou než tabulkou), okap + papírová loďka → oceán, lekníny v plošinovce → pláž. Zkoušeno a vráceno, protože to posunulo svět jiných vět ve `compose/__tests__/world.test.ts`: „mountain“ → sníh (čtení dělá horu i z „seaside cliff“ a „mountain tavern“), „snowball“ bez sněhu (tučňák se sněhovými koulemi spadl na louku), lekníny jako slovo louky (z rybníka u rytmické hry „lily pads and the pond“ udělaly řeku). Ve `world.test.ts` jsou dva nové posuny jmenované s cílem: „defends the couch“ a „cozy rainy café“ → obývák. Nová sada žádná (žádné místo ≥ 3 %). `src/play/arcade/look/__tests__/place-from-sentence.test.ts` počítá kreslenou sadu ze dveří `/api/play/games` nad štítky T9; před opravou červený (26 špatných).
+
 ## Útrata
 
 Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946).

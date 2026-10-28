@@ -34,11 +34,13 @@ describe('P62 place audit', () => {
   it('gives a wrong place the first class that fits', () => {
     expect(placeClass({ id: 'a', place: 'night market', ok: ['city'] }, 'supermarket')).toBe('compound');
     expect(placeClass({ id: 'b', place: 'post office sorting room', ok: ['city', 'factory'] }, 'living_room')).toBe('compound');
-    expect(placeClass({ id: 'c', place: 'soccer pitch', ok: ['meadow'] }, 'castle')).toBe('foreign-interior');
+    // Místo, které žádná sada nezná (fotbalové hřiště zná od T10 louka).
+    expect(placeClass({ id: 'c', place: 'bowling alley', ok: ['city'] }, 'castle')).toBe('foreign-interior');
     expect(placeClass({ id: 'd', place: 'haunted castle', ok: ['castle', 'graveyard'] }, 'meadow')).toBe('overridden');
     expect(placeClass({ id: 'e', place: 'circus', ok: ['meadow', 'city'] }, 'beach', 'Bounce a beach ball on a seal’s nose at the circus')).toBe('overridden');
-    expect(placeClass({ id: 'h', place: 'circus', ok: ['meadow', 'city'] }, 'beach', 'Juggle on a seal’s nose at the circus')).toBe('unknown-place');
-    expect(placeClass({ id: 'i', place: 'café', ok: ['living_room', 'city'] }, 'meadow', 'a sleepy cat naps in a cozy rainy café')).toBe('unknown-place');
+    // Místa, která žádná sada nezná (cirkus a kavárnu zná od T10 louka a obývák).
+    expect(placeClass({ id: 'h', place: 'zoo', ok: ['meadow', 'city'] }, 'beach', 'Juggle on a seal’s nose at the zoo')).toBe('unknown-place');
+    expect(placeClass({ id: 'i', place: 'bistro', ok: ['living_room', 'city'] }, 'meadow', 'a sleepy cat naps in a cozy rainy bistro')).toBe('unknown-place');
     expect(placeClass({ id: 'j', place: 'tower', ok: ['city', 'castle'] }, 'meadow', 'A firefighter climbs the tower')).toBe('overridden');
     expect(placeClass({ id: 'k', place: 'harbour', ok: ['beach'] }, 'meadow', 'a crab sneaks around the harbour')).toBe('other');
     expect(placeClass({ id: 'f', place: 'night market', ok: ['city'] }, 'city')).toBeNull();
