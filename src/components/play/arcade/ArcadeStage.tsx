@@ -60,6 +60,7 @@ import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
 import { KeepFrame } from '../feed/snapshot-cache';
 import { DrawWhenCompiled, FreshCamera, HostedCanvas } from '../feed/StageHost';
+import { XrGame } from '../xr/xr-context';
 import type { StageTunnel } from '../feed/stage-tunnel';
 
 /** Fire remains available when independent parts wrap the native weapon rule. */
@@ -1098,6 +1099,7 @@ export default function ArcadeStage({
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
       <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} keepFrame={keepFrame} sceneKey={sceneKey} names={names} />
+      <XrGame session={session} enabled={enabled} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}

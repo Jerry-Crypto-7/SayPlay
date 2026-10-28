@@ -384,10 +384,11 @@ function actorIn(segment: string): string | null {
   // „pull the pins to…“, „knock down towers…“: člen nebo částice uvnitř = sloveso a jeho předmět, ne podmět.
   if (words.some((word, index) => index > 0 && (ARTICLE_WORDS.has(word) || PARTICLES.has(word)))) return null;
   // „a dog needs to“, „a dog chases“: slovo na -s za jednotnou hlavou je sloveso, ne jméno (jako `subjectOf` v lexikonu).
+  // Za „race“ / „racing“ ne: „racing cars“ jsou auta, jako řádek závodu čte „a race car“ (P65 T6b).
   const kept: string[] = [];
   for (const word of words) {
     const previous = kept.at(-1);
-    if (AUXILIARIES.has(word) || LIGHT_VERBS.has(word) || (previous !== undefined && /[^s]s$/.test(word) && !previous.endsWith('s'))) break;
+    if (AUXILIARIES.has(word) || LIGHT_VERBS.has(word) || (previous !== undefined && /[^s]s$/.test(word) && !previous.endsWith('s') && !/^rac(?:e|ing)$/.test(previous))) break;
     kept.push(word);
   }
   const head = kept.at(-1);
@@ -696,7 +697,8 @@ export function extractIntent(sentence: string): Intent {
       const before = phraseIn(segment);
       const target = before === null ? null : { head: headOf(before), many: singular(before) !== before, at: from, end: hit.at, via: null };
       readings.push({ hit, actor: null, thing: target ?? after });
-    } else if (hit.row.before === 'modifier' && (bareBefore || TOOL_HEADS.has(headOf(hit.said)) && /\bwith\s+(?:a|an|the)\s+[a-z -]*$/.test(segment))) {
+    } else if (hit.row.before === 'modifier' && (bareBefore || TOOL_HEADS.has(headOf(hit.said)) && /\bwith\s+(?:(?:a|an|the)\s+)?[a-z -]*$/.test(segment))) {
+      // „with a water gun“, „with laser blasters“ (P65 T6b): přívlastek zbraně za „with“ střelcem není, se členem i bez něj.
       readings.push({ hit, actor: null, thing: after });
     } else {
       // The relative noun is the object; the doer is a named subject before „with“
@@ -810,8 +812,9 @@ export function extractIntent(sentence: string): Intent {
     if (verbHits.some((verb) => hit.at >= verb.at && hit.at < verb.end)) continue;
     const raceRival = hit.row.emits.some(emit => emit.id === 'rival') && /\brac(?:e|es|ing)\b/.test(text);
     if (!raceRival && consumed.some(({ thing }) => thing !== null && hit.at >= thing.at && hit.at < thing.end)) continue;
-    // „a lava cave“: láva jako přívlastek prostředí je kulisa.
+    // „a lava cave“: láva jako přívlastek prostředí je kulisa; „laser blasters“ (P65 T6b): přívlastek zbraně hrozbou není.
     const next = /^ ([a-z]+)/.exec(text.slice(hit.end))?.[1];
+    if (next !== undefined && TOOL_HEADS.has(headOf(next))) continue;
     const scenery = next !== undefined && inSetting(next);
     for (const emit of hit.row.emits) {
       const avoidedDetection = /^ (?:spotting|seeing|catching|detecting|noticing)\b/.test(text.slice(hit.end));

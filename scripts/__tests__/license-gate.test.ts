@@ -1356,6 +1356,22 @@ describe('license-gate: licence podle RULES.md §4 (kontrola 2)', () => {
     expect(out).toContain('webgl-constants@1.1.2: licence není deklarovaná');
     expect(code).toBe(1);
   });
+
+  it('„SEE LICENSE IN LICENSE“ bere jako nedeklarovanou licenci, i u vnořeného balíčku', () => {
+    // `@pmndrs/xr` (P65) leží pod `@react-three/xr` a SPDX v package.json nenese.
+    const reviewed = makeGreenRepo({
+      'node_modules/@react-three/xr/node_modules/@pmndrs/xr': { version: '6.6.31', license: 'SEE LICENSE IN LICENSE', resolved: 'https://r.io/xr.tgz' },
+    });
+    expect(failedChecks(run(LICENSE_GATE, reviewed).out)).toEqual([]);
+    expect(readRegistry(reviewed).entries.find((item) => item.name === '@react-three/xr › @pmndrs/xr@6.6.31')?.license).toBe('MIT');
+
+    const unknown = makeGreenRepo({
+      'node_modules/@pmndrs/xr': { version: '6.6.99', license: 'SEE LICENSE IN LICENSE', resolved: 'https://r.io/xr.tgz' },
+    });
+    const { code, out } = run(LICENSE_GATE, unknown);
+    expect(out).toContain('@pmndrs/xr@6.6.99: licence není deklarovaná');
+    expect(code).toBe(1);
+  });
 });
 
 describe('license-gate: DISCLOSURE.md je výpis, ne text (kontrola 6)', () => {

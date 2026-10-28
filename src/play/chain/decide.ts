@@ -4,8 +4,11 @@
  * P61 T4 zúžil `generic` na neslyšenou větu (`evals/play/p56c/decide.md`, `evals/play/p61/README.md`).
  */
 
+import { saidMove } from '../compose/assemble';
 import { readCountedNouns, singular } from '../draft/lexicon';
 import type { GenreRanking } from '../genre/classify';
+import { extractIntent } from '../intent';
+import type { VerbClass } from '../read/schema';
 import { VERB_MICROS } from './build';
 import { MICRO } from './micro';
 import type { SentenceRead } from './read';
@@ -28,6 +31,19 @@ function verbControls(read: SentenceRead): number {
   return used.size;
 }
 
+/** Třídy sloves, které jízda se střelbou hraje celé: řídit, střílet, dojet nebo sebrat, ujet honiči. */
+const DRIVE_SHOOT_PLAYS: ReadonlySet<VerbClass> = new Set(['steer', 'aim_shoot', 'move_free', 'runner']);
+
+/**
+ * P65 T6b, rozhodnutí majitele 28. 10.: vozidlo nebo závod se střelbou je jedna jízda, která střílí (`steer` + `blaster`),
+ * ne řetěz – ta hraje obě slovesa. Věta s dalším slovesem, které jízda nehraje („throw pies“), zůstane řetězem.
+ */
+function drivesAndShoots(sentence: string, read: SentenceRead): boolean {
+  const intent = extractIntent(sentence);
+  const shoots = intent.items.some((item) => item.essential && item.verb === 'shoot') && !intent.negated.includes('shoot');
+  return shoots && saidMove(intent) === 'drive' && read.verbs.every((verb) => DRIVE_SHOOT_PLAYS.has(verb.class));
+}
+
 /** Proč věta hraje řetěz; prázdné = jedna hra. */
 export function chainReasons(sentence: string, read: SentenceRead, ranking: GenreRanking): ChainReason[] {
   const reasons: ChainReason[] = [];
@@ -42,7 +58,7 @@ export function chainReasons(sentence: string, read: SentenceRead, ranking: Genr
   // Počet musí patřit věci, kterou věta sbírá: „eight swords“, „three forest lanes“ cíl nejsou.
   const item = read.item === null ? null : singular(read.item.toLowerCase()).split(' ').at(-1);
   const counted = heard && GENERIC_CELLS.has(`${top.genre}.${top.mode}`) && readCountedNouns(sentence).some(({ noun }) => singular(noun) === item);
-  if (verbControls(read) >= 2 && !counted) reasons.push('multi_verb');
+  if (verbControls(read) >= 2 && !counted && !drivesAndShoots(sentence, read)) reasons.push('multi_verb');
   // P61 T4: `generic` jen pro neslyšenou větu. Dřív i slyšená obecná buňka s náskokem pod 3 („skateboard“ → běžec 2).
   if (!heard) reasons.push('generic');
   if (CHAIN_CUES.test(sentence.toLowerCase())) reasons.push('cue');

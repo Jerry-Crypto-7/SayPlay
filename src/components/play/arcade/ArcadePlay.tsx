@@ -45,6 +45,8 @@ import { AboutButton, SentenceRead } from '../SentenceRead';
 import { type DarePublish, type LivePublish, publishDare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
+import { EnterVrButton } from '../xr/EnterVrButton';
+import { type XrCounter, XrHudSource } from '../xr/xr-context';
 import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner, useCommitted } from '../UpgradeBanner';
@@ -149,6 +151,22 @@ export function collectGoal(world: ArcadeWorld, count: number): HudGoal | null {
 
 const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true || spec.control === 'steer' && typeof spec.controlParams?.crashBudget === 'number';
 
+/** Počítadla pilulky postupu mimo cíl sbírání: zbývající rány, náboje, životy a cíl k překonání – DOM HUD i panel VR (P65 T5). */
+function hudCountersOf(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, target: HudCounter | null): HudCounter[] {
+  const counters: HudCounter[] = [];
+  if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
+  if (countsAmmo(world)) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
+  if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
+  if (target !== null) counters.push(target);
+  return counters;
+}
+
+/** Počítadla pro panel VR: cíl sbírání jako `3/5`, ostatní s textem DOM HUD. */
+const xrCountersOf = (goal: HudGoal | null, counters: readonly HudCounter[]): XrCounter[] => [
+  ...(goal === null ? [] : [{ label: goal.label, text: `${goal.count}/${goal.need}` }]),
+  ...counters.map((counter) => ({ label: counter.label, text: counter.text })),
+];
+
 /**
  * Fakta skončeného běhu pro výsledek (P34 T6) – jen čísla, která relace
  * arkády opravdu počítá: sebrané předměty, životy, body jednotkou hry
@@ -219,11 +237,7 @@ function ArcadeHud({
 }) {
   const lives = hasLives(spec) ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
-  const counters: HudCounter[] = [];
-  if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
-  if (countsAmmo(world)) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
-  if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
-  if (target !== null) counters.push(target);
+  const counters = hudCountersOf(spec, world, snapshot, target);
   const limit = limitOf(world);
   const elapsed = snapshot.tick / ARCADE_HZ;
   return (
@@ -817,6 +831,17 @@ function ArcadePlayGame({
     session.restart();
     session.resume();
   }, [session, versionId]);
+  // Nový pokus z výsledku – „Play again“ / „Try again“ (`PostRun`) i „Again“ panelu VR (P65 T5).
+  const replay = useCallback(
+    (via: 'button' | 'key') => {
+      if (!offline && session.humanRun()) loopEvent('restart', versionId);
+      session.restart();
+      // Klávesa nového pokusu (P36B T3) je zároveň první dotek: nový běh jede hned, bez výzvy.
+      if (via === 'key') session.begin();
+    },
+    [offline, session, versionId],
+  );
+  const again = useCallback(() => replay('button'), [replay]);
   useHudKeys(menu && !aboutOpen, session.paused, (action) => {
     if (action === 'restart') restart();
     else if (action === 'pause') pauseGame();
@@ -970,6 +995,8 @@ function ArcadePlayGame({
                 </Button>
               )}
               {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} recording={filming} />}
+              {/* VR (P65 T1): jen s `?vr=1` a prohlížečem, který VR umí; feed zůstává 2D. */}
+              {!inFeed && <EnterVrButton />}
             </>
           )
         }
@@ -1053,14 +1080,23 @@ function ArcadePlayGame({
           offline={offline}
           record={record}
           controlsHint={spec.tutorial.controlsHint}
-          onReplay={(via) => {
-            if (!offline && session.humanRun()) loopEvent('restart', versionId);
-            session.restart();
-            // Klávesa nového pokusu (P36B T3) je zároveň první dotek: nový běh jede hned, bez výzvy.
-            if (via === 'key') session.begin();
-          }}
+          onReplay={replay}
         />
       )}
+      {/* VR (P65 T5): DOM v relaci vidět není, HUD a výsledek kreslí 3D panely (`xr/XrHud.tsx`) z týchž dat. */}
+      <XrHudSource
+        view={
+          active
+            ? {
+                session,
+                goalLine: spec.tutorial.goalLine,
+                counters: xrCountersOf(collectGoal(arcade, snapshot.items), hudCountersOf(spec, arcade, snapshot, target)),
+                result: !running && demo === null && settled ? (snapshot.runState === 'won' ? 'won' : 'lost') : null,
+                again,
+              }
+            : null
+        }
+      />
     </main>
   );
 }

@@ -5,6 +5,9 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { baseControlOf } from '@/play/arcade/addons';
+import { compileArcade } from '@/play/arcade/compile';
+import { draftGameSpecWithMeta } from '@/play/draft/draft';
 import { classifyGenre } from '@/play/genre/classify';
 import type { Reading } from '@/play/read/schema';
 
@@ -100,6 +103,38 @@ describe('chainOrSingle', () => {
       const sentence = 'a chef catches eggs dropping into the kitchen while avoiding bombs';
       const reading: Reading = { control: 'timing', verbs: [{ word: 'catches', class: 'timing' }], hero: 'chef', roles: [{ noun: 'eggs', kind: 'target', count: null }, { noun: 'bombs', kind: 'hazard', count: null }], setting: 'kitchen', mood: 'busy', numbers: none, genre: { genre: 'catch', mode: 'default' }, sure: true, foe: null, item: 'eggs', world: null, title: 'Chef Egg Catch' };
       expect(read(sentence, reading)).toEqual([]);
+    });
+  });
+
+  // P65 T6b, rozhodnutí majitele 28. 10.: vozidlo nebo závod se střelbou je jedna jízda, která střílí – ne řetěz ani střílečka.
+  describe('a vehicle or a race with shooting plays one drive game that shoots (P65 T6b)', () => {
+    for (const sentence of [
+      'game in a car with shooting and racing',
+      'racing cars with machine guns',
+      'a car race where you shoot five zombies',
+      'drive a tank and shoot the enemy tanks',
+      'a kart race where you shoot rockets at the other karts',
+      'police car chase where you shoot at the robbers',
+      'a car that shoots lasers while racing through the city',
+      'shoot zombies from your car while driving to the finish',
+      'race a monster truck and blast the drones',
+      'a racing game with guns',
+      'drive through the desert shooting at bandits',
+      'a kart race with laser blasters',
+    ]) {
+      it(sentence, () => {
+        expect(reasons(sentence)).toEqual([]);
+        const compiled = compileArcade(draftGameSpecWithMeta(sentence, 1).spec, 1);
+        if (!compiled.ok) throw new Error(compiled.issues.join('; '));
+        const world = compiled.value.arcade!;
+        expect(baseControlOf(world.control).id).toBe('steer');
+        expect(world.rules.map((rule) => rule.id)).toContain('blaster');
+      });
+    }
+
+    it('a vehicle with another second verb, or asking for rounds, still makes a chain', () => {
+      expect(reasons('drive a car and throw pies at the clowns')).toEqual(['multi_verb']);
+      expect(reasons('a car race where you shoot five zombies, make it five levels')).toEqual(['cue']);
     });
   });
 
