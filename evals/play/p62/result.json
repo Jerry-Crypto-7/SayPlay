@@ -1,0 +1,2916 @@
+{
+ "schema": "p62-result.v1",
+ "task": "P62 T7 – sealed scene gate: main vs P62 on shared sheets (G1–G3), time to playable (G4), phone FPS (G5), model bytes of the first game (G6), robot / idle / replay (G7)",
+ "holdout": {
+  "file": "evals/play/p62/holdout.json",
+  "sha256": "7863a64004efbc746fbec880a06f5ec04c16d114e32153c60541e4c413ca99a9",
+  "openedAt": "2026-10-27T21:30:04.528Z",
+  "commit": "569aba6f",
+  "sentences": 24
+ },
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": "495bbc77",
+   "measuredAt": "2026-10-27T11:23:05.467Z",
+   "base": "http://127.0.0.1:3162"
+  },
+  {
+   "name": "p62",
+   "label": "p62",
+   "commit": "569aba6f",
+   "measuredAt": "2026-10-27T21:47:12.354Z",
+   "base": "http://127.0.0.1:3168"
+  }
+ ],
+ "shots": {
+  "main": "D:/caches/p62/main-holdout (T1)",
+  "p62": "D:/caches/p62/p62-holdout",
+  "sameSettings": {
+   "at": [
+    1000,
+    3000,
+    5000
+   ],
+   "views": {
+    "desktop": "1280x720",
+    "phone": "Pixel 7 portrait"
+   },
+   "range": [
+    0,
+    23
+   ],
+   "reader": "gpt-6-astra, PLAY_READER=on, upgrade path blocked while shooting"
+  },
+  "readingGames": {
+   "main": 7,
+   "p62": 7
+  },
+  "errors": {
+   "main": 0,
+   "p62": 0
+  },
+  "sameQuickGame": 23
+ },
+ "judge": {
+  "name": "codex exec",
+  "view": "desktop",
+  "seed": 61026,
+  "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+  "concurrency": 1,
+  "calls": 24,
+  "fallback": null,
+  "judgedAt": "2026-10-27T21:49:55.516Z"
+ },
+ "scene": {
+  "interiors": [
+   "mall",
+   "supermarket",
+   "living_room",
+   "factory",
+   "castle",
+   "cave"
+  ],
+  "rule": "Quick scene P62 draws differently, inferred from the published spec (control and look/setting), not from pixels: arena (move_free: T3 walls, T4 dressing, T5 foe scale), shooter (T4 dressing, T5 foe scale and camera), any genre in an interior look (T6 floor; rhythm also T1-R1). Checked by eye on the sheet for p04 (race in a factory: same scene), p08 (runner, graveyard: same scene), p18 (defense under 'castle walls': flagstone floor instead of grass) and p24 (runner, supermarket: tiled floor, no road).",
+  "changed": [
+   "p01",
+   "p02",
+   "p03",
+   "p05",
+   "p06",
+   "p07",
+   "p11",
+   "p13",
+   "p15",
+   "p17",
+   "p18",
+   "p19",
+   "p23",
+   "p24"
+  ],
+  "unchanged": [
+   "p04",
+   "p08",
+   "p09",
+   "p10",
+   "p12",
+   "p14",
+   "p16",
+   "p20",
+   "p21",
+   "p22"
+  ]
+ },
+ "plan": [
+  {
+   "id": "p01",
+   "sentence": "A security guard chases rats through an empty shopping mall at night",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p02",
+   "sentence": "Grab ten cereal boxes off the shelves of a supermarket before it closes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p03",
+   "sentence": "A kitten knocks the vases off every shelf in a cozy living room",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p62-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p04",
+   "sentence": "A welder dodges runaway forklifts in a car factory",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p05",
+   "sentence": "A jester battles armored guards in the great hall of a castle",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p06",
+   "sentence": "A gem hunter gathers glowing crystals deep in a cave while bats swoop down",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p07",
+   "sentence": "A busboy collects coffee mugs left all over a cozy cafe",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p08",
+   "sentence": "A janitor dodges runaway wheelchairs in a hospital corridor",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p09",
+   "sentence": "A farmer chases escaped pigs back into the barn on a muddy farm",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p62-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p10",
+   "sentence": "A sandcastle builder fends off stinging jellyfish on a sunny beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p11",
+   "sentence": "A yak carries supplies over a windy mountain pass while boulders tumble down",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p12",
+   "sentence": "A park ranger puts out campfires left burning in a pine forest",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p62-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p13",
+   "sentence": "A window cleaner collects lost kites from the rooftops of a rainy city",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p14",
+   "sentence": "A moon rover scoops up moon rocks on a crater field while meteors rain down",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p62-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p15",
+   "sentence": "A nomad collects water jugs while crossing the dunes of a desert",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p16",
+   "sentence": "A sea witch hurls fireballs at pirate ships on a stormy ocean",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p17",
+   "sentence": "A sea otter zaps electric eels that invade a rocky tide pool",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p18",
+   "sentence": "A groundskeeper guards a soccer pitch from moles digging holes before the big match",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p19",
+   "sentence": "A spelunker crawls through a flooded mine shaft while stalactites crash down",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p62-reading"
+    }
+   ]
+  },
+  {
+   "id": "p20",
+   "sentence": "A lost tourist runs through a red canyon from angry walking cacti",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p62-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p21",
+   "sentence": "A dog walker hurries through a stormy park dodging falling branches",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p62-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p22",
+   "sentence": "A rusty tin can escapes the hydraulic presses of a scrapyard",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p23",
+   "sentence": "A puppy fights living cardboard boxes in a post office sorting room",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  },
+  {
+   "id": "p24",
+   "sentence": "A shopkeeper dodges slamming metal shutters in a night market",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p62-quick"
+    }
+   ]
+  }
+ ],
+ "sentences": [
+  {
+   "id": "p01",
+   "sentence": "A security guard chases rats through an empty shopping mall at night",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.55,
+     "reason": "A labeled guard pursues visible rats across a dim tiled space, but the mall identity is weak and the sparse scenery makes the chase look repetitive."
+    },
+    "p62-quick": {
+     "fidelity": 0.72,
+     "wouldPlay": 0.61,
+     "reason": "The guard, rats, dim mall-like interior, and scattered obstacles convey the requested chase more clearly and suggest more engaging movement, though the characters look crude."
+    },
+    "main-after-reading": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.55,
+     "reason": "A labeled guard pursues visible rats across a dim tiled space, but the mall identity is weak and the sparse scenery makes the chase look repetitive."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.72,
+     "wouldPlay": 0.61,
+     "reason": "The guard, rats, dim mall-like interior, and scattered obstacles convey the requested chase more clearly and suggest more engaging movement, though the characters look crude."
+    }
+   }
+  },
+  {
+   "id": "p02",
+   "sentence": "Grab ten cereal boxes off the shelves of a supermarket before it closes",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.63,
+     "wouldPlay": 0.46,
+     "reason": "The ten-box counter, closing timer, cereal boxes, and shopping character convey the objective, but the sparse supermarket and boxes on the floor weaken the shelf-collection premise and make play look repetitive."
+    },
+    "p62-quick": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.61,
+     "reason": "Visible stocked shelving, cereal boxes, other shoppers, a ten-box counter, and a closing timer establish the supermarket challenge, while the busier environment looks more engaging despite collection appearing to happen on the floor."
+    },
+    "main-after-reading": {
+     "fidelity": 0.63,
+     "wouldPlay": 0.46,
+     "reason": "The ten-box counter, closing timer, cereal boxes, and shopping character convey the objective, but the sparse supermarket and boxes on the floor weaken the shelf-collection premise and make play look repetitive."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.61,
+     "reason": "Visible stocked shelving, cereal boxes, other shoppers, a ten-box counter, and a closing timer establish the supermarket challenge, while the busier environment looks more engaging despite collection appearing to happen on the floor."
+    }
+   }
+  },
+  {
+   "id": "p03",
+   "sentence": "A kitten knocks the vases off every shelf in a cozy living room",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25,
+     "reason": "A kitten and living-room furniture are visible, but shelves and vase-knocking are unclear, and the disconnected hole-and-hammer scene makes the game look confusing."
+    },
+    "p62-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "The kitten, couch, lamps, and wood floor suggest a living room, but visible vase targets and shelf-clearing action are missing, leaving little apparent gameplay."
+    },
+    "p62-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.65,
+     "reason": "A controllable kitten, scattered furnishings, and marked targets suggest an active knocking challenge, though the open arena and star objectives poorly convey vases on cozy living-room shelves."
+    },
+    "main-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.6,
+     "reason": "The kitten, target markers, and nearby obstacles make an understandable action game, but the intense red arena lacks cozy atmosphere and clearly visible shelves of vases."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.6,
+     "reason": "The kitten, target markers, and nearby obstacles make an understandable action game, but the intense red arena lacks cozy atmosphere and clearly visible shelves of vases."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.65,
+     "reason": "A controllable kitten, scattered furnishings, and marked targets suggest an active knocking challenge, though the open arena and star objectives poorly convey vases on cozy living-room shelves."
+    }
+   }
+  },
+  {
+   "id": "p04",
+   "sentence": "A welder dodges runaway forklifts in a car factory",
+   "scores": {
+    "p62-quick": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.55,
+     "reason": "The industrial road and Welder label suggest the premise, but the character appears to be a car and runaway forklifts are unclear; the obstacle-dodging looks accessible but generic."
+    },
+    "main-quick": {
+     "fidelity": 0.61,
+     "wouldPlay": 0.59,
+     "reason": "The industrial setting and visible vehicle near the road edge make the dodging action slightly clearer, though the welder and forklift threats remain ambiguous; the simple driving challenge looks moderately appealing."
+    },
+    "main-after-reading": {
+     "fidelity": 0.61,
+     "wouldPlay": 0.59,
+     "reason": "The industrial setting and visible vehicle near the road edge make the dodging action slightly clearer, though the welder and forklift threats remain ambiguous; the simple driving challenge looks moderately appealing."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.55,
+     "reason": "The industrial road and Welder label suggest the premise, but the character appears to be a car and runaway forklifts are unclear; the obstacle-dodging looks accessible but generic."
+    }
+   }
+  },
+  {
+   "id": "p05",
+   "sentence": "A jester battles armored guards in the great hall of a castle",
+   "scores": {
+    "p62-quick": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.66,
+     "reason": "Visible jester and armored enemies, attack effects, and castle stonework support the battle premise, though the space reads more like a courtyard than a great hall and combat looks basic."
+    },
+    "main-quick": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.57,
+     "reason": "The jester fights a labeled armored guard in a stone castle area, but the prominent grass and sparse surroundings weaken the great-hall setting and make combat look less engaging."
+    },
+    "main-after-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.57,
+     "reason": "The jester fights a labeled armored guard in a stone castle area, but the prominent grass and sparse surroundings weaken the great-hall setting and make combat look less engaging."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.66,
+     "reason": "Visible jester and armored enemies, attack effects, and castle stonework support the battle premise, though the space reads more like a courtyard than a great hall and combat looks basic."
+    }
+   }
+  },
+  {
+   "id": "p06",
+   "sentence": "A gem hunter gathers glowing crystals deep in a cave while bats swoop down",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.72,
+     "wouldPlay": 0.65,
+     "reason": "A visible hunter collects glowing gems in a dark cave, but swooping bats are unclear and the sparse terrain offers limited visual variety."
+    },
+    "p62-quick": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.58,
+     "reason": "Glowing gems and cave scenery establish the collection goal, but bats are unclear and the hunter appears as a plain block in two screenshots, reducing polish."
+    },
+    "main-after-reading": {
+     "fidelity": 0.72,
+     "wouldPlay": 0.65,
+     "reason": "A visible hunter collects glowing gems in a dark cave, but swooping bats are unclear and the sparse terrain offers limited visual variety."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.58,
+     "reason": "Glowing gems and cave scenery establish the collection goal, but bats are unclear and the hunter appears as a plain block in two screenshots, reducing polish."
+    }
+   }
+  },
+  {
+   "id": "p07",
+   "sentence": "A busboy collects coffee mugs left all over a cozy cafe",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.36,
+     "reason": "A character collects glowing objects, but the sparse earthy arena lacks a recognizable cozy cafe or coffee mugs, and the activity looks repetitive."
+    },
+    "p62-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.43,
+     "reason": "Tables and a busboy label better suggest cafe cleanup, but the outdoor-looking arena and abstract collectibles weaken fidelity, while furniture adds some navigational interest."
+    },
+    "main-after-reading": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.36,
+     "reason": "A character collects glowing objects, but the sparse earthy arena lacks a recognizable cozy cafe or coffee mugs, and the activity looks repetitive."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.43,
+     "reason": "Tables and a busboy label better suggest cafe cleanup, but the outdoor-looking arena and abstract collectibles weaken fidelity, while furniture adds some navigational interest."
+    }
+   }
+  },
+  {
+   "id": "p08",
+   "sentence": "A janitor dodges runaway wheelchairs in a hospital corridor",
+   "scores": {
+    "p62-quick": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.43,
+     "reason": "A labeled janitor runs along a snowy graveyard road rather than a hospital corridor, with no clear runaway wheelchairs, though the lane layout suggests a readable dodging game."
+    },
+    "main-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.49,
+     "reason": "The janitor and labeled runaway wheelchair partially match the premise, but the snowy graveyard setting and oversized gates replace the hospital corridor, while varied obstacles add some gameplay appeal."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.49,
+     "reason": "The janitor and labeled runaway wheelchair partially match the premise, but the snowy graveyard setting and oversized gates replace the hospital corridor, while varied obstacles add some gameplay appeal."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.43,
+     "reason": "A labeled janitor runs along a snowy graveyard road rather than a hospital corridor, with no clear runaway wheelchairs, though the lane layout suggests a readable dodging game."
+    }
+   }
+  },
+  {
+   "id": "p09",
+   "sentence": "A farmer chases escaped pigs back into the barn on a muddy farm",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.58,
+     "reason": "A farmer and a pig appear in a fenced green field with a pursuit-like setup, but no barn or muddy ground is visible and the star objectives distract from herding."
+    },
+    "main-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.28,
+     "reason": "A character beneath trees and a falling dark object suggest a simple catching game, with no visible pigs, barn, mud, or chase."
+    },
+    "p62-reading": {
+     "fidelity": 0.47,
+     "wouldPlay": 0.51,
+     "reason": "The farmer, pig, and fenced field partly match the premise, but flowers and blue objects obscure the herding goal and no barn or mud is evident."
+    },
+    "p62-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.28,
+     "reason": "The sparse scene shows a character under trees with a falling object, offering little visible variety and almost none of the requested pig-herding scenario."
+    },
+    "main-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.58,
+     "reason": "A farmer and a pig appear in a fenced green field with a pursuit-like setup, but no barn or muddy ground is visible and the star objectives distract from herding."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.47,
+     "wouldPlay": 0.51,
+     "reason": "The farmer, pig, and fenced field partly match the premise, but flowers and blue objects obscure the herding goal and no barn or mud is evident."
+    }
+   }
+  },
+  {
+   "id": "p10",
+   "sentence": "A sandcastle builder fends off stinging jellyfish on a sunny beach",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2,
+     "reason": "A sandy setting appears, but the gray obstacle scene and bright platform view show no clear sandcastle building or jellyfish defense and little coherent gameplay."
+    },
+    "p62-reading": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.78,
+     "reason": "The sunny beach, builder, colorful jellyfish, attack button, and health bars clearly convey defense, though sandcastle construction is not visible."
+    },
+    "p62-quick": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.12,
+     "reason": "The static gray sandy scene contains scattered obstacles but no recognizable builder, jellyfish threat, or compelling visible action."
+    },
+    "main-reading": {
+     "fidelity": 0.86,
+     "wouldPlay": 0.8,
+     "reason": "The sunny beach battle visibly pairs a builder with jellyfish enemies, health bars, and attack effects, making combat inviting despite no visible castle construction."
+    },
+    "main-after-reading": {
+     "fidelity": 0.86,
+     "wouldPlay": 0.8,
+     "reason": "The sunny beach battle visibly pairs a builder with jellyfish enemies, health bars, and attack effects, making combat inviting despite no visible castle construction."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.78,
+     "reason": "The sunny beach, builder, colorful jellyfish, attack button, and health bars clearly convey defense, though sandcastle construction is not visible."
+    }
+   }
+  },
+  {
+   "id": "p11",
+   "sentence": "A yak carries supplies over a windy mountain pass while boulders tumble down",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.42,
+     "reason": "A yak and supply-delivery objective are visible, but the grassy arena, wolves, and orange blocks convey little of a windy mountain pass or tumbling boulders, and the action looks sparse."
+    },
+    "p62-quick": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.48,
+     "reason": "The yak, delivery objective, and visible cargo suggest the premise, but wolves and blocks on grassy terrain replace the mountain and boulder hazards; the extra scenery makes play look slightly more engaging."
+    },
+    "main-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.42,
+     "reason": "A yak and supply-delivery objective are visible, but the grassy arena, wolves, and orange blocks convey little of a windy mountain pass or tumbling boulders, and the action looks sparse."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.48,
+     "reason": "The yak, delivery objective, and visible cargo suggest the premise, but wolves and blocks on grassy terrain replace the mountain and boulder hazards; the extra scenery makes play look slightly more engaging."
+    }
+   }
+  },
+  {
+   "id": "p12",
+   "sentence": "A park ranger puts out campfires left burning in a pine forest",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.53,
+     "reason": "A green ranger-like character explores a forest clearing, but the blue obstacles and lack of visible campfires make the firefighting goal unclear."
+    },
+    "main-quick": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.23,
+     "reason": "A gray wooded scene shifts to a character facing five holes and a red marker, with little visible connection to extinguishing forest campfires or compelling play."
+    },
+    "p62-reading": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.61,
+     "reason": "A ranger-like character, wooded park, benches, and small orange flame-like details suggest the premise, though extinguishing fires is not clearly shown."
+    },
+    "p62-quick": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.19,
+     "reason": "Repeated gray forest views and a sparse five-hole scene show neither clear ranger firefighting nor enough visible interaction to make the game appealing."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.53,
+     "reason": "A green ranger-like character explores a forest clearing, but the blue obstacles and lack of visible campfires make the firefighting goal unclear."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.61,
+     "reason": "A ranger-like character, wooded park, benches, and small orange flame-like details suggest the premise, though extinguishing fires is not clearly shown."
+    }
+   }
+  },
+  {
+   "id": "p13",
+   "sentence": "A window cleaner collects lost kites from the rooftops of a rainy city",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.68,
+     "wouldPlay": 0.46,
+     "reason": "Rain, rooftop surfaces, scattered kites and a collection objective fit the premise, but the cleaner is indistinct and the dark, sparse scene makes play look repetitive."
+    },
+    "p62-quick": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.57,
+     "reason": "Rainy rooftops, collectible kites, a labelled window cleaner and more visible obstacles convey the premise better, though the very dark presentation makes navigation look difficult."
+    },
+    "main-after-reading": {
+     "fidelity": 0.68,
+     "wouldPlay": 0.46,
+     "reason": "Rain, rooftop surfaces, scattered kites and a collection objective fit the premise, but the cleaner is indistinct and the dark, sparse scene makes play look repetitive."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.57,
+     "reason": "Rainy rooftops, collectible kites, a labelled window cleaner and more visible obstacles convey the premise better, though the very dark presentation makes navigation look difficult."
+    }
+   }
+  },
+  {
+   "id": "p14",
+   "sentence": "A moon rover scoops up moon rocks on a crater field while meteors rain down",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.22,
+     "reason": "A grassy orchard with a catching device and falling objects shows little of the lunar rover, rocks, crater field, or meteor threat, and the play looks sparse."
+    },
+    "main-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.48,
+     "reason": "A rover, collectible moon rock, and meteor-dodging objective fit the premise, but the green terrain lacks clear craters and the dark streaks obscure the action."
+    },
+    "p62-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.58,
+     "reason": "The rover, scattered rocks, and falling objects suggest the requested collection-and-dodging gameplay, though the green field reads poorly as a cratered lunar surface."
+    },
+    "p62-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.22,
+     "reason": "The visible orchard and falling-object catching setup barely resemble the lunar scenario, and the empty field offers limited apparent variety or challenge."
+    },
+    "main-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.48,
+     "reason": "A rover, collectible moon rock, and meteor-dodging objective fit the premise, but the green terrain lacks clear craters and the dark streaks obscure the action."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.58,
+     "reason": "The rover, scattered rocks, and falling objects suggest the requested collection-and-dodging gameplay, though the green field reads poorly as a cratered lunar surface."
+    }
+   }
+  },
+  {
+   "id": "p15",
+   "sentence": "A nomad collects water jugs while crossing the dunes of a desert",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.87,
+     "wouldPlay": 0.64,
+     "reason": "A nomad crosses a sandy desert toward visible water jugs, clearly matching the premise, though the sparse terrain and limited visible challenges make play look repetitive."
+    },
+    "p62-quick": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.7,
+     "reason": "The nomad, dunes, and water-collection objective fit the sentence, while glowing pickups and more varied obstacles add appeal despite some ambiguity about which objects are jugs."
+    },
+    "main-after-reading": {
+     "fidelity": 0.87,
+     "wouldPlay": 0.64,
+     "reason": "A nomad crosses a sandy desert toward visible water jugs, clearly matching the premise, though the sparse terrain and limited visible challenges make play look repetitive."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.7,
+     "reason": "The nomad, dunes, and water-collection objective fit the sentence, while glowing pickups and more varied obstacles add appeal despite some ambiguity about which objects are jugs."
+    }
+   }
+  },
+  {
+   "id": "p16",
+   "sentence": "A sea witch hurls fireballs at pirate ships on a stormy ocean",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.61,
+     "reason": "The rainy ocean, pirate ships, witch-like figure, and fiery projectiles fit the premise, but dark visuals and unclear targeting make the action hard to read."
+    },
+    "p62-quick": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.59,
+     "reason": "The stormy sea and pirate fleet convey the setting well, but the witch and fireball attacks remain small and indistinct, limiting the appeal of the throwing gameplay."
+    },
+    "main-after-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.61,
+     "reason": "The rainy ocean, pirate ships, witch-like figure, and fiery projectiles fit the premise, but dark visuals and unclear targeting make the action hard to read."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.59,
+     "reason": "The stormy sea and pirate fleet convey the setting well, but the witch and fireball attacks remain small and indistinct, limiting the appeal of the throwing gameplay."
+    }
+   }
+  },
+  {
+   "id": "p17",
+   "sentence": "A sea otter zaps electric eels that invade a rocky tide pool",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.64,
+     "reason": "The otter, electric-eel targets, and visible aiming beam convey the combat goal, but the industrial harbor lacks a rocky tide pool; clear targets and shot feedback suggest an approachable phone shooter."
+    },
+    "p62-quick": {
+     "fidelity": 0.54,
+     "wouldPlay": 0.59,
+     "reason": "The otter and labeled electric-eel targets support the premise, but the buoy-filled harbor misses the rocky tide pool and makes threats less distinct; aiming looks accessible but visually cluttered."
+    },
+    "main-after-reading": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.64,
+     "reason": "The otter, electric-eel targets, and visible aiming beam convey the combat goal, but the industrial harbor lacks a rocky tide pool; clear targets and shot feedback suggest an approachable phone shooter."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.54,
+     "wouldPlay": 0.59,
+     "reason": "The otter and labeled electric-eel targets support the premise, but the buoy-filled harbor misses the rocky tide pool and makes threats less distinct; aiming looks accessible but visually cluttered."
+    }
+   }
+  },
+  {
+   "id": "p18",
+   "sentence": "A groundskeeper guards a soccer pitch from moles digging holes before the big match",
+   "scores": {
+    "p62-quick": {
+     "fidelity": 0.36,
+     "wouldPlay": 0.44,
+     "reason": "Visible moles and a defensive play area suggest pest control, but the paved pinball-like lanes lack a soccer pitch or clear groundskeeper, and the gameplay looks repetitive."
+    },
+    "main-quick": {
+     "fidelity": 0.52,
+     "wouldPlay": 0.53,
+     "reason": "The grassy setting and advancing moles better suggest protecting a field, but the lane-and-flipper layout lacks soccer markings, visible digging, or a clear groundskeeper while offering a readable arcade challenge."
+    },
+    "main-after-reading": {
+     "fidelity": 0.52,
+     "wouldPlay": 0.53,
+     "reason": "The grassy setting and advancing moles better suggest protecting a field, but the lane-and-flipper layout lacks soccer markings, visible digging, or a clear groundskeeper while offering a readable arcade challenge."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.36,
+     "wouldPlay": 0.44,
+     "reason": "Visible moles and a defensive play area suggest pest control, but the paved pinball-like lanes lack a soccer pitch or clear groundskeeper, and the gameplay looks repetitive."
+    }
+   }
+  },
+  {
+   "id": "p19",
+   "sentence": "A spelunker crawls through a flooded mine shaft while stalactites crash down",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.52,
+     "reason": "A miner-like character dodges falling hazards in a dark space, but no flooded shaft or crawling is evident; clear controls and feedback suggest a playable survival game."
+    },
+    "p62-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.19,
+     "reason": "A small figure lies in a gray industrial obstacle course with cranes, with no visible flooding or stalactites, and the sparse, static scene offers little appeal."
+    },
+    "main-quick": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.16,
+     "reason": "A figure stands or lies beside large obstacles in a dark industrial scene, but the flooded mine and falling stalactites are absent and the gameplay looks unclear."
+    },
+    "p62-reading": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.59,
+     "reason": "A spelunker-like character faces scattered falling hazards in a readable survival arena, but the bright tiled setting lacks a flooded mine shaft or crawling."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.52,
+     "reason": "A miner-like character dodges falling hazards in a dark space, but no flooded shaft or crawling is evident; clear controls and feedback suggest a playable survival game."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.59,
+     "reason": "A spelunker-like character faces scattered falling hazards in a readable survival arena, but the bright tiled setting lacks a flooded mine shaft or crawling."
+    }
+   }
+  },
+  {
+   "id": "p20",
+   "sentence": "A lost tourist runs through a red canyon from angry walking cacti",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.48,
+     "reason": "A tourist runs across orange canyon terrain with approaching enemies, but the enemies look robotic rather than like angry walking cacti and the arena feels sparse."
+    },
+    "p62-quick": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.79,
+     "reason": "The tourist runs through a convincing red canyon with cacti and clear jumping obstacles, though the cacti appear stationary rather than pursuing him."
+    },
+    "p62-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.57,
+     "reason": "The tourist and red canyon are clear, with cactus-like figures and approaching threats, but the most prominent pursuers look robotic and the chase goal is vague."
+    },
+    "main-quick": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.7,
+     "reason": "The canyon runner has visible obstacles and round progression, but the tourist is generic and the roadside cacti show no clear anger or pursuit."
+    },
+    "main-after-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.48,
+     "reason": "A tourist runs across orange canyon terrain with approaching enemies, but the enemies look robotic rather than like angry walking cacti and the arena feels sparse."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.57,
+     "reason": "The tourist and red canyon are clear, with cactus-like figures and approaching threats, but the most prominent pursuers look robotic and the chase goal is vague."
+    }
+   }
+  },
+  {
+   "id": "p21",
+   "sentence": "A dog walker hurries through a stormy park dodging falling branches",
+   "scores": {
+    "p62-quick": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.57,
+     "reason": "A rainy park path, labeled dog walker, dog-like companion, and dodge objective fit the premise, but falling branches are unclear and bulky obstacles obscure the action."
+    },
+    "main-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.54,
+     "reason": "The stormy park and forward obstacle course convey hurried dodging, but the walker and falling branches are poorly defined, while large blocky barriers make play look repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.54,
+     "reason": "The stormy park and forward obstacle course convey hurried dodging, but the walker and falling branches are poorly defined, while large blocky barriers make play look repetitive."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.57,
+     "reason": "A rainy park path, labeled dog walker, dog-like companion, and dodge objective fit the premise, but falling branches are unclear and bulky obstacles obscure the action."
+    }
+   }
+  },
+  {
+   "id": "p22",
+   "sentence": "A rusty tin can escapes the hydraulic presses of a scrapyard",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.52,
+     "reason": "A forest runner with a humanoid and blocky object shows some escape action, but no clearly rusty tin can, scrapyard, or hydraulic presses; colorful scenery and an arch provide modest appeal."
+    },
+    "p62-quick": {
+     "fidelity": 0.13,
+     "wouldPlay": 0.46,
+     "reason": "The forest road, humanoid, and scattered pickups suggest a basic runner rather than a tin can escaping scrapyard presses, with readable visuals but little visible variety."
+    },
+    "main-after-reading": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.52,
+     "reason": "A forest runner with a humanoid and blocky object shows some escape action, but no clearly rusty tin can, scrapyard, or hydraulic presses; colorful scenery and an arch provide modest appeal."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.13,
+     "wouldPlay": 0.46,
+     "reason": "The forest road, humanoid, and scattered pickups suggest a basic runner rather than a tin can escaping scrapyard presses, with readable visuals but little visible variety."
+    }
+   }
+  },
+  {
+   "id": "p23",
+   "sentence": "A puppy fights living cardboard boxes in a post office sorting room",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.65,
+     "reason": "Visible combat with a box-like enemy supports the premise, but the puppy is unclear and the brick room lacks recognizable postal sorting equipment; bold colors and readable combat indicators look engaging."
+    },
+    "p62-quick": {
+     "fidelity": 0.49,
+     "wouldPlay": 0.58,
+     "reason": "A dog-like character and combat indicators suggest the requested fight, but living cardboard boxes are ambiguous and the furnished wooden room looks more domestic than postal; the action appears approachable but repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.65,
+     "reason": "Visible combat with a box-like enemy supports the premise, but the puppy is unclear and the brick room lacks recognizable postal sorting equipment; bold colors and readable combat indicators look engaging."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.49,
+     "wouldPlay": 0.58,
+     "reason": "A dog-like character and combat indicators suggest the requested fight, but living cardboard boxes are ambiguous and the furnished wooden room looks more domestic than postal; the action appears approachable but repetitive."
+    }
+   }
+  },
+  {
+   "id": "p24",
+   "sentence": "A shopkeeper dodges slamming metal shutters in a night market",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.65,
+     "reason": "The night-market stalls, shopkeeper figure, labeled shutter and overhead hazard convey the premise, while the clear lane and visible rewards look playable despite dim lighting and ambiguous shutter motion."
+    },
+    "p62-quick": {
+     "fidelity": 0.49,
+     "wouldPlay": 0.44,
+     "reason": "The labeled shopkeeper and dark market establish character and setting, but the scattered obstacles and coins suggest a generic runner with little visible evidence of slamming metal shutters."
+    },
+    "main-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.65,
+     "reason": "The night-market stalls, shopkeeper figure, labeled shutter and overhead hazard convey the premise, while the clear lane and visible rewards look playable despite dim lighting and ambiguous shutter motion."
+    },
+    "p62-after-reading": {
+     "fidelity": 0.49,
+     "wouldPlay": 0.44,
+     "reason": "The labeled shopkeeper and dark market establish character and setting, but the scattered obstacles and coins suggest a generic runner with little visible evidence of slamming metal shutters."
+    }
+   }
+  }
+ ],
+ "skipped": [],
+ "medians": {
+  "main-quick": {
+   "fidelity": 0.57,
+   "wouldPlay": 0.525,
+   "n": 24
+  },
+  "main-after-reading": {
+   "fidelity": 0.585,
+   "wouldPlay": 0.545,
+   "n": 24
+  },
+  "p62-quick": {
+   "fidelity": 0.49,
+   "wouldPlay": 0.515,
+   "n": 24
+  },
+  "p62-after-reading": {
+   "fidelity": 0.58,
+   "wouldPlay": 0.58,
+   "n": 24
+  },
+  "main-reading": {
+   "fidelity": 0.5,
+   "wouldPlay": 0.53,
+   "n": 7
+  },
+  "p62-reading": {
+   "fidelity": 0.58,
+   "wouldPlay": 0.59,
+   "n": 7
+  }
+ },
+ "gates": [
+  {
+   "id": "G1",
+   "label": "P62 quick: median would play >= main quick + 0.10 on the same sheets",
+   "side": "p62-quick",
+   "against": "main-quick",
+   "metric": "wouldPlay",
+   "lead": 0.1,
+   "value": [
+    0.515,
+    0.525
+   ],
+   "pass": false
+  },
+  {
+   "id": "G2",
+   "label": "P62 quick: median fidelity >= main quick on the same sheets",
+   "side": "p62-quick",
+   "against": "main-quick",
+   "metric": "fidelity",
+   "value": [
+    0.49,
+    0.57
+   ],
+   "pass": false
+  },
+  {
+   "id": "G3",
+   "label": "P62 after reading: median would play >= main after reading on the same sheets",
+   "side": "p62-after-reading",
+   "against": "main-after-reading",
+   "metric": "wouldPlay",
+   "value": [
+    0.58,
+    0.545
+   ],
+   "pass": true
+  }
+ ],
+ "verdict": {
+  "pass": false,
+  "unmet": [
+   "G1",
+   "G2",
+   "G4"
+  ]
+ },
+ "timing": {
+  "tool": "scripts/measure/first-playable-ab.mjs",
+  "measuredAt": "2026-10-27T22:05:45.010Z",
+  "a": {
+   "side": "main",
+   "commit": "495bbc77",
+   "url": "http://127.0.0.1:3162"
+  },
+  "b": {
+   "side": "p62",
+   "commit": "569aba6f",
+   "url": "http://127.0.0.1:3168"
+  },
+  "sentences": "evals/play/p30/dev.json [0..4] (the first five dev sentences, as in evals/play/first-playable)",
+  "metric": "ms from tapping \"Make it!\" on /play to the game canvas answering two inputs in a row (time-to-playable.mjs); firstFrame = ms to the first drawn game frame",
+  "order": "run is the outer loop; each sentence gets an A+B pair back to back, the side going first alternates per pair; 5 s pause between runs",
+  "runs": 3,
+  "reader": "off (plain next start, no reader env, 0 paid calls); every sentence published on both servers before measuring",
+  "server": "npm run build + next start, fresh PLAY_STORE_DIR per server, both servers up during the run",
+  "failed": 0,
+  "profiles": {
+   "desktop": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      3017,
+      2464,
+      2698
+     ],
+     "B": [
+      2844,
+      2537,
+      3050
+     ],
+     "firstFrameA": [
+      1683,
+      1419,
+      1533
+     ],
+     "firstFrameB": [
+      1654,
+      1490,
+      1827
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      2393,
+      1388,
+      2217
+     ],
+     "B": [
+      2981,
+      1574,
+      2782
+     ],
+     "firstFrameA": [
+      1711,
+      799,
+      1535
+     ],
+     "firstFrameB": [
+      2232,
+      927,
+      1953
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      2937,
+      2950,
+      2994
+     ],
+     "B": [
+      3102,
+      3115,
+      3211
+     ],
+     "firstFrameA": [
+      1619,
+      1777,
+      1681
+     ],
+     "firstFrameB": [
+      1735,
+      1743,
+      1869
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      3271,
+      2379,
+      3044
+     ],
+     "B": [
+      3405,
+      4830,
+      3157
+     ],
+     "firstFrameA": [
+      2343,
+      1385,
+      1985
+     ],
+     "firstFrameB": [
+      2248,
+      3205,
+      2293
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      3362,
+      4640,
+      3226
+     ],
+     "B": [
+      3596,
+      3592,
+      3334
+     ],
+     "firstFrameA": [
+      2343,
+      3240,
+      2242
+     ],
+     "firstFrameB": [
+      2437,
+      2477,
+      2293
+     ]
+    }
+   ],
+   "pixel7-cpu4": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      9683,
+      9133,
+      10455
+     ],
+     "B": [
+      9776,
+      9030,
+      9807
+     ],
+     "firstFrameA": [
+      4862,
+      4660,
+      5456
+     ],
+     "firstFrameB": [
+      4709,
+      4320,
+      4845
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      7329,
+      7271,
+      8204
+     ],
+     "B": [
+      7140,
+      6687,
+      7150
+     ],
+     "firstFrameA": [
+      5176,
+      5070,
+      5755
+     ],
+     "firstFrameB": [
+      4520,
+      4321,
+      4579
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      7967,
+      9041,
+      7799
+     ],
+     "B": [
+      8865,
+      8222,
+      8921
+     ],
+     "firstFrameA": [
+      4813,
+      4915,
+      4578
+     ],
+     "firstFrameB": [
+      4632,
+      4575,
+      4508
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      8923,
+      10411,
+      8177
+     ],
+     "B": [
+      9237,
+      10262,
+      9072
+     ],
+     "firstFrameA": [
+      5554,
+      6412,
+      5442
+     ],
+     "firstFrameB": [
+      5306,
+      5805,
+      5899
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      7563,
+      8797,
+      8093
+     ],
+     "B": [
+      8306,
+      8127,
+      8039
+     ],
+     "firstFrameA": [
+      5259,
+      6075,
+      5674
+     ],
+     "firstFrameB": [
+      5564,
+      5402,
+      5494
+     ]
+    }
+   ]
+  },
+  "medians": {
+   "desktop": {
+    "A": 2950,
+    "B": 3115,
+    "diff": 165,
+    "pairedDiff": 165,
+    "pass": true
+   },
+   "pixel7-cpu4": {
+    "A": 8204,
+    "B": 8865,
+    "diff": 661,
+    "pairedDiff": -103,
+    "pass": false
+   }
+  },
+  "gate": {
+   "id": "G4",
+   "label": "Sentence to playable: branch median <= main median + 200 ms in every profile the script measures",
+   "thresholdMs": 200,
+   "pass": false
+  }
+ },
+ "fps": {
+  "a": {
+   "side": "main",
+   "commit": "495bbc77"
+  },
+  "b": {
+   "side": "p62",
+   "commit": "569aba6f"
+  },
+  "rule": "per scene: median FPS of B / median FPS of A over its rounds; gate value = median of those ratios over the scenes; every run must pass",
+  "runs": [
+   {
+    "tool": "e2e/play-perf.spec.ts @measure (unchanged), driven per scene: PERF_GAMES=<scene> PERF_PROFILES=moto-g-power-emulated PERF_REPEATS=1, one Playwright process at a time (D:/caches/p62/t7/fps-ab.mjs, copy of P61 T8)",
+    "profile": "the spec phone profile moto-g-power-emulated: 412x823, DPR 1.75, touch, CPU 4x, Fast 4G; the spec has no Pixel 7 profile",
+    "metric": "playing.fpsP50 (FPS from the median frame interval, 10 s robot demo)",
+    "order": "round is the outer loop; each scene gets an A+B pair back to back, the side going first alternates per pair",
+    "measuredAt": "2026-10-27T22:15:06.972Z",
+    "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "excluded": {
+     "drive": "failed in round 1 on both sides (play-perf.spec.ts:192, the spec probe cannot start the chain; same gap as P61 T8), not run in rounds 2-3"
+    },
+    "scenes": [
+     {
+      "scene": "runner",
+      "A": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "B": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "callsA": [
+       39,
+       67,
+       38
+      ],
+      "callsB": [
+       39,
+       41,
+       39
+      ],
+      "qualityA": [
+       "low",
+       "medium",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "arena",
+      "A": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "B": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "callsA": [
+       53,
+       23,
+       53
+      ],
+      "callsB": [
+       57,
+       57,
+       57
+      ],
+      "qualityA": [
+       "medium",
+       "low",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "medium"
+      ]
+     },
+     {
+      "scene": "grid-collect",
+      "A": [
+       59.9,
+       59.5,
+       59.9
+      ],
+      "B": [
+       59.9,
+       30,
+       59.9
+      ],
+      "callsA": [
+       23,
+       19,
+       20
+      ],
+      "callsB": [
+       24,
+       24,
+       26
+      ],
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "drive",
+      "A": [
+       null,
+       null,
+       null
+      ],
+      "B": [
+       null,
+       null,
+       null
+      ],
+      "callsA": [
+       null,
+       null,
+       null
+      ],
+      "callsB": [
+       null,
+       null,
+       null
+      ],
+      "qualityA": [
+       null,
+       null,
+       null
+      ],
+      "qualityB": [
+       null,
+       null,
+       null
+      ]
+     },
+     {
+      "scene": "glide",
+      "A": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "B": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "callsA": [
+       36,
+       36,
+       36
+      ],
+      "callsB": [
+       36,
+       36,
+       36
+      ],
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "walker",
+      "A": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "B": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "callsA": [
+       34,
+       33,
+       34
+      ],
+      "callsB": [
+       34,
+       34,
+       34
+      ],
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "ball",
+      "A": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "B": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "callsA": [
+       81,
+       82,
+       112
+      ],
+      "callsB": [
+       81,
+       81,
+       81
+      ],
+      "qualityA": [
+       "low",
+       "low",
+       "medium"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     }
+    ],
+    "scenesMeasured": 6,
+    "ratioMedian": 1,
+    "pass": true
+   },
+   {
+    "tool": "scripts/play-look-shots.mjs perf --vs --set genres,<D:/caches/p62/t7/perf-set.json> --repeats 3",
+    "profile": "Playwright Pixel 7, CPU 4x, d3d11",
+    "metric": "rAF FPS over a 10 s robot demo window",
+    "order": "scene by scene; repeats alternate A B, B A, A B",
+    "set": "22 genre scenes (evals/play/p46g/genres.json) + 3 dev scenes P62 changes most (d-s039 mall shooter, d-s002 castle arena, d-s003 supermarket runner)",
+    "measuredAt": "2026-10-27T23:25:54.608Z",
+    "scenes": [
+     {
+      "scene": "g-runner",
+      "A": [
+       48.5,
+       47.2,
+       47.1
+      ],
+      "B": [
+       47.2,
+       46.9,
+       47.6
+      ],
+      "callsA": 99,
+      "callsB": 99,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-race",
+      "A": [
+       56.9,
+       54.2,
+       55.7
+      ],
+      "B": [
+       55.5,
+       54.8,
+       57.2
+      ],
+      "callsA": 88,
+      "callsB": 88,
+      "qualityA": [
+       "high",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-platform",
+      "A": [
+       55,
+       53,
+       56.6
+      ],
+      "B": [
+       56,
+       57.9,
+       59
+      ],
+      "callsA": 87,
+      "callsB": 87,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-arena",
+      "A": [
+       52.8,
+       51.1,
+       48.6
+      ],
+      "B": [
+       49.1,
+       41.8,
+       47.7
+      ],
+      "callsA": 70,
+      "callsB": 83,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "low",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-fight",
+      "A": [
+       57.3,
+       47.6,
+       44.2
+      ],
+      "B": [
+       49.7,
+       48.7,
+       39.1
+      ],
+      "callsA": 82,
+      "callsB": 52,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-quest",
+      "A": [
+       35.8,
+       39.9,
+       33.6
+      ],
+      "B": [
+       36.4,
+       37.6,
+       35.9
+      ],
+      "callsA": 38,
+      "callsB": 39,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-agar",
+      "A": [
+       50.3,
+       47.1,
+       48.1
+      ],
+      "B": [
+       42.6,
+       43.9,
+       42.4
+      ],
+      "callsA": 54,
+      "callsB": 56,
+      "qualityA": [
+       "medium",
+       "low",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "low",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-walker",
+      "A": [
+       46.4,
+       45.9,
+       41
+      ],
+      "B": [
+       48.2,
+       44.6,
+       29.4
+      ],
+      "callsA": 31,
+      "callsB": 32,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-glide",
+      "A": [
+       34.8,
+       17,
+       16.8
+      ],
+      "B": [
+       25.5,
+       19.5,
+       45.7
+      ],
+      "callsA": 33,
+      "callsB": 35,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-ball",
+      "A": [
+       37.5,
+       40.7,
+       42.7
+      ],
+      "B": [
+       43.8,
+       41.1,
+       43.4
+      ],
+      "callsA": 74,
+      "callsB": 74,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-flap",
+      "A": [
+       45.1,
+       46.8,
+       42.9
+      ],
+      "B": [
+       48.4,
+       45.8,
+       43.7
+      ],
+      "callsA": 43,
+      "callsB": 79,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-shooter",
+      "A": [
+       36.1,
+       33.3,
+       35.1
+      ],
+      "B": [
+       34.8,
+       34.8,
+       30.2
+      ],
+      "callsA": 52,
+      "callsB": 49,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-throw",
+      "A": [
+       47.1,
+       45.4,
+       45
+      ],
+      "B": [
+       49.9,
+       46.5,
+       42.9
+      ],
+      "callsA": 54,
+      "callsB": 54,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "g-timing",
+      "A": [
+       43.6,
+       58.9,
+       47
+      ],
+      "B": [
+       42.6,
+       40,
+       55.3
+      ],
+      "callsA": 36,
+      "callsB": 67,
+      "qualityA": [
+       "low",
+       "high",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-rhythm",
+      "A": [
+       55.1,
+       54.7,
+       47.2
+      ],
+      "B": [
+       57.4,
+       59.6,
+       59.6
+      ],
+      "callsA": 61,
+      "callsB": 90,
+      "qualityA": [
+       "medium",
+       "medium",
+       "low"
+      ],
+      "qualityB": [
+       "medium",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "g-duel",
+      "A": [
+       57.7,
+       59.7,
+       58.9
+      ],
+      "B": [
+       59.1,
+       59.8,
+       57.8
+      ],
+      "callsA": 50,
+      "callsB": 51,
+      "qualityA": [
+       "medium",
+       "high",
+       "high"
+      ],
+      "qualityB": [
+       "medium",
+       "high",
+       "medium"
+      ]
+     },
+     {
+      "scene": "g-voyage",
+      "A": [
+       59.9,
+       58.1,
+       59.5
+      ],
+      "B": [
+       59.9,
+       59.9,
+       59.9
+      ],
+      "callsA": 48,
+      "callsB": 48,
+      "qualityA": [
+       "high",
+       "medium",
+       "high"
+      ],
+      "qualityB": [
+       "high",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "g-lander",
+      "A": [
+       59.8,
+       59.9,
+       60
+      ],
+      "B": [
+       59.8,
+       59.8,
+       59.9
+      ],
+      "callsA": 45,
+      "callsB": 45,
+      "qualityA": [
+       "high",
+       "high",
+       "high"
+      ],
+      "qualityB": [
+       "high",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "g-catch",
+      "A": [
+       59.7,
+       59.7,
+       59.9
+      ],
+      "B": [
+       59.9,
+       59.8,
+       59.5
+      ],
+      "callsA": 55,
+      "callsB": 55,
+      "qualityA": [
+       "high",
+       "high",
+       "high"
+      ],
+      "qualityB": [
+       "high",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "g-whack",
+      "A": [
+       58.7,
+       59.9,
+       59.7
+      ],
+      "B": [
+       59.7,
+       59.9,
+       59.9
+      ],
+      "callsA": 58,
+      "callsB": 58,
+      "qualityA": [
+       "high",
+       "high",
+       "high"
+      ],
+      "qualityB": [
+       "medium",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "g-defense",
+      "A": [
+       53.9,
+       57.6,
+       58.7
+      ],
+      "B": [
+       58.6,
+       58.9,
+       58.8
+      ],
+      "callsA": 113,
+      "callsB": 113,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "high",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "g-slice",
+      "A": [
+       59.7,
+       59.5,
+       59.5
+      ],
+      "B": [
+       59.7,
+       59.5,
+       59.6
+      ],
+      "callsA": 75,
+      "callsB": 74,
+      "qualityA": [
+       "high",
+       "high",
+       "high"
+      ],
+      "qualityB": [
+       "high",
+       "high",
+       "high"
+      ]
+     },
+     {
+      "scene": "d-s039",
+      "A": [
+       41.2,
+       42.3,
+       43
+      ],
+      "B": [
+       38.6,
+       34.9,
+       37.6
+      ],
+      "callsA": 48,
+      "callsB": 39,
+      "qualityA": [
+       "low",
+       "low",
+       "low"
+      ],
+      "qualityB": [
+       "low",
+       "low",
+       "low"
+      ]
+     },
+     {
+      "scene": "d-s002",
+      "A": [
+       52.3,
+       55.8,
+       46.7
+      ],
+      "B": [
+       50.8,
+       53,
+       46.9
+      ],
+      "callsA": 63,
+      "callsB": 75,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "medium"
+      ]
+     },
+     {
+      "scene": "d-s003",
+      "A": [
+       44.2,
+       46,
+       45.6
+      ],
+      "B": [
+       42.9,
+       44.7,
+       46.6
+      ],
+      "callsA": 103,
+      "callsB": 102,
+      "qualityA": [
+       "medium",
+       "medium",
+       "medium"
+      ],
+      "qualityB": [
+       "medium",
+       "medium",
+       "medium"
+      ]
+     }
+    ],
+    "scenesMeasured": 25,
+    "ratioMedian": 1.002,
+    "pass": true
+   }
+  ],
+  "gate": {
+   "id": "G5",
+   "label": "Phone FPS: median over scenes of B/A >= 0.95 in every run",
+   "threshold": 0.95,
+   "pass": true
+  }
+ },
+ "bytes": {
+  "tool": "D:/caches/p62/t7/har-bytes.mjs (Playwright recordHar, mode full, content omitted)",
+  "measuredAt": "2026-10-27T22:14:53.034Z",
+  "profile": "Playwright Pixel 7, CPU 4x, fresh context per run (empty HTTP cache), no network throttle",
+  "metric": "bytes of every .glb response in the HAR of one game load (transfer size), from navigation until no model request started or stayed pending for 6 s (cap 60 s)",
+  "sentences": "evals/play/p30/dev.json [0..4] (the timing sentences), quick game published on each server",
+  "order": "run is the outer loop; each sentence gets an A+B pair back to back, the side going first alternates per pair",
+  "runs": 2,
+  "capped": 0,
+  "rows": [
+   {
+    "id": "s039",
+    "A": [
+     543231,
+     543231
+    ],
+    "B": [
+     543231,
+     543231
+    ],
+    "modelsA": [
+     17,
+     17
+    ],
+    "modelsB": [
+     17,
+     17
+    ],
+    "allA": [
+     1827095,
+     1827095
+    ],
+    "allB": [
+     1929882,
+     1929882
+    ]
+   },
+   {
+    "id": "s037",
+    "A": [
+     510342,
+     510342
+    ],
+    "B": [
+     510342,
+     510342
+    ],
+    "modelsA": [
+     19,
+     19
+    ],
+    "modelsB": [
+     19,
+     19
+    ],
+    "allA": [
+     1794244,
+     1794244
+    ],
+    "allB": [
+     1897035,
+     1897035
+    ]
+   },
+   {
+    "id": "s002",
+    "A": [
+     702654,
+     702654
+    ],
+    "B": [
+     860059,
+     860059
+    ],
+    "modelsA": [
+     22,
+     22
+    ],
+    "modelsB": [
+     27,
+     27
+    ],
+    "allA": [
+     1987494,
+     1987494
+    ],
+    "allB": [
+     2247687,
+     2247687
+    ]
+   },
+   {
+    "id": "s003",
+    "A": [
+     779880,
+     779880
+    ],
+    "B": [
+     779880,
+     779880
+    ],
+    "modelsA": [
+     37,
+     37
+    ],
+    "modelsB": [
+     37,
+     37
+    ],
+    "allA": [
+     2065206,
+     2065206
+    ],
+    "allB": [
+     2069336,
+     2069336
+    ]
+   },
+   {
+    "id": "s006",
+    "A": [
+     845649,
+     845649
+    ],
+    "B": [
+     845649,
+     845649
+    ],
+    "modelsA": [
+     36,
+     36
+    ],
+    "modelsB": [
+     36,
+     36
+    ],
+    "allA": [
+     2157018,
+     2157018
+    ],
+    "allB": [
+     2161143,
+     2161143
+    ]
+   }
+  ],
+  "medians": {
+   "A": 702654,
+   "B": 779880,
+   "ratio": 1.11,
+   "pass": true
+  },
+  "gate": {
+   "id": "G6",
+   "label": "Model bytes of the first game on the phone: branch median <= main median x 1.25",
+   "threshold": 1.25,
+   "pass": true
+  }
+ },
+ "robot": {
+  "scope": "P62 branch: every holdout game it published while shooting (24 quick, of them 7 chains, and 7 reading games). For \"unchanged\" the 24 quick games were also published on a plain main server (495bbc77, no reader) and their bot and idle runs compared hash by hash.",
+  "harness": "publish gate (verifyArcade / verifyChain: bot wins, idle loses, two replays equal the bot run) at publish time, re-run offline on the published world in a fresh process (temporary evals/play/p62/t7-robot.measure.ts, copy in D:/caches/p62/t7/), as P61 T8",
+  "games": 31,
+  "published": 31,
+  "chains": 7,
+  "server": {
+   "publishEligible": 31,
+   "botWins": 31,
+   "idleLoses": 31,
+   "replayEqual": 31
+  },
+  "offline": {
+   "botWins": 31,
+   "idleLoses": 31,
+   "replayEqual": 31,
+   "sameHashesAsServer": 31
+  },
+  "sameAsMain": {
+   "quickGames": 24,
+   "sameBotHash": 24,
+   "sameIdleHash": 24,
+   "differ": []
+  },
+  "rows": [
+   {
+    "file": "p01-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p02-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p03-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p03-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p04-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p05-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p06-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p07-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p08-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p09-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p09-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p10-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p10-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p11-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p12-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p12-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p13-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p14-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p14-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p15-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p16-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p17-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p18-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p19-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p19-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p20-quick.json",
+    "type": "chain",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p20-reading.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p21-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p22-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p23-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   },
+   {
+    "file": "p24-quick.json",
+    "type": "arcade",
+    "botWins": true,
+    "idleLoses": true,
+    "replayEqual": true,
+    "matchesServer": true
+   }
+  ],
+  "gate": {
+   "id": "G7",
+   "label": "Robot wins, idle loses, replay equal on every game the branch published on the set",
+   "pass": true
+  }
+ },
+ "spend": {
+  "t7": {
+   "calls": 24,
+   "usd": 0.7393
+  },
+  "before": 1.5454,
+  "total": 2.285,
+  "cap": 4
+ }
+}

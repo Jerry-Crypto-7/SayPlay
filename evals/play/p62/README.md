@@ -66,7 +66,7 @@ Hlavní podstatné jméno role bez vlastního modelu, bez slov z `ops/gen3d/not-
 
 Žádná věta se neshoduje, ani skoro (podíl společných slov ≥ 0,3), s `p30/*.json`, `p56c/*.json`, `p58b/holdout.json`, `p61/holdout.json` ani další známou sadou (`__tests__/seal.test.ts`). Nejbližší dvojice je 0,22. Věty, které se s dřívějšími sadami potkaly obsahem (krtci „popping up … bonk“, potápěč a úhoř ve vraku), se přepsaly ještě před zapečetěním.
 
-SHA-256 nad LF bajty: `7863a64004efbc746fbec880a06f5ec04c16d114e32153c60541e4c413ca99a9` (`seal.ts`). Otevře se jednou v T7; nic se podle ní neladí.
+SHA-256 nad LF bajty: `7863a64004efbc746fbec880a06f5ec04c16d114e32153c60541e4c413ca99a9` (`seal.ts`). Otevře se jednou v T7; nic se podle ní neladí. Otevřená v T7 27. 10. 2026 ve 21:30 UTC na větvi `569aba6f` (`holdout-opened.json`), otisk při otevření seděl.
 
 Snímky `main`: 24/24 rychlých her (desktop i Pixel 7, po třech snímcích) a 7 her ze čtení, 186 souborů v `D:/caches/p62/main-holdout/`, nesouzené.
 
@@ -207,13 +207,177 @@ Testy: `src/play` + `src/components/play` 13 464 / 13 466 – dva pády jsou ča
 - **Náhradní kvádr ve hře ze čtení** (s022) – start scény, jako nález T7 v P61.
 - **Bílý kopec za lednicí** v supermarketu běžce (snímek 2 před i po) zůstal; podle tvaru jde o kulisu, ne o zem – neměřeno.
 
+## Zapečetěná brána (T7, 27. 10.)
+
+**Výsledek:** na zapečetěné sadě P62 rychlou hru nezlepšila. „Hrál bych“ má medián 0,515 proti 0,525 u `main` (cíl byl o 0,10 víc), věrnost 0,49 proti 0,57. Hra po čtení je lákavější (0,58 proti 0,545). Aréna v místě, které sedí s větou, si polepšila. Víc ale ztratily tři věty, kde P62 nakreslila zřetelně jiné místo, než věta říká.
+
+Sada otevřená jednou 27. 10. 2026 ve 21:30 UTC na větvi `569aba6f` (`holdout-opened.json`). Větev nafocená do `D:/caches/p62/p62-holdout/` týmž `shots.mjs` a nastavením jako `main` v T1 (`495bbc77`, `D:/caches/p62/main-holdout/`): snímky v 1, 3 a 5 s, desktop 1280 × 720 i Pixel 7, čtečka astra zapnutá, upgrade cesta při focení zablokovaná. 24 z 24 vět bez chyby, hra ze čtení vznikla u 7 vět na obou stranách (tytéž řetězy).
+
+- 23 z 24 rychlých her mají na `main` i větvi totéž id verze, tedy stejnou hru – liší se jen tím, jak scénu kreslí. Jiná je jen p19: T2 zaregistroval krápník, takže role nesou jméno „stalactite“ místo „block“ a „gear“.
+- Na větu jeden list (desktop) s řádky `main` rychlá, `main` ze čtení, P62 rychlá, P62 ze čtení – co vzniklo, 2 nebo 4 řádky; pořadí `pure-rand` se seedem 61026.
+- Soudce **Codex** (`codex exec`, obrázek jen jako `sheet.png` v prázdném `mkdtemp`), souběh 1, jeden běh, 24 volání, všechny odpovědi platné napoprvé → `result.json`. Před během bylo ze sdíleného denního limitu 50 volání spotřebováno 6. Listy a odpovědi leží v `D:/caches/p62/sheets-holdout/`.
+- Dev tabulky výš soudil Claude, tuhle Codex. Srovnávají se jen `main` a větev na týchž listech, ne s čísly T1 a T6.
+
+| Strana | Věrnost | Hrál bych | Vět |
+|---|---|---|---|
+| `main` rychlá hra | 0,57 | 0,525 | 24 |
+| `main` po čtení | 0,585 | 0,545 | 24 |
+| P62 rychlá hra | 0,49 | 0,515 | 24 |
+| P62 po čtení | 0,58 | 0,58 | 24 |
+
+„Po čtení“ = hra ze čtení, a když nevznikla, rychlá hra. Hra ze čtení sama (7 vět): `main` 0,50 / 0,53, P62 0,58 / 0,59. Průměr rychlé hry (doplněk k mediánu): věrnost 0,467 → 0,456, „hrál bych“ 0,474 → 0,474; „hrál bych“ větev zvedla u 11 vět, u 11 snížila, u 2 nechala.
+
+| Brána | P62 | `main` | Výsledek |
+|---|---|---|---|
+| G1 rychlá hra: medián „hrál bych“ ≥ `main` + 0,10 | 0,515 | 0,525 (cíl 0,625) | nesplněna |
+| G2 rychlá hra: medián věrnosti ≥ `main` | 0,49 | 0,57 | nesplněna |
+| G3 po čtení: medián „hrál bych“ ≥ `main` | 0,58 | 0,545 | splněna |
+| G4 věta → hratelná: medián větve ≤ `main` + 0,2 s (desktop i telefon) | 3,12 s / 8,87 s | 2,95 s / 8,20 s | nesplněna |
+| G5 FPS na telefonu: medián B/A přes scény ≥ 0,95 (oba běhy) | 1,00 / 1,002 | – | splněna |
+| G6 bajty modelů první hry na telefonu: medián větve ≤ `main` × 1,25 | 762 KiB | 686 KiB | splněna |
+| G7 robot vyhraje, nečinný nevyhraje, přehrání shodné na všech hrách sady | 31 / 31 | – | splněna |
+
+Brány přepočítává `__tests__/result.test.ts` ze skóre po větách v `result.json` (G4–G7 ze surových běhů v `timing`, `fps`, `bytes` a `robot`); prahy má z plánu, ne z výsledku. Celkový verdikt (`result.json` → `verdict`): nesplněny G1, G2 a G4.
+
+### Verdikt: G1 a G2 nesplněny
+
+Rychlá hra P62 není na zapečetěné sadě lákavější ani věrnější než `main`. Podle sady se nic neladilo.
+
+**Které scény P62 vůbec mění** (odvozeno ze specifikace hry – žánr a vzhled místa –, u p04, p08, p18 a p24 ověřeno okem na listu):
+- **14 vět se změněnou scénou:** aréna 9 (p01, p02, p05, p06, p07, p11, p13, p15, p23), střelnice 1 (p17), podlaha interiéru v jiném žánru 4 (p03 rytmus, p18 obrana, p19 stohování, p24 běžec). Medián rozdílu P62 − `main`: věrnost +0,005, „hrál bych“ +0,055. Aréna sama: 6 vět nahoru, 3 dolů, medián +0,06 / +0,06.
+- **10 vět se stejnou scénou** (p04 závod, p08, p20, p21, p22 běžec venku, p09, p14 chytání, p10, p12 stohování venku, p16 hod): na listu je tatáž hra, jen v jiném okamžiku. Soudce je přesto posunul o −0,10 až +0,09 (medián −0,015 / −0,03). To je rozptyl Codexu na této sadě při jednom běhu.
+
+**Proč medián klesl, i když aréna získala** (odvozeno z pořadí hodnot): medián 24 vět leží mezi 12. a 13. větou. U větve tam padly p23 a p24, obě ztráty; u `main` tam stály p17 a p23 s 0,57.
+
+Ztráty podle výtek soudce, seskupené podle příčiny:
+1. **Zřetelně jiné místo, než věta říká** – P62 dělá zvolený interiér nezaměnitelným. Když je zvolený vzhled jen náhradou za místo, které knihovna nemá, nebo výchozím místem žánru, soudce teď jasně vidí špatné místo. `main` kreslil tentýž vzhled méně zřetelně a soudce ho četl jako vhodný.
+   - p24 noční trh → supermarket: dlažba bez silnice místo silnice s pruhem, −0,29 / −0,21;
+   - p18 fotbalové hřiště v obraně, jejíž místo je výchozí „castle walls“ → hradní dlažba místo trávy, −0,16 / −0,09;
+   - p23 pošta → obývák: prkna a gauče místo červené dlažby, −0,08 / −0,07.
+2. **Náhradní kvádr hrdiny v prvních snímcích** – p06: soudce píše „hunter appears as a plain block in two screenshots“, −0,06 / −0,07. Na listu p01 a p06 stojí u P62 v 1 a 3 s modrý kvádr, u `main` už model. Proč, se neměřilo: bajty modelů (níž) jsou jen z pěti dev vět, ne z p01 a p06; odvozeno, neověřeno – modely kulis arény z T4 se stahují spolu s hrdinou.
+3. **Šum soudce** na stejné scéně: p08 −0,10 / −0,06, p10 −0,08 / −0,08.
+
+Zisky: p02 supermarket +0,14 / +0,15 (regály, nakupující), p07 kavárna +0,11 / +0,07 (stoly), p13 střechy +0,08 / +0,11, p01 obchoďák +0,08 / +0,06, p05 hrad +0,06 / +0,09. Všechno arény, kde vzhled sedí s místem věty.
+
+Po větách, věrnost / hrál bych; „=“ = hra ze čtení nevznikla, po čtení se hraje rychlá hra:
+
+| Věta | `main` rychlá | P62 rychlá | `main` po čtení | P62 po čtení | Scéna P62 | Výtka soudce u rychlé hry P62 |
+|---|---|---|---|---|---|---|
+| p01 ochranka, krysy, obchoďák v noci | 0,64 / 0,55 | 0,72 / 0,61 | = | = | aréna, obchoďák | strážný, krysy a tmavý interiér obchoďáku s překážkami; postavy hrubé |
+| p02 deset krabic cereálií, supermarket | 0,63 / 0,46 | 0,77 / 0,61 | = | = | aréna, supermarket | regály, krabice, nakupující a počítadlo deseti krabic; sbírá se ze země |
+| p03 kotě shazuje vázy, obývák | 0,30 / 0,25 | 0,35 / 0,30 | 0,45 / 0,60 | 0,50 / 0,65 | rytmus, obývák | kotě, gauč, lampy a prkenná podlaha; vázy a shazování z polic chybí |
+| p04 svářeč, vozíky, továrna aut | 0,61 / 0,59 | 0,58 / 0,55 | = | = | beze změny (závod) | průmyslová silnice a jmenovka svářeče; hrdina vypadá jako auto, vozíky nejsou poznat |
+| p05 šašek, obrnění strážci, hradní sál | 0,70 / 0,57 | 0,76 / 0,66 | = | = | aréna, hrad | šašek, obrnění nepřátelé, útoky a kamenné zdivo; spíš nádvoří než sál |
+| p06 hledač drahokamů, jeskyně, netopýři | 0,72 / 0,65 | 0,66 / 0,58 | = | = | aréna, jeskyně | drahokamy a jeskyně; netopýři nejasní, hrdina ve dvou snímcích holý kvádr |
+| p07 pikolík, hrnky, kavárna | 0,24 / 0,36 | 0,35 / 0,43 | = | = | aréna | stoly a jmenovka pikolíka; aréna vypadá venkovně, sbírané věci abstraktní |
+| p08 uklízeč, vozíky, nemocnice | 0,30 / 0,49 | 0,20 / 0,43 | = | = | beze změny (běžec, hřbitov) | zasněžená cesta hřbitovem místo nemocniční chodby, vozíky nejsou |
+| p09 farmář, prasata, farma | 0,08 / 0,28 | 0,08 / 0,28 | 0,50 / 0,58 | 0,47 / 0,51 | beze změny (chytání) | postava pod stromy a padající předmět; prasata ani stodola |
+| p10 stavitel z písku, medúzy, pláž | 0,20 / 0,20 | 0,12 / 0,12 | 0,86 / 0,80 | 0,85 / 0,78 | beze změny (stohování) | statická šedá písečná scéna s překážkami, bez stavitele a medúz |
+| p11 jak, horský průsmyk, balvany | 0,35 / 0,42 | 0,38 / 0,48 | = | = | aréna | jak a náklad; vlci a kvádry na trávě místo hor a padajících balvanů |
+| p12 strážce parku, ohně, les | 0,12 / 0,23 | 0,10 / 0,19 | 0,45 / 0,53 | 0,58 / 0,61 | beze změny (stohování) | opakované šedé lesní záběry a pět děr, hašení ohňů není |
+| p13 čistič oken, draci, deštivé střechy | 0,68 / 0,46 | 0,76 / 0,57 | = | = | aréna | deštivé střechy, draci, jmenovka a víc překážek; velmi tmavé |
+| p14 měsíční vozítko, kameny, meteority | 0,08 / 0,22 | 0,08 / 0,22 | 0,65 / 0,48 | 0,73 / 0,58 | beze změny (chytání) | sad a chytání padajících věcí místo měsíčního vozítka |
+| p15 nomád, džbány, poušť | 0,87 / 0,64 | 0,85 / 0,70 | = | = | aréna | nomád, duny a sběr vody; víc překážek, džbány nejasné |
+| p16 mořská čarodějnice, ohnivé koule, lodě | 0,76 / 0,61 | 0,75 / 0,59 | = | = | beze změny (hod) | bouřlivé moře a pirátské lodě; čarodějnice a koule malé |
+| p17 vydra, električtí úhoři, tůň | 0,57 / 0,64 | 0,54 / 0,59 | = | = | střelnice | vydra a úhoři; přístav s bójemi místo skalní tůně, nepřehledné |
+| p18 správce hřiště, krtci | 0,52 / 0,53 | 0,36 / 0,44 | = | = | obrana, hradní dlažba | krtci ano; dlážděné dráhy jako pinball místo fotbalového trávníku |
+| p19 jeskyňář, zatopená šachta, krápníky | 0,10 / 0,16 | 0,08 / 0,19 | 0,30 / 0,52 | 0,22 / 0,59 | stohování, továrna | malá postava na šedé průmyslové dráze s jeřáby, žádná voda ani krápníky |
+| p20 turista, červený kaňon, kaktusy | 0,64 / 0,70 | 0,70 / 0,79 | 0,55 / 0,48 | 0,62 / 0,57 | beze změny (běžec) | přesvědčivý červený kaňon, kaktusy a skoky; kaktusy stojí, nepronásledují |
+| p21 venčitel psů, park, větve | 0,60 / 0,54 | 0,64 / 0,57 | = | = | beze změny (běžec) | deštivá cesta parkem, venčitel a pes; padající větve nejasné |
+| p22 plechovka, lisy, vrakoviště | 0,15 / 0,52 | 0,13 / 0,46 | = | = | beze změny (běžec) | lesní cesta místo vrakoviště, žádná plechovka ani lisy |
+| p23 štěně, krabice, pošta | 0,57 / 0,65 | 0,49 / 0,58 | = | = | aréna, obývák | pes a souboj; krabice nejasné, dřevěná zařízená místnost vypadá jako domov, ne pošta |
+| p24 prodavač, rolety, noční trh | 0,78 / 0,65 | 0,49 / 0,44 | = | = | běžec, supermarket bez silnice | prodavač a tmavý trh; rozházené překážky a mince jako obecný běžec, rolety nejsou |
+
+Hra ze čtení (G3 splněna): ve 3 ze 7 řetězů je P62 po čtení lákavější o 0,08 a víc (p12 +0,08, p14 +0,10, p20 +0,09), u ostatních do ±0,07.
+
+**Co z toho plyne (odvozeno, neměřeno):** dlažba a stěny interiéru pomáhají, jen když interiér sedí s větou. Další krok není víc kulis, ale rozhodnout, kdy vzhled místa kreslit naplno: vzhled převzatý z výchozího místa žánru (obrana = „castle walls“) nebo náhrada za místo bez vlastního vzhledu (pošta, noční trh) by měly zůstat neutrální. Podle sady se nic neladilo; je to podnět pro další plán.
+
+### Robot, nečinný hráč, přehrání (G7)
+
+Všech 31 her, které větev na sadě publikovala (24 rychlých, z toho 7 řetězů, a 7 her ze čtení):
+- publikační brána (robot vyhraje, nečinný hráč nevyhraje, dvě přehrání skončí ve stavu běhu robota; u řetězu každé kolo) prošla 31 / 31;
+- znovu offline v novém procesu nad publikovaným světem (dočasný `t7-robot.measure.ts` jako v P61, kopie v `D:/caches/p62/t7/`): robot vyhrál 31 / 31, nečinný nevyhrál 31 / 31, přehrání shodná 31 / 31, otisk běhu robota i nečinného shodný se zprávou serveru 31 / 31.
+
+**Beze změny proti `main`:** 24 rychlých her znovu publikovaných na `main` bez čtečky (id verzí shodná se snímky T1 24 / 24) – otisk běhu robota i nečinného je u všech 24 stejný jako na větvi, včetně p19 s jiným jménem role. Kulisy P62 tedy do hry nezasahují. Hry `main` ze čtení z T1 zmizely se serverem (žily v jeho paměti), srovnání proti `main` je proto jen u rychlých her.
+
+### Čas do hratelné hry (G4) – na telefonu nesplněna
+
+`scripts/measure/first-playable-ab.mjs`, 27. 10. 2026 ve 23 h: A = `main` `495bbc77` (worktree `demo-main-2026-10-23`, build z 27. 10. 11 h téhož commitu), B = větev `569aba6f`. Oba `next start` s prázdným úložištěm her, bez čtečky (0 placených volání), servery běžely souběžně (porty 3162 a 3168). Prvních 5 dev vět (`p30/dev.json` [0..4]), 3 běhy na stranu, dvojice A+B těsně po sobě se střídavým začátkem, oba profily skriptu. Hratelných 60 z 60 běhů. Stroj vytížený jinými relacemi, na klid se nečekalo. Surové časy v `result.json` → `timing`, HAR v `D:/caches/p62/t7/ttp-raw/`.
+
+| Profil | `main` medián | P62 medián | rozdíl mediánů | párový rozdíl | Brána ≤ +200 ms |
+|---|---|---|---|---|---|
+| desktop 1280×720 | 2950 ms | 3115 ms | +165 ms | +165 ms | splněna |
+| Pixel 7, CPU 4× | 8204 ms | 8865 ms | +661 ms | −103 ms | nesplněna |
+
+Po větách, medián 3 běhů v ms, `main` → P62:
+
+| Věta | Desktop | Telefon | Telefon, první snímek |
+|---|---|---|---|
+| s039 zombie shooter in a mall | 2698 → 2844 | 9683 → 9776 | 4862 → 4709 |
+| s037 space marine, alien bugs | 2217 → 2782 | 7329 → 7140 | 5176 → 4520 |
+| s002 knight, three keys, ghosts | 2950 → 3115 | 7967 → 8865 | 4813 → 4575 |
+| s003 hamster, Roomba | 3044 → 3405 | 8923 → 9237 | 5554 → 5805 |
+| s006 corgi, sausages, sprinklers | 3362 → 3592 | 8093 → 8127 | 5674 → 5494 |
+
+- Brána platí pro oba profily skriptu (jako v P61) a měří medián všech 15 běhů. Na telefonu ho nesplnila: +661 ms.
+- Párový rozdíl je −103 ms a medián rozdílů po větách +93 ms. Medián 15 běhů skáče mezi skupinami vět (s037 kolem 7,1 s, s002 a s006 kolem 8 s, s039 a s003 9–10 s). 8865 ms větve je přesně medián s002.
+- Jediný posun ve všech třech bězích je s002 (hrad v aréně): +0,9 s v mediánu, první snímek naopak o 0,24 s dřív. Od prvního snímku do hratelnosti tedy přibylo asi 1,1 s. Odvozeno, neprofilováno: sedí to s pěti modely kulis navíc (níž) a s rozmístěním kulis po hydrataci (T4-R1).
+- Desktop: větev pomalejší u všech pěti vět (+146 až +565 ms), medián +165 ms je pod hranicí.
+
+### FPS na telefonu (G5) – splněna
+
+Dva běhy, oba A/B prokládaně scénu po scéně, `main` `495bbc77` proti větvi `569aba6f`, tytéž servery jako G4. Stroj byl vytížený, na klid se nečekalo. Brána: medián poměrů B/A přes scény (poměr = medián FPS větve / medián FPS `main` ve scéně) ≥ 0,95 v každém běhu. Surová čísla v `result.json` → `fps`.
+
+| Běh | Scén | Medián B/A | Brána ≥ 0,95 |
+|---|---|---|---|
+| `e2e/play-perf.spec.ts @measure`, telefonní profil specu (Moto G Power, 412 × 823, CPU 4×, Fast 4G), 3 kola | 6 | 1,00 | splněna |
+| `scripts/play-look-shots.mjs perf --vs`, Pixel 7, CPU 4×, 22 žánrů + 3 dev scény, 3 opakování | 25 | 1,002 | splněna |
+
+- Spec nemá profil Pixel 7, měří jen svou emulaci Moto G Power (jako v P61). Proto druhý běh na Pixel 7 nad 22 žánry (nástroj P54B) a třemi dev scénami, které P62 mění nejvíc: střelnice v obchoďáku (s039), aréna na hradě (s002) a běžec v supermarketu (s003; sada `D:/caches/p62/t7/perf-set.json`).
+- Metrika specu (FPS z mediánu délky snímku) stojí ve 34 z 36 běhů obou stran na stropu 60 Hz (mimo: `grid-collect` 2. kolo, `main` 59,5, větev 30,0), pozná tedy jen pokles pod strop. Scéna `drive` padla v 1. kole na obou stranách (`play-perf.spec.ts:192`, sonda specu řetěz nespustí – stejná mezera jako v P61) a v dalších kolech se nepouštěla.
+- Nejhorší scény druhého běhu: `g-agar` 0,886 (volání 54 → 56, rozptyl), **`d-s039` střelnice v obchoďáku 0,889** – 42,3 → 37,6 FPS, větev nižší ve všech třech opakováních (41,2–43,0 proti 34,9–38,6) při méně voláních (48 → 39). Odvozeno podle poznámky „pokles bez volání = procesor“: práce procesoru za snímek ve scéně s kulisami a zvětšenými nepřáteli (T4, T5); neprofilováno. Dál `g-timing` 0,906 a `g-arena` 0,933 (volání 70 → 83, kulisy arény z T4). Čtyři scény jsou pod 0,95, medián přes 25 scén drží 1,002.
+- Kreslené snímky (`drawnFps`, snímky, ve kterých se opravdu kreslilo) v prvním běhu: `grid-collect` 36,3 → 27,3, ostatní scény v rozptylu. Brána je postavená na FPS, ne na kreslených snímcích; zapsáno jako pozorování.
+
+### Bajty modelů první hry na telefonu (G6) – splněna
+
+`D:/caches/p62/t7/har-bytes.mjs`: Pixel 7 s CPU 4×, čerstvý kontext (prázdná cache) na každé načtení, HAR od navigace, dokud po plátně 6 s nezačalo ani neviselo stahování modelu (strop 60 s, nedosažen). Bajty = přenesená velikost všech `.glb` v HAR. Tytéž dev věty a servery jako G4, rychlá hra publikovaná na obou stranách, 2 běhy na stranu prokládaně. Obě opakování daly bajt na bajt totéž.
+
+| Profil | `main` medián | P62 medián | B / A | Brána ≤ 1,25 |
+|---|---|---|---|---|
+| Pixel 7, CPU 4×, první hra, prázdná cache | 686 KiB | 762 KiB | 1,11 | splněna |
+
+| Věta | Modely `main` → P62 | KiB `main` → P62 |
+|---|---|---|
+| s039 zombie shooter in a mall | 17 → 17 | 530 → 530 |
+| s037 space marine, alien bugs | 19 → 19 | 498 → 498 |
+| s002 knight, three keys, ghosts | 22 → 27 | 686 → 840 |
+| s003 hamster, Roomba | 37 → 37 | 762 → 762 |
+| s006 corgi, sausages, sprinklers | 36 → 36 | 826 → 826 |
+
+- Modely přibyly jen hradu v aréně (+5 modelů, +154 KiB, +22 %). Kulisy střelnice v obchoďáku (T4) jsou tytéž modely, které už stojí na okraji. Dlažba interiéru (T6) je textura kreslená v prohlížeči, nic se nestahuje.
+- Medián přes věty leží u každé strany na jiné větě (`main` s002, P62 s003), proto 1,11, i když se změnila jen jedna věta.
+- Celkem přenesených bajtů (nejen modely): s039 a s037 +101 KiB, s002 +254 KiB (z toho modely 154 KiB), s003 a s006 +4 KiB. Rozdíl mimo modely jsou bloky JavaScriptu; jejich jména se mezi buildy liší, po souborech se nesrovnávalo.
+- Prvním pokusem měřidla s oknem ticha od navigace vyšlo jedno načtení `main` s nulou modelů – na CPU 4× začalo stahování modelů později než 6 s po navigaci. Okno se teď počítá od plátna a čeká na první model; v tabulce je jen druhý pokus.
+
+### Testy
+
+- **Vitest** cíleně `src/play`, `src/components/play`, `src/app/api/play`, `evals/play/p62` (JSON reporter, po skončení všech měření): 14 025 / 14 025 zelených, žádný časový limit. `tsc` čistý.
+- `__tests__/result.test.ts` (11 případů) přepočítá brány z `result.json`. Rozbité schválně: G3 v `result.json` přepsaná na nesplněnou a G2 v README na splněnou – každé zčervená test „records each gate verdict“.
+- **E2E** proti buildu větve (`next start` bez čtečky, prázdné úložiště, `FALLBACK_SMOKE_URL`, `--grep-invert @measure`): 115 prošlo, 0 červených, 120 přeskočil spec podle profilu.
+  - `chromium`: `play-shooter` 7, `play-phone` 4, `p58a-framing` 48 (+ 24 přeskočených).
+  - `pixel7-touch` a `iphone-touch`: `play-phone` 4 a `p58a-framing` 24 (+ 48 přeskočených) na každém.
+  - `play-shooter` a `play-perf` v dotykových projektech konfigurace nemá. `play-perf` má jen test `@measure`; ten běžel jako měření FPS (G5).
+- Po bězích `git status` v obou worktree bez přepsaných artefaktů.
+
 ## Útrata
 
 Čtení věty (astra) při focení dev a zapečetěné sady v T1: **1,09 USD** za 36 volání (`shots.mjs spend --usage-log D:/caches/p62/usage-t1.jsonl` → 1,0946).
 
 T6: **0,45 USD** za 15 volání (`--usage-log D:/caches/p62/usage-t6.jsonl` → 0,4508, strop serveru 1 USD) – focení větve na dev 0,36 USD za 12 volání, snímky po opravě (4 věty) 0,09 USD za 3 volání.
 
-Celkem 1,54 USD ze stropu plánu 4 USD; zbývá 2,46 USD.
+T7: **0,74 USD** za 24 volání (`--usage-log D:/caches/p62/usage-t7.jsonl` → 0,7393, strop serveru 1,5 USD) – focení větve na zapečetěné sadě. Čas do hratelné hry, FPS, bajty a e2e běžely bez čtečky.
+
+Celkem 2,28 USD (1,0946 + 0,4508 + 0,7393) ze stropu plánu 4 USD; zbývá 1,72 USD.
 
 ## Jak to zopakovat
 
@@ -229,6 +393,19 @@ node evals/play/p61/shots.mjs shoot --set evals/play/p30/dev.json --range 0..11 
 node evals/play/p61/judge.mjs --shots p62=D:/caches/p62/p62-dev --out evals/play/p62/after-dev.json --judge claude --runs 2 --sheets D:/caches/p62/sheets-p62-dev
 # T6 po opravě: jen dotčené dev věty (s039, s037, s003, s022 v D:/caches/p62/t6-set.json)
 node evals/play/p61/shots.mjs shoot --set D:/caches/p62/t6-set.json --out D:/caches/p62/t6-after --label p62-t6 --base http://127.0.0.1:3168
+# T7: zapečetěná brána (sada už otevřená – holdout-opened.json; podruhé ji openSealedOnce odmítne)
+node --env-file=<worktree P58B>/.env.local evals/play/p61/shots.mjs serve --port 3168 --usage-log D:/caches/p62/usage-t7.jsonl --cap-usd 1.5
+node evals/play/p61/shots.mjs shoot --set evals/play/p62/holdout.json --out D:/caches/p62/p62-holdout --label p62 --commit 569aba6f --base http://127.0.0.1:3168
+node D:/caches/p62/t7/fetch-games.mjs shots D:/caches/p62/p62-holdout http://127.0.0.1:3168 D:/caches/p62/p62-holdout/games
+node evals/play/p61/judge.mjs --shots main=D:/caches/p62/main-holdout,p62=D:/caches/p62/p62-holdout --out D:/caches/p62/t7/judge.json --judge codex --runs 1 --sheets D:/caches/p62/sheets-holdout
+# T7 bez čtečky: main (demo-main) na 3162, větev na 3168, obě PLAY_STORE_DIR=<prázdný adresář> node node_modules/next/dist/bin/next start -p <port> -H 127.0.0.1
+node scripts/measure/first-playable-ab.mjs D:/caches/p62/t7/ttp-config.json
+node D:/caches/p62/t7/har-bytes.mjs http://127.0.0.1:3162 http://127.0.0.1:3168 2 D:/caches/p62/t7/har2
+node D:/caches/p62/t7/fps-ab.mjs http://127.0.0.1:3162 http://127.0.0.1:3168 3 D:/caches/p62/t7/fps runner,arena,grid-collect,glide,walker,ball
+node scripts/play-look-shots.mjs perf --base http://127.0.0.1:3162 --out D:/caches/p62/t7/look-perf-main.json --vs http://127.0.0.1:3168 --out-vs D:/caches/p62/t7/look-perf-p62.json --repeats 3 --set genres,../../../../../../../../caches/p62/t7/perf-set
+node D:/caches/p62/t7/fetch-games.mjs publish evals/play/p62/holdout.json http://127.0.0.1:3162 D:/caches/p62/t7/main-quick-games
+P62_GAMES_DIRS="D:/caches/p62/p62-holdout/games;D:/caches/p62/t7/main-quick-games" npx vitest run --config vitest.measure.mts evals/play/p62/t7-robot.measure.ts   # soubor dočasně z D:/caches/p62/t7/
+node D:/caches/p62/t7/compose-result.mjs <worktree> '{"calls":24,"usd":0.7393}'
 ```
 
 Server jen jeden proces naráz, zastavit podle PID z prvního řádku.
