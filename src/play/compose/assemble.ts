@@ -13,11 +13,23 @@ export interface AssemblySource {
   assembly: 'native';
 }
 
+/**
+ * Movement the sentence itself decides, before any reading: the said one, a machine as the hero, or (P65 T6b) a race
+ * with shooting and nobody named – „a racing game with guns“ drives and shoots, it does not run.
+ */
+export function saidMove(intent: Intent): Recipe['move'] | undefined {
+  const items = intent.items.filter(item => item.essential);
+  const explicit = items.find(item => item.axis === 'move')?.verb as Recipe['move'] | undefined;
+  if (explicit !== undefined) return explicit;
+  if (intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '')) return 'drive';
+  const shoots = items.some(item => item.verb === 'shoot') && !intent.negated.includes('shoot');
+  return intent.hero === null && items.some(item => item.verb === 'race') && shoots ? 'drive' : undefined;
+}
+
 /** Choose movement once; independent requested actions never select a cell. */
 export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   const items = intent.items.filter(item => item.essential);
-  const explicit = items.find(item => item.axis === 'move')?.verb as Recipe['move'] | undefined;
-  const implied = intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '') ? 'drive' : undefined;
+  const said = saidMove(intent);
   const objective = items.find(item => item.axis === 'objective')?.verb as Recipe['objective'] | undefined;
   const action = items.filter(item => item.axis === 'action').map(item => item.verb) as Recipe['actions'];
   const actionDefaults: Partial<Record<string, Pick<GenreSpec, 'genre' | 'mode'>>> = {
@@ -30,11 +42,11 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   // lighting candles in a haunted house stays the spatial quest the reading chose.
   const read = PRESETS[`${fallback.genre}.${fallback.mode}`]!;
   const first = action[0];
-  const preferred = explicit === undefined && implied === undefined && objective !== 'escape' && first !== undefined && !read.actions.includes(first) ? actionDefaults[first] : undefined;
+  const preferred = said === undefined && objective !== 'escape' && first !== undefined && !read.actions.includes(first) ? actionDefaults[first] : undefined;
   const selected = { ...fallback, ...preferred } as GenreSpec;
   const base = PRESETS[`${selected.genre}.${selected.mode}`]!;
   // A race keeps a movement that can race (the reading drives a cart); otherwise it runs.
-  const move = explicit ?? implied ?? (objective === 'escape' ? 'run' : objective === 'race' ? (['drive', 'glide'].includes(base.move) ? base.move : 'run') : base.move);
+  const move = said ?? (objective === 'escape' ? 'run' : objective === 'race' ? (['drive', 'glide'].includes(base.move) ? base.move : 'run') : base.move);
   // Unsaid actions: defeating on foot is fighting, whatever action the reading guessed ("destroy" is no quest);
   // a catch is a whole game, so the read genre's own action (collecting) was never asked for.
   const unsaid = objective === 'defeat' && move === 'roam' ? ['fight' as const] : move === base.move && objective !== 'catch' ? base.actions : [];

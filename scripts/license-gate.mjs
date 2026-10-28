@@ -898,12 +898,24 @@ function packageCopyright(path) {
 /**
  * Licence, kterou balíček v `package.json` nedeklaruje, ale nese ji v souboru
  * `LICENSE`. Klíč je přesná verze: nová verze se musí přečíst znovu, jinak by
- * záznam přežil změnu licence upstreamu a brána by ji nepoznala.
+ * záznam přežil změnu licence upstreamu a brána by ji nepoznala. Klíč je holé
+ * jméno balíčku, i když leží vnořený (`@react-three/xr › @pmndrs/xr`).
+ * `"SEE LICENSE IN <soubor>"` je totéž co žádná deklarace: SPDX nenese.
  */
 const UNDECLARED_LICENSES = {
   // drei → detect-gpu; LICENSE: „MIT License, Copyright (c) 2019 Tim van Scherpenzeel“, přečteno 29. 9. 2026.
   'webgl-constants@1.1.1': 'MIT',
+  // P65 (VR): LICENSE všech čtyř je text MIT, „Copyright 2024 Bela Bohlender“, přečteno 27. 10. 2026.
+  '@react-three/xr@6.6.31': 'MIT',
+  '@pmndrs/xr@6.6.31': 'MIT',
+  '@pmndrs/pointer-events@6.6.31': 'MIT',
+  '@pmndrs/handle@6.6.31': 'MIT',
 };
+
+function licenseOf(pkg) {
+  if (pkg.license && !/^SEE LICENSE IN /i.test(pkg.license)) return pkg.license;
+  return UNDECLARED_LICENSES[`${pkg.name.split(' › ').pop()}@${pkg.version}`] || '';
+}
 
 function noticesFor(license) {
   if (NOTICES[license]) return NOTICES[license];
@@ -918,7 +930,7 @@ function deriveLibraries() {
   return lockPackages().map((pkg) => {
     const author = packageAuthor(pkg.path);
     const copyright = packageCopyright(pkg.path);
-    const license = pkg.license || UNDECLARED_LICENSES[`${pkg.name}@${pkg.version}`] || '';
+    const license = licenseOf(pkg);
     return {
       name: `${pkg.name}@${pkg.version}`,
       kind: 'library',
