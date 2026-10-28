@@ -1,0 +1,1251 @@
+{
+ "schema": "p58b-compare.v1",
+ "commit": "f39af3d0",
+ "measuredAt": "2026-10-27T13:40:55.161Z",
+ "from": "local PC -> provider",
+ "promptVersion": "4f8d2493a47601d7",
+ "sets": [
+  "evals/play/p63/reread-set.json"
+ ],
+ "models": [
+  {
+   "id": "astra@openai",
+   "kind": "openai",
+   "endpoint": "api.openai.com",
+   "model": "gpt-6-astra",
+   "effort": "low",
+   "pricing": {
+    "usdPerMTokIn": 10,
+    "usdPerMTokOut": 50
+   }
+  }
+ ],
+ "capUsd": 0.7,
+ "spentUsd": 0.59203,
+ "stopped": null,
+ "summary": {
+  "astra@openai": {
+   "all": {
+    "sentences": 19,
+    "targets": {
+     "of": 0,
+     "hit": 0,
+     "modeHit": 0
+    },
+    "traps": {
+     "of": 0,
+     "offLure": 0
+    },
+    "roles": {
+     "of": 0,
+     "hero": 0,
+     "foe": 0
+    },
+    "invalid": 0,
+    "errors": 0,
+    "latencyMs": {
+     "p50": 4305,
+     "p95": 7599,
+     "max": 7599,
+     "overBudget": 19,
+     "overGate": 19
+    },
+    "firstByteMs": {
+     "p50": 4304,
+     "p95": 7599
+    },
+    "tokens": {
+     "input": 46913,
+     "output": 2458
+    },
+    "usd": 0.59203,
+    "listUsd": null
+   },
+   "perSet": {
+    "p63/reread-set": {
+     "sentences": 19,
+     "targets": {
+      "of": 0,
+      "hit": 0,
+      "modeHit": 0
+     },
+     "traps": {
+      "of": 0,
+      "offLure": 0
+     },
+     "roles": {
+      "of": 0,
+      "hero": 0,
+      "foe": 0
+     },
+     "invalid": 0,
+     "errors": 0,
+     "latencyMs": {
+      "p50": 4305,
+      "p95": 7599,
+      "max": 7599,
+      "overBudget": 19,
+      "overGate": 19
+     },
+     "firstByteMs": {
+      "p50": 4304,
+      "p95": 7599
+     },
+     "tokens": {
+      "input": 46913,
+      "output": 2458
+     },
+     "usd": 0.59203,
+     "listUsd": null
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "set": "p63/reread-set",
+   "id": "h02",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "duel",
+      "verbs": [
+       {
+        "word": "fight",
+        "class": "melee"
+       }
+      ],
+      "hero": "Pirates",
+      "roles": [
+       {
+        "noun": "sea monsters",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "deck of a sinking ship",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "fight"
+      },
+      "sure": true,
+      "foe": "sea monsters",
+      "item": null,
+      "world": "ocean",
+      "title": "Pirates fight sea monsters"
+     },
+     "readGenre": "arena.fight",
+     "classified": "arena.fight",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 5359,
+     "totalMs": 5364,
+     "inputTokens": 2470,
+     "outputTokens": 109,
+     "usd": 0.03015,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "h14",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "races",
+        "class": "steer"
+       },
+       {
+        "word": "dodges",
+        "class": "melee"
+       },
+       {
+        "word": "jumps",
+        "class": "platform"
+       }
+      ],
+      "hero": "skier",
+      "roles": [
+       {
+        "noun": "pine trees",
+        "kind": "obstacle",
+        "count": null
+       },
+       {
+        "noun": "cliffs",
+        "kind": "hazard",
+        "count": null
+       }
+      ],
+      "setting": "mountain",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": "pine trees",
+      "item": null,
+      "world": "snow",
+      "title": "Down the mountain"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4745,
+     "totalMs": 4746,
+     "inputTokens": 2473,
+     "outputTokens": 138,
+     "usd": 0.03163,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "h15",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [
+       {
+        "word": "climbs",
+        "class": "tap_go"
+       },
+       {
+        "word": "sprays",
+        "class": "aim_shoot"
+       },
+       {
+        "word": "rescues",
+        "class": "tap_go"
+       }
+      ],
+      "hero": "firefighter",
+      "roles": [
+       {
+        "noun": "tower",
+        "kind": "destination",
+        "count": null
+       },
+       {
+        "noun": "flames",
+        "kind": "hazard",
+        "count": null
+       },
+       {
+        "noun": "cat",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "tower",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "quest",
+       "mode": "spatial"
+      },
+      "sure": true,
+      "foe": "flames",
+      "item": null,
+      "world": null,
+      "title": "firefighter rescues a cat"
+     },
+     "readGenre": "quest.spatial",
+     "classified": "quest.spatial",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4288,
+     "totalMs": 4289,
+     "inputTokens": 2472,
+     "outputTokens": 153,
+     "usd": 0.03237,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "h18",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "duel",
+      "verbs": [
+       {
+        "word": "slays",
+        "class": "melee"
+       },
+       {
+        "word": "rides",
+        "class": "steer"
+       }
+      ],
+      "hero": "knight",
+      "roles": [
+       {
+        "noun": "dragon",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "forest",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "duel",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "dragon",
+      "item": null,
+      "world": "forest",
+      "title": "knight slays a dragon"
+     },
+     "readGenre": "duel.default",
+     "classified": "duel.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 5257,
+     "totalMs": 5258,
+     "inputTokens": 2469,
+     "outputTokens": 150,
+     "usd": 0.03219,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "h19",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "timing",
+      "verbs": [
+       {
+        "word": "Stack",
+        "class": "timing"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "pancakes",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "busy diner",
+      "mood": "busy",
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "timing",
+       "mode": "stack"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "pancakes",
+      "world": null,
+      "title": "Stack pancakes"
+     },
+     "readGenre": "timing.stack",
+     "classified": "timing.stack",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3616,
+     "totalMs": 3617,
+     "inputTokens": 2469,
+     "outputTokens": 103,
+     "usd": 0.02984,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "h23",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "ball",
+      "verbs": [
+       {
+        "word": "Bounce",
+        "class": "timing"
+       }
+      ],
+      "hero": "seal",
+      "roles": [
+       {
+        "noun": "beach ball",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "circus",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "catch",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "beach ball",
+      "world": null,
+      "title": "Bounce a beach ball"
+     },
+     "readGenre": "catch.default",
+     "classified": "catch.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 5734,
+     "totalMs": 5735,
+     "inputTokens": 2470,
+     "outputTokens": 149,
+     "usd": 0.03215,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "h24",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "steer",
+      "verbs": [
+       {
+        "word": "Steer",
+        "class": "steer"
+       }
+      ],
+      "hero": "hot air balloon",
+      "roles": [
+       {
+        "noun": "thunderclouds",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "above the ocean",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "voyage",
+       "mode": "race"
+      },
+      "sure": true,
+      "foe": "thunderclouds",
+      "item": null,
+      "world": "ocean",
+      "title": "hot air balloon"
+     },
+     "readGenre": "voyage.race",
+     "classified": "voyage.race",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4304,
+     "totalMs": 4305,
+     "inputTokens": 2471,
+     "outputTokens": 112,
+     "usd": 0.03031,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s039",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "zombie",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "mall",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "shooter",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "zombie",
+      "item": null,
+      "world": "mall",
+      "title": "zombie shooter"
+     },
+     "readGenre": "shooter.default",
+     "classified": "shooter.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3965,
+     "totalMs": 3966,
+     "inputTokens": 2464,
+     "outputTokens": 92,
+     "usd": 0.02924,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s037",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "shooter",
+      "verbs": [
+       {
+        "word": "shoots",
+        "class": "aim_shoot"
+       }
+      ],
+      "hero": "space marine",
+      "roles": [
+       {
+        "noun": "alien bugs",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": "mining colony",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "shooter",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "alien bugs",
+      "item": null,
+      "world": "space",
+      "title": "space marine shoots alien bugs"
+     },
+     "readGenre": "shooter.default",
+     "classified": "shooter.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3816,
+     "totalMs": 3817,
+     "inputTokens": 2468,
+     "outputTokens": 108,
+     "usd": 0.03008,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s002",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "collect",
+        "class": "move_free"
+       },
+       {
+        "word": "dodging",
+        "class": "melee"
+       }
+      ],
+      "hero": "knight",
+      "roles": [
+       {
+        "noun": "keys",
+        "kind": "collectible",
+        "count": 3
+       },
+       {
+        "noun": "ghosts",
+        "kind": "threat",
+        "count": null
+       }
+      ],
+      "setting": "haunted castle",
+      "mood": "haunted",
+      "numbers": {
+       "seconds": null,
+       "counts": [
+        3
+       ]
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "collect"
+      },
+      "sure": true,
+      "foe": "ghosts",
+      "item": "keys",
+      "world": "castle",
+      "title": "Three Keys in a Haunted Castle"
+     },
+     "readGenre": "arena.collect",
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4797,
+     "totalMs": 4797,
+     "inputTokens": 2473,
+     "outputTokens": 132,
+     "usd": 0.03133,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s003",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "move_free",
+      "verbs": [
+       {
+        "word": "escaping",
+        "class": "move_free"
+       },
+       {
+        "word": "hunts",
+        "class": "move_free"
+       }
+      ],
+      "hero": "hamster",
+      "roles": [
+       {
+        "noun": "giant Roomba",
+        "kind": "chaser",
+        "count": null
+       }
+      ],
+      "setting": "supermarket",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "arena",
+       "mode": "escape"
+      },
+      "sure": true,
+      "foe": "giant Roomba",
+      "item": null,
+      "world": "supermarket",
+      "title": "hamster escaping a supermarket"
+     },
+     "readGenre": "arena.escape",
+     "classified": "arena.escape",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3235,
+     "totalMs": 3235,
+     "inputTokens": 2470,
+     "outputTokens": 120,
+     "usd": 0.0307,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s006",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "runner",
+      "verbs": [
+       {
+        "word": "runs",
+        "class": "runner"
+       },
+       {
+        "word": "grabbing",
+        "class": "move_free"
+       },
+       {
+        "word": "jumping",
+        "class": "platform"
+       }
+      ],
+      "hero": "corgi",
+      "roles": [
+       {
+        "noun": "sausages",
+        "kind": "collectible",
+        "count": null
+       },
+       {
+        "noun": "sprinklers",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "park",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "runner",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "sprinklers",
+      "item": "sausages",
+      "world": "meadow",
+      "title": "Sausages and Sprinklers"
+     },
+     "readGenre": "runner.default",
+     "classified": "runner.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4876,
+     "totalMs": 4876,
+     "inputTokens": 2473,
+     "outputTokens": 179,
+     "usd": 0.03368,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s008",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "runner",
+      "verbs": [
+       {
+        "word": "running",
+        "class": "runner"
+       }
+      ],
+      "hero": "banana",
+      "roles": [
+       {
+        "noun": "monkey",
+        "kind": "chaser",
+        "count": null
+       }
+      ],
+      "setting": "temple",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "runner",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "monkey",
+      "item": null,
+      "world": null,
+      "title": "banana running from a monkey"
+     },
+     "readGenre": "runner.default",
+     "classified": "runner.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 7599,
+     "totalMs": 7599,
+     "inputTokens": 2469,
+     "outputTokens": 163,
+     "usd": 0.03284,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s022",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "platform",
+      "verbs": [
+       {
+        "word": "climbs",
+        "class": "platform"
+       },
+       {
+        "word": "reach",
+        "class": "platform"
+       }
+      ],
+      "hero": "tiny robot",
+      "roles": [
+       {
+        "noun": "moving platforms",
+        "kind": "obstacle",
+        "count": null
+       },
+       {
+        "noun": "charger",
+        "kind": "destination",
+        "count": null
+       }
+      ],
+      "setting": "a tower of moving platforms",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "platformer",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": null,
+      "title": "tiny robot climbs a tower"
+     },
+     "readGenre": "platformer.default",
+     "classified": "platformer.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 5125,
+     "totalMs": 5125,
+     "inputTokens": 2471,
+     "outputTokens": 128,
+     "usd": 0.03111,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s021",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "platform",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "lava",
+        "kind": "hazard",
+        "count": null
+       },
+       {
+        "noun": "spinning bars",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "platformer",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "spinning bars",
+      "item": null,
+      "world": null,
+      "title": "lava and spinning bars"
+     },
+     "readGenre": "platformer.default",
+     "classified": "platformer.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 6166,
+     "totalMs": 6167,
+     "inputTokens": 2465,
+     "outputTokens": 162,
+     "usd": 0.03275,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s035",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "flap",
+      "verbs": [],
+      "hero": "bird",
+      "roles": [],
+      "setting": "underwater",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "flap",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": null,
+      "world": "underwater",
+      "title": "flappy bird underwater"
+     },
+     "readGenre": "flap.default",
+     "classified": "flap.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3689,
+     "totalMs": 3689,
+     "inputTokens": 2464,
+     "outputTokens": 113,
+     "usd": 0.03029,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s050",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [
+       {
+        "word": "throwing",
+        "class": "throw"
+       }
+      ],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "snowballs",
+        "kind": "item",
+        "count": null
+       },
+       {
+        "noun": "kids",
+        "kind": "target",
+        "count": null
+       },
+       {
+        "noun": "snow fort",
+        "kind": "obstacle",
+        "count": null
+       }
+      ],
+      "setting": "behind a snow fort",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": "kids",
+      "item": "snowballs",
+      "world": "snow",
+      "title": "throwing snowballs"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3723,
+     "totalMs": 3724,
+     "inputTokens": 2468,
+     "outputTokens": 129,
+     "usd": 0.03113,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s088",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "throw",
+      "verbs": [],
+      "hero": "cats",
+      "roles": [
+       {
+        "noun": "cardboard boxes",
+        "kind": "target",
+        "count": null
+       }
+      ],
+      "setting": null,
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": {
+       "genre": "throw",
+       "mode": "default"
+      },
+      "sure": true,
+      "foe": null,
+      "item": "cats",
+      "world": null,
+      "title": "cats and cardboard boxes"
+     },
+     "readGenre": "throw.default",
+     "classified": "throw.default",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 4146,
+     "totalMs": 4147,
+     "inputTokens": 2467,
+     "outputTokens": 131,
+     "usd": 0.03122,
+     "listUsd": null
+    }
+   }
+  },
+  {
+   "set": "p63/reread-set",
+   "id": "s069",
+   "kind": "unlabeled",
+   "label": null,
+   "lure": null,
+   "models": {
+    "astra@openai": {
+     "error": null,
+     "detail": null,
+     "reading": {
+      "control": "tap_go",
+      "verbs": [],
+      "hero": null,
+      "roles": [
+       {
+        "noun": "gems",
+        "kind": "item",
+        "count": null
+       }
+      ],
+      "setting": "cave",
+      "mood": null,
+      "numbers": {
+       "seconds": null,
+       "counts": []
+      },
+      "genre": null,
+      "sure": true,
+      "foe": null,
+      "item": "gems",
+      "world": "cave",
+      "title": "gems in a cave"
+     },
+     "readGenre": null,
+     "classified": "arena.collect",
+     "hit": null,
+     "modeHit": null,
+     "firstByteMs": 3185,
+     "totalMs": 3186,
+     "inputTokens": 2467,
+     "outputTokens": 87,
+     "usd": 0.02902,
+     "listUsd": null
+    }
+   }
+  }
+ ],
+ "dictionary": {
+  "all": {
+   "targets": {
+    "of": 0,
+    "hit": 0,
+    "modeHit": 0
+   },
+   "traps": {
+    "of": 0,
+    "offLure": 0
+   }
+  },
+  "perSet": {
+   "p63/reread-set": {
+    "targets": {
+     "of": 0,
+     "hit": 0,
+     "modeHit": 0
+    },
+    "traps": {
+     "of": 0,
+     "offLure": 0
+    }
+   }
+  },
+  "classified": {
+   "p63/reread-set#h02": "arena.fight",
+   "p63/reread-set#h14": "voyage.race",
+   "p63/reread-set#h15": "shooter.default",
+   "p63/reread-set#h18": "arena.fight",
+   "p63/reread-set#h19": "timing.stack",
+   "p63/reread-set#h23": "platformer.default",
+   "p63/reread-set#h24": "voyage.race",
+   "p63/reread-set#s039": "shooter.default",
+   "p63/reread-set#s037": "shooter.default",
+   "p63/reread-set#s002": "arena.escape",
+   "p63/reread-set#s003": "arena.escape",
+   "p63/reread-set#s006": "runner.default",
+   "p63/reread-set#s008": "runner.default",
+   "p63/reread-set#s022": "platformer.default",
+   "p63/reread-set#s021": "platformer.default",
+   "p63/reread-set#s035": "flap.default",
+   "p63/reread-set#s050": "throw.default",
+   "p63/reread-set#s088": "throw.default",
+   "p63/reread-set#s069": "quest.station"
+  }
+ }
+}

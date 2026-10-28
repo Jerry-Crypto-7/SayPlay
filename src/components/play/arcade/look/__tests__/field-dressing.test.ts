@@ -56,13 +56,13 @@ interface Row {
   readonly genre: string;
   readonly mode: string;
   readonly sentence: string;
-  /** Hash startu a konce běhu robota na `main` 495bbc77, semínko 1. */
+  /** Hash startu a konce běhu robota na `main` c1dfd552 (P63 změnil jen první větu), semínko 1. */
   readonly main: { readonly init: string; readonly bot: string };
 }
 
 /** Každý arénový žánr a režim (útěk s věcmi i přežití, sběr, souboj, úkol v prostoru i u pultu) a střelnice. */
 const ROWS: readonly Row[] = [
-  { genre: 'arena', mode: 'escape', sentence: 'A knight must collect three keys in a haunted castle while dodging ghosts.', main: { init: '13802e2b', bot: 'a00fd14a' } },
+  { genre: 'arena', mode: 'escape', sentence: 'A knight must collect three keys in a haunted castle while dodging ghosts.', main: { init: '8d1ca4a7', bot: '4604184a' } },
   { genre: 'arena', mode: 'escape', sentence: 'survive the zombies in a mall', main: { init: '627c506d', bot: 'b69b4c20' } },
   { genre: 'arena', mode: 'collect', sentence: 'collect seashells on a sunny beach', main: { init: 'd41116a7', bot: 'c4546df6' } },
   { genre: 'arena', mode: 'fight', sentence: 'a knight fights goblins in a castle courtyard', main: { init: '4589e97e', bot: 'c09bee0d' } },

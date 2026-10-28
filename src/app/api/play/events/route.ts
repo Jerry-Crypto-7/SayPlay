@@ -2,7 +2,8 @@
  * `POST /api/play/events` – jedna událost herní smyčky (P27D T4, B4).
  *
  * Tělo: `{ name, versionId, session }`, u `share` ještě volitelné `withClip`
- * (boolean, P29D T2) a `dare` (boolean, P36B T6), a nic jiného (`src/play/loop-events.ts`);
+ * (boolean, P29D T2) a `dare` (boolean, P36B T6), u každé volitelné `visitor` (UUID, P63 T5),
+ * a nic jiného (`src/play/loop-events.ts`);
  * klíč navíc, věta nebo volný text je 400. Odpověď `204`. Nic neplatí a nic
  * nezakládá, přesto má vlastní strop frekvence a páku `sessions` – kdo vypne
  * zakládání, nechce ani zápis statistik.
@@ -31,8 +32,10 @@ export async function POST(request: Request): Promise<Response> {
   const body = await readJsonBody(request);
   if (!body.ok) return body.response;
   const event = readLoopEvent(body.value);
-  if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus optional booleans withClip and dare on share, and nothing else');
-  recordLoopEvent(event);
+  if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus an optional visitor UUID and optional booleans withClip and dare on share, and nothing else');
+  // Id návštěvníka do záznamu nejde: na Vercelu je záznam řádek logu vedle adresy volajícího.
+  const { visitor, ...logged } = event;
+  recordLoopEvent(logged);
   // Dohrání a přeskočení řadí feed (P36B T9), pokus a výhra dávají „clear rate“ (P37C T5),
   // opakování, sdílení a okamžitý odchod přidal P40 T4: jen hra, která v úložišti je,
   // a jeden hlas volajícího za den na čítač.
@@ -41,5 +44,7 @@ export async function POST(request: Request): Promise<Response> {
   // Trychtýř smyčky (P44B T12): stupeň jednou za den na relaci a hru.
   const stage = funnelStageOf(event.name);
   if (stage !== null) await store().countFunnel(stage, event.versionId, event.session);
+  // Návrat hráče (P63 T5): návštěvník jednou za den, první den nový, pozdější den návrat.
+  if (visitor !== undefined) await store().countVisitor(visitor);
   return new Response(null, { status: 204 });
 }

@@ -104,7 +104,11 @@ describe('pacing under a P45B overlay template', () => {
     for (const [text, spec] of Object.entries(STORED)) {
       if (generatorOf(spec) === 'quest_spatial') continue;
       const fresh = draftGameSpecWithMeta(text, 1).spec;
-      expect(fresh.rules, text).toEqual(spec.rules);
+      // Věta s počtem („Collect three keys … while mummies chase you“, útěk od P63 T4 jako sběr od P61 T5) šablonu
+      // s věcmi navíc nedostane – počítá jen věci věty; průběh má dál.
+      const counted = (fresh.controlParams as { readonly tuning?: { readonly counted?: boolean } }).tuning?.counted === true;
+      if (counted) expect(fresh.rules ?? [], text).toEqual([]);
+      else expect(fresh.rules, text).toEqual(spec.rules);
       expect(paced(fresh), text).toBe(true);
       expect(paced(withVersion(spec, FINALE_GENRE_VERSION)), text).toBe(true);
     }

@@ -428,8 +428,8 @@
    "status": "ready",
    "reason": null,
    "rules": [
-    3,
-    3
+    0,
+    0
    ],
    "keptRules": true,
    "keptLogic": true,

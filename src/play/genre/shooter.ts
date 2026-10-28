@@ -51,7 +51,8 @@ export const shooterGenre: GenreModule<'shooter'> = {
     const rest = { cast: (spec.cast ?? []).filter((item) => item !== foe) };
     const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1] ?? castFor(rest, 'collect', 'avoid', 'chase_me', 'fight') ?? foe)?.label ?? 'target';
     const { waves = SHOOTER_GENRE.waves, enemies, targets } = spec.params ?? {};
-    const foes = plural(singular(enemy), 2);
+    // P63 T4: „shoots six bandits“ – počet věty je nepřátel ve vlně (`waveSize`), cíl ho řekne; výhra dál počítá vlny.
+    const foes = spec.counts?.enemy === undefined || enemies === undefined ? plural(singular(enemy), 2) : `${String(enemies)} ${plural(singular(enemy), enemies)}`;
     return legacySpec(spec, {
       control: 'shooter',
       controlParams: { waves, rise: SHOOTER_GENRE.rise, ...(spec.params?.targetWidthPct === undefined ? {} : { targetWidthPct: spec.params.targetWidthPct }), ...(spec.params?.movingTargets === undefined ? {} : { moving: spec.params.movingTargets === 1 }), ...(enemies === undefined ? {} : { waveSize: enemies }) },

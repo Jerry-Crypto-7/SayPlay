@@ -1,0 +1,1864 @@
+{
+ "schema": "p63-result.v1",
+ "task": "P63 T6 – sealed reading gate: main vs P63 on shared sheets (quick game and the game after reading), robot on every game of the set, and time to playable",
+ "holdout": {
+  "file": "evals/play/p63/holdout.json",
+  "sha256": "e03e39a08c2a3e4ba2ea98054ce367b08e2ffcd9f66dc815d92222740538051b",
+  "openedAt": "2026-10-27T18:27:47.984Z",
+  "commit": "17e8715a",
+  "sentences": 24
+ },
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": "495bbc77",
+   "measuredAt": "2026-10-27T11:42:49.002Z",
+   "base": "http://127.0.0.1:3163"
+  },
+  {
+   "name": "p63",
+   "label": "p63",
+   "commit": "17e8715a",
+   "measuredAt": "2026-10-27T18:53:09.603Z",
+   "base": "http://127.0.0.1:3163"
+  }
+ ],
+ "shots": {
+  "main": "D:/caches/p63/main-holdout (T1)",
+  "p63": "D:/caches/p63/p63-holdout",
+  "sameSettings": {
+   "at": [
+    1000,
+    3000,
+    5000
+   ],
+   "views": {
+    "desktop": "1280x720",
+    "phone": "Pixel 7 portrait"
+   },
+   "range": [
+    0,
+    23
+   ],
+   "reader": "gpt-6-astra, PLAY_READER=on, director unreachable, upgrade path blocked while shooting"
+  },
+  "readingGames": {
+   "main": 8,
+   "p63": 19
+  },
+  "errors": {
+   "main": 0,
+   "p63": 0
+  },
+  "note": "On main a single game's reading game never reached the meter: the director ends at once (MODEL_UNAVAILABLE) and the end carried no reading id. The branch hands it over since 6d5ac168, so main-reading rows exist only for chains."
+ },
+ "judge": {
+  "name": "claude-opus-5-5 (claude -p --safe-mode)",
+  "view": "desktop",
+  "seed": 61026,
+  "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+  "concurrency": 1,
+  "calls": 24,
+  "judgedAt": "2026-10-27T18:53:49.126Z"
+ },
+ "plan": [
+  {
+   "id": "p01",
+   "sentence": "A chef flips burgers on a sizzling grill before the customers get angry",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p02",
+   "sentence": "A clown juggles flaming torches under the big top",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p03",
+   "sentence": "A lifeguard swims out to pull tired swimmers from a stormy sea",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p04",
+   "sentence": "A goalkeeper blocks penalty kicks in a packed stadium",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p05",
+   "sentence": "A fisherman reels in giant fish through a hole in a frozen lake",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p06",
+   "sentence": "A plumber patches leaking pipes in a flooding basement",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p07",
+   "sentence": "A window cleaner scrubs pigeon mess off the windows of a skyscraper",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p08",
+   "sentence": "A barista pours hot coffee for a line of grumpy robots",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p09",
+   "sentence": "A pirate digs up four treasure chests on a sandy island",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p10",
+   "sentence": "Pop twelve balloons floating over a carnival",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p11",
+   "sentence": "A mouse steals 5 cheese wedges from a sleeping cat's kitchen",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p12",
+   "sentence": "A fairy lights nine lanterns in an enchanted forest",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p13",
+   "sentence": "A puppy digs up three buried bones in the backyard",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p14",
+   "sentence": "A ghost scares eight campers around a spooky campfire",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p15",
+   "sentence": "A robot repairs two broken satellites in orbit",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p16",
+   "sentence": "A frog snaps up eleven flies over a misty pond",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p17",
+   "sentence": "A hedgehog rolls through a glowing mushroom cave",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p18",
+   "sentence": "A tiny submarine explores a deep ocean trench full of anglerfish",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p19",
+   "sentence": "A viking sails through icy fjords while sea serpents attack",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p20",
+   "sentence": "A monkey swings through jungle vines dodging falling coconuts",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p21",
+   "sentence": "A race car speeds around a desert track full of tumbleweeds",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    }
+   ]
+  },
+  {
+   "id": "p22",
+   "sentence": "An owl delivers letters across a moonlit village",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p23",
+   "sentence": "A dinosaur stomps through a city smashing parked cars",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p63-reading"
+    }
+   ]
+  },
+  {
+   "id": "p24",
+   "sentence": "A snail slides along a garden path after the rain, racing a beetle",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p63-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p63-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  }
+ ],
+ "sentences": [
+  {
+   "id": "p01",
+   "sentence": "A chef flips burgers on a sizzling grill before the customers get angry",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2,
+     "reason": "A gray blob character and two gray items on a strip that could be a counter sit on a plain green field, with a timer and a 'Here they come!' cue, but there's no visible grill, no recognizable burgers and no customers."
+    },
+    "p63-quick": {
+     "fidelity": 0.27,
+     "wouldPlay": 0.2,
+     "reason": "The layout is almost the same as A, with a labelled 'Chef' near two gray items on a counter strip and a timer, but there's still no grill, no clear burgers or customers, and the visuals are bland and repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2,
+     "reason": "A gray blob character and two gray items on a strip that could be a counter sit on a plain green field, with a timer and a 'Here they come!' cue, but there's no visible grill, no recognizable burgers and no customers."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.27,
+     "wouldPlay": 0.2,
+     "reason": "The layout is almost the same as A, with a labelled 'Chef' near two gray items on a counter strip and a timer, but there's still no grill, no clear burgers or customers, and the visuals are bland and repetitive."
+    }
+   }
+  },
+  {
+   "id": "p02",
+   "sentence": "A clown juggles flaming torches under the big top",
+   "scores": {
+    "p63-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "Has a lane game about catching flaming torches with a 'Clown' label, but it takes place in an empty green field with no big top, and the torches are tiny, barely visible sticks."
+    },
+    "p63-quick": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2,
+     "reason": "A generic rhythm-lane game on a rooftop with a blocky character that is not a clown, with no torches or circus tent, and the run ended after 2.3 seconds on the failure screen."
+    },
+    "main-quick": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2,
+     "reason": "Almost identical to B: a rooftop rhythm lane with no clown, torches or big top, and the run quickly ended in failure with 0 points."
+    },
+    "main-after-reading": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2,
+     "reason": "Almost identical to B: a rooftop rhythm lane with no clown, torches or big top, and the run quickly ended in failure with 0 points."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "Has a lane game about catching flaming torches with a 'Clown' label, but it takes place in an empty green field with no big top, and the torches are tiny, barely visible sticks."
+    }
+   }
+  },
+  {
+   "id": "p03",
+   "sentence": "A lifeguard swims out to pull tired swimmers from a stormy sea",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15,
+     "reason": "There is a dark, rainy sea with lighthouses and a swimmer figure, but no tired swimmers show up, and two of the three frames are a game-over screen after 2.1 seconds."
+    },
+    "p63-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.35,
+     "reason": "A character labelled 'Lifeguard' walks around a dry, sandy field collecting stars, with no sea, storm or swimmers to rescue, though the game looks playable and polished."
+    },
+    "p63-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25,
+     "reason": "The first frame shows a stormy blue sea with lighthouses, boats and a lifeguard swimming through rings, but there are no swimmers to rescue and the run ends almost at once on a fail screen."
+    },
+    "main-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15,
+     "reason": "There is a dark, rainy sea with lighthouses and a swimmer figure, but no tired swimmers show up, and two of the three frames are a game-over screen after 2.1 seconds."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.35,
+     "reason": "A character labelled 'Lifeguard' walks around a dry, sandy field collecting stars, with no sea, storm or swimmers to rescue, though the game looks playable and polished."
+    }
+   }
+  },
+  {
+   "id": "p04",
+   "sentence": "A goalkeeper blocks penalty kicks in a packed stadium",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35,
+     "reason": "It shows a player kicking at goals on a grassy field with a shot counter, but the player is the shooter rather than a goalkeeper blocking kicks, there is no stadium or crowd, and it quickly ends on a fail screen."
+    },
+    "p63-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3,
+     "reason": "It is a generic catch-the-apples, dodge-the-bombs lane game in an empty field, and apart from a 'Goalkeeper' label it has no penalties, stadium or crowd."
+    },
+    "main-quick": {
+     "fidelity": 0.02,
+     "wouldPlay": 0.05,
+     "reason": "All three screenshots show only a 'Try again' fail screen over a dark, empty scene, so no goalkeeping, stadium or gameplay is visible."
+    },
+    "main-after-reading": {
+     "fidelity": 0.02,
+     "wouldPlay": 0.05,
+     "reason": "All three screenshots show only a 'Try again' fail screen over a dark, empty scene, so no goalkeeping, stadium or gameplay is visible."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3,
+     "reason": "It is a generic catch-the-apples, dodge-the-bombs lane game in an empty field, and apart from a 'Goalkeeper' label it has no penalties, stadium or crowd."
+    }
+   }
+  },
+  {
+   "id": "p05",
+   "sentence": "A fisherman reels in giant fish through a hole in a frozen lake",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.4,
+     "reason": "It's a snowy platformer where a figure jumps across ice cliffs to reach a flag; there's a winter setting and some fish-like objects, but no hole in the ice and no reeling."
+    },
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.4,
+     "reason": "It looks almost the same as A: a winter jump-to-the-flag platformer that misses the ice-fishing hole and the reeling mechanic."
+    },
+    "p63-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45,
+     "reason": "A labelled fisherman walks a frozen-lake arena collecting giant fish in timed waves, which matches the setting and characters, but there's no hole in the ice and the banner admits it isn't a reeling game."
+    },
+    "main-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45,
+     "reason": "It's nearly the same as C: a fisherman picks up fish on a frozen lake, with the setting right but no hole-in-the-ice reeling."
+    },
+    "main-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45,
+     "reason": "It's nearly the same as C: a fisherman picks up fish on a frozen lake, with the setting right but no hole-in-the-ice reeling."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45,
+     "reason": "A labelled fisherman walks a frozen-lake arena collecting giant fish in timed waves, which matches the setting and characters, but there's no hole in the ice and the banner admits it isn't a reeling game."
+    }
+   }
+  },
+  {
+   "id": "p06",
+   "sentence": "A plumber patches leaking pipes in a flooding basement",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.45,
+     "reason": "An indoor brick-tiled room with a worker character, a pipe pickup and patch-collecting stars hints at a basement repair job, but there's no visible water, flooding or leaking pipes."
+    },
+    "main-quick": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3,
+     "reason": "A grey outdoor windmill scene with generic flap, stack and dodge minigames, where only a 'patches' label loosely ties it to plumbing."
+    },
+    "p63-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "A character labelled 'Plumber' collects patch stars, but the open green grass field doesn't look like a basement and there's no water or pipes."
+    },
+    "p63-quick": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25,
+     "reason": "A washed-out outdoor windmill minigame with flappy and stacking rounds that has almost nothing to do with a plumber or a flooding basement."
+    },
+    "main-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.45,
+     "reason": "An indoor brick-tiled room with a worker character, a pipe pickup and patch-collecting stars hints at a basement repair job, but there's no visible water, flooding or leaking pipes."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "A character labelled 'Plumber' collects patch stars, but the open green grass field doesn't look like a basement and there's no water or pipes."
+    }
+   }
+  },
+  {
+   "id": "p07",
+   "sentence": "A window cleaner scrubs pigeon mess off the windows of a skyscraper",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25,
+     "reason": "A labelled window-cleaner puck picks up pigeon messes on a flat tiled rooftop, but there are no windows, no skyscraper facade and no scrubbing, and the scene is mostly empty."
+    },
+    "main-quick": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.22,
+     "reason": "This is almost the same as A: a generic collect-the-mess puck on an empty grey floor, with no windows, height or real threat."
+    },
+    "p63-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.4,
+     "reason": "The goal is actually to scrub pigeon messes, and there are obstacles, a green possible pigeon threat and a Use action, which make it more of a game, but it still takes place on a flat floor instead of a skyscraper's windows."
+    },
+    "main-after-reading": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.22,
+     "reason": "This is almost the same as A: a generic collect-the-mess puck on an empty grey floor, with no windows, height or real threat."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.4,
+     "reason": "The goal is actually to scrub pigeon messes, and there are obstacles, a green possible pigeon threat and a Use action, which make it more of a game, but it still takes place on a flat floor instead of a skyscraper's windows."
+    }
+   }
+  },
+  {
+   "id": "p08",
+   "sentence": "A barista pours hot coffee for a line of grumpy robots",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15,
+     "reason": "A counter with two coffee cups and a 'pour hot coffees' goal are visible, but there's no clear barista or grumpy robots, and the three frames barely change on a plain green field."
+    },
+    "p63-quick": {
+     "fidelity": 0.27,
+     "wouldPlay": 0.17,
+     "reason": "It's nearly the same as A (cups on a counter, a pouring goal, no robots or clear barista), though losing a life suggests a slight fail state; it still looks static and sparse."
+    },
+    "main-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15,
+     "reason": "A counter with two coffee cups and a 'pour hot coffees' goal are visible, but there's no clear barista or grumpy robots, and the three frames barely change on a plain green field."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.27,
+     "wouldPlay": 0.17,
+     "reason": "It's nearly the same as A (cups on a counter, a pouring goal, no robots or clear barista), though losing a life suggests a slight fail state; it still looks static and sparse."
+    }
+   }
+  },
+  {
+   "id": "p09",
+   "sentence": "A pirate digs up four treasure chests on a sandy island",
+   "scores": {
+    "p63-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.4,
+     "reason": "Shows a sandy island with buried chests, a 0/4 chest counter and a character model, but the pirate starts as a blue placeholder block, no chest is dug up yet, and the only other creature is a vague green figure, not a clear threat."
+    },
+    "main-quick": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.55,
+     "reason": "Has a sandy island, chests to dig with a 0/4 goal, a pirate-like character and red crab enemies that actually take a life (3 to 2), which makes it the most complete and playable-looking row, though it starts with a placeholder and no chests are collected."
+    },
+    "p63-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45,
+     "reason": "Same sandy island, chest goal and crab threat as B, but the pirate stays a blue placeholder block for two of the three screenshots and there's no visible progress or damage, so it feels less finished."
+    },
+    "main-after-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.55,
+     "reason": "Has a sandy island, chests to dig with a 0/4 goal, a pirate-like character and red crab enemies that actually take a life (3 to 2), which makes it the most complete and playable-looking row, though it starts with a placeholder and no chests are collected."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.4,
+     "reason": "Shows a sandy island with buried chests, a 0/4 chest counter and a character model, but the pirate starts as a blue placeholder block, no chest is dug up yet, and the only other creature is a vague green figure, not a clear threat."
+    }
+   }
+  },
+  {
+   "id": "p10",
+   "sentence": "Pop twelve balloons floating over a carnival",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2,
+     "reason": "A whack-a-mole layout with a fox and a mallet on plain green, and no balloons or carnival appear in any frame; the goal reads 10 balloons, not 12."
+    },
+    "p63-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3,
+     "reason": "Same whack-a-mole setup as A, but pale balloon-like targets with rings pop up in the last frame, so there is some visible action, though still no carnival and the count is 10, not 12."
+    },
+    "main-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3,
+     "reason": "A character walks a bare green field toward small white balloon targets on the ground; the count is 8 instead of 12, nothing floats and there is no carnival setting, and the view looks sparse."
+    },
+    "p63-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3,
+     "reason": "Nearly the same as C: an explorer collecting 8 small ground-level balloons on an empty green plain, with no carnival, nothing floating and little visual appeal."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3,
+     "reason": "A character walks a bare green field toward small white balloon targets on the ground; the count is 8 instead of 12, nothing floats and there is no carnival setting, and the view looks sparse."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3,
+     "reason": "Nearly the same as C: an explorer collecting 8 small ground-level balloons on an empty green plain, with no carnival, nothing floating and little visual appeal."
+    }
+   }
+  },
+  {
+   "id": "p11",
+   "sentence": "A mouse steals 5 cheese wedges from a sleeping cat's kitchen",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "A brown mouse-like character collects cheese wedges (counter shows 1/5) on a big tiled floor, but there's no visible sleeping cat or threat, and the cluttered floor barely reads as a kitchen."
+    },
+    "main-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "This is nearly the same as A: a blobby mouse picks up cheese wedges on a messy, generic tiled floor, with no cat or stealth tension visible, so it feels flat."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "This is nearly the same as A: a blobby mouse picks up cheese wedges on a messy, generic tiled floor, with no cat or stealth tension visible, so it feels flat."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "A brown mouse-like character collects cheese wedges (counter shows 1/5) on a big tiled floor, but there's no visible sleeping cat or threat, and the cluttered floor barely reads as a kitchen."
+    }
+   }
+  },
+  {
+   "id": "p12",
+   "sentence": "A fairy lights nine lanterns in an enchanted forest",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45,
+     "reason": "A fairy and lantern rings on a dark green field with a wolf threat fit the idea, but the counter says 8 lanterns instead of nine and the 'enchanted forest' is mostly an empty lawn with a few bushes."
+    },
+    "p63-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.47,
+     "reason": "It looks almost the same as A, with a fairy, lantern rings and a believable wolf/fox enemy, but it still shows 0/8 lanterns and a sparse open-field forest."
+    },
+    "p63-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "The fairy and lantern goal are the same, but the threat is a red placeholder block and then a green blob, which hurts both the theme and the look, and it still shows 8 lanterns instead of nine."
+    },
+    "main-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45,
+     "reason": "A fairy and lantern rings on a dark green field with a wolf threat fit the idea, but the counter says 8 lanterns instead of nine and the 'enchanted forest' is mostly an empty lawn with a few bushes."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "The fairy and lantern goal are the same, but the threat is a red placeholder block and then a green blob, which hurts both the theme and the look, and it still shows 8 lanterns instead of nine."
+    }
+   }
+  },
+  {
+   "id": "p13",
+   "sentence": "A puppy digs up three buried bones in the backyard",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "It has a grassy backyard with fenced edges, bone pickups at markers, a 0/3 bone counter and a striped enemy that costs a heart, but the 'puppy' is a blue block or orange blob, and the banner says digging isn't in the game yet, with no bones collected."
+    },
+    "p63-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.33,
+     "reason": "It is almost the same as A, with a backyard, bone markers, a 0/3 counter and a striped threat, plus a 'Puppy' label on the player, but the character still doesn't look like a dog, there's no digging and nothing visibly happens across the frames."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "It has a grassy backyard with fenced edges, bone pickups at markers, a 0/3 bone counter and a striped enemy that costs a heart, but the 'puppy' is a blue block or orange blob, and the banner says digging isn't in the game yet, with no bones collected."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.33,
+     "reason": "It is almost the same as A, with a backyard, bone markers, a 0/3 counter and a striped threat, plus a 'Puppy' label on the player, but the character still doesn't look like a dog, there's no digging and nothing visibly happens across the frames."
+    }
+   }
+  },
+  {
+   "id": "p14",
+   "sentence": "A ghost scares eight campers around a spooky campfire",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45,
+     "reason": "A ghost roams a dark night field trying to scare 8 targets with a timer and lives, but the campers are shown as abstract stars and there is no visible campfire."
+    },
+    "p63-quick": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2,
+     "reason": "This is a whack-a-mole layout with a ghost and a hammer, with no campers or campfire, and nothing changes across the three frames except the timer."
+    },
+    "main-quick": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2,
+     "reason": "It is the same static whack-a-mole setup as B, with a placeholder blue block in the first frame and no campers or campfire scene."
+    },
+    "p63-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.5,
+     "reason": "Like A, a ghost hunts 8 star targets at night with a visible chase ring and a pursuing figure, but there are still no recognizable campers and no campfire."
+    },
+    "main-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45,
+     "reason": "A ghost roams a dark night field trying to scare 8 targets with a timer and lives, but the campers are shown as abstract stars and there is no visible campfire."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.5,
+     "reason": "Like A, a ghost hunts 8 star targets at night with a visible chase ring and a pursuing figure, but there are still no recognizable campers and no campfire."
+    }
+   }
+  },
+  {
+   "id": "p15",
+   "sentence": "A robot repairs two broken satellites in orbit",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.35,
+     "reason": "A robot and two smoking satellites on a repair bench match the core goal, but the red canyon workshop setting is not orbit and the play area looks static and cramped."
+    },
+    "main-quick": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4,
+     "reason": "Nearly identical to A with a robot repairing two smoking satellites on a bench, and a lost life hints at some hazard, but the setting is still a red ground-level room rather than space."
+    },
+    "p63-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.5,
+     "reason": "A robot roams an open red rocky field with a 0/2 satellite counter and a hostile robot, giving more gameplay variety, but it looks like a planet surface rather than orbit and the satellites are barely visible."
+    },
+    "main-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4,
+     "reason": "Nearly identical to A with a robot repairing two smoking satellites on a bench, and a lost life hints at some hazard, but the setting is still a red ground-level room rather than space."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.5,
+     "reason": "A robot roams an open red rocky field with a 0/2 satellite counter and a hostile robot, giving more gameplay variety, but it looks like a planet surface rather than orbit and the satellites are barely visible."
+    }
+   }
+  },
+  {
+   "id": "p16",
+   "sentence": "A frog snaps up eleven flies over a misty pond",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2,
+     "reason": "A frog appears in a misty, wooded setting, but the game is about passing rings to reach a finish, with no flies to snap, and it ends in a fail screen after 2.1 seconds."
+    },
+    "p63-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.5,
+     "reason": "A frog on a misty green ground has to collect 11 flies on a timer, which matches the sentence well, but no pond water is visible, no flies have been caught yet (0/11), and the field looks flat and empty."
+    },
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2,
+     "reason": "It is almost the same as A: a frog flies through rings in mist instead of catching flies over a pond, and it quickly ends in a fail screen after 2.1 seconds."
+    },
+    "main-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2,
+     "reason": "It is almost the same as A: a frog flies through rings in mist instead of catching flies over a pond, and it quickly ends in a fail screen after 2.1 seconds."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.5,
+     "reason": "A frog on a misty green ground has to collect 11 flies on a timer, which matches the sentence well, but no pond water is visible, no flies have been caught yet (0/11), and the field looks flat and empty."
+    }
+   }
+  },
+  {
+   "id": "p17",
+   "sentence": "A hedgehog rolls through a glowing mushroom cave",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3,
+     "reason": "It shows a hedgehog in a dark cave with glowing teal mushrooms, but the goal is a soccer-style 'kick it past the targets' shooting game, not rolling through a cave, and the scene is dim and static."
+    },
+    "p63-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35,
+     "reason": "It shows a hedgehog collecting crystals on a dark, flat cave-like floor, but there are hardly any glowing mushrooms, the banner admits rolling isn't supported, and the open, empty arena looks dull."
+    },
+    "main-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3,
+     "reason": "It looks almost identical to A: a hedgehog in a dim cave with glowing mushrooms, but stuck in an off-theme target-kicking shooting game with little visible motion."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3,
+     "reason": "It looks almost identical to A: a hedgehog in a dim cave with glowing mushrooms, but stuck in an off-theme target-kicking shooting game with little visible motion."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35,
+     "reason": "It shows a hedgehog collecting crystals on a dark, flat cave-like floor, but there are hardly any glowing mushrooms, the banner admits rolling isn't supported, and the open, empty arena looks dull."
+    }
+   }
+  },
+  {
+   "id": "p18",
+   "sentence": "A tiny submarine explores a deep ocean trench full of anglerfish",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "It has an underwater blue setting with a sub-like player at the bottom, but it plays as a catch-apples, dodge-bombs game with no trench or anglerfish, and the last frame turns grey and murky."
+    },
+    "p63-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "A submarine collects pearls on a sandy floor, but the arena is bright and shallow instead of a deep trench, and there are no anglerfish threats to see."
+    },
+    "main-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "It is almost the same as B, a pearl-collecting sub on a bright sandy arena, with no deep trench darkness and no anglerfish."
+    },
+    "p63-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35,
+     "reason": "It is the same underwater catch-and-dodge setup as A with a sub at the bottom and falling bombs, still missing the trench and anglerfish, though the visuals stay clearer than A's."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "It is almost the same as B, a pearl-collecting sub on a bright sandy arena, with no deep trench darkness and no anglerfish."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "A submarine collects pearls on a sandy floor, but the arena is bright and shallow instead of a deep trench, and there are no anglerfish threats to see."
+    }
+   }
+  },
+  {
+   "id": "p19",
+   "sentence": "A viking sails through icy fjords while sea serpents attack",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.5,
+     "reason": "A viking-like character fights a polar bear/ogre brute in a snowy arena and then runs a crowd-gate lane, so the icy setting fits, but there's no sailing, no fjord water and no sea serpents."
+    },
+    "main-reading": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35,
+     "reason": "A red car labelled 'Viking' drives down a snowy track past ice crystals, so the icy theme is there, but there's no boat, no fjord, no serpents and no visible threats."
+    },
+    "main-quick": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.3,
+     "reason": "Same structure as A, but the first screenshot shows placeholder red and blue boxes instead of the characters, and there's still no ship or sea serpents."
+    },
+    "p63-reading": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.3,
+     "reason": "Nearly identical to B but without even the 'Viking' label: a car on a snowy road with no sailing, serpents or real threats."
+    },
+    "main-after-reading": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35,
+     "reason": "A red car labelled 'Viking' drives down a snowy track past ice crystals, so the icy theme is there, but there's no boat, no fjord, no serpents and no visible threats."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.3,
+     "reason": "Nearly identical to B but without even the 'Viking' label: a car on a snowy road with no sailing, serpents or real threats."
+    }
+   }
+  },
+  {
+   "id": "p20",
+   "sentence": "A monkey swings through jungle vines dodging falling coconuts",
+   "scores": {
+    "p63-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.6,
+     "reason": "A polished jungle lane runner where a monkey runs past obstacles and a coconut falls in the third frame, but it doesn't swing on vines at any point."
+    },
+    "main-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.65,
+     "reason": "Almost the same jungle runner as A, with a monkey and a falling coconut and still no vines, and the coin pickup with a +1 adds a bit more reward feel."
+    },
+    "p63-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.4,
+     "reason": "A side-view jungle platformer with a monkey on floating blocks, but no vines or falling coconuts are visible and the monkey barely moves across the three frames."
+    },
+    "main-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.65,
+     "reason": "Almost the same jungle runner as A, with a monkey and a falling coconut and still no vines, and the coin pickup with a +1 adds a bit more reward feel."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.4,
+     "reason": "A side-view jungle platformer with a monkey on floating blocks, but no vines or falling coconuts are visible and the monkey barely moves across the three frames."
+    }
+   }
+  },
+  {
+   "id": "p21",
+   "sentence": "A race car speeds around a desert track full of tumbleweeds",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.5,
+     "reason": "A red race car drives along a desert track lined with cacti and a rock arch, but no clear tumbleweeds or threats appear, and the action looks static across all three frames."
+    },
+    "p63-quick": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.52,
+     "reason": "It is nearly identical to A, with the same car and desert track, and the third frame shows a lost life, which hints at hazards, though no tumbleweeds can be clearly seen."
+    },
+    "main-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.5,
+     "reason": "A red race car drives along a desert track lined with cacti and a rock arch, but no clear tumbleweeds or threats appear, and the action looks static across all three frames."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.52,
+     "reason": "It is nearly identical to A, with the same car and desert track, and the third frame shows a lost life, which hints at hazards, though no tumbleweeds can be clearly seen."
+    }
+   }
+  },
+  {
+   "id": "p22",
+   "sentence": "An owl delivers letters across a moonlit village",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "A gray owl-labelled figure collects stars on a plain brown field under a 'deliver the letter' goal, but there are no visible letters, houses or moonlit village, and the only threats are a few rocks."
+    },
+    "p63-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25,
+     "reason": "It's almost the same as A but sparser, just the owl figure and scattered stars on an empty dirt plain, with no visible village, letters or threats."
+    },
+    "p63-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35,
+     "reason": "It has the same dark dirt field and owl, plus more props (a red crate, blue objects), a Use action and a lost life that hints at hazards, but it still doesn't show a moonlit village or letter delivery."
+    },
+    "main-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "A gray owl-labelled figure collects stars on a plain brown field under a 'deliver the letter' goal, but there are no visible letters, houses or moonlit village, and the only threats are a few rocks."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35,
+     "reason": "It has the same dark dirt field and owl, plus more props (a red crate, blue objects), a Use action and a lost life that hints at hazards, but it still doesn't show a moonlit village or letter delivery."
+    }
+   }
+  },
+  {
+   "id": "p23",
+   "sentence": "A dinosaur stomps through a city smashing parked cars",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.45,
+     "reason": "A green dinosaur roams a paved city plaza with parked cars marked as targets, but the cars are tiny, no smashing is visible, and the open square feels sparse."
+    },
+    "p63-quick": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35,
+     "reason": "There's a dinosaur, a city skyline, a police car and a van, but the action is a duel with a blocky figure followed by a block-stacking task, so smashing cars hardly features."
+    },
+    "main-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25,
+     "reason": "Same city-backdrop duel and block-stacking setup as B, but the screens barely change and no car-smashing appears beyond a parked police car in the background."
+    },
+    "p63-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.45,
+     "reason": "Nearly the same as A: a dinosaur in a city plaza with parked cars ringed as targets and a hit effect in the last frame, but there's little visible destruction and it looks visually flat."
+    },
+    "main-after-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.45,
+     "reason": "A green dinosaur roams a paved city plaza with parked cars marked as targets, but the cars are tiny, no smashing is visible, and the open square feels sparse."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.45,
+     "reason": "Nearly the same as A: a dinosaur in a city plaza with parked cars ringed as targets and a hit effect in the last frame, but there's little visible destruction and it looks visually flat."
+    }
+   }
+  },
+  {
+   "id": "p24",
+   "sentence": "A snail slides along a garden path after the rain, racing a beetle",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.4,
+     "reason": "Rainy garden-like road and a 'Beat the beetle' goal, but the player drives a red car instead of a snail, no beetle is visible, and it ends quickly on a fail screen."
+    },
+    "p63-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.65,
+     "reason": "A snail character runs down a dirt garden path past obstacles in a polished lane runner with rounds and hop feedback, but there's no visible rain or beetle rival."
+    },
+    "p63-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.4,
+     "reason": "Nearly the same as A: a rainy path with a beetle-race goal, but a car stands in for the snail, there are only a few sparse pickups, and no beetle opponent appears."
+    },
+    "main-quick": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.5,
+     "reason": "A snail on a garden path with a small rival-like creature ahead fits the sentence, but the goal switches to 'cross 18 rows', there's no rain, and the washed-out grey frames look confusing."
+    },
+    "main-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.4,
+     "reason": "Rainy garden-like road and a 'Beat the beetle' goal, but the player drives a red car instead of a snail, no beetle is visible, and it ends quickly on a fail screen."
+    },
+    "p63-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.4,
+     "reason": "Nearly the same as A: a rainy path with a beetle-race goal, but a car stands in for the snail, there are only a few sparse pickups, and no beetle opponent appears."
+    }
+   }
+  }
+ ],
+ "skipped": [],
+ "medians": {
+  "main-quick": {
+   "fidelity": 0.29,
+   "wouldPlay": 0.3,
+   "n": 24
+  },
+  "main-after-reading": {
+   "fidelity": 0.375,
+   "wouldPlay": 0.35,
+   "n": 24
+  },
+  "p63-quick": {
+   "fidelity": 0.35,
+   "wouldPlay": 0.34,
+   "n": 24
+  },
+  "p63-after-reading": {
+   "fidelity": 0.4,
+   "wouldPlay": 0.375,
+   "n": 24
+  },
+  "main-reading": {
+   "fidelity": 0.375,
+   "wouldPlay": 0.425,
+   "n": 8
+  },
+  "p63-reading": {
+   "fidelity": 0.4,
+   "wouldPlay": 0.4,
+   "n": 19
+  }
+ },
+ "gates": [
+  {
+   "id": "G1",
+   "label": "P63 after reading: median fidelity >= 0.75",
+   "side": "p63-after-reading",
+   "metric": "fidelity",
+   "threshold": 0.75,
+   "value": 0.4,
+   "pass": false
+  },
+  {
+   "id": "G2",
+   "label": "P63 after reading: median fidelity >= main after reading",
+   "side": "p63-after-reading",
+   "against": "main-after-reading",
+   "metric": "fidelity",
+   "threshold": 0.375,
+   "value": 0.4,
+   "pass": true
+  },
+  {
+   "id": "G3",
+   "label": "P63 after reading: median would play >= 0.70",
+   "side": "p63-after-reading",
+   "metric": "wouldPlay",
+   "threshold": 0.7,
+   "value": 0.375,
+   "pass": false
+  },
+  {
+   "id": "G4",
+   "label": "P63 after reading: median would play >= main after reading",
+   "side": "p63-after-reading",
+   "against": "main-after-reading",
+   "metric": "wouldPlay",
+   "threshold": 0.35,
+   "value": 0.375,
+   "pass": true
+  },
+  {
+   "id": "G5",
+   "label": "P63 quick: median fidelity >= main quick - 0.02",
+   "side": "p63-quick",
+   "against": "main-quick",
+   "metric": "fidelity",
+   "threshold": 0.27,
+   "value": 0.35,
+   "pass": true
+  },
+  {
+   "id": "G6",
+   "label": "P63 quick: median would play >= main quick - 0.02",
+   "side": "p63-quick",
+   "against": "main-quick",
+   "metric": "wouldPlay",
+   "threshold": 0.28,
+   "value": 0.34,
+   "pass": true
+  }
+ ],
+ "verdict": {
+  "pass": false,
+  "unmet": [
+   "G1",
+   "G3",
+   "G7"
+  ]
+ },
+ "robot": {
+  "scope": "P63 branch only: every game of the set as P63 built it – the 24 sealed sentences (quick + reading, shot at 17e8715a) and the 12 dev sentences (quick + reading, shot at 55f1a838; reading games of s002, s003, s021 from the dev-fix shoot). main games of T1 are not re-checked.",
+  "harness": "publish gate (verifyArcade / verifyChain: bot wins, idle loses, two replays equal the bot run) at publish time, read back from the server report; re-run offline on the published world in a fresh process (temporary evals/play/p63/t6c-robot.measure.ts run with vitest.measure.mts, copy in D:/caches/p63/)",
+  "games": 60,
+  "quick": 36,
+  "reading": 24,
+  "chains": 10,
+  "server": {
+   "publishEligible": 60,
+   "botWins": 60,
+   "idleLoses": 60,
+   "replayEqual": 60
+  },
+  "offline": {
+   "botWins": 60,
+   "idleLoses": 60,
+   "replayEqual": 60,
+   "sameHashesAsServer": 60
+  },
+  "sets": {
+   "holdout": {
+    "games": 43,
+    "quick": 24,
+    "reading": 19,
+    "chains": 8,
+    "server": {
+     "publishEligible": 43,
+     "botWins": 43,
+     "idleLoses": 43,
+     "replayEqual": 43
+    },
+    "offline": {
+     "botWins": 43,
+     "idleLoses": 43,
+     "replayEqual": 43,
+     "sameHashesAsServer": 43
+    }
+   },
+   "dev": {
+    "games": 17,
+    "quick": 12,
+    "reading": 5,
+    "chains": 2,
+    "server": {
+     "publishEligible": 17,
+     "botWins": 17,
+     "idleLoses": 17,
+     "replayEqual": 17
+    },
+    "offline": {
+     "botWins": 17,
+     "idleLoses": 17,
+     "replayEqual": 17,
+     "sameHashesAsServer": 17
+    }
+   }
+  }
+ },
+ "timing": {
+  "tool": "scripts/measure/first-playable-ab.mjs",
+  "measuredAt": "2026-10-27T19:53:30.260Z",
+  "a": {
+   "side": "main",
+   "commit": "495bbc77",
+   "url": "http://127.0.0.1:3164"
+  },
+  "b": {
+   "side": "p63",
+   "commit": "d03aa1c1",
+   "url": "http://127.0.0.1:3163"
+  },
+  "sentences": "evals/play/p30/dev.json [0..4] (the first five dev sentences, as in evals/play/first-playable and P61 T8)",
+  "metric": "ms from tapping \"Make it!\" on /play to the game canvas answering two inputs in a row (time-to-playable.mjs); firstFrame = ms to the first drawn game frame",
+  "order": "run is the outer loop; each sentence gets an A+B pair back to back, the side going first alternates per pair; 5 s pause between runs",
+  "runs": 3,
+  "reader": "off (PLAY_READER=off, no reader or director key in either server, 0 paid calls); every sentence published on both servers before measuring",
+  "server": "npm run build + next start, fresh empty PLAY_STORE_DIR per server, both servers up during the run; machine loaded by other agents, no waiting for calm",
+  "failed": 0,
+  "profiles": {
+   "desktop": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      2570,
+      1850,
+      2879
+     ],
+     "B": [
+      1691,
+      3172,
+      4522
+     ],
+     "firstFrameA": [
+      1486,
+      667,
+      1599
+     ],
+     "firstFrameB": [
+      550,
+      1696,
+      2321
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      1085,
+      2137,
+      2459
+     ],
+     "B": [
+      2136,
+      2233,
+      2877
+     ],
+     "firstFrameA": [
+      576,
+      1591,
+      1544
+     ],
+     "firstFrameB": [
+      1469,
+      1511,
+      2194
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      2418,
+      2635,
+      4653
+     ],
+     "B": [
+      2493,
+      2503,
+      3608
+     ],
+     "firstFrameA": [
+      1463,
+      1699,
+      2175
+     ],
+     "firstFrameB": [
+      1447,
+      1575,
+      2035
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      2919,
+      3163,
+      4925
+     ],
+     "B": [
+      2671,
+      3401,
+      4245
+     ],
+     "firstFrameA": [
+      1965,
+      2154,
+      3046
+     ],
+     "firstFrameB": [
+      1910,
+      2347,
+      2852
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      2225,
+      2852,
+      4177
+     ],
+     "B": [
+      3041,
+      3190,
+      3192
+     ],
+     "firstFrameA": [
+      1333,
+      1589,
+      3256
+     ],
+     "firstFrameB": [
+      2121,
+      2112,
+      1978
+     ]
+    }
+   ],
+   "pixel7-cpu4": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      9687,
+      14615,
+      21668
+     ],
+     "B": [
+      9119,
+      9280,
+      18345
+     ],
+     "firstFrameA": [
+      5054,
+      7985,
+      9867
+     ],
+     "firstFrameB": [
+      4586,
+      4869,
+      8402
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      7637,
+      12236,
+      14143
+     ],
+     "B": [
+      10960,
+      11266,
+      10206
+     ],
+     "firstFrameA": [
+      5267,
+      7893,
+      9172
+     ],
+     "firstFrameB": [
+      5458,
+      6226,
+      4708
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      7707,
+      16526,
+      9356
+     ],
+     "B": [
+      7692,
+      10476,
+      8057
+     ],
+     "firstFrameA": [
+      4658,
+      9848,
+      5138
+     ],
+     "firstFrameB": [
+      4488,
+      6220,
+      4824
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      9058,
+      18189,
+      8443
+     ],
+     "B": [
+      9313,
+      22433,
+      8711
+     ],
+     "firstFrameA": [
+      5941,
+      11516,
+      5506
+     ],
+     "firstFrameB": [
+      6195,
+      9290,
+      5630
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      9261,
+      11296,
+      7573
+     ],
+     "B": [
+      8408,
+      10271,
+      7954
+     ],
+     "firstFrameA": [
+      6377,
+      7849,
+      5245
+     ],
+     "firstFrameB": [
+      5682,
+      5716,
+      5669
+     ]
+    }
+   ]
+  },
+  "medians": {
+   "desktop": {
+    "A": 2635,
+    "B": 3041,
+    "diff": 406,
+    "pairedDiff": 96,
+    "pass": false
+   },
+   "pixel7-cpu4": {
+    "A": 9687,
+    "B": 9313,
+    "diff": -374,
+    "pairedDiff": -853,
+    "pass": true
+   }
+  },
+  "games": "the same version on both servers for s039, s037, s003 and s006 (s006 a 5-round chain); s002 a different version of the same genre (arena.escape with the count from T4)",
+  "desktopSecondRound": {
+   "measuredAt": "2026-10-27T19:59:25.370Z",
+   "why": "desktop missed the gate by medians in the full run while the paired difference was +96 ms; the same desktop measurement repeated once right after, same servers and games",
+   "failed": 0,
+   "rows": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      2647,
+      2720,
+      2487
+     ],
+     "B": [
+      2115,
+      2469,
+      2814
+     ],
+     "firstFrameA": [
+      1529,
+      1638,
+      1451
+     ],
+     "firstFrameB": [
+      970,
+      1432,
+      1708
+     ]
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      2138,
+      2069,
+      1528
+     ],
+     "B": [
+      2236,
+      2208,
+      1638
+     ],
+     "firstFrameA": [
+      1509,
+      1578,
+      831
+     ],
+     "firstFrameB": [
+      1531,
+      1550,
+      921
+     ]
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "A": [
+      1711,
+      2624,
+      2281
+     ],
+     "B": [
+      2341,
+      2335,
+      1687
+     ],
+     "firstFrameA": [
+      867,
+      1668,
+      1436
+     ],
+     "firstFrameB": [
+      1405,
+      1411,
+      853
+     ]
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "A": [
+      2244,
+      2791,
+      2808
+     ],
+     "B": [
+      2694,
+      2809,
+      2834
+     ],
+     "firstFrameA": [
+      1388,
+      2002,
+      1932
+     ],
+     "firstFrameB": [
+      1888,
+      1857,
+      1929
+     ]
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "A": [
+      2996,
+      2743,
+      2401
+     ],
+     "B": [
+      3074,
+      2916,
+      3069
+     ],
+     "firstFrameA": [
+      2054,
+      1875,
+      1402
+     ],
+     "firstFrameB": [
+      2062,
+      2015,
+      2122
+     ]
+    }
+   ],
+   "medians": {
+    "A": 2487,
+    "B": 2469,
+    "diff": -18,
+    "pairedDiff": 98,
+    "pass": true
+   }
+  },
+  "gate": {
+   "id": "G7",
+   "label": "Sentence to playable: branch median <= main median + 200 ms in every profile the script measures (desktop and Pixel 7, CPU 4x)",
+   "thresholdMs": 200,
+   "pass": false
+  }
+ },
+ "spend": {
+  "t6": {
+   "calls": 24,
+   "usd": 0.7465
+  },
+  "before": 3.095,
+  "total": 3.842,
+  "cap": 4
+ }
+}

@@ -197,6 +197,8 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
           ? `${verbText} ${targets}${each} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
           : `${verbText} ${targets}${each} within ${String(seconds)} seconds.`,
       role: 'target',
+      // P63 T4: počet z věty nese i cíl („light five candles“ = 5), jako u sběru; bez počtu cíl počet nemá jako dřív.
+      ...(spec.counts?.target === undefined ? {} : { count }),
     },
     // Tři životy (P36A T2); berou je pronásledovatelé v prostoru a přetečení na místě (T3, `boil_over`).
     mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],

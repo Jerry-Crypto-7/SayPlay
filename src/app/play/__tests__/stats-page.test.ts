@@ -104,6 +104,23 @@ describe('/play/stats', () => {
     const page = await html();
     expect(windowOf(page, 7)).toContain('Say → Play –');
     expect(page).toContain('No dares or remixes yet.');
+    expect(page).toContain('D1 –');
+  });
+
+  // P63 T5: návrat hráče – D1 z dne, jehož 1. den uplynul; id návštěvníka stránka nikdy neukáže.
+  it('shows returning players and D1, never a visitor id', async () => {
+    const versions = versionStoreFromEnv(process.env);
+    const visitor = '6f1c2b9e-3d4a-4f8b-9c1d-2e3f4a5b6c7d';
+    vi.setSystemTime(NOW - 2 * DAY);
+    await versions.countVisitor(visitor);
+    vi.setSystemTime(NOW - DAY);
+    await versions.countVisitor(visitor);
+    vi.setSystemTime(NOW);
+    const page = await html();
+    expect(page).toContain('Returning players');
+    expect(page).toContain('D1 100% (1 of 1)');
+    expect(page).toContain('D7 –');
+    expect(page).not.toContain(visitor);
   });
 
   it('on Vercel without a key: 404 before any store read', async () => {

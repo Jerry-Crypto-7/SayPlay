@@ -40,6 +40,10 @@ const SINGLE = devRow('s57');
 const CHAIN = devRow('s01');
 /** Věta, která o víc her výslovně žádá (`CHAIN_CUES`): řetězem zůstane i se čtením (P58F). */
 const CUE = { text: `${CHAIN.text} across three levels`, reading: CHAIN.reading };
+/** P63 h18: slovník hraje řetěz s drakem; čtení astry starým promptem (`readings.astra.json`) i promptem T2. */
+const KNIGHT = 'A knight rides through the forest and slays a dragon';
+const knightReading = (file: string): Reading =>
+  (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p63', file), 'utf8')) as { rows: { id: string; models: Record<string, { reading: Reading }> }[] }).rows.find((row) => row.id === 'h18')!.models['astra@openai']!.reading;
 
 /** Placená čtečka (cena astry) a objednaná placená větev režiséra – `mayPayChainRead` je pak otevřená. */
 const PAID = {
@@ -147,6 +151,21 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
     expect(reading).toHaveLength(1);
     expect(reading[0]).toMatchObject({ relation: 'reading', version: { parentId: body.versionId } });
     expect(reading[0]!.spec).toEqual(draftGameSpecWithMeta(CHAIN.text, 1, { reading: CHAIN.reading }).spec);
+    expect(reader.calls).toHaveLength(1);
+  });
+
+  // P63 T3: hra ze čtení, která z rolí čtení ukáže méně než kola řetězu, řetěz nenahradí. Staré čtení h18 je jízda bez
+  // draka (řetěz drak má), čtení T2 souboj s drakem.
+  it.each([
+    ['the old reading: a ride without the dragon stays a chain', 'readings.astra.json', undefined],
+    ['the reading of T2: the duel with the dragon replaces the chain', 'readings.p63.astra.json', 'duel'],
+  ])('h18, %s', async (_name, file, genre) => {
+    reader.reading = knightReading(file);
+    const { body } = await create(KNIGHT);
+    expect((await versionStoreFromEnv(process.env).get(body.versionId))?.chain).toBeDefined();
+    await settled(body.versionId);
+    const reading = await children(versionStoreFromEnv(process.env), body.versionId);
+    expect(reading.map((child) => child.spec.genre?.id)).toEqual(genre === undefined ? [] : [genre]);
     expect(reader.calls).toHaveLength(1);
   });
 

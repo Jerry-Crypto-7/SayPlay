@@ -59,7 +59,9 @@ const ITEM_GAMES: readonly [string, () => GameSpecV1][] = [
   // `goal-count.test.ts`), ne `grow_to` s bránou bosse – tu měří táž věta bez počtu.
   ['c08 castle', () => draft('Explore an old castle to find treasure chests')],
   ['e01 mushrooms', () => draft('Pick up glowing mushrooms in a dark forest and avoid the wolves')],
-  ['e02 pyramid', () => draft('Collect three keys in a pyramid while mummies chase you')],
+  // P63 T4: „Collect three keys in a pyramid while mummies chase you“ s počtem je útěk se sběrem počtu (`p63-count.test.ts`)
+  // – výhru dává počet, ne `grow_to` s bránou bosse. Bez počtu by ji slova dala běžci, proto útěk s klíči bez počtu jinými slovy.
+  ['e02 pyramid', () => draft('Pick up keys in a pyramid and avoid the mummies')],
 ];
 
 /** Tik, kdy se boss poprvé objevil a kdy zmizel (−1 = nikdy). */
