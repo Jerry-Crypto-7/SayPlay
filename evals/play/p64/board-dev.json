@@ -1,0 +1,21 @@
+{
+ "about": "P64 T8-R3 dev set for board genres: 16 new English sentences written 29. 10. 2026 after the sealed P64 set was opened. The sealed set showed board genres losing their scene on a portrait phone, and p30/dev.json has almost no board genre. Two sentences each for the four genres that lost (timing, slice, catch, merge), one for every other board genre. genre = what the quick game's offline classifier picks today (classifyGenre(text, null).ranked[0].genre). Tuning happens here, never on a sealed set.",
+ "sentences": [
+  { "id": "b64-01", "genre": "timing", "text": "A baker stacks pancakes onto a swaying tower in a busy diner without letting it topple" },
+  { "id": "b64-02", "genre": "timing", "text": "A sushi chef drops each slice of fish at the perfect moment onto a rolling conveyor belt" },
+  { "id": "b64-03", "genre": "slice", "text": "A samurai slices flying watermelons tossed into the air at a beach party" },
+  { "id": "b64-04", "genre": "slice", "text": "A pirate slices flying coconuts in half with his cutlass on a sunny beach" },
+  { "id": "b64-05", "genre": "catch", "text": "A farmer catches eggs dropping from a henhouse roof in a straw basket" },
+  { "id": "b64-06", "genre": "catch", "text": "A little girl catches falling snowflakes in a mitten in a quiet mountain village" },
+  { "id": "b64-07", "genre": "merge", "text": "Drop shiny gemstones into a mine cart so matching gems fuse into bigger jewels" },
+  { "id": "b64-08", "genre": "merge", "text": "A toy maker combines matching wooden blocks into bigger toys inside a workshop crate" },
+  { "id": "b64-09", "genre": "whack", "text": "A carnival kid bops sneaky moles popping out of holes at a fairground stand" },
+  { "id": "b64-10", "genre": "defense", "text": "A castle guard defends the drawbridge from waves of goblins charging out of a dark forest" },
+  { "id": "b64-11", "genre": "push", "text": "Two sumo crabs shove each other out of a sandy ring on the beach" },
+  { "id": "b64-12", "genre": "hop", "text": "A frog crosses a busy country road full of tractors to reach the river" },
+  { "id": "b64-13", "genre": "crowd", "text": "A brave pirate grows his crew by sailing through magic gates on a long river" },
+  { "id": "b64-14", "genre": "duel", "text": "Two knights duel with foam swords on the deck of a pirate ship" },
+  { "id": "b64-15", "genre": "quest", "text": "A park ranger puts out the fires scattered across a dry forest valley" },
+  { "id": "b64-16", "genre": "rhythm", "text": "A disco robot dances to the beat on a glowing city rooftop" }
+ ]
+}

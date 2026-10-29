@@ -872,3 +872,54 @@ Měřeno 29. 10. na větvi `b6c6e610` (server 3164) proti `main` `e661855c` (ser
 - Výška beze změny: úloha nemění kód hry, jen stráž, konfiguraci Playwrightu a výchozí stav.
 
 Útrata 0 USD, bez volání soudce.
+
+## T8-R3: deskové žánry na výšku
+
+Zapečetěná sada ukázala ztrátu deskových žánrů (G1). Dev sada `p30/dev.json` je skoro nemá, proto vznikla nová dev
+sada jen na ladění: `board-dev.json`, 16 vět, každý z 12 deskových žánrů aspoň jednou, po dvou pro žánry, které
+v zapečetěné sadě ztratily (načasování, krájení, chytání, slučování). Žánr věty je to, co dnes vybere klasifikátor
+rychlé hry bez modelu. Se žádnou známou sadou ani se zapečetěnou sadou P64 nesdílí větu. Obojí hlídá
+`__tests__/seal.test.ts`.
+
+### Krok 1: výchozí stav na dev sadě (větev `63767fad`, kód hry = `b6c6e610`)
+
+Oba servery bez čtečky (`PLAY_READER=off`), každý s novým `PLAY_STORE_DIR`: `main` `e661855c` na 3165, větev na 3164.
+`shots.mjs shoot` nad `board-dev.json` do `D:/caches/p64/r3-main-dev/` a `r3-p64-dev/`, nejdřív `main`, pak větev,
+16 / 16 na každé straně. Soud na společných listech `--view phone --judge claude --runs 2`, seed 61026, výsledek
+v `board-dev-before.json`. Hra ze čtení nevzniká (čtečka vypnutá), řádky „po čtení“ jsou tedy rychlá hra.
+
+| strana | běh | věrnost | hrál bych | n |
+|---|---|---|---|---|
+| `main` rychlá | 1 | 0,39 | 0,315 | 16 |
+| `main` rychlá | 2 | 0,435 | 0,30 | 16 |
+| P64 rychlá | 1 | 0,35 | 0,315 | 16 |
+| P64 rychlá | 2 | 0,40 | 0,30 | 16 |
+
+Medián rozdílu dvou běhů je u „hrál bych“ 0, nejvýš 0,1. Po větách (průměr dvou běhů, „hrál bych“ `main` / P64):
+
+| věta | žánr | `main` | P64 | rozdíl | výtka soudce (P64) |
+|---|---|---|---|---|---|
+| b64-01 | načasování | 0,50 | 0,125 | −0,375 | jen popisek „Baker“ a pár kusů nábytku v prázdné mlze, žádné palačinky, věž ani pekař |
+| b64-02 | načasování | 0,25 | 0,20 | −0,05 | týž obecný statek s kuchařem a bloky, bez suši a pásu |
+| b64-04 | krájení | 0,40 | 0,35 | −0,05 | pirát malý dole na **skoro prázdné obrazovce** |
+| b64-05 | chytání | 0,35 | 0,33 | −0,02 | jako `main`, holé pole bez kurníku a košíku |
+| b64-07 | slučování | 0,27 | 0,25 | −0,02 | malé stejné drahokamy ve vysoké bedně |
+| b64-10 | obrana | 0,285 | 0,275 | −0,01 | skřeti jsou drobné tečky (stejně jako na `main`) |
+| b64-13 | dav | 0,535 | 0,525 | −0,01 | jako `main` |
+| b64-16 | rytmus | 0,30 | 0,29 | −0,01 | jako `main` |
+| b64-08 | slučování | 0,30 | 0,30 | 0 | bloky skoro neviditelné, jako `main` |
+| b64-09 | bouchání | 0,25 | 0,25 | 0 | krtci nejsou vidět, jako `main` |
+| b64-11 | vytlačování | 0,40 | 0,40 | 0 | jako `main` |
+| b64-06 | chytání | 0,315 | 0,325 | +0,01 | sněhové vločky a zasněžené pozadí sedí |
+| b64-03 | krájení | 0,225 | 0,275 | +0,05 | víc vidět pohyb, padající jablko |
+| b64-15 | úkol | 0,40 | 0,45 | +0,05 | hasení stromů čitelné |
+| b64-12 | přeskákání | 0,275 | 0,40 | +0,125 | `main` má kameru tak blízko, že trať není vidět |
+| b64-14 | souboj | 0,40 | 0,55 | +0,15 | paluba se stěžněm a bednami čte jako loď |
+
+**Co z toho plyne.** Jediná ztráta nad šumem soudce je načasování b64-01 (−0,375), týž obraz jako p64-08
+v zapečetěné sadě (stan mimo záběr): na výšku kamera `fitTall` napasuje jen kyv jezdce a věž s okrajem 0, takže
+přijede těsně k věži a scéna s hrdinou vypadne z obrazu. Krájení b64-04 (−0,05) nese tutéž výtku jako p64-15 a p64-23
+(prázdná plocha nad malým hrdinou), ale je v šumu. Slučování a chytání na dev sadě neztrácejí. Inference: G1 v zapečetěné
+sadě táhlo dolů hlavně načasování, krájení a chytání jsou na hraně šumu. Další krok začíná kamerou načasování.
+
+Útrata 0 USD (čtečka vypnutá). Soudce 32 volání `claude -p` (16 listů × 2 běhy), předplatné.

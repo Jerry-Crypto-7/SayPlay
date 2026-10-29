@@ -52,3 +52,25 @@ describe('P64 sealed portrait holdout', () => {
     expect(own.filter((text) => seen.has(text))).toEqual([]);
   });
 });
+
+// T8-R3: na této sadě se ladí kamery deskových žánrů. Věta z kterékoli zapečetěné sady by ladění přenesla do brány.
+const BOARD = ['timing', 'rhythm', 'duel', 'quest', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'];
+const boardDev = (): Sentence[] => (JSON.parse(readLf(join(DIR, 'board-dev.json'))) as { sentences: Sentence[] }).sentences;
+
+describe('P64 board-genre dev set', () => {
+  it('covers every board genre, each sentence labelled with the genre the offline classifier picks today', () => {
+    const sentences = boardDev();
+    expect(new Set(sentences.map((s) => s.id)).size).toBe(sentences.length);
+    expect([...new Set(sentences.map((s) => s.genre))].sort()).toEqual([...BOARD].sort());
+    expect(sentences.filter((s) => classifyGenre(s.text, null).ranked[0]!.genre !== s.genre).map((s) => `${s.id} → ${classifyGenre(s.text, null).ranked[0]!.genre}`)).toEqual([]);
+  });
+
+  it('shares no sentence with the P64 sealed set or any known set', () => {
+    const own = boardDev().map((s) => normalizeSentence(s.text));
+    expect(new Set(own).size).toBe(own.length);
+    const sets = [...new Set([...knownSets(), 'p58b/holdout.json', 'p30/dev.json', 'p61/holdout.json', 'p62/holdout.json', 'p62/holdout-b.json', 'p63/holdout.json', 'p63/read-set.json', 'p63/reread-set.json', 'p64/holdout.json'])].filter((set) => existsSync(join(PLAY, set)));
+    expect(sets).toContain('p64/holdout.json');
+    const seen = new Set(sets.flatMap((set) => textsOf(set).map((text) => normalizeSentence(text))));
+    expect(own.filter((text) => seen.has(text))).toEqual([]);
+  });
+});
