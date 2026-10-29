@@ -1,0 +1,1274 @@
+{
+ "schema": "p61-judge.v1",
+ "judgedAt": "2026-10-29T13:44:00.732Z",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+ "view": "phone",
+ "seed": 61026,
+ "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": null,
+   "measuredAt": "2026-10-28T17:09:03.746Z",
+   "base": "http://127.0.0.1:3165"
+  },
+  {
+   "name": "p64",
+   "label": "p64",
+   "commit": null,
+   "measuredAt": "2026-10-29T13:43:41.930Z",
+   "base": "http://127.0.0.1:3164"
+  }
+ ],
+ "plan": [
+  {
+   "id": "s039",
+   "sentence": "zombie shooter in a mall",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s037",
+   "sentence": "A space marine shoots alien bugs in a mining colony",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s003",
+   "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s006",
+   "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p64-reading"
+    }
+   ]
+  },
+  {
+   "id": "s008",
+   "sentence": "temple run but you're a banana running from a monkey",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s022",
+   "sentence": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s021",
+   "sentence": "obby game with lava and spinning bars",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s035",
+   "sentence": "like flappy bird but underwater",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s050",
+   "sentence": "throwing snowballs at kids behind a snow fort",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s088",
+   "sentence": "angry birds but with cats and cardboard boxes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s069",
+   "sentence": "candy crush but with gems in a cave",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p64-reading"
+    }
+   ]
+  }
+ ],
+ "runs": [
+  {
+   "run": 1,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.475,
+     "wouldPlay": 0.4,
+     "n": 12
+    },
+    "main-quick": {
+     "fidelity": 0.475,
+     "wouldPlay": 0.4,
+     "n": 12
+    },
+    "main-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.375,
+     "n": 6
+    },
+    "p64-after-reading": {
+     "fidelity": 0.51,
+     "wouldPlay": 0.45,
+     "n": 12
+    },
+    "p64-quick": {
+     "fidelity": 0.51,
+     "wouldPlay": 0.45,
+     "n": 12
+    },
+    "p64-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.45,
+     "n": 5
+    }
+   },
+   "sentences": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "The shooter part comes through clearly: zombie waves walk toward you, there's a crosshair and an ammo count, but the mall is only hinted at by a tiled floor and a few kiosks, and the view looks hazy and empty."
+      },
+      "p64-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "This is almost the same as A: zombies approach across a tiled floor with kiosks and a gun in view, so it reads as a zombie shooter, but the mall setting is thin and the scene looks sparse and washed out."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "The shooter part comes through clearly: zombie waves walk toward you, there's a crosshair and an ammo count, but the mall is only hinted at by a tiled floor and a few kiosks, and the view looks hazy and empty."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "This is almost the same as A: zombies approach across a tiled floor with kiosks and a gun in view, so it reads as a zombie shooter, but the mall setting is thin and the scene looks sparse and washed out."
+      }
+     }
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "An armored marine aims a laser at green alien bugs, and the game has a wave-based shooting goal, but the generic tiled hall with a few barrels barely suggests a mining colony."
+      },
+      "p64-quick": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "This is almost identical to A: a marine shoots green bugs in waves, but the setting is a plain tiled arena, and the action looks static with only a few targets."
+      },
+      "main-after-reading": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "An armored marine aims a laser at green alien bugs, and the game has a wave-based shooting goal, but the generic tiled hall with a few barrels barely suggests a mining colony."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "This is almost identical to A: a marine shoots green bugs in waves, but the setting is a plain tiled arena, and the action looks static with only a few targets."
+      }
+     }
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.5,
+       "reason": "A knight in a dark stone castle courtyard is chased by a ghost and there's a keys 0/3 HUD, but no key ever shows up in any frame."
+      },
+      "p64-quick": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.6,
+       "reason": "This one has the most complete loop: a knight, a visible key pickup, several ghosts closing in and a heart being lost, all in a moody castle setting."
+      },
+      "p64-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "Only the knight is visible on an empty stone floor, with no keys or ghosts, so nothing seems to happen beyond a timer counting down."
+      },
+      "main-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "Nearly the same as C: a lone knight on a bare floor with no keys or ghosts and a static-looking scene."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "Nearly the same as C: a lone knight on a bare floor with no keys or ghosts and a static-looking scene."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "Only the knight is visible on an empty stone floor, with no keys or ghosts, so nothing seems to happen beyond a timer counting down."
+      }
+     }
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "scores": {
+      "p64-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "Shows a hamster and Roomba-like chasers on a tiled store floor, but the goal is just to survive 40 seconds, with no escape, and the supermarket setting is only suggested by scattered debris."
+      },
+      "p64-quick": {
+       "fidelity": 0.85,
+       "wouldPlay": 0.7,
+       "reason": "A lane runner where the hamster escapes the supermarket toward a finish line while a Roomba chases from behind, with shelves, crates and jump obstacles, so it matches the sentence closely."
+      },
+      "main-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "Almost the same as A: the hamster dodges several Roombas in a survive-the-timer chase instead of escaping, and the supermarket feel is weak."
+      },
+      "main-quick": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.6,
+       "reason": "Has the right escape-the-supermarket runner goal with a Roomba behind the hamster at the start, but the scene is sparse and foggy and the Roomba threat disappears in later shots."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "Almost the same as A: the hamster dodges several Roombas in a survive-the-timer chase instead of escaping, and the supermarket feel is weak."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "Shows a hamster and Roomba-like chasers on a tiled store floor, but the goal is just to survive 40 seconds, with no escape, and the supermarket setting is only suggested by scattered debris."
+      }
+     }
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "An orange blocky runner on a park path with a few small tan pickups, but the main obstacles are big rock walls and logs rather than sprinklers, a 'cross rows to the meadow' goal shows up, and the last frame turns gray and gloomy."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.4,
+       "reason": "Same park runner with possible sausage pickups and a few trees, but the obstacles are rock walls and barriers instead of sprinklers, and it fades to a dull gray round screen."
+      },
+      "main-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.6,
+       "reason": "A brighter park path with trees, scattered sausage-like pickups and an orange spray arc that reads as a sprinkler to jump, though the corgi is a vague blocky shape and the green crates are generic."
+      },
+      "p64-reading": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.65,
+       "reason": "The clearest match: an obstacle is actually labelled 'Sprinkler' with a spray arc, sausage pickups line the park path, and a x2 combo appears, though the corgi is still a crude orange block."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.6,
+       "reason": "A brighter park path with trees, scattered sausage-like pickups and an orange spray arc that reads as a sprinkler to jump, though the corgi is a vague blocky shape and the green crates are generic."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.65,
+       "reason": "The clearest match: an obstacle is actually labelled 'Sprinkler' with a spray arc, sausage pickups line the park path, and a x2 combo appears, though the corgi is still a crude orange block."
+      }
+     }
+    },
+    {
+     "id": "s008",
+     "sentence": "temple run but you're a banana running from a monkey",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "A jungle temple runner with lanes, obstacles and an orange creature chasing from behind fits the premise, but the 'banana' looks like a green bottle and the monkey is a vague orange blob."
+      },
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.47,
+       "reason": "It's almost the same jungle temple runner, but the 'Banana' label and a bigger chaser that stays close behind make the premise a bit clearer, even though the hero still looks like a bottle and the monkey is hard to read."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.47,
+       "reason": "It's almost the same jungle temple runner, but the 'Banana' label and a bigger chaser that stays close behind make the premise a bit clearer, even though the hero still looks like a bottle and the monkey is hard to read."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "A jungle temple runner with lanes, obstacles and an orange creature chasing from behind fits the premise, but the 'banana' looks like a green bottle and the monkey is a vague orange blob."
+      }
+     }
+    },
+    {
+     "id": "s022",
+     "sentence": "A tiny robot climbs a tower of moving platforms to reach its charger",
+     "scores": {
+      "main-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "A blocky robot stands on a floating grass platform, and there is a 'Reach the charger' prompt and a distant glowing crystal, but nothing shows a tower, a climb or moving platforms, and the robot barely moves across the three shots."
+      },
+      "p64-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.45,
+       "reason": "The same robot and goal appear with a clearer view of the platforms and a distant charger-like crystal, and the robot moves a little, but there is still no vertical tower or visibly moving platforms."
+      },
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "This matches B's scene with a robot, platforms and a charger goal, and it adds a 1/5 stage counter and a short countdown that give some urgency, but there is no visible climbing or moving platforms."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "The robot and the 'Reach the charger' goal are present, but the robot stays put at the platform edge while the timer runs down and the controls grey out and then vanish, which suggests a stalled or failed run with no tower or moving platforms."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "A blocky robot stands on a floating grass platform, and there is a 'Reach the charger' prompt and a distant glowing crystal, but nothing shows a tower, a climb or moving platforms, and the robot barely moves across the three shots."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.45,
+       "reason": "The same robot and goal appear with a clearer view of the platforms and a distant charger-like crystal, and the robot moves a little, but there is still no vertical tower or visibly moving platforms."
+      }
+     }
+    },
+    {
+     "id": "s021",
+     "sentence": "obby game with lava and spinning bars",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "A blocky character stands on dark platforms over a lava sea, with a flag goal in the distance, but no spinning bars are visible and the character barely moves across the three shots."
+      },
+      "p64-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "It shows the same lava obby setting with a volcano, a small red hazard and visible progress along the platforms, but there are still no spinning bars."
+      },
+      "main-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "This is almost the same as A: a lava backdrop and platforms with a flag goal, but no spinning bars and almost no visible progress between shots."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "This is almost the same as A: a lava backdrop and platforms with a flag goal, but no spinning bars and almost no visible progress between shots."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "It shows the same lava obby setting with a volcano, a small red hazard and visible progress along the platforms, but there are still no spinning bars."
+      }
+     }
+    },
+    {
+     "id": "s035",
+     "sentence": "like flappy bird but underwater",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "Murky teal fog and a few faint bubbles hint at underwater, and there are pillar obstacles, but the player is a plain dark ball on a floor track instead of a swimming character between pipe gaps, and every run ends at 0.9s with 0 points."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same murky scene with a dark ball and pillars, plus a lives and timer HUD, but it still barely reads as underwater Flappy Bird and runs end instantly with 0 points."
+      },
+      "main-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same murky scene with a dark ball and pillars, plus a lives and timer HUD, but it still barely reads as underwater Flappy Bird and runs end instantly with 0 points."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "Murky teal fog and a few faint bubbles hint at underwater, and there are pillar obstacles, but the player is a plain dark ball on a floor track instead of a swimming character between pipe gaps, and every run ends at 0.9s with 0 points."
+      }
+     }
+    },
+    {
+     "id": "s050",
+     "sentence": "throwing snowballs at kids behind a snow fort",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "There's a snowy setting, a throw counter and a 'hit every kid' goal, but the kids are barely visible, the fort is an igloo, and the targets are abstract poles with rings."
+      },
+      "p64-quick": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.42,
+       "reason": "It's nearly the same as A, with a slightly richer scene of trees and small figures near the igloo, but the kids are still tiny, the targets are abstract, and the player is a dark blob."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "There's a snowy setting, a throw counter and a 'hit every kid' goal, but the kids are barely visible, the fort is an igloo, and the targets are abstract poles with rings."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.42,
+       "reason": "It's nearly the same as A, with a slightly richer scene of trees and small figures near the igloo, but the kids are still tiny, the targets are abstract, and the player is a dark blob."
+      }
+     }
+    },
+    {
+     "id": "s088",
+     "sentence": "angry birds but with cats and cardboard boxes",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A gray blocky cat figure throws red balls at a distant line of small boxes on a plain field, but there is no slingshot, no box structure to knock down and no cats flying, so it only loosely resembles Angry Birds."
+      },
+      "main-quick": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.32,
+       "reason": "This is almost the same as A: a gray cat throws balls at tiny boxes in a flat field, and its labeled cardboard box target is a bit clearer, but it still has no slingshot or physics tower to topple, so it looks plain."
+      },
+      "main-after-reading": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.32,
+       "reason": "This is almost the same as A: a gray cat throws balls at tiny boxes in a flat field, and its labeled cardboard box target is a bit clearer, but it still has no slingshot or physics tower to topple, so it looks plain."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A gray blocky cat figure throws red balls at a distant line of small boxes on a plain field, but there is no slingshot, no box structure to knock down and no cats flying, so it only loosely resembles Angry Birds."
+      }
+     }
+    },
+    {
+     "id": "s069",
+     "sentence": "candy crush but with gems in a cave",
+     "scores": {
+      "main-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "A lone kid character stands on a dark stone floor with a 'collect gems' goal, but no gems or match-3 grid show up, and the setting barely looks like a cave."
+      },
+      "p64-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "Gem crystals sit on crates and a dark cave-like floor with torches is visible, but there is no match-3 board, just a sparse layout with a few items."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "This is almost the same as B: crystal gems and cave torches appear, but there is no candy-crush grid or matching mechanic."
+      },
+      "p64-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "Like A, a kid on a stone floor has a gem-collecting goal, but no gems, match-3 board or clear cave setting are visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "A lone kid character stands on a dark stone floor with a 'collect gems' goal, but no gems or match-3 grid show up, and the setting barely looks like a cave."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "Like A, a kid on a stone floor has a gem-collecting goal, but no gems, match-3 board or clear cave setting are visible."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  },
+  {
+   "run": 2,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.375,
+     "n": 12
+    },
+    "main-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.375,
+     "n": 12
+    },
+    "main-reading": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.325,
+     "n": 6
+    },
+    "p64-after-reading": {
+     "fidelity": 0.485,
+     "wouldPlay": 0.435,
+     "n": 12
+    },
+    "p64-quick": {
+     "fidelity": 0.485,
+     "wouldPlay": 0.435,
+     "n": 12
+    },
+    "p64-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.3,
+     "n": 5
+    }
+   },
+   "sentences": [
+    {
+     "id": "s039",
+     "sentence": "zombie shooter in a mall",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.5,
+       "reason": "Green zombies walk across a tiled floor toward a crosshair-aiming shooter with a waves objective, but the mall is only hinted at by a tiled floor and a couple of kiosk carts, and the player is mostly hidden."
+      },
+      "p64-quick": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.52,
+       "reason": "It is nearly the same zombie-wave shooter on a tiled, kiosk-dotted floor with a slightly more visible player character, but the mall setting is still sparse and generic."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.5,
+       "reason": "Green zombies walk across a tiled floor toward a crosshair-aiming shooter with a waves objective, but the mall is only hinted at by a tiled floor and a couple of kiosk carts, and the player is mostly hidden."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.52,
+       "reason": "It is nearly the same zombie-wave shooter on a tiled, kiosk-dotted floor with a slightly more visible player character, but the mall setting is still sparse and generic."
+      }
+     }
+    },
+    {
+     "id": "s037",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "An armored marine aims a laser sight at green alien bugs on a tiled floor with a few crates and barrels, but the mining colony setting is barely visible."
+      },
+      "p64-quick": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "Same as A: a marine shooting green bugs in waves on a plain tiled arena with props, so the shooter goal is clear but the mining colony theme is weak."
+      },
+      "main-after-reading": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "An armored marine aims a laser sight at green alien bugs on a tiled floor with a few crates and barrels, but the mining colony setting is barely visible."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "Same as A: a marine shooting green bugs in waves on a plain tiled arena with props, so the shooter goal is clear but the mining colony theme is weak."
+      }
+     }
+    },
+    {
+     "id": "s002",
+     "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.65,
+       "wouldPlay": 0.55,
+       "reason": "A knight in a dark stone courtyard, a keys 0/3 counter, and a highlighted ghost closing in all show up, but no key is visible and the setting looks more like a plain courtyard than a haunted castle."
+      },
+      "p64-quick": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.65,
+       "reason": "This row shows the most: a visible key pickup, castle-like walls, ghosts swarming the knight, and a heart lost to them, with a joystick and dodge button that make the action feel lively."
+      },
+      "p64-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "The knight just stands in the same spot on bare stone floor while the timer runs down, and no keys or ghosts ever appear."
+      },
+      "main-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "All three screenshots are nearly identical: the knight never moves, there are no keys or ghosts, and there is no joystick."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "All three screenshots are nearly identical: the knight never moves, there are no keys or ghosts, and there is no joystick."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "The knight just stands in the same spot on bare stone floor while the timer runs down, and no keys or ghosts ever appear."
+      }
+     }
+    },
+    {
+     "id": "s003",
+     "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "scores": {
+      "p64-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It has a hamster, Roombas and a supermarket floor, but it's a 'survive 40 seconds' arena chase, and the banner says escaping isn't in yet, so the escape goal is missing."
+      },
+      "p64-quick": {
+       "fidelity": 0.85,
+       "wouldPlay": 0.65,
+       "reason": "A Roomba chases the hamster from behind in an 'escape the supermarket' lane runner with a finish line, shelf obstacles and +2 pickups, which fits the sentence and looks lively."
+      },
+      "main-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It's almost the same as A: a hamster dodging Roombas in a supermarket survival arena, but the escape goal isn't implemented and the scenes are cluttered and repetitive."
+      },
+      "main-quick": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.5,
+       "reason": "It's the same escape-the-supermarket runner premise, but the Roomba only shows up at the edge of the first frame and the foggy, sparse aisles look less engaging."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It's almost the same as A: a hamster dodging Roombas in a supermarket survival arena, but the escape goal isn't implemented and the scenes are cluttered and repetitive."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It has a hamster, Roombas and a supermarket floor, but it's a 'survive 40 seconds' arena chase, and the banner says escaping isn't in yet, so the escape goal is missing."
+      }
+     }
+    },
+    {
+     "id": "s006",
+     "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "An orange blocky runner on a park path, but it faces stone walls and blocks with no clear sausages or sprinklers, and the last frame turns gray and gloomy."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "Very close to A: a boxy orange runner jumps stone obstacles on a green trail, with a few small pickups, but nothing reads as sausages or sprinklers and it ends in a dark gray scene."
+      },
+      "main-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "A brighter park trail with sausage-like pickups, green hurdles, a jump arc and a Grab button fits the idea better, though the corgi is a blob and no sprinklers are clearly visible."
+      },
+      "p64-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.55,
+       "reason": "The same bright park runner as C, plus a labeled sprinkler hazard, a jump arc, a Grab button and a x2 combo, so it matches the sentence best, though the corgi is still a vague orange blob."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "A brighter park trail with sausage-like pickups, green hurdles, a jump arc and a Grab button fits the idea better, though the corgi is a blob and no sprinklers are clearly visible."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.55,
+       "reason": "The same bright park runner as C, plus a labeled sprinkler hazard, a jump arc, a Grab button and a x2 combo, so it matches the sentence best, though the corgi is still a vague orange blob."
+      }
+     }
+    },
+    {
+     "id": "s008",
+     "sentence": "temple run but you're a banana running from a monkey",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "It's a jungle-temple lane runner with an orange monkey-like chaser and stone gate obstacles, but the yellow-green 'banana' looks more like a bottle, and the monkey is small, so it hardly feels like a chase."
+      },
+      "main-quick": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.5,
+       "reason": "It has the same temple-path runner, but the character is labelled 'Banana' and a big monkey looms right behind it, which sells the chase better, even though the hero still looks like a bottle."
+      },
+      "main-after-reading": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.5,
+       "reason": "It has the same temple-path runner, but the character is labelled 'Banana' and a big monkey looms right behind it, which sells the chase better, even though the hero still looks like a bottle."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "It's a jungle-temple lane runner with an orange monkey-like chaser and stone gate obstacles, but the yellow-green 'banana' looks more like a bottle, and the monkey is small, so it hardly feels like a chase."
+      }
+     }
+    },
+    {
+     "id": "s022",
+     "sentence": "A tiny robot climbs a tower of moving platforms to reach its charger",
+     "scores": {
+      "main-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A blocky robot stands on floating grass platforms and a 'Reach the charger' goal is shown, but there's no visible tower, the platforms don't appear to move, and the robot barely changes position across the three frames."
+      },
+      "p64-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "It has the same robot, floating islands and charger goal as A with a slightly better view of the scenery, but there's no vertical climb or moving platforms and the robot stays in place."
+      },
+      "p64-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "The robot and charger goal are there, and a short countdown timer and level counter add some urgency, but there's still no tower or moving platforms and the robot doesn't progress."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "The robot sits on a platform edge with the charger goal shown, but the controls are greyed out by the third frame as the timer runs down, with no climbing or moving platforms visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A blocky robot stands on floating grass platforms and a 'Reach the charger' goal is shown, but there's no visible tower, the platforms don't appear to move, and the robot barely changes position across the three frames."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "It has the same robot, floating islands and charger goal as A with a slightly better view of the scenery, but there's no vertical climb or moving platforms and the robot stays in place."
+      }
+     }
+    },
+    {
+     "id": "s021",
+     "sentence": "obby game with lava and spinning bars",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Has a blocky runner on dark platforms over a lava sea with a flag goal, but no spinning bars show up and the character barely moves across the three shots."
+      },
+      "p64-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "Same lava obby setting with a volcano backdrop, a small red hazard and real camera and position changes, which make it feel more like it's being played, but there are still no spinning bars."
+      },
+      "main-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Nearly the same as A: a lava backdrop and a dark platform with a distant flag, with no spinning bars and almost no visible progress between shots."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Nearly the same as A: a lava backdrop and a dark platform with a distant flag, with no spinning bars and almost no visible progress between shots."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "Same lava obby setting with a volcano backdrop, a small red hazard and real camera and position changes, which make it feel more like it's being played, but there are still no spinning bars."
+      }
+     }
+    },
+    {
+     "id": "s035",
+     "sentence": "like flappy bird but underwater",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "A murky greenish scene with bubbles and pillar obstacles hints at underwater flapping, but the player is a plain ball, and the run ends after 0.9s with 0 points."
+      },
+      "main-quick": {
+       "fidelity": 0.33,
+       "wouldPlay": 0.18,
+       "reason": "This looks almost the same as A, with a murky underwater-ish scene, a generic ball character and pillars, and an instant 0.9s death; its game-over card is also partly blank."
+      },
+      "main-after-reading": {
+       "fidelity": 0.33,
+       "wouldPlay": 0.18,
+       "reason": "This looks almost the same as A, with a murky underwater-ish scene, a generic ball character and pillars, and an instant 0.9s death; its game-over card is also partly blank."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "A murky greenish scene with bubbles and pillar obstacles hints at underwater flapping, but the player is a plain ball, and the run ends after 0.9s with 0 points."
+      }
+     }
+    },
+    {
+     "id": "s050",
+     "sentence": "throwing snowballs at kids behind a snow fort",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "It has a snowy setting, a throw counter and a 'hit every kid' goal, but the targets are abstract posts with rings, the kids are barely visible or appear as a penguin, and an igloo stands in for the snow fort."
+      },
+      "p64-quick": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.42,
+       "reason": "It is almost the same as A, with slightly richer scenery of trees and small figures near the igloo, but the targets are still abstract ring posts instead of kids hiding behind a snow fort."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "It has a snowy setting, a throw counter and a 'hit every kid' goal, but the targets are abstract posts with rings, the kids are barely visible or appear as a penguin, and an igloo stands in for the snow fort."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.42,
+       "reason": "It is almost the same as A, with slightly richer scenery of trees and small figures near the igloo, but the targets are still abstract ring posts instead of kids hiding behind a snow fort."
+      }
+     }
+    },
+    {
+     "id": "s088",
+     "sentence": "angry birds but with cats and cardboard boxes",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A blocky gray cat throws red balls at a distant line of small cardboard boxes, but there's no slingshot, no stacked structures to topple and no visible destruction, so it barely reads as Angry Birds."
+      },
+      "main-quick": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.32,
+       "reason": "It's nearly the same as A, with a cat throwing balls at small boxes on a grassy field, though one frame shows a labeled cardboard box up close; it still lacks a slingshot, towers and any satisfying collapse."
+      },
+      "main-after-reading": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.32,
+       "reason": "It's nearly the same as A, with a cat throwing balls at small boxes on a grassy field, though one frame shows a labeled cardboard box up close; it still lacks a slingshot, towers and any satisfying collapse."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A blocky gray cat throws red balls at a distant line of small cardboard boxes, but there's no slingshot, no stacked structures to topple and no visible destruction, so it barely reads as Angry Birds."
+      }
+     }
+    },
+    {
+     "id": "s069",
+     "sentence": "candy crush but with gems in a cave",
+     "scores": {
+      "main-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A kid character stands on a dark stone floor with a 'collect 10 gems' goal, but no gems or match-3 grid are visible and it looks more like a dungeon than a cave."
+      },
+      "p64-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "Crystal gems sit on pedestals over a dark stone floor, which hints at the theme, but there is no candy-crush-style grid or matching, just a sparse gem-placement layout with a joystick."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "This is nearly identical to B, with crystal gems on pedestals in a dark setting, but there is still no match-3 board and the play looks thin."
+      },
+      "p64-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "This is the same as A: a kid character told to 'grab the gems' on a dark tiled floor, with no visible gems, no cave feel and no match-3 mechanic."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A kid character stands on a dark stone floor with a 'collect 10 gems' goal, but no gems or match-3 grid are visible and it looks more like a dungeon than a cave."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "This is the same as A: a kid character told to 'grab the gems' on a dark tiled floor, with no visible gems, no cave feel and no match-3 mechanic."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  }
+ ],
+ "variance": {
+  "pairs": 35,
+  "medianAbsDiff": {
+   "fidelity": 0.02,
+   "wouldPlay": 0.05,
+   "n": 35
+  },
+  "maxAbsDiff": {
+   "fidelity": 0.15,
+   "wouldPlay": 0.15
+  },
+  "diffs": [
+   {
+    "id": "s039",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s039",
+    "kind": "p64-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.07
+   },
+   {
+    "id": "s037",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s037",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s002",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s002",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s002",
+    "kind": "p64-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s002",
+    "kind": "main-reading",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s003",
+    "kind": "p64-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s003",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s003",
+    "kind": "main-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s003",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.1
+   },
+   {
+    "id": "s006",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s006",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s006",
+    "kind": "main-reading",
+    "fidelity": 0.15,
+    "wouldPlay": 0.1
+   },
+   {
+    "id": "s006",
+    "kind": "p64-reading",
+    "fidelity": 0.15,
+    "wouldPlay": 0.1
+   },
+   {
+    "id": "s008",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s008",
+    "kind": "main-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.03
+   },
+   {
+    "id": "s022",
+    "kind": "main-reading",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s022",
+    "kind": "p64-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.15
+   },
+   {
+    "id": "s022",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.15
+   },
+   {
+    "id": "s022",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s021",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s021",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s021",
+    "kind": "main-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s035",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s035",
+    "kind": "main-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.04
+   },
+   {
+    "id": "s050",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s050",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s088",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s088",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "s069",
+    "kind": "main-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s069",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s069",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "s069",
+    "kind": "p64-reading",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   }
+  ]
+ }
+}

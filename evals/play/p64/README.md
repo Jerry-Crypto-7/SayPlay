@@ -625,3 +625,51 @@ V prvním běhu `p58a` arena.escape na iPhonu utekl hrdina v jednom snímku z 30
 
 **arena `underHud` 0,1 → 0,2.** 0,1 šel na iPhonu jen s větví hrozby a ta stojí hráče ducha za zády. T1 byl na iPhonu
 0,23, sloučení 0,20, teď 0,17. Cíl drží, že se lišta cíle nevrátí nad stav T1.
+
+## T8: zapečetěná brána
+
+### Dev po T3–T7 (`708cf7fd`)
+
+Větev `708cf7fd`, `npm run build`, `shots.mjs serve` na portu 3164 (strop 1 USD), `shots.mjs shoot` nad `p30/dev.json`
+[0..11] do `D:/caches/p64/p64-dev/`. Soud na **společných listech** s dev snímky `main` z T1 (`--shots
+main=…/main-dev,p64=…/p64-dev`), `--view phone --judge claude --runs 2`, seed 61026. Výsledek je v `after-dev.json`.
+
+| strana | běh | věrnost | hrál bych | n |
+|---|---|---|---|---|
+| `main` rychlá | 1 | 0,475 | 0,40 | 12 |
+| `main` rychlá | 2 | 0,46 | 0,375 | 12 |
+| P64 rychlá | 1 | 0,51 | 0,45 | 12 |
+| P64 rychlá | 2 | 0,485 | 0,435 | 12 |
+| `main` po čtení | 1 | 0,475 | 0,40 | 12 |
+| `main` po čtení | 2 | 0,45 | 0,375 | 12 |
+| P64 po čtení | 1 | 0,51 | 0,45 | 12 |
+| P64 po čtení | 2 | 0,485 | 0,435 | 12 |
+
+Rychlá hra P64 má „hrál bych“ o 0,05 a 0,06 výš než `main` na týchž listech, věrnost o 0,035 a 0,025 výš. `main` sám
+na svých listech v T1 dostal 0,35; na společném listu 0,40 a 0,375 – soudce hodnotí relativně, proto brána G1 srovnává
+jen strany jednoho listu. Hra ze čtení vznikla u 5 vět z 12 (u `main` v T1 u 6), čtení je placený model a nedeterministické.
+
+Po větách (průměr dvou běhů, „hrál bych“ P64 − `main`):
+
+| věta | žánr | `main` | P64 | rozdíl |
+|---|---|---|---|---|
+| s022 | plošinovka | 0,275 | 0,425 | +0,15 |
+| s003 | běh | 0,55 | 0,675 | +0,125 |
+| s002 | aréna | 0,525 | 0,625 | +0,10 |
+| s021 | plošinovka | 0,375 | 0,475 | +0,10 |
+| s050 | hod | 0,40 | 0,42 | +0,02 |
+| s039 | střílečka | 0,475 | 0,485 | +0,01 |
+| s037 | střílečka | 0,50 | 0,50 | 0 |
+| s035 | mávání | 0,20 | 0,20 | 0 |
+| s069 | úkol | 0,275 | 0,275 | 0 |
+| s088 | hod | 0,32 | 0,30 | −0,02 |
+| s006 | běh | 0,375 | 0,35 | −0,025 |
+| s008 | běh | 0,485 | 0,45 | −0,035 |
+
+**Kolo opravy se nekonalo.** Žádný žánr proti `main` neklesl (běh +0,022, hod 0, střílečka +0,005). Největší ztráta po
+větách je s008 (−0,035), menší než medián rozdílu dvou běhů soudce (0,05). Je to jediná ztráta, kterou soudce spojuje
+s rámováním: v P64 je honící opice celá v obraze, ale menší, na `main` je obří a spodek leží pod dolní lištou. Soudce
+to bere jako „honička je cítit“. Zvětšit ji by znamenalo vrátit hrdinu níž k ovládání, proti cíli T5, a ladit kameru
+na jedné větě pod šumem soudce. U s006 a s088 výtky rámování nejmenují (překážky místo postřikovačů, chybí prak), stejně
+jako u nejslabších vět bez rozdílu (mávání končí po 0,9 s, úkol nemá mřížku). Plán (Co nevíme) vázal kolo opravy na
+pokles žánru, ten nenastal.
