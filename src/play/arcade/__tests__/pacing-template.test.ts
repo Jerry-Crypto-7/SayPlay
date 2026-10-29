@@ -41,7 +41,7 @@ const DEV: Readonly<Record<string, readonly string[]>> = {
   arena_escape: [
     'Pick up glowing mushrooms in a dark forest and avoid the wolves',
     'Collect three keys in a pyramid while mummies chase you',
-    'Survive a horde of skeletons in a graveyard until sunrise',
+    // P66 T12: „Survive a horde of skeletons in a graveyard until sunrise“ je od P66 survivor (horda); uložená v3 hra zůstává v `STORED`.
     'Survive the robot uprising in a factory for one minute',
   ],
   quest_spatial: [
@@ -105,6 +105,8 @@ describe('pacing under a P45B overlay template', () => {
     for (const [text, spec] of Object.entries(STORED)) {
       if (generatorOf(spec) === 'quest_spatial') continue;
       const fresh = draftGameSpecWithMeta(text, 1).spec;
+      // P66 T12: horda do svítání je nová hra survivor bez šablony P45B; uložená v3 hra ji drží (test výš).
+      if (fresh.genre?.id === 'survivor') continue;
       // Věta s počtem („Collect three keys … while mummies chase you“, útěk od P63 T4 jako sběr od P61 T5) šablonu
       // s věcmi navíc nedostane – počítá jen věci věty; průběh má dál.
       const counted = (fresh.controlParams as { readonly tuning?: { readonly counted?: boolean } }).tuning?.counted === true;

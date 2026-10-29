@@ -212,7 +212,8 @@ describe('collect and item escape: the boss is the last step to the win (genre.v
 /** Přežití: buňka s jedním životem bez šablony a věty dev sady P47A se šablonou (tři životy). */
 const SURVIVAL_GAMES: readonly [string, () => GameSpecV1][] = [
   ['cell arena.escape', () => cellSpec('arena.escape')],
-  ['e03 graveyard', () => draft('Survive a horde of skeletons in a graveyard until sunrise')],
+  // P66 T12: „Survive a horde of skeletons in a graveyard until sunrise“ (e03) je od P66 survivor; přežití v aréně drží zombie v obchoďáku.
+  ['mall zombies', () => draft('survive the zombies in a mall')],
   ['e04 factory', () => draft('Survive the robot uprising in a factory for one minute')],
 ];
 

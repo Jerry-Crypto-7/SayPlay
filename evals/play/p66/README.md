@@ -1155,7 +1155,9 @@ Bez druhého kola. Zbylé ztráty jako nálezy:
 Vitest `src/play src/components/play src/app/play src/app/api/play evals/play/p66` (sám, JSON): **14 786 / 14 794**. Osm červených ve čtyřech souborech; na `main` (`e661855c`) jsou tytéž soubory zelené (74/74), takže jde o rozdíl větve. Všechny tři příčiny jsou zamýšlené změny P66, ne chyby hry – testy drží starý stav (→ T15a):
 - `field-dressing` 3 (aréna sběr, aréna souboj, střelnice): nová věta je `genre.v6` a háčky mění otisk světa; test porovnává s otiskem `main`, který drží táž věta uložená jako `genre.v5`.
 - `field-finale` 2, `pacing-template` 2: „Survive a horde of skeletons in a graveyard until sunrise“ jde od T12 do survivor (horda), ne do přežití v aréně.
-- `bodies` 1: běžec `genre.v6` má mezi skrytými těly pět místo čtyř (jaké tělo přibylo, zapíše T15a).
+- `bodies` 1: běžec `genre.v6` má mezi skrytými těly pět místo čtyř – přibylo počítadlo háčků se stavem (`hooks.keeper`, `ROLE.thing`, nic nekreslí).
+
+T15a: testy míří na hry P66 (otisk `main` přes `genre.v5`, přežití v aréně drží „survive the zombies in a mall“, počítadlo háčků zvlášť); kód hry beze změny, čtyři soubory 73/73.
 
 `runner-sections` (dřív časový limit) tentokrát prošel.
 
