@@ -384,6 +384,9 @@ const VERBS: readonly Verb[] = [
   v('refuse', 'chase', ESCAPE, /\brefus(?:e|es|ing)\b/),
 ];
 
+/** Buňky, které hraje znak žánru (P66 T12): když je hlavním slovesem věty, jmenuje celou hru (`chain/decide.ts`). */
+export const SIGN_CELLS: ReadonlySet<string> = new Set(VERBS.filter((entry) => entry.kind === 'sign' && entry.pick !== null).map((entry) => `${entry.pick!.genre}.${entry.pick!.mode}`));
+
 /**
  * Jména her a věci, které žánr prozradí bez slovesa („like mario kart“, „a
  * match 3 game“): +2, takže rozhodnou jen věty, kde hlavní sloveso chybí.

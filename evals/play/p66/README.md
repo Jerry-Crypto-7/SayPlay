@@ -1115,3 +1115,37 @@ Build větve `c3301e2a` + testy, `next start -p 3131` s prázdným `PLAY_STORE_D
 
 - **Díra a třídění – opravené testy:** nečinný hráč prohraje na hodinách, které nese svět hry, ne na mezi. `play-hole` bere `seconds` z pravidla `hole_round` (už podělené `holeSeconds`), `play-sort` bere `ticks` prvního kola z pravidla `sort_tap` (`roundTicks`). Na `chromium` i `pixel7-touch` zelené.
 - **Telefon a tlačítko akce – v klidu zelené bez změny:** `play-phone` (6/6 na `pixel7-touch` i `chromium`) a `interface-language` (4/4 na `chromium`, na telefon se nespouští) prošly na větvi i na `main`. V T14 byly červené za jiného prostředí. Inference: toast `play-upgrade-note` je poznámka „AI verze nebude“ (`UpgradeBanner.tsx`), která za 3 s zmizí; měření mřížky v T14 nejspíš padlo do těch 3 s. Neověřeno – opakovat to pod zátěží jsem nezkoušel. Kdyby se to vrátilo, stráž má počkat, až poznámka zmizí, ne ji měřit.
+
+## T15 – dev znovu, jedna oprava, regrese
+
+### Dev listy větve (`after-dev.json`, build `c3301e2a`)
+
+Týž recept jako výchozí stav T1: `shots.mjs serve` na portu 3166 (čtečka astra placená, režisér bez modelu), `shoot` rychlá i po čtení na `p30/dev.json` [0..11] (`D:/caches/p66/p66-dev-p30`) a `p66/dev.json` (`p66-dev-p66`), `judge.mjs --view phone --judge claude --runs 2`, seed 61026, listy `D:/caches/p66/sheets-t15-dev`. Hra ze čtení vznikla u 11 z 20 vět P66 (na `main` 16). Rozptyl soudce: 49 párů, medián rozdílu 0 věrnost / 0,02 „hrál bych“, nejvíc 0,10.
+
+| Strana (vět) | `main` věrnost / hrál bych (běh 1) | P66 běh 1 | P66 běh 2 |
+|---|---|---|---|
+| `p30` dev, rychlá (12) | 0,475 / 0,35 | 0,475 / 0,35 | 0,45 / 0,35 |
+| `p66` dev, rychlá (20) | 0,25 / 0,30 | 0,35 / 0,325 | 0,35 / 0,35 |
+| `p66` dev, po čtení (20) | 0,275 / 0,30 | 0,475 / 0,35 | 0,475 / 0,35 |
+
+Po žánrech (medián vět, průměr dvou běhů na větu; věrnost / hrál bych, `main` → P66):
+
+| Žánr (4 věty) | rychlá | po čtení |
+|---|---|---|
+| přežití | 0,375 / 0,338 → 0,388 / 0,350 | 0,438 / 0,388 → 0,587 / 0,438 |
+| díra | 0,238 / 0,313 → 0,463 / 0,338 | 0,362 / 0,313 → 0,500 / 0,338 |
+| krádež | 0,275 / 0,287 → 0,287 / 0,307 | 0,450 / 0,350 → 0,438 / 0,325 |
+| třídění | 0,200 / 0,287 → 0,388 / 0,413 | 0,193 / 0,213 → 0,450 / 0,400 |
+| šipky | 0,100 / 0,225 → 0,362 / 0,287 | 0,060 / 0,175 → 0,375 / 0,313 |
+
+Po větách: `cmp-t15.mjs` (`D:/caches/p66/`) nad oběma JSON. Obecné dev věty `p30` se v mediánu nepohnuly (0,475 → 0,45 / 0,35 → 0,35, v rozptylu soudce); nejvíc ztratily `s035` 0,275 → 0,10 a `s002` 0,75 → 0,60.
+
+### Největší zbývající ztráta: rychlá krádež
+
+Krádež je jediný nový žánr, který v rychlé hře proti `main` skoro nepřidal (0,275 → 0,287). Dvě ze čtyř vět (`v09` mýval s piknikovým košem, `v12` kočka nindža s rybami) a k tomu `v20` (dřevěné ryby v rybníku, šipky) posílal `chainOrSingle` do řetězu mikroher kvůli více slovesům („sneaks, grabs, runs back, catch“). Řetěz nové žánry nenabízí (T13), takže z krádeže bylo chytání a ze šipek běžec. Soudce: „generic catching game with no rival camp, tree or rangers“, „fox endless runner … with no fish, pond“ (0,04–0,35). Klasifikátor i skladatel přitom na všech třech dávají správný nový žánr.
+
+Oprava (`chain/decide.ts`, `genre/classify.ts` → `SIGN_CELLS`): když je hlavním slovesem věty znak nového žánru a ten žánr vede pořadí, víc sloves řetěz nespustí. Žádost o kola (`cue`) a neslyšená věta (`generic`) řetěz spouštějí dál. Obdoba výjimky P65 T6b pro jízdu se střelbou. Test: `decide.test.ts` – tři dev věty hrají jednu hru svého žánru, „…carry it home, make it five levels“ zůstává řetězem.
+
+Bez druhého kola. Zbylé ztráty jako nálezy:
+- **Vzhled bez věcí věty:** třídění `v15` (lektvary v kouzelnické laboratoři) třídí medvídky a kachničky robota; krádež `v10`, `v11` – „no golden egg, dragon, cave“, „no ships, sea or island“. Věci věty se do scény nového žánru nepromítají.
+- **Svědci sloves** (nález T13): beze změny, `VERB_UNPROVED` u krádeže, třídění, šipek a přežití.
