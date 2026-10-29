@@ -1037,3 +1037,62 @@ Pro G3 v T16: sonda musí pro nové žánry ťukat do jejich zón (`data-lane-ed
   - krádež: cíl hry píše „from the rival base“ a `goal-text.test.ts` u věty krádeže hlásí „rival“ jako věc, kterou hra nemá;
   - třídění: „puts teddy bears, robots and balls back on the right shelves“ věci výčtu nevezme (bere jen za „sort / organize / pack“), hraje výchozí hračky a místo „right shelves“;
   - šipky: „clear the jammed parking lot by tapping each car…“ dá kus „jammed“ místo auta a místo louku.
+
+## T13 – režisér a čtečka znají nové žánry
+
+### Co se změnilo
+
+- **Režisér** (`director/prompt.ts`): vlastní popis každého z pěti žánrů (`GENRE_PITCH`) a jeden vzorový příklad na žánr v `examples.json` (`p66-<žánr>`), vždy z dev vět mimo deset vět živé kontroly. `DIRECTOR_PENDING` je prázdný.
+- **Čtečka** (`read/prompt.ts`): krátký řádek pro každý žánr (`MODE_HINTS`). `READER_PENDING` je prázdný.
+- **Schopnosti** (`capabilities.ts`): role, popisky, `health` (survivor, krádež, šipky) a `setting` nových žánrů.
+- `retrieval.ts`, `repair.ts`, `compact.ts` a `answer-schema.ts` změnu nepotřebovaly – testy prošly bez nich.
+
+### Délka promptů
+
+- Prompt režiséra 14 970 → 16 356 B (strop v testu 15 000 → 16 500), kompaktní 13 970 B (strop 14 100), růst nad `main` 2 761 znaků (strop 2 800). Stropy jsem zvedl o změřený přírůstek.
+- Prompt čtečky zůstal pod stropem 6 000 znaků: popisy žánrů jsou krátké a vypadl jeden vzorový příklad (focení netopýrů).
+- **Nahrávky P46E** (`d3339426`) přenahrané lokálně, 0 USD, protože se změnil otisk promptu. `after.json`: hotových 24 → 25 z 25, `MALFORMED` 1 → 0, přidané věci 0,333 → 0,32, boss 7 → 5, akce 2 → 0, úseky 1 → 3. `p46-fixtures` a `evals/play/p46e` 30/30 zelené.
+
+### Řetěz mikroher nové žánry nenabízí
+
+Kolo řetězu trvá nejvýš 8 s. Robot nový žánr nevyhraje ani na nejmenších mezích dřív než za: šipky 9,4 s, díra 12,8 s, krádež 15,8 s, survivor 22,5 s, třídění 33 s. `VERB_MICROS` a `WORLD_MICROS` v `chain/build.ts` proto zůstaly beze změny.
+
+### Živá kontrola (`director-live.json`, 29. 10., commit `d3339426`)
+
+Server `shots.mjs serve` na portu 3166, čtečka astra placená, režisér bez modelu (`MODEL_UNAVAILABLE` záměrně), tedy se měří čtečka. Deset dev vět, dvě na žánr.
+
+| Věta | štítek | rychlá hra | hra ze čtení |
+|---|---|---|---|
+| v01 | survivor | survivor | – |
+| v02 | survivor | survivor | survivor |
+| v05 | díra | díra | – |
+| v06 | díra | díra | – |
+| v09 | krádež | chytání | krádež |
+| v10 | krádež | krádež | krádež |
+| v13 | třídění | třídění | – |
+| v14 | třídění | třídění | třídění |
+| v17 | šipky | šipky | – |
+| v19 | šipky | šipky | – |
+
+- Hra ze čtení vznikla u 4 z 10 vět a všechny 4 jsou v novém žánru podle štítku. Na `main` (T1) dostala tytéž věty hru ze čtení v novém žánru 0krát – žánry neexistovaly.
+- Publikační brána neodmítla nic: v logu serveru není žádný řádek `reading version … not published`.
+- Hra, kterou hráč dostane (ze čtení, jinak rychlá), je v žánru podle štítku u 10 z 10 vět. v09 dostala krádež až ze čtení, rychlá hra byla chytání.
+- Inference: u šesti vět bez hry ze čtení se čtení od rychlé hry nelišilo (`readingDiffers`), nebo by ukázalo méně věcí z věty (`namesNoLess`). Server tyto dva případy v logu nerozliší. Rychlá hra tam už byla v novém žánru (T12), takže čtečka neměla co měnit. Popisy proto neupravuji.
+
+### Útrata T13
+
+| Krok | volání | USD |
+|---|---|---|
+| živá kontrola po čtení | 10 | 0,34 |
+
+Celkem P66 1,99 USD ze 4 USD (T1 1,65). Na T15 a T16 zbývá 2,01 USD.
+
+### Nálezy
+
+- **Pro T15 – svědci sloves:** u 4 z 5 nových žánrů má odpověď režiséra sloveso věty bez svědka. Dostane `VERB_UNPROVED`, ale hra zůstává `authored` a projde publikační branou. Případy:
+  - krádež „collect egg“ – svědek dává jen `steal`/`deliver`;
+  - třídění „put bear“;
+  - šipky „untangle jam“ a „traffic obstacle hero“;
+  - survivor „auto- shoot bug“ a „bug show up“ – chyba čtení záměru u „auto-fires“ a „shows up“.
+
+  Oprava by byla v `arcade/witness.ts` (ř. 520–526) a ve čtení záměru, tedy mimo soubory T13.
