@@ -82,6 +82,8 @@ function clearRound(state: Int32Array, params: HookParams, round: number, out: H
 /**
  * Kola na konci tiku, po všech průchodech pravidel: v tiku 0 začne první kolo; výhra před posledním kolem se vrátí
  * na běh (u `win` je to konec kola), výhra v posledním kole platí; u `wave` kolo skončí, když žánr zvedl vlnu.
+ * U `wave` a `goal` se po vrácené výhře kontrola konce kola provede i tak: pravidlo s výhrou na úrovni (`score_bonus`,
+ * `cleared`) ji hlásí každý tik a návrat by kolo zasekl navždy (recenze Fáze 3, F2).
  */
 export function roundsEnd(state: Int32Array, params: HookParams, out: HookEffect[]): void {
   const round = roundOf(state, params.keeper);
@@ -95,8 +97,10 @@ export function roundsEnd(state: Int32Array, params: HookParams, out: HookEffect
       return;
     }
     state[HEADER.runState] = RUN_STATE.running;
-    if (params.clear === 'win') clearRound(state, params, round, out);
-    return;
+    if (params.clear === 'win') {
+      clearRound(state, params, round, out);
+      return;
+    }
   }
   if (params.clear === 'wave' && !last && waveOf(state) > round) clearRound(state, params, round, out);
   else if (params.clear === 'goal' && params.goal !== undefined && !last && goalDone(state, params.goal) >= (params.goal.marks[round] as number)) clearRound(state, params, round, out);

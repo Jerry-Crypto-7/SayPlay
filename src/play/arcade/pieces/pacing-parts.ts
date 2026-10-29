@@ -1282,12 +1282,15 @@ export function roundsForWaves(waves: number): number {
   return 3;
 }
 
-/** Vyhrává se na skóre? Sběr arény (`grow_to`) a cílové skóre (`score_bonus.target`); vzácnost by výhru zkrátila. */
-const winsOnScore = (rules: readonly PieceRef[]): boolean =>
-  rules.some((ref) => {
-    const native = underlyingRule(ref);
-    return native.id === 'grow_to' || (native.id === 'score_bonus' && ((native.params.target as number | undefined) ?? 0) > 0);
-  });
+/**
+ * Cílové skóre ze specu, ne ze zkompilovaného `score_bonus.target`: sonda dosažitelného cíle (`reachableTarget` v
+ * `compile.ts`) staví svět s cílem 0, takže háčky podle zkompilovaného cíle by se v sondě a ve finálním světě lišily
+ * (recenze Fáze 3, F1). S cílem výhra přijde před posledním kolem a kola by ji jen vracela (F2) – hra kola nedostane.
+ */
+const targetsScore = (spec: GameSpecV1): boolean => (spec.scoring?.target ?? 0) > 0;
+
+/** Vyhrává se na skóre? Cílové skóre ze specu nebo sběr arény (`grow_to`); vzácnost by výhru zkrátila. */
+const winsOnScore = (spec: GameSpecV1, rules: readonly PieceRef[]): boolean => targetsScore(spec) || rules.some((ref) => underlyingRule(ref).id === 'grow_to');
 
 /**
  * Háčky, které hra `genre.v6` dosavadního žánru dostane sama (P66 T10; volá `arcade/compile.ts` nad hotovými pravidly):
@@ -1307,12 +1310,13 @@ export function genreHookOffer(spec: GameSpecV1, world: { readonly control: Piec
   const mode = spec.genre?.mode;
   const waves = (nativeRule(world.rules, 'arena_waves') ?? nativeRule(world.rules, 'defense_shot'))?.params.waves as readonly unknown[] | undefined;
   const count = waves === undefined ? 0 : waves.length + 1;
+  if (targetsScore(spec)) return { rounds: 1 };
   if (genre === 'arena' && mode === 'fight' && count >= 2) return { rounds: roundsForWaves(count), upgrades: GENRE_UPGRADES.fight, byWaves: true, heal: true };
   if (genre === 'arena' && mode === 'collect' && count >= 2 && (spec.abilities?.length ?? 0) === 0 && breakGoal(world.control)?.by === 'score') return { rounds: roundsForWaves(count), upgrades: GENRE_UPGRADES.collect, heal: true };
   if (genre === 'shooter' && breakGoal(world.control)?.by === 'fallen') return { rounds: SHOOTER_ROUNDS, upgrades: GENRE_UPGRADES.shooter, heal: true };
   if (genre === 'defense' && count >= 2) return { rounds: Math.min(DEFENSE_ROUNDS, count), upgrades: GENRE_UPGRADES.defense, byWaves: true, heal: true };
   const things = world.level.bodies.some((body) => body.role === 'collectible');
-  if (genre !== undefined && RARITY_GENRES.includes(genre) && things && !winsOnScore(world.rules)) return { rounds: 1, rarity: true };
+  if (genre !== undefined && RARITY_GENRES.includes(genre) && things && !winsOnScore(spec, world.rules)) return { rounds: 1, rarity: true };
   return { rounds: 1 };
 }
 

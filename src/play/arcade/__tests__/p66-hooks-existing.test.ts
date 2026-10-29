@@ -22,7 +22,7 @@ import { GENRE_COMPILER_VERSION } from '@/play/genre/contract';
 import { compileGenre, GENRE_MODULES, readGenreSpec } from '@/play/genre/index';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
-import { arcadeWorldOf } from '../compile';
+import { arcadeWorldOf, compileArcade } from '../compile';
 import { type ArcadeWorld, type BotPiece, NO_INPUT, RUN_STATE, HEADER, bodyBase } from '../contract';
 import { foundOf, hooksOf, inBreak } from '../hooks';
 import { ROUNDS, UPGRADE_OFFER } from '../hooks/contract';
@@ -215,4 +215,39 @@ describe('a slow pick does not cost the march (world clock, P66 T10)', () => {
     expect(played.state[bodyBase(hooks.keeper) + CLOCK_SLOTS.paused]).toBe(offers.length * UPGRADE_OFFER.pickTicks);
     expect(hooks.rounds).toBeLessThanOrEqual(ROUNDS.max);
   });
+});
+
+/**
+ * Recenze Fáze 3, F1 a F2: hra `genre.v6` s cílovým skóre („… score 500 points“, `targetScore` režiséra).
+ * F1 – sonda dosažitelného cíle staví svět s cílem 0; háčky podle zkompilovaného cíle by sondě daly vzácnost a
+ * finálnímu světu ne, robot by na cíl nedosáhl (UNWINNABLE). F2 – výhra na skóre před posledním kolem by kolo zasekla.
+ * Nabídka se proto řídí cílem ze specu: s cílem žádná kola ani vzácnost, sonda i finální svět stejné.
+ */
+describe('a genre.v6 game with a score target compiles and the bot wins (P66 Phase 3 review F1, F2)', () => {
+  const golden = JSON.parse(readFileSync('evals/play/p41/golden/genres.json', 'utf8')) as { readonly variants: readonly { readonly id: string; readonly spec: GameSpecV1 }[] };
+  const CASES: readonly (readonly [string, number | null])[] = [
+    ['runner.default/depth:targetScore', 500],
+    ['arena.collect/depth:targetScore', 10],
+    ['shooter.default/depth:targetScore', 20],
+    ['arena.fight/depth:targetScore', null],
+    ['platformer.default/depth:targetScore', null],
+    ['voyage.race/depth:targetScore', null],
+  ];
+  for (const [id, target] of CASES) {
+    it(`${id}${target === null ? '' : ` target ${String(target)}`}`, () => {
+      const base = golden.variants.find((variant) => variant.id === id)!.spec;
+      const spec = { ...base, genre: { ...base.genre!, compilerVersion: 'genre.v6' }, scoring: { ...base.scoring, target: target ?? base.scoring?.target ?? 0 } } as GameSpecV1;
+      expect(spec.scoring?.target ?? 0, id).toBeGreaterThan(0);
+      for (const seed of [1, 2, 3]) {
+        const made = compileArcade(spec, seed);
+        expect(made.ok, `${id} seed ${String(seed)}: ${made.ok ? '' : `${made.reason} ${made.issues.join(' | ')}`}`).toBe(true);
+        if (!made.ok) continue;
+        const world = made.value.arcade!;
+        const hooks = hooksOf(world.rules);
+        expect(hooks?.rounds ?? 1, `${id} seed ${String(seed)}`).toBe(1);
+        expect(hooks?.rarity, `${id} seed ${String(seed)}`).toBeUndefined();
+        expect(runBot(world).outcome, `${id} seed ${String(seed)}`).toBe('won');
+      }
+    });
+  }
 });
