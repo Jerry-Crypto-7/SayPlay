@@ -13,11 +13,15 @@ import {
   type ArrowPiece,
   type ArrowsGrid,
   arrowsRounds,
+  gridIssue,
   pathClear,
   roundGrids,
   solveArrows,
   totalPieces,
 } from '../pieces/arrows-level';
+import { AXIS_MAX } from '../contract';
+import { checkArrowsLevel } from '../pieces/arrows';
+import { axisOfCell } from '../pieces/lanes';
 
 const SEEDS = Array.from({ length: 200 }, (_, index) => index + 1);
 
@@ -85,5 +89,15 @@ describe('arrows grid (P66 T9)', () => {
       for (let round = 1; round < rounds; round += 1) expect(grids[round]!.cols * grids[round]!.rows).toBeGreaterThan(grids[round - 1]!.cols * grids[round - 1]!.rows);
     }
     expect(totalPieces(ARROWS.rounds.max)).toBeLessThanOrEqual(50);
+  });
+
+  it('a grid carries at most 999 cells, so the last tap axis stays within AXIS_MAX (T2a)', () => {
+    // Ťuk nese buňku v ose (`axisOfCell`); výzva (`score/dare.ts`) bere osu nejvýš `AXIS_MAX`.
+    expect(axisOfCell(ARROWS.maxCells - 1)).toBeLessThanOrEqual(AXIS_MAX);
+    for (const step of ARROWS.steps) expect(gridIssue(step), `${step.cols} × ${step.rows}`).toBeNull();
+    expect(gridIssue({ cols: 27, rows: 37 })).toBeNull();
+    expect(gridIssue({ cols: 25, rows: 40 })).toMatch(/1000 cells/);
+    const grids = [{ cols: 4, rows: 3 }, { cols: 50, rows: 20 }];
+    expect(checkArrowsLevel(grids, [[{ cell: 0, dir: 0 }], [{ cell: 0, dir: 0 }]], 3).join(' ')).toMatch(/round 2: .*1000 cells/);
   });
 });
