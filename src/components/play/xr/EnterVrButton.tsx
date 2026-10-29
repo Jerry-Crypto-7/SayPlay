@@ -4,7 +4,7 @@ import { Button } from '../ui';
 import { useXrControls } from './xr-context';
 
 /**
- * „Enter VR“ (P65 T1) v HUD hry: jen s `?vr=1` a prohlížečem, který VR umí (`XrGate`), mimo relaci a až když
+ * „Enter VR“ (P65 T1) v HUD hry: jen s prohlížečem, který VR umí (`XrGate`, P67 T1), mimo relaci a až když
  * ji klepnutí opravdu začne (`ready`). DOM v relaci vidět není (Quest ho nekreslí, emulátor ho překryje plátnem
  * brýlí), proto ven vede systémové tlačítko brýlí a 3D panel „Exit VR“ (T5), ne tlačítko tady.
  */

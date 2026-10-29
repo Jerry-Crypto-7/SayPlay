@@ -36,7 +36,7 @@ npm run build
 node node_modules/next/dist/bin/next start -p 3165
 ```
 
-Server nech běžet ve vlastním terminálu. Port 3165 je pevný, skript s ním počítá.
+Server nech běžet ve vlastním terminálu. Skript počítá s portem 3165; server na jiném portu mu řekni volbou `--port`, třeba `node scripts/quest-dev.mjs --port 3168`.
 
 ### 5. Otevření hry v brýlích
 
@@ -51,11 +51,11 @@ Skript:
 1. najde adb;
 2. ověří, že brýle jsou připojené a ladění povolily (jinak napíše, co udělat);
 3. přesměruje port 3165, takže brýle vidí server počítače jako `localhost:3165`. To je nutné: vstup do VR v prohlížeči funguje jen na zabezpečené adrese a `localhost` mezi ně patří;
-4. otevře v prohlížeči brýlí `http://localhost:3165/play?vr=1&vrhud=1`.
+4. otevře v prohlížeči brýlí `http://localhost:3165/play?vrhud=1`.
 
 ### 6. V brýlích
 
-1. Stránka se otevře sama, s `?vr=1&vrhud=1` v adrese.
+1. Stránka se otevře sama, s `?vrhud=1` v adrese. „Enter VR“ nabídne každý prohlížeč, který VR umí; `?vr=1` už není potřeba a `?vr=0` VR vypne (pro ladění).
 2. Stiskni „Enter VR“.
 3. Hraj. Vlevo dole v zorném poli visí malý panel FPS (zapíná ho `?vrhud=1` v adrese). Ukazuje za poslední sekundu:
    - `fps` – kolik snímků brýle nakreslily; plynulý chod je 72;
@@ -78,7 +78,7 @@ Když za celou dobu nepřijde jediný údaj, skript nic nezapíše a skončí ch
 ```json
 {
   "measuredAt": "2026-10-27T14:03:11.482Z",
-  "url": "http://localhost:3165/play?vr=1&vrhud=1",
+  "url": "http://localhost:3165/play?vrhud=1",
   "seconds": 60,
   "median": 72,
   "p5": 68,
@@ -95,6 +95,18 @@ Cíl: **`median` ≥ 72 a `p5` ≥ 65**. Quest 2 obnovuje obraz 72× za sekundu,
 ### 9. Ostrost proti plynulosti (`?vrscale`)
 
 Hra ve VR kreslí v plném rozlišení prohlížeče Questu. Když některá hra nedrží 72, zkus ji s nižším rozlišením: v adrese v brýlích připiš `&vrscale=0.8` a změř znovu. Rozsah je 0,8–1,0 (`0.9` je mezi). Pokud je při 0,8 hra plynulá a text na panelech pořád čitelný, napiš to do zápisu brány – profil se pak přepne na 0,8.
+
+### 10. Brýle bez člověka (`--cdp`)
+
+```
+node scripts/quest-dev.mjs --port 3168 --cdp
+node scripts/quest-dev.mjs --port 3168 --cdp --probe
+```
+
+- `--cdp` přesměruje ladicí rozhraní prohlížeče brýlí (Chrome DevTools Protocol) na `localhost:9222` počítače. Skript pak vidí otevřené stránky a smí v nich spustit kód nebo klepnout. Klepnutí přes toto rozhraní bere prohlížeč jako klepnutí člověka, takže otevře i VR relaci.
+- `--probe` zjistí, co prohlížeč Questu umí, a zapíše to do `evals/vr/quest-caps.json`: verzi prohlížeče, immersive VR, diktování (Web Speech API), sdílení odkazu, service worker, a po vstupu do VR obnovovací frekvence a vibrace ovladačů. Na serveru vytvoří jednu rychlou hru z věty (bez modelu, bez útraty), relaci po měření ukončí a přesměrování portů zruší.
+- Bez připojených brýlí sonda zapíše `{"connected": false}` a skončí bez chyby.
+- Skript nic neinstaluje do brýlí, nemění jejich nastavení a nemaže data prohlížeče. Diktování jen zkusí spustit a za 3 s zruší; když prohlížeč chce povolit mikrofon, dotaz zůstane bez odpovědi.
 
 ## Ovládání ovladači
 
@@ -186,6 +198,26 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 - Unit: `src/play/xr/__tests__/input-map.test.ts` drží, komu patří spoušť (panel, nebo hra).
 
 ## Měření a známá omezení
+
+### „Enter VR“ podle schopnosti prohlížeče (P67 T1, 29. 10. 2026)
+
+„Enter VR“ dostane každý prohlížeč, který hlásí `immersive-vr`, i ve feedu. Rozhoduje jediná funkce `xrGateOpen` v `src/play/xr/flag.ts`; `?vr=0` VR vypne.
+
+**První JS telefonu** (Pixel 7 v Chromiu, `/play`, všechny skripty načtené při otevření stránky, produkční build):
+
+| | Skriptů | Rozbalené | Přenesené | Kód XR |
+|---|---|---|---|---|
+| `main` (`e661855c`) | 39 | 4 215 651 B | 1 236 252 B | ne |
+| větev (T1 + T11) | 39 | 4 216 059 B | 1 236 754 B | ne |
+| rozdíl | 0 | +408 B | +502 B | – |
+
+Cíl ±1 kB je splněný. Rozdíl je brána bez `?vr=1` a registrace service workeru (T11).
+
+- **Počítač s OpenXR runtime hlásí VR i bez brýlí.** Na měřicím počítači je jako runtime nastavený SteamVR. Chromium pak na `immersive-vr` odpoví „ano“, i když žádné brýle nejsou připojené. Takový desktop dostane „Enter VR“ a stáhne kód XR (+139 kB rozbaleně), jako by byl brýlemi. Telefon OpenXR runtime nemá.
+- **E2E proto běží bez OpenXR** (`--disable-features=OpenXR` v `playwright.config.ts`). Brýle v testech hraje emulátor IWER, který `navigator.xr` nahradí celý, takže se ho volba netýká.
+- **`play-phone`:** test „the hero is its model from the first frame: castle arena“ na Pixelu 7 padá i na `main` (2 ze 2 běhů), ve větvi 1 ze 2. Není to regrese brány.
+
+**Sonda Questu 2 (`--cdp --probe`, 29. 10. 2026):** brýle byly připojené a ladění povolené, ale nikdo je neměl na hlavě. Po probuzení držel popředí systémový dialog (`com.oculus.firsttimenux/.FirstTimeNuxExclusiveSystemDialogActivity`), prohlížeč zůstal na pozadí a ladicí rozhraní stránku neukázalo. Sonda proto zapsala `reached: false` a nic nezměřila (`evals/vr/quest-caps.json`). Diktování, sdílení a obnovovací frekvence Questu se změří, až budou brýle nasazené (T3, T13, ruční brána T15).
 
 ### První JS bez `?vr=1` (27. 10. 2026)
 

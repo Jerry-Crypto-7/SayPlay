@@ -1,14 +1,14 @@
 'use client';
 
 /**
- * Brána VR pro celé `/play` (P65 T1), v layoutu, takže přežije navigaci z rychlé hry na AI verzi. S `?vr=1`
- * v adrese, kterou stránka otevřela, a s prohlížečem, který umí `immersive-vr`, načte `XrRoot` a dá hrám trvalé
- * plátno XR relace. Jinak jen předá děti s prázdným kontextem: stejný strom jako dřív a žádný bajt XR.
+ * Brána VR pro celé `/play` (P65 T1), v layoutu, takže přežije navigaci z rychlé hry na AI verzi. S prohlížečem,
+ * který umí `immersive-vr`, a bez `?vr=0` v adrese (P67 T1) načte `XrRoot` a dá hrám trvalé plátno XR relace.
+ * Jinak jen předá děti s prázdným kontextem: stejný strom jako dřív a žádný bajt XR.
  */
 
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
-import { xrSupported, xrWanted } from '@/play/xr/flag';
+import { xrGateOpen } from '@/play/xr/flag';
 
 import { type XrControls, XrControlsContext, XrHostContext } from './xr-context';
 
@@ -19,10 +19,9 @@ export function XrGate({ children }: { readonly children: ReactNode }) {
   const [presenting, setPresenting] = useState(false);
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    if (!xrWanted(window.location.href)) return undefined;
     let live = true;
     void (async () => {
-      if (!(await xrSupported())) return;
+      if (!(await xrGateOpen(window.location.href))) return;
       const module = await import('./XrRoot');
       if (live) setXr(module);
     })();

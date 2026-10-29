@@ -276,8 +276,8 @@ function ChainRun({
   }, [active, session]);
 
   const over = outcome !== 'running';
-  // VR (P65 T1): „Enter VR“ jen s `?vr=1` a prohlížečem, který VR umí; jinak dolní řada HUD nevznikne, jako dřív.
-  const vrOffered = useXrControls()?.presenting === false && !inFeed && !over;
+  // VR (P67 T1): „Enter VR“ s každým prohlížečem, který VR umí, i ve feedu; jinak dolní řada HUD nevznikne, jako dřív.
+  const vrOffered = useXrControls()?.presenting === false && !over;
   // Výhra pošle záznam s globálními tiky jako výzvu hned, ne až po stisku – nabídka sdílení chce čerstvé gesto.
   const [dare, setDare] = useState<DarePublish | undefined>(undefined);
   useEffect(() => {

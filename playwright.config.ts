@@ -47,6 +47,12 @@ const LOCAL_URL = `http://127.0.0.1:${PORT}`;
 // renderer; E2E_RENDERER=software reproduces historical SwiftShader runs.
 const { args: renderArgs } = browserRenderer();
 
+// Bez systémového runtime VR (P67 T1). „Enter VR“ dostane každý prohlížeč, který hlásí `immersive-vr`, a Chromium
+// to hlásí i bez brýlí, jakmile je v počítači OpenXR runtime (naměřeno 29. 10. 2026: SteamVR na tomhle stroji).
+// Testovaný telefon a desktop by pak stahovaly kód XR jako brýle. Brýle v testech hraje emulátor IWER, který
+// `navigator.xr` nahradí celý, takže tahle volba se ho netýká.
+const NO_HOST_VR = '--disable-features=OpenXR';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -60,7 +66,7 @@ export default defineConfig({
     baseURL: target ?? LOCAL_URL,
     trace: 'off',
     launchOptions: {
-      args: renderArgs,
+      args: [...renderArgs, NO_HOST_VR],
     },
   },
   projects: [
@@ -111,7 +117,7 @@ export default defineConfig({
       testMatch: /(webgpu-detect|model-wired)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
-        launchOptions: { args: ['--disable-gpu', '--disable-features=WebGPU,Vulkan'] },
+        launchOptions: { args: ['--disable-gpu', '--disable-features=WebGPU,Vulkan,OpenXR'] },
       },
     },
   ],
