@@ -21,7 +21,7 @@ node --experimental-strip-types --import ./scripts/ts-paths.mjs evals/vr/budget.
 
 ## Rozpočet
 
-Rozpočet Questu 2 je **≤ 150 draw callů a ≤ 300 000 trojúhelníků za snímek** (`QUEST2_BUDGET` v `src/play/xr/quality.ts`). Je to inference z doporučení Mety pro Quest 2, upřesní ji ruční brána T8 v brýlích.
+Rozpočet Questu 2 je **≤ 150 draw callů a ≤ 300 000 trojúhelníků za snímek** (`QUEST2_BUDGET` v `src/play/xr/quality.ts`). Je to inference z doporučení Mety pro Quest 2, upřesní ji ruční brána v brýlích (oddíl „Ruční brána“ níž).
 
 `evals/vr/__tests__/budget.test.ts` spočte nejhorší snímek každého případu znovu ze vzorků v `budget.json` a selže, když je některý žánr, panel nad ním, lobby nebo feed nad rozpočtem, když soubor nemá všech 19 žánrů se všemi panely nebo když tabulky níž neodpovídají měření.
 
@@ -93,8 +93,8 @@ Profil platí jen v relaci VR (`src/play/xr/quality.ts`, `XrRoot.tsx`, `XrCull` 
 
 ## Co emulátor neměří
 
-- **FPS.** Rozhodují brýle (T8).
-- **`framebufferScaleFactor` a foveace.** IWER kreslí do plátna stránky a obojí přejde. Profil začíná na 1,0 (výchozí rozlišení prohlížeče Questu). T8 porovná na brýlích s `?vrscale=0.8` (rozsah 0,8–1,0). Lepší FPS při 0,8 a čitelné panely = profil se přepne na 0,8.
+- **FPS.** Rozhodují brýle (ruční brána).
+- **`framebufferScaleFactor` a foveace.** IWER kreslí do plátna stránky a obojí přejde. Profil začíná na 1,0 (výchozí rozlišení prohlížeče Questu). Ruční brána porovná na brýlích s `?vrscale=0.8` (rozsah 0,8–1,0). Lepší FPS při 0,8 a čitelné panely = profil se přepne na 0,8.
 - **Plnění pixelů** (průhledné částice, mlha, velké plochy). Draw cally a trojúhelníky jsou práce CPU a vrcholů, ne pixelů.
 
 ## FPS v brýlích (P67 T13)
@@ -103,6 +103,26 @@ Profil platí jen v relaci VR (`src/play/xr/quality.ts`, `XrRoot.tsx`, `XrCull` 
 
 29. 10. 2026: neměřeno – brýle nepřipojené/nenasazené, měří se v T15. Brýle byly na USB s povoleným laděním, ale spaly (`mWakefulness=Asleep`), nikdo je neměl na hlavě. Skript je nebudil (po probuzení bez člověka drží popředí systémový dialog), nic nepřesměroval a zapsal důvod do souboru.
 
-## Ruční brána T8
+## Celá smyčka v jedné relaci (P67 T14, 29. 10. 2026, emulátor)
 
-Zapíše majitel po kole v brýlích (návod `docs/vr/README.md`): `Ruční brána T8: OK <datum>`, nebo seznam žánrů s vadou.
+`e2e/vr-loop.spec.ts` projde v IWER (Quest 2) celé kolo v jedné XR relaci: feed → „Enter VR“ → robot vyhraje → „Again“ → „Next“ → páčka zpět → „New game“ → karta lobby → „Make it!“ → hra → „New game“ → klávesnice „zombies attack my house“ → „Make it!“ → hra → „AI version ready“ → „Play it“ → AI verze z fixtur → výhra → „Share“ → QR kód s výzvou. Po každém kroku test ověří, že stránka si o relaci řekla jednou, žádná neskončila a renderer dál bere snímky od téhož objektu `XRSession`.
+
+Tři běhy samostatně, všechny zelené, a čtvrtý v sadě všech `vr-*` (35/35) taky. Čas od načtení feedu (ms, kumulativně):
+
+| krok | běh 1 | běh 2 | běh 3 |
+|---|---|---|---|
+| ve VR (feed) | 4 131 | 3 738 | 3 934 |
+| „Again“ | 5 483 | 5 098 | 5 201 |
+| „Next“ a zpět | 8 084 | 7 624 | 7 487 |
+| hra z karty lobby | 13 093 | 10 304 | 10 138 |
+| hra z klávesnice | 20 942 | 17 779 | 17 467 |
+| AI verze | 23 120 | 20 005 | 19 648 |
+| QR kód sdílení | 30 391 | 30 423 | 29 998 |
+
+- **Klávesnice:** 23 stisků (věta „zombies attack my house“) ~6 s, tedy ~0,25 s na klávesu včetně míření. Člověk v brýlích bude pomalejší; to emulátor neměří.
+- **QR kód** se ukazuje 7–10 s po výhře: výsledek 2D výzvu po výhře uložil a strop 1 výzva / 10 s VR chvíli odmítá (`docs/vr/README.md`, „Sdílení z VR“).
+- **Útrata 0:** feed a AI verze jsou hry z fixtur, každý dotaz na AI verzi (`GET …/upgrade`) odpověděl test. Kromě čtení stránka poslala jen dvě rychlé hry z vět, uložení výzvy a události.
+
+## Ruční brána
+
+Zapíše majitel po kole v brýlích (návod `docs/vr/README.md`, „Kolo majitele v brýlích“): `Ruční brána P67: OK <datum>`, nebo seznam vad (co, ve které hře, jak se to projevilo).

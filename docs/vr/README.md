@@ -1,6 +1,25 @@
-# PLAY ve VR (Quest 2)
+# Sayplay ve VR (Meta Quest 2)
 
-Jak pustit hru z PLAY v brýlích Meta Quest 2 připojených k počítači kabelem a změřit, jak plynule běží.
+Sayplay jde hrát v brýlích Meta Quest přímo v jejich prohlížeči, bez obchodu a bez instalace. Hráč v brýlích vybere nebo řekne větu, zahraje si hru z ní, listuje feedem dalších her, vymění hru za AI verzi a pošle kamarádovi odkaz přes QR kód. Brýle přitom celou dobu nesundá.
+
+**Stav k 29. 10. 2026:** všechno v tomhle dokumentu je ověřené v emulátoru brýlí na počítači (IWER – emulátor Questu od Mety, který běží v prohlížeči testů a dělá, že je to Quest 2 s ovladači). Na skutečném Questu 2 to ještě nikdo nehrál. To udělá majitel v oddílu „Kolo majitele v brýlích“. Co ověřené není, shrnuje oddíl „Známá omezení“.
+
+K vyzkoušení stačí první tři oddíly a „Známá omezení“. Zbytek jsou podrobnosti o ovládání, měření a rozhodnutích.
+
+## Celé kolo v brýlích
+
+1. **Vstup do VR.** Tlačítko „Enter VR“ vidí jen prohlížeč, který VR umí (brýle). Telefon a počítač ho nedostanou a kód pro VR ani nestáhnou. Dvě cesty:
+   - na domově `/play` vpravo nahoře – brýle začnou **lobby**: kartou s větami metr před hráčem;
+   - ve **feedu** na `/play`: ťuknout na hru, aby ji hráč převzal od robota, a pak „Enter VR“ v liště hry – brýle začnou touto hrou.
+2. **Hra.** Ovladače dělají totéž co klávesnice: páčka = šipky, spoušť = mezerník. Podle druhu hry stojí svět na stole, na velkém pódiu před hráčem, na podlaze kolem hráče, nebo se hraje rukou (oddíl „Ovládání ovladači“).
+3. **Výsledek.** Po konci kola visí panel „You did it!“ nebo „So close.“ s tlačítky: „Again“ (znovu), „New game“ (lobby), „Share“ (QR kód), „Comfort“ (pohodlí), „Exit VR“ a ve feedu ještě „Next“ (další hra). Tlačítko se mačká paprskem z ovladače a spouští.
+4. **Feed.** Pravá páčka mávnutím nahoru = další hra, dolů = předchozí. Spoušť převezme hru od robota, jako ťuk na telefonu.
+5. **Hra z věty.** „New game“ otevře lobby: šest karet s větami, „Type“ (klávesnice ve vzduchu) a „Say it“ (hlas, jen když prohlížeč umí diktovat). „Make it!“ udělá hru a za pár sekund běží v brýlích.
+6. **AI verze.** Hra z věty se nejdřív hraje v rychlé verzi. Když server dopočítá AI verzi, objeví se panel „AI version ready“ s tlačítkem „Play it“ a hra se vymění bez opuštění VR.
+7. **Sdílení.** „Share“ ukáže QR kód odkazu na hru. Kamarád ho naskenuje telefonem. Po výhře odkaz nese výzvu: kamarád vidí skóre, které má překonat.
+8. **Konec.** „Exit VR“ na panelu nebo systémové tlačítko Meta na pravém ovladači. Stránka se vrátí do 2D a hra běží dál.
+
+**Feed jen na začátku.** Cesta vede feed → lobby → hry z vět. Ze hry z věty (stránka `/play/<id>`) se ve VR do feedu vrátit nedá: lobby vede jen na další hru. Zpátky do feedu se jde přes „Exit VR“ a 2D feed. Test celého kola proto začíná ve feedu (oddíl „Celá smyčka v jedné relaci“).
 
 ## Quest 2 – návod krok za krokem
 
@@ -33,30 +52,30 @@ V kořeni repozitáře:
 
 ```
 npm run build
-node node_modules/next/dist/bin/next start -p 3165
+node node_modules/next/dist/bin/next start -p 3168
 ```
 
-Server nech běžet ve vlastním terminálu. Skript počítá s portem 3165; server na jiném portu mu řekni volbou `--port`, třeba `node scripts/quest-dev.mjs --port 3168`.
+Server nech běžet ve vlastním terminálu. Skript v dalším kroku bez volby počítá s portem 3165, proto se mu port 3168 říká volbou `--port` (tak to chce i kolo majitele níž).
 
 ### 5. Otevření hry v brýlích
 
 Ve druhém terminálu:
 
 ```
-node scripts/quest-dev.mjs
+node scripts/quest-dev.mjs --port 3168
 ```
 
 Skript:
 
 1. najde adb;
 2. ověří, že brýle jsou připojené a ladění povolily (jinak napíše, co udělat);
-3. přesměruje port 3165, takže brýle vidí server počítače jako `localhost:3165`. To je nutné: vstup do VR v prohlížeči funguje jen na zabezpečené adrese a `localhost` mezi ně patří;
-4. otevře v prohlížeči brýlí `http://localhost:3165/play?vrhud=1`.
+3. přesměruje port 3168, takže brýle vidí server počítače jako `localhost:3168`. To je nutné: vstup do VR v prohlížeči funguje jen na zabezpečené adrese a `localhost` mezi ně patří;
+4. otevře v prohlížeči brýlí `http://localhost:3168/play?vrhud=1`.
 
 ### 6. V brýlích
 
-1. Stránka se otevře sama, s `?vrhud=1` v adrese. „Enter VR“ nabídne každý prohlížeč, který VR umí; `?vr=1` už není potřeba a `?vr=0` VR vypne (pro ladění).
-2. Stiskni „Enter VR“.
+1. Stránka se otevře sama, s `?vrhud=1` v adrese. „Enter VR“ nabídne každý prohlížeč, který VR umí; `?vr=0` v adrese VR vypne (pro ladění).
+2. Stiskni „Enter VR“ vpravo nahoře. Začne lobby s větami (oddíl „Hra z věty ve VR“). Do feedu se jde jinak: ťuknout na hru ve feedu a „Enter VR“ v liště hry.
 3. Hraj. Vlevo dole v zorném poli visí malý panel FPS (zapíná ho `?vrhud=1` v adrese). Ukazuje za poslední sekundu:
    - `fps` – kolik snímků brýle nakreslily; plynulý chod je 72;
    - `worst ms` – nejdelší mezera mezi dvěma snímky; nad 14 ms je to cuknutí;
@@ -66,7 +85,7 @@ Skript:
 ### 7. Měření FPS
 
 ```
-node scripts/quest-dev.mjs --fps 60
+node scripts/quest-dev.mjs --port 3168 --fps 60
 ```
 
 Skript udělá kroky z bodu 5, pak počká. Až jsi ve VR a hra běží, stiskni v terminálu Enter. Následujících 60 sekund čte z brýlí systémový záznam snímků (jeden údaj za sekundu) a výsledek zapíše do `evals/vr/quest2-fps.json`. Číslo za `--fps` je délka měření v sekundách.
@@ -147,6 +166,35 @@ Celá prohlídka trvá asi 19 × 35 s, tedy 11 minut. Brýle musí být vzhůru 
 - **Registruje ho jen prohlížeč, který umí immersive VR.** Telefon a desktop žádný worker nedostanou, chovají se jako dřív. Registraci volá kód XR (`XrRoot`), který se stahuje jen tam, kde VR je; s `?vr=0` se proto worker nezaregistruje.
 - **Orientace není zamčená.** Manifest nemá `orientation`, protože by zamkl i telefon, který si Sayplay nainstaluje; Quest ji nepotřebuje.
 - **Proč `play-sw.js`, ne `sw.js`:** cesta `public/sw.js` je v `.gitignore` pro vygenerované workery jiných nástrojů.
+
+### 12. Na konci
+
+1. Server zastav v jeho terminálu (Ctrl+C).
+2. Přesměrování portu zruš: `adb reverse --remove tcp:3168`. Prohlídka `--tour` a sonda `--probe` to dělají samy, ruční kroky 5 a 7 ne.
+
+## Kolo majitele v brýlích (ruční brána)
+
+Rozhoduje člověk v brýlích: hraje se to, ovládání sedí, text je čitelný a nikomu není špatně. Emulátor nic z toho posoudit neumí.
+
+**Příprava:** kroky 1–6 návodu výš (server na portu 3168), pak místo kroku 5:
+
+```
+node scripts/quest-dev.mjs --port 3168 --fps 60
+```
+
+Až jsi ve VR a hraješ, stiskni v terminálu Enter. Skript 60 s měří FPS a zapíše je do `evals/vr/quest2-fps.json` (bod 8).
+
+**V brýlích projdi** (u každého bodu si poznamenej „OK“, nebo co vadí):
+
+1. **Feed:** na `/play` ťukni na hru ve feedu (převezmeš ji od robota) a stiskni „Enter VR“ v liště hry. Dohraj kolo, „Again“, pak pravou páčkou nahoru (další hra) a dolů (předchozí).
+2. **Hra z věty:** na výsledku „New game“. V lobby vyber kartu, nebo stiskni „Say it“ a řekni anglickou větu (když „Say it“ chybí, prohlížeč Questu diktovat neumí – pak „Type“ a klávesnice). „Make it!“ a hru zahraj.
+3. **Again** po konci hry z věty.
+4. **Share:** na výsledku „Share“, QR kód naskenuj telefonem. Telefon má otevřít tutéž hru (po výhře s výzvou). Kód se může ukázat až po ~12 s (oddíl „Známá omezení“).
+5. **Svět kolem tebe:** aréna, obrana a chytání. Adresy her všech žánrů vypíše `node --experimental-strip-types --import ./scripts/ts-paths.mjs evals/vr/budget.mjs --base http://127.0.0.1:3168 --publish`; otevři je v prohlížeči brýlí jako `localhost:3168/play/<id>` a „Enter VR“.
+6. **Trať na pódiu:** jedna z runner, platformer, flap, voyage, hop, crowd (adresy z téhož příkazu).
+7. **Comfort:** „Seated“ a „Standing“, „Recenter“, velikost světa, vibrace, vinětace.
+
+**Zápis:** do `evals/vr/README.md` (oddíl „Ruční brána“) řádek `Ruční brána P67: OK <datum>`, nebo seznam vad: co, ve které hře a jak se to projevilo. Vada znamená opravu před vydáním, ne vydání.
 
 ## Ovládání ovladači
 
@@ -421,7 +469,83 @@ Panel „Comfort“ se otevře tlačítkem „Comfort“ na lobby nebo na výsle
 - `e2e/vr-feed.spec.ts` v emulátoru IWER: výhra ve feedu → „Share“ → „Getting your link…“ → karta s kódem, odkaz `…/play/<verze>?via=share&dare=<id>` s id, které vrátil server. Karta je celá v obraze obou očí, anglicky. „Share link“ pošle tentýž odkaz do nabídky sdílení. Bez nabídky sdílení má karta jen „Done“. Karta drží výsledek i po 11 s. Od „Share“ dál stránka poslala jen čtení, uložení výzvy a událost sdílení, žádné volání AI.
 - `src/play/xr/__tests__/qr.test.ts`: kód nakreslený do plátna přečte zpátky nezávislý dekodér (`jsqr`, jen pro testy) a dostane přesně týž odkaz, i nejdelší možný. Tmavé na světlém, tichá zóna 4 moduly, moduly nezrcadlené.
 
-## Měření a známá omezení
+## Měření – souhrn
+
+Stav 29. 10. 2026. Všechno kromě posledního řádku je z emulátoru IWER na počítači, ne z brýlí.
+
+| Co | Výsledek | Kde podrobně |
+|---|---|---|
+| celé kolo v jedné relaci (feed, Again, Next a zpět, karta lobby, klávesnice, AI verze, QR kód) | 3 běhy ze 3 zelené, ~30 s na kolo, pořád tatáž relace | „Celá smyčka v jedné relaci“ níž, `evals/vr/README.md` |
+| rozpočet snímku Questu 2 (≤ 150 draw callů, ≤ 300 tisíc trojúhelníků) | všech 19 žánrů i všechny panely pod ním; nejtěsnější závod `voyage` (rezerva 4,6 %) | „Rozpočet snímku ve všech režimech“ |
+| „Next“ ve feedu → první snímek další hry | medián 119–122 ms (první návštěva karty 0,5–0,9 s) | „Feed ve VR“ |
+| první JS telefonu (`/play`, Pixel 7) proti `main` | +984 B, limit ±1 kB splněný | „Celá smyčka v jedné relaci“ |
+| zvuk mimo VR | bit po bitu stejný jako před VR | „Zvuk a vibrace“ |
+| FPS na skutečném Questu 2 | **neměřeno** – brýle nikdo neměl na hlavě | kolo majitele v brýlích |
+
+Draw call = jeden příkaz grafické kartě „nakresli tenhle objekt“; Quest 2 jich zvládne zhruba 150 za snímek. Trojúhelníky jsou plošky, ze kterých jsou modely složené.
+
+## Známá omezení
+
+**Neověřeno na skutečných brýlích** (všechno patří do kola majitele v brýlích):
+
+- FPS žádné hry na Questu 2. Prohlídka všech žánrů v brýlích (`quest-dev.mjs --tour`) na brýlích ještě nikdy neběžela.
+- Ovládání, čitelnost panelů, pohodlí, zvuk a vibrace.
+- Diktování („Say it“): jestli ho prohlížeč Questu umí, jestli se dotaz na mikrofon ukáže uvnitř VR a jestli stisk spouště stačí jako gesto, které diktování potřebuje. Když prohlížeč diktovat neumí, tlačítko se samo neukáže a zbývá klávesnice.
+- Quest 3 (vyšší rozlišení a 90 Hz) – žádný nebyl k dispozici.
+- Instalace jako aplikace a „Share link“ (nabídka sdílení prohlížeče) v brýlích; jak dobře telefon přečte QR kód z obrazu brýlí.
+
+**Známé slabiny:**
+
+- **Do feedu jen na začátku.** Ze hry z věty se ve VR do feedu nevrátíš; zpátky přes „Exit VR“ a 2D feed.
+- **„Enter VR“ ve feedu až po převzetí hry od robota.** Během náhledu robota lišta s tlačítkem není.
+- **Odkaz pro sdílení až za ~12 s.** Server pouští jednu výzvu za 10 s a 2D výsledek ji uloží hned po výhře; VR to pak zkouší znovu po 3 s. Oprava je jeden řádek v souboru jiného plánu, zatím ne.
+- **Výsledek ve feedu se po 10 s bez dotyku stránky vrátí do náhledu robota** – ovladače se za dotyk nepočítají. Karta „Share“ to drží, dokud je otevřená.
+- **Flap na pódiu 1:8 ořízne horních 1,7 m trubek.** Hrdina létá níž, ale vršky trubek nejsou vidět.
+- **Mlha scény ve VR nepůsobí.** Pódium tratí má vlastní; u her kolem hráče sahá podlaha až k obloze.
+- **Na brýlích mimo VR dvě grafická plátna:** feed a skryté plátno pro VR (1 px, nekreslí). Paměť navíc, obraz stejný.
+- **Řetěz mikroher nemá ve VR panely cíle a výsledku** – jen „AI version ready“.
+- **Časovač ve VR chybí**; panel ukazuje cíl, počítadla a životy.
+- **Ve VR nejsou rostliny a obrysy nepřátel**, kvůli rozpočtu snímku.
+- **Občasná chyba života na pozadí scény ve VR** (`Ambient.tsx`): snímek s chybou se zahodí, v brýlích to může být cuknutí.
+- **Výsledek her hraných rukou** (střílečka, hod, krtci, krájení) je nad levým zápěstím, ne před hráčem.
+- **Nové žánry z jiného plánu** (survivor, hole, steal, sort, arrows) se po přistání do `main` budou hrát na stole, dokud nedostanou vlastní režim.
+- **Počítač s nastaveným OpenXR runtime** (třeba SteamVR) hlásí VR i bez brýlí, takže desktop dostane „Enter VR“ a stáhne kód VR.
+- **Rezerva prvního JS telefonu je 16 B.** Další kód na cestě telefonu se do limitu ±1 kB vejde jen s úsporou jinde.
+
+## Podrobnosti měření a rozhodnutí
+
+### Celá smyčka v jedné relaci (P67 T14, 29. 10. 2026, emulátor)
+
+`e2e/vr-loop.spec.ts` v IWER (Quest 2) projde celé kolo bez opuštění VR. Jediné klepnutí mimo VR je „Enter VR“ na kartě feedu, všechno další dělají ovladače:
+
+1. feed → kolo karty → „Enter VR“; robot kolo vyhraje (sonda `handPlay`) → „Again“ → nové kolo od tiku 0;
+2. „Next“ na výsledku → další karta, pravá páčka dolů → předchozí;
+3. spoušť převezme hru, robot kolo dohraje → „New game“ → lobby → karta s větou → „Make it!“ → hra na `/play/<id>`;
+4. konec kola → „New game“ → „Type“ → klávesnice „zombies attack my house“ → „Make it!“ → další hra;
+5. AI verze té hry (podvržená odpověď `GET …/upgrade`, cíl je hra z fixtur) → panel „AI version ready“ → „Play it“ → AI verze běží → výhra → „Share“ → karta s QR kódem odkazu `…/play/<verze>?via=share&dare=<id>`.
+
+Po každém kroku test ověří tutéž relaci: stránka si o ni řekla jednou, žádná neskončila a renderer dál bere snímky přímo od toho objektu `XRSession` (počítadlo na jeho `requestAnimationFrame`). Útrata 0: každý dotaz na AI verzi odpověděl test, takže server práci režiséra nespustil; kromě čtení stránka poslala jen dvě rychlé hry z vět, uložení výzvy a události. Výsledek: 3 běhy ze 3 zelené, ~30 s na kolo (časy kroků v `evals/vr/README.md`).
+
+**Proč kolo začíná ve feedu:** feed je jen na `/play` a lobby z „New game“ vede jen dál na novou hru. Pořadí „lobby → … → feed“ by potřebovalo navigaci, kterou hráč v brýlích udělat nemůže (tlačítko zpět prohlížeče), a test by tvrdil víc, než produkt umí.
+
+**`vr-lobby` už nekolísá.** Příčina: feed za lobby si dělá snímky karet pro náhledy (`captureFrame` v `src/components/play/feed/snapshot-cache.ts`) a kreslil přitom snímek navíc mimo snímek XR relace. V takovém snímku ovladače nemají polohu, paprsek na chvíli sjel z tlačítka a stisk spouště právě v tu chvíli se ztratil. Ve VR se teď snímek karty nedělá (plátno relace obraz brýlí stejně nenese); hlídá to unit test. Druhá oprava v testu: kontrola „při diktování žádný požadavek“ nepočítá soubory scény z vlastního serveru (`/assets/`, `/_next/static/`), které si hra feedu za lobby dotahuje. `vr-lobby` sám: 6 běhů po sobě zelených, v sadě všech `vr-*` zelený.
+
+**Regrese (build větve, server 3168, 29. 10. 2026):**
+
+| Test | Výsledek |
+|---|---|
+| `play-phone` (Chromium, Pixel 7, iPhone) | 18/18 |
+| `play-perf` | 1/1 |
+| `interface-language` | 4/4 |
+| `play-hud` | soubor v repozitáři není |
+| `vr-diorama`, `vr-enter`, `vr-feed`, `vr-hud`, `vr-native`, `vr-pwa`, `vr-room`, `vr-loop` | 35/35 |
+| `vr-lobby` sám, naposled | 3/3 |
+| zvuk mimo VR bit po bitu (`src/play/audio/__tests__/positional.test.ts`) | 17/17 |
+| rozpočet a tabulky měření (`evals/vr/__tests__/budget.test.ts`) | 12/12 |
+
+`origin/main` se od začátku větve nepohnul (`e661855c`), slučovat nebylo co.
+
+**První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 635 B rozbaleně, **+984 B** proti `main` (4 215 651 B), přenesené +1 390 B, žádný kód XR. Oprava `captureFrame` přidala 53 B. Rezerva do limitu ±1 kB je 16 B.
 
 ### „Enter VR“ podle schopnosti prohlížeče (P67 T1, 29. 10. 2026)
 
@@ -663,7 +787,7 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 
 **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, **+931 B** rozbaleně proti `main` (T4a +88 B v `XrGate`), přenesené +1 373 B, žádný kód XR.
 
-**`vr-lobby` kolísá i bez T4a:** klik paprskem na panel lobby občas propadne (`lobby:idea-1` zůstane „aimed“, nebo text karty nedostane větu). Stejné podpisy chyb jsou v bězích T9 a na buildu s vrácenou opravou T4a (1 ze 3 testů červený ve 2 bězích ze 2). S opravou 1 běh 3/3 zelený, 3 běhy 1/3.
+**`vr-lobby` kolísá i bez T4a:** klik paprskem na panel lobby občas propadne (`lobby:idea-1` zůstane „aimed“, nebo text karty nedostane větu). Stejné podpisy chyb jsou v bězích T9 a na buildu s vrácenou opravou T4a (1 ze 3 testů červený ve 2 bězích ze 2). S opravou 1 běh 3/3 zelený, 3 běhy 1/3. Příčinu našla a opravila T14 (oddíl „Celá smyčka v jedné relaci“).
 
 **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 426 B rozbaleně, **+775 B** proti `main`, přenesené +697 B, žádný kód XR.
 
