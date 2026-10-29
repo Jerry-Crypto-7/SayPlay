@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { Button } from '../ui';
 import { useXrControls } from './xr-context';
 
