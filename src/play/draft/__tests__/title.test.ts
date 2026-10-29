@@ -65,6 +65,8 @@ describe('the game title comes from the sentence (P56A T8)', () => {
     ['a raccoon sneaks into the museum and grabs the diamond while guards patrol', 'Museum Heist'],
     ['survive the zombie night', 'Zombie Survivor'],
     ['an archer shoots an arrow', 'Robin Arrows'],
+    ['a pit in the street swallows the cars of the city', 'City Hole'],
+    ['put every toy into the right box', 'Toy Sort'],
   ])('keeps the reading title of "%s" while its kind is no live template', (sentence, title) => {
     expect(titleOf(sentence, { ...A01_READ, title })).toBe(title);
   });
