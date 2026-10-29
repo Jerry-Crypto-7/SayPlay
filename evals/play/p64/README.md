@@ -225,3 +225,33 @@ u 6 z nich.
 | **celkem P64** | 36 | 1,134 z 4 |
 
 Soudce: 24 volání `claude -p` (12 vět × 2 běhy), předplatné, 0 USD. Codex 0 volání.
+
+## T6 – HUD na výšku
+
+Jen CSS pod `@media (max-aspect-ratio: 1/1) and (pointer: coarse) and (max-width: 1023px)` na konci `play.css` a posun
+popisku jména v `NameLine.tsx` (`--_name-push`, čte se jen na telefonu na výšku). Scéna, kamera ani hash se nemění.
+`Hud.tsx` a `PostRun.tsx` změnu nepotřebovaly.
+
+- Horní pás: menší odsazení a řádek cíle písmem popisku – dva řádky 46 px místo 57, na iPhonu 393 × 659 pás ≤ 18 %.
+- Pilulky o 4 px užší z každé strany: „116 shots left ♥ 3“ se na 360 px vejde vedle časovače s pauzou.
+- Štítky nad hrou (ukázka robota, stav AI verze, hotový remix, živá změna) v mřížce HUD pod řádkem cíle, ne přes
+  hrdinu a ne v prostřední třetině. S výsledkem jde stav AI verze nahoru doprostřed.
+- Výsledek: list podle obsahu dole, menší kroky a odznak 84 px; akce přilepené dole, kde se list nevejde.
+
+Měření `e2e/p64-portrait-hud.spec.ts` (obdélníky DOM, 22 buněk × 360 × 780, 390 × 844, 412 × 915 a výřez telefonu):
+
+| server | `pixel7-touch` | `iphone-touch` | desktop 1280 × 720 proti referenci |
+|---|---|---|---|
+| `main` `e661855c` | 0 / 23 | – | shodný (reference je z `main`) |
+| větev T2 + T6 | 23 / 23 | 23 / 23 | shodný |
+
+Na `main` padá: list výsledku se posouvá (64 odečtů), akce mimo obrazovku (60), ukázka robota přes hrdinu (32),
+uříznuté pilulky (22), popisek jména pod horním pásem (14). `play-phone` a `interface-language` na `chromium`
+i `pixel7-touch` 20 / 20. Snímky pro oko: `D:/caches/p64/hud/final/`. Útrata 0 USD.
+
+Hrdina v horní třetině (úkol pod lištou, shazovač slučování – `underHud` auditu T1) štítek pod pásem minout nemůže;
+spec překryv jen vypíše a hlídají ho kamery T3 a T4.
+
+```
+FALLBACK_SMOKE_URL=http://127.0.0.1:3164 P64_HUD_SHOTS=D:/caches/p64/hud/final npx playwright test e2e/p64-portrait-hud.spec.ts --project=pixel7-touch --project=iphone-touch --project=chromium --workers=1
+```

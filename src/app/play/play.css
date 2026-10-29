@@ -3571,3 +3571,155 @@ button.play-feed-card {
 @media (prefers-reduced-motion: reduce) {
   .play-chain-card { animation: none; }
 }
+
+/* HUD a výsledek na telefonu na výšku (P64 T6, kit `08-game-hud.md` Layout portrait). Jen dotyk na výšku a užší
+ * než desktop: desktop, tablet a šířka beze změny (`e2e/p64-portrait-hud.spec.ts` je fotí proti `main`). Blok stojí
+ * na konci souboru, ať přebije pravidla HUD, odznaku i štítků výš bez vyšší specifičnosti.
+ * - Horní pás nejvýš 18 % výšky i na iPhonu 393 × 659: odsazení 12 px, mezera pod pilulkami 8 px a řádek cíle
+ *   písmem popisku (13 px, proklad 1,25) – dva řádky 46 px místo 57, pás 115 px místo 138.
+ * - Odznak power-upu (`PowerupBadge`) pod dvouřádkovým cílem, ne přes jeho spodek (`--_goal-max`).
+ * - Štítky nad hrou (ukázka robota, přepínač AI verze, hotový remix, živá změna) leží v mřížce HUD pod řádkem cíle
+ *   jeden pod druhým: ne nad dolní řadou přes hrdinu běžce a ne v prostřední třetině. Úzké vpravo pod časovačem,
+ *   vlevo pod pilulkou zůstane místo odznaku power-upu; ukázka robota přes šířku a nízká. Toast konce bez AI verze
+ *   (3 s, P56B T5) zůstává nad dolní řadou jako na `main`: nahoře přes šířku by `play-phone` počítal jako horní pruh.
+ * - „Change one thing“ se na 360 px vejde (okraj tlačítka 8 px místo 20, mezery dolní řady 8 px místo 10).
+ * - Popisek jména se drží pod horním pásem: `NameLine.tsx` mu píše `--_name-push`, `NameAnchor` ho dál vodí. */
+@media (max-aspect-ratio: 1/1) and (pointer: coarse) and (max-width: 1023px) {
+  .play-shell {
+    --_top: calc(var(--sp-space-3) + env(safe-area-inset-top, 0px));
+    --_goal-max: calc(2 * var(--sp-text-label-size) * var(--sp-text-label-leading) + 2 * var(--sp-space-1) + 2 * var(--sp-border-base));
+  }
+
+  .play-hud {
+    row-gap: var(--sp-space-2);
+  }
+
+  .play-hud-goal {
+    padding: var(--sp-space-1) var(--sp-space-3);
+    font-size: var(--sp-text-label-size);
+    line-height: var(--sp-text-label-leading);
+  }
+
+  /* Pilulky užší o 4 px z každé strany a číslo hned u ikony: „116 shots left ♥ 3“ se na 360 px vejde vedle
+   * časovače s pauzou (dřív 200 px obsahu ve 187). */
+  .play-hud .sp-hud-pill {
+    padding-inline: var(--sp-space-3);
+  }
+
+  .play-hud-count > .sp-icon + .play-hud-num {
+    margin-left: 0;
+  }
+
+  .play-shell:has(.play-hud-goal[data-shown='true']) .play-boosts {
+    top: calc(var(--_top) + var(--_pill-row) + var(--sp-space-2) + var(--_goal-max) + var(--sp-space-2));
+  }
+
+  .play-hud-bottom {
+    gap: var(--sp-space-2);
+  }
+
+  .play-hud-change {
+    padding-inline: var(--sp-space-2);
+  }
+
+  .play-hud > :is(.play-upgrade-status, .play-demo-note, .play-upgrade, .play-live) {
+    position: static;
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    transform: none;
+  }
+
+  /* Ukázka robota přes šířku: text vlevo, tlačítko vedle, tři řádky popisku. */
+  .play-hud > .play-demo-note {
+    justify-self: stretch;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: var(--sp-space-2);
+    padding: var(--sp-space-2) var(--sp-space-3);
+    font-size: var(--sp-text-label-size);
+    text-align: start;
+    animation-name: sp-pop-in;
+  }
+
+  .play-hud > .play-demo-note > .sp-btn {
+    flex: none;
+  }
+
+  /* S výsledkem jde stav AI verze zpátky nahoru doprostřed, do místa, které mu nechá `.play-result-top`. */
+  .play-shell:has(> .play-result) .play-hud > .play-upgrade-status {
+    position: absolute;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  .play-name-line {
+    margin-top: var(--_name-push, 0px);
+  }
+
+  /* Výsledek na výšku: list podle obsahu dole, zamrzlá scéna s odznakem vyplní zbytek nahoře (jako na desktopu),
+   * kroky listu o stupeň menší, odznak 84 px. Výhra s žebříčkem se na 360 × 780 vejde bez posunu listu a hlavní
+   * akce leží ve spodní polovině. Kde se nevejde (nižší telefon, plný žebříček), akce zůstanou přilepené dole. */
+  .play-result-top {
+    flex: 1 1 auto;
+    min-height: auto;
+    padding-top: calc(var(--_top) + var(--sp-size-touch-min) + var(--sp-space-2));
+  }
+
+  .play-result .sp-badge {
+    width: 84px;
+    height: 84px;
+  }
+
+  .play-result .play-badge-time {
+    font-size: var(--sp-text-title-l-size);
+  }
+
+  .play-result-sheet {
+    flex: 0 1 auto;
+    padding-top: var(--sp-space-5);
+    padding-bottom: calc(var(--sp-space-4) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .play-result-stars,
+  .play-result-summary {
+    margin-top: var(--sp-space-2);
+  }
+
+  .play-star {
+    width: 36px;
+    height: 36px;
+  }
+
+  .play-result-score {
+    margin-top: var(--sp-space-1);
+  }
+
+  .play-result-stats,
+  .play-result-sheet .play-board {
+    margin-top: var(--sp-space-3);
+  }
+
+  .play-result-stats > .sp-stat {
+    padding-block: var(--sp-space-2);
+  }
+
+  .play-result-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding-top: var(--sp-space-3);
+    background: var(--sp-bg);
+  }
+
+  .play-result-more {
+    margin-top: var(--sp-space-2);
+  }
+
+  .play-result-links {
+    margin-top: var(--sp-space-1);
+  }
+}
