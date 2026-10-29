@@ -83,6 +83,6 @@ describe('P52 T7: shield in ball games, grab and shield in shooters', () => {
   it('ball and shooter games without the new actions build the same worlds as before', () => {
     const plain = (id: string): GameSpecV1 => ({ ...draftGameSpecWithMeta(textOf(id), 1).spec, abilities: undefined });
     // Otisky změřené před T7; střelnice přeotisknuty v P66 T10 (`genre.v6`: kola s výběrem vylepšení mezi vlnami).
-    expect(['d07', 'd08', 'd19', 'd21'].map((id) => canonicalHash(worldOf(plain(id), 1)))).toEqual(['3240ac8e', '4f42804d', '84c1b3bc', '51fdcdf1']);
+    expect(['d07', 'd08', 'd19', 'd21'].map((id) => canonicalHash(worldOf(plain(id), 1)))).toEqual(['3240ac8e', '4f42804d', '84c1b3bc', '78c547ac']);
   });
 });

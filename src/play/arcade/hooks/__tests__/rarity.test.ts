@@ -67,7 +67,7 @@ describe('a thing gets its rarity when it comes into being, not when it is colle
       const world = testWorld(seed, [item(1), item(2), item(3)], [{ id: 'collect_at', params: { at } }], { rounds: 1, rarity: true });
       const played = play(world, [], TEST_LIBRARY, { horizon: 40 });
       const pops = new Map(ofKind(played, 'score_pop').map((pop) => [pop.body, pop.amount]));
-      return { pops, score: played.state[HEADER.counters + COUNTER.score], found: foundOf(played.state, hooksOf(world.rules)!.keeper) };
+      return { pops, score: played.state[HEADER.counters + COUNTER.score], found: foundOf(played.state, hooksOf(world.rules)!.keeper as number) };
     };
     const forward = run([1, 2, 3]);
     const backward = run([3, 2, 1]);

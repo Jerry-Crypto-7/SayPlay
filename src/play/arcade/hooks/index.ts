@@ -4,8 +4,8 @@
  * v `rounds.ts`, `upgrades.ts`, `rarity.ts`, `boss.ts`; tady je pravidlo, které háčky nese, jejich stavba a tři
  * místa, kudy je volá jádro (`kernel.ts`).
  *
- * **Svět s háčky** má za tělesy úrovně počítadlo háčků (mrtvá předloha jako počítadlo komba) a pravidlo `hooks`
- * s jejich parametry; s výběrem vylepšení i robota `hooks_bot`. Uložené hry ho nemají, takže jejich hash se nehne.
+ * **Svět s háčky** má pravidlo `hooks` s jejich parametry, háčky se stavem (kola, vylepšení, vzácnost) i počítadlo
+ * háčků za tělesy úrovně (mrtvá předloha jako počítadlo komba); s výběrem vylepšení i robota `hooks_bot`. Uložené hry ho nemají, takže jejich hash se nehne.
  * Staví ho jen hra `genre.v6` a novější: dosavadní žánr klíči `tuning` (`hookTuningOf`, `arcade/compile.ts`),
  * nový žánr sám ve svém generátoru (`withHooks`).
  */
@@ -42,8 +42,11 @@ const body = z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1);
 
 const hookParams = z
   .object({
-    /** Počítadlo háčků (index těla) se sloty `HOOK_SLOTS`. */
-    keeper: body,
+    /**
+     * Počítadlo háčků (index těla) se sloty `HOOK_SLOTS`. Jen háčky se stavem – kola, vylepšení, vzácnost (`stateful`);
+     * jedno kolo bez nich (létající skóre, hlášky) tělo nemá, ať nové tělo neposune indexy vzniklých těl (T10a).
+     */
+    keeper: body.optional(),
     rounds: z.int().min(ROUNDS.min).max(ROUNDS.max),
     /** Co kolo končí (`rounds.ts`): zvednutá vlna žánru, výhra pravidla žánru, nebo značka postupu `goal`. */
     clear: z.enum(['wave', 'win', 'goal']),
@@ -78,8 +81,13 @@ const hookParams = z
     /** Rána hrdiny, kterou `fire_rate` zkrátí (`Swing`): slot těla hráče a plná délka rozestupu. */
     swing: z.object({ slot: z.int().min(0).max(BODY_STRIDE - 1), ticks: z.int().min(2).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
   })
-  .strict();
+  .strict()
+  .refine((params) => params.keeper !== undefined || !stateful(params), { message: 'hooks with rounds, upgrades or rarity need a keeper' });
 export type HookParams = z.infer<typeof hookParams>;
+
+/** Píšou háčky stav do počítadla? Kola (přestávky, `clock`), vylepšení (`swing`, `lifeCap`) a vzácnost ano. */
+const stateful = (hooks: { readonly rounds: number; readonly upgrades?: object; readonly rarity?: object }): boolean =>
+  hooks.rounds > 1 || hooks.upgrades !== undefined || hooks.rarity !== undefined;
 
 /**
  * Pravidlo, které háčky nese: samo nevystřelí nic, jeho parametry čte jádro (`loadProgram`), jako `score_bonus`.
@@ -117,8 +125,8 @@ export interface HookedParts {
   readonly level: ArcadeLevel;
   readonly rules: PieceRef[];
   readonly bot: PieceRef;
-  /** Index počítadla háčků – kusy žánru ho dostanou do parametrů. */
-  readonly keeper: number;
+  /** Index počítadla háčků – kusy žánru ho dostanou do parametrů; háčky bez stavu (`stateful`) ho nemají. */
+  readonly keeper: number | undefined;
 }
 
 /**
@@ -131,8 +139,7 @@ export function withHooks(parts: { readonly level: ArcadeLevel; readonly rules: 
   const hero = parts.level.bodies[0] as BodyInit;
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
   const upgrades = request.upgrades !== undefined && request.rounds > 1 ? { offers: drawOffers(seed, request.upgrades, request.rounds - 1) } : undefined;
-  const params: HookParams = {
-    keeper,
+  const params: Omit<HookParams, 'keeper'> = {
     rounds: request.rounds,
     clear: request.clear ?? 'win',
     ...(request.clear === 'goal' && request.goal !== undefined ? { goal: request.goal } : {}),
@@ -142,9 +149,11 @@ export function withHooks(parts: { readonly level: ArcadeLevel; readonly rules: 
     ...(request.rarity === true ? { rarity: { draws: drawRarities(seed) } } : {}),
     ...(upgrades !== undefined && request.swing !== undefined && request.upgrades?.includes('fire_rate') === true ? { swing: request.swing } : {}),
   };
+  // Háčky bez stavu tělo nedostanou: posunulo by indexy vzniklých těl a s nimi hru (bloudění hlídky je z indexu).
+  if (!stateful(params)) return { level: parts.level, rules: [...parts.rules, { id: 'hooks', params }], bot: parts.bot, keeper: undefined };
   return {
     level: { ...parts.level, bodies: [...parts.level.bodies, counter] },
-    rules: [...parts.rules, { id: 'hooks', params }],
+    rules: [...parts.rules, { id: 'hooks', params: { keeper, ...params } }],
     bot: upgrades === undefined ? parts.bot : { id: 'hooks_bot', params: { base: parts.bot, keeper } },
     keeper,
   };
@@ -291,11 +300,13 @@ export function offeredHooks(ask: HookAsk, game: TunedGame): HookRequest {
  * vylepšení do hrdiny (`boostHero`) a vrátí `false`.
  */
 export function hooksStart(state: Int32Array, input: ArcadeInput, params: HookParams, out: ArcadeEffect[]): boolean {
-  if (inBreak(state, params.keeper)) {
-    out.push(...breakTick(state, input, params));
+  const { keeper } = params;
+  if (keeper === undefined) return false;
+  if (inBreak(state, keeper)) {
+    out.push(...breakTick(state, input, params, keeper));
     return true;
   }
-  boostHero(state, state[HEADER.player] as number, params.keeper);
+  boostHero(state, state[HEADER.player] as number, keeper);
   return false;
 }
 
@@ -323,17 +334,19 @@ function popBody(state: Int32Array, effects: readonly ArcadeEffect[], i: number)
 export function hooksEnd(state: Int32Array, effects: ArcadeEffect[], params: HookParams, combo: number): void {
   const out: HookEffect[] = [];
   const score = HEADER.counters + COUNTER.score;
+  // Vzácnost, rána a kola mají počítadlo vždy (schéma `hookParams`).
+  const { keeper } = params;
   for (let i = 0; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
     const amount = effect.kind === 'score' || (effect.kind === 'count' && effect.counter === 'score') ? effect.amount : 0;
     if (amount <= 0) continue;
-    const found = params.rarity === undefined ? undefined : collectedAt(state, effects, i);
+    const found = params.rarity === undefined || keeper === undefined ? undefined : collectedAt(state, effects, i);
     if (found === undefined) {
       out.push({ kind: 'score_pop', amount, body: popBody(state, effects, i) });
       continue;
     }
     state[score] = (state[score] as number) + rarityBonus(amount, found.rarity);
-    addFound(state, params.keeper, found.rarity);
+    addFound(state, keeper as number, found.rarity);
     out.push({ kind: 'score_pop', amount: amount * RARITY_SCORE[found.rarity], body: found.body });
     if (found.rarity !== 'common') out.push({ kind: 'rare_found', rarity: found.rarity, body: found.body });
     if (found.rarity === 'epic') out.push({ kind: 'callout', callout: 'epic_find' });
@@ -347,8 +360,10 @@ export function hooksEnd(state: Int32Array, effects: ArcadeEffect[], params: Hoo
     }
   }
   if (params.boss !== undefined) bossEntries(state, effects, params.boss, out);
-  if (params.swing !== undefined) shortenSwing(state, state[HEADER.player] as number, params.keeper, params.swing);
-  if (params.rarity !== undefined) assignRarities(state, params.keeper, params.rarity.draws);
-  if (params.rounds > 1) roundsEnd(state, params, out);
+  if (keeper !== undefined) {
+    if (params.swing !== undefined) shortenSwing(state, state[HEADER.player] as number, keeper, params.swing);
+    if (params.rarity !== undefined) assignRarities(state, keeper, params.rarity.draws);
+    if (params.rounds > 1) roundsEnd(state, params, keeper, out);
+  }
   effects.push(...out);
 }

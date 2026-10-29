@@ -135,8 +135,9 @@ describe('stored games and track segment scripts build the same world', () => {
     ['arena.escape', 'genre.v3', ['74a28c348188', '1591f5ae36dd', 'b56044e4a5d0']],
     ['arena.escape+collect', 'genre.v3', ['89cca55ed3df', '171b7bfe29e2', '7ff0286fe7cc']],
     ['quest.spatial', 'genre.v3', ['e7a5cb8cd961', '884d8d96893b', '56c7a67b52af']],
-    // Nová hra (`genre.v6`, P66 T10) má navíc počítadlo a pravidlo háčků (létající skóre; skákačka i vzácnost věcí).
-    ['arena.escape', null, ['3bd38ee3a8cf', '3020e7d34971', '434e85fdf44f']],
+    // Nová hra (`genre.v6`, P66 T10) má navíc pravidlo háčků (létající skóre; skákačka i vzácnost věcí a počítadlo).
+    // Útěk bez počítadla (T10a): háčky bez stavu tělo nedostanou.
+    ['arena.escape', null, ['7e0bb9c503aa', '9ec28470bd8b', '5430d2cf486a']],
     ['runner.default', 'genre.v4', ['91adfc092eae', '443589755c48', '5b57273aa65e']],
     ['run.escape', 'genre.v4', ['762ef4f834fd', '768ed29c6ac0', '24e183116936']],
     ['platformer.default', 'genre.v4', ['a742d0104813', 'c2a18d608e93', '73161f418097']],

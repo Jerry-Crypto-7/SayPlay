@@ -96,9 +96,10 @@ const fingerprint = (world: ArcadeWorld): string => createHash('sha256').update(
 // s P47A (`genre.v4`, nápor v aréně) přeměřen na samotné P47A: týž otisk jako sloučená větev.
 // P51 (`genre.v5`: finále, tep pole) dává nové hře nový otisk; uložená `genre.v4` staví dál 3eaf0928… a 327f61dd…
 // (piny uložených světů P51 ve `stored-v4-p51.json`). Přeotisknuto při slučování P51 do main, ať main nezůstane červený.
-// P66 T10 (`genre.v6`): přeotisknuto – nová hra má počítadlo a pravidlo háčků (létající skóre, u chytání vzácnost).
+// P66 T10 (`genre.v6`): přeotisknuto – nová hra má pravidlo háčků (létající skóre, u chytání vzácnost a počítadlo).
+// T10a: sběr se štítem má jen létající skóre, počítadlo nedostane.
 const HARMFUL = [
-  ['a kid shields herself while collecting shells', '8305f7a302b88a2b'],
+  ['a kid shields herself while collecting shells', 'd47d70edab3d9193'],
   ['a squirrel runs and blocks falling acorns', '875b1bae1efbac1c'],
 ] as const;
 
@@ -117,9 +118,9 @@ const PLAIN = [
   ['a car races rivals and shoots them', [142, 146, 137, 139]],
   ['a car races rivals and grabs turbo', [138, 142, 133, 135]],
   // Po sloučení s P47A (`genre.v4`): o 7 těl víc přidá nápor arény, ne akce – na samotné P47A týž počet.
-  // P66 T10 (`genre.v6`): +1 tělo – počítadlo háčků.
+  // P66 T10 (`genre.v6`): +1 tělo – počítadlo háčků kol sběru; uchopení má jen létající skóre a tělo navíc nemá (T10a).
   ['a kid collects shells', [28, 29, 27, 29]],
-  ['a kid grabs shells', [28, 29, 27, 29]],
+  ['a kid grabs shells', [27, 28, 26, 28]],
 ] as const;
 
 describe('P47B T5: a game without dash or shield gets no extra body', () => {

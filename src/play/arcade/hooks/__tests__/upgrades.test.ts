@@ -58,7 +58,7 @@ describe('the pick is an input in the record', () => {
     const played = play(world, [...before, pick], ARCADE_LIBRARY, { horizon: offerTick + 20 });
     const offer = ofKind(played, 'upgrade_offer')[0]!.offer;
     expect(ofKind(played, 'upgrade_pick')).toEqual([{ kind: 'upgrade_pick', card, upgrade: offer[card], tick: offerTick + 4 }]);
-    const keeper = hooksOf(world.rules)!.keeper;
+    const keeper = hooksOf(world.rules)!.keeper as number;
     for (const id of offer) expect(upgradeLevel(played.state, keeper, id)).toBe(id === offer[card] ? 1 : 0);
     const again = play(world, [...before, pick], ARCADE_LIBRARY, { horizon: offerTick + 20 });
     expect(Array.from(again.state)).toEqual(Array.from(played.state));

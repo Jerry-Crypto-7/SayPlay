@@ -221,7 +221,7 @@ describe('P52 T5: arena collect with strike and a guard', () => {
       return { ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v4' } };
     };
     const specs = [arenaSpec(text, ['strike']), arenaSpec(text, ['dash']), v4(['dash', 'strike']), v4(['strike'])];
-    // Nová hra (`genre.v6`) přeotisknuta v P66 T10: počítadlo a pravidlo háčků (létající skóre); `genre.v4` beze změny.
-    expect(specs.map((spec) => canonicalHash(worldOf(spec, 1)))).toEqual(['748ee119', '2c6ab96f', '6d1e1888', '250a2f1b']);
+    // Nová hra (`genre.v6`) přeotisknuta v P66 T10 a T10a: pravidlo háčků (létající skóre) bez počítadla; `genre.v4` beze změny.
+    expect(specs.map((spec) => canonicalHash(worldOf(spec, 1)))).toEqual(['c369830f', '09b77a69', '6d1e1888', '250a2f1b']);
   });
 });

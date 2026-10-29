@@ -90,7 +90,7 @@ function play(world: ArcadeWorld, inputs: readonly InputEvent[]): Played {
     effects.push(out);
     for (const effect of out) if (isHookEffect(effect)) events.push({ ...effect, tick });
   }
-  return { outcome: outcomeOf(state), tick: state[HEADER.tick] as number, round: roundOf(state, hooksOf(world.rules)!.keeper), state, events, effects };
+  return { outcome: outcomeOf(state), tick: state[HEADER.tick] as number, round: roundOf(state, hooksOf(world.rules)!.keeper as number), state, events, effects };
 }
 
 const ofKind = <K extends HookEffect['kind']>(played: Played, kind: K) => played.events.filter((event): event is Extract<HookEffect, { kind: K }> & { tick: number } => event.kind === kind);
@@ -182,7 +182,7 @@ describe('survivor hooks in a bot run (P66 T5)', () => {
   const world = worldOf(1);
   const bot = runBot(world);
   const played = play(world, bot.inputs);
-  const keeper = hooksOf(world.rules)!.keeper;
+  const keeper = hooksOf(world.rules)!.keeper as number;
 
   it('plays four rounds with three offers, picks a damage card first, and the boss enters once in the last round', () => {
     expect(played.outcome).toBe('won');

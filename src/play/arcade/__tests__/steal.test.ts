@@ -63,7 +63,7 @@ function careless(world: ArcadeWorld): ArcadeWorld {
 }
 
 const paramsOf = (world: ArcadeWorld): StealControlParams => world.control.params as StealControlParams;
-const keeperOf = (world: ArcadeWorld): number => hooksOf(world.rules)!.keeper;
+const keeperOf = (world: ArcadeWorld): number => hooksOf(world.rules)!.keeper as number;
 const counter = (state: Int32Array, name: keyof typeof COUNTER): number => state[HEADER.counters + COUNTER[name]] as number;
 const alive = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
 

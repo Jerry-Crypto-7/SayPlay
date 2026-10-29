@@ -177,7 +177,7 @@ describe('sort hooks: combo, rarity, rounds', () => {
       const hooks = hooksOf(world.rules)!;
       expect(hooks.rarity).toBeDefined();
       const { state } = play(world, runBot(world).inputs);
-      const found = foundOf(state, hooks.keeper);
+      const found = foundOf(state, hooks.keeper as number);
       expect(found.common + found.rare + found.epic).toBe(state[HEADER.counters + 5]);
       rare += found.rare;
       epic += found.epic;

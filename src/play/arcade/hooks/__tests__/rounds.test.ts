@@ -50,7 +50,7 @@ describe('rounds of the arena fight from a hand-written genre.v6 spec', () => {
     const world = worldOf(fightSpec(), 2);
     const played = play(world, runBot(world).inputs, ARCADE_LIBRARY, { snapshots: true });
     const offer = ofKind(played, 'upgrade_offer')[0]!;
-    const keeper = hooksOf(world.rules)!.keeper;
+    const keeper = hooksOf(world.rules)!.keeper as number;
     // Vše kromě tiku a počítadla háčků (odpočet přestávky).
     const frozen = (state: Int32Array): number[] =>
       Array.from(state).filter((_, at) => at !== HEADER.tick && (at < HEADER_SIZE + keeper * BODY_STRIDE || at >= HEADER_SIZE + (keeper + 1) * BODY_STRIDE));
@@ -90,7 +90,7 @@ describe('rounds ended by the genre win (clear: win, the new genres)', () => {
   it('a single win is one cleared round, not a won game', () => {
     const played = play(winsAt([10]), [], TEST_LIBRARY, { horizon: 600 });
     expect(played.state[HEADER.runState]).toBe(RUN_STATE.running);
-    expect(roundOf(played.state, hooksOf(winsAt([10]).rules)!.keeper)).toBe(1);
+    expect(roundOf(played.state, hooksOf(winsAt([10]).rules)!.keeper as number)).toBe(1);
   });
 
   it('a win while the wave genre is still in an earlier round waits (clear: wave)', () => {
@@ -130,7 +130,7 @@ describe('the round schedule and the saved games', () => {
     const plain = worldOf(fightTuned(({ hookRounds: _r, hookUpgrades: _u, ...rest }) => rest, 'genre.v5'), 1);
     const hooked = worldOf(fightSpec(), 1);
     expect(hooksOf(plain.rules)).toBeNull();
-    const keeper = hooksOf(hooked.rules)!.keeper;
+    const keeper = hooksOf(hooked.rules)!.keeper as number;
     const bodies = (world: typeof plain): number[] => world.initial.slice(HEADER_SIZE, HEADER_SIZE + keeper * BODY_STRIDE);
     expect(bodies(hooked)).toEqual(bodies(plain));
     expect(hooked.initial.length).toBe(plain.initial.length + BODY_STRIDE);
@@ -152,7 +152,7 @@ describe('the round schedule and the saved games', () => {
 
   it('the hook slots start at zero: round 0, no break, no offer', () => {
     const world = worldOf(fightSpec(), 3);
-    const base = HEADER_SIZE + hooksOf(world.rules)!.keeper * BODY_STRIDE;
+    const base = HEADER_SIZE + (hooksOf(world.rules)!.keeper as number) * BODY_STRIDE;
     for (const slot of Object.values(HOOK_SLOTS)) expect(world.initial[base + slot]).toBe(0);
   });
 });

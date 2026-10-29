@@ -78,7 +78,7 @@ async function openArrows(page: Page, request: APIRequestContext, touch: boolean
   return {
     world,
     params: nativeRule(world.rules, 'arrows_tap')!.params as ArrowsTapParams,
-    keeper: hooksOf(world.rules)!.keeper,
+    keeper: hooksOf(world.rules)!.keeper as number,
     player: world.initial[HEADER.player] as number,
     /** Kusy prvního kola (scéna je kreslí od startu). */
     firstRound: pieces.filter((body) => roundOfCode(bodyHp(initial, body)) === 0),

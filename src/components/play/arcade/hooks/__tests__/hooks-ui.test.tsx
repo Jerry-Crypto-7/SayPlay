@@ -277,7 +277,7 @@ describe('a layer that mounts mid-game (back in the feed)', () => {
   it('shows the offer the core still holds open, and nothing when none is open or the game has no hooks', () => {
     const world = worldOf(fightSpec(), 1);
     const state = instantiate(world);
-    const keeper = hooksOf(world.rules)!.keeper;
+    const keeper = hooksOf(world.rules)!.keeper as number;
     expect(resumedView({ world, state: () => state })).toBe(NO_HOOKS);
     openOffer(state, keeper, ['extra_life', 'speed', 'fire_rate']);
     expect(resumedView({ world, state: () => state }).offer?.cards).toEqual(['extra_life', 'speed', 'fire_rate']);

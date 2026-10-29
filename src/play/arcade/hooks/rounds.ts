@@ -67,16 +67,16 @@ export function roundSeeds(seed: number, rounds: number): number[] {
 }
 
 /** Kolo `round` je vyčištěné: zpráva a hláška, přestávka – s nabídkou z pořadí té přestávky, jinak jen odpočet. */
-function clearRound(state: Int32Array, params: HookParams, round: number, out: HookEffect[]): void {
+function clearRound(state: Int32Array, params: HookParams, keeper: number, round: number, out: HookEffect[]): void {
   out.push({ kind: 'round_clear', round, rounds: params.rounds }, { kind: 'callout', callout: 'round_clear' });
   if (round === params.rounds - 1) return;
   const order = params.upgrades?.offers[round];
   if (order === undefined) {
-    state[at(params.keeper, HOOK_SLOTS.breakLeft)] = ROUNDS.breakTicks;
+    state[at(keeper, HOOK_SLOTS.breakLeft)] = ROUNDS.breakTicks;
     return;
   }
-  out.push({ kind: 'upgrade_offer', offer: openOffer(state, params.keeper, order) });
-  state[at(params.keeper, HOOK_SLOTS.breakLeft)] = UPGRADE_OFFER.pickTicks;
+  out.push({ kind: 'upgrade_offer', offer: openOffer(state, keeper, order) });
+  state[at(keeper, HOOK_SLOTS.breakLeft)] = UPGRADE_OFFER.pickTicks;
 }
 
 /**
@@ -85,36 +85,36 @@ function clearRound(state: Int32Array, params: HookParams, round: number, out: H
  * U `wave` a `goal` se po vrácené výhře kontrola konce kola provede i tak: pravidlo s výhrou na úrovni (`score_bonus`,
  * `cleared`) ji hlásí každý tik a návrat by kolo zasekl navždy (recenze Fáze 3, F2).
  */
-export function roundsEnd(state: Int32Array, params: HookParams, out: HookEffect[]): void {
-  const round = roundOf(state, params.keeper);
+export function roundsEnd(state: Int32Array, params: HookParams, keeper: number, out: HookEffect[]): void {
+  const round = roundOf(state, keeper);
   if (state[HEADER.tick] === 0) out.push({ kind: 'round_start', round: 0, rounds: params.rounds });
   const run = state[HEADER.runState];
   if (run === RUN_STATE.lost) return;
   const last = round === params.rounds - 1;
   if (run === RUN_STATE.won) {
     if (last) {
-      clearRound(state, params, round, out);
+      clearRound(state, params, keeper, round, out);
       return;
     }
     state[HEADER.runState] = RUN_STATE.running;
     if (params.clear === 'win') {
-      clearRound(state, params, round, out);
+      clearRound(state, params, keeper, round, out);
       return;
     }
   }
-  if (params.clear === 'wave' && !last && waveOf(state) > round) clearRound(state, params, round, out);
-  else if (params.clear === 'goal' && params.goal !== undefined && !last && goalDone(state, params.goal) >= (params.goal.marks[round] as number)) clearRound(state, params, round, out);
+  if (params.clear === 'wave' && !last && waveOf(state) > round) clearRound(state, params, keeper, round, out);
+  else if (params.clear === 'goal' && params.goal !== undefined && !last && goalDone(state, params.goal) >= (params.goal.marks[round] as number)) clearRound(state, params, keeper, round, out);
 }
 
 /**
  * Tik přestávky (svět stojí): volba karty ze vstupu, jinak odpočet a po `pickTicks` karta `defaultCard`; bez nabídky
  * jen odpočet. Na konci přestávky hned `round_start` dalšího kola.
  */
-export function breakTick(state: Int32Array, input: ArcadeInput, params: HookParams): HookEffect[] {
+export function breakTick(state: Int32Array, input: ArcadeInput, params: HookParams, keeper: number): HookEffect[] {
   const out: HookEffect[] = [];
-  const breakLeft = at(params.keeper, HOOK_SLOTS.breakLeft);
-  const pickLeft = at(params.keeper, HOOK_SLOTS.pickLeft);
-  if (params.clock === true) state[at(params.keeper, CLOCK_SLOTS.paused)] = (state[at(params.keeper, CLOCK_SLOTS.paused)] as number) + 1;
+  const breakLeft = at(keeper, HOOK_SLOTS.breakLeft);
+  const pickLeft = at(keeper, HOOK_SLOTS.pickLeft);
+  if (params.clock === true) state[at(keeper, CLOCK_SLOTS.paused)] = (state[at(keeper, CLOCK_SLOTS.paused)] as number) + 1;
   if ((state[pickLeft] as number) > 0) {
     let card = pickedCard(input);
     if (card < 0) {
@@ -123,14 +123,14 @@ export function breakTick(state: Int32Array, input: ArcadeInput, params: HookPar
     }
     // Volba kartu vezme a přestávku ukončí; odpočet do ní dál neběží.
     if (card >= 0) {
-      takeCard(state, params.keeper, card, out, params.lifeCap);
+      takeCard(state, keeper, card, out, params.lifeCap);
       state[breakLeft] = 1;
     }
   }
   state[breakLeft] = (state[breakLeft] as number) - 1;
   if (state[breakLeft] === 0) {
-    const next = roundOf(state, params.keeper) + 1;
-    state[at(params.keeper, HOOK_SLOTS.round)] = next;
+    const next = roundOf(state, keeper) + 1;
+    state[at(keeper, HOOK_SLOTS.round)] = next;
     out.push({ kind: 'round_start', round: next, rounds: params.rounds });
   }
   return out;

@@ -97,7 +97,10 @@ function handWorld(things: readonly (readonly [cls: number, x: number, z: number
     { id: 'hole_round', params: { ...shape, seconds: options.seconds ?? HOLE.seconds.default } },
   ];
   const hooked = withHooks({ level: { bodies, length: 0 }, rules, bot: { id: 'hole_bot', params: { half: HOLE.half, ...shape, ...field } } }, 1, { rounds, clear: 'win', ...(options.rarity === true ? { rarity: true } : {}) });
-  const built = buildWorld({ seed: 1, control: { id: 'hole', params: { half: HOLE.half, ...shape, ...field } }, rules: hooked.rules, bot: hooked.bot, level: hooked.level }, ARCADE_LIBRARY);
+  // Kusy díry čtou počítadlo háčků; generátor ho má vždy (vzácnost), jedno kolo bez vzácnosti ho od `withHooks` nedostane (T10a).
+  const counter: BodyInit = { role: 'thing', kind: 'player', x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
+  const level = hooked.keeper === undefined ? { ...hooked.level, bodies: [...hooked.level.bodies, counter] } : hooked.level;
+  const built = buildWorld({ seed: 1, control: { id: 'hole', params: { half: HOLE.half, ...shape, ...field } }, rules: hooked.rules, bot: hooked.bot, level }, ARCADE_LIBRARY);
   if (!built.ok) throw new Error(built.issues.join('; '));
   if (options.edit === undefined) return built.world;
   const state = Int32Array.from(built.world.initial);
@@ -207,8 +210,8 @@ describe('hole: the size threshold and the tiers (pin)', () => {
     const world = handWorld([[0, 0, 9000]], { rounds: 3, need: 60 });
     const state = Int32Array.from(world.initial);
     state[HEADER.counters + COUNTER.ammo] = 3 * 60;
-    expect(roundOf(state, hooksOf(world.rules)!.keeper)).toBe(0);
-    expect(tierOf(state, { keeper: hooksOf(world.rules)!.keeper, rounds: 3, need: 60 })).toBe(3);
+    expect(roundOf(state, hooksOf(world.rules)!.keeper as number)).toBe(0);
+    expect(tierOf(state, { keeper: hooksOf(world.rules)!.keeper as number, rounds: 3, need: 60 })).toBe(3);
   });
 });
 

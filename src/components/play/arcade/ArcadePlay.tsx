@@ -192,7 +192,7 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
     extra,
     score: scoring ? { value: snapshot.score, unit: scoreUnit(spec) } : null,
     stars: starsFor(runOf(snapshot, livesStart), par),
-    found: hooks?.rarity === undefined ? null : foundOf(state, hooks.keeper),
+    found: hooks?.rarity === undefined || hooks.keeper === undefined ? null : foundOf(state, hooks.keeper),
   };
 }
 

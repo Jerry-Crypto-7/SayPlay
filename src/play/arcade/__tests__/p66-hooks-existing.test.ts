@@ -163,7 +163,7 @@ describe('existing genres offer the hooks from genre.v6 (P66 T10)', () => {
     expect(ofKind(played, 'round_clear')).toHaveLength(want.rounds === 1 ? 0 : want.rounds);
     expect(ofKind(played, 'upgrade_offer')).toHaveLength(want.upgrades ? want.rounds - 1 : 0);
     expect(ofKind(played, 'upgrade_pick')).toHaveLength(want.upgrades ? want.rounds - 1 : 0);
-    const found = foundOf(played.state, hooksOf(world.rules)!.keeper);
+    const found = foundOf(played.state, hooksOf(world.rules)!.keeper as number);
     if (want.rarity) expect(found.common + found.rare + found.epic).toBeGreaterThan(0);
     else expect(found).toEqual({ common: 0, rare: 0, epic: 0 });
   });
@@ -212,7 +212,7 @@ describe('a slow pick does not cost the march (world clock, P66 T10)', () => {
     expect(picks.map((pick, k) => pick.tick - offers[k]!.tick)).toEqual(offers.map(() => UPGRADE_OFFER.pickTicks));
     // Hodiny světa stojí celou přestávku: tiky přestávek jsou právě nabídky × doba volby.
     expect(hooks.clock).toBe(true);
-    expect(played.state[bodyBase(hooks.keeper) + CLOCK_SLOTS.paused]).toBe(offers.length * UPGRADE_OFFER.pickTicks);
+    expect(played.state[bodyBase(hooks.keeper as number) + CLOCK_SLOTS.paused]).toBe(offers.length * UPGRADE_OFFER.pickTicks);
     expect(hooks.rounds).toBeLessThanOrEqual(ROUNDS.max);
   });
 });

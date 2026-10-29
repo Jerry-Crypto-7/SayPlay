@@ -54,7 +54,7 @@ function worldOf(seed: number, rounds?: number): ArcadeWorld {
 }
 
 const tapParams = (world: ArcadeWorld): ArrowsTapParams => nativeRule(world.rules, 'arrows_tap')!.params as ArrowsTapParams;
-const keeperOf = (world: ArcadeWorld): number => hooksOf(world.rules)!.keeper;
+const keeperOf = (world: ArcadeWorld): number => hooksOf(world.rules)!.keeper as number;
 const health = (state: Int32Array): number => state[HEADER.counters + COUNTER.health] as number;
 const score = (state: Int32Array): number => state[HEADER.counters + COUNTER.score] as number;
 const items = (state: Int32Array): number => state[HEADER.counters + COUNTER.items] as number;

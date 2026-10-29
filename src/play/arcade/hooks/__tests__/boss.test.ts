@@ -46,6 +46,7 @@ describe('the boss moment reuses the finale boss', () => {
 
   it('with a boss template, its spawned copy is announced at the tick it enters', () => {
     const world = testWorld(1, [item(1, true)], [{ id: 'spawn_at', params: { at: [[3, 1]] } }], { rounds: 1 }, { boss: 1 });
-    expect(ofKind(play(world, [], TEST_LIBRARY, { horizon: 10 }), 'boss_enter')).toEqual([{ kind: 'boss_enter', body: 3, tick: 3 }]);
+    // Jedno kolo bez vzácnosti nemá počítadlo háčků (T10a): kopie bosse jde do slotu 2 hned za tělesy úrovně.
+    expect(ofKind(play(world, [], TEST_LIBRARY, { horizon: 10 }), 'boss_enter')).toEqual([{ kind: 'boss_enter', body: 2, tick: 3 }]);
   });
 });

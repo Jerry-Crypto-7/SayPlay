@@ -52,7 +52,7 @@ describe('a pick in the record replays the same', () => {
   it('another pick in the record is another game, and it too replays the same', () => {
     const world = worldOf(fightSpec(), 1);
     const bot = runBot(world);
-    const keeper = hooksOf(world.rules)!.keeper;
+    const keeper = hooksOf(world.rules)!.keeper as number;
     // Místo karty robota karta o jednu dál (v kruhu) u obou nabídek.
     const moved: InputEvent[] = bot.inputs.map((input) => ((input.buttons & PICK_MASK) === 0 ? input : { ...input, buttons: rotate(input.buttons) }));
     const theirs = play(world, bot.inputs, ARCADE_LIBRARY, { horizon: 1200 });
