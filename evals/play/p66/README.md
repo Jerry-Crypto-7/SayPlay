@@ -1165,3 +1165,62 @@ E2e proti `next start` 3131, projekty podle `playwright.config.ts`:
 - `chromium` 24 specifikací: **89 / 92**. Červené `play-merge` „an idle player merges nothing“ (časový limit) a `play-push` „an idle player pushes nobody out“ („Try again!“ místo „So close.“) jsou červené i na `main` (server 3132, týž spec z worktree `main`) – nejsou regrese P66.
 - `vr-diorama` „runner.default: … keeps the hero in view“: červený jen na větvi (na `main` zelený, opakováno samostatně `--workers=1`) – hrdina běžce v diorámatu od ticku 180 vyjede z pohledu. **Regrese** → T15b, opraveno `600f0f92`: semínko hry plyne z otisku specu, `genre.v6` tak dostal jiné semínko a kreslená trať běžce má na ~40 m údolí 1,86 m (na `main` kopec 1,03 m); diorama brala zem jako rovnou (`diorama-scale.ts`, `area.minY`) a kreslený hrdina zapadl pod desku. Spodek pohledu je teď kreslená zem pod hrdinou (výšky trati z `runnerPathOf`), pád do jámy dál mizí pod deskou. Jen kreslení, stav hry a `genre.v5` beze změny; `vr-*` 25/25, `play-runner-path` + `p66-hooks` 5/5.
 - `pixel7-touch` a `iphone-touch` (`play-touch`, `play-phone`, pět nových žánrů, `p66-hooks`, `play-share`): **48 / 48**.
+
+## T16 – zapečetěná brána a verdikt sloučení
+
+Verdikt: **připraveno k sloučení**. Všech sedm bran G1–G7 je splněných. Brány přepočítává ze surových dat `__tests__/result.test.ts`, ne z tohoto textu.
+
+### Jak se měřilo
+
+- **Otevření sady:** `holdout.json` otevřen jednou 29. 10. 18:45:57 UTC na `da0183b5` (`holdout-opened.json`, pečeť `42bf10cc…` sedí). Nic se podle sady neladilo.
+- **Focení:** větev `da0183b5` přes `shots.mjs` se stejným nastavením jako `main` v T1 (snímky v 1, 3 a 5 s, telefon Pixel 7 na výšku i desktop, placená čtečka, režisér bez modelu) → `D:/caches/p66/p66-holdout/`.
+  - Hra ze čtení vznikla u 9 z 30 vět, na `main` u 17.
+  - První server se po 4. větě zasekl. Příčina byla v měření, ne v P66: výstup serveru šel do `| head -40` a po zavření roury server dokola logoval chybu zápisu. Druhý server dofotil věty 5–30 se stejným nastavením. Všech 39 her se ze serveru stáhlo.
+- **Soudce:** `judge.mjs --view phone --judge codex --seed 66016`. Na větu jeden list s řádky `main` rychlá, `main` ze čtení (když vznikla), P66 rychlá a P66 ze čtení (když vznikla); pořadí řádků losuje `pure-rand`. Soudce viděl jen `sheet.png` v prázdném adresáři. Codex odpověděl 30× (limit nenastal) a soudil celou sadu.
+
+### Brány
+
+| Brána | Práh | Naměřeno | Splněno |
+|---|---|---|---|
+| G1 „hrál bych“, rychlá hra | P66 ≥ `main` + 0,05; obecná polovina ≥ `main` − 0,02 | 0,555 proti 0,48 (+0,075); obecná 0,54 proti 0,49 | ano |
+| G2 věrnost | P66 ≥ `main` − 0,02, rychlá i po čtení | rychlá 0,63 proti 0,375; po čtení 0,655 proti 0,455 | ano |
+| G3 start na telefonu (`pixel7-cpu4`) | párový medián větev − `main` ≤ +200 ms | −710 ms (15 párů, prokládaně); medián 5 259 proti 6 335 ms | ano |
+| G4 FPS na telefonu | 19 žánrů B/A ≥ 0,95; nový žánr ≥ 28,5 fps | B/A medián 1,00, nejnižší 1,00; pět nových žánrů po 59,9 fps | ano |
+| G5 determinismus a publikační brána | otisky beze změny; robot vyhraje, nečinný ne, přehrání shodná; nový žánr prohratelný | `p66-hash` 48/48, `hash-v6` zelený; 39/39 her sady (6 řetězů) offline; slabý robot prohraje u všech pěti | ano |
+| G6 žánr na sadě 200 | `wrongRate` ≤ `main`, 0 přesunů mezi starými žánry | 0,389 = 0,389; 0 přesunů (3 věty přešly na nové žánry) | ano |
+| G7 e2e | zelené, nebo červené i na `main` | chromium 90/92, `pixel7-touch` 35/35, `iphone-touch` 13/13 | ano |
+
+Mediány po polovinách (věrnost / „hrál bych“):
+
+| Polovina | `main` rychlá | P66 rychlá | `main` po čtení | P66 po čtení |
+|---|---|---|---|---|
+| celá sada (30) | 0,375 / 0,48 | 0,63 / 0,555 | 0,455 / 0,48 | 0,655 / 0,585 |
+| věty na nové žánry (15) | 0,25 / 0,45 | 0,65 / 0,57 | 0,42 / 0,48 | 0,66 / 0,65 |
+| obecné věty (15) | 0,58 / 0,49 | 0,58 / 0,54 | 0,48 / 0,49 | 0,46 / 0,51 |
+
+### Po větách
+
+- **Věty na nové žánry:** rychlá hra trefila cílový žánr u 10 z 15. Zbylých pět dostalo tentýž žánr jako na `main`: p66-02 survivor → aréna, p66-05 díra → aréna, p66-08 a p66-09 krádež → běžec, p66-11 třídění → běžec.
+- **Obecné věty:** všech 15 má na větvi tentýž žánr jako na `main` – nové žánry jim nic nevzaly. U p66-19 a p66-30 se žánr liší od štítku při zapečetění (plavba → flap, aréna → běžec), ale stejně je tomu i na `main`.
+- **Jediný větší propad:** p66-06 (díra), „hrál bych“ 0,58 → 0,40.
+- **Inference:** zisk G1 a G2 nesou věty na nové žánry (věrnost 0,25 → 0,65). Obecná polovina drží věrnost rychlé hry 0,58. Po čtení je o 0,02 níž (0,46 proti 0,48), ale G2 platí pro celou sadu.
+
+### Výhrady k měření
+
+- **FPS má strop.** `fpsP50` naměřil 59,9 fps u všech běhů obou stran, což je obnovovací frekvence obrazovky. Malé zpomalení tím pádem neukáže. Podle kreslených snímků je nejnižší poměr u catch 0,974 (56,0 proti 57,5 fps).
+- **Práh pro nové žánry:** `main` runner tentokrát dal 59,9 fps místo 30 fps z T1. Práh zůstal z `baseline-fps.json` (0,95 × 30 = 28,5 fps).
+- **Cizí server:** posledních ~10 minut měření FPS (žánry merge a push) běžel na 0.0.0.0:3166 server jiné relace. Měřený server poslouchal na 127.0.0.1. Inference, neověřeno: dotazy šly na měřený server.
+- **E2e červené i na `main`:** `play-merge` „an idle player merges nothing“ (časový limit) a `play-push` „an idle player pushes nobody out“ („Try again!“ místo „So close.“) jsou červené po opakování i na `main` – stav `main`, ne P66. `vr-diorama` je po T15b 15/15.
+- **Vitest:** cílená sada `src/play src/components/play src/app/play src/app/api/play evals/play/p66` prošla 14 793 / 14 794. `runner-sections` (20 semínek) narazil na časový limit, samotný pak prošel 20/20.
+
+### Útrata čtení a soudci
+
+| Úloha | čtení | USD |
+|---|---|---|
+| T1 | 51 | 1,647 |
+| T13 | 10 | 0,342 |
+| T15 | 31 | 1,046 |
+| T16 (dva serverové procesy, strop 0,96 a 0,78) | 26 | 0,873 |
+| **Celkem** | 118 | **3,908 ze 4** |
+
+Soudci v T16: Codex 30 volání (zapečetěná sada), předplatné.

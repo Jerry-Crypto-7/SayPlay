@@ -1,10 +1,10 @@
 {
  "schema": "p66-genre-route.v1",
- "commit": "ba9f9590+T12",
- "measuredAt": "2026-10-29T10:27:59.329Z",
+ "commit": "da0183b5",
+ "measuredAt": "2026-10-29T19:21:12.999Z",
  "labels": "evals/play/p66/genre-labels.json",
  "about": "genre = classifyGenre(sentence, null).ranked[0] (quick game, no model); draft = draftGameSpecWithMeta(sentence, 1).genre (composer, may skip a choice that does not compile or verify; grid = archetype fallback). wrong = best != none and genre not in acceptable; none is not counted.",
- "seconds": 256,
+ "seconds": 115,
  "wrongRate": {
   "test200": {
    "sentences": 200,
