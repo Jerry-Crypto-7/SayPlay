@@ -54,12 +54,18 @@ async function publishFixture(request: APIRequestContext): Promise<string> {
   return ((await response.json()) as { url: string }).url;
 }
 
+/**
+ * Hláška Chromia, ne přežití (vzor `play-segments.spec.ts`): na telefonu hlídač kvality přepne úroveň a s ní rozlišení
+ * plátna a rekordér klipu (`clip.ts`, MP4 `avc1`) to zaloguje jako chybu.
+ */
+const CLIP_RESOLUTION_WARNING = 'When using "avc1" for mp4 encoding, the codec description is not supposed to change';
+
 /** Chyby stránky a konzole od otevření; 404 modelu by tu byla taky. */
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    if (message.type() === 'error' && !message.text().startsWith(CLIP_RESOLUTION_WARNING)) errors.push(`console: ${message.text()}`);
   });
   return errors;
 }
