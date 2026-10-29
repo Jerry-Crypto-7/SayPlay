@@ -3,7 +3,7 @@
  *
  * - `native` – hraje se rukou ve skutečné velikosti nebo v dosahu ruky (střílečka, hod, bouchání, krájení; P65 T3);
  * - `room` – svět 1:1 až 1:3 kolem stojícího hráče (aréna, obrana, chytání); hrdina se hýbe, hráč ne;
- * - `surround` – trať jako velká diorama před hráčem (T7; do té doby se kreslí jako `desk`);
+ * - `surround` – trať jako velká diorama 1:4–1:8 na pódiu před hráčem, svět jede k němu (T7, `STAGE` v `diorama-scale.ts`);
  * - `desk` – zmenšený svět na stole (P65 T4, `diorama-scale.ts`). Neznámý žánr jde sem.
  *
  * `pose` říká, kde hráč stojí. Režim i póza jsou jen kresba: do hashovaného stavu nejde nic z nich.
@@ -25,7 +25,7 @@ export type XrMode = 'native' | 'room' | 'surround' | 'desk';
  * - `center` – ve středu hřiště (aréna);
  * - `base` – u základny za hrdinou, nepřátelé jdou k němu (obrana);
  * - `front` – před pruhy, do kterých věci padají (chytání);
- * - `track` – před tratí, která jede k němu (T7);
+ * - `track` – před pódiem tratě, která jede k němu (T7);
  * - `table` – u stolu.
  */
 export type XrPose = 'behind' | 'reach' | 'center' | 'base' | 'front' | 'track' | 'table';

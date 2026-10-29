@@ -7,6 +7,9 @@
  * - **Diorama:** tabule stojí za vzdáleným okrajem stolu, nad nízkou scénou – cíl, počítadla a „Exit VR“.
  *   „AI version ready“ visí pod bližším okrajem. Výsledek stojí na bližší polovině stolu, kam se hráč dívá;
  *   po konci běhu smí zakrýt zamrzlou scénu. Všechno jede s deskou, když ji hráč levým gripem posune.
+ * - **Pódium tratí** (P67 T7): tabule stojí nad horní hranou vzdáleného kraje pódia – výš, než kam se promítne
+ *   cokoli z prostoru pódia, takže trať nezakryje. „AI version ready“ visí z téhož místa dolů přes mlhu na konci
+ *   trati, výsledek stojí na bližší části pódia. Panely mají tutéž úhlovou velikost jako na stole (`onStage`).
  * - **VR-nativní žánry** (střílečka, hod, krtci, krájení): jeden sloupec nad levým zápěstím, výsledek místo HUD.
  *
  * Panely se natáčejí k hlavě. Velikost roste se vzdáleností od očí (`scale`), ať má text úhlovou velikost
@@ -18,7 +21,7 @@ import { useXR, useXRInputSourceState } from '@react-three/xr';
 import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import { type Group, Vector3 } from 'three';
 
-import { DESK, type Point, TABLE, worldOfDesk } from '@/play/xr/diorama-scale';
+import { DESK, type DeskPose, HEAD, type Point, STAGE, STAGE_POSE, TABLE, worldOfDesk } from '@/play/xr/diorama-scale';
 
 import { feedSteps } from '../feed/feed-next';
 import { PLAY_FULL, SO_CLOSE, YOU_DID_IT } from '../starters';
@@ -46,12 +49,34 @@ export type Anchor =
   | { readonly kind: 'wrist'; readonly up: number; readonly scale: number }
   | { readonly kind: 'front'; readonly distance: number; readonly up: number; readonly scale: number };
 
+type DeskAnchor = Extract<Anchor, { kind: 'desk' }>;
+
 /** Tabule: spodní hrana 0,25 m nad deskou, 6 cm za vzdáleným okrajem – nad scénou, v horní části zorného pole. */
-const BOARD: Anchor = { kind: 'desk', at: { x: 0, y: 0.25, z: -TABLE.depth / 2 - 0.06 }, scale: 1.75 };
+const BOARD: DeskAnchor = { kind: 'desk', at: { x: 0, y: 0.25, z: -TABLE.depth / 2 - 0.06 }, scale: 1.75 };
 /** „AI version ready“: visí z bližšího okraje desky – v dolní části zorného pole a nic na stole nezakryje. */
-const APRON: Anchor = { kind: 'desk', at: { x: 0, y: 0.005, z: TABLE.depth / 2 + 0.005 }, scale: 0.95, hang: true };
+const APRON: DeskAnchor = { kind: 'desk', at: { x: 0, y: 0.005, z: TABLE.depth / 2 + 0.005 }, scale: 0.95, hang: true };
 /** Výsledek: stojí na bližší polovině desky, ~1 m od očí. */
-const RESULT: Anchor = { kind: 'desk', at: { x: 0, y: 0.02, z: 0.2 }, scale: 1.1 };
+const RESULT: DeskAnchor = { kind: 'desk', at: { x: 0, y: 0.02, z: 0.2 }, scale: 1.1 };
+
+/** Vzdálenost kotvy od očí stojícího hráče (`HEAD`) při výchozí poloze desky. */
+const away = (pose: DeskPose, at: Point): number => {
+  const real = worldOfDesk(pose, at);
+  return Math.hypot(real.x, real.y - HEAD.y, real.z);
+};
+
+/** Kotva pódia (T7) se stejnou úhlovou velikostí panelu, jakou má `desk` na stole. */
+const onStage = (desk: DeskAnchor, at: Point): DeskAnchor => ({ ...desk, at, scale: (desk.scale * away(STAGE_POSE, at)) / away(DESK, desk.at) });
+
+/** Vzdálený kraj pódia v úrovni horní hrany jeho prostoru: tabule odtud stojí nahoru, oznámení visí dolů. */
+const STAGE_FAR_TOP: Point = { x: 0, y: STAGE.height, z: -STAGE.depth / 2 - 0.06 };
+const STAGE_ANCHORS = {
+  board: onStage(BOARD, STAGE_FAR_TOP),
+  apron: onStage(APRON, STAGE_FAR_TOP),
+  // Výsledek na bližší části pódia, 0,35 m od kraje (~1,7 m od očí).
+  result: onStage(RESULT, { x: 0, y: 0.02, z: STAGE.depth / 2 - 0.35 }),
+};
+const DESK_ANCHORS = { board: BOARD, apron: APRON, result: RESULT };
+
 /** Sloupec 5 cm nad levým ovladačem; zápěstí je od očí ~0,4 m, proto menší (text pořád větší než na 1 m). */
 const WRIST: Anchor = { kind: 'wrist', up: 0.05, scale: 0.45 };
 /** Šířky karet v px kitu. */
@@ -176,10 +201,11 @@ export function XrColumn({ anchor, specs, desk, aim }: { readonly anchor: Anchor
 }
 
 /**
- * HUD hry na obrazovce ve VR; `diorama` = hra na stole, jinak zápěstí. `desk` je deska dioramy (`Diorama`).
- * `XrRig` ho kreslí jen s hrou na obrazovce: mezi dvěma hrami (výměna za AI verzi) by panel přeskočil na zápěstí.
+ * HUD hry na obrazovce ve VR; `diorama` = hra na stole (`stage` = na pódiu tratí), jinak zápěstí. `desk` je deska
+ * dioramy (`Diorama`). `XrRig` ho kreslí jen s hrou na obrazovce: mezi dvěma hrami (výměna za AI verzi) by panel
+ * přeskočil na zápěstí.
  */
-export function XrHud({ diorama, desk, aim }: { readonly diorama: boolean; readonly desk: RefObject<DeskReport | null>; readonly aim: PanelAim }) {
+export function XrHud({ diorama, stage, desk, aim }: { readonly diorama: boolean; readonly stage: boolean; readonly desk: RefObject<DeskReport | null>; readonly aim: PanelAim }) {
   const view = useXrHud();
   const notice = useXrNotice();
   const session = useXR((xr) => xr.session);
@@ -191,11 +217,12 @@ export function XrHud({ diorama, desk, aim }: { readonly diorama: boolean; reado
   const top = (width: number): PanelSpec[] => (notice === null ? [] : [noticeOf(notice, width)]);
 
   if (diorama) {
+    const anchors = stage ? STAGE_ANCHORS : DESK_ANCHORS;
     return (
       <>
-        {view !== null && view.result === null && <XrColumn anchor={BOARD} specs={[hudOf(view, WIDTH.board, exit)]} desk={desk} aim={aim} />}
-        {view !== null && view.result !== null && <XrColumn anchor={RESULT} specs={[resultOf(view, WIDTH.result, exit, next)]} desk={desk} aim={aim} />}
-        {notice !== null && <XrColumn anchor={APRON} specs={top(WIDTH.notice)} desk={desk} aim={aim} />}
+        {view !== null && view.result === null && <XrColumn anchor={anchors.board} specs={[hudOf(view, WIDTH.board, exit)]} desk={desk} aim={aim} />}
+        {view !== null && view.result !== null && <XrColumn anchor={anchors.result} specs={[resultOf(view, WIDTH.result, exit, next)]} desk={desk} aim={aim} />}
+        {notice !== null && <XrColumn anchor={anchors.apron} specs={top(WIDTH.notice)} desk={desk} aim={aim} />}
       </>
     );
   }

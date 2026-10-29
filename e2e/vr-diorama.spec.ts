@@ -6,20 +6,25 @@ import type { XrReport } from '../src/components/play/xr/XrRig';
 import { BUTTON } from '../src/play/arcade/contract';
 import { assemblyOfCell, liveCells } from '../src/play/compose/allowed';
 import { compileRecipe } from '../src/play/compose/compile';
-import { DESK, TABLE } from '../src/play/xr/diorama-scale';
+import { DESK, type DeskPose, type Room, STAGE, STAGE_POSE, STAGE_SCALE, TABLE, inHeadView, stageFogOf, worldOfDesk } from '../src/play/xr/diorama-scale';
+import { XR_MODES } from '../src/play/xr/modes';
+import type { GenreId } from '../src/play/genre/contract';
 
 import { expect, test } from './vr-pages';
 
 /**
  * Diorama (P65 T4) v emulátoru IWER: 12 žánrů mimo čtyři VR-nativní a tři kolem hráče (aréna, obrana a chytání,
- * P67 T6, `vr-room.spec.ts`) se hraje na desce před hráčem. Každý žánr
+ * P67 T6, `vr-room.spec.ts`). Šest tratí (runner, platformer, flap, voyage, hop, crowd) stojí od P67 T7 jako velká
+ * diorama na pódiu (`STAGE`), zbylých šest na desce před hráčem. Každý žánr
  * se zahraje dvakrát s ručními hodinami (`byHand`) a týmž skriptem 300 tiků (5 s): ve 2D skutečnou klávesnicí
  * (šipky, mezerník), ve VR páčkou a spouští pravého ovladače (páčka = šipky, spoušť = mezerník,
  * `docs/vr/README.md`). Obě hry musí skončit v témže stavu (hash) a hrdina se musí pohnout nebo změnit počítadlo.
  *
  * Hrdina ve VR musí být po celou hru v zorném poli: každých 30 tiků se jeho střed promítne kamerou obou očí
- * (uvnitř snímku, ne za okem) a leží nad deskou. Hlava stojí ve výšce 1,6 m a dívá se na střed desky, jako hráč
- * u stolu. Paprsek pravého ovladače míří nahoru, aby ťuk spouští nemířil na pruh (`XrAim` – to je dotyk, ne klávesa).
+ * (uvnitř snímku, ne za okem) a leží nad deskou, nebo na pódiu. Hlava stojí ve výšce 1,6 m a dívá se na střed desky
+ * (pódia), jako hráč u stolu. Pódium se celé vejde do zorného pole hlavy (`HEAD.fov`), vzdálený kraj je v mlze
+ * a při jízdě světa se ztmaví okraj obrazu (vinětace). Paprsek pravého ovladače míří nahoru, aby ťuk spouští
+ * nemířil na pruh (`XrAim` – to je dotyk, ne klávesa).
  */
 
 const IWER_BUNDLE = join(process.cwd(), 'node_modules/iwer/build/iwer.min.js');
@@ -86,10 +91,16 @@ interface QuestWindow {
   __quest: Quest;
 }
 
-/** Sklon hlavy dolů na střed desky (rad). */
-const PITCH = Math.atan2(1.6 - TABLE.top, -TABLE.z);
+/** Hraje se žánr buňky na pódiu tratí (P67 T7)? */
+const onStage = (id: string): boolean => XR_MODES[id.split('.')[0] as GenreId].mode === 'surround';
 
-async function withQuest2(page: Page): Promise<void> {
+/** Sklon hlavy dolů na střed desky, nebo pódia (rad). */
+const pitchOf = (room: Room): number => Math.atan2(1.6 - room.top, -room.z);
+
+/** Tratě, kde svět jede rychle (běžec 1:4 ~2,5 m/s, závod, dav): vinětace se musí ukázat. */
+const FAST = ['runner.default', 'voyage.race', 'crowd.default'];
+
+async function withQuest2(page: Page, pitch: number): Promise<void> {
   await page.addInitScript({ path: IWER_BUNDLE });
   await page.addInitScript((pitch) => {
     const self = window as unknown as QuestWindow;
@@ -105,7 +116,7 @@ async function withQuest2(page: Page): Promise<void> {
     device.controllers.left?.position.set(-0.3, 1.1, -0.4);
     device.controllers.left?.quaternion.set(0, 0, 0, 1);
     self.__quest = device;
-  }, PITCH);
+  }, pitch);
 }
 
 function specOf(id: string) {
@@ -156,6 +167,7 @@ interface Look {
   readonly at: XrReport['heroAt'];
   readonly view: XrReport['heroView'];
   readonly desk: XrReport['heroOnDesk'];
+  readonly vignette: XrReport['vignette'];
 }
 
 /**
@@ -196,7 +208,7 @@ async function playVr(page: Page, script: readonly Hold[]): Promise<Played & { r
         if ((tick + 1) % lookEvery === 0) {
           await frames(2);
           const report = window.__playXr!();
-          looks.push({ tick: end.tick, at: report.heroAt, view: report.heroView, desk: report.heroOnDesk });
+          looks.push({ tick: end.tick, at: report.heroAt, view: report.heroView, desk: report.heroOnDesk, vignette: report.vignette });
         }
       }
       return { first: first!, end: end!, captured: shell.capture(), looks };
@@ -205,15 +217,24 @@ async function playVr(page: Page, script: readonly Hold[]): Promise<Played & { r
   );
 }
 
-/** Střed hrdiny v obou očích uvnitř snímku a hrdina nad deskou (s přesahem o půl hrdiny – stojí u kraje). */
-function lostLooks(looks: readonly Look[]): string[] {
+/** Střed hrdiny v obou očích uvnitř snímku a hrdina nad deskou nebo pódiem (s přesahem o půl hrdiny – stojí u kraje). */
+function lostLooks(looks: readonly Look[], room: Room): string[] {
   const slack = 0.05;
   return looks.flatMap(({ tick, view, desk }) => {
     const eyes = view ?? [];
     const seen = eyes.length > 0 && eyes.every((eye) => eye !== null && !eye.behind && Math.abs(eye.x) <= 1 && Math.abs(eye.y) <= 1);
-    const onDesk = desk !== null && Math.abs(desk.x) <= TABLE.width / 2 + slack && Math.abs(desk.z) <= TABLE.depth / 2 + slack && desk.y >= -slack && desk.y <= TABLE.height + slack;
+    const onDesk = desk !== null && Math.abs(desk.x) <= room.width / 2 + slack && Math.abs(desk.z) <= room.depth / 2 + slack && desk.y >= -slack && desk.y <= room.height + slack;
     return seen && onDesk ? [] : [`tick ${String(tick)}: eyes ${JSON.stringify(view)}, desk ${JSON.stringify(desk)}`];
   });
+}
+
+/** Rohy podlahy pódia a jeho vzdálená horní hrana, které hlava při pohledu na střed nevidí (`HEAD.fov`). */
+function outOfView(pose: DeskPose, room: Room): string[] {
+  const corners = [
+    ...[-1, 1].flatMap((x) => [-1, 1].map((z) => ({ x: (x * room.width) / 2, y: 0, z: (z * room.depth) / 2 }))),
+    ...[-1, 1].map((x) => ({ x: (x * room.width) / 2, y: room.height, z: -room.depth / 2 })),
+  ];
+  return corners.filter((at) => !inHeadView(worldOfDesk(pose, at), pose)).map((at) => JSON.stringify(at));
 }
 
 test.beforeEach(async () => {
@@ -222,7 +243,9 @@ test.beforeEach(async () => {
 });
 
 for (const [id, script] of Object.entries(GENRES)) {
-  test(`${id}: the table-top diorama plays like the keyboard and keeps the hero in view`, async ({ openPage, request }) => {
+  const stage = onStage(id);
+  const room: Room = stage ? STAGE : TABLE;
+  test(`${id}: the ${stage ? 'track stage' : 'table-top diorama'} plays like the keyboard and keeps the hero in view`, async ({ openPage, request }) => {
     const url = await publish(request, id);
 
     const flat = await openPage();
@@ -234,17 +257,33 @@ for (const [id, script] of Object.entries(GENRES)) {
     expect(reference.captured.inputs.length, 'the keyboard script reaches the game').toBeGreaterThan(0);
 
     const page = await openPage();
-    await withQuest2(page);
+    await withQuest2(page, pitchOf(room));
     await page.goto(`${url}?vr=1`);
     await ready(page);
     await page.getByTestId('enter-vr').click();
     await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
     await expect.poll(async () => (await xr(page))?.desk?.scale ?? null, { timeout: 15_000 }).not.toBeNull();
-    const desk = (await xr(page))!.desk!;
-    // Deska stojí, kde má: 0,9 m před hráčem, deska ve výšce 0,8 m, svět nejvýš 1:12.
-    expect({ x: desk.x, top: desk.top, z: desk.z, yaw: desk.yaw }).toEqual(DESK);
-    expect(desk.scale).toBeLessThanOrEqual(1 / 12);
-    const start = (await xr(page))!.heroAt;
+    const entered = (await xr(page))!;
+    const desk = entered.desk!;
+    const pose = { x: desk.x, top: desk.top, z: desk.z, yaw: desk.yaw };
+    expect(desk.room).toEqual(room);
+    if (stage) {
+      // Pódium: střed 2,8 m před hráčem, zem 0,4 m, horní hrana pod očima, 1:4 až 1:8, celé v zorném poli hlavy.
+      expect(pose).toEqual(STAGE_POSE);
+      expect(desk.scale).toBeGreaterThanOrEqual(STAGE_SCALE.min - 1e-9);
+      expect(desk.scale).toBeLessThanOrEqual(STAGE_SCALE.max + 1e-9);
+      expect(outOfView(pose, room)).toEqual([]);
+      // Vzdálený kraj mizí do mlhy (m od očí), podlaha okolí kolem pódia.
+      expect(entered.fog).toEqual(stageFogOf());
+      expect(entered.sky).not.toBeNull();
+    } else {
+      // Deska stojí, kde má: 0,9 m před hráčem, deska ve výšce 0,8 m, svět nejvýš 1:12; bez mlhy a vinětace.
+      expect(pose).toEqual(DESK);
+      expect(desk.scale).toBeLessThanOrEqual(1 / 12);
+      expect(entered.fog).toBeNull();
+      expect(entered.vignette).toBeNull();
+    }
+    const start = entered.heroAt;
 
     const played = await playVr(page, script);
     const after = await xr(page);
@@ -267,7 +306,11 @@ for (const [id, script] of Object.entries(GENRES)) {
     expect(moved || counted, 'the hero moved or a counter changed').toBe(true);
 
     expect(played.looks.length).toBeGreaterThanOrEqual(Math.min(TICKS, played.end.tick) / LOOK_EVERY - 1);
-    expect(lostLooks(played.looks)).toEqual([]);
+    expect(lostLooks(played.looks, room)).toEqual([]);
+    const vignette = Math.max(0, ...played.looks.map((look) => look.vignette ?? 0));
+    console.log(`${id}: vignette up to ${vignette.toFixed(2)}`);
+    if (FAST.includes(id)) expect(vignette, 'the edge of the view darkens while the world moves').toBeGreaterThan(0.3);
+    if (!stage) expect(played.looks.every((look) => look.vignette === null)).toBe(true);
 
     if (id === 'quest.spatial') {
       // Levý grip nese desku a do hry nejde; pravý grip dál drží použití (`interact`).

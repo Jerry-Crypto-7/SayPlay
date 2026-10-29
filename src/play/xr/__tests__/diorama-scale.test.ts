@@ -6,6 +6,9 @@
  *
  * Hrdina jde do okna v metrech scény podle těla (x zrcadlené, jako `World`); kde scéna kreslí jinde (ohyb trati
  * běžce), jede okno za kresleným hrdinou a ověří to e2e `vr-diorama.spec.ts` v kameře brýlí.
+ *
+ * Tratě (P67 T7) stojí na pódiu: 1:4 až 1:8, střed 1,5–3 m před hráčem, horní hrana pod očima, celé v zorném poli
+ * hlavy, hrdina na pódiu po celou hru robota a vzdálený kraj v mlze.
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -24,9 +27,16 @@ import { stageOf } from '@/play/compose/stage-registry';
 
 import {
   DESK,
+  type DeskPose,
   type DioramaView,
+  HEAD,
   type Point,
+  type Room,
   SCALE_MAX,
+  STAGE,
+  STAGE_LAYOUT,
+  STAGE_POSE,
+  STAGE_SCALE,
   TABLE,
   carried,
   createDiorama,
@@ -36,8 +46,12 @@ import {
   inHeadView,
   onDesk,
   playAreaOf,
+  stageFogOf,
+  stageScale,
+  viewDepthOf,
   worldOfDesk,
 } from '../diorama-scale';
+import { genreOfWorld, modeOf } from '../modes';
 
 beforeAll(async () => {
   await loadRapier();
@@ -79,15 +93,18 @@ const runOf = (id: string): Point[] => {
   return runs.get(id)!;
 };
 
-/** Tiky, kdy hrdina nebyl na desce nebo v pohledu hlavy, s místem na desce (m). */
-function lost(path: readonly Point[], viewOf: (hero: Point) => DioramaView): string[] {
+/** Tiky, kdy hrdina nebyl na desce (stole, nebo pódiu) nebo v pohledu hlavy, s místem na desce (m). */
+function lost(path: readonly Point[], viewOf: (hero: Point) => DioramaView, room: Room = TABLE, pose: DeskPose = DESK): string[] {
   const misses: string[] = [];
   path.forEach((hero, tick) => {
     const at = deskPointOf(viewOf(hero), hero);
-    if (!onDesk(at) || !inHeadView(worldOfDesk(DESK, at))) misses.push(`tick ${String(tick)}: desk ${at.x.toFixed(2)}, ${at.y.toFixed(2)}, ${at.z.toFixed(2)} m`);
+    if (!onDesk(at, 0, room) || !inHeadView(worldOfDesk(pose, at), pose)) misses.push(`tick ${String(tick)}: desk ${at.x.toFixed(2)}, ${at.y.toFixed(2)}, ${at.z.toFixed(2)} m`);
   });
   return misses;
 }
+
+/** Tratě na pódiu (P67 T7): živé buňky, jejichž žánr hraje režim `surround`. */
+const stageWorlds = worlds.filter(([, world]) => modeOf(genreOfWorld(world)).mode === 'surround');
 
 /** Pět tratí z AC: svět se posouvá v dioramě, hlava stojí. */
 const TRACKS = ['runner.default', 'voyage.race', 'crowd.default', 'flap.default', 'hop.default'] as const;
@@ -163,6 +180,86 @@ describe('the hero never leaves the desk', () => {
     const path = runOf(id);
     const start = view.frame(path[0]!);
     for (const hero of path) expect(view.frame(hero).center).toEqual(start.center);
+  });
+});
+
+describe('tracks on the stage (P67 T7): a big diorama in front of the player', () => {
+  it('covers the six track genres, every live cell of them', () => {
+    expect(new Set(stageWorlds.map(([, world]) => genreOfWorld(world)))).toEqual(new Set(['runner', 'platformer', 'flap', 'voyage', 'hop', 'crowd']));
+    expect(stageWorlds.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('stands 1.5–3 m ahead with its top edge below the eyes', () => {
+    expect(Math.hypot(STAGE.x, STAGE.z)).toBeGreaterThanOrEqual(1.5);
+    expect(Math.hypot(STAGE.x, STAGE.z)).toBeLessThanOrEqual(3);
+    expect(STAGE.top + STAGE.height).toBeLessThan(HEAD.y);
+    // Bližší kraj není u nohou: hráč stojí před pódiem, ne na něm.
+    expect(-STAGE.z - STAGE.depth / 2).toBeGreaterThan(0.5);
+  });
+
+  it('fits the field of view of the head looking at its middle: the whole floor, the far top edge, the column above the middle', () => {
+    const seen = [
+      ...[-1, 1].flatMap((x) => [-1, 1].map((z) => ({ x: (x * STAGE.width) / 2, y: 0, z: (z * STAGE.depth) / 2 }))),
+      ...[-1, 1].map((x) => ({ x: (x * STAGE.width) / 2, y: STAGE.height, z: -STAGE.depth / 2 })),
+      { x: 0, y: STAGE.height, z: 0 },
+      { x: 0, y: STAGE.height, z: STAGE.depth / 2 },
+    ];
+    for (const at of seen) expect(inHeadView(worldOfDesk(STAGE_POSE, at), STAGE_POSE), JSON.stringify(at)).toBe(true);
+    // Hlídá i ven: pódium o 10 cm širší na každou stranu by bližší rohy z pohledu ztratilo.
+    expect(inHeadView(worldOfDesk(STAGE_POSE, { x: STAGE.width / 2 + 0.1, y: 0, z: STAGE.depth / 2 }), STAGE_POSE)).toBe(false);
+  });
+
+  it.each(stageWorlds)('%s: 1:4 to 1:8, the whole height under the top edge when 1:8 allows', (_id, world) => {
+    const area = playAreaOf(world);
+    const scale = stageScale(area);
+    expect(scale).toBeGreaterThanOrEqual(STAGE_SCALE.min);
+    expect(scale).toBeLessThanOrEqual(STAGE_SCALE.max);
+    if ((area.maxY - area.minY) * STAGE_SCALE.min <= STAGE.height) expect((area.maxY - area.minY) * scale).toBeLessThanOrEqual(STAGE.height + 1e-9);
+  });
+
+  it('the runner is 1:4 and the race 1:8 – the scale is the widest that fits', () => {
+    expect(stageScale(playAreaOf(worldOf('runner.default')))).toBeCloseTo(1 / 4, 9);
+    expect(stageScale(playAreaOf(worldOf('voyage.race')))).toBeCloseTo(1 / 8, 9);
+    // Plošinovka 8,4 m vysoká se celá vejde pod horní hranu.
+    expect(stageScale(playAreaOf(worldOf('platformer.default')))).toBeCloseTo(STAGE.height / 8.4, 2);
+  });
+
+  it.each(stageWorlds)('%s: on the stage and in view for the whole bot run', (id, world) => {
+    const view = createDiorama(playAreaOf(world), STAGE_LAYOUT);
+    const path = runOf(id);
+    expect(path.length).toBeGreaterThan(60);
+    expect(lost(path, (hero) => view.frame(hero), STAGE, STAGE_POSE)).toEqual([]);
+  });
+
+  it('a stage that stops following loses the runner – the check above bites', () => {
+    const view = createDiorama(playAreaOf(worldOf('runner.default')), STAGE_LAYOUT);
+    const frozen = view.frame(runOf('runner.default')[0]!);
+    expect(lost(runOf('runner.default'), () => frozen, STAGE, STAGE_POSE).length).toBeGreaterThan(100);
+  });
+
+  it.each(TRACKS)('%s: the world moves towards the player, the stage and the head stand', (id) => {
+    const view = createDiorama(playAreaOf(worldOf(id)), STAGE_LAYOUT);
+    const path = runOf(id);
+    const start = view.frame(path[0]!);
+    let end = start;
+    let farthest = Infinity;
+    for (const hero of path) {
+      end = view.frame(hero);
+      // Hrdina v bližší čtvrtině pódia, blízko hráče: nejdál od něj je na kraji pásu trati (osa z desky míří k hráči).
+      farthest = Math.min(farthest, deskPointOf(end, hero).z);
+    }
+    expect(end.center.z - start.center.z).toBeGreaterThan(20);
+    expect(end.scale).toBe(start.scale);
+    expect(farthest).toBeGreaterThanOrEqual(STAGE.depth / 2 - 0.25 * STAGE.depth - 1e-9);
+  });
+
+  it('the far end vanishes into the mist, the hero never does', () => {
+    const fog = stageFogOf();
+    // Celá vzdálená stěna prostoru pódia je za koncem mlhy: řez na kraji není vidět.
+    for (const x of [-1, 1]) for (const y of [0, STAGE.height]) expect(viewDepthOf(worldOfDesk(STAGE_POSE, { x: (x * STAGE.width) / 2, y, z: -STAGE.depth / 2 }), STAGE_POSE)).toBeGreaterThanOrEqual(fog.far - 1e-9);
+    // Pás hrdiny (bližší čtvrtina) je před začátkem mlhy v každé výšce a šířce.
+    for (const x of [-1, 1]) for (const y of [0, STAGE.height]) expect(viewDepthOf(worldOfDesk(STAGE_POSE, { x: (x * STAGE.width) / 2, y, z: STAGE.depth / 4 }), STAGE_POSE)).toBeLessThan(fog.near);
+    expect(fog.far - fog.near).toBeGreaterThan(0.5);
   });
 });
 

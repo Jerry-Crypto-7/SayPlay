@@ -3,10 +3,10 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR } from '@react-three/xr';
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
-import { ACESFilmicToneMapping, type ArrayCamera, Box3, DynamicDrawUsage, type Group, InstancedMesh, Material, Matrix4, type Mesh, Object3D, type SkinnedMesh, Sphere, Vector3 } from 'three';
+import { ACESFilmicToneMapping, type ArrayCamera, Box3, DynamicDrawUsage, Fog, type Group, InstancedMesh, Material, Matrix4, type Mesh, Object3D, type SkinnedMesh, Sphere, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
-import { type Point, deskOfWorld, onDesk } from '@/play/xr/diorama-scale';
+import { DESK_LAYOUT, type Point, STAGE_LAYOUT, deskOfWorld, onDesk } from '@/play/xr/diorama-scale';
 import { REACH, type XrControl, type XrMotion } from '@/play/xr/input-map';
 import { genreOfWorld, modeOf } from '@/play/xr/modes';
 import { cutOf } from '@/play/xr/quality';
@@ -32,7 +32,8 @@ import { XrSwing } from './XrSwing';
  * brýlí a její pozici každý snímek přepíše póza hlavy. Svět se otočí o půl kruhu, aby hráč stál tam, kde ve 2D
  * stojí kamera (za hrdinou, na straně −z). Jak se žánr hraje, říká tabulka režimů (`xr/modes.ts`, P67 T6):
  * VR-nativní žánry (T3) svět nezmenší, nebo ho dají do dosahu ruky (`placementOf`); aréna, obrana a chytání stojí
- * kolem hráče (`XrRoom`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`). Zvuk události zní
+ * kolem hráče (`XrRoom`); tratě jsou velká diorama na pódiu, která jede k hráči (P67 T7, `Diorama` se
+ * `STAGE_LAYOUT`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`). Zvuk události zní
  * z místa těla přes matici obalu (`XrAudio`) a ovladače vibrují podle tabulky událostí (`XrHaptics`, P67 T8).
  * Mimo relaci je obal identita, takže 2D se nemění a vstup do VR scénu nepřestaví.
  * `DIORAMA` je jen poloha, než relace dostane hru (pak měřítko spočte `Diorama` z velikosti hřiště).
@@ -183,7 +184,7 @@ function XrCull({ world, desk, diorama }: { readonly world: RefObject<Group | nu
       const { geometry } = mesh;
       if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
       const sphere = at.sphere.copy(geometry.boundingSphere!).applyMatrix4(mesh.matrixWorld);
-      return onDesk(deskOfWorld(pose, sphere.center), sphere.radius + DESK_MARGIN);
+      return onDesk(deskOfWorld(pose, sphere.center), sphere.radius + DESK_MARGIN, pose.room);
     };
 
     // Svět se prochází každý snímek: scéna sítě i staví znovu (prstenec arény po změně volných míst) a nová síť
@@ -270,6 +271,10 @@ export interface XrReport {
   readonly room: RoomReport | null;
   /** Sada prostředí, v jejíchž barvách je podlaha okolí (`XrSky`); `null` = okolí se nekreslí. */
   readonly sky: string | null;
+  /** Síla vinětace 0–1 v posledním snímku (pódium tratí, P67 T7); `null` = vinětace není. */
+  readonly vignette: number | null;
+  /** Mlha kořene scény (m od očí), kterou ve VR kreslí pódium tratí; `null` = žádná. */
+  readonly fog: { readonly near: number; readonly far: number } | null;
   /** Střed kresleného hrdiny promítnutý kamerou každého oka (NDC −1…1, +y nahoru); `behind` = za okem. */
   readonly heroView: readonly ({ readonly x: number; readonly y: number; readonly behind: boolean } | null)[] | null;
   /** Kreslený hrdina v osách desky dioramy (m: x doprava, y nad deskou, z k hráči); `null` = bez dioramy. */
@@ -359,7 +364,14 @@ function XrProbe({
       if (presenting) scene.updateMatrixWorld();
       const at = hero?.getWorldPosition(new Vector3()) ?? null;
       let sky: string | null = null;
-      if (presenting) scene.traverse((node) => (sky = (node.userData.xrSky as string | undefined) ?? sky));
+      let vignette: number | null = null;
+      if (presenting) {
+        scene.traverse((node) => {
+          sky = (node.userData.xrSky as string | undefined) ?? sky;
+          vignette = (node.userData.xrVignette as number | undefined) ?? vignette;
+        });
+      }
+      const fog = presenting && scene.fog instanceof Fog ? { near: scene.fog.near, far: scene.fog.far } : null;
       return {
         presenting,
         eyes: presenting ? gl.xr.getCamera().cameras.length : 0,
@@ -372,6 +384,8 @@ function XrProbe({
         heroWorld: at === null ? null : { x: at.x, y: at.y, z: at.z },
         room: presenting ? room.current : null,
         sky,
+        vignette,
+        fog,
         heroView:
           hero === null
             ? null
@@ -443,7 +457,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   const hud = useXrHud();
   const shown = game ?? hud?.session ?? null;
   const control = useMemo(() => (shown === null ? null : xrControlOf(shown.world)), [shown]);
-  // Režim podle žánru (P67 T6); `surround` (T7) se zatím hraje na stole.
+  // Režim podle žánru (P67 T6).
   const entry = useMemo(() => (shown === null ? null : modeOf(genreOfWorld(shown.world))), [shown]);
   const world = useRef<Group>(null);
   const motion = useRef<XrMotion>({ aim: null, velocity: null, laneAxis: null, handX: null });
@@ -456,6 +470,8 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   const swings = control?.input === 'throw-rig' || control?.swing !== undefined;
   const room = entry?.mode === 'room';
   const diorama = shown !== null && entry?.mode !== 'native' && !room;
+  // Tratě na pódiu (P67 T7), ostatní dioramy na stole.
+  const stage = entry?.mode === 'surround';
   // VR lobby (P67 T2): nad hrou na obrazovce místo jejího HUD; ovladače do hry nejdou, dokud je otevřené.
   const lobbyState = useXrLobby();
   const lobby = presenting && lobbyShown(lobbyState, shown);
@@ -466,7 +482,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   return (
     <>
       <group ref={world}>{children}</group>
-      {presenting && diorama && <Diorama world={world} session={shown} report={desk} />}
+      {presenting && diorama && <Diorama key={stage ? 'stage' : 'desk'} world={world} session={shown} report={desk} layout={stage ? STAGE_LAYOUT : DESK_LAYOUT} />}
       {presenting && room && shown !== null && <XrRoom world={world} session={shown} pose={entry.pose} hand={control?.handLane === true} motion={motion} report={roomReport} />}
       {presenting && !diorama && !room && <XrPlace world={world} session={shown} control={control} />}
       {presenting && <DirectRender calls={calls} />}
@@ -476,7 +492,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {playing && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
       {playing && game !== null && <XrHaptics session={game} />}
       {presenting && shown !== null && <XrAudio world={world} session={shown} />}
-      {presenting && shown !== null && !lobby && <XrHud diorama={diorama} desk={desk} aim={aim} />}
+      {presenting && shown !== null && !lobby && <XrHud diorama={diorama} stage={stage} desk={desk} aim={aim} />}
       {lobby && <XrLobby shown={shown} aim={aim} />}
       {playing && <XrFeed shown={shown} aim={aim} />}
       <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} room={roomReport} />

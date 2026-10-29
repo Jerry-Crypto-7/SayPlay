@@ -1766,8 +1766,8 @@
     },
     {
       "id": "runner.default",
-      "kind": "diorama",
-      "scale": "1:12.0",
+      "kind": "surround",
+      "scale": "1:4.0",
       "settled": true,
       "end": {
         "runState": "running",
@@ -1779,7 +1779,7 @@
         {
           "tick": 30,
           "calls": 34,
-          "triangles": 90370,
+          "triangles": 86048,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1789,8 +1789,8 @@
         },
         {
           "tick": 60,
-          "calls": 28,
-          "triangles": 88346,
+          "calls": 32,
+          "triangles": 84128,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1800,8 +1800,8 @@
         },
         {
           "tick": 90,
-          "calls": 30,
-          "triangles": 93010,
+          "calls": 34,
+          "triangles": 84588,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1812,7 +1812,7 @@
         {
           "tick": 120,
           "calls": 32,
-          "triangles": 93470,
+          "triangles": 84488,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1822,8 +1822,8 @@
         },
         {
           "tick": 150,
-          "calls": 30,
-          "triangles": 89052,
+          "calls": 34,
+          "triangles": 84720,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1833,8 +1833,8 @@
         },
         {
           "tick": 180,
-          "calls": 36,
-          "triangles": 89748,
+          "calls": 38,
+          "triangles": 85184,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1844,8 +1844,8 @@
         },
         {
           "tick": 210,
-          "calls": 38,
-          "triangles": 94484,
+          "calls": 36,
+          "triangles": 84724,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1855,8 +1855,8 @@
         },
         {
           "tick": 240,
-          "calls": 38,
-          "triangles": 97052,
+          "calls": 42,
+          "triangles": 96210,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1866,8 +1866,8 @@
         },
         {
           "tick": 270,
-          "calls": 40,
-          "triangles": 107730,
+          "calls": 44,
+          "triangles": 106888,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1877,8 +1877,8 @@
         },
         {
           "tick": 300,
-          "calls": 46,
-          "triangles": 119112,
+          "calls": 48,
+          "triangles": 114476,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1888,8 +1888,8 @@
         },
         {
           "tick": 330,
-          "calls": 44,
-          "triangles": 114376,
+          "calls": 50,
+          "triangles": 114708,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1899,8 +1899,8 @@
         },
         {
           "tick": 360,
-          "calls": 46,
-          "triangles": 109774,
+          "calls": 48,
+          "triangles": 106080,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1910,8 +1910,8 @@
         },
         {
           "tick": 390,
-          "calls": 40,
-          "triangles": 98528,
+          "calls": 42,
+          "triangles": 93650,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1921,8 +1921,8 @@
         },
         {
           "tick": 420,
-          "calls": 38,
-          "triangles": 86634,
+          "calls": 40,
+          "triangles": 82940,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1932,8 +1932,8 @@
         },
         {
           "tick": 450,
-          "calls": 28,
-          "triangles": 81080,
+          "calls": 30,
+          "triangles": 80948,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1943,8 +1943,8 @@
         },
         {
           "tick": 480,
-          "calls": 26,
-          "triangles": 80848,
+          "calls": 28,
+          "triangles": 80716,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1954,8 +1954,8 @@
         },
         {
           "tick": 510,
-          "calls": 22,
-          "triangles": 80384,
+          "calls": 26,
+          "triangles": 80484,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1965,8 +1965,8 @@
         },
         {
           "tick": 540,
-          "calls": 20,
-          "triangles": 80048,
+          "calls": 24,
+          "triangles": 80148,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1976,8 +1976,8 @@
         },
         {
           "tick": 570,
-          "calls": 20,
-          "triangles": 80048,
+          "calls": 24,
+          "triangles": 80148,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1987,8 +1987,8 @@
         },
         {
           "tick": 600,
-          "calls": 22,
-          "triangles": 80144,
+          "calls": 26,
+          "triangles": 80244,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -1998,8 +1998,8 @@
         },
         {
           "tick": 600,
-          "calls": 22,
-          "triangles": 80144,
+          "calls": 26,
+          "triangles": 80244,
           "textures": 28,
           "textureMB": 56.7,
           "renderbufferMB": 0,
@@ -2009,15 +2009,15 @@
         }
       ],
       "max": {
-        "calls": 46,
-        "triangles": 119112,
+        "calls": 50,
+        "triangles": 114708,
         "textureMB": 56.7
       }
     },
     {
       "id": "platformer.default",
-      "kind": "diorama",
-      "scale": "1:12.0",
+      "kind": "surround",
+      "scale": "1:7.6",
       "settled": true,
       "end": {
         "runState": "running",
@@ -2028,8 +2028,8 @@
       "samples": [
         {
           "tick": 30,
-          "calls": 32,
-          "triangles": 63244,
+          "calls": 42,
+          "triangles": 68326,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2039,8 +2039,8 @@
         },
         {
           "tick": 60,
-          "calls": 34,
-          "triangles": 63476,
+          "calls": 44,
+          "triangles": 68330,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2050,8 +2050,8 @@
         },
         {
           "tick": 90,
-          "calls": 32,
-          "triangles": 61556,
+          "calls": 46,
+          "triangles": 68562,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2061,9 +2061,9 @@
         },
         {
           "tick": 120,
-          "calls": 36,
-          "triangles": 62124,
-          "textures": 26,
+          "calls": 46,
+          "triangles": 66978,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2072,9 +2072,9 @@
         },
         {
           "tick": 150,
-          "calls": 30,
-          "triangles": 61456,
-          "textures": 26,
+          "calls": 44,
+          "triangles": 66642,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2083,9 +2083,9 @@
         },
         {
           "tick": 180,
-          "calls": 30,
-          "triangles": 61456,
-          "textures": 26,
+          "calls": 42,
+          "triangles": 66542,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2094,9 +2094,9 @@
         },
         {
           "tick": 210,
-          "calls": 32,
-          "triangles": 61792,
-          "textures": 26,
+          "calls": 42,
+          "triangles": 66646,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2105,9 +2105,9 @@
         },
         {
           "tick": 240,
-          "calls": 32,
-          "triangles": 65746,
-          "textures": 26,
+          "calls": 44,
+          "triangles": 66710,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2116,9 +2116,9 @@
         },
         {
           "tick": 270,
-          "calls": 36,
-          "triangles": 66314,
-          "textures": 26,
+          "calls": 46,
+          "triangles": 67046,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2127,9 +2127,9 @@
         },
         {
           "tick": 300,
-          "calls": 32,
-          "triangles": 65746,
-          "textures": 26,
+          "calls": 44,
+          "triangles": 66826,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2138,9 +2138,9 @@
         },
         {
           "tick": 330,
-          "calls": 32,
-          "triangles": 65746,
-          "textures": 26,
+          "calls": 44,
+          "triangles": 66826,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2149,9 +2149,9 @@
         },
         {
           "tick": 360,
-          "calls": 34,
-          "triangles": 66082,
-          "textures": 26,
+          "calls": 48,
+          "triangles": 67394,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2160,9 +2160,9 @@
         },
         {
           "tick": 390,
-          "calls": 32,
-          "triangles": 65746,
-          "textures": 26,
+          "calls": 50,
+          "triangles": 67314,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2171,9 +2171,9 @@
         },
         {
           "tick": 420,
-          "calls": 32,
-          "triangles": 65746,
-          "textures": 26,
+          "calls": 50,
+          "triangles": 67314,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2182,9 +2182,9 @@
         },
         {
           "tick": 450,
-          "calls": 34,
-          "triangles": 65914,
-          "textures": 26,
+          "calls": 50,
+          "triangles": 67106,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2193,9 +2193,9 @@
         },
         {
           "tick": 480,
-          "calls": 36,
-          "triangles": 66262,
-          "textures": 26,
+          "calls": 54,
+          "triangles": 67570,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2204,9 +2204,9 @@
         },
         {
           "tick": 510,
-          "calls": 38,
-          "triangles": 66598,
-          "textures": 26,
+          "calls": 58,
+          "triangles": 68138,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2215,9 +2215,9 @@
         },
         {
           "tick": 540,
-          "calls": 38,
-          "triangles": 66494,
-          "textures": 26,
+          "calls": 58,
+          "triangles": 67826,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2226,9 +2226,9 @@
         },
         {
           "tick": 570,
-          "calls": 40,
-          "triangles": 62460,
-          "textures": 26,
+          "calls": 62,
+          "triangles": 68290,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2237,9 +2237,9 @@
         },
         {
           "tick": 600,
-          "calls": 36,
-          "triangles": 62060,
-          "textures": 26,
+          "calls": 60,
+          "triangles": 68122,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2248,9 +2248,9 @@
         },
         {
           "tick": 600,
-          "calls": 36,
-          "triangles": 62060,
-          "textures": 26,
+          "calls": 60,
+          "triangles": 68122,
+          "textures": 27,
           "textureMB": 55.7,
           "renderbufferMB": 0,
           "presenting": true,
@@ -2259,15 +2259,15 @@
         }
       ],
       "max": {
-        "calls": 40,
-        "triangles": 66598,
+        "calls": 62,
+        "triangles": 68562,
         "textureMB": 55.7
       }
     },
     {
       "id": "flap.default",
-      "kind": "diorama",
-      "scale": "1:14.0",
+      "kind": "surround",
+      "scale": "1:8.0",
       "settled": true,
       "end": {
         "runState": "running",
@@ -2278,8 +2278,8 @@
       "samples": [
         {
           "tick": 30,
-          "calls": 28,
-          "triangles": 13336,
+          "calls": 44,
+          "triangles": 13996,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2289,8 +2289,8 @@
         },
         {
           "tick": 60,
-          "calls": 28,
-          "triangles": 13336,
+          "calls": 44,
+          "triangles": 13996,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2300,8 +2300,8 @@
         },
         {
           "tick": 90,
-          "calls": 32,
-          "triangles": 13592,
+          "calls": 50,
+          "triangles": 18750,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2311,8 +2311,8 @@
         },
         {
           "tick": 120,
-          "calls": 32,
-          "triangles": 11696,
+          "calls": 50,
+          "triangles": 16854,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2322,8 +2322,8 @@
         },
         {
           "tick": 150,
-          "calls": 36,
-          "triangles": 12024,
+          "calls": 52,
+          "triangles": 16950,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2333,8 +2333,8 @@
         },
         {
           "tick": 180,
-          "calls": 42,
-          "triangles": 12408,
+          "calls": 60,
+          "triangles": 17566,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2344,8 +2344,8 @@
         },
         {
           "tick": 210,
-          "calls": 40,
-          "triangles": 12072,
+          "calls": 58,
+          "triangles": 17230,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2355,8 +2355,8 @@
         },
         {
           "tick": 240,
-          "calls": 44,
-          "triangles": 16594,
+          "calls": 60,
+          "triangles": 17254,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2366,8 +2366,8 @@
         },
         {
           "tick": 270,
-          "calls": 46,
-          "triangles": 16714,
+          "calls": 64,
+          "triangles": 21792,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2377,8 +2377,8 @@
         },
         {
           "tick": 300,
-          "calls": 44,
-          "triangles": 17002,
+          "calls": 64,
+          "triangles": 21896,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2388,8 +2388,8 @@
         },
         {
           "tick": 330,
-          "calls": 48,
-          "triangles": 17050,
+          "calls": 64,
+          "triangles": 22104,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2399,8 +2399,8 @@
         },
         {
           "tick": 360,
-          "calls": 46,
-          "triangles": 16930,
+          "calls": 66,
+          "triangles": 22032,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2410,8 +2410,8 @@
         },
         {
           "tick": 390,
-          "calls": 44,
-          "triangles": 16594,
+          "calls": 60,
+          "triangles": 21648,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2421,8 +2421,8 @@
         },
         {
           "tick": 420,
-          "calls": 48,
-          "triangles": 21132,
+          "calls": 64,
+          "triangles": 21792,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2432,8 +2432,8 @@
         },
         {
           "tick": 450,
-          "calls": 44,
-          "triangles": 21092,
+          "calls": 64,
+          "triangles": 25828,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2443,8 +2443,8 @@
         },
         {
           "tick": 480,
-          "calls": 50,
-          "triangles": 21372,
+          "calls": 66,
+          "triangles": 26060,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2454,8 +2454,8 @@
         },
         {
           "tick": 510,
-          "calls": 46,
-          "triangles": 21012,
+          "calls": 66,
+          "triangles": 25748,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2465,8 +2465,8 @@
         },
         {
           "tick": 540,
-          "calls": 44,
-          "triangles": 21084,
+          "calls": 64,
+          "triangles": 25820,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2476,8 +2476,8 @@
         },
         {
           "tick": 570,
-          "calls": 48,
-          "triangles": 21228,
+          "calls": 66,
+          "triangles": 25940,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2487,8 +2487,8 @@
         },
         {
           "tick": 600,
-          "calls": 46,
-          "triangles": 20878,
+          "calls": 66,
+          "triangles": 26060,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2498,8 +2498,8 @@
         },
         {
           "tick": 600,
-          "calls": 44,
-          "triangles": 20646,
+          "calls": 64,
+          "triangles": 25828,
           "textures": 26,
           "textureMB": 55.7,
           "renderbufferMB": 0,
@@ -2509,9 +2509,761 @@
         }
       ],
       "max": {
-        "calls": 50,
-        "triangles": 21372,
+        "calls": 66,
+        "triangles": 26060,
         "textureMB": 55.7
+      }
+    },
+    {
+      "id": "voyage.race",
+      "kind": "surround",
+      "scale": "1:8.0",
+      "settled": true,
+      "end": {
+        "runState": "running",
+        "tick": 600,
+        "score": 3
+      },
+      "errors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "samples": [
+        {
+          "tick": 30,
+          "calls": 48,
+          "triangles": 281438,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 60,
+          "calls": 54,
+          "triangles": 277110,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 90,
+          "calls": 52,
+          "triangles": 279438,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 120,
+          "calls": 48,
+          "triangles": 270980,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 150,
+          "calls": 44,
+          "triangles": 253182,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 180,
+          "calls": 36,
+          "triangles": 252878,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 210,
+          "calls": 32,
+          "triangles": 243748,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 240,
+          "calls": 30,
+          "triangles": 242284,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 270,
+          "calls": 26,
+          "triangles": 239908,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 300,
+          "calls": 26,
+          "triangles": 239908,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 330,
+          "calls": 26,
+          "triangles": 239908,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 360,
+          "calls": 26,
+          "triangles": 239876,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 390,
+          "calls": 26,
+          "triangles": 239852,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 420,
+          "calls": 28,
+          "triangles": 243912,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 450,
+          "calls": 28,
+          "triangles": 243904,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 480,
+          "calls": 34,
+          "triangles": 248864,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 510,
+          "calls": 38,
+          "triangles": 253682,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 540,
+          "calls": 36,
+          "triangles": 253558,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 570,
+          "calls": 34,
+          "triangles": 258086,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 600,
+          "calls": 32,
+          "triangles": 252942,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 600,
+          "calls": 32,
+          "triangles": 252942,
+          "textures": 26,
+          "textureMB": 55,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        }
+      ],
+      "max": {
+        "calls": 54,
+        "triangles": 281438,
+        "textureMB": 55
+      }
+    },
+    {
+      "id": "hop.default",
+      "kind": "surround",
+      "scale": "1:7.8",
+      "settled": true,
+      "end": {
+        "runState": "running",
+        "tick": 600,
+        "score": 280
+      },
+      "errors": [],
+      "samples": [
+        {
+          "tick": 30,
+          "calls": 44,
+          "triangles": 152880,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 60,
+          "calls": 44,
+          "triangles": 154612,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 90,
+          "calls": 44,
+          "triangles": 155444,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 120,
+          "calls": 44,
+          "triangles": 154964,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 150,
+          "calls": 46,
+          "triangles": 157356,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 180,
+          "calls": 44,
+          "triangles": 154436,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 210,
+          "calls": 46,
+          "triangles": 154860,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 240,
+          "calls": 46,
+          "triangles": 154728,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 270,
+          "calls": 44,
+          "triangles": 156464,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 300,
+          "calls": 42,
+          "triangles": 160992,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 330,
+          "calls": 48,
+          "triangles": 168192,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 360,
+          "calls": 42,
+          "triangles": 169596,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 390,
+          "calls": 44,
+          "triangles": 172372,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 420,
+          "calls": 40,
+          "triangles": 168844,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 450,
+          "calls": 38,
+          "triangles": 168744,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 480,
+          "calls": 38,
+          "triangles": 165192,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 510,
+          "calls": 40,
+          "triangles": 171868,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 540,
+          "calls": 40,
+          "triangles": 175256,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 570,
+          "calls": 40,
+          "triangles": 172520,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 600,
+          "calls": 40,
+          "triangles": 171336,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 600,
+          "calls": 40,
+          "triangles": 171336,
+          "textures": 28,
+          "textureMB": 56.4,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        }
+      ],
+      "max": {
+        "calls": 48,
+        "triangles": 175256,
+        "textureMB": 56.4
+      }
+    },
+    {
+      "id": "crowd.default",
+      "kind": "surround",
+      "scale": "1:4.0",
+      "settled": true,
+      "end": {
+        "runState": "running",
+        "tick": 600,
+        "score": 150
+      },
+      "errors": [],
+      "samples": [
+        {
+          "tick": 30,
+          "calls": 46,
+          "triangles": 34308,
+          "textures": 28,
+          "textureMB": 55.3,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 60,
+          "calls": 48,
+          "triangles": 32436,
+          "textures": 28,
+          "textureMB": 55.3,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 90,
+          "calls": 48,
+          "triangles": 33676,
+          "textures": 28,
+          "textureMB": 55.3,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 120,
+          "calls": 48,
+          "triangles": 33676,
+          "textures": 28,
+          "textureMB": 55.3,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 150,
+          "calls": 48,
+          "triangles": 36796,
+          "textures": 28,
+          "textureMB": 55.3,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 180,
+          "calls": 48,
+          "triangles": 36796,
+          "textures": 31,
+          "textureMB": 55.7,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 210,
+          "calls": 48,
+          "triangles": 36796,
+          "textures": 31,
+          "textureMB": 55.7,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 240,
+          "calls": 48,
+          "triangles": 35556,
+          "textures": 31,
+          "textureMB": 55.7,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 270,
+          "calls": 48,
+          "triangles": 38052,
+          "textures": 31,
+          "textureMB": 55.7,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 300,
+          "calls": 48,
+          "triangles": 38052,
+          "textures": 33,
+          "textureMB": 56,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 330,
+          "calls": 48,
+          "triangles": 38052,
+          "textures": 33,
+          "textureMB": 56,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 360,
+          "calls": 48,
+          "triangles": 38052,
+          "textures": 33,
+          "textureMB": 56,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 390,
+          "calls": 50,
+          "triangles": 39108,
+          "textures": 33,
+          "textureMB": 56,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 420,
+          "calls": 46,
+          "triangles": 40300,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 450,
+          "calls": 44,
+          "triangles": 38860,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 480,
+          "calls": 44,
+          "triangles": 41980,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 510,
+          "calls": 42,
+          "triangles": 41020,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 540,
+          "calls": 42,
+          "triangles": 41020,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 570,
+          "calls": 42,
+          "triangles": 41020,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 600,
+          "calls": 42,
+          "triangles": 43516,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        },
+        {
+          "tick": 600,
+          "calls": 42,
+          "triangles": 43516,
+          "textures": 34,
+          "textureMB": 56.2,
+          "renderbufferMB": 0,
+          "presenting": true,
+          "eyes": 2,
+          "quality": "high"
+        }
+      ],
+      "max": {
+        "calls": 50,
+        "triangles": 43516,
+        "textureMB": 56.2
       }
     },
     {
@@ -3265,258 +4017,6 @@
       }
     },
     {
-      "id": "voyage.race",
-      "kind": "diorama",
-      "scale": "1:27.1",
-      "settled": true,
-      "end": {
-        "runState": "running",
-        "tick": 600,
-        "score": 3
-      },
-      "errors": [
-        "Failed to load resource: the server responded with a status of 404 (Not Found)"
-      ],
-      "samples": [
-        {
-          "tick": 30,
-          "calls": 48,
-          "triangles": 281658,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 60,
-          "calls": 52,
-          "triangles": 281754,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 90,
-          "calls": 50,
-          "triangles": 279586,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 120,
-          "calls": 48,
-          "triangles": 279338,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 150,
-          "calls": 44,
-          "triangles": 261424,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 180,
-          "calls": 40,
-          "triangles": 253194,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 210,
-          "calls": 30,
-          "triangles": 248146,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 240,
-          "calls": 26,
-          "triangles": 242184,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 270,
-          "calls": 24,
-          "triangles": 240768,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 300,
-          "calls": 22,
-          "triangles": 239808,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 330,
-          "calls": 22,
-          "triangles": 239808,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 360,
-          "calls": 22,
-          "triangles": 239776,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 390,
-          "calls": 22,
-          "triangles": 239752,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 420,
-          "calls": 24,
-          "triangles": 243812,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 450,
-          "calls": 26,
-          "triangles": 248094,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 480,
-          "calls": 36,
-          "triangles": 253016,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 510,
-          "calls": 40,
-          "triangles": 258160,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 540,
-          "calls": 42,
-          "triangles": 266506,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 570,
-          "calls": 32,
-          "triangles": 262484,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 600,
-          "calls": 30,
-          "triangles": 253338,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 600,
-          "calls": 30,
-          "triangles": 253338,
-          "textures": 26,
-          "textureMB": 55,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        }
-      ],
-      "max": {
-        "calls": 52,
-        "triangles": 281754,
-        "textureMB": 55
-      }
-    },
-    {
       "id": "quest.spatial",
       "kind": "diorama",
       "scale": "1:33.3",
@@ -3764,506 +4264,6 @@
         "calls": 74,
         "triangles": 74630,
         "textureMB": 60.4
-      }
-    },
-    {
-      "id": "hop.default",
-      "kind": "diorama",
-      "scale": "1:13.0",
-      "settled": true,
-      "end": {
-        "runState": "running",
-        "tick": 600,
-        "score": 280
-      },
-      "errors": [],
-      "samples": [
-        {
-          "tick": 30,
-          "calls": 42,
-          "triangles": 152784,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 60,
-          "calls": 42,
-          "triangles": 154536,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 90,
-          "calls": 42,
-          "triangles": 155348,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 120,
-          "calls": 42,
-          "triangles": 154860,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 150,
-          "calls": 44,
-          "triangles": 157244,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 180,
-          "calls": 42,
-          "triangles": 154308,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 210,
-          "calls": 44,
-          "triangles": 154776,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 240,
-          "calls": 44,
-          "triangles": 154760,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 270,
-          "calls": 42,
-          "triangles": 156356,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 300,
-          "calls": 40,
-          "triangles": 160876,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 330,
-          "calls": 40,
-          "triangles": 166760,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 360,
-          "calls": 38,
-          "triangles": 169496,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 390,
-          "calls": 40,
-          "triangles": 172272,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 420,
-          "calls": 36,
-          "triangles": 168744,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 450,
-          "calls": 36,
-          "triangles": 168648,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 480,
-          "calls": 36,
-          "triangles": 165096,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 510,
-          "calls": 38,
-          "triangles": 171772,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 540,
-          "calls": 38,
-          "triangles": 175160,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 570,
-          "calls": 38,
-          "triangles": 172424,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 600,
-          "calls": 38,
-          "triangles": 171240,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 600,
-          "calls": 38,
-          "triangles": 171240,
-          "textures": 28,
-          "textureMB": 56.4,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        }
-      ],
-      "max": {
-        "calls": 44,
-        "triangles": 175160,
-        "textureMB": 56.4
-      }
-    },
-    {
-      "id": "crowd.default",
-      "kind": "diorama",
-      "scale": "1:12.0",
-      "settled": true,
-      "end": {
-        "runState": "running",
-        "tick": 600,
-        "score": 150
-      },
-      "errors": [],
-      "samples": [
-        {
-          "tick": 30,
-          "calls": 42,
-          "triangles": 34208,
-          "textures": 28,
-          "textureMB": 55.3,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 60,
-          "calls": 40,
-          "triangles": 32288,
-          "textures": 28,
-          "textureMB": 55.3,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 90,
-          "calls": 44,
-          "triangles": 33576,
-          "textures": 28,
-          "textureMB": 55.3,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 120,
-          "calls": 44,
-          "triangles": 33576,
-          "textures": 28,
-          "textureMB": 55.3,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 150,
-          "calls": 44,
-          "triangles": 36696,
-          "textures": 28,
-          "textureMB": 55.3,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 180,
-          "calls": 44,
-          "triangles": 36696,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 210,
-          "calls": 44,
-          "triangles": 36696,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 240,
-          "calls": 44,
-          "triangles": 35456,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 270,
-          "calls": 44,
-          "triangles": 37952,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 300,
-          "calls": 44,
-          "triangles": 37952,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 330,
-          "calls": 44,
-          "triangles": 37952,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 360,
-          "calls": 44,
-          "triangles": 37952,
-          "textures": 31,
-          "textureMB": 55.7,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 390,
-          "calls": 48,
-          "triangles": 40496,
-          "textures": 33,
-          "textureMB": 56,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 420,
-          "calls": 42,
-          "triangles": 40200,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 450,
-          "calls": 42,
-          "triangles": 40200,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 480,
-          "calls": 40,
-          "triangles": 41880,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 510,
-          "calls": 38,
-          "triangles": 40920,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 540,
-          "calls": 38,
-          "triangles": 40920,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 570,
-          "calls": 38,
-          "triangles": 40920,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 600,
-          "calls": 38,
-          "triangles": 43416,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        },
-        {
-          "tick": 600,
-          "calls": 38,
-          "triangles": 43416,
-          "textures": 34,
-          "textureMB": 56.2,
-          "renderbufferMB": 0,
-          "presenting": true,
-          "eyes": 2,
-          "quality": "high"
-        }
-      ],
-      "max": {
-        "calls": 48,
-        "triangles": 43416,
-        "textureMB": 56.2
       }
     },
     {

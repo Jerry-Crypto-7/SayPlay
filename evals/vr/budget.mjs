@@ -24,7 +24,7 @@ import { chromium } from '@playwright/test';
 
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
-import { TABLE } from '@/play/xr/diorama-scale';
+import { STAGE, TABLE } from '@/play/xr/diorama-scale';
 import { QUEST2_BUDGET, XR_QUALITY } from '@/play/xr/quality';
 
 import { browserRenderer } from '../../scripts/browser-renderer.ts';
@@ -33,27 +33,15 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const IWER_BUNDLE = join(ROOT, 'node_modules/iwer/build/iwer.min.js');
 
 /**
- * Rozdělení žánrů jako v e2e: čtyři VR-nativní (`vr-native.spec.ts`), tři kolem hráče (`vr-room.spec.ts`, P67 T6)
- * a dvanáct dioram (`vr-diorama.spec.ts`).
+ * Rozdělení žánrů jako v e2e: čtyři VR-nativní (`vr-native.spec.ts`), tři kolem hráče (`vr-room.spec.ts`, P67 T6),
+ * šest tratí na pódiu (`surround`, P67 T7) a šest dioram na stole (obojí `vr-diorama.spec.ts`).
  */
 export const NATIVE = ['shooter.default', 'throw.default', 'whack.default', 'slice.default'];
 export const ROOM = ['arena.escape', 'catch.default', 'defense.default'];
-export const DIORAMA = [
-  'runner.default',
-  'platformer.default',
-  'flap.default',
-  'timing.stack',
-  'rhythm.default',
-  'duel.default',
-  'voyage.race',
-  'quest.spatial',
-  'hop.default',
-  'crowd.default',
-  'merge.default',
-  'push.default',
-];
+export const SURROUND = ['runner.default', 'platformer.default', 'flap.default', 'voyage.race', 'hop.default', 'crowd.default'];
+export const DIORAMA = ['timing.stack', 'rhythm.default', 'duel.default', 'quest.spatial', 'merge.default', 'push.default'];
 
-const kindOf = (id) => (NATIVE.includes(id) ? 'native' : ROOM.includes(id) ? 'room' : 'diorama');
+const kindOf = (id) => (NATIVE.includes(id) ? 'native' : ROOM.includes(id) ? 'room' : SURROUND.includes(id) ? 'surround' : 'diorama');
 
 /** 10 s hry; snímek každou půlsekundu. */
 const TICKS = 600;
@@ -68,8 +56,8 @@ const base = arg('base', 'http://127.0.0.1:3165');
 const out = resolve(ROOT, arg('out', 'evals/vr/budget.json'));
 const only = arg('genres', null)?.split(',');
 
-/** Sklon hlavy dolů na střed desky (rad), jako `vr-diorama.spec.ts`. */
-const PITCH = Math.atan2(1.6 - TABLE.top, -TABLE.z);
+/** Sklon hlavy dolů na střed desky, nebo pódia tratí (rad), jako `vr-diorama.spec.ts`. */
+const PITCH = { diorama: Math.atan2(1.6 - TABLE.top, -TABLE.z), surround: Math.atan2(1.6 - STAGE.top, -STAGE.z) };
 
 /**
  * Paměť textur na GPU: init skript obalí volání WebGL2, která alokují (`texImage*`, `texStorage*`,
@@ -260,8 +248,8 @@ async function measure(browser, id) {
   });
   await page.addInitScript(textureMeter);
   await page.addInitScript({ path: IWER_BUNDLE });
-  // VR-nativní žánry a svět kolem hráče: hlava rovně jako v `vr-native.spec.ts` a `vr-room.spec.ts`; diorama: pohled na střed desky.
-  await page.addInitScript(withQuest2, kind === 'diorama' ? PITCH : 0);
+  // VR-nativní žánry a svět kolem hráče: hlava rovně jako v `vr-native.spec.ts` a `vr-room.spec.ts`; diorama a pódium: pohled na střed.
+  await page.addInitScript(withQuest2, PITCH[kind] ?? 0);
   await page.goto(new URL(`${url}?vr=1`, base).href);
   await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 90_000 });
   await page.evaluate(() => window.__playShell.byHand(true));
@@ -344,7 +332,7 @@ async function measure(browser, id) {
 export const peak = (samples, field) => Math.max(...samples.map((sample) => sample[field]));
 
 async function main() {
-  const order = [...NATIVE, ...ROOM, ...DIORAMA];
+  const order = [...NATIVE, ...ROOM, ...SURROUND, ...DIORAMA];
   const ids = order.filter((id) => only === undefined || only.includes(id));
   // Bez OpenXR runtime počítače (SteamVR by hlásil immersive-vr i bez brýlí); brýle hraje IWER, jako v `playwright.config.ts`.
   const browser = await chromium.launch({ args: [...browserRenderer().args, '--disable-features=OpenXR'] });

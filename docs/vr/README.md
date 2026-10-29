@@ -184,7 +184,7 @@ Tři hry stojí ve VR na podlaze pokoje kolem hráče, ne na stole. Hráč stoj�
 
 - **Měřítko arény** se počítá ze stěn: stěny smí být nejvýš 8 m od hráče, svět ale nikdy menší než 1:3 (menší už je diorama).
 - **Chytání 1:3:** pruhy jsou 0,67 m od sebe, krajní pruh začíná 1 m od středu. Na krajní pruhy stačí natažená ruka a půlkrok. Páčka do strany posune koš jen na jeden tik, ruka ho vrátí pod sebe; když brýle ruku ztratí, vede koš zase páčka.
-- **Okolí:** za hranou hrací plochy je podlaha v barvě země prostředí hry (podle sady prostředí scény, jen čtení), mlha ji v dálce rozpustí do obzoru. Nebe nad hráčem je obloha scény, ta se ve VR kreslí kolem hlavy v každém měřítku.
+- **Okolí:** za hranou hrací plochy je podlaha v barvě země prostředí hry (podle sady prostředí scény, jen čtení). Mlha scény ve VR nepůsobí (nález T7), podlaha proto sahá až k obloze. Nebe nad hráčem je obloha scény, ta se ve VR kreslí kolem hlavy v každém měřítku.
 - **Panely** (cíl, počítadla, výsledek) jsou nad levým zápěstím jako u her rukou.
 - **Co se ověří v brýlích (T8):**
   - u obrany kryje hradba (1 m vysoko, 3–4 m před hráčem) zem pruhů asi do 11 m, nepřátelé jsou nad ní vidět od pasu nahoru;
@@ -200,20 +200,45 @@ Tři hry stojí ve VR na podlaze pokoje kolem hráče, ne na stole. Hráč stoj�
 
 ### Hry na stole (diorama)
 
-Ostatních 12 her se ve VR hraje jako zmenšený svět na stole: runner, platformer, flap, timing, rhythm, duel, voyage, quest, hop, crowd, merge a push. Tratě (runner, platformer, flap, voyage, hop, crowd) dostanou vlastní režim „trať kolem hráče“ v další úloze (P67 T7); do té doby jsou na stole.
+Šest her se ve VR hraje jako zmenšený svět na stole: timing, rhythm, duel, quest, merge a push. Na stole jsou i hry ze staršího ovládání bez žánru (`glide`, `walker`, `ball`). Tratě mají od P67 T7 vlastní velké pódium (oddíl „Tratě na pódiu“ níž).
 
-- **Stůl:** deska 1,2 × 1,2 m, její střed 0,9 m před hráčem, ve výšce 0,8 m. Nad deskou je 0,75 m prostoru. Co leží mimo tento prostor, se nekreslí, takže trať končí na kraji stolu a ne v pokoji.
+- **Stůl:** deska 1,2 × 1,2 m, její střed 0,9 m před hráčem, ve výšce 0,8 m. Nad deskou je 0,75 m prostoru. Co leží mimo tento prostor, se nekreslí, takže svět končí na kraji stolu a ne v pokoji.
 - **Měřítko:** spočte se z velikosti hřiště, aby se celá šířka hrací plochy vešla na 1,2 m. Malá hřiště se nezvětší víc než na 1:12. Aréna se měří podle svých stěn, ne podle toho, kde zrovna leží věci.
-- **Trať se posouvá, hlava stojí:** u tratí (runner, voyage, crowd, flap, hop) i u vysokých her (věž v timing) jede svět pod hrdinou. Hrdina zůstává v bližší třetině stolu, zbytek stolu ukazuje, co přijde. Hřiště, které se na stůl vejde celé (quest, push, merge), stojí na místě.
+- **Vysoká hra se posouvá, hlava stojí:** u věže v timing jede svět pod hrdinou nahoru. Hřiště, které se na stůl vejde celé (quest, push, merge), stojí na místě.
 - **Levý grip nese stůl:** stiskni levý grip a posuň nebo otoč rukou. Stůl jde s rukou: posun do všech stran (i výš a níž, třeba vsedě) a otočení kolem svislé osy. Je to jen pohled, hra o něm neví. Pravý grip dál slouží hře.
 
 **Ověření (T4):**
 
-- `e2e/vr-diorama.spec.ts` hraje každou z 12 her (do P67 T6 15, i s arénou, obranou a chytáním) dvakrát po 5 s týmž skriptem: jednou ve 2D skutečnou klávesnicí, jednou ve VR páčkou a spouští. Obě hry skončí ve stejném stavu (stejné vstupy, stejný hash) a hrdina se pohne nebo se změní počítadlo.
+- `e2e/vr-diorama.spec.ts` hraje každou z 12 her (šest na stole, šest tratí na pódiu; do P67 T6 15, i s arénou, obranou a chytáním) dvakrát po 5 s týmž skriptem: jednou ve 2D skutečnou klávesnicí, jednou ve VR páčkou a spouští. Obě hry skončí ve stejném stavu (stejné vstupy, stejný hash) a hrdina se pohne nebo se změní počítadlo.
 - Každých 30 tiků se hrdina promítne do kamery obou očí. Jeho střed musí být uvnitř obrazu a nad deskou. Hlava stojí ve výšce 1,6 m a dívá se na střed stolu.
 - U questu test navíc ověří, že levý grip posune stůl o 20 cm a do hry nic nepošle, a že pravý grip dál dělá „použít“.
 - `src/play/xr/__tests__/diorama-scale.test.ts` nechá robota dohrát každou živou hru (mimo čtyři hry rukou) a v každém tiku ověří, že hrdina je na stole a v zorném poli hlavy.
 - **Mutace:** stůl, který za hrdinou na trati nejede, test pozná (37 testů červených). Test sám obsahuje i kontrolu se zamrzlým stolem, která musí hrdinu ztratit.
+
+### Tratě na pódiu (runner, platformer, flap, voyage, hop, crowd)
+
+Šest tratí se ve VR hraje jako velká diorama na pódiu před hráčem (P67 T7). Hráč stojí a hlava se nehýbe; trať jede k němu.
+
+- **Pódium:** 2 m široké a 3,8 m hluboké. Bližší kraj je 0,9 m před hráčem, vzdálený 4,7 m, střed 2,8 m. Zem světa leží 0,4 m nad podlahou na tmavém soklu, nad ní je 1,1 m prostoru. Horní hrana je tedy ve výšce 1,5 m, pod očima stojícího hráče. Hlava, která se dívá na střed pódia, vidí celé pódium (kontrola počítá se zorným polem 80°).
+- **Měřítko 1:4 až 1:8:** šířka hrací plochy na šířku pódia a celá výška pod horní hranu, kde to 1:8 dovolí.
+
+| Hra | Měřítko | Proč |
+|---|---|---|
+| runner, crowd | 1:4 | trať 8 m a 4,6 m široká, víc se zvětšit nesmí |
+| platformer | 1:7,6 | věž 8,4 m vysoká se celá vejde pod horní hranu |
+| hop | 1:7,8 | 15,6 m šířky na 2 m |
+| flap, voyage | 1:8 | flap 10,5 m vysoký, závod 22 m široký; menší už pódium nedovolí |
+
+- **Svět jede k hráči:** hrdina je v bližší čtvrtině pódia, zbylé tři čtvrtiny ukazují, co přijde (u běžce asi 11 m trati, na stole bylo 10 m). Závod je i při 1:8 širší než pódium (22 m trati); když hrdina dojede k pětině šířky od kraje, svět se posune i do strany.
+- **Vzdálený konec mizí v mlze:** zhruba poslední třetina pódia přechází do barvy obzoru prostředí hry a vzdálený kraj je v mlze celý. Řez světa na kraji tak není vidět a překážky z mlhy vyjíždějí. Kolem pódia leží podlaha v barvě země prostředí, jako u her kolem hráče.
+- **Vinětace:** když svět jede, ztmaví se okraj obrazu a střed zůstane čistý. Síla roste s rychlostí světa: od 0,2 m/s, plná od 1,5 m/s (běžec jede ~2,5 m/s, závod ~2,6 m/s, flap ~0,7 m/s, plošinovka ~0,5 m/s, hop pod prahem). Po zastavení světa okraj do vteřiny zesvětlá. Vypnout ji půjde v panelu pohodlí (T9); výchozí je zapnuto.
+- **Panely:** tabule s cílem a počítadly stojí nad vzdáleným koncem pódia, výš než cokoli na trati, takže nic nezakryje. „AI version ready“ visí z téhož místa dolů přes mlhu. Výsledek stojí na bližší části pódia. Všechny mají od očí stejnou úhlovou velikost jako na stole, proto jsou větší (tabule ~5×, výsledek ~1,8×).
+- **Levý grip nese pódium** jako stůl (i níž pro hráče vsedě). Sokl sahá vždy až k podlaze. Mlha se počítá pro pódium ve výchozí poloze.
+
+**Ověření (P67 T7):**
+
+- `src/play/xr/__tests__/diorama-scale.test.ts`: pódium 1,5–3 m před hráčem, horní hrana pod očima, celé v zorném poli hlavy (a o 10 cm širší už ne); každá živá trať 1:4 až 1:8; robot dohraje každou živou trať a hrdina je po celou dobu na pódiu a v pohledu hlavy; trať jede k hráči a hrdina zůstává v bližší čtvrtině; vzdálená stěna je celá za koncem mlhy, pás hrdiny celý před jejím začátkem. Kontrola se zamrzlým pódiem musí běžce ztratit.
+- `e2e/vr-diorama.spec.ts` (IWER): šest tratí na pódiu – poloha a měřítko pódia, celé v zorném poli hlavy (80°), mlha a podlaha okolí, hrdina každých 30 tiků v obraze obou očí a na pódiu, u běžce, závodu a davu se při jízdě ztmaví okraj obrazu. Na stole mlha ani vinětace nejsou.
 
 ### Panely ve VR (cíl, počítadla, výsledek)
 
@@ -380,6 +405,37 @@ Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na 
 - **Tratě (`surround`, T7)** jsou v tabulce režimů, ale do T7 se hrají na stole.
 - **Test HUD na stole** (`e2e/vr-hud.spec.ts`) hraje quest „A knight must light three candles…“: věta s klíči dělá arénu, ta je teď kolem hráče. Věta „open three chests“ dělá na serveru řetěz mikroher bez ručních hodin, proto svíčky.
 
+### Tratě na pódiu (P67 T7, 29. 10. 2026, emulátor)
+
+**Rozpočet snímku** (IWER Quest 2, obě oči, hlava se dívá na střed pódia, nejhorší snímek z 10 s hry robota; `evals/vr/budget.json`):
+
+| Hra | Měřítko | Draw cally | Trojúhelníky | Na stole před T7 |
+|---|---|---|---|---|
+| runner | 1:4 | 50 | 114 708 | 46 / 119 112 |
+| platformer | 1:7,6 | 62 | 68 562 | 40 / 66 598 |
+| flap | 1:8 | 66 | 26 060 | 50 / 21 372 |
+| voyage | 1:8 | 54 | 281 438 | 52 / 281 754 |
+| hop | 1:7,8 | 48 | 175 256 | 44 / 175 160 |
+| crowd | 1:4 | 50 | 43 516 | 48 / 43 416 |
+
+- **Všechno pod rozpočtem** (150 volání, 300 000 trojúhelníků), srážet nebylo třeba. Závod má rezervu 6 % jako na stole.
+- **Vinětace v e2e** (nejsilnější za 5 s hry): běžec 0,97, závod 0,97, dav 0,95, plošinovka 0,41, flap 0,30, hop 0. Na stole žádná.
+- **Snímky z emulátoru** (běžec, závod, flap, výsledek davu): pódium, sokl, podlaha okolí, mlha na konci trati, ztmavený okraj a panely jsou vidět tak, jak je popisuje oddíl „Tratě na pódiu“ výš.
+- **První JS telefonu** se neměřil: T7 nezměnila žádný soubor, který telefon stahuje. Pódium, mlha, vinětace i nové kotvy panelů jsou jen v kódu XR (`diorama-scale.ts`, `Diorama`, `XrVignette`, `XrHud`, `XrRig`).
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **Pódium je kvádr, ne lichoběžník.** 2 × 3,8 m: širší pódium by bližší rohy dostalo z pohledu hlavy (test hlídá i o 10 cm širší). Vzdálený konec by unesl víc šířky, ale svět se kreslí do kvádru řezu jako na stole.
+- **Střed 2,8 m, zem 0,4 m.** Plán chce střed 1,5–3 m a horní hranu pod očima. Hluboké pódium dá výhled ~11 m trati běžce (na stole 10 m); nižší zem dovolí 1,1 m prostoru, ve kterém se celá vejde plošinovka.
+- **Flap 1:8 a seříznuté trubky.** Flap je 10,5 m vysoký, při 1:8 by měl 1,31 m, prostor nad pódiem má 1,1 m. Horní 1,7 m trubek proto řeže horní rovina (v pohledu těsně pod úrovní očí). Hrdina létá ve 2,1–4,7 m, svět se kvůli němu nahoru ani dolů nehýbe.
+- **Mlha jen na pódiu.** Scéna nese mlhu v metrech scény a ve VR ji three nepoužije: `<fog>` scény visí na obalu světa, ne na kořeni (e2e: na stole žádná mlha). Pódium dá kořeni vlastní mlhu v metrech od očí a po odchodu ji vrátí. Mlha měří hloubku po ose pohledu, takže když se hráč otočí stranou, je vzdálený řez vidět víc. Barva je obzor základní sady prostředí, jako u podlahy okolí.
+- **Vinětace podle rychlosti světa, ne podle pohybu hrdiny.** Svět jede jen tehdy, když jede okno; u hopu se okno posouvá po skocích tak pomalu (~0,2 m/s), že vinětace nezačne.
+- **Vinětace pod panely.** Text panelů neztmaví; paprsek ovladače také ne.
+- **Vypínač vinětace** je `setVignetteOn` v `src/components/play/xr/XrVignette.tsx` (kód XR, jen v paměti stránky), ne v `xr-context.ts`, protože ten stahuje i telefon. Komfortní panel (T9) ho jen zavolá.
+- **Levý grip nese i pódium** (hráč vsedě si ho sníží). Sokl sahá vždy k podlaze, mlha zůstává spočtená pro výchozí polohu.
+- **Stolní hry beze změny.** Měřítko stolu (`dioramaScale`) zůstává, jak bylo; plán chtěl jen „dorovnat podle `diorama-scale.ts`“, a to platí.
+- **Nález pro hry kolem hráče (T6):** ze stejného důvodu ani jejich podlaha okolí do mlhy nemizí, sahá až k obloze (150 m). Pódium to řeší vlastní mlhou; arény, obrany a chytání se T7 netýká.
+
 ### Zvuk a vibrace (P67 T8, 29. 10. 2026, emulátor)
 
 **V emulátoru IWER** (`e2e/vr-native.spec.ts`, kontext zvuku běží po kliknutí na „Enter VR“, hlava 1,6 m):
@@ -481,7 +537,7 @@ Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produk
 
 ### Měřítko dioramy (27. 10. 2026, emulátor)
 
-Aréna, catch a defense se od P67 T6 hrají kolem hráče (oddíl výš); jejich řádky platí, jen kdyby se vrátily na stůl.
+Aréna, catch a defense se od P67 T6 hrají kolem hráče, tratě (runner, platformer, flap, voyage, hop, crowd) od T7 na pódiu (oddíly výš); jejich řádky platí, jen kdyby se vrátily na stůl.
 
 | Hra | Měřítko |
 |---|---|

@@ -5,22 +5,30 @@
  * kresleného hrdinu, posune okno dioramy za ním a postaví obal světa na desku; co leží mimo prostor nad deskou,
  * se ořízne rovinami řezu, takže trať běžce nekončí v pokoji, ale na kraji stolu. Levý grip desku nese – posun
  * a otočení jsou jen pohled, do relace nic nejde (grip pravého ovladače dál drží použití, `XrInput`).
+ *
+ * Tratě (P67 T7, `STAGE_LAYOUT`) stojí stejně na velkém pódiu: deska je sokl až k podlaze, okolo podlaha okolí
+ * (`XrSky`), vzdálená část trati mizí do mlhy v barvě obzoru (`stageFogOf`) a při pohybu světa se ztmaví okraj
+ * obrazu (`XrVignette`).
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR, useXRInputSourceState } from '@react-three/xr';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
-import { type Group, type Material, Matrix4, type Mesh, type Object3D, Plane, Quaternion, Vector3 } from 'three';
+import { Fog, type Group, type Material, Matrix4, type Mesh, type Object3D, Plane, Quaternion, Vector3 } from 'three';
 
 import { colorHex } from '@/brand/tokens';
-import { DESK, type DeskPose, type HandPose, TABLE, carried, createDiorama, playAreaOf } from '@/play/xr/diorama-scale';
+import { LOOKS } from '@/play/arcade/look';
+import { type DeskPose, type HandPose, type Layout, type Room, STAGE_LAYOUT, carried, createDiorama, playAreaOf, stageFogOf } from '@/play/xr/diorama-scale';
 
 import type { ArcadeSession } from '../arcade/session';
 import { MOTION_PRIORITY } from './XrAim';
+import { XrSky, lookIdOf } from './XrSky';
+import { XrVignette } from './XrVignette';
 
-/** Co o desce čte sonda (`XrProbe`): poloha desky a měřítko světa na ní. */
+/** Co o desce čte sonda (`XrProbe`): poloha desky, měřítko světa na ní a prostor nad ní (stůl, nebo pódium). */
 export interface DeskReport extends DeskPose {
   readonly scale: number;
+  readonly room: Room;
 }
 
 const shown = (node: Object3D): boolean => {
@@ -44,18 +52,21 @@ export function heroNodeOf(root: Object3D): Object3D | null {
  */
 const SWEEP_EVERY = 10;
 
-/** Deska pod světem: o 2 cm větší než prostor řezu, ať je vidět rám; plocha těsně pod zemí světa. */
+/**
+ * Deska pod světem: o 2 cm větší než prostor řezu, ať je vidět rám; plocha těsně pod zemí světa. Pod pódiem je
+ * deska soklem až k podlaze (nejméně `thick`), aby velký svět nevisel ve vzduchu.
+ */
 const SLAB = { rim: 0.02, thick: 0.04, below: 0.002 } as const;
 
-/** Roviny řezu v osách desky: prostor nad deskou (`TABLE`), zespodu o kousek pod její plochou kvůli zemi světa. */
-const LOCAL_PLANES = [
-  new Plane(new Vector3(1, 0, 0), TABLE.width / 2),
-  new Plane(new Vector3(-1, 0, 0), TABLE.width / 2),
-  new Plane(new Vector3(0, 0, 1), TABLE.depth / 2),
-  new Plane(new Vector3(0, 0, -1), TABLE.depth / 2),
+/** Roviny řezu v osách desky: prostor nad deskou (`room`), zespodu o kousek pod její plochou kvůli zemi světa. */
+const planesOf = (room: Room): Plane[] => [
+  new Plane(new Vector3(1, 0, 0), room.width / 2),
+  new Plane(new Vector3(-1, 0, 0), room.width / 2),
+  new Plane(new Vector3(0, 0, 1), room.depth / 2),
+  new Plane(new Vector3(0, 0, -1), room.depth / 2),
   new Plane(new Vector3(0, 1, 0), SLAB.below + 0.01),
-  new Plane(new Vector3(0, -1, 0), TABLE.height),
-] as const;
+  new Plane(new Vector3(0, -1, 0), room.height),
+];
 
 type Clippable = Material & { clippingPlanes: Plane[] | null };
 
@@ -65,20 +76,63 @@ function yawOf(turn: Quaternion, forward: Vector3): number | null {
   return Math.hypot(forward.x, forward.z) < 0.3 ? null : Math.atan2(-forward.x, -forward.z);
 }
 
-export function Diorama({ world, session, report }: { readonly world: RefObject<Group | null>; readonly session: ArcadeSession; readonly report: RefObject<DeskReport | null> }) {
+/**
+ * `layout` se za života komponenty nemění (`XrRig` ji při změně stolu za pódium postaví znovu): podle něj je výchozí
+ * poloha desky, roviny řezu i sokl.
+ */
+export function Diorama({
+  world,
+  session,
+  report,
+  layout,
+}: {
+  readonly world: RefObject<Group | null>;
+  readonly session: ArcadeSession;
+  readonly report: RefObject<DeskReport | null>;
+  readonly layout: Layout;
+}) {
   const gl = useThree((three) => three.gl);
+  const scene = useThree((three) => three.scene);
   const left = useXRInputSourceState('controller', 'left');
   const space = useXR((xr) => xr.originReferenceSpace);
-  const view = useMemo(() => createDiorama(playAreaOf(session.world)), [session]);
-  const desk = useRef<DeskPose>(DESK);
+  const { room } = layout;
+  const stage = layout === STAGE_LAYOUT;
+  const view = useMemo(() => createDiorama(playAreaOf(session.world), layout), [session, layout]);
+  const desk = useRef<DeskPose>({ x: room.x, top: room.top, z: room.z, yaw: 0 });
   const grab = useRef<{ readonly desk: DeskPose; readonly hand: HandPose } | null>(null);
   const slab = useRef<Mesh>(null);
+  // Rychlost světa (m/s skutečného prostoru) pro vinětaci pódia.
+  const speed = useRef(0);
+  const local = useMemo(() => planesOf(room), [room]);
   const at = useMemo(
-    () => ({ hero: null as Object3D | null, frames: 0, point: new Vector3(), turn: new Quaternion(), forward: new Vector3(), matrix: new Matrix4(), planes: LOCAL_PLANES.map(() => new Plane()) }),
-    [],
+    () => ({
+      hero: null as Object3D | null,
+      frames: 0,
+      point: new Vector3(),
+      turn: new Quaternion(),
+      forward: new Vector3(),
+      matrix: new Matrix4(),
+      planes: local.map(() => new Plane()),
+      last: null as { readonly view: unknown; readonly x: number; readonly y: number; readonly z: number } | null,
+    }),
+    [local],
   );
   // Původní roviny řezu každého oříznutého materiálu, ať se po odchodu z dioramy vrátí, jak byly.
   const clipped = useMemo(() => new Map<Clippable, Plane[] | null>(), []);
+  // Barva obzoru sady prostředí scény, do které plátno kreslí (jako podlaha okolí `XrSky`); nová hra = jiná sada.
+  const horizon = useMemo(() => LOOKS[lookIdOf(gl.domElement)].horizon, [gl, session]);
+
+  // Mlha pódia ve skutečném prostoru (m od očí). Scéna nese svou mlhu v metrech scény a ve VR ji three nepoužije
+  // (`<fog>` scény visí na obalu světa, ne na kořeni); po odchodu z pódia se vrátí, co kořen měl.
+  useEffect(() => {
+    if (!stage) return undefined;
+    const before = scene.fog;
+    const { near, far } = stageFogOf();
+    scene.fog = new Fog(horizon, near, far);
+    return () => {
+      scene.fog = before;
+    };
+  }, [scene, stage, horizon]);
 
   useEffect(() => {
     const before = gl.localClippingEnabled;
@@ -94,7 +148,7 @@ export function Diorama({ world, session, report }: { readonly world: RefObject<
     };
   }, [gl, clipped, report, world]);
 
-  useFrame((_, __, frame: XRFrame | undefined) => {
+  useFrame((_, delta, frame: XRFrame | undefined) => {
     const group = world.current;
     if (group === null) return;
 
@@ -129,6 +183,10 @@ export function Diorama({ world, session, report }: { readonly world: RefObject<
     // Hrdina v metrech scény: světová poloha zpět přes obal (jeho matice je ze snímku, kdy hrdinu kreslil).
     const hero = at.hero === null ? null : group.worldToLocal(at.hero.getWorldPosition(at.point));
     const { scale, center } = view.frame(hero === null ? null : { x: hero.x, y: hero.y, z: hero.z });
+    // Jak rychle jede svět (okno přes scénu); nová hra okno přeskočí, to pohyb není.
+    const last = at.last;
+    speed.current = last === null || last.view !== view ? 0 : (scale * Math.hypot(center.x - last.x, center.y - last.y, center.z - last.z)) / Math.max(delta, 1e-3);
+    at.last = { view, ...center };
 
     // Obal = deska ∘ otočení o půl kruhu ∘ měřítko: bod `center` scény sedí na středu plochy desky.
     const { x, top, z, yaw } = desk.current;
@@ -141,18 +199,24 @@ export function Diorama({ world, session, report }: { readonly world: RefObject<
     group.scale.setScalar(scale);
 
     at.matrix.makeRotationY(yaw).setPosition(x, top, z);
-    LOCAL_PLANES.forEach((plane, index) => at.planes[index]!.copy(plane).applyMatrix4(at.matrix));
+    local.forEach((plane, index) => at.planes[index]!.copy(plane).applyMatrix4(at.matrix));
     if (slab.current !== null) {
-      slab.current.position.set(x, top - SLAB.below - SLAB.thick / 2, z);
+      const thick = stage ? Math.max(SLAB.thick, top - SLAB.below) : SLAB.thick;
+      slab.current.position.set(x, top - SLAB.below - thick / 2, z);
       slab.current.rotation.set(0, yaw, 0);
+      slab.current.scale.set(1, thick, 1);
     }
-    report.current = { ...desk.current, scale };
+    report.current = { ...desk.current, scale, room };
   }, MOTION_PRIORITY - 1);
 
   return (
-    <mesh ref={slab}>
-      <boxGeometry args={[TABLE.width + 2 * SLAB.rim, SLAB.thick, TABLE.depth + 2 * SLAB.rim]} />
-      <meshStandardMaterial color={colorHex['ink-soft']} roughness={0.9} />
-    </mesh>
+    <>
+      <mesh ref={slab}>
+        <boxGeometry args={[room.width + 2 * SLAB.rim, 1, room.depth + 2 * SLAB.rim]} />
+        <meshStandardMaterial color={colorHex['ink-soft']} roughness={0.9} />
+      </mesh>
+      {stage && <XrSky game={session} />}
+      {stage && <XrVignette speed={speed} />}
+    </>
   );
 }

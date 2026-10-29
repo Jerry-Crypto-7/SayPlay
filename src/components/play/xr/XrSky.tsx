@@ -6,7 +6,8 @@
  * kolem hlavy v každém měřítku světa – druhá kopule by se pod ní nikdy neukázala.
  *
  * Podlaha leží ve skutečném prostoru (ne v obalu světa) kousek pod zemí scény: kde scéna zem má, kreslí se ta,
- * za její hranou tahle. Mlha scény ji v dálce rozpustí do barvy obzoru, jako zbytek scény.
+ * za její hranou tahle. Mlha scény sem nedosáhne (`<fog>` scény visí na obalu světa, ne na kořeni); do barvy
+ * obzoru ji rozpustí jen mlha pódia tratí (P67 T7, `Diorama`), která patří kořeni.
  */
 
 import { useThree } from '@react-three/fiber';

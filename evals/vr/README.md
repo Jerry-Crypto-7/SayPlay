@@ -21,7 +21,7 @@ Rozpočet Questu 2 je **≤ 150 draw callů a ≤ 300 000 trojúhelníků za sn�
 
 `evals/vr/__tests__/budget.test.ts` spočte nejhorší snímek každého žánru znovu ze vzorků v `budget.json` a selže, když je některý žánr nad rozpočtem, když soubor nemá všech 19 žánrů nebo když tabulka níž neodpovídá měření.
 
-Měření 27. 10. 2026, Chromium s ANGLE D3D11 na GPU tohoto stroje, nejhorší snímek z 21 vzorků. Aréna, chytání a obrana změřené znovu 29. 10. 2026 (P67 T6) ve svém novém režimu kolem hráče (`room`, hlava rovně):
+Měření 27. 10. 2026, Chromium s ANGLE D3D11 na GPU tohoto stroje, nejhorší snímek z 21 vzorků. Aréna, chytání a obrana změřené znovu 29. 10. 2026 (P67 T6) ve svém novém režimu kolem hráče (`room`, hlava rovně). Šest tratí změřené znovu 29. 10. 2026 (P67 T7) na pódiu (`surround`, hlava se dívá na střed pódia):
 
 | žánr | hraje se | draw cally | trojúhelníky | textury MB |
 |---|---|---|---|---|
@@ -32,20 +32,22 @@ Měření 27. 10. 2026, Chromium s ANGLE D3D11 na GPU tohoto stroje, nejhorší 
 | `arena.escape` | room | 44 | 103328 | 60.0 |
 | `catch.default` | room | 56 | 23720 | 57.4 |
 | `defense.default` | room | 90 | 51376 | 57.4 |
-| `runner.default` | diorama | 46 | 119112 | 56.7 |
-| `platformer.default` | diorama | 40 | 66598 | 55.7 |
-| `flap.default` | diorama | 50 | 21372 | 55.7 |
+| `runner.default` | surround | 50 | 114708 | 56.7 |
+| `platformer.default` | surround | 62 | 68562 | 55.7 |
+| `flap.default` | surround | 66 | 26060 | 55.7 |
+| `voyage.race` | surround | 54 | 281438 | 55.0 |
+| `hop.default` | surround | 48 | 175256 | 56.4 |
+| `crowd.default` | surround | 50 | 43516 | 56.2 |
 | `timing.stack` | diorama | 46 | 23708 | 55.7 |
 | `rhythm.default` | diorama | 52 | 22082 | 55.7 |
 | `duel.default` | diorama | 44 | 22592 | 55.7 |
-| `voyage.race` | diorama | 52 | 281754 | 55.0 |
 | `quest.spatial` | diorama | 74 | 74630 | 60.4 |
-| `hop.default` | diorama | 44 | 175160 | 56.4 |
-| `crowd.default` | diorama | 48 | 43416 | 56.2 |
 | `merge.default` | diorama | 54 | 45016 | 55.0 |
 | `push.default` | diorama | 40 | 26660 | 55.0 |
 
-Nejvíc draw callů má hod (112 z 150), nejvíc trojúhelníků závod `voyage` (282 tisíc z 300, rezerva 6 %). Když T8 rozpočet zpřísní, začíná se u něj.
+Nejvíc draw callů má hod (112 z 150), nejvíc trojúhelníků závod `voyage` (281 tisíc z 300, rezerva 6 %). Když T8 rozpočet zpřísní, začíná se u něj.
+
+**Pódium tratí (T7) proti stolu:** trojúhelníky skoro stejné (závod 281 438 proti 281 754 na stole 1:27, běžec 114 708 proti 119 112), draw callů o 2–22 víc. Pódium vidí víc trati, a přesto trojúhelníků nepřibylo – nejspíš je nese terén a trať, které okno protínají v obou případech (zvlášť neměřeno). Jistě přibyla podlaha okolí (2 volání, obě oči) a vinětace (2 volání, jen když svět jede). Nejvíc přidaly flap (50 → 66) a plošinovka (40 → 62); odhad: na pódiu 1:8 je vidět víc trubek a plošin než na stole 1:12–1:14. Srážet nebylo třeba.
 
 ## Před profilem a po něm
 
@@ -71,7 +73,7 @@ Profil platí jen v relaci VR (`src/play/xr/quality.ts`, `XrRoot.tsx`, `XrCull` 
 1. **Skládač postprocessingu nekreslí.** Ve VR kreslil celou scénu podruhé a k tomu AO, bloom a SMAA v rozlišení brýlí, a výsledek stejně přemazala přímá kresba (stereo by rozbil). To byla většina volání.
 2. **Žádné stíny.** Světla ve VR stín nevrhají, stínový průchod nekreslí kulisy ještě jednou.
 3. **Bez vegetace.** Rostliny si vybírají podle kamery hry ve 2D; ve VR bez stínového průchodu kreslily všechny rostliny svého okna, 0,74–1,37 milionu trojúhelníků za snímek. Oprava patří do `look/Vegetation.tsx` (P62), pak se vegetace může vrátit.
-4. **Kulisy mimo desku (diorama).** Síť, která leží celá mimo prostor nad deskou, by roviny řezu stejně ořízly. Závod tak kreslil 162 ze 184 volání kulis zbytečně.
+4. **Kulisy mimo desku (diorama i pódium tratí).** Síť, která leží celá mimo prostor nad deskou, by roviny řezu stejně ořízly. Závod tak kreslil 162 ze 184 volání kulis zbytečně.
 5. **Prstenec rostlin za stěnami arény.** Na desce leží celý za rovinami řezu, stál 175–213 tisíc trojúhelníků. V aréně kolem hráče (P67 T6) vidět je, ale s ním měla aréna 316 656 trojúhelníků, nad rozpočtem; bez něj 103 328. Za stěnami místo něj leží podlaha okolí v barvě země sady.
 6. **Obrysy nepřátel.** Každý díl postavy kreslily podruhé. Obrys hrdiny zůstává.
 7. **Sloučení stejných sítí.** Aspoň 4 sítě se stejnou geometrií a materiálem kreslí jedna instancovaná síť. Šest dílů každého nepřítele střílečky tak stojí 6 volání na oko, ne 6 × počet nepřátel.

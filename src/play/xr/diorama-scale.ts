@@ -4,6 +4,9 @@
  * se celá hrací plocha vešla na šířku desky (nejvýš 1:12). Hřiště delší nebo vyšší, než deska unese (trať běžce,
  * věž stohování), je okno, které se pod hrdinou posouvá: hlava hráče i deska stojí, jede svět.
  *
+ * Tratě (P67 T7, režim `surround`) stojí na velkém pódiu (`STAGE`) místo stolu: 1:4 až 1:8, svět jede k hráči
+ * stejným oknem, jen větším.
+ *
  * Vše je jen kresba. Do hashovaného stavu nejde nic – ani okno, ani poloha desky, kterou hráč posune levým gripem.
  *
  * Osy scény: x zrcadlí jádro (x scény = −x jádra), y nahoru, z vpřed (trať běží po +z). Osy desky: x doprava,
@@ -14,11 +17,31 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { type ArcadeWorld, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { PUSH } from '@/play/arcade/pieces/push-ring';
 
-/** Deska ve skutečném prostoru (m, `local-floor`): střed 0,9 m před hráčem, nad ní 0,75 m prostoru pro svět. */
-export const TABLE = { x: 0, top: 0.8, z: -0.9, width: 1.2, depth: 1.2, height: 0.75 } as const;
+/** Deska ve skutečném prostoru (m, `local-floor`): střed plochy a prostor nad ní, do kterého se svět kreslí. */
+export interface Room {
+  readonly x: number;
+  readonly top: number;
+  readonly z: number;
+  readonly width: number;
+  readonly depth: number;
+  readonly height: number;
+}
+
+/** Stůl: střed 0,9 m před hráčem, nad ním 0,75 m prostoru pro svět. */
+export const TABLE = { x: 0, top: 0.8, z: -0.9, width: 1.2, depth: 1.2, height: 0.75 } as const satisfies Room;
+
+/**
+ * Pódium tratí (P67 T7): zem světa 0,4 m nad podlahou, bližší kraj 0,9 m před hráčem, vzdálený 4,7 m, střed 2,8 m.
+ * Nad zemí 1,1 m prostoru, horní hrana tedy 1,5 m – pod očima stojícího hráče (`HEAD.y`). Šířka 2 m: hlava, která
+ * se dívá na střed pódia, vidí i jeho bližší rohy (`inHeadView`, test).
+ */
+export const STAGE = { x: 0, top: 0.4, z: -2.8, width: 2, depth: 3.8, height: 1.1 } as const satisfies Room;
 
 /** Největší měřítko: malé hřiště (souboj, slučování) se nezvětší nad 1:12, ať je pořád diorama, ne hračka v ruce. */
 export const SCALE_MAX = 1 / 12;
+
+/** Měřítko pódia: 1:4 až 1:8 (plán P67). */
+export const STAGE_SCALE = { min: 1 / 8, max: 1 / 4 } as const;
 
 /**
  * Hřiště nejvýš 2× větší než deska v měřítku podle šířky se zmenší, aby se vešlo celé (aréna 40 × 40 m). Větší
@@ -106,6 +129,15 @@ export function dioramaScale(area: Box): number {
   return scale;
 }
 
+/**
+ * Měřítko pódia: šířka hřiště na šířku pódia, a výška celá pod jeho horní hranu – obojí jen v mezích 1:4 až 1:8.
+ * Hloubka se nepočítá, trať je vždy delší a jede (běžec 1:4, plošinovka 1:7,6 podle výšky, závod 1:8).
+ */
+export function stageScale(area: Box): number {
+  const width = Math.min(STAGE_SCALE.max, STAGE.width / Math.max(area.maxX - area.minX, 1e-3));
+  return Math.max(STAGE_SCALE.min, Math.min(width, STAGE.height / Math.max(area.maxY - area.minY, 1e-3)));
+}
+
 /** Kde svět na desce leží: měřítko a bod scény, který sedí na středu desky (x, z) a na její ploše (y). */
 export interface DioramaView {
   readonly scale: number;
@@ -119,23 +151,42 @@ type Band = readonly [number, number];
  * - `fit` – hřiště se vejde a okno stojí; hrdina ho posune, jen kdyby kresbou vyjel z desky (ohyb trati). Celé
  *   okno: hrdina arény u stěny (19,5 m z 20) je pořád na desce a deska se kvůli němu nehne;
  * - `ahead` – trať: hrdina v bližší třetině, zbytek desky ukazuje, co přijde;
- * - `lift` – výška: hrdina pod horním krajem, zem dole smí pod desku (věž, sestup přistávače).
+ * - `lift` – výška: hrdina pod horním krajem, zem dole smí pod desku (věž, sestup přistávače);
+ * - `side` – šířka, která se nevejde (závod na pódiu 1:8): hrdina nejde ke kraji blíž než pětinu okna.
  */
-const BAND = { fit: [0, 1], ahead: [0.1, 0.35], lift: [0, 0.8] } as const satisfies Record<string, Band>;
+const BAND = { fit: [0, 1], ahead: [0.1, 0.35], lift: [0, 0.8], side: [0.2, 0.8] } as const satisfies Record<string, Band>;
 
 /** Spodní kraj okna velikosti `size`, posunutý jen tolik, aby `at` ležel v pásu `band`. */
 const follow = (lo: number, size: number, at: number, band: Band): number => Math.min(at - band[0] * size, Math.max(at - band[1] * size, lo));
 
 /**
+ * Jak se svět staví: na stůl (`desk`), nebo na pódium tratí (`stage`, T7). `ahead` je pás trati: na pódiu je hrdina
+ * v bližší čtvrtině, ať je blízko hráče a zbylé tři čtvrtiny (~11 m trati běžce) ukazují, co přijde.
+ */
+export interface Layout {
+  readonly room: Room;
+  readonly scale: (area: Box) => number;
+  readonly ahead: Band;
+}
+
+export const DESK_LAYOUT: Layout = { room: TABLE, scale: dioramaScale, ahead: BAND.ahead };
+export const STAGE_LAYOUT: Layout = { room: STAGE, scale: stageScale, ahead: [0.08, 0.25] };
+
+/** Rezerva porovnání velikostí (m scény): šířka vypočtená z měřítka se od šířky hřiště liší o zaokrouhlení. */
+const FIT_EPS = 1e-6;
+
+/**
  * Okno dioramy nad hřištěm. Měřítko je pevné po celou hru (zoom za běhu by se houpal); okno jede za kresleným
  * hrdinou snímek po snímku (`frame`) – plynule, protože scény hrdinu mezi tiky prolínají. Stav okna je jen kresba.
  */
-export function createDiorama(area: Box) {
-  const scale = dioramaScale(area);
-  const size = { x: TABLE.width / scale, y: TABLE.height / scale, z: TABLE.depth / scale };
+export function createDiorama(area: Box, layout: Layout = DESK_LAYOUT) {
+  const { room } = layout;
+  const scale = layout.scale(area);
+  const size = { x: room.width / scale, y: room.height / scale, z: room.depth / scale };
+  const fitsX = area.maxX - area.minX <= size.x + FIT_EPS;
   const fitsY = area.maxY - area.minY <= size.y;
   const fitsZ = area.maxZ - area.minZ <= size.z;
-  const band = { x: BAND.fit, y: fitsY ? BAND.fit : BAND.lift, z: fitsZ ? BAND.fit : BAND.ahead };
+  const band = { x: fitsX ? BAND.fit : BAND.side, y: fitsY ? BAND.fit : BAND.lift, z: fitsZ ? BAND.fit : layout.ahead };
   const lo = { x: (area.minX + area.maxX - size.x) / 2, y: area.minY, z: fitsZ ? (area.minZ + area.maxZ - size.z) / 2 : area.minZ };
   return {
     scale,
@@ -159,9 +210,9 @@ export const deskPointOf = ({ scale, center }: DioramaView, at: Point): Point =>
   z: scale * (center.z - at.z),
 });
 
-/** Leží bod desky v prostoru nad ní (`TABLE`)? `slack` (m) povolí přesah, třeba o půl hrdiny. */
-export const onDesk = (at: Point, slack = 0): boolean =>
-  Math.abs(at.x) <= TABLE.width / 2 + slack && Math.abs(at.z) <= TABLE.depth / 2 + slack && at.y >= -slack && at.y <= TABLE.height + slack;
+/** Leží bod desky v prostoru nad ní (`room`, stůl nebo pódium)? `slack` (m) povolí přesah, třeba o půl hrdiny. */
+export const onDesk = (at: Point, slack = 0, room: Room = TABLE): boolean =>
+  Math.abs(at.x) <= room.width / 2 + slack && Math.abs(at.z) <= room.depth / 2 + slack && at.y >= -slack && at.y <= room.height + slack;
 
 /** Poloha desky v prostoru: střed plochy a otočení kolem svislé osy (rad). Levý grip ji nese (`carried`). */
 export interface DeskPose {
@@ -172,6 +223,28 @@ export interface DeskPose {
 }
 
 export const DESK: DeskPose = { x: TABLE.x, top: TABLE.top, z: TABLE.z, yaw: 0 };
+
+/** Pódium tratí (T7); levý grip ho nese stejně jako stůl. */
+export const STAGE_POSE: DeskPose = { x: STAGE.x, top: STAGE.top, z: STAGE.z, yaw: 0 };
+
+/** Hloubka (m) po ose pohledu stojící hlavy (`HEAD`) na střed plochy `desk` – tak měří mlha three. */
+export function viewDepthOf(at: Point, desk: DeskPose): number {
+  const look = { x: desk.x, y: desk.top - HEAD.y, z: desk.z };
+  return (at.x * look.x + (at.y - HEAD.y) * look.y + at.z * look.z) / Math.hypot(look.x, look.y, look.z);
+}
+
+/** Délka přechodu mlhy pódia (m hloubky). */
+const STAGE_FOG_FADE = 1;
+
+/**
+ * Mlha pódia (T7): vzdálená část trati mizí do barvy obzoru a vzdálená stěna prostoru je v mlze celá, takže řez
+ * na kraji pódia není vidět a věci z mlhy vyjíždějí. Konec mlhy je nejbližší bod té stěny (její horní hrana),
+ * začátek o `STAGE_FOG_FADE` blíž – za třemi pětinami pódia, daleko za pásem hrdiny.
+ */
+export function stageFogOf(): { readonly near: number; readonly far: number } {
+  const far = viewDepthOf({ x: STAGE.x, y: STAGE.top + STAGE.height, z: STAGE.z - STAGE.depth / 2 }, STAGE_POSE);
+  return { near: far - STAGE_FOG_FADE, far };
+}
 
 /** Bod desky → skutečný prostor (otočení kolem y jako three.js: (x, z) → (x cos + z sin, −x sin + z cos)). */
 export function worldOfDesk(desk: DeskPose, at: Point): Point {
