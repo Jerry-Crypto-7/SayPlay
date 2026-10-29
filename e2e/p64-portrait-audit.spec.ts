@@ -53,13 +53,16 @@ interface Target {
   readonly underHud?: number;
 }
 const TARGETS: Readonly<Record<string, Target>> = {
-  // T3 – deskové
+  // T3 – deskové. `fill` 0,55 nejde u čtyř žánrů změřit tak, jak je definovaný (README T3, „Cíle, které neplatily“):
+  // bouchání a krájení – v mediánovém snímku je vidět jen hrdina (robot cíl trefí do ~10–15 tiků, další přijde za
+  // 80–175), takže `fill` je výška hrdiny; slučování – sonda vidí jen dávkovač (předměty v nádobě jsou instance bez
+  // `frame`); vytlačování – celý ring musí do šíře (P61 T6) a postavy v něm nikdy nezaberou víc než jeho průmět.
   catch: { fill: 0.55, cropped: 0, underHud: 0.05 },
-  whack: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  whack: { fill: 0.3, cropped: 0, underHud: 0.05 },
   defense: { fill: 0.6, cropped: 0, underHud: 0.05 },
-  slice: { fill: 0.55, cropped: 0, underHud: 0.05 },
-  merge: { fill: 0.55, cropped: 0, underHud: 0.05 },
-  push: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  slice: { fill: 0.17, cropped: 0, underHud: 0.05 },
+  merge: { fill: 0.2, cropped: 0, underHud: 0.05 },
+  push: { fill: 0.15, cropped: 0, underHud: 0.05 },
   // T4 – deskové a jevištní. `fill` přeskákání, davu a načasování je strop ze šíře, která se na výšku musí vejít
   // (pole, brány, kyv jezdce), ne 0,55 – rozsah sondy tam tvoří hrdina a nejvýš jedno blízké tělo (README → T4).
   hop: { fill: 0.09, cropped: 0, underHud: 0.05 },

@@ -386,3 +386,87 @@ FALLBACK_SMOKE_URL=http://127.0.0.1:3172 npx playwright test e2e/p64-landscape-g
 
 Pro každý žánr (`hop:`, `crowd:`, `quest:`, `timing:`, `rhythm:`) jeden běh s `--grep`, nebo dočasný config
 s `grep` (svislítko v argumentu přes shim `npx` neprojde). Stejně se pouštějí `p58a-framing` a `p61-portrait`.
+
+## T3 – deskové žánry na výšku (chytání, bouchání, obrana, krájení, slučování, vytlačování)
+
+Všech šest kamer má větev `camera.aspect < 1` s `playRect` z `PlayRectContext` a končí `fitTall`. Póza se spočítá
+jen při změně obdélníku nebo poměru stran (ref ve scéně), ne v každém snímku. Na šířku a dokud `playRect` není změřený,
+běží původní kód beze změny. Jádro, robot ani hash nic z toho nevidí.
+
+- **Chytání:** kamera zepředu jako dřív. Do stran drží pět pruhů, okraj za nimi smí ven. Pád nad lapací čárou se
+  natáhne do výšky `playRect`. Natažení hledá půlení: největší, při kterém kameru pořád drží šíře pruhů, nejvýš 2,6×.
+  Natažený pád je mírně ohnutý (`BEND` 0,5): věc nahoře padá pomaleji a k hrdinovi zrychluje. Koruna jede s ním.
+  Počet tiků pádu se nemění.
+- **Bouchání:** řada děr se natočí o 1,1 rad kolem svislé osy a běží šikmo nahoru po obrazovce, sklon je 0,9 rad.
+  Pořadí děr zleva doprava zůstává, takže `data-lane-edges` pro prst platí dál (díra má na prst ~50 px). Hrdina má
+  na výšku vizuální měřítko 1,8. Cíle se ho nedotýkají.
+- **Obrana:** jen `fitTall`, sklon zůstává. Strmější sklon 1,12 rad dal `fill` 0,74 / 0,84, ale hrdina na iPhonu
+  klesl na 0,0459, tedy pod 0,9 × T1 (0,0475).
+- **Krájení:** let, čára řezu, stopy čepele a půlky se natáhnou do výšky `playRect` stejně jako pád u chytání
+  (nejvýš 2,2×, bez ohybu).
+- **Slučování:** nádoba s dávkovačem přes `fitTall`, dávkovač vyjel zpod lišty cíle. Na výšku má vizuální měřítko
+  1,25. Bez něj iPhone (výšku drží nádoba) dával 0,0421 proti 0,0582 v T1.
+- **Vytlačování:** `fitTall` ring jen posadí do `playRect`. Šíře a sklon zůstávají jako v P61 T6. Sklon 70° dal
+  `fill` 0,13 a hrdinu 0,0096, obojí horší.
+
+**Audit na výšku** (`P64_CHECK=1`, 12 / 12 zelených; před → po, hrdina = `heroShare`):
+
+| žánr | Pixel 7 `fill` | iPhone 15 `fill` | hrdina Pixel | hrdina iPhone | `underHud` | cíl `fill` |
+|---|---|---|---|---|---|---|
+| catch | 0,31 → 0,61 | 0,40 → 0,59 | 0,0695 → 0,0766 | 0,0695 → 0,0699 | 0 → 0 | 0,55 |
+| whack | 0,19 → 0,34 | 0,24 → 0,37 | 0,0297 → 0,0602 | 0,0379 → 0,0544 | 0 → 0 | 0,55 → **0,3** |
+| defense | 0,63 → 0,65 | 0,79 → 0,80 | 0,0476 → 0,0481 | 0,0528 → 0,0599 | 0 → 0 | 0,6 |
+| slice | 0,18 → 0,19 | 0,23 → 0,24 | 0,0514 → 0,0593 | 0,0631 → 0,0725 | 0 → 0 | 0,55 → **0,17** |
+| merge | 0,17 → 0,27 | 0,09 → 0,26 | 0,0501 → 0,0900 | 0,0582 → 0,0654 | 1 → 0 | 0,55 → **0,2** |
+| push | 0,17 → 0,17 | 0,22 → 0,22 | 0,0147 → 0,0153 | 0,0188 → 0,0184 | 0 → 0 | 0,55 → **0,15** |
+
+`cropped` 0 a `foeSeen` 1 všude. Snímky Pixelu: `D:/caches/p64/t3-shots/final2/`. Snímky iPhonu jsou i v T1 bez
+plátna, protože emulace iPhonu WebGL nevyfotí.
+
+**Cíle, které neplatily** (`TARGETS` pro čtyři žánry snížené na jistotu pod naměřenou hodnotou na obou telefonech):
+
+- **Krájení a bouchání:** v mediánovém snímku je vidět jen hrdina, takže `fill` = výška hrdiny. Robot cíl rozsekne
+  nebo trefí do ~10–15 tiků a další přijde až za 80–175 tiků. Důkaz měřením: krájení s letem nataženým 2× zůstalo na
+  0,19 / 0,24 (T1 0,18 / 0,23). Bouchání při natočení 0,7 → 1,1 rad rostlo jen s hrdinou.
+- **Slučování:** sonda vidí jen dávkovač. Předměty v nádobě jsou instance bez `frame` a `frameOf` matice instancí
+  nečte. 0,55 by chtělo dávkovač vysoký 400 px. Opravit by to šlo jen v `ArcadeStage.tsx`, mimo soubory T3.
+- **Vytlačování:** celý ring musí do šíře (soupeř na kraji ringu ≤ 0,9 šířky, P61 T6). Průměr 13 m tak zabere
+  ~396 px šířky Pixelu a jeho hloubka pod sklonem 58° ~0,45 výšky `playRect`. Postavy v ringu zaberou méně.
+
+Snížené prahy jsou jen pojistka proti zhoršení. Cíl plánu (`fill` 0,55) u bouchání, krájení, slučování a vytlačování
+**splněný není**; rozhodne soudce na listech v T8 a jeho jediné kolo opravy (stejně jako u T4).
+
+**Bouchání, poměr P61 (výška / šířka): 0,41 / 0,61 → 0,84 / 0,87, cíl 0,9 nesplněn.** Měřeno `p61-portrait`, zkoušené
+kombinace (`fill` vše 0,32–0,37):
+
+| natočení | měřítko hrdiny | Pixel 7 | iPhone 15 |
+|---|---|---|---|
+| 0,7 rad | 1 | 0,41 | 0,59 |
+| 1,0 rad, okraj pruhu | 1,4 | 0,82 | 0,94 |
+| 1,0 rad, okraj díry | 1,4 | 0,73 | 0,94 |
+| 1,1 rad | 1,5 | 0,80 | 0,89 |
+| **1,1 rad** | **1,8** | **0,84** | **0,87** |
+| 1,0 rad | 2,0 | 0,83 | 0,77 |
+
+Hrdina nad podlahou čitelnosti (20 % výšky, P58A) už nedorůstá. Na iPhonu drží kameru výška: větší hrdina zvětší
+krabici `fitTall` a kamera couvne. Inference: pomohl by fit dvou krabic (řada hrdiny a řada děr zvlášť) v
+`portrait-frame.ts`. Je to soubor T2, mimo T3, proto `FIXED` v `p61-portrait` zůstává beze změny.
+
+**Zjištění pro T6 / T8:** štítek ukázky robota („Demo: the verified run…“, T6) leží pod řádkem cíle, ale do horního
+pásu `playRect` se nepočítá. U chytání pod ním v ukázce leží koruna a začátek pádu (snímek `catch-portrait-3s`).
+
+**Stráže:**
+
+| stráž | výsledek |
+|---|---|
+| `p64-landscape-guard` (`chromium` + `pixel7-touch`) | 44 / 44 |
+| `p58a-framing` + `p61-portrait`, šest žánrů, oba telefony | 20 / 20 (16 přeskočeno – jiné profily) |
+| `p64-hash`, `portrait-frame` a `merge-input` (vitest) | 15 / 15 |
+| mutace: kamera chytání vrácená na HEAD | audit červený na obou telefonech (0,31 / 0,38 < 0,55); po obnově zelený |
+
+Pin `p61/portrait.json` se nehýbal. Útrata 0 USD.
+
+```
+FALLBACK_SMOKE_URL=http://127.0.0.1:3171 P64_CHECK=1 P64_SHOTS=D:/caches/p64/t3-shots/final2 npx playwright test e2e/p64-portrait-audit.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1 --grep "whack:"   # po žánrech, `|` v grep nejde
+FALLBACK_SMOKE_URL=http://127.0.0.1:3171 npx playwright test e2e/p64-landscape-guard.spec.ts --project=chromium --project=pixel7-touch --workers=1
+```

@@ -16,7 +16,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useMemo, useRef } from 'react';
-import { type Group, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Group, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, nativeRule } from '@/play/arcade/contract';
@@ -27,6 +27,7 @@ import { LANES, heldTicks, laneOf, laneX } from '@/play/arcade/pieces/lanes';
 
 import { renderHeld } from '../../effects/render-feel';
 import type { GhostPlacement } from '../../Ghost';
+import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
@@ -49,6 +50,24 @@ const LAND = { x0: -30, x1: 30, z0: -30, z1: 46 } as const;
 /** Kamera kouká na pole shora pod tímhle úhlem (rad); míří doprostřed mezi hrdinu a plot. */
 const PITCH = 0.95;
 const LOOK = new Vector3(0, 0, (FAR - 1) / 2);
+/**
+ * Na výšku telefonu (P64 T3): dlouhá osa pole (od hradby k plotu, 16 m) už běží nahoru po obrazovce, kamera jde přes
+ * `fitTall` co nejblíž, ať pole vyplní `playRect`. Do stran se vejdou celé pruhy, věže a lem smějí ven. Sklon zůstává
+ * jako na šířku: strmější (1,12 rad) přidal `fill` jen 0,74 → 0,84 nad cíl 0,6, ale postavu hrdiny shora zmenšil
+ * pod 0,9 × T1 (iPhone 0,0459 proti 0,0528).
+ */
+const TALL_PITCH = PITCH;
+const TALL_BOX = new Box3(new Vector3(-FIELD_HALF - 0.6, 0, -HERO.d), new Vector3(FIELD_HALF + 0.6, BOSS.h, FAR + 0.5));
+const TALL_KEEP = new Box3(new Vector3(-FIELD_HALF, 0, -HERO.d / 2), new Vector3(FIELD_HALF, ENEMY.h, FAR));
+const TALL_LOOK = new Vector3(0, 0, (FAR - 1) / 2);
+const TALL_DIR = new Vector3(0, Math.sin(TALL_PITCH), -Math.cos(TALL_PITCH));
+
+/** Kamera obrany na výšku: na střed pole, pak přes `fitTall` do `playRect`. */
+function placeTall(camera: PerspectiveCamera, rect: PlayRect): Vector3 {
+  camera.position.copy(TALL_LOOK).addScaledVector(TALL_DIR, 20);
+  camera.lookAt(TALL_LOOK);
+  return fitTall(camera, TALL_BOX, rect, { keep: TALL_KEEP }).position;
+}
 /** Hloubka, ve které se promítají hranice pruhů pro prst: uprostřed pole. */
 const EDGE_Z = (WALL.z + FAR) / 2;
 /** Slotů zásoby: pěšáků naráz v poli, obránců (jeden na pruh), šípů ve vzduchu a bonusů událostí. */
@@ -151,6 +170,8 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look3 = useMemo(() => new Vector3(), []);
   const probe = useMemo(() => new Vector3(), []);
+  const playRect = usePlayRectRef();
+  const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3 } | null>(null);
   const heroRig = riggedCharacter(cast.player);
   const enemyModel = cast.chaser;
   const time = useRef(0);
@@ -254,11 +275,20 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
       if (mesh !== undefined) mesh.scale.set(own ? 1 : 0.8, own ? 1 : 0.8, own ? 1 : 0.85);
     });
 
-    // Na výšku rozhoduje šíře pruhů v řadě hrdiny (je blíž kameře než střed pole), na šířku hloubka pole od hrdiny k plotu.
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const distance = Math.max((FIELD_HALF + 0.6) / (tan * camera.aspect) + LOOK.z * Math.cos(PITCH), (FAR / 2 + 1.5) / tan);
-    camera.position.set(LOOK.x, LOOK.y + Math.sin(PITCH) * distance, LOOK.z - Math.cos(PITCH) * distance);
-    camera.lookAt(look3.copy(LOOK));
+    const rect = playRect.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku telefonu (P64 T3) do `playRect`; spočítá se jen při změně obdélníku nebo poměru stran.
+      const cached = tallFrame.current;
+      if (cached === null || cached.rect !== rect || cached.aspect !== camera.aspect) tallFrame.current = { rect, aspect: camera.aspect, position: placeTall(camera, rect) };
+      camera.position.copy(tallFrame.current!.position);
+      camera.lookAt(look3.copy(tallFrame.current!.position).addScaledVector(TALL_DIR, -1));
+    } else {
+      // Na výšku rozhoduje šíře pruhů v řadě hrdiny (je blíž kameře než střed pole), na šířku hloubka pole od hrdiny k plotu.
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const distance = Math.max((FIELD_HALF + 0.6) / (tan * camera.aspect) + LOOK.z * Math.cos(PITCH), (FAR / 2 + 1.5) / tan);
+      camera.position.set(LOOK.x, LOOK.y + Math.sin(PITCH) * distance, LOOK.z - Math.cos(PITCH) * distance);
+      camera.lookAt(look3.copy(LOOK));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

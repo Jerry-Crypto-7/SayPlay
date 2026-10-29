@@ -19,7 +19,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useMemo, useRef } from 'react';
-import { type Group, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Group, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
@@ -30,6 +30,7 @@ import { SLICE, heightAfter, sliceInView } from '@/play/arcade/pieces/slice';
 
 import { renderHeld } from '../../effects/render-feel';
 import type { GhostPlacement } from '../../Ghost';
+import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
@@ -50,6 +51,12 @@ const VIEW = { bottom: -0.4, top: PEAK_M + THING + 0.6 };
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
 /** Kolik volné výšky (na výšku telefonu) jde nad nejvyšší bod místo pod zem: skoro nic, let je uprostřed plátna. */
 const SKY_SHARE = 0.05;
+/**
+ * Na výšku telefonu (P64 T3): šíři obrazu drží pět pruhů, výšku letu kamerou zvětšit nejde. Let (i čára řezu,
+ * stopy čepele a půlky) se proto natáhne do výšky `playRect` – věci vylétají přes celou výšku jako na šířku, v témž
+ * počtu tiků; jádro ani hash to nevidí. Nejvýš tolikrát.
+ */
+const TALL_STRETCH = 2.2;
 /** Zásoba slotů: ovoce a bomb naráz ve vzduchu, stop čepele, rozseknutého ovoce a záblesků bomb. */
 const SLOTS = { fruit: 10, bomb: 5, bonus: 6, golden: 2, trails: 3, halves: 6, blasts: 2 } as const;
 /** Jak dlouho žije stopa čepele, půlky ovoce a záblesk bomby (s). */
@@ -63,6 +70,45 @@ const lerp = (from: number, to: number, alpha: number): number => from + (to - f
 
 /** Hranice mezi pruhy l | l+1 v x jádra; kreslí se zrcadlově. */
 const LANE_EDGES = Array.from({ length: LANES.count - 1 }, (_, lane) => laneX(lane) + LANES.width / 2);
+
+/**
+ * Rámování na výšku (P64 T3): co se vejít musí – do stran celé pruhy od hrdiny po rovinu letu (`keep`), svisle od
+ * země po vrchol nataženého letu; okraj za pruhy smí ven.
+ */
+function tallBoxes(stretch: number): { readonly box: Box3; readonly keep: Box3 } {
+  const top = (PEAK_M + THING) * stretch;
+  return {
+    box: new Box3(new Vector3(-FIELD_HALF - 0.5, VIEW.bottom, -HERO.d / 2), new Vector3(FIELD_HALF + 0.5, top + 0.3, PLANE_Z + 0.5)),
+    keep: new Box3(new Vector3(-FIELD_HALF, 0, -HERO.d / 2), new Vector3(FIELD_HALF, top, PLANE_Z)),
+  };
+}
+
+/**
+ * Kamera krájení na výšku: zepředu jako na šířku a přes `fitTall` do `playRect`, let natažený tak, aby ho svisle
+ * nevázalo nic víc než šíře pruhů (půlením: dokud se let vejde kamerou, kterou drží pruhy, vzdálenost se nezmění).
+ */
+function placeTall(camera: PerspectiveCamera, rect: PlayRect): { readonly position: Vector3; readonly stretch: number } {
+  // Bod pohledu uprostřed krabice: `fitTall` ho posadí doprostřed `playRect` a krabice se rozloží na obě strany.
+  const fit = (stretch: number) => {
+    const { box, keep } = tallBoxes(stretch);
+    const y = (box.min.y + box.max.y) / 2;
+    camera.position.set(0, y, -10);
+    camera.lookAt(0, y, 0);
+    return fitTall(camera, box, rect, { keep });
+  };
+  const lanes = fit(1);
+  let low = 1;
+  let high = TALL_STRETCH;
+  if (fit(high).distance <= lanes.distance + 1e-6) low = high;
+  else {
+    for (let step = 0; step < 12; step += 1) {
+      const mid = (low + high) / 2;
+      if (fit(mid).distance <= lanes.distance + 1e-6) low = mid;
+      else high = mid;
+    }
+  }
+  return { position: fit(low).position, stretch: low };
+}
 
 type SliceSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -178,6 +224,9 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look3 = useMemo(() => new Vector3(), []);
   const probe = useMemo(() => new Vector3(), []);
+  const playRect = usePlayRectRef();
+  const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3; readonly stretch: number } | null>(null);
+  const cutLines = useRef<Group | null>(null);
   const heroRig = riggedCharacter(cast.player);
   // Duch dřívějšího běhu jezdí po pruzích svého běhu kousek blíž ke kameře, čelem k ní.
   const ghostSpot = useCallback((pose: GhostPose): GhostPlacement => [-pose.x / UNIT, 0, -HERO.d * 1.2, Math.PI], []);
@@ -197,6 +246,14 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
     const count = state[HEADER.bodyCount] as number;
     const from = state[HEADER.spawnBase] as number;
     const at = (index: number, slot: number): number => lerp(prev[bodyBase(index) + slot] as number, state[bodyBase(index) + slot] as number, alpha) / UNIT;
+    // Na výšku telefonu rámuje `playRect` (P64 T3); spočítá se jen při změně obdélníku nebo poměru stran.
+    const rect = playRect.current;
+    const cached = tallFrame.current;
+    if (camera.aspect >= 1 || rect === null) tallFrame.current = null;
+    else if (cached === null || cached.rect !== rect || cached.aspect !== camera.aspect) tallFrame.current = { rect, aspect: camera.aspect, ...placeTall(camera, rect) };
+    const tall = tallFrame.current;
+    const stretch = tall?.stretch ?? 1;
+    cutLines.current?.position.set(0, CUT_M * (stretch - 1), 0);
     const player = state[HEADER.player] as number;
     const heroX = -at(player, BODY.x);
     hero.current?.position.set(heroX, 0, 0);
@@ -247,7 +304,7 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
         const fresh = ((prev[bodyBase(body) + BODY.flags] as number) & FLAG.alive) === 0 || (state[bodyBase(body) + BODY.vy] as number) > (prev[bodyBase(body) + BODY.vy] as number);
         const x = fresh ? -(state[bodyBase(body) + BODY.x] as number) / UNIT : -at(body, BODY.x);
         const y = fresh ? (state[bodyBase(body) + BODY.y] as number) / UNIT : at(body, BODY.y);
-        group.position.set(x, y, PLANE_Z);
+        group.position.set(x, y * stretch, PLANE_Z);
         group.rotation.set(time.current * 1.7 + body, time.current * 2.3 + body * 0.7, 0);
       });
     };
@@ -264,7 +321,7 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
       mesh.visible = slot.left > 0;
       if (!mesh.visible) return;
       const k = slot.left / LIFE.trail;
-      mesh.position.set(slot.x, slot.y, PLANE_Z - 0.5);
+      mesh.position.set(slot.x, slot.y * stretch, PLANE_Z - 0.5);
       mesh.rotation.set(0, 0, slot.tilt);
       mesh.scale.set(0.7 + 0.3 * (1 - k), Math.max(0.05, k), 1);
     });
@@ -279,9 +336,9 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
       const [left, right] = group.children;
       const rise = 2.2 * t - (HALF_GRAVITY * t * t) / 2;
       const spin = slot.tilt * 4 * t;
-      left?.position.set(slot.x - 2.4 * t, slot.y + rise, PLANE_Z);
+      left?.position.set(slot.x - 2.4 * t, slot.y * stretch + rise, PLANE_Z);
       left?.rotation.set(0, Math.PI + 0.7, spin);
-      right?.position.set(slot.x + 2.4 * t, slot.y + rise, PLANE_Z);
+      right?.position.set(slot.x + 2.4 * t, slot.y * stretch + rise, PLANE_Z);
       right?.rotation.set(0, -0.7, -spin);
     });
     // Záblesk rozseknuté bomby se nafoukne a zmizí.
@@ -291,22 +348,27 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
       if (mesh === null || mesh === undefined) return;
       mesh.visible = slot.left > 0;
       if (!mesh.visible) return;
-      mesh.position.set(slot.x, slot.y, PLANE_Z - 0.3);
+      mesh.position.set(slot.x, slot.y * stretch, PLANE_Z - 0.3);
       mesh.scale.setScalar(0.4 + 1.4 * (1 - slot.left / LIFE.blast));
     });
 
-    // Na výšku rozhoduje šíře pruhů, na šířku výška letu; volná výška jde z větší části pod zem (pole před hrdinou).
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const needed = (VIEW.top - VIEW.bottom) / 2;
-    const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
-    const spare = distance * tan - needed;
-    const y = (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE;
-    camera.position.set(0, y, -distance);
-    camera.lookAt(look3.set(0, y, 0));
+    if (tall !== null) {
+      camera.position.copy(tall.position);
+      camera.lookAt(look3.set(tall.position.x, tall.position.y, 0));
+    } else {
+      // Na výšku rozhoduje šíře pruhů, na šířku výška letu; volná výška jde z větší části pod zem (pole před hrdinou).
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const needed = (VIEW.top - VIEW.bottom) / 2;
+      const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
+      const spare = distance * tan - needed;
+      const y = (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE;
+      camera.position.set(0, y, -distance);
+      camera.lookAt(look3.set(0, y, 0));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();
-    const fraction = (x: number): number => (probe.set(x, CUT_M, PLANE_Z).project(camera).x + 1) / 2;
+    const fraction = (x: number): number => (probe.set(x, CUT_M * stretch, PLANE_Z).project(camera).x + 1) / 2;
     const edges = LANE_EDGES.map((edge) => fraction(-edge / UNIT).toFixed(4)).join(',');
     if (host.dataset.laneEdges !== edges) host.dataset.laneEdges = edges;
     host.dataset.playerX = probe.set(heroX, HERO.h, 0).project(camera).x.toFixed(3);
@@ -325,13 +387,17 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
             <boxGeometry args={[LANE_M * 0.7, 0.44, 0.9]} />
             <meshStandardMaterial color={color['cream-deep']} roughness={0.9} />
           </mesh>
-          {/* Čára řezu: nad ní čepel dosáhne. */}
-          <mesh position={[0, CUT_M, PLANE_Z - 0.45]}>
+        </group>
+      ))}
+      {/* Čára řezu: nad ní čepel dosáhne; na výšku telefonu jede s nataženým letem nahoru. */}
+      <group ref={cutLines}>
+        {Array.from({ length: LANES.count }, (_, lane) => (
+          <mesh key={lane} position={[-laneX(lane) / UNIT, CUT_M, PLANE_Z - 0.45]}>
             <boxGeometry args={[LANE_M * 0.72, 0.05, 0.02]} />
             <meshStandardMaterial color={color.sun} emissive={color.sun} emissiveIntensity={0.35} />
           </mesh>
-        </group>
-      ))}
+        ))}
+      </group>
       <group ref={hero} userData={{ frame: 'hero' }}>
         {/* Kamera kouká po +z: hrdina se otočí čelem k ní. */}
         <group rotation={[0, Math.PI, 0]}>
