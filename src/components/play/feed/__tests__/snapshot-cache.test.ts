@@ -1,7 +1,8 @@
+import type { RootState } from '@react-three/fiber';
 import { describe, expect, it } from 'vitest';
 
 import thumbs from '../feed-thumbs.json';
-import { type FrameStore, cardImage, createSnapshotCache, indexedFrames, keepFrame } from '../snapshot-cache';
+import { type FrameStore, captureFrame, cardImage, createSnapshotCache, indexedFrames, keepFrame } from '../snapshot-cache';
 
 /** `objectURL` jako počitadlo: kolik se vytvořilo a které se uvolnily. */
 function urls() {
@@ -106,5 +107,37 @@ describe('snapshot-cache: snímek vlastní hry přežije reload (P56B T12)', () 
     const store = indexedFrames();
     await expect(store.save('a', blob)).resolves.toBeUndefined();
     await expect(store.load()).resolves.toEqual([]);
+  });
+});
+
+/** Kořen R3F jen s tím, co `captureFrame` čte: snímek navíc a kopie plátna se zapisují do `calls`. */
+function root(presenting: boolean) {
+  const calls: string[] = [];
+  const state = {
+    advance: () => void calls.push('advance'),
+    gl: {
+      xr: { isPresenting: presenting },
+      domElement: {
+        toBlob: (done: BlobCallback) => {
+          calls.push('toBlob');
+          done(blob);
+        },
+      },
+    },
+  } as unknown as Pick<RootState, 'advance' | 'gl'>;
+  return { state, calls };
+}
+
+describe('captureFrame (P67 T14)', () => {
+  it('mimo VR nakreslí snímek navíc a vrátí obrázek plátna', async () => {
+    const { state, calls } = root(false);
+    await expect(captureFrame(state)).resolves.toBe(blob);
+    expect(calls).toEqual(['advance', 'toBlob']);
+  });
+
+  it('ve VR snímek navíc nekreslí: bez snímku relace by ovladače ztratily pózu a paprsek tlačítko', async () => {
+    const { state, calls } = root(true);
+    await expect(captureFrame(state)).resolves.toBeNull();
+    expect(calls).toEqual([]);
   });
 });

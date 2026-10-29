@@ -162,8 +162,13 @@ export function createSnapshotCache(limit = SNAPSHOTS, urls: { create(blob: Blob
  * už žádný další snímek její scény nepřijde (scénu další hry vymění tentýž
  * commit) – proto jeden snímek navíc hned teď a `toBlob` v témž úkolu
  * (kopie plátna je synchronní, kódování až potom).
+ *
+ * Ve VR snímek není (P67 T14): snímek navíc mimo snímek relace nemá pózy
+ * ovladačů, paprsek v něm na chvíli z tlačítka panelu sjede a spoušť stisknutá
+ * právě teď se ztratí (e2e `vr-lobby`); plátno relace obraz brýlí stejně nenese.
  */
 export function captureFrame(state: Pick<RootState, 'advance' | 'gl'>): Promise<Blob | null> {
+  if (state.gl.xr.isPresenting) return Promise.resolve(null);
   try {
     state.advance(performance.now(), false);
   } catch {

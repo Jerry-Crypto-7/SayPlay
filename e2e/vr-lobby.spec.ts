@@ -429,8 +429,16 @@ test('Say it dictates the sentence into the lobby preview with no request of its
   await page.screenshot({ path: test.info().outputPath('lobby-say-it.png') });
 
   // Od teď až po přepis nesmí stránka nic poslat ani stáhnout: přepis dělá prohlížeč, ne naše API ani placená služba.
+  // Výjimka jsou soubory scény z našeho serveru (modely `/assets/`, chunky): hra feedu za lobby si je dotahuje,
+  // kdy potřebuje, a přepis jimi odejít nemůže (P67 T14: modely přišly uprostřed diktování na studeném serveru).
   const requests: string[] = [];
-  const watch = (request: { method(): string; url(): string }) => requests.push(`${request.method()} ${request.url()}`);
+  const sceneFile = (request: { method(): string; url(): string }): boolean => {
+    const url = new URL(request.url());
+    return request.method() === 'GET' && url.origin === new URL(page.url()).origin && /^\/(assets|_next\/static)\//.test(url.pathname);
+  };
+  const watch = (request: { method(): string; url(): string }) => {
+    if (!sceneFile(request)) requests.push(`${request.method()} ${request.url()}`);
+  };
   page.on('request', watch);
 
   // „Listening…“ místo titulku a „Cancel“ na tlačítku; „Cancel“ poslech ukončí a co prohlížeč dopošle, zahodí.
