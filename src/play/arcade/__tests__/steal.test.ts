@@ -299,10 +299,10 @@ describe('steal rules (P66 T7)', () => {
 });
 
 describe('steal genre module (P66 T7)', () => {
-  it('compiles a valid genre.v6 spec from the hand spec; routing (cues, recipe cell) waits for T12', () => {
-    // Pro výběr kostra (`staged`) a bez narážek jako šipky (T9), dokud T12 nepřesune buňku receptu do živých.
-    expect(stealGenre.availability('default')).toBe('staged');
-    expect(stealGenre.cues).toEqual([]);
+  it('compiles a valid genre.v6 spec from the hand spec; T12 routes sentences to it (ready, cues)', () => {
+    // P66 T12: živý pro výběr – narážky v modulu, buňka receptu v `PRESETS` (`p66-staged.test.ts`).
+    expect(stealGenre.availability('default')).toBe('ready');
+    expect(stealGenre.cues.length).toBeGreaterThan(0);
     const read = readGenreSpec({ genre: 'steal', mode: 'default', hero: 'cat', setting: 'fish market', cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'chase_me' }] });
     if (!read.ok) throw new Error(read.issues.join('; '));
     const spec = compileWith(stealGenre as GenreModule, read.value);

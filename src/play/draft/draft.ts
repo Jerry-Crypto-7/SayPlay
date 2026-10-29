@@ -275,11 +275,12 @@ function titleFrom(sentence: string, fallback: string): string {
 }
 
 /**
- * Šablona názvu modulu nebo skladatele („Corgi Run“, „Bee Defense“): postava a druh hry. Druh nového žánru P66
- * (`survivor`, `hole`, `heist`, `sort`, `arrows`) sem patří až s úlohou, která žánr pustí do rychlé hry (T12):
- * dřív by jen odmítal čtené názvy dnešních her („Museum Heist“), které žádný modul nevyrábí.
+ * Šablona názvu modulu nebo skladatele („Corgi Run“, „Bee Defense“): postava a druh hry. P66 T12 pustil nové žánry do
+ * rychlé hry a přidal druhy, které jejich moduly opravdu skládají: „<Postava> Hole“, „<Postava> Heist“, „<Postava> Sort“.
+ * Přežití („Knight vs Skeletons“) ani šipky („Car Jam“) šablonu „survivor“ / „arrows“ nevyrábějí, takže čtený název
+ * „Zombie Survivor“ zůstává.
  */
-const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase)$/i;
+const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort)$/i;
 
 /**
  * Název hry z věty (P56A T8): název čtení, když projde – nejvýš 32 znaků, filtr obsahu feedu (`blockedText` v

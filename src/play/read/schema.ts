@@ -32,9 +32,16 @@ export type RoleKind = (typeof ROLE_KINDS)[number];
 
 const word = z.string().min(1).max(40);
 
+/**
+ * Živé žánry, které čtečka zatím nejmenuje – jako `DIRECTOR_PENDING` u režiséra: bez řádku popisu v promptu čtečky by
+ * je model volil naslepo a schéma odpovědi by se pohnulo dřív než prompt. P66 T12 pustil pět nových žánrů do rychlé
+ * hry; čtečce je popíše a odsud vyjme P66 T13.
+ */
+export const READER_PENDING: ReadonlySet<string> = new Set<string>(['survivor', 'hole', 'steal', 'sort', 'arrows']);
+
 /** Režimy, které hrají (`availability = 'ready'`), po žánrech – jen ty smí čtečka jmenovat (P56A T3). */
 export const READY_GENRE_MODES: readonly { readonly genre: GenreModule['id']; readonly modes: readonly [string, ...string[]] }[] = (Object.values(GENRE_MODULES) as GenreModule[])
-  .map((module) => ({ genre: module.id, modes: module.modes.filter((mode) => module.availability(mode) === 'ready') as string[] }))
+  .map((module) => ({ genre: module.id, modes: READER_PENDING.has(module.id) ? [] : (module.modes.filter((mode) => module.availability(mode) === 'ready') as string[]) }))
   .filter((entry): entry is { genre: GenreModule['id']; modes: [string, ...string[]] } => entry.modes.length > 0);
 
 /**

@@ -28,8 +28,8 @@ const DEV = [
   ['p55/holdout.json', 'p55-holdout'],
 ] as const;
 
-/** Šablony názvů z modulů žánrů a skladatele: „<Postava> <druh hry>“. */
-const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase)$/i;
+/** Šablony názvů z modulů žánrů a skladatele: „<Postava> <druh hry>“ (P66 T12: díra, krádež a třídění). */
+const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort)$/i;
 /** Věta to slovo říká v nějakém tvaru („races“, „racing“, „escapes“). */
 const says = (text: string, word: string): boolean => text.toLowerCase().split(/[^a-z]+/).some((token) => token.startsWith(word.toLowerCase().replace(/e$/, '')));
 const titleOf = (text: string, reading: Reading | null): string => draftGameSpecWithMeta(text, 1, { reading }).spec.title;
@@ -60,14 +60,30 @@ describe('the game title comes from the sentence (P56A T8)', () => {
     expect(titleOf(sentence, { ...A01_READ, title: 'Hamster Escape' })).toBe('Hamster Escape');
   });
 
-  // P66 T2 recenze: druh hry žánru, který rychlá hra ještě nedělá, není šablona – čtený název zůstává.
+  // P66 T2 recenze: druh hry, který žádný modul jako šablonu nevyrábí, není šablona – čtený název zůstává. Přežití
+  // skládá „Knight vs Skeletons“, šipky „Car Jam“, takže „survivor“ ani „arrows“ šablonou nejsou ani po P66 T12.
   it.each([
-    ['a raccoon sneaks into the museum and grabs the diamond while guards patrol', 'Museum Heist'],
     ['survive the zombie night', 'Zombie Survivor'],
     ['an archer shoots an arrow', 'Robin Arrows'],
+  ])('keeps the reading title of "%s" while its kind is no live template', (sentence, title) => {
+    expect(titleOf(sentence, { ...A01_READ, title })).toBe(title);
+  });
+
+  // P66 T12: díra, krádež a třídění hrají v rychlé hře a jejich moduly skládají „<Postava> Hole / Heist / Sort“.
+  // Čtený název v té šabloně platí jen u věty, která druh říká; jinak jsou to slova věty.
+  it.each([
+    ['a raccoon sneaks into the museum and grabs the diamond while guards patrol', 'Museum Heist'],
     ['a pit in the street swallows the cars of the city', 'City Hole'],
     ['put every toy into the right box', 'Toy Sort'],
-  ])('keeps the reading title of "%s" while its kind is no live template', (sentence, title) => {
+  ])('drops the template-shaped reading title of "%s" now that its kind is a live template', (sentence, title) => {
+    expect(titleOf(sentence, { ...A01_READ, title })).toBe(titleOf(sentence, null));
+  });
+
+  it.each([
+    ['plan the perfect heist on the city museum', 'Museum Heist'],
+    ['a hole in the street swallows the cars of the city', 'City Hole'],
+    ['sort every toy into the right box', 'Toy Sort'],
+  ])('keeps the template-shaped reading title of "%s" when the sentence says its kind', (sentence, title) => {
     expect(titleOf(sentence, { ...A01_READ, title })).toBe(title);
   });
 

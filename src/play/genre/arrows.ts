@@ -6,8 +6,9 @@
  * Hloubka: `rounds` kol (2–5, výchozí 3) s rostoucí mřížkou, poslední je finále; úroveň je řešitelná konstrukcí
  * (`arrows-level.ts`); 3 srdce, hodiny celé hry `arrowsSeconds`; kombo za sérii odletů bez nárazu.
  *
- * Kusem je první věc obsazení (kulisa, překážka, sbíraná věc…), výchozí auto. Narážky pro klasifikátor žádné –
- * věty sem povede až T12; do té doby se hra otevírá ručním specem (`e2e/fixtures/p66-arrows-spec.json`).
+ * Kusem je první věc obsazení (kulisa, překážka, sbíraná věc…), výchozí auto. Věty sem od P66 T12 vede znak žánru
+ * v `classify.ts` (ťuk, po kterém kus odjede; kus jede, kam ukazuje; zácpa); e2e hraje z ručního specu
+ * (`e2e/fixtures/p66-arrows-spec.json`).
  */
 
 import { ARROWS, arrowsSeconds, totalPieces } from '../arcade/pieces/arrows-level';
@@ -37,16 +38,15 @@ const pieceOf = (spec: Parameters<typeof castFor>[0]): string =>
 export const arrowsGenre: GenreModule<'arrows'> = {
   id: 'arrows',
   modes: ['default'],
-  // Narážky žádné: věty k žánru povede klasifikátor až v T12 (P66), do té doby jen ruční spec.
-  cues: [],
+  // P66 T12: věty sem vede znak žánru v `classify.ts` (ťuk, po kterém kus odjede; kus jede, kam ukazuje; zácpa);
+  // narážky přidají bod a v pořadí dají šipky před ostatní.
+  cues: ['jammed', 'traffic jam', 'gridlock'],
   heroClasses: ['vehicle', 'animal', 'prop', 'humanoid', 'robot', 'monster'],
   paramBounds: {
     rounds: { min: ARROWS.rounds.min, max: ARROWS.rounds.max },
   },
-  // Hraje (překlad i svět), ale pro výběr zůstává `staged`: klasifikátor, návrh i režisér procházejí celé pořadí
-  // přes buňku receptu (`PRESETS`, `compose/presets.ts`) a tu přesune do živých až T12 se zapojením vět.
-  // `ready` bez buňky shodí skladbu (`sourceFor`) u každé věty – změřeno 29. 10., 2 894 červených testů.
-  availability: () => 'staged',
+  // P66 T12: živý – buňka `arrows.default` je v `PRESETS` a věty sem vede klasifikátor.
+  availability: () => 'ready',
   compile: (spec) => {
     const rounds = spec.params?.rounds ?? ARROWS.rounds.default;
     const piece = singular(pieceOf(spec));

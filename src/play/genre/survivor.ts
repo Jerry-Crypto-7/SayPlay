@@ -11,8 +11,8 @@
  * Hloubka: `enemies` nepřátel ve vlnách (`COUNT_PARAMS.survivor.default.enemy`), `rounds` kol (poslední boss);
  * 3 životy. Robot vyhraje za 60–90 s, nečinný hráč prohraje ve druhé vlně.
  *
- * Narážky pro klasifikátor žádné – věty k žánru dovede až P66 T12. Do té doby se žánr otevírá ručním specem
- * (`e2e/fixtures/p66-survivor-spec.json`) a překladem `compileWith(survivorGenre, …)`.
+ * Věty sem od P66 T12 vede znak žánru v `classify.ts` (přežít vlny či hordy, střelba sama, síla mezi vlnami); e2e
+ * hraje z ručního specu (`e2e/fixtures/p66-survivor-spec.json`).
  */
 
 import { BOSS_ATTACKS } from '../arcade/contract';
@@ -48,16 +48,16 @@ function foeOf(sentence: string, ammo: string | undefined): string | null {
 export const survivorGenre: GenreModule<'survivor'> = {
   id: 'survivor',
   modes: ['default'],
-  // Narážky dopíše T12 (P66): do té doby žánr klasifikátor nevybere sám.
-  cues: [],
+  // P66 T12: věty sem vede znak žánru v `classify.ts` („survives waves of“, „auto-fires“); narážka přidá bod a v pořadí
+  // dá přežití před ostatní. Ne „horde“: v holé větě bez slovesa by vzala dav („my zombie horde gets bigger with every gate“).
+  cues: ['survivor'],
   heroClasses: ['humanoid', 'robot', 'animal', 'monster', 'vehicle'],
   paramBounds: {
     enemies: { min: SURVIVOR.enemies.min, max: SURVIVOR.enemies.max },
     rounds: { min: SURVIVOR.rounds.min, max: SURVIVOR.rounds.max },
   },
-  // Hraje (překlad i svět), ale pro výběr zůstává `staged` jako šipky (T9): buňku receptu (`PRESETS`,
-  // `compose/presets.ts`) přesune do živých až T12 se zapojením vět; `ready` bez ní shodí skladbu každé věty.
-  availability: () => 'staged',
+  // P66 T12: živý – buňka `survivor.default` je v `PRESETS` a věty sem vede klasifikátor.
+  availability: () => 'ready',
   compile: (spec) => {
     const enemies = spec.params?.enemies ?? SURVIVOR.enemies.default;
     const rounds = spec.params?.rounds ?? SURVIVOR.rounds.default;

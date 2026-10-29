@@ -917,3 +917,123 @@ Robot bere kartu 9 tiků po nabídce, takže hra s výběrem je o pár desítek 
 - **Mez měřidla HP soupeře** (`FightFx.tsx`, `maxHp`) je nejvyšší HP, které obrazovka viděla, ne skutečné maximum. Po skoku na konec běhu tak ukáže „0 of 6“ místo „0 of 7“, když soupeř dostal první ránu před skokem. Robot ve `genre.v6` před poslední vlnou bere `fire_rate`. `e2e/p32-arena` teď bere 6 i 7. Oprava patří scéně souboje (P64).
 - **`p32-arena` „zásah: zasažené tělo bliká“** padá i se specem `genre.v5` (kopie testu, tentýž build). Nesouvisí s háčky; patří P64, nebo do brány T16 na klidném stroji.
 - **Karty doskočí s překmitem** (`sp-pop-in`). Kontrola rohů karet v `p66-hooks` (T4) padala 1–3 ze 4 běhů a teď čeká na konec nástupu; s ní 12/12. Inference (neměřeno): uprostřed nástupu roh přesahuje sousední karta.
+
+## T12 – věty rychlé hry do pěti nových žánrů
+
+Jedna změna výběru: pět žánrů je živých a klasifikátor k nim vede věty, aniž by bral věty starým žánrům. Worktree `D:/caches/p66/wt-t12`, větev `p66-t12` z `ba9f9590`.
+
+### Co se změnilo
+
+- **Živé žánry.** Moduly `survivor`, `hole`, `steal`, `sort`, `arrows` mají `availability: 'ready'` a narážky. Jejich buňky receptu se přesunuly ze `STAGED_PRESETS` do `PRESETS`; `STAGED_PRESETS` je prázdný.
+- **Znak žánru v klasifikátoru** (`classify.ts`). Nový druh slovesa `sign` jde v pořadí před úkol. Je to sloveso jen s druhou půlkou, která celou hru jmenuje. Samotné „survive“, „eats“, „steals“, „tap“ dál hrají starý žánr.
+
+  | Žánr | Znak (sloveso `verb`) | Příklad z dev | Zůstává starému žánru |
+  |---|---|---|---|
+  | přežití | `survive`: přežít / vydržet / odrazit + vlny, hordy, roje; „auto-fires“; síla mezi vlnami | „survives endless waves of skeletons“ | „survive the storm“ (útěk), „defend the castle from waves of goblins“ (obrana) |
+  | díra | `swallow`: díra jako podmět (a / the … hole, sinkhole, pit, vortex) + polyká, jí, hltá | „a hungry hole in the farmyard eats chickens“ | „the mole pops out of its hole and eats…“ (díra za předložkou) |
+  | krádež | `steal`: ukrást / uloupit / „grabs their …“ + odnese domů (back, home, to his …) | „steal the golden egg … and carry it home“ | „steals fish while dodging the fishmonger“, „sneaks past guards to steal a fish“ (bludiště P46A) |
+  | třídění | `sort`: sloveso třídění (ne „a sort of“, ne „sorting room“); věc do správné nádoby; přelévání do jedné barvy; podle barvy | „puts teddy bears … back on the right shelves“ | „merge fruits in a jar“ (slučování) |
+  | šipky | `tap`: ťuk, po kterém kus odjede; kus jede, kam ukazuje; rozmotat zácpu | „tap a bus and it leaves if the road ahead is clear“ | „tap to the beat“ (rytmus) |
+
+- **Body.** Hlavní znak dá svému žánru +6: sloveso (+4) a jméno hry (+2 jako `NAMES`), protože druhá půlka znaku hru jmenuje. S +4 by ho dorovnala slova starého žánru kolem: „tap the boats so they sail out“ = sloveso plavby, „boats“ a narážka plavby = 4, při shodě vyhraje dřívější žánr.
+- **Narážky** (+1, úzké): přežití `survivor`; díra `black hole`, `sinkhole`; krádež `sneak`, `heist`; třídění `sorter`, `by colour`, `by color`; šipky `jammed`, `traffic jam`, `gridlock`.
+- **Věrnost** (`verbPlayedBy`): znak hraje svůj nový žánr navíc. Řádek starého žánru, který slovo hrál, neschová – „sort“ dál hraje i `quest.station`, „steal“ dál sběr.
+- **Návrh** (`draft.ts`): `TEMPLATE_TITLE` + `hole`, `heist`, `sort` – moduly díry, krádeže a třídění skládají „<Postava> Hole / Heist / Sort“. Přežití („Knight vs Skeletons“) ani šipky („Car Jam“) šablonu `survivor` / `arrows` nevyrábějí, takže zůstaly venku. `title.test.ts`: čtený název „Museum Heist“, „City Hole“, „Toy Sort“ u věty, která druh neříká, teď ustoupí slovům věty; u věty, která ho říká, zůstává. `GENRE_SETTING` beze změny.
+- **Režisér a čtečka je zatím nenabízejí:** pět žánrů je v `DIRECTOR_PENDING` (`director/answer-schema.ts`, mechanismus z P54C) a v novém `READER_PENDING` (`read/schema.ts`). Prompt režiséra, schéma odpovědi i otisk nahraných odpovědí P46E se tak nepohnuly. **T13 obě množiny vyprázdní**, až žánry popíše.
+- **Svědci** (`arcade/witness.ts`, jen pro nová ovládání a pravidla). Živá buňka musí na semínkách 1–5 dokázat každý kus receptu (`allowed.test.ts`):
+  - pohyb `roam` pro přežití, díru a krádež;
+  - `swallow` (polknutí díry), `sort` (věc v nádobě), `unblock` (kus odletěl), `steal` (kořist doma), `autofire` (výstřel bez stisku);
+  - `defeat` u přežití: pád nepřítele je v obalu `ifAlive`, svědek proto zná původ efektů uvnitř – jen u pravidel `survivor_*`, obaly schopností P46A dál ne;
+  - hrozby: sonda jde u přežití a krádeže k hrozbě jako v aréně; nepřítel přežití, který zranil, je `chaser`; strážce krádeže, který chytil, je `guard`.
+
+### Stráž proti krádeži (`genre-route.mjs` → `route-branch.json`)
+
+| | `main` (`route-main.json`) | větev (`route-branch.json`) |
+|---|---|---|
+| `wrongRate` sada 200 | 0,389 (68 / 175) | **0,389** (68 / 175) |
+| `wrongRate` otevřené sady | 0,358 (110 / 307) | **0,355** (109 / 307) |
+| `wrongRateDraft` sada 200 / otevřené | 0,349 / 0,339 | 0,349 / 0,336 |
+| přesuny mezi dvěma starými žánry | – | **0** |
+| přesuny ze starého žánru na nový | – | **3, všechny s novým žánrem v `acceptable`** (2 v sadě 200: díra 1, třídění 1; 1 jen v otevřených: p30 dev s111 „a black hole that swallows a city“ → díra) |
+
+- Dev `p66/dev.json`: **20 / 20** (každý žánr 4 / 4). Prvních 12 vět `p30/dev.json` hraje týž žánr a režim jako `main`.
+- Ladilo se na dev P66 a otevřených sadách. Sada 200 se jen počítala.
+  - Jedna výjimka zapsaná poctivě: filtr skriptu ladění zprvu omylem vypsal i věty sady 200. Vzor „organize + skříň“ z jedné z nich se proto smazal a narážky „thief“ a „recycling“ se nepřidaly.
+- **Zúženo po testech:** první verze krádeže brala i „sneaks past … to steal“. Přesunula by dvě věty bludiště se strážemi (`native-sentences`, `abilities-draft`: „a cat sneaks past guards to steal a fish“ → walker) a dev d14. Krádež teď chce kořist nesenou domů.
+- Narážka „horde“ u přežití vzala větu davu P55 h45 („my zombie horde gets bigger with every gate“) a vypadla.
+- Na dosavadních sadách nové žánry skoro nic nedostanou (díra 2, třídění 1, ostatní 0). Odpovídá to dosahu z T1 – věty nových žánrů v nich skoro nejsou.
+
+### Testy
+
+- `p66-route.test.ts` (nový) přepočítá stráž z dnešního `classifyGenre` nad `genre-labels.json`. Selže na přesunu mezi starými žánry, na přesunu na nový žánr mimo `acceptable`, na horším `wrongRate`, na zastaralém `route-branch.json`, na dev pod 16 / 20 (nebo pod 3 / 4 u žánru) a na kterékoli z 12 vět P30 dev.
+- Sdílené testy, které předpokládaly kostry:
+  - `p66-staged.test.ts` drží konečný stav: pět žánrů `ready` s narážkami, živá buňka a žádná `staged`, překlad receptem projde, věty z T2, které žánr jmenují, ho dostanou, generátor staví svět;
+  - `contract.test.ts` dostal vzorek na každý nový žánr, `dressing.test.ts` řádek na každý nový žánr (místo, nepřítel nebo věc z věty);
+  - testy žánrů (`survivor`, `hole`, `steal`, `arrows`) čekají `ready` a narážky.
+- **Očekávání, která se pohnula (`classify.test.ts`):**
+  - P30 dev s111 se přesunula z `arena.collect` na `hole.default` – soudce T1 tam má díru jako jediný přijatelný žánr;
+  - zlatý test P56A porovnává pořadí 19 dosavadních žánrů bez nových; to se u žádné věty tří dev sad nepohnulo. Nový žánr vyhrál jen s111.
+- `read/__tests__/schema.test.ts`: čtečka nové žánry jmenovat nesmí, dokud jsou v `READER_PENDING`.
+- **P41 obtížnost** (`p41/difficulty.json`, 20 semínek, profily P41, změřeno tímtéž algoritmem jako `difficulty.measure.ts`, ostatní řádky beze změny):
+
+  | Buňka | začátečník | pokročilý |
+  |---|---|---|
+  | survivor | 11 / 20 (0,55) | 19 / 20 |
+  | hole | 20 / 20 | 20 / 20 |
+  | steal | 4 / 20 (0,20) | 20 / 20 |
+  | sort | 20 / 20 | 20 / 20 |
+  | arrows | 20 / 20 | 20 / 20 |
+
+  Pásmo začátečníka P41 (0,3–0,7) splní jen přežití. `difficulty.test.ts` má proto výjimku `OWN_DIFFICULTY` pro díru, krádež, třídění a šipky: jejich obtížnost drží vlastní test slabého robota; běhy, chyby, přehrání a pokročilý ≥ 0,8 se hlídají dál.
+- **Běhy (JSON reporter):**
+  - před rebase na T10 (`23c55335`): `npx vitest run src/play/genre src/play/compose src/play/director src/play/read src/play/draft src/play/__tests__/draft.test.ts src/play/fidelity src/play/chain`, testy pěti žánrů v `src/play/arcade/__tests__`, `p66-hash.test.ts` a `evals/play/p66`: **5 832 / 5 832** zelených; svědci ostatních her (`*-witness`, `platform-probe`, `arena-catch`, `assembly-parts`) 142 / 142;
+  - po rebase totéž + `p66-hooks-existing` a svědci: **5 981 / 6 015**. Všech 34 červených je v `chain/micro.test.ts` (obrana a obrana s bossem), `chain/mutators.test.ts` (× obrana: `unknown bot hooks_bot` u zrcadla a mizející podlahy, robot nedohraje) a `director/p46-fixtures.test.ts` s002. **Tytéž 3 soubory dají tytéž 34 červené na hlavě větve `23c55335` bez T12** (dočasný worktree, pak smazaný) – přišly s T10, ne s T12;
+  - P41 obtížnost pěti nových buněk po rebase přeměřená: řádky bajt po bajtu stejné;
+  - `tsc --noEmit` čistý před i po rebase.
+- **Rozbito schválně** (záloha `D:/caches/p66/t12-scratch/classify.ts.bak`, po každé obnova a `diff -q`), `p66-route.test.ts`:
+
+  | Záměrná chyba | Červené testy |
+  |---|---|
+  | díra polyká i bez díry jako podmětu (každé „eats“) | 3 – přesun mimo `acceptable`, `wrongRate` 0,394 > 0,389, zastaralý `route-branch.json` |
+  | znak třídění hraje `quest.station` | 2 – třídění 0 / 4 na dev, zastaralý `route-branch.json` |
+  | pohyb před úkolem v pořadí sloves | 3 – přesuny mezi starými žánry, `wrongRate`, zastaralý `route-branch.json` |
+
+  `mutationStatus: all-red` (3 / 3).
+- **E2e** (`npm run build` po rebase na T10, `next start` :3177, `PLAY_READER=off`): `play-survivor`, `play-hole`, `play-steal`, `play-sort`, `play-arrows` na `chromium` i `pixel7-touch` **18 / 18**.
+  - `interface-language` (`chromium`, jediný projekt, kam patří): v souběhu se sadou vitestu 3 / 4 – „tlačítko akce…“ nestihlo přejít na `/play/<id>` za 5 s (dvakrát, i před rebase). Samotný běh **4 / 4** (také dvakrát).
+
+### Start rychlé hry (`first-playable-ab.mjs`, orientačně, brána je G3 v T16)
+
+`pixel7-cpu4`, A = `main` :3167, B = větev :3177 (build před rebase na T10), prokládaně, 3 dev věty P66 (v02 přežití, v05 díra, v13 třídění). Dvě sezení. První (3 běhy) zastavil limit nástroje po 13 bězích a běželo souběžně se sadou vitestu. Druhé (2 běhy) jsem zastavil po 10 bězích: ve druhém běhu obě strany otevíraly hru, kterou server z prvního běhu už měl, a sonda „plocha reaguje na vstup“ na ní 90 s nic nenašla.
+
+| Věta | párů, kde hrály obě strany | hratelná A / B (ms) po párech | medián B − A |
+|---|---|---|---|
+| v02 robot auto-fires | 3 | 9 273 / 22 341 · 17 887 / 23 732 · 13 061 / 5 900 | +5 845 |
+| v05 black hole | 3 | 12 172 / 22 299 · 81 308 / 14 520 · 22 614 / 8 925 | −13 689 |
+| v13 sort candies | 1 | 38 526 / 80 966 | +42 440 |
+
+Inference: rozptyl ±60 s je řádově větší než práh G3 (+0,2 s), takže z toho nejde nic vyvodit. Dvě věci jsou ale vidět:
+
+- Sonda „hratelné = plocha reaguje na vstup“ u nových žánrů selhává nebo potřebuje mnoho pokusů. Přežití se hýbe i bez vstupu (střílí samo), třídění chce ťuk do sloupce fronty – ve větvi 2 ze 3 běhů třídění bez výsledku.
+- `main` pro tyto věty hraje jiné žánry (střílečka, sběr), takže A/B porovnává různé hry.
+
+Pro G3 v T16: sonda musí pro nové žánry ťukat do jejich zón (`data-lane-edges`) a každý běh potřebuje čerstvý server, ne hru z minulého běhu.
+
+### Rozhodnutí (`implementation-notes`)
+
+- `sign` před úkolem a +6 místo cue-záplat pro každou dev větu: jedno pravidlo místo narážek šitých na věty.
+- Režisér a čtečka čekají na T13 (`DIRECTOR_PENDING`, `READER_PENDING`). Bez toho by prompt režiséra narostl nad rozpočet (`logic-answer-schema.test.ts`: 2 130 znaků proti `main`, mez 1 500), pohnul by se otisk nahraných odpovědí P46E a čtečka by volila žánry bez popisu.
+- Svědci jen pro nová ovládání a pravidla: chování svědků dosavadních her se nemění.
+- Výjimka pásma začátečníka P41 pro čtyři žánry místo ladění jejich obtížnosti: ladění pravidel žánrů je mimo T12.
+
+### Nálezy
+
+- **Řetěz s obranou po T10 červený** (není z T12, viz Testy): mikrohra `defense.default` a mutátory nad ní. Zrcadlo a mizející podlaha neznají obal robota `hooks_bot` a robot obrany nedohraje ve 3–8 s. K tomu `director/p46-fixtures` s002. Patří k T10 (obal háčků v `genre.v6` obraně) – vrátit orchestraci.
+- **FPS nových žánrů z věty** (`play-perf @measure`, odložené z T5–T9 „až věty povedou do žánru“) T12 neměřil, AC ho nechce. Věty teď do žánrů vedou (dev P66), měření patří do G4 v T16.
+- **Pásmo začátečníka P41:** třídění, šipky a díra jsou pro začátečníka moc snadné (20 / 20), krádež moc těžká (4 / 20 – prohraje 16 z 20). Profil začátečníka je zpoždění a šum vstupu. Ťukací hádanky s velkým časem na něj nereagují. Krádež je kandidát na opravu v T15.
+- **Rychlá hra z věty – co návrh ze slov vezme špatně** (`draftFill` modulů; T12 smí měnit jen narážky, proto pro T15):
+  - díra: „a black hole swallows the cars“ dá mezi věci k polknutí i „hole“;
+  - krádež: strážce zůstane výchozí robot, když ho věta jmenuje jen přívlastkem („guard dogs chase her“) nebo přivlastňovacím pádem („the dragon's cave“);
+  - krádež: cíl hry píše „from the rival base“ a `goal-text.test.ts` u věty krádeže hlásí „rival“ jako věc, kterou hra nemá;
+  - třídění: „puts teddy bears, robots and balls back on the right shelves“ věci výčtu nevezme (bere jen za „sort / organize / pack“), hraje výchozí hračky a místo „right shelves“;
+  - šipky: „clear the jammed parking lot by tapping each car…“ dá kus „jammed“ místo auta a místo louku.

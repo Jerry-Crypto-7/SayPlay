@@ -7,7 +7,7 @@
  * Co se krade, je věc obsazení, kterou věta sbírá (`collect`, výchozí drahokam); kdo hlídá, je ten, kdo honí nebo se
  * pere (`chase_me`, `fight`, jinak `avoid`/`shoot_at`; výchozí robot `GENRE_FOE`).
  *
- * Narážky žádné: věty sem vede až klasifikátor P66 T12. Do té doby se žánr otevírá ručním specem (fixture e2e).
+ * Věty sem od P66 T12 vede znak žánru v `classify.ts` (kořist nesená domů); e2e hraje z ručního specu.
  */
 
 import { STEAL } from '../arcade/pieces/steal';
@@ -24,7 +24,9 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 export const stealGenre: GenreModule<'steal'> = {
   id: 'steal',
   modes: ['default'],
-  cues: [],
+  // P66 T12: věty sem vede znak žánru v `classify.ts` (kořist nesená domů); narážky přidají bod proti útěku, když
+  // věta plíží („sneaks into the rival camp … before the rangers catch him“), a v pořadí dají krádež před ostatní.
+  cues: ['sneak', 'heist'],
   heroClasses: ['humanoid', 'animal', 'robot', 'monster'],
   // Meze z měření robotem (T7, `evals/play/p66/README.md` → T7): kořist na kolo, kola, strážci prvního kola.
   paramBounds: {
@@ -32,9 +34,8 @@ export const stealGenre: GenreModule<'steal'> = {
     rounds: { min: STEAL.rounds.min, max: STEAL.rounds.max },
     guards: { min: STEAL.guards.min, max: STEAL.guards.max },
   },
-  // Hraje (překlad i svět), ale pro výběr zůstává `staged` jako šipky (T9): klasifikátor, návrh i režisér procházejí
-  // celé pořadí přes buňku receptu (`PRESETS`, `compose/presets.ts`) a tu přesune do živých až T12.
-  availability: () => 'staged',
+  // P66 T12: živý – buňka `steal.default` je v `PRESETS` a věty sem vede klasifikátor.
+  availability: () => 'ready',
   compile: (spec) => {
     const loot = spec.params?.loot ?? STEAL.perRound.default;
     const rounds = spec.params?.rounds ?? STEAL.rounds.default;

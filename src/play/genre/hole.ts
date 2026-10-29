@@ -10,7 +10,7 @@
  * Hloubka: `rounds` kol (1–3, výchozí 3) po `seconds` s (60–90); v každém kole cíl bodů, v posledním navíc
  * největší věc. Bez životů – větší věc díru jen zastaví.
  *
- * Narážky pro klasifikátor žádné: věty k žánru povede až T12; do té doby se hra otevírá ručním specem
+ * Věty sem od P66 T12 vede znak žánru v `classify.ts` (díra jako podmět, která polyká); e2e hraje z ručního specu
  * (`e2e/fixtures/p66-hole-spec.json`).
  */
 
@@ -99,16 +99,16 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 export const holeGenre: GenreModule<'hole'> = {
   id: 'hole',
   modes: ['default'],
-  cues: [],
+  // P66 T12: věty sem vede znak žánru v `classify.ts` (díra jako podmět, která polyká); narážky přidají bod.
+  cues: ['black hole', 'sinkhole'],
   heroClasses: ['prop', 'monster', 'animal', 'vehicle', 'robot', 'humanoid'],
   paramBounds: {
     items: { min: HOLE.items.min, max: HOLE.items.max },
     rounds: { min: HOLE.rounds.min, max: HOLE.rounds.max },
     seconds: { min: HOLE.seconds.min, max: HOLE.seconds.max },
   },
-  // Hraje (překlad i svět), ale pro výběr zůstává `staged` jako šipky: buňku receptu (`PRESETS`) přesune do živých
-  // až T12 se zapojením vět; `ready` bez ní shodí skladbu u každé věty.
-  availability: () => 'staged',
+  // P66 T12: živý – buňka `hole.default` je v `PRESETS` a věty sem vede klasifikátor.
+  availability: () => 'ready',
   compile: (spec) => {
     const items = spec.params?.items ?? HOLE.items.default;
     const rounds = spec.params?.rounds ?? HOLE.rounds.default;

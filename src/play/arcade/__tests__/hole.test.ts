@@ -365,8 +365,8 @@ describe('hole: the genre module', () => {
 
   it('the field holds the class mix, the counts and the param bounds of the genre', () => {
     expect(classCounts(60)).toEqual([28, 18, 10, 4]);
-    // Hraje z ručního specu, pro výběr zůstává `staged` do T12 (jako šipky).
-    expect(holeGenre.availability('default')).toBe('staged');
+    // P66 T12: živý pro výběr – narážky v modulu, buňka receptu v `PRESETS` (`p66-staged.test.ts`).
+    expect(holeGenre.availability('default')).toBe('ready');
     expect(holeGenre.paramBounds).toEqual({ items: { min: 30, max: 120 }, rounds: { min: 1, max: 3 }, seconds: { min: 60, max: 90 } });
     expect(readGenreSpec({ ...SENTENCE, params: { rounds: 4 } }).ok).toBe(false);
     const parts = holeParts(1, {});

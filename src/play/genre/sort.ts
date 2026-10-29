@@ -11,9 +11,9 @@
  * s víc věcmi dá každému druhu jednu z nich (dokola, když jich je méně než druhů); věta s jednou věcí třídí tutéž věc
  * podle barev. Barvu má každý druh vždy – jen podle ní se pozná druh u věty s jednou věcí.
  *
- * Narážky pro klasifikátor žádné a výběru skrytý (`staged`): do rychlé hry a k režisérovi žánr pustí T12 jednou
- * změnou výběru (narážky, `availability: 'ready'`, buňka `sort.default` z `STAGED_PRESETS` mezi živé). Do té doby se
- * otevírá ručním specem (`e2e/fixtures/p66-sort-spec.json`) přes překlad tohoto modulu.
+ * Do rychlé hry žánr pustil P66 T12 jednou změnou výběru (narážky, `availability: 'ready'`, buňka `sort.default`
+ * v `PRESETS`); věty sem vede znak žánru v `classify.ts`. Režisérovi a čtečce ho popíše T13. E2e hraje z ručního specu
+ * (`e2e/fixtures/p66-sort-spec.json`).
  */
 
 import { SORT, binsPerRound } from '../arcade/pieces/sort-level';
@@ -60,16 +60,16 @@ function sortedLabels(cast: readonly CastItem[]): string[] {
 export const sortGenre: GenreModule<'sort'> = {
   id: 'sort',
   modes: ['default'],
-  // Narážky žádné: věty k žánru vede klasifikátor až od T12.
-  cues: [],
+  // P66 T12: věty sem vede znak žánru v `classify.ts` (sloveso třídění, věc do správné nádoby); narážky přidají bod.
+  // Ne „sort“: narážka bere každý tvar slova, tedy i „a sort of“, které znak žánru vynechává.
+  cues: ['sorter', 'by colour', 'by color'],
   heroClasses: ['humanoid', 'animal', 'robot', 'monster', 'prop'],
   paramBounds: {
     items: { min: SORT.items.min, max: SORT.items.max },
     rounds: { min: SORT.rounds.min, max: SORT.rounds.max },
   },
-  // Hraje (překlad, generátor, robot, scéna), ale výběru zůstává skrytý do T12: `ready` by žánr bez narážek zařadil
-  // do pořadí klasifikátoru i nabídky režiséra a skladba by sáhla po buňce `sort.default`, která je dál v `STAGED_PRESETS`.
-  availability: () => 'staged',
+  // P66 T12: živý – buňka `sort.default` je v `PRESETS` a věty sem vede klasifikátor.
+  availability: () => 'ready',
   compile: (spec) => {
     const items = spec.params?.items ?? SORT.items.default;
     const rounds = spec.params?.rounds ?? SORT.rounds.default;

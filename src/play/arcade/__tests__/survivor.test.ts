@@ -103,9 +103,9 @@ describe('survivor world (P66 T5)', () => {
     expect(read.ok, read.ok ? '' : read.issues.join('; ')).toBe(true);
     expect(SPEC.genre).toEqual({ id: 'survivor', mode: 'default', compilerVersion: 'genre.v6' });
     expect(SPEC.control).toBe('survivor');
-    // Pro výběr kostra (`staged`) a bez narážek, dokud T12 nepřesune buňku receptu – hraje z ručního specu (jako šipky).
-    expect(module.availability('default' as never)).toBe('staged');
-    expect(module.cues).toEqual([]);
+    // P66 T12: živý pro výběr – narážky v modulu, buňka receptu v `PRESETS` (`p66-staged.test.ts`).
+    expect(module.availability('default' as never)).toBe('ready');
+    expect(module.cues.length).toBeGreaterThan(0);
   });
 
   it('builds a portrait arena with its own control, rules, hooks (rounds, upgrades, rarity, boss) and a kill combo', () => {

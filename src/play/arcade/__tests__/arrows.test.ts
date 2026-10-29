@@ -91,10 +91,10 @@ function finalState(world: ArcadeWorld, inputs: readonly InputEvent[], horizon =
 const weakened = (world: ArcadeWorld, mistakes: number): ArcadeWorld => ({ ...world, bot: { id: 'arrows_bot', params: { ...world.bot.params, mistakes } } });
 
 describe('arrows genre is playable (P66 T9)', () => {
-  it('compiles a valid spec through the arrows generator; routing (cues, recipe cell) waits for T12', () => {
-    // Pro výběr kostra (`staged`) a bez narážek, dokud T12 nepřesune buňku receptu – hraje z ručního specu.
-    expect(arrowsGenre.availability('default')).toBe('staged');
-    expect(arrowsGenre.cues).toEqual([]);
+  it('compiles a valid spec through the arrows generator; T12 routes sentences to it (ready, cues)', () => {
+    // P66 T12: živý pro výběr – narážky v modulu, buňka receptu v `PRESETS` (`p66-staged.test.ts`).
+    expect(arrowsGenre.availability('default')).toBe('ready');
+    expect(arrowsGenre.cues.length).toBeGreaterThan(0);
     expect(MODE_GENERATORS.arrows_grid?.id).toBe('arrows_grid');
     const spec = specOf();
     expect(readGameSpec(spec).ok).toBe(true);

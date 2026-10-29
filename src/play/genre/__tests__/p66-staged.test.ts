@@ -1,18 +1,19 @@
 /**
- * Kostry P66 (T2): pět nových žánrů je v kontraktu a ve všech sdílených registrech, ale nehraje – klasifikátor,
- * návrh ani režisér je nevidí a překlad hází, dokud úloha žánru (T5–T9) modul nepřepne. Kostra, která by se omylem
- * dostala do pořadí klasifikátoru, by kradla věty starým žánrům dřív, než cokoli hraje.
+ * Pět žánrů P66: T2 je zapsal do kontraktu a všech sdílených registrů jako kostry (`staged`), T5–T9 postavily jejich
+ * hru a T12 je jednou změnou výběru pustil živě – `ready`, narážky, buňka receptu v `PRESETS`. Test drží konečný stav:
+ * každý z pěti hraje celou cestou věty (klasifikátor → buňka → překlad → svět generátoru) a žádný nezůstal napůl,
+ * třeba `ready` bez buňky receptu (shodí skladbu každé věty) nebo buňku živou bez `ready` (klasifikátor ji nevidí).
  */
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { BUTTON } from '@/play/arcade/contract';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '@/play/arcade/library';
-import { modeNotBuilt } from '@/play/arcade/pieces/mode-stub';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { ALLOWED, liveCells } from '@/play/compose/allowed';
-import { STAGED_PRESETS } from '@/play/compose/presets';
+import { PRESETS, STAGED_PRESETS } from '@/play/compose/presets';
 import { STAGES } from '@/play/compose/stage-registry';
-import { CONTROLS, READ_CONTROLS } from '@/play/spec';
+import { CONTROLS, READ_CONTROLS, readGameSpec } from '@/play/spec';
 import { SUBSYSTEMS } from '@/sim/rng';
 
 import { classifyGenre } from '../classify';
@@ -20,11 +21,9 @@ import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, ty
 import { GENRE_MODULES, compileGenre } from '../index';
 
 const P66 = ['survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
-/** Žánry, které jejich úloha už postavila (překlad i generátor hrají z ručního specu); pro výběr zůstávají `staged` do T12. */
-const LIVE: readonly string[] = ['arrows', 'sort', 'steal', 'hole', 'survivor'];
-const STAGED = P66.filter((genre) => !LIVE.includes(genre));
-/** Generátor režimu, který úloha žánru naplní (registrace je hotová v T2). */
-const GENERATOR: Readonly<Record<(typeof P66)[number], string>> = {
+type P66Genre = (typeof P66)[number];
+/** Generátor režimu, který úloha žánru naplnila (registrace je z T2). */
+const GENERATOR: Readonly<Record<P66Genre, string>> = {
   survivor: 'survivor_waves',
   hole: 'hole_swallow',
   steal: 'steal_bases',
@@ -32,28 +31,31 @@ const GENERATOR: Readonly<Record<(typeof P66)[number], string>> = {
   arrows: 'arrows_grid',
 };
 /** Joystick pro pohyb po ploše, klepnutí do sloupce (fronta) nebo buňky (osa nese buňku, `cellAxisAt`). */
-const INPUT: Readonly<Record<(typeof P66)[number], string>> = { survivor: 'arena', hole: 'arena', steal: 'arena', sort: 'lanes', arrows: 'lanes' };
+const INPUT: Readonly<Record<P66Genre, string>> = { survivor: 'arena', hole: 'arena', steal: 'arena', sort: 'lanes', arrows: 'lanes' };
 
-/** Věty, které nový žánr jmenují přímo – kostra je přesto nesmí dostat. */
-const NAMING = [
-  'a soldier survives waves of zombies, shooting on his own and picking an upgrade after each wave',
-  'a black hole swallows the cars of a busy city and grows',
-  'steal the gold from the rival base and carry it home before the guards catch you',
-  'sort the colored balls into the matching jars',
-  'tap the cars so they drive out of the jammed parking lot in the right order',
-  'a cozy game',
+/** Věty, které nový žánr jmenují přímo (napsané v T2, kdy je kostra ještě dostat nesměla) – teď je dostanou. */
+const NAMING: readonly (readonly [P66Genre, string])[] = [
+  ['survivor', 'a soldier survives waves of zombies, shooting on his own and picking an upgrade after each wave'],
+  ['hole', 'a black hole swallows the cars of a busy city and grows'],
+  ['steal', 'steal the gold from the rival base and carry it home before the guards catch you'],
+  ['sort', 'sort the colored balls into the matching jars'],
+  ['arrows', 'tap the cars so they drive out of the jammed parking lot in the right order'],
 ];
 
-describe('P66 staged genres (T2)', () => {
-  it('the contract has 24 genres: the 19 before P66 and five staged ones with one default mode', () => {
+beforeAll(async () => {
+  await loadRapier();
+});
+
+describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', () => {
+  it('the contract has 24 genres: the 19 before P66 and five live ones with one default mode and their own cues', () => {
     expect(GENRES).toHaveLength(24);
     for (const genre of P66) {
       expect(GENRES).toContain(genre);
       expect(GENRE_MODES[genre as GenreId]).toEqual(['default']);
       const module = GENRE_MODULES[genre as GenreId];
       expect(module.id).toBe(genre);
-      expect(module.availability('default' as never)).toBe('staged');
-      expect(module.cues).toEqual([]);
+      expect(module.availability('default' as never), genre).toBe('ready');
+      expect(module.cues.length, genre).toBeGreaterThan(0);
       expect(FOE_DOES[genre as GenreId]).toBeDefined();
       expect(COUNT_PARAMS[genre as GenreId]).toBeDefined();
       // Každý počet, který věta řekne, má parametr s mezemi v modulu (úloha žánru je smí změnit, ne vynechat).
@@ -63,34 +65,37 @@ describe('P66 staged genres (T2)', () => {
     }
   });
 
-  it('compiling a skeleton throws until its task makes it live', () => {
-    for (const genre of STAGED) {
-      const spec = { genre, mode: 'default', hero: 'fox', setting: 'forest' } as never;
-      expect(() => GENRE_MODULES[genre as GenreId].compile(spec), genre).toThrow(/not live/);
-      // Cesta hry žánru jde přes buňku receptu; kostra živou buňku nemá (`presetOf`), takže hází i tady.
-      expect(() => compileGenre(spec), genre).toThrow();
-    }
-  });
-
-  it('the classifier never ranks a skeleton, even when the sentence names it', () => {
-    const playing = GENRES.flatMap((genre) => GENRE_MODES[genre].filter((mode) => GENRE_MODULES[genre].availability(mode as never) !== 'staged').map((mode) => `${genre}.${mode}`));
-    for (const sentence of NAMING) {
-      const ranked = classifyGenre(sentence, null).ranked;
-      expect(ranked.filter((choice) => (P66 as readonly string[]).includes(choice.genre)), sentence).toEqual([]);
-      expect(ranked.map((choice) => `${choice.genre}.${choice.mode}`).sort(), sentence).toEqual([...playing].sort());
-    }
-  });
-
-  it('every skeleton has a staged cell with its own recipe and no live one', () => {
+  it('every P66 genre has a live cell with its own recipe and none is left staged', () => {
+    expect(Object.keys(STAGED_PRESETS)).toEqual([]);
     for (const genre of P66) {
       const cell = ALLOWED.find((entry) => entry.id === `${genre}.default`);
-      expect(cell?.status, genre).toBe('staged');
-      expect(STAGED_PRESETS[`${genre}.default`], genre).toBeDefined();
-      expect(liveCells().some((entry) => entry.preset.genre === genre), genre).toBe(false);
+      expect(cell?.status, genre).toBe('live');
+      expect(PRESETS[`${genre}.default`], genre).toBeDefined();
+      expect(cell?.recipe, genre).toEqual(PRESETS[`${genre}.default`]);
+      expect(liveCells().some((entry) => entry.preset.genre === genre), genre).toBe(true);
     }
   });
 
-  it('every skeleton has its control, scene, input, bot and generator registered, and the generator builds no world', () => {
+  it('the recipe path of the game compiles each genre to a spec that reads (no "not live" skeleton left)', () => {
+    for (const genre of P66) {
+      const game = compileGenre({ genre, mode: 'default', hero: 'fox', setting: 'forest' } as never);
+      expect(game.control, genre).toBe(genre);
+      expect(readGameSpec(game).ok, genre).toBe(true);
+    }
+  });
+
+  it('the classifier ranks every live mode once, puts each naming sentence in its genre and leaves a sentence without a cue in the arena collect', () => {
+    const playing = GENRES.flatMap((genre) => GENRE_MODES[genre].filter((mode) => GENRE_MODULES[genre].availability(mode as never) !== 'staged').map((mode) => `${genre}.${mode}`));
+    for (const genre of P66) expect(playing, genre).toContain(`${genre}.default`);
+    for (const [genre, sentence] of NAMING) {
+      const ranked = classifyGenre(sentence, null).ranked;
+      expect(ranked.map((choice) => `${choice.genre}.${choice.mode}`).sort(), sentence).toEqual([...playing].sort());
+      expect(ranked[0]?.genre, sentence).toBe(genre);
+    }
+    expect(classifyGenre('a cozy game', null).ranked[0]).toMatchObject({ genre: 'arena', mode: 'collect', score: 0 });
+  });
+
+  it('every P66 genre has its control, scene, input, bot and generator registered, and the generator builds a world', () => {
     for (const genre of P66) {
       expect(CONTROLS, genre).toContain(genre);
       expect(READ_CONTROLS, genre).not.toContain(genre);
@@ -101,8 +106,8 @@ describe('P66 staged genres (T2)', () => {
       expect(MODE_GENERATORS[id]?.id, genre).toBe(id);
       expect(ARCADE_LIBRARY.generators[id], genre).toBe(MODE_GENERATORS[id]);
       const generator = MODE_GENERATORS[id]!;
-      const parts = generator.parts(1, LIVE.includes(genre) ? generator.params.parse({}) : {}, undefined);
-      expect(parts.issues ?? [], genre).toEqual(LIVE.includes(genre) ? [] : [modeNotBuilt(id)]);
+      const parts = generator.parts(1, generator.params.parse({}), undefined);
+      expect(parts.issues ?? [], genre).toEqual([]);
       expect(parts.control.id, genre).toBe(genre);
       // Žánr s výběrem vylepšení má robota žánru pod obalem háčků (`withHooks` → `hooks_bot`).
       const bot = parts.bot.id === 'hooks_bot' ? (parts.bot.params as { base: { id: string } }).base.id : parts.bot.id;
