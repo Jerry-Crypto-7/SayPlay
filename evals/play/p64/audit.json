@@ -2821,6 +2821,2816 @@
      }
     }
    }
+  },
+  "after": {
+   "pixel7-touch": {
+    "runner": {
+     "cell": "s01",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.049,
+      "foeSeen": 1,
+      "fill": 0.7187,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.009,
+      "foeSeen": 1,
+      "fill": 0.6642,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "platformer": {
+     "cell": "s14",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 703,
+       "height": 605
+      },
+      "heroShare": 0.1217,
+      "foeSeen": 1,
+      "fill": 0.7309,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 6,
+          "top": 703,
+          "right": 97,
+          "bottom": 753
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 109,
+          "top": 703,
+          "right": 200,
+          "bottom": 753
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 268,
+          "top": 703,
+          "right": 350,
+          "bottom": 753
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 224,
+       "height": 104
+      },
+      "heroShare": 0.0319,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 1,
+      "underHud": 0.8333,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 63,
+          "top": 224,
+          "right": 153,
+          "bottom": 274
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 279,
+          "top": 224,
+          "right": 369,
+          "bottom": 274
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 606,
+          "top": 224,
+          "right": 688,
+          "bottom": 274
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "arena": {
+     "cell": "a02",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 691,
+       "height": 593
+      },
+      "heroShare": 0.087,
+      "foeSeen": 1,
+      "fill": 0.794,
+      "cropped": 0,
+      "underHud": 0.1,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 330,
+          "top": 691,
+          "right": 392,
+          "bottom": 753
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": true,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 120,
+       "height": 0
+      },
+      "heroShare": 0.0102,
+      "foeSeen": 1,
+      "fill": null,
+      "cropped": 0.1667,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 771,
+          "top": 118,
+          "right": 843,
+          "bottom": 190
+         },
+         "inThumb": false
+        }
+       ],
+       "stickAtRest": false,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "voyage": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.1221,
+      "foeSeen": null,
+      "fill": 0.272,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0214,
+      "foeSeen": null,
+      "fill": 0.3267,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "quest": {
+     "cell": "a10",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 691,
+       "height": 593
+      },
+      "heroShare": 0.0409,
+      "foeSeen": 1,
+      "fill": 0.9692,
+      "cropped": 1,
+      "underHud": 0.6,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 330,
+          "top": 691,
+          "right": 392,
+          "bottom": 753
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": true,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 120,
+       "height": 0
+      },
+      "heroShare": 0.0101,
+      "foeSeen": 1,
+      "fill": null,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 771,
+          "top": 118,
+          "right": 843,
+          "bottom": 190
+         },
+         "inThumb": false
+        }
+       ],
+       "stickAtRest": false,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "shooter": {
+     "cell": "s08",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0732,
+      "foeSeen": 1,
+      "fill": 0.9659,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0258,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 0,
+      "underHud": 0.1,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "throw": {
+     "cell": "s18",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0544,
+      "foeSeen": 1,
+      "fill": 0.6242,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0237,
+      "foeSeen": 1,
+      "fill": 0.4774,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "timing": {
+     "cell": "s03",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0198,
+      "foeSeen": 1,
+      "fill": 0.1961,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0126,
+      "foeSeen": 1,
+      "fill": 0.3559,
+      "cropped": 0,
+      "underHud": 0.1,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "rhythm": {
+     "cell": "a11",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.1294,
+      "foeSeen": 1,
+      "fill": 0.8049,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.1206,
+      "foeSeen": 1,
+      "fill": 0.8978,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "duel": {
+     "cell": "s48",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 703,
+       "height": 605
+      },
+      "heroShare": 0.0988,
+      "foeSeen": 1,
+      "fill": 0.5726,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 59,
+          "top": 703,
+          "right": 147,
+          "bottom": 753
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 267,
+          "top": 703,
+          "right": 351,
+          "bottom": 753
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 224,
+       "height": 104
+      },
+      "heroShare": 0.0191,
+      "foeSeen": 1,
+      "fill": 0.9259,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 172,
+          "top": 224,
+          "right": 260,
+          "bottom": 274
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 605,
+          "top": 224,
+          "right": 690,
+          "bottom": 274
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "flap": {
+     "cell": "s16",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0643,
+      "foeSeen": 1,
+      "fill": 0.5749,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0098,
+      "foeSeen": 1,
+      "fill": 0.897,
+      "cropped": 1,
+      "underHud": 0.2,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "catch": {
+     "cell": "a01",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0766,
+      "foeSeen": 1,
+      "fill": 0.6071,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0172,
+      "foeSeen": 1,
+      "fill": 0.7697,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "whack": {
+     "cell": "s53",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.059,
+      "foeSeen": 1,
+      "fill": 0.3376,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.072,
+      "foeSeen": 1,
+      "fill": 0.555,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "defense": {
+     "cell": "a06",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0481,
+      "foeSeen": 1,
+      "fill": 0.6463,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0114,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "slice": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0593,
+      "foeSeen": 1,
+      "fill": 0.1909,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0257,
+      "foeSeen": 1,
+      "fill": 0.3679,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "hop": {
+     "cell": "a12",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0142,
+      "foeSeen": 1,
+      "fill": 0.1023,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0232,
+      "foeSeen": 1,
+      "fill": 0.3396,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "crowd": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0444,
+      "foeSeen": null,
+      "fill": 0.209,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0125,
+      "foeSeen": null,
+      "fill": 0.3371,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "merge": {
+     "cell": "draft",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0891,
+      "foeSeen": null,
+      "fill": 0.2704,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0157,
+      "foeSeen": null,
+      "fill": 0,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "push": {
+     "cell": "s13",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0149,
+      "foeSeen": 1,
+      "fill": 0.1665,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0149,
+      "foeSeen": 1,
+      "fill": 0.3852,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "control:steer": {
+     "cell": "a04",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0206,
+      "foeSeen": 1,
+      "fill": 0.5115,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0137,
+      "foeSeen": 1,
+      "fill": 0.5618,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "control:walker": {
+     "cell": "s04",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.0091,
+      "foeSeen": 1,
+      "fill": 0.61,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0042,
+      "foeSeen": 1,
+      "fill": 0.4401,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "control:ball": {
+     "cell": "s56",
+     "portrait": {
+      "width": 412,
+      "height": 839,
+      "samples": 30,
+      "playRect": {
+       "top": 98,
+       "bottom": 839,
+       "height": 741
+      },
+      "heroShare": 0.052,
+      "foeSeen": 1,
+      "fill": 0.4672,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 98,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 863,
+      "height": 360,
+      "samples": 30,
+      "playRect": {
+       "top": 120,
+       "bottom": 360,
+       "height": 240
+      },
+      "heroShare": 0.0138,
+      "foeSeen": 1,
+      "fill": 0.4479,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 120,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    }
+   },
+   "iphone-touch": {
+    "runner": {
+     "cell": "s01",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0483,
+      "foeSeen": 1,
+      "fill": 0.7751,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0097,
+      "foeSeen": 1,
+      "fill": 0.6831,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "platformer": {
+     "cell": "s14",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 115,
+       "bottom": 523,
+       "height": 408
+      },
+      "heroShare": 0.1275,
+      "foeSeen": 1,
+      "fill": 0.8484,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 3,
+       "topPx": 115,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 4,
+          "top": 523,
+          "right": 95,
+          "bottom": 573
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 102,
+          "top": 523,
+          "right": 193,
+          "bottom": 573
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 253,
+          "top": 523,
+          "right": 336,
+          "bottom": 573
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 207,
+       "height": 86
+      },
+      "heroShare": 0.0364,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 1,
+      "underHud": 1,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 46,
+          "top": 207,
+          "right": 137,
+          "bottom": 257
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 230,
+          "top": 207,
+          "right": 321,
+          "bottom": 257
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 509,
+          "top": 207,
+          "right": 592,
+          "bottom": 257
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "arena": {
+     "cell": "a02",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 511,
+       "height": 412
+      },
+      "heroShare": 0.0747,
+      "foeSeen": 1,
+      "fill": 0.8076,
+      "cropped": 0,
+      "underHud": 0.2,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 311,
+          "top": 511,
+          "right": 373,
+          "bottom": 573
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": true,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 121,
+       "height": 0
+      },
+      "heroShare": 0.0114,
+      "foeSeen": 1,
+      "fill": null,
+      "cropped": 0.1667,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 642,
+          "top": 101,
+          "right": 714,
+          "bottom": 173
+         },
+         "inThumb": false
+        }
+       ],
+       "stickAtRest": false,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "voyage": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0961,
+      "foeSeen": null,
+      "fill": 0.2768,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0293,
+      "foeSeen": null,
+      "fill": 0.3635,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "quest": {
+     "cell": "a10",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 511,
+       "height": 412
+      },
+      "heroShare": 0.0459,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 1,
+      "underHud": 0.9333,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 311,
+          "top": 511,
+          "right": 373,
+          "bottom": 573
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": true,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 121,
+       "height": 0
+      },
+      "heroShare": 0.0113,
+      "foeSeen": 1,
+      "fill": null,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-fire.play-action",
+         "rect": {
+          "left": 642,
+          "top": 101,
+          "right": 714,
+          "bottom": 173
+         },
+         "inThumb": false
+        }
+       ],
+       "stickAtRest": false,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "shooter": {
+     "cell": "s08",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0638,
+      "foeSeen": 1,
+      "fill": 0.9609,
+      "cropped": 1,
+      "underHud": 0.2333,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.029,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 0,
+      "underHud": 0.1,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "throw": {
+     "cell": "s18",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0454,
+      "foeSeen": 1,
+      "fill": 0.6352,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0233,
+      "foeSeen": 1,
+      "fill": 0.4662,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "timing": {
+     "cell": "s03",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.029,
+      "foeSeen": 1,
+      "fill": 0.2495,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0142,
+      "foeSeen": 1,
+      "fill": 0.366,
+      "cropped": 0,
+      "underHud": 0.2,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "rhythm": {
+     "cell": "a11",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 115,
+       "bottom": 659,
+       "height": 544
+      },
+      "heroShare": 0.139,
+      "foeSeen": 1,
+      "fill": 0.9364,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 3,
+       "topPx": 115,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.1351,
+      "foeSeen": 1,
+      "fill": 0.9064,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "duel": {
+     "cell": "s48",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 523,
+       "height": 424
+      },
+      "heroShare": 0.0824,
+      "foeSeen": 1,
+      "fill": 0.6426,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 54,
+          "top": 523,
+          "right": 143,
+          "bottom": 573
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 252,
+          "top": 523,
+          "right": 337,
+          "bottom": 573
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 207,
+       "height": 86
+      },
+      "heroShare": 0.0215,
+      "foeSeen": 1,
+      "fill": 0.9885,
+      "cropped": 0,
+      "underHud": 0.0333,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 139,
+          "top": 207,
+          "right": 228,
+          "bottom": 257
+         },
+         "inThumb": true
+        },
+        {
+         "name": "play-touch-zone",
+         "rect": {
+          "left": 508,
+          "top": 207,
+          "right": 593,
+          "bottom": 257
+         },
+         "inThumb": true
+        }
+       ],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "flap": {
+     "cell": "s16",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0489,
+      "foeSeen": 1,
+      "fill": 0.5773,
+      "cropped": 0.3333,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0085,
+      "foeSeen": 1,
+      "fill": 0.8175,
+      "cropped": 1,
+      "underHud": 0.3,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "catch": {
+     "cell": "a01",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0699,
+      "foeSeen": 1,
+      "fill": 0.5865,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0193,
+      "foeSeen": 1,
+      "fill": 0.7916,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "whack": {
+     "cell": "s53",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0545,
+      "foeSeen": 1,
+      "fill": 0.37,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0625,
+      "foeSeen": 1,
+      "fill": 0.5178,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "defense": {
+     "cell": "a06",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.06,
+      "foeSeen": 1,
+      "fill": 0.8008,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0128,
+      "foeSeen": 1,
+      "fill": 1,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "slice": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0725,
+      "foeSeen": 1,
+      "fill": 0.243,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0288,
+      "foeSeen": 1,
+      "fill": 0.3783,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "hop": {
+     "cell": "a12",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0174,
+      "foeSeen": 1,
+      "fill": 0.1284,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0262,
+      "foeSeen": 1,
+      "fill": 0.3493,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "crowd": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.053,
+      "foeSeen": null,
+      "fill": 0.2514,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0137,
+      "foeSeen": null,
+      "fill": 0.3467,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "merge": {
+     "cell": "draft",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0653,
+      "foeSeen": null,
+      "fill": 0.2615,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0157,
+      "foeSeen": null,
+      "fill": 0,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "push": {
+     "cell": "s13",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0185,
+      "foeSeen": 1,
+      "fill": 0.2149,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0161,
+      "foeSeen": 1,
+      "fill": 0.3849,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "control:steer": {
+     "cell": "a04",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0249,
+      "foeSeen": 1,
+      "fill": 0.6934,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0154,
+      "foeSeen": 1,
+      "fill": 0.5781,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "control:walker": {
+     "cell": "s04",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0104,
+      "foeSeen": 1,
+      "fill": 0.6334,
+      "cropped": 1,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0046,
+      "foeSeen": 1,
+      "fill": 0.4193,
+      "cropped": 1,
+      "underHud": 0.2333,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    },
+    "control:ball": {
+     "cell": "s56",
+     "portrait": {
+      "width": 393,
+      "height": 659,
+      "samples": 30,
+      "playRect": {
+       "top": 99,
+       "bottom": 659,
+       "height": 560
+      },
+      "heroShare": 0.0537,
+      "foeSeen": 1,
+      "fill": 0.5433,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 99,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     },
+     "landscape": {
+      "width": 734,
+      "height": 343,
+      "samples": 30,
+      "playRect": {
+       "top": 121,
+       "bottom": 343,
+       "height": 222
+      },
+      "heroShare": 0.0153,
+      "foeSeen": 1,
+      "fill": 0.4628,
+      "cropped": 0,
+      "underHud": 0,
+      "hud": {
+       "clipped": [],
+       "goalLines": 2,
+       "topPx": 121,
+       "overlaps": []
+      },
+      "controls": {
+       "items": [],
+       "stickAtRest": null,
+       "overRail": [],
+       "overHint": []
+      }
+     }
+    }
+   }
   }
  }
 }

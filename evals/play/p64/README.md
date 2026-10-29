@@ -543,3 +543,28 @@ FALLBACK_SMOKE_URL=http://127.0.0.1:3173 npx playwright test e2e/p64-landscape-g
 FALLBACK_SMOKE_URL=http://127.0.0.1:3173 npx playwright test e2e/p58a-framing.spec.ts e2e/p61-portrait.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1
 npx vitest run src/components/play/arcade --reporter=json --outputFile.json=<soubor>
 ```
+
+## Po sloučení T3 + T4 + T5 + T7 (`3071efe7`)
+
+Větev po cherry-picku T7 → T4 → T3 → T5, čistý build, `P64_CHECK=1 P64_AUDIT=write P64_PHASE=after` → `audit.json`
+oddíl `after`. Zelené: 37 / 44 buněk. `p64-landscape-guard` 44 / 44, `p58a-framing` + `p61-portrait` 86 / 86 na obou
+telefonech, vitest `src/components/play/arcade` 1197 / 1197.
+
+Nesplněné cíle (Pixel 7 / iPhone 15):
+
+| buňka | měřeno | cíl | proč |
+|---|---|---|---|
+| arena | `fill` 0,79 / 0,81, `underHud` 0,10 / 0,20 | 0,8 / 0,1 | po T7 je `playRect` o 95 px vyšší, týž záběr pokryje menší díl; na iPhonu cíl pod lištou cíle při vstupu |
+| quest | `underHud` 0,60 / 0,93 | 0,1 | kamera arény (`quest_spatial`): hrozba u kamery stáhne bod pohledu a hrdina má temeno v NDC 0,79, lišta cíle končí v 0,77 / 0,70 |
+| voyage | `fill` 0,27 / 0,28 | 0,45 | sonda bere jen loď, brány jsou `checkpoint` (T5) |
+| shooter | `underHud` 0 / 0,23 | 0,1 | vrána ~7 px pod lištou cíle; vejde se až s hrdinou pod 0,9 × T1 (T5) |
+
+Zkoušené na úkolu a aréně a vrácené (kopie v `D:/caches/p64/t5-bak/arena-band/`):
+
+- **Pás `playRect` do řešiče arény** (`arena-camera.ts`, pevné `TALL_TOP` a hrany nahrazené změřeným pásem): úkol na
+  Pixelu `underHud` 0,57 → 0, ale hrdina 0,0359 < 0,9 × T1 (0,0387); iPhone beze změny (0,93, kamera do setin stejná).
+- **Posun kamery po ose nahoru**, až je temeno hrdiny pod pásem HUD (bez změny vzdálenosti): Pixel 0,57 → 0,43,
+  iPhone 0,93 beze změny, hrdina beze změny.
+
+Inference: na iPhonu úkol neřídí temeno hrdiny pod `TALL_TOP`; příčinu ukáže až sonda `framed` a `need`/`limit` ze
+`arenaGoal` na tom telefonu.
