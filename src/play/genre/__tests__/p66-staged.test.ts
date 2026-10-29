@@ -21,7 +21,7 @@ import { GENRE_MODULES, compileGenre } from '../index';
 
 const P66 = ['survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
 /** Žánry, které jejich úloha už postavila (překlad i generátor hrají z ručního specu); pro výběr zůstávají `staged` do T12. */
-const LIVE: readonly string[] = ['arrows', 'sort'];
+const LIVE: readonly string[] = ['arrows', 'sort', 'steal'];
 const STAGED = P66.filter((genre) => !LIVE.includes(genre));
 /** Generátor režimu, který úloha žánru naplní (registrace je hotová v T2). */
 const GENERATOR: Readonly<Record<(typeof P66)[number], string>> = {
@@ -102,9 +102,11 @@ describe('P66 staged genres (T2)', () => {
       expect(ARCADE_LIBRARY.generators[id], genre).toBe(MODE_GENERATORS[id]);
       const generator = MODE_GENERATORS[id]!;
       const parts = generator.parts(1, LIVE.includes(genre) ? generator.params.parse({}) : {}, undefined);
-      expect(parts.issues, genre).toEqual(LIVE.includes(genre) ? [] : [modeNotBuilt(id)]);
+      expect(parts.issues ?? [], genre).toEqual(LIVE.includes(genre) ? [] : [modeNotBuilt(id)]);
       expect(parts.control.id, genre).toBe(genre);
-      expect(parts.bot.id, genre).toBe(`${genre}_bot`);
+      // Žánr s výběrem vylepšení má robota žánru pod obalem háčků (`withHooks` → `hooks_bot`).
+      const bot = parts.bot.id === 'hooks_bot' ? (parts.bot.params as { base: { id: string } }).base.id : parts.bot.id;
+      expect(bot, genre).toBe(`${genre}_bot`);
     }
   });
 });

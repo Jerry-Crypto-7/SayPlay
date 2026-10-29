@@ -603,3 +603,70 @@ Po rebase na `features/P66-…` `62e2d21e` (šipky T9 a obě opravy háčků uvn
 ### Nálezy
 
 - **Úvodní karta „Tap to start“** leží na telefonu přes první řadu front (stejný nález jako u šipek, sdílená `PromptSpot`, T14 / P64). První ťuk ji schová.
+
+## T7 – steal
+
+Krádež: hrdina joystickem doběhne k cizí základně nahoře, popadne kořist z věty (s nákladem je pomalejší) a odnese ji domů dolů. Strážci (nepřítel z věty) ho honí a při dotyku kořist vezmou zpět. Worktree `D:/caches/p66/wt-t7`, větev `p66-t7`.
+
+### Jak hra běží
+
+- **Soubory:**
+  - `pieces/steal.ts` – ovládání `steal`, pravidla `steal_grab`, `steal_home`, `steal_tag`, `steal_clock`, generátor `steal_bases`;
+  - `pieces/steal-bot.ts` – robot `steal_bot`;
+  - `genre/steal.ts` – modul žánru;
+  - `genres/steal/StealScene.tsx` – scéna.
+- **Hřiště na výšku:** úzký pás 7,6 × 19 m, domov dole (u kamery), cizí základna nahoře, cesta vede po výšce obrazovky. Hrdina běží 9 m/s, s nákladem na 72 %. Každý stupeň `carry` přidá 8 % rychlosti s nákladem a jednu nesenou věc navíc.
+- **Kola** (`rounds` 2–4, výchozí 3), kořisti na kolo `loot` 2–4 (výchozí 3), strážci prvního kola `guards` 1–3 (výchozí 1).
+  - Každé další kolo přidá strážce. Poslední kolo místo něj přidá strážce velké kořisti (větší, rychlejší, vidí dál); jeho vstup ohlásí `boss_enter` a hláška „Boss!“.
+  - Velká kořist finále je vždy epická a má 400 bodů místo 100. Ostatní kořist losují háčky (`rarity.ts`).
+  - Háčky `withHooks(..., { rounds, upgrades: speed / carry / extra_life / magnet, rarity: true, clear: 'win' })`: odevzdání poslední kořisti kola je výhra pravidla, před finále z ní háčky udělají konec kola, přestávku a výběr 1 ze 3.
+- **Hodiny kola v ticích** (`roundTicksOf`): nejvýš 30 s a tak, aby se všechna kola s přestávkami robota vešla do horizontu ověření 90 s. 3 kola = 1 760 tiků (29,3 s) na kolo, 4 kola = 21,9 s. Doběhnou = prohra, životy na nule = prohra.
+- **Strážci** hlídají napříč po své řadě za kořistí. Zloděje s kořistí, který se přiblíží na dohled, honí zhruba stejně rychle, jako zloděj s nákladem běží (108 j/tik + 2 za kolo). Chytí toho, kdo vběhne do cesty nebo zaváhá, ne toho, kdo má náskok. Hrdinu bez kořisti nehoní. Pod vodítkem (3,5 m pod středem hřiště) je cesta domů bezpečná.
+  - Dotyk: −1 život s milostí 1 s, hrdina zpět domů, nesená kořist zpět na své místo.
+- **Kombo:** `steal_home` bere parametr `combo`, takže ho `hookedComboSources` od `genre.v6` udělá zdrojem komba. Každý odevzdaný kus zvedne násobič; dva kusy naráz (náklad 2) o dva stupně v jednom tiku.
+- **Robot světa** čeká na stanovišti pod kořistí, až budou všichni strážci v tiku sebrání dost daleko (předpověď hlídky `patrolAt`), pak kořist sebere a utíká domů.
+  - **Slabý robot** (`wary` 0) strážce nevidí, nečeká a bere nejbližší kořist hned.
+- **Scéna:** hrdina, kořist a strážci jsou modely z věty (riggované s klipem chůze, kde model je). Na výšku drží `fitTall` okno celé na hřišti, kamera jede za hrdinou plynule (mimo hash). Kroužek vzácnosti pod kořistí (běžná inkoust, vzácná modrozelená, epická slunečná), štítky „Home“ (hrdina nese kořist), „Run!“ (strážce honí) a „N s left“ v posledních 8 s kola. Nic fialového.
+
+### Rozhodnutí (`implementation-notes`)
+
+- **`availability` zůstává `staged`** – stejná konvence jako šipky (T9), rozhodnutí běhu pro všech pět žánrů. `ready` bez buňky `PRESETS` shodí skladbu u každé věty. Hra hraje z ručního specu `e2e/fixtures/p66-steal-spec.json` (kočka krade ryby na rybím trhu, hlídají psi). Test drží, že fixture = přesně překlad žánru.
+  - Sdílené soubory (`presets.ts`, `classify.test.ts`, `dressing.test.ts`, `contract.test.ts`) zůstaly beze změny.
+- **`p66-staged.test.ts`:** `LIVE = ['arrows', 'steal']`. K tomu dvě obecné úpravy, bez nich krádež neprojde:
+  - `parts.issues ?? []` – generátor krádeže nemá kontrolu úrovně, `issues` nevrací;
+  - robot pod obalem háčků: žánr s výběrem vylepšení má `hooks_bot` s `steal_bot` uvnitř. Totéž potká survivor (T5).
+- **Meze parametrů užší než kostra T2** (`loot` 3–20 → 2–4 na kolo, `guards` 1–8 → 1–3, `rounds` 2–4 z AC). Robot musí vyhrát každou kombinaci mezí uvnitř horizontu 90 s s hodinami kola ≤ 30 s; test projde mezní kombinace na 3 semínkách.
+- **Honička je vlastní v ovládání `steal`, ne `arena escape`.** Pronásledovatel arény honí hrdinu po celém hřišti od startu a nezná kořist ani vodítko. Krádež potřebuje strážce, kteří hlídají základnu, honí jen zloděje s kořistí a pustí ho blízko domova.
+- **„Kolo 30 s – 3 min“** platí pro celou hru (robot 30–90 s). Kolo samo má 22–30 s, jádro má jeden horizont 90 s.
+- **VR:** krádež má vstup arény (tah = směr), `xr/` beze změny.
+
+### Testy
+
+- **Jednotky** (`npx vitest run src/play/arcade src/play/genre src/components/play/arcade/genres/steal`, JSON reporter): **7 064 / 7 076** zelených, 4 přeskočené (`place-from-sentence`), 8 červených.
+  - Všech 8 červených je časových pod zátěží čtyř sourozenců (souběžné vitesty, build T5, e2e P64): 7× `STACK_TRACE_ERROR` na limitu (`hop`, `p51-dead-time` 3×, `quest`, `runner-sections`, `witness`) a `swarm (f)` 0,097 ms na tik nad mezí 0,05. Opakovaný běh samotných šesti souborů pod toutéž zátěží: 7 červených, jiná podmnožina. Krádeže se netýkají – žádný z nich krádež nečte a běžec, hop ani roj se neměnily.
+  - `steal.test.ts` 14/14, `p66-staged.test.ts` 8/8, otisk T1 `p66-hash.test.ts` 48/48. `tsc --noEmit` čistý.
+  - Brány: robot vyhraje na 10/10 semínkách za 30–90 s, nečinný prohraje na hodinách prvního kola, slabý robot prohraje na 10/10 chycením (životy na nule), dvě přehrání = týž hash, publikační brána projde na 10 semínkách, mezní kombinace parametrů vyhratelné.
+  - Pravidla: náklad zpomalí a `carry` pomůže, strážce vezme kořist zpět a pošle hrdinu domů, strážci honí jen zloděje s kořistí, každé kolo přidá strážce, finále s epickou velkou kořistí a vstupem bosse, nabídky jen ze `speed / carry / extra_life / magnet`, kombo z odevzdání, předpověď hlídky robota.
+- **E2e** `play-steal` (build `npm run build`, `next start` :3173, `PLAY_READER=off`): **chromium 1/1, pixel7-touch 1/1**.
+  - Telefon dohraje prstem a vyhraje (tik 2 141, 6 020 bodů); desktop klávesnicí prohraje na hodinách finále (tik 3 225, 5 100 bodů). Oba vzali 2 karty vylepšení, konzole bez chyb, záznam z prohlížeče přehraný v Node dá týž stav.
+  - Hrdina 19,2 % výšky na telefonu (čitelnost 2×), 21,5 % na desktopu. Domov ve spodní polovině telefonu.
+- **Snímky** (`D:/caches/p66/steal/`, start / carrying / upgrade / result na obou projektech): kočka, ryby se vzácností, psi, mátový domov dole, krémová základna nahoře, karty „Run faster / Carry more / Extra life“ v zóně palce.
+
+**Rozbít schválně** (záloha `D:/caches/p66/steal/backup/`, po každé obnova a `diff -q`):
+
+| Vlastnost | Záměrná chyba | Červené testy |
+|---|---|---|
+| strážce chytí | `steal_tag` nic nedělá | 2 – pin (slabý robot prohraje), dotyk strážce |
+| strážce dohoní | honička třetinovou rychlostí | 1 – pin |
+| náklad zpomalí | s nákladem plná rychlost | 2 – pin, náklad zpomalí |
+
+`mutationStatus: all-red` (3/3, jednotky; test level `pin`, mutace nepovinné).
+
+**FPS přeskočeno** ze stejného důvodu jako u šipek: `play-perf @measure` publikuje hru z věty a větu krádež trefí až po T12.
+
+### Nálezy
+
+- **Klávesnice je na krádež hrubší než prst:** šipky dají 8 směrů, joystick 32. Robot vedený klávesami v e2e nestihl finále na hodinách, prstem vyhrál. Pro člověka to neznamená nehratelnost, ale hodiny finále (29 s) jsou pro klávesnici těsné. Ověřit na zapečetěných listech T16.
+- **`capabilities.ts` řádek `steal`** říká, že ovládání nic nečte (`labels: []`, `mechanics: []`). Hra přitom čte životy a kreslí kořist a strážce z popisků rolí `loot` a `guard`. Opravit s T13 jako u šipek.
+- **„fishes“:** sdílený `plural` (`draft/lexicon.ts`) nezná `fish` jako nepravidelné, cíl zní „Grab the fishes…“. Patří do slovníku (`IRREGULAR`), ne do krádeže.
+- **Štítek „Home“** na telefonu, když je hrdina u cizí základny, vykoukne zpod dolní řady HUD (domov je mimo záběr). Patří ke kotvení štítků mimo záběr, kosmetické.

@@ -1,0 +1,71 @@
+{
+  "schema": "gamespec.v1",
+  "control": "steal",
+  "controlParams": {
+    "generator": "steal_bases"
+  },
+  "genre": {
+    "id": "steal",
+    "mode": "default",
+    "compilerVersion": "genre.v6"
+  },
+  "title": "Cat Heist",
+  "archetype": "delivery",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "fish market",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "deliver",
+    "description": "Grab 3 fishes from the rival base and carry them home in 3 rounds. Dodge the dogs.",
+    "role": "loot"
+  },
+  "mechanics": [
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "cat",
+      "count": 1
+    },
+    {
+      "id": "loot",
+      "kind": "collectible",
+      "label": "fish",
+      "count": 9
+    },
+    {
+      "id": "guard",
+      "kind": "chaser",
+      "label": "dog",
+      "count": 1
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Grab the fishes and run them home!",
+    "controlsHint": "Drag or arrows to move. Dodge the dogs."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "scoring": {}
+}
