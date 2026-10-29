@@ -45,8 +45,25 @@ const hookParams = z
     /** Počítadlo háčků (index těla) se sloty `HOOK_SLOTS`. */
     keeper: body,
     rounds: z.int().min(ROUNDS.min).max(ROUNDS.max),
-    /** Co kolo končí (`rounds.ts`): zvednutá vlna žánru, nebo výhra pravidla žánru. */
-    clear: z.enum(['wave', 'win']),
+    /** Co kolo končí (`rounds.ts`): zvednutá vlna žánru, výhra pravidla žánru, nebo značka postupu `goal`. */
+    clear: z.enum(['wave', 'win', 'goal']),
+    /**
+     * Jen `clear: 'goal'` (P66 T10): postup žánru – vlna, skóre, nebo padlí soupeři role `role` z `need` – a značka
+     * konce každého kola kromě posledního (`marks[r]`, rostoucí).
+     */
+    goal: z
+      .object({
+        by: z.enum(['wave', 'score', 'fallen']),
+        role: z.int().min(1).optional(),
+        need: z.int().min(1),
+        marks: z.array(z.int().min(1)).min(1).max(ROUNDS.max - 1),
+      })
+      .strict()
+      .optional(),
+    /** Počítadlo háčků počítá tiky přestávek (`worldTickOf`): žánr pouští věci v pevných ticích (P66 T10). */
+    clock: z.literal(true).optional(),
+    /** `extra_life` život jen vrátí, nejvýš do tolika (počet na startu, dosavadní žánr P66 T10); bez pole +1 navíc. */
+    lifeCap: z.int().min(1).max(99).optional(),
     /** Výběr vylepšení: pořadí zásoby žánru na každou přestávku (`drawOffers`). */
     upgrades: z
       .object({ offers: z.array(z.array(z.enum(UPGRADES)).min(3).max(UPGRADES.length)).min(1).max(ROUNDS.max - 1) })
@@ -88,7 +105,11 @@ export interface HookRequest {
   readonly rounds: number;
   readonly upgrades?: readonly UpgradeId[];
   readonly rarity?: boolean;
-  readonly clear?: 'wave' | 'win';
+  readonly clear?: HookParams['clear'];
+  /** Jen `clear: 'goal'`: postup a značky kol (`hookRequestOf` je spočítá z `TunedGame.goal`). */
+  readonly goal?: HookParams['goal'];
+  readonly clock?: true;
+  readonly lifeCap?: number;
   readonly swing?: Swing;
 }
 
@@ -114,6 +135,9 @@ export function withHooks(parts: { readonly level: ArcadeLevel; readonly rules: 
     keeper,
     rounds: request.rounds,
     clear: request.clear ?? 'win',
+    ...(request.clear === 'goal' && request.goal !== undefined ? { goal: request.goal } : {}),
+    ...(request.clock === true ? { clock: true as const } : {}),
+    ...(upgrades !== undefined && request.lifeCap !== undefined ? { lifeCap: request.lifeCap } : {}),
     ...(upgrades === undefined ? {} : { upgrades }),
     ...(request.rarity === true ? { rarity: { draws: drawRarities(seed) } } : {}),
     ...(upgrades !== undefined && request.swing !== undefined && request.upgrades?.includes('fire_rate') === true ? { swing: request.swing } : {}),
@@ -149,53 +173,114 @@ export interface TunedGame {
   readonly level: ArcadeLevel;
   readonly lives: number | undefined;
   readonly swing: Swing | undefined;
+  /**
+   * Postup, na jehož stejné díly jdou kola, když to nejsou vlny (P66 T10, `breakGoal` v `pacing-parts`): skóre sběru,
+   * padlí nepřátelé střelnice. Bez něj kola = vlny (`arena_waves`, obrana pruhů).
+   */
+  readonly goal?: { readonly by: 'wave' | 'score' | 'fallen'; readonly role?: number; readonly need: number };
+  /** Vylepšení, která čte kus žánru sám (`upgradeLevel`, P66 T10: zbraň střelnice, obrana pruhů). */
+  readonly own?: readonly UpgradeId[];
+  /** Žánr pouští věci v pevných ticích a chce hodiny světa (`worldTickOf`). */
+  readonly clock?: true;
+}
+
+/** Co hra od háčků chce, než se ověří proti hře (`hookRequestOf`): klíče `tuning`, nebo nabídka žánru. */
+export interface HookAsk {
+  readonly rounds: number;
+  readonly upgrades?: readonly string[];
+  readonly rarity?: boolean;
+  /** Kola na stejné díly vln, i když jich je víc než kol (nabídka žánru; klíče `tuning` chtějí kolo = vlna). */
+  readonly byWaves?: true;
+  /** `extra_life` jen vrátí život do počtu na startu (`lifeCap`): dosavadní žánr drží své pásmo obtížnosti. */
+  readonly heal?: true;
+}
+
+/** Vlny dosavadního žánru: vlny arény (`arena_waves`), nebo začátky vln obrany pruhů (`defense_shot`). */
+function wavesOf(rules: readonly PieceRef[]): readonly unknown[] | undefined {
+  return (nativeRule(rules, 'arena_waves')?.params.waves ?? nativeRule(rules, 'defense_shot')?.params.waves) as readonly unknown[] | undefined;
+}
+
+/**
+ * Ověří žádost proti hře. Karta musí v té hře něco dělat: `extra_life` chce životy, `magnet` sbírané věci, `fire_rate`
+ * ránu hrdiny (`Swing`) nebo zbraň žánru (`own`), `range` a `carry` kus žánru, který je čte (`own`). Kola dosavadního
+ * žánru jsou jeho vlny (`clear: 'wave'`, právě tolik vln), nebo stejné díly postupu `goal` (`clear: 'goal'`).
+ * `at` pojmenuje klíč chyby.
+ */
+export function hookRequestOf(ask: HookAsk, game: TunedGame, at: (key: string) => string = (key) => `/controlParams/tuning/${key}`): { readonly request: HookRequest } | { readonly issues: readonly string[] } {
+  const issues: string[] = [];
+  const { rounds, upgrades } = ask;
+  if (!Number.isInteger(rounds) || rounds < ROUNDS.min || rounds > ROUNDS.max) issues.push(`${at('hookRounds')}: ${String(rounds)} rounds, not ${ROUNDS.min}–${ROUNDS.max}`);
+  if (upgrades !== undefined) {
+    const unknown = upgrades.filter((id) => !(UPGRADES as readonly string[]).includes(id));
+    if (unknown.length > 0) issues.push(`${at('hookUpgrades')}: no upgrade ${unknown.join(', ')} (${UPGRADES.join(', ')})`);
+    if (new Set(upgrades).size !== upgrades.length || upgrades.length < UPGRADE_OFFER.size) issues.push(`${at('hookUpgrades')}: an offer shows ${UPGRADE_OFFER.size} different cards, so list at least ${UPGRADE_OFFER.size} different upgrades once each`);
+    if (rounds === 1) issues.push(`${at('hookUpgrades')}: upgrades are picked between rounds – set hookRounds 2–5`);
+    const own = (id: UpgradeId): boolean => game.own?.includes(id) === true;
+    const idle: Readonly<Record<UpgradeId, boolean>> = {
+      speed: false,
+      extra_life: (game.lives ?? 0) <= 0,
+      magnet: !game.level.bodies.some((body) => body.role === 'collectible'),
+      fire_rate: game.swing === undefined && !own('fire_rate'),
+      range: !own('range'),
+      carry: !own('carry'),
+    };
+    const useless = upgrades.filter((id) => Object.hasOwn(idle, id) && idle[id as UpgradeId]);
+    if (useless.length > 0) issues.push(`${at('hookUpgrades')}: ${useless.join(', ')} would do nothing in this game (extra_life needs lives, magnet things to collect, fire_rate a strike or a gun; range and carry a genre that reads them)`);
+  }
+  const waves = wavesOf(game.rules);
+  const shares: TunedGame['goal'] = ask.byWaves === true && waves !== undefined && waves.length + 1 !== rounds ? { by: 'wave', need: waves.length + 1 } : undefined;
+  const goal = rounds !== 1 ? (game.goal ?? shares) : undefined;
+  if (goal !== undefined && goal.need < rounds) issues.push(`${at('hookRounds')}: ${String(rounds)} rounds need a goal of at least ${String(rounds)}, this game has ${String(goal.need)}`);
+  else if (rounds !== 1 && goal === undefined && waves === undefined) issues.push(`${at('hookRounds')}: rounds of an existing genre are its waves, and this game has none`);
+  else if (rounds !== 1 && goal === undefined && waves !== undefined && waves.length + 1 !== rounds) issues.push(`${at('hookRounds')}: ${String(rounds)} rounds but the game has ${String(waves.length + 1)} waves – set tuning waves to the same number`);
+  if (issues.length > 0) return { issues };
+  // Značky kol: stejné díly cíle; `need ≥ rounds`, takže rostou a první je aspoň 1.
+  const marks = goal === undefined ? undefined : Array.from({ length: rounds - 1 }, (_, k) => Math.floor((goal.need * (k + 1)) / rounds));
+  return {
+    request: {
+      rounds,
+      clear: goal === undefined ? 'wave' : 'goal',
+      ...(goal === undefined || marks === undefined ? {} : { goal: { by: goal.by, ...(goal.role === undefined ? {} : { role: goal.role }), need: goal.need, marks } }),
+      ...(game.clock === true && rounds !== 1 ? { clock: true as const } : {}),
+      ...(ask.heal === true && game.lives !== undefined && game.lives > 0 ? { lifeCap: game.lives } : {}),
+      ...(upgrades === undefined ? {} : { upgrades: upgrades as UpgradeId[] }),
+      ...(ask.rarity === true ? { rarity: true } : {}),
+      ...(game.swing === undefined ? {} : { swing: game.swing }),
+    },
+  };
 }
 
 /**
  * Háčky z klíčů `tuning` (jen hra `genre.v6`, rozhoduje volající): `hookRounds` 1–5, `hookUpgrades` = zásoba
- * vylepšení čárkami (`"speed,fire_rate,extra_life"`), `hookRarity` = `true`. Kola dosavadního žánru jsou jeho vlny
- * (`clear: 'wave'`), takže chtějí `arena_waves` s právě tolika vlnami. Karta musí v té hře něco dělat: `extra_life`
- * chce životy, `magnet` sbírané věci, `fire_rate` ránu hrdiny (`Swing`); `range` a `carry` dosavadní žánr nemá.
+ * vylepšení čárkami (`"speed,fire_rate,extra_life"`), `hookRarity` = `true`. Ověří je `hookRequestOf`; chyba je
+ * chyba specu s důvodem.
  */
 export function hookTuningOf(tuning: Readonly<Record<string, unknown>> | undefined, game: TunedGame): { readonly request: HookRequest } | { readonly issues: readonly string[] } | null {
   if (tuning === undefined || !HOOK_TUNING.some((key) => key in tuning)) return null;
   const at = (key: string): string => `/controlParams/tuning/${key}`;
   const issues: string[] = [];
   const rounds = tuning.hookRounds ?? 1;
-  if (typeof rounds !== 'number' || !Number.isInteger(rounds) || rounds < ROUNDS.min || rounds > ROUNDS.max) issues.push(`${at('hookRounds')}: ${String(rounds)} rounds, not ${ROUNDS.min}–${ROUNDS.max}`);
+  if (typeof rounds !== 'number') issues.push(`${at('hookRounds')}: ${String(rounds)} rounds, not ${ROUNDS.min}–${ROUNDS.max}`);
   const raw = tuning.hookUpgrades;
   const upgrades = typeof raw === 'string' ? raw.split(',').map((id) => id.trim()) : undefined;
   if (raw !== undefined && upgrades === undefined) issues.push(`${at('hookUpgrades')}: a comma list of ${UPGRADES.join(', ')}`);
-  if (upgrades !== undefined) {
-    const unknown = upgrades.filter((id) => !(UPGRADES as readonly string[]).includes(id));
-    if (unknown.length > 0) issues.push(`${at('hookUpgrades')}: no upgrade ${unknown.join(', ')} (${UPGRADES.join(', ')})`);
-    if (new Set(upgrades).size !== upgrades.length || upgrades.length < UPGRADE_OFFER.size) issues.push(`${at('hookUpgrades')}: an offer shows ${UPGRADE_OFFER.size} different cards, so list at least ${UPGRADE_OFFER.size} different upgrades once each`);
-    if (rounds === 1) issues.push(`${at('hookUpgrades')}: upgrades are picked between rounds – set hookRounds 2–5`);
-    const idle: Readonly<Record<UpgradeId, boolean>> = {
-      speed: false,
-      extra_life: (game.lives ?? 0) <= 0,
-      magnet: !game.level.bodies.some((body) => body.role === 'collectible'),
-      fire_rate: game.swing === undefined,
-      range: true,
-      carry: true,
-    };
-    const useless = upgrades.filter((id) => Object.hasOwn(idle, id) && idle[id as UpgradeId]);
-    if (useless.length > 0) issues.push(`${at('hookUpgrades')}: ${useless.join(', ')} would do nothing in this game (extra_life needs lives, magnet things to collect, fire_rate a strike; range and carry belong to the new genres)`);
-  }
   if (tuning.hookRarity !== undefined && tuning.hookRarity !== true) issues.push(`${at('hookRarity')}: true or absent`);
-  const waves = nativeRule(game.rules, 'arena_waves')?.params.waves as readonly unknown[] | undefined;
-  if (rounds !== 1 && waves === undefined) issues.push(`${at('hookRounds')}: rounds of an existing genre are its waves, and this game has none`);
-  else if (rounds !== 1 && waves !== undefined && waves.length + 1 !== rounds) issues.push(`${at('hookRounds')}: ${String(rounds)} rounds but the game has ${String(waves.length + 1)} waves – set tuning waves to the same number`);
   if (issues.length > 0) return { issues };
-  return {
-    request: {
-      rounds: rounds as number,
-      clear: 'wave',
-      ...(upgrades === undefined ? {} : { upgrades: upgrades as UpgradeId[] }),
-      ...(tuning.hookRarity === true ? { rarity: true } : {}),
-      ...(game.swing === undefined ? {} : { swing: game.swing }),
-    },
-  };
+  return hookRequestOf({ rounds: rounds as number, ...(upgrades === undefined ? {} : { upgrades }), ...(tuning.hookRarity === true ? { rarity: true } : {}) }, game, at);
+}
+
+/**
+ * Háčky, které hra `genre.v6` dosavadního žánru dostane sama, bez klíčů (P66 T10, nabídka žánru `genreHookOffer`
+ * v `pacing-parts`). Hra kvůli nim nikdy neselže: co hra neunese, ustoupí – nejdřív kola s výběrem, pak vzácnost;
+ * létající skóre a hlášky komba (kolo 1) zůstanou vždy.
+ */
+export function offeredHooks(ask: HookAsk, game: TunedGame): HookRequest {
+  const tries: HookAsk[] = [ask, { rounds: 1, ...(ask.rarity === true ? { rarity: true } : {}) }, { rounds: 1 }];
+  for (const tried of tries) {
+    const made = hookRequestOf(tried, game);
+    if ('request' in made) return made.request;
+  }
+  return { rounds: 1, clear: 'wave' };
 }
 
 // ---------------------------------------------------------------------------

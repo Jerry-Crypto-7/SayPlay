@@ -66,10 +66,15 @@ export function assignRarities(state: Int32Array, keeper: number, draws: string)
   }
 }
 
-/** Sebraná věc dvojice efektů od `i` (kladné `score`, hned `despawn` sbírané věci s losem), nebo `undefined`. */
+/**
+ * Sebraná věc dvojice efektů od `i` (kladné `score`, hned `despawn` sbírané věci s losem), nebo `undefined`. Mezi
+ * nimi smí být zápisy čítačů (`count`): chytání (`catch_fall`) mezi body a zmizení věci přičte chycenou věc (P66 T10).
+ */
 export function collectedAt(state: Int32Array, effects: readonly ArcadeEffect[], i: number): { readonly body: number; readonly rarity: Rarity } | undefined {
   const score = effects[i];
-  const next = effects[i + 1];
+  let after = i + 1;
+  while (effects[after]?.kind === 'count') after += 1;
+  const next = effects[after];
   if (score?.kind !== 'score' || score.amount <= 0 || next?.kind !== 'despawn') return undefined;
   if (next.body < 0 || next.body >= (state[HEADER.bodyCount] as number)) return undefined;
   const rarity = rarityOf(state, next.body);

@@ -90,8 +90,11 @@ export function pickedCard(input: ArcadeInput): number {
   return UPGRADE_PICK_BUTTONS.findIndex((button) => (input.buttons & button) !== 0);
 }
 
-/** Vezme kartu `card` otevřené nabídky: stupeň nahoru (nejvýš strop), `extra_life` hned přidá život; nabídka se zavře. */
-export function takeCard(state: Int32Array, keeper: number, card: number, out: HookEffect[]): void {
+/**
+ * Vezme kartu `card` otevřené nabídky: stupeň nahoru (nejvýš strop), `extra_life` hned přidá život; nabídka se zavře.
+ * S `lifeCap` (dosavadní žánr, P66 T10) život jen vrátí do počtu na startu – zraněnému hráči pomůže, plnému nic.
+ */
+export function takeCard(state: Int32Array, keeper: number, card: number, out: HookEffect[], lifeCap?: number): void {
   const offer = offerOf(state, keeper);
   if (offer === null) return;
   const upgrade = offer[card] as UpgradeId;
@@ -99,7 +102,8 @@ export function takeCard(state: Int32Array, keeper: number, card: number, out: H
   if (level < UPGRADE_OFFER.maxLevel) {
     const at = slot(keeper, HOOK_SLOTS.levels);
     state[at] = (state[at] as number) + (1 << levelShift(upgrade));
-    if (upgrade === 'extra_life') state[HEADER.counters + COUNTER.health] = (state[HEADER.counters + COUNTER.health] as number) + UPGRADE_STEP.extra_life;
+    const health = HEADER.counters + COUNTER.health;
+    if (upgrade === 'extra_life') state[health] = Math.max(state[health] as number, Math.min(lifeCap ?? Number.MAX_SAFE_INTEGER, (state[health] as number) + UPGRADE_STEP.extra_life));
   }
   state[slot(keeper, HOOK_SLOTS.offer)] = 0;
   state[slot(keeper, HOOK_SLOTS.pickLeft)] = 0;

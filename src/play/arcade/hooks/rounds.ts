@@ -1,10 +1,12 @@
 /**
  * Kola „Round N of M“ (P66 T3, kontrakt `hooks/contract.ts`): úroveň má `rounds` kol a vyhraje se až po posledním.
  *
- * **Konec kola** hlásí žánr jedním ze dvou signálů (`clear` v parametrech `hooks`):
- * - `wave` – žánr ve vlnách (`arena_waves`) zvedl čítač vlny (`waveOf`) nad běžící kolo: kolo = vlna;
+ * **Konec kola** hlásí žánr jedním ze tří signálů (`clear` v parametrech `hooks`):
+ * - `wave` – žánr ve vlnách (`arena_waves`, obrana pruhů) zvedl čítač vlny (`waveOf`) nad běžící kolo: kolo = vlna;
  * - `win` – pravidlo žánru vyhlásilo výhru; před posledním kolem z ní je jen vyčištěné kolo a žánr podle
- *   `roundOf` postaví další (nové žánry).
+ *   `roundOf` postaví další (nové žánry);
+ * - `goal` (P66 T10) – postup žánru ke cíli (`goal`: skóre sběru, padlí nepřátelé střelnice) dosáhl značky kola:
+ *   kola jsou stejné díly cíle průběhu (`pacing-parts`), takže výhra na skóre přijde až po poslední značce.
  *
  * Výhra před posledním kolem neplatí v žádném z nich; prohra platí kdykoli, podle pravidla žánru.
  *
@@ -12,11 +14,15 @@
  * a volba karty. Bez nabídky trvá `ROUNDS.breakTicks`, s nabídkou do volby, nejdéle `UPGRADE_OFFER.pickTicks`.
  * Pak hned `round_start` dalšího kola, bez nového načtení. Tik běží dál (záznam vstupů i `time_limit` ho čtou),
  * takže přestávka se hodinám hry počítá.
+ *
+ * **Hodiny světa** (`clock`, P66 T10): žánr, který pouští věci v pevných ticích (pochod střelnice, vlny obrany),
+ * čte tik bez přestávek (`worldTickOf`) – jinak by přestávka posunula rozvrh proti zastaveným tělům, a co vyšlo
+ * na tik v přestávce, by nevyšlo vůbec. Přestávky počítá počítadlo háčků (`CLOCK_SLOTS.paused`).
  */
 
 import { createStreams, nextInt } from '@/sim/rng';
 
-import { HEADER, RUN_STATE, bodyBase, type ArcadeInput } from '../contract';
+import { BODY, COUNTER, FLAG, HEADER, RUN_STATE, bodyBase, type ArcadeInput } from '../contract';
 import { waveOf } from '../pieces/waves';
 import { HOOK_SLOTS, ROUNDS, UPGRADE_OFFER, type HookEffect } from './contract';
 import type { HookParams } from './index';
@@ -28,6 +34,28 @@ const at = (keeper: number, slot: number): number => bodyBase(keeper) + slot;
 export const roundOf = (state: Int32Array, keeper: number): number => state[at(keeper, HOOK_SLOTS.round)] as number;
 /** Stojí svět v přestávce po vyčištěném kole? */
 export const inBreak = (state: Int32Array, keeper: number): boolean => (state[at(keeper, HOOK_SLOTS.breakLeft)] as number) > 0;
+
+/** Slot počítadla háčků mimo kontrakt `HOOK_SLOTS`: kolik tiků už přestávky trvaly (jen s `clock`). */
+export const CLOCK_SLOTS = { paused: BODY.aux1 } as const;
+
+/**
+ * Tik světa: tik hry bez přestávek. Kus žánru s počítadlem háčků `keeper` (parametr `hooks`) podle něj pouští věci
+ * v pevných ticích; bez něj (uložené hry, svět bez háčků) je to tik hry beze změny.
+ */
+export const worldTickOf = (state: Int32Array, keeper: number | undefined): number =>
+  (state[HEADER.tick] as number) - (keeper === undefined ? 0 : (state[at(keeper, CLOCK_SLOTS.paused)] as number));
+
+/** Postup ke značkám kol `goal`: vlna, skóre, nebo padlí soupeři role `role` (`need` minus živí, jako průběh `fallen`). */
+function goalDone(state: Int32Array, goal: NonNullable<HookParams['goal']>): number {
+  if (goal.by === 'wave') return waveOf(state);
+  if (goal.by === 'score') return state[HEADER.counters + COUNTER.score] as number;
+  let alive = 0;
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (state[base + BODY.role] === goal.role && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) alive += 1;
+  }
+  return goal.need - alive;
+}
 
 /**
  * Rozvrh kol: semínko obsahu každého kola ze streamu `rounds` hry `seed` (žánr z něj staví mřížku či frontu kola,
@@ -71,6 +99,7 @@ export function roundsEnd(state: Int32Array, params: HookParams, out: HookEffect
     return;
   }
   if (params.clear === 'wave' && !last && waveOf(state) > round) clearRound(state, params, round, out);
+  else if (params.clear === 'goal' && params.goal !== undefined && !last && goalDone(state, params.goal) >= (params.goal.marks[round] as number)) clearRound(state, params, round, out);
 }
 
 /**
@@ -81,6 +110,7 @@ export function breakTick(state: Int32Array, input: ArcadeInput, params: HookPar
   const out: HookEffect[] = [];
   const breakLeft = at(params.keeper, HOOK_SLOTS.breakLeft);
   const pickLeft = at(params.keeper, HOOK_SLOTS.pickLeft);
+  if (params.clock === true) state[at(params.keeper, CLOCK_SLOTS.paused)] = (state[at(params.keeper, CLOCK_SLOTS.paused)] as number) + 1;
   if ((state[pickLeft] as number) > 0) {
     let card = pickedCard(input);
     if (card < 0) {
@@ -89,7 +119,7 @@ export function breakTick(state: Int32Array, input: ArcadeInput, params: HookPar
     }
     // Volba kartu vezme a přestávku ukončí; odpočet do ní dál neběží.
     if (card >= 0) {
-      takeCard(state, params.keeper, card, out);
+      takeCard(state, params.keeper, card, out, params.lifeCap);
       state[breakLeft] = 1;
     }
   }

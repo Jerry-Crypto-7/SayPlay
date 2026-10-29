@@ -281,7 +281,8 @@ describe('a layer that mounts mid-game (back in the feed)', () => {
     expect(resumedView({ world, state: () => state })).toBe(NO_HOOKS);
     openOffer(state, keeper, ['extra_life', 'speed', 'fire_rate']);
     expect(resumedView({ world, state: () => state }).offer?.cards).toEqual(['extra_life', 'speed', 'fire_rate']);
-    const plain = worldOf(fightTuned(() => ({ enemies: 3, waves: 3 })), 1);
+    // Hra bez háčků: `genre.v5` (od P66 T10 má `genre.v6` souboje háčky i bez klíčů).
+    const plain = worldOf(fightTuned(() => ({ enemies: 3, waves: 3 }), 'genre.v5'), 1);
     expect(resumedView({ world: plain, state: () => state })).toBe(NO_HOOKS);
   });
 });

@@ -804,3 +804,116 @@ Přežití ve vlnách: hrdina z věty se hýbe joystickem a střílí sám na ne
 
 - **Létající čísla skóre** jsou na světlejší podlaze méně kontrastní než na černé. Čitelná jsou, ale stálo by za to zkontrolovat v T15 na listech z telefonu.
 - **`capabilities.ts` řádek `survivor`** pořád říká, že hra nic nečte (`labels: []`, `mechanics: []`), přitom čte životy a kreslí nepřítele, sbíranou věc, náboj a bosse z rolí. Sdílený registr se neměnil – opravit s T13, až přežití uvidí režisér a kritik.
+
+## T10 – háčky dosavadním žánrům: výběr vylepšení, vzácnost, létající skóre
+
+### Co hra `genre.v6` dostane
+
+Bez klíčů v `tuning`. Nabídku žánru (`genreHookOffer` v `pieces/pacing-parts.ts`) čte `arcade/compile.ts` nad hotovými pravidly a ověří ji proti hře (`offeredHooks` v `hooks/index.ts`).
+
+| Žánr | Háčky | Konec kola | Karty |
+|---|---|---|---|
+| aréna `fight` | kolo na vlnu (2–5 vln), nad 5 vln stejné díly vln (`roundsForWaves`) | `wave` (jako T3), nad 5 vln `goal` podle vln | `speed`, `fire_rate` (úder), `extra_life` |
+| aréna `collect` bez akce hrdiny | kola na stejné díly skóre (vln ≤ 5 = kolo na vlnu, víc = dělitel do 5) | `goal` podle skóre | `speed`, `magnet`, `extra_life` |
+| `shooter` | 3 kola na třetiny padlých nepřátel | `goal` podle padlých | `extra_life`, `fire_rate` (rozestup ran), `range` (rychlejší střela) |
+| `defense` | 3 kola na 4 vlny (výběr po 1. a 2. vlně) | `goal` podle vln | `extra_life`, `fire_rate` (přebití luku), `range` (dosah obránců) |
+| `runner`, `platformer`, `catch`, `voyage` | vzácnost sebraných věcí | – | – |
+| všechny ostatní (i sběr s akcí hrdiny) | jedno kolo: létající skóre a hlášky komba | – | – |
+
+`extra_life` v dosavadních žánrech jen vrátí ztracený život do počtu na startu (`lifeCap`). Co se nevejde, ustoupí a hra nikdy neselže: nejdřív kola s výběrem, pak vzácnost. Létající skóre zůstane vždy. Bez místa na počítadlo a pravidlo (`maxRules`, `maxBodies`) háčky nedostane.
+
+### Pásmo obtížnosti (20 semínek, výhry začátečníka; pásmo 0,3–0,7)
+
+| Buňka | `genre.v5` | +1 život navíc, kolo na vlnu | vrácení života (výsledek) |
+|---|---|---|---|
+| aréna `fight` | 0,6 | 1,0 | 0,55 |
+| aréna `collect` (věta) | 0,45 | 1,0 | 0,5 |
+| `shooter` | 0,95 | 1,0 | 1,0 |
+| `defense` | 0,55 | 1,0 | 0,45 (3 kola; se 4 koly 0,9) |
+| sběr s úderem / dashem / štítem (P52) | 0,65–0,7 | – | 0,75–0,9, i s jedinou nabídkou 0,65–0,8 → výběr nedostane |
+
+Intermediate všude ≥ 0,9. Střelnice žánru je lehká už bez háčků; test hlídá jen spodek pásma.
+
+### Rozhodnutí (`implementation-notes`)
+
+- **Nabídka bez klíčů, ne klíče z modulů žánrů.** T3 zapínal háčky dosavadního žánru klíči `hookRounds` / `hookUpgrades` / `hookRarity` a ty zůstávají jako ruční přebití (fixtury T3, T4). Klíče psané modulem by ale po pozdější změně tvaru hry daly tvrdou chybu překladu. Tvar mění pravidla režiséra (průběh pak nebývá), díly P42, remix vln nebo jeden život. Nabídka podle hotové hry ustoupí. Moduly žánrů (`genre/*.ts`) se proto neměnily. Hra `genre.v6` je deterministická dál: nabídku určí spec a překladač, nic za běhu.
+- **Kola mimo vlny: `clear: 'goal'`** (`hooks/rounds.ts`). Kolo končí, když postup žánru dojde na značku, a značky jsou stejné díly cíle (`breakGoal`: skóre sběru, padlí nepřátelé střelnice; u souboje a obrany vlny, když je kol míň než vln). Sběr arény tak kola unese, protože výhra na skóre přijde až po poslední značce. To byla slepá ulička T3 s koly = vlny. Střelnice čítač vln nemá (`ammo` jsou tam náboje). Klíče `tuning` dál chtějí kolo = vlna (chyba T3 se nezměnila), stejné díly vln bere jen nabídka žánru (`byWaves`).
+- **`extra_life` jen vrací život** (`lifeCap` v parametrech háčků, jen nabídka dosavadního žánru). S +1 životem navíc vyhrával začátečník všechno (tabulka výš) a hra by vypadla z pásma obtížnosti P41. Nové žánry (T5–T9) a klíče `tuning` mají +1 navíc jako dřív. Karta se dál jmenuje „Extra life +1“ – hráči s plnými životy nic nepřidá (nález níž).
+- **Obrana 3 kola, ne 4:** výběr před bossem (4 kola) zvedl začátečníka na 0,9.
+- **Sběr s akcí hrdiny výběr nedostane:** sedí na horní mezi pásma už bez háčků a každá karta ho přehoupla.
+- **Hodiny světa** (`clock`, `worldTickOf`, slot `CLOCK_SLOTS.paused` = `aux1` počítadla háčků). Pochod střelnice pouští nepřítele v přesném tiku a obrana zvedá vlnu v tiku. Přestávka svět zastaví, ale tik hry běží. Bez hodin světa by nepřítel naplánovaný do přestávky nevyšel vůbec – změřeno: pomalá volba (celá přestávka) a střelnice bez hodin skončila na horizontu `running`. Hodiny dostane jen svět s `clock` (střelnice, obrana), ostatní háčky se nepohnou.
+- **Vylepšení čte zbraň žánru sama**, jak T3 počítal pro `range` / `fire_rate` vlastní rány: `gun` a `defense_shot` dostanou parametr `hooks` (počítadlo) jen ve hře s koly. Uložená hra ho nemá a jede beze změny.
+- **Vzácnost i u chytání:** `collectedAt` (`hooks/rarity.ts`) pustí mezi body a zmizením věci zápisy čítačů (`count`). `catch_fall` chycenou věc přičte právě tam, takže dřív dostaly vzácnost jen bonusy událostí.
+- **Vzácnost jen tam, kde skóre nerozhoduje o výhře** (`grow_to`, `score_bonus.target`) a je co sbírat. Sběr arény ji proto nemá: skóre je jeho cíl a ×3 / ×10 by výhru zkrátilo. Plavba bez turba nemá věci.
+- **`hooks_bot` ve `WRAPPING_BOTS`** (`addons.ts`, oprava u zdroje podle T3): `baseBotOf` přes něj vidí robota žánru.
+- **Soubory mimo seznam T10:** `hooks/index.ts`, `hooks/rounds.ts`, `hooks/rarity.ts`, `hooks/upgrades.ts`, `arcade/compile.ts`, `pieces/shooter.ts`, `pieces/lane-defense.ts`, `addons.ts`. Všechno přidává jen za `genre.v6`, nebo za nový volitelný parametr, který dostane jen svět `genre.v6`.
+- **Přeotisknuto, protože svět `genre.v6` se mění záměrně** (počítadlo a pravidlo háčků v každé nové hře, kola a vzácnost v osmi žánrech):
+  - zmrazení P41 (`evals/play/p41/golden/genres.json`, `replays.json`) generátorem `freeze.measure.ts`, jak chce jeho hlavička;
+  - piny nové hry v `field-segments`, `p52-ball-shooter-actions`, `p52-strike`, `assembly-harm`, `fight-guard`;
+  - srovnání „týž svět jako před průběhem“ v `pacing-static-a/b` a test T3 „hooks only add …“ teď berou tutéž hru `genre.v5`, protože `genre.v6` k ní přidá jen háčky;
+  - seznamy pravidel (`pacing-static-a/b`, `assembly-premature-win`) berou `hooks` jako vlastní pravidlo, které nic nevystřelí;
+  - test vrstvy T4 (`hooks-ui`) bere hru bez háčků jako `genre.v5`.
+
+  Uložené `genre.v5` drží otisk T1 (`p66-hash`) beze změny.
+
+### Změřeno (semínko 1, `hash-v6.json`; robot / nečinný, tiky)
+
+| Buňka | `genre.v5` | `genre.v6` | Háčky v běhu robota |
+|---|---|---|---|
+| aréna `fight` (`framing-cells`) | 3322 / prohra 1464 | 3358 / prohra 1464 | 5 kol, 4 nabídky, boss |
+| aréna `collect` (věta) | – | 3561 / prohra 4214 | 3 kola, 2 nabídky, boss |
+| `shooter` | 3373 / prohra 1425 | 3391 / prohra 1425 | 3 kola, 2 nabídky |
+| `defense` | 2870 / prohra 511 | 2888 / prohra 511 | 3 kola, 2 nabídky |
+| `runner` | 360 / prohra 167 | 360 / prohra 167 | vzácnost (3 věci na krátké trati) |
+| `platformer` | 2603 / prohra 5281 | 2603 / prohra 5281 | vzácnost (41 / 12 / 1) |
+| `catch` | 2098 / prohra 576 | 2098 / prohra 576 | vzácnost |
+| `voyage` s turbem (věta) | – | 2239 / prohra 4321 | vzácnost turba |
+
+Robot bere kartu 9 tiků po nabídce, takže hra s výběrem je o pár desítek tiků delší. Na semínkách 2 a 3 vyhraje robot všechny čtyři žánry s výběrem.
+
+### Testy (`src/play/arcade/__tests__/p66-hooks-existing.test.ts`, otisk `hash-v6.json`)
+
+- buňky `framing-cells` přeložené jako `genre.v6` (souboj, střelnice, obrana, běžec, skákačka, chytání), sběr arény a plavba s turbem z věty;
+- každá buňka: tvar háčků žánru, `genre.v5` bez háčků, robot vyhraje, nečinný prohraje, dvě přehrání záznamu robota shodná a vše jako v `hash-v6.json`;
+- běh robota: nabídka na každé přestávce, nálezy podle vzácnosti tam, kde vzácnost je;
+- pásmo obtížnosti čtyř žánrů s výběrem na 20 semínkách;
+- semínka 2 a 3: robot vyhraje;
+- pomalá volba u střelnice a obrany: každá přestávka dojde celá, bere se karta 0, hra dohraje a hodiny světa stály právě nabídky × 300 tiků.
+
+`P66_V6_WRITE=1` otisk znovu vyrobí.
+
+**Rozbít schválně** (záloha `D:/caches/p66/t10-backup/`, po každé obnova a `diff -q`):
+
+| Vlastnost | Záměrná chyba | Červené |
+|---|---|---|
+| háčky jen od `genre.v6` | nabídka žánru už od `genre.v5` (`compile.ts`) | 19 v `p66-hash` (otisk T1), 8 v testu T10 |
+| hodiny světa | `withHooks` zahodí `clock` | pomalá volba: střelnice skončí `running` (pochod nevyšel), obrana bez `clock`; piny střelnice a obrany |
+| `extra_life` jen vrací život | `withHooks` zahodí `lifeCap` | 8: pásmo souboje, sběru a obrany (začátečník 1,0), `lifeCap` střelnice, piny čtyř žánrů s výběrem |
+
+`mutationStatus: all-red` (3/3, úroveň `pin`).
+
+**Běhy (JSON reporter):**
+
+- `npx vitest run src/play/arcade src/play/genre src/components/play/arcade/hooks evals/play/p41` – **7154/7154** (s otiskem T1 `p66-hash`, zmrazením P41 a `swarm`);
+- `tsc --noEmit -p .` čistý.
+
+**E2e** (build `npm run build`, `next start` :3176, `PLAY_READER=off`, stroj na 100 % CPU od souběžných úloh):
+
+- `p66-hooks` **chromium 3/3, pixel7-touch 3/3**, dvakrát po sobě 12/12. Karty střílečky leží nad dolní řadou HUD, tlačítko střelby je během nabídky skryté.
+- `play-shooter`, `play-defense`, `play-runner-path`, `play-catch` na `chromium` zelené. Jediný červený test `play-catch` („an idle player loses…“) čekal „So close.“, ale prohra bez bodu je od P56A T9 „Try again!“. Očekávání opraveno, s ním zelený.
+- `p32-arena` (aréna, kterou úloha našla): 8 z 10 zelených. Souboj rytířů padal ve třech místech:
+  - **mez HP po KO** – opraveno, viz nálezy;
+  - **„zásah: zasažené tělo bliká“** – padá stejně na kopii testu se specem `genre.v5`, není to háčky;
+  - **FPS telefonu se 4× zpomaleným CPU** (21,6 FPS, 11 vzorků) – měřeno na stroji pod plnou zátěží.
+- `pixel7-touch` spouští z těchto souborů jen `p66-hooks` – ostatní nejsou v jeho `testMatch`.
+
+### Nálezy
+
+- **Přestávka bere hodiny i horizont.** `time_limit` a horizont 90 s počítají tik hry včetně přestávek (rozhodnutí T3). Hráč, který nechá dojít každou volbu (5 s), ztratí u souboje s 5 koly až 20 s času světa. Robot vybere za 0,15 s. Sběr arény má hodiny („before time runs out“) – ověřit na lidech, případně počítat `time_limit` hodinami světa.
+- **Karta „Extra life +1“ při plných životech nic nepřidá** (`lifeCap`). Text karty patří vrstvě T4 (`UpgradePick.tsx`); poctivější by byl „Heal“ / „+1 life (up to 3)“. Robot ji bere i při plných životech (pevné pořadí `UPGRADE_PRIORITY`).
+- **Souboj s 6–8 vlnami** má kola na stejné díly vln (6 vln = 3 kola, 7 vln = 3 kola po 2, 2 a 3 vlnách, 8 = 4); pásmo je změřené jen na buňce s 5 vlnami.
+- **Střelnice s 5 vlnami** (režisér smí 5–6) dělí kola na třetiny padlých, takže nabídka přijde uprostřed vlny. Výchozích 6 vln = výběr po každé druhé vlně.
+- **`pixel7-touch` nemá v `testMatch`** `play-shooter`, `play-defense`, `play-catch` ani `play-runner-path` (`playwright.config.ts` není v souborech T10). Na telefonu karty střílečky hlídá `p66-hooks`.
+- **Mez měřidla HP soupeře** (`FightFx.tsx`, `maxHp`) je nejvyšší HP, které obrazovka viděla, ne skutečné maximum. Po skoku na konec běhu tak ukáže „0 of 6“ místo „0 of 7“, když soupeř dostal první ránu před skokem. Robot ve `genre.v6` před poslední vlnou bere `fire_rate`. `e2e/p32-arena` teď bere 6 i 7. Oprava patří scéně souboje (P64).
+- **`p32-arena` „zásah: zasažené tělo bliká“** padá i se specem `genre.v5` (kopie testu, tentýž build). Nesouvisí s háčky; patří P64, nebo do brány T16 na klidném stroji.
+- **Karty doskočí s překmitem** (`sp-pop-in`). Kontrola rohů karet v `p66-hooks` (T4) padala 1–3 ze 4 běhů a teď čeká na konec nástupu; s ní 12/12. Inference (neměřeno): uprostřed nástupu roh přesahuje sousední karta.

@@ -126,7 +126,8 @@ describe('the round schedule and the saved games', () => {
   });
 
   it('hooks only add to the genre.v6 world: one counter body, the hooks rule and the bot wrapper', () => {
-    const plain = worldOf(fightTuned(({ hookRounds: _r, hookUpgrades: _u, ...rest }) => rest), 1);
+    // Tentýž spec bez klíčů jako `genre.v5`: `genre.v6` bez klíčů už háčky má – nabídku žánru (P66 T10).
+    const plain = worldOf(fightTuned(({ hookRounds: _r, hookUpgrades: _u, ...rest }) => rest, 'genre.v5'), 1);
     const hooked = worldOf(fightSpec(), 1);
     expect(hooksOf(plain.rules)).toBeNull();
     const keeper = hooksOf(hooked.rules)!.keeper;

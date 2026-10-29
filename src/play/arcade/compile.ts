@@ -41,7 +41,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
-import { FINALE5_GENRE_VERSION, genreAtLeast, generatorParams, pacingParts } from './pieces/pacing-parts';
+import { FINALE5_GENRE_VERSION, breakGoal, genreAtLeast, genreHookOffer, generatorParams, pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
@@ -60,8 +60,8 @@ import { timingParts } from './pieces/timing';
 import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
 import { rememberBotRun, runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
-import { completeHooks, hookTuningOf, hooksOf, withHooks } from './hooks';
-import { HOOKS_GENRE_VERSION } from './hooks/contract';
+import { type HookRequest, type HookedParts, type TunedGame, completeHooks, hookTuningOf, hooksOf, offeredHooks, withHooks } from './hooks';
+import { HOOKS_GENRE_VERSION, type UpgradeId } from './hooks/contract';
 import { ARROWS_RULES } from './pieces/arrows';
 import { FIGHT } from './pieces/fight';
 import { HOLE_RULES } from './pieces/hole';
@@ -285,9 +285,15 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   // Háčky (P66 T3) jen od `genre.v6`: dosavadní žánr je zapne klíči `tuning`, nový žánr je přinese z generátoru.
   // Rána, kterou `fire_rate` zkrátí: úder souboje (rozestup v `aux1` hráče, `attackCooldownOf`).
   const swing = baseControlOf(control).id === 'fight' ? { slot: BODY.aux1, ticks: FIGHT.attackCooldown } : undefined;
-  const tuned = genreAtLeast(spec, HOOKS_GENRE_VERSION) ? hookTuningOf(tuningOf(spec), { rules: scored.rules, level: scored.level, lives, swing }) : null;
+  const hookable = genreAtLeast(spec, HOOKS_GENRE_VERSION);
+  const game = hookable ? hookGameOf(control, scored, lives, swing) : null;
+  const tuned = game === null ? null : hookTuningOf(tuningOf(spec), game);
   if (tuned !== null && 'issues' in tuned) return { ok: false, issues: tuned.issues };
-  const hooked = tuned === null ? { ...scored, bot } : withHooks({ ...scored, bot }, seed, tuned.request);
+  // Bez klíčů dostane hra `genre.v6` nabídku svého žánru (P66 T10): kola s výběrem, vzácnost, aspoň létající skóre.
+  // Jen s místem na počítadlo a pravidlo – hra kvůli háčkům nikdy neselže; nový žánr si je přinese sám (`hooksOf`).
+  const offered = game !== null && tuned === null && hooksOf(scored.rules) === null && roomForHooks(scored) ? offeredHooks(genreHookOffer(spec, { control, rules: scored.rules, level: scored.level }), game) : null;
+  const request = tuned?.request ?? offered;
+  const hooked = request === null ? { ...scored, bot, control } : withHookedPieces(withHooks({ ...scored, bot }, seed, request), control, request);
   const finalRules = hooksOf(hooked.rules) === null ? hooked.rules : completeHooks(hooked.rules);
   if (finalRules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with hooks uses ${finalRules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
@@ -295,7 +301,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
 
   // Logika (P45B) jen ze specu s blokem `logic`: jen takový svět dostane logická těla a `arcade-v3`.
   const built = buildWorld(
-    { seed, control, rules: finalRules, bot: hooked.bot, level: hooked.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
+    { seed, control: hooked.control, rules: finalRules, bot: hooked.bot, level: hooked.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
     ARCADE_LIBRARY,
   );
   if (!built.ok) return built;
@@ -323,6 +329,58 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
   const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
   const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
   return { level: combo.level, rules: [...combo.rules, gate({ id: 'score_bonus', params: { lives, limit, target } })] };
+}
+
+/**
+ * Hra, jak ji háčky potřebují znát (P66 T10): k pravidlům, úrovni, životům a ráně souboje postup kol mimo vlny
+ * (`breakGoal`), vylepšení, která čte zbraň žánru sama (`gun` střelnice, `defense_shot` obrany), a hodiny světa pro
+ * žánr, který pouští věci v pevných ticích (pochod střelnice, vlny obrany).
+ */
+function hookGameOf(control: PieceRef, scored: { readonly level: ArcadeLevel; readonly rules: readonly PieceRef[] }, lives: number | undefined, swing: TunedGame['swing']): TunedGame {
+  const goal = breakGoal(control);
+  const armed = scored.rules.some((ref) => {
+    const id = underlyingRule(ref).id;
+    return id === 'gun' || id === 'defense_shot';
+  });
+  const timed = baseControlOf(control).params.march !== undefined || scored.rules.some((ref) => underlyingRule(ref).id === 'defense_shot');
+  return {
+    rules: scored.rules,
+    level: scored.level,
+    lives,
+    swing,
+    ...(goal === undefined ? {} : { goal }),
+    ...(armed ? { own: HOOKED_GUN } : {}),
+    ...(timed ? { clock: true as const } : {}),
+  };
+}
+
+/** Co zbraň žánru s počítadlem háčků čte sama (`gun`, `defense_shot`). */
+const HOOKED_GUN: readonly UpgradeId[] = ['fire_rate', 'range'];
+
+/** Vejde se počítadlo háčků (tělo) a pravidlo `hooks` do stropu jádra? */
+const roomForHooks = (scored: { readonly level: ArcadeLevel; readonly rules: readonly PieceRef[] }): boolean =>
+  scored.rules.length + 1 <= ARCADE_LIMITS.maxRules && scored.level.bodies.length + (scored.level.spawnSlots ?? 0) + 1 <= ARCADE_LIMITS.maxBodies;
+
+/** Ovládání `id` pod obaly (`params.base`) změněné `change`; jiné ovládání beze změny. */
+function mapBaseControl(control: PieceRef, id: string, change: (ref: PieceRef) => PieceRef): PieceRef {
+  const base = control.params.base as PieceRef | undefined;
+  if (typeof base === 'object' && base !== null && typeof base.id === 'string') return { ...control, params: { ...control.params, base: mapBaseControl(base, id, change) } };
+  return control.id === id ? change(control) : control;
+}
+
+/**
+ * Kusy žánru, které háčky čtou samy (P66 T10), dostanou počítadlo háčků (`hooks`) – jen hra s koly: zbraň střelnice
+ * a luk obrany vylepšení, pochod střelnice a takt obrany tik světa. Bez kol (jen vzácnost a létající skóre) beze změny.
+ */
+function withHookedPieces(hooked: HookedParts, control: PieceRef, request: HookRequest): HookedParts & { readonly control: PieceRef } {
+  if (request.rounds === 1) return { ...hooked, control };
+  const keeper = { hooks: hooked.keeper };
+  const reads = (id: string): boolean => id === 'gun' || id === 'defense_shot';
+  return {
+    ...hooked,
+    rules: hooked.rules.map((ref) => mapUnderlying(ref, (native) => (reads(native.id) ? { id: native.id, params: { ...native.params, ...keeper } } : native))),
+    control: request.clock === true ? mapBaseControl(control, 'shooter', (ref) => (ref.params.march === undefined ? ref : { ...ref, params: { ...ref.params, ...keeper } })) : control,
+  };
 }
 
 /** Pravidla, jejichž zásah nebo sebrání zvedá kombo nové hry (P46C T3). */

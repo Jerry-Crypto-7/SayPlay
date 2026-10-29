@@ -83,7 +83,8 @@ describe('a composed game cannot win before its parts', () => {
   it('wrapping spec rules and the bonus replaces them, it adds no rule', () => {
     const world = composed({ rules: [...(draft.rules ?? []), early], scoring: {} });
     expect(world.rules.length).toBeLessThanOrEqual(ARCADE_LIMITS.maxRules);
-    expect(world.rules.filter((rule) => !rule.id.startsWith('assembly_gate_')).map((rule) => rule.id).sort()).toEqual(['assembly_finish', 'assembly_part']);
+    // Pravidlo `hooks` (létající skóre, P66 T10) má každá hra `genre.v6`, s obalem nesouvisí.
+    expect(world.rules.filter((rule) => !rule.id.startsWith('assembly_gate_') && rule.id !== 'hooks').map((rule) => rule.id).sort()).toEqual(['assembly_finish', 'assembly_part']);
     const natives = world.rules.map(underlyingRule);
     expect(natives.filter((rule) => rule.id === 'score_bonus')).toHaveLength(1);
     expect(natives.filter((rule) => rule.params.id === 'early')).toHaveLength(1);
