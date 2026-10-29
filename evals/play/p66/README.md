@@ -145,7 +145,7 @@ Rozpočet T1 byl 1,50 USD (+0,15). Na T13, T15 a T16 zbývá 2,35 USD z 4 USD pr
 | `arcade/library.ts` | ovládání `<g>`, robot `<g>_bot`, generátor (`survivor_waves`, `hole_swallow`, `steal_bases`, `sort_bins`, `arrows_grid`), pravidla `<G>_RULES` z `pieces/<g>.ts` a `<g>-bot.ts` |
 | `arcade/pieces/mode-stub.ts` | `controlStub`, `botStub` a `modeStub` s vlastním ovládáním a robotem: generátor vrátí `issues`, takže svět nevznikne a hra neprojde publikační branou |
 | `ArcadeStage.tsx` | jen větev výběru scény → `genres/<g>/<G>Scene.tsx` (podlaha `FieldGround`) |
-| `draft/draft.ts` | `GENRE_SETTING` (ruined town, busy city, rival base, toy shop, parking lot); `TEMPLATE_TITLE` + `survivor`, `hole`, `heist`, `sort`, `arrows` – názvy modulů T5–T9 končí jedním z nich |
+| `draft/draft.ts` | `GENRE_SETTING` (ruined town, busy city, rival base, toy shop, parking lot). `TEMPLATE_TITLE` beze změny: po recenzi T2 se druhy nových žánrů vrátily ven, protože odmítaly čtené názvy dnešních her („Museum Heist“). Přidá je T12, až žánr pustí do rychlé hry |
 | `playwright.config.ts`, `e2e/play-<g>.spec.ts` | `pixel7-touch` dostal pět specifikací; `chromium` je bere sám (nejsou v `testIgnore`); každá zatím jeden `test.skip` |
 
 Jména kusů, ovládání, generátorů a robotů drží úlohy žánrů beze změny. Přejmenování by znamenalo sahat do `library.ts`.

@@ -60,6 +60,15 @@ describe('the game title comes from the sentence (P56A T8)', () => {
     expect(titleOf(sentence, { ...A01_READ, title: 'Hamster Escape' })).toBe('Hamster Escape');
   });
 
+  // P66 T2 recenze: druh hry žánru, který rychlá hra ještě nedělá, není šablona – čtený název zůstává.
+  it.each([
+    ['a raccoon sneaks into the museum and grabs the diamond while guards patrol', 'Museum Heist'],
+    ['survive the zombie night', 'Zombie Survivor'],
+    ['an archer shoots an arrow', 'Robin Arrows'],
+  ])('keeps the reading title of "%s" while its kind is no live template', (sentence, title) => {
+    expect(titleOf(sentence, { ...A01_READ, title })).toBe(title);
+  });
+
   it('gives the words of the sentence without a reading, not the module template', () => {
     expect(titleOf(A01.text, null)).not.toMatch(TEMPLATE_TITLE);
     expect(titleOf(A01.text, null).toLowerCase()).toContain('frog');
