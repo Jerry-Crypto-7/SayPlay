@@ -6,6 +6,13 @@
  *   node scripts/quest-dev.mjs --port 3168        # server na jiném portu (výchozí 3165)
  *   node scripts/quest-dev.mjs --cdp              # ovládání prohlížeče brýlí přes Chrome DevTools Protocol
  *   node scripts/quest-dev.mjs --cdp --probe      # co prohlížeč Questu umí → evals/vr/quest-caps.json (P67 T1)
+ *   node scripts/quest-dev.mjs --port 3168 --cdp --tour 30   # všech 19 žánrů po 30 s bez člověka (P67 T13)
+ *
+ * `--tour` otevře `/play`, pak každý žánr (tytéž hry jako rozpočet, `evals/vr/budget.mjs --publish`): CDP klepne na
+ * „Enter VR“, robot hraje, skript čte FPS z `VrApi`, v půlce uloží snímek obrazovky brýlí (`--shots`, výchozí
+ * `D:/caches/p67/quest`) a relaci ukončí. Medián a 5. percentil po žánrech → `evals/vr/quest2-fps.json`. Brýle bez
+ * ladění, uspané (nikdo je nemá na hlavě) nebo bez stránky v popředí: soubor řekne „neměřeno“ a proč, běh skončí
+ * bez chyby. Brýle se nebudí, nic se do nich neinstaluje a nic v nich nemění.
  *
  * `adb reverse tcp:3165 tcp:3165` udělá z počítačového serveru v brýlích
  * `localhost:3165`. Na tom záleží: WebXR pustí jen bezpečný původ (HTTPS nebo
@@ -34,20 +41,29 @@ export const GAME_URL = gameUrl();
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FPS_FILE = join(ROOT, 'evals', 'vr', 'quest2-fps.json');
 const CAPS_FILE = join(ROOT, 'evals', 'vr', 'quest-caps.json');
-const USAGE = 'usage: node scripts/quest-dev.mjs [--port <n>] [--fps <sekundy>] [--cdp [--probe]]';
+/** Snímky obrazovky brýlí z prohlídky (`--shots`); mimo repozitář, PNG z brýlí mají jednotky MB. */
+export const SHOTS_DIR = 'D:/caches/p67/quest';
+const USAGE = 'usage: node scripts/quest-dev.mjs [--port <n>] [--fps <sekundy>] [--cdp [--probe | --tour <sekundy> [--shots <složka>]]]';
+
+/** Brána plynulosti na Questu 2: medián a 5. percentil snímků za sekundu na každém žánru. */
+export const FPS_GATE = { median: 72, p5: 65 };
+/** Věta souboru FPS, když se v brýlích neměřilo. */
+export const NOT_MEASURED = 'neměřeno – brýle nepřipojené/nenasazené, měří se v T15';
+/** Po vstupu do VR se scéna dostaví a frekvence ustálí; tyhle sekundy se do měření nepočítají. */
+const WARMUP_MS = 3_000;
 
 /**
  * Volby příkazové řádky.
  *
  * @param {string[]} argv
- * @returns {{ port: number, fps: number | null, cdp: boolean, probe: boolean } | { error: string }}
+ * @returns {{ port: number, fps: number | null, cdp: boolean, probe: boolean, tour: number | null, shots: string } | { error: string }}
  */
 export function parseCli(argv) {
   let values;
   try {
     ({ values } = parseArgs({
       args: argv,
-      options: { port: { type: 'string' }, fps: { type: 'string' }, cdp: { type: 'boolean' }, probe: { type: 'boolean' } },
+      options: { port: { type: 'string' }, fps: { type: 'string' }, cdp: { type: 'boolean' }, probe: { type: 'boolean' }, tour: { type: 'string' }, shots: { type: 'string' } },
     }));
   } catch (error) {
     return { error: `${String(error.message)}\n${USAGE}` };
@@ -59,7 +75,101 @@ export function parseCli(argv) {
   const cdp = values.cdp === true;
   const probe = values.probe === true;
   if (probe && !cdp) return { error: `--probe běží přes CDP, přidej --cdp.\n${USAGE}` };
-  return { port, fps, cdp, probe };
+  const tour = values.tour === undefined ? null : Number(values.tour);
+  if (tour !== null && !(tour > 0)) return { error: `--tour chce počet sekund na žánr větší než nula.\n${USAGE}` };
+  if (tour !== null && !cdp) return { error: `--tour běží přes CDP, přidej --cdp.\n${USAGE}` };
+  if (tour !== null && (probe || fps !== null)) return { error: `--tour měří FPS sám; nejde s --probe ani --fps.\n${USAGE}` };
+  if (values.shots !== undefined && tour === null) return { error: `--shots patří k --tour.\n${USAGE}` };
+  return { port, fps, cdp, probe, tour, shots: values.shots ?? SHOTS_DIR };
+}
+
+/**
+ * Výstup `dumpsys power` → stav brýlí (`Awake`, `Asleep`, `Dozing`, `Dreaming`), jinak `null`. Uspané brýle (nikdo je
+ * nemá na hlavě) VR relaci nezačnou a probuzení bez člověka nechá v popředí systémový dialog.
+ *
+ * @param {string} stdout
+ * @returns {string | null}
+ */
+export function parseWakefulness(stdout) {
+  const match = /mWakefulness=(\w+)/.exec(stdout);
+  return match ? match[1] : null;
+}
+
+/**
+ * Argumenty Node, které publikují hru každého žánru na server počítače a vypíšou `[{ id, kind, url }]`
+ * (`evals/vr/budget.mjs --publish`): brýle hrají tytéž hry, které měří rozpočet v emulátoru.
+ *
+ * @param {number} port
+ * @returns {string[]}
+ */
+export function publishArgs(port) {
+  return ['--experimental-strip-types', '--no-warnings', '--import', './scripts/ts-paths.mjs', 'evals/vr/budget.mjs', '--base', `http://127.0.0.1:${String(port)}`, '--publish'];
+}
+
+/**
+ * Poslední řádek výstupu `budget.mjs --publish` → hry žánrů. Cokoli jiného je chyba, ne prázdná prohlídka.
+ *
+ * @param {string} stdout
+ * @returns {{ id: string, kind: string, url: string }[]}
+ */
+export function parseGames(stdout) {
+  const last = stdout.trim().split(/\r?\n/).at(-1) ?? '';
+  const games = JSON.parse(last);
+  const valid = Array.isArray(games) && games.length > 0 && games.every((game) => typeof game?.id === 'string' && typeof game.kind === 'string' && typeof game.url === 'string' && game.url.startsWith('/play/'));
+  if (!valid) throw new Error(`budget.mjs --publish nevrátil hry žánrů: ${last.slice(0, 200)}`);
+  return games;
+}
+
+/**
+ * Snímek obrazovky brýlí jako PNG na standardní výstup (`exec-out` nepřekládá konce řádků jako `shell`).
+ *
+ * @param {string} serial
+ * @returns {string[]}
+ */
+export function screencapArgs(serial) {
+  return ['-s', serial, 'exec-out', 'screencap', '-p'];
+}
+
+/**
+ * Jeden žánr prohlídky: vzorky FPS (jeden za sekundu z `VrApi`) a z nich medián a 5. percentil. Žánr bez vzorku
+ * (relace nezačala) má `median` a `p5` `null`, ne nulu.
+ *
+ * @param {{ id: string, kind: string | null, url: string, enterVr: string, fps: readonly number[], runState: string | null, screenshot: string | null }} row
+ */
+export function tourRow({ id, kind, url, enterVr, fps, runState, screenshot }) {
+  const summary = summarizeFps(fps);
+  return { id, kind, url, enterVr, fps: [...fps], median: summary?.median ?? null, p5: summary?.p5 ?? null, samples: summary?.samples ?? 0, runState, screenshot };
+}
+
+/**
+ * `evals/vr/quest2-fps.json` po měření v brýlích. `tour` = prohlídka všech žánrů, jinak ruční měření (`--fps`).
+ * `evals/vr/__tests__/budget.test.ts` z `fps` každého řádku přepočítá medián a percentil a hlídá bránu.
+ *
+ * @param {{ measuredAt: string, port: number, seconds: number, tour: boolean, genres: ReturnType<typeof tourRow>[] }} measured
+ */
+export function fpsReport({ measuredAt, port, seconds, tour, genres }) {
+  return { connected: true, measuredAt, base: `http://localhost:${String(port)}`, seconds, tour, gate: FPS_GATE, genres };
+}
+
+/**
+ * `quest2-fps.json`, když se v brýlích neměřilo: `connected: false` (brýle pro měření nedostupné, i když je adb
+ * vidí), věta pro README a důvod. Brána FPS se pak nepočítá; rozpočet z emulátoru platí dál.
+ *
+ * @param {{ checkedAt: string, reason: string, serial?: string | null, wakefulness?: string | null, foreground?: string | null }} why
+ */
+export function notMeasured({ checkedAt, reason, serial = null, wakefulness = null, foreground = null }) {
+  return { connected: false, note: NOT_MEASURED, checkedAt, reason, serial, wakefulness, foreground };
+}
+
+/**
+ * Řádky pod bránou: medián nebo 5. percentil pod `gate`, nebo žánr bez jediného vzorku.
+ *
+ * @param {ReadonlyArray<{ id: string, median: number | null, p5: number | null, samples: number }>} genres
+ * @param {{ median: number, p5: number }} [gate]
+ * @returns {string[]}
+ */
+export function belowGate(genres, gate = FPS_GATE) {
+  return genres.filter((genre) => genre.samples === 0 || genre.median === null || genre.p5 === null || genre.median < gate.median || genre.p5 < gate.p5).map((genre) => genre.id);
 }
 
 /**
@@ -224,6 +334,39 @@ export const PROBE_SESSION = `(async () => {
   };
   await session.end().catch(() => undefined);
   return report;
+})()`;
+
+/**
+ * Robot ověřovače hraje v brýlích za hráče (jako `budget.mjs`): ruční hodiny hry (`byHand`) a tik po tiku, co robot
+ * chce. Časovač, ne `requestAnimationFrame`: okno stránky v immersive relaci snímky nedostává. Prvních pár tiků po
+ * zapnutí robot nemá pozorování starší o svou reakci a nehraje. Kolo, které skončí, zůstane na panelu výsledku.
+ */
+export const TOUR_PLAY = `(() => {
+  const shell = window.__playShell;
+  if (!shell || window.__tour) return false;
+  shell.byHand(true);
+  const run = { runState: 'running', tick: 0 };
+  const timer = setInterval(() => {
+    if (run.runState !== 'running') return;
+    let want = null;
+    try { want = shell.botWants(); } catch (error) { want = null; }
+    shell.hold(want && want.axis ? want.axis : 0);
+    shell.press(want && want.buttons ? want.buttons : 0);
+    const now = shell.tickByHand();
+    run.runState = now.runState;
+    run.tick = now.tick;
+  }, 1000 / 60);
+  window.__tour = { run, stop: () => clearInterval(timer) };
+  return true;
+})()`;
+
+/** Konec žánru: robot přestane, relace skončí; vrátí, jak kolo dopadlo. */
+export const TOUR_STOP = `(async () => {
+  const tour = window.__tour;
+  if (tour) tour.stop();
+  const session = window.__probeSession;
+  if (session) await session.end().catch(() => undefined);
+  return tour ? { runState: tour.run.runState, tick: tour.run.tick } : null;
 })()`;
 
 const DEV_MODE_HINT =
@@ -468,6 +611,77 @@ async function probe(adb, serial, port) {
   console.log(`Zapsáno: ${CAPS_FILE}`);
 }
 
+/** Neměřeno: zapíše proč a skončí bez chyby, ať běh plánu pokračuje. */
+function skipTour(why) {
+  const report = notMeasured({ checkedAt: new Date().toISOString(), ...why });
+  writeJson(FPS_FILE, report);
+  console.log(`${report.note}\n${report.reason}\nZapsáno: ${FPS_FILE}`);
+}
+
+/** Snímek obrazovky brýlí do `file`; když se nepovede, prohlídka jede dál bez něj. */
+function screencap(adb, serial, file) {
+  try {
+    const png = execFileSync(adb, screencapArgs(serial), { maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, png);
+    return file;
+  } catch (error) {
+    console.log(`screencap selhal: ${String(error.message).split('\n')[0]}`);
+    return null;
+  }
+}
+
+/**
+ * Prohlídka žánrů v brýlích (P67 T13). Nejdřív jen čte: spí-li brýle, nic se nepřesměruje ani neotevře.
+ * Pak `/play` přes CDP, hry žánrů na serveru počítače a každá hra `seconds` s ve VR s robotem.
+ */
+async function tour(adb, serial, port, seconds, shots) {
+  const wakefulness = parseWakefulness(adbRun(adb, ['-s', serial, 'shell', 'dumpsys', 'power']));
+  const foreground = parseResumedActivity(adbRun(adb, ['-s', serial, 'shell', 'dumpsys', 'activity', 'activities']));
+  if (wakefulness !== 'Awake') {
+    skipTour({ reason: `Brýle jsou připojené, ale spí (mWakefulness=${String(wakefulness)}) – nikdo je nemá na hlavě. Bez člověka se nebudí: po probuzení drží popředí systémový dialog.`, serial, wakefulness, foreground });
+    return;
+  }
+  adbRun(adb, ['-s', serial, 'reverse', `tcp:${String(port)}`, `tcp:${String(port)}`]);
+  console.log(adbRun(adb, openGameArgs(serial, gameUrl(port))).trim());
+  const cdp = await openPage(adb, serial, port);
+  if (cdp === null) {
+    const front = parseResumedActivity(adbRun(adb, ['-s', serial, 'shell', 'dumpsys', 'activity', 'activities']));
+    cleanUp(adb, serial, port);
+    skipTour({ reason: `${NO_PAGE(port)} V popředí brýlí: ${String(front)}.`, serial, wakefulness, foreground: front });
+    return;
+  }
+  const genres = [];
+  try {
+    const games = parseGames(execFileSync(process.execPath, publishArgs(port), { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }));
+    for (const game of games) {
+      const url = gameUrl(port, game.url);
+      await cdp.send('Page.navigate', { url });
+      await poll(() => cdpEvaluate(cdp, `document.readyState === 'complete' && window.__playShell !== undefined ? true : null`), 60_000);
+      const enter = await enterVr(cdp);
+      if (enter !== 'cdp-mouse' && enter !== 'cdp-user-gesture') {
+        genres.push(tourRow({ id: game.id, kind: game.kind, url, enterVr: enter, fps: [], runState: null, screenshot: null }));
+        console.log(`${game.id.padEnd(20)} bez relace (${enter})`);
+        continue;
+      }
+      await cdpEvaluate(cdp, TOUR_PLAY);
+      await sleep(WARMUP_MS);
+      const file = join(shots, `${game.id}.png`);
+      const [fps, screenshot] = await Promise.all([readFps(adb, serial, seconds), sleep((seconds * 1000) / 2).then(() => screencap(adb, serial, file))]);
+      const run = await cdpEvaluate(cdp, TOUR_STOP);
+      const row = tourRow({ id: game.id, kind: game.kind, url, enterVr: enter, fps, runState: run?.runState ?? null, screenshot });
+      genres.push(row);
+      console.log(`${game.id.padEnd(20)} medián ${String(row.median)}  p5 ${String(row.p5)}  vzorků ${String(row.samples)}  ${String(row.runState)}`);
+    }
+  } finally {
+    cdp.close();
+    cleanUp(adb, serial, port);
+  }
+  writeJson(FPS_FILE, fpsReport({ measuredAt: new Date().toISOString(), port, seconds, tour: true, genres }));
+  const below = belowGate(genres);
+  console.log(`Zapsáno: ${FPS_FILE}. ${below.length === 0 ? 'Všechny žánry drží bránu' : `Pod bránou: ${below.join(', ')}`} (medián ≥ ${String(FPS_GATE.median)}, 5. percentil ≥ ${String(FPS_GATE.p5)}).`);
+}
+
 async function main() {
   const cli = parseCli(process.argv.slice(2));
   if ('error' in cli) {
@@ -477,7 +691,10 @@ async function main() {
   const { port, fps: seconds } = cli;
 
   const found = findAdb(process.env, existsSync);
-  if ('error' in found) fail(found.error);
+  if ('error' in found) {
+    if (cli.tour !== null) return skipTour({ reason: found.error.split('\n')[0] });
+    fail(found.error);
+  }
   const { adb } = found;
 
   const device = parseDevices(adbRun(adb, ['devices']));
@@ -487,7 +704,13 @@ async function main() {
     console.log(`${device.error}\nZapsáno: ${CAPS_FILE} – brýle nepřipojené.`);
     return;
   }
+  if ('error' in device && cli.tour !== null) return skipTour({ reason: device.error.split('\n')[0] });
   if ('error' in device) fail(device.error);
+  if (cli.tour !== null) {
+    console.log(`Brýle: ${device.serial}`);
+    await tour(adb, device.serial, port, cli.tour, cli.shots);
+    return;
+  }
   const { serial } = device;
   console.log(`Brýle: ${serial}`);
 
@@ -511,12 +734,14 @@ async function main() {
 
   await waitForEnter('V brýlích stiskni „Enter VR“ a začni hrát. Pak v terminálu stiskni Enter, měření začne. ');
   console.log(`Měřím FPS ${String(seconds)} s…`);
-  const summary = summarizeFps(await readFps(adb, serial, seconds));
+  const samples = await readFps(adb, serial, seconds);
+  const summary = summarizeFps(samples);
   if (summary === null) {
     fail('Za celou dobu nepřišel žádný řádek VrApi s FPS. Nic jsem nezapsal. Jsou brýle nasazené a běží hra ve VR?');
   }
-  writeJson(FPS_FILE, { measuredAt: new Date().toISOString(), url: gameUrl(port), seconds, ...summary });
-  console.log(`Medián ${String(summary.median)} FPS, 5. percentil ${String(summary.p5)} FPS ze ${String(summary.samples)} vzorků (cíl: medián ≥ 72, 5. percentil ≥ 65).`);
+  // Ruční měření má týž tvar jako prohlídka: jeden řádek „hraný člověkem“, bránu přepočítá test.
+  writeJson(FPS_FILE, fpsReport({ measuredAt: new Date().toISOString(), port, seconds, tour: false, genres: [tourRow({ id: 'by-hand', kind: null, url, enterVr: 'by-hand', fps: samples, runState: null, screenshot: null })] }));
+  console.log(`Medián ${String(summary.median)} FPS, 5. percentil ${String(summary.p5)} FPS ze ${String(summary.samples)} vzorků (cíl: medián ≥ ${String(FPS_GATE.median)}, 5. percentil ≥ ${String(FPS_GATE.p5)}).`);
   console.log(`Zapsáno: ${FPS_FILE}`);
 }
 

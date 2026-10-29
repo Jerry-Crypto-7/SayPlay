@@ -1,0 +1,9 @@
+{
+  "connected": false,
+  "note": "neměřeno – brýle nepřipojené/nenasazené, měří se v T15",
+  "checkedAt": "2026-10-29T20:00:31.395Z",
+  "reason": "Brýle jsou připojené, ale spí (mWakefulness=Asleep) – nikdo je nemá na hlavě. Bez člověka se nebudí: po probuzení drží popředí systémový dialog.",
+  "serial": "1WMHHB6AUW2144",
+  "wakefulness": "Asleep",
+  "foreground": "com.oculus.vrshell/com.oculus.panelapp.controlbar.ControlBarActivity"
+}

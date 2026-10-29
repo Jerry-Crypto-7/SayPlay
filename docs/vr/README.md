@@ -77,20 +77,27 @@ Když za celou dobu nepřijde jediný údaj, skript nic nezapíše a skončí ch
 
 ```json
 {
+  "connected": true,
   "measuredAt": "2026-10-27T14:03:11.482Z",
-  "url": "http://localhost:3165/play?vrhud=1",
+  "base": "http://localhost:3165",
   "seconds": 60,
-  "median": 72,
-  "p5": 68,
-  "samples": 60
+  "tour": false,
+  "gate": { "median": 72, "p5": 65 },
+  "genres": [
+    { "id": "by-hand", "fps": [72, 72, 71, "…"], "median": 72, "p5": 68, "samples": 60, "enterVr": "by-hand" }
+  ]
 }
 ```
 
+- `genres` – jeden řádek na měřenou hru. Ruční měření (`--fps`) má jeden řádek `by-hand`, prohlídka (`--tour`, bod 10) řádek na každý z 19 žánrů.
+- `fps` – snímky v každé sekundě měření, jak je hlásí systém brýlí. Z nich test přepočítá medián a percentil.
 - `median` – typická sekunda: polovina sekund měla víc snímků, polovina méně.
 - `p5` – nejhorší chvíle: 5 % sekund mělo tolik snímků nebo méně. Právě tyhle propady jsou v brýlích cítit jako trhání.
 - `samples` – kolik sekund se změřilo. Výrazně méně než `seconds` znamená, že brýle část doby nehrály (sundané, uspané, mimo VR).
 
-Cíl: **`median` ≥ 72 a `p5` ≥ 65**. Quest 2 obnovuje obraz 72× za sekundu, takže 72 je plynulý chod.
+Cíl: **`median` ≥ 72 a `p5` ≥ 65** na každém řádku. Quest 2 obnovuje obraz 72× za sekundu, takže 72 je plynulý chod. Hlídá to `evals/vr/__tests__/budget.test.ts`: když soubor říká `connected: true`, spočte medián a percentil znovu z `fps` a hru pod cílem shodí.
+
+Když se v brýlích neměřilo, soubor má `connected: false`, větu „neměřeno …“ a důvod (`reason`, třeba „brýle spí“). Brána se pak nepočítá.
 
 ### 9. Ostrost proti plynulosti (`?vrscale`)
 
@@ -109,6 +116,22 @@ node scripts/quest-dev.mjs --port 3168 --cdp --probe
 - `--probe` zjistí, co prohlížeč Questu umí, a zapíše to do `evals/vr/quest-caps.json`: verzi prohlížeče, immersive VR, diktování (Web Speech API), sdílení odkazu, service worker, a po vstupu do VR obnovovací frekvence a vibrace ovladačů. Na serveru vytvoří jednu rychlou hru z věty (bez modelu, bez útraty), relaci po měření ukončí a přesměrování portů zruší.
 - Bez připojených brýlí sonda zapíše `{"connected": false}` a skončí bez chyby.
 - Skript nic neinstaluje do brýlí, nemění jejich nastavení a nemaže data prohlížeče. Diktování jen zkusí spustit a za 3 s zruší; když prohlížeč chce povolit mikrofon, dotaz zůstane bez odpovědi.
+
+**Prohlídka všech žánrů bez člověka (`--tour`, P67 T13):**
+
+```
+npm run build
+PLAY_STORE_DIR=D:/caches/p67/store node node_modules/next/dist/bin/next start -p 3168
+node scripts/quest-dev.mjs --port 3168 --cdp --tour 30
+```
+
+1. Skript nejdřív jen čte: jsou brýle vzhůru (`dumpsys power`)? Spící brýle nebudí – po probuzení bez člověka drží popředí systémový dialog. Zapíše „neměřeno“ s důvodem a skončí bez chyby.
+2. Přesměruje port 3168, v prohlížeči brýlí otevře `/play` a připojí se k němu přes ladicí rozhraní. Když se stránka do 30 s neukáže, zapíše „neměřeno“ a co bylo v popředí.
+3. Na serveru počítače publikuje hru každého z 19 žánrů. Jsou to tytéž hry, které měří rozpočet v emulátoru (`evals/vr/budget.mjs --publish`, bez modelu a bez útraty).
+4. Každou hru otevře, klepne na „Enter VR“, pustí robota, který hraje za hráče, 3 s počká a pak 30 s čte FPS ze systémového záznamu brýlí. V půlce uloží snímek obrazovky brýlí do `D:/caches/p67/quest/<žánr>.png` (jinam `--shots <složka>`). Pak relaci ukončí a jde na další hru.
+5. Medián a 5. percentil každého žánru zapíše do `evals/vr/quest2-fps.json` (bod 8) a vypíše žánry pod cílem. Na konci zruší obě přesměrování portů.
+
+Celá prohlídka trvá asi 19 × 35 s, tedy 11 minut. Brýle musí být vzhůru a v nich prohlížeč – stačí je mít na hlavě nebo zakrýt čidlo nad nosem. Kolo, které robot dohraje dřív než za 30 s, zůstane na panelu výsledku; sloupec `runState` v souboru to přizná.
 
 ### 11. Sayplay jako aplikace v knihovně Questu
 
@@ -436,8 +459,8 @@ Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na 
 
 - **Proč stav lobby není v `xr-context.ts`:** ten modul je v prvním JS dvakrát (v chunku layoutu i feedu). Stav lobby v něm stál ~500 B rozbaleně navíc (naměřeno: +1 207 B proti `main`, po přesunu +708 B), proto je v `xr/xr-lobby.ts`, který načítá jen kód XR.
 - **Velikost a čitelnost v emulátoru** (hlava 1,6 m, pohled 19° dolů): karta lobby je v obraze obou očí celá. Nejmenší písmo kitu (13 px) má od očí 1,16°, klávesnice 1,08°, nad 0,9° z pravidel plánu. Text karet vět (18 px) má ~1,6°.
-- **Cena stisku klávesy:** každý stisk překreslí texturu karty lobby (náhled a počítadlo) a nahraje ji do GPU, stejně jako tabule HUD při změně počítadla. Na Questu to může být jeden pomalejší snímek na stisk; změří se v T13.
-- **Draw cally:** otevřené lobby přidá jednu síť na tlačítko (9 na kartě, 43 na klávesnici) ke hře, která pod ním stojí. Rozpočet 150 volání v `evals/vr/budget.json` měří hru bez lobby.
+- **Cena stisku klávesy:** každý stisk překreslí texturu karty lobby (náhled a počítadlo) a nahraje ji do GPU, stejně jako tabule HUD při změně počítadla. Na Questu to může být jeden pomalejší snímek na stisk; brýle v T13 nikdo nenasadil, změří se v T15.
+- **Draw cally:** do T13 přidalo otevřené lobby jednu síť na tlačítko (9 na kartě, 43 na klávesnici) ke hře pod ním; s klávesnicí nad střílečkou to bylo 194 volání ze 150. Od T13 se tlačítka v klidu kreslí na kartu a lobby s klávesnicí stojí 2–6 volání (oddíl „Rozpočet snímku ve všech režimech“).
 - **Skutečné brýle:** lobby na Questu 2 tento běh neověřil, brýle nikdo neměl na hlavě. Patří do ruční brány T15.
 
 ### Diktování v lobby (P67 T3, 29. 10. 2026, emulátor)
@@ -657,6 +680,27 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 - **Výsledek bez dotyku 10 s vrátí kartu do náhledu robota** jako na telefonu. Ovladače se za dotyk stránky nepočítají, takže ve VR se to stane i hráči, který jen čte panel. Další mávnutí nebo spoušť pokračuje dál.
 - **„Next“ na poslední kartě nic neudělá.** Feed dotahuje další stránku, když jsou do konce tři karty.
 - **Skutečné brýle:** feed na Questu 2 tento běh neověřil. Patří do ruční brány T15.
+
+### Rozpočet snímku ve všech režimech (P67 T13, 29. 10. 2026, emulátor)
+
+Všech 19 žánrů ve svých režimech, nad každým panel výsledku, karta sdílení s QR kódem, „Comfort“ a lobby z „New game“ s otevřenou klávesnicí, k tomu lobby na domově a feed ve VR. Rozpočet Questu 2 je ≤ 150 draw callů a ≤ 300 000 trojúhelníků za snímek (obě oči). Nejhorší snímek v každém režimu:
+
+| režim | nejvíc volání | kde | nejvíc trojúhelníků | kde |
+|---|---|---|---|---|
+| native | 114 | `shooter.default` | 72946 | `shooter.default` |
+| room | 88 | `defense.default` | 98588 | `arena.escape` |
+| surround | 64 | `flap.default` | 286270 | `voyage.race` |
+| diorama | 76 | `quest.spatial` | 104414 | `quest.spatial` |
+| lobby | 56 | `lobby` | 82664 | `lobby` |
+| feed | 78 | `feed` | 82660 | `feed` |
+
+Všechno je pod rozpočtem. Nejtěsnější je závod `voyage` na pódiu: 286 tisíc trojúhelníků, rezerva 4,6 %. Čísla všech žánrů a panelů jsou v `evals/vr/README.md`; obě tabulky hlídá `evals/vr/__tests__/budget.test.ts` proti měření.
+
+- **Co bylo nad rozpočtem a co se srazilo:** lobby z „New game“ s otevřenou klávesnicí. Každé tlačítko panelu byla vlastní síť, 2 volání na tlačítko. Nad střílečkou to dělalo 194 volání, nad questem 158. Tlačítka v klidu se teď kreslí do textury karty a vlastní síť kreslí jen tlačítko s paprskem nebo stisknuté (`XrPanel.tsx`). Střílečka s klávesnicí má 104 volání, lobby na domově 56 místo 142. Vypadá to stejně: tlačítko s paprskem i stisknuté kreslí síť jako dřív.
+- **Lobby a feed v měření** mají za sebou tytéž tři hry z fixtur (běžec, flap, plošinovka). Těžší hra na první kartě feedu přidá svá volání; nejtěžší hra s lobby je řádek střílečky (104).
+- **Chyba `Ambient.tsx` ve VR** (oddíl „Panely HUD“) se v tomto běhu ozvala u 4 žánrů (střílečka, aréna, plošinovka, závod) a ve feedu. Snímek s ní se zahodí; v brýlích to bude cuknutí.
+
+**FPS v brýlích:** neměřeno – brýle nepřipojené/nenasazené, měří se v T15. Quest 2 byl 29. 10. na USB s povoleným laděním, ale spal (`mWakefulness=Asleep`), nikdo ho neměl na hlavě. Prohlídka (`--tour`, bod 10 návodu) ho nebudila, nic nepřesměrovala a do `evals/vr/quest2-fps.json` zapsala důvod.
 
 ### Nové žánry P66 (P67 T12, 29. 10. 2026)
 

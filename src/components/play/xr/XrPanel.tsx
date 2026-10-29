@@ -372,6 +372,11 @@ function text(ctx: CanvasRenderingContext2D, value: string, type: Type, x: numbe
   ctx.fillText(value, x, y);
 }
 
+/**
+ * Karta i s tlačítky v klidu (P67 T13): tlačítko v klidu je jen kresba na kartě, vlastní síť kreslí jen s paprskem
+ * na sobě nebo stisknuté (`PanelKey`). Klávesnice lobby tak stojí 1 volání na oko místo 44 – s ní nad střílečkou
+ * byl snímek na 194 voláních z rozpočtu 150 (`evals/vr/budget.json`).
+ */
 function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
   const ctx = canvas.getContext('2d');
   if (ctx === null) return;
@@ -387,6 +392,7 @@ function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
     text(ctx, stat.value, TYPE.value, rect.x + rect.w / 2, rect.y + CHIP_PAD.y + value / 2, color.ink, 'center');
     if (stat.caption !== null) text(ctx, stat.caption, TYPE.caption, rect.x + rect.w / 2, rect.y + CHIP_PAD.y + value + (TYPE.caption.size * TYPE.caption.lineHeight) / 2, color['ink-soft'], 'center');
   }
+  for (const key of layout.keys) paintKey(ctx, key, 'rest', key.rect.x, key.rect.y);
   if (layout.qr !== null) {
     // Kód v pixelech plátna, bez měřítka: moduly na celé pixely.
     const { rect } = layout.qr;
@@ -397,21 +403,30 @@ function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
 
 type KeyState = 'rest' | 'aimed' | 'pressed';
 
-/** Tlačítko kitu: v klidu se stínem, s paprskem na něm silnější obrys, stisknuté „zamáčknuté“ do stínu. */
-function drawKey(canvas: HTMLCanvasElement, key: Key, state: KeyState): void {
-  const ctx = canvas.getContext('2d');
-  if (ctx === null) return;
-  ctx.setTransform(RES, 0, 0, RES, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+/** Tlačítko kitu s levým horním rohem v `x`, `y`: v klidu se stínem, s paprskem silnější obrys, stisknuté „zamáčknuté“ do stínu. */
+function paintKey(ctx: CanvasRenderingContext2D, key: Key, state: KeyState, x: number, y: number): void {
   const sunk = state === 'pressed' ? KEY_SHADOW : 0;
-  const face = { x: sunk, y: sunk, w: key.rect.w, h: key.rect.h };
+  const face = { x: x + sunk, y: y + sunk, w: key.rect.w, h: key.rect.h };
   if (state !== 'pressed') shadowOf(ctx, face, radius.md, KEY_SHADOW);
   const fill = key.selected ? color.ink : key.primary ? color.tomato : key.tone !== undefined ? color[key.tone] : color.paper;
   box(ctx, face, radius.md, fill, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
   // Řádky popisku svisle uprostřed tlačítka; na inkoustu krémové (15,7:1).
   const step = key.type.size * key.type.lineHeight;
-  const top = sunk + key.rect.h / 2 - (step * (key.lines.length - 1)) / 2;
-  key.lines.forEach((line, index) => text(ctx, line, key.type, sunk + key.rect.w / 2, top + index * step, key.selected ? color.cream : color.ink, 'center'));
+  const top = face.y + key.rect.h / 2 - (step * (key.lines.length - 1)) / 2;
+  key.lines.forEach((line, index) => text(ctx, line, key.type, face.x + key.rect.w / 2, top + index * step, key.selected ? color.cream : color.ink, 'center'));
+}
+
+/**
+ * Plátno sítě tlačítka s paprskem nebo stisknutého. Pod sítí leží totéž tlačítko v klidu nakreslené na kartě, proto
+ * plátno nejdřív zakryje celé místo papírem karty: stisknuté tlačítko sjede do stínu a klidová kresba nesmí vykukovat.
+ */
+function drawKey(canvas: HTMLCanvasElement, key: Key, state: KeyState): void {
+  const ctx = canvas.getContext('2d');
+  if (ctx === null) return;
+  ctx.setTransform(RES, 0, 0, RES, 0, 0);
+  ctx.fillStyle = color.paper;
+  ctx.fillRect(0, 0, key.rect.w + KEY_SHADOW, key.rect.h + KEY_SHADOW);
+  paintKey(ctx, key, state, 0, 0);
 }
 
 /** Plátno 2D kreslí písmem stránky, až je načtené: do té doby náhradním, po načtení se karty rozvrhnou znovu. */
@@ -451,10 +466,14 @@ function PanelKey({ panel, layout, keyOf, aim, press }: { readonly panel: string
   const [state, setState] = useState<KeyState>('rest');
   const hands = useRef(new Set<XRHandedness>());
   const id = `${panel}:${keyOf.id}`;
+  // V klidu síť nekreslí (kresba je na kartě, `drawCard`), plátno se maluje a nahrává až s paprskem na tlačítku.
+  // Paprsek síť najde i tak: `material.visible` řídí jen kresbu, ne zásah paprskem.
+  const drawn = state !== 'rest';
   useEffect(() => {
+    if (!drawn) return;
     drawKey(paint.canvas, keyOf, state);
     paint.texture.needsUpdate = true;
-  }, [paint, keyOf, state]);
+  }, [paint, keyOf, state, drawn]);
   useEffect(() => () => paint.texture.dispose(), [paint]);
   // Tlačítko, které zmizí pod paprskem (výsledek po „Again“), odchod paprsku neohlásí.
   useEffect(
@@ -485,7 +504,7 @@ function PanelKey({ panel, layout, keyOf, aim, press }: { readonly panel: string
       onClick={press}
     >
       <planeGeometry args={[(rect.w + KEY_SHADOW) * KIT_PX, (rect.h + KEY_SHADOW) * KIT_PX]} />
-      <meshBasicMaterial map={paint.texture} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
+      <meshBasicMaterial map={paint.texture} visible={drawn} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
     </mesh>
   );
 }
