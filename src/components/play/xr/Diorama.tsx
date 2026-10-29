@@ -15,6 +15,7 @@ import { type Group, type Material, Matrix4, type Mesh, type Object3D, Plane, Qu
 import { colorHex } from '@/brand/tokens';
 import { DESK, type DeskPose, type HandPose, TABLE, carried, createDiorama, playAreaOf } from '@/play/xr/diorama-scale';
 
+import { runnerPathOf } from '../arcade/runner/path';
 import type { ArcadeSession } from '../arcade/session';
 import { MOTION_PRIORITY } from './XrAim';
 
@@ -69,7 +70,10 @@ export function Diorama({ world, session, report }: { readonly world: RefObject<
   const gl = useThree((three) => three.gl);
   const left = useXRInputSourceState('controller', 'left');
   const space = useXR((xr) => xr.originReferenceSpace);
-  const view = useMemo(() => createDiorama(playAreaOf(session.world)), [session]);
+  const view = useMemo(() => {
+    const path = runnerPathOf(session.world);
+    return createDiorama(playAreaOf(session.world), path === null ? undefined : (z) => path(z).y);
+  }, [session]);
   const desk = useRef<DeskPose>(DESK);
   const grab = useRef<{ readonly desk: DeskPose; readonly hand: HandPose } | null>(null);
   const slab = useRef<Mesh>(null);
