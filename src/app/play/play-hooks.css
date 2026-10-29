@@ -160,6 +160,12 @@
   pointer-events: auto;
 }
 
+/* Během nabídky tlačítka akcí (`play-fire`, i Attack) zmizí: v přestávce nemají co dělat a na telefonu by ležela
+ * přes pravou kartu. */
+.play-stage:has(.play-hook-cards) .play-fire {
+  visibility: hidden;
+}
+
 .play-hook-timer {
   grid-column: 1 / -1;
   height: var(--sp-space-2);

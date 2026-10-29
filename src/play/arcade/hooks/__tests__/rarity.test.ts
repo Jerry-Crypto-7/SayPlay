@@ -10,7 +10,7 @@ import { BODY, COMBO, COUNTER, FLAG, HEADER, RESTITUTION_SHIFT, ROLE, bodyBase }
 import { RARITY, RARITY_SCORE, type Rarity } from '../contract';
 import { foundOf, hooksOf, rarityOf } from '../index';
 import { RARITY_DRAWS, assignRarities, drawRarities } from '../rarity';
-import { TEST_LIBRARY, item, ofKind, play, testWorld } from './harness';
+import { TEST_LIBRARY, fightSpec, fightTuned, item, ofKind, play, testWorld, worldOf } from './harness';
 
 const rarityAt = (draws: string, k: number): Rarity => RARITY[Number(draws[k])] as Rarity;
 
@@ -127,5 +127,12 @@ describe('score pops and combo callouts', () => {
       ['combo_max', 14],
       ['combo_2', 17],
     ]);
+  });
+});
+
+describe('hookRarity in tuning', () => {
+  it('a genre.v6 game with hookRarity draws rarities, one without does not', () => {
+    expect(hooksOf(worldOf(fightTuned((tuning) => ({ ...tuning, hookRarity: true })), 1).rules)?.rarity).toBeDefined();
+    expect(hooksOf(worldOf(fightSpec(), 1).rules)?.rarity).toBeUndefined();
   });
 });

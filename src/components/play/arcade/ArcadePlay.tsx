@@ -14,6 +14,7 @@ import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMe
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
+import { foundOf, hooksOf } from '@/play/arcade/hooks';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
@@ -173,9 +174,11 @@ const xrCountersOf = (goal: HudGoal | null, counters: readonly HudCounter[]): Xr
  * a uběhlá část trati (aréna, střelba a hod trať nemají). Body jdou zvlášť
  * jako velké skóre (P36B T2) – jen u hry, která boduje: něco nabodoval hráč
  * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
+ * Nálezy podle vzácnosti (P66 T4) jen u hry, jejíž háčky vzácnost losují.
  */
-function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, par: Par | null, livesStart: number): RunFacts {
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number): RunFacts {
   const goal = collectGoal(world, snapshot.items);
+  const hooks = hooksOf(world.rules);
   const extra: ResultStat[] = [];
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
   if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
@@ -189,6 +192,7 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
     extra,
     score: scoring ? { value: snapshot.score, unit: scoreUnit(spec) } : null,
     stars: starsFor(runOf(snapshot, livesStart), par),
+    found: hooks?.rarity === undefined ? null : foundOf(state, hooks.keeper),
   };
 }
 
@@ -1063,7 +1067,7 @@ function ArcadePlayGame({
         <PostRun
           versionId={versionId}
           remix={remix}
-          facts={arcadeFacts(spec, arcade, snapshot, par, livesStart)}
+          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart)}
           clip={clip}
           live={live}
           dare={dare}
