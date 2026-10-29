@@ -355,6 +355,75 @@ test('the feed in VR: Next, Prev and Again in one XR session; the right stick pa
   expect(await sessions(page)).toEqual({ requests: 1, ended: 0 });
 });
 
+/** Sonda T4a: pozdržená brána VR a plátna, která byla kdy vidět. */
+interface CanvasWindow {
+  __openXr(): void;
+  /** Kolik různých pláten bylo kdy vidět ve feedu. */
+  __feedCanvases: number;
+  __visibleCanvases(): number;
+}
+
+/**
+ * Feed mimo relaci na prohlížeči s VR (P67 T4a). Kód XR se načítá až po prvním snímku stránky; tady ho test pozdrží
+ * (brána čeká na `isSessionSupported`), jako pomalé načtení na Questu, takže feed začne kreslit bez něj. Po načtení
+ * kreslí dál do plátna, ve kterém začal: na stránce jedno viditelné plátno a feed ho nevyměnil. Plátno relace čeká
+ * skryté a „Enter VR“ z karty v něm relaci začne.
+ */
+test('outside the session the feed keeps its one visible canvas when the XR code arrives, and Enter VR still starts the session', async ({ page }) => {
+  await withQuest2(page);
+  await page.addInitScript(() => {
+    const self = window as unknown as CanvasWindow;
+    const xr = navigator.xr!;
+    const ask = xr.isSessionSupported.bind(xr);
+    const open = new Promise<void>((resolve) => {
+      self.__openXr = resolve;
+    });
+    xr.isSessionSupported = async (mode) => {
+      await open;
+      return ask(mode);
+    };
+    const visible = () =>
+      [...document.querySelectorAll('canvas')].filter((canvas) => {
+        const box = canvas.getBoundingClientRect();
+        return box.width > 0 && box.height > 0 && getComputedStyle(canvas).visibility === 'visible' && canvas.checkVisibility();
+      });
+    const seen = new WeakSet<HTMLCanvasElement>();
+    self.__feedCanvases = 0;
+    self.__visibleCanvases = () => visible().length;
+    const sample = () => {
+      for (const canvas of visible()) {
+        if (seen.has(canvas) || canvas.closest('[data-testid="feed-pager"]') === null) continue;
+        seen.add(canvas);
+        self.__feedCanvases += 1;
+      }
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows, next: null }) }));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`/play?g=${rows[0]!.versionId}`);
+  await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+  await expectPreview(page, rows[0]!);
+  expect(await xr(page), 'XR code held back').toBeNull();
+
+  // Kód XR dorazí: plátno relace je připojené (sonda `XrRig` žije v něm), relace ještě není.
+  await page.evaluate(() => (window as unknown as CanvasWindow).__openXr());
+  await expect.poll(async () => (await xr(page))?.presenting ?? null, { timeout: 30_000 }).toBe(false);
+  await frames(page, 30);
+  await expectPreview(page, rows[0]!);
+  const canvases = () => page.evaluate(() => ({ visible: (window as unknown as CanvasWindow).__visibleCanvases(), feed: (window as unknown as CanvasWindow).__feedCanvases }));
+  expect(await canvases()).toEqual({ visible: 1, feed: 1 });
+
+  // „Enter VR“ z karty: hra se přestěhuje do plátna relace a brýle ji kreslí.
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await feed(page)).mode).toBe('play');
+  await holdClock(page);
+  await page.getByTestId('feed-current').getByTestId('enter-vr').click({ timeout: 30_000 });
+  await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
+  await drawnInVr(page);
+});
+
 /**
  * Sdílení z VR (P67 T5): výhra → „Share“ → karta s QR kódem odkazu na výzvu. Odkaz se skládá z hrané verze a id
  * výzvy, které server vrátil – tatáž výzva, kterou po výhře uložil výsledek 2D. Produkce pustí volajícího na 1 výzvu

@@ -2,8 +2,9 @@
 
 /**
  * Brána VR pro celé `/play` (P65 T1), v layoutu, takže přežije navigaci z rychlé hry na AI verzi. S prohlížečem,
- * který umí `immersive-vr`, a bez `?vr=0` v adrese (P67 T1) načte `XrRoot` a dá hrám trvalé plátno XR relace.
- * Jinak jen předá děti s prázdným kontextem: stejný strom jako dřív a žádný bajt XR.
+ * který umí `immersive-vr`, a bez `?vr=0` v adrese (P67 T1) načte `XrRoot` a od „Enter VR“ do konce relace dá hrám
+ * trvalé plátno XR relace (`hosting`, P67 T4a); mimo relaci kreslí hry do vlastního. Jinak jen předá děti s prázdným
+ * kontextem: stejný strom jako dřív a žádný bajt XR.
  */
 
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
@@ -18,6 +19,7 @@ export function XrGate({ children }: { readonly children: ReactNode }) {
   const [xr, setXr] = useState<XrModule | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [ready, setReady] = useState(false);
+  const [hosting, setHosting] = useState(false);
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -31,9 +33,10 @@ export function XrGate({ children }: { readonly children: ReactNode }) {
   }, []);
   useEffect(() => (xr === null ? undefined : xr.onPresenting(setPresenting)), [xr]);
   useEffect(() => (xr === null ? undefined : xr.onReady(setReady)), [xr]);
+  useEffect(() => (xr === null ? undefined : xr.onHosting(setHosting)), [xr]);
   const controls = useMemo<XrControls | null>(() => (xr === null ? null : { presenting, ready, enter: xr.enterVr, exit: xr.exitVr }), [xr, presenting, ready]);
   return (
-    <XrHostContext.Provider value={xr?.host ?? null}>
+    <XrHostContext.Provider value={hosting ? (xr?.host ?? null) : null}>
       <XrControlsContext.Provider value={controls}>
         {xr !== null && <xr.XrStage />}
         {children}

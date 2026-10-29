@@ -612,7 +612,7 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 - **První přechod na kartu, která ještě nehrála, je nejdelší:** nová scéna se poprvé nakreslí až s přeloženými shadery (`DrawWhenCompiled`, nejvýš 1 s). Mezitím brýle ukazují poslední snímek předchozí scény. Další přechody jsou rychlejší, protože trvalé plátno relace drží přeložené programy (`keepPrograms`) – to je odhad, zvlášť se neměřilo.
 - **Bez brány.** Quest 2 je pomalejší než počítač; změří se v T13 a v ruční bráně T15.
 
-**Plátno hry ve VR:** `StageHost` už od P65 T1 nedělá vlastní plátno, když je na stránce VR, a hru karty předá trvalému plátnu relace z layoutu. Feed ve VR proto nepotřeboval náhradní cestu přes `router.push` z plánu a `StageHost.tsx` se neměnil.
+**Plátno hry ve VR:** `StageHost` už od P65 T1 nedělá vlastní plátno, když je na stránce VR, a hru karty předá trvalému plátnu relace z layoutu (od T4a jen od „Enter VR“ do konce relace, viz níž). Feed ve VR proto nepotřeboval náhradní cestu přes `router.push` z plánu a `StageHost.tsx` se neměnil.
 
 **Mutační zkouška** (`e2e/vr-feed.spec.ts`, každá chyba zvlášť, po ní soubor vrácený ze zálohy):
 
@@ -622,7 +622,25 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 | páčka listuje i v běžícím kole | mávnutí v kole přepnulo na další kartu |
 | spoušť náhled nepřevezme | karta zůstala v náhledu robota |
 
-**Tři testy feedu na tomhle počítači červené, ale ne kvůli T4:** `play-feed-phone` („ten swipes up“, „ten wheel moves“) a `play-feed-reels` („twenty moves keep one canvas“) hlásí dvě plátna místo jednoho. Tyhle soubory si přepisují `launchOptions` a s nimi i `--disable-features=OpenXR` z konfigurace, takže Chromium na tomhle počítači (SteamVR) hlásí VR a feed načte kód XR. Do té doby feed kreslí do vlastního plátna, pak přejde na plátno relace. S `XR_RUNTIME_JSON` mířícím na neexistující soubor (OpenXR runtime vypnutý jen pro ten běh) jsou všechny tři zelené. Telefon OpenXR runtime nemá. Brýle druhé plátno dostanou od T1; za změření stojí v T13.
+**Tři testy feedu na tomhle počítači červené, ale ne kvůli T4:** `play-feed-phone` („ten swipes up“, „ten wheel moves“) a `play-feed-reels` („twenty moves keep one canvas“) hlásí dvě plátna místo jednoho. Tyhle soubory si přepisují `launchOptions` a s nimi i `--disable-features=OpenXR` z konfigurace, takže Chromium na tomhle počítači (SteamVR) hlásí VR a feed načte kód XR. Do té doby feed kreslí do vlastního plátna, pak přejde na plátno relace. S `XR_RUNTIME_JSON` mířícím na neexistující soubor (OpenXR runtime vypnutý jen pro ten běh) jsou všechny tři zelené. Telefon OpenXR runtime nemá. Brýle druhé plátno dostanou od T1; opravené v T4a.
+
+### Feed mimo relaci: jedno plátno (P67 T4a, 29. 10. 2026)
+
+**Příčina (naměřeno sondou na tomhle počítači, Chromium s OpenXR runtime):** kód XR se načítá až po prvním snímku stránky. Feed mezitím kreslí do vlastního plátna (desktop od 544 ms) a po načtení kódu XR (1 499 ms) ho `StageHost` vyměnil za plátno relace: druhý kontext WebGL, scéna se postavila znovu. Na brýlích neměřeno; prohlížeč Questu hlásí VR vždy, takže by feed měnil plátno při každém otevření `/play`. Na `main` se kód XR ve feedu nenačítal.
+
+**Oprava:**
+
+- Hry dostanou plátno relace až od „Enter VR“ do konce relace (`onHosting` v `XrRoot.tsx`, kontext v `XrGate.tsx`). Mimo relaci kreslí do vlastního plátna jako na telefonu.
+- Plátno relace mezitím čeká ve skrytém kontejneru 1 px (`xr-parking`): R3F plátno bez rozměru nezaloží, `<XR>` by se nepřipojilo a „Enter VR“ by se neukázalo. Když ho hra pustí, vrátí se tam.
+- „Enter VR“ nejdřív přestěhuje hru do plátna relace a relaci začne o snímek později. Plátno pak v relaci visí v místě hry jako dřív: z něj čte sadu prostředí `lookIdOf` a emulátor si ho tam po relaci vrátí.
+
+**Cena:** na brýlích mimo relaci dva kontexty WebGL (feed a skryté plátno 1 px, které nekreslí). Při vstupu do VR se scéna hry v plátně relace staví znovu (nejvýš 1 s `DrawWhenCompiled`), po odchodu z VR dostane hra nové vlastní plátno.
+
+**Test:** `e2e/vr-feed.spec.ts` „outside the session…“ pozdrží bránu VR, dokud feed nehraje náhled, pak ji pustí a počítá plátna, která byla ve feedu kdy vidět. S opravou 1, s vrácenou opravou (hry mají plátno relace hned) 2 – test zčervená. Spec soubory s vlastními `launchOptions` (`play-feed`, `play-feed-reels`, `play-feed-phone`, `play-feed-perf`) mají `--disable-features=OpenXR`, ať nezávisí na runtime VR počítače.
+
+**První JS telefonu** (Pixel 7, `/play`): 39 skriptů, **+931 B** rozbaleně proti `main` (T4a +88 B v `XrGate`), přenesené +1 373 B, žádný kód XR.
+
+**`vr-lobby` kolísá i bez T4a:** klik paprskem na panel lobby občas propadne (`lobby:idea-1` zůstane „aimed“, nebo text karty nedostane větu). Stejné podpisy chyb jsou v bězích T9 a na buildu s vrácenou opravou T4a (1 ze 3 testů červený ve 2 bězích ze 2). S opravou 1 běh 3/3 zelený, 3 běhy 1/3.
 
 **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 426 B rozbaleně, **+775 B** proti `main`, přenesené +697 B, žádný kód XR.
 
