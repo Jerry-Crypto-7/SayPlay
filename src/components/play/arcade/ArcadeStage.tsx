@@ -47,6 +47,8 @@ import { HoleScene } from './genres/hole/HoleScene';
 import { StealScene } from './genres/steal/StealScene';
 import { SortScene } from './genres/sort/SortScene';
 import { ArrowsScene } from './genres/arrows/ArrowsScene';
+import { HooksLayer } from './hooks/HooksLayer';
+import { PopAnchor } from './hooks/ScorePop';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -957,8 +959,10 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
       timers.add(timer);
     };
     const off = session.onEvents((events) => {
-      const amount = events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
-      const combo = comboOf(events);
+      // Tik se `score_pop` (háčky P66) kreslí čísla a kombo vrstva háčků nad tělem – tady by se zdvojila.
+      const hooked = events.some((event) => event.kind === 'score_pop');
+      const amount = hooked ? 0 : events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
+      const combo = hooked ? null : comboOf(events);
       const x = Number(surface.current?.dataset.playerX ?? 0);
       const left = 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50;
       const fresh: ScorePop[] = [];
@@ -1107,6 +1111,8 @@ const StageCanvas = memo(function StageCanvas({
       <LegibleBodies control={control} foes={control === 'shooter' || stage.scene === 'arena'} />
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
       <PromptSpot session={session} surface={surface} />
+      {/* Létající skóre háčků (P66 T4) nad tělem: promítne popy vrstvy háčků kamerou scény. */}
+      <PopAnchor surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
       <Effects session={session} look={look} surface={surface} />
     </HostedCanvas>
@@ -1223,6 +1229,8 @@ export default function ArcadeStage({
       <XrGame session={session} enabled={enabled} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {/* Háčky (P66 T4): létající skóre, hlášky, banner kola, karty vylepšení, nálezy; hra bez háčků nic nevykreslí. */}
+      {enabled && <HooksLayer session={session} />}
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}

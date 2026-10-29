@@ -1,0 +1,313 @@
+/* Háčky na obrazovce (P66 T4, `src/components/play/arcade/hooks/`): létající skóre, hláška, banner kola, karty
+ * vylepšení, pilulka nálezu a řádek nálezů ve výsledku. Vlastní soubor vedle `play.css`, ať se sloučení s P64
+ * (HUD a ovládání v `play.css`) nepotká. Jen tokeny kitu; nic fialového. Vzácnost: běžná = inkoust na papíře,
+ * vzácná = modrozelená (napůl `mint`, napůl `sky` z kitu, odstín ~177°), epická = slunce. */
+
+.play-hook-pop,
+.play-hook-rarity,
+.play-found-tier {
+  --_rare: color-mix(in srgb, var(--sp-color-mint), var(--sp-color-sky));
+}
+
+/* Létající skóre: polohu nad tělem píše `PopAnchor` (do té doby schované); ťuky jdou skrz na scénu. */
+.play-hook-pops {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.play-hook-pop {
+  position: absolute;
+  visibility: hidden;
+  translate: -50% -100%;
+  font-family: var(--sp-font-display);
+  font-size: var(--sp-text-title-l-size);
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--sp-color-ink);
+  -webkit-text-stroke: var(--sp-border-base) var(--sp-color-paper);
+  paint-order: stroke fill;
+  animation: play-hook-pop 700ms var(--sp-ease-standard) forwards;
+}
+
+.play-hook-pop[data-rarity='rare'] {
+  color: var(--_rare);
+  -webkit-text-stroke-color: var(--sp-color-ink);
+}
+
+.play-hook-pop[data-rarity='epic'] {
+  font-size: var(--sp-text-display-m-size);
+  color: var(--sp-color-sun);
+  -webkit-text-stroke-color: var(--sp-color-ink);
+}
+
+@keyframes play-hook-pop {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1.15);
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-40px) scale(1);
+  }
+}
+
+@keyframes play-hook-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Hláška: štítek kitu pod horním pásem HUD (pilulka postupu, pod ní odznak power-upů), nad prostřední třetinou –
+ * hrdina stojí níž. Náběh přes `scale`, `transform` nese náklon štítku. */
+.play-hook-callout {
+  top: calc(var(--_top, var(--sp-space-4)) + var(--_pill-row, var(--sp-size-hud-pill)) + var(--sp-size-touch-min) + var(--sp-space-6));
+  left: 50%;
+  z-index: 2;
+  margin: 0;
+  max-width: calc(100% - var(--sp-space-8));
+  transform: translateX(-50%) rotate(-4deg);
+  box-shadow: var(--sp-shadow-sm);
+  pointer-events: none;
+  animation: play-hook-callout 1200ms var(--sp-ease-pop) both;
+}
+
+@keyframes play-hook-callout {
+  0% {
+    scale: 0.6;
+    opacity: 0;
+  }
+  20%,
+  80% {
+    scale: 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1;
+    opacity: 0;
+  }
+}
+
+/* Banner kola: papírová pilulka ve čtvrtině výšky, zhasne do 0,9 s. Visí-li banner průběhu („Boss!“), jde pod něj. */
+.play-hook-round {
+  position: absolute;
+  top: 24%;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  height: var(--sp-size-hud-pill);
+  margin: 0;
+  padding: 0 var(--sp-space-5);
+  transform: translate(-50%, -50%);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-pill);
+  box-shadow: var(--sp-shadow-sm);
+  font-family: var(--sp-font-display);
+  font-size: var(--sp-text-title-l-size);
+  font-weight: 900;
+  letter-spacing: var(--sp-text-title-l-tracking);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: play-hook-round 900ms var(--sp-ease-pop) both;
+}
+
+.play-stage:has(.play-pacing-banner) .play-hook-round {
+  top: 34%;
+}
+
+@keyframes play-hook-round {
+  0% {
+    scale: 0.6;
+    opacity: 0;
+  }
+  25%,
+  75% {
+    scale: 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1;
+    opacity: 0;
+  }
+}
+
+/* Karty vylepšení: zóna palce nad dolní řadou HUD (`--_stack` z `play.css`), na desktopu nejvýš 520 px jako dolní
+ * řada kitu. Nad HUD (`--sp-z-sticky`), pod pauzou a listy. */
+.play-hook-cards {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--_stack, var(--sp-space-20)) + var(--sp-space-3));
+  z-index: var(--sp-z-sticky);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-space-2);
+  width: min(calc(100% - 2 * var(--sp-space-3)), 520px);
+  translate: -50% 0;
+  pointer-events: auto;
+}
+
+.play-hook-timer {
+  grid-column: 1 / -1;
+  height: var(--sp-space-2);
+  background: var(--sp-secondary);
+  border: var(--sp-border-thin) solid var(--sp-outline);
+  border-radius: var(--sp-radius-pill);
+  transform-origin: left center;
+  animation: play-hook-timer linear forwards;
+}
+
+@keyframes play-hook-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.play-hook-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-space-1);
+  min-width: var(--sp-size-touch-min);
+  min-height: calc(2 * var(--sp-size-touch-min));
+  padding: var(--sp-space-3) var(--sp-space-2);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-lg);
+  box-shadow: var(--sp-shadow-sm);
+  font-family: var(--sp-font-body);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition:
+    transform var(--sp-duration-press) var(--sp-ease-standard),
+    box-shadow var(--sp-duration-press) var(--sp-ease-standard);
+  /* `backwards`: po náběhu `transform` zase patří stisku (zamáčknutí do stínu). */
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) backwards;
+}
+
+/* Výchozí karta (bere se, když hráč nevybere) je slunečná; rajčatová akce na obrazovce zůstává jedna jinde. */
+.play-hook-card.is-default {
+  background: var(--sp-color-sun-soft);
+}
+
+.play-hook-card:active,
+.play-hook-card.is-pressed {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.play-hook-card > .sp-icon {
+  width: var(--sp-size-icon);
+  height: var(--sp-size-icon);
+}
+
+.play-hook-card-title {
+  font-family: var(--sp-font-display);
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: var(--sp-text-title-m-tracking);
+}
+
+.play-hook-card-gain {
+  font-size: var(--sp-text-label-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Klávesa karty jen u myši a klávesnice; prst klávesy nemá. */
+.play-hook-key {
+  position: absolute;
+  top: var(--sp-space-1);
+  left: var(--sp-space-2);
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
+  color: var(--sp-text-secondary);
+}
+
+@media (pointer: coarse) {
+  .play-hook-key {
+    display: none;
+  }
+}
+
+/* Na výšku prstem: karty přes celou šířku zóny palce, vyšší cíl. */
+@media (max-aspect-ratio: 1/1) and (pointer: coarse) {
+  .play-hook-cards {
+    width: calc(100% - 2 * var(--sp-space-3));
+  }
+
+  .play-hook-card {
+    min-height: calc(2 * var(--sp-size-touch-min) + var(--sp-space-6));
+  }
+}
+
+/* Pilulka nálezu: vpravo pod časovačem, v rámečku vzácnosti. Popisek, ne ovladač. */
+.play-hook-rarity {
+  position: absolute;
+  top: calc(var(--_top, var(--sp-space-4)) + var(--_pill-row, var(--sp-size-hud-pill)) + var(--sp-space-3));
+  right: var(--_side-r, var(--sp-space-3));
+  z-index: 2;
+  margin: 0;
+  pointer-events: none;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+.play-hook-rarity[data-rarity='rare'] {
+  background: var(--_rare);
+}
+
+.play-hook-rarity[data-rarity='epic'] {
+  background: var(--sp-secondary);
+}
+
+/* Řádek nálezů ve výsledku: jedna pilulka na vzácnost. */
+.play-found-tier {
+  display: inline-block;
+  padding: 0 var(--sp-space-2);
+  background: var(--sp-surface);
+  border: var(--sp-border-thin) solid var(--sp-outline);
+  border-radius: var(--sp-radius-pill);
+}
+
+.play-found-tier[data-rarity='rare'] {
+  background: var(--_rare);
+}
+
+.play-found-tier[data-rarity='epic'] {
+  background: var(--sp-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-hook-pop {
+    animation-name: play-hook-fade;
+  }
+
+  .play-hook-callout,
+  .play-hook-round {
+    animation-name: play-hook-fade;
+  }
+
+  .play-hook-card,
+  .play-hook-rarity {
+    animation: none;
+  }
+}

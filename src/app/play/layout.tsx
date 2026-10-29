@@ -6,6 +6,7 @@ import { color } from '@/brand/tokens';
 import { XrGate } from '@/components/play/xr/XrGate';
 
 import './play.css';
+import './play-hooks.css';
 
 export const metadata: Metadata = {
   title: 'sayplay',
