@@ -41,7 +41,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
-import { FINALE5_GENRE_VERSION, genreAtLeast, pacingParts } from './pieces/pacing-parts';
+import { FINALE5_GENRE_VERSION, genreAtLeast, generatorParams, pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
@@ -60,7 +60,7 @@ import { timingParts } from './pieces/timing';
 import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
 import { rememberBotRun, runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
-import { completeHooks, hookTuningOf, hooksOf, withHooks, withoutHookTuning } from './hooks';
+import { completeHooks, hookTuningOf, hooksOf, withHooks } from './hooks';
 import { HOOKS_GENRE_VERSION } from './hooks/contract';
 import { ARROWS_RULES } from './pieces/arrows';
 import { FIGHT } from './pieces/fight';
@@ -210,14 +210,9 @@ export function generatorOf(spec: GameSpecV1): string {
 
 /**
  * Parametry ovládání bez polí delegace: `tuning` se rozbalí mezi ostatní, takže
- * ho validuje schéma vybraného generátoru, a `generator` zmizí.
+ * ho validuje schéma vybraného generátoru, a `generator` a klíče háčků zmizí (`generatorParams`).
  */
-function ownParams(spec: GameSpecV1): Record<string, unknown> | undefined {
-  if (spec.controlParams === undefined) return undefined;
-  const { generator: _generator, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly generator?: string; readonly tuning?: Record<string, unknown> };
-  // Klíče háčků (P66 T3) čte jen hra `genre.v6`, generátor je nevidí; starší spec je dostane jako dřív (a odmítne).
-  return { ...own, ...(genreAtLeast(spec, HOOKS_GENRE_VERSION) ? withoutHookTuning(tuning) : tuning) };
-}
+const ownParams = (spec: GameSpecV1): Record<string, unknown> | undefined => (spec.controlParams === undefined ? undefined : generatorParams(spec));
 
 /** Klíče `tuning`, jak je spec napsal (háčky je čtou dřív, než je `ownParams` zahodí). */
 const tuningOf = (spec: GameSpecV1): Readonly<Record<string, unknown>> | undefined => (spec.controlParams as { readonly tuning?: Readonly<Record<string, unknown>> } | undefined)?.tuning;

@@ -24,6 +24,7 @@ import { type Operation, applyPatch, createPatch } from 'rfc6902';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { MODE_GENERATORS } from '../arcade/library';
+import { generatorParams } from '../arcade/pieces/pacing-parts';
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { loadRapier } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
@@ -241,8 +242,8 @@ function genreHarder(child: GameSpecV1, accept?: (spec: GameSpecV1) => boolean):
   const { generator, tuning = {}, ...own } = child.controlParams as Record<string, unknown> & { readonly generator?: string; readonly tuning?: Record<string, unknown> };
   const mode = generator !== undefined && Object.hasOwn(MODE_GENERATORS, generator) ? MODE_GENERATORS[generator] : undefined;
   if (generator === undefined || mode === undefined) return false;
-  // Generátor čte vlastní parametry ovládání i `tuning` (`ownParams` v `arcade/compile.ts`).
-  const params = { ...own, ...tuning };
+  // Generátor čte vlastní parametry ovládání i `tuning`, klíče háčků ne – stejně jako kompilace.
+  const params = generatorParams(child);
   const current = mode.params.parse(params) as Record<string, unknown>;
   for (const { key, step, role: kind } of GENRE_HARDER[generator] ?? []) {
     const now = current[key];

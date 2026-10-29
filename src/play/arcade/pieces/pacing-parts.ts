@@ -12,6 +12,8 @@
 import { type Phase, phasesFromCurve } from '../../compose/progression';
 import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
+import { withoutHookTuning } from '../hooks';
+import { HOOKS_GENRE_VERSION } from '../hooks/contract';
 import { RULE_TEMPLATES, type TemplateName } from '../rules/templates';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
 import { ESCAPE } from './arena';
@@ -744,10 +746,14 @@ export function timingFinaleSpeeds(params: TimingLevelParams): number[] {
   return Array.from({ length: params.rounds }, (_, round) => (round >= params.rounds - TIMING_FINALE.rounds ? Math.max(calm, TIMING_FINALE.speed) : calm));
 }
 
-/** Parametry generátoru ze specu jako v `arcadeWorldOf`: bez `generator`, s rozbaleným `tuning`. */
-function generatorParams(spec: GameSpecV1): Record<string, unknown> {
+/**
+ * Parametry generátoru ze specu: bez `generator`, s rozbaleným `tuning`. Klíče háčků (P66 T3) čte jen hra `genre.v6`
+ * a generátor je nevidí; starší spec je dostane jako dřív (a přísné schéma generátoru ho odmítne). Jediné místo pro
+ * kompilaci (`ownParams` v `arcade/compile.ts`), tempování i remix (`director/remix.ts`).
+ */
+export function generatorParams(spec: GameSpecV1): Record<string, unknown> {
   const { generator: _generator, tuning, ...own } = (spec.controlParams ?? {}) as Record<string, unknown> & { readonly tuning?: Record<string, unknown> };
-  return { ...own, ...tuning };
+  return { ...own, ...(genreAtLeast(spec, HOOKS_GENRE_VERSION) ? withoutHookTuning(tuning) : tuning) };
 }
 
 /**
