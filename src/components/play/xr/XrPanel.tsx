@@ -61,7 +61,7 @@ export interface PanelButton {
   readonly label: string;
   /** Rajčatová hlavní akce – nejvýš jedna na panel. */
   readonly primary?: boolean;
-  /** Výplň karty nápadu místo papíru (jen v mřížce `grid`). */
+  /** Výplň místo papíru: karta nápadu v mřížce `grid`, mikrofon lobby (`sun`, P67 T3). */
   readonly tone?: PanelTone;
   press(): void;
 }
@@ -260,8 +260,18 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
     });
     y = beside.top + h + GAP;
   } else {
-    const w = (inner - GAP * (buttons.length - 1)) / buttons.length;
-    keys = buttons.map((button, index) => ({ ...keyFrom(button, [button.label], TYPE.button), rect: { x: PAD + index * (w + GAP), y, w, h: KEY_HEIGHT } }));
+    // Stejná šířka, dokud se do ní vejde každý popisek; jinak každé tlačítko na svůj popisek a zbytek řady rovným
+    // dílem (P67 T3: lobby s „Say it“ má čtyři tlačítka a „More ideas“ by v čtvrtině řady přetekl).
+    const free = inner - GAP * (buttons.length - 1);
+    const fitted = buttons.map((button) => widthOf(button.label, TYPE.button) + 2 * space['3']);
+    const share = (free - fitted.reduce((sum, w) => sum + w, 0)) / buttons.length;
+    const widths = fitted.every((w) => w <= free / buttons.length) ? fitted.map(() => free / buttons.length) : fitted.map((w) => w + share);
+    let x = PAD;
+    keys = buttons.map((button, index) => {
+      const rect = { x, y, w: widths[index]!, h: KEY_HEIGHT };
+      x += widths[index]! + GAP;
+      return { ...keyFrom(button, [button.label], TYPE.button), rect };
+    });
     if (keys.length > 0) y += KEY_HEIGHT + GAP;
   }
   return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys: [...cells, ...keys] };
@@ -288,7 +298,7 @@ export const specKey = (spec: PanelSpec): string =>
     spec.note,
     spec.stats,
     spec.grid === undefined ? null : [spec.grid.columns, spec.grid.gap, spec.grid.cells.map((cell) => [cell.id, cell.label, cell.primary === true, cell.tone])],
-    spec.buttons?.map((button) => [button.id, button.label, button.primary === true]),
+    spec.buttons?.map((button) => [button.id, button.label, button.primary === true, button.tone]),
   ]);
 
 function canvasOf(w: number, h: number, shadow: number): { readonly canvas: HTMLCanvasElement; readonly texture: CanvasTexture } {

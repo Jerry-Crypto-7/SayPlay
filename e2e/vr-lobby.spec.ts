@@ -14,6 +14,9 @@ import { BUILD_FAILED, IDEAS, STARTERS } from '../src/components/play/starters';
  * Panely se ovládají jako v `vr-hud.spec.ts`: paprsek pravé ruky na střed tlačítka, spoušť dolů a nahoru. Sonda
  * `__playXr().panels` říká, co na kartě stojí a kde jsou tlačítka. Hlava stojí rovně a dívá se ~19° dolů, kde
  * lobby visí (metr před hráčem, horní hrana v úrovni očí).
+ *
+ * „Say it“ (P67 T3) diktuje větu rozpoznávačem prohlížeče, tady podvrženým (`withSpeech`); bez Web Speech tlačítko
+ * není (`withoutSpeech`).
  */
 
 const IWER_BUNDLE = join(process.cwd(), 'node_modules/iwer/build/iwer.min.js');
@@ -85,6 +88,81 @@ async function withQuest2(page: Page): Promise<void> {
     { pitch: PITCH, hand: HAND },
   );
 }
+
+/** Přepis podvrženého rozpoznávače (AC T3). */
+const SPOKEN = 'zombies attack my house';
+/** Co „prohlížeč“ dopošle po `stop()`: zrušený poslech to do náhledu dát nesmí. */
+const LATE = 'heard after cancel';
+/** Co podvržený rozpoznávač udělá po `start()`: přepis, zamítnutý mikrofon, nebo poslouchá, dokud ho nikdo nezastaví. */
+type SpeechMode = 'text' | 'error' | 'hold';
+interface SpeechWindow {
+  __speechMode: SpeechMode;
+  __speechStarts: number;
+}
+interface FakeResult {
+  readonly results: ArrayLike<ArrayLike<{ readonly transcript: string }> & { readonly isFinal: boolean }>;
+}
+
+/**
+ * Rozpoznávač řeči prohlížeče podvržený jako v `play-voice.spec.ts` (`webkitSpeechRecognition`, jako Chrome a
+ * prohlížeč Questu). Odpovídá až po chvíli, ať je „Listening…“ vidět; po `stop()` dopošle, co „slyšel“, jako Chrome.
+ */
+async function withSpeech(page: Page): Promise<void> {
+  await page.addInitScript(
+    ({ spoken, late }) => {
+      const self = window as unknown as SpeechWindow;
+      self.__speechMode = 'text';
+      self.__speechStarts = 0;
+      const result = (transcript: string): FakeResult => ({ results: [Object.assign([{ transcript }], { isFinal: true })] });
+      class FakeRecognition {
+        lang = '';
+        continuous = true;
+        interimResults = true;
+        onresult: ((event: FakeResult) => void) | null = null;
+        onerror: ((event: { readonly error: string }) => void) | null = null;
+        onend: (() => void) | null = null;
+        private ended = false;
+        start(): void {
+          self.__speechStarts += 1;
+          const mode = self.__speechMode;
+          if (mode === 'hold') return;
+          setTimeout(() => {
+            if (mode === 'error') this.onerror?.({ error: 'not-allowed' });
+            else this.onresult?.(result(spoken));
+            this.end();
+          }, 300);
+        }
+        stop(): void {
+          setTimeout(() => {
+            if (this.ended) return;
+            this.onresult?.(result(late));
+            this.end();
+          }, 50);
+        }
+        private end(): void {
+          this.ended = true;
+          this.onend?.();
+        }
+      }
+      Object.defineProperty(window, 'webkitSpeechRecognition', { configurable: true, value: FakeRecognition });
+      Object.defineProperty(window, 'SpeechRecognition', { configurable: true, value: undefined });
+    },
+    { spoken: SPOKEN, late: LATE },
+  );
+}
+
+/** Prohlížeč bez Web Speech (Firefox; Chromium testů rozhraní má, i když nepřepisuje). */
+async function withoutSpeech(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'webkitSpeechRecognition', { configurable: true, value: undefined });
+    Object.defineProperty(window, 'SpeechRecognition', { configurable: true, value: undefined });
+  });
+}
+
+const speechMode = (page: Page, mode: SpeechMode): Promise<void> =>
+  page.evaluate((mode) => {
+    (window as unknown as SpeechWindow).__speechMode = mode;
+  }, mode);
 
 const xr = (page: Page): Promise<XrReport | null> => page.evaluate(() => window.__playXr?.() ?? null);
 const ids = async (page: Page): Promise<string[]> => ((await xr(page))?.panels ?? []).map((panel) => panel.id).sort();
@@ -243,6 +321,8 @@ test('a browser without immersive-vr gets no Enter VR on /play and downloads no 
 
 test('Enter VR on /play opens the lobby; Type, a sentence card and Make it! start the game in the same XR session, New game makes another', async ({ page }) => {
   await withQuest2(page);
+  // Bez Web Speech lobby „Say it“ nemá (P67 T3): řada tlačítek níž je přesně „More ideas“, „Type“, „Make it!“.
+  await withoutSpeech(page);
   await page.goto('/play');
   const enter = page.locator('.play-appbar').getByTestId('enter-vr');
   await expect(enter).toBeVisible({ timeout: 30_000 });
@@ -321,4 +401,57 @@ test('Enter VR on /play opens the lobby; Type, a sentence card and Make it! star
   await expectText(page, 'lobby').toContain(POOL[1]!);
   await click(page, 'lobby', 'make');
   await gameRunsInVr(page, first);
+});
+
+test('Say it dictates the sentence into the lobby preview with no request of its own: Listening…, Cancel, a blocked microphone, then Make it! makes the game', async ({ page }) => {
+  await withQuest2(page);
+  await withSpeech(page);
+  await page.goto('/play');
+  const enter = page.locator('.play-appbar').getByTestId('enter-vr');
+  await expect(enter).toBeVisible({ timeout: 30_000 });
+  await enter.click();
+  await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
+
+  // Prohlížeč diktuje: „Say it“ mezi „Type“ a „Make it!“, celé v obraze, anglicky.
+  const lobby = await panelOf(page, 'lobby');
+  expect(lobby.buttons.map((button) => button.id).slice(-4)).toEqual(['more', 'type', 'mic', 'make']);
+  expect(labelsOf(lobby).slice(-4)).toEqual(['More ideas', 'Type', 'Say it', 'Make it!']);
+  expectSeen(lobby);
+  expectEnglish(lobby);
+  await page.screenshot({ path: test.info().outputPath('lobby-say-it.png') });
+
+  // Od teď až po přepis nesmí stránka nic poslat ani stáhnout: přepis dělá prohlížeč, ne naše API ani placená služba.
+  const requests: string[] = [];
+  const watch = (request: { method(): string; url(): string }) => requests.push(`${request.method()} ${request.url()}`);
+  page.on('request', watch);
+
+  // „Listening…“ místo titulku a „Cancel“ na tlačítku; „Cancel“ poslech ukončí a co prohlížeč dopošle, zahodí.
+  await speechMode(page, 'hold');
+  await click(page, 'lobby', 'mic');
+  await expectText(page, 'lobby').toContain('Listening…');
+  expect(labelsOf(await panelOf(page, 'lobby')).slice(-2)).toEqual(['Cancel', 'Make it!']);
+  await click(page, 'lobby', 'mic');
+  await expectText(page, 'lobby').toContain('Say it in one sentence');
+  await expect.poll(async () => labelsOf(await panelOf(page, 'lobby')).slice(-2)).toEqual(['Say it', 'Make it!']);
+  await page.waitForTimeout(500);
+  expect(await textOf(page, 'lobby')).not.toContain(LATE);
+
+  // Zamítnutý mikrofon: věta kitu na kartě, tlačítko zpátky na „Say it“.
+  await speechMode(page, 'error');
+  await click(page, 'lobby', 'mic');
+  await expectText(page, 'lobby').toContain('The microphone is blocked for this page. You can type instead.');
+  await expect.poll(async () => labelsOf(await panelOf(page, 'lobby')).slice(-2)).toEqual(['Say it', 'Make it!']);
+
+  // Přepis do náhledu (chyba zmizí); hru spustí až „Make it!“.
+  await speechMode(page, 'text');
+  await click(page, 'lobby', 'mic');
+  await expectText(page, 'lobby').toContain(`Say it in one sentence ${SPOKEN}`);
+  expect(await textOf(page, 'lobby')).not.toContain('microphone is blocked');
+  expect(new URL(page.url()).pathname).toBe('/play');
+  page.off('request', watch);
+  expect(requests, 'requests while dictating').toEqual([]);
+  expect(await page.evaluate(() => (window as unknown as SpeechWindow).__speechStarts)).toBe(3);
+
+  await click(page, 'lobby', 'make');
+  await gameRunsInVr(page, '/play');
 });

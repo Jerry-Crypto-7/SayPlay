@@ -294,9 +294,15 @@ Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoř
 | šest karet vět | vloží větu do náhledu nahoře; hru ještě nespustí (jako karty nápadů na domově) |
 | „More ideas“ | dalších šest vět, pak zase první; pořadí je pevné (nápady domova, pak startovní věty) |
 | „Type“ | otevře pod kartou klávesnici: číslice, QWERTY, `' , . -`, „Space“, „Delete“, „Done“ |
+| „Say it“ | jen v prohlížeči, který umí diktovat: poslouchá jednu větu a vloží ji do náhledu; hru ještě nespustí |
 | „Make it!“ | udělá hru z věty v náhledu, stejně jako „Make it!“ na domově; mezitím „Making…“ |
 
 - **Klávesnice:** paprsek na klávesu a spoušť. Píše se vždy na konec věty, první písmeno je velké, mezera nikdy na začátku ani dvakrát za sebou. Nad 140 znaků (strop věty) už nic nepřibude, „Delete“ maže vždy. Náhled s kurzorem `|` a počítadlo `n/140` jsou na kartě nad klávesnicí, vedle „Make it!“.
+- **Diktování („Say it“):** tlačítko je na kartě vět i vedle klávesnice, ale jen když prohlížeč diktování umí (Web Speech API). Rozhoduje se za běhu v prohlížeči, ne podle seznamu brýlí. Prohlížeč, který ho neumí, tlačítko vůbec nedostane.
+  - Po stisku je místo titulku „Listening…“ a na tlačítku „Cancel“. Řekněte jednu větu anglicky; poslech skončí sám, jakmile domluvíte, a věta nahradí náhled (jako karta nápadu, takže druhý pokus po špatném přepisu nemusíte mazat). Delší věta se zkrátí na 140 znaků.
+  - „Cancel“ poslech ukončí a nic z něj do náhledu nedá.
+  - Zablokovaný mikrofon nebo jiná chyba ukáže na kartě větu kitu („The microphone is blocked for this page. You can type instead.“), tlačítko se vrátí na „Say it“.
+  - Přepis dělá prohlížeč sám. Stránka nic neposílá: žádná placená služba ani vlastní server.
 - **Chyba:** když dveře hru nepostaví, karta ukáže větu kitu červeně pod náhledem („Couldn't build that. Try fewer rules.“, „Couldn't send your idea. Try again.“). Prázdný náhled a „Make it!“ řekne, co napsat, jako na domově.
 - **Brýle zůstanou ve VR:** „Make it!“ přejde na stránku nové hry (`/play/<id>`). Relace s tím neskončí, protože relace i plátno patří layoutu `/play`, ne stránce. Karta zmizí, až je na stole (nebo v ruce) nová hra.
 - **Z výsledku:** „New game“ na panelu výsledku otevře lobby nad dohranou hrou. Lobby zmizí, až přijde hra, kterou udělalo.
@@ -312,6 +318,15 @@ Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoř
 - Po celou dobu jedna relace: stránka si o relaci řekla jednou a žádná neskončila.
 - Prohlížeč bez VR nemá „Enter VR“ na domově a nestáhne žádný skript s kódem lobby.
 - Unit: `src/play/xr/__tests__/keyboard.test.ts` (rozložení, strop, mazání, mezery), `src/components/play/__tests__/create-game.test.ts` (věta → hra pro formulář i lobby: adresa, chyby dveří, bez sítě).
+
+**Ověření (P67 T3):** `e2e/vr-lobby.spec.ts` s podvrženým rozpoznávačem řeči prohlížeče (`webkitSpeechRecognition`):
+
+- karta má „More ideas“, „Type“, „Say it“, „Make it!“, celá v obraze obou očí, anglicky;
+- „Say it“ → „Listening…“ a „Cancel“; „Cancel“ → zpátky „Say it“ a přepis, který prohlížeč pošle až po zastavení, se do náhledu nedostane;
+- zamítnutý mikrofon → věta kitu na kartě, tlačítko zpátky na „Say it“;
+- přepis „zombies attack my house“ → v náhledu (chyba zmizí) → „Make it!“ → hra na `/play/<id>` v téže relaci;
+- od prvního stisku „Say it“ po přepis stránka neudělala jediný síťový požadavek;
+- prohlížeč bez Web Speech (test T2) tlačítko „Say it“ nemá. Chromium testů rozhraní `webkitSpeechRecognition` má (jen nepřepisuje), proto ho test schová, jako by šlo o Firefox.
 
 ### Feed ve VR (listování her)
 
@@ -381,6 +396,32 @@ Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na 
 - **Cena stisku klávesy:** každý stisk překreslí texturu karty lobby (náhled a počítadlo) a nahraje ji do GPU, stejně jako tabule HUD při změně počítadla. Na Questu to může být jeden pomalejší snímek na stisk; změří se v T13.
 - **Draw cally:** otevřené lobby přidá jednu síť na tlačítko (9 na kartě, 43 na klávesnici) ke hře, která pod ním stojí. Rozpočet 150 volání v `evals/vr/budget.json` měří hru bez lobby.
 - **Skutečné brýle:** lobby na Questu 2 tento běh neověřil, brýle nikdo neměl na hlavě. Patří do ruční brány T15.
+
+### Diktování v lobby (P67 T3, 29. 10. 2026, emulátor)
+
+**Rozhodnutí, která plán nechal otevřená:**
+
+- **Přepis náhled nahradí, nepřidá se k němu.** Na telefonu se přidává k napsanému. V brýlích je mazání pracné (klávesa po klávese), takže druhý pokus po špatném přepisu by musel nejdřív smazat ten první. Karta nápadu náhled taky nahrazuje.
+- **Poslech není rajčatový.** Kit při nahrávání mikrofon zbarví rajčatově, jenže na kartě lobby je rajčatové „Make it!“ a rajčatová akce smí být na panelu jen jedna. Mikrofon je proto `sun` (barva mikrofonu v kitu) a poslech ukazuje „Listening…“ místo titulku a „Cancel“ na tlačítku.
+- **Řada čtyř tlačítek:** stejná šířka platí, dokud se do ní vejde každý popisek. Se „Say it“ by se „More ideas“ do čtvrtiny řady nevešlo, proto má každé tlačítko šířku podle popisku a zbytek řady se rozdělí rovným dílem (`XrPanel.tsx`). Panely, kterým se popisky vejdou (výsledek, HUD), se nemění (`vr-hud`, `vr-feed` zelené).
+
+**První JS telefonu** (Pixel 7 v Chromiu, `/play`, jako u T1):
+
+| | Skriptů | Rozbalené | Přenesené | Kód XR |
+|---|---|---|---|---|
+| `main` (`e661855c`) | 39 | 4 215 651 B | 1 236 252 B | ne |
+| větev (do T3) | 39 | 4 216 498 B | 1 236 981 B | ne |
+| rozdíl | 0 | +847 B | +729 B | – |
+
+T3 nemění žádný soubor na cestě telefonu: tlačítko, stav poslechu i jeho věty jsou jen v chunku XR (`xr/XrMic.tsx`). Společná funkce pro věty chyb v `src/input/speech.ts` by přidala 30 B, proto jsou věty i v `XrMic.tsx`.
+
+**Sonda Questu 2 (29. 10. 2026):** brýle připojené (`adb devices`: `device`), ale spaly (`mWakefulness=Asleep`) a nikdo je neměl na hlavě. Ladicí soket prohlížeče existoval, jenže relaci VR bez nasazených brýlí otevřít nejde, takže `startDictation` uvnitř relace sonda nezkusila. Zapsáno v `evals/vr/quest-caps.json` (`dictationInSession.reached: false`).
+
+Na Questu zůstává neověřené (ruční brána T15):
+
+- jestli prohlížeč Questu vystavuje `webkitSpeechRecognition`. Když ne, tlačítko se neukáže samo;
+- jestli se dotaz na mikrofon ukáže uvnitř relace VR, nebo ji přeruší;
+- jestli stisk spouště na panelu prohlížeč bere jako gesto uživatele, které rozpoznávač řeči potřebuje.
 
 ### Svět kolem hráče (P67 T6, 29. 10. 2026, emulátor)
 

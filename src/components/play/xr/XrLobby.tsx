@@ -5,6 +5,7 @@
  *
  * - šest karet vět z `IDEAS` a `STARTERS` v pevném pořadí, „More ideas“ listuje dál dokola;
  * - „Type“ otevře 3D klávesnici (`XrKeyboard`) pod kartou, „Done“ ji zavře;
+ * - „Say it“ (P67 T3, jen kde prohlížeč diktuje) nadiktuje větu do náhledu (`XrMic`);
  * - „Make it!“ (jediná rajčatová akce) → `createGame()` → `router.push`, tatáž cesta jako formulář na `/play`.
  *   Mezitím „Making…“, chyba dveří zůstane na kartě (kit, Errors).
  *
@@ -25,6 +26,7 @@ import type { DeskReport } from './Diorama';
 import { madeInXrLobby } from './xr-lobby';
 import { type Anchor, XrColumn } from './XrHud';
 import { keyboardOf, KEYBOARD_WIDTH } from './XrKeyboard';
+import { LISTENING, useXrMic } from './XrMic';
 import type { PanelAim, PanelButton, PanelSpec, PanelTone } from './XrPanel';
 
 export const MAKE_IT = 'Make it!';
@@ -100,23 +102,27 @@ export function XrLobby({ shown, aim }: { readonly shown: ArcadeSession | null; 
     router.push(created.url);
   };
 
+  // Nadiktovaná věta náhled nahradí jako karta nápadu (P67 T3): druhý pokus po špatném přepisu nemá co mazat.
+  const mic = useXrMic({ blocked: making, onListen: () => setError(null), onText: (spoken) => edit(() => spoken.slice(0, SENTENCE_LIMIT)), onError: setError });
+  const micButton = mic.button === null ? [] : [mic.button];
+  const title = mic.listening ? LISTENING : PROMPT_LABEL;
   const makeIt: PanelButton = { id: 'make', label: making ? MAKING : MAKE_IT, primary: true, press: () => void make() };
   const lobby: PanelSpec = typing
     ? {
         id: 'lobby',
         width: KEYBOARD_WIDTH,
-        title: PROMPT_LABEL,
+        title,
         // Kurzor na konci náhledu: klávesnice píše vždy na konec věty.
         body: `${sentence}|`,
         note: error ?? undefined,
         stats: [{ value: `${String(sentence.length)}/${String(SENTENCE_LIMIT)}`, caption: null, label: 'counter' }],
-        buttons: [makeIt],
+        buttons: [...micButton, makeIt],
         inline: true,
       }
     : {
         id: 'lobby',
         width: KEYBOARD_WIDTH,
-        title: PROMPT_LABEL,
+        title,
         body: sentence === '' ? undefined : sentence,
         note: error ?? undefined,
         grid: {
@@ -126,6 +132,7 @@ export function XrLobby({ shown, aim }: { readonly shown: ArcadeSession | null; 
         buttons: [
           { id: 'more', label: MORE_IDEAS, press: () => !making && setPage((now) => now + 1) },
           { id: 'type', label: TYPE, press: () => !making && setTyping(true) },
+          ...micButton,
           makeIt,
         ],
       };

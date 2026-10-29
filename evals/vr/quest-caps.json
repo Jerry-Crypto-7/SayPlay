@@ -2,5 +2,13 @@
   "connected": true,
   "reached": false,
   "measuredAt": "2026-10-29T11:52:35.909Z",
-  "foreground": "com.oculus.firsttimenux/.FirstTimeNuxExclusiveSystemDialogActivity"
+  "foreground": "com.oculus.firsttimenux/.FirstTimeNuxExclusiveSystemDialogActivity",
+  "dictationInSession": {
+    "task": "P67 T3",
+    "measuredAt": "2026-10-29T17:05:00.000Z",
+    "connected": true,
+    "reached": false,
+    "reason": "headset asleep (dumpsys power: mWakefulness=Asleep), nobody wearing it; no XR session possible, startDictation not tried",
+    "cdpSocket": "@chrome_devtools_remote present, not opened"
+  }
 }
