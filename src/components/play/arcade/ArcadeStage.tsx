@@ -800,8 +800,12 @@ const PROMPT_FLOOR = '.play-hud-bottom, .play-hud > :is(.play-upgrade-status, .p
 /** Dolní pás `playRect` (P64 T2): totéž a tlačítka palce na `--_stack` – tytéž prvky jako audit `p64-portrait-audit`. */
 const PLAY_FLOOR = `${PROMPT_FLOOR}, .play-fire, .play-action, .play-ability`;
 
-/** Spodní hrana horní lišty HUD a horní hrana dolní (prvky `floor`), v px od horní hrany stage. */
-function hudBars(host: HTMLElement, stage: DOMRect, floor = PROMPT_FLOOR): { readonly top: number; readonly bottom: number } {
+/**
+ * Spodní hrana horní lišty HUD a horní hrana dolní (prvky `floor`), v px od horní hrany stage. Prvek `floor` celý
+ * v horní půlce stage patří k hornímu pásu: na telefonu na výšku stojí stav AI verze pod řádkem cíle (P64 T6) a jako
+ * podlaha by pás karty i `playRect` zavřel u horního okraje (souboj: „Tap to start“ přes přepínač).
+ */
+export function hudBars(host: HTMLElement, stage: DOMRect, floor = PROMPT_FLOOR): { readonly top: number; readonly bottom: number } {
   const shell = host.parentElement;
   let top = 0;
   let bottom = stage.height;
@@ -811,7 +815,9 @@ function hudBars(host: HTMLElement, stage: DOMRect, floor = PROMPT_FLOOR): { rea
   }
   for (const bar of shell?.querySelectorAll(floor) ?? []) {
     const rect = bar.getBoundingClientRect();
-    if (rect.height > 0) bottom = Math.min(bottom, rect.top - stage.top);
+    if (rect.height <= 0) continue;
+    if (rect.bottom - stage.top <= stage.height / 2) top = Math.max(top, rect.bottom - stage.top);
+    else bottom = Math.min(bottom, rect.top - stage.top);
   }
   return { top, bottom };
 }

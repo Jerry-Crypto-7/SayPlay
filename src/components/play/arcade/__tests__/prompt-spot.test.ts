@@ -7,7 +7,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { promptPlacement, setStyleVar } from '../ArcadeStage';
+import { hudBars, promptPlacement, setStyleVar } from '../ArcadeStage';
 
 function host() {
   const values = new Map<string, string>();
@@ -49,5 +49,28 @@ describe('prompt placement', () => {
     const placed = promptPlacement({ top: 0.35, bottom: 0.7, left: 0.3, right: 0.7 }, { width: 390, height: 844 }, { top: 140, bottom: 740 }, { width: 340, height: 200 });
     expect(placed.at).toBe('above');
     expect(placed.scale).toBeCloseTo((0.35 * 844 - 140 - 32) / 200, 3);
+  });
+});
+
+// P64 T6 posadil na telefonu na výšku stav AI verze pod řádek cíle. Jako podlaha zavřel pás karty (souboj: „Tap to
+// start“ přes přepínač) i `playRect` kamer u horního okraje – karta i záběr vypadají jen jinak, ne rozbitě, proto pin.
+describe('HUD bars', () => {
+  const rect = (top: number, bottom: number) => ({ top, bottom, height: bottom - top, left: 0, right: 100, width: 100 }) as DOMRect;
+  const stageOn = (tops: readonly DOMRect[], floors: readonly DOMRect[]) => {
+    const shell = { querySelectorAll: (selector: string) => (selector.includes('.play-hud-goal') ? tops : floors).map((r) => ({ getBoundingClientRect: () => r })) };
+    return { parentElement: shell } as unknown as HTMLElement;
+  };
+  const stage = rect(0, 839);
+
+  it('closes the band at a floor piece in the lower half, as on desktop', () => {
+    expect(hudBars(stageOn([rect(12, 120)], [rect(700, 760), rect(780, 830)]), stage)).toEqual({ top: 120, bottom: 700 });
+  });
+
+  it('counts a floor piece wholly in the upper half to the top band (the AI-version switch under the goal)', () => {
+    expect(hudBars(stageOn([rect(12, 120)], [rect(128, 172), rect(780, 830)]), stage)).toEqual({ top: 172, bottom: 780 });
+  });
+
+  it('keeps a floor piece reaching into the lower half (a full-height touch zone) a floor', () => {
+    expect(hudBars(stageOn([rect(12, 120)], [rect(300, 839)]), stage)).toEqual({ top: 120, bottom: 300 });
   });
 });
