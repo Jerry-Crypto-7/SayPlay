@@ -673,3 +673,175 @@ to bere jako „honička je cítit“. Zvětšit ji by znamenalo vrátit hrdinu 
 na jedné větě pod šumem soudce. U s006 a s088 výtky rámování nejmenují (překážky místo postřikovačů, chybí prak), stejně
 jako u nejslabších vět bez rozdílu (mávání končí po 0,9 s, úkol nemá mřížku). Plán (Co nevíme) vázal kolo opravy na
 pokles žánru, ten nenastal.
+
+### Zapečetěná sada: brány
+
+**Verdikt: nepřipraveno k sloučení.**
+
+Nesplněné brány a proč:
+- **G1 „hrál bych“, rychlá hra:** P64 0,56 proti `main` 0,555, potřeba ≥ 0,605. Honičky, tratě a aréna na výšku
+  vyhrávají, deskové žánry ztrácejí scénu (rozbor pod tabulkou vět). Po čtení P64 0,60 ≥ 0,565 drží.
+- **G3 čas na telefonu:** +1 133 ms proti povoleným +200 ms v úplném měření. Spadlé první měření dává −504 ms, rozdíl
+  je menší než rozptyl stroje (rozbor níž), ale brána počítá úplné měření.
+- **G6 na šířku:** podíl hrdiny na šířku proti `main` změřenému teď ujel ve 2 buňkách z 38 opakovaně: aréna na Pixelu 7
+  +11 % (0,0112 proti 0,0101), plavba na iPhonu 15 +22 až 25 % (0,0284 proti 0,0233). Plán chtěl šířku beze změny.
+- **Cílené e2e nejsou zelené:** `play-touch` „duel: the name tags never cover the Dodge!/Strike! cue“ padá na obou
+  telefonech i v opakování (štítek „Knight“ zakryje „Strike!“ v tiku 195 na Pixelu 7, 192 na iPhonu), na `main` zelený.
+
+Všechny tři vady jdou do plánu jako nálezy, na zapečetěné sadě se nic neladilo.
+
+**Jak se měřilo.** `holdout.json` otevřen jednou (`holdout-opened.json`, 29. 10. 14:03Z, větev `7b6fc80e`, kód rovný
+`708cf7fd`). Větev nafocena `shots.mjs` stejně jako `main` v T1: server se čtečkou na 3164, 24 vět, hra ze čtení
+u 14 (u `main` 13). Na větu jeden list `--view phone` s řádky `main` rychlá, `main` ze čtení, P64 rychlá, P64 ze čtení
+(co vzniklo), pořadí `pure-rand` seed 61026, soudce Codex (`codex exec`), souběh 1, jeden běh, 24 volání, limit Codexu
+nepřišel. Brány přepočítává `__tests__/result.test.ts` z `result.json`, prahy má z plánu.
+
+| strana | věrnost | hrál bych | n |
+|---|---|---|---|
+| `main` rychlá hra | 0,50 | 0,555 | 24 |
+| P64 rychlá hra | 0,495 | 0,56 | 24 |
+| `main` po čtení | 0,645 | 0,565 | 24 |
+| P64 po čtení | 0,625 | 0,60 | 24 |
+
+| brána | práh | naměřeno | výsledek |
+|---|---|---|---|
+| G1 „hrál bych“ | rychlá ≥ `main` + 0,05; po čtení ≥ `main` | rychlá 0,56 / 0,555; po čtení 0,60 / 0,565 | nesplněna |
+| G2 věrnost | obě ≥ `main` − 0,02 | rychlá 0,495 / 0,50; po čtení 0,625 / 0,645 | splněna |
+| G3 čas na telefonu | P64 ≤ `main` + 200 ms | 12 204,5 / 11 071,5 ms (+1 133) | nesplněna |
+| G4 FPS na telefonu | medián B/A ≥ 0,95 | 1,00 (6 scén) | splněna |
+| G5 determinismus | `p64-hash` zelený, robot / nečinný / replay na všech hrách | 1/1, 55/55 | splněna |
+| G6 desktop a šířka | stráže zelené, `p61` na šířku ≤ 2 % | stráž 44/44, `p58a` 48/48, velikost hrdiny 10/10, HUD 1/1; `p61` na šířku 2 buňky +11 a +22 % | nesplněna |
+
+### Verdikt po větách
+
+„Hrál bych“ a věrnost rychlé hry `main` / P64, po čtení = hra ze čtení, když vznikla. Výtka soudce u řádku P64 rychlá.
+
+| věta | žánr | hrál bych rychlá | hrál bych po čtení | věrnost rychlá | výtka soudce (P64 rychlá) |
+|---|---|---|---|---|---|
+| p64-01 | běh | 0,72 / 0,64 | 0,51 / 0,43 | 0,46 / 0,45 | chybí déšť, ulice a roznašeč novin; `main` chválí světlo úsvitu |
+| p64-02 | plošinovka | 0,48 / 0,58 | 0,51 / 0,62 | 0,29 / 0,32 | použitelná plošinovka, chybí lešení a padající cihly |
+| p64-03 | aréna | 0,36 / 0,43 | 0,56 / 0,48 | 0,25 / 0,32 | zápas je čitelný, mutantní mývalové nejasní |
+| p64-04 | – | 0,40 / 0,43 | 0,40 / 0,43 | 0,28 / 0,30 | letadlo na úzké trati místo balonu, chybí bouřkové mraky |
+| p64-05 | úkol | 0,61 / 0,70 | 0,66 / 0,77 | 0,73 / 0,75 | hasič, ohně a statek čitelné, joystick sedí na telefon |
+| p64-06 | střílečka | 0,58 / 0,64 | 0,63 / 0,72 | 0,68 / 0,67 | boj na lodi čitelný, hrozby vypadají jako asteroidy |
+| p64-07 | hod | 0,39 / 0,45 | 0,39 / 0,45 | 0,43 / 0,46 | větší čaroděj a skály premisu posilují, golemové chybí |
+| p64-08 | načasování | 0,42 / 0,20 | 0,42 / 0,20 | 0,35 / 0,22 | jen pár bledých beden, bez siláka a **bez střechy stanu**; `main` má stan v záběru |
+| p64-09 | rytmus | 0,57 / 0,60 | 0,57 / 0,60 | 0,38 / 0,39 | tučňáci a led, dráha rytmu čitelná |
+| p64-10 | souboj | 0,34 / 0,42 | 0,76 / 0,66 | 0,28 / 0,30 | kuchař a útoky lžící, šedé dlaždice místo střechy |
+| p64-11 | mávání | 0,16 / 0,23 | 0,40 / 0,25 | 0,08 / 0,20 | panely výsledku zakrývají sovu i překážky |
+| p64-12 | chytání | 0,58 / 0,54 | 0,58 / 0,54 | 0,64 / 0,62 | medvěd, kýbl a med čitelné, **velká prázdná plocha** |
+| p64-13 | bouchání | 0,56 / 0,65 | 0,56 / 0,65 | 0,62 / 0,69 | nástroj a řada děr dělají bouchání jasnější a lákavější |
+| p64-14 | obrana | 0,65 / 0,63 | 0,65 / 0,63 | 0,78 / 0,75 | obránce, vlci a bariéra sedí, zima a vesnice slabě |
+| p64-15 | krájení | 0,52 / 0,48 | 0,52 / 0,50 | 0,51 / 0,58 | babička a jablka, chybí sad a vtipálek, prázdné místo |
+| p64-16 | běh | 0,36 / 0,40 | 0,77 / 0,84 | 0,23 / 0,24 | káčátko na silnici, málo provozu, chybí rybník |
+| p64-17 | dav | 0,70 / 0,73 | 0,76 / 0,70 | 0,90 / 0,93 | rytíř, rostoucí vojsko a brány, jednoduchá volba láká |
+| p64-18 | slučování | 0,62 / 0,59 | 0,62 / 0,59 | 0,80 / 0,78 | slizy padají a slučují se, postava ruší, **nádrž stísněná** |
+| p64-19 | vytlačování | 0,53 / 0,62 | 0,53 / 0,62 | 0,65 / 0,73 | mrož, tuleni a zmenšující se kra jsou lépe vidět |
+| p64-20 | přeskákání | 0,81 / 0,78 | 0,75 / 0,64 | 0,76 / 0,79 | hustý provoz a želva, autobusy nezřetelné |
+| p64-21 | slučování | 0,55 / 0,45 | 0,55 / 0,45 | 0,49 / 0,46 | **skluz a pila dominují**, chybí kotel a proměna lektvarů |
+| p64-22 | vytlačování | 0,64 / 0,65 | 0,75 / 0,72 | 0,70 / 0,70 | brouci u okraje, překrývající se nápovědy ruší |
+| p64-23 | krájení | 0,58 / 0,48 | 0,62 / 0,51 | 0,55 / 0,53 | dřevorubec a šišky, cíl s bombou, **velká prázdná plocha** |
+| p64-24 | načasování | 0,32 / 0,30 | 0,55 / 0,60 | 0,18 / 0,18 | abstraktní pruhy, žádná pizza |
+
+**Co z toho plyne (inference).** Honičky, tratě a aréna na výšku vyhrávají (plošinovka +0,10, úkol +0,09, bouchání
++0,09, vytlačování p64-19 +0,09, souboj +0,08, aréna +0,07). Rychlá hra se ale v mediánu nepohne, protože deskové žánry
+ztrácejí právě kvůli tomu, co T3 a T4 změnily: soudce u krájení a chytání píše „velká prázdná plocha“, u slučování
+„nádrž stísněná“ a „skluz a pila dominují“, a u načasování p64-08 strmější a bližší kamera vyřízla stan, který na `main`
+nese premisu cirkusu (−0,22, největší ztráta sady). „Co nevíme“ tohle riziko jmenovalo (strmější pohled deskových žánrů
+ubere scénu); na dev větách se neukázalo, protože dev sada deskové žánry skoro nemá (jediný je úkol s069). Návrh dalšího
+kola mimo tuto bránu: u deskových žánrů na výšku nechat bližší kameru, ale vrátit sklon a výšku `main`, aby zůstalo
+okolí scény; měřit na dev větách s deskovými žánry, ne na této sadě.
+
+### Čas do hratelné hry (G3)
+
+`scripts/measure/first-playable-ab.mjs`, A = `main` `e661855c` (`D:/caches/p64/main`, port 3165), B = větev (port 3164),
+oba `npm run build` + `next start`, prázdný `PLAY_STORE_DIR`, `PLAY_READER=off`, 0 USD. Prvních 5 dev vět, 3 běhy na
+stranu, dvojice A+B těsně po sobě se střídavým začátkem. Brána jen na Pixelu 7 s CPU 4×, desktop se zapisuje. Selhaný
+běh (plátno do 120 s nereagovalo) se nepočítá: na telefonu jeden na každé straně, oba u střílečky v obchoďáku.
+
+| Profil | `main` medián | P64 medián | rozdíl mediánů | párový rozdíl | Brána ≤ +200 ms |
+|---|---|---|---|---|---|
+| Pixel 7, CPU 4× | 11071.5 ms | 12204.5 ms | +1133 ms | +1482.5 ms | nesplněna |
+| desktop 1280×720 | 4278 ms | 4751 ms | +473 ms | +364 ms | bez brány |
+
+**Rozptyl je větší než rozdíl (fakta, pak inference).** Týž běh na telefonu má u jedné věty `main` 9,4 až 25,8 s a větev
+9,4 až 41,2 s. První pokus o měření spadl po 37 z 60 bězích bez hlášky (výstup spolkla roura) a do brány nejde; jeho
+telefonní běhy (2 opakování × 5 vět na stranu, prokládaně) dávají `main` 11 589,5 ms a větvi 11 085 ms, tedy −504 ms.
+Inference: znaménko rozdílu se mezi dvěma měřeními obrací a desktop, kde P64 nemění kameru ani CSS, se ve druhém měření
+zhoršil o +473 ms stejně jako telefon. Ukazuje to na zátěž stroje, ne na cenu P64. Brána ale podle plánu počítá úplné
+měření, proto zůstává nesplněná.
+
+### FPS na telefonu (G4)
+
+`e2e/play-perf.spec.ts @measure`, telefonní profil specu (Moto G Power, 412 × 823 na výšku, CPU 4×, Fast 4G), tytéž
+servery jako G3, A/B prokládaně scénu po scéně se střídavým začátkem, 3 opakování na stranu, metrika `fpsP50`. `drive`
+vynechán: sonda specu na řetězu nedá první tik na žádné straně (P61 T8, P63 T6).
+
+| scéna | `main` | P64 | B/A |
+|---|---|---|---|
+| runner | 30,0 | 30,0 | 1,00 |
+| arena | 59,9 | 59,9 | 1,00 |
+| grid-collect | 30,0 | 30,0 | 1,00 |
+| glide | 30,0 | 30,0 | 1,00 |
+| walker | 59,9 | 30,1 | 0,503 |
+| ball | 59,9 | 30,0 | 0,502 |
+| Medián B/A | 1,00 | | splněna |
+
+`fpsP50` skáče jen mezi 30 a 60 (synchronizace snímků). U chodce a míče padla větev na 30 ve 2 ze 3 opakování, `main`
+v 1 ze 3 a 0 ze 3. Větev přitom kreslí stejně nebo méně: chodec 34 volání a 22 913 trojúhelníků na obou stranách, míč
+78 volání a 41 tis. trojúhelníků proti 81–112 a 62 tis. na `main`. Inference: pokles je procesor stroje, ne kresba P64
+(paměť „Pokles FPS bez volání = procesor“); jemnější `drawnFps` se na obou stranách překrývá (chodec 23–47 proti 34–39).
+
+### Robot / nečinný / replay
+
+Všech 55 her sady, jak je P64 postavil: zapečetěná sada 24 rychlých her (3 řetězy) a 14 her ze čtení, dev 12 rychlých
+(2 řetězy) a 5 ze čtení. Hry vrátil server větve přes `/api/play/games/<id>` z úložiště, ve kterém vznikly. Dvě kontroly
+jako P63 T6: publikační brána ze zprávy serveru a znovu offline v novém procesu (`verifyArcade` / `verifyChain`,
+dočasný skript mimo repo), otisk běhu robota i nečinného proti zprávě serveru.
+
+| Sada | Her | Robot vyhraje | Nečinný nevyhraje | Přehrání shodné | Otisk běhu = server |
+|---|---|---|---|---|---|
+| zapečetěná (24 vět) | 38 | 38 | 38 | 38 | 38 |
+| dev (12 vět) | 17 | 17 | 17 | 17 | 17 |
+| Celkem | 55 | 55 | 55 | 55 | 55 |
+
+### Stráže a cílené testy
+
+Proti serveru větve bez čtečky, výsledky v `D:/caches/p64/t8-guards.json` (mimo repo).
+
+| sada | výsledek |
+|---|---|
+| vitest `src/components/play`, `src/app/play`, `evals/play/p64` (bez `result.test.ts`) | 1510 / 1510 |
+| `p64-hash` (otisk robota a nečinného na buňkách = `hash-baseline.json`) | 1 / 1 |
+| `p64-landscape-guard` (otisk kamery na šířku = `landscape-baseline.json`) | 44 / 44 |
+| `p58a-framing` na `chromium` | 48 / 48 |
+| `play-hero-size` na `chromium` | 10 / 10 |
+| `p64-portrait-hud`, desktopová reference HUD a výsledku = `main` po pixelech | 47 / 47, reference 1 / 1 |
+| `p64-portrait-audit` | 44 / 44 |
+| `p64-thumb` | zelený, střílečka na iPhonu jednou vypršela při načítání, opakování zelené |
+| `play-phone`, `play-feed-phone`, `interface-language` | 18 / 18, 2 / 2, 4 / 4 |
+| `vr-enter`, `vr-diorama`, `vr-native`, `vr-hud` | 25 / 25 |
+| `p61-portrait` (spec hlídá jen výšku) | 38 / 38 |
+| `play-touch` | duel na obou telefonech červený (výš), jinak zelený |
+
+**`p61-portrait` na šířku.** Spec na šířku nic netvrdí, podíl hrdiny se srovnal ručně z výstupu testu. Proti `before`
+v `p61/portrait.json` je 15 buněk z 38 o víc než 2 % jinde (nejvíc střílečka +58 %), stejně na `main` – drift starší než
+P64. Proti `main` změřenému teď stejným specem je 33 z 38 do 2 %; pět odchylek se pustilo znovu na obou stranách:
+plavba, úkol a hod na Pixelu 7 jsou šum, aréna na Pixelu 7 a plavba na iPhonu 15 se opakují. Otisk kamery na šířku
+na Pixelu 7 je shodný, takže aréna se mění v kvádru hrdiny nebo jeho dráze, ne v kameře (inference). Šířku iPhonu stráž
+kamery nepokrývá.
+
+Během běhu server po 2 h limitu úlohy na pozadí spadl; specy, které v tu chvíli odmítly spojení, se pustily znovu
+a v tabulce jsou jen opakování. `play-feed-phone` přepsal `evals/play/feed/phone-check-2026-10-20/*`, vráceno.
+
+### Útrata a volání (T8)
+
+| krok | USD | volání čtečky |
+|---|---|---|
+| T1 (výše) | 1,134 | 36 |
+| T8 dev, 12 vět (`usage-p64.jsonl`) | 0,374 | 12 |
+| T8 zapečetěná sada, 24 vět (`usage-p64-holdout.jsonl`) | 0,757 | 24 |
+| **Celkem** | **2,265** | 72 (strop 4 USD) |
+
+Soudci: T8 dev 24 volání `claude -p`, zapečetěná sada 24 volání Codex, předplatné, 0 USD. Čas, FPS, robot a stráže bez
+čtečky (`PLAY_READER=off`), 0 USD.

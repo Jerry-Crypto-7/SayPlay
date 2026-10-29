@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "77c23c1f50f1a6588eb5538a75d54d801a6b754af92394a0c64bcd01b447d624",
+ "openedAt": "2026-10-29T14:03:04.057Z",
+ "commit": "7b6fc80e",
+ "by": "P64 T8 sealed portrait gate (shots.mjs + judge.mjs --view phone, main vs P64 on shared sheets)",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}
