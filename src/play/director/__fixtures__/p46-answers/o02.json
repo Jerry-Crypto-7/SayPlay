@@ -3,10 +3,10 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:11:49.519Z",
- "ms": 8514,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:26:21.968Z",
+ "ms": 15042,
  "answer": {
   "plan": "Arena fight with Amanita mushrooms vs bulls, featuring chase, escape, and shooting mechanics.",
   "spec": {
@@ -18,28 +18,28 @@
      "label": "bull",
      "does": "fight",
      "verb": "fight",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "chase_me",
      "verb": "chase",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "shoot_at",
      "verb": "shoot",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "acorn",
      "does": "collect",
      "verb": "collect",
-     "states": 2,
+     "states": null,
      "patrol": false
     }
    ],
@@ -60,7 +60,7 @@
     "enemySpeed": 80,
     "playerHp": 5,
     "lives": 3,
-    "targetScore": 0,
+    "targetScore": 2000,
     "timeLimit": 60
    },
    "counts": {
@@ -85,67 +85,83 @@
     {
      "role": "bull",
      "start": "hidden",
-     "physics": true
+     "physics": null
     },
     {
      "role": "acorn",
      "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startTimer",
-     "verb": "wait",
+     "id": "spawn_bulls",
+     "verb": "spawn",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "phase1",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase1to2",
-     "verb": "wait",
-     "when": {
-      "timer": "phase1"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      },
-      {
-       "wave": {
+       "spawn": {
         "role": "bull",
-        "count": 2,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "phase2action",
-     "verb": "wait",
+     "id": "spawn_acorn",
+     "verb": "spawn",
      "when": {
-      "phase": "second"
+      "phase": "first"
      },
      "if": null,
      "do": [
-      {
-       "toggle": "acorn"
-      },
       {
        "spawn": {
         "role": "acorn",
-        "at": "player"
+        "at": "other"
        }
+      }
+     ]
+    },
+    {
+     "id": "bull_chase",
+     "verb": "chase",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "bull"
+      }
+     ]
+    },
+    {
+     "id": "bull_shoot",
+     "verb": "shoot",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "bull"
+      }
+     ]
+    },
+    {
+     "id": "bull_fight",
+     "verb": "fight",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "bull"
       }
      ]
     }
@@ -154,7 +170,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "phase_timer"
      }
     ],
     "phases": [
