@@ -9,7 +9,8 @@ import { P64_CELLS } from './p64-cells';
  * Stráž desktopu a šířky (P64 T1): P64 mění rámování jen na výšku (`camera.aspect < 1`). Otisk kamery (`__playFrame()
  * .camera` – poloha, kvaternion, zorné pole, poměr stran a projekční matice) po 30, 90 a 180 tikách robota na každé
  * buňce `p64-cells.ts` se musí shodovat s `evals/play/p64/landscape-baseline.json` do `TOLERANCE`. Na `chromium`
- * 1280 × 720, na `pixel7-touch` týž telefon na šířku.
+ * 1280 × 720, na `pixel7-touch` a `iphone-touch` týž telefon na šířku. Výchozí stav iPhonu (T8-R2) je zapsaný z buildu
+ * `5d0d3ff1` (T1: sonda bez změny kamer, tedy kamery `main`), ne z větve.
  *
  * Kamera se po tiku ustálí, než se čte: úvodní průlet a dojezdy kamer běží po snímcích (wall-clock), stav hry po
  * tikách. Otisk se čte, až se dva snímky po sobě liší míň než `SETTLED`. `P64_GUARD=write` zapíše výchozí stav.
@@ -23,7 +24,7 @@ const SETTLED = 1e-7;
 /** Nejvíc snímků čekání na ustálení (~8 s). Aréna, úkol, plošinovka a přeskákání dojíždějí 150–200 snímků (T1). */
 const SETTLE_FRAMES = 480;
 
-const VIEWS: Readonly<Record<string, string | null>> = { chromium: null, 'pixel7-touch': 'Pixel 7 landscape' };
+const VIEWS: Readonly<Record<string, string | null>> = { chromium: null, 'pixel7-touch': 'Pixel 7 landscape', 'iphone-touch': 'iPhone 15 landscape' };
 
 interface HandProbe {
   byHand(on: boolean): void;
@@ -99,7 +100,7 @@ function record(project: string, key: string, printed: readonly Print[]): void {
   const about = {
     plan: 'P64 T1',
     measure: 'e2e/p64-landscape-guard.spec.ts',
-    what: 'camera print (world position, quaternion, fov, aspect, projection matrix) after 30, 90 and 180 robot ticks, read once the camera settles; chromium 1280x720 and Pixel 7 landscape',
+    what: 'camera print (world position, quaternion, fov, aspect, projection matrix) after 30, 90 and 180 robot ticks, read once the camera settles; chromium 1280x720, Pixel 7 landscape and iPhone 15 landscape (T8-R2, written from 5d0d3ff1)',
     tolerance: TOLERANCE,
   };
   writeFileSync(OUT, `${JSON.stringify({ about, prints: all }, null, 1)}\n`);
@@ -117,7 +118,7 @@ test.describe('P64 landscape and desktop camera guard', () => {
   for (const cell of P64_CELLS) {
     test(`${cell.key}: the camera print matches the baseline`, async ({ browser, page, request }, testInfo) => {
       const project = testInfo.project.name;
-      test.skip(!(project in VIEWS), 'chromium and pixel7-touch only');
+      test.skip(!(project in VIEWS), 'chromium and the phones only');
       const url = await publish(request, cell.spec);
       const printed = await measure(browser, page, VIEWS[project]!, testInfo.project.use.baseURL!, url);
       expect(printed).toHaveLength(AT.length);

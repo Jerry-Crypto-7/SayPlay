@@ -93,7 +93,8 @@ export default defineConfig({
     },
     {
       name: 'iphone-touch',
-      testMatch: /(play-create|play-touch|play-chain|p36-dare|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-portrait-hud|p64-thumb)\.spec\.ts/,
+      // Stráž kamery na šířku i tady (P64 T8-R2): plavbu na šířku iPhonu 15 Pixel nepokrývá.
+      testMatch: /(play-create|play-touch|play-chain|p36-dare|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb)\.spec\.ts/,
       // Rozložení vedle feedu je desktopové; mobilní profil z něj změna velikosti okna neudělá.
       grepInvert: /desktop \d+×\d+/,
       use: { ...devices['iPhone 15'], hasTouch: true, launchOptions: { args: [] } },

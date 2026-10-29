@@ -845,3 +845,30 @@ a v tabulce jsou jen opakování. `play-feed-phone` přepsal `evals/play/feed/ph
 
 Soudci: T8 dev 24 volání `claude -p`, zapečetěná sada 24 volání Codex, předplatné, 0 USD. Čas, FPS, robot a stráže bez
 čtečky (`PLAY_READER=off`), 0 USD.
+
+## T8-R2: podíl hrdiny na šířku (G6)
+
+**Závěr: regrese na šířku není, kód se neměnil.** Obě buňky z G6 dávají na větvi totéž co `main`, když obě strany
+běží na čerstvém úložišti a týmž specem. Stráž kamery na šířku teď pokrývá i iPhone 15.
+
+Měřeno 29. 10. na větvi `b6c6e610` (server 3164) proti `main` `e661855c` (server 3165), oba bez čtečky a s novým
+`PLAY_STORE_DIR`, `e2e/p61-portrait.spec.ts` z větve, sloupec „na šířku“:
+
+| buňka | větev | `main` | rozdíl |
+|---|---|---|---|
+| aréna, Pixel 7 (3 běhy na stranu) | 0,0101 · 0,0101 · 0,0101 | 0,0101 · 0,0101 · 0,0101 | 0 % |
+| plavba, iPhone 15 (4 běhy na stranu) | 0,0229 · 0,0281 · 0,0283 · 0,0242 | 0,0288 · 0,0282 · 0,0242 · 0,0242 | medián 0,0262 proti 0,0262, −0,2 % |
+
+- **Plavba na iPhonu má dvě hodnoty na obou stranách** (~0,024 a ~0,028), podle běhu. Rozdíl +22–25 % v T8 byl jeden
+  běh větve z horní a jeden běh `main` z dolní skupiny. Diagnostika po 30 tikách ukazuje týž obraz: čitelnost hrdiny
+  (`legible.hero`) 1,455 na větvi a 1,430 na `main` v jednom běhu, kamera i kvádr hrdiny jinak stejné. Inference:
+  měřítko čitelnosti se měří po snímcích (`LEGIBLE_EVERY`), ne po tikách, a dosedne podle toho, kdy se načte model lodi.
+- **Aréna na Pixelu 7 se v T8 naměřené hodnotě 0,0112 nepřiblížila ani jednou.** Diagnostika po 30 tikách dává kvádr
+  hrdiny na obou stranách shodný do 0,001 NDC. Příčinu hodnoty z T8 neznám. Inference: jiný stav úložiště na serveru
+  větve (výsledky a duch z dřívějších běhů), stejný jev jako u výsledkového listu plavby v T8-R1.
+- **Stráž kamery na šířku pro iPhone 15** (`p64-landscape-guard`, projekt `iphone-touch`, `iPhone 15 landscape`
+  734 × 343): výchozí stav je zapsaný z buildu `5d0d3ff1`. To je T1, sonda bez jakékoli změny kamer, tedy kamery `main`
+  (`main` sám pole `camera` v sondě nemá). Větev proti němu 22 / 22. Desktop a Pixel 7 ve výchozím stavu beze změny.
+- Výška beze změny: úloha nemění kód hry, jen stráž, konfiguraci Playwrightu a výchozí stav.
+
+Útrata 0 USD, bez volání soudce.
