@@ -464,3 +464,142 @@ Hádanka „klepni a odletí“: mřížka kusů z věty (výchozí auto), každ
 - **Úvodní karta „Tap to start“** (`PromptSpot` v `ArcadeStage.tsx`) leží na telefonu přes horní řadu mřížky. Pod hrdinou je víc místa než nad ním, protože mřížka je dole. První ťuk ji schová, ale na prvním snímku zakryje kus první mřížky. Patří sdílené logice karty (T14 / P64).
 - **`capabilities.ts` řádek `arrows`** pořád říká, že ovládání nic nečte (`labels: []`, `mechanics: []`). Hra přitom čte životy a kreslí kus z popisku role `piece` (přes `cast.things`). Opravit s T13, až šipky uvidí režisér a kritik.
 - **Pět žánrů a `p66-staged.test.ts`:** test teď má `LIVE = ['arrows']`. Šipky jsou pořád `staged` pro výběr, ale překlad i generátor hrají. Každá další úloha žánru tam připíše svůj žánr – při slučování spojit seznam.
+
+## T8 – sort
+
+Třídění do nádob: nahoře fronty věcí z věty, pod nimi odkladiště se 4 místy, dole řada tří nádob. Ťuk do sloupce fronty pošle její čelo do viditelné nádoby téhož druhu, jinak na odkladiště. Plná nádoba (3 věci) odjede a zprava přijede další z pořadí kola; věci jejího druhu z odkladiště do ní samy přeskočí. Plné odkladiště = prohra, kolo nevyčištěné do minuty = prohra.
+
+### Co přibylo
+
+| Soubor | Co dělá |
+|---|---|
+| `arcade/pieces/sort-level.ts` | pravidla jednoho kola bez jádra (`tapQueue`, `visibleBins`), stupně kol, generátor kola od řešení pozpátku (`witnessOrder`, `sortRound`), řešič (`solveBoard`) |
+| `arcade/pieces/sort.ts` | ovládání `sort`, pravidlo `sort_tap`, generátor `sort_bins` (+ `sortPartsOf` pro ruční kola testů) |
+| `arcade/pieces/sort-bot.ts` | robot `sort_bot`: tempo 55 tiků na ťuk, tah z řešiče s rozpočtem 4000 stavů, slabý robot přes `mistakes` ‰ |
+| `genre/sort.ts` | překlad věty: druhy `sort0`–`sort4` z věcí věty, meze `items` 30–60 a `rounds` 2–5, `draftFill` čte výčet za slovesem třídění |
+| `genres/sort/SortScene.tsx` | scéna na výšku i na šířku, hranice front pro prst, hodiny kola jako pruh |
+| `e2e/play-sort.spec.ts`, `e2e/fixtures/p66-sort-spec.json` | hra z ručního specu `genre.v6` na `chromium` a `pixel7-touch` |
+
+### Jak to v jádře běží
+
+- **Stav kola je celý ve věcech.** Druh věci 0–4 nese HP (`hp = druh + 1`), frontu `x`, odkladiště stav cíle 1 (`stateChange`). Věc v nádobě je mrtvá (`despawn`).
+  - Které nádoby jsou hotové a kolik má otevřená, plyne z počtu mrtvých věcí každého druhu.
+  - Věc jde vždy do první nehotové nádoby svého druhu. Ta je vidět, kdykoli je vidět kterákoli pozdější, takže nádoby téhož druhu se plní popořadě a nádoby žádný slot stavu nepotřebují.
+- **Ovládání `sort`** je ovládání pruhů sevřené na pruhy front běžícího kola. Fronty leží v pruzích `firstLane(Q) …`, start hráče (pruh 2) je vždy mezi nimi.
+  - Navíc každý tik (mimo přestávku háčků, kdy svět stojí) rozestaví věci běžícího kola: čelo do první řady, odkladiště po místech.
+  - Létající skóre háčků tak vzlétne z věci, kterou hráč poslal, a scéna kreslí věci tam, kde v jádře jsou.
+  - Hodiny kola a tik posledního ťuku drží mrtvé počítadlo třídění za tělesy úrovně (jako počítadlo háčků).
+- **Pravidlo `sort_tap`** (tik): hodiny kola ≥ 3600 tiků = `lose`. Ťuk = `tapQueue` nad stavem a z tahů efekty:
+  - do nádoby: `score` + hned `despawn` (sebrání pro vzácnost háčků), `count items`, `combo`;
+  - na odkladiště: `stateChange` a `combo` 0;
+  - plné odkladiště `lose`, hotové kolo `win`.
+- **Kola:** `withHooks(..., { rounds, clear: 'win', rarity: true })`. Věci všech kol jsou tělesa úrovně od tiku 0 (vzácnost dostanou hned). Věci pozdějších kol čekají za scénou a ovládání je rozestaví v prvním tiku svého kola. Semínka kol jsou z `roundSeeds`, každé kolo staví `createCompileRng(semínko kola, 'layout')`.
+- **Stupně kol:**
+
+  | Kolo | Druhy | Fronty | Odklad řešení generátoru |
+  |---|---|---|---|
+  | úvod | 3 | 3 | 10 % |
+  | prostřední | 4 | 4 | 35 % |
+  | finále | 5 | 5 | 60 % |
+
+  Vidět jsou vždy 3 nádoby. Nádob v kole je `items / 3` po vahách 2, 3, 4…, aspoň 3 / 4 / 5 a nejvýš 8. Výchozí hra: 3 kola, 15 nádob, 45 věcí.
+- **Kombo:** od `genre.v6` je `sort_tap` zdroj komba sám (`hookedComboSources` – pravidlo bere parametr `combo`). Série správných ťuků jde ×1…×5 s oknem 6 s (`nextMultiplier`), ťuk na odkladiště ji shodí na 0. Věc, která z odkladiště přeskočí sama, dá body bez komba. Hlídá to test, dřív to netestoval nikdo.
+
+### Řešitelnost konstrukcí (pin) a co ukázalo měření
+
+- Generátor nejdřív zahraje vlastní řešení (`witnessOrder`): většinou věc do otevřené nádoby, s pravděpodobností stupně věc, jejíž nádoba ještě nepřijela, na odkladiště – jen dokud po ní zbude volné místo.
+- Pak řešení odehraje pozpátku a každou věc vrátí na čelo jedné fronty. Prvních `Q` věcí řešení dostane každá fronta jednu, žádná nezůstane prázdná. Další jdou do náhodné fronty pod stropem hloubky.
+- Tah do otevřené nádoby existuje vždy: otevřená nádoba čeká na věci svého druhu, a na odkladišti žádné nejsou (přeskočily by).
+- **Test (`sort-level.test.ts`):** nezávislý řešič (prohledá tahy, řešení generátoru nezná) vyřeší všech 700 kol 200 her přes všechny meze (2–5 kol, 30 / 45 / 60 věcí). Táž řešení zahraná skutečným jádrem vyhrají všech 200 her.
+- **Rozbít schválně** (záloha `D:/caches/p66/sort/backup/`, vráceno `cp` + `diff -q`):
+
+  | Záměrná chyba | Výsledek |
+  |---|---|
+  | generátor ztratí poslední věc kola s lichým počtem nádob | **červené 3 testy**: řešič (267 neřešitelných kol), přehrání jádrem (`checkSortLevel` svět nepostaví), tvar kol |
+  | řešení generátoru smí odložit i na poslední volné místo (plné = prohra) | zelené – ekvivalentní mutant, viz níž |
+  | fronty občas berou věc na čelo místo na konec | zelené – ekvivalentní mutant |
+  | fronty z úplně zamíchaného řešení | zelené – ekvivalentní mutant |
+
+  `mutationStatus: partial` – červeně skončila 1 ze 4 chyb. Zbylé tři nejsou díra v testu: s dnešními mezemi (3 viditelné nádoby, 4 místa odkladiště, nejvýš 5 druhů) má řešení **každé** uspořádání front. I úplně zamíchané fronty vyřešil řešič na všech 200 semínkách. Řešitelnost konstrukcí tu dnes drží rezervu. Test začne kousat, až se meze utáhnou (míň míst, víc druhů na nádobu) – tam by generátor bez konstrukce stavěl neřešitelná kola.
+- **Obtížnost** (simulace nad `sortRound`, 200 semínek na řádek, odkladiště 4 místa):
+
+  | Kolo | Náhodné ťukání vyhraje | „Pošli, co pasuje“ (bez plánu) vyhraje | Řešič |
+  |---|---|---|---|
+  | prostřední (4 druhy, 4 fronty, 5 nádob) | 187 / 200 | 195 / 200 | 200 / 200 |
+  | finále (5 druhů, 5 front, 6 nádob) | 69 / 200 | 176 / 200 | 200 / 200 |
+
+  Tlak dělá druhů víc než nádob. První verze se 4 viditelnými nádobami ve finále a 5 místy na odkladišti nechala náhodné ťukání vyhrát 193 / 200 – proto 3 nádoby a 4 místa.
+
+### Robot, nečinný a slabý robot (`sort.test.ts`, fixture, semínka 1–20)
+
+- **Robot světa vyhraje všech 20 semínek za 3018 tiků (50,3 s).**
+  - Každá věc je jeden ťuk v tempu 55 tiků a přeskoky z odkladiště ťuk nepotřebují, proto stejný čas na všech semínkách.
+  - Každé kolo pod minutou, na konci 3× `round_start` a 3× `round_clear`.
+  - Okraje mezí (semínka 1–3):
+
+    | Hra | Robot vyhraje za |
+    |---|---|
+    | 30 věcí, 2 kola | 33 s |
+    | 60 věcí, 5 kol | 75 s |
+    | 30 věcí, 5 kol (minima kol dají 60 věcí) | 69 s |
+
+- **Nečinný hráč prohraje** na hodinách prvního kola v tiku 3600.
+- **Slabý robot** (`mistakes` ‰: každý n-tý ťuk pošle čelo, které do žádné otevřené nádoby nepatří, je-li takové):
+  - 1000 ‰ prohraje 10 / 10 semínek;
+  - 500 ‰ prohraje 7 / 10 (test chce aspoň 6);
+  - 334 ‰ jen 3 / 10.
+- **Publikační brána:** `compileArcade` + `verifyArcade` projdou na semínkách 1–10, dvě přehrání záznamu robota dají týž hash.
+- **Vzácnost:** každá věc v nádobě je nález. Na semínkách 1–8 padly vzácné i epické. Ve výsledku e2e „36 common, 8 rare, 1 epic“.
+- **Determinismus:** jen `pure-rand` (`roundSeeds`, `createCompileRng`). Robot chybuje podle počtu věcí, bez náhody. Test hlídá, že `sort*.ts` nesahá na `Math.random` / `Date.now` / `performance.now`.
+
+### Věc z věty na scéně
+
+- Druhy věcí jsou role `sort0`–`sort4`. Věta s víc věcmi dá každému druhu jednu (dokola), věta s jednou věcí třídí tutéž věc podle barvy („Sort the gems by color!“).
+- Scéna kreslí model popisku (`cast.things` = `sceneModelOf`) na podložce barvy druhu. Výchozí věci hračkářství: teddy bear, rubber duck, ball. Fixture: fox, teddy bears, rubber ducks, balls – všechny mají model v knihovně, náhrada `nearest` nebyla potřeba.
+- **Barvy druhů** jsou z kitu: tomato, sky-deep, sun, mint-deep, bubblegum. Nic fialového.
+- `implementation-notes`: look má jen dva tlumené odstíny rekvizit (`tint`), mezi nimiž se pět druhů nedá rozeznat. „Barvy z palety looku“ jsou proto barvy kitu, ze kterých looky berou. Look dává scéně podlahu a pozadí.
+- Vzácná věc má modrozelený kroužek, epická slunečný (jako `play-hooks.css`).
+- **Na výšku:** kamera `fitTall`. Pás je úzký (deska je širší než vysoká), takže se deska navíc přisune dolů k zóně palce. Nádoby i čela front tak leží ve spodních 45 % výšky (e2e to měří) a hrdina stojí za frontami nad nimi. Na šířku vlastní fit (`fitWide`, celé plátno pod HUD).
+
+### Rozhodnutí (`implementation-notes`)
+
+- **`availability` zůstává `staged`, ne `ready`.** Změřeno: s `ready` padlo v `src/play/arcade` a `src/play/genre` 2886 testů. Důvody:
+  - klasifikátor zařadil `sort.default` do pořadí každé věty (bez narážek na konec);
+  - skladba (`compose/assemble.ts` `sourceFor`) pak sáhla po buňce, která je dál v `STAGED_PRESETS`, a spadla;
+  - zmrazená pořadí klasifikátoru (`classify.test.ts` p30Dev) by se pohnula.
+
+  T12 tak udělá jednu změnu výběru: narážky, `ready` a buňku `sort.default` ze `STAGED_PRESETS` mezi živé. Do té doby hra jde z ručního specu přes překlad tohoto modulu (`sortGenre.compile`). `compileGenre` pro třídění dál hází.
+- **Sdílený soubor:** `src/play/genre/__tests__/p66-staged.test.ts` – třídění připsané do `LIVE` vedle šipek (`['arrows', 'sort']`), stejný tvar jako T9. Pro živé žánry test chce svět generátoru místo „svět nevznikne“ a z „překlad hází“ je vynechá. Zbytek kostry (staged, žádná narážka, žádná živá buňka, klasifikátor je neřadí) platí dál.
+- **„Plné odkladiště = prohra“** doslova: prohra padne, když na odkladišti leží všechna 4 místa. Ne až když se na plné nevejde další věc.
+- **`items` je cíl, ne přesný počet.** Kola mají minimum (3 / 4 / 5 nádob) a strop 8 nádob. 5 kol tak dá aspoň 60 věcí, 2 kola nejvýš 48.
+- **`objective.count` = počet nádob** (≤ 20). Schéma specu pouští nejvýš 50 a věcí může být 63. Text říká oboje: „Send teddy bears, rubber ducks and balls to bins of their kind: fill 15 bins in 3 rounds, keep the shelf free.“
+- **Hodiny kola** ukazuje jen scéna (pruh mezi odkladištěm a nádobami, posledních 10 s v barvě poplachu). Časovač HUD (`time_limit`) by počítal i přestávky mezi koly, a nový popisek počítadla se nepřidával.
+- `draftFill` zahodí místo, kam se třídí („into boxes“), když ho čtení vzalo za prostředí. Rychlá hra pak dostane výchozí prostředí žánru (toy shop).
+- **VR** se nemění: třídění hraje přes osu pruhů jako na telefonu (nález T2).
+
+### Testy
+
+Po rebase na `features/P66-…` `62e2d21e` (šipky T9 a obě opravy háčků uvnitř). Stroj celou dobu na 100 % CPU (sady a buildy sourozenců T5, T6, T7, T10).
+
+- **Jednotky** (`npx vitest run src/play/arcade src/play/genre src/components/play/arcade/genres/sort`, JSON reporter): **7 078 / 7 093** zelených, 11 červených, 4 přeskočené.
+  - Všech 11 červených je mimo třídění: `STACK_TRACE_ERROR` na limitu času v souborech běžce, skákání a chůze (`hop` 2, `p51-dead-time` 5, `p51-walker-glide` 1, `runner-sections` 1, `witness` 1) a strop 0,05 ms na tik v `swarm (f)`.
+  - Těch 7 souborů samotných: 152 / 154. Dál červené jen `runner-sections` (limit 120 s) a `swarm (f)` (0,109 ms). Obojí je zapsané už u T9 a T3 jako zátěž; třídění na běžce ani roj nesahá.
+  - `sort.test.ts` 20, `sort-level.test.ts` 10, `p66-staged.test.ts` 8: zelené. Otisk T1 `p66-hash.test.ts` 48 / 48.
+  - `tsc --noEmit` čistý.
+- **E2e** `play-sort` (build `npm run build`, `next start` :3174, `PLAY_READER=off`): **chromium 2 / 2, pixel7-touch 2 / 2**.
+  - Telefon dohraje prstem do sloupců front, desktop šipkami a mezerníkem: výhra v tiku 3018 / 3052, 45 věcí, 3 095 bodů, karta „You did it!“.
+  - Banner „Round 1 of 3“ po prvním tiku, finále s 5 frontami odehrané.
+  - Nejužší sloupec fronty přes celou hru 67 px na telefonu (80 px desktop), práh 44 px (`--sp-size-touch-min`).
+  - Nádoby i čela front ve spodních 45 % výšky telefonu, hrdina čitelný, konzole bez chyb.
+  - Nečinný hráč prohraje v tiku 3600 na hodinách kola.
+- **Snímky** (`D:/caches/p66/sort/`, start / mid / result / lost na obou projektech):
+  - fronty plyšáků, kachniček a míčů z věty na podložkách barvy druhu, odkladiště se 4 místy, tři barevné nádoby pod palcem;
+  - létající „+50“ nad poslanou věcí;
+  - výsledek „36 common, 8 rare, 1 epic“;
+  - nic fialového.
+
+**FPS přeskočeno** ze stejného důvodu jako u šipek: `play-perf @measure` publikuje hru z věty a větu třídění pustí až klasifikátor v T12. Zacílit ho na ruční spec by znamenalo měnit sdílený `play-perf.spec.ts`.
+
+### Nálezy
+
+- **Úvodní karta „Tap to start“** leží na telefonu přes první řadu front (stejný nález jako u šipek, sdílená `PromptSpot`, T14 / P64). První ťuk ji schová.
