@@ -126,6 +126,26 @@ export function createSwing(threshold: number): (speed: number) => boolean {
   };
 }
 
+/** Mávnutí páčkou (P67 T4, listování feedu): výchylka svisle aspoň tolik. */
+export const FLICK = 0.7;
+
+/**
+ * Mávnutí páčkou nahoru (`1`) nebo dolů (`-1`), `y` kladně nahoru: jednou za výchylku přes `FLICK`, převážně svisle;
+ * další až po návratu páčky pod `ARROW`. Páčka držená nahoře tak nelistuje dokola.
+ */
+export function createFlick(): (x: number, y: number) => -1 | 0 | 1 {
+  let armed = true;
+  return (x, y) => {
+    if (Math.abs(y) < ARROW) {
+      armed = true;
+      return 0;
+    }
+    if (!armed || Math.abs(y) < FLICK || Math.abs(y) <= Math.abs(x)) return 0;
+    armed = false;
+    return y > 0 ? 1 : -1;
+  };
+}
+
 /**
  * Spoušť jedné ruky pro hru (P65 T5): spoušť je zároveň „klik“ paprsku na panelu HUD. Stisk, který začal
  * s paprskem na tlačítku panelu, patří panelu až do puštění, i když paprsek mezitím z tlačítka sjede; stisk, který

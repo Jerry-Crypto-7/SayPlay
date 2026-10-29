@@ -20,9 +20,10 @@ import { type Group, Vector3 } from 'three';
 
 import { DESK, type Point, TABLE, worldOfDesk } from '@/play/xr/diorama-scale';
 
+import { feedSteps } from '../feed/feed-next';
 import { PLAY_FULL, SO_CLOSE, YOU_DID_IT } from '../starters';
 import type { DeskReport } from './Diorama';
-import { type XrCounter, type XrHudView, type XrNotice, useXrHud, useXrNotice } from './xr-context';
+import { type XrCounter, type XrHudView, type XrNotice, useShared, useXrHud, useXrNotice } from './xr-context';
 import { openXrLobby } from './xr-lobby';
 import { KIT_PX, type PanelAim, type PanelSpec, type PanelStat, XrPanel, layoutOf, specKey, useFonts } from './XrPanel';
 
@@ -31,6 +32,8 @@ export const AGAIN = 'Again';
 export const AI_READY = 'AI version ready';
 /** Výsledek → VR lobby s kartami vět (P67 T2). */
 export const NEW_GAME = 'New game';
+/** Výsledek ve feedu → další karta (P67 T4). */
+export const NEXT = 'Next';
 
 /**
  * Kotva sloupce: bod desky (osy desky, +z k hráči), levé zápěstí, nebo místo před hráčem (`front`, P67 T2 lobby):
@@ -72,9 +75,10 @@ const hudOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => (
 /**
  * Výsledek: nadpis kitu, konečná počítadla, „Again“ (jediná rajčatová akce) přes celou šířku, nad ním vedlejší
  * „New game“ do VR lobby (P67 T2) a „Exit VR“ zpátky k 2D výsledku. Tři tlačítka v jedné řadě by se do karty
- * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole.
+ * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole. Ve feedu (`next`, P67 T4) stojí vedle „Again“
+ * vedlejší „Next“ na další kartu.
  */
-const resultOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => ({
+const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() => void) | null): PanelSpec => ({
   id: 'result',
   width,
   headline: view.result === 'won' ? YOU_DID_IT : SO_CLOSE,
@@ -86,7 +90,7 @@ const resultOf = (view: XrHudView, width: number, exit: () => void): PanelSpec =
       { id: 'exit', label: EXIT_VR, press: exit },
     ],
   },
-  buttons: [{ id: 'again', label: AGAIN, primary: true, press: view.again }],
+  buttons: [...(next === null ? [] : [{ id: 'next', label: NEXT, press: next }]), { id: 'again', label: AGAIN, primary: true, press: view.again }],
 });
 
 const noticeOf = (notice: XrNotice, width: number): PanelSpec => ({
@@ -182,18 +186,20 @@ export function XrHud({ diorama, desk, aim }: { readonly diorama: boolean; reado
   const left = useXRInputSourceState('controller', 'left');
   // Konec relace: brýle se vrátí do 2D a stránka ukazuje výsledek (`PostRun`), odkud jde sdílet a remixovat.
   const exit = useCallback(() => void session?.end(), [session]);
+  // Ve feedu (P67 T4) vede výsledek i na další kartu.
+  const next = useShared(feedSteps, null)?.next ?? null;
   const top = (width: number): PanelSpec[] => (notice === null ? [] : [noticeOf(notice, width)]);
 
   if (diorama) {
     return (
       <>
         {view !== null && view.result === null && <XrColumn anchor={BOARD} specs={[hudOf(view, WIDTH.board, exit)]} desk={desk} aim={aim} />}
-        {view !== null && view.result !== null && <XrColumn anchor={RESULT} specs={[resultOf(view, WIDTH.result, exit)]} desk={desk} aim={aim} />}
+        {view !== null && view.result !== null && <XrColumn anchor={RESULT} specs={[resultOf(view, WIDTH.result, exit, next)]} desk={desk} aim={aim} />}
         {notice !== null && <XrColumn anchor={APRON} specs={top(WIDTH.notice)} desk={desk} aim={aim} />}
       </>
     );
   }
-  const wrist = [...(view === null ? [] : [view.result === null ? hudOf(view, WIDTH.wrist, exit) : resultOf(view, WIDTH.wrist, exit)]), ...top(WIDTH.wrist)];
+  const wrist = [...(view === null ? [] : [view.result === null ? hudOf(view, WIDTH.wrist, exit) : resultOf(view, WIDTH.wrist, exit, next)]), ...top(WIDTH.wrist)];
   // Bez levého ovladače sloupec není: neviditelné tlačítko by paprsek pořád našel.
   return wrist.length > 0 && left !== undefined ? <XrColumn anchor={WRIST} specs={wrist} desk={desk} aim={aim} /> : null;
 }

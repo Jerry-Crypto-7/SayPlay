@@ -11,7 +11,7 @@ import { axisOfLane, laneX } from '@/play/arcade/pieces/lanes';
 import { CLOCK_COUNTER } from '@/play/arcade/pieces/merge-drop';
 import { STAGES, type Stage } from '@/play/compose/stage-registry';
 
-import { DEAD_ZONE, IDLE, type Pad, type XrControl, analog, createTriggerOwner, createXrDriver, laneAxisOfX, mapPad } from '../input-map';
+import { DEAD_ZONE, FLICK, IDLE, type Pad, type XrControl, analog, createFlick, createTriggerOwner, createXrDriver, laneAxisOfX, mapPad } from '../input-map';
 
 const control = (input: Stage['input'], extra: Partial<XrControl> = {}): XrControl => ({ input, fire: false, attack: false, use: false, abilities: 0, ...extra });
 const pad = (over: Partial<Pad>): Pad => ({ ...IDLE, ...over });
@@ -275,5 +275,29 @@ describe('the trigger is either a click on a HUD panel or a game input, never bo
     const trigger = createTriggerOwner();
     expect(trigger('right', true, true)).toBe(false);
     expect(trigger('left', true, false)).toBe(true);
+  });
+});
+
+describe('a stick flick pages the feed once per flick (P67 T4)', () => {
+  it('up is next, down is previous, each once until the stick comes back', () => {
+    const flick = createFlick();
+    expect(flick(0, 0.3)).toBe(0);
+    expect(flick(0, FLICK)).toBe(1);
+    // Držená nahoře, nebo dotlačená dál, nelistuje znovu.
+    expect(flick(0, 1)).toBe(0);
+    expect(flick(0, 0.6)).toBe(0);
+    expect(flick(0, 0.2)).toBe(0);
+    expect(flick(0, -1)).toBe(-1);
+    expect(flick(0, -1)).toBe(0);
+    expect(flick(0, 0)).toBe(0);
+    expect(flick(0, 0.9)).toBe(1);
+  });
+
+  it('a short or mostly sideways push is not a flick', () => {
+    const flick = createFlick();
+    expect(flick(0, FLICK - 0.05)).toBe(0);
+    expect(flick(0.9, 0.8)).toBe(0);
+    expect(flick(-0.9, -0.8)).toBe(0);
+    expect(flick(0.3, 0.8)).toBe(1);
   });
 });

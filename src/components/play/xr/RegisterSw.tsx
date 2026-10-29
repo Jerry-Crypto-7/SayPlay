@@ -1,11 +1,8 @@
-'use client';
-
 /**
  * Instalace Sayplay jako aplikace na Questu (P67 T11). Service worker `public/play-sw.js` jen propouští síť; registruje
- * se jen v prohlížeči, který umí immersive VR, takže telefon a desktop zůstanou přesně jako dřív.
+ * se jen v prohlížeči, který umí immersive VR, takže telefon a desktop zůstanou přesně jako dřív. Volá ho kód XR
+ * (`XrRoot`, P67 T4): ten se stahuje jen tam, kde VR je, a telefon tak registraci nemá ani v prvním JS.
  */
-
-import { useEffect } from 'react';
 
 import { type XrSystemLike, xrSupported } from '@/play/xr/flag';
 
@@ -27,11 +24,4 @@ export async function registerSw(nav: SwNavigatorLike = navigator as SwNavigator
   } catch {
     return false;
   }
-}
-
-export function RegisterSw() {
-  useEffect(() => {
-    void registerSw();
-  }, []);
-  return null;
 }

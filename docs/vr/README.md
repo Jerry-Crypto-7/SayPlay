@@ -121,7 +121,7 @@ node scripts/quest-dev.mjs --port 3168 --cdp --probe
 - **Proč prázdný posluchač:** první verze posílala požadavky na síť sama (`fetch(event.request)`). E2E pak ukázalo, že takové požadavky obejdou odposlech sítě v testech: podvržený příchod AI verze v `vr-enter.spec.ts` nedorazil. Prázdný posluchač je i rychlejší, protože prohlížeč worker u požadavků vůbec nebudí.
 - **Ověření:** `src/play/xr/__tests__/pwa.test.ts` (manifest, worker bez cache a bez převzetí odpovědi, registrace jen s immersive VR) a `e2e/vr-pwa.spec.ts` (IWER: worker je zaregistrovaný, stránka i API pod ním běží, cache je prázdná; Chromium bez VR: žádný worker).
 - **Instalaci na skutečném Questu tento běh neověřil** (brýle nikdo neměl na hlavě); patří do ruční brány T15.
-- **Registruje ho jen prohlížeč, který umí immersive VR.** Telefon a desktop žádný worker nedostanou, chovají se jako dřív.
+- **Registruje ho jen prohlížeč, který umí immersive VR.** Telefon a desktop žádný worker nedostanou, chovají se jako dřív. Registraci volá kód XR (`XrRoot`), který se stahuje jen tam, kde VR je; s `?vr=0` se proto worker nezaregistruje.
 - **Orientace není zamčená.** Manifest nemá `orientation`, protože by zamkl i telefon, který si Sayplay nainstaluje; Quest ji nepotřebuje.
 - **Proč `play-sw.js`, ne `sw.js`:** cesta `public/sw.js` je v `.gitignore` pro vygenerované workery jiných nástrojů.
 
@@ -288,6 +288,33 @@ Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoř
 - Prohlížeč bez VR nemá „Enter VR“ na domově a nestáhne žádný skript s kódem lobby.
 - Unit: `src/play/xr/__tests__/keyboard.test.ts` (rozložení, strop, mazání, mezery), `src/components/play/__tests__/create-game.test.ts` (věta → hra pro formulář i lobby: adresa, chyby dveří, bez sítě).
 
+### Feed ve VR (listování her)
+
+Feed na `/play` jde procházet bez sundání brýlí. Do VR se vstoupí „Enter VR“ v HUD hry na kartě feedu (je vidět, jakmile hraje hráč, ne robot). Hra karty se pak kreslí v brýlích, a když hráč přejde na jinou kartu, brýle ukážou její hru. Relace po celou dobu trvá.
+
+| Ovládání | Kdy | Co dělá |
+|---|---|---|
+| pravá páčka mávnutím nahoru | mimo běžící kolo | další karta |
+| pravá páčka mávnutím dolů | mimo běžící kolo | předchozí karta |
+| spoušť (paprsek mimo panely) nebo A/X | robot hraje náhled | hru převezme hráč, jako ťuk na scénu na telefonu |
+| „Next“ na panelu výsledku | po konci kola | další karta |
+| „Again“ na panelu výsledku | po konci kola | nové kolo téže hry |
+
+- **Mimo běžící kolo** znamená náhled robota, výsledek a kartu, která se ještě načítá. Když hraje hráč, páčka patří hře, i když hra čeká na první pohyb.
+- **Mávnutí** je výchylka páčky svisle aspoň na 70 %. Další mávnutí platí až po návratu páčky pod polovinu výchylky, takže páčka držená nahoře nelistuje dokola.
+- **Panel výsledku ve feedu:** „New game“ a „Exit VR“ nahoře, „Next“ a rajčatové „Again“ dole. Mimo feed „Next“ chybí.
+- **Další karta je načtená dopředu:** feed stahuje detail aktivní karty a sousedů (+1, +2, −1), takže hra další karty se po přechodu postaví bez čekání na síť.
+
+**Ověření (P67 T4):** `e2e/vr-feed.spec.ts` v emulátoru IWER:
+
+- feed → převzetí klávesou → „Enter VR“ → kolo karty se kreslí v brýlích (hrdina ve scéně relace, snímky přibývají);
+- mávnutí nahoru v kole feed neposune;
+- konec kola → panel výsledku `New game`, `Exit VR`, `Next`, `Again`; detail další karty už je stažený;
+- „Next“ → jiná hra (jiné `versionId` v sondě feedu) v téže relaci; páčka dolů → původní hra;
+- spoušť převezme náhled; „Again“ → nové kolo téže hry od tiku 0; páčka nahoru na výsledku → další karta;
+- po celou dobu jedna relace: stránka si o ni řekla jednou a žádná neskončila.
+- Unit: `src/play/xr/__tests__/input-map.test.ts` drží mávnutí (jednou za výchylku, převážně svisle).
+
 ## Měření a známá omezení
 
 ### „Enter VR“ podle schopnosti prohlížeče (P67 T1, 29. 10. 2026)
@@ -398,6 +425,46 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 - **Quest Pro a prohlížeč v režimu „stránka pro počítač“** (UA počítače) dostanou profil Questu 2 jako neznámé brýle.
 - **Foveace a strop částic** zůstávají jako na Questu 2.
 - **`?vrscale` jen snižuje**, i na Questu 3 (rozsah 0,8–1,0).
+
+### Feed ve VR (P67 T4, 29. 10. 2026, emulátor)
+
+**Přechod „Next“ do prvního snímku nové hry** (IWER Quest 2 na počítači s GPU, `e2e/vr-feed.spec.ts`): od mávnutí páčkou po první snímek relace, ve kterém je hrdina nové karty ve scéně a po něm se nakreslil další snímek. Pět přechodů střídavě mezi dvěma kartami:
+
+| Běh | 1 | 2 | 3 | 4 | 5 | Medián (ms) |
+|---|---|---|---|---|---|---|
+| první | 906 | 160 | 66 | 119 | 67 | **119** |
+| druhý (finální build) | 472 | 181 | 79 | 122 | 84 | **122** |
+
+- **První přechod na kartu, která ještě nehrála, je nejdelší:** nová scéna se poprvé nakreslí až s přeloženými shadery (`DrawWhenCompiled`, nejvýš 1 s). Mezitím brýle ukazují poslední snímek předchozí scény. Další přechody jsou rychlejší, protože trvalé plátno relace drží přeložené programy (`keepPrograms`) – to je odhad, zvlášť se neměřilo.
+- **Bez brány.** Quest 2 je pomalejší než počítač; změří se v T13 a v ruční bráně T15.
+
+**Plátno hry ve VR:** `StageHost` už od P65 T1 nedělá vlastní plátno, když je na stránce VR, a hru karty předá trvalému plátnu relace z layoutu. Feed ve VR proto nepotřeboval náhradní cestu přes `router.push` z plánu a `StageHost.tsx` se neměnil.
+
+**Mutační zkouška** (`e2e/vr-feed.spec.ts`, každá chyba zvlášť, po ní soubor vrácený ze zálohy):
+
+| Úmyslná chyba | Test zčervenal na |
+|---|---|
+| `StageHost` bez větve XR (feed má vždy vlastní plátno) | „Enter VR“ se na kartě feedu vůbec neukáže: plátno relace nemá kde viset, nepřipojí se a brýle by nedostaly ani snímek |
+| páčka listuje i v běžícím kole | mávnutí v kole přepnulo na další kartu |
+| spoušť náhled nepřevezme | karta zůstala v náhledu robota |
+
+**Tři testy feedu na tomhle počítači červené, ale ne kvůli T4:** `play-feed-phone` („ten swipes up“, „ten wheel moves“) a `play-feed-reels` („twenty moves keep one canvas“) hlásí dvě plátna místo jednoho. Tyhle soubory si přepisují `launchOptions` a s nimi i `--disable-features=OpenXR` z konfigurace, takže Chromium na tomhle počítači (SteamVR) hlásí VR a feed načte kód XR. Do té doby feed kreslí do vlastního plátna, pak přejde na plátno relace. S `XR_RUNTIME_JSON` mířícím na neexistující soubor (OpenXR runtime vypnutý jen pro ten běh) jsou všechny tři zelené. Telefon OpenXR runtime nemá. Brýle druhé plátno dostanou od T1; za změření stojí v T13.
+
+**První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 426 B rozbaleně, **+775 B** proti `main`, přenesené +697 B, žádný kód XR.
+
+- T4 sama přidala +269 B: `FeedPrev` vedle `FeedNext`, krok zpět a ohlášení listování pro kód XR v `ReelFeed.tsx` a `feed-next.ts`.
+- Tím by větev byla +1 134 B, nad limitem ±1 kB. Registrace service workeru (T11) proto odešla z layoutu do kódu XR (`XrRoot`): −359 B. Registruje se dál jen v prohlížeči s immersive VR (`e2e/vr-pwa.spec.ts`).
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **Listování jde do kódu XR přes `feedSteps`, ne přes kontext.** Plátno XR je vlastní React kořen v layoutu a kontexty feedu (`FeedNext`, `FeedPrev`) do něj nedosáhnou. `FeedPrev` je v `feed-next.ts` a `ReelFeed` ho poskytuje jako `FeedNext`.
+- **Převzetí náhledu spouští ve VR stejný ťuk na scénu jako na telefonu.** Kód XR pošle na scénu aktivní karty stisk a puštění na místě; `ReelFeed` ťuk zopakuje a `ArcadePlay` hru převezme. Do vstupů hry ťuk nejde. `ArcadePlay.tsx` patří souběžným plánům, proto převzetí nemá vlastní funkci.
+- **„Enter VR“ ve feedu je jen u hry, kterou hraje hráč.** Lišta HUD s tlačítkem se během náhledu robota nekreslí (`ArcadePlay`), a to se v T4 neměnilo. Na domově `/play` začíná „Enter VR“ v liště lobby (T2).
+- **Kolo běží i tehdy, když hra po „Again“ čeká na první pohyb.** Páčka pak patří hře, první pohyb kolo pustí.
+- **„Again“ zůstává jedinou rajčatovou akcí panelu,** „Next“ je vedlejší, jako „Next game“ ve 2D.
+- **Výsledek bez dotyku 10 s vrátí kartu do náhledu robota** jako na telefonu. Ovladače se za dotyk stránky nepočítají, takže ve VR se to stane i hráči, který jen čte panel. Další mávnutí nebo spoušť pokračuje dál.
+- **„Next“ na poslední kartě nic neudělá.** Feed dotahuje další stránku, když jsou do konce tři karty.
+- **Skutečné brýle:** feed na Questu 2 tento běh neověřil. Patří do ruční brány T15.
 
 ### První JS bez `?vr=1` (27. 10. 2026)
 

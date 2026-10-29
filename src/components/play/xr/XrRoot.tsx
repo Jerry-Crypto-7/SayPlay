@@ -20,6 +20,7 @@ import { profileFor } from '@/play/xr/headset';
 import { type FrameMeter, XR_QUALITY, createFrameMeter, framebufferScaleOf, nearestRate } from '@/play/xr/quality';
 
 import { createHostTunnel, StagePortal } from '../feed/StageHost';
+import { registerSw } from './RegisterSw';
 import { closeXrLobby, openXrLobby } from './xr-lobby';
 import { XrFpsHud } from './XrFpsHud';
 import { PANEL_ORDER } from './XrPanel';
@@ -29,6 +30,9 @@ import { XrRig } from './XrRig';
 const opened = window.location.href;
 /** Které brýle (`profileFor`): Quest 3 a 3S mají vlastní profil, ostatní profil Questu 2. */
 const userAgent = navigator.userAgent;
+
+// Instalace jako aplikace (T11): worker se registruje odsud, ne z layoutu – telefon ho nemá ani v prvním JS.
+void registerSw();
 
 const store = createXRStore({
   // Emulátor IWER vstřikuje jen e2e; produkt ho nenačte ani na localhostu.

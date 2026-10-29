@@ -18,6 +18,7 @@ import { useXrGame, useXrHud } from './xr-context';
 import { closeXrLobby, lobbyShown, useXrLobby } from './xr-lobby';
 import { MOTION_PRIORITY, XrAim } from './XrAim';
 import { XrAudio } from './XrAudio';
+import { XrFeed } from './XrFeed';
 import { XrHaptics } from './XrHaptics';
 import { XrHud } from './XrHud';
 import { XrInput, xrControlOf } from './XrInput';
@@ -254,6 +255,8 @@ export interface XrReport {
   readonly eyes: number;
   /** Draw cally posledního snímku ve VR. */
   readonly calls: number;
+  /** Kolik snímků plátno dosud nakreslilo (`info.render.frame`) – měření přechodu feedu (P67 T4). */
+  readonly frames: number;
   /** Osa míření z paprsku a osa pruhu pod rukou v posledním snímku (T3, `vr-native.spec.ts`); `null` = žádná. */
   readonly aim: number | null;
   readonly laneAxis: number | null;
@@ -361,6 +364,7 @@ function XrProbe({
         presenting,
         eyes: presenting ? gl.xr.getCamera().cameras.length : 0,
         calls: presenting ? calls.current : 0,
+        frames: gl.info.render.frame,
         aim: presenting ? motion.current.aim : null,
         laneAxis: presenting ? motion.current.laneAxis : null,
         handX: presenting ? (motion.current.handX ?? null) : null,
@@ -474,6 +478,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {presenting && shown !== null && <XrAudio world={world} session={shown} />}
       {presenting && shown !== null && !lobby && <XrHud diorama={diorama} desk={desk} aim={aim} />}
       {lobby && <XrLobby shown={shown} aim={aim} />}
+      {playing && <XrFeed shown={shown} aim={aim} />}
       <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} room={roomReport} />
     </>
   );

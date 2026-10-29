@@ -31,7 +31,7 @@ export async function xrSupported(xr: XrSystemLike | undefined = navigatorXr()):
   }
 }
 
-/** Načíst kód XR: adresa VR nevypnula a prohlížeč ho umí. Jediné místo, kde se to rozhoduje (`XrGate`, `RegisterSw`). */
+/** Načíst kód XR: adresa VR nevypnula a prohlížeč ho umí. Jediné místo, kde se to rozhoduje (`XrGate`; worker PWA registruje kód XR za ní). */
 export async function xrGateOpen(url: string | URL, xr: XrSystemLike | undefined = navigatorXr()): Promise<boolean> {
   return xrWanted(url) && (await xrSupported(xr));
 }

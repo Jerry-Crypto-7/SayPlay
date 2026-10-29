@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { preload } from 'react-dom';
 
 import { color } from '@/brand/tokens';
-import { RegisterSw } from '@/components/play/xr/RegisterSw';
 import { XrGate } from '@/components/play/xr/XrGate';
 
 import './play.css';
@@ -29,7 +28,6 @@ export default function PlayLayout({ children }: { children: ReactNode }) {
   return (
     <div className="play-root sp-root">
       <XrGate>{children}</XrGate>
-      <RegisterSw />
     </div>
   );
 }
