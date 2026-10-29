@@ -33,6 +33,7 @@ export function xrControlOf(world: ArcadeWorld): XrControl | null {
     drive: input === 'steer' ? driveModeOf(world) : undefined,
     glideShoots: input === 'glide' ? glideShoots(world) : undefined,
     swing: input !== 'lanes' ? undefined : nativeRule(world.rules, 'slice_cut') !== undefined ? 'slice' : nativeRule(world.rules, 'whack_hit') !== undefined ? 'whack' : undefined,
+    handLane: input === 'lanes' && nativeRule(world.rules, 'catch_fall') !== undefined ? true : undefined,
   };
 }
 

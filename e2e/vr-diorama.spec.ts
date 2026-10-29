@@ -11,7 +11,8 @@ import { DESK, TABLE } from '../src/play/xr/diorama-scale';
 import { expect, test } from './vr-pages';
 
 /**
- * Diorama (P65 T4) v emulátoru IWER: 15 žánrů mimo čtyři VR-nativní se hraje na desce před hráčem. Každý žánr
+ * Diorama (P65 T4) v emulátoru IWER: 12 žánrů mimo čtyři VR-nativní a tři kolem hráče (aréna, obrana a chytání,
+ * P67 T6, `vr-room.spec.ts`) se hraje na desce před hráčem. Každý žánr
  * se zahraje dvakrát s ručními hodinami (`byHand`) a týmž skriptem 300 tiků (5 s): ve 2D skutečnou klávesnicí
  * (šipky, mezerník), ve VR páčkou a spouští pravého ovladače (páčka = šipky, spoušť = mezerník,
  * `docs/vr/README.md`). Obě hry musí skončit v témže stavu (hash) a hrdina se musí pohnout nebo změnit počítadlo.
@@ -41,11 +42,8 @@ const GENRES: Readonly<Record<string, readonly Hold[]>> = {
   'timing.stack': taps('Space', [60, 150, 240]),
   'rhythm.default': taps('Space', every(20, 20)),
   'duel.default': [...taps('Space', [40, 120, 200]), ...taps('ArrowDown', [80, 160])],
-  'arena.escape': [['ArrowRight', 10, 120], ['ArrowUp', 125, 230], ['ArrowLeft', 235, 300]],
   'voyage.race': [['ArrowDown', 60, 180]],
   'quest.spatial': [['ArrowUp', 10, 150], ['ArrowRight', 155, 290]],
-  'catch.default': [...taps('ArrowLeft', [30]), ...taps('ArrowRight', [90, 150])],
-  'defense.default': [...taps('ArrowLeft', [30]), ...taps('Space', [60, 150]), ...taps('ArrowRight', [120])],
   'hop.default': taps('ArrowUp', every(20, 40)),
   'crowd.default': [...taps('ArrowLeft', [30]), ...taps('ArrowRight', [100, 160])],
   'merge.default': [['ArrowLeft', 10, 60], ...taps('Space', [70]), ['ArrowRight', 100, 160], ...taps('Space', [170])],

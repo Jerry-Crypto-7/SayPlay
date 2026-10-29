@@ -170,18 +170,44 @@ Pro všechny hry: schopnosti hrdiny jsou na A/X a B/Y, blaster na B/Y, úder v s
 
 **Mutace (T2):** otočená osa páčky (8 testů červených), ztracená mrtvá zóna (2) a spoušť na špatném tlačítku (10) – `src/play/xr/__tests__/input-map.test.ts`.
 
+### Hry kolem hráče (aréna, obrana, chytání)
+
+Tři hry stojí ve VR na podlaze pokoje kolem hráče, ne na stole. Hráč stojí, hrdina se hýbe. Svět se za hry nikdy nepohne: kde stál na začátku, tam stojí až do konce.
+
+| Hra | Měřítko | Kde hráč stojí | Jak se hraje |
+|---|---|---|---|
+| arena | 1:2,5 (aréna 40 × 40 m) | ve středu arény, stěny 8 m od něj | levá páčka vede hrdinu jako dřív, hráč se za ním jen otáčí hlavou |
+| defense | 1:1 | 1,5 m za hrdinou, za hradbou; nepřátelé jdou pruhy k němu | paprsek pravého ovladače na pruh a spoušť = výstřel do pruhu (jako ťuk prstem) |
+| catch | 1:3 | před pruhy, do kterých věci padají (pruhy 1,2 m před ním) | koš (hrdina) jezdí pod pravou rukou: ruka nad pruhem drží ten pruh jako tažený prst |
+
+- **Měřítko arény** se počítá ze stěn: stěny smí být nejvýš 8 m od hráče, svět ale nikdy menší než 1:3 (menší už je diorama).
+- **Chytání 1:3:** pruhy jsou 0,67 m od sebe, krajní pruh začíná 1 m od středu. Na krajní pruhy stačí natažená ruka a půlkrok. Páčka do strany posune koš jen na jeden tik, ruka ho vrátí pod sebe; když brýle ruku ztratí, vede koš zase páčka.
+- **Okolí:** za hranou hrací plochy je podlaha v barvě země prostředí hry (podle sady prostředí scény, jen čtení), mlha ji v dálce rozpustí do obzoru. Nebe nad hráčem je obloha scény, ta se ve VR kreslí kolem hlavy v každém měřítku.
+- **Panely** (cíl, počítadla, výsledek) jsou nad levým zápěstím jako u her rukou.
+- **Co se ověří v brýlích (T8):**
+  - u obrany kryje hradba (1 m vysoko, 3–4 m před hráčem) zem pruhů asi do 11 m, nepřátelé jsou nad ní vidět od pasu nahoru;
+  - u chytání je koš ve výšce kolen (lapací čára 0,4 m) a věci padají z 2,8 m – hráč kouká víc dolů než u ostatních her;
+  - v aréně startuje hrdina hráči u nohou.
+
+**Ověření (P67 T6):**
+
+- `e2e/vr-room.spec.ts` v emulátoru IWER: aréna – levá páčka doprava a hrdina ujede hráči doprava (ve skutečném prostoru); obrana – paprsek na krajní levý pruh, spoušť, ťuk do toho pruhu a hrdina v něm; chytání – ruka vlevo a pak vpravo za hranicí krajního pruhu a koš pod ní. U všech: stůl žádný, svět po hře stojí, kde stál, podlaha okolí má sadu prostředí scény.
+- `src/play/xr/__tests__/xr-replay.test.ts`: aréna páčkou, obrana paprskem a chytání rukou dají přehráním vstupů bez XR týž hash. Chytání rukou navíc dá přesně tytéž vstupy a týž hash jako prst tažený po týchž pruzích.
+- `src/play/xr/__tests__/modes.test.ts`: tabulka režimů má každý z 19 žánrů, neznámý žánr jde na stůl, žánr se pozná ze světa hry a čtyři hry rukou jsou přesně ty jako dřív; aréna má stěny nejvýš 8 m od hráče, obrana stojí 1:1, chytání 1:3.
+- **Mutace:** chytání, které pošle polohu ruky rovnou jako osu (bez převodu na pruh), shodí test „ruka = prst“ v `xr-replay.test.ts`.
+
 ### Hry na stole (diorama)
 
-Ostatních 15 her se ve VR hraje jako zmenšený svět na stole: runner, platformer, flap, timing, rhythm, duel, arena, voyage, quest, catch, defense, hop, crowd, merge a push.
+Ostatních 12 her se ve VR hraje jako zmenšený svět na stole: runner, platformer, flap, timing, rhythm, duel, voyage, quest, hop, crowd, merge a push. Tratě (runner, platformer, flap, voyage, hop, crowd) dostanou vlastní režim „trať kolem hráče“ v další úloze (P67 T7); do té doby jsou na stole.
 
 - **Stůl:** deska 1,2 × 1,2 m, její střed 0,9 m před hráčem, ve výšce 0,8 m. Nad deskou je 0,75 m prostoru. Co leží mimo tento prostor, se nekreslí, takže trať končí na kraji stolu a ne v pokoji.
 - **Měřítko:** spočte se z velikosti hřiště, aby se celá šířka hrací plochy vešla na 1,2 m. Malá hřiště se nezvětší víc než na 1:12. Aréna se měří podle svých stěn, ne podle toho, kde zrovna leží věci.
-- **Trať se posouvá, hlava stojí:** u tratí (runner, voyage, crowd, flap, hop) i u vysokých her (věž v timing) jede svět pod hrdinou. Hrdina zůstává v bližší třetině stolu, zbytek stolu ukazuje, co přijde. Hřiště, které se na stůl vejde celé (aréna, push, merge), stojí na místě.
+- **Trať se posouvá, hlava stojí:** u tratí (runner, voyage, crowd, flap, hop) i u vysokých her (věž v timing) jede svět pod hrdinou. Hrdina zůstává v bližší třetině stolu, zbytek stolu ukazuje, co přijde. Hřiště, které se na stůl vejde celé (quest, push, merge), stojí na místě.
 - **Levý grip nese stůl:** stiskni levý grip a posuň nebo otoč rukou. Stůl jde s rukou: posun do všech stran (i výš a níž, třeba vsedě) a otočení kolem svislé osy. Je to jen pohled, hra o něm neví. Pravý grip dál slouží hře.
 
 **Ověření (T4):**
 
-- `e2e/vr-diorama.spec.ts` hraje každou z 15 her dvakrát po 5 s týmž skriptem: jednou ve 2D skutečnou klávesnicí, jednou ve VR páčkou a spouští. Obě hry skončí ve stejném stavu (stejné vstupy, stejný hash) a hrdina se pohne nebo se změní počítadlo.
+- `e2e/vr-diorama.spec.ts` hraje každou z 12 her (do P67 T6 15, i s arénou, obranou a chytáním) dvakrát po 5 s týmž skriptem: jednou ve 2D skutečnou klávesnicí, jednou ve VR páčkou a spouští. Obě hry skončí ve stejném stavu (stejné vstupy, stejný hash) a hrdina se pohne nebo se změní počítadlo.
 - Každých 30 tiků se hrdina promítne do kamery obou očí. Jeho střed musí být uvnitř obrazu a nad deskou. Hlava stojí ve výšce 1,6 m a dívá se na střed stolu.
 - U questu test navíc ověří, že levý grip posune stůl o 20 cm a do hry nic nepošle, a že pravý grip dál dělá „použít“.
 - `src/play/xr/__tests__/diorama-scale.test.ts` nechá robota dohrát každou živou hru (mimo čtyři hry rukou) a v každém tiku ověří, že hrdina je na stole a v zorném poli hlavy.
@@ -207,7 +233,7 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 
 **Ověření (T5):** `e2e/vr-hud.spec.ts` v emulátoru IWER, klikání skutečným paprskem a spouští:
 
-- Stolní hra z věty „A knight must collect three keys…“: tabule s cílem a počítadlem `0/3 keys` je celá v obraze obou očí a čitelná. Robot vyhraje, výsledek „You did it!“ je v obraze. „Again“ vrátí hru na tik 0 bez vstupu. Druhá výhra a „Exit VR“ vrátí 2D výsledek, z něj funguje sdílení (odkaz ve schránce) i „Remix it“.
+- Stolní hra z věty „A knight must light three candles…“ (quest; do P67 T6 sběr klíčů v aréně, ta je teď kolem hráče): tabule s cílem a počítadlem `0/3 candles` je celá v obraze obou očí a čitelná. Robot vyhraje, výsledek „You did it!“ je v obraze. „Again“ vrátí hru na tik 0 bez vstupu. Druhá výhra a „Exit VR“ vrátí 2D výsledek, z něj funguje sdílení (odkaz ve schránce) i „Remix it“.
 - Spoušť na tlačítku nejde do hry: stisk na „Exit VR“, paprsek z tlačítka pryč, puštění, hra nedostala nic. Týž stisk mimo panely do hry jde (kontrola, že test měří spoušť).
 - Střílečka: panel na levém zápěstí v obraze, prohra ukáže „So close.“, „Again“ hru restartuje.
 - AI verze: panel „AI version ready“ s „Play it“ vymění hru a relace trvá. Přechod na hru podle věty ukáže panel krátce bez tlačítka.
@@ -283,6 +309,29 @@ Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na 
 - **Draw cally:** otevřené lobby přidá jednu síť na tlačítko (9 na kartě, 43 na klávesnici) ke hře, která pod ním stojí. Rozpočet 150 volání v `evals/vr/budget.json` měří hru bez lobby.
 - **Skutečné brýle:** lobby na Questu 2 tento běh neověřil, brýle nikdo neměl na hlavě. Patří do ruční brány T15.
 
+### Svět kolem hráče (P67 T6, 29. 10. 2026, emulátor)
+
+**Rozpočet snímku** (IWER Quest 2, obě oči, hlava rovně, nejhorší snímek z 10 s hry robota; `evals/vr/budget.json`):
+
+| Hra | Měřítko | Draw cally | Trojúhelníky | Na stole před T6 |
+|---|---|---|---|---|
+| arena | 1:2,5 | 44 | 103 328 | 48 / 72 446 |
+| catch | 1:3 | 56 | 23 720 | 58 / 23 672 |
+| defense | 1:1 | 90 | 51 376 | 98 / 22 184 |
+
+- **Aréna byla nad rozpočtem:** s prstencem rostlin za stěnami 316 656 trojúhelníků. Profil XR teď prstenec nekreslí nikde (na stole ho už dřív skrývaly roviny řezu), za stěnami leží podlaha okolí. Data scény se nezměnila.
+- **První JS telefonu** (`/play`, Pixel 7): 39 skriptů, 4 216 351 B rozbaleně, žádný kód XR – o 8 B méně než po T2. Nové moduly (`xr/modes.ts`, `XrRoom`, `XrSky`) jsou jen v chunku XR.
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **Žánr se pozná z robota světa.** Svět hry žánr nenese a spec do vrstvy XR nedojde; každý žánr má vlastního robota (`genreOfWorld` v `src/play/xr/modes.ts`). Hry skládané ze staršího ovládání (`glide`, `walker`, `ball`) žánr nemají a hrají se na stole jako dřív.
+- **Chytání 1:3, ne 1:1.** Při 1:1 jsou pruhy 2 m od sebe a krajní pruhy by byly 4 m od středu, mimo dosah ruky. 1:3 je nejmenší měřítko režimu; krajní pruh pak začíná 1 m od středu.
+- **Aréna: stěny 8 m podél os,** rohy jsou dál (11 m). Aby byly 8 m i rohy, musela by být aréna menší než 1:3.
+- **Kopule = obloha scény.** Obloha scény se kreslí jen podle natočení hlavy, takže ve VR stojí kolem hráče v každém měřítku (ověřeno snímkem z emulátoru). Druhá kopule by pod ní nikdy nebyla vidět, proto `XrSky` kreslí jen podlahu okolí.
+- **Barvy okolí ze sady scény:** plátno XR leží v místě scény, která ho vlastní, a ta nese `data-look`. Bere se základní sada (země `ground`); noční nebo počasím upravená barva scény se nepřebírá.
+- **Tratě (`surround`, T7)** jsou v tabulce režimů, ale do T7 se hrají na stole.
+- **Test HUD na stole** (`e2e/vr-hud.spec.ts`) hraje quest „A knight must light three candles…“: věta s klíči dělá arénu, ta je teď kolem hráče. Věta „open three chests“ dělá na serveru řetěz mikroher bez ručních hodin, proto svíčky.
+
 ### První JS bez `?vr=1` (27. 10. 2026)
 
 Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produkčním buildu:
@@ -297,6 +346,8 @@ Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produk
 - Cíl ±1 kB tím není splněný. Menší rozdíl by znamenal bránu mimo layout, a pak by VR relace nepřežila příchod AI verze (ta je navigace na jinou `/play/<id>`).
 
 ### Měřítko dioramy (27. 10. 2026, emulátor)
+
+Aréna, catch a defense se od P67 T6 hrají kolem hráče (oddíl výš); jejich řádky platí, jen kdyby se vrátily na stůl.
 
 | Hra | Měřítko |
 |---|---|
@@ -346,7 +397,7 @@ Podrobnosti, čísla všech her a návod na měření jsou v `evals/vr/README.md
 - **Nejhorší hry po profilu:** hod 112 volání, závod 282 tisíc trojúhelníků. Před T6 bylo nejhorší 1182 volání (střílečka) a 29 milionů trojúhelníků (běžec).
 - **Ve VR nejsou rostliny.** Vegetace si vybírá rostliny podle kamery hry ve 2D. Ve VR bez stínového průchodu kreslila všechny rostliny svého okna: 0,74–1,37 milionu trojúhelníků. Oprava patří do `src/components/play/arcade/look/Vegetation.tsx` (P62): výběr počítat z hlavy hráče převedené do souřadnic scény. Pak se rostliny do VR vrátí.
 - **Bez obrysů nepřátel.** Obrys kreslil každý díl postavy podruhé. Obrys hrdiny zůstal.
-- **Na stole se nekreslí, co je mimo něj.** Kulisy za okrajem desky a prstenec rostlin za stěnami arény by roviny řezu stejně ořízly.
+- **Na stole se nekreslí, co je mimo něj.** Kulisy za okrajem desky by roviny řezu stejně ořízly. Prstenec rostlin za stěnami arény se ve VR nekreslí vůbec (od P67 T6 i v aréně kolem hráče, kde stál nad rozpočtem).
 - **Stejné díly se kreslí najednou.** Aspoň 4 sítě se stejnou geometrií a materiálem kreslí jedna instancovaná síť (díly nepřátel střílečky).
 - **Částice:** nejvýš 500 živých, jako telefon na nejnižší úrovni kvality.
 - **Co emulátor neměří:** FPS, rozlišení relace a foveaci (IWER je přejde). Profil startuje na rozlišení 1,0 a foveaci 1; porovnání s 0,8 je v bodě 9 návodu výš.

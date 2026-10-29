@@ -13,8 +13,7 @@ import { type RefObject, useMemo } from 'react';
 import { type Group, Matrix4, Quaternion, Vector3 } from 'three';
 
 import { UNIT } from '@/play/arcade/contract';
-import { axisOfLane, laneOfX } from '@/play/arcade/pieces/lanes';
-import type { XrMotion } from '@/play/xr/input-map';
+import { type XrMotion, laneAxisOfX } from '@/play/xr/input-map';
 
 import type { ArcadeSession } from '../arcade/session';
 import { MOTION_PRIORITY } from './XrAim';
@@ -52,7 +51,7 @@ export function XrSwing({ session, world, motion }: { readonly session: ArcadeSe
     motion.current.velocity = hand.inGame.copy(hand.velocity).applyQuaternion(hand.turn);
     hand.local.copy(hand.at).applyMatrix4(hand.toGame.copy(group.matrixWorld).invert());
     // Scéna zrcadlí osu x jádra (x → −x), stejně jako těla.
-    motion.current.laneAxis = axisOfLane(laneOfX(-hand.local.x * UNIT));
+    motion.current.laneAxis = laneAxisOfX(-hand.local.x * UNIT);
 
     const now = session.snapshot();
     const hits = now.score + now.items;

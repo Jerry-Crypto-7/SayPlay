@@ -46,12 +46,13 @@ export type XrCut = 'vegetation' | 'ink' | 'ring';
  * - `ink` – obrys nepřátel (`userData.ink = 'foe'`): každý díl postavy kreslí podruhé, střílečka tak měla
  *   přes 100 volání jen na obrysy. Obrys hrdiny zůstává – na desce je hrdina velký 3–8 cm.
  * - `ring` – prstenec rostlin za stěnami arény (`terrain = 'arena-ring'`): na desce dioramy leží celý za
- *   rovinami řezu, takže není vidět, ale stál 175–213 tisíc trojúhelníků.
+ *   rovinami řezu, takže není vidět, ale stál 175–213 tisíc trojúhelníků. V aréně kolem hráče (P67 T6) vidět je,
+ *   jenže s ním měla 317 tisíc trojúhelníků, nad rozpočtem; za stěnami místo něj leží podlaha okolí (`XrSky`).
  */
-export function cutOf(node: { readonly name: string; readonly userData: Readonly<Record<string, unknown>> }, diorama: boolean): XrCut | null {
+export function cutOf(node: { readonly name: string; readonly userData: Readonly<Record<string, unknown>> }): XrCut | null {
   if (node.name === 'vegetation') return 'vegetation';
   if (node.userData.ink === 'foe') return 'ink';
-  if (diorama && node.userData.terrain === 'arena-ring') return 'ring';
+  if (node.userData.terrain === 'arena-ring') return 'ring';
   return null;
 }
 

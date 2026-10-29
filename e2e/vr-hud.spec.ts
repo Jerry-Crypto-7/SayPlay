@@ -23,8 +23,11 @@ import { HUD_COUNTER_LABELS, counterLabelsFor } from './hud-labels';
 
 const IWER_BUNDLE = join(process.cwd(), 'node_modules/iwer/build/iwer.min.js');
 
-/** Věta s počtem (P61 T5, `interface-language.spec.ts`): počítadlo cíle nese slovo věty. */
-const COUNTED = 'A knight must collect three keys in a haunted castle';
+/**
+ * Věta s počtem (P61 T5): počítadlo cíle nese slovo věty. Hra z ní je quest na stole; sběr klíčů v aréně
+ * (`interface-language.spec.ts`) se od P67 T6 hraje kolem hráče, ne na stole.
+ */
+const COUNTED = 'A knight must light three candles in a haunted castle';
 const QUICK = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
 
 /** Nejmenší text panelu od očí (rad): text kitu 13 px na 1 m je 0,026 rad. */
@@ -290,14 +293,14 @@ test('table-top: the goal board is in view, a bot win shows You did it!, Again r
   const hud = await panelOf(page, 'hud');
   console.log(`hud ${JSON.stringify({ text: hud.text, eyes: hud.eyes, smallest: hud.smallest })}`);
   expect(hud.text.join(' ')).toContain(goalLine);
-  expect(hud.text).toContain('0/3 keys');
+  expect(hud.text).toContain('0/3 candles');
   expect(buttonOf(hud, 'exit').label).toBe('Exit VR');
   expectSeen(hud);
   expectEnglish(hud);
   // Popisky počítadel tytéž jako v DOM HUD: z uzavřeného seznamu, navíc jen slovo věty.
   const allowed = counterLabelsFor(COUNTED);
   for (const label of hud.labels) expect(allowed, `${label} mimo seznam`).toContain(label);
-  expect(hud.labels.filter((label) => !HUD_COUNTER_LABELS.includes(label))).toEqual(['keys']);
+  expect(hud.labels.filter((label) => !HUD_COUNTER_LABELS.includes(label))).toEqual(['candles']);
   expect([...hud.labels].sort()).toEqual([...domLabels].sort());
 
   // Spoušť stisknutá s paprskem na tlačítku patří panelu: paprsek z tlačítka sjede, spoušť se pustí jinde (žádný klik)

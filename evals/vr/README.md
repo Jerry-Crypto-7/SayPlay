@@ -13,7 +13,7 @@ PLAY_STORE_DIR=D:/caches/p65/store node node_modules/next/dist/bin/next start -p
 node --experimental-strip-types --import ./scripts/ts-paths.mjs evals/vr/budget.mjs
 ```
 
-`--genres runner.default,shooter.default` zúží běh, `--out` zapíše jinam, `--base` míří na jiný server. Jeden prohlížeč naráz proti jednomu serveru. Skript na konci vypíše řádky tabulky níž.
+`--genres runner.default,shooter.default` zúží běh (nezměřené žánry zůstanou v `budget.json` z minulého měření), `--out` zapíše jinam, `--base` míří na jiný server. Jeden prohlížeč naráz proti jednomu serveru. Prohlížeč běží bez OpenXR runtime počítače (`--disable-features=OpenXR`), brýle hraje IWER. Skript na konci vypíše řádky tabulky níž.
 
 ## Rozpočet
 
@@ -21,7 +21,7 @@ Rozpočet Questu 2 je **≤ 150 draw callů a ≤ 300 000 trojúhelníků za sn�
 
 `evals/vr/__tests__/budget.test.ts` spočte nejhorší snímek každého žánru znovu ze vzorků v `budget.json` a selže, když je některý žánr nad rozpočtem, když soubor nemá všech 19 žánrů nebo když tabulka níž neodpovídá měření.
 
-Měření 27. 10. 2026, Chromium s ANGLE D3D11 na GPU tohoto stroje, nejhorší snímek z 21 vzorků:
+Měření 27. 10. 2026, Chromium s ANGLE D3D11 na GPU tohoto stroje, nejhorší snímek z 21 vzorků. Aréna, chytání a obrana změřené znovu 29. 10. 2026 (P67 T6) ve svém novém režimu kolem hráče (`room`, hlava rovně):
 
 | žánr | hraje se | draw cally | trojúhelníky | textury MB |
 |---|---|---|---|---|
@@ -29,17 +29,17 @@ Měření 27. 10. 2026, Chromium s ANGLE D3D11 na GPU tohoto stroje, nejhorší 
 | `throw.default` | native | 112 | 50304 | 54.6 |
 | `whack.default` | native | 26 | 8784 | 57.4 |
 | `slice.default` | native | 60 | 12012 | 57.4 |
+| `arena.escape` | room | 44 | 103328 | 60.0 |
+| `catch.default` | room | 56 | 23720 | 57.4 |
+| `defense.default` | room | 90 | 51376 | 57.4 |
 | `runner.default` | diorama | 46 | 119112 | 56.7 |
 | `platformer.default` | diorama | 40 | 66598 | 55.7 |
 | `flap.default` | diorama | 50 | 21372 | 55.7 |
 | `timing.stack` | diorama | 46 | 23708 | 55.7 |
 | `rhythm.default` | diorama | 52 | 22082 | 55.7 |
 | `duel.default` | diorama | 44 | 22592 | 55.7 |
-| `arena.escape` | diorama | 48 | 72446 | 60.4 |
 | `voyage.race` | diorama | 52 | 281754 | 55.0 |
 | `quest.spatial` | diorama | 74 | 74630 | 60.4 |
-| `catch.default` | diorama | 58 | 23672 | 55.0 |
-| `defense.default` | diorama | 98 | 22184 | 55.0 |
 | `hop.default` | diorama | 44 | 175160 | 56.4 |
 | `crowd.default` | diorama | 48 | 43416 | 56.2 |
 | `merge.default` | diorama | 54 | 45016 | 55.0 |
@@ -72,7 +72,7 @@ Profil platí jen v relaci VR (`src/play/xr/quality.ts`, `XrRoot.tsx`, `XrCull` 
 2. **Žádné stíny.** Světla ve VR stín nevrhají, stínový průchod nekreslí kulisy ještě jednou.
 3. **Bez vegetace.** Rostliny si vybírají podle kamery hry ve 2D; ve VR bez stínového průchodu kreslily všechny rostliny svého okna, 0,74–1,37 milionu trojúhelníků za snímek. Oprava patří do `look/Vegetation.tsx` (P62), pak se vegetace může vrátit.
 4. **Kulisy mimo desku (diorama).** Síť, která leží celá mimo prostor nad deskou, by roviny řezu stejně ořízly. Závod tak kreslil 162 ze 184 volání kulis zbytečně.
-5. **Prstenec rostlin za stěnami arény (diorama).** Na desce leží celý za rovinami řezu, stál 175–213 tisíc trojúhelníků.
+5. **Prstenec rostlin za stěnami arény.** Na desce leží celý za rovinami řezu, stál 175–213 tisíc trojúhelníků. V aréně kolem hráče (P67 T6) vidět je, ale s ním měla aréna 316 656 trojúhelníků, nad rozpočtem; bez něj 103 328. Za stěnami místo něj leží podlaha okolí v barvě země sady.
 6. **Obrysy nepřátel.** Každý díl postavy kreslily podruhé. Obrys hrdiny zůstává.
 7. **Sloučení stejných sítí.** Aspoň 4 sítě se stejnou geometrií a materiálem kreslí jedna instancovaná síť. Šest dílů každého nepřítele střílečky tak stojí 6 volání na oko, ne 6 × počet nepřátel.
 8. **Strop částic** 500 jako telefon na `low`, pevná foveace 1, frekvence nejblíž 72 Hz.

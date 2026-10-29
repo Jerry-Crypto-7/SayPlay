@@ -72,23 +72,21 @@ describe('cutOf', () => {
   const node = (name: string, userData: Record<string, unknown> = {}) => ({ name, userData });
 
   it('drops the vegetation everywhere in VR', () => {
-    expect(cutOf(node('vegetation'), true)).toBe('vegetation');
-    expect(cutOf(node('vegetation'), false)).toBe('vegetation');
+    expect(cutOf(node('vegetation'))).toBe('vegetation');
   });
 
   it('drops the outline of foes but keeps the hero outline', () => {
-    expect(cutOf(node('', { ink: 'foe' }), false)).toBe('ink');
-    expect(cutOf(node('', { ink: 'hero' }), true)).toBeNull();
+    expect(cutOf(node('', { ink: 'foe' }))).toBe('ink');
+    expect(cutOf(node('', { ink: 'hero' }))).toBeNull();
   });
 
-  it('drops the arena ring only on the desk, where the cut planes hide it anyway', () => {
-    expect(cutOf(node('', { terrain: 'arena-ring' }), true)).toBe('ring');
-    expect(cutOf(node('', { terrain: 'arena-ring' }), false)).toBeNull();
+  it('drops the arena ring: hidden by the cut planes on the desk, over the budget around the player (P67 T6)', () => {
+    expect(cutOf(node('', { terrain: 'arena-ring' }))).toBe('ring');
   });
 
   it('keeps everything else', () => {
-    expect(cutOf(node('', { terrain: 'arena' }), true)).toBeNull();
-    expect(cutOf(node('backdrop'), true)).toBeNull();
-    expect(cutOf(node('', { frame: 'hero' }), true)).toBeNull();
+    expect(cutOf(node('', { terrain: 'arena' }))).toBeNull();
+    expect(cutOf(node('backdrop'))).toBeNull();
+    expect(cutOf(node('', { frame: 'hero' }))).toBeNull();
   });
 });

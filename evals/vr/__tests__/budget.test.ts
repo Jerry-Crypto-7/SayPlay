@@ -22,7 +22,7 @@ interface Sample {
 }
 interface Genre {
   readonly id: string;
-  readonly kind: 'native' | 'diorama';
+  readonly kind: 'native' | 'room' | 'diorama';
   readonly samples: readonly Sample[];
   readonly max: { readonly calls: number; readonly triangles: number; readonly textureMB: number };
 }
@@ -52,12 +52,15 @@ function overBudget(genres: readonly Genre[], budget: { readonly calls: number; 
 }
 
 describe('Quest 2 frame budget per genre (evals/vr/budget.json)', () => {
-  it('measures all 19 genres – 4 played by hand, 15 on the desk – in a two-eye VR session', () => {
+  it('measures all 19 genres – 4 played by hand, 3 around the player, 12 on the desk – in a two-eye VR session', () => {
     const ids = report.genres.map((genre) => genre.id);
     expect(new Set(ids).size).toBe(19);
     expect(new Set(ids.map((id) => id.split('.')[0])).size).toBe(19);
-    expect(report.genres.filter((genre) => genre.kind === 'native').map((genre) => genre.id.split('.')[0]).sort()).toEqual(['shooter', 'slice', 'throw', 'whack']);
-    expect(report.genres.filter((genre) => genre.kind === 'diorama')).toHaveLength(15);
+    const genresOf = (kind: Genre['kind']) => report.genres.filter((genre) => genre.kind === kind).map((genre) => genre.id.split('.')[0]).sort();
+    expect(genresOf('native')).toEqual(['shooter', 'slice', 'throw', 'whack']);
+    // Svět kolem hráče (P67 T6) se měří ve svém režimu, ne na stole.
+    expect(genresOf('room')).toEqual(['arena', 'catch', 'defense']);
+    expect(genresOf('diorama')).toHaveLength(12);
     for (const genre of report.genres) {
       expect(genre.samples.length, genre.id).toBeGreaterThan(1);
       expect(genre.samples.every((sample) => sample.presenting && sample.eyes === 2), genre.id).toBe(true);
@@ -86,7 +89,7 @@ describe('Quest 2 frame budget per genre (evals/vr/budget.json)', () => {
 
   it('shows the measured numbers in evals/vr/README.md, not numbers typed by hand', () => {
     const rows = new Map(
-      [...read('../README.md').matchAll(/^\| `([^`]+)` \| (native|diorama) \| (\d+) \| (\d+) \| ([\d.]+) \|/gm)].map((match) => [
+      [...read('../README.md').matchAll(/^\| `([^`]+)` \| (native|room|diorama) \| (\d+) \| (\d+) \| ([\d.]+) \|/gm)].map((match) => [
         match[1],
         { kind: match[2], calls: Number(match[3]), triangles: Number(match[4]), textureMB: Number(match[5]) },
       ]),

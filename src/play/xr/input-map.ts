@@ -58,17 +58,21 @@ export interface XrControl {
   readonly glideShoots?: boolean;
   /** Pruhy, ve kterých ruka seká (`slice_cut`) nebo bouchá (`whack_hit`) máchnutím (T3). */
   readonly swing?: 'slice' | 'whack';
+  /** Pruh drží poloha pravé ruky, jako tažený prst (chytání `catch_fall`, P67 T6). */
+  readonly handLane?: boolean;
 }
 
 /**
  * Pohyb pravého ovladače v prostoru hry (T3), přepisovaný každý snímek. `aim` = osa míření z paprsku,
  * `velocity` = rychlost ruky v m/s skutečného prostoru, otočená do os hry (+y nahoru, +z dopředu),
- * `laneAxis` = osa pruhu pod rukou. Nic z toho nejde do hashovaného stavu – jen tlačítka a osa, které z něj vzejdou.
+ * `laneAxis` = osa pruhu pod rukou, `handX` = poloha pravé ruky v ose x jádra (jednotky; chytání, P67 T6). Nic z toho
+ * nejde do hashovaného stavu – jen tlačítka a osa, které z něj vzejdou.
  */
 export interface XrMotion {
   aim: number | null;
   velocity: { readonly x: number; readonly y: number; readonly z: number } | null;
   laneAxis: number | null;
+  handX?: number | null;
 }
 
 /**
@@ -102,6 +106,12 @@ export function throwOf(vy: number, vz: number): { readonly aim: number; readonl
   // Osa 0 = „beze změny“, proto 45° je 1.
   return { aim: aim === 0 ? 1 : aim, charge: 1 + Math.round(power * (THROW.maxCharge - 1)) };
 }
+
+/**
+ * Ruka nad pruhem → osa, kterou dá prst na témž pruhu (`lanes-input.ts`): `x` je poloha ruky v ose x jádra
+ * (jednotky). Jediný převod polohy ruky na vstup – krájení, bouchání i chytání jdou tudy.
+ */
+export const laneAxisOfX = (x: number): number => axisOfLane(laneOfX(x));
 
 /** Švih nad prahem sekne jednou; další až po zpomalení ruky pod polovinu prahu (chvění na vrcholu nesekne dvakrát). */
 export function createSwing(threshold: number): (speed: number) => boolean {
@@ -143,7 +153,7 @@ export function aimOfPoint(input: Stage['input'], x: number, z: number, state: I
     const muzzleZ = (state[player + BODY.z] as number) + SHOOTER.playerD / 2;
     return z > muzzleZ ? aimAt(x - (state[player + BODY.x] as number), z - muzzleZ) : null;
   }
-  if (input === 'lanes') return axisOfLane(laneOfX(x));
+  if (input === 'lanes') return laneAxisOfX(x);
   return null;
 }
 
@@ -353,8 +363,11 @@ export function createXrDriver(session: XrDrivenSession, control: XrControl) {
         }
       }
       before = now;
-      if (step.axis !== axis) {
-        axis = step.axis;
+      // Chytání (P67 T6): pruh drží ruka nad ním jako tažený prst; páčka do strany ho na tik posune, ruka ho vrátí.
+      const hand = control.handLane === true ? (motion?.handX ?? null) : null;
+      const stepAxis = hand === null ? step.axis : laneAxisOfX(hand);
+      if (stepAxis !== axis) {
+        axis = stepAxis;
         session.hold(axis);
       }
       if (stepHeld !== held) {

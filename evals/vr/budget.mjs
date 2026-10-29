@@ -13,9 +13,10 @@
  *   PLAY_STORE_DIR=D:/caches/p65/store node node_modules/next/dist/bin/next start -p 3165 -H 127.0.0.1
  *   node --experimental-strip-types --import ./scripts/ts-paths.mjs evals/vr/budget.mjs [--base http://127.0.0.1:3165] [--out evals/vr/budget.json] [--genres runner.default,shooter.default]
  *
+ * `--genres` změří jen vyjmenované žánry; ostatní zůstanou v souboru z minulého měření (P67 T6).
  * Jeden prohlížeč naráz proti jednomu serveru: dva souběžné procesy `next start` zaseknou.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -31,8 +32,12 @@ import { browserRenderer } from '../../scripts/browser-renderer.ts';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const IWER_BUNDLE = join(ROOT, 'node_modules/iwer/build/iwer.min.js');
 
-/** Rozdělení žánrů jako v e2e: čtyři VR-nativní (`vr-native.spec.ts`) a patnáct dioram (`vr-diorama.spec.ts`). */
+/**
+ * Rozdělení žánrů jako v e2e: čtyři VR-nativní (`vr-native.spec.ts`), tři kolem hráče (`vr-room.spec.ts`, P67 T6)
+ * a dvanáct dioram (`vr-diorama.spec.ts`).
+ */
 export const NATIVE = ['shooter.default', 'throw.default', 'whack.default', 'slice.default'];
+export const ROOM = ['arena.escape', 'catch.default', 'defense.default'];
 export const DIORAMA = [
   'runner.default',
   'platformer.default',
@@ -40,16 +45,15 @@ export const DIORAMA = [
   'timing.stack',
   'rhythm.default',
   'duel.default',
-  'arena.escape',
   'voyage.race',
   'quest.spatial',
-  'catch.default',
-  'defense.default',
   'hop.default',
   'crowd.default',
   'merge.default',
   'push.default',
 ];
+
+const kindOf = (id) => (NATIVE.includes(id) ? 'native' : ROOM.includes(id) ? 'room' : 'diorama');
 
 /** 10 s hry; snímek každou půlsekundu. */
 const TICKS = 600;
@@ -240,7 +244,7 @@ async function settled(page) {
 }
 
 async function measure(browser, id) {
-  const native = NATIVE.includes(id);
+  const kind = kindOf(id);
   const url = await publish(id);
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const page = await context.newPage();
@@ -256,8 +260,8 @@ async function measure(browser, id) {
   });
   await page.addInitScript(textureMeter);
   await page.addInitScript({ path: IWER_BUNDLE });
-  // VR-nativní žánry: hlava rovně jako v `vr-native.spec.ts`; diorama: pohled na střed desky.
-  await page.addInitScript(withQuest2, native ? 0 : PITCH);
+  // VR-nativní žánry a svět kolem hráče: hlava rovně jako v `vr-native.spec.ts` a `vr-room.spec.ts`; diorama: pohled na střed desky.
+  await page.addInitScript(withQuest2, kind === 'diorama' ? PITCH : 0);
   await page.goto(new URL(`${url}?vr=1`, base).href);
   await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 90_000 });
   await page.evaluate(() => window.__playShell.byHand(true));
@@ -319,6 +323,7 @@ async function measure(browser, id) {
     { ticks: TICKS, every: EVERY },
   );
   const desk = await page.evaluate(() => window.__playXr().desk?.scale ?? null);
+  const room = await page.evaluate(() => window.__playXr().room?.scale ?? null);
   await context.close();
 
   const { samples } = played;
@@ -326,8 +331,8 @@ async function measure(browser, id) {
   if (lost.length > 0) throw new Error(`${id}: ${String(lost.length)} samples outside a two-eye session`);
   return {
     id,
-    kind: native ? 'native' : 'diorama',
-    scale: desk === null ? null : `1:${(1 / desk).toFixed(1)}`,
+    kind,
+    scale: desk === null ? (room === null ? null : `1:${(1 / room).toFixed(1)}`) : `1:${(1 / desk).toFixed(1)}`,
     settled: ready,
     end: { runState: played.end.runState, tick: played.end.tick, score: played.end.score },
     errors,
@@ -339,8 +344,10 @@ async function measure(browser, id) {
 export const peak = (samples, field) => Math.max(...samples.map((sample) => sample[field]));
 
 async function main() {
-  const ids = [...NATIVE, ...DIORAMA].filter((id) => only === undefined || only.includes(id));
-  const browser = await chromium.launch({ args: browserRenderer().args });
+  const order = [...NATIVE, ...ROOM, ...DIORAMA];
+  const ids = order.filter((id) => only === undefined || only.includes(id));
+  // Bez OpenXR runtime počítače (SteamVR by hlásil immersive-vr i bez brýlí); brýle hraje IWER, jako v `playwright.config.ts`.
+  const browser = await chromium.launch({ args: [...browserRenderer().args, '--disable-features=OpenXR'] });
   const genres = [];
   try {
     for (const id of ids) {
@@ -356,6 +363,9 @@ async function main() {
   } finally {
     await browser.close();
   }
+  // Zúžený běh: nezměřené žánry zůstanou z minulého měření, pořadí podle rozdělení.
+  const kept = only === undefined || !existsSync(out) ? [] : JSON.parse(readFileSync(out, 'utf8')).genres.filter((genre) => !ids.includes(genre.id));
+  const all = [...kept, ...genres].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   const report = {
     device: 'IWER metaQuest2, stereo, 1280×720 page',
     renderer: browserRenderer().mode,
@@ -363,13 +373,13 @@ async function main() {
     profile: XR_QUALITY,
     ticks: TICKS,
     every: EVERY,
-    genres,
+    genres: all,
   };
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`);
   console.log(`→ ${out}`);
   // Řádky tabulky pro `evals/vr/README.md`; `__tests__/budget.test.ts` je porovná se souborem.
-  for (const genre of genres) console.log(`| \`${genre.id}\` | ${genre.kind} | ${String(genre.max.calls)} | ${String(genre.max.triangles)} | ${genre.max.textureMB.toFixed(1)} |`);
+  for (const genre of all) console.log(`| \`${genre.id}\` | ${genre.kind} | ${String(genre.max.calls)} | ${String(genre.max.triangles)} | ${genre.max.textureMB.toFixed(1)} |`);
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

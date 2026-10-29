@@ -8,6 +8,7 @@ import { ACESFilmicToneMapping, type ArrayCamera, Box3, DynamicDrawUsage, type G
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { type Point, deskOfWorld, onDesk } from '@/play/xr/diorama-scale';
 import { REACH, type XrControl, type XrMotion } from '@/play/xr/input-map';
+import { genreOfWorld, modeOf } from '@/play/xr/modes';
 import { cutOf } from '@/play/xr/quality';
 
 import { frameOf } from '../arcade/ArcadeStage';
@@ -20,13 +21,15 @@ import { XrHud } from './XrHud';
 import { XrInput, xrControlOf } from './XrInput';
 import { XrLobby } from './XrLobby';
 import type { PanelAim } from './XrPanel';
+import { type RoomReport, XrRoom } from './XrRoom';
 import { XrSwing } from './XrSwing';
 
 /**
  * Hráč ve VR (P65 T1). Kameru vlastní hlava: kamery žánrů dál nastavují kameru R3F, jenže tou je v relaci kamera
  * brýlí a její pozici každý snímek přepíše póza hlavy. Svět se otočí o půl kruhu, aby hráč stál tam, kde ve 2D
- * stojí kamera (za hrdinou, na straně −z). VR-nativní žánry (T3) svět nezmenší, nebo ho dají do dosahu ruky
- * (`placementOf`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`).
+ * stojí kamera (za hrdinou, na straně −z). Jak se žánr hraje, říká tabulka režimů (`xr/modes.ts`, P67 T6):
+ * VR-nativní žánry (T3) svět nezmenší, nebo ho dají do dosahu ruky (`placementOf`); aréna, obrana a chytání stojí
+ * kolem hráče (`XrRoom`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`).
  * Mimo relaci je obal identita, takže 2D se nemění a vstup do VR scénu nepřestaví.
  * `DIORAMA` je jen poloha, než relace dostane hru (pak měřítko spočte `Diorama` z velikosti hřiště).
  */
@@ -191,7 +194,7 @@ function XrCull({ world, desk, diorama }: { readonly world: RefObject<Group | nu
     const alike = new Map<string, Mesh[]>();
     at.placed = [];
     const walk = (node: Object3D, cut: boolean) => {
-      const off = cut || cutOf(node, diorama) !== null;
+      const off = cut || cutOf(node) !== null;
       const mesh = node as Mesh;
       if (off) {
         hide(node);
@@ -251,8 +254,16 @@ export interface XrReport {
   /** Osa míření z paprsku a osa pruhu pod rukou v posledním snímku (T3, `vr-native.spec.ts`); `null` = žádná. */
   readonly aim: number | null;
   readonly laneAxis: number | null;
+  /** Pravá ruka v ose x jádra (jednotky) u chytání (P67 T6, `vr-room.spec.ts`); `null` = žádná. */
+  readonly handX: number | null;
   /** Hráčovo tělo ve stavu hry (jednotky jádra) – „hrdina se pohnul“ (T4, `vr-diorama.spec.ts`); `null` = bez hry. */
   readonly heroAt: Point | null;
+  /** Kreslený hrdina ve skutečném prostoru (m, `local-floor`); `null` = mimo relaci nebo bez hrdiny. */
+  readonly heroWorld: Point | null;
+  /** Svět kolem hráče (P67 T6): měřítko, bod scény pod hráčem, póza; `null` = jiný režim nebo mimo relaci. */
+  readonly room: RoomReport | null;
+  /** Sada prostředí, v jejíchž barvách je podlaha okolí (`XrSky`); `null` = okolí se nekreslí. */
+  readonly sky: string | null;
   /** Střed kresleného hrdiny promítnutý kamerou každého oka (NDC −1…1, +y nahoru); `behind` = za okem. */
   readonly heroView: readonly ({ readonly x: number; readonly y: number; readonly behind: boolean } | null)[] | null;
   /** Kreslený hrdina v osách desky dioramy (m: x doprava, y nad deskou, z k hráči); `null` = bez dioramy. */
@@ -322,12 +333,14 @@ function XrProbe({
   motion,
   game,
   desk,
+  room,
 }: {
   readonly presenting: boolean;
   readonly calls: RefObject<number>;
   readonly motion: RefObject<XrMotion>;
   readonly game: ArcadeSession | null;
   readonly desk: RefObject<DeskReport | null>;
+  readonly room: RefObject<RoomReport | null>;
 }) {
   const get = useThree((three) => three.get);
   useEffect(() => {
@@ -339,13 +352,19 @@ function XrProbe({
       const hero = presenting ? heroNodeOf(scene) : null;
       if (presenting) scene.updateMatrixWorld();
       const at = hero?.getWorldPosition(new Vector3()) ?? null;
+      let sky: string | null = null;
+      if (presenting) scene.traverse((node) => (sky = (node.userData.xrSky as string | undefined) ?? sky));
       return {
         presenting,
         eyes: presenting ? gl.xr.getCamera().cameras.length : 0,
         calls: presenting ? calls.current : 0,
         aim: presenting ? motion.current.aim : null,
         laneAxis: presenting ? motion.current.laneAxis : null,
+        handX: presenting ? (motion.current.handX ?? null) : null,
         heroAt,
+        heroWorld: at === null ? null : { x: at.x, y: at.y, z: at.z },
+        room: presenting ? room.current : null,
+        sky,
         heroView:
           hero === null
             ? null
@@ -362,7 +381,7 @@ function XrProbe({
     return () => {
       if (window.__playXr === probe) delete window.__playXr;
     };
-  }, [get, presenting, calls, motion, game, desk]);
+  }, [get, presenting, calls, motion, game, desk, room]);
   return null;
 }
 
@@ -377,9 +396,6 @@ interface Placement {
   readonly scale: number;
   readonly at: readonly [number, number, number];
 }
-
-/** VR-nativní žánr (T3): hraje se rukou ve skutečné velikosti nebo v dosahu ruky, ne na desce. */
-const nativeOf = (control: XrControl | null): boolean => control?.swing !== undefined || control?.input === 'shooter-rig' || control?.input === 'throw-rig';
 
 function placementOf(control: XrControl | null, state: Int32Array): Placement {
   if (control?.swing !== undefined) return REACH;
@@ -420,14 +436,19 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   const hud = useXrHud();
   const shown = game ?? hud?.session ?? null;
   const control = useMemo(() => (shown === null ? null : xrControlOf(shown.world)), [shown]);
+  // Režim podle žánru (P67 T6); `surround` (T7) se zatím hraje na stole.
+  const entry = useMemo(() => (shown === null ? null : modeOf(genreOfWorld(shown.world))), [shown]);
   const world = useRef<Group>(null);
-  const motion = useRef<XrMotion>({ aim: null, velocity: null, laneAxis: null });
+  const motion = useRef<XrMotion>({ aim: null, velocity: null, laneAxis: null, handX: null });
   const calls = useRef(0);
   const desk = useRef<DeskReport | null>(null);
+  const roomReport = useRef<RoomReport | null>(null);
   const aim = useMemo<PanelAim>(() => new Map(), []);
-  const aims = control?.input === 'shooter-rig' || control?.input === 'lanes';
+  // Chytání drží pruh rukou; paprsek by spouští ťukal do jiného pruhu, než nad kterým ruka je.
+  const aims = (control?.input === 'shooter-rig' || control?.input === 'lanes') && control.handLane !== true;
   const swings = control?.input === 'throw-rig' || control?.swing !== undefined;
-  const diorama = shown !== null && !nativeOf(control);
+  const room = entry?.mode === 'room';
+  const diorama = shown !== null && entry?.mode !== 'native' && !room;
   // VR lobby (P67 T2): nad hrou na obrazovce místo jejího HUD; ovladače do hry nejdou, dokud je otevřené.
   const lobbyState = useXrLobby();
   const lobby = presenting && lobbyShown(lobbyState, shown);
@@ -439,7 +460,8 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
     <>
       <group ref={world}>{children}</group>
       {presenting && diorama && <Diorama world={world} session={shown} report={desk} />}
-      {presenting && !diorama && <XrPlace world={world} session={shown} control={control} />}
+      {presenting && room && shown !== null && <XrRoom world={world} session={shown} pose={entry.pose} hand={control?.handLane === true} motion={motion} report={roomReport} />}
+      {presenting && !diorama && !room && <XrPlace world={world} session={shown} control={control} />}
       {presenting && <DirectRender calls={calls} />}
       {presenting && shown !== null && <XrCull key={diorama ? 'desk' : 'free'} world={world} desk={desk} diorama={diorama} />}
       {playing && game !== null && control !== null && aims && <XrAim session={game} control={control} world={world} motion={motion} />}
@@ -447,7 +469,7 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {playing && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
       {presenting && shown !== null && !lobby && <XrHud diorama={diorama} desk={desk} aim={aim} />}
       {lobby && <XrLobby shown={shown} aim={aim} />}
-      <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} />
+      <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} room={roomReport} />
     </>
   );
 }
