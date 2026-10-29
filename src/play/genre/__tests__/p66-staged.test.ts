@@ -20,6 +20,9 @@ import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, ty
 import { GENRE_MODULES, compileGenre } from '../index';
 
 const P66 = ['survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
+/** Žánry, které jejich úloha už postavila (překlad i generátor hrají z ručního specu); pro výběr zůstávají `staged` do T12. */
+const LIVE: readonly string[] = ['arrows'];
+const STAGED = P66.filter((genre) => !LIVE.includes(genre));
 /** Generátor režimu, který úloha žánru naplní (registrace je hotová v T2). */
 const GENERATOR: Readonly<Record<(typeof P66)[number], string>> = {
   survivor: 'survivor_waves',
@@ -61,7 +64,7 @@ describe('P66 staged genres (T2)', () => {
   });
 
   it('compiling a skeleton throws until its task makes it live', () => {
-    for (const genre of P66) {
+    for (const genre of STAGED) {
       const spec = { genre, mode: 'default', hero: 'fox', setting: 'forest' } as never;
       expect(() => GENRE_MODULES[genre as GenreId].compile(spec), genre).toThrow(/not live/);
       // Cesta hry žánru jde přes buňku receptu; kostra živou buňku nemá (`presetOf`), takže hází i tady.
@@ -97,8 +100,9 @@ describe('P66 staged genres (T2)', () => {
       const id = GENERATOR[genre];
       expect(MODE_GENERATORS[id]?.id, genre).toBe(id);
       expect(ARCADE_LIBRARY.generators[id], genre).toBe(MODE_GENERATORS[id]);
-      const parts = MODE_GENERATORS[id]!.parts(1, {}, undefined);
-      expect(parts.issues, genre).toEqual([modeNotBuilt(id)]);
+      const generator = MODE_GENERATORS[id]!;
+      const parts = generator.parts(1, LIVE.includes(genre) ? generator.params.parse({}) : {}, undefined);
+      expect(parts.issues, genre).toEqual(LIVE.includes(genre) ? [] : [modeNotBuilt(id)]);
       expect(parts.control.id, genre).toBe(genre);
       expect(parts.bot.id, genre).toBe(`${genre}_bot`);
     }

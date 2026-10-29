@@ -368,3 +368,99 @@ Jedna záměrná chyba na vlastnost, pak soubor zpět ze zálohy (`D:/caches/p66
 - Hláška „New best!“ je vidět i na snímku telefonu: nahoře uprostřed pod pásem HUD, ne přes hrdinu.
 - `interface-language` 4/4, `p36-dare` 4/4 a `p37c-share` 3/3 zelené na `chromium`. `interface-language` na `pixel7-touch` není v `testMatch` projektu, tam se nepouští.
 - **Nález:** `p66-hooks` padá na obou projektech na ENOENT `e2e/fixtures/p66-hooks-spec.json`. Soubor commit T4 nenese (není ani v gitu, ani v `.gitignore`), s T11 to nesouvisí.
+
+## T9 – arrows
+
+Hádanka „klepni a odletí“: mřížka kusů z věty (výchozí auto), každý se šipkou. Klepnutý kus odletí, když má ve směru šipky volnou cestu ven; jinak narazí, vrátí se a hráč ztratí srdce (3 srdce). Worktree `D:/caches/p66/wt-t9`, větev `p66-t9`.
+
+### Jak hra běží
+
+- **Soubory:**
+  - `pieces/arrows-level.ts` – mřížky kol, stavba, řešič, mez buněk;
+  - `pieces/arrows.ts` – ovládání `arrows`, pravidlo `arrows_tap`, generátor `arrows_grid`;
+  - `pieces/arrows-bot.ts` – robot `arrows_bot`;
+  - `genre/arrows.ts` – modul žánru;
+  - `genres/arrows/ArrowsScene.tsx` – scéna.
+- **Úroveň řešitelná konstrukcí.** Kusy se kladou v obráceném pořadí odletu. Kus jde jen do prázdné buňky a jen se směrem, jehož cesta ven je volná od už položených kusů. Ze 3 losů 2 dávají přednost kusu, který zatarasí cestu už položeného kusu – jinak by hádanka neměla co řešit.
+  - Hladový řešič (vždy první volný kus) vyčistí mřížku právě tehdy, když to jde: odebrání kusu cesty jen uvolňuje.
+  - Generátor úroveň znovu ověří řešičem (`checkArrowsLevel`). Zaseknutá mřížka hru nepostaví.
+- **Kola** (`rounds` 2–5, výchozí 3) berou mřížky rovnoměrně z řady 4×3/6 kusů → 4×4/8 → 5×4/10 → 5×5/12 → 6×5/14. Poslední kolo je vždy finále 6×5. Hra se 3 koly má 6 + 10 + 14 = 30 kusů, s 5 koly 50 (strop počtu role ve specu).
+  - Semínko obsahu každého kola je z `roundSeeds` (stream háčků `rounds`), mřížka z vlastního `layout` streamu toho semínka.
+  - Kusy všech kol stojí v úrovni od tiku 0. HP těla nese kód 1 + směr + 4 × kolo; pravidlo, ovládání, robot i scéna berou jen kusy běžícího kola (`roundOf`).
+  - Háčky `withHooks(..., { clear: 'win' })`: poslední kus kola = výhra pravidla, před finále z ní háčky udělají konec kola, přestávku 90 tiků a „Round N of M“.
+- **Hodiny celé hry:** `time_limit` = 12 + 2 s za kus, v mezích 30–85 s (3 kola: 72 s). Na kolo to dává 20–30 s, pod 60 s z AC. Nečinný hráč prohraje na hodinách, ještě uvnitř horizontu ověření 90 s.
+- **Kombo** za sérii odletů bez nárazu, bez časového okna; náraz ho vrátí na ×1. Pravidlo `arrows_tap` bere parametr `combo`, takže ho `hookedComboSources` od `genre.v6` udělá zdrojem komba. Tahle cesta dosud neměla test – teď ji drží `arrows.test.ts`:
+  - počítadlo komba dostane `arrows_tap` i pravidlo `hooks`;
+  - body rostou ×1, ×2, ×3;
+  - padnou hlášky `combo_2` a `combo_3`.
+- **Vstup:** ťuk nese buňku v ose (`axisOfCell`, buňky po řadách zleva shora). Scéna každý snímek zapíše `data-lane-cells` z rohů mřížky promítnutých skutečnou kamerou.
+  - Klávesnice: šipky vlevo a vpravo posunou kurzor po kusech běžícího kola, mezerník ťukne na kus pod kurzorem. První mezerník kurzor jen ukáže.
+  - Kurzor nad odletěným kusem skočí na další kus. Scéna ho kreslí slunečným kroužkem a zapíše `data-arrows-cursor`.
+- **Robot světa** ťuká na první volný kus jednou za 24 tiků (0,4 s, hráčské tempo – par skóre není nedosažitelný) a v přestávce neťuká.
+  - **Slabý robot** (`mistakes` ‰) s tou pravděpodobností ťukne na zatarasený kus. Los je z `pure-rand` nad tikem (stream `ai`).
+- **Scéna.** Kamera kouká po +z shora pod 56° s úzkým objektivem 32°. Na výšku ji `fitTall` napasuje tak, že mřížka běžícího kola leží celá ve spodních 45 % plátna nad dolní řadou HUD (`tapRect`). Nad mřížkou stojí hrdina z věty čelem k hráči a za ním řada kulis místa.
+  - Pod mřížkou a dráhou odletu je plocha v povrchu cesty sady: parkoviště = asfalt (`SURFACES[look.surface]`), přístav = prkna.
+  - V přestávce scéna ukazuje mřížku dalšího kola: kusy naskočí a kamera plynule couvne, než kolo začne.
+  - Odlet, náraz a naskočení jsou jen obraz. Odlet = kus jede po šipce za okraj a zmenší se. Náraz = kus poskočí ke kusu v cestě a vrátí se, odznak blikne poplachovou barvou.
+  - Kusy nemají `userData.frame`: čitelnost (`LegibleBodies`) by nejbližší kus zvětšila přes jeho buňku. Sonda je počítá přes `userData.item = 'piece'`.
+
+### Rozhodnutí (`implementation-notes`)
+
+- **`availability` zůstává `staged`.** AC chce `ready`, ale klasifikátor, návrh i režisér procházejí celé pořadí přes buňku receptu (`PRESETS` v `compose/presets.ts`). Ten soubor je sdílený registr a brief ho zakazuje měnit.
+  - `ready` bez buňky shodí skladbu (`sourceFor`) u každé věty. Změřeno 29. 10.: 2 894 červených z 6 863.
+  - Hra tedy hraje jen z ručního specu (fixture), jak plán do T12 stejně chce. Přepnutí na `ready` patří k přesunu řádku `arrows.default` do `PRESETS` v T12.
+- **Klepací cíle vs. „mřížka plní rect“.** Pás `rect` pro `fitTall` je spodních 45 % plátna nad dolní řadou HUD, ne celý pás hry. Mřížka ho plní a obě AC (klepací cíle dole, mřížka plní svůj pás) platí zároveň.
+- **„Kolo do 60 s“** drží rozpočet hodin celé hry (20–30 s na kolo), ne hodiny každého kola. `time_limit` jádra je jeden na hru a nejvýš 90 s.
+- **Mřížka je mírný lichoběžník.** `data-lane-cells` unese jen obdélník, perspektiva dělá lichoběžník. Boky se proto průměrují a objektiv je úzký (32°): střed každé buňky padne do své buňky.
+  - Přesný tvar by chtěl nový formát v `lanes-input.ts` (sdílený s tříděním), proto se neměnil.
+- **VR šipky nenabídne** (rozhodnutí T2, `xr/` beze změny): páčka buňku ve 2D nevybere.
+- **Bez upgradů a vzácnosti.** Žádná karta z `UPGRADES` v šipkách nic nedělá. Upgrady nejsou ani v AC T9.
+
+### T2a – ťuk do buňky end to end a mez buněk
+
+- `e2e/play-arrows.spec.ts` klepne prstem (desktop myší) doprostřed konkrétní buňky s volným kusem podle `data-lane-cells`. Pak ověří tři věci:
+  - poslední vstup záznamu je `{ TAP, axis: axisOfCell(buňka) }`;
+  - záznam přehraný v Node (`replayState`, týž hash jako Chromium) má mrtvý právě kus z té buňky a všechny ostatní kusy živé;
+  - scéna kreslí o kus méně.
+- Mez: `ARROWS.maxCells = 999`. `gridIssue` odmítne mřížku nad 999 buněk a `buildRound` z ní nic nepostaví.
+  - Test `arrows-level.test.ts` drží, že 37 × 27 = 999 projde a 40 × 25 = 1000 ani 32 × 32 ne.
+  - Každá buňka každé mřížky hry jde do osy ≤ `AXIS_MAX` a zpět.
+- `lanes-input.ts` ani `lane-cells.ts` se neměnily – ťuk do buňky dnes drží e2e šipek.
+
+### Testy
+
+- **Jednotky** (`npx vitest run src/play/arcade src/play/genre src/components/play/arcade/genres/arrows`, JSON reporter): **7 062 / 7 062** zelených. Otisk T1 `p66-hash.test.ts` 48/48 zelený.
+  - Poslední běh nad hotovým kódem (jen testy a scéna navíc): 7 057 / 7 062. Pět červených jsou běžecké testy (`p51-dead-time` 4, `runner-sections` 1) s `STACK_TRACE_ERROR` na limitu 120 s pod zátěží buildů čtyř sourozenců.
+  - Samotné: `p51-dead-time` zelený, `runner-sections` dál 1× na limitu (120,6 s). Šipek se netýkají – běžec ani jeho generátor se neměnil.
+  - `arrows-level.test.ts` 7, `arrows.test.ts` 13. Řešič na 200 semínkách × 2, 3 a 5 kol, publikační brána na 10 semínkách a pro 2–5 kol, robot vyhraje, nečinný prohraje, slabý robot (600 ‰) prohraje na 10/10.
+  - Fixture `e2e/fixtures/p66-arrows-spec.json` = přesně překlad žánru (test).
+  - `tsc --noEmit` čistý.
+- **E2e** `play-arrows` (build `npm run build`, `next start` :3175, `PLAY_READER=off`, souběžně s buildy sourozenců): **chromium 3/3, pixel7-touch 3/3** – dohrání, ťuk do buňky (T2a) a nečinný hráč.
+  - Telefon dohraje prstem, desktop klávesnicí.
+  - Mřížka leží ve spodních 45 % telefonu, buňka má ≥ 44 px, hrdina je čitelný (≥ 20 %, nebo čitelností zvětšený na strop).
+  - Banner „Round 1 of 3“, náraz vezme srdce, výsledek „You did it!“, konzole bez chyb.
+  - Nečinný hráč prohraje na hodinách („Try again!“).
+- **Snímky** (`D:/caches/p66/arrows/`, start / mid / result na obou projektech). Auta z věty se šipkami, hrdina nad mřížkou, plocha parkoviště a výsledek. Nic fialového.
+
+**Rozbít schválně** (záloha `D:/caches/p66/arrows/backup/`, po každé obnova a `diff -q`):
+
+| Vlastnost | Záměrná chyba | Červené testy |
+|---|---|---|
+| řešitelné z konstrukce | stavba bere každý směr bez kontroly cesty | 12, mezi nimi řešič na 200 semínkách |
+| mez 999 buněk (T2a) | `gridIssue` pustí 1 000 buněk | 1 – „a grid over 999 cells is refused…“ |
+| náraz stojí srdce | náraz bez `damage` | 2 – slabý robot, ťuk na zatarasený kus |
+| odletí právě ťuknutý kus | odletí první kus mřížky | 2 – ťuk na volný kus, klávesnice |
+| kombo násobí | násobič vždy ×1 | 1 – série a hlášky komba |
+| náraz kombo shodí | po nárazu série pokračuje | 2 |
+| slabý robot chybuje | práh chyb se ignoruje | 1 – slabý robot prohraje |
+| ťuk nese svou buňku | ovládání posune buňku o jednu | 8 |
+
+`mutationStatus: all-red` (8/8, jednotky). E2e se schválně nerozbíjelo – chyba v kódu hry by chtěla nový build (~10 min pod zátěží); vazbu ťuk → buňka drží v jednotkách řádek „ťuk nese svou buňku“.
+
+**FPS přeskočeno.** `play-perf @measure` publikuje hru z věty (`{ sentence }`) a věta šipky trefí až po T12, kdy je pustí klasifikátor. Zacílit ho na ruční spec by znamenalo měnit sdílený `play-perf.spec.ts`. Orientační měření patří do T12 nebo T16.
+
+### Nálezy
+
+- **Úvodní karta „Tap to start“** (`PromptSpot` v `ArcadeStage.tsx`) leží na telefonu přes horní řadu mřížky. Pod hrdinou je víc místa než nad ním, protože mřížka je dole. První ťuk ji schová, ale na prvním snímku zakryje kus první mřížky. Patří sdílené logice karty (T14 / P64).
+- **`capabilities.ts` řádek `arrows`** pořád říká, že ovládání nic nečte (`labels: []`, `mechanics: []`). Hra přitom čte životy a kreslí kus z popisku role `piece` (přes `cast.things`). Opravit s T13, až šipky uvidí režisér a kritik.
+- **Pět žánrů a `p66-staged.test.ts`:** test teď má `LIVE = ['arrows']`. Šipky jsou pořád `staged` pro výběr, ale překlad i generátor hrají. Každá další úloha žánru tam připíše svůj žánr – při slučování spojit seznam.
