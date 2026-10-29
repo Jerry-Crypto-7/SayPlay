@@ -179,7 +179,7 @@ Jména kusů, ovládání, generátorů a robotů drží úlohy žánrů beze zm
 - **Zmrazené výsledky po zvednutí na `genre.v6` byly přepočítané**, stejně jako v P51:
   - `evals/play/p41/golden/genres.json` (generátor `freeze.measure.ts -t "writes genres.json"`): rozdíl je jen 323× `compilerVersion` a 287× `specHash`; `replays.json` je bajt po bajtu stejný, takže svět ani robot nové hry se nepohnuly.
   - `evals/play/p41/difficulty.json` (`difficulty.measure.ts`): `specHash` se posunul u 35 z 62 buněk.
-  - **Řádky běhů se změnily u šesti buněk** (`roam.catch`, `catch`, `whack`, `defense`, `slice`, `merge`; 40 řádků každá) a v souhrnu dvou z nich (`catch`, `merge`). Na T2 to nezávisí (inference):
+  - **Řádky běhů se změnily u šesti buněk** (`roam.catch`, `catch`, `whack`, `defense`, `slice`, `merge`; 40 řádků každá) a v souhrnu dvou z nich (`catch`, `merge`). **Na T2 to nezávisí – změřeno 29. 10.:** `difficulty.measure.ts` přeměřený na čistém `main` `e661855c` (worktree `D:/caches/p66/main`) dává řádky běhů i souhrny shodné s větví (0 rozdílných řádků; liší se jen `specHash` 35 buněk kvůli `genre.v6`). Proč soubor zastaral:
     - spec `roam.catch` se nepohnul, a běhy přesto ano;
     - soubor se naposledy měřil v P54C (21. 10.) a P55 (události pruhů), P58A, P61 a P63 světy těch buněk změnily;
     - `difficulty.test.ts` řádky nehlídá, jen `specHash` a meze.
