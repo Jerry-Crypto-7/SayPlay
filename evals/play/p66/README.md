@@ -328,3 +328,43 @@ Jedna záměrná chyba na vlastnost, pak soubor zpět ze zálohy (`D:/caches/p66
 | přestávka zastaví svět | `hooksStart` po tiku přestávky pustí i zbytek tiku | 9 – kola, boss, výchozí karta, robot, přestávka |
 
 `mutationStatus: all-red` (11/11).
+
+## T11 – rekord a „beat my score“ při sdílení, bez účtů
+
+**Co už bylo (P36B, P37C) a zůstává:**
+- pilulka „Best 1,240“ / „Beat 1,240“ – položka `best` / `dare` pilulky postupu HUD, u každé arkády nezávisle na háčcích;
+- rekord v `localStorage` (`best.ts`);
+- výzva odkazem `?via=share&dare=<id>`;
+- výsledek „New best!“ / „You beat it!“ / „So close.“ (`PostRun.tsx`).
+
+`BestPill.tsx` proto nevznikl a `PostRun.tsx` se neměnil – druhá pilulka by jen zopakovala tu v HUD.
+
+**Co přibylo:**
+- **Hláška přebitého cíle za běhu.** `cheerOf` (`best.ts`) a `cheerView` (`HooksLayer.tsx`) ohlásí přebitý cíl hláškou jednou za běh; restart ji vrátí.
+  - Vrstva háčků visí nad každou arkádou, která běží, takže hláška jde i ve hře bez háčků.
+  - Položka HUD hned zmizí. Dřív v ní 2 s stálo „New best!“, a s hláškou by byl na obrazovce dvakrát.
+- **Text hlášky:** rekord „New best!“, výzva „You're ahead!“, ne „You beat it!“ z plánu. Kamarád ještě musí vyhrát (`dareVerdict`) a „You beat it!“ patří až výsledku – stejný důvod jako u `AHEAD` v P36B T7. Id hlášky zůstává `beat_it`.
+- **Sdílecí text po výhře:** „Beat my 1,240!“, bez bodů „Beat my 31.0s!“ (dřív „Can you beat 1,240?“). Kit: Dare = hra s tvým skóre k překonání, po výhře smí být drzá.
+  - Výhra s nulou bodů dá čas, ne „Beat my 0!“ – stejně jako cíl kamaráda (`dareGoal`).
+  - Prohra číslo dál nenese (pravidlo P37C).
+- **Žádný nový parametr URL s holým číslem.** Odkaz nese skóre přes id výzvy, které server ověřil přehráním (výchozí postup plánu).
+  - Okraj „celé číslo 1–10 000 000“ by hlídal parametr, který neexistuje.
+  - Holé číslo nebo nesmysl v `dare=` (`1240`, `-1`, `99999999999`, `NaN`) otevře obyčejnou hru bez cíle a bez `NaN` – drží to nový e2e.
+- **Bez úložiště** (soukromé okno, kde už sáhnout na `localStorage` hází) hra doběhne do výsledku, výhra nespadne a pilulka rekordu není. Drží to unit test i e2e.
+- **Žádný nový popisek počítadla**, `hud-labels.ts` beze změny.
+- **Sonda `handPlay(n)`** stojí u bodů nad `n`. Díky tomu e2e přebije rekord za běhu, dokud hra ještě běží.
+- **Ostatní změny mimo seznam úlohy:**
+  - `playwright.config.ts`: `play-share` jede i na `pixel7-touch` (AC to chce);
+  - `e2e/p37c-share.spec.ts`: řádek výzvy po výhře;
+  - stará věta po prohře bez bodu (P56A T9). Padala by i bez T11, protože větev prohry T11 nemění. Ověřeno čtením kódu, běh bez změny se nepouštěl.
+
+**Testy (29. 10., worktree `p66-t11`, build `npm run build`, server `next start` :3169, `PLAY_READER=off`):**
+- `npx vitest run src/components/play src/play/score`: 1529/1529 zelených; `tsc --noEmit` čistý.
+- `play-share` 10/10 zelených na `chromium` i na `pixel7-touch`. Nové testy:
+  - výzva „Best N“ → „Beat N“ → „So close.“ a výsledek proti výzvě;
+  - hláška „New best!“ za běhu;
+  - okraj `dare=`;
+  - soukromé okno.
+- Hláška „New best!“ je vidět i na snímku telefonu: nahoře uprostřed pod pásem HUD, ne přes hrdinu.
+- `interface-language` 4/4, `p36-dare` 4/4 a `p37c-share` 3/3 zelené na `chromium`. `interface-language` na `pixel7-touch` není v `testMatch` projektu, tam se nepouští.
+- **Nález:** `p66-hooks` padá na obou projektech na ENOENT `e2e/fixtures/p66-hooks-spec.json`. Soubor commit T4 nenese (není ani v gitu, ani v `.gitignore`), s T11 to nesouvisí.

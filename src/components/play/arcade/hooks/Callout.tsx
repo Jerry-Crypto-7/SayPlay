@@ -2,12 +2,12 @@
  * Hláška háčků (P66 T4): krátký štítek kitu pod horním pásem HUD, nikdy přes hrdinu (`play-hooks.css`), z uzavřeného
  * seznamu `CALLOUTS`. Jádro hlásí milníky komba, vyčištěné kolo a epický nález (`callout`); vstup bosse
  * (`boss_enter`) dá „Boss!“ sám. Visí jedna naráz – přijde-li jich v tiku víc, vyhraje nejdůležitější, nová
- * přebije starou. „New best!“ a „You beat it!“ sem pošle rekord (T11) přes `showCallout`. Jen DOM, mimo hash.
+ * přebije starou. Přebitý rekord a výzvu kamaráda sem pošle `ArcadePlay` (T11, `cheerView`). Jen DOM, mimo hash.
  */
 
 import type { CalloutId, HookEffect } from '@/play/arcade/hooks/contract';
 
-import { NEW_BEST, YOU_BEAT_IT } from '../../starters';
+import { AHEAD, NEW_BEST } from '../../starters';
 
 /**
  * Viditelný text (anglicky, sentence case, `docs/brand/docs/11-voice-copy.md`). Násobič je „×“ jako na pilulce
@@ -21,7 +21,8 @@ export const CALLOUT_TEXT: Readonly<Record<CalloutId, string>> = {
   epic_find: 'Epic find!',
   boss: 'Boss!',
   new_best: NEW_BEST,
-  beat_it: YOU_BEAT_IT,
+  // Body výzvy přebité za běhu (T11): vyhrát ještě musí, „You beat it!“ řekne až výsledek (`AHEAD`, P36B T7).
+  beat_it: AHEAD,
 };
 
 /** Jak dlouho hláška visí (ms, CSS `play-hook-callout`). */

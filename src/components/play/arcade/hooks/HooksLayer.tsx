@@ -6,13 +6,17 @@
  * (`RarityToast`). Všechno ze zpráv háčků tiku (`onHookEffects` v `effects/bus.ts`) – jen DOM a čas kresby,
  * do stavu, záznamu ani hashe nic nepíše; vstup volby jde přes relaci jako každý jiný stisk. Hra bez háčků
  * (`genre.v5`) zprávy nemá a vrstva nevykreslí nic. Restart relace (tik zpět) ji vyprázdní.
+ *
+ * Výjimka mimo zprávy jádra (T11): přebitý rekord nebo výzvu kamaráda za běhu pošle `ArcadePlay` jako `cheer`
+ * a vrstva ji ohlásí hláškou jednou za běh – i ve hře bez háčků (vrstva visí nad každou arkádou, která běží).
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ARCADE_LIMITS } from '@/play/arcade/contract';
 import type { HookEffect, UpgradeId } from '@/play/arcade/hooks/contract';
 
+import type { BestCheer } from '../../best';
 import { onHookEffects } from '../effects/bus';
 import { runnerPathOf } from '../runner/path';
 import type { ArcadeSession } from '../session';
@@ -50,9 +54,16 @@ export interface HooksView {
   readonly toast: ShownFind | null;
   /** Vzácné a epické nálezy běhu pro pilulku (jen obraz; počty pro výsledek drží stav jádra). */
   readonly found: Readonly<Record<FoundRarity, number>>;
+  /** Přebitý cíl HUD (rekord, výzva) už v tomhle běhu hlášku dostal (T11); restart ho vrátí s celým obrazem. */
+  readonly cheered: boolean;
 }
 
-export const NO_HOOKS: HooksView = { pops: [], callout: null, round: null, offer: null, toast: null, found: { rare: 0, epic: 0 } };
+export const NO_HOOKS: HooksView = { pops: [], callout: null, round: null, offer: null, toast: null, found: { rare: 0, epic: 0 }, cheered: false };
+
+/** Hláška přebitého cíle (P66 T11) jednou za běh: další přebití téhož běhu (body klesly a znovu stouply) nic neohlásí. */
+export function cheerView(view: HooksView, cheer: BestCheer, now: number, key: number): HooksView {
+  return view.cheered ? view : { ...view, cheered: true, callout: showCallout(view.callout, cheer, now, key) };
+}
 
 /** Co z tiku vrstva potřebuje: zprávy a popy s polohou přečtenou hned (relace pole stavu přepisuje). */
 export interface HookTick {
@@ -78,7 +89,7 @@ export function nextView(view: HooksView, tick: HookTick, now: number, nextKey: 
     }
   }
   const pops = tick.pops.length > 0 ? addPops(view.pops, tick.pops, now, nextKey) : view.pops;
-  return { pops, callout, round, offer, toast, found };
+  return { ...view, pops, callout, round, offer, toast, found };
 }
 
 /** Zhasne, co dohořelo; beze změny vrátí týž obraz (React nepřekreslí). */
@@ -115,11 +126,20 @@ export function HookScreen({ view, session }: { readonly view: HooksView; readon
   );
 }
 
-export function HooksLayer({ session }: { readonly session: ArcadeSession }) {
+export function HooksLayer({ session, cheer = null }: { readonly session: ArcadeSession; readonly cheer?: BestCheer | null }) {
   const [view, setView] = useState<HooksView>(NO_HOOKS);
+  // Klíče nástupů jedna řada pro zprávy háčků i hlášku rekordu: táž hodnota by u nové hlášky nepřehrála nástup.
+  const keys = useRef(0);
+  // Rekord nebo výzva přebité za běhu (T11, `cheerOf` v `ArcadePlay`): hláška jednou za běh, pak zhasne jako ostatní.
   useEffect(() => {
-    let key = 0;
-    const nextKey = (): number => (key += 1);
+    if (cheer === null) return;
+    const key = (keys.current += 1);
+    setView((current) => cheerView(current, cheer, performance.now(), key));
+    // Bez úklidu: časovač jen zhasne hlášku, i když body mezitím klesly pod cíl (`cheer` zpět na `null`).
+    window.setTimeout(() => setView((current) => pruneView(current, performance.now())), CALLOUT_MS + 20);
+  }, [cheer]);
+  useEffect(() => {
+    const nextKey = (): number => (keys.current += 1);
     const timers = new Set<number>();
     const bend = runnerPathOf(session.world) ?? undefined;
     const seen: Partial<Record<HookEffect['kind'], number>> = {};

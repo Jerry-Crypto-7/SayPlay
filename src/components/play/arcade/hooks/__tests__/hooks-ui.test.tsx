@@ -159,9 +159,11 @@ describe('Callout', () => {
   });
 
   it('has short English copy for every callout id', () => {
-    for (const id of CALLOUTS) expect(CALLOUT_TEXT[id]).toMatch(/^[A-Z][A-Za-z ×0-9!]{2,15}$/);
+    for (const id of CALLOUTS) expect(CALLOUT_TEXT[id]).toMatch(/^[A-Z][A-Za-z' ×0-9!]{2,15}$/);
     expect(CALLOUT_TEXT.round_clear).toBe('Round clear!');
     expect(CALLOUT_TEXT.epic_find).toBe('Epic find!');
+    // T11: body výzvy přebité za běhu ještě nejsou výhra – „You beat it!“ patří až výsledku.
+    expect([CALLOUT_TEXT.new_best, CALLOUT_TEXT.beat_it]).toEqual(['New best!', "You're ahead!"]);
   });
 });
 

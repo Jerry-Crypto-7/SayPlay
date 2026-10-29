@@ -31,9 +31,8 @@ import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 import type { FeedPreview } from '@/play/version/version';
 
-import { type Best, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, readBest, settleBest } from '../best';
+import { type Best, type BestOutcome, bestGoal, cheerOf, type Dare, dareGoal, dareStart, readBest, settleBest } from '../best';
 import type { StageTunnel } from '../feed/stage-tunnel';
-import { AHEAD, NEW_BEST } from '../starters';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression, loopTouch } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
@@ -306,8 +305,6 @@ export interface ArcadePlayProps {
 const END_PAUSE_MS = 600;
 /** Po prohře výsledek dřív (P36B T3): oslava tu není a „Try again“ má být po ruce do 300 ms. */
 const LOSS_PAUSE_MS = 300;
-/** Jak dlouho HUD ukazuje „New best!“, když hráč rekord přebije za běhu (P36B T4); pak cíl zmizí. */
-const NEW_BEST_MS = 2000;
 
 /**
  * Je Rapier pro tenhle svět načtený (P29A T13)? Jádro je synchronní a bez něj
@@ -671,7 +668,7 @@ function ArcadePlayGame({
   }, [offline, session, versionId, livesStart, par]);
 
   // Cíl k překonání v HUD (P36B T4): rekord z prohlížeče, přečtený po připojení a s každým
-  // novým během (`record` se vynuluje). Přebité body ukážou na chvíli „New best!“, pak cíl zmizí.
+  // novým během (`record` se vynuluje). Přebité body ohlásí hláška „New best!“ (P66 T11) a cíl zmizí.
   // Výzva kamaráda (P36B T7) má přednost: cíl je jeho výsledek a přebité body řeknou „You're ahead!“.
   const [best, setBest] = useState<Best | null>(null);
   useEffect(() => {
@@ -684,23 +681,11 @@ function ArcadePlayGame({
   const names = useMemo(() => nameLines(spec), [spec]);
   const nameSlot = running && active ? nameSlotAt(snapshot.tick, ARCADE_HZ, demo === null, verb !== null) : null;
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
-  const goalLabel = challenge === null ? 'best' : 'dare';
-  const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
-  const [cheered, setCheered] = useState(false);
-  useEffect(() => {
-    if (!beaten) {
-      setCheered(false);
-      return;
-    }
-    const timer = window.setTimeout(() => setCheered(true), NEW_BEST_MS);
-    return () => window.clearTimeout(timer);
-  }, [beaten]);
+  // Přebitý cíl (P66 T11) ohlásí hláška vrstvy háčků jednou za běh a položka HUD hned zmizí – „New best!“ by jinak
+  // stál na obrazovce dvakrát. Ukázka robota není běh hráče: cíl ani hlášku nemá.
+  const cheer = demo === null ? cheerOf(goal, challenge !== null, snapshot.score) : null;
   const target: HudCounter | null =
-    goal === null || demo !== null || cheered
-      ? null
-      : beaten
-        ? { label: goalLabel, count: snapshot.score, text: challenge === null ? NEW_BEST : AHEAD, fresh: true }
-        : { label: goalLabel, count: goal.score ?? 0, text: goal.text };
+    goal === null || demo !== null || cheer !== null ? null : { label: challenge === null ? 'best' : 'dare', count: goal.score ?? 0, text: goal.text };
 
   // Duch (P37B T8, `GHOST.md`): kamarád z odkazu výzvy, jinak nejlepší běh hry – jednou na aktivní
   // hru z úložiště. Id kamarádovy výzvy nese adresa `/play/[id]?dare=`, stránka ji ověřila (`challenge`).
@@ -892,17 +877,19 @@ function ArcadePlayGame({
       /**
        * Záznam robota zahraný „rukou“ (P28C T3): tytéž stisky tik po tiku cestou,
        * kterou jde klávesnice, takže běh je hráčův a odezva i zvuk reagují.
-       * Stojí u prvního bodu (`score`) nebo na konci hry (`end`); `at` je
+       * Stojí u prvního bodu (`score`), u bodů nad číslem (`until` číslo – e2e
+       * rekordu přebitého za běhu, P66 T11) nebo na konci hry (`end`); `at` je
        * `performance.now()` té chvíle. `lag` posune stisky o tolik tiků později
        * – e2e výzvy (P36B T7) tak dostane pomalejší výhru téhož robota.
        */
-      handPlay: (until: 'score' | 'end', lag = 0) => {
+      handPlay: (until: 'score' | 'end' | number, lag = 0) => {
         const inputs = session.botInputs().map((event) => ({ ...event, tick: event.tick + lag }));
+        const above = until === 'score' ? 0 : until === 'end' ? Infinity : until;
         session.restart();
         let next = 0;
         const done = (): boolean => {
           const now = session.snapshot();
-          return now.runState !== 'running' || now.tick >= ARCADE_LIMITS.maxTicks || (until === 'score' && now.score > 0);
+          return now.runState !== 'running' || now.tick >= ARCADE_LIMITS.maxTicks || now.score > above;
         };
         while (!done()) {
           const tick = session.snapshot().tick;
@@ -946,6 +933,7 @@ function ArcadePlayGame({
         lookId={lookOf(spec.theme)}
         look={scene}
         enabled={active && running}
+        cheer={cheer}
         heroAction={heroActionOf(spec)}
         // Ukázka robota není závod: duch jen v běhu hráče.
         ghost={demo === null && ghost !== null ? ghost : undefined}

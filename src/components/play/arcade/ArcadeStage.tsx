@@ -27,6 +27,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
 
+import type { BestCheer } from '../best';
 import { AbilityButton, ActionButton, abilitiesOf, actionsOf, useAbilityInput, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
@@ -1125,6 +1126,7 @@ export default function ArcadeStage({
   lookId = 'meadow',
   look: scene,
   enabled = true,
+  cheer = null,
   heroAction = 'none',
   ghost,
   abilityWords,
@@ -1141,6 +1143,8 @@ export default function ArcadeStage({
   readonly look?: Look;
   /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
   readonly enabled?: boolean;
+  /** Přebitý rekord či výzva za běhu (P66 T11, `cheerOf`): vrstva háčků ho ohlásí hláškou jednou za běh. */
+  readonly cheer?: BestCheer | null;
   /** Viditelná činnost hrdiny ze specu (P37-0 T2); jde do každé scény, kreslí ji až stopa vzhledu. Jádro ji nečte. */
   readonly heroAction?: HeroAction;
   /** Duch dřívějšího běhu (P37B T8, `GhostSlot.tsx`); scéna ho kreslí ve svém slotu. */
@@ -1230,7 +1234,7 @@ export default function ArcadeStage({
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {/* Háčky (P66 T4): létající skóre, hlášky, banner kola, karty vylepšení, nálezy; hra bez háčků nic nevykreslí. */}
-      {enabled && <HooksLayer session={session} />}
+      {enabled && <HooksLayer session={session} cheer={cheer} />}
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}

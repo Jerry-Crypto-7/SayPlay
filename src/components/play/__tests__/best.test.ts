@@ -2,7 +2,8 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { BEST_PREFIX, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, dareVerdict, readBest, settleBest } from '../best';
+import { cheerView, NO_HOOKS } from '../arcade/hooks/HooksLayer';
+import { BEST_PREFIX, type BestCheer, type BestOutcome, bestGoal, cheerOf, type Dare, dareGoal, dareStart, dareVerdict, readBest, settleBest } from '../best';
 import { PostRun, type RunFacts, runResult } from '../PostRun';
 import type { RemixJob } from '../RemixBox';
 import { DARE_BACK, NEW_BEST, YOU_BEAT_IT } from '../starters';
@@ -160,6 +161,63 @@ describe('bestGoal – cíl k překonání v HUD (P36B T4)', () => {
       renderToStaticMarkup(createElement(GameHud, { title: 'T', goalLine: 'Go', counters: [counter], clock: { seconds: 3, countdown: false }, objective: false }));
     expect(hud({ label: 'best', count: 2450, text: 'Best 2,450' })).toMatch(/class="play-hud-count" data-testid="hud-counter-best"[^>]*>.*Best 2,450/);
     expect(hud({ label: 'best', count: 2451, text: NEW_BEST, fresh: true })).toMatch(/class="play-hud-count is-new" data-testid="hud-counter-best"[^>]*>.*New best!/);
+  });
+});
+
+/**
+ * P66 T11: soukromé okno, kde už sáhnout na `localStorage` vyhodí, hraje bez pilulky rekordu a bez pádu;
+ * přebitý cíl ohlásí hláška jednou za běh, i když body kolem cíle kolíší.
+ */
+describe('rekord bez úložiště a hláška přebitého cíle (P66 T11)', () => {
+  it('bez úložiště (přístup k localStorage hází) pilulka rekordu není a konec běhu nespadne', () => {
+    const before = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get: () => {
+        throw new DOMException('The operation is insecure.', 'SecurityError');
+      },
+    });
+    try {
+      expect(readBest('v1')).toBeNull();
+      expect(bestGoal(readBest('v1'), 60, false)).toBeNull();
+      expect(settleBest('v1', win(200, 900, 2))).toEqual({ previous: null, isNew: false });
+      expect(cheerOf(bestGoal(readBest('v1'), 60, false), false, 99_999)).toBeNull();
+    } finally {
+      if (before === undefined) Reflect.deleteProperty(globalThis, 'localStorage');
+      else Object.defineProperty(globalThis, 'localStorage', before);
+    }
+  });
+
+  /** Body běhu tik po tiku → hlášky, které by vrstva háčků ukázala (`cheerOf` v `ArcadePlay`, `cheerView` ve vrstvě). */
+  function cheers(goal: ReturnType<typeof bestGoal>, dare: boolean, scores: readonly number[], restartAt = -1): BestCheer[] {
+    const shown: BestCheer[] = [];
+    let view = NO_HOOKS;
+    scores.forEach((score, tick) => {
+      if (tick === restartAt) view = NO_HOOKS;
+      const cheer = cheerOf(goal, dare, score);
+      if (cheer === null) return;
+      const next = cheerView(view, cheer, tick, tick);
+      if (next !== view) shown.push(next.callout!.id as BestCheer);
+      view = next;
+    });
+    return shown;
+  }
+
+  it('přebitý rekord ohlásí „New best!“ jednou za běh, i když body klesnou a znovu stoupnou', () => {
+    const goal = bestGoal({ score: 1240, ticks: 1860, stars: 2 }, 60, false);
+    expect(cheers(goal, false, [0, 800, 1240, 1241, 1300, 1200, 1500])).toEqual(['new_best']);
+    // Shoda s rekordem ho nepřebije.
+    expect(cheers(goal, false, [0, 1240, 1240])).toEqual([]);
+    // Restart (tik zpět) vrátí vrstvu do `NO_HOOKS`: nový běh ohlásí znovu.
+    expect(cheers(goal, false, [0, 1300, 0, 1300], 2)).toEqual(['new_best', 'new_best']);
+  });
+
+  it('výzva kamaráda hlásí `beat_it`; cíl v čase ani žádný cíl za běhu nehlásí', () => {
+    const scored: Dare = { score: 1240, ticks: 1860, liveChanges: 0 };
+    expect(cheers(dareGoal(scored, 60, false), true, [0, 1241, 1500])).toEqual(['beat_it']);
+    expect(cheers(dareGoal({ ...scored, score: 0 }, 60, false), true, [0, 50, 5000])).toEqual([]);
+    expect(cheers(bestGoal({ score: 0, ticks: 1860, stars: 1 }, 60, false), false, [0, 5000])).toEqual([]);
+    expect(cheers(null, false, [0, 5000])).toEqual([]);
   });
 });
 

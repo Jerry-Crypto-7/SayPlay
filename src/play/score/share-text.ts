@@ -1,7 +1,7 @@
 /**
  * Výsledek jako text ke sdílení (P37C T4), po vzoru Wordle: mřížka bez
  * spoileru – jen to, jak běh dopadl (hvězdy, životy, kolik cílů), nic z hry
- * samotné – a cíl k překonání („Can you beat 2,450?“) s odkazem výzvy.
+ * samotné – a cíl k překonání („Beat my 2,450!“, P66 T11) s odkazem výzvy.
  *
  * Celý text se vejde do 280 znaků (počítáno v UTF-16, tedy přísněji než
  * sítě, které emoji váží dvěma): zkracuje se jen název hry, ostatní řádky
@@ -56,13 +56,17 @@ function grid(run: ShareRun): string {
   return marks.join(' ');
 }
 
-/** Cíl pro kamaráda: body, jinak čas; přežití nemá co zkrátit, prohra nemá číslo k překonání. */
+/**
+ * Cíl pro kamaráda: výhra dá svoje body, jinak čas, jako cíl dalšímu („Beat my 2,450!“, P66 T11 – Dare je
+ * podle kitu hra s tvým skóre k překonání, po výhře smí být drzá); přežití nemá co zkrátit, prohra nemá
+ * číslo k překonání (výzvu nese jen výhra, `dareVerdict`).
+ */
 function dareLine(run: ShareRun, time: string): string {
   // Prohra bez bodu „So close.“ neříká (P56A T9) – stejné pravidlo jako nadpis výsledku v `PostRun`.
   const nothing = run.score !== null ? run.score === 0 : run.goal !== null && run.goal.count === 0;
   if (!run.won) return nothing ? 'Can you beat it?' : 'So close. Can you beat it?';
-  if (run.score !== null) return `Can you beat ${run.score.toLocaleString('en-US')}?`;
-  return run.survive ? 'Can you survive it too?' : `Can you beat ${time}?`;
+  if (run.score !== null && run.score > 0) return `Beat my ${run.score.toLocaleString('en-US')}!`;
+  return run.survive ? 'Can you survive it too?' : `Beat my ${time}!`;
 }
 
 function clip(text: string, room: number): string {
