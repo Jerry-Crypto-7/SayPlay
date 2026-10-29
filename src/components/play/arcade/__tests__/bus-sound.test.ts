@@ -12,7 +12,7 @@ import { HERO_ACTION_SFX, SFX_PRESETS } from '@/play/audio';
 import { HERO_ACTIONS } from '@/play/spec';
 
 import { VISUAL_EVENT_KINDS, type VisualEvent, type VisualEventKind } from '../effects/bus';
-import { busPresets } from '../effects/sound';
+import { busEventOf, busPresets } from '../effects/sound';
 
 const event = (kind: VisualEventKind, role: number = ROLE.player): VisualEvent => ({ kind, body: 1, role, x: 0, y: 0, z: 0, tick: 10 });
 
@@ -33,6 +33,15 @@ describe('bus sounds', () => {
   it('the end of the run drowns the rest of the tick, the loss beats the win', () => {
     expect(busPresets([event('pickup', ROLE.collectible), event('win')])).toEqual(['win']);
     expect(busPresets([event('win'), event('lose')])).toEqual(['lose']);
+  });
+
+  it('each sound of the tick sounds from the event that made it (P67 T8, used in VR only)', () => {
+    const enemy = { ...event('hit', ROLE.enemy), body: 4, x: 3 };
+    const player = { ...event('hit', ROLE.player), body: 1, x: -2 };
+    const tick = [enemy, player];
+    expect(busPresets(tick).map((preset) => busEventOf(tick, preset))).toEqual([enemy, player]);
+    const end = [{ ...event('pickup', ROLE.collectible), x: 5 }, { ...event('lose'), x: 7 }];
+    expect(busPresets(end).map((preset) => busEventOf(end, preset)?.x)).toEqual([7]);
   });
 
   it('plays each sound once per tick', () => {

@@ -239,6 +239,25 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 - AI verze: panel „AI version ready“ s „Play it“ vymění hru a relace trvá. Přechod na hru podle věty ukáže panel krátce bez tlačítka.
 - Unit: `src/play/xr/__tests__/input-map.test.ts` drží, komu patří spoušť (panel, nebo hra).
 
+### Zvuk a vibrace ve VR
+
+- **Zvuk z místa události.** Sebrání, zásah, zánik, dopad, power-up a další zvuky hry zní ve VR z místa, kde se věc stala: z desky dioramy, z pruhu pod rukou, ze stěny arény. Směr i výšku dává HRTF (prostorový zvuk pro sluchátka), posluchač je hlava. Hudba, vypravěč, skok a zvuky akcí hráče zní jako dřív, bez polohy.
+- **Vibrace ovladačů** podle druhu události (`src/play/xr/haptics.ts`):
+
+| Událost | Síla | Délka | Ruka |
+|---|---|---|---|
+| zásah (`hit`) | 0,6 | 40 ms | pravá |
+| sebrání (`pickup`) | 0,3 | 20 ms | pravá |
+| zánik (`death`) | 0,45 | 30 ms | pravá |
+| růst komba (`comboUp`) | 0,35 | 25 ms | pravá |
+| blízké minutí (`nearMiss`) | 0,2 | 25 ms | obě |
+| power-up | 0,5 | 80 ms | obě |
+| padlý boss | 1 | 160 ms | obě |
+| výhra | 0,5 | 140 ms | obě |
+| prohra | 0,8 | 220 ms | obě |
+
+Dopad hrdiny, zrod těla, změna stavu cíle a zásah akcí nevibrují (dějí se pořád nebo je už nese zásah). Za jeden tik dostane každá ruka jen nejsilnější pulz. Vypnout vibrace půjde v panelu pohodlí (T9).
+
 ### Hra z věty ve VR (lobby)
 
 Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoře „Enter VR“ (jen v prohlížeči, který VR umí). Ten začne relaci VR lobby: kartou kitu metr před hráčem, horní hranou v úrovni očí. „Enter VR“ na hře z feedu dál začne tou hrou.
@@ -331,6 +350,32 @@ Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na 
 - **Barvy okolí ze sady scény:** plátno XR leží v místě scény, která ho vlastní, a ta nese `data-look`. Bere se základní sada (země `ground`); noční nebo počasím upravená barva scény se nepřebírá.
 - **Tratě (`surround`, T7)** jsou v tabulce režimů, ale do T7 se hrají na stole.
 - **Test HUD na stole** (`e2e/vr-hud.spec.ts`) hraje quest „A knight must light three candles…“: věta s klíči dělá arénu, ta je teď kolem hráče. Věta „open three chests“ dělá na serveru řetěz mikroher bez ručních hodin, proto svíčky.
+
+### Zvuk a vibrace (P67 T8, 29. 10. 2026, emulátor)
+
+**V emulátoru IWER** (`e2e/vr-native.spec.ts`, kontext zvuku běží po kliknutí na „Enter VR“, hlava 1,6 m):
+
+| Hra | Pulzů pravé ruky | Zvuků přes panner | Poslední zvuk (m) |
+|---|---|---|---|
+| shooter | 7 (zásah 0,6 / 40 ms) | 25 | 19 m vlevo, 33 m vpředu |
+| throw | 3 (zásah) | 10 | 20 m vpředu |
+| whack | 3 (zánik 0,45 / 30 ms) | 4 | 0,4 m vlevo, 0,5 m vpředu, výška pasu |
+| slice | 2 (sebrání 0,3 / 20 ms) | 4 | 0,2 m vpravo, 0,4 m vpředu |
+
+**První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 511 B rozbaleně, +860 B proti `main` (T8 sama +160 B), přenesené +701 B, žádný kód XR. Do prvního JS jde jen volitelná poloha v `playSfx`, háček `spatial.route` v `src/play/audio/index.ts` a `busEventOf` v `effects/sound.ts`. Panner, posluchač, tabulka vibrací a druhá sběrnice jsou v chunku XR.
+
+**Zvuk telefonu se nezměnil:** `src/play/audio/__tests__/positional.test.ts` porovnává otisk vyrenderovaných vzorků dvou presetů s otiskem naměřeným před T8, mimo VR s polohou i bez ní a ve VR bez polohy.
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **Poloha je bod události v osách jádra,** do světa XR ji převede až kód XR maticí obalu světa (`soundPointOf` v `src/play/xr/spatial-sound.ts`). Matici staví režim rigu (deska, svět kolem hráče, VR-nativní žánr), takže převod nemá vlastní větev pro každý režim. Trať běžce se ohne stejně jako částice.
+- **Polohovaný zvuk přebije týž bez polohy z téhož tiku.** Efekty jádra (`ArcadePlay`) ohlásí sebrání, zásah, výhru a prohru dřív než sběrnice a jejich zvuk bez polohy už hraje. Ve VR ho stejný zvuk s polohou utne ještě v téže úloze, než cokoli zazní. Mimo VR platí okno opakování 30 ms jako dřív a `ArcadePlay` zůstává beze změny.
+- **Útlum:** do 1 m plná hlasitost, pak `inverse` s faktorem 0,3 (8 m ~32 %, 20 m ~15 %). Silnější útlum by vzdálené zásahy ve střílečce skoro umlčel.
+- **Hudba, vypravěč, skok a zvuky akcí hráče** zůstávají bez polohy: nemají místo ve světě, nebo je dělá sám hráč.
+- **Vibrace mají vlastní sběrnici v kódu XR** (`createEffectsBus` + `subscribe`). Sběrnice `Effects` není zvenku vidět a vytáhnout ji by znamenalo sahat do prvního JS. Druhá sběrnice stav jen čte, náklad je výpočet událostí jednoho tiku.
+- **Vibrace nezávisí na ztlumení zvuku** (na telefonu ztlumení vypne i vibraci). Ve VR je ztlumení M nedosažitelné a ovladač je hlavní zpětná vazba; vypínač bude v panelu pohodlí (T9, `setHapticsOn` v `src/play/xr/haptics.ts`, jen v paměti stránky).
+- **Prohlížeč bez parametrů posluchače** (Gecko, Wolvic) dostane starší `setPosition` / `setOrientation`.
+- **Skutečné brýle:** zvuk ani vibrace na Questu 2 tento běh neověřil. Patří do ruční brány T15.
 
 ### První JS bez `?vr=1` (27. 10. 2026)
 

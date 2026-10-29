@@ -17,6 +17,8 @@ import { Diorama, type DeskReport, heroNodeOf } from './Diorama';
 import { useXrGame, useXrHud } from './xr-context';
 import { closeXrLobby, lobbyShown, useXrLobby } from './xr-lobby';
 import { MOTION_PRIORITY, XrAim } from './XrAim';
+import { XrAudio } from './XrAudio';
+import { XrHaptics } from './XrHaptics';
 import { XrHud } from './XrHud';
 import { XrInput, xrControlOf } from './XrInput';
 import { XrLobby } from './XrLobby';
@@ -29,7 +31,8 @@ import { XrSwing } from './XrSwing';
  * brýlí a její pozici každý snímek přepíše póza hlavy. Svět se otočí o půl kruhu, aby hráč stál tam, kde ve 2D
  * stojí kamera (za hrdinou, na straně −z). Jak se žánr hraje, říká tabulka režimů (`xr/modes.ts`, P67 T6):
  * VR-nativní žánry (T3) svět nezmenší, nebo ho dají do dosahu ruky (`placementOf`); aréna, obrana a chytání stojí
- * kolem hráče (`XrRoom`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`).
+ * kolem hráče (`XrRoom`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`). Zvuk události zní
+ * z místa těla přes matici obalu (`XrAudio`) a ovladače vibrují podle tabulky událostí (`XrHaptics`, P67 T8).
  * Mimo relaci je obal identita, takže 2D se nemění a vstup do VR scénu nepřestaví.
  * `DIORAMA` je jen poloha, než relace dostane hru (pak měřítko spočte `Diorama` z velikosti hřiště).
  */
@@ -465,8 +468,10 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {presenting && <DirectRender calls={calls} />}
       {presenting && shown !== null && <XrCull key={diorama ? 'desk' : 'free'} world={world} desk={desk} diorama={diorama} />}
       {playing && game !== null && control !== null && aims && <XrAim session={game} control={control} world={world} motion={motion} />}
-      {playing && game !== null && swings && <XrSwing session={game} world={world} motion={motion} />}
+      {playing && game !== null && swings && <XrSwing world={world} motion={motion} />}
       {playing && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
+      {playing && game !== null && <XrHaptics session={game} />}
+      {presenting && shown !== null && <XrAudio world={world} session={shown} />}
       {presenting && shown !== null && !lobby && <XrHud diorama={diorama} desk={desk} aim={aim} />}
       {lobby && <XrLobby shown={shown} aim={aim} />}
       <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} room={roomReport} />

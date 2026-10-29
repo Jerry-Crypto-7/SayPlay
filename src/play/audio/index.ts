@@ -219,7 +219,16 @@ export function unlockAudio(): void {
   if (context?.state === 'suspended') void context.resume();
 }
 
-function play(key: string, params: ZzfxParams): void {
+/** Bod události ve hře (m, osy jádra), odkud zvuk zní (P67 T8). */
+export type SoundAt = { readonly x: number; readonly y: number; readonly z: number };
+
+/**
+ * Cesta zvuku ve VR (P67 T8): `null` = každý zvuk jde rovnou do `destination` a poloha se pomine. V relaci VR ji
+ * dosadí `XrAudio` (chunk XR): zvuk s polohou pustí přes panner, bez polohy rovnou do `destination`.
+ */
+export const spatial: { route: ((context: AudioContext, source: AudioBufferSourceNode, at?: SoundAt) => void) | null } = { route: null };
+
+function play(key: string, params: ZzfxParams, at?: SoundAt): void {
   if (!PLAY_SFX || context === null || context.state !== 'running' || isMuted()) return;
   let buffer = buffers.get(key);
   if (buffer === undefined) {
@@ -228,14 +237,15 @@ function play(key: string, params: ZzfxParams): void {
     buffer.getChannelData(0).set(samples);
     buffers.set(key, buffer);
   }
-  playBuffer(buffer);
+  playBuffer(buffer, at);
 }
 
-function playBuffer(buffer: AudioBuffer): void {
+function playBuffer(buffer: AudioBuffer, at?: SoundAt): void {
   if (context === null) return;
   const source = context.createBufferSource();
   source.buffer = buffer;
-  source.connect(context.destination);
+  if (spatial.route === null) source.connect(context.destination);
+  else spatial.route(context, source, at);
   source.start();
 }
 
@@ -297,16 +307,17 @@ export function setSoundLook(look: LookId | null): void {
 export const SFX_REPEAT_MS = 30;
 const lastSfx = new Map<SfxPreset, number>();
 
-export function playSfx(preset: SfxPreset): void {
+/** `at` = odkud zní (P67 T8); platí jen ve VR, kde zvuk s polohou projde i po témže bez ní – ten utne `spatial.route`. */
+export function playSfx(preset: SfxPreset, at?: SoundAt): void {
   const now = typeof performance === 'undefined' ? Date.now() : performance.now();
   const last = lastSfx.get(preset);
-  if (last !== undefined && now - last < SFX_REPEAT_MS) return;
+  if (last !== undefined && now - last < SFX_REPEAT_MS && (at === undefined || spatial.route === null)) return;
   lastSfx.set(preset, now);
   if (preset === 'win' || preset === 'lose') duckMusic();
   const url = soundLook === null || !hasFile(preset) ? null : sfxFor(soundLook, preset);
   const file = url === null ? undefined : files.get(url);
-  if (typeof file === 'object' && context?.state === 'running' && !isMuted()) playBuffer(file);
-  else play(preset, SFX_PRESETS[preset]);
+  if (typeof file === 'object' && context?.state === 'running' && !isMuted()) playBuffer(file, at);
+  else play(preset, SFX_PRESETS[preset], at);
 }
 
 /*
