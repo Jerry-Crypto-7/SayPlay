@@ -747,3 +747,60 @@ Díra, která roste: hráč ji táhne joystickem (nebo šipkami) po místě z v�
 - **Úvodní karta „Tap to start“** leží na telefonu těsně nad dírou (jako u šipek) – patří sdílené logice karty (T14 / P64).
 - **`capabilities.ts` řádek `hole`** říká `labels: []`, ale hra čte popisky věcí věty (`item1`…) a kreslí z nich modely. Opravit s T13, až díru uvidí režisér.
 - **Výsledek** píše „All 60 collected“ – je to postup posledního kola (`items` oříznutý na cíl kola), ne počet polknutých věcí. Text karty je sdílený (`PostRun`), ladit v T14.
+
+## T5 – survivor
+
+Přežití ve vlnách: hrdina z věty se hýbe joystickem a střílí sám na nejbližšího nepřítele v dostřelu. Nepřátelé z věty chodí ve vlnách od všech okrajů arény, mezi vlnami hráč vybere 1 ze 3 vylepšení, poslední kolo je boss. Hráč nemíří, jen uhýbá a volí, kam jít a co vzít – tím se žánr liší od `arena` a `shooter`. Worktree `D:/caches/p66/wt-t5`, větev `p66-t5`.
+
+### Jak hra běží
+
+- **Soubory:**
+  - `pieces/survivor-world.ts` – míry, rozložení stavu a čtení stavu (sdílí ovládání, robot i scéna);
+  - `pieces/survivor.ts` – ovládání `survivor`, pravidla `survivor_fire`, `survivor_hit`, `survivor_touch`, `survivor_round`, generátor `survivor_waves`;
+  - `pieces/survivor-bot.ts` – robot `survivor_bot`;
+  - `genre/survivor.ts` – modul žánru;
+  - `genres/survivor/SurvivorScene.tsx` – scéna.
+- **Kola** (`rounds` 2–5, výchozí 4 = 3 vlny + boss) přes `withHooks(..., { clear: 'win', upgrades, rarity: true })`. Kolo končí, když nemá živého nepřítele ani čekající příchod; před bossem z toho háčky udělají konec kola, přestávku s nabídkou a „Round N of M“.
+  - Kdo kdy a odkud přijde, je hotové při stavbě (semínko kola z `roundSeeds`). Za běhu běží jen hodiny kola v tikách.
+- **Nepřátelé:** `enemies` 16–40 (výchozí 36) do vln rostoucí velikosti (36 → 8, 12, 16). Vlna má strop (`waveCap`), takže text cíle počítá, kolik jich opravdu přijde.
+  - Aréna je 14 × 22 m, na výšku vyšší než širší. Nepřátelé vstupují ze všech čtyř stran, i shora a zdola, nikdy blíž než 5 m od hrdiny.
+- **Vylepšení** mezi vlnami: `fire_rate`, `range`, `speed`, `extra_life`, `magnet` (karty z T4). `speed` a `magnet` promítne jádro, rychlost střelby a dostřel čte ovládání a pravidlo výstřelu. Nevybere-li hráč, bere se karta 0.
+- **Boss** posledního kola: 30 HP (o vlnu víc nebo míň se mění), útoky v cyklu podle `spec.boss.attack` (rozběh, dupnutí, salva koulí), telegraf 0,5 s, pod polovinou HP rozzuřený.
+  - Kolem 4 s kola začnou chodit posily, s časem hustší. Hrdina bez silnější rány bosse nedostane dřív, než ho posily zavalí – proto výběr vylepšení rozhoduje (pin).
+- **Krystaly** po padlých nesou vzácnost z háčků (běžná / vzácná / epická). **Kombo** za zabití v řadě: pravidlo `survivor_hit` nese parametr `combo`, takže je od `genre.v6` zdrojem komba.
+- **Obsazení z věty:** nepřítel = `shoot_at` / `chase_me` / `fight` / `avoid` (výchozí goblin); boss = boss režiséra, jinak velký nepřítel téhož druhu; padlí nechávají sbíranou věc věty (výchozí krystal); střela věty („shoots fireballs“) je náboj.
+- **Robot světa** volí z 32 směrů ten, kde je za ⅓ s nejdál od nepřátel, koulí a čáry rozběhu bosse a přitom má nepřítele v dostřelu. Bez hrozby jde pro krystaly. Karty bere rána napřed (`SURVIVOR_PICK_PRIORITY`).
+  - **Slabý robot** (`errors` ‰) v tolika oknech po 30 tikách stojí. Okna vybírá pevná funkce bez náhody.
+- **Scéna.** Kamera jede za hrdinou shora zezadu. Na výšku se okno kolem hrdiny vepíše přes `fitTall` do pásu mezi horním HUD a zónou palce, na šířku vlastní póza. Podlaha v povrchu cesty sady (`SURFACES[look.surface]`, jako šipky), kolem povrch prostředí a kulisy sady.
+  - Jen obraz, mimo hash: pás rozběhu a kruh dupnutí v telegrafu, štítek útoku, blikání hrdiny v milosti, rámeček vzácnosti krystalu (inkoust / modrozelená / slunečná).
+
+### Rozhodnutí (`implementation-notes`)
+
+- **`availability` zůstává `staged`** – stejná konvence jako šipky (T9), rozhodnutí běhu pro všech pět žánrů. Hra se otevírá jen z ručního specu (`e2e/fixtures/p66-survivor-spec.json`). Řádek `survivor.default` se do `PRESETS` přesune až v T12.
+  - Předchozí verze T5 dala `ready` a přesunula buňku do `PRESETS`. Musela kvůli tomu měnit sdílené testy (`classify`, `dressing`, `contract`) a dopsat řádek do `evals/play/p41/difficulty.json`. Všechno vráceno na stav větve.
+  - Změřená obtížnost té verze (P41, 20 semínek) pro T12: začátečník 11/20 (0,55), pokročilý 19/20 (0,95) – v pásmu 0,3–0,7 a ≥ 0,8.
+- **`p66-staged.test.ts`:** `LIVE = ['arrows', 'sort', 'steal', 'hole', 'survivor']` – při rebase spojeno se sourozenci, teď hraje všech pět.
+- **Hodiny:** kolo nemá vlastní limit, končí vyčištěním. Délku drží test: robot vyhraje celou hru za 30–90 s.
+- **Prohra = životy na nule** (3 životy). Nečinný hráč prohraje na všech semínkách i mezích (test).
+
+### Testy
+
+- **Jednotky** (`npx vitest run src/play/arcade src/play/genre src/components/play/arcade/genres/survivor`, JSON reporter): **7 061 / 7 077** v běhu souběžně s buildem a sourozenci. 12 červených v 7 souborech, všechny `STACK_TRACE_ERROR` na limitu nebo měření času (běžec, `hop`, `off-topic`, `verb-coverage`, `swarm` 0,13 ms/tik místo ≤ 0,05). Přežití se netýkají. Samotné znovu: 105/106, `swarm` těsně nad limitem (0,0509 ms); samotný `swarm` pak 10/10. Celkem tedy všech 7 077 zelených, jen ne v jednom běhu.
+  - `survivor.test.ts` 15 testů. Robot vyhraje na 10/10 semínkách za 30–90 s, nečinný prohraje, dvě přehrání = týž hash, publikační brána projde, slabý robot (500 ‰) prohraje na ≥ 8/10, meze 2/3/5 kol × 16/40 nepřátel (robot ≥ 9/10).
+  - **Pin:** robot s vylepšeními vyhraje 10/10, tentýž robot na témže světě bez nabídek prohraje na ≥ 7/10 a pokaždé až na bossovi.
+  - Fixture = přesně překlad žánru (test). Otisk T1 `p66-hash.test.ts` 48/48 zelený. TypeScript (`tsc --noEmit`) čistý.
+- **E2e** `play-survivor` (`npm run build`, `next start` :3171, `PLAY_READER=off`): **chromium 2/2, pixel7-touch 2/2**.
+  - Telefon dohraje prstem: tah směrem, který chce robot ověřovače, karty ťukem. Karta leží ve spodních 45 % obrazovky.
+  - Desktop: šipka pohne hrdinou doprava, karta klávesou „3“, zbytek hry záznam robota přes klávesnici.
+  - Obojí: hrdina čitelný, popisky počítadel z uzavřeného seznamu, „You did it!“ s nálezy, konzole bez chyb. Nečinný hráč prohraje („So close.“).
+- **Snímky** `D:/caches/p66/survivor/` (start, upgrade, mid, boss-round, result). Při kontrole se našly a opravily dvě vady scény:
+  - ukazatel HP bosse visel uprostřed arény celou hru – `Html` je DOM a neviditelná skupina ho neschová;
+  - podlaha v barvě dráhy (`look.track`, ve městě #1f2937) byla na telefonu skoro černá a nepřátelé v ní zanikali.
+- `mutationStatus: none` (úroveň `pin`). Pin je postavený tak, že vylepšení bez účinku by ho shodila: týž robot, týž svět, rozdíl jen v nabídkách.
+
+**FPS přeskočeno** ze stejného důvodu jako u šipek: `play-perf @measure` publikuje hru z věty a přežití věty dostane až v T12.
+
+### Nálezy
+
+- **Létající čísla skóre** jsou na světlejší podlaze méně kontrastní než na černé. Čitelná jsou, ale stálo by za to zkontrolovat v T15 na listech z telefonu.
+- **`capabilities.ts` řádek `survivor`** pořád říká, že hra nic nečte (`labels: []`, `mechanics: []`), přitom čte životy a kreslí nepřítele, sbíranou věc, náboj a bosse z rolí. Sdílený registr se neměnil – opravit s T13, až přežití uvidí režisér a kritik.
