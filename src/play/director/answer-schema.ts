@@ -71,9 +71,9 @@ const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input'
  * v tabulce živých kombinací, takže prompt režiséra (rozpočet bajtů, otisk nahraných odpovědí) se nepohne.
  * P54C T14 nabídl čtyři žánry pruhů (chytání, bouchání, obrana, krájení), T14b čtyři žánry fáze 3 (přeskákání,
  * dav, slučování, vytlačování) – seznam je prázdný. Žánr, který úloha pustí živě dřív, než ho režisér nabídne, sem přidá.
- * P66 T12 pustil pět nových žánrů do rychlé hry; režisérovi je popíše a odsud vyjme P66 T13.
+ * P66 T12 pustil pět nových žánrů do rychlé hry, P66 T13 je režisérovi popsal (`GENRE_PITCH`) – seznam je zase prázdný.
  */
-export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['survivor', 'hole', 'steal', 'sort', 'arrows']);
+export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>();
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4); žánr z `DIRECTOR_PENDING` žádný. */
 export const readyModes = (module: GenreModule): string[] => (DIRECTOR_PENDING.has(module.id) ? [] : module.modes.filter((mode) => module.availability(mode) === 'ready'));

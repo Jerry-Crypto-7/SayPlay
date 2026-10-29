@@ -100,5 +100,30 @@
     "answer": { "plan": "Running is the main verb; the drones are shot down; 300 points to win.", "spec": { "genre": "runner", "mode": "default", "hero": "ninja", "cast": [{ "label": "drone", "does": "shoot_at" }], "setting": "city rooftops", "params": { "targetScore": 300 } } }
   }
 ,
-  {"id":"p41-phases","sentence":"a car drives through the city in two stages, first slower then faster","answer":{"plan":"Drive the same city route through two actual speed sections.","spec":{"recipe":{"move":"drive","actions":[],"objective":"reach","threats":[],"phases":[{"start":0,"speedPercent":90},{"start":500,"speedPercent":110}]},"hero":"car","setting":"city","unmet":[]}}}
+  {"id":"p41-phases","sentence":"a car drives through the city in two stages, first slower then faster","answer":{"plan":"Drive the same city route through two actual speed sections.","spec":{"recipe":{"move":"drive","actions":[],"objective":"reach","threats":[],"phases":[{"start":0,"speedPercent":90},{"start":500,"speedPercent":110}]},"hero":"car","setting":"city","unmet":[]}}},
+  {
+    "id": "p66-survivor",
+    "sentence": "survive the zombie horde in an abandoned shopping mall for as long as you can",
+    "answer": { "plan": "Keep moving through the mall while the hero fires by itself at zombie waves; pick an upgrade between waves.", "spec": { "genre": "survivor", "mode": "default", "hero": "survivor", "cast": [{ "label": "zombie", "does": "shoot_at" }], "setting": "abandoned shopping mall", "palette": "mall" } }
+  },
+  {
+    "id": "p66-hole",
+    "sentence": "a sinkhole grows under a sunny beach and gulps down umbrellas, sandcastles and surfboards",
+    "answer": { "plan": "Steer the sinkhole over the beach; it swallows umbrellas first, then sandcastles and surfboards as it grows.", "spec": { "genre": "hole", "mode": "default", "hero": "sinkhole", "cast": [{ "label": "umbrella", "does": "collect" }, { "label": "sandcastle", "does": "collect" }, { "label": "surfboard", "does": "collect" }], "setting": "sunny beach", "palette": "beach" } }
+  },
+  {
+    "id": "p66-steal",
+    "sentence": "a pirate crew raids the enemy ship for treasure chests and hauls them back to their own island",
+    "answer": { "plan": "Board the enemy ship, grab a treasure chest and haul it back to the island while the enemy crew chases you.", "spec": { "genre": "steal", "mode": "default", "hero": "pirate", "cast": [{ "label": "treasure chest", "does": "collect" }, { "label": "enemy pirate", "does": "chase_me" }], "setting": "pirate island", "palette": "ocean" } }
+  },
+  {
+    "id": "p66-sort",
+    "sentence": "a mail sorter at the post office drops red, blue and yellow letters into the matching bags",
+    "answer": { "plan": "Tap each queue so its front letter drops into the bag of its colour.", "spec": { "genre": "sort", "mode": "default", "hero": "mail sorter", "cast": [{ "label": "letter", "does": "collect" }], "setting": "post office" } }
+  },
+  {
+    "id": "p66-arrows",
+    "sentence": "slide the wooden fish out of the crowded pond, each fish only swims the way its nose points",
+    "answer": { "plan": "Tap a wooden fish; it swims out the way its nose points if the path is clear, else it bumps.", "spec": { "genre": "arrows", "mode": "default", "hero": "fisher", "cast": [{ "label": "fish", "does": "scenery" }], "setting": "crowded pond" } }
+  }
 ]

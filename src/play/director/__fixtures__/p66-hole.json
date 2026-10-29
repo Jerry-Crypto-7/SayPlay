@@ -1,0 +1,17 @@
+{
+  "sentence": "a hungry hole in the farmyard eats chickens, then tractors, then the whole barn",
+  "answer": {
+    "plan": "Steer the hole around the farmyard: it swallows chickens first, grows to take tractors and ends with the barn.",
+    "spec": {
+      "genre": "hole",
+      "mode": "default",
+      "hero": "hungry hole",
+      "cast": [
+        { "label": "chicken", "does": "collect" },
+        { "label": "tractor", "does": "collect" },
+        { "label": "barn", "does": "collect" }
+      ],
+      "setting": "farmyard"
+    }
+  }
+}
