@@ -108,6 +108,21 @@ node scripts/quest-dev.mjs --port 3168 --cdp --probe
 - Bez připojených brýlí sonda zapíše `{"connected": false}` a skončí bez chyby.
 - Skript nic neinstaluje do brýlí, nemění jejich nastavení a nemaže data prohlížeče. Diktování jen zkusí spustit a za 3 s zruší; když prohlížeč chce povolit mikrofon, dotaz zůstane bez odpovědi.
 
+### 11. Sayplay jako aplikace v knihovně Questu
+
+1. V prohlížeči brýlí otevři Sayplay (`/play`).
+2. V menu prohlížeče (tři tečky vpravo nahoře) zvol „Install app“ nebo „Add to library“. Ikona Sayplay se objeví v knihovně aplikací (Library → Unknown sources nebo přímo mezi aplikacemi, podle verze systému).
+3. Sayplay z knihovny startuje rovnou na `/play` v okně bez adresního řádku.
+
+- **Co instalaci umožní:** manifest `public/manifest.webmanifest` (`id`, `start_url` a `scope` `/play`, režim `standalone`, ikony 192 a 512 px) a service worker `public/play-sw.js`.
+- **Worker nic neukládá a do požadavků nevstupuje.** Má jen prázdný posluchač `fetch`, který prohlížeč k instalaci chce; každý požadavek vyřídí prohlížeč sám, jako bez workeru. Aplikace tak vždy ukáže aktuální verzi hry. Bez sítě Sayplay nepoběží, stejně jako v prohlížeči.
+- **Proč prázdný posluchač:** první verze posílala požadavky na síť sama (`fetch(event.request)`). E2E pak ukázalo, že takové požadavky obejdou odposlech sítě v testech: podvržený příchod AI verze v `vr-enter.spec.ts` nedorazil. Prázdný posluchač je i rychlejší, protože prohlížeč worker u požadavků vůbec nebudí.
+- **Ověření:** `src/play/xr/__tests__/pwa.test.ts` (manifest, worker bez cache a bez převzetí odpovědi, registrace jen s immersive VR) a `e2e/vr-pwa.spec.ts` (IWER: worker je zaregistrovaný, stránka i API pod ním běží, cache je prázdná; Chromium bez VR: žádný worker).
+- **Instalaci na skutečném Questu tento běh neověřil** (brýle nikdo neměl na hlavě); patří do ruční brány T15.
+- **Registruje ho jen prohlížeč, který umí immersive VR.** Telefon a desktop žádný worker nedostanou, chovají se jako dřív.
+- **Orientace není zamčená.** Manifest nemá `orientation`, protože by zamkl i telefon, který si Sayplay nainstaluje; Quest ji nepotřebuje.
+- **Proč `play-sw.js`, ne `sw.js`:** cesta `public/sw.js` je v `.gitignore` pro vygenerované workery jiných nástrojů.
+
 ## Ovládání ovladači
 
 Ovladače dělají totéž co klávesnice: páčka = šipky, spoušť = mezerník. Obě ruce platí stejně; páčka levého ovladače má přednost, když je vychýlená. Drift páčky pod 0,15 se nepočítá, jako šipka páčka platí až za polovinou výchylky. Výjimkou je grip: pravý grip je použití (`interact`), levý grip nese stůl s hrou (viz „Hry na stole“ níž).

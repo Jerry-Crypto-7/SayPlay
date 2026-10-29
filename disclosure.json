@@ -93621,6 +93621,15 @@
       "scope": "prod"
     },
     {
+      "name": "public/play-sw.js",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Pass-through service worker written in this repo (P67 T11) so sayplay installs as an app on Quest; caches nothing.",
+      "source": "written in this repo",
+      "authorOrProvider": "Worldsmith project",
+      "scope": "prod"
+    },
+    {
       "name": "public/play/env/airport-low.webp",
       "kind": "asset",
       "firstParty": true,

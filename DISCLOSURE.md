@@ -3160,7 +3160,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output. P58B T3 also sends the dev sentences to gpt-6-astra here to compare sentence readers (evals/play/p58b/compare.measure.ts, --cap-usd spend cap); measurement only. Since P58B T4 gpt-6-astra here is also the sentence reader of the AI version: called only when the deployment sets PLAY_READER=on, PLAY_READER_PATH=ai and PLAY_READER_ENDPOINT=openai:https://api.openai.com with the owner's key, under the reader's own spend cap (PLAY_READER_SPEND_CAP_USD, PLAY_READER_CALL_CAP) and a daily count per caller, by the background director; the answer cache keeps a reading for 7 days and a paid reading that failed (timeout, invalid or cut-off answer) for 10 minutes, so a repeat of the sentence does not pay again within that time, but two reads of the same sentence that overlap in time may each pay, and a reading that failed is paid again after 10 minutes; the fast draft never waits for it and plays from the words. The reading it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (4772)
+## Vlastní, ne třetí strana (4773)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -7879,6 +7879,7 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/e8a6bd5da7abc3b2e6a24c6f154e13da-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/e8a6bd5da7abc3b2e6a24c6f154e13da-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/manifest.webmanifest** (asset): Web app manifest for sayplay written in this repo (P34 T1); points at the Sayplay kit app icons in public/brand/app-icon/.
+- **public/play-sw.js** (asset): Pass-through service worker written in this repo (P67 T11) so sayplay installs as an app on Quest; caches nothing.
 - **public/play/env/airport-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/play/env/airport.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/play/env/arctic-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
