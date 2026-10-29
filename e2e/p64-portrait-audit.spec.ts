@@ -42,13 +42,47 @@ const PHONES: Readonly<Record<string, { readonly device: string; readonly dir: s
   'iphone-touch': { device: 'iPhone 15', dir: 'iphone15' },
 };
 
-/** Cíle žánru na výšku (P64 T3–T5 z README T1); žánr bez záznamu se jen měří. */
+/**
+ * Cíle žánru na výšku (P64 T3–T5, tabulka „Rodiny a cíle“ v README T1); žánr bez záznamu se jen měří. `cropped`
+ * chybí u posuvných světů, kde další úsek trati leží mimo záběr i na šířku. Ke každému cíli platí z plánu i
+ * `heroShare` ≥ 0,9 × T1 a `foeSeen` ≥ T1 − 0,05 proti oddílu `before` v `audit.json` téhož telefonu.
+ */
 interface Target {
   readonly fill?: number;
   readonly cropped?: number;
   readonly underHud?: number;
 }
-const TARGETS: Readonly<Record<string, Target>> = {};
+const TARGETS: Readonly<Record<string, Target>> = {
+  // T3 – deskové
+  catch: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  whack: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  defense: { fill: 0.6, cropped: 0, underHud: 0.05 },
+  slice: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  merge: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  push: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  // T4 – deskové a jevištní
+  hop: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  crowd: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  duel: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  quest: { fill: 0.9, underHud: 0.1 },
+  timing: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  rhythm: { fill: 0.6, cropped: 0, underHud: 0.05 },
+  // T5 – honičky a tratě
+  runner: { fill: 0.6, cropped: 0, underHud: 0.05 },
+  platformer: { fill: 0.6, underHud: 0.05 },
+  flap: { fill: 0.55, underHud: 0.05 },
+  voyage: { fill: 0.45, cropped: 0, underHud: 0.05 },
+  shooter: { fill: 0.9, underHud: 0.1 },
+  throw: { fill: 0.6, cropped: 0, underHud: 0.05 },
+  arena: { fill: 0.8, cropped: 0, underHud: 0.1 },
+  'control:steer': { fill: 0.5, cropped: 0, underHud: 0.05 },
+  'control:walker': { fill: 0.55, underHud: 0.05 },
+  'control:ball': { fill: 0.45, cropped: 0, underHud: 0.05 },
+};
+/** `heroShare` na výšku ≥ tento násobek T1. */
+const HERO_KEEP = 0.9;
+/** `foeSeen` na výšku smí klesnout proti T1 nejvýš o tolik. */
+const FOE_SLACK = 0.05;
 
 interface Rect {
   readonly left: number;
@@ -336,6 +370,10 @@ test.describe('P64 portrait audit', () => {
       if (target.fill !== undefined) expect(portrait.fill ?? 0, 'portrait fill').toBeGreaterThanOrEqual(target.fill);
       if (target.cropped !== undefined) expect(portrait.cropped ?? 0, 'portrait cropped').toBeLessThanOrEqual(target.cropped);
       if (target.underHud !== undefined) expect(portrait.underHud, 'portrait under HUD').toBeLessThanOrEqual(target.underHud);
+      const before = readResults().before?.[testInfo.project.name]?.[cell.key]?.portrait;
+      expect(before, `T1 audit of ${cell.key} in ${OUT}`).toBeDefined();
+      if (before!.heroShare !== null) expect(portrait.heroShare ?? 0, 'portrait heroShare vs T1').toBeGreaterThanOrEqual(HERO_KEEP * before!.heroShare);
+      if (before!.foeSeen !== null) expect(portrait.foeSeen ?? 0, 'portrait foeSeen vs T1').toBeGreaterThanOrEqual(before!.foeSeen - FOE_SLACK);
     });
   }
 });
