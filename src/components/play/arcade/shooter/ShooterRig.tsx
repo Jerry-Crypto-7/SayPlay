@@ -14,7 +14,7 @@ import { renderHeld } from '../effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { type Group, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
+import { Box3, type Group, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
 
 import { type ArcadeState, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -25,7 +25,9 @@ import { ShootThrowFx } from '../action-cue/ShootThrowFx';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { FieldDressing } from '../look/Scenery';
+import { usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
+import { fitChase } from '../track-camera';
 import { TALL, WIDE } from './view';
 
 const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
@@ -33,6 +35,9 @@ const RETICLE_M = 20;
 const FIRE_KEYS = new Set([' ', 'arrowup', 'w']);
 /** Značka pro `ShadowFlags` rigu: síť stín nevrhá ani nepřijímá. */
 const AID = { rigShadow: 'none' } as const;
+const fitBox = new Box3();
+const heroBox = new Box3();
+const foeBox = new Box3();
 const TALL_AXIS = Math.hypot(TALL.up, TALL.back + TALL.ahead);
 /**
  * Na výšku je záběr úzký a nepřítel jde k hráči až pod 35° (`laneSpread`) – stál za bokem obrazu (P58A T4).
@@ -55,9 +60,9 @@ function tallReach(r: number, tanX: number, edge: number): number {
 
 /**
  * Kam se má kamera na výšku natočit (rad, kladně k +x scény): co nejméně od `yaw`, aby nejbližší terč či nepřítel
- * před hráčem zůstal v záběru. `cut` = je teď celý mimo obraz.
+ * před hráčem zůstal v záběru. `cut` = je teď celý mimo obraz; `foe` = kde stojí vůči hráči (m scény), `null` = nikdo.
  */
-function tallYaw(state: ArcadeState, player: number, yaw: number, tanX: number): { readonly goal: number; readonly cut: boolean } {
+function tallYaw(state: ArcadeState, player: number, yaw: number, tanX: number): { readonly goal: number; readonly cut: boolean; readonly foe: { readonly dx: number; readonly dz: number } | null } {
   const p = bodyBase(player);
   let best: { readonly dx: number; readonly dz: number; readonly r: number } | null = null;
   for (let index = 0; index < (state[HEADER.bodyCount] as number); index += 1) {
@@ -69,11 +74,20 @@ function tallYaw(state: ArcadeState, player: number, yaw: number, tanX: number):
     const r = Math.hypot(dx, dz);
     if (dz > 0 && (best === null || r < best.r)) best = { dx, dz, r };
   }
-  if (best === null) return { goal: 0, cut: false };
+  if (best === null) return { goal: 0, cut: false, foe: null };
   const bearing = Math.atan2(best.dx, best.dz);
   const reach = tallReach(best.r, tanX, TURN_EDGE);
-  return { goal: Math.max(bearing - reach, Math.min(bearing + reach, yaw)), cut: Math.abs(bearing - yaw) > tallReach(best.r, tanX, 1) };
+  return { goal: Math.max(bearing - reach, Math.min(bearing + reach, yaw)), cut: Math.abs(bearing - yaw) > tallReach(best.r, tanX, 1), foe: best };
 }
+
+/**
+ * Střelnice na výšku (P64 T5): do `playRect` se vejde hráč (`hero` m kolem něj, do výšky `heroTop`; do stran jen on)
+ * a nejbližší terč či nepřítel (`foe` m kolem něj, do výšky `foeTop` – nepřítel z věty roste čitelností až na
+ * dvojnásobek); bez něj bod `TALL.ahead` m před hráčem. Dřív stál nepřítel pod lištou HUD a hráč pod spodní hranou
+ * plátna. Vzdálenost a posun dává `fitChase`, couvnout smí nejvýš o `most` m – dál by hráč zmenšil pod dnešek
+ * (na iPhonu je mezi HUD a spodní hranou jen 560 px). Orientace zůstává `TALL` natočená za nejbližším (`tallYaw`).
+ */
+const RANGE_TALL = { hero: 0.6, heroTop: 2, foe: 0.8, foeTop: (2 * SHOOTER.enemyH) / UNIT, most: 1 } as const;
 
 export function ShooterRig({
   session,
@@ -91,6 +105,7 @@ export function ShooterRig({
   readonly look: Look;
 }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  const playRect = usePlayRectRef();
   const reticle = useRef<Group | null>(null);
   const look = useMemo(() => new Vector3(), []);
   const yaw = useRef(0);
@@ -116,13 +131,21 @@ export function ShooterRig({
     const p = bodyBase(player);
     const z = (state[p + BODY.z] as number) / UNIT;
     if (camera.aspect < 1) {
-      const { goal, cut } = tallYaw(state, player, yaw.current, Math.tan((camera.fov * Math.PI) / 360) * camera.aspect);
+      const { goal, cut, foe } = tallYaw(state, player, yaw.current, Math.tan((camera.fov * Math.PI) / 360) * camera.aspect);
       yaw.current += (goal - yaw.current) * (cut ? 1 : 1 - Math.exp(-delta * TURN_RATE));
       const x = -(state[p + BODY.x] as number) / UNIT;
       const sin = Math.sin(yaw.current);
       const cos = Math.cos(yaw.current);
       camera.position.set(x - TALL.back * sin, TALL.up, z - TALL.back * cos);
       look.set(x + TALL.ahead * sin, 0, z + TALL.ahead * cos);
+      camera.lookAt(look);
+      const view = RANGE_TALL;
+      heroBox.min.set(x - view.hero, 0, z - view.hero);
+      heroBox.max.set(x + view.hero, view.heroTop, z + view.hero);
+      const far = foe ?? { dx: TALL.ahead * sin, dz: TALL.ahead * cos };
+      foeBox.min.set(x + far.dx - view.foe, 0, z + far.dz - view.foe);
+      foeBox.max.set(x + far.dx + view.foe, foe === null ? 0 : view.foeTop, z + far.dz + view.foe);
+      fitChase(camera, look, fitBox.copy(heroBox).union(foeBox), playRect.current, heroBox, view.most);
     } else {
       camera.position.set(0, WIDE.up, z - WIDE.back);
       look.set(0, WIDE.aim, z + WIDE.ahead);

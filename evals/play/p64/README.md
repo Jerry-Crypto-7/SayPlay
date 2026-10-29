@@ -470,3 +470,76 @@ Pin `p61/portrait.json` se nehýbal. Útrata 0 USD.
 FALLBACK_SMOKE_URL=http://127.0.0.1:3171 P64_CHECK=1 P64_SHOTS=D:/caches/p64/t3-shots/final2 npx playwright test e2e/p64-portrait-audit.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1 --grep "whack:"   # po žánrech, `|` v grep nejde
 FALLBACK_SMOKE_URL=http://127.0.0.1:3171 npx playwright test e2e/p64-landscape-guard.spec.ts --project=chromium --project=pixel7-touch --workers=1
 ```
+
+## T5 – honičky a tratě na výšku
+
+Vše jen pod `camera.aspect < 1`; na šířku kamery beze změny. Společný šev je `fitChase` v `track-camera.ts`: scéna
+postaví pózu žánru, `fitTall` (T2) ji po ose pohledu a ose nahoru dorovná, až krabice hry leží v `playRect`
+(`usePlayRectRef`), a bod pohledu jede s kamerou. Volitelný strop `most` omezí couvnutí, aby hrdina neklesl pod T1.
+
+- **Běžec:** kamera nad osou trati (pruh ji nehýbe), sklon 22°, míří 10 m před hrdinu; krabice = tři pruhy ±2,5 m
+  od pat pronásledovatele (2 m za hrdinou) po 2 m před ním. Trať běží nahoru po obrazovce.
+- **Plošinovka:** tři čtvrtiny jako dřív a navíc 10° shora, míří 2 m před hrdinu; těsná krabice (na iPhonu je mezi
+  HUD a zónami jen 408 px). `CHASER_VIEW.platformBehindTall` = zadní hrana krabice, 1,2 m místo 1,5.
+- **Poletování:** 65° od boku místo 50° (víc zezadu), míří 2 m před ptáčka; celá výška letu do `playRect`.
+- **Plavba:** `VOYAGE_CAM.phone` 5 / 5 / −1 / 8 m místo 4 / 7 / −1,6 / 6, loď do `playRect`. **Závod:** silnice
+  ±5 m a 14 m dopředu. **Klouzání:** póza beze změny a fit (žádná buňka auditu ho neměří).
+- **Míč:** sklon 46° místo 19°, hřiště ±3,6 m a 5,5 m dopředu. **Hod:** osa hřiště −1 až 20 m, ±0,35 m, výška 3 m.
+- **Střelnice:** hráč (do stran jen on) a nejbližší terč do `playRect`, couvnutí nejvýš 1 m. **Bludiště:** ±7,2 m,
+  −4 až 12 m.
+- **Aréna:** beze změny (níž).
+- Testy, které volají `World` jako funkci s mockovaným Reactem, dostaly `useContext` → nezměřený obdélník (6 souborů).
+
+Audit (`P64_CHECK=1`, `fill / underHud / hero`), před = tatáž větev bez T5 (s HUD z T6):
+
+| buňka | Pixel 7 před | Pixel 7 po | iPhone 15 před | iPhone 15 po |
+|---|---|---|---|---|
+| runner | 0,50 / 0 / 0,043 | 0,72 / 0 / 0,049 | 0,52 / 0 / 0,035 | 0,78 / 0 / 0,050 |
+| platformer | 0,48 / 0 / 0,127 | 0,73 / 0 / 0,118 | 0,56 / 0 / 0,122 | 0,84 / 0 / 0,127 |
+| flap | 0,43 / 0 / 0,022 | 0,57 / 0 / 0,064 | 0,44 / 0 / 0,018 | 0,58 / 0 / 0,049 |
+| voyage | 0,25 / 0 / 0,105 | 0,26 / 0 / 0,113 | 0,26 / 0 / 0,084 | 0,28 / 0 / 0,097 |
+| shooter | 0,95 / 0,23 / 0,076 | 0,97 / 0 / 0,076 | 0,95 / 0,23 / 0,063 | 0,96 / 0,23 / 0,064 |
+| throw | 0,61 / 0 / 0,058 | 0,63 / 0 / 0,056 | 0,63 / 0 / 0,047 | 0,64 / 0 / 0,051 |
+| arena | 0,81 / 0,23 / 0,088 | beze změny | 0,77 / 0,17 / 0,075 | beze změny |
+| control:steer | 0,40 / 0 / 0,013 | 0,51 / 0 / 0,021 | 0,42 / 0 / 0,011 | 0,69 / 0 / 0,025 |
+| control:walker | 0,54 / 0 / 0,0099 | 0,61 / 0 / 0,0091 | 0,52 / 0 / 0,0081 | 0,63 / 0 / 0,0104 |
+| control:ball | 0,28 / 0 / 0,048 | 0,47 / 0 / 0,052 | 0,29 / 0 / 0,039 | 0,55 / 0 / 0,053 |
+
+`cropped` u pruhů (runner, voyage, throw, steer, ball) 0 všude. Zelené na obou telefonech: runner, platformer, flap,
+throw, steer, walker, ball; shooter na Pixelu.
+
+**Nesplněno, s měřením:**
+
+- **voyage `fill` 0,26 / 0,28 (cíl 0,45).** `spread` má ve všech 30 vzorcích jedno tělo: brány závodu jsou role
+  `checkpoint`, sonda je za cíl nebere. `fill` je tak jen výška lodi a tu čitelnost drží na 21–26 % výšky plátna
+  (nad 26 % ji zmenší). 0,45 by chtělo loď přes 40 % výšky a trať před ní by zmizela. Cíl nejde splnit kamerou; buď
+  brány do sondy, nebo cíl kolem 0,25 – rozhodne T8.
+- **arena** (Pixel `underHud` 0,23, iPhone `fill` 0,77). Zkoušený fit (hrdina a tažená hrozba do `playRect`, strop
+  couvnutí 3–5 %) dal `underHud` 0,20–0,23 a hrdinu na hraně 0,9 × T1. Překryvy jsou hrozba pod lištou cíle při
+  vstupu (3 vzorky) a hrdina při úderu pod tlačítkem úderu (3 vzorky): pás `playRect` je 98–597 px, tlačítko stojí
+  v 597 px. Stejnou kameru má úkol (T4), proto vráceno; přeměřit po T7 (tlačítko níž).
+- **shooter iPhone `underHud` 0,23 (před 0,23).** Nejbližší vrána je v 7 vzorcích o ~7 px pod lištou cíle. Vejde se,
+  až když kamera couvne o ~2 m, a hrdina pak klesne na 0,048 (< 0,9 × 0,065). Strop couvnutí 1 m drží hrdinu 0,064.
+- **Běžec „dřív v horní polovině“:** dohled končí mlhou 80 m od kamery – překážka je vidět 70 m před hrdinou proti
+  73 m na `main` (kamera je o 2,7 m dál a výš), o 0,3 s méně. Přiblížení se ale roztáhne: překážka 18 m (2 s) před
+  hrdinou leží 335 px nad jeho patami proti 259 px (Pixel) a 274 proti 204 px (iPhone). Měřeno `fitTall` nad
+  obdélníky z auditu (`D:/caches/p64/t5-tools/ahead.mts`).
+- **Poletování, dohled dopředu ≥ `main`:** koridor před ptáčkem v záběru 24 m proti 19,5 m (Pixel), 44 proti 24,5 m
+  (iPhone). Splněno.
+
+**Stráže:** `p64-landscape-guard` 44 / 44 (chromium, Pixel 7). `p58a-framing` a `p61-portrait` na obou telefonech
+85 / 86, padl jen strážný bludiště na Pixelu (93 %); po rozšíření krabice na ±7,2 m 2 / 2. `play-hero-size` 20 / 20
+(chromium, Pixel 7 přes dočasný config). `vr-enter`, `vr-diorama`, `vr-native`, `vr-hud` 25 / 25 (chromium).
+`p32-voyage` (chromium) 7 / 10: tři testy „Pixel 7 with CPU 4× slower“ padají na čekání na tik 5 – stejně i proti
+serveru větve bez T5 (3164), takže to není T5. Vitest `src/components/play/arcade` 1191 / 1191 (i `p64-hash`).
+Mutace: `placeRunner` bez větve na výšku → audit runner červený na obou telefonech (`fill` 0,50 / 0,52); vráceno ze
+zálohy, zelené. Připíchnutá čísla (`p61/portrait.json`, prahy) se nehýbala.
+
+```
+npm run build
+PLAY_READER=off node node_modules/next/dist/bin/next start -p 3173 -H 127.0.0.1
+FALLBACK_SMOKE_URL=http://127.0.0.1:3173 P64_CHECK=1 npx playwright test e2e/p64-portrait-audit.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1
+FALLBACK_SMOKE_URL=http://127.0.0.1:3173 npx playwright test e2e/p64-landscape-guard.spec.ts --project=chromium --project=pixel7-touch --workers=1
+FALLBACK_SMOKE_URL=http://127.0.0.1:3173 npx playwright test e2e/p58a-framing.spec.ts e2e/p61-portrait.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1
+npx vitest run src/components/play/arcade --reporter=json --outputFile.json=<soubor>
+```

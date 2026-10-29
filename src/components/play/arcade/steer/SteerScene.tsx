@@ -13,7 +13,7 @@ import { renderHeld } from '../effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { BoxGeometry, type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
+import { Box3, BoxGeometry, type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
@@ -38,7 +38,9 @@ import { UNDER_PANORAMA } from '../look/under-panorama';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { Scenery } from '../look/Scenery';
 import { Vegetation } from '../look/Vegetation';
+import type { PlayRect } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
+import { fitChase } from '../track-camera';
 import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
 import { BARRIER_W, roadShapeOf } from './road-shape';
@@ -57,7 +59,7 @@ export const STEER_SCENE_KINDS: ReadonlySet<string> = new Set(['pad']);
  * středu trati `road`, ne od počátku: auto u mantinelu a soupeř u druhého
  * kraje se na výšku vejdou jen s kamerou napůl nad silnicí (P30B T5).
  */
-export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, z: number, road: number): void {
+export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, z: number, road: number, rect: PlayRect | null = null): void {
   // Plavba (P32F T4): ovládání osu trati nenese, bere se z rozvržení; přistání má vlastní záběr.
   const voyage = voyageCams.get(camera);
   if (voyage?.layout.mode === 'land') {
@@ -65,12 +67,18 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
     return;
   }
   if (voyage !== undefined) {
-    placeVoyage(camera, look, x, z, centerOf(voyage.layout.course, z), voyage.layout.motion);
+    placeVoyage(camera, look, x, z, centerOf(voyage.layout.course, z), voyage.layout.motion, rect);
     return;
   }
   if (camera.aspect < 1) {
-    camera.position.set(road + (x - road) * 0.5, 18, z - 18);
-    look.set(road + (x - road) * 0.4, 0, z + 8);
+    // P64 T5: do `playRect` celá šíře silnice (`STEER_TALL`) od auta po kus trati před ním; vzdálenost a posun `fitChase`.
+    const view = STEER_TALL;
+    camera.position.set(road + (x - road) * view.follow, view.up, z - view.back);
+    look.set(road + (x - road) * view.followLook, 0, z + view.ahead);
+    camera.lookAt(look);
+    track.min.set(road - view.half, 0, z - view.behind);
+    track.max.set(road + view.half, view.top, z + view.depth);
+    fitChase(camera, look, track, rect);
   } else {
     camera.position.set(road + (x - road) * 0.8, 4.2, z - 8.5);
     look.set(road + (x - road) * 0.6, 0.8, z + 12);
@@ -90,9 +98,27 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
  */
 const VOYAGE_CAM = {
   // Na výšku víc do strany nejde: trať v zatáčce by vyjela z úzkého obrazu (−2,6 m = 1,9 s před psem).
-  phone: { up: 4, back: 7, side: -1.6, ahead: 6 },
+  // P64 T5: výš, blíž a dál dopředu (dřív 4, 7, −1,6, 6) – trať běží nahoru po obrazovce, loď stojí dole v `playRect`.
+  phone: { up: 5, back: 5, side: -1, ahead: 8 },
   desktop: { up: 3.6, back: 7.5, side: -3, ahead: 10 },
 } as const;
+
+/**
+ * Závod na výšku (P64 T5): kamera nad autem (`up`) a `back` m za ním, míří `ahead` m před něj a do strany jde za
+ * autem jen z části (`follow`, `followLook`). Do `playRect` se vejde silnice `half` m od osy (výchozí trať 5 m
+ * a soupeř či turbo u kraje), od `behind` m za autem po `depth` m před ním, do výšky `top`. Vzdálenost a posun dává
+ * `fitChase`.
+ */
+const STEER_TALL = { up: 18, back: 18, ahead: 10, follow: 0.5, followLook: 0.4, half: 5, behind: 2, depth: 14, top: 1.5 } as const;
+
+/**
+ * Plavba na výšku (P64 T5): do `playRect` se vejde loď (`hero` m kolem ní, do výšky `top` se stěžněm); trať před ní
+ * ukazuje póza `VOYAGE_CAM.phone`. Vzdálenost a posun dává `fitChase`. Větší krabice (i trať před lodí) kameru
+ * odsunula a loď zmenšila pod dnešek.
+ */
+const VOYAGE_TALL = { hero: 0.7, top: 2.4 } as const;
+
+const track = new Box3();
 
 /**
  * Loď je v kvádru těla řídká (stěžně, plachty, vesla): kvádr na snímku zabírá
@@ -100,12 +126,17 @@ const VOYAGE_CAM = {
  */
 const BOAT_NEAR = 0.65;
 
-function placeVoyage(camera: PerspectiveCamera, look: Vector3, x: number, z: number, road: number, motion: VoyageLayout['motion']): void {
-  const cam = camera.aspect < 1 ? VOYAGE_CAM.phone : VOYAGE_CAM.desktop;
+function placeVoyage(camera: PerspectiveCamera, look: Vector3, x: number, z: number, road: number, motion: VoyageLayout['motion'], rect: PlayRect | null): void {
+  const tall = camera.aspect < 1;
+  const cam = tall ? VOYAGE_CAM.phone : VOYAGE_CAM.desktop;
   const near = motion === 'boat' ? BOAT_NEAR : 1;
   camera.position.set(road + (x - road) * 0.8 + cam.side * near, cam.up * near, z - cam.back * near);
   look.set(road + (x - road) * 0.6, 0.4, z + cam.ahead);
   camera.lookAt(look);
+  if (!tall) return;
+  track.min.set(x - VOYAGE_TALL.hero, 0, z - VOYAGE_TALL.hero);
+  track.max.set(x + VOYAGE_TALL.hero, VOYAGE_TALL.top, z + VOYAGE_TALL.hero);
+  fitChase(camera, look, track, rect);
 }
 
 /** Horní okraj obrazu, kam hráč ještě vidí (NDC): nad ním leží lišta HUD s časem a cílem (~15 % výšky). */

@@ -42,6 +42,8 @@ vi.mock('react', async (importOriginal) => {
     useCallback: (callback: unknown) => callback,
     useRef: (current: unknown) => ({ current }),
     useEffect: () => undefined,
+    // Hrací obdélník na výšku (`usePlayRectRef`, P64): mimo plátno nezměřený.
+    useContext: () => ({ current: null }),
     useSyncExternalStore: (_subscribe: unknown, snapshot: () => unknown) => snapshot(),
   };
 });

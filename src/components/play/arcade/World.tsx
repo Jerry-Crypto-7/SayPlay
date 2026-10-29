@@ -32,7 +32,6 @@ import { baseControlOf } from '@/play/arcade/addons';
 import type { Look } from '@/play/arcade/look';
 import { type PropRole, fitScale, foeTarget, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
-import { FLAP } from '@/play/arcade/pieces/flap';
 import { SHOOTER } from '@/play/arcade/pieces/shooter';
 import { STRUCTURE_KINDS } from '@/play/arcade/pieces/runner-sections';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
@@ -60,7 +59,8 @@ import { STEER_SCENE_KINDS, SteerBackdrop, placeChase } from './steer/SteerScene
 import { ThrowRig } from './throw/ThrowRig';
 import { type ToyTarget, applyToy, toyIdleOf, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
-import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
+import { usePlayRectRef } from './portrait-frame';
+import { type Spot, chaserSpot, placeFlap, placePlatform, placeRunner } from './track-camera';
 import { WorldBackdrop } from './WorldBackdrop';
 
 /**
@@ -465,8 +465,6 @@ function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
 }
 
-const DEG = Math.PI / 180;
-
 /**
  * Rezerva k vzdálené rovině, kterou `FarAtFog` (`look/rig/StyleRig.tsx`) staví na konec mlhy:
  * kamera se dorovná až po tělech a největší tělo je kolem 10 m.
@@ -556,6 +554,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
   const rigged = useMemo(() => views.map((view) => riggedCharacter(modelIdOf(view, cast))), [views, cast]);
   const clips = useRef<ClipState[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  // Hrací obdélník mezi HUD a ovládáním (P64 T5): kamery honiček do něj na výšku rámují hru (`fitChase`).
+  const playRect = usePlayRectRef();
   // Zakřivená trať běžce (P46D T3): těla, stavby i kamera jdou po křivce; jádro dál běží rovně.
   const path = useMemo(() => (control === 'runner' ? runnerPathOf(session.world) : null), [control, session]);
   const look = useMemo(() => new Vector3(), []);
@@ -697,29 +697,24 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       if (control === 'platform') {
         // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
         followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        placePlatform(camera, look, z, followY.current);
+        placePlatform(camera, look, z, followY.current, playRect.current);
       } else if (control === 'flap') {
-        // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
-        // tak daleko, ať je vidět první trubka i mince za ní (P30B T5). Na výšku by kolmá
-        // kamera ptáčka zmenšila na 3 % výšky: natočená do tří čtvrtin ho má přes 4 %
-        // a první trubku i minci pořád v záběru.
-        if (camera.aspect < 1) placeAngled(camera, look, z, FLAP.ceiling / UNIT / 2, 22, 50 * DEG, 5);
-        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 30, FLAP.ceiling / UNIT + 1, 26, 0.1);
+        placeFlap(camera, look, z, playRect.current);
       } else if (control === 'glide') {
-        placeGlide(camera, look, x, y, z);
+        placeGlide(camera, look, x, y, z, playRect.current);
       } else if (control === 'walker') {
-        placeWalker(camera, look, x, z);
+        placeWalker(camera, look, x, z, playRect.current);
       } else if (control === 'ball') {
-        placeBall(camera, look);
+        placeBall(camera, look, playRect.current);
       } else if (control === 'steer') {
         // Osa trati je v jednotkách jádra a scéna ji zrcadlí (x → −x), stejně jako těla.
         const course = baseControlOf(session.world.control).params.course as SteerCourse | undefined;
-        placeChase(camera, look, x, z, course === undefined ? 0 : -centerAt(course, z * UNIT) / UNIT);
+        placeChase(camera, look, x, z, course === undefined ? 0 : -centerAt(course, z * UNIT) / UNIT, playRect.current);
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
         // Hrdina je už na křivce; kamera chce jeho pruh a křivku zvlášť.
-        placeRunner(camera, look, path === null ? x : x - path(z).x, z, path ?? undefined);
+        placeRunner(camera, look, path === null ? x : x - path(z).x, z, path ?? undefined, playRect.current);
       }
       if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock()));
       camera.updateMatrixWorld();
