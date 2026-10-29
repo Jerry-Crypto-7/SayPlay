@@ -19,7 +19,12 @@ import type { RemixJob } from '../../../RemixBox';
 import { hookEffectsOf, onHookEffects } from '../../effects/bus';
 import type { ArcadeEventListener, ArcadeSession } from '../../session';
 import { CALLOUT_MS, CALLOUT_TEXT } from '../Callout';
-import { HookScreen, type HookTick, HooksLayer, type HooksView, NO_HOOKS, hookTickOf, nextView, pruneView } from '../HooksLayer';
+import { hooksOf } from '@/play/arcade/hooks';
+import { fightSpec, fightTuned, worldOf } from '@/play/arcade/hooks/__tests__/harness';
+import { openOffer } from '@/play/arcade/hooks/upgrades';
+import { instantiate } from '@/play/arcade/kernel';
+
+import { HookScreen, type HookTick, HooksLayer, type HooksView, NO_HOOKS, hookTickOf, nextView, pruneView, resumedView } from '../HooksLayer';
 import { ROUND_BANNER_MS } from '../RoundBanner';
 import { POP_MAX, POP_MERGE_MS, POP_MS } from '../ScorePop';
 import { UpgradeCards, pickCard, pickKey } from '../UpgradePick';
@@ -243,7 +248,9 @@ describe('RarityToast', () => {
 
 describe('a game without hooks', () => {
   it('renders nothing new', () => {
-    expect(renderToStaticMarkup(<HooksLayer session={{} as ArcadeSession} />)).toBe('');
+    const world = worldOf(fightTuned(() => ({ enemies: 3, waves: 3 })), 1);
+    const state = instantiate(world);
+    expect(renderToStaticMarkup(<HooksLayer session={{ world, state: () => state } as unknown as ArcadeSession} />)).toBe('');
     const empty: HookTick = hookTickOf([], row(1, 0));
     expect(screen(play([[0, empty.effects]]))).toBe('');
   });
@@ -263,6 +270,19 @@ describe('PostRun rarity row', () => {
     expect(markup.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, '')).toContain('You found 12 common 3 rare 1 epic');
     expect(await card({})).not.toContain('play-found');
     expect(await card({ found: { common: 0, rare: 0, epic: 0 } })).not.toContain('play-found');
+  });
+});
+
+describe('a layer that mounts mid-game (back in the feed)', () => {
+  it('shows the offer the core still holds open, and nothing when none is open or the game has no hooks', () => {
+    const world = worldOf(fightSpec(), 1);
+    const state = instantiate(world);
+    const keeper = hooksOf(world.rules)!.keeper;
+    expect(resumedView({ world, state: () => state })).toBe(NO_HOOKS);
+    openOffer(state, keeper, ['extra_life', 'speed', 'fire_rate']);
+    expect(resumedView({ world, state: () => state }).offer?.cards).toEqual(['extra_life', 'speed', 'fire_rate']);
+    const plain = worldOf(fightTuned(() => ({ enemies: 3, waves: 3 })), 1);
+    expect(resumedView({ world: plain, state: () => state })).toBe(NO_HOOKS);
   });
 });
 

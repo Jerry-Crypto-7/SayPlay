@@ -14,6 +14,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { ARCADE_LIMITS } from '@/play/arcade/contract';
+import { hooksOf, offerOf } from '@/play/arcade/hooks';
 import type { HookEffect, UpgradeId } from '@/play/arcade/hooks/contract';
 
 import type { BestCheer } from '../../best';
@@ -126,8 +127,18 @@ export function HookScreen({ view, session }: { readonly view: HooksView; readon
   );
 }
 
+/**
+ * Obraz vrstvy, která se připojí uprostřed hry: ve feedu se při odswipování odpojí a po návratu by bez toho ztratila
+ * nabídku, kterou jádro dál drží otevřenou (karty i klávesy 1–3 by zmizely a vzala by se karta 0).
+ */
+export function resumedView(session: Pick<ArcadeSession, 'world' | 'state'>): HooksView {
+  const keeper = hooksOf(session.world.rules)?.keeper;
+  const cards = keeper === undefined ? null : offerOf(session.state(), keeper);
+  return cards === null ? NO_HOOKS : { ...NO_HOOKS, offer: { cards, key: 0 } };
+}
+
 export function HooksLayer({ session, cheer = null }: { readonly session: ArcadeSession; readonly cheer?: BestCheer | null }) {
-  const [view, setView] = useState<HooksView>(NO_HOOKS);
+  const [view, setView] = useState<HooksView>(() => resumedView(session));
   // Klíče nástupů jedna řada pro zprávy háčků i hlášku rekordu: táž hodnota by u nové hlášky nepřehrála nástup.
   const keys = useRef(0);
   // Rekord nebo výzva přebité za běhu (T11, `cheerOf` v `ArcadePlay`): hláška jednou za běh, pak zhasne jako ostatní.
