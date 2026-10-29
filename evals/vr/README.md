@@ -103,21 +103,24 @@ Profil platí jen v relaci VR (`src/play/xr/quality.ts`, `XrRoot.tsx`, `XrCull` 
 
 29. 10. 2026: neměřeno – brýle nepřipojené/nenasazené, měří se v T15. Brýle byly na USB s povoleným laděním, ale spaly (`mWakefulness=Asleep`), nikdo je neměl na hlavě. Skript je nebudil (po probuzení bez člověka drží popředí systémový dialog), nic nepřesměroval a zapsal důvod do souboru.
 
-## Celá smyčka v jedné relaci (P67 T14, 29. 10. 2026, emulátor)
+## Celá smyčka v jedné relaci (P67 T14 a T14a, 29. 10. 2026, emulátor)
 
-`e2e/vr-loop.spec.ts` projde v IWER (Quest 2) celé kolo v jedné XR relaci: feed → „Enter VR“ → robot vyhraje → „Again“ → „Next“ → páčka zpět → „New game“ → karta lobby → „Make it!“ → hra → „New game“ → klávesnice „zombies attack my house“ → „Make it!“ → hra → „AI version ready“ → „Play it“ → AI verze z fixtur → výhra → „Share“ → QR kód s výzvou. Po každém kroku test ověří, že stránka si o relaci řekla jednou, žádná neskončila a renderer dál bere snímky od téhož objektu `XRSession`.
+`e2e/vr-loop.spec.ts` projde v IWER (Quest 2) celé kolo v jedné XR relaci v pořadí z cíle plánu (od T14a): `/play` → „Enter VR“ → lobby → karta → „Make it!“ → hra → robot vyhraje → „Again“ → „Next“ → feed (robot první karty v brýlích hned) → spoušť → „Next“ → páčka zpět → „New game“ → klávesnice „zombies attack my house“ → „Make it!“ → hra → „AI version ready“ → „Play it“ → AI verze z fixtur → výhra → „Share“ → QR kód s výzvou. Okno 800 × 900, kde feed leží pod formulářem. Po každém kroku test ověří, že stránka si o relaci řekla jednou, žádná neskončila a renderer dál bere snímky od téhož objektu `XRSession`.
 
-Tři běhy samostatně, všechny zelené, a čtvrtý v sadě všech `vr-*` (35/35) taky. Čas od načtení feedu (ms, kumulativně):
+Tři běhy samostatně (T14a), všechny zelené. Čas od začátku testu (ms, kumulativně):
 
 | krok | běh 1 | běh 2 | běh 3 |
 |---|---|---|---|
-| ve VR (feed) | 4 131 | 3 738 | 3 934 |
-| „Again“ | 5 483 | 5 098 | 5 201 |
-| „Next“ a zpět | 8 084 | 7 624 | 7 487 |
-| hra z karty lobby | 13 093 | 10 304 | 10 138 |
-| hra z klávesnice | 20 942 | 17 779 | 17 467 |
-| AI verze | 23 120 | 20 005 | 19 648 |
-| QR kód sdílení | 30 391 | 30 423 | 29 998 |
+| ve VR (lobby) | 2 394 | 2 435 | 2 382 |
+| hra z karty lobby | 4 020 | 4 329 | 4 343 |
+| „Again“ | 6 139 | 6 254 | 6 332 |
+| „Next“ do feedu | 9 131 | 8 802 | 9 238 |
+| „Next“ a zpět | 11 549 | 11 015 | 11 667 |
+| hra z klávesnice | 17 553 | 17 275 | 17 627 |
+| AI verze | 20 229 | 19 775 | 20 522 |
+| QR kód sdílení | 27 461 | 30 014 | 27 780 |
+
+Do T14a kolo začínalo ve feedu („Enter VR“ na kartě), protože ze hry z věty do feedu cesta nevedla; tři běhy T14 měly 30,0–30,4 s.
 
 - **Klávesnice:** 23 stisků (věta „zombies attack my house“) ~6 s, tedy ~0,25 s na klávesu včetně míření. Člověk v brýlích bude pomalejší; to emulátor neměří.
 - **QR kód** se ukazuje 7–10 s po výhře: výsledek 2D výzvu po výhře uložil a strop 1 výzva / 10 s VR chvíli odmítá (`docs/vr/README.md`, „Sdílení z VR“).

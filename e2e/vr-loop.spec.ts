@@ -7,20 +7,20 @@ import type { PanelReport, XrReport } from '../src/components/play/xr/XrRig';
 import { IDEAS, STARTERS } from '../src/components/play/starters';
 
 /**
- * Celá smyčka Sayplay v jedné XR relaci (P67 T14) v emulátoru IWER: hráč brýle nesundá od prvního „Enter VR“
- * do QR kódu sdílení. Hlavní tvrzení: stránka si o relaci řekla jednou, žádná neskončila a renderer celou dobu
- * kreslí přes tentýž objekt `XRSession` (jeho `requestAnimationFrame` dostává snímky po každém kroku).
+ * Celá smyčka Sayplay v jedné XR relaci (P67 T14, pořadí z cíle plánu T14a) v emulátoru IWER: hráč brýle nesundá
+ * od „Enter VR“ na domově do QR kódu sdílení. Hlavní tvrzení: stránka si o relaci řekla jednou, žádná neskončila
+ * a renderer celou dobu kreslí přes tentýž objekt `XRSession` (jeho `requestAnimationFrame` dostává snímky po každém
+ * kroku). Jediné klepnutí mimo VR je „Enter VR“ v liště `/play`, všechno další dělají ovladače:
  *
- * Pořadí kroků dává produkt: feed žije jen na `/play` a ve VR z hry na `/play/<id>` zpátky do feedu cesta není
- * („New game“ otevře lobby nad hrou, „Make it!“ vede dál na další hru). Smyčka proto začíná ve feedu, kam vede
- * „Enter VR“ z karty, a do lobby jde přes „New game“ – všechno od vstupu do VR dělají ovladače:
+ * 1. lobby → karta s větou → „Make it!“ → hra z věty na `/play/<id>`;
+ * 2. robot kolo dohraje (sonda `handPlay`) → „Again“ → nové kolo od tiku 0;
+ * 3. konec kola → „Next“ (i mimo feed, T14a) → feed na `/play`: aktivní karta kreslí v brýlích hned, bez klepnutí;
+ * 4. spoušť převezme kartu → konec kola → „Next“ na další kartu → páčka dolů na předchozí;
+ * 5. „New game“ → „Type“ → klávesnice „zombies attack my house“ → „Make it!“ → hra; její AI verze z fixtures
+ *    (podvržené `GET …/upgrade`, jako `vr-enter`) → „Play it“ na panelu „AI version ready“;
+ * 6. výhra → „Share“ → karta s QR kódem odkazu na výzvu.
  *
- * 1. feed → kolo karty → „Enter VR“; robot kolo vyhraje (sonda `handPlay`) → „Again“ → nové kolo od tiku 0;
- * 2. „Next“ na výsledku → další karta, páčka dolů → předchozí karta;
- * 3. „New game“ → lobby → karta s větou → „Make it!“ → hra;
- * 4. konec kola → „New game“ → „Type“ → klávesnice „zombies attack my house“ → „Make it!“ → hra;
- * 5. AI verze té hry z fixtures (podvržené `GET …/upgrade`, jako `vr-enter`) → „Play it“ na panelu
- *    „AI version ready“ → výhra → „Share“ → karta s QR kódem odkazu na výzvu.
+ * Klávesnice je most k AI verzi: feed AI verzi nehlídá (karta má `upgrade={null}`), čeká na ni jen čerstvá hra z věty.
  *
  * Útrata 0: feed a AI verze jsou hry z fixtur, každý dotaz na AI verzi (`…/upgrade`) odpovídá test, takže práci
  * režiséra nikdo nespustí; kromě čtení smí stránka jen postavit dvě rychlé hry z vět, uložit výzvu a poslat události.
@@ -277,12 +277,29 @@ async function expectPreview(page: Page, row: Row): Promise<void> {
 }
 
 /** Konec kola rukou robota → výsledek karty feedu ve VR. */
-async function endFeedRound(page: Page, want?: 'won'): Promise<PanelReport> {
-  const end = await robotEnds(page);
-  if (want === undefined) expect(['won', 'lost']).toContain(end);
-  else expect(end).toBe(want);
+async function endFeedRound(page: Page): Promise<PanelReport> {
+  expect(['won', 'lost']).toContain(await robotEnds(page));
   await expect.poll(async () => (await feed(page)).mode, { timeout: 15_000 }).toBe('result');
   return panelOf(page, 'result');
+}
+
+/**
+ * Aktivní karta feedu kreslí v brýlích: kontejner plátna relace (`play-stage-host`, jediný na stránce – feed v relaci
+ * vlastní plátno nemá) visí v ní, ne v úschovně (`xr-parking`); hrdina je ve scéně a snímků přibývá. Kontejner, ne
+ * `<canvas>`: samotné plátno si emulátor po dobu relace přestěhuje k sobě.
+ */
+async function drawnInCard(page: Page): Promise<void> {
+  const hosts = () =>
+    page.evaluate(() => ({
+      all: document.querySelectorAll('.play-stage-host').length,
+      card: document.querySelectorAll('[data-testid="feed-current"] .play-stage-host').length,
+      parked: document.querySelectorAll('[data-testid="xr-parking"] .play-stage-host').length,
+    }));
+  await expect.poll(hosts, { timeout: 15_000 }).toEqual({ all: 1, card: 1, parked: 0 });
+  await expect.poll(async () => (await xr(page))?.heroWorld ?? null, { timeout: 15_000 }).not.toBeNull();
+  const before = (await xr(page))!.frames;
+  await expect.poll(async () => (await xr(page))?.frames ?? 0, { timeout: 15_000 }).toBeGreaterThan(before);
+  expect((await xr(page))?.calls).toBeGreaterThan(0);
 }
 
 /** Hra z „Make it!“ běží ve VR: adresa `/play/<id>` jiná než `before`, HUD hry, hrdina ve stavu, kreslené snímky. */
@@ -307,8 +324,8 @@ test.beforeAll(async ({ request }) => {
   aiVersion = await publish(request, AI_VERSION[0], AI_VERSION[1], FEED.length);
 });
 
-test('the whole loop in one XR session: feed, Again, Next and Prev, lobby card, keyboard, AI version, Share QR', async ({ page }) => {
-  // Feed, tři hry z lobby a AI verze, kola a výzva se do výchozích 30 s nevejdou.
+test('the whole loop in one XR session: lobby card, game, Again, Next to the feed, Next and Prev, AI version, Share QR', async ({ page }) => {
+  // Dvě hry z lobby, feed, AI verze, kola a výzva se do výchozích 30 s nevejdou.
   test.setTimeout(420_000);
   const started = Date.now();
   const marks: Record<string, number> = {};
@@ -335,50 +352,20 @@ test('the whole loop in one XR session: feed, Again, Next and Prev, lobby card, 
   await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows, next: null }) }));
   await withQuest2(page);
 
-  // 1. Feed → kolo karty → „Enter VR“ (jediné klepnutí mimo VR); hodiny kola stojí, konec dá robot.
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`/play?g=${rows[0]!.versionId}`);
-  await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
-  await expectPreview(page, rows[0]!);
-  await page.keyboard.press('ArrowLeft');
-  await expect.poll(async () => (await feed(page)).mode).toBe('play');
-  await holdClock(page);
-  const enter = page.getByTestId('feed-current').getByTestId('enter-vr');
+  // 1. `/play` → „Enter VR“ v liště (jediné klepnutí mimo VR) → lobby nad feedem → karta s větou → „Make it!“ → hra.
+  // Okno užší než 1024 px: feed leží pod formulářem, takže „Next“ do feedu musí feed sám posunout do obrazu (`XrFeed`)
+  // – jinak karta nehraje. Široké okno (feed vedle formuláře) hlídají `vr-feed` a `vr-lobby`.
+  await page.setViewportSize({ width: 800, height: 900 });
+  await page.goto('/play');
+  const enter = page.locator('.play-appbar').getByTestId('enter-vr');
   await expect(enter).toBeVisible({ timeout: 30_000 });
   await enter.click();
   await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
   expect((await xr(page))?.eyes).toBe(2);
-  await expect.poll(async () => (await xr(page))?.heroWorld ?? null, { timeout: 15_000 }).not.toBeNull();
-  await sameSession(page, 'enter VR from the feed');
+  await panelOf(page, 'lobby');
+  expect(await ids(page)).toEqual(['lobby']);
+  await sameSession(page, 'enter VR on /play');
   mark('enter');
-
-  // Robot kolo vyhraje → „Again“ → nové kolo téže karty od tiku 0.
-  const won = await endFeedRound(page, 'won');
-  expect(labelsOf(won)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
-  await click(page, 'result', 'again');
-  await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['hud']);
-  expect(await tickOf(page)).toBe(0);
-  expect(await feed(page)).toMatchObject({ versionId: rows[0]!.versionId, mode: 'play' });
-  await sameSession(page, 'Again');
-  mark('again');
-
-  // 2. „Next“ → další karta, páčka dolů → zpátky na předchozí.
-  await endFeedRound(page);
-  await click(page, 'result', 'next');
-  await expectPreview(page, rows[1]!);
-  await sameSession(page, 'Next');
-  await flick(page, 'down');
-  await expectPreview(page, rows[0]!);
-  await sameSession(page, 'Prev');
-  mark('next-prev');
-
-  // 3. Spoušť převezme kolo, robot ho dohraje, „New game“ → lobby → karta s větou → „Make it!“ → hra.
-  await pullTrigger(page);
-  await expect.poll(async () => (await feed(page)).mode, { timeout: 10_000 }).toBe('play');
-  await holdClock(page);
-  await endFeedRound(page);
-  await click(page, 'result', 'new');
-  await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['lobby']);
   await click(page, 'lobby', 'idea-0');
   await expectText(page, 'lobby').toContain(POOL[0]!);
   await click(page, 'lobby', 'make');
@@ -386,8 +373,47 @@ test('the whole loop in one XR session: feed, Again, Next and Prev, lobby card, 
   await sameSession(page, 'lobby card → game');
   mark('card-game');
 
-  // 4. Konec kola → „New game“ → „Type“ → klávesnice → „Make it!“ → další hra.
+  // 2. Robot kolo vyhraje → výsledek i mimo feed s „Next“ vedle „Again“ → „Again“ → nové kolo téže hry od tiku 0.
+  expect(await robotEnds(page)).toBe('won');
+  const won = await panelOf(page, 'result');
+  expect(labelsOf(won)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
+  await click(page, 'result', 'again');
+  await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['hud']);
+  expect(await tickOf(page)).toBe(0);
+  expect(new URL(page.url()).pathname).toBe(fromCard);
+  await sameSession(page, 'Again');
+  mark('again');
+
+  // 3. Konec kola → „Next“ → feed na `/play`: aktivní karta kreslí v brýlích hned, bez klepnutí na stránku.
   expect(['won', 'lost']).toContain(await robotEnds(page));
+  await click(page, 'result', 'next');
+  await page.waitForURL((url) => url.pathname === '/play', { timeout: 20_000 });
+  await expectPreview(page, rows[0]!);
+  await drawnInCard(page);
+  await sameSession(page, 'Next to the feed');
+  mark('to-feed');
+
+  // 4. Spoušť převezme kartu, robot kolo dohraje, „Next“ → další karta; páčka dolů → zpátky na předchozí.
+  await pullTrigger(page);
+  await expect.poll(async () => (await feed(page)).mode, { timeout: 10_000 }).toBe('play');
+  await holdClock(page);
+  const inFeed = await endFeedRound(page);
+  expect(labelsOf(inFeed)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
+  await click(page, 'result', 'next');
+  await expectPreview(page, rows[1]!);
+  await drawnInCard(page);
+  await sameSession(page, 'Next');
+  await flick(page, 'down');
+  await expectPreview(page, rows[0]!);
+  await drawnInCard(page);
+  await sameSession(page, 'Prev');
+  mark('next-prev');
+
+  // 5. Spoušť převezme kartu, konec kola → „New game“ → „Type“ → klávesnice → „Make it!“ → hra z věty.
+  await pullTrigger(page);
+  await expect.poll(async () => (await feed(page)).mode, { timeout: 10_000 }).toBe('play');
+  await holdClock(page);
+  await endFeedRound(page);
   await click(page, 'result', 'new');
   await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['lobby']);
   await click(page, 'lobby', 'type');
@@ -396,11 +422,12 @@ test('the whole loop in one XR session: feed, Again, Next and Prev, lobby card, 
   const typed = TYPED[0]!.toUpperCase() + TYPED.slice(1);
   await expectText(page, 'lobby').toContain(`${typed}|`);
   await click(page, 'lobby', 'make');
-  const fromKeyboard = await gameRunsInVr(page, fromCard);
+  const fromKeyboard = await gameRunsInVr(page, '/play');
+  expect(fromKeyboard).not.toBe(fromCard);
   await sameSession(page, 'keyboard → game');
   mark('keyboard-game');
 
-  // 5. AI verze dorazí: panel „AI version ready“ → „Play it“ → AI verze (hra z fixtur) běží v téže relaci.
+  // AI verze dorazí: panel „AI version ready“ → „Play it“ → AI verze (hra z fixtur) běží v téže relaci.
   aiReadyFor = fromKeyboard.slice('/play/'.length);
   const notice = await panelOf(page, 'notice');
   expect(notice.text.join(' ')).toContain('AI version ready');
@@ -411,12 +438,12 @@ test('the whole loop in one XR session: feed, Again, Next and Prev, lobby card, 
   await sameSession(page, 'AI version');
   mark('ai-version');
 
-  // Výhra → „Share“ → karta s QR kódem odkazu na výzvu hrané AI verze. Výsledek 2D výzvu po výhře uložil a strop
+  // 6. Výhra → „Share“ → karta s QR kódem odkazu na výzvu hrané AI verze. Výsledek 2D výzvu po výhře uložil a strop
   // 1 výzva / 10 s ji VR může chvíli odmítat – karta to zkouší znovu (až ~12 s, `docs/vr/README.md`).
   await holdClock(page);
   expect(await robotEnds(page)).toBe('won');
   const result = await panelOf(page, 'result');
-  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Again']);
+  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
   await click(page, 'result', 'share');
   await expect.poll(async () => (await panelOf(page, 'share')).qr, { timeout: 25_000 }).not.toBeNull();
   const shared = await panelOf(page, 'share');

@@ -12,11 +12,16 @@
  *
  * Listování dává feed přes `feedSteps` (`feed-next.ts`): plátno R3F je vlastní React kořen a kontexty feedu
  * do něj nedosáhnou. Páčka ani poloha ovladačů nejdou do stavu hry – převzetí je tentýž restart jako po ťuku.
+ *
+ * Do feedu se v relaci jde i „Next“ z hry na vlastní stránce (P67 T14a, `XrHud`). Nová stránka `/play` začne nahoře
+ * a v úzkém okně (pod 1024 px) leží feed pod formulářem: karta, kterou feed nevidí z poloviny, nehraje, a v brýlích
+ * by nebylo nic, ani panel. Dokud žádná hra na obrazovce není, posune se proto feed do obrazu (`nearest`: feed, který
+ * vidět je, se nehne).
  */
 
 import { useFrame } from '@react-three/fiber';
 import { type XRControllerState, useXRInputSourceState } from '@react-three/xr';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { createFlick, createTriggerOwner } from '@/play/xr/input-map';
 
@@ -52,6 +57,9 @@ export function XrFeed({ shown, aim }: { readonly shown: ArcadeSession | null; r
   const flick = useMemo(createFlick, []);
   const owner = useMemo(createTriggerOwner, []);
   const held = useRef(false);
+  useEffect(() => {
+    if (steps !== null && shown === null) document.querySelector('[data-testid="feed-pager"]')?.scrollIntoView({ block: 'nearest' });
+  }, [steps, shown]);
   useFrame(() => {
     if (steps === null) return;
     const stick = right?.gamepad['xr-standard-thumbstick'];

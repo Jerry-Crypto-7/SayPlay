@@ -401,7 +401,7 @@ test('Enter VR on /play opens the lobby; Type, a sentence card and Make it! star
   const end = await page.evaluate(() => (window.__playShell as unknown as Shell).handPlay('end'));
   expect(['won', 'lost']).toContain(end.runState);
   const result = await panelOf(page, 'result');
-  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Again']);
+  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
   expectEnglish(result);
   await click(page, 'result', 'new');
   await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['lobby']);

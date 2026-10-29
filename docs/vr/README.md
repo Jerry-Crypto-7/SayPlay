@@ -12,14 +12,14 @@ K vyzkoušení stačí první tři oddíly a „Známá omezení“. Zbytek jsou
    - na domově `/play` vpravo nahoře – brýle začnou **lobby**: kartou s větami metr před hráčem;
    - ve **feedu** na `/play`: ťuknout na hru, aby ji hráč převzal od robota, a pak „Enter VR“ v liště hry – brýle začnou touto hrou.
 2. **Hra.** Ovladače dělají totéž co klávesnice: páčka = šipky, spoušť = mezerník. Podle druhu hry stojí svět na stole, na velkém pódiu před hráčem, na podlaze kolem hráče, nebo se hraje rukou (oddíl „Ovládání ovladači“).
-3. **Výsledek.** Po konci kola visí panel „You did it!“ nebo „So close.“ s tlačítky: „Again“ (znovu), „New game“ (lobby), „Share“ (QR kód), „Comfort“ (pohodlí), „Exit VR“ a ve feedu ještě „Next“ (další hra). Tlačítko se mačká paprskem z ovladače a spouští.
-4. **Feed.** Pravá páčka mávnutím nahoru = další hra, dolů = předchozí. Spoušť převezme hru od robota, jako ťuk na telefonu.
+3. **Výsledek.** Po konci kola visí panel „You did it!“ nebo „So close.“ s tlačítky: „Again“ (znovu), „Next“ (další hra z feedu), „New game“ (lobby), „Share“ (QR kód), „Comfort“ (pohodlí) a „Exit VR“. Tlačítko se mačká paprskem z ovladače a spouští.
+4. **Feed.** „Next“ vede do feedu odkudkoli: ve feedu na další kartu, ze hry z věty nebo z AI verze na feed domova. Tam hned hraje robot první karty a hráč ho vidí v brýlích. Pravá páčka mávnutím nahoru = další hra, dolů = předchozí. Spoušť převezme hru od robota, jako ťuk na telefonu.
 5. **Hra z věty.** „New game“ otevře lobby: šest karet s větami, „Type“ (klávesnice ve vzduchu) a „Say it“ (hlas, jen když prohlížeč umí diktovat). „Make it!“ udělá hru a za pár sekund běží v brýlích.
 6. **AI verze.** Hra z věty se nejdřív hraje v rychlé verzi. Když server dopočítá AI verzi, objeví se panel „AI version ready“ s tlačítkem „Play it“ a hra se vymění bez opuštění VR.
 7. **Sdílení.** „Share“ ukáže QR kód odkazu na hru. Kamarád ho naskenuje telefonem. Po výhře odkaz nese výzvu: kamarád vidí skóre, které má překonat.
 8. **Konec.** „Exit VR“ na panelu nebo systémové tlačítko Meta na pravém ovladači. Stránka se vrátí do 2D a hra běží dál.
 
-**Feed jen na začátku.** Cesta vede feed → lobby → hry z vět. Ze hry z věty (stránka `/play/<id>`) se ve VR do feedu vrátit nedá: lobby vede jen na další hru. Zpátky do feedu se jde přes „Exit VR“ a 2D feed. Test celého kola proto začíná ve feedu (oddíl „Celá smyčka v jedné relaci“).
+Kolo jde projít v libovolném pořadí bez sundání brýlí: lobby → hra z věty → „Next“ → feed → „New game“ → lobby a znovu. Test celého kola jde v pořadí z cíle plánu (oddíl „Celá smyčka v jedné relaci“).
 
 ## Quest 2 – návod krok za krokem
 
@@ -75,7 +75,7 @@ Skript:
 ### 6. V brýlích
 
 1. Stránka se otevře sama, s `?vrhud=1` v adrese. „Enter VR“ nabídne každý prohlížeč, který VR umí; `?vr=0` v adrese VR vypne (pro ladění).
-2. Stiskni „Enter VR“ vpravo nahoře. Začne lobby s větami (oddíl „Hra z věty ve VR“). Do feedu se jde jinak: ťuknout na hru ve feedu a „Enter VR“ v liště hry.
+2. Stiskni „Enter VR“ vpravo nahoře. Začne lobby s větami (oddíl „Hra z věty ve VR“). Do feedu vede „Next“ na výsledku hry; rovnou z feedu se začíná ťuknutím na hru ve feedu a „Enter VR“ v liště hry.
 3. Hraj. Vlevo dole v zorném poli visí malý panel FPS (zapíná ho `?vrhud=1` v adrese). Ukazuje za poslední sekundu:
    - `fps` – kolik snímků brýle nakreslily; plynulý chod je 72;
    - `worst ms` – nejdelší mezera mezi dvěma snímky; nad 14 ms je to cuknutí;
@@ -186,9 +186,9 @@ Až jsi ve VR a hraješ, stiskni v terminálu Enter. Skript 60 s měří FPS a z
 
 **V brýlích projdi** (u každého bodu si poznamenej „OK“, nebo co vadí):
 
-1. **Feed:** na `/play` ťukni na hru ve feedu (převezmeš ji od robota) a stiskni „Enter VR“ v liště hry. Dohraj kolo, „Again“, pak pravou páčkou nahoru (další hra) a dolů (předchozí).
-2. **Hra z věty:** na výsledku „New game“. V lobby vyber kartu, nebo stiskni „Say it“ a řekni anglickou větu (když „Say it“ chybí, prohlížeč Questu diktovat neumí – pak „Type“ a klávesnice). „Make it!“ a hru zahraj.
-3. **Again** po konci hry z věty.
+1. **Hra z věty:** na `/play` stiskni „Enter VR“ vpravo nahoře. V lobby vyber kartu, nebo stiskni „Say it“ a řekni anglickou větu (když „Say it“ chybí, prohlížeč Questu diktovat neumí – pak „Type“ a klávesnice). „Make it!“ a hru zahraj.
+2. **Again** po konci hry z věty.
+3. **Feed:** po dalším konci kola „Next“. Brýle ukážou feed s robotem na první kartě. Pravou páčkou nahoru (další hra) a dolů (předchozí), spouští převezmi hru od robota a dohraj kolo.
 4. **Share:** na výsledku „Share“, QR kód naskenuj telefonem. Telefon má otevřít tutéž hru (po výhře s výzvou). Kód se může ukázat až po ~12 s (oddíl „Známá omezení“).
 5. **Svět kolem tebe:** aréna, obrana a chytání. Adresy her všech žánrů vypíše `node --experimental-strip-types --import ./scripts/ts-paths.mjs evals/vr/budget.mjs --base http://127.0.0.1:3168 --publish`; otevři je v prohlížeči brýlí jako `localhost:3168/play/<id>` a „Enter VR“.
 6. **Trať na pódiu:** jedna z runner, platformer, flap, voyage, hop, crowd (adresy z téhož příkazu).
@@ -404,17 +404,20 @@ Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoř
 
 Feed na `/play` jde procházet bez sundání brýlí. Do VR se vstoupí „Enter VR“ v HUD hry na kartě feedu (je vidět, jakmile hraje hráč, ne robot). Hra karty se pak kreslí v brýlích, a když hráč přejde na jinou kartu, brýle ukážou její hru. Relace po celou dobu trvá.
 
+Do feedu se jde i z relace, která začala jinde (P67 T14a): „Next“ na výsledku hry z věty, sdílené hry nebo AI verze otevře feed na `/play`. Robot první karty hraje v brýlích hned, bez ťuknutí na stránku; spoušť ho převezme jako ve feedu výš.
+
 | Ovládání | Kdy | Co dělá |
 |---|---|---|
 | pravá páčka mávnutím nahoru | mimo běžící kolo | další karta |
 | pravá páčka mávnutím dolů | mimo běžící kolo | předchozí karta |
 | spoušť (paprsek mimo panely) nebo A/X | robot hraje náhled | hru převezme hráč, jako ťuk na scénu na telefonu |
-| „Next“ na panelu výsledku | po konci kola | další karta |
+| „Next“ na panelu výsledku | po konci kola | ve feedu další karta, jinde feed na `/play` |
 | „Again“ na panelu výsledku | po konci kola | nové kolo téže hry |
 
 - **Mimo běžící kolo** znamená náhled robota, výsledek a kartu, která se ještě načítá. Když hraje hráč, páčka patří hře, i když hra čeká na první pohyb.
 - **Mávnutí** je výchylka páčky svisle aspoň na 70 %. Další mávnutí platí až po návratu páčky pod polovinu výchylky, takže páčka držená nahoře nelistuje dokola.
-- **Panel výsledku ve feedu:** „New game“, „Exit VR“, „Comfort“ a „Share“ nahoře, „Next“ a rajčatové „Again“ dole. Mimo feed „Next“ chybí.
+- **Panel výsledku:** „New game“, „Exit VR“, „Comfort“ a „Share“ nahoře, „Next“ a rajčatové „Again“ dole – ve feedu i mimo něj stejně, „Next“ jen vede jinam.
+- **Úzké okno prohlížeče** (pod 1024 px): feed na `/play` leží pod formulářem a karta, kterou feed nevidí aspoň z poloviny, nehraje. Po příchodu do feedu z „Next“ se proto feed sám posune do obrazu (`XrFeed.tsx`), dokud na něm žádná hra nehraje. Bez toho by brýle po „Next“ ukázaly prázdný svět bez panelu (naměřeno v okně 800 × 900: robot karty nehrál, test červený).
 - **Další karta je načtená dopředu:** feed stahuje detail aktivní karty a sousedů (+1, +2, −1), takže hra další karty se po přechodu postaví bez čekání na síť.
 
 **Ověření (P67 T4):** `e2e/vr-feed.spec.ts` v emulátoru IWER:
@@ -475,7 +478,7 @@ Stav 29. 10. 2026. Všechno kromě posledního řádku je z emulátoru IWER na p
 
 | Co | Výsledek | Kde podrobně |
 |---|---|---|
-| celé kolo v jedné relaci (feed, Again, Next a zpět, karta lobby, klávesnice, AI verze, QR kód) | 3 běhy ze 3 zelené, ~30 s na kolo, pořád tatáž relace | „Celá smyčka v jedné relaci“ níž, `evals/vr/README.md` |
+| celé kolo v jedné relaci v pořadí z cíle (karta lobby, hra, Again, Next do feedu, Next a zpět, klávesnice, AI verze, QR kód) | 3 běhy ze 3 zelené, ~28 s na kolo, pořád tatáž relace | „Celá smyčka v jedné relaci“ níž, `evals/vr/README.md` |
 | rozpočet snímku Questu 2 (≤ 150 draw callů, ≤ 300 tisíc trojúhelníků) | všech 19 žánrů i všechny panely pod ním; nejtěsnější závod `voyage` (rezerva 4,6 %) | „Rozpočet snímku ve všech režimech“ |
 | „Next“ ve feedu → první snímek další hry | medián 119–122 ms (první návštěva karty 0,5–0,9 s) | „Feed ve VR“ |
 | první JS telefonu (`/play`, Pixel 7) proti `main` | +984 B, limit ±1 kB splněný | „Celá smyčka v jedné relaci“ |
@@ -496,7 +499,7 @@ Draw call = jeden příkaz grafické kartě „nakresli tenhle objekt“; Quest 
 
 **Známé slabiny:**
 
-- **Do feedu jen na začátku.** Ze hry z věty se ve VR do feedu nevrátíš; zpátky přes „Exit VR“ a 2D feed.
+- **„Next“ ze hry mimo feed otevře feed od první karty.** Feed dává čerstvé hry na každé třetí místo, takže hráč může svou právě udělanou hru potkat znovu.
 - **„Enter VR“ ve feedu až po převzetí hry od robota.** Během náhledu robota lišta s tlačítkem není.
 - **Odkaz pro sdílení až za ~12 s.** Server pouští jednu výzvu za 10 s a 2D výsledek ji uloží hned po výhře; VR to pak zkouší znovu po 3 s. Oprava je jeden řádek v souboru jiného plánu, zatím ne.
 - **Výsledek ve feedu se po 10 s bez dotyku stránky vrátí do náhledu robota** – ovladače se za dotyk nepočítají. Karta „Share“ to drží, dokud je otevřená.
@@ -514,19 +517,24 @@ Draw call = jeden příkaz grafické kartě „nakresli tenhle objekt“; Quest 
 
 ## Podrobnosti měření a rozhodnutí
 
-### Celá smyčka v jedné relaci (P67 T14, 29. 10. 2026, emulátor)
+### Celá smyčka v jedné relaci (P67 T14 a T14a, 29. 10. 2026, emulátor)
 
-`e2e/vr-loop.spec.ts` v IWER (Quest 2) projde celé kolo bez opuštění VR. Jediné klepnutí mimo VR je „Enter VR“ na kartě feedu, všechno další dělají ovladače:
+`e2e/vr-loop.spec.ts` v IWER (Quest 2) projde celé kolo bez opuštění VR v pořadí z cíle plánu. Jediné klepnutí mimo VR je „Enter VR“ vpravo nahoře na `/play`, všechno další dělají ovladače:
 
-1. feed → kolo karty → „Enter VR“; robot kolo vyhraje (sonda `handPlay`) → „Again“ → nové kolo od tiku 0;
-2. „Next“ na výsledku → další karta, pravá páčka dolů → předchozí;
-3. spoušť převezme hru, robot kolo dohraje → „New game“ → lobby → karta s větou → „Make it!“ → hra na `/play/<id>`;
-4. konec kola → „New game“ → „Type“ → klávesnice „zombies attack my house“ → „Make it!“ → další hra;
-5. AI verze té hry (podvržená odpověď `GET …/upgrade`, cíl je hra z fixtur) → panel „AI version ready“ → „Play it“ → AI verze běží → výhra → „Share“ → karta s QR kódem odkazu `…/play/<verze>?via=share&dare=<id>`.
+1. lobby → karta s větou → „Make it!“ → hra z věty na `/play/<id>`;
+2. robot kolo vyhraje (sonda `handPlay`) → výsledek s „Next“ i mimo feed → „Again“ → nové kolo od tiku 0;
+3. konec kola → „Next“ → feed na `/play`: robot první karty hraje a kreslí se v brýlích hned, bez ťuknutí na stránku (kontejner plátna relace visí v kartě, ne v úschovně; hrdina ve scéně, snímky přibývají);
+4. spoušť převezme kartu → konec kola → „Next“ → další karta; pravá páčka dolů → předchozí;
+5. spoušť převezme kartu → konec kola → „New game“ → „Type“ → klávesnice „zombies attack my house“ → „Make it!“ → hra z věty; její AI verze (podvržená odpověď `GET …/upgrade`, cíl je hra z fixtur) → panel „AI version ready“ → „Play it“ → AI verze běží;
+6. výhra → „Share“ → karta s QR kódem odkazu `…/play/<verze>?via=share&dare=<id>`.
 
-Po každém kroku test ověří tutéž relaci: stránka si o ni řekla jednou, žádná neskončila a renderer dál bere snímky přímo od toho objektu `XRSession` (počítadlo na jeho `requestAnimationFrame`). Útrata 0: každý dotaz na AI verzi odpověděl test, takže server práci režiséra nespustil; kromě čtení stránka poslala jen dvě rychlé hry z vět, uložení výzvy a události. Výsledek: 3 běhy ze 3 zelené, ~30 s na kolo (časy kroků v `evals/vr/README.md`).
+Klávesnice je v kole most k AI verzi: feed AI verzi nehlídá (karta feedu ji nečeká), čeká na ni jen čerstvá hra z věty.
 
-**Proč kolo začíná ve feedu:** feed je jen na `/play` a lobby z „New game“ vede jen dál na novou hru. Pořadí „lobby → … → feed“ by potřebovalo navigaci, kterou hráč v brýlích udělat nemůže (tlačítko zpět prohlížeče), a test by tvrdil víc, než produkt umí.
+Test běží v okně 800 × 900, užším než 1024 px. Tam leží feed pod formulářem a „Next“ do feedu ho musí sám posunout do obrazu (oddíl „Feed ve VR“). Bez toho posunu test v kroku 3 zčervená: robot první karty nehraje. Široké okno hlídají `vr-feed` (1440 × 900) a `vr-lobby` (1280 × 720); celé kolo v okně 1440 × 900 prošlo na tomtéž buildu jednou zeleně.
+
+Po každém kroku test ověří tutéž relaci: stránka si o ni řekla jednou, žádná neskončila a renderer dál bere snímky přímo od toho objektu `XRSession` (počítadlo na jeho `requestAnimationFrame`). Útrata 0: každý dotaz na AI verzi odpověděl test, takže server práci režiséra nespustil; kromě čtení stránka poslala jen dvě rychlé hry z vět, uložení výzvy a události. Výsledek T14a: 3 běhy ze 3 zelené, 27–30 s na kolo (časy kroků v `evals/vr/README.md`).
+
+**Do T14a** kolo začínalo ve feedu: ze hry z věty do feedu cesta nevedla, „Next“ byl jen na výsledku ve feedu. Od T14a „Next“ na výsledku mimo feed otevře feed na `/play` (`XrHud.tsx`); navigace zůstává v layoutu `/play`, takže relace žije dál, stejně jako u „Make it!“.
 
 **`vr-lobby` už nekolísá.** Příčina: feed za lobby si dělá snímky karet pro náhledy (`captureFrame` v `src/components/play/feed/snapshot-cache.ts`) a kreslil přitom snímek navíc mimo snímek XR relace. V takovém snímku ovladače nemají polohu, paprsek na chvíli sjel z tlačítka a stisk spouště právě v tu chvíli se ztratil. Ve VR se teď snímek karty nedělá (plátno relace obraz brýlí stejně nenese); hlídá to unit test. Druhá oprava v testu: kontrola „při diktování žádný požadavek“ nepočítá soubory scény z vlastního serveru (`/assets/`, `/_next/static/`), které si hra feedu za lobby dotahuje. `vr-lobby` sám: 6 běhů po sobě zelených, v sadě všech `vr-*` zelený.
 
@@ -546,6 +554,8 @@ Po každém kroku test ověří tutéž relaci: stránka si o ni řekla jednou, 
 `origin/main` se od začátku větve nepohnul (`e661855c`), slučovat nebylo co.
 
 **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 635 B rozbaleně, **+984 B** proti `main` (4 215 651 B), přenesené +1 390 B, žádný kód XR. Oprava `captureFrame` přidala 53 B. Rezerva do limitu ±1 kB je 16 B.
+
+**Regrese T14a (build větve, server 3168, 29. 10. 2026):** `vr-loop` 3/3, `vr-diorama`, `vr-enter`, `vr-feed`, `vr-hud`, `vr-native`, `vr-pwa`, `vr-room` a `interface-language` 38/38, `vr-lobby` sám naposled 3/3. T14a mění jen `XrHud.tsx` a `XrFeed.tsx`, které načítá jen kód XR (`XrRoot`), takže první JS telefonu zůstává +984 B; znovu neměřeno.
 
 ### „Enter VR“ podle schopnosti prohlížeče (P67 T1, 29. 10. 2026)
 

@@ -20,6 +20,7 @@
 
 import { useFrame } from '@react-three/fiber';
 import { useXR, useXRInputSourceState } from '@react-three/xr';
+import { useRouter } from 'next/navigation';
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Group, Vector3 } from 'three';
 
@@ -39,8 +40,10 @@ export const AGAIN = 'Again';
 export const AI_READY = 'AI version ready';
 /** Výsledek → VR lobby s kartami vět (P67 T2). */
 export const NEW_GAME = 'New game';
-/** Výsledek ve feedu → další karta (P67 T4). */
+/** Výsledek ve feedu → další karta (P67 T4); mimo feed → feed (P67 T14a). */
 export const NEXT = 'Next';
+/** Feed: domov `/play`, v témže layoutu jako hry, takže XR relace přechod přežije (`e2e/vr-loop.spec.ts`). */
+const FEED_PATH = '/play';
 /** Výsledek a lobby → panel pohodlí (P67 T9, `XrComfort`). */
 export const COMFORT = 'Comfort';
 
@@ -106,11 +109,12 @@ const hudOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => (
 /**
  * Výsledek: nadpis kitu, konečná počítadla, „Again“ (jediná rajčatová akce) přes celou šířku, nad ním vedlejší
  * „New game“ do VR lobby (P67 T2) a „Exit VR“ zpátky k 2D výsledku. Tři tlačítka v jedné řadě by se do karty
- * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole. Ve feedu (`next`, P67 T4) stojí vedle „Again“
- * vedlejší „Next“ na další kartu. „Comfort“ (P67 T9) otevře panel pohodlí místo výsledku, „Share“ (P67 T5) kartu
- * s QR kódem odkazu (`XrShare`) – jen když adresa nese hranou verzi (`share` není `null`).
+ * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole. Vedle „Again“ stojí vedlejší „Next“: ve feedu
+ * na další kartu (P67 T4), u hry na vlastní stránce do feedu (P67 T14a). „Comfort“ (P67 T9) otevře panel pohodlí
+ * místo výsledku, „Share“ (P67 T5) kartu s QR kódem odkazu (`XrShare`) – jen když adresa nese hranou verzi
+ * (`share` není `null`).
  */
-const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() => void) | null, share: (() => void) | null): PanelSpec => ({
+const resultOf = (view: XrHudView, width: number, exit: () => void, next: () => void, share: (() => void) | null): PanelSpec => ({
   id: 'result',
   width,
   headline: view.result === 'won' ? YOU_DID_IT : SO_CLOSE,
@@ -124,7 +128,10 @@ const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() =>
       ...(share === null ? [] : [{ id: 'share', label: SHARE, press: share }]),
     ],
   },
-  buttons: [...(next === null ? [] : [{ id: 'next', label: NEXT, press: next }]), { id: 'again', label: AGAIN, primary: true, press: view.again }],
+  buttons: [
+    { id: 'next', label: NEXT, press: next },
+    { id: 'again', label: AGAIN, primary: true, press: view.again },
+  ],
 });
 
 const noticeOf = (notice: XrNotice, width: number): PanelSpec => ({
@@ -225,8 +232,10 @@ export function XrHud({ diorama, stage, desk, aim }: { readonly diorama: boolean
   const left = useXRInputSourceState('controller', 'left');
   // Konec relace: brýle se vrátí do 2D a stránka ukazuje výsledek (`PostRun`), odkud jde sdílet a remixovat.
   const exit = useCallback(() => void session?.end(), [session]);
-  // Ve feedu (P67 T4) vede výsledek i na další kartu.
-  const next = useShared(feedSteps, null)?.next ?? null;
+  // Ve feedu (P67 T4) vede výsledek na další kartu; hra z věty, sdílená hra a AI verze (P67 T14a) do feedu.
+  const router = useRouter();
+  const steps = useShared(feedSteps, null);
+  const next = steps === null ? () => router.push(FEED_PATH) : steps.next;
   const top = (width: number): PanelSpec[] => (notice === null ? [] : [noticeOf(notice, width)]);
   // Karta sdílení (P67 T5) stojí místo výsledku, dokud ji „Done“ nezavře; nové kolo nebo karta feedu ji zavře samy.
   const [sharing, setSharing] = useState(false);
