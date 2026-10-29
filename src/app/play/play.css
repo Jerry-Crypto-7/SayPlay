@@ -3583,7 +3583,8 @@ button.play-feed-card {
  *   vlevo pod pilulkou zůstane místo odznaku power-upu; ukázka robota přes šířku a nízká. Toast konce bez AI verze
  *   (3 s, P56B T5) zůstává nad dolní řadou jako na `main`: nahoře přes šířku by `play-phone` počítal jako horní pruh.
  * - „Change one thing“ se na 360 px vejde (okraj tlačítka 8 px místo 20, mezery dolní řady 8 px místo 10).
- * - Popisek jména se drží pod horním pásem: `NameLine.tsx` mu píše `--_name-push`, `NameAnchor` ho dál vodí. */
+ * - Popisek jména se drží pod horním pásem a mimo povel souboje: `NameLine.tsx` mu píše `--_name-push` a
+ *   `--_name-shift`, `NameAnchor` ho dál vodí; nastupuje na svém místě. */
 @media (max-aspect-ratio: 1/1) and (pointer: coarse) and (max-width: 1023px) {
   .play-shell {
     --_top: calc(var(--sp-space-3) + env(safe-area-inset-top, 0px));
@@ -3656,8 +3657,13 @@ button.play-feed-card {
     transform: translateX(-50%);
   }
 
+  /* Nástup štítku (`sp-pop-in` kitu) přepisoval `transform` i s posunem `translate(-50%, -100%)`: štítek stál po celý
+   * nástup o půl šířky vpravo a o výšku níž – v souboji na výšku přímo na povelu „Strike!“ nad hydrou (P64 T8-R1).
+   * `add` přidá zvětšení za posun kitu, štítek vyroste na svém místě. */
   .play-name-line {
     margin-top: var(--_name-push, 0px);
+    margin-left: var(--_name-shift, 0px);
+    animation-composition: add;
   }
 
   /* Výsledek na výšku: list podle obsahu dole, zamrzlá scéna s odznakem vyplní zbytek nahoře (jako na desktopu),

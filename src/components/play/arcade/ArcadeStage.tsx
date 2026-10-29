@@ -27,6 +27,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
 
+import { keepClear } from './action-cue/NameLine';
 import { AbilityButton, ActionButton, abilitiesOf, actionsOf, useAbilityInput, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
@@ -616,6 +617,16 @@ function NameAnchor({ surface, control, bodies }: { readonly surface: React.RefO
     tag.style.top = `${(clamp((1 - box.maxY) / 2, 0.12, 0.95) * 100).toFixed(1)}%`;
     tag.style.visibility = 'visible';
   });
+  // Úkrok z HUD a z povelu souboje (P64 T8-R1) až po snímku: povel píše `DuelScene` a jeho polohu `Html` ve vlastních
+  // `useFrame`, které běží po tomhle – při kreslení na požádání by štítek uhýbal povelu z minulého tiku.
+  useEffect(
+    () =>
+      addAfterEffect(() => {
+        const tag = surface.current?.querySelector<HTMLElement>('.play-name-line');
+        if (tag != null && tag.style.visibility === 'visible') keepClear(tag);
+      }),
+    [surface],
+  );
   return null;
 }
 
