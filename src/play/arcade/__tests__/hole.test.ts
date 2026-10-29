@@ -30,12 +30,12 @@ import {
   bodyBase,
   nativeRule,
 } from '../contract';
-import { hooksOf, roundOf, withHooks } from '../hooks';
-import { RARITY_SCORE } from '../hooks/contract';
+import { hooksOf, inBreak, roundOf, withHooks } from '../hooks';
+import { RARITY_SCORE, ROUNDS } from '../hooks/contract';
 import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { arenaAxis } from '../pieces/arena';
-import { HOLE, HOLE_BODIES, blockDistance, classCounts, growthAt, holeParts, massOf, needOf, roundStartOf, swallows, tierOf } from '../pieces/hole';
+import { HOLE, HOLE_BODIES, blockDistance, classCounts, growthAt, holeParts, holeSeconds, massOf, needOf, roundStartOf, swallows, tierOf } from '../pieces/hole';
 import { HOLE_BOT, mistakeWindow } from '../pieces/hole-bot';
 import { runBot, verifyArcade } from '../verify';
 import type { GenreModule } from '../../genre/contract';
@@ -305,7 +305,8 @@ describe('hole: the bot wins, the idle player and the weak bot lose, replays mat
   it('the idle player loses when the first round clock runs out', () => {
     const idle = replay(worldOf(2), [], ARCADE_LIBRARY);
     expect(idle.outcome).toBe('lost');
-    expect(idle.tick).toBe(HOLE.seconds.default * ARCADE_HZ + 1);
+    // Tři kola si horizont dělí: 29 s na kolo, ne `seconds` 60 (T5a).
+    expect(idle.tick).toBe(holeSeconds(HOLE.rounds.default, HOLE.seconds.default) * ARCADE_HZ + 1);
   });
 
   it.each(SEEDS)('seed %i: the weak bot that ignores the size threshold loses', (seed) => {
@@ -336,6 +337,35 @@ describe('hole: the bot wins, the idle player and the weak bot lose, replays mat
       const bot = runBot(worldOf(seed, spec));
       expect(bot.outcome, `seed ${seed}`).toBe('won');
     }
+  });
+});
+
+describe('hole: the slowest win still fits the replay horizon (P66 T5a pin)', () => {
+  /**
+   * Nejpomalejší vyhraný běh: hráč stojí a každé kolo vyhraje až v posledním tiku jeho hodin (cíl kola mu tam
+   * dopíšeme), v posledním kole stejně tak polkne největší věc (díra na ni); každá přestávka běží celá. Běh musí
+   * skončit výhrou v horizontu ověření – jinak výzvu z poctivé výhry server odmítne (`score/dare.ts`).
+   */
+  it.each(Array.from({ length: HOLE.rounds.max - HOLE.rounds.min + 1 }, (_, k) => HOLE.rounds.min + k))('%i round(s) with the longest round clock end inside the horizon', (rounds) => {
+    const world = worldOf(1, specOf({ rounds, seconds: HOLE.seconds.max }));
+    const round = nativeRule(world.rules, 'hole_round')!.params as { keeper: number; need: number; seconds: number };
+    const clock = round.seconds * ARCADE_HZ;
+    const program = loadProgram(world, ARCADE_LIBRARY);
+    const state = instantiate(world);
+    const finale = bodyBase(HOLE_BODIES.finale);
+    while (outcomeOf(state) === 'running' && (state[HEADER.tick] as number) < 4 * ARCADE_LIMITS.maxTicks) {
+      if (!inBreak(state, round.keeper) && (state[HEADER.tick] as number) - roundStartOf(state, 0) === clock - 1) {
+        state[HEADER.counters + COUNTER.ammo] = (state[HEADER.counters + COUNTER.reserve] as number) + round.need;
+        if (roundOf(state, round.keeper) === rounds - 1) {
+          state[bodyBase(0) + BODY.x] = state[finale + BODY.x] as number;
+          state[bodyBase(0) + BODY.z] = state[finale + BODY.z] as number;
+        }
+      }
+      step(state, NO_INPUT, program);
+    }
+    expect(outcomeOf(state)).toBe('won');
+    expect(state[HEADER.tick]).toBe(rounds * clock + (rounds - 1) * ROUNDS.breakTicks);
+    expect(state[HEADER.tick]).toBeLessThanOrEqual(ARCADE_LIMITS.maxTicks);
   });
 });
 

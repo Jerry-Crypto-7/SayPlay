@@ -20,6 +20,8 @@
 
 import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
+import { ARCADE_HZ, ARCADE_LIMITS } from '../contract';
+import { ROUNDS } from '../hooks/contract';
 import { roundSeeds } from '../hooks/rounds';
 import { LANES } from './lanes';
 
@@ -31,7 +33,7 @@ export const SORT = {
   /** Věcí za celou hru (`COUNT_PARAMS.sort.default.collectible`); skutečný počet je násobek `capacity`, kola mají svá minima. */
   items: { min: 30, max: 60, default: 45 },
   rounds: { min: 2, max: 5, default: 3 },
-  /** Hodiny kola: kdo kolo do minuty nevyčistí, prohraje. */
+  /** Hodiny kola nejvýš (s): kdo kolo nevyčistí včas, prohraje; kola si horizont ověření dělí (`roundTicks`). */
   roundSeconds: 60,
   points: 10,
   /** Okno série správných ťuků (tiky): delší než u akčních žánrů, třídění je hádanka. */
@@ -275,6 +277,18 @@ export function binsPerRound(items: number, rounds: number): number[] {
   let rest = total - out.reduce((all, count) => all + count, 0);
   for (let round = rounds - 1; rest > 0; round = round === 0 ? rounds - 1 : round - 1, rest -= 1) out[round] = (out[round] as number) + 1;
   return out.map((count, round) => Math.min(SORT.roundBins, Math.max(count, stageOf(round, rounds).least)));
+}
+
+/**
+ * Hodiny kol (tiky) z počtu věcí v kolech: horizont ověření bez přestávek (`ROUNDS.breakTicks`, třídění vylepšení
+ * nenabízí) v poměru věcí, nejvýš `roundSeconds`. Nejpomalejší vyhraný běh – každé kolo vyčištěné v posledním tiku
+ * svých hodin, každá přestávka celá – tak skončí v horizontu a výzvu z výhry server vezme (`score/dare.ts`). Dělení
+ * podle věcí, ne rovným dílem: pozdější kola jsou větší a 5 kol po 16,8 s by finále s 18 věcmi nestihl ani robot.
+ */
+export function roundTicks(items: readonly number[]): number[] {
+  const total = items.reduce((sum, count) => sum + count, 0);
+  const play = ARCADE_LIMITS.maxTicks - (items.length - 1) * ROUNDS.breakTicks;
+  return items.map((count) => Math.min(SORT.roundSeconds * ARCADE_HZ, Math.floor((count * play) / total)));
 }
 
 /** Pořadí nádob: každý druh jednou (zamíchané, takže první nádoby jsou různé), zbytek náhodné druhy. */

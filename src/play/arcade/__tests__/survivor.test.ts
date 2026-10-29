@@ -24,7 +24,7 @@ import { readGenreSpec } from '../../genre/index';
 import { survivorGenre } from '../../genre/survivor';
 import { type GameSpecV1, readGameSpec } from '../../spec';
 import { arcadeWorldOf, compileArcade } from '../compile';
-import { type ArcadeEffect, type ArcadeWorld, HEADER, type InputEvent, NO_INPUT, type PieceRef } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, HEADER, type InputEvent, NO_INPUT, type PieceRef } from '../contract';
 import { type HookEffect, UPGRADE_OFFER, isHookEffect } from '../hooks/contract';
 import { type HookParams, foundOf, hooksOf, roundOf, upgradeLevel } from '../hooks';
 import { instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
@@ -116,7 +116,7 @@ describe('survivor world (P66 T5)', () => {
     expect(world.bot.id).toBe('survivor_bot');
     // Aréna je na výšku vyšší než širší.
     expect(SURVIVOR.halfZ).toBeGreaterThan(SURVIVOR.halfX);
-    expect(world.rules.map((ref) => ref.id)).toEqual(['survivor_fire', 'survivor_hit', 'survivor_touch', 'pickup', 'survivor_round', 'out_of_health', 'hooks', 'score_bonus']);
+    expect(world.rules.map((ref) => ref.id)).toEqual(['survivor_fire', 'survivor_hit', 'survivor_touch', 'pickup', 'survivor_round', 'out_of_health', 'time_limit', 'hooks', 'score_bonus']);
     const hooks = hooksOf(world.rules)!;
     expect(hooks.rounds).toBe(SURVIVOR.rounds.default);
     expect(hooks.clear).toBe('win');
@@ -258,6 +258,20 @@ describe('survivor genre module and bounds (P66 T5)', () => {
         const won = worlds.filter((world) => runBot(world).outcome === 'won').length;
         expect(won, `rounds ${String(rounds)}, enemies ${String(enemies)}`).toBeGreaterThanOrEqual(9);
         for (const world of worlds) expect(replay(world, [], ARCADE_LIBRARY).outcome).toBe('lost');
+      }
+    }
+  });
+
+  it('pin T5a: at every bound (rounds 2–5 × enemies 16, 40) a run that never ends on its own still ends inside the replay horizon', () => {
+    // Nejpomalejší hráč: nikoho nesrazí a nikdo ho nezraní (bez výstřelu a doteku), na kartu čeká celých `pickTicks`.
+    // Hodiny hry ho uzavřou prohrou v horizontu ověření – každá výhra tak padne dřív a výzva z ní projde (`score/dare.ts`).
+    for (let rounds = SURVIVOR.rounds.min; rounds <= SURVIVOR.rounds.max; rounds += 1) {
+      for (const enemies of [SURVIVOR.enemies.min, SURVIVOR.enemies.max]) {
+        const world = worldOf(1, specOf({ ...CONTENT, params: { rounds, enemies } }));
+        const endless = { ...world, rules: world.rules.filter((ref) => ref.id !== 'survivor_fire' && ref.id !== 'survivor_touch') };
+        const run = replay(endless, [], ARCADE_LIBRARY, 4 * ARCADE_LIMITS.maxTicks);
+        expect(run.outcome, `rounds ${String(rounds)}, enemies ${String(enemies)}`).toBe('lost');
+        expect(run.tick).toBeLessThanOrEqual(ARCADE_LIMITS.maxTicks);
       }
     }
   });

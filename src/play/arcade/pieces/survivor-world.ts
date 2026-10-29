@@ -4,8 +4,8 @@
  * a čisté funkce nad stavem, celá čísla.
  */
 
-import { type ArcadeState, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '../contract';
-import { UPGRADE_STEP, type UpgradeId } from '../hooks/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeState, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '../contract';
+import { UPGRADE_OFFER, UPGRADE_STEP, type UpgradeId } from '../hooks/contract';
 import { DIRECTIONS } from './arena';
 
 // ---------------------------------------------------------------------------
@@ -30,6 +30,14 @@ export const SURVIVOR = {
   fireTicks: 24,
   /** Kola (háčky): poslední je boss, ostatní vlny. */
   rounds: { min: 2, max: 5, default: 4 },
+  /**
+   * Hodiny celé hry (s, pravidlo `time_limit`). Kolo vlastní limit nemá – končí vyčištěním –, takže hráč, který
+   * nepřátele jen vodí kolem, by vyhrál až za horizontem ověření a výzvu z výhry by server odmítl (`score/dare.ts`).
+   * Hodiny běží i v přestávkách s výběrem karty, takže každá výhra padne před ně. 85 s = horizont bez jedné celé volby
+   * karty (`UPGRADE_OFFER.pickTicks`): v přestávce pravidla neběží, prohra na hodinách, které doběhnou při volbě,
+   * padne až po ní – pořád v horizontu. Robot světa vyhraje nejdéle za 53 s (5 kol, 40 nepřátel, semínka 1–10).
+   */
+  seconds: (ARCADE_LIMITS.maxTicks - UPGRADE_OFFER.pickTicks) / ARCADE_HZ,
   /** Nepřátel ve vlnách dohromady (bez bosse a jeho posil). */
   enemies: { min: 16, max: 40, default: 36 },
   /** Body za padlého nepřítele (× kombo), za krystal a za bosse. */

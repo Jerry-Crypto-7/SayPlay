@@ -1,7 +1,8 @@
 /**
  * Třídění (P66 T8): fronty věcí z věty nahoře, nádoby dole; ťuk do sloupce fronty (vstup pruhů, `laneOfAxis`) pošle
  * její čelo do nádoby téhož druhu nebo barvy, jinak do odkladiště s omezeným místem. Plné odkladiště = prohra, hodiny
- * kola (minuta) taky. Hra a její meze jsou v `sort-level.ts`; tady je ovládání, pravidlo a generátor.
+ * kola (nejvýš minuta, kola si horizont ověření dělí podle věcí – `roundTicks`) taky. Hra a její meze jsou
+ * v `sort-level.ts`; tady je ovládání, pravidlo a generátor.
  *
  * **Kola** (háčky `arcade/hooks`, `clear: 'win'`): pravidlo vyhlásí výhru, když jsou všechny nádoby kola hotové; před
  * posledním kolem z ní háčky udělají vyčištěné kolo s přestávkou a pak hned další kolo z `roundOf`. Věci všech kol
@@ -55,6 +56,7 @@ import {
   firstLane,
   queueOfX,
   queueX,
+  roundTicks,
   rowZ,
   slotX,
   sortRounds,
@@ -73,6 +75,8 @@ const roundSchema = z
     bins: z.string().regex(/^[0-4]{1,32}$/),
     show: z.int().min(1).max(5),
     queues: z.int().min(1).max(LANES.count),
+    /** Hodiny kola (tiky, `roundTicks`). */
+    ticks: z.int().min(ARCADE_HZ).max(ARCADE_LIMITS.maxTicks),
   })
   .strict();
 
@@ -82,8 +86,6 @@ const gameShape = {
   keeper: body,
   slots: z.int().min(2).max(8),
   capacity: z.int().min(1).max(6),
-  /** Hodiny kola (tiky). */
-  ticks: z.int().min(ARCADE_HZ).max(ARCADE_LIMITS.maxTicks),
   rounds: z.array(roundSchema).min(1).max(SORT.rounds.max),
 };
 export const sortGameSchema = z.object(gameShape).strict();
@@ -203,11 +205,11 @@ export const sortTapRule: RulePiece<SortTapParams> = {
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player }, params) => {
-    if ((state[bodyBase(params.board) + BODY.x] as number) >= params.ticks) return [{ kind: 'lose' }];
-    const lane = tappedIn(state, player);
-    if (lane === null) return [];
     const round = roundIn(state, params);
     const plan = params.rounds[round] as SortGame['rounds'][number];
+    if ((state[bodyBase(params.board) + BODY.x] as number) >= plan.ticks) return [{ kind: 'lose' }];
+    const lane = tappedIn(state, player);
+    if (lane === null) return [];
     const queue = lane - firstLane(plan.queues);
     if (queue < 0 || queue >= plan.queues) return [];
     const tap = tapQueue(boardOfState(state, params, round), queue);
@@ -284,15 +286,17 @@ export function sortParts(seed: number, params: SortParams): ModeParts {
 export function sortPartsOf(seed: number, rounds: readonly SortRound[], slots: number = SORT.slots): ModeParts {
   const hero: BodyInit = { role: 'player', kind: 'player', x: 0, y: 0, z: SORT_LAYOUT.heroZ, ...SORT_LAYOUT.hero, solid: false };
   const bodies: BodyInit[] = [hero];
-  const plans: SortGame['rounds'][number][] = rounds.map((round, index) => {
+  const placed = rounds.map((round, index) => {
     const start = bodies.length;
     round.queues.forEach((line, queue) => line.forEach((kind, order) => bodies.push(itemBody(kind, queue, round.queues.length, order, index))));
     return { start, count: bodies.length - start, bins: round.bins.join(''), show: round.show, queues: round.queues.length };
   });
+  const clocks = roundTicks(placed.map((plan) => plan.count));
+  const plans: SortGame['rounds'][number][] = placed.map((plan, index) => ({ ...plan, ticks: clocks[index] as number }));
   const board = bodies.length;
   bodies.push({ role: 'thing', kind: 'player', x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true });
   const keeper = bodies.length;
-  const game: SortGame = { board, keeper, slots, capacity: SORT.capacity, ticks: SORT.roundSeconds * ARCADE_HZ, rounds: plans };
+  const game: SortGame = { board, keeper, slots, capacity: SORT.capacity, rounds: plans };
   const total = plans.reduce((sum, plan) => sum + plan.count, 0);
   const level: ArcadeLevel = { bodies, length: 0 };
   const rules: PieceRef[] = [

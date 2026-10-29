@@ -302,9 +302,10 @@ export function SortScene({ session, cast, surface, scene: look }: SortSceneProp
     // Hodiny kola: pruh se krátí, posledních 10 s v barvě poplachu.
     const counter = bodyBase(game.board);
     const clock = state[counter + BODY.y] === now ? (state[counter + BODY.x] as number) : 0;
-    const left = Math.max(0, 1 - clock / game.ticks);
+    const { ticks } = game.rounds[now] as SortGame['rounds'][number];
+    const left = Math.max(0, 1 - clock / ticks);
     timer.current?.scale.set(Math.max(0.001, left), 1, 1);
-    timerColor.current?.color.set(left * game.ticks < 10 * ARCADE_HZ ? color.alarm : color['sun-deep']);
+    timerColor.current?.color.set(left * ticks < 10 * ARCADE_HZ ? color.alarm : color['sun-deep']);
 
     // Hrdina za frontami jde ke zvolenému sloupci; značka před čelem zvolené fronty.
     const player = state[HEADER.player] as number;

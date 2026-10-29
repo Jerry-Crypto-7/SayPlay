@@ -92,9 +92,10 @@ describe('sort as a game (P66 T8)', () => {
     }
   });
 
-  it('the bot wins every seed in 30–90 s with each round under its minute; the idle player loses on the round clock', () => {
+  it('the bot wins every seed in 30–90 s with each round under its own clock; the idle player loses on the round clock', () => {
     for (const seed of SEEDS) {
       const world = worldOf(seed);
+      const clocks = gameOf(world).rounds.map((round) => round.ticks);
       const bot = runBot(world);
       expect(bot.outcome, `seed ${seed}`).toBe('won');
       expect(bot.tick / ARCADE_HZ).toBeGreaterThanOrEqual(30);
@@ -104,10 +105,12 @@ describe('sort as a game (P66 T8)', () => {
       const clears = ticks.flatMap((effects, tick) => (effects.some((effect) => effect.kind === 'round_clear') ? [tick] : []));
       expect(starts).toHaveLength(3);
       expect(clears).toHaveLength(3);
-      clears.forEach((clear, round) => expect(clear - (starts[round] as number), `seed ${seed} round ${round + 1}`).toBeLessThan(SORT.roundSeconds * ARCADE_HZ));
+      clears.forEach((clear, round) => expect(clear - (starts[round] as number), `seed ${seed} round ${round + 1}`).toBeLessThan(clocks[round] as number));
+      // Hodiny kol z horizontu podle věcí (T5a): 9 / 15 / 21 věcí → 1044 / 1740 / 2436 tiků, ne minuta na kolo.
+      expect(clocks).toEqual([1044, 1740, 2436]);
       const idle = replay(world, [], ARCADE_LIBRARY);
       expect(idle.outcome).toBe('lost');
-      expect(idle.tick).toBe(SORT.roundSeconds * ARCADE_HZ);
+      expect(idle.tick).toBe(clocks[0]);
     }
   });
 

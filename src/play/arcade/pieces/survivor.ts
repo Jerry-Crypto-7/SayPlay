@@ -566,13 +566,14 @@ export const SPAWN_SLOTS = 56;
  * Režim `survivor.default` (generátor `survivor_waves`): `rounds − 1` vln z `enemies` nepřátel, pak boss. Háčky nese
  * generátor sám (`withHooks`, kolo končí výhrou pravidla): kola, výběr 1 ze 3 ze `SURVIVOR_UPGRADES` mezi koly
  * a vzácnost krystalů; boss posledního kola je předloha bosse háčků (`boss_enter`). Životy ze specu (výchozí
- * `START_LIVES`); prohra = životy na nule.
+ * `START_LIVES`); prohra = životy na nule, nebo hodiny celé hry (`time_limit`, `SURVIVOR.seconds`) – ty drží každou
+ * výhru v horizontu ověření, i u hráče, který vlny jen obchází.
  */
 export const survivorWaves: ModeGeneratorPiece<SurvivorParams> = {
   id: 'survivor_waves',
   params: generatorParams,
   roles: ['player', 'enemy', 'projectile', 'collectible', 'hazard'],
-  cost: (params) => ({ bodies: 8 + params.rounds + SPAWN_SLOTS, rules: 8 }),
+  cost: (params) => ({ bodies: 8 + params.rounds + SPAWN_SLOTS, rules: 9 }),
   generate: (_seed, params) => ({ bodies: survivorLevel(params.rounds - 1), length: 0, spawnSlots: SPAWN_SLOTS }),
   parts: (seed, params, health): ModeParts => {
     const waves = params.rounds - 1;
@@ -599,6 +600,7 @@ export const survivorWaves: ModeGeneratorPiece<SurvivorParams> = {
         params: { keeper, hooks, halfX: SURVIVOR.halfX, halfZ: SURVIVOR.halfZ, waves: schedule, boss: { template: SURVIVOR_BODIES.boss, at: BOSS.at, minion: SURVIVOR_BODIES.minion, dirs, orb: SURVIVOR_BODIES.orb }, attacks },
       },
       { id: 'out_of_health', params: {} },
+      { id: 'time_limit', params: { seconds: SURVIVOR.seconds } },
       ...hooked.rules.map((ref) => (ref.id === 'hooks' ? { id: 'hooks', params: { ...ref.params, boss: SURVIVOR_BODIES.boss } } : ref)),
     ];
     return {

@@ -15,7 +15,8 @@
  *
  * **Kola** (háčky `withHooks`, `clear: 'win'`): kolo končí výhrou `hole_round`, když hráč v kole nasbíral `need`
  * hmoty; před posledním kolem z ní háčky udělají vyčištěné kolo, přestávku a další kolo. Každé kolo má vlastní
- * hodiny `seconds` v ticích od svého začátku; doběhnou pod cílem = prohra. Kolo si nastaví ovládání v prvním tiku
+ * hodiny `seconds` v ticích od svého začátku; doběhnou pod cílem = prohra. Hodiny si kola dělí s horizontem ověření
+ * (`holeSeconds`): i výhra v posledním tiku každého kola se vejde do výzvy. Kolo si nastaví ovládání v prvním tiku
  * kola (dřív než pravidla): tik začátku do `aux1` hráče, hmotu začátku do čítače `reserve`. Postup kola (oříznutý na
  * cíl) jde do čítače `items`, ať ho HUD ukáže proti `finish_collected.need` (tělo cíle svět nemá, nevystřelí).
  *
@@ -50,7 +51,7 @@ import {
   bodyBase,
 } from '../contract';
 import { rarityOf, roundOf, roundSeeds, withHooks } from '../hooks';
-import { RARITY_SCORE } from '../hooks/contract';
+import { RARITY_SCORE, ROUNDS } from '../hooks/contract';
 import { DIRECTIONS, directionOfAxis } from './arena';
 import { nextMultiplier } from './rules';
 
@@ -72,7 +73,7 @@ export const HOLE = {
   /** Větší věc díru zastaví, když by se středy přiblížily pod (díra + věc) / 2 × tohle ‰. */
   block: 800,
   rounds: { min: 1, max: 3, default: 3 },
-  /** Hodiny jednoho kola (s). */
+  /** Hodiny jednoho kola nejvýš (s); víc kol si horizont ověření dělí (`holeSeconds`). */
   seconds: { min: 60, max: 90, default: 60 },
   /** Věcí na poli (bez finále). */
   items: { min: 30, max: 120, default: 60 },
@@ -101,6 +102,15 @@ export interface HoleShape {
 
 /** Cíl jednoho kola z počtu věcí a kol. */
 export const needOf = (items: number, rounds: number): number => Math.max(10, Math.round((items * HOLE.needPerItem) / rounds));
+
+/**
+ * Hodiny jednoho kola (s), nejvýš `seconds`: nejpomalejší vyhraný běh – každé kolo vyhrané v posledním tiku svých
+ * hodin, každá přestávka celá (`ROUNDS.breakTicks`, díra vylepšení nenabízí) – skončí v tiku kola × hodiny +
+ * (kola − 1) × přestávka a ten musí ležet v horizontu ověření, jinak výzvu z výhry server odmítne (`score/dare.ts`).
+ * 1 kolo 60–90 s, 2 kola 44 s, 3 kola 29 s; robot světa potřebuje na kolo nejvýš 25 s (2 kola, 120 věcí).
+ */
+export const holeSeconds = (rounds: number, seconds: number): number =>
+  Math.min(seconds, Math.floor((ARCADE_LIMITS.maxTicks - (rounds - 1) * ROUNDS.breakTicks) / (rounds * ARCADE_HZ)));
 
 /** Hmota, od které díra dosáhne stupně 1–3 (pořadí jako `HOLE.growth`). */
 export const growthAt = (shape: Pick<HoleShape, 'rounds' | 'need'>): readonly number[] => HOLE.growth.map((share) => Math.ceil((share * shape.rounds * shape.need) / 1000));
@@ -323,7 +333,8 @@ const roundParams = z
     keeper: index,
     rounds: z.int().min(HOLE.rounds.min).max(HOLE.rounds.max),
     need: z.int().min(1).max(9999),
-    seconds: z.int().min(HOLE.seconds.min).max(HOLE.seconds.max),
+    /** Hodiny kola (s) už podělené horizontem (`holeSeconds`). */
+    seconds: z.int().min(10).max(HOLE.seconds.max),
   })
   .strict();
 
@@ -493,7 +504,7 @@ export function checkHole(level: ArcadeLevel, items: number, rounds: number, nee
 export function holeParts(seed: number, params: HoleParams): ModeParts {
   const items = params.items ?? HOLE.items.default;
   const rounds = params.rounds ?? HOLE.rounds.default;
-  const seconds = params.seconds ?? HOLE.seconds.default;
+  const seconds = holeSeconds(rounds, params.seconds ?? HOLE.seconds.default);
   const need = needOf(items, rounds);
   const field = holeLayout(seed, items, kindsOfParams(params), params.finale ?? DEFAULT_FINALE);
   const start = Math.trunc((HOLE.startZ * HOLE.half) / 1000);
