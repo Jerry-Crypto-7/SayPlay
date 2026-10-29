@@ -34,6 +34,7 @@ vi.mock('react', async (importOriginal) => {
     useRef: (current: unknown) => ({ current }),
     useEffect: () => undefined,
     useSyncExternalStore: (_subscribe: unknown, snapshot: () => unknown) => snapshot(),
+    useContext: (context: { _currentValue: unknown }) => context._currentValue,
   };
 });
 type Frame = (state: unknown, delta: number) => void;

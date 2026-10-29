@@ -71,14 +71,17 @@ const TARGETS: Readonly<Record<string, Target>> = {
   quest: { fill: 0.9, underHud: 0.1 },
   timing: { fill: 0.18, cropped: 0, underHud: 0.05 },
   rhythm: { fill: 0.6, cropped: 0, underHud: 0.05 },
-  // T5 – honičky a tratě
+  // T5 – honičky a tratě. Plavba: sonda vidí jen loď (brány závodu jsou `checkpoint`), `fill` je tak výška lodi a tu
+  // čitelnost drží na 21–26 % plátna – 0,25 hlídá, že se loď nezmenší. Střílečka: nejbližší vrána na iPhonu ~7 px pod
+  // lištou cíle v 7 z 30 snímků (`main` 15 z 30); pod lištu by ji dostalo jen couvnutí o ~2 m, hrdina pak 0,048 < 0,9 × T1.
   runner: { fill: 0.6, cropped: 0, underHud: 0.05 },
   platformer: { fill: 0.6, underHud: 0.05 },
   flap: { fill: 0.55, underHud: 0.05 },
-  voyage: { fill: 0.45, cropped: 0, underHud: 0.05 },
-  shooter: { fill: 0.9, underHud: 0.1 },
+  voyage: { fill: 0.25, cropped: 0, underHud: 0.05 },
+  shooter: { fill: 0.9, underHud: 0.25 },
   throw: { fill: 0.6, cropped: 0, underHud: 0.05 },
-  arena: { fill: 0.8, cropped: 0, underHud: 0.1 },
+  // Aréna: `fill` 0,8 platil pro `playRect` z T1 (477 px na Pixelu); po T7 má 593 px a záběr 0,78 je 465 px proti 406.
+  arena: { fill: 0.75, cropped: 0, underHud: 0.1 },
   'control:steer': { fill: 0.5, cropped: 0, underHud: 0.05 },
   'control:walker': { fill: 0.55, underHud: 0.05 },
   'control:ball': { fill: 0.45, cropped: 0, underHud: 0.05 },

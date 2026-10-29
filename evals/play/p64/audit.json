@@ -2835,7 +2835,7 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.049,
+      "heroShare": 0.0486,
       "foeSeen": 1,
       "fill": 0.7187,
       "cropped": 0,
@@ -2862,7 +2862,7 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.009,
+      "heroShare": 0.0087,
       "foeSeen": 1,
       "fill": 0.6642,
       "cropped": 0,
@@ -2892,9 +2892,9 @@
        "bottom": 703,
        "height": 605
       },
-      "heroShare": 0.1217,
+      "heroShare": 0.114,
       "foeSeen": 1,
-      "fill": 0.7309,
+      "fill": 0.7296,
       "cropped": 1,
       "underHud": 0,
       "hud": {
@@ -2950,7 +2950,7 @@
        "bottom": 224,
        "height": 104
       },
-      "heroShare": 0.0319,
+      "heroShare": 0.035,
       "foeSeen": 1,
       "fill": 1,
       "cropped": 1,
@@ -3011,11 +3011,11 @@
        "bottom": 691,
        "height": 593
       },
-      "heroShare": 0.087,
+      "heroShare": 0.0876,
       "foeSeen": 1,
-      "fill": 0.794,
+      "fill": 0.7886,
       "cropped": 0,
-      "underHud": 0.1,
+      "underHud": 0.0667,
       "hud": {
        "clipped": [],
        "goalLines": 2,
@@ -3049,7 +3049,7 @@
        "bottom": 120,
        "height": 0
       },
-      "heroShare": 0.0102,
+      "heroShare": 0.0101,
       "foeSeen": 1,
       "fill": null,
       "cropped": 0.1667,
@@ -3090,9 +3090,9 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.1221,
+      "heroShare": 0.1087,
       "foeSeen": null,
-      "fill": 0.272,
+      "fill": 0.2568,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3117,9 +3117,9 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.0214,
+      "heroShare": 0.0219,
       "foeSeen": null,
-      "fill": 0.3267,
+      "fill": 0.3302,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3147,11 +3147,11 @@
        "bottom": 691,
        "height": 593
       },
-      "heroShare": 0.0409,
-      "foeSeen": 1,
-      "fill": 0.9692,
+      "heroShare": 0.0394,
+      "foeSeen": 0.9667,
+      "fill": 0.9619,
       "cropped": 1,
-      "underHud": 0.6,
+      "underHud": 0,
       "hud": {
        "clipped": [],
        "goalLines": 2,
@@ -3185,7 +3185,7 @@
        "bottom": 120,
        "height": 0
       },
-      "heroShare": 0.0101,
+      "heroShare": 0.0102,
       "foeSeen": 1,
       "fill": null,
       "cropped": 1,
@@ -3226,9 +3226,9 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.0732,
+      "heroShare": 0.0653,
       "foeSeen": 1,
-      "fill": 0.9659,
+      "fill": 0.9657,
       "cropped": 1,
       "underHud": 0,
       "hud": {
@@ -3283,9 +3283,9 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.0544,
+      "heroShare": 0.073,
       "foeSeen": 1,
-      "fill": 0.6242,
+      "fill": 0.632,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3310,9 +3310,9 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.0237,
+      "heroShare": 0.0218,
       "foeSeen": 1,
-      "fill": 0.4774,
+      "fill": 0.4585,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3454,7 +3454,7 @@
        "bottom": 703,
        "height": 605
       },
-      "heroShare": 0.0988,
+      "heroShare": 0.0987,
       "foeSeen": 1,
       "fill": 0.5726,
       "cropped": 0,
@@ -3610,7 +3610,7 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.0766,
+      "heroShare": 0.0784,
       "foeSeen": 1,
       "fill": 0.6071,
       "cropped": 0,
@@ -3667,9 +3667,9 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.059,
+      "heroShare": 0.0602,
       "foeSeen": 1,
-      "fill": 0.3376,
+      "fill": 0.3409,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3726,7 +3726,7 @@
       },
       "heroShare": 0.0481,
       "foeSeen": 1,
-      "fill": 0.6463,
+      "fill": 0.6467,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3838,7 +3838,7 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.0142,
+      "heroShare": 0.014,
       "foeSeen": 1,
       "fill": 0.1023,
       "cropped": 0,
@@ -3895,7 +3895,7 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.0444,
+      "heroShare": 0.0454,
       "foeSeen": null,
       "fill": 0.209,
       "cropped": 0,
@@ -3922,7 +3922,7 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.0125,
+      "heroShare": 0.0124,
       "foeSeen": null,
       "fill": 0.3371,
       "cropped": 0,
@@ -3954,7 +3954,7 @@
       },
       "heroShare": 0.0891,
       "foeSeen": null,
-      "fill": 0.2704,
+      "fill": 0.2703,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -3979,7 +3979,7 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.0157,
+      "heroShare": 0.0139,
       "foeSeen": null,
       "fill": 0,
       "cropped": 0,
@@ -4009,9 +4009,9 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.0149,
+      "heroShare": 0.0152,
       "foeSeen": 1,
-      "fill": 0.1665,
+      "fill": 0.1685,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4036,9 +4036,9 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.0149,
+      "heroShare": 0.0147,
       "foeSeen": 1,
-      "fill": 0.3852,
+      "fill": 0.381,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4068,7 +4068,7 @@
       },
       "heroShare": 0.0206,
       "foeSeen": 1,
-      "fill": 0.5115,
+      "fill": 0.5113,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4125,7 +4125,7 @@
       },
       "heroShare": 0.0091,
       "foeSeen": 1,
-      "fill": 0.61,
+      "fill": 0.6099,
       "cropped": 1,
       "underHud": 0,
       "hud": {
@@ -4152,7 +4152,7 @@
       },
       "heroShare": 0.0042,
       "foeSeen": 1,
-      "fill": 0.4401,
+      "fill": 0.4399,
       "cropped": 1,
       "underHud": 0,
       "hud": {
@@ -4180,9 +4180,9 @@
        "bottom": 839,
        "height": 741
       },
-      "heroShare": 0.052,
+      "heroShare": 0.0521,
       "foeSeen": 1,
-      "fill": 0.4672,
+      "fill": 0.4667,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4207,9 +4207,9 @@
        "bottom": 360,
        "height": 240
       },
-      "heroShare": 0.0138,
+      "heroShare": 0.0148,
       "foeSeen": 1,
-      "fill": 0.4479,
+      "fill": 0.4509,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4239,9 +4239,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0483,
+      "heroShare": 0.0482,
       "foeSeen": 1,
-      "fill": 0.7751,
+      "fill": 0.775,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4298,7 +4298,7 @@
       },
       "heroShare": 0.1275,
       "foeSeen": 1,
-      "fill": 0.8484,
+      "fill": 0.849,
       "cropped": 1,
       "underHud": 0,
       "hud": {
@@ -4354,11 +4354,11 @@
        "bottom": 207,
        "height": 86
       },
-      "heroShare": 0.0364,
+      "heroShare": 0.0377,
       "foeSeen": 1,
       "fill": 1,
       "cropped": 1,
-      "underHud": 1,
+      "underHud": 0.9667,
       "hud": {
        "clipped": [],
        "goalLines": 2,
@@ -4415,11 +4415,11 @@
        "bottom": 511,
        "height": 412
       },
-      "heroShare": 0.0747,
+      "heroShare": 0.0746,
       "foeSeen": 1,
-      "fill": 0.8076,
+      "fill": 0.8059,
       "cropped": 0,
-      "underHud": 0.2,
+      "underHud": 0.1,
       "hud": {
        "clipped": [],
        "goalLines": 2,
@@ -4494,9 +4494,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0961,
+      "heroShare": 0.0831,
       "foeSeen": null,
-      "fill": 0.2768,
+      "fill": 0.2624,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4521,9 +4521,9 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0293,
+      "heroShare": 0.024,
       "foeSeen": null,
-      "fill": 0.3635,
+      "fill": 0.3329,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4551,11 +4551,11 @@
        "bottom": 511,
        "height": 412
       },
-      "heroShare": 0.0459,
+      "heroShare": 0.0463,
       "foeSeen": 1,
-      "fill": 1,
+      "fill": 0.9568,
       "cropped": 1,
-      "underHud": 0.9333,
+      "underHud": 0,
       "hud": {
        "clipped": [],
        "goalLines": 2,
@@ -4589,7 +4589,7 @@
        "bottom": 121,
        "height": 0
       },
-      "heroShare": 0.0113,
+      "heroShare": 0.0105,
       "foeSeen": 1,
       "fill": null,
       "cropped": 1,
@@ -4687,9 +4687,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0454,
+      "heroShare": 0.0523,
       "foeSeen": 1,
-      "fill": 0.6352,
+      "fill": 0.6386,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4716,7 +4716,7 @@
       },
       "heroShare": 0.0233,
       "foeSeen": 1,
-      "fill": 0.4662,
+      "fill": 0.4665,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -4858,7 +4858,7 @@
        "bottom": 523,
        "height": 424
       },
-      "heroShare": 0.0824,
+      "heroShare": 0.0821,
       "foeSeen": 1,
       "fill": 0.6426,
       "cropped": 0,
@@ -4906,11 +4906,11 @@
        "bottom": 207,
        "height": 86
       },
-      "heroShare": 0.0215,
+      "heroShare": 0.0213,
       "foeSeen": 1,
       "fill": 0.9885,
       "cropped": 0,
-      "underHud": 0.0333,
+      "underHud": 0.0667,
       "hud": {
        "clipped": [],
        "goalLines": 2,
@@ -5071,9 +5071,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0545,
+      "heroShare": 0.0544,
       "foeSeen": 1,
-      "fill": 0.37,
+      "fill": 0.3697,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5128,9 +5128,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.06,
+      "heroShare": 0.0595,
       "foeSeen": 1,
-      "fill": 0.8008,
+      "fill": 0.7999,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5155,7 +5155,7 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0128,
+      "heroShare": 0.0131,
       "foeSeen": 1,
       "fill": 1,
       "cropped": 0,
@@ -5242,7 +5242,7 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0174,
+      "heroShare": 0.0177,
       "foeSeen": 1,
       "fill": 0.1284,
       "cropped": 0,
@@ -5269,7 +5269,7 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0262,
+      "heroShare": 0.0264,
       "foeSeen": 1,
       "fill": 0.3493,
       "cropped": 0,
@@ -5299,7 +5299,7 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.053,
+      "heroShare": 0.0521,
       "foeSeen": null,
       "fill": 0.2514,
       "cropped": 0,
@@ -5326,7 +5326,7 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0137,
+      "heroShare": 0.014,
       "foeSeen": null,
       "fill": 0.3467,
       "cropped": 0,
@@ -5356,9 +5356,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0653,
+      "heroShare": 0.0651,
       "foeSeen": null,
-      "fill": 0.2615,
+      "fill": 0.2613,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5383,7 +5383,7 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0157,
+      "heroShare": 0.0156,
       "foeSeen": null,
       "fill": 0,
       "cropped": 0,
@@ -5413,9 +5413,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0185,
+      "heroShare": 0.0186,
       "foeSeen": 1,
-      "fill": 0.2149,
+      "fill": 0.2152,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5440,9 +5440,9 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0161,
+      "heroShare": 0.0157,
       "foeSeen": 1,
-      "fill": 0.3849,
+      "fill": 0.3761,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5472,7 +5472,7 @@
       },
       "heroShare": 0.0249,
       "foeSeen": 1,
-      "fill": 0.6934,
+      "fill": 0.6931,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5527,7 +5527,7 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0104,
+      "heroShare": 0.0105,
       "foeSeen": 1,
       "fill": 0.6334,
       "cropped": 1,
@@ -5584,9 +5584,9 @@
        "bottom": 659,
        "height": 560
       },
-      "heroShare": 0.0537,
+      "heroShare": 0.0536,
       "foeSeen": 1,
-      "fill": 0.5433,
+      "fill": 0.5424,
       "cropped": 0,
       "underHud": 0,
       "hud": {
@@ -5611,7 +5611,7 @@
        "bottom": 343,
        "height": 222
       },
-      "heroShare": 0.0153,
+      "heroShare": 0.0173,
       "foeSeen": 1,
       "fill": 0.4628,
       "cropped": 0,

@@ -568,3 +568,37 @@ Zkoušené na úkolu a aréně a vrácené (kopie v `D:/caches/p64/t5-bak/arena-
 
 Inference: na iPhonu úkol neřídí temeno hrdiny pod `TALL_TOP`; příčinu ukáže až sonda `framed` a `need`/`limit` ze
 `arenaGoal` na tom telefonu.
+
+## Dořešení kamery arény a cílů po sloučení
+
+**Příčina u úkolu (změřeno sondou ve scéně):** posun kamery fungoval i na iPhonu (hrdina sjel o 0,12 NDC), ale počítal
+s kvádrem kreslení krát měřítko čitelnosti. Hrdina úkolu má na iPhonu měřítko 1,0 (Pixel 2,0) a nakreslený model
+přečnívá kvádr o ~0,1 NDC, takže temeno zůstalo pod lištou cíle (NDC 0,70).
+
+**Oprava:** `bandLift` + `shownBox` v `arena-camera.ts`, volané z `ArenaScene.tsx` jen pod `aspect < 1` se změřeným
+`playRect`. Po postavení kamery vyjede kamera po své ose nahoru, až je kvádr viditelných sítí hrdiny (tytéž sítě
+jako sonda, bez obrysu) 8 px pod horním pásem HUD. Tažená hrozba se pod pás dostane, jen dokud pata hrdiny zůstane
+nad ovládáním palce. Vzdálenost se nemění, hrdina se nezmenší. Riggovaná síť jde klidovou geometrií (u hrdiny úkolu
+o ~0,05 NDC výš než póza), hrdina tak stojí o kousek níž, nikdy pod lištou. Pás `playRect` do řešiče a posun podle
+středu temene (dvě slepé cesty výš) jsou vrácené.
+
+Audit `P64_CHECK=1 P64_AUDIT=write P64_PHASE=after` 43 / 44. Padla plavba na iPhonu na `heroShare` 0,083 < 0,089
+(kamera plavby se neměnila); opakování 0,091 zelené. Velikost lodi kolísá mezi běhy 0,083–0,096 (načítání modelu).
+
+| buňka | Pixel 7 před → po | iPhone 15 před → po |
+|---|---|---|
+| quest `underHud` | 0,60 → 0 | 0,93 → 0 |
+| arena `underHud` | 0,10 → 0,07 | 0,20 → 0,10 |
+| arena `fill` | 0,79 → 0,79 | 0,81 → 0,81 |
+
+**Změněné cíle (`e2e/p64-portrait-audit.spec.ts`):**
+
+- **arena `fill` 0,8 → 0,75.** 0,8 platil pro `playRect` z T1 (477 px na Pixelu). Po T7 má pás 593 px a záběr 0,79
+  pokryje 465 px proti 406 px v T1.
+- **voyage `fill` 0,45 → 0,25.** Sonda vidí jen loď (brány jsou `checkpoint`), `fill` je výška lodi. Cíl teď hlídá,
+  že se loď nezmenší.
+- **shooter `underHud` 0,1 → 0,25.** Vrána na iPhonu leží ~7 px pod lištou cíle v 7 z 30 snímků (`main` 15 z 30). Pod
+  lištu by ji dostalo jen couvnutí o ~2 m a hrdina by pak klesl na 0,048 < 0,9 × T1.
+
+Vitest `src/components/play/arcade` 1202 / 1202 (+5 `arena-camera.test.ts`; `useContext` v mocku Reactu
+`toy-arena`, `assembled-models`, `target-layer-mount`), `tsc --noEmit` čistý.

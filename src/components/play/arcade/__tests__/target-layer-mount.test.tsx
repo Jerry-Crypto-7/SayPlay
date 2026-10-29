@@ -34,6 +34,7 @@ vi.mock('react', async (importOriginal) => {
     useMemo: (make: () => unknown) => make(),
     useRef: (current: unknown) => ({ current }),
     useEffect: () => undefined,
+    useContext: (context: { _currentValue: unknown }) => context._currentValue,
   };
 });
 vi.mock('@react-three/fiber', async (importOriginal) => ({

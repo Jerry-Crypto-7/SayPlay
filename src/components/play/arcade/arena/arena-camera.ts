@@ -4,6 +4,10 @@
  * bez plátna. Jen kresba: stav, hash ani robot se nemění.
  */
 
+import { Box3, type Matrix4, type Mesh, type Object3D, Vector3 } from 'three';
+
+import { isInk } from '../look/rig/InkOutline';
+
 /** Sklon kamery nad vodorovnou (sin, cos). */
 export interface Tilt {
   readonly sin: number;
@@ -191,6 +195,61 @@ export function arenaGoal(view: ArenaView, framing: ArenaFraming): { readonly go
   if (Math.hypot(threat.at.x - view.hero.x, threat.at.z - view.hero.z) >= THREAT_M) return { goal: view.lead, framed: false };
   const mid = { x: (view.lead.x + threat.at.x) / 2, z: (view.lead.z + threat.at.z) / 2 };
   return Math.max(heroReach(view, mid), centreReach(view, mid)) <= limit ? { goal: mid, framed: 'centre' } : { goal: view.lead, framed: false };
+}
+
+const corner = new Vector3();
+const meshBox = new Box3();
+
+/**
+ * Kvádr viditelných sítí těla ve světě – tytéž sítě jako sonda `__playFrame` (bez obrysu). Kvádr kreslení krát
+ * `legible` model podcení: hrdina úkolu na iPhonu s měřítkem 1 přečníval o 0,1 NDC. Riggovaná síť klidovou geometrií,
+ * ne pózou kostí (`posedBox` sondy stojí na telefonu jednotky ms za snímek): u hrdiny úkolu o ~0,05 NDC výš než póza,
+ * hrdina tak stojí o kousek níž, nikdy pod lištou.
+ */
+export function shownBox(object: Object3D, out: Box3): Box3 {
+  out.makeEmpty();
+  object.updateWorldMatrix(true, true);
+  object.traverseVisible((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true || isInk(mesh)) return;
+    if (mesh.geometry.boundingBox === null) mesh.geometry.computeBoundingBox();
+    out.union(meshBox.copy(mesh.geometry.boundingBox!).applyMatrix4(mesh.matrixWorld));
+  });
+  return out;
+}
+
+/**
+ * Pro rohy kvádru (prostor kamery `view`, −z dopředu) nejvyšší a nejnižší `y + edge · tan · z`: o tolik metrů vyjet
+ * kamerou po její ose nahoru, aby roh ležel na `edge` NDC. `null` = prázdný kvádr nebo roh za kamerou.
+ */
+function liftsOf(box: Box3, view: Matrix4, tan: number, edge: number): { readonly most: number; readonly least: number } | null {
+  if (box.isEmpty()) return null;
+  let most = -Infinity;
+  let least = Infinity;
+  for (let i = 0; i < 8; i += 1) {
+    corner.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(view);
+    if (corner.z >= 0) return null;
+    const lift = corner.y + edge * tan * corner.z;
+    most = Math.max(most, lift);
+    least = Math.min(least, lift);
+  }
+  return { most, least };
+}
+
+/**
+ * Na výšku (P64): o kolik metrů vyjet kamerou po její ose nahoru (obraz jede dolů, vzdálenost ani hrdina se nemění),
+ * aby celý kvádr hrdiny (`shownBox`) ležel pod horním pásem HUD `band.top` (NDC) – řešič záběru počítá s pevným
+ * `TALL_TOP` 0,8 a lišta cíle končí níž (iPhone 15 v 0,70), hrozba u kamery pak temeno úkolu vytlačila pod ni. Tažená
+ * hrozba (`threat`) se dostane pod pás jen tak daleko, dokud pata hrdiny zůstane nad dolním `band.bottom`. Nikdy
+ * dolů: hrdina pod ovládáním palce je věc vzdálenosti, ne posunu.
+ */
+export function bandLift(hero: Box3, threat: Box3 | null, view: Matrix4, tan: number, band: { readonly top: number; readonly bottom: number }): number {
+  const head = liftsOf(hero, view, tan, band.top);
+  const feet = liftsOf(hero, view, tan, band.bottom);
+  if (head === null || feet === null) return 0;
+  const lift = Math.max(0, head.most);
+  const far = threat === null ? null : liftsOf(threat, view, tan, band.top);
+  return far === null ? lift : Math.max(lift, Math.min(far.most, feet.least));
 }
 
 /**

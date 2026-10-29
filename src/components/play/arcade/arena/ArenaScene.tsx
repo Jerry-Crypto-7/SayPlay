@@ -33,7 +33,7 @@ import { renderHeld } from '../effects/render-feel';
 import { Billboard } from '@react-three/drei/core/Billboard';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Color, type Group, type Material, type Mesh, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, Color, type Group, type Material, type Mesh, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -68,7 +68,8 @@ import { InkOutline } from '../look/rig/InkOutline';
 import { applyToy, toyIdleOf, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { type Cast, FittedModel, toyTargetOf } from '../World';
-import { ARENA_FRAMING, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Size, arenaDistance, arenaGoal } from './arena-camera';
+import { FIT_MARGIN_PX, usePlayRectRef } from '../portrait-frame';
+import { ARENA_FRAMING, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Size, arenaDistance, arenaGoal, bandLift, shownBox } from './arena-camera';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
 import { useThreatEdge } from './ThreatEdge';
@@ -455,6 +456,12 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const goal = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
   const mid = useMemo(() => new Vector3(), []);
+  const sight = useMemo(() => new Vector3(), []);
+  const raise = useMemo(() => new Vector3(), []);
+  const heroBox = useMemo(() => new Box3(), []);
+  const threatBox = useMemo(() => new Box3(), []);
+  // Hrací obdélník mezi HUD a ovládáním palce (P64 T2), jen na výšku.
+  const playRect = usePlayRectRef();
   const pointEdge = useThreatEdge(surface);
   const follow = useRef<{ tick: number; distance: number } | null>(null);
   const frames = useRef(0);
@@ -720,7 +727,21 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     follow.current = { tick, distance };
     camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
     camera.lookAt(aim);
-    applyIntro(camera, aim, introLeft(introClock()));
+    // Na výšku (P64, `bandLift`): obraz dolů, až je hrdina celým kvádrem sítí pod horním pásem HUD `playRect`.
+    sight.copy(aim);
+    const rect = aspect < 1 ? playRect.current : null;
+    if (rect !== null) {
+      camera.updateMatrixWorld();
+      const margin = (2 * FIT_MARGIN_PX) / rect.canvas.height;
+      const pulled = framed === false || threat < 0 ? null : shownBox(groups.current[threat]!, threatBox);
+      const lift = bandLift(shownBox(me, heroBox), pulled, camera.matrixWorldInverse, tan, { top: rect.ndc.top - margin, bottom: rect.ndc.bottom + margin });
+      if (lift > 0) {
+        raise.set(0, 1, 0).applyQuaternion(camera.quaternion).multiplyScalar(lift);
+        camera.position.add(raise);
+        sight.add(raise);
+      }
+    }
+    applyIntro(camera, sight, introLeft(introClock()));
     // Otřes po zásahu souboje; zásah hráče ve hře člověka třese sběrnice efektů sama.
     if (watch !== null) shakeCamera(camera.position, watch.shake(now, session.humanRun()), now);
     camera.updateMatrixWorld();
