@@ -602,3 +602,26 @@ Audit `P64_CHECK=1 P64_AUDIT=write P64_PHASE=after` 43 / 44. Padla plavba na iPh
 
 Vitest `src/components/play/arcade` 1202 / 1202 (+5 `arena-camera.test.ts`; `useContext` v mocku Reactu
 `toy-arena`, `assembled-models`, `target-layer-mount`), `tsc --noEmit` čistý.
+
+### Stráže po opravě: posun jen podle hrdiny
+
+Stráže nad `c2f30e7d` (server `PLAY_READER=off`, 29. 10.): `play-hero-size` 10 / 10, `p64-landscape-guard` 43 / 44
+(jediný pád `ECONNRESET` na `POST /api/play/games`, ne kamera), `p58a-framing` + `p61-portrait` 85 / 86. Pád:
+arena.escape na iPhonu, nejbližší duch vidět v 1 z 30 snímků a ten jediný přečníval okraj. Na `3071efe7` (bez
+`bandLift`) zelený.
+
+**Příčina (inference z měření níž):** druhá větev `bandLift` vyjížděla kvůli tažené hrozbě nad pásem HUD, dokud pata
+hrdiny nedošla k ovládání palce. Obraz tím sjel tak nízko, že duch, který hrdinu honí zezadu, vypadl dolů z plátna.
+
+**Oprava:** `bandLift` posouvá jen podle kvádru hrdiny, větev hrozby je pryč.
+
+| buňka | Pixel 7 | iPhone 15 |
+|---|---|---|
+| `p58a` arena.escape: duch vidět / přečnívá | 21 z 30 / 0 % | 20–21 z 30 / 5 % (3 opakování zelená) |
+| audit quest `underHud` | 0 | 0 |
+| audit arena `underHud` | 0,10 | 0,17 |
+
+V prvním běhu `p58a` arena.escape na iPhonu utekl hrdina v jednom snímku z 30 (t708). Tři opakování: 0 snímků.
+
+**arena `underHud` 0,1 → 0,2.** 0,1 šel na iPhonu jen s větví hrozby a ta stojí hráče ducha za zády. T1 byl na iPhonu
+0,23, sloučení 0,20, teď 0,17. Cíl drží, že se lišta cíle nevrátí nad stav T1.

@@ -219,37 +219,22 @@ export function shownBox(object: Object3D, out: Box3): Box3 {
 }
 
 /**
- * Pro rohy kvádru (prostor kamery `view`, −z dopředu) nejvyšší a nejnižší `y + edge · tan · z`: o tolik metrů vyjet
- * kamerou po její ose nahoru, aby roh ležel na `edge` NDC. `null` = prázdný kvádr nebo roh za kamerou.
- */
-function liftsOf(box: Box3, view: Matrix4, tan: number, edge: number): { readonly most: number; readonly least: number } | null {
-  if (box.isEmpty()) return null;
-  let most = -Infinity;
-  let least = Infinity;
-  for (let i = 0; i < 8; i += 1) {
-    corner.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(view);
-    if (corner.z >= 0) return null;
-    const lift = corner.y + edge * tan * corner.z;
-    most = Math.max(most, lift);
-    least = Math.min(least, lift);
-  }
-  return { most, least };
-}
-
-/**
  * Na výšku (P64): o kolik metrů vyjet kamerou po její ose nahoru (obraz jede dolů, vzdálenost ani hrdina se nemění),
- * aby celý kvádr hrdiny (`shownBox`) ležel pod horním pásem HUD `band.top` (NDC) – řešič záběru počítá s pevným
- * `TALL_TOP` 0,8 a lišta cíle končí níž (iPhone 15 v 0,70), hrozba u kamery pak temeno úkolu vytlačila pod ni. Tažená
- * hrozba (`threat`) se dostane pod pás jen tak daleko, dokud pata hrdiny zůstane nad dolním `band.bottom`. Nikdy
- * dolů: hrdina pod ovládáním palce je věc vzdálenosti, ne posunu.
+ * aby celý kvádr hrdiny (`shownBox`, prostor kamery `view`, −z dopředu) ležel pod horním pásem HUD `top` (NDC) – řešič
+ * záběru počítá s pevným `TALL_TOP` 0,8 a lišta cíle končí níž (iPhone 15 v 0,70), hrozba u kamery pak temeno úkolu
+ * vytlačila pod ni. Jen hrdina: posun i pro taženou hrozbu nad pásem vystrčil ducha za hrdinou dolů z obrazu
+ * (`p58a-framing` arena.escape na iPhonu, README P64). Nikdy dolů: hrdina pod ovládáním palce je věc vzdálenosti.
+ * Prázdný kvádr nebo roh za kamerou → 0.
  */
-export function bandLift(hero: Box3, threat: Box3 | null, view: Matrix4, tan: number, band: { readonly top: number; readonly bottom: number }): number {
-  const head = liftsOf(hero, view, tan, band.top);
-  const feet = liftsOf(hero, view, tan, band.bottom);
-  if (head === null || feet === null) return 0;
-  const lift = Math.max(0, head.most);
-  const far = threat === null ? null : liftsOf(threat, view, tan, band.top);
-  return far === null ? lift : Math.max(lift, Math.min(far.most, feet.least));
+export function bandLift(hero: Box3, view: Matrix4, tan: number, top: number): number {
+  if (hero.isEmpty()) return 0;
+  let lift = 0;
+  for (let i = 0; i < 8; i += 1) {
+    corner.set(i & 1 ? hero.max.x : hero.min.x, i & 2 ? hero.max.y : hero.min.y, i & 4 ? hero.max.z : hero.min.z).applyMatrix4(view);
+    if (corner.z >= 0) return 0;
+    lift = Math.max(lift, corner.y + top * tan * corner.z);
+  }
+  return lift;
 }
 
 /**

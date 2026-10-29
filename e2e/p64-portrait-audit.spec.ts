@@ -81,7 +81,8 @@ const TARGETS: Readonly<Record<string, Target>> = {
   shooter: { fill: 0.9, underHud: 0.25 },
   throw: { fill: 0.6, cropped: 0, underHud: 0.05 },
   // Aréna: `fill` 0,8 platil pro `playRect` z T1 (477 px na Pixelu); po T7 má 593 px a záběr 0,78 je 465 px proti 406.
-  arena: { fill: 0.75, cropped: 0, underHud: 0.1 },
+  // `underHud` 0,1 šel na iPhonu jen posunem i pro taženou hrozbu a ten vystrčil ducha za hrdinou z obrazu (`p58a`).
+  arena: { fill: 0.75, cropped: 0, underHud: 0.2 },
   'control:steer': { fill: 0.5, cropped: 0, underHud: 0.05 },
   'control:walker': { fill: 0.55, underHud: 0.05 },
   'control:ball': { fill: 0.45, cropped: 0, underHud: 0.05 },

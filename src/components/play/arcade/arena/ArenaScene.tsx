@@ -459,7 +459,6 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const sight = useMemo(() => new Vector3(), []);
   const raise = useMemo(() => new Vector3(), []);
   const heroBox = useMemo(() => new Box3(), []);
-  const threatBox = useMemo(() => new Box3(), []);
   // Hrací obdélník mezi HUD a ovládáním palce (P64 T2), jen na výšku.
   const playRect = usePlayRectRef();
   const pointEdge = useThreatEdge(surface);
@@ -733,8 +732,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     if (rect !== null) {
       camera.updateMatrixWorld();
       const margin = (2 * FIT_MARGIN_PX) / rect.canvas.height;
-      const pulled = framed === false || threat < 0 ? null : shownBox(groups.current[threat]!, threatBox);
-      const lift = bandLift(shownBox(me, heroBox), pulled, camera.matrixWorldInverse, tan, { top: rect.ndc.top - margin, bottom: rect.ndc.bottom + margin });
+      const lift = bandLift(shownBox(me, heroBox), camera.matrixWorldInverse, tan, rect.ndc.top - margin);
       if (lift > 0) {
         raise.set(0, 1, 0).applyQuaternion(camera.quaternion).multiplyScalar(lift);
         camera.position.add(raise);

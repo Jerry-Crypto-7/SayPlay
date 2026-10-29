@@ -171,21 +171,21 @@ describe('the arena camera sits closer and keeps the nearest foe in frame (P56B 
 });
 
 describe('on a portrait phone the whole hero box sits under the HUD band (P64, bandLift)', () => {
-  // iPhone 15 na výšku: lišta cíle končí v NDC 0,70, ovládání palce začíná v −0,55 (audit `p64-portrait-audit`).
-  const BAND = { top: 0.7, bottom: -0.55 } as const;
+  // iPhone 15 na výšku: lišta cíle končí v NDC 0,70 (audit `p64-portrait-audit`).
+  const TOP = 0.7;
   const DISTANCE = 14;
 
   /** Kvádr těla 0,8 × `h` × 0,8 m s patou v (`x`, 0, `z`). */
   const body = (x: number, z: number, h = 1.6): Box3 => new Box3(new Vector3(x - 0.4, 0, z - 0.4), new Vector3(x + 0.4, h, z + 0.4));
 
   /** Kamera arény nad `aim` jako `ArenaScene`, po `bandLift` vyjetá po své ose nahoru. */
-  function shot(hero: Box3, threat: Box3 | null): { camera: PerspectiveCamera; lift: number } {
+  function shot(hero: Box3): { camera: PerspectiveCamera; lift: number } {
     const camera = new PerspectiveCamera(50, 393 / 659, 0.1, 500);
     camera.position.set(0, DISTANCE * STYLED_TILT.sin, -DISTANCE * STYLED_TILT.cos);
     camera.lookAt(0, 0, 0);
     camera.updateMatrixWorld();
     const before = camera.quaternion.clone();
-    const lift = bandLift(hero, threat, camera.matrixWorldInverse, Math.tan((camera.fov * Math.PI) / 360), BAND);
+    const lift = bandLift(hero, camera.matrixWorldInverse, Math.tan((camera.fov * Math.PI) / 360), TOP);
     camera.position.add(new Vector3(0, 1, 0).applyQuaternion(camera.quaternion).multiplyScalar(lift));
     camera.updateMatrixWorld();
     expect(camera.quaternion.equals(before)).toBe(true);
@@ -201,31 +201,14 @@ describe('on a portrait phone the whole hero box sits under the HUD band (P64, b
   it('a hero framed above the band comes down until its farthest top corner is on the band edge, no further', () => {
     // Hrdina 8 m za bodem pohledu – hrozba u kamery táhla záběr k sobě (úkol na iPhonu: temeno v NDC 0,81–0,93).
     const hero = body(-1, 8, 1.9);
-    const { camera, lift } = shot(hero, null);
+    const { camera, lift } = shot(hero);
     expect(lift).toBeGreaterThan(0);
-    expect(ndcOf(camera, hero).top).toBeCloseTo(BAND.top, 6);
+    expect(ndcOf(camera, hero).top).toBeCloseTo(TOP, 6);
   });
 
   it('a hero already inside the band, or not drawn yet, leaves the camera where it was', () => {
-    expect(shot(body(0, 0), null).lift).toBe(0);
-    expect(shot(new Box3(), null).lift).toBe(0);
-  });
-
-  it('a pulled threat over the band comes under it while the hero feet stay above the thumb controls', () => {
-    const hero = body(0, -2);
-    const threat = body(1, 9, 2.1);
-    const { camera } = shot(hero, threat);
-    expect(ndcOf(camera, threat).top).toBeLessThanOrEqual(BAND.top + 1e-6);
-    expect(ndcOf(camera, hero).bottom).toBeGreaterThanOrEqual(BAND.bottom - 1e-6);
-  });
-
-  it('the hero feet win over a pulled threat: the image stops where the feet meet the bottom band', () => {
-    const hero = body(0, -3);
-    const threat = body(0, 14, 2.1);
-    const { camera, lift } = shot(hero, threat);
-    expect(lift).toBeGreaterThan(0);
-    expect(ndcOf(camera, threat).top).toBeGreaterThan(BAND.top);
-    expect(ndcOf(camera, hero).bottom).toBeCloseTo(BAND.bottom, 6);
+    expect(shot(body(0, 0)).lift).toBe(0);
+    expect(shot(new Box3()).lift).toBe(0);
   });
 
   it('the hero box is the drawn meshes, not the body size: a model scaled past its box still counts whole', () => {
