@@ -6,7 +6,9 @@ import { type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'reac
 import { ACESFilmicToneMapping, type ArrayCamera, Box3, DynamicDrawUsage, Fog, type Group, InstancedMesh, Material, Matrix4, type Mesh, Object3D, type SkinnedMesh, Sphere, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
-import { DESK_LAYOUT, type Point, STAGE_LAYOUT, deskOfWorld, onDesk } from '@/play/xr/diorama-scale';
+import { sizedLayout, sizedMode, useComfort, useComfortOpen, usePlayerFrame } from '@/play/xr/comfort';
+import { DESK_LAYOUT, type Point, STAGE_LAYOUT, deskOfWorld, onDesk, worldOfDesk } from '@/play/xr/diorama-scale';
+import { hapticsOn, setHapticsOn } from '@/play/xr/haptics';
 import { REACH, type XrControl, type XrMotion } from '@/play/xr/input-map';
 import { genreOfWorld, modeOf } from '@/play/xr/modes';
 import { cutOf } from '@/play/xr/quality';
@@ -18,6 +20,7 @@ import { useXrGame, useXrHud } from './xr-context';
 import { closeXrLobby, lobbyShown, useXrLobby } from './xr-lobby';
 import { MOTION_PRIORITY, XrAim } from './XrAim';
 import { XrAudio } from './XrAudio';
+import { XrComfort } from './XrComfort';
 import { XrFeed } from './XrFeed';
 import { XrHaptics } from './XrHaptics';
 import { XrHud } from './XrHud';
@@ -26,6 +29,7 @@ import { XrLobby } from './XrLobby';
 import type { PanelAim } from './XrPanel';
 import { type RoomReport, XrRoom } from './XrRoom';
 import { XrSwing } from './XrSwing';
+import { setVignetteOn, vignetteOn } from './XrVignette';
 
 /**
  * Hráč ve VR (P65 T1). Kameru vlastní hlava: kamery žánrů dál nastavují kameru R3F, jenže tou je v relaci kamera
@@ -35,6 +39,8 @@ import { XrSwing } from './XrSwing';
  * kolem hráče (`XrRoom`); tratě jsou velká diorama na pódiu, která jede k hráči (P67 T7, `Diorama` se
  * `STAGE_LAYOUT`); ostatní se hrají jako diorama na desce před hráčem (T4, `Diorama`). Zvuk události zní
  * z místa těla přes matici obalu (`XrAudio`) a ovladače vibrují podle tabulky událostí (`XrHaptics`, P67 T8).
+ * Volby panelu „Comfort“ (P67 T9, `comfort.ts`) rig jen čte: velikost světa mění režim a měřítko, vsedě a „Recenter“
+ * dávají rám hráče (`usePlayerFrame`), vibrace a vinětace přepínají vypínače `setHapticsOn` a `setVignetteOn`.
  * Mimo relaci je obal identita, takže 2D se nemění a vstup do VR scénu nepřestaví.
  * `DIORAMA` je jen poloha, než relace dostane hru (pak měřítko spočte `Diorama` z velikosti hřiště).
  */
@@ -283,6 +289,8 @@ export interface XrReport {
   readonly desk: DeskReport | null;
   /** 3D panely HUD v relaci (T5, `vr-hud.spec.ts`). */
   readonly panels: readonly PanelReport[];
+  /** Vypínače vibrací a vinětace, jak je nastavily volby panelu „Comfort“ (P67 T9). */
+  readonly switches: { readonly haptics: boolean; readonly vignette: boolean };
 }
 
 /** Panel HUD, jak ho vidí hráč: co na něm stojí, kde jsou tlačítka a kam padne do obrazu každého oka. */
@@ -396,6 +404,7 @@ function XrProbe({
         heroOnDesk: at === null || desk.current === null ? null : deskOfWorld(desk.current, at),
         desk: presenting ? desk.current : null,
         panels: presenting ? panelsOf(scene, gl.xr.getCamera()) : [],
+        switches: { haptics: hapticsOn(), vignette: vignetteOn() },
       };
     };
     window.__playXr = probe;
@@ -429,14 +438,21 @@ function placementOf(control: XrControl | null, state: Int32Array): Placement {
   return DIORAMA;
 }
 
-/** Postaví svět VR-nativního žánru kolem hráče každý snímek (hrdina střílečky se hýbe); mimo relaci vrátí obal na identitu. */
+/**
+ * Postaví svět VR-nativního žánru kolem hráče každý snímek (hrdina střílečky se hýbe); mimo relaci vrátí obal na
+ * identitu. „Recenter“ (P67 T9) svět otočí a posune k hlavě; vsedě se hry rukou nemění, jsou v dosahu ruky nebo 1:1
+ * na podlaze.
+ */
 function XrPlace({ world, session, control }: { readonly world: RefObject<Group | null>; readonly session: ArcadeSession | null; readonly control: XrControl | null }) {
+  const frame = usePlayerFrame();
+  const level = useMemo(() => ({ ...frame, top: 0 }), [frame]);
   useFrame(() => {
     const group = world.current;
     if (group === null) return;
     const { scale, at } = session === null ? DIORAMA : placementOf(control, session.state());
-    group.position.set(...at);
-    group.rotation.set(0, DIORAMA.turn, 0);
+    const real = worldOfDesk(level, { x: at[0], y: at[1], z: at[2] });
+    group.position.set(real.x, real.y, real.z);
+    group.rotation.set(0, DIORAMA.turn + level.yaw, 0);
     group.scale.setScalar(scale);
   }, MOTION_PRIORITY - 1);
   useEffect(
@@ -457,8 +473,9 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   const hud = useXrHud();
   const shown = game ?? hud?.session ?? null;
   const control = useMemo(() => (shown === null ? null : xrControlOf(shown.world)), [shown]);
-  // Režim podle žánru (P67 T6).
-  const entry = useMemo(() => (shown === null ? null : modeOf(genreOfWorld(shown.world))), [shown]);
+  const comfort = useComfort();
+  // Režim podle žánru (P67 T6); velikost „Small“ dá tratě a hry kolem hráče na stůl (P67 T9).
+  const entry = useMemo(() => (shown === null ? null : sizedMode(modeOf(genreOfWorld(shown.world)), comfort.size)), [shown, comfort.size]);
   const world = useRef<Group>(null);
   const motion = useRef<XrMotion>({ aim: null, velocity: null, laneAxis: null, handX: null });
   const calls = useRef(0);
@@ -470,19 +487,27 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   const swings = control?.input === 'throw-rig' || control?.swing !== undefined;
   const room = entry?.mode === 'room';
   const diorama = shown !== null && entry?.mode !== 'native' && !room;
-  // Tratě na pódiu (P67 T7), ostatní dioramy na stole.
+  // Tratě na pódiu (P67 T7), ostatní dioramy na stole; měřítko obou podle velikosti světa (P67 T9).
   const stage = entry?.mode === 'surround';
+  const layout = useMemo(() => sizedLayout(stage ? STAGE_LAYOUT : DESK_LAYOUT, comfort.size), [stage, comfort.size]);
   // VR lobby (P67 T2): nad hrou na obrazovce místo jejího HUD; ovladače do hry nejdou, dokud je otevřené.
   const lobbyState = useXrLobby();
   const lobby = presenting && lobbyShown(lobbyState, shown);
-  const playing = presenting && !lobby;
+  // Panel „Comfort“ (P67 T9) stojí místo lobby nebo výsledku; ovladače do hry nejdou ani pod ním.
+  const comfortOpen = useComfortOpen();
+  const covered = presenting && comfortOpen;
+  const playing = presenting && !lobby && !covered;
   useEffect(() => {
     if (lobbyState?.made === true && !lobbyShown(lobbyState, shown)) closeXrLobby();
   }, [lobbyState, shown]);
+  useEffect(() => {
+    setHapticsOn(comfort.haptics);
+    setVignetteOn(comfort.vignette);
+  }, [comfort.haptics, comfort.vignette]);
   return (
     <>
       <group ref={world}>{children}</group>
-      {presenting && diorama && <Diorama key={stage ? 'stage' : 'desk'} world={world} session={shown} report={desk} layout={stage ? STAGE_LAYOUT : DESK_LAYOUT} />}
+      {presenting && diorama && <Diorama key={stage ? 'stage' : 'desk'} world={world} session={shown} report={desk} layout={layout} />}
       {presenting && room && shown !== null && <XrRoom world={world} session={shown} pose={entry.pose} hand={control?.handLane === true} motion={motion} report={roomReport} />}
       {presenting && !diorama && !room && <XrPlace world={world} session={shown} control={control} />}
       {presenting && <DirectRender calls={calls} />}
@@ -492,8 +517,9 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {playing && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
       {playing && game !== null && <XrHaptics session={game} />}
       {presenting && shown !== null && <XrAudio world={world} session={shown} />}
-      {presenting && shown !== null && !lobby && <XrHud diorama={diorama} stage={stage} desk={desk} aim={aim} />}
-      {lobby && <XrLobby shown={shown} aim={aim} />}
+      {presenting && shown !== null && !lobby && !covered && <XrHud diorama={diorama} stage={stage} desk={desk} aim={aim} />}
+      {lobby && <XrLobby shown={shown} aim={aim} covered={covered} />}
+      {covered && <XrComfort aim={aim} />}
       {playing && <XrFeed shown={shown} aim={aim} />}
       <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} room={roomReport} />
     </>

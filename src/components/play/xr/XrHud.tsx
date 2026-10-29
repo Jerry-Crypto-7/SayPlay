@@ -21,6 +21,7 @@ import { useXR, useXRInputSourceState } from '@react-three/xr';
 import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import { type Group, Vector3 } from 'three';
 
+import { openComfort, useHeading } from '@/play/xr/comfort';
 import { DESK, type DeskPose, HEAD, type Point, STAGE, STAGE_POSE, TABLE, worldOfDesk } from '@/play/xr/diorama-scale';
 
 import { feedSteps } from '../feed/feed-next';
@@ -37,6 +38,8 @@ export const AI_READY = 'AI version ready';
 export const NEW_GAME = 'New game';
 /** Výsledek ve feedu → další karta (P67 T4). */
 export const NEXT = 'Next';
+/** Výsledek a lobby → panel pohodlí (P67 T9, `XrComfort`). */
+export const COMFORT = 'Comfort';
 
 /**
  * Kotva sloupce: bod desky (osy desky, +z k hráči), levé zápěstí, nebo místo před hráčem (`front`, P67 T2 lobby):
@@ -101,7 +104,7 @@ const hudOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => (
  * Výsledek: nadpis kitu, konečná počítadla, „Again“ (jediná rajčatová akce) přes celou šířku, nad ním vedlejší
  * „New game“ do VR lobby (P67 T2) a „Exit VR“ zpátky k 2D výsledku. Tři tlačítka v jedné řadě by se do karty
  * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole. Ve feedu (`next`, P67 T4) stojí vedle „Again“
- * vedlejší „Next“ na další kartu.
+ * vedlejší „Next“ na další kartu. „Comfort“ (P67 T9) otevře panel pohodlí místo výsledku.
  */
 const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() => void) | null): PanelSpec => ({
   id: 'result',
@@ -113,6 +116,7 @@ const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() =>
     cells: [
       { id: 'new', label: NEW_GAME, press: openXrLobby },
       { id: 'exit', label: EXIT_VR, press: exit },
+      { id: 'comfort', label: COMFORT, press: openComfort },
     ],
   },
   buttons: [...(next === null ? [] : [{ id: 'next', label: NEXT, press: next }]), { id: 'again', label: AGAIN, primary: true, press: view.again }],
@@ -133,8 +137,12 @@ export function XrColumn({ anchor, specs, desk, aim }: { readonly anchor: Anchor
   const space = useXR((xr) => xr.originReferenceSpace);
   // Výchozí hlava (stojící hráč), než přijde první póza brýlí.
   const head = useMemo(() => new Vector3(0, 1.6, 0), []);
-  // Místo kotvy `front`, jakmile ho první póza brýlí určí.
+  // Místo kotvy `front`, jakmile ho první póza brýlí určí; „Recenter“ (P67 T9) ho určí znovu před hlavou.
   const placed = useRef<Vector3 | null>(null);
+  const heading = useHeading();
+  useEffect(() => {
+    placed.current = null;
+  }, [heading]);
   const fonts = useFonts();
   const content = specs.map(specKey).join('\n');
   // Rozvržení podle obsahu (a načteného písma), ne podle identity – `XrHud` skládá nové pole každý render.

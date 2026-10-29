@@ -27,12 +27,12 @@ export function lookIdOf(canvas: Element): LookId {
   return Object.hasOwn(LOOKS, id) ? (id as LookId) : 'meadow';
 }
 
-/** `game` mění sadu: nová hra se připojí do jiné scény. */
-export function XrSky({ game }: { readonly game: unknown }) {
+/** `game` mění sadu: nová hra se připojí do jiné scény. `floor` = výška podlahy světa (vsedě pod skutečnou, P67 T9). */
+export function XrSky({ game, floor }: { readonly game: unknown; readonly floor: number }) {
   const canvas = useThree((three) => three.gl.domElement);
   const lookId = useMemo(() => lookIdOf(canvas), [canvas, game]);
   return (
-    <mesh rotation-x={-Math.PI / 2} position-y={-FLOOR.below} userData={{ xrSky: lookId }}>
+    <mesh rotation-x={-Math.PI / 2} position-y={floor - FLOOR.below} userData={{ xrSky: lookId }}>
       <circleGeometry args={[FLOOR.radius, FLOOR.segments]} />
       <meshBasicMaterial color={LOOKS[lookId].ground} />
     </mesh>

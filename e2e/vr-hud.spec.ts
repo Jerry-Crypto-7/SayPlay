@@ -5,6 +5,7 @@ import { type APIRequestContext, expect, type Page, test } from '@playwright/tes
 import type { PanelReport, XrReport } from '../src/components/play/xr/XrRig';
 import { assemblyOfCell, liveCells } from '../src/play/compose/allowed';
 import { compileRecipe } from '../src/play/compose/compile';
+import { COMFORT_KEY, SEATED_DROP } from '../src/play/xr/comfort';
 import { TABLE } from '../src/play/xr/diorama-scale';
 
 import { HUD_COUNTER_LABELS, counterLabelsFor } from './hud-labels';
@@ -32,6 +33,8 @@ const QUICK = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
 
 /** Nejmenší text panelu od očí (rad): text kitu 13 px na 1 m je 0,026 rad. */
 const READABLE = 0.025;
+/** Panel „Comfort“ stojí před hráčem jako lobby: nejmenší text aspoň 0,9° (pravidla plánu P67, komfort Mety). */
+const COMFORT_TEXT = (0.9 * Math.PI) / 180;
 type Hand = readonly [number, number, number];
 /** Pravá ruka, odkud paprsek míří na tlačítka u stolu. */
 const HAND: Hand = [0.2, 1.2, -0.25];
@@ -323,8 +326,8 @@ test('table-top: the goal board is in view, a bot win shows You did it!, Again r
   const won = await panelOf(page, 'result');
   console.log(`result ${JSON.stringify({ text: won.text, eyes: won.eyes, smallest: won.smallest })}`);
   expect(won.text).toContain('You did it!');
-  // „New game“ (P67 T2) vede do VR lobby; vedlejší akce stojí nad „Again“ (`XrHud.resultOf`).
-  expect(won.buttons.map((button) => button.label)).toEqual(['New game', 'Exit VR', 'Again']);
+  // „New game“ (P67 T2) vede do VR lobby, „Comfort“ (P67 T9) na panel pohodlí; vedlejší akce stojí nad „Again“.
+  expect(won.buttons.map((button) => button.label)).toEqual(['New game', 'Exit VR', 'Comfort', 'Again']);
   expectSeen(won);
   expectEnglish(won);
   expect(await ids(page)).not.toContain('hud');
@@ -352,6 +355,75 @@ test('table-top: the goal board is in view, a bot win shows You did it!, Again r
   await page.getByRole('button', { name: 'Remix it' }).click();
   await expect(page.getByRole('dialog', { name: 'Change one thing' })).toBeVisible();
   await expect(page.getByTestId('remix-input')).toBeVisible();
+});
+
+/**
+ * Panel „Comfort“ (P67 T9) z výsledku hry na stole. Volba, která se uloží a nepoužije, vypadá funkčně – proto se
+ * měří, co rig postavil: výška a měřítko desky a hrdina na ní ze sondy, vypínače, které čte hra, a po novém načtení
+ * stránky stůl pořád nízko.
+ */
+test('Comfort from the result: Seated lowers the table and stays after a reload, Large enlarges the world, Recenter turns it to the view, Haptics and Vignette switch off', async ({ page, request }) => {
+  const game = await publish(request, { sentence: COUNTED });
+  await withQuest2(page, AT_DESK);
+  await page.goto(`${game.url}?vr=1`);
+  await ready(page);
+  await enterVr(page);
+  await expect.poll(async () => (await xr(page))?.desk?.top ?? -1, { timeout: 15_000 }).toBeCloseTo(TABLE.top, 6);
+  expect((await xr(page))?.switches).toEqual({ haptics: true, vignette: true });
+
+  // Výsledek → „Comfort“: karta místo výsledku, celá v obraze obou očí i od stolu, text aspoň 0,9°, anglicky.
+  expect((await handPlayEnd(page)).runState).toBe('won');
+  await click(page, await panelOf(page, 'result'), 'comfort');
+  const comfort = await panelOf(page, 'comfort');
+  console.log(`comfort ${JSON.stringify({ text: comfort.text, eyes: comfort.eyes, smallest: comfort.smallest })}`);
+  expect(await ids(page)).toEqual(['comfort']);
+  expect(comfort.text).toEqual(['Comfort']);
+  expect(comfort.buttons.map((button) => button.label)).toEqual(['Standing', 'Seated', 'Recenter', 'Small', 'Medium', 'Large', 'Haptics on', 'Vignette on', 'Done']);
+  for (const eye of comfort.eyes) expect(eye !== null && !eye.behind && eye.minX >= -1 && eye.maxX <= 1 && eye.minY >= -1 && eye.maxY <= 1, JSON.stringify(eye)).toBe(true);
+  expect(comfort.smallest).toBeGreaterThanOrEqual(COMFORT_TEXT);
+  expectEnglish(comfort);
+
+  // „Seated“: stůl o 40 cm níž a svět na něm s ním – hrdina klesne stejně a na desce stojí, kde stál.
+  const before = (await xr(page))!;
+  await click(page, comfort, 'seated');
+  await expect.poll(async () => (await xr(page))?.desk?.top ?? -1).toBeCloseTo(TABLE.top - SEATED_DROP, 6);
+  const seated = (await xr(page))!;
+  expect(seated.heroWorld!.y).toBeCloseTo(before.heroWorld!.y - SEATED_DROP, 3);
+  for (const axis of ['x', 'y', 'z'] as const) expect(seated.heroOnDesk![axis]).toBeCloseTo(before.heroOnDesk![axis], 3);
+
+  // „Large“: svět na stole 1,25× větší.
+  await click(page, comfort, 'large');
+  await expect.poll(async () => (await xr(page))?.desk?.scale ?? -1).toBeCloseTo(before.desk!.scale * 1.25, 6);
+
+  // „Haptics“ a „Vignette“ vypnuté: popisek nese stav a hra čte vypnuté vypínače.
+  await click(page, comfort, 'haptics');
+  await click(page, comfort, 'vignette');
+  await expect.poll(async () => (await xr(page))?.switches).toEqual({ haptics: false, vignette: false });
+  expect((await panelOf(page, 'comfort')).buttons.map((button) => button.label).slice(6, 8)).toEqual(['Haptics off', 'Vignette off']);
+  const saved = await page.evaluate((key) => localStorage.getItem(key), COMFORT_KEY);
+  expect(JSON.parse(saved ?? 'null')).toEqual({ stance: 'seated', size: 'large', haptics: false, vignette: false });
+
+  // „Recenter“ s hlavou otočenou o čtvrt kruhu doleva: stůl stojí před ní (na −x) a je k ní otočený; vsedě zůstane.
+  await page.evaluate(() => (window as unknown as QuestWindow).__quest.quaternion.set(0, Math.SQRT1_2, 0, Math.SQRT1_2));
+  await click(page, comfort, 'recenter');
+  await expect.poll(async () => (await xr(page))?.desk?.yaw ?? -1).toBeCloseTo(Math.PI / 2, 3);
+  const turned = (await xr(page))!.desk!;
+  expect(turned.x).toBeCloseTo(TABLE.z, 3);
+  expect(turned.z).toBeCloseTo(0, 3);
+  expect(turned.top).toBeCloseTo(TABLE.top - SEATED_DROP, 6);
+
+  // „Done“: zpátky výsledek (karta pohodlí se po „Recenter“ postavila před otočenou hlavu).
+  await click(page, await panelOf(page, 'comfort'), 'done');
+  await expect.poll(() => ids(page)).toEqual(['result']);
+
+  // Nové načtení: uložené volby platí od prvního snímku; „Recenter“ patří relaci, stůl je zase na −z.
+  await page.reload();
+  await ready(page);
+  await enterVr(page);
+  await expect.poll(async () => (await xr(page))?.desk?.top ?? -1, { timeout: 15_000 }).toBeCloseTo(TABLE.top - SEATED_DROP, 6);
+  const reloaded = (await xr(page))!;
+  expect(reloaded.desk!.yaw).toBeCloseTo(0, 6);
+  expect(reloaded.switches).toEqual({ haptics: false, vignette: false });
 });
 
 test('VR-native: the HUD rides the left wrist, a loss shows So close., Again restarts', async ({ page, request }) => {

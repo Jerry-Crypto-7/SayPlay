@@ -7,6 +7,9 @@
  *
  * Chytání: koš drží pravá ruka. Poloha ruky se převede do os hry a do `XrMotion.handX`; na osu pruhu ji převede
  * `input-map` (`laneAxisOfX`), stejně jako ruku krájení a bouchání. Do hashovaného stavu jde jen ta osa.
+ *
+ * Pohodlí (P67 T9, `comfort.ts`): svět stojí v rámu hráče (vsedě o 40 cm níž, po „Recenter“ kolem hlavy a čelem
+ * k pohledu) a velikost světa ho zvětší, nejvýš na 1:1. Obojí mění jen hráč na panelu, ne hra.
  */
 
 import { useFrame } from '@react-three/fiber';
@@ -15,6 +18,8 @@ import { type RefObject, useEffect, useMemo } from 'react';
 import { type Group, Matrix4, Vector3 } from 'three';
 
 import { UNIT } from '@/play/arcade/contract';
+import { sizedRoomScale, useComfort, usePlayerFrame } from '@/play/xr/comfort';
+import { worldOfDesk } from '@/play/xr/diorama-scale';
 import type { XrMotion } from '@/play/xr/input-map';
 import { type RoomPlacement, type XrPose, roomOf } from '@/play/xr/modes';
 
@@ -45,7 +50,15 @@ export function XrRoom({
 }) {
   const right = useXRInputSourceState('controller', 'right');
   const space = useXR((xr) => xr.originReferenceSpace);
-  const placement = useMemo(() => roomOf(pose, session.world), [pose, session]);
+  const { size } = useComfort();
+  const player = usePlayerFrame();
+  const placement = useMemo(() => {
+    const base = roomOf(pose, session.world);
+    const scale = sizedRoomScale(base.scale, size);
+    return scale === base.scale ? base : { ...base, scale, reach: (base.reach * scale) / base.scale };
+  }, [pose, session, size]);
+  // Obal otočený o půl kruhu postaví bod scény (x, 0, z) k nohám hráče, když sám stojí v (x, 0, z) · měřítko – v rámu hráče.
+  const origin = useMemo(() => worldOfDesk(player, { x: placement.scale * placement.anchor.x, y: 0, z: placement.scale * placement.anchor.z }), [player, placement]);
   const at = useMemo(() => ({ hand: new Vector3(), toGame: new Matrix4() }), []);
 
   useEffect(() => {
@@ -68,11 +81,9 @@ export function XrRoom({
   useFrame((_, __, frame: XRFrame | undefined) => {
     const group = world.current;
     if (group === null) return;
-    const { scale, anchor } = placement;
-    // Obal otočený o půl kruhu postaví bod scény (x, 0, z) k nohám hráče, když sám stojí v (x, 0, z) · měřítko.
-    group.position.set(scale * anchor.x, 0, scale * anchor.z);
-    group.rotation.set(0, Math.PI, 0);
-    group.scale.setScalar(scale);
+    group.position.set(origin.x, origin.y, origin.z);
+    group.rotation.set(0, Math.PI + player.yaw, 0);
+    group.scale.setScalar(placement.scale);
     if (!hand) return;
     const source = right?.inputSource;
     const grip = source !== undefined && space !== undefined && frame !== undefined ? frame.getPose(source.gripSpace ?? source.targetRaySpace, space) : undefined;
@@ -87,5 +98,5 @@ export function XrRoom({
     motion.current.handX = -at.hand.x * UNIT;
   }, MOTION_PRIORITY - 1);
 
-  return <XrSky game={session} />;
+  return <XrSky game={session} floor={player.top} />;
 }

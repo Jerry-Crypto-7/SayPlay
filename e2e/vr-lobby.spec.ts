@@ -333,8 +333,8 @@ test('Enter VR on /play opens the lobby; Type, a sentence card and Make it! star
   const lobby = await panelOf(page, 'lobby');
   console.log(`lobby ${JSON.stringify({ text: lobby.text, eyes: lobby.eyes, smallest: lobby.smallest })}`);
   expect(await ids(page)).toEqual(['lobby']);
-  expect(lobby.buttons.map((button) => button.id)).toEqual(['idea-0', 'idea-1', 'idea-2', 'idea-3', 'idea-4', 'idea-5', 'more', 'type', 'make']);
-  expect(labelsOf(lobby)).toEqual([...POOL.slice(0, 6), 'More ideas', 'Type', 'Make it!']);
+  expect(lobby.buttons.map((button) => button.id)).toEqual(['idea-0', 'idea-1', 'idea-2', 'idea-3', 'idea-4', 'idea-5', 'comfort', 'more', 'type', 'make']);
+  expect(labelsOf(lobby)).toEqual([...POOL.slice(0, 6), 'Comfort', 'More ideas', 'Type', 'Make it!']);
   expect(lobby.text.join(' ')).toContain('Say it in one sentence');
   expectSeen(lobby);
   expectEnglish(lobby);
@@ -358,6 +358,14 @@ test('Enter VR on /play opens the lobby; Type, a sentence card and Make it! star
   await expectText(page, 'lobby').toContain('Cat |');
   await expectText(page, 'lobby').toContain('4/140');
   await click(page, 'keyboard', 'done');
+  await expect.poll(() => ids(page)).toEqual(['lobby']);
+  await expectText(page, 'lobby').toContain('Say it in one sentence Cat');
+
+  // „Comfort“ (P67 T9): panel pohodlí místo karty, „Done“ vrátí lobby i s rozepsanou větou.
+  await click(page, 'lobby', 'comfort');
+  await expect.poll(() => ids(page)).toEqual(['comfort']);
+  expectEnglish(await panelOf(page, 'comfort'));
+  await click(page, 'comfort', 'done');
   await expect.poll(() => ids(page)).toEqual(['lobby']);
   await expectText(page, 'lobby').toContain('Say it in one sentence Cat');
 
@@ -393,7 +401,7 @@ test('Enter VR on /play opens the lobby; Type, a sentence card and Make it! star
   const end = await page.evaluate(() => (window.__playShell as unknown as Shell).handPlay('end'));
   expect(['won', 'lost']).toContain(end.runState);
   const result = await panelOf(page, 'result');
-  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Again']);
+  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Again']);
   expectEnglish(result);
   await click(page, 'result', 'new');
   await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['lobby']);

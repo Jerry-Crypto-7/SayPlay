@@ -8,8 +8,8 @@
  * Kreslí se jako obdélník přes celý obraz každého oka – souřadnice jsou rovnou v NDC, kamera se nepoužije – po
  * scéně a pod panely HUD (`PANEL_ORDER`), takže text panelů neztmaví. Jen kresba: do hry nejde nic.
  *
- * Vypínač (`setVignetteOn`) patří komfortnímu panelu (T9), jen v paměti stránky; výchozí je zapnuto. Je tady, v kódu
- * XR, ne v `xr-context.ts`: ten je v prvním JS telefonu.
+ * Vypínač (`setVignetteOn`) nastavuje `XrRig` z voleb panelu „Comfort“ (T9, `comfort.ts`); výchozí je zapnuto. Je
+ * tady, v kódu XR, ne v `xr-context.ts`: ten je v prvním JS telefonu.
  */
 
 import { useFrame } from '@react-three/fiber';

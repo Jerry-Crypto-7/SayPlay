@@ -9,6 +9,9 @@
  * Tratě (P67 T7, `STAGE_LAYOUT`) stojí stejně na velkém pódiu: deska je sokl až k podlaze, okolo podlaha okolí
  * (`XrSky`), vzdálená část trati mizí do mlhy v barvě obzoru (`stageFogOf`) a při pohybu světa se ztmaví okraj
  * obrazu (`XrVignette`).
+ *
+ * Výchozí poloha desky je v rámu hráče (P67 T9, `comfort.ts`): vsedě o 40 cm níž, po „Recenter“ před hlavou
+ * a otočená k ní. Změna rámu vrátí desku na výchozí místo v novém rámu, i když ji hráč předtím posunul gripem.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -18,7 +21,8 @@ import { Fog, type Group, type Material, Matrix4, type Mesh, type Object3D, Plan
 
 import { colorHex } from '@/brand/tokens';
 import { LOOKS } from '@/play/arcade/look';
-import { type DeskPose, type HandPose, type Layout, type Room, STAGE_LAYOUT, carried, createDiorama, playAreaOf, stageFogOf } from '@/play/xr/diorama-scale';
+import { deskHome, usePlayerFrame } from '@/play/xr/comfort';
+import { type DeskPose, type HandPose, type Layout, type Room, STAGE, carried, createDiorama, playAreaOf, stageFogOf } from '@/play/xr/diorama-scale';
 
 import type { ArcadeSession } from '../arcade/session';
 import { MOTION_PRIORITY } from './XrAim';
@@ -77,8 +81,8 @@ function yawOf(turn: Quaternion, forward: Vector3): number | null {
 }
 
 /**
- * `layout` se za života komponenty nemění (`XrRig` ji při změně stolu za pódium postaví znovu): podle něj je výchozí
- * poloha desky, roviny řezu i sokl.
+ * Prostor `layout` se za života komponenty nemění (`XrRig` ji při změně stolu za pódium postaví znovu): podle něj je
+ * výchozí poloha desky, roviny řezu i sokl. Měřítko se měnit smí (velikost světa, P67 T9).
  */
 export function Diorama({
   world,
@@ -96,10 +100,16 @@ export function Diorama({
   const left = useXRInputSourceState('controller', 'left');
   const space = useXR((xr) => xr.originReferenceSpace);
   const { room } = layout;
-  const stage = layout === STAGE_LAYOUT;
+  const stage = room === STAGE;
   const view = useMemo(() => createDiorama(playAreaOf(session.world), layout), [session, layout]);
-  const desk = useRef<DeskPose>({ x: room.x, top: room.top, z: room.z, yaw: 0 });
+  const player = usePlayerFrame();
+  const home = useMemo(() => deskHome(room, player), [room, player]);
+  const desk = useRef<DeskPose>(home);
   const grab = useRef<{ readonly desk: DeskPose; readonly hand: HandPose } | null>(null);
+  useEffect(() => {
+    desk.current = home;
+    grab.current = null;
+  }, [home]);
   const slab = useRef<Mesh>(null);
   // Rychlost světa (m/s skutečného prostoru) pro vinětaci pódia.
   const speed = useRef(0);
@@ -201,7 +211,8 @@ export function Diorama({
     at.matrix.makeRotationY(yaw).setPosition(x, top, z);
     local.forEach((plane, index) => at.planes[index]!.copy(plane).applyMatrix4(at.matrix));
     if (slab.current !== null) {
-      const thick = stage ? Math.max(SLAB.thick, top - SLAB.below) : SLAB.thick;
+      // Sokl pódia sahá k podlaze světa (vsedě níž než skutečná podlaha).
+      const thick = stage ? Math.max(SLAB.thick, top - player.top - SLAB.below) : SLAB.thick;
       slab.current.position.set(x, top - SLAB.below - thick / 2, z);
       slab.current.rotation.set(0, yaw, 0);
       slab.current.scale.set(1, thick, 1);
@@ -215,7 +226,7 @@ export function Diorama({
         <boxGeometry args={[room.width + 2 * SLAB.rim, 1, room.depth + 2 * SLAB.rim]} />
         <meshStandardMaterial color={colorHex['ink-soft']} roughness={0.9} />
       </mesh>
-      {stage && <XrSky game={session} />}
+      {stage && <XrSky game={session} floor={player.top} />}
       {stage && <XrVignette speed={speed} />}
     </>
   );

@@ -15,6 +15,7 @@ import { EffectComposer } from 'postprocessing';
 import { type ReactNode, useEffect, useMemo } from 'react';
 import type { Light } from 'three';
 
+import { closeComfort, resetRecenter } from '@/play/xr/comfort';
 import { fpsHudWanted } from '@/play/xr/flag';
 import { profileFor } from '@/play/xr/headset';
 import { type FrameMeter, XR_QUALITY, createFrameMeter, framebufferScaleOf, nearestRate } from '@/play/xr/quality';
@@ -71,9 +72,13 @@ const store = createXRStore({
   frameBufferScaling: framebufferScaleOf(opened, profileFor({ userAgent }).scale),
 });
 
-// VR lobby (P67 T2) patří relaci: po odchodu z VR se zavře a další „Enter VR“ ze hry začne hrou, ne lobby.
+// VR lobby (P67 T2) patří relaci: po odchodu z VR se zavře a další „Enter VR“ ze hry začne hrou, ne lobby. Stejně
+// panel „Comfort“ a „Recenter“ (P67 T9): nová relace má nový počátek prostoru. Uložené volby zůstávají.
 store.subscribe((state, prev) => {
-  if (prev.session != null && state.session == null) closeXrLobby();
+  if (prev.session == null || state.session != null) return;
+  closeXrLobby();
+  closeComfort();
+  resetRecenter();
 });
 
 /** Panel FPS (`?vrhud=1`) pro ruční bránu T8. */

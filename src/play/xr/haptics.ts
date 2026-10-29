@@ -42,7 +42,7 @@ export const XR_HAPTICS: Readonly<Record<VisualEventKind, Haptic | null>> = {
 
 let on = true;
 
-/** Vibruje se? Vypínač komfortního panelu (T9), jen v paměti stránky. */
+/** Vibruje se? Vypínač nastavuje `XrRig` z voleb panelu „Comfort“ (T9, `comfort.ts`). */
 export const hapticsOn = (): boolean => on;
 
 export function setHapticsOn(value: boolean): void {

@@ -6,6 +6,8 @@
  * - šest karet vět z `IDEAS` a `STARTERS` v pevném pořadí, „More ideas“ listuje dál dokola;
  * - „Type“ otevře 3D klávesnici (`XrKeyboard`) pod kartou, „Done“ ji zavře;
  * - „Say it“ (P67 T3, jen kde prohlížeč diktuje) nadiktuje větu do náhledu (`XrMic`);
+ * - „Comfort“ (P67 T9) otevře panel pohodlí (`XrComfort`) místo karty; lobby pod ním žije dál (`covered`),
+ *   takže náhled věty po „Done“ zůstane;
  * - „Make it!“ (jediná rajčatová akce) → `createGame()` → `router.push`, tatáž cesta jako formulář na `/play`.
  *   Mezitím „Making…“, chyba dveří zůstane na kartě (kit, Errors).
  *
@@ -17,6 +19,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { openComfort } from '@/play/xr/comfort';
 import { type KeyPress, typed } from '@/play/xr/keyboard';
 
 import type { ArcadeSession } from '../arcade/session';
@@ -24,7 +27,7 @@ import { createGame } from '../create-game';
 import { IDEAS, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from '../starters';
 import type { DeskReport } from './Diorama';
 import { madeInXrLobby } from './xr-lobby';
-import { type Anchor, XrColumn } from './XrHud';
+import { type Anchor, COMFORT, XrColumn } from './XrHud';
 import { keyboardOf, KEYBOARD_WIDTH } from './XrKeyboard';
 import { LISTENING, useXrMic } from './XrMic';
 import type { PanelAim, PanelButton, PanelSpec, PanelTone } from './XrPanel';
@@ -55,7 +58,7 @@ const TONES: readonly PanelTone[] = ['mint', 'sun', 'sky', 'bubblegum'];
  */
 const FRONT: Anchor = { kind: 'front', distance: 1, up: 0.05, scale: 0.8 };
 
-export function XrLobby({ shown, aim }: { readonly shown: ArcadeSession | null; readonly aim: PanelAim }) {
+export function XrLobby({ shown, aim, covered }: { readonly shown: ArcadeSession | null; readonly aim: PanelAim; readonly covered: boolean }) {
   const router = useRouter();
   const desk = useRef<DeskReport | null>(null);
   const [sentence, setSentence] = useState('');
@@ -129,7 +132,9 @@ export function XrLobby({ shown, aim }: { readonly shown: ArcadeSession | null; 
           columns: 2,
           cells: ideasOnPage(page).map((idea, index) => ({ id: `idea-${String(index)}`, label: idea, tone: TONES[index % TONES.length], press: () => edit(() => idea) })),
         },
+        // „Comfort“ první: řada se zalomí (`layoutOf`) a „Make it!“ zůstane poslední.
         buttons: [
+          { id: 'comfort', label: COMFORT, press: () => !making && openComfort() },
           { id: 'more', label: MORE_IDEAS, press: () => !making && setPage((now) => now + 1) },
           { id: 'type', label: TYPE, press: () => !making && setTyping(true) },
           ...micButton,
@@ -138,5 +143,5 @@ export function XrLobby({ shown, aim }: { readonly shown: ArcadeSession | null; 
       };
   const onKey = (key: KeyPress): void => edit((previous) => typed(previous, key, SENTENCE_LIMIT));
   const specs = typing ? [lobby, keyboardOf(onKey, () => setTyping(false))] : [lobby];
-  return <XrColumn anchor={FRONT} specs={specs} desk={desk} aim={aim} />;
+  return covered ? null : <XrColumn anchor={FRONT} specs={specs} desk={desk} aim={aim} />;
 }

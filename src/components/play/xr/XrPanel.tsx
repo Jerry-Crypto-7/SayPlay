@@ -63,6 +63,8 @@ export interface PanelButton {
   readonly primary?: boolean;
   /** Výplň místo papíru: karta nápadu v mřížce `grid`, mikrofon lobby (`sun`, P67 T3). */
   readonly tone?: PanelTone;
+  /** Vybraná volba jako `.sp-chip.is-selected`: inkoustová výplň, krémový text (panel Comfort, P67 T9). */
+  readonly selected?: boolean;
   press(): void;
 }
 
@@ -122,6 +124,7 @@ interface Key {
   readonly label: string;
   readonly primary: boolean;
   readonly tone?: PanelTone;
+  readonly selected: boolean;
   readonly lines: readonly string[];
   readonly type: Type;
   readonly rect: Rect;
@@ -260,19 +263,34 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
     });
     y = beside.top + h + GAP;
   } else {
-    // Stejná šířka, dokud se do ní vejde každý popisek; jinak každé tlačítko na svůj popisek a zbytek řady rovným
-    // dílem (P67 T3: lobby s „Say it“ má čtyři tlačítka a „More ideas“ by v čtvrtině řady přetekl).
-    const free = inner - GAP * (buttons.length - 1);
+    // Tlačítka po pořadí do řady, dokud se jejich popisky vejdou; další jdou do nové řady (P67 T9: lobby s „Comfort“
+    // a „Say it“ má pět tlačítek). V řadě stejná šířka, dokud se do ní vejde každý popisek; jinak každé tlačítko na
+    // svůj popisek a zbytek řady rovným dílem (P67 T3: „More ideas“ by v čtvrtině řady přetekl).
     const fitted = buttons.map((button) => widthOf(button.label, TYPE.button) + 2 * space['3']);
-    const share = (free - fitted.reduce((sum, w) => sum + w, 0)) / buttons.length;
-    const widths = fitted.every((w) => w <= free / buttons.length) ? fitted.map(() => free / buttons.length) : fitted.map((w) => w + share);
-    let x = PAD;
-    keys = buttons.map((button, index) => {
-      const rect = { x, y, w: widths[index]!, h: KEY_HEIGHT };
-      x += widths[index]! + GAP;
-      return { ...keyFrom(button, [button.label], TYPE.button), rect };
+    const rows: number[][] = [];
+    let used = inner;
+    fitted.forEach((w, index) => {
+      if (used + GAP + w > inner) {
+        rows.push([]);
+        used = -GAP;
+      }
+      rows.at(-1)!.push(index);
+      used += GAP + w;
     });
-    if (keys.length > 0) y += KEY_HEIGHT + GAP;
+    keys = [];
+    for (const row of rows) {
+      const free = inner - GAP * (row.length - 1);
+      const own = row.map((index) => fitted[index]!);
+      const share = (free - own.reduce((sum, w) => sum + w, 0)) / row.length;
+      const widths = own.every((w) => w <= free / row.length) ? own.map(() => free / row.length) : own.map((w) => w + share);
+      let x = PAD;
+      row.forEach((index, at) => {
+        const button = buttons[index]!;
+        keys.push({ ...keyFrom(button, [button.label], TYPE.button), rect: { x, y, w: widths[at]!, h: KEY_HEIGHT } });
+        x += widths[at]! + GAP;
+      });
+      y += KEY_HEIGHT + GAP;
+    }
   }
   return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys: [...cells, ...keys] };
 }
@@ -282,6 +300,7 @@ const keyFrom = (button: PanelButton, lines: readonly string[], type: Type): Omi
   label: button.label,
   primary: button.primary === true,
   ...(button.tone === undefined ? {} : { tone: button.tone }),
+  selected: button.selected === true,
   lines,
   type,
 });
@@ -297,8 +316,8 @@ export const specKey = (spec: PanelSpec): string =>
     spec.body,
     spec.note,
     spec.stats,
-    spec.grid === undefined ? null : [spec.grid.columns, spec.grid.gap, spec.grid.cells.map((cell) => [cell.id, cell.label, cell.primary === true, cell.tone])],
-    spec.buttons?.map((button) => [button.id, button.label, button.primary === true, button.tone]),
+    spec.grid === undefined ? null : [spec.grid.columns, spec.grid.gap, spec.grid.cells.map((cell) => [cell.id, cell.label, cell.primary === true, cell.tone, cell.selected === true])],
+    spec.buttons?.map((button) => [button.id, button.label, button.primary === true, button.tone, button.selected === true]),
   ]);
 
 function canvasOf(w: number, h: number, shadow: number): { readonly canvas: HTMLCanvasElement; readonly texture: CanvasTexture } {
@@ -366,11 +385,12 @@ function drawKey(canvas: HTMLCanvasElement, key: Key, state: KeyState): void {
   const sunk = state === 'pressed' ? KEY_SHADOW : 0;
   const face = { x: sunk, y: sunk, w: key.rect.w, h: key.rect.h };
   if (state !== 'pressed') shadowOf(ctx, face, radius.md, KEY_SHADOW);
-  box(ctx, face, radius.md, key.primary ? color.tomato : key.tone !== undefined ? color[key.tone] : color.paper, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
-  // Řádky popisku svisle uprostřed tlačítka.
+  const fill = key.selected ? color.ink : key.primary ? color.tomato : key.tone !== undefined ? color[key.tone] : color.paper;
+  box(ctx, face, radius.md, fill, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
+  // Řádky popisku svisle uprostřed tlačítka; na inkoustu krémové (15,7:1).
   const step = key.type.size * key.type.lineHeight;
   const top = sunk + key.rect.h / 2 - (step * (key.lines.length - 1)) / 2;
-  key.lines.forEach((line, index) => text(ctx, line, key.type, sunk + key.rect.w / 2, top + index * step, color.ink, 'center'));
+  key.lines.forEach((line, index) => text(ctx, line, key.type, sunk + key.rect.w / 2, top + index * step, key.selected ? color.cream : color.ink, 'center'));
 }
 
 /** Plátno 2D kreslí písmem stránky, až je načtené: do té doby náhradním, po načtení se karty rozvrhnou znovu. */

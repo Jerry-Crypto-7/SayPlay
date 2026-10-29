@@ -306,7 +306,7 @@ test('the feed in VR: Next, Prev and Again in one XR session; the right stick pa
 
   // Výsledek ve feedu: „Next“ vedle „Again“ (jediná rajčatová akce), anglicky.
   const result = await endRound(page);
-  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Next', 'Again']);
+  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Next', 'Again']);
   expect([...result.text, ...labelsOf(result)].join(' ')).not.toMatch(/[ěščřžýáíéúůňťďóĚŠČŘŽÝÁÍÉÚŮŇŤĎÓ]/u);
   // Další karta je načtená dopředu: její detail přišel dřív, než ji hráč chce.
   expect(details.has(rows[1]!.versionId), 'next card loaded ahead').toBe(true);

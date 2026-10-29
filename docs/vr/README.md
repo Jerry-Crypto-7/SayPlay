@@ -174,7 +174,7 @@ Pro všechny hry: schopnosti hrdiny jsou na A/X a B/Y, blaster na B/Y, úder v s
 
 ### Hry kolem hráče (aréna, obrana, chytání)
 
-Tři hry stojí ve VR na podlaze pokoje kolem hráče, ne na stole. Hráč stojí, hrdina se hýbe. Svět se za hry nikdy nepohne: kde stál na začátku, tam stojí až do konce.
+Tři hry stojí ve VR na podlaze pokoje kolem hráče, ne na stole. Hráč stojí, hrdina se hýbe. Svět se za hry sám nikdy nepohne: kde stál na začátku, tam stojí až do konce. Otočí ho jen hráč tlačítkem „Recenter“ v panelu „Comfort“.
 
 | Hra | Měřítko | Kde hráč stojí | Jak se hraje |
 |---|---|---|---|
@@ -231,7 +231,7 @@ Tři hry stojí ve VR na podlaze pokoje kolem hráče, ne na stole. Hráč stoj�
 
 - **Svět jede k hráči:** hrdina je v bližší čtvrtině pódia, zbylé tři čtvrtiny ukazují, co přijde (u běžce asi 11 m trati, na stole bylo 10 m). Závod je i při 1:8 širší než pódium (22 m trati); když hrdina dojede k pětině šířky od kraje, svět se posune i do strany.
 - **Vzdálený konec mizí v mlze:** zhruba poslední třetina pódia přechází do barvy obzoru prostředí hry a vzdálený kraj je v mlze celý. Řez světa na kraji tak není vidět a překážky z mlhy vyjíždějí. Kolem pódia leží podlaha v barvě země prostředí, jako u her kolem hráče.
-- **Vinětace:** když svět jede, ztmaví se okraj obrazu a střed zůstane čistý. Síla roste s rychlostí světa: od 0,2 m/s, plná od 1,5 m/s (běžec jede ~2,5 m/s, závod ~2,6 m/s, flap ~0,7 m/s, plošinovka ~0,5 m/s, hop pod prahem). Po zastavení světa okraj do vteřiny zesvětlá. Vypnout ji půjde v panelu pohodlí (T9); výchozí je zapnuto.
+- **Vinětace:** když svět jede, ztmaví se okraj obrazu a střed zůstane čistý. Síla roste s rychlostí světa: od 0,2 m/s, plná od 1,5 m/s (běžec jede ~2,5 m/s, závod ~2,6 m/s, flap ~0,7 m/s, plošinovka ~0,5 m/s, hop pod prahem). Po zastavení světa okraj do vteřiny zesvětlá. Vypnout ji jde v panelu „Comfort“ (oddíl „Pohodlí ve VR“ níž); výchozí je zapnuto.
 - **Panely:** tabule s cílem a počítadly stojí nad vzdáleným koncem pódia, výš než cokoli na trati, takže nic nezakryje. „AI version ready“ visí z téhož místa dolů přes mlhu. Výsledek stojí na bližší části pódia. Všechny mají od očí stejnou úhlovou velikost jako na stole, proto jsou větší (tabule ~5×, výsledek ~1,8×).
 - **Levý grip nese pódium** jako stůl (i níž pro hráče vsedě). Sokl sahá vždy až k podlaze. Mlha se počítá pro pódium ve výchozí poloze.
 
@@ -247,7 +247,7 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 | Panel | Kdy | Hry na stole | Hry rukou |
 |---|---|---|---|
 | cíl a počítadla, „Exit VR“ | během hry | tabule za vzdáleným okrajem stolu, nad scénou | nad levým zápěstím |
-| výsledek „You did it!“ / „So close.“, „Again“, „New game“, „Exit VR“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
+| výsledek „You did it!“ / „So close.“, „Again“, „New game“, „Exit VR“, „Comfort“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
 | „AI version ready“ | příchod AI verze | visí z bližšího okraje stolu | nad levým zápěstím |
 
 - **Ovládání:** paprsek pravého (nebo levého) ovladače na tlačítko a spoušť: stisknout a pustit. Tlačítko pod paprskem má silnější obrys, stisknuté se zamáčkne. Spoušť stisknutá na tlačítku do hry nejde, ani když paprsek mezitím z tlačítka sjede. Stisk, který začal mimo panely, patří hře.
@@ -283,7 +283,7 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 | výhra | 0,5 | 140 ms | obě |
 | prohra | 0,8 | 220 ms | obě |
 
-Dopad hrdiny, zrod těla, změna stavu cíle a zásah akcí nevibrují (dějí se pořád nebo je už nese zásah). Za jeden tik dostane každá ruka jen nejsilnější pulz. Vypnout vibrace půjde v panelu pohodlí (T9).
+Dopad hrdiny, zrod těla, změna stavu cíle a zásah akcí nevibrují (dějí se pořád nebo je už nese zásah). Za jeden tik dostane každá ruka jen nejsilnější pulz. Vypnout vibrace jde v panelu „Comfort“ (oddíl „Pohodlí ve VR“ níž).
 
 ### Hra z věty ve VR (lobby)
 
@@ -296,6 +296,7 @@ Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoř
 | „Type“ | otevře pod kartou klávesnici: číslice, QWERTY, `' , . -`, „Space“, „Delete“, „Done“ |
 | „Say it“ | jen v prohlížeči, který umí diktovat: poslouchá jednu větu a vloží ji do náhledu; hru ještě nespustí |
 | „Make it!“ | udělá hru z věty v náhledu, stejně jako „Make it!“ na domově; mezitím „Making…“ |
+| „Comfort“ | otevře panel pohodlí (oddíl „Pohodlí ve VR“ níž); „Done“ vrátí lobby i s rozepsanou větou |
 
 - **Klávesnice:** paprsek na klávesu a spoušť. Píše se vždy na konec věty, první písmeno je velké, mezera nikdy na začátku ani dvakrát za sebou. Nad 140 znaků (strop věty) už nic nepřibude, „Delete“ maže vždy. Náhled s kurzorem `|` a počítadlo `n/140` jsou na kartě nad klávesnicí, vedle „Make it!“.
 - **Diktování („Say it“):** tlačítko je na kartě vět i vedle klávesnice, ale jen když prohlížeč diktování umí (Web Speech API). Rozhoduje se za běhu v prohlížeči, ne podle seznamu brýlí. Prohlížeč, který ho neumí, tlačítko vůbec nedostane.
@@ -342,7 +343,7 @@ Feed na `/play` jde procházet bez sundání brýlí. Do VR se vstoupí „Enter
 
 - **Mimo běžící kolo** znamená náhled robota, výsledek a kartu, která se ještě načítá. Když hraje hráč, páčka patří hře, i když hra čeká na první pohyb.
 - **Mávnutí** je výchylka páčky svisle aspoň na 70 %. Další mávnutí platí až po návratu páčky pod polovinu výchylky, takže páčka držená nahoře nelistuje dokola.
-- **Panel výsledku ve feedu:** „New game“ a „Exit VR“ nahoře, „Next“ a rajčatové „Again“ dole. Mimo feed „Next“ chybí.
+- **Panel výsledku ve feedu:** „New game“, „Exit VR“ a „Comfort“ nahoře, „Next“ a rajčatové „Again“ dole. Mimo feed „Next“ chybí.
 - **Další karta je načtená dopředu:** feed stahuje detail aktivní karty a sousedů (+1, +2, −1), takže hra další karty se po přechodu postaví bez čekání na síť.
 
 **Ověření (P67 T4):** `e2e/vr-feed.spec.ts` v emulátoru IWER:
@@ -354,6 +355,32 @@ Feed na `/play` jde procházet bez sundání brýlí. Do VR se vstoupí „Enter
 - spoušť převezme náhled; „Again“ → nové kolo téže hry od tiku 0; páčka nahoru na výsledku → další karta;
 - po celou dobu jedna relace: stránka si o ni řekla jednou a žádná neskončila.
 - Unit: `src/play/xr/__tests__/input-map.test.ts` drží mávnutí (jednou za výchylku, převážně svisle).
+
+### Pohodlí ve VR (Comfort)
+
+Panel „Comfort“ se otevře tlačítkem „Comfort“ na lobby nebo na výsledku hry. Je to karta metr před hráčem, kousek pod úrovní očí, a stojí místo lobby nebo výsledku, dokud ji „Done“ nezavře. Ovládá se paprskem a spouští jako ostatní panely.
+
+| Tlačítko | Co dělá |
+|---|---|
+| „Standing“ / „Seated“ | vsedě klesne stůl, pódium tratí, svět kolem hráče i podlaha okolí o 40 cm, takže hráč vsedě vidí totéž co vestoje |
+| „Recenter“ | svět se otočí tam, kam se hráč právě dívá, a postaví se před něj |
+| „Small“ / „Medium“ / „Large“ | velikost světa: 0,75×, 1× a 1,25× stolu i pódia. „Small“ navíc dá tratě a hry kolem hráče (aréna, obrana, chytání) na stůl. „Large“ zvětší i svět kolem hráče, nejvýš na 1:1 |
+| „Haptics on“ / „Haptics off“ | vibrace ovladačů |
+| „Vignette on“ / „Vignette off“ | ztmavení okraje obrazu, když jede trať na pódiu |
+| „Done“ | zavře panel (jediné rajčatové tlačítko) |
+
+- **Vybraná volba** je vyplněná inkoustem s krémovým textem (jako vybraný čip kitu). Vypínače mají stav i v textu.
+- **Volby se pamatují** v prohlížeči (`localStorage`, klíč `sp-vr-comfort`) a platí i po novém načtení stránky a v další relaci. Když prohlížeč úložiště nedovolí (soukromé okno, zakázané cookies), platí výchozí volby: vestoje, „Medium“, vibrace i vinětace zapnuté. Změna pak platí do zavření stránky.
+- **„Recenter“ se nepamatuje.** Platí do konce relace, protože každá relace má vlastní počátek prostoru. Hlava se nikdy nehne sama: svět se otočí jen na stisk a hned, bez animace.
+- **Stůl posunutý levým gripem** se po změně „Seated“ / „Standing“ nebo po „Recenter“ vrátí na výchozí místo.
+- **Hry rukou** (střílečka, hod, bouchání, krájení) vsedě nemění výšku: jejich svět je v dosahu ruky nebo 1:1 na podlaze. „Recenter“ je otočí taky.
+- **Do hry nic z toho nejde.** Volby jsou jen kresba a vibrace, mimo hashovaný stav hry. Ovladače do hry nejdou, dokud je panel otevřený.
+
+**Ověření (P67 T9):**
+
+- `e2e/vr-hud.spec.ts` v emulátoru IWER, hra na stole: výsledek → „Comfort“ → karta celá v obraze obou očí (i s hlavou skloněnou ke stolu), text aspoň 0,9°, anglicky. „Seated“ → deska o 40 cm níž a hrdina s ní (na desce stojí, kde stál). „Large“ → svět na stole 1,25× větší. „Haptics“ a „Vignette“ → popisky „off“ a hra čte vypnuté vypínače. Záznam v `localStorage` nese všechny čtyři volby. Hlava otočená o čtvrt kruhu doleva a „Recenter“ → stůl stojí vlevo před ní a je k ní otočený. „Done“ → zpátky výsledek. Nové načtení stránky a vstup do VR → stůl rovnou nízko, vibrace a vinětace vypnuté, „Recenter“ zapomenutý.
+- `e2e/vr-lobby.spec.ts`: lobby → „Comfort“ → „Done“ → lobby s rozepsanou větou.
+- `src/play/xr/__tests__/comfort.test.ts`: uložení a načtení, výchozí volby při chybě úložiště (přístup, čtení, zápis, poškozený záznam), co rig z voleb postaví (výška a otočení desky, režim a měřítko podle velikosti).
 
 ## Měření a známá omezení
 
@@ -472,7 +499,7 @@ Na Questu zůstává neověřené (ruční brána T15):
 - **Mlha jen na pódiu.** Scéna nese mlhu v metrech scény a ve VR ji three nepoužije: `<fog>` scény visí na obalu světa, ne na kořeni (e2e: na stole žádná mlha). Pódium dá kořeni vlastní mlhu v metrech od očí a po odchodu ji vrátí. Mlha měří hloubku po ose pohledu, takže když se hráč otočí stranou, je vzdálený řez vidět víc. Barva je obzor základní sady prostředí, jako u podlahy okolí.
 - **Vinětace podle rychlosti světa, ne podle pohybu hrdiny.** Svět jede jen tehdy, když jede okno; u hopu se okno posouvá po skocích tak pomalu (~0,2 m/s), že vinětace nezačne.
 - **Vinětace pod panely.** Text panelů neztmaví; paprsek ovladače také ne.
-- **Vypínač vinětace** je `setVignetteOn` v `src/components/play/xr/XrVignette.tsx` (kód XR, jen v paměti stránky), ne v `xr-context.ts`, protože ten stahuje i telefon. Komfortní panel (T9) ho jen zavolá.
+- **Vypínač vinětace** je `setVignetteOn` v `src/components/play/xr/XrVignette.tsx` (kód XR), ne v `xr-context.ts`, protože ten stahuje i telefon. Od T9 ho nastavuje rig z uložených voleb panelu „Comfort“.
 - **Levý grip nese i pódium** (hráč vsedě si ho sníží). Sokl sahá vždy k podlaze, mlha zůstává spočtená pro výchozí polohu.
 - **Stolní hry beze změny.** Měřítko stolu (`dioramaScale`) zůstává, jak bylo; plán chtěl jen „dorovnat podle `diorama-scale.ts`“, a to platí.
 - **Nález pro hry kolem hráče (T6):** ze stejného důvodu ani jejich podlaha okolí do mlhy nemizí, sahá až k obloze (150 m). Pódium to řeší vlastní mlhou; arény, obrany a chytání se T7 netýká.
@@ -499,7 +526,7 @@ Na Questu zůstává neověřené (ruční brána T15):
 - **Útlum:** do 1 m plná hlasitost, pak `inverse` s faktorem 0,3 (8 m ~32 %, 20 m ~15 %). Silnější útlum by vzdálené zásahy ve střílečce skoro umlčel.
 - **Hudba, vypravěč, skok a zvuky akcí hráče** zůstávají bez polohy: nemají místo ve světě, nebo je dělá sám hráč.
 - **Vibrace mají vlastní sběrnici v kódu XR** (`createEffectsBus` + `subscribe`). Sběrnice `Effects` není zvenku vidět a vytáhnout ji by znamenalo sahat do prvního JS. Druhá sběrnice stav jen čte, náklad je výpočet událostí jednoho tiku.
-- **Vibrace nezávisí na ztlumení zvuku** (na telefonu ztlumení vypne i vibraci). Ve VR je ztlumení M nedosažitelné a ovladač je hlavní zpětná vazba; vypínač bude v panelu pohodlí (T9, `setHapticsOn` v `src/play/xr/haptics.ts`, jen v paměti stránky).
+- **Vibrace nezávisí na ztlumení zvuku** (na telefonu ztlumení vypne i vibraci). Ve VR je ztlumení M nedosažitelné a ovladač je hlavní zpětná vazba; vypínač je v panelu „Comfort“ (T9, `setHapticsOn` v `src/play/xr/haptics.ts`, uložený v `localStorage`).
 - **Prohlížeč bez parametrů posluchače** (Gecko, Wolvic) dostane starší `setPosition` / `setOrientation`.
 - **Skutečné brýle:** zvuk ani vibrace na Questu 2 tento běh neověřil. Patří do ruční brány T15.
 
@@ -522,6 +549,22 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 - **Quest Pro a prohlížeč v režimu „stránka pro počítač“** (UA počítače) dostanou profil Questu 2 jako neznámé brýle.
 - **Foveace a strop částic** zůstávají jako na Questu 2.
 - **`?vrscale` jen snižuje**, i na Questu 3 (rozsah 0,8–1,0).
+
+### Pohodlí (P67 T9, 29. 10. 2026, emulátor)
+
+- **V emulátoru IWER** (`e2e/vr-hud.spec.ts`, quest na stole, hlava 1,6 m skloněná ke středu stolu): deska vestoje 0,80 m, po „Seated“ 0,40 m, hrdina o 0,40 m níž a na desce na stejném místě. „Large“ zvětšil měřítko světa přesně 1,25×. Po „Recenter“ s hlavou otočenou doleva stojí deska 0,9 m vlevo, otočená o 90°. Po novém načtení stránky deska rovnou 0,40 m a vypínače vypnuté. Karta „Comfort“ je celá v obraze obou očí.
+- **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 495 B rozbaleně, +844 B proti `main` (před T9 +847 B), přenesené +730 B, žádný kód XR. T9 nezměnila žádný soubor, který telefon stahuje.
+- **Skutečné brýle:** neověřeno. Patří do ruční brány T15 (bod „Comfort“).
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **Stav voleb je v `src/play/xr/comfort.ts`, ne v `xr-context.ts`.** Plán chtěl `xr-context.ts`, ten je ale v prvním JS telefonu dvakrát (layout i feed). `comfort.ts` načítá jen kód XR.
+- **„Seated“ = svět o 40 cm níž**, ne vyšší hlava. Výška očí vsedě ~1,2 m proti 1,6 m vestoje; stůl, pódium, svět kolem hráče i podlaha okolí klesnou o rozdíl, takže zorné pole, mlha pódia a velikost panelů platí beze změny. Hry rukou se nemění: pruhy krájení a bouchání jsou u ruky, střílečka a hod 1:1 na podlaze.
+- **„Recenter“ otočí i posune.** Svět se otočí ke směru pohledu (bez sklonu hlavy) a postaví se před hlavu tam, kde hráč právě stojí, jako „Recenter“ systému Questu. Neukládá se, nová relace začíná bez něj. Stůl posunutý gripem se vrátí na výchozí místo.
+- **Velikost světa ve třech stupních:** 0,75×, 1× a 1,25× měřítka stolu a pódia. „Small“ dá tratě a hry kolem hráče na stůl: plán počítal s tím, že panel pohodlí umí vrátit arénu na stůl, když 1:1–1:3 dělá nevolno. „Large“ zvětší i svět kolem hráče, nejvýš na 1:1 (obrana už 1:1 je).
+- **Karta „Comfort“ stojí metr před hráčem jako lobby, ne na místě výsledku.** Na stole, pódiu i zápěstí je pak stejně velká a čitelná a tři tlačítka v řadě se do ní vejdou. Horní hrana 10 cm pod očima, aby byla vidět i od stolu.
+- **Řada tlačítek panelu se zalomí,** když se nevejde (`layoutOf`): lobby s „Comfort“ a „Say it“ má pět tlačítek, „Make it!“ pak stojí samo přes celou šířku. Panely, kterým řada stačila, se nezměnily.
+- **„Comfort“ na výsledku** je třetí vedlejší tlačítko pod „New game“ a „Exit VR“; tři vedle sebe by se do karty 300 px nevešly.
 
 ### Feed ve VR (P67 T4, 29. 10. 2026, emulátor)
 
