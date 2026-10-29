@@ -15,7 +15,7 @@ import { renderHeld } from '../effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group, Object3D, PerspectiveCamera } from 'three';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 
 import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -32,6 +32,7 @@ import type { Box } from '../look/ground';
 import type { Volume } from '../look/landmark-places';
 import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
+import { fitTall, usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
@@ -229,6 +230,8 @@ export function TimingScene({
   // Poměr stran kamery: R3F ho po změně velikosti plátna přepíše dřív, než se ptá selektorů scén.
   const aspect = useThree((three) => (three.camera as PerspectiveCamera).aspect);
   const look = useMemo(() => new Vector3(), []);
+  const play = useMemo(() => new Box3(), []);
+  const playArea = usePlayRectRef();
   const followY = useRef<number | null>(null);
   // Hrdina a jeho místo pro kulisy podle poměru stran: na výšku ho kamera má v popředí (P61 T6).
   const heroAt = useMemo(() => timingHeroAt(aspect, timingDistance(camera.fov, aspect, sliderInit.w)), [aspect, camera.fov, sliderInit.w]);
@@ -279,6 +282,14 @@ export function TimingScene({
     camera.position.set(0, followY.current + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
     look.set(0, followY.current, 0);
     camera.lookAt(look);
+    const rect = playArea.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku (P64 T4): kyv jezdce i věž s cílem v `playRect` pod HUD – šířku dál drží `timingDistance`.
+      const swing = TIMING.amplitude / UNIT + sliderInit.w / 2 + SWING_PAD;
+      play.min.set(-swing, 0, -TIMING.depth / UNIT / 2);
+      play.max.set(swing, Math.max(top + 1, followY.current + (2 * TIMING.blockH) / UNIT), TIMING.depth / UNIT / 2);
+      camera.position.copy(fitTall(camera, play, rect, { margin: 0 }).position);
+    }
   });
 
   const depth = TIMING.depth / UNIT;

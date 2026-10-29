@@ -53,6 +53,8 @@ vi.mock('react', async (importOriginal) => {
     useRef: (current: unknown) => ({ current }),
     useEffect: () => undefined,
     useSyncExternalStore: (_subscribe: unknown, snapshot: () => unknown) => snapshot(),
+    // Kontext bez poskytovatele = jeho výchozí hodnota (`usePlayRectRef` → `{ current: null }`, P64 T4).
+    useContext: (context: { _currentValue: unknown }) => context._currentValue,
   };
 });
 vi.mock('@react-three/fiber', async (importOriginal) => ({

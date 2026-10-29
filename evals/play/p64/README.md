@@ -297,8 +297,92 @@ Měření (server `next start` na 3174, `PLAY_READER=off`, útrata 0 USD):
   leaves the touch zones readable“ na obou – přepínač verze, který T6 dal na výšku do horní mřížky, se překrývá
   s kartou „Tap to start“ (Pixel: přepínač y 122–167, karta 130–222). Totéž padá na buildu T6 bez T7, T7 to
   nezpůsobil a neopravuje (kartu staví `ArcadeStage` mimo rozsah T7) – patří T6 / bráně.
+  - Opraveno v `db4c0f28`: `hudBars` počítal stav AI verze za podlahu i nahoře pod cílem, takže pás karty
+    (a `playRect` kamer) končil u jeho horní hrany. Prvek `floor` celý v horní půlce stage teď patří k hornímu
+    pásu. `play-touch` 14 / 14 na obou telefonech.
 
 ```
 FALLBACK_SMOKE_URL=http://127.0.0.1:3174 P64_THUMB_SHOTS=D:/caches/p64/t7-shots npx playwright test e2e/p64-thumb.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1
 npx vitest run src/components/play/arcade/__tests__/p64-stick.test.ts
 ```
+
+## T4 – přeskákání, dav, souboj, úkol, načasování a rytmus na výšku
+
+Každá změna platí jen na `camera.aspect < 1` se změřeným `playRect` (`usePlayRectRef`) a jde přes `fitTall`. Na šířku
+a bez změřeného obdélníku je kamera beze změny. `track-camera.ts` `placeSide` žádný z těch šesti žánrů nepoužívá
+(volá ho jen plošinovka na šířku a poletování), takže zůstal beze změny.
+
+- **Souboj:** ring leží podél výšky obrazovky. Kamera je z boku natočená o 68° za hráče a zvednutá o 30°, pohled
+  jde přes rameno. Hráč stojí vlevo dole, soupeř vpravo nahoře čelem ke kameře a povel „Dodge!“ / „Strike!“ je nad
+  ním. Krabice záběru obsahuje oba bojovníky, 0,7 m nad hlavou, 0,15 m do stran a 0,4 m za hráčem. Bez té rezervy
+  za hráčem zajel hrdina při zásahu pod štítky zón (`underHud` na iPhonu 0,1–0,17).
+- **Rytmus:** pohled je strmější (24°) a míří 7 m za lištu místo 9 m. Lišta i se 0,2 m po stranách vyplní šířku
+  plátna a 8 m pruhů před ní se vejde do `playRect`. S bodem pohledu na 9 m tlačila lišta na iPhonu ke spodní hraně
+  a kamera kvůli ní couvla: lišta měla 0,107 plochy proti 0,136.
+- **Přeskákání:** šíře pole v řadě hrdiny vyplní šířku plátna. Hrdina stojí v 80 % výšky `playRect`; v T1 stál
+  v 57 % obrazovky a pod ním bylo 40 % trávy. Nad hrdinou jsou řady až k cíli. Náklon je 48° místo 58°, protože
+  strmější pohled hrdinu zmenšil (při 62° měl 0,011 plochy proti 0,0146 v T1).
+- **Dav:** stejný princip. Obě brány (±2,4 m) vyplní šířku, dav stojí v 61–66 % výšky a další brány a pily jsou
+  v horní polovině. Náklon je 44°.
+- **Načasování:** `timingDistance` i `timingHeroAt` zůstaly. `fitTall` bez okraje jen posune kyv, věž a cíl do
+  `playRect`, takže tučňák v popředí už není useknutý spodní hranou.
+- **Úkol:** `StationScene` se používá jen pro `quest_station`. Úsek pultu s hrdinou se posune nad tlačítko „Use“
+  a pod HUD, do stran se záběr nemění. Bod úvodního průletu se posouvá s kamerou.
+
+**Audit na výšku** (`P64_CHECK=1`, T1 → T4, Pixel 7 / iPhone 15). Horní pás `playRect` je po T6 nižší: na Pixelu
+98 px místo 120.
+
+| žánr | fill | hrdina (plocha) | cropped / underHud |
+|---|---|---|---|
+| souboj | 0,34 → 0,57 / 0,40 → 0,64 | 0,034 → 0,099 / 0,028 → 0,082 | 0 / 0 |
+| rytmus | 0,63 → 0,80 / 0,70 → 0,94 | 0,106 → 0,129 / 0,136 → 0,139 | 0 / 0 |
+| přeskákání | 0,10 → 0,10 / 0,13 → 0,13 | 0,0146 → 0,0140 / 0,0185 → 0,0175 | 0 / 0 |
+| dav | 0,23 → 0,21 / 0,27 → 0,25 | 0,041 → 0,046 / 0,052 → 0,053 | 0 / 0 |
+| načasování | 0,19 → 0,20 / 0,23 → 0,25 | 0,017 → 0,020 / 0,023 → 0,029 | 0 / 0 |
+| úkol (a10) | 1 → 1 / 1 → 1 | 0,043 → 0,044 / 0,046 → 0,046 | 1 / 0,83 → 0,57, 0,93 → 0,93 |
+
+- **P61 poměr výška / šířka:** rytmus 0,88 → 1,07 a 1,00 → 1,03, splněno. Přeskákání 0,62 → 0,61 a 0,72 → 0,69,
+  cíl 0,9 nesplněn. Šířka pole dovolí na výšku nejvýš 36,7 px/m u hrdiny, na šířku má hrdina 41 px/m (kamera na
+  9 m). Strop poměru je tak (36,7 / 41)² × 0,90 (poměr ploch plátna) ≈ 0,72. Na 0,9 by se pole muselo do stran
+  uříznout, což rozsah plánu zakazuje (In 1: nic hratelného uříznuté do stran).
+- **Úkol (nesplněno, předáno dál):** buňka a10 je `quest_spatial` a rámuje ji kamera arény (`arena-camera.ts`,
+  `ArenaScene.tsx`, soubory T5), ne `StationScene`. Hrdina stojí nahoře pod HUD (`underHud` 0,57 / 0,93). Opravu
+  provede T5 (`underHud` arény), případně navazující úloha. Stanoviště (`quest_station`, věta „a chef cooks pancakes
+  on the stove before they burn“, mimo buňky auditu) má na výšku fill 0,55 / 0,73 a `underHud` 0 / 0.
+- **Cíle `fill` v `TARGETS` byly špatně** u žánrů, kde rozsah sondy tvoří hrdina a nejvýš jedno blízké tělo a šíři
+  záběru drží věc, která se musí vejít:
+  - přeskákání 0,55 → 0,09: rozsah = hrdina a nejbližší vozidlo do 5 řad (`NEAR_ROWS`). Pole 10,8 m vyplní
+    412 px, takže 5 řad (6 m) dá v obraze nejvýš ~5,5 m z ~20 m výšky `playRect`, tedy ≤ 0,27. Medián vozidla je
+    1–2 řady, naměřeno 0,10. Na 0,55 by pole muselo být 2–5× širší než obrazovka;
+  - dav 0,55 → 0,19: rozsah = jen hrdina. Brány ani pily nejsou cíl sondy a zlobr se objeví až po 3 s (`foeSeen`
+    v T1 je null). Když brány vyplní šířku, má hrdina 0,21 výšky `playRect`; na 0,55 by trať musela být 2,6× širší
+    než obrazovka;
+  - načasování 0,55 → 0,18: rozsah = jezdec a sloupec cíle (1,6 m). Kyv ±3,5 m vyplní šířku (`timingDistance`,
+    P61 T6), takže `playRect` je vysoký ~13 m a vychází ~0,2.
+
+  Nové prahy jsou naměřená hodnota minus ~10 %, slouží jen jako pojistka proti zhoršení. Cíl plánu (`fill` 0,55)
+  u těchto tří žánrů tím **splněný není**: sonda plnou výšku neumí vidět, rozhodne soudce na listech v T8 a jeho
+  jediné kolo opravy.
+- **Stráže:**
+  - `p64-landscape-guard` 44 / 44 (`chromium` a `pixel7-touch`);
+  - `p58a-framing` 20 / 20 pro souboj, úkol, rytmus, načasování a přeskákání na `chromium` (desktop i telefon,
+    `phone quest` 97 % ≥ 0,9), `pixel7-touch` a `iphone-touch`;
+  - `p61-portrait` 12 / 12, připíchnutá čísla se nehýbou;
+  - audit 10 / 12 – červený je jen úkol (viz výš);
+  - vitest `src/components/play/arcade` 1191 / 1191 (včetně hashe `p64-hash`). Náhrada Reactu v testech `ghost-slot`, `toy-duel`
+    a `toy-rhythm` dostala `useContext` (vrací výchozí hodnotu kontextu), protože scény teď čtou `PlayRectContext`.
+- **Mutace:** po vypnutí větve na výšku u souboje padl audit (fill 0,33 < 0,55). Po návratu ze zálohy byl znovu
+  zelený (0,57).
+- Snímky jsou v `D:/caches/p64/t4-shots/final/` (Pixel) a `D:/caches/p64/t4-shots/iphone/` (iPhone). Část snímků
+  iPhonu vyšla prázdná i na šířku, kde se kód neměnil. Plátno tam za zátěže nenakreslilo snímek; sonda měřila
+  normálně. Útrata 0 USD.
+
+```
+npm run build
+PLAY_READER=off node node_modules/next/dist/bin/next start -p 3172 -H 127.0.0.1
+FALLBACK_SMOKE_URL=http://127.0.0.1:3172 P64_CHECK=1 P64_SHOTS=D:/caches/p64/t4-shots/final npx playwright test e2e/p64-portrait-audit.spec.ts --grep "duel:" --project=pixel7-touch --project=iphone-touch --workers=1
+FALLBACK_SMOKE_URL=http://127.0.0.1:3172 npx playwright test e2e/p64-landscape-guard.spec.ts --project=chromium --project=pixel7-touch --workers=1
+```
+
+Pro každý žánr (`hop:`, `crowd:`, `quest:`, `timing:`, `rhythm:`) jeden běh s `--grep`, nebo dočasný config
+s `grep` (svislítko v argumentu přes shim `npx` neprojde). Stejně se pouštějí `p58a-framing` a `p61-portrait`.

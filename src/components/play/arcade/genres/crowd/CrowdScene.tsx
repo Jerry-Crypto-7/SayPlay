@@ -19,6 +19,7 @@ import { Html } from '@react-three/drei/web/Html';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  Box3,
   BoxGeometry,
   type BufferGeometry,
   CanvasTexture,
@@ -47,6 +48,7 @@ import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { loadBodyModel } from '../../look/load';
+import { FIT_MARGIN_PX, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps, fitModel } from '../../World';
 
@@ -71,6 +73,12 @@ const LEAD_IN = 12;
 const RUN_OUT = 26;
 /** Kamera: polovina šíře, která se vejde, náklon, rozsah vzdálenosti a kam před hrdinu kouká. */
 const CAMERA = { fit: ROAD_HALF + 0.3, elevation: (40 * Math.PI) / 180, near: 9, far: 20, ahead: 2 } as const;
+/**
+ * Kamera na výšku (P64 T4, `fitTall`): trať běží nahoru po obrazovce. V řadě hrdiny vyplní šířku plátna obě brány
+ * (`keep`, `half`; obruba smí ven), dav stojí `behind` m nad spodní hranou krabice záběru a nad ním je `reach` z délky
+ * trati, která by se při téže šířce vešla do výšky `playRect` – další brány a pily jsou v horní polovině.
+ */
+const TALL = { elevation: (44 * Math.PI) / 180, behind: 1.4, reach: 0.7, half: LANE + GATE_W / 2 } as const;
 
 type CrowdSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 type Box3D = readonly [w: number, h: number, d: number];
@@ -254,9 +262,12 @@ export function CrowdScene({ session, cast, surface, scene: look, ghost }: Crowd
       turn: new Quaternion(),
       look: new Vector3(),
       probe: new Vector3(),
+      box: new Box3(),
+      keep: new Box3(),
     }),
     [obstacles],
   );
+  const playArea = usePlayRectRef();
   const heroRig = riggedCharacter(cast.player);
   // Dav je z modelu hrdiny; riggovaná postava (kostra by se v instanci nehýbala) dá kluka z katalogu.
   const memberModel = heroRig === undefined ? cast.player : 'kid';
@@ -356,11 +367,31 @@ export function CrowdScene({ session, cast, surface, scene: look, ghost }: Crowd
     }
 
     // Kamera za davem a nad ním, jede s ním (běží stálou rychlostí, vyhlazení by ho jen posunulo); na výšku rozhoduje šíře trati.
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const distance = Math.max(CAMERA.near, Math.min(CAMERA.far, CAMERA.fit / (tan * camera.aspect)));
-    const lookZ = Math.min(heroZ, stopM) + CAMERA.ahead;
-    camera.position.set(0, distance * Math.sin(CAMERA.elevation), lookZ - distance * Math.cos(CAMERA.elevation));
-    camera.lookAt(scratch.look.set(0, 0, lookZ));
+    const rect = playArea.current;
+    const leadZ = Math.min(heroZ, stopM);
+    if (camera.aspect < 1 && rect !== null) {
+      // Výška `playRect` v metrech u davu, když brány vyplní šířku plátna; tolik trati se vejde nad dav.
+      const across = (2 * TALL.half) / (1 - (2 * FIT_MARGIN_PX) / rect.canvas.width);
+      const high = ((across / camera.aspect) * (rect.ndc.top - rect.ndc.bottom)) / 2;
+      const ahead = (TALL.reach * (high - HERO.h * Math.cos(TALL.elevation))) / Math.sin(TALL.elevation) - TALL.behind;
+      const from = leadZ - TALL.behind;
+      const lookZ = from + (TALL.behind + ahead) / 2;
+      camera.position.set(0, CAMERA.far * Math.sin(TALL.elevation), lookZ - CAMERA.far * Math.cos(TALL.elevation));
+      camera.lookAt(scratch.look.set(0, 0, lookZ));
+      scratch.box.min.set(-ROAD_HALF, 0, from);
+      scratch.box.max.set(ROAD_HALF, HERO.h, leadZ + ahead);
+      // Zlobr, na kterého trať dosáhne, se vejde celý i s hlavou.
+      if (bossAlive && boss.z - boss.d / 2 <= leadZ + ahead) scratch.box.max.set(ROAD_HALF, boss.h, Math.max(leadZ + ahead, boss.z + boss.d / 2));
+      scratch.keep.min.set(-TALL.half, 0, leadZ);
+      scratch.keep.max.set(TALL.half, 0, leadZ);
+      camera.position.copy(fitTall(camera, scratch.box, rect, { keep: scratch.keep }).position);
+    } else {
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const distance = Math.max(CAMERA.near, Math.min(CAMERA.far, CAMERA.fit / (tan * camera.aspect)));
+      const lookZ = leadZ + CAMERA.ahead;
+      camera.position.set(0, distance * Math.sin(CAMERA.elevation), lookZ - distance * Math.cos(CAMERA.elevation));
+      camera.lookAt(scratch.look.set(0, 0, lookZ));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

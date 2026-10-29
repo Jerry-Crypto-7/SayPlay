@@ -26,7 +26,7 @@ import { Html } from '@react-three/drei/web/Html';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 
 import { BODY, BUTTON, FLAG, HEADER, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -43,6 +43,7 @@ import type { Volume } from '../look/landmark-places';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
+import { fitTall, usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
 import { ShotPrimitive } from '../shooter/primitives';
 import { DUEL_ZONES, zoneAt } from '../touch-zones';
@@ -60,6 +61,13 @@ const STAGGER_LEAN = 0.25;
 const FIGHTER: BodyClass = 'biped';
 /** Záběr ringu na výšku (m): aspoň `tall`, se šampionem jeho výška a místo na pipy HP nad hlavou. */
 const FRAME = { tall: 3.2, overHead: 1.4, lookY: 1.1, below: 0.5 } as const;
+/**
+ * Ring na výšku (P64 T4, `fitTall`): kamera se z boku natočí o `yaw` za hráče a zvedne o `pitch`, takže ring leží
+ * podél výšky obrazovky – hráč vlevo dole blíž, soupeř vpravo nahoře čelem ke kameře a nezakrytý. Krabice záběru =
+ * oba bojovníci (i vyrostlý šampion), `over` m nad hlavou na povel chvíle, `side` m do stran a ke soupeři na výpad
+ * a `back` m za hráčem na cuknutí po zásahu – bez nich hrdina v pár snímcích zajel pod štítky zón (iPhone 0,1–0,17).
+ */
+const TALL = { yaw: (68 * Math.PI) / 180, pitch: (30 * Math.PI) / 180, side: 0.15, back: 0.4, over: 0.7 } as const;
 
 export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
@@ -195,6 +203,8 @@ export function DuelScene({
   const lastTick = useRef(0);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
+  const span = useMemo(() => new Box3(), []);
+  const playArea = usePlayRectRef();
   const midZ = rival.z / 2;
   const duelLand = useMemo(() => ({ x0: -30, x1: 30, z0: midZ - 30, z1: midZ + 30 }), [midZ]);
   /** Ring 4 × 9 m: orientační bod za ním, rámující kusy před ním u kraje obrazu (P54B T8). */
@@ -301,13 +311,27 @@ export function DuelScene({
       tag.style.visibility = cue === null ? 'hidden' : 'visible';
     }
 
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
     const tall = Math.max(FRAME.tall, foeH + FRAME.overHead);
-    const dist = Math.max(6 / (2 * tan * camera.aspect), tall / (2 * tan), 5);
     const lookY = Math.max(FRAME.lookY, tall / 2 - FRAME.below);
-    camera.position.set(-dist, lookY + 0.3, midZ);
-    look.set(0, lookY, midZ);
-    camera.lookAt(look);
+    const rect = playArea.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku ring podél obrazovky: kamera za hráčem ze tří čtvrtin, hráč vlevo dole, soupeř vpravo nahoře.
+      look.set(0, lookY, midZ);
+      const reach = 10;
+      camera.position.set(-reach * Math.cos(TALL.yaw) * Math.cos(TALL.pitch), lookY + reach * Math.sin(TALL.pitch), midZ - reach * Math.sin(TALL.yaw) * Math.cos(TALL.pitch));
+      camera.lookAt(look);
+      const foeW = (state[f + BODY.w] as number) / UNIT;
+      const foeD = (state[f + BODY.d] as number) / UNIT;
+      span.min.set(-Math.max(hero.w, foeW) / 2 - TALL.side, 0, hero.z - hero.d / 2 - TALL.back);
+      span.max.set(Math.max(hero.w, foeW) / 2 + TALL.side, Math.max(hero.h, foeH) + TALL.over, rival.z + foeD / 2 + TALL.side);
+      camera.position.copy(fitTall(camera, span, rect).position);
+    } else {
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const dist = Math.max(6 / (2 * tan * camera.aspect), tall / (2 * tan), 5);
+      camera.position.set(-dist, lookY + 0.3, midZ);
+      look.set(0, lookY, midZ);
+      camera.lookAt(look);
+    }
   });
 
   return (

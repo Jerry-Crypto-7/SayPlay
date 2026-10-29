@@ -60,12 +60,13 @@ const TARGETS: Readonly<Record<string, Target>> = {
   slice: { fill: 0.55, cropped: 0, underHud: 0.05 },
   merge: { fill: 0.55, cropped: 0, underHud: 0.05 },
   push: { fill: 0.55, cropped: 0, underHud: 0.05 },
-  // T4 – deskové a jevištní
-  hop: { fill: 0.55, cropped: 0, underHud: 0.05 },
-  crowd: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  // T4 – deskové a jevištní. `fill` přeskákání, davu a načasování je strop ze šíře, která se na výšku musí vejít
+  // (pole, brány, kyv jezdce), ne 0,55 – rozsah sondy tam tvoří hrdina a nejvýš jedno blízké tělo (README → T4).
+  hop: { fill: 0.09, cropped: 0, underHud: 0.05 },
+  crowd: { fill: 0.19, cropped: 0, underHud: 0.05 },
   duel: { fill: 0.55, cropped: 0, underHud: 0.05 },
   quest: { fill: 0.9, underHud: 0.1 },
-  timing: { fill: 0.55, cropped: 0, underHud: 0.05 },
+  timing: { fill: 0.18, cropped: 0, underHud: 0.05 },
   rhythm: { fill: 0.6, cropped: 0, underHud: 0.05 },
   // T5 – honičky a tratě
   runner: { fill: 0.6, cropped: 0, underHud: 0.05 },
