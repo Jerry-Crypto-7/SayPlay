@@ -69,6 +69,8 @@ import { judgeRule, timingControl, timingLevel } from './pieces/timing';
 import { timingBot } from './pieces/timing-bot';
 import { arenaWaves } from './pieces/waves';
 import { SPEC_RULES } from './rules/compile';
+import { hooksRule } from './hooks';
+import { makeHooksBot } from './hooks/upgrades';
 
 import { glideControl, glideCourse, glideFinish } from './pieces/glide';
 import { glideBot } from './pieces/glide-bot';
@@ -213,10 +215,13 @@ const NATIVE_LIBRARY: ArcadeLibrary = {
 
 const ASSEMBLY_CONTROLS = { ...NATIVE_LIBRARY.controls, assembly_control: makeAssemblyControl(NATIVE_LIBRARY.controls) };
 const ASSEMBLY_BOTS = { ...NATIVE_LIBRARY.bots, assembly_bot: makeAssemblyBot(NATIVE_LIBRARY.bots) };
+const CHAIN_BOTS = { ...ASSEMBLY_BOTS, mirror_bot: makeMirrorBot(ASSEMBLY_BOTS), vanishing_floor_bot: makeVanishingFloorBot(ASSEMBLY_BOTS) };
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   ...NATIVE_LIBRARY,
   // P56C T15: obaly mutátorů řetězu kolem kteréhokoli ovládání a robota (`chain/mutators.ts`).
   controls: { ...ASSEMBLY_CONTROLS, mirror_control: makeMirrorControl(ASSEMBLY_CONTROLS) },
-  bots: { ...ASSEMBLY_BOTS, mirror_bot: makeMirrorBot(ASSEMBLY_BOTS), vanishing_floor_bot: makeVanishingFloorBot(ASSEMBLY_BOTS) },
-  rules: { ...NATIVE_LIBRARY.rules, assembly_part: assemblyPart, assembly_finish: assemblyFinish, ...assemblyGateRules(NATIVE_LIBRARY.rules), vanishing_floor: vanishingFloor as RulePiece },
+  // P66 T3: robot s háčky (volba karty mezi koly) obalí kteréhokoli robota, i obaly výš.
+  bots: { ...CHAIN_BOTS, hooks_bot: makeHooksBot(CHAIN_BOTS) as BotPiece },
+  // P66 T3: pravidlo `hooks` nese parametry háčků, jádro je čte (`loadProgram`).
+  rules: { ...NATIVE_LIBRARY.rules, assembly_part: assemblyPart, assembly_finish: assemblyFinish, ...assemblyGateRules(NATIVE_LIBRARY.rules), vanishing_floor: vanishingFloor as RulePiece, hooks: hooksRule as RulePiece },
 };

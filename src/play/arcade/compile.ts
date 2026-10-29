@@ -24,6 +24,7 @@ import {
   ARCADE_RUNTIME_VERSION,
   type ArcadeLevel,
   type ArcadeWorld,
+  BODY,
   type BodyInit,
   COUNTED_ROLES,
   COUNTER,
@@ -33,6 +34,7 @@ import {
   type ModeGeneratorPiece,
   NO_INPUT,
   type PieceRef,
+  type RulePiece,
   rampMarks,
 } from './contract';
 import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHasPhysics } from './kernel';
@@ -58,6 +60,14 @@ import { timingParts } from './pieces/timing';
 import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
 import { rememberBotRun, runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
+import { completeHooks, hookTuningOf, hooksOf, withHooks, withoutHookTuning } from './hooks';
+import { HOOKS_GENRE_VERSION } from './hooks/contract';
+import { ARROWS_RULES } from './pieces/arrows';
+import { FIGHT } from './pieces/fight';
+import { HOLE_RULES } from './pieces/hole';
+import { SORT_RULES } from './pieces/sort';
+import { STEAL_RULES } from './pieces/steal';
+import { SURVIVOR_RULES } from './pieces/survivor';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: svět s logikou nebo vlnou je `arcade-v3`). */
 export const arcadeCompilerVersion = (world: Pick<ArcadeWorld, 'runtimeVersion'>): string => `${GAME_COMPILER_VERSION}/${world.runtimeVersion}`;
@@ -205,8 +215,12 @@ export function generatorOf(spec: GameSpecV1): string {
 function ownParams(spec: GameSpecV1): Record<string, unknown> | undefined {
   if (spec.controlParams === undefined) return undefined;
   const { generator: _generator, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly generator?: string; readonly tuning?: Record<string, unknown> };
-  return { ...own, ...tuning };
+  // Klíče háčků (P66 T3) čte jen hra `genre.v6`, generátor je nevidí; starší spec je dostane jako dřív (a odmítne).
+  return { ...own, ...(genreAtLeast(spec, HOOKS_GENRE_VERSION) ? withoutHookTuning(tuning) : tuning) };
 }
+
+/** Klíče `tuning`, jak je spec napsal (háčky je čtou dřív, než je `ownParams` zahodí). */
+const tuningOf = (spec: GameSpecV1): Readonly<Record<string, unknown>> | undefined => (spec.controlParams as { readonly tuning?: Readonly<Record<string, unknown>> } | undefined)?.tuning;
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. `target` přebije cílové skóre specu (ořez na dosažitelné). */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): ArcadeWorldResult {
@@ -268,15 +282,25 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
   // Kombo (P46C T3) má každá nová hra žánru, i bez `scoring`; bez cílového skóre jen násobí body. Uložené hrají jako dřív.
   // Úder zvedá kombo jen v nové hře: uložená hra se `scoring` a úderem musí mít týž hash.
-  const sources = wantsPowerups(spec) ? COMBO_SOURCES : LEGACY_COMBO_SOURCES;
+  const sources = wantsPowerups(spec) ? (genreAtLeast(spec, HOOKS_GENRE_VERSION) ? hookedComboSources(rules) : COMBO_SOURCES) : LEGACY_COMBO_SOURCES;
   const scored = spec.scoring !== undefined ? withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate, sources) : wantsPowerups(spec) ? withCombo(level, rules, sources) : { level, rules };
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
+  // Háčky (P66 T3) jen od `genre.v6`: dosavadní žánr je zapne klíči `tuning`, nový žánr je přinese z generátoru.
+  // Rána, kterou `fire_rate` zkrátí: úder souboje (rozestup v `aux1` hráče, `attackCooldownOf`).
+  const swing = baseControlOf(control).id === 'fight' ? { slot: BODY.aux1, ticks: FIGHT.attackCooldown } : undefined;
+  const tuned = genreAtLeast(spec, HOOKS_GENRE_VERSION) ? hookTuningOf(tuningOf(spec), { rules: scored.rules, level: scored.level, lives, swing }) : null;
+  if (tuned !== null && 'issues' in tuned) return { ok: false, issues: tuned.issues };
+  const hooked = tuned === null ? { ...scored, bot } : withHooks({ ...scored, bot }, seed, tuned.request);
+  const finalRules = hooksOf(hooked.rules) === null ? hooked.rules : completeHooks(hooked.rules);
+  if (finalRules.length > ARCADE_LIMITS.maxRules) {
+    return { ok: false, issues: [`rules: this ${spec.control} game with hooks uses ${finalRules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
+  }
 
   // Logika (P45B) jen ze specu s blokem `logic`: jen takový svět dostane logická těla a `arcade-v3`.
   const built = buildWorld(
-    { seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
+    { seed, control, rules: finalRules, bot: hooked.bot, level: hooked.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
     ARCADE_LIBRARY,
   );
   if (!built.ok) return built;
@@ -310,6 +334,18 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
 const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint', 'catch_fall', 'whack_hit', 'defense_hit', 'slice_cut', 'hop_cross', 'crowd_gate', 'merge_join', 'push_out'];
 /** Totéž pro uložené hry se `scoring` (P36A): bez úderu. */
 const LEGACY_COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit'];
+
+/** Pravidla pěti nových žánrů P66 (T5–T9); každé, které bere parametr `combo` (jako `pickup`), zvedá kombo. */
+const HOOKED_GENRE_RULES: Readonly<Record<string, RulePiece>> = { ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES };
+
+/** Zdroje komba hry `genre.v6` (P66 T3): `COMBO_SOURCES` a pravidla nových žánrů ve světě, jejichž parametry `combo` vezmou. */
+function hookedComboSources(rules: readonly PieceRef[]): readonly string[] {
+  const takes = rules
+    .map(underlyingRule)
+    .filter((ref) => Object.hasOwn(HOOKED_GENRE_RULES, ref.id) && HOOKED_GENRE_RULES[ref.id]!.params.safeParse({ ...ref.params, combo: 1 }).success)
+    .map((ref) => ref.id);
+  return takes.length === 0 ? COMBO_SOURCES : [...COMBO_SOURCES, ...takes];
+}
 
 /**
  * Kombo bez cílového skóre: počítadlo komba za tělesa úrovně (mrtvá předloha s modelem

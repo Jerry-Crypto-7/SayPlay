@@ -1,0 +1,103 @@
+/**
+ * Kola „Round N of M“ (P66 T3, kontrakt `hooks/contract.ts`): úroveň má `rounds` kol a vyhraje se až po posledním.
+ *
+ * **Konec kola** hlásí žánr jedním ze dvou signálů (`clear` v parametrech `hooks`):
+ * - `wave` – žánr ve vlnách (`arena_waves`) zvedl čítač vlny (`waveOf`) nad běžící kolo: kolo = vlna;
+ * - `win` – pravidlo žánru vyhlásilo výhru; před posledním kolem z ní je jen vyčištěné kolo a žánr podle
+ *   `roundOf` postaví další (nové žánry).
+ *
+ * Výhra před posledním kolem neplatí v žádném z nich; prohra platí kdykoli, podle pravidla žánru.
+ *
+ * **Přestávka po vyčištěném kole** (`round_clear`): svět stojí – ovládání, pravidla ani fyzika neběží, jen odpočet
+ * a volba karty. Bez nabídky trvá `ROUNDS.breakTicks`, s nabídkou do volby, nejdéle `UPGRADE_OFFER.pickTicks`.
+ * Pak hned `round_start` dalšího kola, bez nového načtení. Tik běží dál (záznam vstupů i `time_limit` ho čtou),
+ * takže přestávka se hodinám hry počítá.
+ */
+
+import { createStreams, nextInt } from '@/sim/rng';
+
+import { HEADER, RUN_STATE, bodyBase, type ArcadeInput } from '../contract';
+import { waveOf } from '../pieces/waves';
+import { HOOK_SLOTS, ROUNDS, UPGRADE_OFFER, type HookEffect } from './contract';
+import type { HookParams } from './index';
+import { openOffer, pickedCard, takeCard } from './upgrades';
+
+const at = (keeper: number, slot: number): number => bodyBase(keeper) + slot;
+
+/** Index běžícího (v přestávce právě vyčištěného) kola 0..`rounds`−1. */
+export const roundOf = (state: Int32Array, keeper: number): number => state[at(keeper, HOOK_SLOTS.round)] as number;
+/** Stojí svět v přestávce po vyčištěném kole? */
+export const inBreak = (state: Int32Array, keeper: number): boolean => (state[at(keeper, HOOK_SLOTS.breakLeft)] as number) > 0;
+
+/**
+ * Rozvrh kol: semínko obsahu každého kola ze streamu `rounds` hry `seed` (žánr z něj staví mřížku či frontu kola,
+ * jako řetěz mikroher semínka svých kol). Při stavbě, ne za běhu.
+ */
+export function roundSeeds(seed: number, rounds: number): number[] {
+  const stream = createStreams(seed).rounds;
+  return Array.from({ length: rounds }, () => nextInt(stream, 0, 0x7fffffff));
+}
+
+/** Kolo `round` je vyčištěné: zpráva a hláška, přestávka – s nabídkou z pořadí té přestávky, jinak jen odpočet. */
+function clearRound(state: Int32Array, params: HookParams, round: number, out: HookEffect[]): void {
+  out.push({ kind: 'round_clear', round, rounds: params.rounds }, { kind: 'callout', callout: 'round_clear' });
+  if (round === params.rounds - 1) return;
+  const order = params.upgrades?.offers[round];
+  if (order === undefined) {
+    state[at(params.keeper, HOOK_SLOTS.breakLeft)] = ROUNDS.breakTicks;
+    return;
+  }
+  out.push({ kind: 'upgrade_offer', offer: openOffer(state, params.keeper, order) });
+  state[at(params.keeper, HOOK_SLOTS.breakLeft)] = UPGRADE_OFFER.pickTicks;
+}
+
+/**
+ * Kola na konci tiku, po všech průchodech pravidel: v tiku 0 začne první kolo; výhra před posledním kolem se vrátí
+ * na běh (u `win` je to konec kola), výhra v posledním kole platí; u `wave` kolo skončí, když žánr zvedl vlnu.
+ */
+export function roundsEnd(state: Int32Array, params: HookParams, out: HookEffect[]): void {
+  const round = roundOf(state, params.keeper);
+  if (state[HEADER.tick] === 0) out.push({ kind: 'round_start', round: 0, rounds: params.rounds });
+  const run = state[HEADER.runState];
+  if (run === RUN_STATE.lost) return;
+  const last = round === params.rounds - 1;
+  if (run === RUN_STATE.won) {
+    if (last) {
+      clearRound(state, params, round, out);
+      return;
+    }
+    state[HEADER.runState] = RUN_STATE.running;
+    if (params.clear === 'win') clearRound(state, params, round, out);
+    return;
+  }
+  if (params.clear === 'wave' && !last && waveOf(state) > round) clearRound(state, params, round, out);
+}
+
+/**
+ * Tik přestávky (svět stojí): volba karty ze vstupu, jinak odpočet a po `pickTicks` karta `defaultCard`; bez nabídky
+ * jen odpočet. Na konci přestávky hned `round_start` dalšího kola.
+ */
+export function breakTick(state: Int32Array, input: ArcadeInput, params: HookParams): HookEffect[] {
+  const out: HookEffect[] = [];
+  const breakLeft = at(params.keeper, HOOK_SLOTS.breakLeft);
+  const pickLeft = at(params.keeper, HOOK_SLOTS.pickLeft);
+  if ((state[pickLeft] as number) > 0) {
+    let card = pickedCard(input);
+    if (card < 0) {
+      state[pickLeft] = (state[pickLeft] as number) - 1;
+      if (state[pickLeft] === 0) card = UPGRADE_OFFER.defaultCard;
+    }
+    // Volba kartu vezme a přestávku ukončí; odpočet do ní dál neběží.
+    if (card >= 0) {
+      takeCard(state, params.keeper, card, out);
+      state[breakLeft] = 1;
+    }
+  }
+  state[breakLeft] = (state[breakLeft] as number) - 1;
+  if (state[breakLeft] === 0) {
+    const next = roundOf(state, params.keeper) + 1;
+    state[at(params.keeper, HOOK_SLOTS.round)] = next;
+    out.push({ kind: 'round_start', round: next, rounds: params.rounds });
+  }
+  return out;
+}
