@@ -640,6 +640,11 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 - **„Next“ na poslední kartě nic neudělá.** Feed dotahuje další stránku, když jsou do konce tři karty.
 - **Skutečné brýle:** feed na Questu 2 tento běh neověřil. Patří do ruční brány T15.
 
+### Nové žánry P66 (P67 T12, 29. 10. 2026)
+
+- **P66 ještě není v `main`** (`origin/main` = `e661855c`, `GENRES` bez survivor, hole, steal, sort a arrows). Nové žánry dostanou `desk` z výchozí hodnoty tabulky `src/play/xr/modes.ts`, tedy hrají se na stole jako ostatní deskové hry.
+- Výchozí hodnotu hlídá `src/play/xr/__tests__/modes.test.ts` („an unknown genre plays on the desk“). Až P66 přistane, test „každý žánr z `GENRES` má záznam“ zčervená a žánry dostanou režim podle plánu: survivor, hole a steal `room`, sort a arrows `desk` s klepnutím paprskem.
+
 ### První JS bez `?vr=1` (27. 10. 2026)
 
 Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produkčním buildu:
