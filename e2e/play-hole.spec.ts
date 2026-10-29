@@ -243,13 +243,15 @@ test('hole: the city of the sentence, played to a win by touch or keys alone (P6
 
 test('hole: an idle player loses when the first round clock runs out (P66 T6)', async ({ page }) => {
   test.setTimeout(180_000);
-  const { url } = await publish(page);
+  const { url, world } = await publish(page);
+  // Hodiny kola už podělené horizontem ověření (`holeSeconds`), jak je svět nese.
+  const seconds = Number((world.rules.find((rule) => rule.id === 'hole_round')?.params as { seconds: number }).seconds);
   await page.goto(url);
   await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 90_000 });
-  await expect(page.getByTestId('hole-clock')).toHaveAttribute('data-left', String(HOLE.seconds.default), { timeout: 60_000 });
+  await expect(page.getByTestId('hole-clock')).toHaveAttribute('data-left', String(seconds), { timeout: 60_000 });
   const end = await page.evaluate(() => (window.__playShell as unknown as HandProbe).idleRun());
   expect(end.runState).toBe('lost');
-  expect(end.tick).toBe(HOLE.seconds.default * 60 + 1);
+  expect(end.tick).toBe(seconds * 60 + 1);
   await expect(page.getByTestId('play-postrun')).toContainText('Try again', { timeout: 30_000 });
   await expect(page.getByTestId('hud-counter-collected')).toHaveAttribute('data-count', '0');
 });

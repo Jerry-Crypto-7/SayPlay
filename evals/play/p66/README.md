@@ -1108,3 +1108,10 @@ Celkem P66 1,99 USD ze 4 USD (T1 1,65). Na T15 a T16 zbývá 2,01 USD.
   - `interface-language` „tlačítko akce nese anglické sloveso…“ (`chromium`): `toHaveURL` selhal, původ neznámý.
 
   Opravy jsou v souborech mimo T14 – úkol T14a v plánu.
+
+## T14a – šest červených stráží e2e
+
+Build větve `c3301e2a` + testy, `next start -p 3131` s prázdným `PLAY_STORE_DIR`, bez `VERCEL_ENV` (bez placené čtečky), `FALLBACK_SMOKE_URL`. `main` `e661855c` z `D:/caches/p66/main` na portu 3132 stejně.
+
+- **Díra a třídění – opravené testy:** nečinný hráč prohraje na hodinách, které nese svět hry, ne na mezi. `play-hole` bere `seconds` z pravidla `hole_round` (už podělené `holeSeconds`), `play-sort` bere `ticks` prvního kola z pravidla `sort_tap` (`roundTicks`). Na `chromium` i `pixel7-touch` zelené.
+- **Telefon a tlačítko akce – v klidu zelené bez změny:** `play-phone` (6/6 na `pixel7-touch` i `chromium`) a `interface-language` (4/4 na `chromium`, na telefon se nespouští) prošly na větvi i na `main`. V T14 byly červené za jiného prostředí. Inference: toast `play-upgrade-note` je poznámka „AI verze nebude“ (`UpgradeBanner.tsx`), která za 3 s zmizí; měření mřížky v T14 nejspíš padlo do těch 3 s. Neověřeno – opakovat to pod zátěží jsem nezkoušel. Kdyby se to vrátilo, stráž má počkat, až poznámka zmizí, ne ji měřit.

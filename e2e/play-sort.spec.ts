@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { type APIRequestContext, type CDPSession, expect, type Page, test } from '@playwright/test';
 
-import { BUTTON } from '../src/play/arcade/contract';
+import { type ArcadeWorld, BUTTON } from '../src/play/arcade/contract';
 import { LEGIBLE_CAP, LEGIBLE_SHARE } from '../src/play/arcade/models';
 import { laneOfAxis } from '../src/play/arcade/pieces/lanes';
 import { HUD_COUNTER_LABELS } from './hud-labels';
@@ -173,9 +173,13 @@ test('sort: the game opens, plays to a win by taps or keys and ends on the win c
 test('sort: a player who does nothing loses on the round clock and gets the loss card (P66 T8)', async ({ page, request }, info) => {
   test.setTimeout(180_000);
   const errors = watchErrors(page);
-  await openGame(page, await publishFixture(request));
+  const url = await publishFixture(request);
+  // Hodiny prvního kola podle věcí v kolech (`roundTicks`), jak je svět nese.
+  const world = ((await (await request.get(`/api/play/games/${url.split('/').at(-1)!}`)).json()) as { arcade: ArcadeWorld }).arcade;
+  const ticks = (world.rules.find((rule) => rule.id === 'sort_tap')?.params as { rounds: readonly { ticks: number }[] }).rounds[0]!.ticks;
+  await openGame(page, url);
   const end = await page.evaluate(() => (window.__playShell as unknown as HandProbe).idleRun());
-  expect(end).toEqual({ runState: 'lost', tick: 3600 });
+  expect(end).toEqual({ runState: 'lost', tick: ticks });
   await expect(page.getByTestId('play-postrun')).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId('play-postrun')).not.toContainText('You did it!');
   await page.screenshot({ path: join(SHOTS, `${info.project.name}-lost.png`) });
