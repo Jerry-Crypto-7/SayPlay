@@ -670,3 +670,80 @@ Krádež: hrdina joystickem doběhne k cizí základně nahoře, popadne kořist
 - **`capabilities.ts` řádek `steal`** říká, že ovládání nic nečte (`labels: []`, `mechanics: []`). Hra přitom čte životy a kreslí kořist a strážce z popisků rolí `loot` a `guard`. Opravit s T13 jako u šipek.
 - **„fishes“:** sdílený `plural` (`draft/lexicon.ts`) nezná `fish` jako nepravidelné, cíl zní „Grab the fishes…“. Patří do slovníku (`IRREGULAR`), ne do krádeže.
 - **Štítek „Home“** na telefonu, když je hrdina u cizí základny, vykoukne zpod dolní řady HUD (domov je mimo záběr). Patří ke kotvení štítků mimo záběr, kosmetické.
+
+## T6 – hole
+
+Díra, která roste: hráč ji táhne joystickem (nebo šipkami) po místě z věty, věci menší než díra do ní spadnou a díra roste po stupních. Worktree `D:/caches/p66/wt-t6`, větev `p66-t6`.
+
+### Jak hra běží
+
+- **Soubory:**
+  - `pieces/hole.ts` – ovládání `hole`, pravidla `hole_eat` a `hole_round`, generátor `hole_swallow`;
+  - `pieces/hole-bot.ts` – robot `hole_bot`;
+  - `genre/hole.ts` – modul žánru (věci z věty, kulisy sady, meze);
+  - `genres/hole/HoleScene.tsx` – scéna.
+- **Velikost je práh.** Díra má stupeň 0–4 (průměr 1,0 / 1,8 / 3,0 / 4,6 / 7,5 m), věc třídu 0–4 (hrana 0,6 / 1,3 / 2,4 / 3,8 / 6,5 m). Věc spadne, jen když je menší než díra a její střed leží v díře o půl svého poloměru. Stupeň `t` tak polkne právě třídy 0..t.
+  - Větší věc díru zastaví: ovládání ubere rychlost směrem do věci a díra po ní sklouzne. Díra nikdy nezemře.
+- **Růst z hmoty.** Polknutá věc dá hmotu = body třídy (1 / 3 / 8 / 20 / 60) × vzácnost (`RARITY_SCORE`). Stupně 1–3 přijdou při 6 %, 20 % a 45 % součtu cílů všech kol.
+  - Stupeň 4 přijde jen v posledním kole, když hráč v něm nasbíral celý cíl kola. Největší věc (finále, třída 4) jde proto spolknout jen na konci – a tím hra končí výhrou.
+- **Kola** (`rounds` 1–3, výchozí 3; `seconds` 60–90, výchozí 60; `items` 30–120, výchozí 60). Cíl kola = věci × 3 / kola bodů (výchozí 60).
+  - Háčky `withHooks(..., { clear: 'win', rarity: true })`: cíl kola = výhra pravidla, před posledním kolem z ní háčky udělají konec kola, přestávku a „Round N of M“.
+  - Každé kolo má vlastní hodiny v ticích od svého začátku. Doběhnou pod cílem = prohra. Nečinný hráč prohraje na tiku 3 601.
+- **Věci z věty.** Každá věc obsazení kromě hrdiny (nejvýš 3) je věc pole s tělem `thing:item1`… a modelem z popisku. Třída jde z hlavy slova (`thingClass`: auto 2, člověk 1, dům 3, jinak drobnost 0).
+  - Kolem nich kulisy sady místa (`kitFor`, `setting-kits.json`), nejvýš 3 na třídu podle výšky modelu. Místo bez sady bere kulisy rušného města.
+  - Finále = věc věty třídy 3, jinak nejvyšší kulisa sady (rušné město: skleněná kancelářská věž).
+  - Věci věty třídy 1 a 2 stojí na startu v záběru kousek před dírou (výloha), ať hráč hned vidí auta a lidi z věty.
+- **Rozmístění** ze semínka (`pure-rand`, stream `layout` ze semínka kola háčků). Za běhu žádná náhoda.
+- **Kombo** za rychlou sérii polknutí: `hole_eat` bere parametr `combo`, takže ho `hookedComboSources` od `genre.v6` udělá zdrojem komba. Kombo násobí jen skóre, hmotu ne.
+- **Robot** jede k věci s nejlepším poměrem body × vzácnost na vzdálenost, kterou díra už polkne; věc za větší věcí má cenu 30 %. Jakmile jde polknout finále, jede k němu.
+  - **Slabý robot** (`mistakes` ‰ oken po 30 tikách) v okně chyby jede do nejbližší věci, na kterou díra nestačí, a stojí o ni opřený.
+- **Scéna.** Inkoustový kotouč se stěnou a modrým okrajem (`sky-deep`) v průměru stupně; pod 10 s okraj i hodiny kola zrudnou (rajčatová).
+  - Polknutá věc se svalí ke středu díry, zmenší se a zapadne. Průměr díry se po růstu dorovná plynule. Obojí jen obraz.
+  - Na výšku `fitTall`: krabice kolem díry (0,8 průměru do stran, 0,7 dozadu, 2,85 dopředu) leží v pásu mezi HUD a zónou palce, díra v její spodní třetině. S růstem kamera plynule couvne. Na šířku vlastní póza (díra 24 % výšky obrazu).
+  - Hodiny kola visí nad dírou (`hole-clock`), v přestávce a před startem schované.
+
+### Rozhodnutí (`implementation-notes`)
+
+- **`availability` zůstává `staged`** (konvence běhu pro všech pět žánrů, stejně jako šipky). Hra hraje z ručního specu `e2e/fixtures/p66-hole-spec.json`; sdílené soubory (`compose/presets.ts`, `classify.test.ts`, `dressing.test.ts`, `contract.test.ts`) zůstaly beze změny. `p66-staged.test.ts` má `LIVE = ['arrows', 'sort', 'hole']`.
+  - Test i fixture jdou přes `compileWith(holeGenre, …)` – recept `compileGenre` chce buňku `PRESETS`, kterou dostane až T12.
+- **`objective.count` = počet kol**, ne body. Cíl kola je v bodech (60 a víc) a schéma unese nejvýš 50 kusů. Body kola nese `finish_collected.need` (pilulka HUD) a popis cíle.
+- **Kombo nemění hmotu.** Série ×5 by cíl kola přeskočila za pár vteřin a stupně by přestaly znamenat výzvu.
+- **Stupeň 4 jen v posledním kole.** Jinak by finále šlo spolknout v prvním kole a další kola by nic neznamenala.
+- **Čítače bez nového kontraktu:** hmota v `ammo` (díra nestřílí), hmota na začátku kola v `reserve`, postup kola v `items`.
+- **Okno chyby slabého robota** je celočíselný rozptyl čísla okna, ne PRNG. Robot není na cestě replaye (přehrává se záznam vstupů), takže determinismus hry to nemění.
+- **Bez upgradů.** AC díry výběr vylepšení nechce.
+
+### Testy
+
+- **Jednotky** (`npx vitest run src/play/arcade src/play/genre src/components/play/arcade/genres/hole`, JSON reporter): **7 103 / 7 111** zelených. Otisk T1 `p66-hash.test.ts` 48/48, `p66-staged.test.ts` 8/8.
+  - 8 červených jsou těžké testy jiných žánrů pod zátěží sourozenců: `hop` 2, `p51-dead-time` 2, `runner-sections` 1, `witness` 1, `off-topic` 1 (vše `STACK_TRACE_ERROR` na limitu 120 s) a `swarm` (0,067 ms na tik proti mezi 0,05).
+  - Samotné znovu: 111/124, tytéž soubory na týchž limitech (stroj dál vytížený, `swarm` 0,135 ms). Žádný z nich díru nestaví; čistý běh patří k celé sadě v klidu před pushem.
+  - `hole.test.ts` 49/49:
+    - **práh velikosti a stupně (pin)**: stupeň `t` polkne právě třídy 0..t; díra stupně 0–3 najetá přímo na věc o třídu větší se zastaví a věc zůstane; finále zastaví díru stupně 3 a spadne jen do stupně 4 posledního kola;
+    - růst po stupních a nikdy zpět, hmota × vzácnost, kombo jako zdroj háčků (×3 a hláška `combo_2`), vlastní hodiny každého kola;
+    - publikační brána na 10 semínkách (robot vyhraje, nečinný prohraje, dvě přehrání týž hash), slabý robot (850 ‰) prohraje na 10/10, robot vyhraje i s `items` 30/120, `rounds` 1/2, `seconds` 90;
+    - modul žánru, třídy slov a kulis, fixture = přesně překlad žánru.
+- **E2e** `play-hole` (build `npm run build`, `next start` :3172, `PLAY_READER=off`): **chromium 2/2, pixel7-touch 2/2**.
+  - Telefon dohraje prstem, desktop šipkami: výhra na tiku ~1 710, stupně 0–4, tři bannery kol, „You did it!“, nálezy podle vzácnosti.
+  - Díra je hrdina sondy a čitelná bez zvětšení (telefon 191 px na výšku 839 px). Auta, lidé i finále v záběru.
+  - Záznam z prohlížeče přehraný v Node dá týž stav. Nečinný hráč prohraje na hodinách prvního kola („Try again“).
+  - Na telefonu rekordér klipu loguje „avc1 … codec description“ (hlídač kvality přepne rozlišení plátna). Výjimka stejná jako v `play-segments.spec.ts`; díry se netýká.
+- **Snímky** (`D:/caches/p66/hole/`, start / mid / result na obou projektech): město s auty, lidmi a kužely, díra s hodinami kola, toast „Epic find!“, karta výhry. Nic fialového.
+- **Obraz:** telefon 75 sítí, 91 volání, 90 tis. trojúhelníků (strop sítí 200).
+
+**Rozbít schválně** (záloha `D:/caches/p66/hole/backup/`, po každé obnova a `diff -q`):
+
+| Vlastnost | Záměrná chyba | Červené testy |
+|---|---|---|
+| díra nepolkne větší věc | `swallows` pustí věc o 3 m větší | 1 – „a tier swallows exactly the classes up to its own“ |
+| větší věc díru zastaví | `slide` žádnou věc nebrzdí | 4 – „a tier-0…3 hole driven at a thing one class bigger stops“ |
+
+`mutationStatus: all-red` (2/2, jednotky; úroveň `pin`, kontrola nepovinná). První mutant ve hře zakryje i brzda (`slide` díru k větší věci nepustí) – práh drží dvě nezávislé vrstvy a každou hlídá vlastní test.
+
+**FPS přeskočeno** ze stejného důvodu jako u šipek: `play-perf @measure` publikuje hru z věty a větu díra trefí až po T12.
+
+### Nálezy
+
+- **Úvodní karta „Tap to start“** leží na telefonu těsně nad dírou (jako u šipek) – patří sdílené logice karty (T14 / P64).
+- **`capabilities.ts` řádek `hole`** říká `labels: []`, ale hra čte popisky věcí věty (`item1`…) a kreslí z nich modely. Opravit s T13, až díru uvidí režisér.
+- **Výsledek** píše „All 60 collected“ – je to postup posledního kola (`items` oříznutý na cíl kola), ne počet polknutých věcí. Text karty je sdílený (`PostRun`), ladit v T14.

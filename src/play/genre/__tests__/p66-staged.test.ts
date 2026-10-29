@@ -21,7 +21,7 @@ import { GENRE_MODULES, compileGenre } from '../index';
 
 const P66 = ['survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
 /** Žánry, které jejich úloha už postavila (překlad i generátor hrají z ručního specu); pro výběr zůstávají `staged` do T12. */
-const LIVE: readonly string[] = ['arrows', 'sort', 'steal'];
+const LIVE: readonly string[] = ['arrows', 'sort', 'steal', 'hole'];
 const STAGED = P66.filter((genre) => !LIVE.includes(genre));
 /** Generátor režimu, který úloha žánru naplní (registrace je hotová v T2). */
 const GENERATOR: Readonly<Record<(typeof P66)[number], string>> = {
