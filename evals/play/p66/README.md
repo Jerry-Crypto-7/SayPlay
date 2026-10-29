@@ -1096,3 +1096,15 @@ Celkem P66 1,99 USD ze 4 USD (T1 1,65). Na T15 a T16 zbývá 2,01 USD.
   - survivor „auto- shoot bug“ a „bug show up“ – chyba čtení záměru u „auto-fires“ a „shows up“.
 
   Oprava by byla v `arcade/witness.ts` (ř. 520–526) a ve čtení záměru, tedy mimo soubory T13.
+
+## T14 – sloučení s `main` a rámování P64
+
+- **Sloučení:** 29. 10. `git fetch` a `git merge origin/main` – „Already up to date“. `origin/main` je `e661855c` (28. 10. 16:04), tedy tentýž základ jako v T1. Nic se neslučovalo, žádný konflikt, žádné rozhodnutí po souborech.
+- **P64 v `main` není:** `git cat-file -e origin/main:src/components/play/arcade/portrait-frame.ts` vrátil 128. Pět scén nových žánrů zůstává na `genres/portrait-first.ts`. Převzetí `portrait-frame.ts` udělá ten z plánů P64 a P66, který se do `main` sloučí později.
+- **Stráže po sloučení:** otisk T1 a `hash-v6.json` (`p66-hash`, `p66-hooks-existing`) 95/95 zelené. Build `d3339426` prošel (dál jen README a JSON). E2e na `chromium` a `pixel7-touch` (`next start` + `FALLBACK_SMOKE_URL`): 41 zelených, 6 červených. Sloučení nic nepřineslo, takže jde o stav větve, ne o sloučení:
+  - `play-hole` „idle player loses…“ (oba projekty): test čeká hodiny `HOLE.seconds.default`, ale T5a je udělal závislé na počtu kol (`holeSeconds`);
+  - `play-sort` „player who does nothing loses…“ (oba projekty): stejná příčina, T5a dělí čas kola podle počtu věcí (`roundTicks`) – inference, zpráva je jen `toEqual`;
+  - `play-phone` 390 × 844 (`pixel7-touch`): hra na mřížce má 694 z 844 px, protože dole překáží toast `play-upgrade-note` (12–578 × 694–758);
+  - `interface-language` „tlačítko akce nese anglické sloveso…“ (`chromium`): `toHaveURL` selhal, původ neznámý.
+
+  Opravy jsou v souborech mimo T14 – úkol T14a v plánu.
