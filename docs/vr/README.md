@@ -247,7 +247,7 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 | Panel | Kdy | Hry na stole | Hry rukou |
 |---|---|---|---|
 | cíl a počítadla, „Exit VR“ | během hry | tabule za vzdáleným okrajem stolu, nad scénou | nad levým zápěstím |
-| výsledek „You did it!“ / „So close.“, „Again“, „New game“, „Exit VR“, „Comfort“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
+| výsledek „You did it!“ / „So close.“, „Again“, „New game“, „Exit VR“, „Comfort“, „Share“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
 | „AI version ready“ | příchod AI verze | visí z bližšího okraje stolu | nad levým zápěstím |
 
 - **Ovládání:** paprsek pravého (nebo levého) ovladače na tlačítko a spoušť: stisknout a pustit. Tlačítko pod paprskem má silnější obrys, stisknuté se zamáčkne. Spoušť stisknutá na tlačítku do hry nejde, ani když paprsek mezitím z tlačítka sjede. Stisk, který začal mimo panely, patří hře.
@@ -343,7 +343,7 @@ Feed na `/play` jde procházet bez sundání brýlí. Do VR se vstoupí „Enter
 
 - **Mimo běžící kolo** znamená náhled robota, výsledek a kartu, která se ještě načítá. Když hraje hráč, páčka patří hře, i když hra čeká na první pohyb.
 - **Mávnutí** je výchylka páčky svisle aspoň na 70 %. Další mávnutí platí až po návratu páčky pod polovinu výchylky, takže páčka držená nahoře nelistuje dokola.
-- **Panel výsledku ve feedu:** „New game“, „Exit VR“ a „Comfort“ nahoře, „Next“ a rajčatové „Again“ dole. Mimo feed „Next“ chybí.
+- **Panel výsledku ve feedu:** „New game“, „Exit VR“, „Comfort“ a „Share“ nahoře, „Next“ a rajčatové „Again“ dole. Mimo feed „Next“ chybí.
 - **Další karta je načtená dopředu:** feed stahuje detail aktivní karty a sousedů (+1, +2, −1), takže hra další karty se po přechodu postaví bez čekání na síť.
 
 **Ověření (P67 T4):** `e2e/vr-feed.spec.ts` v emulátoru IWER:
@@ -381,6 +381,22 @@ Panel „Comfort“ se otevře tlačítkem „Comfort“ na lobby nebo na výsle
 - `e2e/vr-hud.spec.ts` v emulátoru IWER, hra na stole: výsledek → „Comfort“ → karta celá v obraze obou očí (i s hlavou skloněnou ke stolu), text aspoň 0,9°, anglicky. „Seated“ → deska o 40 cm níž a hrdina s ní (na desce stojí, kde stál). „Large“ → svět na stole 1,25× větší. „Haptics“ a „Vignette“ → popisky „off“ a hra čte vypnuté vypínače. Záznam v `localStorage` nese všechny čtyři volby. Hlava otočená o čtvrt kruhu doleva a „Recenter“ → stůl stojí vlevo před ní a je k ní otočený. „Done“ → zpátky výsledek. Nové načtení stránky a vstup do VR → stůl rovnou nízko, vibrace a vinětace vypnuté, „Recenter“ zapomenutý.
 - `e2e/vr-lobby.spec.ts`: lobby → „Comfort“ → „Done“ → lobby s rozepsanou větou.
 - `src/play/xr/__tests__/comfort.test.ts`: uložení a načtení, výchozí volby při chybě úložiště (přístup, čtení, zápis, poškozený záznam), co rig z voleb postaví (výška a otočení desky, režim a měřítko podle velikosti).
+
+### Sdílení z VR (QR kód)
+
+„Share“ na panelu výsledku dá na jeho místo kartu „Share“ s QR kódem odkazu na hru a větou „Scan with your phone“. Kód přečte fotoaparát telefonu, třeba z obrazu brýlí promítaného na telefon nebo televizi.
+
+- **Po výhře** odkaz nese výzvu (`&dare=…`) jako „Dare a friend to beat it“ ve 2D: kamarád hraje tutéž hru a vidí skóre, které má překonat. Server běh jen přehraje a uloží, AI se nevolá a nic se neplatí.
+- **Po prohře** je to obyčejný odkaz na hru.
+- **Než je odkaz hotový,** karta říká „Getting your link…“. Obvykle je to chvilka, nejvýš asi 12 s (viz níže). Když výzva nevyjde, karta ukáže odkaz bez výzvy a větu „Couldn't attach your score, so the link opens just the game.“
+- **„Share link“** pošle odkaz do nabídky sdílení prohlížeče. Je jen tam, kde ji prohlížeč má.
+- **„Done“** (jediné rajčatové tlačítko) vrátí výsledek. Nové kolo nebo jiná karta feedu kartu zavře.
+- **Ve feedu** karta drží výsledek, dokud je otevřená. Jinak se výsledek bez dotyku stránky po 10 s vrací do náhledu robota.
+
+**Ověření (P67 T5):**
+
+- `e2e/vr-feed.spec.ts` v emulátoru IWER: výhra ve feedu → „Share“ → „Getting your link…“ → karta s kódem, odkaz `…/play/<verze>?via=share&dare=<id>` s id, které vrátil server. Karta je celá v obraze obou očí, anglicky. „Share link“ pošle tentýž odkaz do nabídky sdílení. Bez nabídky sdílení má karta jen „Done“. Karta drží výsledek i po 11 s. Od „Share“ dál stránka poslala jen čtení, uložení výzvy a událost sdílení, žádné volání AI.
+- `src/play/xr/__tests__/qr.test.ts`: kód nakreslený do plátna přečte zpátky nezávislý dekodér (`jsqr`, jen pro testy) a dostane přesně týž odkaz, i nejdelší možný. Tmavé na světlém, tichá zóna 4 moduly, moduly nezrcadlené.
 
 ## Měření a známá omezení
 
@@ -565,6 +581,24 @@ Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 
 - **Karta „Comfort“ stojí metr před hráčem jako lobby, ne na místě výsledku.** Na stole, pódiu i zápěstí je pak stejně velká a čitelná a tři tlačítka v řadě se do ní vejdou. Horní hrana 10 cm pod očima, aby byla vidět i od stolu.
 - **Řada tlačítek panelu se zalomí,** když se nevejde (`layoutOf`): lobby s „Comfort“ a „Say it“ má pět tlačítek, „Make it!“ pak stojí samo přes celou šířku. Panely, kterým řada stačila, se nezměnily.
 - **„Comfort“ na výsledku** je třetí vedlejší tlačítko pod „New game“ a „Exit VR“; tři vedle sebe by se do karty 300 px nevešly.
+
+### Sdílení z VR (P67 T5, 29. 10. 2026, emulátor)
+
+- **Kód v obraze brýlí se dá přečíst:** snímek stereo pohledu IWER z `e2e/vr-feed.spec.ts` (karta „Share“ na pódiu tratě, kód asi 100 px široký v každém oku) přečetl `jsqr` z výřezu levého oka a dal přesně odkaz s výzvou. Jednorázová kontrola, test ji nedělá.
+- **Knihovna:** `uqr` 0.1.3 (MIT, vydaná 3. 4. 2026, bez závislostí, port kodéru Nayuki), jen v kódu XR. Na kartě je kód 200 px kitu i s tichou zónou. Nejdelší možný odkaz (id verze 64 znaků, dlouhá adresa náhledu nasazení) má modul aspoň 12 px plátna.
+- **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 494 B rozbaleně, **+843 B** proti `main` (před T5 +844 B), žádný kód XR. Kód QR i karta sdílení jsou jen v chunku XR. Uživatelské rozhraní sdílení ze 2D (`ShareButton`) v něm není podruhé: `publishDare` se bere z chunku stránky, který už je načtený.
+- **Mutační zkouška** (`qr.test.ts`, každá chyba zvlášť, soubor pak vrácený ze zálohy): kód bez světlého podkladu (tichou zónu by nakreslila jen karta) → test zčervenal. Obrácené barvy → zčervenal. Moduly přehozené podle úhlopříčky (zrcadlený kód) → `jsqr` ho přečetl dál. Proto přibyl test, že střed každého modulu odpovídá matici kodéru, a ten zčervenal.
+- **Skutečné brýle:** neověřeno. Jestli Quest Browser v relaci pustí nabídku sdílení („Share link“), a jak dobře telefon čte kód z promítaného obrazu, patří do ruční brány T15.
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **VR posílá výzvu sama a po odmítnutí ji zkusí znovu po 3 s, nejvýš čtyřikrát.** Výsledek 2D (`ArcadePlay`) posílá výzvu sám hned po výhře, jenže panel VR to z `XrHudView` nevidí. Druhé poslání vrátí totéž id výzvy (id je hash běhu), ale produkce pouští jednoho volajícího na 1 výzvu za 10 s. První poslání z VR do 10 s po výhře proto server odmítne a další pokus po 3 s okno přečká (nejvýš ~12 s čekání). Lepší cesta: `ArcadePlay` předá svou výzvu v `XrHudView` (jeden řádek, `dare`). Pravidla běhu P67 ale v `ArcadePlay.tsx` povolují jen řádek s „Enter VR“, proto zatím takhle.
+- **Hraná verze je z adresy:** stránka hry `/play/<id>`, ve feedu `?g=<id>`. Feed adresu drží s aktivní kartou. Z jiné adresy (lobby bez hry) se „Share“ nenabídne.
+- **„Share“ i po prohře,** s odkazem bez výzvy, jako 2D výsledek. Prohraný běh se jako výzva neposílá: server by ho odmítl a vzal volajícímu okno.
+- **Karta drží výsledek ve feedu umělým stiskem na okně každé 2 s.** Feed vrací výsledek po 10 s bez stisku na stránce do náhledu robota a ovladače se za stisk nepočítají. Stisk nemá cíl, takže ho hra ani feed nepřevezmou. Po „Done“ běží 10 s znovu.
+- **„Done“ je jediné rajčatové tlačítko karty,** stejně jako na kartě „Comfort“. „Share link“ je vedlejší, kód je hlavní cesta.
+- **Oprava chyb `L` se zvýšením** (`boostEcc`): z plochy, kterou má karta, dá největší moduly. Kde verze kódu unese víc, oprava se zvýší bez zvětšení kódu.
+- **Událost `share`** se počítá jen po „Share link“, které opravdu odešlo, jako ve 2D. Zobrazený kód se nepočítá: nikdo neví, jestli ho někdo naskenoval.
 
 ### Feed ve VR (P67 T4, 29. 10. 2026, emulátor)
 

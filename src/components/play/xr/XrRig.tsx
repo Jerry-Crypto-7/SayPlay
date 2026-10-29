@@ -295,7 +295,7 @@ export interface XrReport {
 
 /** Panel HUD, jak ho vidí hráč: co na něm stojí, kde jsou tlačítka a kam padne do obrazu každého oka. */
 export interface PanelReport {
-  /** `hud`, `result`, `notice`, VR lobby `lobby` a jeho `keyboard` (P67 T2). */
+  /** `hud`, `result`, `notice`, VR lobby `lobby` a jeho `keyboard` (P67 T2), `comfort` (T9), `share` (T5). */
   readonly id: string;
   /** Řádky textu a počítadla („0/3 keys“). */
   readonly text: readonly string[];
@@ -307,6 +307,8 @@ export interface PanelReport {
   readonly eyes: readonly ({ readonly minX: number; readonly maxX: number; readonly minY: number; readonly maxY: number; readonly behind: boolean } | null)[];
   /** Nejmenší text panelu jako úhel od očí (rad): text kitu 13 px na 1 m = 0,026. */
   readonly smallest: number;
+  /** Text QR kódu nakresleného na kartě (panel `share`, P67 T5); `null` = karta kód nemá. */
+  readonly qr: string | null;
 }
 
 /** Panely HUD ve scéně (`userData.xrPanel` z `XrPanel`) promítnuté do očí. */
@@ -335,6 +337,7 @@ function panelsOf(scene: Object3D, xr: ArrayCamera): PanelReport[] {
         return box === null ? null : { minX: box.minX, maxX: box.maxX, minY: box.minY, maxY: box.maxY, behind: box.behind };
       }),
       smallest: ((node.userData.minText as number) * node.getWorldScale(new Vector3()).x) / head.distanceTo(center),
+      qr: (node.userData.qr as string | null | undefined) ?? null,
     });
   });
   return panels;

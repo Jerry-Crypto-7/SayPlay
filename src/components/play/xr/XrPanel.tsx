@@ -6,7 +6,7 @@
  * v immersive relaci nekreslí, proto se karta kreslí do plátna 2D písmem, které stránka už načetla (`play.css`),
  * a ve scéně je to textura na ploše. Rozměry jsou v pixelech kitu: 1 px kitu = 2 mm ve vzdálenosti 1 m (`KIT_PX`),
  * takže text kitu má ve VR na metr tutéž úhlovou velikost jako na telefonu v ruce. Sloupec panelů ho dál násobí
- * vzdáleností od očí (`XrHud`).
+ * vzdáleností od očí (`XrHud`). Karta smí nést QR kód odkazu (`qr`, P67 T5): kreslí ho `qr.ts` do téhož plátna.
  *
  * Tlačítko je vlastní síť s obsluhou událostí: najde ho paprsek ovladače a spoušť ho stiskne (`@react-three/xr`).
  * Paprsek na tlačítku se zapisuje do `PanelAim`, ať stisk spouště na panelu nejde zároveň do hry (`XrInput`).
@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasTexture, SRGBColorSpace } from 'three';
 
 import { borderWidth, color, fontFamily, radius, size, space, typography } from '@/brand/tokens';
+import { paintQr, qrModules } from '@/play/xr/qr';
 
 /** Metrů na pixel kitu ve vzdálenosti 1 m od očí. */
 export const KIT_PX = 0.002;
@@ -52,6 +53,8 @@ const KEY_SHADOW = 3;
 const KEY_HEIGHT = size['control-m'];
 /** Nejužší tlačítko vedle obsahu (px kitu) – terč paprsku. */
 const KEY_MIN = 120;
+/** Strana čtverce QR kódu i s tichou zónou (px kitu); modul má i v nejdelším odkazu aspoň 12 px plátna (`qr.test.ts`). */
+const QR_SIZE = 200;
 
 /** Barvy karet nápadů kitu (`.sp-idea--mint` …); inkoust na nich má kontrast 10,6–11,5:1. */
 export type PanelTone = 'mint' | 'sun' | 'sky' | 'bubblegum';
@@ -91,6 +94,8 @@ export interface PanelSpec {
   readonly width: number;
   readonly headline?: string;
   readonly title?: string;
+  /** Odkaz jako QR kód pod titulkem (P67 T5): čtverec `QR_SIZE` uprostřed karty, inkoust na papíře. */
+  readonly qr?: string;
   readonly body?: string;
   /** Chyba pod textem, barvou `alarm` jako `.sp-field-error` (P67 T2). */
   readonly note?: string;
@@ -138,6 +143,8 @@ export interface PanelLayout {
   readonly lines: readonly Line[];
   readonly chips: readonly { readonly stat: PanelStat; readonly rect: Rect }[];
   readonly keys: readonly Key[];
+  /** QR kód: zakódovaný text, moduly i s tichou zónou a čtverec na kartě. */
+  readonly qr: { readonly text: string; readonly modules: readonly (readonly boolean[])[]; readonly rect: Rect } | null;
 }
 
 const fontOf = (type: Type, scale = 1): string => `${type.weight} ${type.size * scale}px ${fontFamily.display}`;
@@ -200,6 +207,13 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
   };
   block(spec.headline, TYPE.headline);
   block(spec.title, TYPE.title);
+  let qr: PanelLayout['qr'] = null;
+  if (spec.qr !== undefined) {
+    qr = { text: spec.qr, modules: qrModules(spec.qr), rect: { x: (spec.width - QR_SIZE) / 2, y, w: QR_SIZE, h: QR_SIZE } };
+    y += QR_SIZE + GAP;
+    // Tlačítka vedle kódu nestojí.
+    last.row = null;
+  }
   block(spec.body, TYPE.body);
   block(spec.note, TYPE.body, color.alarm);
 
@@ -292,7 +306,7 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
       y += KEY_HEIGHT + GAP;
     }
   }
-  return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys: [...cells, ...keys] };
+  return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys: [...cells, ...keys], qr };
 }
 
 const keyFrom = (button: PanelButton, lines: readonly string[], type: Type): Omit<Key, 'rect'> => ({
@@ -313,6 +327,7 @@ export const specKey = (spec: PanelSpec): string =>
     spec.inline === true,
     spec.headline,
     spec.title,
+    spec.qr,
     spec.body,
     spec.note,
     spec.stats,
@@ -371,6 +386,12 @@ function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
     const value = TYPE.value.size * TYPE.value.lineHeight;
     text(ctx, stat.value, TYPE.value, rect.x + rect.w / 2, rect.y + CHIP_PAD.y + value / 2, color.ink, 'center');
     if (stat.caption !== null) text(ctx, stat.caption, TYPE.caption, rect.x + rect.w / 2, rect.y + CHIP_PAD.y + value + (TYPE.caption.size * TYPE.caption.lineHeight) / 2, color['ink-soft'], 'center');
+  }
+  if (layout.qr !== null) {
+    // Kód v pixelech plátna, bez měřítka: moduly na celé pixely.
+    const { rect } = layout.qr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    paintQr(ctx, layout.qr.modules, Math.round(rect.x * RES), Math.round(rect.y * RES), Math.round(rect.w * RES), color.ink, color.paper);
   }
 }
 
@@ -483,7 +504,7 @@ export function XrPanel({ layout, y, aim, press }: { readonly layout: PanelLayou
   const [x, cy] = localOf(layout, (layout.width + CARD_SHADOW) / 2, (layout.height + CARD_SHADOW) / 2);
   const text = [...layout.lines.map((line) => line.text), ...layout.chips.map(({ stat }) => (stat.caption === null ? stat.value : `${stat.value} ${stat.caption}`))];
   return (
-    <group position={[0, y, 0]} userData={{ xrPanel: layout.id, text, labels: layout.chips.map(({ stat }) => stat.label), minText: MIN_TEXT * KIT_PX }}>
+    <group position={[0, y, 0]} userData={{ xrPanel: layout.id, text, labels: layout.chips.map(({ stat }) => stat.label), minText: MIN_TEXT * KIT_PX, qr: layout.qr?.text ?? null }}>
       <mesh position={[x, cy, 0]} renderOrder={PANEL_ORDER}>
         <planeGeometry args={[(layout.width + CARD_SHADOW) * KIT_PX, (layout.height + CARD_SHADOW) * KIT_PX]} />
         <meshBasicMaterial map={paint.texture} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />

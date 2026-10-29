@@ -130,6 +130,16 @@ const sessions = (page: Page): Promise<{ readonly requests: number; readonly end
   });
 const labelsOf = (panel: PanelReport): string[] => panel.buttons.map((button) => button.label);
 
+/** Panel celý v obraze obou očí (jako `vr-hud`). */
+function expectInView(panel: PanelReport): void {
+  expect(panel.eyes, `${panel.id}: both eyes`).toHaveLength(2);
+  for (const eye of panel.eyes) {
+    expect(eye, `${panel.id}: drawn`).not.toBeNull();
+    const { minX, maxX, minY, maxY, behind } = eye!;
+    expect({ behind, inside: minX >= -1 && maxX <= 1 && minY >= -1 && maxY <= 1 }, JSON.stringify(eye)).toEqual({ behind: false, inside: true });
+  }
+}
+
 /** `count` snímků stránky. */
 const frames = (page: Page, count: number): Promise<void> =>
   page.evaluate(async (count) => {
@@ -304,9 +314,9 @@ test('the feed in VR: Next, Prev and Again in one XR session; the right stick pa
   await frames(page, 10);
   expect(await feed(page)).toMatchObject({ versionId: rows[0]!.versionId, mode: 'play' });
 
-  // Výsledek ve feedu: „Next“ vedle „Again“ (jediná rajčatová akce), anglicky.
+  // Výsledek ve feedu: „Next“ vedle „Again“ (jediná rajčatová akce), „Share“ v mřížce (T5), anglicky.
   const result = await endRound(page);
-  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Next', 'Again']);
+  expect(labelsOf(result)).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
   expect([...result.text, ...labelsOf(result)].join(' ')).not.toMatch(/[ěščřžýáíéúůňťďóĚŠČŘŽÝÁÍÉÚŮŇŤĎÓ]/u);
   // Další karta je načtená dopředu: její detail přišel dřív, než ji hráč chce.
   expect(details.has(rows[1]!.versionId), 'next card loaded ahead').toBe(true);
@@ -342,6 +352,104 @@ test('the feed in VR: Next, Prev and Again in one XR session; the right stick pa
   await drawnInVr(page);
 
   // 5. Po celou dobu jedna relace.
+  expect(await sessions(page)).toEqual({ requests: 1, ended: 0 });
+});
+
+/**
+ * Sdílení z VR (P67 T5): výhra → „Share“ → karta s QR kódem odkazu na výzvu. Odkaz se skládá z hrané verze a id
+ * výzvy, které server vrátil – tatáž výzva, kterou po výhře uložil výsledek 2D. Produkce pustí volajícího na 1 výzvu
+ * za 10 s (`rate-limit.ts`), takže první poslání z VR tam server odmítne; tady to dělá podvržená odpověď 429
+ * (lokální server volajícího nerozezná). Od „Share“ dál smí stránka jen uložit výzvu a ohlásit sdílení – žádné dveře,
+ * které volají režiséra (útrata 0).
+ */
+test('Share from VR: a won round shows the dare link as a QR code, Share link only where the browser can share, and nothing calls the director', async ({ page }) => {
+  // Nabídka sdílení prohlížeče podvržená: test řídí, jestli ji prohlížeč má, a vidí, co do ní odešlo.
+  await page.addInitScript(() => {
+    const self = window as unknown as { __shared: ShareData[] };
+    self.__shared = [];
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: async (data: ShareData) => {
+        self.__shared.push(data);
+      },
+    });
+  });
+  const dares: string[] = [];
+  /** Odpovědi dveří výzvy po pořadí (stav), ať je při chybě vidět, co server řekl. */
+  const answered: number[] = [];
+  let posted = 0;
+  await page.route('**/api/play/games/*/dare', async (route) => {
+    if (route.request().method() !== 'POST') return route.fallback();
+    posted += 1;
+    if (posted === 2) {
+      answered.push(429);
+      return route.fulfill({ status: 429, json: { error: { code: 'RATE_LIMITED', message: 'too many requests from this client' } } });
+    }
+    const response = await route.fetch();
+    answered.push(response.status());
+    const body = (await response.json()) as { dareId?: unknown };
+    if (typeof body.dareId === 'string') dares.push(body.dareId);
+    return route.fulfill({ response });
+  });
+
+  await enterVrFromFeed(page, rows);
+  await drawnInVr(page);
+  const end = await page.evaluate(() => (window.__playShell as unknown as Shell).handPlay('end'));
+  expect(end.runState).toBe('won');
+  await expect.poll(async () => (await feed(page)).mode, { timeout: 15_000 }).toBe('result');
+  expect(labelsOf(await panelOf(page, 'result'))).toEqual(['New game', 'Exit VR', 'Comfort', 'Share', 'Next', 'Again']);
+  // Výsledek 2D poslal výzvu hned po výhře. Lokální server dělí strop výzev mezi všechny testy (jeden volající),
+  // takže po výhrách předchozího testu ji smí odmítnout – VR ji pak uloží sama.
+  await expect.poll(() => answered.length, { timeout: 10_000 }).toBe(1);
+
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (pathname.startsWith('/api/')) requests.push(`${request.method()} ${pathname}`);
+  });
+
+  // „Share“: výzva se ukládá (první poslání odmítnuté), karta to řekne a kód zatím nemá.
+  await click(page, 'result', 'share');
+  const pending = await panelOf(page, 'share');
+  expect(pending.text).toEqual(['Share', 'Getting your link…']);
+  expect(pending.qr).toBeNull();
+  expect(await ids(page)).toEqual(['share']);
+
+  // Další pokus po 3 s uspěje; id výzvy je hash běhu, takže každé úspěšné poslání vrátilo totéž. Odkaz míří na hranou
+  // verzi feedu.
+  await expect.poll(async () => (await panelOf(page, 'share')).qr, { timeout: 20_000 }).not.toBeNull();
+  const shared = await panelOf(page, 'share');
+  expect(dares.length, `dare answers ${JSON.stringify(answered)}`).toBeGreaterThanOrEqual(1);
+  expect(new Set(dares)).toEqual(new Set([dares[0]]));
+  const link = `${new URL(page.url()).origin}/play/${rows[0]!.versionId}?via=share&dare=${dares[0]!}`;
+  expect(shared.qr).toBe(link);
+  expect(shared.qr).toContain('dare=');
+  expect(shared.text).toEqual(['Share', 'Scan with your phone']);
+  expect(labelsOf(shared)).toEqual(['Share link', 'Done']);
+  expect([...shared.text, ...labelsOf(shared)].join(' ')).not.toMatch(/[ěščřžýáíéúůňťďóĚŠČŘŽÝÁÍÉÚŮŇŤĎÓ]/u);
+  expectInView(shared);
+  await page.screenshot({ path: test.info().outputPath('vr-share-qr.png') });
+
+  // „Share link“ pošle tentýž odkaz do nabídky sdílení prohlížeče.
+  await click(page, 'share', 'link');
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.map((data) => data.url))).toEqual([link]);
+
+  // „Done“ vrátí výsledek. Prohlížeč bez nabídky sdílení: karta má jen kód a „Done“.
+  await click(page, 'share', 'done');
+  await expect.poll(() => ids(page), { timeout: 10_000 }).toEqual(['result']);
+  await page.evaluate(() => Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }));
+  await click(page, 'result', 'share');
+  await expect.poll(async () => (await panelOf(page, 'share')).qr, { timeout: 20_000 }).toBe(link);
+  expect(labelsOf(await panelOf(page, 'share'))).toEqual(['Done']);
+
+  // Otevřená karta drží výsledek déle než 10 s nečinnosti, po kterých se karta feedu vrací do náhledu robota.
+  await page.waitForTimeout(11_000);
+  expect(await feed(page)).toMatchObject({ versionId: rows[0]!.versionId, mode: 'result' });
+  expect((await panelOf(page, 'share')).qr).toBe(link);
+
+  // Útrata 0: kromě čtení (GET) jen uložení výzvy a událost sdílení – režisér nedostal nic.
+  expect(requests.filter((line) => line.startsWith('POST /api/play/games/') && line.endsWith('/dare')).length).toBeGreaterThanOrEqual(2);
+  expect(requests.filter((line) => !line.startsWith('GET ') && !/^POST \/api\/play\/games\/[a-f0-9]+\/dare$/.test(line) && line !== 'POST /api/play/events')).toEqual([]);
   expect(await sessions(page)).toEqual({ requests: 1, ended: 0 });
 });
 

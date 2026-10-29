@@ -12,13 +12,15 @@
  *   trati, výsledek stojí na bližší části pódia. Panely mají tutéž úhlovou velikost jako na stole (`onStage`).
  * - **VR-nativní žánry** (střílečka, hod, krtci, krájení): jeden sloupec nad levým zápěstím, výsledek místo HUD.
  *
+ * „Share“ na výsledku (P67 T5) dá na jeho místo kartu s QR kódem odkazu (`XrShare`).
+ *
  * Panely se natáčejí k hlavě. Velikost roste se vzdáleností od očí (`scale`), ať má text úhlovou velikost
  * textu kitu na 1 m (`KIT_PX`): tabule je od očí ~1,7 m, výsledek a „AI version ready“ ~0,9 m, zápěstí ~0,45 m.
  */
 
 import { useFrame } from '@react-three/fiber';
 import { useXR, useXRInputSourceState } from '@react-three/xr';
-import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Group, Vector3 } from 'three';
 
 import { openComfort, useHeading } from '@/play/xr/comfort';
@@ -30,6 +32,7 @@ import type { DeskReport } from './Diorama';
 import { type XrCounter, type XrHudView, type XrNotice, useShared, useXrHud, useXrNotice } from './xr-context';
 import { openXrLobby } from './xr-lobby';
 import { KIT_PX, type PanelAim, type PanelSpec, type PanelStat, XrPanel, layoutOf, specKey, useFonts } from './XrPanel';
+import { SHARE, playingVersion, sharePanelOf, useShareLink } from './XrShare';
 
 export const EXIT_VR = 'Exit VR';
 export const AGAIN = 'Again';
@@ -104,9 +107,10 @@ const hudOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => (
  * Výsledek: nadpis kitu, konečná počítadla, „Again“ (jediná rajčatová akce) přes celou šířku, nad ním vedlejší
  * „New game“ do VR lobby (P67 T2) a „Exit VR“ zpátky k 2D výsledku. Tři tlačítka v jedné řadě by se do karty
  * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole. Ve feedu (`next`, P67 T4) stojí vedle „Again“
- * vedlejší „Next“ na další kartu. „Comfort“ (P67 T9) otevře panel pohodlí místo výsledku.
+ * vedlejší „Next“ na další kartu. „Comfort“ (P67 T9) otevře panel pohodlí místo výsledku, „Share“ (P67 T5) kartu
+ * s QR kódem odkazu (`XrShare`) – jen když adresa nese hranou verzi (`share` není `null`).
  */
-const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() => void) | null): PanelSpec => ({
+const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() => void) | null, share: (() => void) | null): PanelSpec => ({
   id: 'result',
   width,
   headline: view.result === 'won' ? YOU_DID_IT : SO_CLOSE,
@@ -117,6 +121,7 @@ const resultOf = (view: XrHudView, width: number, exit: () => void, next: (() =>
       { id: 'new', label: NEW_GAME, press: openXrLobby },
       { id: 'exit', label: EXIT_VR, press: exit },
       { id: 'comfort', label: COMFORT, press: openComfort },
+      ...(share === null ? [] : [{ id: 'share', label: SHARE, press: share }]),
     ],
   },
   buttons: [...(next === null ? [] : [{ id: 'next', label: NEXT, press: next }]), { id: 'again', label: AGAIN, primary: true, press: view.again }],
@@ -223,18 +228,27 @@ export function XrHud({ diorama, stage, desk, aim }: { readonly diorama: boolean
   // Ve feedu (P67 T4) vede výsledek i na další kartu.
   const next = useShared(feedSteps, null)?.next ?? null;
   const top = (width: number): PanelSpec[] => (notice === null ? [] : [noticeOf(notice, width)]);
+  // Karta sdílení (P67 T5) stojí místo výsledku, dokud ji „Done“ nezavře; nové kolo nebo karta feedu ji zavře samy.
+  const [sharing, setSharing] = useState(false);
+  const ended = view !== null && view.result !== null;
+  useEffect(() => {
+    if (!ended) setSharing(false);
+  }, [ended]);
+  const link = useShareLink(view, sharing);
+  const share = ended && playingVersion(window.location) !== null ? () => setSharing(true) : null;
+  const outcome = (shown: XrHudView, width: number): PanelSpec => (link === null ? resultOf(shown, width, exit, next, share) : sharePanelOf(link, width, () => setSharing(false)));
 
   if (diorama) {
     const anchors = stage ? STAGE_ANCHORS : DESK_ANCHORS;
     return (
       <>
         {view !== null && view.result === null && <XrColumn anchor={anchors.board} specs={[hudOf(view, WIDTH.board, exit)]} desk={desk} aim={aim} />}
-        {view !== null && view.result !== null && <XrColumn anchor={anchors.result} specs={[resultOf(view, WIDTH.result, exit, next)]} desk={desk} aim={aim} />}
+        {view !== null && view.result !== null && <XrColumn anchor={anchors.result} specs={[outcome(view, WIDTH.result)]} desk={desk} aim={aim} />}
         {notice !== null && <XrColumn anchor={anchors.apron} specs={top(WIDTH.notice)} desk={desk} aim={aim} />}
       </>
     );
   }
-  const wrist = [...(view === null ? [] : [view.result === null ? hudOf(view, WIDTH.wrist, exit) : resultOf(view, WIDTH.wrist, exit, next)]), ...top(WIDTH.wrist)];
+  const wrist = [...(view === null ? [] : [view.result === null ? hudOf(view, WIDTH.wrist, exit) : outcome(view, WIDTH.wrist)]), ...top(WIDTH.wrist)];
   // Bez levého ovladače sloupec není: neviditelné tlačítko by paprsek pořád našel.
   return wrist.length > 0 && left !== undefined ? <XrColumn anchor={WRIST} specs={wrist} desk={desk} aim={aim} /> : null;
 }
