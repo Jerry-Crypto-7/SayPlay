@@ -18,29 +18,17 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
+import { createGame } from './create-game';
 import { moodTone } from './Feed';
 import { FirstVisitHint, isFirstVisit, markVisited } from './FirstVisitHint';
 import { appendSpoken, MicButton } from './MicButton';
-import { BUILD_FAILED, COUNTER_WARN, IDEAS, NOT_SENT, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
+import { COUNTER_WARN, IDEAS, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
 import { BuildingScreen, Button, Icon, TabBar } from './ui';
 
 type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string } | { readonly kind: 'offline' };
 
 /** Barvy karet nápadů v pořadí kitu a střídavý náklon (šachovnice 2×2 jako v referenci). */
 const IDEA_LOOKS = ['sp-idea--mint sp-tilt-l', 'sp-idea--sun sp-tilt-r', 'sp-idea--sky sp-tilt-r', 'sp-idea--gum sp-tilt-l'] as const;
-
-/**
- * Co hráč uslyší, když dveře hru nepostaví. 422 (věta nešla na hratelnou hru)
- * je „Build failed“ z kitu – technický důvod serveru hráči nic neřekne; ostatní
- * (kvóta, vypnutí, úložiště) nesou vlastní větu, jen s velkým písmenem na začátku.
- */
-function doorMessage(status: number, code: unknown, message: unknown): string {
-  if (typeof message !== 'string' || message === '') return BUILD_FAILED;
-  // Zakázané téma ve větě (P40 T1) i v návrhu z ní (T2): dveře posílají větu kitu „Blocked content“ – „Try fewer rules“ by hráče poslal zkoušet totéž znovu.
-  if (code === 'SENTENCE_REJECTED' || code === 'CONTENT_REJECTED') return message;
-  if (status === 422) return BUILD_FAILED;
-  return message[0]!.toUpperCase() + message.slice(1);
-}
 
 export function CreateGame() {
   const router = useRouter();
@@ -80,26 +68,14 @@ export function CreateGame() {
   async function create(text: string): Promise<void> {
     if (text.length === 0 || text.length > SENTENCE_LIMIT || busy) return;
     setPhase({ kind: 'busy', step: 0 });
-    let response: Response;
-    try {
-      response = await fetch('/api/play/games', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sentence: text }),
-      });
-    } catch {
-      setPhase(navigator.onLine ? { kind: 'failed', message: NOT_SENT } : { kind: 'offline' });
-      return;
-    }
-    // Tělo, které není JSON (výpadek za proxy), je selhání stavby jako každé jiné.
-    const body = (await response.json().catch(() => ({}))) as { url?: unknown; error?: { code?: unknown; message?: unknown } };
-    if (!response.ok || typeof body.url !== 'string') {
-      setPhase({ kind: 'failed', message: doorMessage(response.status, body.error?.code, body.error?.message) });
+    const created = await createGame(text);
+    if ('error' in created) {
+      setPhase(created.offline ? { kind: 'offline' } : { kind: 'failed', message: created.error });
       return;
     }
     setPhase({ kind: 'busy', step: 1 });
     markVisited();
-    router.push(body.url);
+    router.push(created.url);
   }
 
   // Bez sítě (kit, Offline): věta zůstane v poli a odejde sama, jakmile se síť vrátí.

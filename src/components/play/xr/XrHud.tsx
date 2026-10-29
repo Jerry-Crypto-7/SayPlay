@@ -23,14 +23,25 @@ import { DESK, type Point, TABLE, worldOfDesk } from '@/play/xr/diorama-scale';
 import { PLAY_FULL, SO_CLOSE, YOU_DID_IT } from '../starters';
 import type { DeskReport } from './Diorama';
 import { type XrCounter, type XrHudView, type XrNotice, useXrHud, useXrNotice } from './xr-context';
+import { openXrLobby } from './xr-lobby';
 import { KIT_PX, type PanelAim, type PanelSpec, type PanelStat, XrPanel, layoutOf, specKey, useFonts } from './XrPanel';
 
 export const EXIT_VR = 'Exit VR';
 export const AGAIN = 'Again';
 export const AI_READY = 'AI version ready';
+/** Výsledek → VR lobby s kartami vět (P67 T2). */
+export const NEW_GAME = 'New game';
 
-/** Kotva sloupce: bod desky (osy desky, +z k hráči), nebo levé zápěstí. `hang` = sloupec visí z kotvy dolů. */
-type Anchor = { readonly kind: 'desk'; readonly at: Point; readonly scale: number; readonly hang?: boolean } | { readonly kind: 'wrist'; readonly up: number; readonly scale: number };
+/**
+ * Kotva sloupce: bod desky (osy desky, +z k hráči), levé zápěstí, nebo místo před hráčem (`front`, P67 T2 lobby):
+ * `distance` m před hlavou ve směru pohledu (jen otočení kolem svislé osy) a horní hrana `up` m nad očima,
+ * spočtené z první pózy brýlí a pak pevné – nabídka nejezdí s hlavou. `hang` = sloupec visí z kotvy dolů
+ * (`front` visí vždy).
+ */
+export type Anchor =
+  | { readonly kind: 'desk'; readonly at: Point; readonly scale: number; readonly hang?: boolean }
+  | { readonly kind: 'wrist'; readonly up: number; readonly scale: number }
+  | { readonly kind: 'front'; readonly distance: number; readonly up: number; readonly scale: number };
 
 /** Tabule: spodní hrana 0,25 m nad deskou, 6 cm za vzdáleným okrajem – nad scénou, v horní části zorného pole. */
 const BOARD: Anchor = { kind: 'desk', at: { x: 0, y: 0.25, z: -TABLE.depth / 2 - 0.06 }, scale: 1.75 };
@@ -58,16 +69,24 @@ const hudOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => (
   inline: true,
 });
 
-/** Výsledek: nadpis kitu, konečná počítadla, „Again“ (jediná rajčatová akce) a „Exit VR“ zpátky k 2D výsledku. */
+/**
+ * Výsledek: nadpis kitu, konečná počítadla, „Again“ (jediná rajčatová akce) přes celou šířku, nad ním vedlejší
+ * „New game“ do VR lobby (P67 T2) a „Exit VR“ zpátky k 2D výsledku. Tři tlačítka v jedné řadě by se do karty
+ * 300 px nevešla a širší karta by na zápěstí přesáhla zorné pole.
+ */
 const resultOf = (view: XrHudView, width: number, exit: () => void): PanelSpec => ({
   id: 'result',
   width,
   headline: view.result === 'won' ? YOU_DID_IT : SO_CLOSE,
   stats: statsOf(view.counters),
-  buttons: [
-    { id: 'again', label: AGAIN, primary: true, press: view.again },
-    { id: 'exit', label: EXIT_VR, press: exit },
-  ],
+  grid: {
+    columns: 2,
+    cells: [
+      { id: 'new', label: NEW_GAME, press: openXrLobby },
+      { id: 'exit', label: EXIT_VR, press: exit },
+    ],
+  },
+  buttons: [{ id: 'again', label: AGAIN, primary: true, press: view.again }],
 });
 
 const noticeOf = (notice: XrNotice, width: number): PanelSpec => ({
@@ -79,12 +98,14 @@ const noticeOf = (notice: XrNotice, width: number): PanelSpec => ({
 });
 
 /** Sloupec panelů (`specs` odspodu nahoru, u `hang` shora dolů) přichycený ke kotvě a natočený k hlavě. */
-function XrColumn({ anchor, specs, desk, aim }: { readonly anchor: Anchor; readonly specs: readonly PanelSpec[]; readonly desk: RefObject<DeskReport | null>; readonly aim: PanelAim }) {
+export function XrColumn({ anchor, specs, desk, aim }: { readonly anchor: Anchor; readonly specs: readonly PanelSpec[]; readonly desk: RefObject<DeskReport | null>; readonly aim: PanelAim }) {
   const group = useRef<Group>(null);
   const left = useXRInputSourceState('controller', 'left');
   const space = useXR((xr) => xr.originReferenceSpace);
   // Výchozí hlava (stojící hráč), než přijde první póza brýlí.
   const head = useMemo(() => new Vector3(0, 1.6, 0), []);
+  // Místo kotvy `front`, jakmile ho první póza brýlí určí.
+  const placed = useRef<Vector3 | null>(null);
   const fonts = useFonts();
   const content = specs.map(specKey).join('\n');
   // Rozvržení podle obsahu (a načteného písma), ne podle identity – `XrHud` skládá nové pole každý render.
@@ -97,23 +118,35 @@ function XrColumn({ anchor, specs, desk, aim }: { readonly anchor: Anchor; reado
   useFrame((_, __, frame: XRFrame | undefined) => {
     const column = group.current;
     if (column === null) return;
+    // Hlava z pózy brýlí v tomto snímku: kamera XR je před kreslením ještě z minulého snímku a její světová
+    // matice se teprve skládá (`getWorldPosition` v `useFrame` vrací nesmysl a panel by se otočil zády).
+    const viewer = space !== undefined ? frame?.getViewerPose(space) : undefined;
+    if (viewer != null) head.set(viewer.transform.position.x, viewer.transform.position.y, viewer.transform.position.z);
     if (anchor.kind === 'desk') {
       const at = worldOfDesk(desk.current ?? DESK, anchor.at);
       column.position.set(at.x, at.y, at.z);
+    } else if (anchor.kind === 'front') {
+      if (placed.current === null && viewer != null) {
+        // Směr pohledu bez sklonu; hlava svisle dolů nebo nahoru nemá vodorovný směr, pak rovně (−z).
+        const { x, y, z, w } = viewer.transform.orientation;
+        const ahead = new Vector3(-2 * (x * z + w * y), 0, -(1 - 2 * (x * x + y * y)));
+        if (ahead.lengthSq() < 1e-6) ahead.set(0, 0, -1);
+        ahead.normalize().multiplyScalar(anchor.distance);
+        placed.current = new Vector3(head.x + ahead.x, head.y + anchor.up, head.z + ahead.z);
+      }
+      column.position.copy(placed.current ?? new Vector3(head.x, head.y + anchor.up, head.z - anchor.distance));
     } else {
       const pose = left !== undefined && space !== undefined && frame !== undefined ? frame.getPose(left.inputSource.gripSpace ?? left.inputSource.targetRaySpace, space) : undefined;
       // Bez pózy (ztracené sledování) zůstane sloupec, kde byl.
       if (pose != null) column.position.set(pose.transform.position.x, pose.transform.position.y + anchor.up, pose.transform.position.z);
     }
     column.scale.setScalar(anchor.scale);
-    // Hlava z pózy brýlí v tomto snímku: kamera XR je před kreslením ještě z minulého snímku a její světová
-    // matice se teprve skládá (`getWorldPosition` v `useFrame` vrací nesmysl a panel by se otočil zády).
-    const viewer = space !== undefined ? frame?.getViewerPose(space) : undefined;
-    if (viewer != null) head.set(viewer.transform.position.x, viewer.transform.position.y, viewer.transform.position.z);
-    column.lookAt(head);
+    // Natočení jen kolem svislé osy u `front`: velká nabídka visí svisle, i když se hráč skloní.
+    if (anchor.kind === 'front') column.lookAt(head.x, column.position.y, head.z);
+    else column.lookAt(head);
   });
 
-  const hang = anchor.kind === 'desk' && anchor.hang === true;
+  const hang = anchor.kind === 'front' || (anchor.kind === 'desk' && anchor.hang === true);
   let y = 0;
   return (
     <group ref={group}>
@@ -127,12 +160,10 @@ function XrColumn({ anchor, specs, desk, aim }: { readonly anchor: Anchor; reado
             layout={layout}
             y={at}
             aim={aim}
-            press={(button) =>
-              latest.current
-                .find((spec) => spec.id === layout.id)
-                ?.buttons?.find((candidate) => candidate.id === button)
-                ?.press()
-            }
+            press={(button) => {
+              const spec = latest.current.find((candidate) => candidate.id === layout.id);
+              [...(spec?.grid?.cells ?? []), ...(spec?.buttons ?? [])].find((candidate) => candidate.id === button)?.press();
+            }}
           />
         );
       })}

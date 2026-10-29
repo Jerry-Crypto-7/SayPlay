@@ -194,11 +194,12 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 | Panel | Kdy | Hry na stole | Hry rukou |
 |---|---|---|---|
 | cíl a počítadla, „Exit VR“ | během hry | tabule za vzdáleným okrajem stolu, nad scénou | nad levým zápěstím |
-| výsledek „You did it!“ / „So close.“, „Again“, „Exit VR“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
+| výsledek „You did it!“ / „So close.“, „Again“, „New game“, „Exit VR“ | po konci hry | stojí na bližší polovině stolu | nad levým zápěstím místo cíle |
 | „AI version ready“ | příchod AI verze | visí z bližšího okraje stolu | nad levým zápěstím |
 
 - **Ovládání:** paprsek pravého (nebo levého) ovladače na tlačítko a spoušť: stisknout a pustit. Tlačítko pod paprskem má silnější obrys, stisknuté se zamáčkne. Spoušť stisknutá na tlačítku do hry nejde, ani když paprsek mezitím z tlačítka sjede. Stisk, který začal mimo panely, patří hře.
 - **„Again“** začne hru znovu od začátku. Hra pak čeká na první pohyb ovladače, stejně jako po „Play again“ ve 2D.
+- **„New game“** otevře VR lobby (viz další oddíl) a z něj vznikne nová hra z věty, pořád ve VR.
 - **„Exit VR“** ukončí relaci. Stránka ukáže 2D výsledek hry, odkud jde sdílet (Dare, Copy link) a remixovat („Remix it“).
 - **„AI version ready“:** když stránka sama přejde na hru podle věty, panel to na 3 s oznámí. Když je hotová verze s plnými detaily, panel nabídne „Play it“, stejně jako tlačítko „Full detail“ ve 2D. Hra se vymění bez opuštění VR.
 - **Čitelnost:** text má od očí úhlovou velikost jako text kitu na 1 m (1 px kitu = 2 mm na 1 m). Tabule je od očí asi 1,7 m, proto je 1,75× větší. Výsledek je zvětšený 1,1×, zápěstí je blízko, proto 0,45×. Panely se natáčejí k hlavě a kreslí se přes scénu, takže je kulisa nezakryje.
@@ -211,6 +212,34 @@ Stránka 2D se v brýlích nekreslí, proto HUD hry ve VR tvoří 3D panely podl
 - Střílečka: panel na levém zápěstí v obraze, prohra ukáže „So close.“, „Again“ hru restartuje.
 - AI verze: panel „AI version ready“ s „Play it“ vymění hru a relace trvá. Přechod na hru podle věty ukáže panel krátce bez tlačítka.
 - Unit: `src/play/xr/__tests__/input-map.test.ts` drží, komu patří spoušť (panel, nebo hra).
+
+### Hra z věty ve VR (lobby)
+
+Novou hru jde udělat bez sundání brýlí. Na domově `/play` je vpravo nahoře „Enter VR“ (jen v prohlížeči, který VR umí). Ten začne relaci VR lobby: kartou kitu metr před hráčem, horní hranou v úrovni očí. „Enter VR“ na hře z feedu dál začne tou hrou.
+
+| Na kartě | Co dělá |
+|---|---|
+| šest karet vět | vloží větu do náhledu nahoře; hru ještě nespustí (jako karty nápadů na domově) |
+| „More ideas“ | dalších šest vět, pak zase první; pořadí je pevné (nápady domova, pak startovní věty) |
+| „Type“ | otevře pod kartou klávesnici: číslice, QWERTY, `' , . -`, „Space“, „Delete“, „Done“ |
+| „Make it!“ | udělá hru z věty v náhledu, stejně jako „Make it!“ na domově; mezitím „Making…“ |
+
+- **Klávesnice:** paprsek na klávesu a spoušť. Píše se vždy na konec věty, první písmeno je velké, mezera nikdy na začátku ani dvakrát za sebou. Nad 140 znaků (strop věty) už nic nepřibude, „Delete“ maže vždy. Náhled s kurzorem `|` a počítadlo `n/140` jsou na kartě nad klávesnicí, vedle „Make it!“.
+- **Chyba:** když dveře hru nepostaví, karta ukáže větu kitu červeně pod náhledem („Couldn't build that. Try fewer rules.“, „Couldn't send your idea. Try again.“). Prázdný náhled a „Make it!“ řekne, co napsat, jako na domově.
+- **Brýle zůstanou ve VR:** „Make it!“ přejde na stránku nové hry (`/play/<id>`). Relace s tím neskončí, protože relace i plátno patří layoutu `/play`, ne stránce. Karta zmizí, až je na stole (nebo v ruce) nová hra.
+- **Z výsledku:** „New game“ na panelu výsledku otevře lobby nad dohranou hrou. Lobby zmizí, až přijde hra, kterou udělalo.
+- **Hra pod lobby:** hra z feedu nebo dohraná hra zůstane vidět za kartou. Její HUD je schovaný a ovladače do ní nejdou, dokud je lobby otevřené.
+- **Odchod z VR** lobby zavře. Další „Enter VR“ ze hry začne hrou.
+
+**Ověření (P67 T2):** `e2e/vr-lobby.spec.ts` v emulátoru IWER, klikání paprskem a spouští:
+
+- `/play` → „Enter VR“ → lobby místo HUD hry z feedu. Šest karet v pevném pořadí, „More ideas“ tam a zpět, karta celá v obraze obou očí, text anglicky.
+- „Type“: `c a t`, dvakrát mezera, `s`, „Delete“ → náhled `Cat |` a `4/140`; „Done“ klávesnici zavře a věta zůstane.
+- Karta vloží větu a adresa je pořád `/play`. Podvržená chyba dveří (422) ukáže „Couldn't build that. Try fewer rules.“ na kartě. Pak „Making…“ a přechod na `/play/<id>`: HUD nové hry, hrdina ve stavu hry, kreslené snímky.
+- Dohraná hra → „New game“ → další karta → „Make it!“ → druhá hra na `/play/<id2>`.
+- Po celou dobu jedna relace: stránka si o relaci řekla jednou a žádná neskončila.
+- Prohlížeč bez VR nemá „Enter VR“ na domově a nestáhne žádný skript s kódem lobby.
+- Unit: `src/play/xr/__tests__/keyboard.test.ts` (rozložení, strop, mazání, mezery), `src/components/play/__tests__/create-game.test.ts` (věta → hra pro formulář i lobby: adresa, chyby dveří, bez sítě).
 
 ## Měření a známá omezení
 
@@ -233,6 +262,26 @@ Cíl ±1 kB je splněný. Rozdíl je brána bez `?vr=1` a registrace service wor
 - **`play-phone`:** test „the hero is its model from the first frame: castle arena“ na Pixelu 7 padá i na `main` (2 ze 2 běhů), ve větvi 1 ze 2. Není to regrese brány.
 
 **Sonda Questu 2 (`--cdp --probe`, 29. 10. 2026):** brýle byly připojené a ladění povolené, ale nikdo je neměl na hlavě. Po probuzení držel popředí systémový dialog (`com.oculus.firsttimenux/.FirstTimeNuxExclusiveSystemDialogActivity`), prohlížeč zůstal na pozadí a ladicí rozhraní stránku neukázalo. Sonda proto zapsala `reached: false` a nic nezměřila (`evals/vr/quest-caps.json`). Diktování, sdílení a obnovovací frekvence Questu se změří, až budou brýle nasazené (T3, T13, ruční brána T15).
+
+### VR lobby (P67 T2, 29. 10. 2026)
+
+**Relace přežije navigaci.** `/play` → `/play/<id>` po „Make it!“ i `/play/<a>` → `/play/<b>` po „New game“: stránka si o XR relaci řekla jednou, žádná neskončila a brýle kreslí novou hru (`e2e/vr-lobby.spec.ts`, IWER). Náhradní cesta z plánu (výměna hry bez navigace přes `XrHostContext`) proto není potřeba.
+
+**První JS telefonu** (Pixel 7 v Chromiu, `/play`, jako u T1):
+
+| | Skriptů | Rozbalené | Přenesené | Kód XR |
+|---|---|---|---|---|
+| `main` (`e661855c`) | 39 | 4 215 651 B | 1 236 252 B | ne |
+| větev (T1 + T11 + T2) | 39 | 4 216 359 B | 1 236 881 B | ne |
+| rozdíl | 0 | +708 B | +629 B | – |
+
+Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na domově a `createGame`). Stav lobby, karty, klávesnice i měď lobby jsou jen v chunku XR. Ten se stahuje až v prohlížeči, který VR umí; test to drží řetězcem „More ideas“.
+
+- **Proč stav lobby není v `xr-context.ts`:** ten modul je v prvním JS dvakrát (v chunku layoutu i feedu). Stav lobby v něm stál ~500 B rozbaleně navíc (naměřeno: +1 207 B proti `main`, po přesunu +708 B), proto je v `xr/xr-lobby.ts`, který načítá jen kód XR.
+- **Velikost a čitelnost v emulátoru** (hlava 1,6 m, pohled 19° dolů): karta lobby je v obraze obou očí celá. Nejmenší písmo kitu (13 px) má od očí 1,16°, klávesnice 1,08°, nad 0,9° z pravidel plánu. Text karet vět (18 px) má ~1,6°.
+- **Cena stisku klávesy:** každý stisk překreslí texturu karty lobby (náhled a počítadlo) a nahraje ji do GPU, stejně jako tabule HUD při změně počítadla. Na Questu to může být jeden pomalejší snímek na stisk; změří se v T13.
+- **Draw cally:** otevřené lobby přidá jednu síť na tlačítko (9 na kartě, 43 na klávesnici) ke hře, která pod ním stojí. Rozpočet 150 volání v `evals/vr/budget.json` měří hru bez lobby.
+- **Skutečné brýle:** lobby na Questu 2 tento běh neověřil, brýle nikdo neměl na hlavě. Patří do ruční brány T15.
 
 ### První JS bez `?vr=1` (27. 10. 2026)
 

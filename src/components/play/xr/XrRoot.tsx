@@ -19,6 +19,7 @@ import { fpsHudWanted } from '@/play/xr/flag';
 import { type FrameMeter, XR_QUALITY, createFrameMeter, framebufferScaleOf, nearestRate } from '@/play/xr/quality';
 
 import { createHostTunnel, StagePortal } from '../feed/StageHost';
+import { closeXrLobby, openXrLobby } from './xr-lobby';
 import { XrFpsHud } from './XrFpsHud';
 import { PANEL_ORDER } from './XrPanel';
 import { XrRig } from './XrRig';
@@ -60,6 +61,11 @@ const store = createXRStore({
   frameRate: nearestRate,
   foveation: XR_QUALITY.foveation,
   frameBufferScaling: framebufferScaleOf(opened),
+});
+
+// VR lobby (P67 T2) patří relaci: po odchodu z VR se zavře a další „Enter VR“ ze hry začne hrou, ne lobby.
+store.subscribe((state, prev) => {
+  if (prev.session != null && state.session == null) closeXrLobby();
 });
 
 /** Panel FPS (`?vrhud=1`) pro ruční bránu T8. */
@@ -195,8 +201,15 @@ export function XrStage() {
   return <StagePortal host={host} keepPrograms deferScenes wrap={wrapScene} />;
 }
 
-export async function enterVr(): Promise<void> {
-  await store.enterVR();
+/** `lobby` (P67 T2, „Enter VR“ domova): relace začne VR lobby; když se do VR nevstoupí, lobby nezůstane čekat. */
+export async function enterVr(options?: { readonly lobby?: boolean }): Promise<void> {
+  if (options?.lobby === true) openXrLobby();
+  try {
+    await store.enterVR();
+  } catch (error) {
+    closeXrLobby();
+    throw error;
+  }
 }
 
 export function exitVr(): void {

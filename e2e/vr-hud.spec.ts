@@ -320,7 +320,8 @@ test('table-top: the goal board is in view, a bot win shows You did it!, Again r
   const won = await panelOf(page, 'result');
   console.log(`result ${JSON.stringify({ text: won.text, eyes: won.eyes, smallest: won.smallest })}`);
   expect(won.text).toContain('You did it!');
-  expect(won.buttons.map((button) => button.label)).toEqual(['Again', 'Exit VR']);
+  // „New game“ (P67 T2) vede do VR lobby; vedlejší akce stojí nad „Again“ (`XrHud.resultOf`).
+  expect(won.buttons.map((button) => button.label)).toEqual(['New game', 'Exit VR', 'Again']);
   expectSeen(won);
   expectEnglish(won);
   expect(await ids(page)).not.toContain('hud');

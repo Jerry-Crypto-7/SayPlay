@@ -14,9 +14,11 @@ import { frameOf } from '../arcade/ArcadeStage';
 import type { ArcadeSession } from '../arcade/session';
 import { Diorama, type DeskReport, heroNodeOf } from './Diorama';
 import { useXrGame, useXrHud } from './xr-context';
+import { closeXrLobby, lobbyShown, useXrLobby } from './xr-lobby';
 import { MOTION_PRIORITY, XrAim } from './XrAim';
 import { XrHud } from './XrHud';
 import { XrInput, xrControlOf } from './XrInput';
+import { XrLobby } from './XrLobby';
 import type { PanelAim } from './XrPanel';
 import { XrSwing } from './XrSwing';
 
@@ -263,7 +265,7 @@ export interface XrReport {
 
 /** Panel HUD, jak ho vidí hráč: co na něm stojí, kde jsou tlačítka a kam padne do obrazu každého oka. */
 export interface PanelReport {
-  /** `hud`, `result` nebo `notice`. */
+  /** `hud`, `result`, `notice`, VR lobby `lobby` a jeho `keyboard` (P67 T2). */
   readonly id: string;
   /** Řádky textu a počítadla („0/3 keys“). */
   readonly text: readonly string[];
@@ -426,6 +428,13 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
   const aims = control?.input === 'shooter-rig' || control?.input === 'lanes';
   const swings = control?.input === 'throw-rig' || control?.swing !== undefined;
   const diorama = shown !== null && !nativeOf(control);
+  // VR lobby (P67 T2): nad hrou na obrazovce místo jejího HUD; ovladače do hry nejdou, dokud je otevřené.
+  const lobbyState = useXrLobby();
+  const lobby = presenting && lobbyShown(lobbyState, shown);
+  const playing = presenting && !lobby;
+  useEffect(() => {
+    if (lobbyState?.made === true && !lobbyShown(lobbyState, shown)) closeXrLobby();
+  }, [lobbyState, shown]);
   return (
     <>
       <group ref={world}>{children}</group>
@@ -433,10 +442,11 @@ export function XrRig({ children }: { readonly children: ReactNode }) {
       {presenting && !diorama && <XrPlace world={world} session={shown} control={control} />}
       {presenting && <DirectRender calls={calls} />}
       {presenting && shown !== null && <XrCull key={diorama ? 'desk' : 'free'} world={world} desk={desk} diorama={diorama} />}
-      {presenting && game !== null && control !== null && aims && <XrAim session={game} control={control} world={world} motion={motion} />}
-      {presenting && game !== null && swings && <XrSwing session={game} world={world} motion={motion} />}
-      {presenting && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
-      {presenting && shown !== null && <XrHud diorama={diorama} desk={desk} aim={aim} />}
+      {playing && game !== null && control !== null && aims && <XrAim session={game} control={control} world={world} motion={motion} />}
+      {playing && game !== null && swings && <XrSwing session={game} world={world} motion={motion} />}
+      {playing && game !== null && <XrInput session={game} motion={motion} aim={aim} />}
+      {presenting && shown !== null && !lobby && <XrHud diorama={diorama} desk={desk} aim={aim} />}
+      {lobby && <XrLobby shown={shown} aim={aim} />}
       <XrProbe presenting={presenting} calls={calls} motion={motion} game={game} desk={desk} />
     </>
   );

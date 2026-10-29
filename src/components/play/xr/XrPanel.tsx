@@ -53,12 +53,25 @@ const KEY_HEIGHT = size['control-m'];
 /** Nejužší tlačítko vedle obsahu (px kitu) – terč paprsku. */
 const KEY_MIN = 120;
 
+/** Barvy karet nápadů kitu (`.sp-idea--mint` …); inkoust na nich má kontrast 10,6–11,5:1. */
+export type PanelTone = 'mint' | 'sun' | 'sky' | 'bubblegum';
+
 export interface PanelButton {
   readonly id: string;
   readonly label: string;
   /** Rajčatová hlavní akce – nejvýš jedna na panel. */
   readonly primary?: boolean;
+  /** Výplň karty nápadu místo papíru (jen v mřížce `grid`). */
+  readonly tone?: PanelTone;
   press(): void;
+}
+
+/** Mřížka tlačítek (P67 T2): karty vět lobby, klávesy klávesnice. Popisek se zalomí do šířky buňky. */
+export interface PanelGrid {
+  readonly columns: number;
+  readonly cells: readonly PanelButton[];
+  /** Mezera mezi buňkami (px kitu), výchozí `space-2`. */
+  readonly gap?: number;
 }
 
 /** Počítadlo jako `.sp-stat`: hodnota a pod ní popisek (`null` = hodnota se popíše sama, „5 shots left“). */
@@ -77,7 +90,11 @@ export interface PanelSpec {
   readonly headline?: string;
   readonly title?: string;
   readonly body?: string;
+  /** Chyba pod textem, barvou `alarm` jako `.sp-field-error` (P67 T2). */
+  readonly note?: string;
   readonly stats?: readonly PanelStat[];
+  /** Mřížka tlačítek pod počítadly, nad řadou `buttons`. */
+  readonly grid?: PanelGrid;
   readonly buttons?: readonly PanelButton[];
   /** Tlačítka vedle poslední řady obsahu, ne pod ní – nižší karta tam, kde je v zorném poli málo místa. */
   readonly inline?: boolean;
@@ -95,6 +112,19 @@ interface Line {
   readonly type: Type;
   /** Střed řádku od horního okraje karty (px kitu). */
   readonly y: number;
+  /** Barva textu; bez ní inkoust. */
+  readonly fill?: string;
+}
+
+/** Tlačítko rozvržené na kartě: `lines` = popisek zalomený do šířky (jeden řádek u tlačítek řady). */
+interface Key {
+  readonly id: string;
+  readonly label: string;
+  readonly primary: boolean;
+  readonly tone?: PanelTone;
+  readonly lines: readonly string[];
+  readonly type: Type;
+  readonly rect: Rect;
 }
 
 /** Rozvržená karta v px kitu, `y` dolů od horního okraje. */
@@ -104,7 +134,7 @@ export interface PanelLayout {
   readonly height: number;
   readonly lines: readonly Line[];
   readonly chips: readonly { readonly stat: PanelStat; readonly rect: Rect }[];
-  readonly keys: readonly { readonly id: string; readonly label: string; readonly primary: boolean; readonly rect: Rect }[];
+  readonly keys: readonly Key[];
 }
 
 const fontOf = (type: Type, scale = 1): string => `${type.weight} ${type.size * scale}px ${fontFamily.display}`;
@@ -154,11 +184,11 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
   const lines: Mutable<Line>[] = [];
   const last: { row: Row | null } = { row: null };
   let y = PAD;
-  const block = (text: string | undefined, type: Type): void => {
+  const block = (text: string | undefined, type: Type, fill?: string): void => {
     if (text === undefined) return;
     const step = type.size * type.lineHeight;
     for (const part of wrap(text, type, inner)) {
-      const line = { text: part, type, y: y + step / 2 };
+      const line = { text: part, type, y: y + step / 2, ...(fill === undefined ? {} : { fill }) };
       lines.push(line);
       last.row = { top: y, h: step, right: PAD + widthOf(part, type), lines: [line], chips: [] };
       y += step;
@@ -168,6 +198,7 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
   block(spec.headline, TYPE.headline);
   block(spec.title, TYPE.title);
   block(spec.body, TYPE.body);
+  block(spec.note, TYPE.body, color.alarm);
 
   const chips: { stat: PanelStat; rect: Mutable<Rect> }[] = [];
   const stats = spec.stats ?? [];
@@ -191,11 +222,31 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
     y += h + GAP;
   }
 
+  // Mřížka: buňky jedné šířky, řada tak vysoká jako nejdelší zalomený popisek v ní, aspoň `control-s`.
+  const cells: Key[] = [];
+  const grid = spec.grid;
+  if (grid !== undefined && grid.cells.length > 0) {
+    const gap = grid.gap ?? space['2'];
+    const w = (inner - gap * (grid.columns - 1)) / grid.columns;
+    const step = TYPE.body.size * TYPE.body.lineHeight;
+    for (let from = 0; from < grid.cells.length; from += grid.columns) {
+      const row = grid.cells.slice(from, from + grid.columns).map((cell) => ({ cell, lines: wrap(cell.label, TYPE.body, w - 2 * CHIP_PAD.x) }));
+      const h = Math.max(size['control-s'], Math.max(...row.map(({ lines: wrapped }) => wrapped.length)) * step + 2 * CHIP_PAD.y);
+      row.forEach(({ cell, lines: wrapped }, index) =>
+        cells.push({ ...keyFrom(cell, wrapped, TYPE.body), rect: { x: PAD + index * (w + gap), y, w, h } }),
+      );
+      y += h + gap;
+    }
+    y += GAP - gap;
+    // Tlačítka řady pod mřížkou, ne vedle ní.
+    last.row = null;
+  }
+
   const buttons = spec.buttons ?? [];
   const natural = buttons.map((button) => Math.max(KEY_MIN, widthOf(button.label, TYPE.button) + 2 * space['5']));
   const together = natural.reduce((sum, w) => sum + w, 0) + GAP * Math.max(0, buttons.length - 1);
   const beside = last.row;
-  let keys: PanelLayout['keys'];
+  let keys: Key[];
   if (spec.inline === true && beside !== null && buttons.length > 0 && beside.right + GAP + together <= PAD + inner) {
     // Řada se srovná na výšku tlačítka; obsah řady i tlačítka svisle uprostřed.
     const h = Math.max(beside.h, KEY_HEIGHT);
@@ -205,16 +256,25 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
     keys = buttons.map((button, index) => {
       const rect = { x, y: beside.top + (h - KEY_HEIGHT) / 2, w: natural[index]!, h: KEY_HEIGHT };
       x += natural[index]! + GAP;
-      return { id: button.id, label: button.label, primary: button.primary === true, rect };
+      return { ...keyFrom(button, [button.label], TYPE.button), rect };
     });
     y = beside.top + h + GAP;
   } else {
     const w = (inner - GAP * (buttons.length - 1)) / buttons.length;
-    keys = buttons.map((button, index) => ({ id: button.id, label: button.label, primary: button.primary === true, rect: { x: PAD + index * (w + GAP), y, w, h: KEY_HEIGHT } }));
+    keys = buttons.map((button, index) => ({ ...keyFrom(button, [button.label], TYPE.button), rect: { x: PAD + index * (w + GAP), y, w, h: KEY_HEIGHT } }));
     if (keys.length > 0) y += KEY_HEIGHT + GAP;
   }
-  return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys };
+  return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys: [...cells, ...keys] };
 }
+
+const keyFrom = (button: PanelButton, lines: readonly string[], type: Type): Omit<Key, 'rect'> => ({
+  id: button.id,
+  label: button.label,
+  primary: button.primary === true,
+  ...(button.tone === undefined ? {} : { tone: button.tone }),
+  lines,
+  type,
+});
 
 /** Obsah karty bez obsluhy tlačítek – podle něj se karta rozvrhne a nakreslí znovu jen při změně. */
 export const specKey = (spec: PanelSpec): string =>
@@ -225,7 +285,9 @@ export const specKey = (spec: PanelSpec): string =>
     spec.headline,
     spec.title,
     spec.body,
+    spec.note,
     spec.stats,
+    spec.grid === undefined ? null : [spec.grid.columns, spec.grid.gap, spec.grid.cells.map((cell) => [cell.id, cell.label, cell.primary === true, cell.tone])],
     spec.buttons?.map((button) => [button.id, button.label, button.primary === true]),
   ]);
 
@@ -274,7 +336,7 @@ function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
   const card = { x: 0, y: 0, w: layout.width, h: layout.height };
   shadowOf(ctx, card, radius.lg, CARD_SHADOW);
   box(ctx, card, radius.lg, color.paper, borderWidth.base);
-  for (const line of layout.lines) text(ctx, line.text, line.type, PAD, line.y, color.ink, 'left');
+  for (const line of layout.lines) text(ctx, line.text, line.type, PAD, line.y, line.fill ?? color.ink, 'left');
   for (const { stat, rect } of layout.chips) {
     box(ctx, rect, radius.md, color.paper, borderWidth.base);
     const value = TYPE.value.size * TYPE.value.lineHeight;
@@ -286,7 +348,7 @@ function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
 type KeyState = 'rest' | 'aimed' | 'pressed';
 
 /** Tlačítko kitu: v klidu se stínem, s paprskem na něm silnější obrys, stisknuté „zamáčknuté“ do stínu. */
-function drawKey(canvas: HTMLCanvasElement, key: PanelLayout['keys'][number], state: KeyState): void {
+function drawKey(canvas: HTMLCanvasElement, key: Key, state: KeyState): void {
   const ctx = canvas.getContext('2d');
   if (ctx === null) return;
   ctx.setTransform(RES, 0, 0, RES, 0, 0);
@@ -294,8 +356,11 @@ function drawKey(canvas: HTMLCanvasElement, key: PanelLayout['keys'][number], st
   const sunk = state === 'pressed' ? KEY_SHADOW : 0;
   const face = { x: sunk, y: sunk, w: key.rect.w, h: key.rect.h };
   if (state !== 'pressed') shadowOf(ctx, face, radius.md, KEY_SHADOW);
-  box(ctx, face, radius.md, key.primary ? color.tomato : color.paper, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
-  text(ctx, key.label, TYPE.button, sunk + key.rect.w / 2, sunk + key.rect.h / 2, color.ink, 'center');
+  box(ctx, face, radius.md, key.primary ? color.tomato : key.tone !== undefined ? color[key.tone] : color.paper, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
+  // Řádky popisku svisle uprostřed tlačítka.
+  const step = key.type.size * key.type.lineHeight;
+  const top = sunk + key.rect.h / 2 - (step * (key.lines.length - 1)) / 2;
+  key.lines.forEach((line, index) => text(ctx, line, key.type, sunk + key.rect.w / 2, top + index * step, color.ink, 'center'));
 }
 
 /** Plátno 2D kreslí písmem stránky, až je načtené: do té doby náhradním, po načtení se karty rozvrhnou znovu. */
