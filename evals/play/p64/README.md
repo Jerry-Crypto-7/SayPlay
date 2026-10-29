@@ -255,3 +255,50 @@ spec překryv jen vypíše a hlídají ho kamery T3 a T4.
 ```
 FALLBACK_SMOKE_URL=http://127.0.0.1:3164 P64_HUD_SHOTS=D:/caches/p64/hud/final npx playwright test e2e/p64-portrait-hud.spec.ts --project=pixel7-touch --project=iphone-touch --project=chromium --workers=1
 ```
+
+## T7 – ovládání palce
+
+Jen DOM a CSS pod podmínkou T6 (`max-aspect-ratio: 1/1`, `pointer: coarse`, ≤ 1023 px) v samostatném bloku na
+konci `play.css`. Vstup, scéna, kamera ani hash se nemění; `usePlayRect` (T2) zůstal, jak byl.
+
+- **Joystick** (`TouchStick`): na výšku je kroužek vidět i v klidu, vlevo dole nad dolní řadou HUD (`--_stack`).
+  Prst ho přenese pod sebe jako dřív (kdekoli na ploše), puštění ho vrátí domů. Osu dál počítá jen `useArenaInput`
+  z místa dotyku: `p64-stick.test.ts` drží pro týž tah táž volání `session.hold` jako `main` (s kroužkem i bez).
+- **Tlačítka** (`.play-fire`, `.play-action`, `.play-ability`): kolo 62 px (`--sp-size-control-l`, dřív 72),
+  sloupec od `--_stack` odspodu podle pořadí v DOM. Zmizela díra po chybějící střelbě: tlačítko úderu nebo
+  použití v aréně a úkolu leželo o kolo výš (84 px) nad prázdným místem. Čtvrté a páté kolo jde do druhého sloupce.
+  Ve feedu sloupec dál stojí vlevo od lišty (`right: 72px`).
+- **Zóny** plošinovky a souboje: beze změny, štítky už stály nad dolní řadou ve spodních 45 %.
+- **Nápověda míče**: dřívější inline styl je teď třída `.play-ball-hint` se stejnými hodnotami. Na výšku leží
+  dole nad sloupcem tlačítek (nad dolní řadou), na papíru s obrysem, jen dotyková věta, 2 řádky na obou telefonech.
+
+Obdélníky na výšku (tik 30 hry hráče, `e2e/p64-thumb.spec.ts`):
+
+| buňka | Pixel 7 412 × 839 | iPhone 15 393 × 659 |
+|---|---|---|
+| aréna, úkol: tlačítko | 596–668 → 691–753 | 416–488 → 511–573 |
+| aréna, úkol: kroužek v klidu | skrytý → 657–753 | skrytý → 477–573 |
+| sloupec Fire, Dash, Shield (horní hrana) | → 543 | → 363 |
+
+Pro T3–T5 a bránu: horní hrana ovládání arény a úkolu klesla o 95 px, takže `playRect` auditu (a `usePlayRect`)
+je tam vyšší – Pixel 477 → 572 px, iPhone 296 → 391 px (inference z hrany tlačítka, audit jsem na větvi T7
+nepouštěl). Kroužek v `playRect` není, stojí vlevo ve stejném pásu jako tlačítko (o 34 px výš).
+
+Měření (server `next start` na 3174, `PLAY_READER=off`, útrata 0 USD):
+
+- `p64-thumb` (22 buněk + sloupec tří kol + míč z dílů, na výšku i na šířku, a karta souboje ve feedu):
+  25 / 25 na `pixel7-touch` i `iphone-touch`. Na šířku: kroužek v klidu skrytý, kola 72 px, nápověda vlevo nahoře
+  i s větou o klávesnici. Ve feedu tlačítko úderu 278–340 px, lišta od 356 (Pixel), 259–321 / 337 (iPhone).
+  Proti buildu T6 bez T7 spec padá (kroužek v klidu skrytý, nápověda míče přes řádek cíle).
+- `p64-stick.test.ts` 3 / 3; mutace (kroužek polkne `pointerdown`) → 2 červené, po obnově zelené.
+- `play-feed-phone` 2 / 2 (nový krok: svislý tah po kroužku nahoru i dolů kartu nepřetočí ani feed neposune).
+- `interface-language` 8 / 8 (`chromium`, `pixel7-touch`), `p64-portrait-hud` 47 passed / 24 skipped.
+- `play-touch` 12 / 14: všech pět her gesty vyhraných na obou telefonech; padá „duel: the Quick | Full detail switch
+  leaves the touch zones readable“ na obou – přepínač verze, který T6 dal na výšku do horní mřížky, se překrývá
+  s kartou „Tap to start“ (Pixel: přepínač y 122–167, karta 130–222). Totéž padá na buildu T6 bez T7, T7 to
+  nezpůsobil a neopravuje (kartu staví `ArcadeStage` mimo rozsah T7) – patří T6 / bráně.
+
+```
+FALLBACK_SMOKE_URL=http://127.0.0.1:3174 P64_THUMB_SHOTS=D:/caches/p64/t7-shots npx playwright test e2e/p64-thumb.spec.ts --project=pixel7-touch --project=iphone-touch --workers=1
+npx vitest run src/components/play/arcade/__tests__/p64-stick.test.ts
+```

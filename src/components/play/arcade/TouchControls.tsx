@@ -6,6 +6,8 @@
  * dotek, a ještě 3 s hry, pak zhasnou. `TouchStick`: v aréně a úkolu kroužek
  * joysticku s páčkou pod prstem – kreslí tah, který `useArenaInput` čte
  * (střed = místo dotyku, každý nový prst střed přenese, puštění vše skončí).
+ * Na telefonu na výšku (P64 T7, `play.css`) stojí kroužek i v klidu na domovské pozici vlevo dole a puštění ho
+ * tam vrátí; osu dál počítá jen `useArenaInput` z místa dotyku (`p64-stick.test.ts`).
  * Obojí jen na dotyku (zóny souboje i na desktopu, s klávesami); kit: papír a inkoustový obrys, žádná průhledná plocha.
  */
 
@@ -85,6 +87,10 @@ export function TouchStick({ surface }: { readonly surface: React.RefObject<HTML
     };
     const onUp = () => {
       origin = null;
+      // Bez polohy z tahu stojí kroužek na domovské pozici z CSS (na výšku), jinde je v klidu skrytý.
+      base.style.left = '';
+      base.style.top = '';
+      handle.style.transform = '';
       delete base.dataset.active;
     };
     element.addEventListener('pointerdown', onDown);

@@ -1343,10 +1343,9 @@ export default function ArcadeStage({
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
-      {enabled && control === 'ball' && session.world.control.id === 'assembly_control' && <div
-        className="play-pause-hint" data-testid="ball-dribble-hint"
-        style={{ position: 'absolute', left: 12, top: 12, maxWidth: '65%', pointerEvents: 'none' }}>
-        Left side: drag to move. Right side: aim and release to shoot. Keyboard: arrows move, Q/E aim, Space shoots.
+      {/* Na telefonu na výšku (P64 T7, `play.css`) dole nad ovládáním a bez věty o klávesnici. */}
+      {enabled && control === 'ball' && session.world.control.id === 'assembly_control' && <div className="play-pause-hint play-ball-hint" data-testid="ball-dribble-hint">
+        Left side: drag to move. Right side: aim and release to shoot.<span className="play-ball-hint-keys"> Keyboard: arrows move, Q/E aim, Space shoots.</span>
       </div>}
       {fireButton && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}

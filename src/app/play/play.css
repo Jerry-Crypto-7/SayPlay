@@ -3723,3 +3723,96 @@ button.play-feed-card {
     margin-top: var(--sp-space-1);
   }
 }
+
+/* P64 T7 – ovládání palce. Nápověda míče (`ArcadeStage.tsx`) vlevo nahoře na desktopu a na šířku: tytéž hodnoty,
+ * které dřív nesl inline styl. */
+.play-ball-hint {
+  position: absolute;
+  top: var(--sp-space-3);
+  left: var(--sp-space-3);
+  max-width: 65%;
+  pointer-events: none;
+}
+
+/* Telefon na výšku (podmínka T6 výš): joystick vlevo dole, tlačítka ve sloupci vpravo dole, obojí nad dolní řadou
+ * HUD (`--_stack`), střed ve spodních 45 % výšky (`e2e/p64-thumb.spec.ts`). Desktop a šířka beze změny. */
+@media (max-aspect-ratio: 1/1) and (pointer: coarse) and (max-width: 1023px) {
+  .play-stage {
+    /* Krok sloupce: kolo a mezera mezi koly (kit: cíle ≥ 8 px od sebe). */
+    --_thumb-step: calc(var(--sp-size-control-l) + var(--sp-space-3));
+  }
+
+  /* Kroužek je vidět i v klidu na domovské pozici; dotek ho přenese pod prst (inline poloha z `TouchStick`),
+   * puštění vrátí sem. */
+  .play-stick {
+    display: block;
+  }
+
+  .play-stick:not([data-active='true']) {
+    top: auto;
+    left: calc(var(--_side-l) + var(--sp-space-3));
+    bottom: var(--_stack);
+    transform: none;
+  }
+
+  /* Střelba, úder a použití, akce A a B (všechny `.play-fire`, v tomhle pořadí v DOM) odspodu bez díry po
+   * chybějící střelbě: místo kola určí, kolik tlačítek palce mu v DOM předchází. Tři kola nad sebou, čtvrté
+   * a páté ve druhém sloupci vlevo – na iPhonu 393 × 659 by čtvrté nad sebou leželo mimo zónu palce. */
+  .play-stage > .play-fire {
+    bottom: var(--_stack);
+    width: var(--sp-size-control-l);
+    height: var(--sp-size-control-l);
+  }
+
+  .play-stage > .play-fire ~ .play-fire {
+    bottom: calc(var(--_stack) + var(--_thumb-step));
+  }
+
+  .play-stage > .play-fire ~ .play-fire ~ .play-fire {
+    bottom: calc(var(--_stack) + 2 * var(--_thumb-step));
+  }
+
+  .play-stage > .play-fire ~ .play-fire ~ .play-fire ~ .play-fire {
+    bottom: var(--_stack);
+    margin-right: var(--_thumb-step);
+  }
+
+  .play-stage > .play-fire ~ .play-fire ~ .play-fire ~ .play-fire ~ .play-fire {
+    bottom: calc(var(--_stack) + var(--_thumb-step));
+  }
+
+  /* Výška sloupce tlačítek – nápověda míče sedí nad ním. */
+  .play-stage:has(> .play-fire) {
+    --_thumb-h: var(--_thumb-step);
+  }
+
+  .play-stage:has(> .play-fire ~ .play-fire) {
+    --_thumb-h: calc(2 * var(--_thumb-step));
+  }
+
+  .play-stage:has(> .play-fire ~ .play-fire ~ .play-fire) {
+    --_thumb-h: calc(3 * var(--_thumb-step));
+  }
+
+  /* Nápověda míče z levého horního rohu (pod pilulkou postupu) dolů nad ovládání: jen dotyková věta, nejvýš dva
+   * řádky, štítek kitu (papír, inkoustový obrys). Vpravo nechá místo liště feedu (kola `--sp-size-touch-min`). */
+  .play-ball-hint {
+    top: auto;
+    left: var(--_side-l);
+    bottom: calc(var(--_stack) + var(--_thumb-h, 0px));
+    max-width: calc(100% - var(--_side-l) - var(--_side-r) - var(--sp-size-touch-min) - var(--sp-space-3));
+    margin: 0;
+    padding: var(--sp-space-1) var(--sp-space-3);
+    border: var(--sp-border-base) solid var(--sp-outline);
+    border-radius: var(--sp-radius-md);
+    background: var(--sp-surface);
+    color: var(--sp-text);
+    font-size: var(--sp-text-label-size);
+    font-weight: var(--sp-text-label-weight);
+    line-height: var(--sp-text-label-leading);
+  }
+
+  .play-ball-hint-keys {
+    display: none;
+  }
+}
