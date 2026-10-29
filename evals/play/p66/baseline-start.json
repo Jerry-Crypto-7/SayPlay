@@ -1,0 +1,843 @@
+{
+  "p66": {
+    "task": "T1 baseline of main e661855c: time from sending the sentence on /play to a playable game, phone profile pixel7-cpu4, 3 runs per sentence.",
+    "commit": "e661855c",
+    "server": "next start -p 3167, PLAY_READER=off (0 paid calls), empty in-memory store",
+    "sides": "a and b are the same main server (no branch yet), so every run measured main twice back to back; the baseline is the median over both sides.",
+    "sentences": {
+      "p30/dev.json": [
+        "s039",
+        "s037"
+      ],
+      "p66/dev.json": [
+        "v02",
+        "v05",
+        "v13"
+      ]
+    },
+    "playable": "30/30",
+    "medianMs": 10768,
+    "medianFirstFrameMs": 6108,
+    "perSentenceMedianMs": {
+      "s1-zombie-shooter-in-a-mall": 11787,
+      "s2-a-space-marine-shoots-alien-bugs-in-a-mi": 9734,
+      "s3-a-little-robot-auto-fires-at-swarms-of-s": 9458.5,
+      "s4-a-black-hole-swallows-the-cars-of-a-busy": 10878,
+      "s5-sort-the-colourful-candies-into-the-righ": 23090
+    },
+    "rawDir": "D:/caches/p66/fp-raw (HAR, outside the repo)"
+  },
+  "about": "Interleaved A/B time to first playable on /play: the same sentences and shared games on two servers, runs paired back to back. Method: evals/play/first-playable/README.md.",
+  "measuredAt": "2026-10-28T17:52:48.547Z",
+  "a": {
+    "url": "http://127.0.0.1:3167",
+    "label": "main e661855c (PLAY_READER=off, empty in-memory store)"
+  },
+  "b": {
+    "url": "http://127.0.0.1:3167",
+    "label": "main e661855c, same server (baseline: both sides are main)"
+  },
+  "probe": "scripts/measure/time-to-playable.mjs via scripts/measure/first-playable-ab.mjs",
+  "profiles": {
+    "pixel7-cpu4": {
+      "device": "Pixel 7",
+      "cpuThrottle": 4
+    }
+  },
+  "runs": 3,
+  "pauseMs": 5000,
+  "sentences": [
+    "zombie shooter in a mall",
+    "A space marine shoots alien bugs in a mining colony",
+    "a little robot auto-fires at swarms of space bugs on a moon base until the giant queen bug shows up",
+    "a black hole swallows the cars of a busy city",
+    "sort the colourful candies into the right jars in a sweet shop"
+  ],
+  "sharedSentences": [],
+  "summary": {
+    "byTarget": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-zombie-shooter-in-a-mall",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 11248,
+          "min": 10905,
+          "max": 13962
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 12167,
+          "min": 11407,
+          "max": 14272
+        },
+        "diffMedian": 919,
+        "pairedDiffMedian": 502
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 9541,
+          "min": 8818,
+          "max": 10175
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 9927,
+          "min": 8386,
+          "max": 10476
+        },
+        "diffMedian": 386,
+        "pairedDiffMedian": 301
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 9361,
+          "min": 8917,
+          "max": 10265
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 9556,
+          "min": 9112,
+          "max": 10578
+        },
+        "diffMedian": 195,
+        "pairedDiffMedian": 313
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 11125,
+          "min": 9529,
+          "max": 14713
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 10631,
+          "min": 9801,
+          "max": 13598
+        },
+        "diffMedian": -494,
+        "pairedDiffMedian": -494
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s5-sort-the-colourful-candies-into-the-righ",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 27122,
+          "min": 22772,
+          "max": 27265
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 21381,
+          "min": 20258,
+          "max": 23408
+        },
+        "diffMedian": -5741,
+        "pairedDiffMedian": -3714
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 15,
+          "median": 10905,
+          "min": 8818,
+          "max": 27265
+        },
+        "B": {
+          "failed": 0,
+          "n": 15,
+          "median": 10631,
+          "min": 8386,
+          "max": 23408
+        },
+        "diffMedian": -274,
+        "pairedDiffMedian": 272
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 15,
+          "median": 10905,
+          "min": 8818,
+          "max": 27265
+        },
+        "B": {
+          "failed": 0,
+          "n": 15,
+          "median": 10631,
+          "min": 8386,
+          "max": 23408
+        },
+        "diffMedian": -274,
+        "pairedDiffMedian": 272
+      }
+    ]
+  },
+  "summaryFirstFrame": {
+    "byTarget": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-zombie-shooter-in-a-mall",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6269,
+          "min": 5515,
+          "max": 6736
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6007,
+          "min": 5780,
+          "max": 6045
+        },
+        "diffMedian": -262,
+        "pairedDiffMedian": -489
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6009,
+          "min": 5778,
+          "max": 6101
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5363,
+          "min": 4873,
+          "max": 5449
+        },
+        "diffMedian": -646,
+        "pairedDiffMedian": -652
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5912,
+          "min": 5720,
+          "max": 6114
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6271,
+          "min": 6083,
+          "max": 6888
+        },
+        "diffMedian": 359,
+        "pairedDiffMedian": 359
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6316,
+          "min": 6115,
+          "max": 7036
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6102,
+          "min": 5203,
+          "max": 6204
+        },
+        "diffMedian": -214,
+        "pairedDiffMedian": -112
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s5-sort-the-colourful-candies-into-the-righ",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6661,
+          "min": 6456,
+          "max": 6778
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6952,
+          "min": 6204,
+          "max": 7621
+        },
+        "diffMedian": 291,
+        "pairedDiffMedian": 291
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 15,
+          "median": 6115,
+          "min": 5515,
+          "max": 7036
+        },
+        "B": {
+          "failed": 0,
+          "n": 15,
+          "median": 6083,
+          "min": 4873,
+          "max": 7621
+        },
+        "diffMedian": -32,
+        "pairedDiffMedian": -112
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 15,
+          "median": 6115,
+          "min": 5515,
+          "max": 7036
+        },
+        "B": {
+          "failed": 0,
+          "n": 15,
+          "median": 6083,
+          "min": 4873,
+          "max": 7621
+        },
+        "diffMedian": -32,
+        "pairedDiffMedian": -112
+      }
+    ]
+  },
+  "results": [
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 11248,
+      "firstFrameMs": 6736,
+      "note": "surface also changes without input (11.15 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209204942,
+      "tPlayable": 1793209216190,
+      "url": "http://127.0.0.1:3167/play/9ddf5cc08ee34615c0555130971883a4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 12167,
+      "firstFrameMs": 6007,
+      "note": "surface also changes without input (4.29 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209228534,
+      "tPlayable": 1793209240701,
+      "url": "http://127.0.0.1:3167/play/9ddf5cc08ee34615c0555130971883a4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 1,
+      "pair": 1,
+      "playable": true,
+      "ms": 10476,
+      "firstFrameMs": 4873,
+      "note": "surface also changes without input (7.48 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209258754,
+      "tPlayable": 1793209269230,
+      "url": "http://127.0.0.1:3167/play/75f92b5b4f7b34b295b456c49ab05c87"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 1,
+      "pair": 1,
+      "playable": true,
+      "ms": 10175,
+      "firstFrameMs": 6009,
+      "note": "surface also changes without input (8.48 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209282544,
+      "tPlayable": 1793209292719,
+      "url": "http://127.0.0.1:3167/play/75f92b5b4f7b34b295b456c49ab05c87"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+      "side": "A",
+      "run": 1,
+      "pair": 2,
+      "playable": true,
+      "ms": 10265,
+      "firstFrameMs": 5720,
+      "note": "surface also changes without input (4.15 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209304560,
+      "tPlayable": 1793209314825,
+      "url": "http://127.0.0.1:3167/play/c8373578bb61976efd980c3a08fe4031"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+      "side": "B",
+      "run": 1,
+      "pair": 2,
+      "playable": true,
+      "ms": 10578,
+      "firstFrameMs": 6888,
+      "note": "surface also changes without input (4.32 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209327460,
+      "tPlayable": 1793209338038,
+      "url": "http://127.0.0.1:3167/play/c8373578bb61976efd980c3a08fe4031"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+      "side": "B",
+      "run": 1,
+      "pair": 3,
+      "playable": true,
+      "ms": 13598,
+      "firstFrameMs": 5203,
+      "note": null,
+      "attempts": 5,
+      "t0": 1793209349782,
+      "tPlayable": 1793209363380,
+      "url": "http://127.0.0.1:3167/play/2e0a03c0efd3d32332f7770415fcc30b"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+      "side": "A",
+      "run": 1,
+      "pair": 3,
+      "playable": true,
+      "ms": 14713,
+      "firstFrameMs": 7036,
+      "note": null,
+      "attempts": 5,
+      "t0": 1793209373829,
+      "tPlayable": 1793209388542,
+      "url": "http://127.0.0.1:3167/play/2e0a03c0efd3d32332f7770415fcc30b"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-sort-the-colourful-candies-into-the-righ",
+      "side": "A",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 27122,
+      "firstFrameMs": 6778,
+      "note": null,
+      "attempts": 13,
+      "t0": 1793209399822,
+      "tPlayable": 1793209426944,
+      "url": "http://127.0.0.1:3167/play/803506d805feb5d789889e88c63b3b03"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-sort-the-colourful-candies-into-the-righ",
+      "side": "B",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 23408,
+      "firstFrameMs": 7621,
+      "note": null,
+      "attempts": 10,
+      "t0": 1793209440615,
+      "tPlayable": 1793209464023,
+      "url": "http://127.0.0.1:3167/play/803506d805feb5d789889e88c63b3b03"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 2,
+      "pair": 5,
+      "playable": true,
+      "ms": 11407,
+      "firstFrameMs": 6045,
+      "note": "surface also changes without input (11.37 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209477313,
+      "tPlayable": 1793209488720,
+      "url": "http://127.0.0.1:3167/play/9ddf5cc08ee34615c0555130971883a4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 2,
+      "pair": 5,
+      "playable": true,
+      "ms": 10905,
+      "firstFrameMs": 5515,
+      "note": "surface also changes without input (10.78 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209501256,
+      "tPlayable": 1793209512161,
+      "url": "http://127.0.0.1:3167/play/9ddf5cc08ee34615c0555130971883a4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 2,
+      "pair": 6,
+      "playable": true,
+      "ms": 9541,
+      "firstFrameMs": 6101,
+      "note": "surface also changes without input (3.74 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209525015,
+      "tPlayable": 1793209534556,
+      "url": "http://127.0.0.1:3167/play/75f92b5b4f7b34b295b456c49ab05c87"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 2,
+      "pair": 6,
+      "playable": true,
+      "ms": 9927,
+      "firstFrameMs": 5449,
+      "note": "surface also changes without input (5.92 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209549515,
+      "tPlayable": 1793209559442,
+      "url": "http://127.0.0.1:3167/play/75f92b5b4f7b34b295b456c49ab05c87"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+      "side": "B",
+      "run": 2,
+      "pair": 7,
+      "playable": true,
+      "ms": 9112,
+      "firstFrameMs": 6083,
+      "note": "surface also changes without input (9.07 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209570805,
+      "tPlayable": 1793209579917,
+      "url": "http://127.0.0.1:3167/play/c8373578bb61976efd980c3a08fe4031"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+      "side": "A",
+      "run": 2,
+      "pair": 7,
+      "playable": true,
+      "ms": 9361,
+      "firstFrameMs": 6114,
+      "note": "surface also changes without input (9.37 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209592178,
+      "tPlayable": 1793209601539,
+      "url": "http://127.0.0.1:3167/play/c8373578bb61976efd980c3a08fe4031"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+      "side": "A",
+      "run": 2,
+      "pair": 8,
+      "playable": true,
+      "ms": 9529,
+      "firstFrameMs": 6115,
+      "note": null,
+      "attempts": 3,
+      "t0": 1793209614038,
+      "tPlayable": 1793209623567,
+      "url": "http://127.0.0.1:3167/play/2e0a03c0efd3d32332f7770415fcc30b"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+      "side": "B",
+      "run": 2,
+      "pair": 8,
+      "playable": true,
+      "ms": 9801,
+      "firstFrameMs": 6102,
+      "note": "surface also changes without input (7.89 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209633213,
+      "tPlayable": 1793209643014,
+      "url": "http://127.0.0.1:3167/play/2e0a03c0efd3d32332f7770415fcc30b"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-sort-the-colourful-candies-into-the-righ",
+      "side": "B",
+      "run": 2,
+      "pair": 9,
+      "playable": true,
+      "ms": 21381,
+      "firstFrameMs": 6204,
+      "note": null,
+      "attempts": 11,
+      "t0": 1793209652338,
+      "tPlayable": 1793209673719,
+      "url": "http://127.0.0.1:3167/play/803506d805feb5d789889e88c63b3b03"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-sort-the-colourful-candies-into-the-righ",
+      "side": "A",
+      "run": 2,
+      "pair": 9,
+      "playable": true,
+      "ms": 27265,
+      "firstFrameMs": 6456,
+      "note": null,
+      "attempts": 11,
+      "t0": 1793209685998,
+      "tPlayable": 1793209713263,
+      "url": "http://127.0.0.1:3167/play/803506d805feb5d789889e88c63b3b03"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 3,
+      "pair": 10,
+      "playable": true,
+      "ms": 13962,
+      "firstFrameMs": 6269,
+      "note": "surface also changes without input (3.15 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209726003,
+      "tPlayable": 1793209739965,
+      "url": "http://127.0.0.1:3167/play/9ddf5cc08ee34615c0555130971883a4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 3,
+      "pair": 10,
+      "playable": true,
+      "ms": 14272,
+      "firstFrameMs": 5780,
+      "note": "surface also changes without input (4.06 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793209753728,
+      "tPlayable": 1793209768000,
+      "url": "http://127.0.0.1:3167/play/9ddf5cc08ee34615c0555130971883a4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 3,
+      "pair": 11,
+      "playable": true,
+      "ms": 8386,
+      "firstFrameMs": 5363,
+      "note": "surface also changes without input (6.12 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209781780,
+      "tPlayable": 1793209790166,
+      "url": "http://127.0.0.1:3167/play/75f92b5b4f7b34b295b456c49ab05c87"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 3,
+      "pair": 11,
+      "playable": true,
+      "ms": 8818,
+      "firstFrameMs": 5778,
+      "note": "surface also changes without input (6.12 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209802351,
+      "tPlayable": 1793209811169,
+      "url": "http://127.0.0.1:3167/play/75f92b5b4f7b34b295b456c49ab05c87"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+      "side": "A",
+      "run": 3,
+      "pair": 12,
+      "playable": true,
+      "ms": 8917,
+      "firstFrameMs": 5912,
+      "note": "surface also changes without input (8.99 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209822399,
+      "tPlayable": 1793209831316,
+      "url": "http://127.0.0.1:3167/play/c8373578bb61976efd980c3a08fe4031"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+      "side": "B",
+      "run": 3,
+      "pair": 12,
+      "playable": true,
+      "ms": 9556,
+      "firstFrameMs": 6271,
+      "note": "surface also changes without input (9.31 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793209843682,
+      "tPlayable": 1793209853238,
+      "url": "http://127.0.0.1:3167/play/c8373578bb61976efd980c3a08fe4031"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+      "side": "B",
+      "run": 3,
+      "pair": 13,
+      "playable": true,
+      "ms": 10631,
+      "firstFrameMs": 6204,
+      "note": null,
+      "attempts": 3,
+      "t0": 1793209866004,
+      "tPlayable": 1793209876635,
+      "url": "http://127.0.0.1:3167/play/2e0a03c0efd3d32332f7770415fcc30b"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+      "side": "A",
+      "run": 3,
+      "pair": 13,
+      "playable": true,
+      "ms": 11125,
+      "firstFrameMs": 6316,
+      "note": null,
+      "attempts": 3,
+      "t0": 1793209887392,
+      "tPlayable": 1793209898517,
+      "url": "http://127.0.0.1:3167/play/2e0a03c0efd3d32332f7770415fcc30b"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-sort-the-colourful-candies-into-the-righ",
+      "side": "A",
+      "run": 3,
+      "pair": 14,
+      "playable": true,
+      "ms": 22772,
+      "firstFrameMs": 6661,
+      "note": null,
+      "attempts": 10,
+      "t0": 1793209909194,
+      "tPlayable": 1793209931966,
+      "url": "http://127.0.0.1:3167/play/803506d805feb5d789889e88c63b3b03"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-sort-the-colourful-candies-into-the-righ",
+      "side": "B",
+      "run": 3,
+      "pair": 14,
+      "playable": true,
+      "ms": 20258,
+      "firstFrameMs": 6952,
+      "note": "surface also changes without input (2.21 % in 300 ms) – check the screenshot",
+      "attempts": 9,
+      "t0": 1793209943550,
+      "tPlayable": 1793209963808,
+      "url": "http://127.0.0.1:3167/play/803506d805feb5d789889e88c63b3b03"
+    }
+  ]
+}

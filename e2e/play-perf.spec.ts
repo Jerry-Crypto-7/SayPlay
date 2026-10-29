@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { startGame } from './play-start';
@@ -36,6 +36,13 @@ const GAMES = [
   { id: 'walker', sentence: 'a cat sneaks past guards to steal a fish', arcade: true },
   { id: 'ball', sentence: 'a penguin plays football against a walrus', arcade: true },
 ] as const;
+
+/** `tap`: hodiny stojí do prvního ťuku do scény (`TAP_TO_START` v `ArcadePlay.tsx`). */
+type Game = { readonly id: string; readonly sentence: string; readonly arcade: boolean; readonly tap?: boolean };
+/** P66 T1: `PERF_GAMES_FILE` = JSON `{ games: [{ id, sentence, tap? }] }` (arkádové hry, např. věta na žánr) místo `GAMES`. */
+const GAME_LIST: readonly Game[] = process.env.PERF_GAMES_FILE
+  ? (JSON.parse(readFileSync(process.env.PERF_GAMES_FILE, 'utf8')) as { games: { id: string; sentence: string; tap?: boolean }[] }).games.map((game) => ({ ...game, arcade: true }))
+  : GAMES;
 
 /** Předvolba „Fast 4G“ z Chrome DevTools (SDK `NetworkManager`): 9 Mb/s dolů, 1,5 Mb/s nahoru, RTT 60 ms × 2,75. */
 const FAST_4G = { offline: false, latency: 165, downloadThroughput: (9_000 * 1000) / 8 * 0.9, uploadThroughput: (1_500 * 1000) / 8 * 0.9 };
@@ -173,7 +180,7 @@ function installPerfProbe(): void {
   requestAnimationFrame(tick);
 }
 
-async function measureOnce(browser: Browser, url: string, game: (typeof GAMES)[number], profile: (typeof PROFILES)[number]) {
+async function measureOnce(browser: Browser, url: string, game: Game, profile: (typeof PROFILES)[number]) {
   const context = await browser.newContext(profile.options);
   const page: Page = await context.newPage();
   const errors: string[] = [];
@@ -190,6 +197,12 @@ async function measureOnce(browser: Browser, url: string, game: (typeof GAMES)[n
     await page.goto(url);
     // Od P33 T11 hra čeká na první dotek: „první tik“ je teď tik po nejrychlejším možném ťuku.
     await startGame(page);
+    // Hodiny ovládání s `waitForInput` (poletování, střelnice, načasování, rytmus, souboj) pustí až ťuk do scény.
+    if (game.tap === true) {
+      const box = (await page.locator('[data-testid="arcade-stage"] canvas').first().boundingBox())!;
+      if (profile.options.hasTouch === true) await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      else await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    }
     step('loaded, waiting for first frame and tick');
     await page.waitForFunction(() => window.__perf?.firstTickMs !== null && window.__perf?.firstDrawMs !== null, undefined, { timeout: 120_000 });
 
@@ -314,16 +327,18 @@ test('@measure play performance: legacy and P41 movements × desktop and emulate
 
   // Zúžení pro ladění: `PERF_GAMES=runner`, `PERF_PROFILES=desktop`.
   const only = (list: string | undefined, id: string) => list === undefined || list.split(',').includes(id);
-  for (const game of GAMES.filter((g) => only(process.env.PERF_GAMES, g.id))) {
+  for (const game of GAME_LIST.filter((g) => only(process.env.PERF_GAMES, g.id))) {
     step(`publishing ${game.id}`);
     const response = await request.post('/api/play/games', { data: { sentence: game.sentence } });
     expect(response.status(), await response.text()).toBeLessThan(300);
-    const url = ((await response.json()) as { url: string }).url;
+    const { url, versionId } = (await response.json()) as { url: string; versionId: string };
+    // Žánr hry, kterou věta opravdu vydala (věta na žánr z `PERF_GAMES_FILE` musí trefit svůj žánr).
+    const published = ((await (await request.get(`/api/play/games/${versionId}`)).json()) as { spec?: { genre?: { id: string; mode: string } } }).spec?.genre ?? null;
     for (const profile of PROFILES.filter((p) => only(process.env.PERF_PROFILES, p.id))) {
       const runs: Run[] = [];
       for (let i = 0; i < REPEATS; i += 1) {
         runs.push(await measureOnce(browser, url, game, profile));
-        results[`${game.id}/${profile.id}`] = { game: game.id, sentence: game.sentence, profile: profile.id, cpuThrottle: profile.cpu, network: profile.network, median: summarise(runs), runs };
+        results[`${game.id}/${profile.id}`] = { game: game.id, sentence: game.sentence, published, profile: profile.id, cpuThrottle: profile.cpu, network: profile.network, median: summarise(runs), runs };
         save();
       }
       for (const run of runs) expect.soft(run.errors).toEqual([]);

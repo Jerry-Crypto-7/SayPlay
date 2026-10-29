@@ -12,6 +12,111 @@ Všechno v T1 běží nad čistým `main` `e661855c` ve worktree `D:/caches/p66/
 
 SHA-256 nad LF bajty: `42bf10ccca56ea5dab0b0c06cca9401701b3bb3980794c31da9a853c99c9e611` (`seal.ts`). Otevře se jednou v T16 (`openSealedOnce`); nic se podle ní neladí.
 
+- `knownSets` = seznam P58B + každá `p56c/*.json` + sady P58B–P63, `p64/holdout.json` a `p66/dev.json`. `p64/holdout.json` v `main` ani ve worktree P64 28. 10. nebyl, takže ho pečeť porovná až po sloučení P64 (soubor, který neexistuje, se přeskočí).
+- Rozbito schválně: změněný bajt sady a věta z dosavadní sady shodí 2 testy pečeti ze 4.
+
+### Dev sada
+
+`dev.json` – 20 nových anglických vět, 4 na každý nový žánr, s místem a věcmi. Ladí se jen na ní a na `p30/dev.json` [0..11].
+
+### Štítky žánrů (`genre-labels.mjs` → `genre-labels.json`)
+
+- 516 různých vět: sada 200 a 11 otevřených sad (počty po sadách v JSON `sets`).
+- Slepý soudce `claude -p --safe-mode --tools ""` v prázdném `mkdtemp`. Vidí jen očíslované věty a 24 popisů typů her slovy pod klíči G01–G24, ne id z kódu.
+- 26 dávek po 20 větách, souběh 1, pořadí dávek ze seedu v JSON; 26 volání, 0 selhání, 328 s.
+- Na větu `best` (žánr, nebo `none` pro ne-hru) a `acceptable` (1–3 žánry, kde by věta dávala smysl).
+
+### Podíl špatného žánru na `main` (`genre-route.mjs` → `route-main.json`)
+
+`wrong` = věta s `best ≠ none`, jejíž žánr z rychlé hry (`classifyGenre(věta, null).ranked[0]`, bez modelu) není v `acceptable`. Ne-hry se nepočítají. Definici drží `__tests__/genre-route.test.ts` na třech ručních větách.
+
+| Sada | vět | ne-hra | počítáno | špatný žánr | `wrongRate` |
+|---|---|---|---|---|---|
+| sada 200 | 200 | 25 | 175 | 68 | **0,389** |
+| otevřené sady | 316 | 9 | 307 | 110 | **0,358** |
+
+Pro srovnání žánr hotového návrhu (`draftGameSpecWithMeta`, přeskočí volbu, která se nepřeloží): 0,349 a 0,339 (`wrongRateDraft`). Stráž T12 a brána G6 berou `wrongRate`.
+
+### Dosah nových žánrů
+
+`best` / `acceptable` = počet vět, které soudce dal novému žánru jako nejlepší / přijatelný; podíl = `acceptable` / počet vět sady; „odkud“ = žánr, který těm větám dnes dá rychlá hra.
+
+| Žánr | sada 200 `best` / `acceptable` | podíl | odkud | otevřené `best` / `acceptable` | podíl | odkud |
+|---|---|---|---|---|---|---|
+| survivor | 0 / 2 | 1,0 % | arena 1, quest 1 | 1 / 11 | 3,5 % | arena 5, shooter 3, quest 2, voyage 1 |
+| díra | 1 / 6 | 3,0 % | arena 6 | 1 / 7 | 2,2 % | arena 6, quest 1 |
+| krádež | 3 / 5 | 2,5 % | arena 4, quest 1 | 5 / 10 | 3,2 % | arena 6, quest 2, platformer 1, runner 1 |
+| třídění | 3 / 8 | 4,0 % | arena 6, quest 1, rhythm 1 | 3 / 9 | 2,8 % | arena 4, quest 2, throw 2, merge 1 |
+| šipky | 1 / 2 | 1,0 % | arena 2 | 0 / 2 | 0,6 % | quest 1, arena 1 |
+
+Inference:
+- Dnešní sady nové žánry skoro nechtějí: v sadě 200 je dohromady nejvýš 23 přijatelných vět (věta se může počítat u dvou žánrů), jako nejlepší jen 8.
+- Skoro všechny dnes končí v `arena` (19 z 23), takže stráž krádeže v T12 hlídá hlavně arénu.
+- Šipky a survivor mají v sadě 200 dosah 1 %, šipky na otevřených sadách pod 1 %. Podle „Co nevíme“ se staví dál, ale T12 jim dá jen úzké narážky.
+
+### Otisk uložených her (`p66-hash.test.ts` → `hash-baseline.json`, commit `b787d657`)
+
+- Robot a nečinný hráč na jedné uložené hře `genre.v5` každého z 19 žánrů (buňky `p58a/framing-cells.json`) a na uložených specech z `src/play/__fixtures__`; otisk stavu po konci běhu. 48 testů.
+- Rozbito schválně: změněný seed jedné buňky shodí 1 test ze 48.
+- Po T2 (`genre.v6`) zelený 48/48.
+
+### Výchozí stav `main` (port 3167, `VERCEL_ENV=production`)
+
+Server `shots.mjs serve`: čtečka astra placená, režisér objednaný, ale jeho model nikam nevede (`MODEL_UNAVAILABLE` je záměr), takže se platí jen čtení věty.
+
+- **Dev listy** (`baseline-dev.json`): `shots.mjs` rychlá hra na `p30/dev.json` [0..11] (`D:/caches/p66/main-dev-p30`), rychlá i po čtení na `p66/dev.json` (`main-dev-p66`); `judge.mjs --view phone --judge claude --runs 2`. Hra ze čtení vznikla u 16 z 20 vět P66.
+
+  | Strana (vět) | běh 1: věrnost / hrál bych | běh 2: věrnost / hrál bych |
+  |---|---|---|
+  | `p30` dev, rychlá (12) | 0,475 / 0,35 | 0,50 / 0,35 |
+  | `p66` dev, rychlá (20) | 0,25 / 0,30 | 0,275 / 0,30 |
+  | `p66` dev, po čtení (20; hra ze čtení, jinak rychlá) | 0,275 / 0,30 | 0,275 / 0,275 |
+  | `p66` dev, jen hra ze čtení (16) | 0,30 / 0,325 | 0,30 / 0,35 |
+
+  Rozptyl soudce: 48 párů, medián rozdílu 0, nejvíc 0,12 věrnost a 0,10 „hrál bych“. Druhý běh 28. 10. narazil na limit předplatného (30 listů bez odpovědi) a doběhl 29. 10. na týchž listech.
+
+  Inference: věty na nové žánry dostávají na `main` věrnost 0,25 proti 0,475 u obecných dev vět – tam je prostor P66.
+
+- **Start** (`baseline-start.json`): `first-playable-ab.mjs`, `pixel7-cpu4`, 3 běhy, 5 dev vět (3 z `p66/dev.json`, 2 z `p30/dev.json`). Obě strany jsou tentýž server `main` (A/A), takže číslo říká i šum stroje.
+
+  | Věta | hratelná A / B (ms) | párový rozdíl (ms) | první snímek A / B (ms) |
+  |---|---|---|---|
+  | zombie shooter in a mall | 11 248 / 12 167 | +502 | 6 269 / 6 007 |
+  | a space marine shoots alien bugs… | 9 541 / 9 927 | +301 | 6 009 / 5 363 |
+  | a little robot auto-fires at swarms… | 9 361 / 9 556 | +313 | 5 912 / 6 271 |
+  | a black hole swallows the cars… | 11 125 / 10 631 | −494 | 6 316 / 6 102 |
+  | sort the colourful candies… | 27 122 / 21 381 | −3 714 | 6 661 / 6 952 |
+
+  Inference: šum A/A (párově 0,3–3,7 s) je větší než práh G3 (+0,2 s). T16 proto musí měřit prokládaně a brát medián párových rozdílů přes všech 15 párů, ne jednotlivé věty.
+- **FPS** (`baseline-fps.json`): `e2e/play-perf.spec.ts @measure` s jednou větou na žánr z `perf-genres.json` (`PERF_GAMES_FILE`, změna spec souboru je v tomto commitu), telefonní profil 412 × 823, CPU 4×, 3 běhy. Medián `fpsP50` přes 19 žánrů 59,9; **nejpomalejší `runner` 30 fps** (kresleno 31,1), `defense` také 30. Práh G4 pro nové žánry = 0,95 × 30 = 28,5 fps.
+- **Zapečetěná sada**: snímky rychlé hry i hry po čtení do `D:/caches/p66/main-holdout/`, **nesouzené**. Všech 30 vět má snímky rychlé hry; hra ze čtení vznikla u 15 z 30 (u obecné poloviny většinou ne – čtečka nechá rychlou hru). Focení začalo 28. 10. a po přerušení (9 vět) doběhlo 29. 10. tímtéž `shots.mjs` na týchž buildech.
+
+### Útrata čtení T1
+
+| Krok | volání | USD |
+|---|---|---|
+| dev `p66/dev.json` po čtení | 20 | 0,66 |
+| zapečetěná sada po čtení | 31 | 0,99 |
+| **T1 celkem** | 51 | **1,65** |
+
+Rozpočet T1 byl 1,50 USD (+0,15). Na T13, T15 a T16 zbývá 2,35 USD z 4 USD proti plánovaným 1,80. Soudci: štítky 26 volání `claude -p`, dev listy 64 volání `claude -p` (32 listů × 2 běhy), vše předplatné.
+
+### Kudy dnes jde výběr žánru (řádky na `main` `e661855c`)
+
+- **Rychlá hra:** `src/play/genre/classify.ts:420` `classifyGenre`. Pravidla slovesy jsou regulární výrazy nad ř. 100–390, dvojice žánr × režim `PAIRS` ř. 391, kostry vyřazené ř. 424 (`availability !== 'staged'`).
+- **Narážky:** pole `cues` v modulu žánru (`src/play/genre/<g>.ts`, např. `arena.ts:148`; typ `genre/contract.ts:304`). Žánry pruhů mají `cues: []` a vede je sloveso.
+- **Návrh:** `src/play/draft/draft.ts` – `TEMPLATE_TITLE` ř. 278, `GENRE_SETTING` ř. 1129, výběr místa ř. 1315, `draftGameSpecWithMeta` ř. 1484 volá `classifyGenre` ř. 1507.
+- **Řetěz:** `src/play/chain/build.ts` – `VERB_MICROS` ř. 64, `WORLD_MICROS` ř. 83, `VERB_BOSS` ř. 105.
+- **Schopnosti:** `src/play/capabilities.ts:96` `CAPABILITIES` (záznam na každé ovládání).
+- **Režisér:** `src/play/director/prompt.ts` – seznam žánrů se skládá z `GENRE_MODULES` (jen režimy `ready`), `GENRE_PITCH` ř. 123 pro žánry bez narážek, boss ř. 173.
+- **Čtečka:** `src/play/read/prompt.ts` – `READY_GENRE_MODES` (ř. 9, popisy ř. 31), `PROMPT_EXAMPLES` ř. 75.
+
+### Kudy jdou kombo, finále a boss
+
+- **Kombo:** `COMBO` `arcade/contract.ts:230` (okno 90 tiků, nejvýš ×5); zdroje `COMBO_SOURCES` `arcade/compile.ts:310`, napojení `withCombo` ř. 272 a 303. Na obrazovce `comboOf` `effects/feel.ts:70` a pilulka `PowerupBadge.tsx`.
+- **Finále:** `FINALE_GENRE_VERSION = 'genre.v4'` `pieces/pacing-parts.ts:1034`, bosse finále `finaleBossesOf` `pieces/pacing.ts:957`.
+- **Boss:** `BOSS_ATTACKS` `arcade/contract.ts:382`, ve schématu `genre/contract.ts:171`; plní ho režisér (`director/prompt.ts:173`).
+
 ## T2 – kostry pěti žánrů, `genre.v6`, kontrakt háčků
 
 ### Vstup klepnutím pro třídění a šipky: vstup pruhů, nový vstup `pick` nevznikl
