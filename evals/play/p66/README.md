@@ -1149,3 +1149,17 @@ Oprava (`chain/decide.ts`, `genre/classify.ts` → `SIGN_CELLS`): když je hlavn
 Bez druhého kola. Zbylé ztráty jako nálezy:
 - **Vzhled bez věcí věty:** třídění `v15` (lektvary v kouzelnické laboratoři) třídí medvídky a kachničky robota; krádež `v10`, `v11` – „no golden egg, dragon, cave“, „no ships, sea or island“. Věci věty se do scény nového žánru nepromítají.
 - **Svědci sloves** (nález T13): beze změny, `VERB_UNPROVED` u krádeže, třídění, šipek a přežití.
+
+### Regrese (build `79d0665a`, 29. 10.)
+
+Vitest `src/play src/components/play src/app/play src/app/api/play evals/play/p66` (sám, JSON): **14 786 / 14 794**. Osm červených ve čtyřech souborech; na `main` (`e661855c`) jsou tytéž soubory zelené (74/74), takže jde o rozdíl větve. Všechny tři příčiny jsou zamýšlené změny P66, ne chyby hry – testy drží starý stav (→ T15a):
+- `field-dressing` 3 (aréna sběr, aréna souboj, střelnice): nová věta je `genre.v6` a háčky mění otisk světa; test porovnává s otiskem `main`, který drží táž věta uložená jako `genre.v5`.
+- `field-finale` 2, `pacing-template` 2: „Survive a horde of skeletons in a graveyard until sunrise“ jde od T12 do survivor (horda), ne do přežití v aréně.
+- `bodies` 1: běžec `genre.v6` má mezi skrytými těly pět místo čtyř (jaké tělo přibylo, zapíše T15a).
+
+`runner-sections` (dřív časový limit) tentokrát prošel.
+
+E2e proti `next start` 3131, projekty podle `playwright.config.ts`:
+- `chromium` 24 specifikací: **89 / 92**. Červené `play-merge` „an idle player merges nothing“ (časový limit) a `play-push` „an idle player pushes nobody out“ („Try again!“ místo „So close.“) jsou červené i na `main` (server 3132, týž spec z worktree `main`) – nejsou regrese P66.
+- `vr-diorama` „runner.default: … keeps the hero in view“: červený jen na větvi (na `main` zelený, opakováno samostatně `--workers=1`) – hrdina běžce v diorámatu od ticku 180 vyjede z pohledu. **Regrese** → T15b.
+- `pixel7-touch` a `iphone-touch` (`play-touch`, `play-phone`, pět nových žánrů, `p66-hooks`, `play-share`): **48 / 48**.
