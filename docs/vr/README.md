@@ -96,6 +96,8 @@ Cíl: **`median` ≥ 72 a `p5` ≥ 65**. Quest 2 obnovuje obraz 72× za sekundu,
 
 Hra ve VR kreslí v plném rozlišení prohlížeče Questu. Když některá hra nedrží 72, zkus ji s nižším rozlišením: v adrese v brýlích připiš `&vrscale=0.8` a změř znovu. Rozsah je 0,8–1,0 (`0.9` je mezi). Pokud je při 0,8 hra plynulá a text na panelech pořád čitelný, napiš to do zápisu brány – profil se pak přepne na 0,8.
 
+Quest 3 a 3S kreslí na 1,2 a cílí na 90 FPS (oddíl „Profil Questu 3“ níž). Když tam hra 90 nedrží, `&vrscale=1` vrátí rozlišení Questu 2; frekvence zůstane 90. Výš než profil `vrscale` nejde.
+
 ### 10. Brýle bez člověka (`--cdp`)
 
 ```
@@ -377,6 +379,26 @@ Cíl ±1 kB je splněný; T2 sama přidala ~300 B (tlačítko „Enter VR“ na 
 - **Prohlížeč bez parametrů posluchače** (Gecko, Wolvic) dostane starší `setPosition` / `setOrientation`.
 - **Skutečné brýle:** zvuk ani vibrace na Questu 2 tento běh neověřil. Patří do ruční brány T15.
 
+### Profil Questu 3 (P67 T10, 29. 10. 2026, emulátor)
+
+Quest 3 a 3S kreslí v rozlišení 1,2 a na 90 Hz (11,1 ms na snímek). Quest 2 a neznámé brýle mají profil Questu 2 beze změny: 72 Hz, foveace 1, rozlišení 1, nejvýš 500 částic.
+
+**Neověřeno na skutečném Questu 3** – žádný nebyl k dispozici. Nikdo neměřil, jestli hry na 1,2 drží 90 FPS. Když ne, `&vrscale=1` vrátí rozlišení 1 (bod 9 návodu) a profil se sníží v `QUEST3_QUALITY` (`src/play/xr/headset.ts`).
+
+- **Jak se brýle poznají:** prohlížeč Questu má model v `navigator.userAgent` („Quest 3“, „Quest 3S“). Rozhoduje `profileFor` v `src/play/xr/headset.ts`. 90 Hz si stránka řekne jen tehdy, když ho relace nabízí v `supportedFrameRates`; jinak zůstane frekvence Questu 2 a rozlišení 1,2.
+- **V emulátoru IWER 2.6.0** (`e2e/vr-enter.spec.ts`): brýle `metaQuest3` nabízejí 72, 80, 90 a 120 Hz. Stránka si řekla o 90 Hz a rozlišení vrstvy 1,2 a relace hlásí 90 Hz. Quest 2 si ve stejném souboru řekl o 72 Hz a rozlišení 1 jako dřív.
+- **Proč test čte žádost, ne jen výsledek:** Quest 3 v IWER startuje na 90 Hz sám a rozlišení vrstvy emulátor nepoužije (kreslí do plátna stránky). Kontrola jen frekvence relace by prošla i bez profilu.
+- **Rozpočet snímku** (`evals/vr/budget.json`) se nemění: draw cally a trojúhelníky na rozlišení nezávisí. Vyšší rozlišení a frekvence zdražují kreslení pixelů, a to emulátor neměří.
+- **První JS telefonu** (Pixel 7, `/play`): 39 skriptů, 4 216 516 B rozbaleně, +865 B proti `main` (T10 sama +5 B), přenesené +714 B, žádný kód XR.
+
+**Výchozí volby (žádná nečekala na rozhodnutí):**
+
+- **Profil je v `headset.ts`, ne v `quality.ts`.** `quality.ts` je v prvním JS telefonu, protože z něj `Effects.tsx` bere strop částic. Profil by tam stál asi 200 B (odhad z minifikovaného kódu) a větev by přešla limit ±1 kB. `headset.ts` načítá jen kód XR. V `quality.ts` přibyl jen cíl frekvence u `nearestRate` a výchozí rozlišení u `framebufferScaleOf`.
+- **Quest 3S jako Quest 3:** má stejný čip.
+- **Quest Pro a prohlížeč v režimu „stránka pro počítač“** (UA počítače) dostanou profil Questu 2 jako neznámé brýle.
+- **Foveace a strop částic** zůstávají jako na Questu 2.
+- **`?vrscale` jen snižuje**, i na Questu 3 (rozsah 0,8–1,0).
+
 ### První JS bez `?vr=1` (27. 10. 2026)
 
 Součet skriptů, které stránka načte hned (`<script src>` v HTML), na produkčním buildu:
@@ -445,4 +467,4 @@ Podrobnosti, čísla všech her a návod na měření jsou v `evals/vr/README.md
 - **Na stole se nekreslí, co je mimo něj.** Kulisy za okrajem desky by roviny řezu stejně ořízly. Prstenec rostlin za stěnami arény se ve VR nekreslí vůbec (od P67 T6 i v aréně kolem hráče, kde stál nad rozpočtem).
 - **Stejné díly se kreslí najednou.** Aspoň 4 sítě se stejnou geometrií a materiálem kreslí jedna instancovaná síť (díly nepřátel střílečky).
 - **Částice:** nejvýš 500 živých, jako telefon na nejnižší úrovni kvality.
-- **Co emulátor neměří:** FPS, rozlišení relace a foveaci (IWER je přejde). Profil startuje na rozlišení 1,0 a foveaci 1; porovnání s 0,8 je v bodě 9 návodu výš.
+- **Co emulátor neměří:** FPS, rozlišení relace a foveaci (IWER je přejde). Profil startuje na rozlišení 1,0 a foveaci 1 (Quest 3 a 3S na 1,2, oddíl „Profil Questu 3“); porovnání s 0,8 je v bodě 9 návodu výš.

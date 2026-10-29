@@ -56,11 +56,11 @@ export function cutOf(node: { readonly name: string; readonly userData: Readonly
   return null;
 }
 
-/** Nejbližší podporovaná frekvence k cíli; bez seznamu (`false`) nechá relaci výchozí. */
-export function nearestRate(rates: ArrayLike<number>): number | false {
+/** Nejbližší podporovaná frekvence k cíli profilu (Quest 3: `headset.ts`); bez seznamu (`false`) nechá relaci výchozí. */
+export function nearestRate(rates: ArrayLike<number>, target: number = XR_QUALITY.hz): number | false {
   let best: number | false = false;
   for (const rate of Array.from(rates)) {
-    if (best === false || Math.abs(rate - XR_QUALITY.hz) < Math.abs(best - XR_QUALITY.hz)) best = rate;
+    if (best === false || Math.abs(rate - target) < Math.abs(best - target)) best = rate;
   }
   return best;
 }
@@ -68,11 +68,14 @@ export function nearestRate(rates: ArrayLike<number>): number | false {
 /** Rozsah `?vrscale=`: pod 0,8 je text panelů v brýlích rozmazaný, nad 1 už jen dráž. */
 const SCALE_RANGE = [0.8, 1] as const;
 
-/** `framebufferScaleFactor` pro adresu: `?vrscale=0.8` (T8 měří na brýlích), jinak profil. Mimo rozsah se ořízne. */
-export function framebufferScaleOf(url: string | URL): number {
+/**
+ * `framebufferScaleFactor` pro adresu: `?vrscale=0.8` (T8 měří na brýlích), jinak `profile` (Quest 3: 1,2).
+ * Mimo rozsah se ořízne – i na Questu 3 jen snižuje.
+ */
+export function framebufferScaleOf(url: string | URL, profile: number = XR_QUALITY.scale): number {
   const raw = new URL(url, 'http://play.invalid/').searchParams.get('vrscale');
   const value = raw === null || raw.trim() === '' ? Number.NaN : Number(raw);
-  if (!Number.isFinite(value)) return XR_QUALITY.scale;
+  if (!Number.isFinite(value)) return profile;
   return Math.min(Math.max(value, SCALE_RANGE[0]), SCALE_RANGE[1]);
 }
 

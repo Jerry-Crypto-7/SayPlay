@@ -21,23 +21,50 @@ declare global {
     IWER?: { XRDevice: new (config: unknown) => { installRuntime(options?: { forceInstall?: boolean }): void }; metaQuest2: unknown };
     /** Poslední relace, kterou stránka dostala – e2e ji ukončí jako systémové tlačítko brýlí. */
     __iwerSession?: XRSession;
+    /**
+     * O co stránka emulátor požádala (P67 T10): cílová frekvence (`updateTargetFrameRate`) a rozlišení vrstvy
+     * (`framebufferScaleFactor`). IWER rozlišení nepoužije a Quest 3 startuje na 90 Hz sám, proto se čte žádost.
+     */
+    __xrAsked?: { rate?: number; scale?: number };
   }
 }
 
-async function withQuest2(page: Page): Promise<void> {
+/** Brýle emulátoru IWER 2.6.0: `metaQuest3` nabízí 72, 80, 90 a 120 Hz jako `metaQuest2`. */
+type Headset = 'metaQuest2' | 'metaQuest3';
+
+async function withHeadset(page: Page, headset: Headset = 'metaQuest2'): Promise<void> {
   await page.addInitScript({ path: IWER_BUNDLE });
-  await page.addInitScript(() => {
-    const device = new window.IWER!.XRDevice(window.IWER!.metaQuest2);
+  await page.addInitScript((name: Headset) => {
+    const iwer = window.IWER!;
+    const device = new iwer.XRDevice((iwer as unknown as Record<Headset, unknown>)[name]);
     device.installRuntime({ forceInstall: true });
+    const asked: NonNullable<Window['__xrAsked']> = {};
+    window.__xrAsked = asked;
+    const global = globalThis as unknown as { XRWebGLLayer: typeof XRWebGLLayer };
+    const Layer = global.XRWebGLLayer;
+    global.XRWebGLLayer = class extends Layer {
+      constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, init?: XRWebGLLayerInit) {
+        super(session, context, init);
+        asked.scale = init?.framebufferScaleFactor;
+      }
+    };
     const xr = navigator.xr!;
     const request = xr.requestSession.bind(xr);
     xr.requestSession = async (...args) => {
       const session = await request(...args);
+      const target = session.updateTargetFrameRate.bind(session);
+      session.updateTargetFrameRate = (rate) => {
+        asked.rate = rate;
+        return target(rate);
+      };
       window.__iwerSession = session;
       return session;
     };
-  });
+  }, headset);
 }
+
+const asked = (page: Page) =>
+  page.evaluate(() => ({ ...window.__xrAsked, frameRate: window.__iwerSession?.frameRate }));
 
 interface Created {
   readonly url: string;
@@ -97,7 +124,7 @@ test('a browser without immersive-vr gets no Enter VR and downloads no XR code',
 });
 
 test('a headset browser gets Enter VR without ?vr=1, and ?vr=0 switches it off', async ({ page, request }) => {
-  await withQuest2(page);
+  await withHeadset(page);
   const scripts = scriptsOf(page);
   const game = await gameFrom(request, 'A hamster escapes a supermarket while a giant Roomba hunts it.');
   await page.goto(game.url);
@@ -114,7 +141,7 @@ test('a headset browser gets Enter VR without ?vr=1, and ?vr=0 switches it off',
 });
 
 test('Enter VR starts a session that draws both eyes, survives the AI version, and leaving VR returns the 2D game', async ({ page, request }) => {
-  await withQuest2(page);
+  await withHeadset(page);
   const quick = await gameFrom(request, 'A hamster escapes a supermarket while a giant Roomba hunts it.');
   const arrived = await gameFrom(request, 'A penguin slides down an icy hill collecting fish.');
   let ready = false;
@@ -133,6 +160,8 @@ test('Enter VR starts a session that draws both eyes, survives the AI version, a
   await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
   expect((await xr(page))?.eyes).toBe(2);
   await drawnInVr(page);
+  // Quest 2 má profil jako před P67 T10: 72 Hz a rozlišení relace 1.
+  expect(await asked(page)).toEqual({ rate: 72, scale: 1, frameRate: 72 });
 
   // AI verze dorazí: stránka přejde na jinou hru, relace trvá a kreslí novou scénu.
   ready = true;
@@ -151,4 +180,15 @@ test('Enter VR starts a session that draws both eyes, survives the AI version, a
   await expect.poll(() => page.evaluate(() => window.__playShell!.tick()), { timeout: 15_000 }).toBeGreaterThan(tick);
   await page.getByTestId('enter-vr').click();
   await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
+});
+
+test('a Quest 3 session runs at 90 Hz with 1.2× resolution', async ({ page, request }) => {
+  await withHeadset(page, 'metaQuest3');
+  const game = await gameFrom(request, 'A hamster escapes a supermarket while a giant Roomba hunts it.');
+  await page.goto(game.url);
+  await running(page);
+  await page.getByTestId('enter-vr').click({ timeout: 15_000 });
+  await expect.poll(async () => (await xr(page))?.presenting, { timeout: 15_000 }).toBe(true);
+  await drawnInVr(page);
+  expect(await asked(page)).toEqual({ rate: 90, scale: 1.2, frameRate: 90 });
 });

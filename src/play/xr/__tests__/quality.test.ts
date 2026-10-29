@@ -1,17 +1,65 @@
 /**
  * Profil kvality XR pro Quest 2 (P65 T6): frekvence, rozlišení relace z adresy, měřák panelu FPS a pravidla,
- * co VR nekreslí. Rozpočet žánrů hlídá měření (`evals/vr/__tests__/budget.test.ts`).
+ * co VR nekreslí. Rozpočet žánrů hlídá měření (`evals/vr/__tests__/budget.test.ts`). Profil Questu 3 (P67 T10)
+ * je v `headset.ts`.
  */
 
 import { describe, expect, it } from 'vitest';
 
+import { QUEST3_QUALITY, profileFor } from '../headset';
 import { XR_QUALITY, createFrameMeter, cutOf, framebufferScaleOf, nearestRate } from '../quality';
+
+/** Prohlížeče Questu hlásí model v závorce UA (vzorky Quest 2 a 3 jsou z emulátoru IWER 2.6.0). */
+const UA = {
+  quest2:
+    'Mozilla/5.0 (X11; Linux x86_64; Quest 2) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/33.0.0.x.x.x Chrome/126.0.6478.122 VR Safari/537.36',
+  quest3:
+    'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/33.0.0.x.x.x Chrome/126.0.6478.122 VR Safari/537.36',
+  quest3s:
+    'Mozilla/5.0 (X11; Linux x86_64; Quest 3S) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/37.0.0.x.x.x Chrome/130.0.6723.102 VR Safari/537.36',
+  questPro:
+    'Mozilla/5.0 (X11; Linux x86_64; Quest Pro) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/33.0.0.x.x.x Chrome/126.0.6478.122 VR Safari/537.36',
+  desktop: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+} as const;
+
+/** Frekvence relace Questu 2 i 3 (IWER `metaQuest2`, `metaQuest3`). */
+const QUEST_RATES = new Float32Array([72, 80, 90, 120]);
+
+describe('profileFor', () => {
+  it('keeps Quest 2 and unknown headsets on the Quest 2 profile, bit for bit', () => {
+    expect(XR_QUALITY).toStrictEqual({ hz: 72, foveation: 1, scale: 1, particles: 500 });
+    for (const userAgent of [UA.quest2, UA.questPro, UA.desktop, '']) {
+      for (const supportedFrameRates of [undefined, [], QUEST_RATES]) {
+        expect(profileFor({ userAgent, supportedFrameRates })).toBe(XR_QUALITY);
+      }
+    }
+  });
+
+  it('gives Quest 3 and 3S 90 Hz and 1.2× resolution when the session offers 90 Hz', () => {
+    expect(QUEST3_QUALITY).toStrictEqual({ hz: 90, foveation: 1, scale: 1.2, particles: 500 });
+    for (const userAgent of [UA.quest3, UA.quest3s]) {
+      expect(profileFor({ userAgent, supportedFrameRates: QUEST_RATES })).toBe(QUEST3_QUALITY);
+      expect(profileFor({ userAgent, supportedFrameRates: [72, 90] })).toBe(QUEST3_QUALITY);
+    }
+  });
+
+  it('keeps the Quest 2 rate on a Quest 3 without 90 Hz, but still the higher resolution', () => {
+    for (const supportedFrameRates of [undefined, [], [72, 80, 120]]) {
+      expect(profileFor({ userAgent: UA.quest3, supportedFrameRates })).toStrictEqual({ ...QUEST3_QUALITY, hz: XR_QUALITY.hz });
+    }
+  });
+});
 
 describe('nearestRate', () => {
   it('picks the supported rate closest to 72 Hz', () => {
     expect(nearestRate([60, 72, 80, 90, 120])).toBe(72);
     expect(nearestRate(new Float32Array([90, 120]))).toBe(90);
     expect(nearestRate([60, 80])).toBe(80);
+  });
+
+  it('picks the supported rate closest to the profile rate', () => {
+    expect(nearestRate(QUEST_RATES, QUEST3_QUALITY.hz)).toBe(90);
+    expect(nearestRate(QUEST_RATES, XR_QUALITY.hz)).toBe(72);
   });
 
   it('leaves the session default without a list', () => {
@@ -22,6 +70,13 @@ describe('nearestRate', () => {
 describe('framebufferScaleOf', () => {
   it('uses the profile without vrscale', () => {
     expect(framebufferScaleOf('http://localhost:3165/play?vr=1&vrhud=1')).toBe(XR_QUALITY.scale);
+    expect(framebufferScaleOf('/play?vr=1', QUEST3_QUALITY.scale)).toBe(1.2);
+    expect(framebufferScaleOf('/play?vrscale=low', QUEST3_QUALITY.scale)).toBe(1.2);
+  });
+
+  it('lets vrscale lower the Quest 3 resolution too, within the same 0.8–1 range', () => {
+    expect(framebufferScaleOf('/play?vrscale=1', QUEST3_QUALITY.scale)).toBe(1);
+    expect(framebufferScaleOf('/play?vrscale=0.8', QUEST3_QUALITY.scale)).toBe(0.8);
   });
 
   it('takes vrscale for the headset check, clamped to 0.8–1', () => {

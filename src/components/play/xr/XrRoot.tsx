@@ -16,6 +16,7 @@ import { type ReactNode, useEffect, useMemo } from 'react';
 import type { Light } from 'three';
 
 import { fpsHudWanted } from '@/play/xr/flag';
+import { profileFor } from '@/play/xr/headset';
 import { type FrameMeter, XR_QUALITY, createFrameMeter, framebufferScaleOf, nearestRate } from '@/play/xr/quality';
 
 import { createHostTunnel, StagePortal } from '../feed/StageHost';
@@ -26,6 +27,8 @@ import { XrRig } from './XrRig';
 
 /** Adresa, kterou stránka otevřela – jako brána `?vr=1` (`XrGate`), tedy i po přechodu na AI verzi. */
 const opened = window.location.href;
+/** Které brýle (`profileFor`): Quest 3 a 3S mají vlastní profil, ostatní profil Questu 2. */
+const userAgent = navigator.userAgent;
 
 const store = createXRStore({
   // Emulátor IWER vstřikuje jen e2e; produkt ho nenačte ani na localhostu.
@@ -57,10 +60,11 @@ const store = createXRStore({
   planeDetection: false,
   hitTest: false,
   domOverlay: false,
-  // Profil Questu 2 (`quality.ts`): 72 Hz, pevná foveace, rozlišení relace.
-  frameRate: nearestRate,
+  // Profil brýlí (`headset.ts`): Quest 2 a neznámé 72 Hz, pevná foveace, rozlišení relace 1; Quest 3 a 3S 90 Hz
+  // (když ho relace nabízí) a rozlišení 1,2. Rozlišení se volí před relací, frekvence až podle jejího seznamu.
+  frameRate: (supportedFrameRates) => nearestRate(supportedFrameRates, profileFor({ userAgent, supportedFrameRates }).hz),
   foveation: XR_QUALITY.foveation,
-  frameBufferScaling: framebufferScaleOf(opened),
+  frameBufferScaling: framebufferScaleOf(opened, profileFor({ userAgent }).scale),
 });
 
 // VR lobby (P67 T2) patří relaci: po odchodu z VR se zavře a další „Enter VR“ ze hry začne hrou, ne lobby.
