@@ -17,9 +17,13 @@ import { join } from 'node:path';
 import { Box3, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
+import { UNIT } from '@/play/arcade/contract';
+import { TIMING } from '@/play/arcade/pieces/timing';
+
 import { P64_CELLS } from '../../../../../e2e/p64-cells';
 import type { CameraPrint } from '../ArcadeStage';
 import { FIT_MARGIN_PX, type PlayRect, fitTall, playRect } from '../portrait-frame';
+import { timingDistance, timingTallBox } from '../timing/TimingScene';
 
 interface Print {
   readonly tick: number;
@@ -218,6 +222,43 @@ describe('fitTall (P64 T2)', () => {
       // Okraj desky do stran opravdu odešel a kamera je blíž než bez `keep`.
       expect(Math.max(...corners.map((corner) => Math.abs(corner.clone().project(view).x)))).toBeGreaterThan(1);
       expect(fit.distance).toBeLessThan(whole.distance);
+    });
+  });
+
+  // P64 T8-R3: celá cílová věž v kvádru odvezla kameru do mlhy (36 palačinek, b64-01). Kamera jako `TimingScene`.
+  describe('timing on a tall goal', () => {
+    const rect = playRect(PIXEL7, 120, 703);
+    const sliderW = TIMING.blockW / UNIT;
+    const goalTop = (rounds: number): number => (TIMING.baseH + rounds * TIMING.blockH) / UNIT;
+    const timingCamera = (followY: number): PerspectiveCamera => {
+      const eye = new PerspectiveCamera(60, PIXEL7.width / PIXEL7.height, 0.1, 70);
+      eye.position.set(0, followY + 3.5, -timingDistance(eye.fov, eye.aspect, sliderW));
+      eye.lookAt(0, followY, 0);
+      eye.updateMatrixWorld();
+      return eye;
+    };
+
+    // Na startu okno s podstavou couvne o 4 %; celá věž v kvádru couvla o ~100 %.
+    it.each([0.6, 12, 21])('a 36-piece goal keeps the camera within 5 % of main (stack at %s m)', (followY) => {
+      const eye = timingCamera(followY);
+      const box = timingTallBox(new Box3(), followY, goalTop(36), sliderW);
+      const forward = new Vector3(0, 0, -1).applyQuaternion(eye.quaternion);
+      const before = box.getCenter(new Vector3()).sub(eye.position).dot(forward);
+      const fit = fitTall(eye, box, rect, { margin: 0 });
+      expect(fit.distance).toBeLessThanOrEqual(before * 1.05);
+      // Vršek stohu a příští díl leží svisle v `playRect`.
+      const view = fitted(eye, fit.position);
+      for (const y of [followY, followY + (2 * TIMING.blockH) / UNIT]) {
+        const ndc = new Vector3(0, y, 0).project(view).y;
+        expect(ndc).toBeLessThanOrEqual(rect.ndc.top);
+        expect(ndc).toBeGreaterThanOrEqual(rect.ndc.bottom);
+      }
+    });
+
+    it('a short goal keeps its top in the box (T4)', () => {
+      const box = timingTallBox(new Box3(), TIMING.baseH / UNIT, goalTop(5), sliderW);
+      expect(box.max.y).toBeGreaterThanOrEqual(goalTop(5) + 1);
+      expect(box.min.y).toBe(0);
     });
   });
 });

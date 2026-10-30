@@ -143,6 +143,24 @@ export function timingDistance(fov: number, aspect: number, sliderW: number): nu
   return Math.max(swing / (2 * tan * aspect) + TIMING.depth / UNIT / 2, 7 / (2 * tan), 8);
 }
 
+/** Kolik stohu pod jezdcem drží kvádr na výšku (m) a jak vysoký kvádr nanejvýš je – na Pixelu 7 se vejde na `timingDistance`. */
+const TALL_BELOW = 2;
+const TALL_SPAN = 6;
+
+/**
+ * Kvádr hry pro `fitTall` na výšku (P64 T8-R3): kyv jezdce do stran a okno věže kolem jezdce (`followY`) – pod ním
+ * `TALL_BELOW` stohu, nad ním dva díly a cíl (`goalTop`), dokud se okno vejde do `TALL_SPAN`. Celá cílová věž
+ * (36 palačinek = 22 m) kameru odvezla do mlhy (b64-01, p64-08); s oknem drží šířku `timingDistance` a fit jen posune.
+ */
+export function timingTallBox(out: Box3, followY: number, goalTop: number, sliderW: number): Box3 {
+  const swing = TIMING.amplitude / UNIT + sliderW / 2 + SWING_PAD;
+  const bottom = Math.max(0, followY - TALL_BELOW);
+  const next = followY + (2 * TIMING.blockH) / UNIT;
+  out.min.set(-swing, bottom, -TIMING.depth / UNIT / 2);
+  out.max.set(swing, Math.max(next, Math.min(goalTop + 1, bottom + TALL_SPAN)), TIMING.depth / UNIT / 2);
+  return out;
+}
+
 /** Kde stojí hrdina věty: na šířku za krajem kyvu, na výšku v popředí pod věží (`HERO_TALL`). */
 function timingHeroAt(aspect: number, distance: number): readonly [number, number, number] {
   return aspect < 1 ? [HERO_TALL.x, 0, -HERO_TALL.front * distance] : HERO_AT;
@@ -284,11 +302,8 @@ export function TimingScene({
     camera.lookAt(look);
     const rect = playArea.current;
     if (camera.aspect < 1 && rect !== null) {
-      // Na výšku (P64 T4): kyv jezdce i věž s cílem v `playRect` pod HUD – šířku dál drží `timingDistance`.
-      const swing = TIMING.amplitude / UNIT + sliderInit.w / 2 + SWING_PAD;
-      play.min.set(-swing, 0, -TIMING.depth / UNIT / 2);
-      play.max.set(swing, Math.max(top + 1, followY.current + (2 * TIMING.blockH) / UNIT), TIMING.depth / UNIT / 2);
-      camera.position.copy(fitTall(camera, play, rect, { margin: 0 }).position);
+      // Na výšku (P64 T4, T8-R3): kyv jezdce a okno věže kolem něj v `playRect` pod HUD – šířku dál drží `timingDistance`.
+      camera.position.copy(fitTall(camera, timingTallBox(play, followY.current, top, sliderInit.w), rect, { margin: 0 }).position);
     }
   });
 
