@@ -1,0 +1,1346 @@
+{
+ "schema": "p61-judge.v1",
+ "judgedAt": "2026-10-30T08:41:55.185Z",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+ "view": "phone",
+ "seed": 61026,
+ "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": null,
+   "measuredAt": "2026-10-29T20:52:25.649Z",
+   "base": "http://127.0.0.1:3165"
+  },
+  {
+   "name": "p64",
+   "label": "p64",
+   "commit": null,
+   "measuredAt": "2026-10-30T08:41:30.326Z",
+   "base": "http://127.0.0.1:3164"
+  }
+ ],
+ "plan": [
+  {
+   "id": "b64-01",
+   "sentence": "A baker stacks pancakes onto a swaying tower in a busy diner without letting it topple",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-02",
+   "sentence": "A sushi chef drops each slice of fish at the perfect moment onto a rolling conveyor belt",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-03",
+   "sentence": "A samurai slices flying watermelons tossed into the air at a beach party",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-04",
+   "sentence": "A pirate slices flying coconuts in half with his cutlass on a sunny beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-05",
+   "sentence": "A farmer catches eggs dropping from a henhouse roof in a straw basket",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-06",
+   "sentence": "A little girl catches falling snowflakes in a mitten in a quiet mountain village",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-07",
+   "sentence": "Drop shiny gemstones into a mine cart so matching gems fuse into bigger jewels",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-08",
+   "sentence": "A toy maker combines matching wooden blocks into bigger toys inside a workshop crate",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-09",
+   "sentence": "A carnival kid bops sneaky moles popping out of holes at a fairground stand",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-10",
+   "sentence": "A castle guard defends the drawbridge from waves of goblins charging out of a dark forest",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-11",
+   "sentence": "Two sumo crabs shove each other out of a sandy ring on the beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-12",
+   "sentence": "A frog crosses a busy country road full of tractors to reach the river",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-13",
+   "sentence": "A brave pirate grows his crew by sailing through magic gates on a long river",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-14",
+   "sentence": "Two knights duel with foam swords on the deck of a pirate ship",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-15",
+   "sentence": "A park ranger puts out the fires scattered across a dry forest valley",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-16",
+   "sentence": "A disco robot dances to the beat on a glowing city rooftop",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  }
+ ],
+ "runs": [
+  {
+   "run": 1,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.33,
+     "n": 16
+    },
+    "main-quick": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.33,
+     "n": 16
+    },
+    "p64-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "n": 16
+    },
+    "p64-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "n": 16
+    }
+   },
+   "sentences": [
+    {
+     "id": "b64-01",
+     "sentence": "A baker stacks pancakes onto a swaying tower in a busy diner without letting it topple",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "A labelled baker chef stands under a small pancake stack, with red diner booths and a 'stack 36 pancakes' goal, but the tower barely grows, the swaying isn't clear and the diner looks empty rather than busy."
+      },
+      "p64-quick": {
+       "fidelity": 0.58,
+       "wouldPlay": 0.38,
+       "reason": "Nearly the same as A: a chef, a pancake stack, diner booths and a stacking goal with lives, but the stack stays small, there's no visible bustle, and the camera often has the booths blocking the view."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "A labelled baker chef stands under a small pancake stack, with red diner booths and a 'stack 36 pancakes' goal, but the tower barely grows, the swaying isn't clear and the diner looks empty rather than busy."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.58,
+       "wouldPlay": 0.38,
+       "reason": "Nearly the same as A: a chef, a pancake stack, diner booths and a stacking goal with lives, but the stack stays small, there's no visible bustle, and the camera often has the booths blocking the view."
+      }
+     }
+    },
+    {
+     "id": "b64-02",
+     "sentence": "A sushi chef drops each slice of fish at the perfect moment onto a rolling conveyor belt",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A chef character is labelled, but the scene is a farm field with a windmill and generic blocks: no sushi, fish slices, or conveyor belt, just a generic stop-the-marker timing game."
+      },
+      "p64-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "It's nearly the same generic windmill farm scene with a chef figure and colored blocks, with no sushi or conveyor visible, and it shows a 'lost track of the full-detail version' error."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A chef character is labelled, but the scene is a farm field with a windmill and generic blocks: no sushi, fish slices, or conveyor belt, just a generic stop-the-marker timing game."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "It's nearly the same generic windmill farm scene with a chef figure and colored blocks, with no sushi or conveyor visible, and it shows a 'lost track of the full-detail version' error."
+      }
+     }
+    },
+    {
+     "id": "b64-03",
+     "sentence": "A samurai slices flying watermelons tossed into the air at a beach party",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "Shows a character on sandy ground catching apples and dodging bombs, but nothing reads as a samurai slicing watermelons at a beach party, and the scene barely changes across the three frames."
+      },
+      "p64-quick": {
+       "fidelity": 0.18,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same apple-catching game as A, with the character pushed to the bottom of a mostly empty sky, so there are no watermelons, no slicing and no party, and the frames look static."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "Shows a character on sandy ground catching apples and dodging bombs, but nothing reads as a samurai slicing watermelons at a beach party, and the scene barely changes across the three frames."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.18,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same apple-catching game as A, with the character pushed to the bottom of a mostly empty sky, so there are no watermelons, no slicing and no party, and the frames look static."
+      }
+     }
+    },
+    {
+     "id": "b64-04",
+     "sentence": "A pirate slices flying coconuts in half with his cutlass on a sunny beach",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "A pirate with a cutlass stands on a sunny sand beach and there's a slice-coconuts-avoid-bombs goal, but only one dark coconut shows up, the score never leaves 0/30, and the scene is sparse with a visible error card."
+      },
+      "p64-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.3,
+       "reason": "It has the same pirate, cutlass, beach and slice-30-coconuts goal, but you barely see any flying coconuts, a life is lost while the score stays at 0/30, and the action looks thin."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "A pirate with a cutlass stands on a sunny sand beach and there's a slice-coconuts-avoid-bombs goal, but only one dark coconut shows up, the score never leaves 0/30, and the scene is sparse with a visible error card."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.3,
+       "reason": "It has the same pirate, cutlass, beach and slice-30-coconuts goal, but you barely see any flying coconuts, a life is lost while the score stays at 0/30, and the action looks thin."
+      }
+     }
+    },
+    {
+     "id": "b64-05",
+     "sentence": "A farmer catches eggs dropping from a henhouse roof in a straw basket",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "A dark silhouette 'farmer' holding an orange ring catches egg-like objects and dodges bombs, but there is no visible henhouse roof or straw basket, and the eggs look like stones; the bonus round adds a bit of variety."
+      },
+      "p64-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "It is nearly the same as A, with a silhouette catcher, a ring instead of a basket and a hedge where the henhouse should be, but fewer things fall, so it looks emptier and less engaging."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "A dark silhouette 'farmer' holding an orange ring catches egg-like objects and dodges bombs, but there is no visible henhouse roof or straw basket, and the eggs look like stones; the bonus round adds a bit of variety."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "It is nearly the same as A, with a silhouette catcher, a ring instead of a basket and a hedge where the henhouse should be, but fewer things fall, so it looks emptier and less engaging."
+      }
+     }
+    },
+    {
+     "id": "b64-06",
+     "sentence": "A little girl catches falling snowflakes in a mitten in a quiet mountain village",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Snowflakes fall over a snowy misty backdrop to be caught, but the 'little girl' is a strange dark blob with a ring, with no visible mitten or village, and bombs were added as threats."
+      },
+      "main-quick": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.33,
+       "reason": "Almost the same as A: a snowy catch-the-flakes setup with an unclear blob-like girl, no mitten or village, added bombs, and snowflakes that are smaller and harder to read."
+      },
+      "main-after-reading": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.33,
+       "reason": "Almost the same as A: a snowy catch-the-flakes setup with an unclear blob-like girl, no mitten or village, added bombs, and snowflakes that are smaller and harder to read."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Snowflakes fall over a snowy misty backdrop to be caught, but the 'little girl' is a strange dark blob with a ring, with no visible mitten or village, and bombs were added as threats."
+      }
+     }
+    },
+    {
+     "id": "b64-07",
+     "sentence": "Drop shiny gemstones into a mine cart so matching gems fuse into bigger jewels",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A robot drops small green gem orbs into a tall wooden bin with a merge counter, but the bin looks more like a crate than a mine cart, all the gems are tiny and identical, and no fusing into bigger jewels is visible."
+      },
+      "main-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "This is almost identical to A: the same robot drops the same small green orbs into a wooden crate, it doesn't look like a mine cart, there's little shine or variety, and no gems are shown fusing into larger jewels."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "This is almost identical to A: the same robot drops the same small green orbs into a wooden crate, it doesn't look like a mine cart, there's little shine or variety, and no gems are shown fusing into larger jewels."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A robot drops small green gem orbs into a tall wooden bin with a merge counter, but the bin looks more like a crate than a mine cart, all the gems are tiny and identical, and no fusing into bigger jewels is visible."
+      }
+     }
+    },
+    {
+     "id": "b64-08",
+     "sentence": "A toy maker combines matching wooden blocks into bigger toys inside a workshop crate",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "A teddy-bear toy maker drops items into a tall wooden crate, which matches the merge-in-a-crate idea, but only one or two small, unclear blocks appear, no merges happen (0/50), and the scene looks sparse and static."
+      },
+      "p64-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "This is almost identical to A: a toy-maker bear sits above a wooden workshop crate with a merge goal, but there are barely any blocks, no visible merging progress, and the empty crate gives little sense of play."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "A teddy-bear toy maker drops items into a tall wooden crate, which matches the merge-in-a-crate idea, but only one or two small, unclear blocks appear, no merges happen (0/50), and the scene looks sparse and static."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "This is almost identical to A: a toy-maker bear sits above a wooden workshop crate with a merge goal, but there are barely any blocks, no visible merging progress, and the empty crate gives little sense of play."
+      }
+     }
+    },
+    {
+     "id": "b64-09",
+     "sentence": "A carnival kid bops sneaky moles popping out of holes at a fairground stand",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A kid character and a whack-moles prompt appear, but the screenshots show block stacking and a dim, dark scene with no visible holes, moles or fairground stand."
+      },
+      "p64-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "Like A, it starts with block stacking and a dark scene, but the last screenshot shows the kid with a mallet beside holes with a mole popping out, though there is still no carnival stand."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A kid character and a whack-moles prompt appear, but the screenshots show block stacking and a dim, dark scene with no visible holes, moles or fairground stand."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "Like A, it starts with block stacking and a dark scene, but the last screenshot shows the kid with a mallet beside holes with a mole popping out, though there is still no carnival stand."
+      }
+     }
+    },
+    {
+     "id": "b64-10",
+     "sentence": "A castle guard defends the drawbridge from waves of goblins charging out of a dark forest",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A dark plank drawbridge with a guard figure and labels about goblins is visible, but the goblins are barely-visible specks, there is no forest, and the scene is murky and mostly covered in UI text."
+      },
+      "main-quick": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.28,
+       "reason": "It is almost identical to A, with a dim lane-based drawbridge and a small guard, but the goblins and dark forest are barely shown, and the gloomy, low-contrast visuals and overlays make it look unappealing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.28,
+       "reason": "It is almost identical to A, with a dim lane-based drawbridge and a small guard, but the goblins and dark forest are barely shown, and the gloomy, low-contrast visuals and overlays make it look unappealing."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A dark plank drawbridge with a guard figure and labels about goblins is visible, but the goblins are barely-visible specks, there is no forest, and the scene is murky and mostly covered in UI text."
+      }
+     }
+    },
+    {
+     "id": "b64-11",
+     "sentence": "Two sumo crabs shove each other out of a sandy ring on the beach",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.35,
+       "reason": "Shows a sandy ring with dark crab sprites shoving at its edge and a push-out goal, but the crabs are small indistinct blobs, the beach setting is just a flat yellow background, and the score stays at 0/7 in every frame."
+      },
+      "main-quick": {
+       "fidelity": 0.58,
+       "wouldPlay": 0.33,
+       "reason": "Nearly identical to A, with crabs clashing at the edge of a sandy ring, but the visuals are equally sparse, the score never moves off 0/7, and an error banner in the last frame hurts its appeal."
+      },
+      "main-after-reading": {
+       "fidelity": 0.58,
+       "wouldPlay": 0.33,
+       "reason": "Nearly identical to A, with crabs clashing at the edge of a sandy ring, but the visuals are equally sparse, the score never moves off 0/7, and an error banner in the last frame hurts its appeal."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.35,
+       "reason": "Shows a sandy ring with dark crab sprites shoving at its edge and a push-out goal, but the crabs are small indistinct blobs, the beach setting is just a flat yellow background, and the score stays at 0/7 in every frame."
+      }
+     }
+    },
+    {
+     "id": "b64-12",
+     "sentence": "A frog crosses a busy country road full of tractors to reach the river",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.4,
+       "reason": "A green frog runs down a wooden pier toward water with a 'Reach the river' goal, but there's no busy country road and no tractors, only tiny obstacles, and the later frames turn grey and washed out."
+      },
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "It's the same frog-on-a-pier runner with no road or tractors, and in the later frames the camera is so close that a giant grey frog blocks most of the view, leaving almost nothing to dodge."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "It's the same frog-on-a-pier runner with no road or tractors, and in the later frames the camera is so close that a giant grey frog blocks most of the view, leaving almost nothing to dodge."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.4,
+       "reason": "A green frog runs down a wooden pier toward water with a 'Reach the river' goal, but there's no busy country road and no tractors, only tiny obstacles, and the later frames turn grey and washed out."
+      }
+     }
+    },
+    {
+     "id": "b64-13",
+     "sentence": "A brave pirate grows his crew by sailing through magic gates on a long river",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.55,
+       "reason": "A generic crowd runner with +/x/−6 gates that grow a small blue-red crew and a spinning saw hazard, but the hero doesn't read as a pirate and the grey road beside blue water looks more like a track than a river."
+      },
+      "main-quick": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.53,
+       "reason": "Nearly the same crowd runner with gates, a saw hazard and a growing crew, plus a 'Brave pirate' label, but there's still no clear pirate look or river and the visuals are just as plain."
+      },
+      "main-after-reading": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.53,
+       "reason": "Nearly the same crowd runner with gates, a saw hazard and a growing crew, plus a 'Brave pirate' label, but there's still no clear pirate look or river and the visuals are just as plain."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.55,
+       "reason": "A generic crowd runner with +/x/−6 gates that grow a small blue-red crew and a spinning saw hazard, but the hero doesn't read as a pirate and the grey road beside blue water looks more like a track than a river."
+      }
+     }
+    },
+    {
+     "id": "b64-14",
+     "sentence": "Two knights duel with foam swords on the deck of a pirate ship",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "Two knights duel by the sea with a wooden deck in view, but the swords look like metal rather than foam, the ship deck is barely shown, and the layout looks broken, with the fighters floating above a cut-off deck."
+      },
+      "p64-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "A clearer over-the-shoulder knight duel with dodge/strike timing by the water, but the grey floor looks more like a dock than a pirate ship deck, the swords aren't foam, and the last frame is dark and murky."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "Two knights duel by the sea with a wooden deck in view, but the swords look like metal rather than foam, the ship deck is barely shown, and the layout looks broken, with the fighters floating above a cut-off deck."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "A clearer over-the-shoulder knight duel with dodge/strike timing by the water, but the grey floor looks more like a dock than a pirate ship deck, the swords aren't foam, and the last frame is dark and murky."
+      }
+     }
+    },
+    {
+     "id": "b64-15",
+     "sentence": "A park ranger puts out the fires scattered across a dry forest valley",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "A green ranger-like figure and an 'extinguish all 5 scattered' goal with burning fires fit the sentence, but the lush green ground doesn't read as a dry valley and a wolf threat is added on top."
+      },
+      "main-quick": {
+       "fidelity": 0.58,
+       "wouldPlay": 0.43,
+       "reason": "This is almost the same scene as A, with the ranger, scattered fires and a wolf in a green rather than dry forest, and the dark, cluttered framing makes the action a bit harder to read."
+      },
+      "main-after-reading": {
+       "fidelity": 0.58,
+       "wouldPlay": 0.43,
+       "reason": "This is almost the same scene as A, with the ranger, scattered fires and a wolf in a green rather than dry forest, and the dark, cluttered framing makes the action a bit harder to read."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "A green ranger-like figure and an 'extinguish all 5 scattered' goal with burning fires fit the sentence, but the lush green ground doesn't read as a dry valley and a wolf threat is added on top."
+      }
+     }
+    },
+    {
+     "id": "b64-16",
+     "sentence": "A disco robot dances to the beat on a glowing city rooftop",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A working four-lane rhythm tap game with a visible yellow hit line fits 'dances to the beat', but there is no disco robot and the setting is a foggy gray street rather than a glowing rooftop."
+      },
+      "p64-quick": {
+       "fidelity": 0.22,
+       "wouldPlay": 0.28,
+       "reason": "Nearly the same rhythm-lane game on a dull foggy street, with no robot, no disco glow and no rooftop, and the hit feedback is a little less clear than in A."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A working four-lane rhythm tap game with a visible yellow hit line fits 'dances to the beat', but there is no disco robot and the setting is a foggy gray street rather than a glowing rooftop."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.22,
+       "wouldPlay": 0.28,
+       "reason": "Nearly the same rhythm-lane game on a dull foggy street, with no robot, no disco glow and no rooftop, and the hit feedback is a little less clear than in A."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  },
+  {
+   "run": 2,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.435,
+     "wouldPlay": 0.33,
+     "n": 16
+    },
+    "main-quick": {
+     "fidelity": 0.435,
+     "wouldPlay": 0.33,
+     "n": 16
+    },
+    "p64-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.34,
+     "n": 16
+    },
+    "p64-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.34,
+     "n": 16
+    }
+   },
+   "sentences": [
+    {
+     "id": "b64-01",
+     "sentence": "A baker stacks pancakes onto a swaying tower in a busy diner without letting it topple",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.42,
+       "reason": "A labelled baker chef stands beside a small stack of pancakes in a tiled room with red diner booths, but the tower barely grows and the camera keeps clipping into the furniture, so the swaying-tower challenge is hard to see."
+      },
+      "p64-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "It is almost the same as A: a chef with a short pancake stack and red booths, lives going down, but the stack stays tiny and big furniture in the foreground hides the action."
+      },
+      "main-after-reading": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.42,
+       "reason": "A labelled baker chef stands beside a small stack of pancakes in a tiled room with red diner booths, but the tower barely grows and the camera keeps clipping into the furniture, so the swaying-tower challenge is hard to see."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "It is almost the same as A: a chef with a short pancake stack and red booths, lives going down, but the stack stays tiny and big furniture in the foreground hides the action."
+      }
+     }
+    },
+    {
+     "id": "b64-02",
+     "sentence": "A sushi chef drops each slice of fish at the perfect moment onto a rolling conveyor belt",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "There's a character labelled as a sushi chef, but the scene is a farm with a windmill and generic blocks, with no fish, slices or conveyor belt, just a placeholder timing bar."
+      },
+      "p64-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.12,
+       "reason": "It's nearly the same farm-and-windmill timing placeholder, with no sushi, fish or conveyor visible and no chef label, so it fits the sentence even less than A."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "There's a character labelled as a sushi chef, but the scene is a farm with a windmill and generic blocks, with no fish, slices or conveyor belt, just a placeholder timing bar."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.12,
+       "reason": "It's nearly the same farm-and-windmill timing placeholder, with no sushi, fish or conveyor visible and no chef label, so it fits the sentence even less than A."
+      }
+     }
+    },
+    {
+     "id": "b64-03",
+     "sentence": "A samurai slices flying watermelons tossed into the air at a beach party",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A red-helmeted character stands on a sandy yellow ground with a ring, catching apples and dodging bombs, so there are no watermelons, no slicing and barely any beach party, and the scene is static and sparse."
+      },
+      "p64-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "It is nearly identical to A, a catch-10-apples, dodge-bombs game on a plain sandy field with a lot of empty sky, and it shows none of the samurai slicing watermelons the sentence asks for."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A red-helmeted character stands on a sandy yellow ground with a ring, catching apples and dodging bombs, so there are no watermelons, no slicing and barely any beach party, and the scene is static and sparse."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "It is nearly identical to A, a catch-10-apples, dodge-bombs game on a plain sandy field with a lot of empty sky, and it shows none of the samurai slicing watermelons the sentence asks for."
+      }
+     }
+    },
+    {
+     "id": "b64-04",
+     "sentence": "A pirate slices flying coconuts in half with his cutlass on a sunny beach",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.35,
+       "reason": "A sword-wielding pirate on yellow sand swings at a single dark coconut-like object, but the score stays at 0/30, nothing gets sliced, and the bland desert-like beach has no sea or palms."
+      },
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It looks almost the same as A, with the pirate and cutlass on a flat yellow beach, but only one coconut ever shows up, none get sliced, and a lost heart is the only sign of anything happening."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.35,
+       "reason": "A sword-wielding pirate on yellow sand swings at a single dark coconut-like object, but the score stays at 0/30, nothing gets sliced, and the bland desert-like beach has no sea or palms."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It looks almost the same as A, with the pirate and cutlass on a flat yellow beach, but only one coconut ever shows up, none get sliced, and a lost heart is the only sign of anything happening."
+      }
+     }
+    },
+    {
+     "id": "b64-05",
+     "sentence": "A farmer catches eggs dropping from a henhouse roof in a straw basket",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "The farmer silhouette with an orange ring basket catches falling eggs and dodges bombs, but there's no henhouse roof, the basket doesn't look like straw, and the eggs look like odd grey blobs, though a bonus run adds some variety."
+      },
+      "p64-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same as A, with a silhouette farmer, a ring basket, a few falling eggs and bombs, and no henhouse, but the screens are sparser and show less action."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "The farmer silhouette with an orange ring basket catches falling eggs and dodges bombs, but there's no henhouse roof, the basket doesn't look like straw, and the eggs look like odd grey blobs, though a bonus run adds some variety."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same as A, with a silhouette farmer, a ring basket, a few falling eggs and bombs, and no henhouse, but the screens are sparser and show less action."
+      }
+     }
+    },
+    {
+     "id": "b64-06",
+     "sentence": "A little girl catches falling snowflakes in a mitten in a quiet mountain village",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Falling snowflakes and a snowy misty backdrop are there, but the 'little girl' is an unclear dark blob with an orange ring, there's no visible mitten or village, and the bombs don't fit a quiet scene."
+      },
+      "main-quick": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.33,
+       "reason": "Almost the same as A, with the same unreadable character, no mitten or village, and bombs that don't belong, plus smaller, sparser snowflakes that make the scene feel emptier."
+      },
+      "main-after-reading": {
+       "fidelity": 0.42,
+       "wouldPlay": 0.33,
+       "reason": "Almost the same as A, with the same unreadable character, no mitten or village, and bombs that don't belong, plus smaller, sparser snowflakes that make the scene feel emptier."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "Falling snowflakes and a snowy misty backdrop are there, but the 'little girl' is an unclear dark blob with an orange ring, there's no visible mitten or village, and the bombs don't fit a quiet scene."
+      }
+     }
+    },
+    {
+     "id": "b64-07",
+     "sentence": "Drop shiny gemstones into a mine cart so matching gems fuse into bigger jewels",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.33,
+       "wouldPlay": 0.25,
+       "reason": "Small green gems drop into a tall wooden crate that doesn't really read as a mine cart, no gems are shown fusing into bigger jewels, and the robot dropper and drab, sparse scene look unpolished."
+      },
+      "main-quick": {
+       "fidelity": 0.36,
+       "wouldPlay": 0.27,
+       "reason": "Almost identical to A but the angled wooden bin looks slightly more like a cart; the gems are still tiny, dull and same-sized with no visible fusion, so it looks unexciting."
+      },
+      "main-after-reading": {
+       "fidelity": 0.36,
+       "wouldPlay": 0.27,
+       "reason": "Almost identical to A but the angled wooden bin looks slightly more like a cart; the gems are still tiny, dull and same-sized with no visible fusion, so it looks unexciting."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.33,
+       "wouldPlay": 0.25,
+       "reason": "Small green gems drop into a tall wooden crate that doesn't really read as a mine cart, no gems are shown fusing into bigger jewels, and the robot dropper and drab, sparse scene look unpolished."
+      }
+     }
+    },
+    {
+     "id": "b64-08",
+     "sentence": "A toy maker combines matching wooden blocks into bigger toys inside a workshop crate",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.25,
+       "reason": "A wooden crate, a teddy-bear toy maker and tiny dropped pieces suggest a merge game, but the counter stays at 0/50, the blocks barely look like wooden blocks, and an error card about the full-detail version suggests the game is broken."
+      },
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It shows the same crate-and-teddy-maker drop-merge setup with a 'Toy maker' label and no error, but only one or two tiny pieces appear, no merges happen, and the large empty crate makes it look dull."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.25,
+       "reason": "A wooden crate, a teddy-bear toy maker and tiny dropped pieces suggest a merge game, but the counter stays at 0/50, the blocks barely look like wooden blocks, and an error card about the full-detail version suggests the game is broken."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It shows the same crate-and-teddy-maker drop-merge setup with a 'Toy maker' label and no error, but only one or two tiny pieces appear, no merges happen, and the large empty crate makes it look dull."
+      }
+     }
+    },
+    {
+     "id": "b64-09",
+     "sentence": "A carnival kid bops sneaky moles popping out of holes at a fairground stand",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A kid character shows up and a 'whack sneaky moles' prompt appears, but the screenshots show block stacking and a dark, murky scene with no clear holes, moles, or fairground stand."
+      },
+      "p64-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "It starts with the same off-topic stacking and dark scenes, but the last shot clearly shows the kid with a mallet beside holes and a popping mole, though the carnival setting is missing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A kid character shows up and a 'whack sneaky moles' prompt appears, but the screenshots show block stacking and a dark, murky scene with no clear holes, moles, or fairground stand."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "It starts with the same off-topic stacking and dark scenes, but the last shot clearly shows the kid with a mallet beside holes and a popping mole, though the carnival setting is missing."
+      }
+     }
+    },
+    {
+     "id": "b64-10",
+     "sentence": "A castle guard defends the drawbridge from waves of goblins charging out of a dark forest",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A dark lane game with a guard at a crenellated wall and labels for goblins and the drawbridge, but the goblins are tiny dark specks, there's no visible forest, and the castle and drawbridge are only vaguely suggested."
+      },
+      "main-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "Almost identical to A: dim stone lanes with a barely visible guard, tiny goblin specks and text labels doing most of the work, no forest, and little visual appeal."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "Almost identical to A: dim stone lanes with a barely visible guard, tiny goblin specks and text labels doing most of the work, no forest, and little visual appeal."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.3,
+       "reason": "A dark lane game with a guard at a crenellated wall and labels for goblins and the drawbridge, but the goblins are tiny dark specks, there's no visible forest, and the castle and drawbridge are only vaguely suggested."
+      }
+     }
+    },
+    {
+     "id": "b64-11",
+     "sentence": "Two sumo crabs shove each other out of a sandy ring on the beach",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.35,
+       "reason": "Dark crab sprites shove each other around a sandy circular ring, so the sumo-crab push-out idea comes across, but the plain yellow backdrop doesn't look like a beach, the crabs are tiny dark blobs, and the 0/7 score never changes across the three shots."
+      },
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.33,
+       "reason": "This is almost the same as A, with crabs clustered at the edge of a sandy ring on a flat yellow background; it reads as crab sumo but has no beach setting, the crabs are hard to read, and the 0/7 score shows no visible progress."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.33,
+       "reason": "This is almost the same as A, with crabs clustered at the edge of a sandy ring on a flat yellow background; it reads as crab sumo but has no beach setting, the crabs are hard to read, and the 0/7 score shows no visible progress."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.35,
+       "reason": "Dark crab sprites shove each other around a sandy circular ring, so the sumo-crab push-out idea comes across, but the plain yellow backdrop doesn't look like a beach, the crabs are tiny dark blobs, and the 0/7 score never changes across the three shots."
+      }
+     }
+    },
+    {
+     "id": "b64-12",
+     "sentence": "A frog crosses a busy country road full of tractors to reach the river",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "There's a green frog and a 'reach the river' goal, but it runs down a wooden pier by the sea with no visible road or tractors, and the later shots are grey and washed out."
+      },
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "It's the same frog-on-a-pier runner with no tractors or country road, and in the later shots the frog is a huge grey shape that blocks most of the screen, which makes it look awkward to play."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "It's the same frog-on-a-pier runner with no tractors or country road, and in the later shots the frog is a huge grey shape that blocks most of the screen, which makes it look awkward to play."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "There's a green frog and a 'reach the river' goal, but it runs down a wooden pier by the sea with no visible road or tractors, and the later shots are grey and washed out."
+      }
+     }
+    },
+    {
+     "id": "b64-13",
+     "sentence": "A brave pirate grows his crew by sailing through magic gates on a long river",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "A generic crowd runner where a vaguely pirate-like hero gathers a crew through +/× gates and dodges saw blades, but he runs on a grey road beside water instead of sailing a river, and the gates don't look magic."
+      },
+      "main-quick": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.5,
+       "reason": "Nearly the same crowd runner as A, with clearer +/× gates and a 'Brave pirate' label, but there is still no ship, no actual river sailing and no magical look."
+      },
+      "main-after-reading": {
+       "fidelity": 0.47,
+       "wouldPlay": 0.5,
+       "reason": "Nearly the same crowd runner as A, with clearer +/× gates and a 'Brave pirate' label, but there is still no ship, no actual river sailing and no magical look."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.5,
+       "reason": "A generic crowd runner where a vaguely pirate-like hero gathers a crew through +/× gates and dodges saw blades, but he runs on a grey road beside water instead of sailing a river, and the gates don't look magic."
+      }
+     }
+    },
+    {
+     "id": "b64-14",
+     "sentence": "Two knights duel with foam swords on the deck of a pirate ship",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "Two armored knights duel over open sea with some wooden planks, but the swords look like real steel, no pirate ship is clearly visible, and the composition is cramped with the deck oddly cut off below the fighters."
+      },
+      "p64-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.45,
+       "reason": "The over-the-shoulder 3D knight duel looks more engaging, but the fight happens on a grey dock or pier with a rowboat rather than a pirate ship deck, the swords aren't foam, and the last frame is dark and murky."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "Two armored knights duel over open sea with some wooden planks, but the swords look like real steel, no pirate ship is clearly visible, and the composition is cramped with the deck oddly cut off below the fighters."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.45,
+       "reason": "The over-the-shoulder 3D knight duel looks more engaging, but the fight happens on a grey dock or pier with a rowboat rather than a pirate ship deck, the swords aren't foam, and the last frame is dark and murky."
+      }
+     }
+    },
+    {
+     "id": "b64-15",
+     "sentence": "A park ranger puts out the fires scattered across a dry forest valley",
+     "scores": {
+      "p64-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "A green ranger-like figure walks toward fires marked by rings, with an 'extinguish all 5' goal and a wolf as a threat, but the valley looks lush and green rather than dry, and the fires look like torches on posts."
+      },
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "It is almost the same as A: a ranger, fire targets, the same extinguish goal and a wolf, in a dark green forest that doesn't look dry, with flat, murky visuals and an orange beam effect that's hard to read."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "It is almost the same as A: a ranger, fire targets, the same extinguish goal and a wolf, in a dark green forest that doesn't look dry, with flat, murky visuals and an orange beam effect that's hard to read."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "A green ranger-like figure walks toward fires marked by rings, with an 'extinguish all 5' goal and a wolf as a threat, but the valley looks lush and green rather than dry, and the fires look like torches on posts."
+      }
+     }
+    },
+    {
+     "id": "b64-16",
+     "sentence": "A disco robot dances to the beat on a glowing city rooftop",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "Rhythm lanes match 'dances to the beat', but there's no disco robot, and the scene is a gray foggy street, not a glowing rooftop."
+      },
+      "p64-quick": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.33,
+       "reason": "It's nearly the same rhythm-lane game on a dull foggy street with no robot or neon rooftop, and its visuals are slightly sparser."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "Rhythm lanes match 'dances to the beat', but there's no disco robot, and the scene is a gray foggy street, not a glowing rooftop."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.33,
+       "reason": "It's nearly the same rhythm-lane game on a dull foggy street with no robot or neon rooftop, and its visuals are slightly sparser."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  }
+ ],
+ "variance": {
+  "pairs": 32,
+  "medianAbsDiff": {
+   "fidelity": 0.045,
+   "wouldPlay": 0.02,
+   "n": 32
+  },
+  "maxAbsDiff": {
+   "fidelity": 0.1,
+   "wouldPlay": 0.1
+  },
+  "diffs": [
+   {
+    "id": "b64-01",
+    "kind": "main-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.02
+   },
+   {
+    "id": "b64-01",
+    "kind": "p64-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.02
+   },
+   {
+    "id": "b64-02",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-02",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.03
+   },
+   {
+    "id": "b64-03",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-03",
+    "kind": "p64-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.02
+   },
+   {
+    "id": "b64-04",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-04",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-05",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-05",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-06",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-06",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-07",
+    "kind": "p64-quick",
+    "fidelity": 0.07,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-07",
+    "kind": "main-quick",
+    "fidelity": 0.04,
+    "wouldPlay": 0.03
+   },
+   {
+    "id": "b64-08",
+    "kind": "main-quick",
+    "fidelity": 0.1,
+    "wouldPlay": 0.1
+   },
+   {
+    "id": "b64-08",
+    "kind": "p64-quick",
+    "fidelity": 0.1,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-09",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-09",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-10",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-10",
+    "kind": "main-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.02
+   },
+   {
+    "id": "b64-11",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-11",
+    "kind": "main-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-12",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-12",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-13",
+    "kind": "p64-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-13",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.03
+   },
+   {
+    "id": "b64-14",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-14",
+    "kind": "p64-quick",
+    "fidelity": 0.1,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-15",
+    "kind": "p64-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0
+   },
+   {
+    "id": "b64-15",
+    "kind": "main-quick",
+    "fidelity": 0.03,
+    "wouldPlay": 0.02
+   },
+   {
+    "id": "b64-16",
+    "kind": "main-quick",
+    "fidelity": 0.05,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-16",
+    "kind": "p64-quick",
+    "fidelity": 0.06,
+    "wouldPlay": 0.05
+   }
+  ]
+ }
+}

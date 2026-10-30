@@ -923,3 +923,62 @@ přijede těsně k věži a scéna s hrdinou vypadne z obrazu. Krájení b64-04 
 sadě táhlo dolů hlavně načasování, krájení a chytání jsou na hraně šumu. Další krok začíná kamerou načasování.
 
 Útrata 0 USD (čtečka vypnutá). Soudce 32 volání `claude -p` (16 listů × 2 běhy), předplatné.
+
+### Krok 2: kamera načasování (`0527ad2f`)
+
+**Příčina byla opačná, než odhadl krok 1.** Kamera nepřijela k věži, ale odjela do mlhy. Kvádr pro `fitTall` sahal
+od země až na vršek cílové věže (`top + 1`), a „Stack 36 pancakes“ má věž 0,6 + 36 × 0,6 = 22,2 m. Výška `playRect`
+na vzdálenosti `timingDistance` je ~13 m, takže kamera couvla zhruba na dvojnásobek a věž, pekař i jídelna zmizely
+v mlze (snímek b64-01 P64 v kroku 1: jen mlha a dva kusy nábytku v rozích). Buňky auditu T4 mají krátké věže, proto
+se to tam neukázalo.
+
+**Oprava:** `timingTallBox` – kvádr je okno kolem jezdce: 2 m stohu pod ním, dva díly nad ním a cíl, dokud se okno
+vejde do 6 m. Krátká věž má cíl v kvádru dál (T4), dlouhá věž jen okno, které jede s jezdcem. Šířku dál drží
+`timingDistance`, fit jen posune záběr pod HUD. Pin v `portrait-frame.test.ts`: na Pixelu 7 na výšku s věží
+36 dílů je kamera nejvýš o 5 % dál než na `main` (start stohu +4 %, kvůli podstavě v okně), vršek stohu a příští díl
+leží v `playRect`. S kvádrem přes celou věž (`TALL_SPAN = 100`) padají 2 ze 13.
+
+Stráže nad buildem `0527ad2f` (server bez čtečky, nové `PLAY_STORE_DIR`), `--grep timing`: audit `P64_CHECK=1`
+na obou telefonech, `p61-portrait` na obou telefonech, `p58a-framing` na `chromium` i telefonech, `p64-landscape-guard`
+na `chromium`, Pixelu 7 i iPhonu 15 – 11 / 11 zelených (5 přeskočených podle projektu). Vitest `portrait-frame`
+a `p54b-landmark` 134 / 134, `tsc` čistý.
+
+**Soud po opravě** (větev přefocená do `D:/caches/p64/r3-p64-dev2/`, `main` tytéž snímky `r3-main-dev/` jako
+v kroku 1, `--judge claude --runs 2`, seed 61026, `board-dev-after.json`):
+
+| strana | běh | věrnost | hrál bych | n |
+|---|---|---|---|---|
+| `main` rychlá | 1 | 0,42 | 0,33 | 16 |
+| `main` rychlá | 2 | 0,435 | 0,33 | 16 |
+| P64 rychlá | 1 | 0,45 | 0,35 | 16 |
+| P64 rychlá | 2 | 0,45 | 0,34 | 16 |
+
+Soudce hodnotí `main` jinak než v kroku 1 (0,315 / 0,30 → 0,33 / 0,33 na týchž snímcích), proto se srovnává
+jen uvnitř jednoho soudu. Po větách (průměr dvou běhů, „hrál bych“):
+
+| věta | žánr | `main` | P64 | rozdíl | krok 1 |
+|---|---|---|---|---|---|
+| b64-04 | krájení | 0,35 | 0,30 | −0,05 | −0,05 |
+| b64-05 | chytání | 0,35 | 0,30 | −0,05 | −0,02 |
+| b64-02 | načasování | 0,175 | 0,135 | −0,04 | −0,05 |
+| b64-01 | načasování | 0,41 | 0,39 | −0,02 | **−0,375** |
+| b64-16 | rytmus | 0,325 | 0,305 | −0,02 | −0,01 |
+| b64-03 | krájení | 0,225 | 0,21 | −0,015 | +0,05 |
+| b64-07 | slučování | 0,285 | 0,275 | −0,01 | −0,02 |
+| b64-10 | obrana | 0,29 | 0,30 | +0,01 | −0,01 |
+| b64-13 | dav | 0,515 | 0,525 | +0,01 | −0,01 |
+| b64-15 | úkol | 0,44 | 0,45 | +0,01 | +0,05 |
+| b64-06 | chytání | 0,33 | 0,35 | +0,02 | +0,01 |
+| b64-11 | vytlačování | 0,33 | 0,35 | +0,02 | 0 |
+| b64-08 | slučování | 0,30 | 0,325 | +0,025 | 0 |
+| b64-14 | souboj | 0,375 | 0,475 | +0,10 | +0,15 |
+| b64-12 | přeskákání | 0,25 | 0,375 | +0,125 | +0,125 |
+| b64-09 | bouchání | 0,25 | 0,425 | +0,175 | 0 |
+
+**Co z toho plyne.** Načasování b64-01 se vrátilo na `main` (soudce: „skoro totéž jako A, kuchař s krátkým stohem
+palačinek a červené boxy“). Žádná věta neztrácí víc než 0,05, rozptyl dvou běhů jednoho soudu je až 0,1, takže deskové
+žánry jsou na výšku po větách na úrovni `main` v šumu a medián je nad `main`. Krájení b64-04 −0,05 je stejné jako
+v kroku 1 a soudce u něj píše „skoro totéž jako A“ – kamera krájení se proto nemění (měření úpravu neopravňuje).
+Honičky se v tomto kroku nemění (jen `TimingScene`), přeskákání drží +0,125.
+
+Útrata 0 USD (čtečka vypnutá). Soudce 32 volání `claude -p`, předplatné.
