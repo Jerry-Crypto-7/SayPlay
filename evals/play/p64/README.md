@@ -994,3 +994,76 @@ první sadou P64 ani `board-dev.json` nesdílí větu (`__tests__/seal.test.ts`)
 (`r3/holdout-opened.json`).
 
 SHA-256 (LF bajty `r3/holdout.json`): `231f085e878745a0a8895a8559661aa6fe23bca62e94145c1cbe5f0168d4e455`
+
+**Měření.** Sada otevřena 30. 10. v 08:56Z (`r3/holdout-opened.json`, commit `b3bf2db7`), teprve pak focení. Obě
+strany se čtečkou (`shots.mjs serve`, astra, strop 0,85 USD na stranu) a novým `PLAY_STORE_DIR`, jedna po druhé:
+`main` `e661855c` na 3165, větev `c1bb2c12` (kód hry = `0527ad2f`) na 3164. 24 / 24 vět na každé straně, hra ze čtení
+vznikla u 11 vět na každé straně. Všech 35 her každé strany (24 rychlých, 11 ze čtení) je stažených a publikovatelných.
+Slepý soud Codexem na společných listech, pohled telefonu, seed 61026, jeden běh, 24 volání. Výsledek a přepočet
+v `result-r3.json` a `__tests__/result-r3.test.ts`.
+
+| strana | věrnost | hrál bych | n |
+|---|---|---|---|
+| `main` rychlá hra | 0,58 | 0,52 | 24 |
+| `main` po čtení | 0,63 | 0,58 | 24 |
+| P64 rychlá hra | 0,60 | 0,55 | 24 |
+| P64 po čtení | 0,65 | 0,60 | 24 |
+
+| brána | práh | změřeno | stav |
+|---|---|---|---|
+| G1 „hrál bych“ | rychlá ≥ `main` + 0,05; po čtení ≥ `main` | rychlá 0,55 / 0,52 (+0,03); po čtení 0,60 / 0,58 | nesplněna |
+| G2 věrnost | rychlá i po čtení ≥ `main` − 0,02 | rychlá 0,60 / 0,58; po čtení 0,65 / 0,63 | splněna |
+| G3 čas do hratelné hry | z T8, nepřeměřeno | Pixel 7 +1 133 ms | nesplněna |
+| G4 FPS | z T8, nepřeměřeno | medián B/A 1,00 | splněna |
+| G5 hash a robot | z T8, nepřeměřeno | hash 1/1, robot 55/55 | splněna |
+| G6 desktop a šířka | přeměřeno v T8-R2 | čerstvé úložiště: aréna i plavba na šířku stejně jako `main` | splněna |
+
+**Verdikt: nepřipraveno k sloučení.**
+
+Nesplněné jsou G1 (rychlá hra +0,03 místo +0,05) a G3 (čas z T8, žádný úkol plánu ho neměnil).
+
+**Po větách** (rychlá hra, „hrál bych“ `main` / P64, seřazeno podle rozdílu). Deskové žánry (17 vět) mají medián
+rozdílu +0,04, honičky (7 vět) taky +0,04. V první zapečetěné sadě deskové žánry ztrácely.
+
+| věta | žánr | `main` | P64 | rozdíl | výtka soudce (P64) |
+|---|---|---|---|---|---|
+| r64-21 | krájení | 0,66 | 0,55 | −0,11 | **skoro prázdná plocha**, krájení málo vidět |
+| r64-15 | krájení | 0,63 | 0,54 | −0,09 | **velká prázdná aréna**, chybí chrám |
+| r64-01 | běh | 0,72 | 0,64 | −0,08 | lyžař nezřetelný |
+| r64-12 | chytání | 0,42 | 0,38 | −0,04 | hra viditelně přejde na běh a skákání |
+| r64-05 | úkol | 0,49 | 0,46 | −0,03 | krab a tráva místo pobřeží a lodí |
+| r64-09 | rytmus | 0,52 | 0,50 | −0,02 | cíl skládání nesouvisí s bubnováním |
+| r64-24 | obrana | 0,46 | 0,44 | −0,02 | koště a kuchyně nezřetelné |
+| r64-06 | střelba | 0,74 | 0,76 | +0,02 | čistší plocha |
+| r64-14 | obrana | 0,41 | 0,43 | +0,02 | liška a skřeti místo slimáků a ježka |
+| r64-11 | mávání | 0,42 | 0,45 | +0,03 | drak blíž, kaňon obepíná |
+| r64-23 | slučování | 0,40 | 0,43 | +0,03 | skluz jako tác |
+| r64-04 | plavba | 0,48 | 0,52 | +0,04 | chybí věže a sovy |
+| r64-18 | slučování | 0,43 | 0,47 | +0,04 | robot a šrouby nad pásem výrazné |
+| r64-22 | chytání | 0,60 | 0,64 | +0,04 | prostorná plocha chytání |
+| r64-19 | vytlačování | 0,48 | 0,53 | +0,05 | čitelný souboj v kruhu |
+| r64-20 | načasování | 0,56 | 0,61 | +0,05 | přístav, jeřáb, zavěšený náklad |
+| r64-08 | načasování | 0,52 | 0,58 | +0,06 | mnich a vysouvaná tyč |
+| r64-16 | přeskákání | 0,57 | 0,63 | +0,06 | rušná noční silnice |
+| r64-07 | házení | 0,63 | 0,70 | +0,07 | nejbližší shoda s větou |
+| r64-02 | plošinovka | 0,70 | 0,80 | +0,10 | plošiny nad lávou jasně oddělené |
+| r64-10 | souboj | 0,52 | 0,64 | +0,12 | šerif a prašná ulice |
+| r64-17 | dav | 0,57 | 0,69 | +0,12 | brány násobení a pila čitelné |
+| r64-03 | aréna | 0,42 | 0,55 | +0,13 | hratelná honička, joystick |
+| r64-13 | bouchání | 0,48 | 0,66 | +0,18 | žáby u odtoků a nástroj čitelné |
+
+**Co z toho plyne.** Oprava kamery načasování platí i na nových větách: obě věty načasování jsou nad `main`
+(+0,05 a +0,06, v první sadě p64-08 −0,22). Jediný žánr, který ztrácí ve všech třech měřeních, je krájení: první sada
+−0,10 a −0,04, dev −0,05, tady −0,11 a −0,09, vždy s výtkou „prázdná plocha nad malým hrdinou“. Inference: krájení je
+největší jednotlivá ztráta (dvě věty −0,20 v součtu), G1 chybí +0,02. Dalším krokem pro G1 je kamera krájení na výšku (bližší, hrdina větší), pro G3 čas do hratelné hry
+na telefonu – žádný z nich v tomto plánu není.
+
+| útrata čtení | USD |
+|---|---|
+| T1 (`main` dev + první sada) | 1,134 |
+| T8 (větev dev + první sada) | 1,131 |
+| T8-R3 `main` (24 volání) | 0,767 |
+| T8-R3 P64 (24 volání) | 0,766 |
+| **Celkem P64** | **3,798** |
+
+Strop plánu 4 USD. Soudce: 24 volání Codexu (`codex exec`), předplatné.
