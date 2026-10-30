@@ -1,0 +1,29 @@
+{
+ "about": "P64 T8-R7 third sealed portrait set: 24 English sentences written and sealed 30. 10. 2026 after the slice fix (T8-R5) and the merge of origin/main with P66 and P67, before anything is shot on them. The second set (../r3/holdout.json) was opened in T8-R3 and the code changed after it. s64-01 to s64-19 = one sentence per genre that P64 frames (GENRES of src/play/genre/contract.ts without the P66 genres), in that order; s64-20 to s64-24 = five more board-genre sentences: two slice (the genre that lost in every earlier judgement), timing stack, catch and merge. genre = what the quick game's offline classifier picks today (classifyGenre(text, null).ranked[0].genre, no model call). The no-model draft (draftGameSpecWithMeta, seed 1) plays that genre for 20 of 24 when sealed; s64-07 drafts quest and s64-18, s64-19, s64-24 draft arena, the same as every merge and push sentence of r3 and board-dev on main 0da52829, so both sides share it. Opened once (r4/holdout-opened.json); nothing is tuned on it.",
+ "sentences": [
+  { "id": "s64-01", "genre": "runner", "text": "A mail carrier sprints down a snowy mountain road dodging rolling barrels and stray goats" },
+  { "id": "s64-02", "genre": "platformer", "text": "A clockwork mouse jumps across crumbling ledges above a flooded sewer" },
+  { "id": "s64-03", "genre": "arena", "text": "A sheepdog chases runaway lambs around a muddy farmyard all afternoon" },
+  { "id": "s64-04", "genre": "voyage", "text": "A paper airplane glides over a busy harbor, weaving past ship masts and seagulls" },
+  { "id": "s64-05", "genre": "quest", "text": "A gardener waters every wilted flower bed across a royal palace garden before the queen wakes" },
+  { "id": "s64-06", "genre": "shooter", "text": "A space cowboy blasts giant worms swarming around a desert outpost" },
+  { "id": "s64-07", "genre": "throw", "text": "A grandma tosses snowballs at sneaky squirrels raiding her bird feeder" },
+  { "id": "s64-08", "genre": "timing", "text": "A window cleaner stacks paint buckets onto a swaying scaffold without letting it topple" },
+  { "id": "s64-09", "genre": "rhythm", "text": "A beach drummer pounds the bongos to the beat at a sunset party" },
+  { "id": "s64-10", "genre": "duel", "text": "A young fencer faces the champion in a final duel under a stadium spotlight" },
+  { "id": "s64-11", "genre": "flap", "text": "A hummingbird flutters up through a jungle waterfall dodging hanging vines" },
+  { "id": "s64-12", "genre": "catch", "text": "A baker catches donuts falling from a broken oven chute in a paper bag" },
+  { "id": "s64-13", "genre": "whack", "text": "A plumber bonks rubber ducks popping out of bathtub drains in an old hotel" },
+  { "id": "s64-14", "genre": "defense", "text": "A scarecrow defends the cornfield from waves of hungry crows at dusk" },
+  { "id": "s64-15", "genre": "slice", "text": "A sword master slices flying melons tossed over a bamboo garden wall" },
+  { "id": "s64-16", "genre": "hop", "text": "A duckling crosses a busy harbor road full of forklifts to reach the pond" },
+  { "id": "s64-17", "genre": "crowd", "text": "A marching band grows by passing through magic gates along a parade street" },
+  { "id": "s64-18", "genre": "merge", "text": "A jeweler combines matching pearls into bigger pearls on a velvet tray" },
+  { "id": "s64-19", "genre": "push", "text": "Two penguins shove each other out of an icy sumo ring on a frozen lake" },
+  { "id": "s64-20", "genre": "slice", "text": "A street chef slices flying bananas thrown across a busy night market with a cleaver" },
+  { "id": "s64-21", "genre": "slice", "text": "A young knight slices flying apples tossed by jesters in a castle orchard" },
+  { "id": "s64-22", "genre": "timing", "text": "A circus clown stacks wobbly cakes onto a tall wedding tower without letting it topple" },
+  { "id": "s64-23", "genre": "catch", "text": "A puppy catches tennis balls dropping from an apple tree in a sunny backyard" },
+  { "id": "s64-24", "genre": "merge", "text": "A potion brewer combines matching bubbles into bigger potions inside a bubbling cauldron" }
+ ]
+}

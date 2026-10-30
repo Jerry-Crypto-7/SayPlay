@@ -1118,3 +1118,19 @@ První snímek na Pixelu: `main` 5559 ms, P64 5631 ms (+72 ms, párově −124 m
 Inference: +1133 ms z T8 byla zátěž stroje, ne cena P64 – v klidném běhu bez souběžné práce je rozdíl v šumu na obě
 strany. CDP profil, který plán chtěl pro nesplněnou bránu, proto nebyl potřeba.
 
+## T8-R7: třetí zapečetěná brána
+
+Druhá sada je otevřená (T8-R3) a krájení se po ní změnilo (T8-R5), brána proto běží na třetí sadě `r4/holdout.json`,
+napsané a zapečetěné 30. 10. po sloučení s `main` (P66, P67) dřív, než se na ní cokoli fotilo. 24 vět: s64-01 až s64-19
+jedna na žánr, který P64 rámuje (`GENRES` bez žánrů P66), v tom pořadí; s64-20 až s64-24 pět dalších deskových: dvě
+krájení (ztrácelo ve všech soudech, celkem tři), stoh na načasování, chytání a slučování. Žánr věty je to, co dnes vybere
+klasifikátor bez modelu. Se žádnou známou sadou, první a druhou sadou P64 ani `board-dev.json` nesdílí větu
+(`__tests__/seal.test.ts`). Otevře se jednou přes `openSealedOnce` (`r4/holdout-opened.json`).
+
+Fakt z pečetění: koncept bez modelu (`draftGameSpecWithMeta`, seed 1) hraje žánr klasifikátoru u 20 z 24 vět. s64-07
+(házení) hraje úkol, s64-18, s64-19 a s64-24 (slučování, vytlačování) arénu. Totéž dnes dělá `main` `0da52829` u všech
+vět slučování a vytlačování z `r3/holdout.json` i `board-dev.json`, takže obě strany brány hrají totéž a P64 to nemění.
+Inference: po P66 se rychlá hra bez modelu ke slučování a vytlačování nedostane – nález pro `main`, ne pro P64.
+
+SHA-256 (LF bajty `r4/holdout.json`): `9ea4d48cf03199dc8fbf7c8b255641b70cb69bdfc95cba870995719cf3bdbe1d`
+
