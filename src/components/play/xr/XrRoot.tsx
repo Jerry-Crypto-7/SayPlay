@@ -7,24 +7,39 @@
  * Trvalé plátno: výměna rychlé hry za AI verzi je navigace na jinou `/play/<id>`, a hra s vlastním `<Canvas>`
  * by s ním ztratila i XR relaci (ta je svázaná s kontextem WebGL). Ve VR proto každá hra pod `/play` kreslí do
  * jednoho plátna tady (`host`), které žije s layoutem.
+ *
+ * Mimo relaci (P67 T4a) hry kreslí do vlastního plátna jako na telefonu a plátno relace čeká skryté (`Parking`).
+ * Kód XR se načítá až po prvním snímku stránky, takže kdyby hry dostaly plátno relace hned, feed by po načtení
+ * vyměnil plátno, ve kterém už kreslí, za druhé (nový kontext WebGL, nový překlad, na Questu bliknutí).
  */
 
 import { useThree } from '@react-three/fiber';
 import { createXRStore, useXR, XR } from '@react-three/xr';
 import { EffectComposer } from 'postprocessing';
-import { type ReactNode, useEffect, useMemo } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import type { Light } from 'three';
 
+import { closeComfort, resetRecenter } from '@/play/xr/comfort';
 import { fpsHudWanted } from '@/play/xr/flag';
+import { profileFor } from '@/play/xr/headset';
 import { type FrameMeter, XR_QUALITY, createFrameMeter, framebufferScaleOf, nearestRate } from '@/play/xr/quality';
 
 import { createHostTunnel, StagePortal } from '../feed/StageHost';
+import type { StageTunnel } from '../feed/stage-tunnel';
+import { registerSw } from './RegisterSw';
+import { closeXrLobby, openXrLobby } from './xr-lobby';
 import { XrFpsHud } from './XrFpsHud';
 import { PANEL_ORDER } from './XrPanel';
 import { XrRig } from './XrRig';
 
 /** Adresa, kterou stránka otevřela – jako brána `?vr=1` (`XrGate`), tedy i po přechodu na AI verzi. */
 const opened = window.location.href;
+/** Které brýle (`profileFor`): Quest 3 a 3S mají vlastní profil, ostatní profil Questu 2. */
+const userAgent = navigator.userAgent;
+
+// Instalace jako aplikace (T11): worker se registruje odsud, ne z layoutu – telefon ho nemá ani v prvním JS.
+void registerSw();
 
 const store = createXRStore({
   // Emulátor IWER vstřikuje jen e2e; produkt ho nenačte ani na localhostu.
@@ -56,10 +71,23 @@ const store = createXRStore({
   planeDetection: false,
   hitTest: false,
   domOverlay: false,
-  // Profil Questu 2 (`quality.ts`): 72 Hz, pevná foveace, rozlišení relace.
-  frameRate: nearestRate,
+  // Profil brýlí (`headset.ts`): Quest 2 a neznámé 72 Hz, pevná foveace, rozlišení relace 1; Quest 3 a 3S 90 Hz
+  // (když ho relace nabízí) a rozlišení 1,2. Rozlišení se volí před relací, frekvence až podle jejího seznamu.
+  frameRate: (supportedFrameRates) => nearestRate(supportedFrameRates, profileFor({ userAgent, supportedFrameRates }).hz),
   foveation: XR_QUALITY.foveation,
-  frameBufferScaling: framebufferScaleOf(opened),
+  frameBufferScaling: framebufferScaleOf(opened, profileFor({ userAgent }).scale),
+});
+
+// VR lobby (P67 T2) patří relaci: po odchodu z VR se zavře a další „Enter VR“ ze hry začne hrou, ne lobby. Stejně
+// panel „Comfort“ a „Recenter“ (P67 T9): nová relace má nový počátek prostoru. Uložené volby zůstávají.
+store.subscribe((state, prev) => {
+  // I relace, kterou prohlížeč dal sám (navigace v brýlích), patří hrám.
+  if (state.session != null) setHosting(true);
+  if (prev.session == null || state.session != null) return;
+  setHosting(false);
+  closeXrLobby();
+  closeComfort();
+  resetRecenter();
 });
 
 /** Panel FPS (`?vrhud=1`) pro ruční bránu T8. */
@@ -67,8 +95,48 @@ const fpsHud = fpsHudWanted(opened);
 /** Snímky relace pro panel FPS; měří `KeepXrFrames`. */
 const meter: FrameMeter = createFrameMeter();
 
-/** Tunel trvalého plátna VR; kontejner plátna se stěhuje do místa hry, která právě hraje. */
-export const host = createHostTunnel();
+/**
+ * Hry kreslí do plátna relace (`onHosting`, kontext `XrGate`): od „Enter VR“ do konce relace. Už před relací, ať plátno
+ * v relaci visí v místě hry jako dřív – z něj čte sadu prostředí `lookIdOf` a emulátor si ho tam po relaci vrátí.
+ */
+let hosting = false;
+const hostingListeners = new Set<(hosting: boolean) => void>();
+
+function setHosting(next: boolean): void {
+  if (hosting === next) return;
+  hosting = next;
+  hostingListeners.forEach((listener) => listener(next));
+}
+
+const tunnel = createHostTunnel();
+/** Skrytý kontejner plátna relace mimo hry (`Parking`); `null`, dokud není na stránce. */
+let parking: HTMLElement | null = null;
+
+/** Plátno, které žádná hra nedrží, do skrytého kontejneru: R3F plátno bez rozměru nezaloží a `<XR>` by se nepřipojilo. */
+function park(): void {
+  if (parking !== null && tunnel.element !== null && !tunnel.element.isConnected) parking.appendChild(tunnel.element);
+}
+
+/** Tunel trvalého plátna VR; kontejner plátna se stěhuje do místa hry, která právě hraje, a po ní zpátky do úschovny. */
+export const host: StageTunnel = {
+  ...tunnel,
+  release: (owner) => {
+    tunnel.release(owner);
+    park();
+  },
+};
+
+/** Úschovna: 1 px v rohu, neviditelná a mimo dotyk – stačí, aby R3F plátno založilo a relace měla kde začít. */
+const PARKED: CSSProperties = { position: 'fixed', left: 0, top: 0, width: 1, height: 1, overflow: 'hidden', visibility: 'hidden', pointerEvents: 'none' };
+
+function parkingRef(node: HTMLDivElement | null): void {
+  parking = node;
+  park();
+}
+
+function Parking() {
+  return createPortal(<div ref={parkingRef} style={PARKED} aria-hidden="true" data-testid="xr-parking" />, document.body);
+}
 
 /**
  * Výjimka v jednom snímku VR by zastavila kreslení relace natrvalo: three po chybě v `setAnimationLoop` nepožádá
@@ -192,11 +260,38 @@ function wrapScene(scene: ReactNode): ReactNode {
 
 /** Plátno s XR relací. Programy shaderů drží přes výměny her a novou scénu staví odloženě, jako řetěz mikroher. */
 export function XrStage() {
-  return <StagePortal host={host} keepPrograms deferScenes wrap={wrapScene} />;
+  return (
+    <>
+      <Parking />
+      <StagePortal host={host} keepPrograms deferScenes wrap={wrapScene} />
+    </>
+  );
 }
 
-export async function enterVr(): Promise<void> {
-  await store.enterVR();
+/**
+ * `lobby` (P67 T2, „Enter VR“ domova): relace začne VR lobby; když se do VR nevstoupí, lobby nezůstane čekat.
+ * Hra se nejdřív přestěhuje do plátna relace (`hosting`) a relace začne o snímek později, až plátno visí v místě hry.
+ */
+export async function enterVr(options?: { readonly lobby?: boolean }): Promise<void> {
+  if (options?.lobby === true) openXrLobby();
+  setHosting(true);
+  try {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await store.enterVR();
+  } catch (error) {
+    closeXrLobby();
+    if (store.getState().session == null) setHosting(false);
+    throw error;
+  }
+}
+
+/** Hlásí, jestli hry kreslí do plátna relace (`hosting`); hned i aktuální stav. */
+export function onHosting(listener: (hosting: boolean) => void): () => void {
+  listener(hosting);
+  hostingListeners.add(listener);
+  return () => {
+    hostingListeners.delete(listener);
+  };
 }
 
 export function exitVr(): void {

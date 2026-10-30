@@ -6,6 +6,7 @@ import { FeedPager } from '@/components/play/FeedPager';
 import { HIDE_FOR_RETURNING } from '@/components/play/FirstVisitHint';
 import { HERO, SUBHEAD } from '@/components/play/starters';
 import { PendingUpgradeCards } from '@/components/play/UpgradeBanner';
+import { EnterVrButton } from '@/components/play/xr/EnterVrButton';
 
 /** Poslední slovo nadpisu nese zvýraznění kitu („What do you want to **play?**“). */
 const HERO_CUT = HERO.lastIndexOf(' ') + 1;
@@ -25,6 +26,8 @@ export default function PlayPage() {
       <div className="play-side">
         <header className="sp-appbar play-appbar">
           <Image className="sp-appbar__logo" src="/brand/logo/logo-lockup.svg" alt="sayplay" width={107} height={30} priority unoptimized />
+          {/* VR (P67 T2): jen s prohlížečem, který VR umí; relace začne VR lobby s kartami vět. */}
+          <EnterVrButton lobby />
         </header>
         <div className="play-home">
           <div className="play-create">

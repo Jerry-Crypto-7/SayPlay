@@ -27,8 +27,9 @@ import { browserRenderer } from '../scripts/browser-renderer';
  * na obrazovce žádný český řetězec. Časy se zapisují a porovnávají s `after-t8.json`.
  */
 
-// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS).
-test.use({ launchOptions: { args: browserRenderer().args } });
+// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS)
+// a bez `--disable-features=OpenXR` by Chromium na počítači s runtime VR (SteamVR) hlásil brýle (P67 T4a).
+test.use({ launchOptions: { args: [...browserRenderer().args, '--disable-features=OpenXR'] } });
 
 const OUT = join('evals', 'play', 'feed', 'phone-check-2026-10-20');
 const SWIPES = 10;

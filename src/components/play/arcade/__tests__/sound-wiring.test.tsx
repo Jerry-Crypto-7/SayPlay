@@ -122,10 +122,11 @@ describe('hero action sound wiring', () => {
 
 describe('effects bus sound wiring', () => {
   // `Effects` potřebuje plátno, three.quarks a okno – jako funkce se zavolat nedá.
-  // Hlídá se tedy zdroj (vzor `hero-action-wiring.test.tsx`): posluchač sběrnice zahraje `busPresets`.
+  // Hlídá se tedy zdroj (vzor `hero-action-wiring.test.tsx`): posluchač sběrnice zahraje `busPresets`,
+  // každý z místa své události (P67 T8; poloha platí jen ve VR).
   it('the bus listener plays every preset of the tick', () => {
     const source = readFileSync(join(__dirname, '..', 'effects', 'Effects.tsx'), 'utf8');
     const listener = /created\.subscribe\(\(events\) => \{[\s\S]*?\n {4}\}\);/.exec(source)?.[0] ?? '';
-    expect(listener).toMatch(/^\s*for \(const preset of busPresets\(events\)\) playSfx\(preset\);$/m);
+    expect(listener).toMatch(/^\s*for \(const preset of busPresets\(events\)\) playSfx\(preset, busEventOf\(events, preset\)\);$/m);
   });
 });

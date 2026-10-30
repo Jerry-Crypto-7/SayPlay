@@ -9,6 +9,7 @@ import { SHOOTER } from '../src/play/arcade/pieces/shooter';
 import { THROW } from '../src/play/arcade/pieces/throw';
 import { assemblyOfCell, liveCells } from '../src/play/compose/allowed';
 import { compileRecipe } from '../src/play/compose/compile';
+import { XR_HAPTICS } from '../src/play/xr/haptics';
 import { REACH, SWING } from '../src/play/xr/input-map';
 
 import { expect, test } from './vr-pages';
@@ -63,10 +64,18 @@ interface Device {
   readonly controllers: { readonly right?: Pose & { readonly inputSource: XRInputSource } };
 }
 
+/** Jeden `pulse` ovladače, jak ho zapsal špión (P67 T8). */
+interface Pulse {
+  readonly hand: 'left' | 'right' | '?';
+  readonly intensity: number;
+  readonly ms: number;
+}
+
 declare global {
   interface Window {
     __iwerDevice?: Device;
     __xrHandVelocity?: readonly [number, number, number] | null;
+    __xrPulses?: Pulse[];
   }
 }
 
@@ -78,6 +87,18 @@ async function withQuest2(page: Page): Promise<void> {
     const device = new iwer.XRDevice(iwer.metaQuest2);
     device.installRuntime({ forceInstall: true });
     window.__iwerDevice = device;
+    // Špión na vibrace (P67 T8): každý `pulse` ovladače se zapíše s rukou, silou a délkou.
+    type Actuator = { pulse(intensity: number, ms: number): Promise<boolean> };
+    const actuatorOf = (hand: 'left' | 'right') =>
+      (device.controllers as Partial<Record<'left' | 'right', { inputSource: XRInputSource }>>)[hand]?.inputSource.gamepad?.hapticActuators?.[0] as unknown as Actuator | undefined;
+    const hands = { left: actuatorOf('left'), right: actuatorOf('right') };
+    window.__xrPulses = [];
+    const proto = Object.getPrototypeOf(hands.right) as Actuator;
+    const pulse = proto.pulse;
+    proto.pulse = function (this: Actuator, intensity: number, ms: number) {
+      window.__xrPulses!.push({ hand: this === hands.right ? 'right' : this === hands.left ? 'left' : '?', intensity, ms });
+      return pulse.call(this, intensity, ms);
+    };
     // Rychlost ruky jako z brýlí: póza paprsku pravého ovladače dostane `linearVelocity`.
     const getPose = XRFrame.prototype.getPose;
     XRFrame.prototype.getPose = function (space, base) {
@@ -269,5 +290,17 @@ for (const kind of ['shooter', 'throw', 'whack', 'slice'] as const) {
     console.log(`${kind} VR: ${JSON.stringify(played)}`);
     if (kind === 'shooter') expect((await xr(page))?.aim).not.toBeNull();
     expect({ score: played.score, items: played.items, runState: played.runState }).toEqual({ score: reference.end.score, items: reference.end.items, runState: reference.end.runState });
+
+    // Zásah zavibruje pravým ovladačem (P67 T8): každý pulz je záznam tabulky `xr/haptics.ts`.
+    const pulses = await page.evaluate(() => window.__xrPulses ?? []);
+    const sound = await page.evaluate(() => ({ audio: window.__playAudio?.state() ?? null, spatial: window.__playXrSound?.() ?? null }));
+    console.log(`${kind} VR pulses: ${pulses.length} ${JSON.stringify(pulses.slice(0, 3))}, sound: ${JSON.stringify(sound)}`);
+    const felt = Object.values(XR_HAPTICS).filter((haptic) => haptic !== null);
+    expect(pulses.filter((pulse) => pulse.hand === 'right').length, 'a hit buzzes the right controller').toBeGreaterThan(0);
+    for (const pulse of pulses) expect(felt, JSON.stringify(pulse)).toContainEqual(expect.objectContaining({ intensity: pulse.intensity, ms: pulse.ms }));
+    // Zvuk událostí zní z místa těla přes panner, posluchač je hlava brýlí (IWER stojí ve výšce očí).
+    expect(sound.audio).toBe('running');
+    expect(sound.spatial?.placed ?? 0, 'game sounds go through the panner in VR').toBeGreaterThan(0);
+    expect(sound.spatial?.listener?.y ?? 0).toBeGreaterThan(1);
   });
 }

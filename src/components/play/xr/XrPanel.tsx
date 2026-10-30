@@ -6,7 +6,7 @@
  * v immersive relaci nekreslí, proto se karta kreslí do plátna 2D písmem, které stránka už načetla (`play.css`),
  * a ve scéně je to textura na ploše. Rozměry jsou v pixelech kitu: 1 px kitu = 2 mm ve vzdálenosti 1 m (`KIT_PX`),
  * takže text kitu má ve VR na metr tutéž úhlovou velikost jako na telefonu v ruce. Sloupec panelů ho dál násobí
- * vzdáleností od očí (`XrHud`).
+ * vzdáleností od očí (`XrHud`). Karta smí nést QR kód odkazu (`qr`, P67 T5): kreslí ho `qr.ts` do téhož plátna.
  *
  * Tlačítko je vlastní síť s obsluhou událostí: najde ho paprsek ovladače a spoušť ho stiskne (`@react-three/xr`).
  * Paprsek na tlačítku se zapisuje do `PanelAim`, ať stisk spouště na panelu nejde zároveň do hry (`XrInput`).
@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasTexture, SRGBColorSpace } from 'three';
 
 import { borderWidth, color, fontFamily, radius, size, space, typography } from '@/brand/tokens';
+import { paintQr, qrModules } from '@/play/xr/qr';
 
 /** Metrů na pixel kitu ve vzdálenosti 1 m od očí. */
 export const KIT_PX = 0.002;
@@ -52,13 +53,30 @@ const KEY_SHADOW = 3;
 const KEY_HEIGHT = size['control-m'];
 /** Nejužší tlačítko vedle obsahu (px kitu) – terč paprsku. */
 const KEY_MIN = 120;
+/** Strana čtverce QR kódu i s tichou zónou (px kitu); modul má i v nejdelším odkazu aspoň 12 px plátna (`qr.test.ts`). */
+const QR_SIZE = 200;
+
+/** Barvy karet nápadů kitu (`.sp-idea--mint` …); inkoust na nich má kontrast 10,6–11,5:1. */
+export type PanelTone = 'mint' | 'sun' | 'sky' | 'bubblegum';
 
 export interface PanelButton {
   readonly id: string;
   readonly label: string;
   /** Rajčatová hlavní akce – nejvýš jedna na panel. */
   readonly primary?: boolean;
+  /** Výplň místo papíru: karta nápadu v mřížce `grid`, mikrofon lobby (`sun`, P67 T3). */
+  readonly tone?: PanelTone;
+  /** Vybraná volba jako `.sp-chip.is-selected`: inkoustová výplň, krémový text (panel Comfort, P67 T9). */
+  readonly selected?: boolean;
   press(): void;
+}
+
+/** Mřížka tlačítek (P67 T2): karty vět lobby, klávesy klávesnice. Popisek se zalomí do šířky buňky. */
+export interface PanelGrid {
+  readonly columns: number;
+  readonly cells: readonly PanelButton[];
+  /** Mezera mezi buňkami (px kitu), výchozí `space-2`. */
+  readonly gap?: number;
 }
 
 /** Počítadlo jako `.sp-stat`: hodnota a pod ní popisek (`null` = hodnota se popíše sama, „5 shots left“). */
@@ -76,8 +94,14 @@ export interface PanelSpec {
   readonly width: number;
   readonly headline?: string;
   readonly title?: string;
+  /** Odkaz jako QR kód pod titulkem (P67 T5): čtverec `QR_SIZE` uprostřed karty, inkoust na papíře. */
+  readonly qr?: string;
   readonly body?: string;
+  /** Chyba pod textem, barvou `alarm` jako `.sp-field-error` (P67 T2). */
+  readonly note?: string;
   readonly stats?: readonly PanelStat[];
+  /** Mřížka tlačítek pod počítadly, nad řadou `buttons`. */
+  readonly grid?: PanelGrid;
   readonly buttons?: readonly PanelButton[];
   /** Tlačítka vedle poslední řady obsahu, ne pod ní – nižší karta tam, kde je v zorném poli málo místa. */
   readonly inline?: boolean;
@@ -95,6 +119,20 @@ interface Line {
   readonly type: Type;
   /** Střed řádku od horního okraje karty (px kitu). */
   readonly y: number;
+  /** Barva textu; bez ní inkoust. */
+  readonly fill?: string;
+}
+
+/** Tlačítko rozvržené na kartě: `lines` = popisek zalomený do šířky (jeden řádek u tlačítek řady). */
+interface Key {
+  readonly id: string;
+  readonly label: string;
+  readonly primary: boolean;
+  readonly tone?: PanelTone;
+  readonly selected: boolean;
+  readonly lines: readonly string[];
+  readonly type: Type;
+  readonly rect: Rect;
 }
 
 /** Rozvržená karta v px kitu, `y` dolů od horního okraje. */
@@ -104,7 +142,9 @@ export interface PanelLayout {
   readonly height: number;
   readonly lines: readonly Line[];
   readonly chips: readonly { readonly stat: PanelStat; readonly rect: Rect }[];
-  readonly keys: readonly { readonly id: string; readonly label: string; readonly primary: boolean; readonly rect: Rect }[];
+  readonly keys: readonly Key[];
+  /** QR kód: zakódovaný text, moduly i s tichou zónou a čtverec na kartě. */
+  readonly qr: { readonly text: string; readonly modules: readonly (readonly boolean[])[]; readonly rect: Rect } | null;
 }
 
 const fontOf = (type: Type, scale = 1): string => `${type.weight} ${type.size * scale}px ${fontFamily.display}`;
@@ -154,11 +194,11 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
   const lines: Mutable<Line>[] = [];
   const last: { row: Row | null } = { row: null };
   let y = PAD;
-  const block = (text: string | undefined, type: Type): void => {
+  const block = (text: string | undefined, type: Type, fill?: string): void => {
     if (text === undefined) return;
     const step = type.size * type.lineHeight;
     for (const part of wrap(text, type, inner)) {
-      const line = { text: part, type, y: y + step / 2 };
+      const line = { text: part, type, y: y + step / 2, ...(fill === undefined ? {} : { fill }) };
       lines.push(line);
       last.row = { top: y, h: step, right: PAD + widthOf(part, type), lines: [line], chips: [] };
       y += step;
@@ -167,7 +207,15 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
   };
   block(spec.headline, TYPE.headline);
   block(spec.title, TYPE.title);
+  let qr: PanelLayout['qr'] = null;
+  if (spec.qr !== undefined) {
+    qr = { text: spec.qr, modules: qrModules(spec.qr), rect: { x: (spec.width - QR_SIZE) / 2, y, w: QR_SIZE, h: QR_SIZE } };
+    y += QR_SIZE + GAP;
+    // Tlačítka vedle kódu nestojí.
+    last.row = null;
+  }
   block(spec.body, TYPE.body);
+  block(spec.note, TYPE.body, color.alarm);
 
   const chips: { stat: PanelStat; rect: Mutable<Rect> }[] = [];
   const stats = spec.stats ?? [];
@@ -191,11 +239,31 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
     y += h + GAP;
   }
 
+  // Mřížka: buňky jedné šířky, řada tak vysoká jako nejdelší zalomený popisek v ní, aspoň `control-s`.
+  const cells: Key[] = [];
+  const grid = spec.grid;
+  if (grid !== undefined && grid.cells.length > 0) {
+    const gap = grid.gap ?? space['2'];
+    const w = (inner - gap * (grid.columns - 1)) / grid.columns;
+    const step = TYPE.body.size * TYPE.body.lineHeight;
+    for (let from = 0; from < grid.cells.length; from += grid.columns) {
+      const row = grid.cells.slice(from, from + grid.columns).map((cell) => ({ cell, lines: wrap(cell.label, TYPE.body, w - 2 * CHIP_PAD.x) }));
+      const h = Math.max(size['control-s'], Math.max(...row.map(({ lines: wrapped }) => wrapped.length)) * step + 2 * CHIP_PAD.y);
+      row.forEach(({ cell, lines: wrapped }, index) =>
+        cells.push({ ...keyFrom(cell, wrapped, TYPE.body), rect: { x: PAD + index * (w + gap), y, w, h } }),
+      );
+      y += h + gap;
+    }
+    y += GAP - gap;
+    // Tlačítka řady pod mřížkou, ne vedle ní.
+    last.row = null;
+  }
+
   const buttons = spec.buttons ?? [];
   const natural = buttons.map((button) => Math.max(KEY_MIN, widthOf(button.label, TYPE.button) + 2 * space['5']));
   const together = natural.reduce((sum, w) => sum + w, 0) + GAP * Math.max(0, buttons.length - 1);
   const beside = last.row;
-  let keys: PanelLayout['keys'];
+  let keys: Key[];
   if (spec.inline === true && beside !== null && buttons.length > 0 && beside.right + GAP + together <= PAD + inner) {
     // Řada se srovná na výšku tlačítka; obsah řady i tlačítka svisle uprostřed.
     const h = Math.max(beside.h, KEY_HEIGHT);
@@ -205,16 +273,51 @@ export function layoutOf(spec: PanelSpec): PanelLayout {
     keys = buttons.map((button, index) => {
       const rect = { x, y: beside.top + (h - KEY_HEIGHT) / 2, w: natural[index]!, h: KEY_HEIGHT };
       x += natural[index]! + GAP;
-      return { id: button.id, label: button.label, primary: button.primary === true, rect };
+      return { ...keyFrom(button, [button.label], TYPE.button), rect };
     });
     y = beside.top + h + GAP;
   } else {
-    const w = (inner - GAP * (buttons.length - 1)) / buttons.length;
-    keys = buttons.map((button, index) => ({ id: button.id, label: button.label, primary: button.primary === true, rect: { x: PAD + index * (w + GAP), y, w, h: KEY_HEIGHT } }));
-    if (keys.length > 0) y += KEY_HEIGHT + GAP;
+    // Tlačítka po pořadí do řady, dokud se jejich popisky vejdou; další jdou do nové řady (P67 T9: lobby s „Comfort“
+    // a „Say it“ má pět tlačítek). V řadě stejná šířka, dokud se do ní vejde každý popisek; jinak každé tlačítko na
+    // svůj popisek a zbytek řady rovným dílem (P67 T3: „More ideas“ by v čtvrtině řady přetekl).
+    const fitted = buttons.map((button) => widthOf(button.label, TYPE.button) + 2 * space['3']);
+    const rows: number[][] = [];
+    let used = inner;
+    fitted.forEach((w, index) => {
+      if (used + GAP + w > inner) {
+        rows.push([]);
+        used = -GAP;
+      }
+      rows.at(-1)!.push(index);
+      used += GAP + w;
+    });
+    keys = [];
+    for (const row of rows) {
+      const free = inner - GAP * (row.length - 1);
+      const own = row.map((index) => fitted[index]!);
+      const share = (free - own.reduce((sum, w) => sum + w, 0)) / row.length;
+      const widths = own.every((w) => w <= free / row.length) ? own.map(() => free / row.length) : own.map((w) => w + share);
+      let x = PAD;
+      row.forEach((index, at) => {
+        const button = buttons[index]!;
+        keys.push({ ...keyFrom(button, [button.label], TYPE.button), rect: { x, y, w: widths[at]!, h: KEY_HEIGHT } });
+        x += widths[at]! + GAP;
+      });
+      y += KEY_HEIGHT + GAP;
+    }
   }
-  return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys };
+  return { id: spec.id, width: spec.width, height: y - GAP + PAD, lines, chips, keys: [...cells, ...keys], qr };
 }
+
+const keyFrom = (button: PanelButton, lines: readonly string[], type: Type): Omit<Key, 'rect'> => ({
+  id: button.id,
+  label: button.label,
+  primary: button.primary === true,
+  ...(button.tone === undefined ? {} : { tone: button.tone }),
+  selected: button.selected === true,
+  lines,
+  type,
+});
 
 /** Obsah karty bez obsluhy tlačítek – podle něj se karta rozvrhne a nakreslí znovu jen při změně. */
 export const specKey = (spec: PanelSpec): string =>
@@ -224,9 +327,12 @@ export const specKey = (spec: PanelSpec): string =>
     spec.inline === true,
     spec.headline,
     spec.title,
+    spec.qr,
     spec.body,
+    spec.note,
     spec.stats,
-    spec.buttons?.map((button) => [button.id, button.label, button.primary === true]),
+    spec.grid === undefined ? null : [spec.grid.columns, spec.grid.gap, spec.grid.cells.map((cell) => [cell.id, cell.label, cell.primary === true, cell.tone, cell.selected === true])],
+    spec.buttons?.map((button) => [button.id, button.label, button.primary === true, button.tone, button.selected === true]),
   ]);
 
 function canvasOf(w: number, h: number, shadow: number): { readonly canvas: HTMLCanvasElement; readonly texture: CanvasTexture } {
@@ -266,6 +372,11 @@ function text(ctx: CanvasRenderingContext2D, value: string, type: Type, x: numbe
   ctx.fillText(value, x, y);
 }
 
+/**
+ * Karta i s tlačítky v klidu (P67 T13): tlačítko v klidu je jen kresba na kartě, vlastní síť kreslí jen s paprskem
+ * na sobě nebo stisknuté (`PanelKey`). Klávesnice lobby tak stojí 1 volání na oko místo 44 – s ní nad střílečkou
+ * byl snímek na 194 voláních z rozpočtu 150 (`evals/vr/budget.json`).
+ */
 function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
   const ctx = canvas.getContext('2d');
   if (ctx === null) return;
@@ -274,28 +385,48 @@ function drawCard(canvas: HTMLCanvasElement, layout: PanelLayout): void {
   const card = { x: 0, y: 0, w: layout.width, h: layout.height };
   shadowOf(ctx, card, radius.lg, CARD_SHADOW);
   box(ctx, card, radius.lg, color.paper, borderWidth.base);
-  for (const line of layout.lines) text(ctx, line.text, line.type, PAD, line.y, color.ink, 'left');
+  for (const line of layout.lines) text(ctx, line.text, line.type, PAD, line.y, line.fill ?? color.ink, 'left');
   for (const { stat, rect } of layout.chips) {
     box(ctx, rect, radius.md, color.paper, borderWidth.base);
     const value = TYPE.value.size * TYPE.value.lineHeight;
     text(ctx, stat.value, TYPE.value, rect.x + rect.w / 2, rect.y + CHIP_PAD.y + value / 2, color.ink, 'center');
     if (stat.caption !== null) text(ctx, stat.caption, TYPE.caption, rect.x + rect.w / 2, rect.y + CHIP_PAD.y + value + (TYPE.caption.size * TYPE.caption.lineHeight) / 2, color['ink-soft'], 'center');
   }
+  for (const key of layout.keys) paintKey(ctx, key, 'rest', key.rect.x, key.rect.y);
+  if (layout.qr !== null) {
+    // Kód v pixelech plátna, bez měřítka: moduly na celé pixely.
+    const { rect } = layout.qr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    paintQr(ctx, layout.qr.modules, Math.round(rect.x * RES), Math.round(rect.y * RES), Math.round(rect.w * RES), color.ink, color.paper);
+  }
 }
 
 type KeyState = 'rest' | 'aimed' | 'pressed';
 
-/** Tlačítko kitu: v klidu se stínem, s paprskem na něm silnější obrys, stisknuté „zamáčknuté“ do stínu. */
-function drawKey(canvas: HTMLCanvasElement, key: PanelLayout['keys'][number], state: KeyState): void {
+/** Tlačítko kitu s levým horním rohem v `x`, `y`: v klidu se stínem, s paprskem silnější obrys, stisknuté „zamáčknuté“ do stínu. */
+function paintKey(ctx: CanvasRenderingContext2D, key: Key, state: KeyState, x: number, y: number): void {
+  const sunk = state === 'pressed' ? KEY_SHADOW : 0;
+  const face = { x: x + sunk, y: y + sunk, w: key.rect.w, h: key.rect.h };
+  if (state !== 'pressed') shadowOf(ctx, face, radius.md, KEY_SHADOW);
+  const fill = key.selected ? color.ink : key.primary ? color.tomato : key.tone !== undefined ? color[key.tone] : color.paper;
+  box(ctx, face, radius.md, fill, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
+  // Řádky popisku svisle uprostřed tlačítka; na inkoustu krémové (15,7:1).
+  const step = key.type.size * key.type.lineHeight;
+  const top = face.y + key.rect.h / 2 - (step * (key.lines.length - 1)) / 2;
+  key.lines.forEach((line, index) => text(ctx, line, key.type, face.x + key.rect.w / 2, top + index * step, key.selected ? color.cream : color.ink, 'center'));
+}
+
+/**
+ * Plátno sítě tlačítka s paprskem nebo stisknutého. Pod sítí leží totéž tlačítko v klidu nakreslené na kartě, proto
+ * plátno nejdřív zakryje celé místo papírem karty: stisknuté tlačítko sjede do stínu a klidová kresba nesmí vykukovat.
+ */
+function drawKey(canvas: HTMLCanvasElement, key: Key, state: KeyState): void {
   const ctx = canvas.getContext('2d');
   if (ctx === null) return;
   ctx.setTransform(RES, 0, 0, RES, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const sunk = state === 'pressed' ? KEY_SHADOW : 0;
-  const face = { x: sunk, y: sunk, w: key.rect.w, h: key.rect.h };
-  if (state !== 'pressed') shadowOf(ctx, face, radius.md, KEY_SHADOW);
-  box(ctx, face, radius.md, key.primary ? color.tomato : color.paper, state === 'aimed' ? borderWidth.thick * 1.5 : borderWidth.base);
-  text(ctx, key.label, TYPE.button, sunk + key.rect.w / 2, sunk + key.rect.h / 2, color.ink, 'center');
+  ctx.fillStyle = color.paper;
+  ctx.fillRect(0, 0, key.rect.w + KEY_SHADOW, key.rect.h + KEY_SHADOW);
+  paintKey(ctx, key, state, 0, 0);
 }
 
 /** Plátno 2D kreslí písmem stránky, až je načtené: do té doby náhradním, po načtení se karty rozvrhnou znovu. */
@@ -335,10 +466,14 @@ function PanelKey({ panel, layout, keyOf, aim, press }: { readonly panel: string
   const [state, setState] = useState<KeyState>('rest');
   const hands = useRef(new Set<XRHandedness>());
   const id = `${panel}:${keyOf.id}`;
+  // V klidu síť nekreslí (kresba je na kartě, `drawCard`), plátno se maluje a nahrává až s paprskem na tlačítku.
+  // Paprsek síť najde i tak: `material.visible` řídí jen kresbu, ne zásah paprskem.
+  const drawn = state !== 'rest';
   useEffect(() => {
+    if (!drawn) return;
     drawKey(paint.canvas, keyOf, state);
     paint.texture.needsUpdate = true;
-  }, [paint, keyOf, state]);
+  }, [paint, keyOf, state, drawn]);
   useEffect(() => () => paint.texture.dispose(), [paint]);
   // Tlačítko, které zmizí pod paprskem (výsledek po „Again“), odchod paprsku neohlásí.
   useEffect(
@@ -369,7 +504,7 @@ function PanelKey({ panel, layout, keyOf, aim, press }: { readonly panel: string
       onClick={press}
     >
       <planeGeometry args={[(rect.w + KEY_SHADOW) * KIT_PX, (rect.h + KEY_SHADOW) * KIT_PX]} />
-      <meshBasicMaterial map={paint.texture} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
+      <meshBasicMaterial map={paint.texture} visible={drawn} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
     </mesh>
   );
 }
@@ -388,7 +523,7 @@ export function XrPanel({ layout, y, aim, press }: { readonly layout: PanelLayou
   const [x, cy] = localOf(layout, (layout.width + CARD_SHADOW) / 2, (layout.height + CARD_SHADOW) / 2);
   const text = [...layout.lines.map((line) => line.text), ...layout.chips.map(({ stat }) => (stat.caption === null ? stat.value : `${stat.value} ${stat.caption}`))];
   return (
-    <group position={[0, y, 0]} userData={{ xrPanel: layout.id, text, labels: layout.chips.map(({ stat }) => stat.label), minText: MIN_TEXT * KIT_PX }}>
+    <group position={[0, y, 0]} userData={{ xrPanel: layout.id, text, labels: layout.chips.map(({ stat }) => stat.label), minText: MIN_TEXT * KIT_PX, qr: layout.qr?.text ?? null }}>
       <mesh position={[x, cy, 0]} renderOrder={PANEL_ORDER}>
         <planeGeometry args={[(layout.width + CARD_SHADOW) * KIT_PX, (layout.height + CARD_SHADOW) * KIT_PX]} />
         <meshBasicMaterial map={paint.texture} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />

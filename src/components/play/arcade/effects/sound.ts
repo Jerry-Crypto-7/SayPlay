@@ -40,3 +40,9 @@ export function busPresets(events: readonly VisualEvent[]): SfxPreset[] {
   if (events.some((event) => event.kind === 'win')) return ['win'];
   return [...new Set(events.map(busPresetOf))];
 }
+
+/**
+ * Odkud zvuk tiku zní (P67 T8): první událost, která ho vydala – její `x/y/z` v osách jádra. `playSfx` polohu
+ * použije jen ve VR (do světa XR ji převede `XrAudio` podle režimu rigu); mimo VR se nic nemění.
+ */
+export const busEventOf = (events: readonly VisualEvent[], preset: SfxPreset): VisualEvent | undefined => events.find((event) => busPresetOf(event) === preset);

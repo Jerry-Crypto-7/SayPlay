@@ -1,9 +1,12 @@
 {
+  "id": "/play",
   "name": "sayplay",
   "short_name": "sayplay",
   "description": "Say it. Play it.",
   "start_url": "/play",
+  "scope": "/play",
   "display": "standalone",
+  "display_override": ["standalone"],
   "background_color": "#FFF3DF",
   "theme_color": "#FFF3DF",
   "icons": [

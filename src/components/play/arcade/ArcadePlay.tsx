@@ -990,8 +990,8 @@ function ArcadePlayGame({
                 </Button>
               )}
               {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} recording={filming} />}
-              {/* VR (P65 T1): jen s `?vr=1` a prohlížečem, který VR umí; feed zůstává 2D. */}
-              {!inFeed && <EnterVrButton />}
+              {/* VR (P67 T1): každý prohlížeč, který VR umí, i ve feedu. */}
+              <EnterVrButton />
             </>
           )
         }

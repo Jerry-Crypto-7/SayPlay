@@ -141,7 +141,10 @@ describe('scéna po křivce', () => {
     const walk = (dir: string): void => {
       for (const name of readdirSync(dir)) {
         const file = join(dir, name);
-        if (statSync(file).isDirectory()) walk(file);
+        // Testy jádro nejsou: test prostorového zvuku (P67 T8) staví trať scény, aby měl kde zvuk umístit.
+        if (statSync(file).isDirectory()) {
+          if (name !== '__tests__') walk(file);
+        }
         else if (/\.ts$/.test(name) && /runner\/path/.test(readFileSync(file, 'utf8'))) core.push(file);
       }
     };
