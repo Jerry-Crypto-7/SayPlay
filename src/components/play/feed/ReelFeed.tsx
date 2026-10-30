@@ -35,7 +35,7 @@ import { Feed, type FeedGame, type KnownGame } from '../Feed';
 import type { FeedPreview } from '@/play/version/version';
 
 import { loopEvent } from '../loop-client';
-import { FeedNext } from './feed-next';
+import { FeedNext, FeedPrev, feedSteps } from './feed-next';
 import { countCanvases, feedMode, previewFor, untaken } from './preview';
 import { ReelActions } from './ReelActions';
 import { type GameDetail, ReelCard } from './ReelCard';
@@ -399,6 +399,12 @@ export function ReelFeed() {
   }, []);
 
   const next = useCallback(() => keys.current.go(keys.current.index + 1), []);
+  const prev = useCallback(() => keys.current.go(keys.current.index - 1), []);
+  // Listování pro VR (P67 T4): páčka a „Next“ panelu výsledku v `xr/XrFeed.tsx`.
+  useEffect(() => {
+    feedSteps.set({ next, prev });
+    return () => feedSteps.set(null);
+  }, [next, prev]);
 
   // Ťuk, nebo tah po scéně? (T9) V náhledu robota tah posouvá feed (`touch-action: pan-y`), takže
   // stisk scény hra hned nedostane – posluchač feedu je v zachytávací fázi okna dřív než převzetí
@@ -520,6 +526,7 @@ export function ReelFeed() {
       <StageHost onLeave={onLeave}>
         {(host) => (
           <FeedNext.Provider value={next}>
+          <FeedPrev.Provider value={prev}>
           {/* Okraj je mimo kartu: na telefonu leží přes pravý kraj feedu, od 768 px vedle plochy. */}
           <div className="play-reel-frame">
           <div ref={reel} className="play-reel" data-testid="feed-reel">
@@ -543,6 +550,7 @@ export function ReelFeed() {
           </div>
           {rail}
           </div>
+          </FeedPrev.Provider>
           </FeedNext.Provider>
         )}
       </StageHost>

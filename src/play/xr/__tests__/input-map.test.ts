@@ -7,10 +7,11 @@ import { describe, expect, it } from 'vitest';
 
 import { AXIS_MAX, BUTTON, COUNTER, HEADER } from '@/play/arcade/contract';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
+import { axisOfLane, laneX } from '@/play/arcade/pieces/lanes';
 import { CLOCK_COUNTER } from '@/play/arcade/pieces/merge-drop';
 import { STAGES, type Stage } from '@/play/compose/stage-registry';
 
-import { DEAD_ZONE, IDLE, type Pad, type XrControl, analog, createTriggerOwner, createXrDriver, mapPad } from '../input-map';
+import { DEAD_ZONE, FLICK, IDLE, type Pad, type XrControl, analog, createFlick, createTriggerOwner, createXrDriver, laneAxisOfX, mapPad } from '../input-map';
 
 const control = (input: Stage['input'], extra: Partial<XrControl> = {}): XrControl => ({ input, fire: false, attack: false, use: false, abilities: 0, ...extra });
 const pad = (over: Partial<Pad>): Pad => ({ ...IDLE, ...over });
@@ -206,6 +207,42 @@ describe('driver', () => {
     expect(calls).toHaveLength(1);
   });
 
+  it('catch (P67 T6): the right hand holds the lane under it, as a dragged finger does', () => {
+    const { calls, session } = recorder();
+    const driver = createXrDriver(session, control('lanes', { handLane: true }));
+    const hand = (x: number | null) => ({ aim: null, velocity: null, laneAxis: null, handX: x });
+    // Pruhy 2 m od sebe (`LANES.width`): −3,6 m je krajní levý, 0,4 m prostřední, 2,5 m vpravo vedle.
+    driver.frame(IDLE, hand(-3600));
+    driver.frame(IDLE, hand(-3500));
+    driver.frame(IDLE, hand(400));
+    driver.frame(IDLE, hand(2500));
+    expect(calls).toEqual([`hold ${axisOfLane(0)}`, `hold ${axisOfLane(2)}`, `hold ${axisOfLane(3)}`]);
+    expect(axisOfLane(2)).not.toBe(0);
+    // Páčka do strany pruh na tik posune, osa ruky ho drží dál; ztracená ruka vrátí vstup páčce.
+    calls.length = 0;
+    driver.frame(LEFT, hand(2500));
+    expect(calls).toEqual([`press ${BUTTON.LEFT} 0`]);
+    calls.length = 0;
+    driver.frame(IDLE, hand(null));
+    expect(calls).toEqual(['hold 0']);
+  });
+
+  it('the hand position means nothing to a game whose lane it does not hold', () => {
+    const { calls, session } = recorder();
+    const driver = createXrDriver(session, control('lanes'));
+    driver.frame(IDLE, { aim: null, velocity: null, laneAxis: null, handX: -3600 });
+    expect(calls).toEqual([]);
+  });
+
+  it('one conversion from a hand over a lane to the axis a finger on that lane gives', () => {
+    for (const lane of [0, 1, 2, 3, 4]) expect(laneAxisOfX(laneX(lane))).toBe(axisOfLane(lane));
+    // Hranice mezi pruhy leží v půli rozestupu; za krajním pruhem je pořád krajní.
+    expect(laneAxisOfX(-2999)).toBe(axisOfLane(1));
+    expect(laneAxisOfX(-3001)).toBe(axisOfLane(0));
+    expect(laneAxisOfX(-50_000)).toBe(axisOfLane(0));
+    expect(laneAxisOfX(50_000)).toBe(axisOfLane(4));
+  });
+
   it('merge drops at once an item that has been waiting (clock below 0), like the key', () => {
     // Hodiny pod nulou = předmět je připravený a čeká (`mergeDropRule`); e2e `vr-diorama` tu VR pust ztratilo.
     const { calls, session } = recorder();
@@ -238,5 +275,29 @@ describe('the trigger is either a click on a HUD panel or a game input, never bo
     const trigger = createTriggerOwner();
     expect(trigger('right', true, true)).toBe(false);
     expect(trigger('left', true, false)).toBe(true);
+  });
+});
+
+describe('a stick flick pages the feed once per flick (P67 T4)', () => {
+  it('up is next, down is previous, each once until the stick comes back', () => {
+    const flick = createFlick();
+    expect(flick(0, 0.3)).toBe(0);
+    expect(flick(0, FLICK)).toBe(1);
+    // Držená nahoře, nebo dotlačená dál, nelistuje znovu.
+    expect(flick(0, 1)).toBe(0);
+    expect(flick(0, 0.6)).toBe(0);
+    expect(flick(0, 0.2)).toBe(0);
+    expect(flick(0, -1)).toBe(-1);
+    expect(flick(0, -1)).toBe(0);
+    expect(flick(0, 0)).toBe(0);
+    expect(flick(0, 0.9)).toBe(1);
+  });
+
+  it('a short or mostly sideways push is not a flick', () => {
+    const flick = createFlick();
+    expect(flick(0, FLICK - 0.05)).toBe(0);
+    expect(flick(0.9, 0.8)).toBe(0);
+    expect(flick(-0.9, -0.8)).toBe(0);
+    expect(flick(0.3, 0.8)).toBe(1);
   });
 });

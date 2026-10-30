@@ -15,8 +15,9 @@ import { browserRenderer } from '../scripts/browser-renderer';
  * feedu přes `page.route`, detail skutečnými dveřmi (nese `preview` z publikace).
  */
 
-// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS).
-test.use({ launchOptions: { args: browserRenderer().args } });
+// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS)
+// a bez `--disable-features=OpenXR` by Chromium na počítači s runtime VR (SteamVR) hlásil brýle (P67 T4a).
+test.use({ launchOptions: { args: [...browserRenderer().args, '--disable-features=OpenXR'] } });
 
 const FIXTURES = [
   ['runner.json', 'Reels runner through the canyon'],

@@ -15,8 +15,9 @@ import { browserRenderer } from '../scripts/browser-renderer';
  * nahromadit ani plátna, ani paměť.
  */
 
-// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS).
-test.use({ launchOptions: { args: [...browserRenderer().args, '--js-flags=--expose-gc', '--enable-precise-memory-info'] } });
+// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS)
+// a bez `--disable-features=OpenXR` by Chromium na počítači s runtime VR (SteamVR) hlásil brýle (P67 T4a).
+test.use({ launchOptions: { args: [...browserRenderer().args, '--disable-features=OpenXR', '--js-flags=--expose-gc', '--enable-precise-memory-info'] } });
 
 const FIXTURES = [
   ['runner.json', 'Feed runner through the canyon'],

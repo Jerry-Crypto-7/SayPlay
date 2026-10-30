@@ -11,8 +11,8 @@ import type { ArcadeSession } from '../arcade/session';
 import type { StageTunnel } from '../feed/stage-tunnel';
 
 /**
- * Trvalé plátno s XR relací, do kterého kreslí každá hra pod `/play`, dokud žije layout. `null` = VR na stránce
- * není (bez `?vr=1` nebo bez podpory) a hra má vlastní plátno jako dřív.
+ * Trvalé plátno s XR relací, do kterého kreslí každá hra pod `/play` od „Enter VR“ do konce relace. `null` = VR
+ * na stránce není (`?vr=0` nebo bez podpory) nebo hráč není ve VR (P67 T4a) a hra má vlastní plátno jako dřív.
  */
 export const XrHostContext = createContext<StageTunnel | null>(null);
 
@@ -21,7 +21,8 @@ export interface XrControls {
   readonly presenting: boolean;
   /** Plátno s relací je připojené: `enter` teprve teď relaci začne (dřív by klepnutí tiše propadlo). */
   readonly ready: boolean;
-  enter(): Promise<void>;
+  /** `lobby` (P67 T2): relace začne VR lobby s kartami vět (`xr-lobby.ts`), ne hrou na obrazovce. */
+  enter(options?: { readonly lobby?: boolean }): Promise<void>;
   exit(): void;
 }
 
@@ -36,7 +37,7 @@ export function useXrControls(): XrControls | null {
 }
 
 /** Hodnota sdílená se scénou XR: plátno R3F je vlastní React kořen a kontext stránky čte jen přes most. */
-function shared<T>(initial: T) {
+export function shared<T>(initial: T) {
   let value = initial;
   const listeners = new Set<() => void>();
   return {
@@ -52,7 +53,7 @@ function shared<T>(initial: T) {
   };
 }
 
-function useShared<T>(store: ReturnType<typeof shared<T>>, server: T): T {
+export function useShared<T>(store: ReturnType<typeof shared<T>>, server: T): T {
   return useSyncExternalStore(store.subscribe, store.get, () => server);
 }
 

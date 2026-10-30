@@ -2309,6 +2309,21 @@
       "scope": "prod"
     },
     {
+      "name": "jsqr@1.4.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/jsqr/-/jsqr-1.4.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
+      "scope": "dev"
+    },
+    {
       "name": "ktx-parse@1.1.0",
       "kind": "library",
       "source": "https://registry.npmjs.org/ktx-parse/-/ktx-parse-1.1.0.tgz",
@@ -3549,6 +3564,19 @@
       ],
       "attribution": "Copyright (c) 2013 Mikola Lysenko",
       "scope": "dev"
+    },
+    {
+      "name": "uqr@0.1.3",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/uqr/-/uqr-0.1.3.tgz",
+      "authorOrProvider": "Anthony Fu",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "Copyright (c) Project Nayuki",
+      "scope": "prod"
     },
     {
       "name": "use-sync-external-store@1.6.0",
@@ -93616,6 +93644,15 @@
       "kind": "asset",
       "firstParty": true,
       "reason": "Web app manifest for sayplay written in this repo (P34 T1); points at the Sayplay kit app icons in public/brand/app-icon/.",
+      "source": "written in this repo",
+      "authorOrProvider": "Worldsmith project",
+      "scope": "prod"
+    },
+    {
+      "name": "public/play-sw.js",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Pass-through service worker written in this repo (P67 T11) so sayplay installs as an app on Quest; caches nothing.",
       "source": "written in this repo",
       "authorOrProvider": "Worldsmith project",
       "scope": "prod"

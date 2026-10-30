@@ -52,7 +52,7 @@ import { FeelCues } from './FeelCues';
 import { PacingFx } from './PacingFx';
 import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
-import { busPresets } from './sound';
+import { busEventOf, busPresets } from './sound';
 
 declare global {
   interface Window {
@@ -180,8 +180,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     window.__playFx = probe;
     const offBursts = created.subscribe((events) => {
       for (const event of events) heard[event.kind] = (heard[event.kind] ?? 0) + 1;
-      // Každá událost sběrnice zní (P37B T5, `sound.ts`); co zní i z efektů jádra, `playSfx` nezdvojí.
-      for (const preset of busPresets(events)) playSfx(preset);
+      // Každá událost sběrnice zní (P37B T5, `sound.ts`); co zní i z efektů jádra, `playSfx` nezdvojí. Ve VR z místa události (P67 T8).
+      for (const preset of busPresets(events)) playSfx(preset, busEventOf(events, preset));
       // Konec běhu (P36C T7): výhra zpomalí efekty a přiblíží kameru, prohra odbarví scénu (`play.css`).
       if (events.some((event) => event.kind === 'win')) wonAt.current = clock.current;
       if (surface.current !== null && events.some((event) => event.kind === 'lose')) surface.current.dataset.fx = 'lose';
