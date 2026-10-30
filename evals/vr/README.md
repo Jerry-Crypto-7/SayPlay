@@ -129,3 +129,7 @@ Do T14a kolo začínalo ve feedu („Enter VR“ na kartě), protože ze hry z v
 ## Ruční brána
 
 Zapíše majitel po kole v brýlích (návod `docs/vr/README.md`, „Kolo majitele v brýlích“): `Ruční brána P67: OK <datum>`, nebo seznam vad (co, ve které hře, jak se to projevilo).
+
+Ruční brána P67: OK 30. 10. 2026
+
+Quest 2 na USB, server `next start` na 3168, `quest-dev.mjs --port 3168 --fps 60`. Majitel prošel smyčku v brýlích bez vad. FPS se tím kolem nezměřilo: `--fps 60` vzorkoval hned po otevření stránky, tedy 2D stránku před „Enter VR“ (medián 24, 5. percentil 23), ne relaci VR, a proto `quest2-fps.json` zůstává `connected: false`. Skutečné FPS v brýlích dá až `--cdp --tour` s brýlemi na hlavě.
