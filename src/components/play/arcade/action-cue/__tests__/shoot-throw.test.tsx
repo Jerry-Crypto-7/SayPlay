@@ -19,7 +19,8 @@ import { FLASH_RADIUS, FLASH_TICKS, MUZZLE, ShootThrowFx, projectileSpawns, shoo
 
 vi.mock('react', async (importOriginal) => {
   const react = await importOriginal<typeof import('react')>();
-  return { ...react, useMemo: (make: () => unknown) => make(), useRef: (current: unknown) => ({ current }), useEffect: () => undefined };
+  // `useContext`: hrací obdélník na výšku (`usePlayRectRef`, P64) mimo plátno nezměřený.
+  return { ...react, useMemo: (make: () => unknown) => make(), useRef: (current: unknown) => ({ current }), useEffect: () => undefined, useContext: () => ({ current: null }) };
 });
 vi.mock('@react-three/fiber', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@react-three/fiber')>()),

@@ -12,11 +12,37 @@
  * v jádře – srážka sedí s obrazem. Jen kresba: stav, hash ani robot se nemění.
  */
 
-import type { PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type PerspectiveCamera, Vector3 } from 'three';
 
+import { UNIT } from '@/play/arcade/contract';
+import { FLAP } from '@/play/arcade/pieces/flap';
+
+import { type PlayRect, fitTall } from './portrait-frame';
 import { type Path, slopeAt } from './runner/path';
 
 const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(high, value));
+
+const moved = new Vector3();
+const forward = new Vector3();
+
+/**
+ * Honička na výšku (P64 T5): kamera, kterou scéna postavila (poloha, `lookAt`), dojede po své ose pohledu a ose
+ * nahoru, až krabice hry `box` leží v hracím obdélníku `rect` mezi HUD a ovládáním (`fitTall`, `keep` jako tam).
+ * Bod pohledu `look` jede s ní o týž vektor, takže úvodní průlet (`applyIntro`) i `lookAt` na něj drží orientaci
+ * fitu. Couvnout smí nejvýš o `most` m po ose pohledu (hrdina by jinak zmenšil pod dnešní velikost): kam fit chce
+ * dál, ujede kamera jen poměrnou část cesty. Střed záběru do středu `rect` se při stropu nesune – přesah by se
+ * rozdělil nahoru i dolů a hrdinu u spodní hrany by uřízl. Bez změřeného obdélníku (první snímek, mimo
+ * `StageCanvas`) a na šířku zůstane kamera, jak je.
+ */
+export function fitChase(camera: PerspectiveCamera, look: Vector3, box: Box3, rect: PlayRect | null, keep?: Box3, most = Infinity): void {
+  if (rect === null || !(camera.aspect < 1)) return;
+  const { position } = fitTall(camera, box, rect, keep === undefined ? undefined : { keep });
+  moved.subVectors(position, camera.position);
+  const back = -moved.dot(forward.set(0, 0, -1).applyQuaternion(camera.quaternion));
+  if (back > most) moved.multiplyScalar(most / back);
+  look.add(moved);
+  camera.position.add(moved);
+}
 
 /**
  * Boční kamera: stojí na −x a kouká po +x, takže +z jádra jde na obrazovce
@@ -40,36 +66,100 @@ export function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y
  * perspektivou. `dist` = vzdálenost k bodu pohledu, `lead` = o kolik metrů
  * před hrdinou kamera míří.
  */
-export function placeAngled(camera: PerspectiveCamera, look: Vector3, z: number, y: number, dist: number, yaw: number, lead: number): void {
+export function placeAngled(camera: PerspectiveCamera, look: Vector3, z: number, y: number, dist: number, yaw: number, lead: number, pitch = 0): void {
   look.set(0, y, z + lead);
-  camera.position.set(-dist * Math.cos(yaw), y, z + lead - dist * Math.sin(yaw));
+  const flat = dist * Math.cos(pitch);
+  camera.position.set(-flat * Math.cos(yaw), y + dist * Math.sin(pitch), z + lead - flat * Math.sin(yaw));
   camera.lookAt(look);
 }
 
 const DEG = Math.PI / 180;
 
 /**
+ * Běžec na výšku (P64 T5): kamera stojí nad osou trati (pruh hrdiny ji nehýbe) ve sklonu `pitch` a míří `ahead` m
+ * před hrdinu, takže trať běží nahoru po obrazovce až k obzoru pod horní lištou HUD. Do `playRect` se vejdou všechny
+ * tři pruhy (`half` m od osy: krajní pruh 2 m a půl hrdiny), od pat (`behind` m za hrdinou, kde běží
+ * pronásledovatel) po `depth` m před ním a do výšky `top` m. Vzdálenost a svislý posun dává `fitChase`.
+ */
+export const RUNNER_TALL = { pitch: 22 * DEG, ahead: 10, reach: 21, half: 2.5, behind: 2, depth: 2, top: 2 } as const;
+
+const fitBox = new Box3();
+
+/**
  * Kamera běžce: za hrdinou a nad ním, kouká po trati před něj. `x`, `z` = hrdina ve scéně (m),
  * `x` v pruzích bez zatáčky. Na zakřivené trati (P46D T3) stojí kamera i bod pohledu na tečně
  * křivky v místě hrdiny: hrdina je v záběru tam, kde na rovné trati, a zatáčka se stáčí před ním.
+ * Na výšku `RUNNER_TALL` a `fitChase` do hracího obdélníku `rect`.
  */
-export function placeRunner(camera: PerspectiveCamera, look: Vector3, x: number, z: number, path?: Path): void {
+export function placeRunner(camera: PerspectiveCamera, look: Vector3, x: number, z: number, path?: Path, rect: PlayRect | null = null): void {
   const at = path?.(z) ?? { x: 0, y: 0 };
   const slope = path === undefined ? { x: 0, y: 0 } : slopeAt(path, z);
+  if (camera.aspect < 1) {
+    const view = RUNNER_TALL;
+    // Bod pohledu i kamera na tečně křivky jako na šířku; `reach` je zhruba vzdálenost po fitu (bez změřeného
+    // obdélníku zůstane kamera tady).
+    const back = view.reach * Math.cos(view.pitch);
+    look.set(at.x + view.ahead * slope.x, at.y + view.ahead * slope.y, z + view.ahead);
+    camera.position.set(look.x - back * slope.x, look.y - back * slope.y + view.reach * Math.sin(view.pitch), look.z - back);
+    camera.lookAt(look);
+    fitBox.min.set(at.x - view.half, at.y, z - view.behind);
+    fitBox.max.set(at.x + view.half, at.y + view.top, z + view.depth);
+    fitChase(camera, look, fitBox, rect);
+    return;
+  }
   camera.position.set(x * 0.6 + at.x - 6.5 * slope.x, 3.4 + at.y - 6.5 * slope.y, z - 6.5);
   look.set(x * 0.4 + at.x + 9 * slope.x, 1.1 + at.y + 9 * slope.y, z + 9);
   camera.lookAt(look);
 }
 
 /**
- * Kamera plošinovky; `y` = výška, za kterou kamera dojíždí (ať skok netřese obrazem).
- * Na výšku natočená do tří čtvrtin, ať je vidět nejbližší mince či hrot ~11 m před startem
- * i vedle širokého hrdiny (P27A T6, P30B T5, `e2e/play-frame`). Hrdina ~13 m od kamery má
- * ~10 % výšky obrazu – z 22 m při bočním pohledu měl 6 % a minimum je 8 % (P36C T6, `e2e/play-hero-size`).
+ * Plošinovka na výšku (P64 T5): natočená do tří čtvrtin (`yaw`, P27A T6, P30B T5 – nejbližší mince či hrot před
+ * startem i vedle širokého hrdiny) a navíc kousek shora (`pitch`), ať plošiny před hrdinou stoupají po obrazovce.
+ * Míří `lead` m před hrdinu. Do `playRect` se vejde úsek od `behind` m za hrdinou (pronásledovatel na kraji,
+ * `CHASER_VIEW.platformBehindTall`) po `depth` m před ním, `half` m napříč a od `low` po `high` m nad výškou, za
+ * kterou kamera dojíždí. Krabice je těsná schválně: větší by kameru odsunula a hrdina by klesl pod dnešní velikost
+ * (na iPhonu jen 408 px mezi HUD a zónami). Vzdálenost a posun dává `fitChase`.
  */
-export function placePlatform(camera: PerspectiveCamera, look: Vector3, z: number, y: number): void {
-  if (camera.aspect < 1) placeAngled(camera, look, z, y + 1.2, 16, 55 * DEG, 3.5);
-  else placeSide(camera, look, z, y + 1.2, 16, 7, 18, 0.4);
+export const PLATFORM_TALL = { yaw: 55 * DEG, pitch: 10 * DEG, lead: 2, behind: 1.2, depth: 8, low: 0.6, high: 2.4, half: 0.4 } as const;
+
+/**
+ * Kamera plošinovky; `y` = výška, za kterou kamera dojíždí (ať skok netřese obrazem).
+ * Na šířku z boku. Na výšku `PLATFORM_TALL` a `fitChase` do hracího obdélníku `rect`; hrdinu drží čitelnost
+ * (`LEGIBLE_SHARE.hero`, `e2e/play-hero-size`).
+ */
+export function placePlatform(camera: PerspectiveCamera, look: Vector3, z: number, y: number, rect: PlayRect | null = null): void {
+  if (camera.aspect < 1) {
+    const view = PLATFORM_TALL;
+    placeAngled(camera, look, z, y + 1.2, 16, view.yaw, view.lead, view.pitch);
+    fitBox.min.set(-view.half, y + view.low, z - view.behind);
+    fitBox.max.set(view.half, y + view.high, z + view.depth);
+    fitChase(camera, look, fitBox, rect);
+  } else placeSide(camera, look, z, y + 1.2, 16, 7, 18, 0.4);
+}
+
+/**
+ * Poletování na výšku (P64 T5): víc zezadu než na šířku (`yaw` 65° od boku, P30B T5 – kolmá kamera by ptáčka
+ * zmenšila na 3 % výšky), takže koridor s trubkami ubíhá doprava do hloubky a dohled dopředu je delší. Míří `lead` m
+ * před ptáčka. Do `playRect` se vejde celá výška letu (`low` až `high`, podlaha až strop – horní trubka nesmí pod
+ * HUD) a koridor od `behind` m za ptáčkem po `depth` m před ním, `half` m napříč. Vzdálenost a posun dává `fitChase`.
+ */
+export const FLAP_TALL = { yaw: 65 * DEG, dist: 22, lead: 2, pitch: 0, behind: 0.5, depth: 5, half: 0.6, low: 0, high: FLAP.ceiling / UNIT } as const;
+
+/**
+ * Kamera poletování: na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera tak daleko, ať je
+ * vidět první trubka i mince za ní (P30B T5); na výšku `FLAP_TALL`.
+ */
+export function placeFlap(camera: PerspectiveCamera, look: Vector3, z: number, rect: PlayRect | null): void {
+  const ceiling = FLAP.ceiling / UNIT;
+  if (!(camera.aspect < 1)) {
+    placeSide(camera, look, z, ceiling / 2, 30, ceiling + 1, 26, 0.1);
+    return;
+  }
+  const view = FLAP_TALL;
+  placeAngled(camera, look, z, ceiling / 2, view.dist, view.yaw, view.lead, view.pitch);
+  fitBox.min.set(-view.half, view.low, z - view.behind);
+  fitBox.max.set(view.half, view.high, z + view.depth);
+  fitChase(camera, look, fitBox, rect);
 }
 
 /** Poloha ve scéně (m): x je zrcadlené x jádra, jako u těl ve `World`. */
@@ -91,9 +181,12 @@ export const CHASER_VIEW = {
   dropBack: 7,
   /** Běžec: po kolika metrech za patami se pronásledovatel, který hrdinu minul, srovná z vlastního pruhu do pat. */
   heelsBlend: 4,
-  /** Plošinovka: nejdál za hrdinou, kde ho boční kamera ukáže celého (na šířku), a natočená na výšku. */
+  /**
+   * Plošinovka: nejdál za hrdinou, kde ho boční kamera ukáže celého (na šířku), a na výšku zadní hrana krabice,
+   * kterou `fitChase` drží v `playRect` (`PLATFORM_TALL.behind`).
+   */
   platformBehind: 3.5,
-  platformBehindTall: 1.5,
+  platformBehindTall: PLATFORM_TALL.behind,
 } as const;
 
 /**

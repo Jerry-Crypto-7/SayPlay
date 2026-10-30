@@ -1,0 +1,29 @@
+{
+ "about": "P64 T1 sealed portrait set: 24 new English sentences written 28. 10. 2026 before the first P64 framing change (no competitor game, no run on these sentences). p64-01 to p64-19 = one sentence per genre of GENRES (src/play/genre/contract.ts), in that order; p64-20 to p64-24 = five more for the genres with the worst portrait fill in the T1 audit. genre = what the quick game's offline classifier picks today (classifyGenre(text, null).ranked[0].genre, no model call); the no-model draft (draftGameSpecWithMeta, seed 1) played the same genre when written. Opened once in T8 (holdout-opened.json); nothing is tuned on it.",
+ "sentences": [
+  { "id": "p64-01", "genre": "runner", "text": "A paperboy sprints down a rainy avenue at dawn, dodging barking dogs and open manholes" },
+  { "id": "p64-02", "genre": "platformer", "text": "A stuntman climbs the scaffolding of a half-built skyscraper while loose bricks tumble down" },
+  { "id": "p64-03", "genre": "arena", "text": "A retired wrestler brawls with mutant raccoons in the parking lot of an abandoned cinema" },
+  { "id": "p64-04", "genre": "voyage", "text": "A hot air balloon pilot steers over snowy peaks, dodging thunderclouds on the way to the summit festival" },
+  { "id": "p64-05", "genre": "quest", "text": "A volunteer firefighter douses grass fires spreading across a windy hillside farm" },
+  { "id": "p64-06", "genre": "shooter", "text": "A space trucker fires at hungry barnacles clinging to the hull of her cargo ship" },
+  { "id": "p64-07", "genre": "throw", "text": "A grumpy wizard hurls fireballs at stone golems in a crumbling mountain pass" },
+  { "id": "p64-08", "genre": "timing", "text": "A circus strongman stacks wobbly crates as high as the tent roof without letting them topple" },
+  { "id": "p64-09", "genre": "rhythm", "text": "A shy penguin dances on a frozen lake to win over the whole colony" },
+  { "id": "p64-10", "genre": "duel", "text": "Two rival chefs duel with wooden spoons on a rooftop restaurant at sunset" },
+  { "id": "p64-11", "genre": "flap", "text": "A clumsy baby owl flaps between tall pine trees on its first night out of the nest" },
+  { "id": "p64-12", "genre": "catch", "text": "A sleepy bear catches falling honeycombs in a wooden bucket under a buzzing beehive" },
+  { "id": "p64-13", "genre": "whack", "text": "A gardener bonks cheeky gophers popping up between the cabbage rows" },
+  { "id": "p64-14", "genre": "defense", "text": "A lone shepherd defends the hilltop village from packs of hungry wolves through a long winter night" },
+  { "id": "p64-15", "genre": "slice", "text": "A grandma with a kitchen knife slices flying apples flung over the orchard fence by a prankster" },
+  { "id": "p64-16", "genre": "hop", "text": "A duckling crosses a busy highway full of trucks to reach the pond on the other side" },
+  { "id": "p64-17", "genre": "crowd", "text": "A tiny knight grows his army by marching through magic gates on a long castle road" },
+  { "id": "p64-18", "genre": "merge", "text": "Drop glowing slime blobs into a glass tank so matching colors fuse into bigger blobs" },
+  { "id": "p64-19", "genre": "push", "text": "A plump walrus shoves noisy seals off a shrinking ice floe in the arctic sea" },
+  { "id": "p64-20", "genre": "hop", "text": "A tortoise in a hurry crosses a four-lane freeway packed with honking buses" },
+  { "id": "p64-21", "genre": "merge", "text": "A wizard's apprentice combines matching potion bottles into stronger elixirs inside a cauldron" },
+  { "id": "p64-22", "genre": "push", "text": "Two beetles bump each other off the edge of a mossy tree stump" },
+  { "id": "p64-23", "genre": "slice", "text": "A lumberjack chops pinecones launched into the air by a grumpy squirrel" },
+  { "id": "p64-24", "genre": "timing", "text": "A pizza chef drops each topping at the perfect moment onto a spinning pizza" }
+ ]
+}

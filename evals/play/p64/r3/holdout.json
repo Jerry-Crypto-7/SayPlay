@@ -1,0 +1,29 @@
+{
+ "about": "P64 T8-R3 second sealed portrait set: 24 English sentences sealed 30. 10. 2026 after the board-genre camera fixes, before anything is shot on them. The first P64 set (../holdout.json) was opened in T8 and the code changed after it, so the gate needs a fresh one. r64-01 to r64-19 = one sentence per genre of GENRES (src/play/genre/contract.ts), in that order, taken from the unused T1 candidate pool (written 28. 10., never shot or judged); r64-20 to r64-24 = five more board-genre sentences, four of them new, for the genres that lost on the first set (timing stack, slice, catch, merge) plus defense. genre = what the quick game's offline classifier picks today (classifyGenre(text, null).ranked[0].genre, no model call); the no-model draft (draftGameSpecWithMeta, seed 1) played the same genre when sealed. Opened once (r3/holdout-opened.json); nothing is tuned on it.",
+ "sentences": [
+  { "id": "r64-01", "genre": "runner", "text": "A ski patroller skis down a foggy slope at full speed, swerving around fallen logs and frozen boulders" },
+  { "id": "r64-02", "genre": "platformer", "text": "A tiny robot hops between floating platforms above a pit of bubbling lava" },
+  { "id": "r64-03", "genre": "arena", "text": "A farm cat chases mischievous mice around a dusty hay barn until sunrise" },
+  { "id": "r64-04", "genre": "voyage", "text": "A teenage witch flies her broom over a sleeping town, weaving past church spires and owls" },
+  { "id": "r64-05", "genre": "quest", "text": "A lighthouse keeper lights every lantern along a rocky coast before the night ships arrive" },
+  { "id": "r64-06", "genre": "shooter", "text": "A pirate captain aims at enemy ships through the fog with a rusty cannon" },
+  { "id": "r64-07", "genre": "throw", "text": "A beach kid flings coconuts at crabs stealing towels on a crowded shore" },
+  { "id": "r64-08", "genre": "timing", "text": "A monk stretches a pole across deep canyons to reach the next mountain temple" },
+  { "id": "r64-09", "genre": "rhythm", "text": "A street drummer bangs on pots and pans to the beat as the city wakes up" },
+  { "id": "r64-10", "genre": "duel", "text": "An old sheriff faces a masked outlaw in a high noon showdown on a dusty main street" },
+  { "id": "r64-11", "genre": "flap", "text": "A little dragon rises up through a narrow canyon dodging icicles hanging from the walls" },
+  { "id": "r64-12", "genre": "catch", "text": "A garden gnome scoops up cherries dropping from an old tree into his little cap" },
+  { "id": "r64-13", "genre": "whack", "text": "A lunch lady bops slimy frogs popping out of the drains of a school cafeteria" },
+  { "id": "r64-14", "genre": "defense", "text": "Slimy snails crawl toward the vegetable garden every night and a brave hedgehog holds them back" },
+  { "id": "r64-15", "genre": "slice", "text": "A kung fu master slashes clay pots hurled at him across a temple courtyard" },
+  { "id": "r64-16", "genre": "hop", "text": "A raccoon family crosses six lanes of night traffic to raid the diner dumpsters" },
+  { "id": "r64-17", "genre": "crowd", "text": "A swarm of rubber ducks multiplies as it floats through bonus gates down a waterslide" },
+  { "id": "r64-18", "genre": "merge", "text": "A robot merges identical bolts into bigger gears on a junkyard conveyor belt" },
+  { "id": "r64-19", "genre": "push", "text": "A stubborn goat rams pushy sheep out of a muddy hay ring at the county fair" },
+  { "id": "r64-20", "genre": "timing", "text": "A crane operator lowers shipping containers onto a wobbling stack at a windy harbor without letting it topple" },
+  { "id": "r64-21", "genre": "slice", "text": "A ninja chef slices flying pumpkins hurled across a moonlit rooftop with twin cleavers" },
+  { "id": "r64-22", "genre": "catch", "text": "A kid in a raincoat collects raindrops dropping from a leaky roof in a teacup" },
+  { "id": "r64-23", "genre": "merge", "text": "A candy maker combines matching gumdrops into giant lollipops on a sticky factory tray" },
+  { "id": "r64-24", "genre": "defense", "text": "A castle maid keeps the goblins from breaking into the royal kitchen with a broom" }
+ ]
+}

@@ -1,0 +1,339 @@
+{
+ "about": {
+  "plan": "P64 T1",
+  "measure": "src/components/play/arcade/__tests__/p64-hash.test.ts",
+  "what": "verifyArcade on the publish path: robot and idle player, outcome, tick and state hash at the end of the run"
+ },
+ "prints": {
+  "runner": {
+   "cell": "s01",
+   "seed": 933581528,
+   "bot": {
+    "outcome": "won",
+    "tick": 360,
+    "hash": "5ab2f261"
+   },
+   "idle": {
+    "hash": "3cf30a4f",
+    "outcome": "lost",
+    "tick": 165
+   },
+   "replayEqual": true
+  },
+  "platformer": {
+   "cell": "s14",
+   "seed": 598194259,
+   "bot": {
+    "outcome": "won",
+    "tick": 2562,
+    "hash": "03349690"
+   },
+   "idle": {
+    "hash": "ab7a6730",
+    "outcome": "lost",
+    "tick": 5281
+   },
+   "replayEqual": true
+  },
+  "arena": {
+   "cell": "a02",
+   "seed": 922502678,
+   "bot": {
+    "outcome": "won",
+    "tick": 2781,
+    "hash": "d572d91b"
+   },
+   "idle": {
+    "hash": "77181882",
+    "outcome": "lost",
+    "tick": 1467
+   },
+   "replayEqual": true
+  },
+  "voyage": {
+   "cell": "draft",
+   "seed": 1254014269,
+   "bot": {
+    "outcome": "won",
+    "tick": 2807,
+    "hash": "a6742b19"
+   },
+   "idle": {
+    "hash": "d048f7c9",
+    "outcome": "lost",
+    "tick": 4261
+   },
+   "replayEqual": true
+  },
+  "quest": {
+   "cell": "a10",
+   "seed": 1502740806,
+   "bot": {
+    "outcome": "won",
+    "tick": 2571,
+    "hash": "bbc70275"
+   },
+   "idle": {
+    "hash": "73960919",
+    "outcome": "lost",
+    "tick": 617
+   },
+   "replayEqual": true
+  },
+  "shooter": {
+   "cell": "s08",
+   "seed": 70870736,
+   "bot": {
+    "outcome": "won",
+    "tick": 3352,
+    "hash": "0fe8d901"
+   },
+   "idle": {
+    "hash": "ef218390",
+    "outcome": "lost",
+    "tick": 1425
+   },
+   "replayEqual": true
+  },
+  "throw": {
+   "cell": "s18",
+   "seed": 1421889819,
+   "bot": {
+    "outcome": "won",
+    "tick": 2090,
+    "hash": "8d5f14dc"
+   },
+   "idle": {
+    "hash": "6279890b",
+    "outcome": "lost",
+    "tick": 5221
+   },
+   "replayEqual": true
+  },
+  "timing": {
+   "cell": "s03",
+   "seed": 1702127283,
+   "bot": {
+    "outcome": "won",
+    "tick": 301,
+    "hash": "153f652d"
+   },
+   "idle": {
+    "hash": "5851cb6e",
+    "outcome": "lost",
+    "tick": 121
+   },
+   "replayEqual": true
+  },
+  "rhythm": {
+   "cell": "a11",
+   "seed": 445245806,
+   "bot": {
+    "outcome": "won",
+    "tick": 2146,
+    "hash": "ad444566"
+   },
+   "idle": {
+    "hash": "a0fdacd9",
+    "outcome": "lost",
+    "tick": 451
+   },
+   "replayEqual": true
+  },
+  "duel": {
+   "cell": "s48",
+   "seed": 1453414204,
+   "bot": {
+    "outcome": "won",
+    "tick": 3165,
+    "hash": "2b5b5f24"
+   },
+   "idle": {
+    "hash": "58cc6cc8",
+    "outcome": "lost",
+    "tick": 280
+   },
+   "replayEqual": true
+  },
+  "flap": {
+   "cell": "s16",
+   "seed": 1731573635,
+   "bot": {
+    "outcome": "won",
+    "tick": 360,
+    "hash": "3a6a8f46"
+   },
+   "idle": {
+    "hash": "132eedbb",
+    "outcome": "lost",
+    "tick": 38
+   },
+   "replayEqual": true
+  },
+  "catch": {
+   "cell": "a01",
+   "seed": 1902427310,
+   "bot": {
+    "outcome": "won",
+    "tick": 2086,
+    "hash": "a5cbc215"
+   },
+   "idle": {
+    "hash": "03970d76",
+    "outcome": "lost",
+    "tick": 601
+   },
+   "replayEqual": true
+  },
+  "whack": {
+   "cell": "s53",
+   "seed": 1609602510,
+   "bot": {
+    "outcome": "won",
+    "tick": 2079,
+    "hash": "a8831fc1"
+   },
+   "idle": {
+    "hash": "cf49c1d2",
+    "outcome": "lost",
+    "tick": 500
+   },
+   "replayEqual": true
+  },
+  "defense": {
+   "cell": "a06",
+   "seed": 1758804811,
+   "bot": {
+    "outcome": "won",
+    "tick": 2869,
+    "hash": "bc42d6e7"
+   },
+   "idle": {
+    "hash": "4af592a3",
+    "outcome": "lost",
+    "tick": 514
+   },
+   "replayEqual": true
+  },
+  "slice": {
+   "cell": "draft",
+   "seed": 373531671,
+   "bot": {
+    "outcome": "won",
+    "tick": 2152,
+    "hash": "4adb3843"
+   },
+   "idle": {
+    "hash": "5445719b",
+    "outcome": "lost",
+    "tick": 605
+   },
+   "replayEqual": true
+  },
+  "hop": {
+   "cell": "a12",
+   "seed": 1991363155,
+   "bot": {
+    "outcome": "won",
+    "tick": 480,
+    "hash": "ed637d9d"
+   },
+   "idle": {
+    "hash": "e8adbf01",
+    "outcome": "lost",
+    "tick": 360
+   },
+   "replayEqual": true
+  },
+  "crowd": {
+   "cell": "draft",
+   "seed": 1773469245,
+   "bot": {
+    "outcome": "won",
+    "tick": 2133,
+    "hash": "69927f2a"
+   },
+   "idle": {
+    "hash": "f0c2f81e",
+    "outcome": "lost",
+    "tick": 2082
+   },
+   "replayEqual": true
+  },
+  "merge": {
+   "cell": "draft",
+   "seed": 383472218,
+   "bot": {
+    "outcome": "won",
+    "tick": 3424,
+    "hash": "f65de6a8"
+   },
+   "idle": {
+    "hash": "5ec0055a",
+    "outcome": "lost",
+    "tick": 1067
+   },
+   "replayEqual": true
+  },
+  "push": {
+   "cell": "s13",
+   "seed": 1258487296,
+   "bot": {
+    "outcome": "won",
+    "tick": 2100,
+    "hash": "482f929d"
+   },
+   "idle": {
+    "hash": "3c21ae84",
+    "outcome": "lost",
+    "tick": 2243
+   },
+   "replayEqual": true
+  },
+  "control:steer": {
+   "cell": "a04",
+   "seed": 1409890862,
+   "bot": {
+    "outcome": "won",
+    "tick": 2040,
+    "hash": "1e353dbc"
+   },
+   "idle": {
+    "hash": "86dfba5c",
+    "outcome": "lost",
+    "tick": 433
+   },
+   "replayEqual": true
+  },
+  "control:walker": {
+   "cell": "s04",
+   "seed": 1513632850,
+   "bot": {
+    "outcome": "won",
+    "tick": 2598,
+    "hash": "270c91c1"
+   },
+   "idle": {
+    "hash": "cd86e7b3",
+    "outcome": "lost",
+    "tick": 4801
+   },
+   "replayEqual": true
+  },
+  "control:ball": {
+   "cell": "s56",
+   "seed": 946584844,
+   "bot": {
+    "outcome": "won",
+    "tick": 1632,
+    "hash": "3a8a6f38"
+   },
+   "idle": {
+    "hash": "db787c9b",
+    "outcome": "lost",
+    "tick": 1981
+   },
+   "replayEqual": true
+  }
+ }
+}

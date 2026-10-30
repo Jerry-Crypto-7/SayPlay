@@ -13,7 +13,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { type Mesh, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
 
 import { AXIS_MAX, AXIS_MIN, BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { GRAVITY } from '@/play/arcade/kernel';
@@ -23,7 +23,9 @@ import type { HeroAction } from '@/play/spec';
 import { ShootThrowFx } from '../action-cue/ShootThrowFx';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
+import { usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
+import { fitChase } from '../track-camera';
 
 const DOTS = 12;
 const DOT_EVERY = 4;
@@ -31,6 +33,14 @@ const DOT_EVERY = 4;
 const AXIS_PER_PX = 12;
 /** Co musí být vidět: hřiště do ~26 m a výška ~9 m. */
 const VIEW = { from: -3, to: 27, tall: 10, y: 4 } as const;
+/**
+ * Hřiště na výšku (P64 T5): kamera šikmo zezadu a z boku (`side`, `up`, `back`), míří na `lookY` m nad středem hřiště
+ * posunutým o `lead`. Do `playRect` se vejde osa hřiště od hráče (`VIEW.from` + `near`) po nejvzdálenější cíl
+ * (`VIEW.to` − `far`, těžká hra 22 m), `half` m napříč (cíle stojí na ose) a do výšky `top` m (věž čtyř bloků).
+ * Celá šíře zdi a oblouk hodu se vejít nemusí – kamera by odjela a cíle zmenšila.
+ */
+const COURT_TALL = { side: -3.5, up: 7, back: -8, lookY: 2, lead: -3, near: 2, far: 7, half: 0.35, top: 3 } as const;
+const court = new Box3();
 
 export function ThrowRig({
   session,
@@ -45,6 +55,7 @@ export function ThrowRig({
   readonly ghost?: ArcadeGhost;
 }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  const playRect = usePlayRectRef();
   const dots = useRef<(Mesh | null)[]>([]);
   const look = useMemo(() => new Vector3(), []);
 
@@ -52,8 +63,14 @@ export function ThrowRig({
     const mid = (VIEW.from + VIEW.to) / 2;
     if (camera.aspect < 1) {
       // Na výšku by boční kamera ustoupila do mlhy: šikmo zezadu a z boku se hloubka hřiště vejde na výšku obrazu.
-      camera.position.set(-3.5, 7, -8);
-      look.set(0, 2, mid - 3);
+      // P64 T5: celé hřiště (`COURT_TALL`) do `playRect` mezi HUD a ovládáním, vzdálenost a posun dává `fitChase`.
+      const view = COURT_TALL;
+      camera.position.set(view.side, view.up, view.back);
+      look.set(0, view.lookY, mid + view.lead);
+      camera.lookAt(look);
+      court.min.set(-view.half, 0, VIEW.from + view.near);
+      court.max.set(view.half, view.top, VIEW.to - view.far);
+      fitChase(camera, look, court, playRect.current);
     } else {
       const tan = Math.tan((camera.fov * Math.PI) / 360);
       const dist = Math.max((VIEW.to - VIEW.from) / (2 * tan * camera.aspect), VIEW.tall / (2 * tan));

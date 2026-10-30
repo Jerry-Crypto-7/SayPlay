@@ -15,7 +15,7 @@ import { renderHeld } from '../effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group, Object3D, PerspectiveCamera } from 'three';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 
 import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -32,6 +32,7 @@ import type { Box } from '../look/ground';
 import type { Volume } from '../look/landmark-places';
 import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
+import { fitTall, usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
@@ -142,6 +143,24 @@ export function timingDistance(fov: number, aspect: number, sliderW: number): nu
   return Math.max(swing / (2 * tan * aspect) + TIMING.depth / UNIT / 2, 7 / (2 * tan), 8);
 }
 
+/** Kolik stohu pod jezdcem drží kvádr na výšku (m) a jak vysoký kvádr nanejvýš je – na Pixelu 7 se vejde na `timingDistance`. */
+const TALL_BELOW = 2;
+const TALL_SPAN = 6;
+
+/**
+ * Kvádr hry pro `fitTall` na výšku (P64 T8-R3): kyv jezdce do stran a okno věže kolem jezdce (`followY`) – pod ním
+ * `TALL_BELOW` stohu, nad ním dva díly a cíl (`goalTop`), dokud se okno vejde do `TALL_SPAN`. Celá cílová věž
+ * (36 palačinek = 22 m) kameru odvezla do mlhy (b64-01, p64-08); s oknem drží šířku `timingDistance` a fit jen posune.
+ */
+export function timingTallBox(out: Box3, followY: number, goalTop: number, sliderW: number): Box3 {
+  const swing = TIMING.amplitude / UNIT + sliderW / 2 + SWING_PAD;
+  const bottom = Math.max(0, followY - TALL_BELOW);
+  const next = followY + (2 * TIMING.blockH) / UNIT;
+  out.min.set(-swing, bottom, -TIMING.depth / UNIT / 2);
+  out.max.set(swing, Math.max(next, Math.min(goalTop + 1, bottom + TALL_SPAN)), TIMING.depth / UNIT / 2);
+  return out;
+}
+
 /** Kde stojí hrdina věty: na šířku za krajem kyvu, na výšku v popředí pod věží (`HERO_TALL`). */
 function timingHeroAt(aspect: number, distance: number): readonly [number, number, number] {
   return aspect < 1 ? [HERO_TALL.x, 0, -HERO_TALL.front * distance] : HERO_AT;
@@ -229,6 +248,8 @@ export function TimingScene({
   // Poměr stran kamery: R3F ho po změně velikosti plátna přepíše dřív, než se ptá selektorů scén.
   const aspect = useThree((three) => (three.camera as PerspectiveCamera).aspect);
   const look = useMemo(() => new Vector3(), []);
+  const play = useMemo(() => new Box3(), []);
+  const playArea = usePlayRectRef();
   const followY = useRef<number | null>(null);
   // Hrdina a jeho místo pro kulisy podle poměru stran: na výšku ho kamera má v popředí (P61 T6).
   const heroAt = useMemo(() => timingHeroAt(aspect, timingDistance(camera.fov, aspect, sliderInit.w)), [aspect, camera.fov, sliderInit.w]);
@@ -279,6 +300,11 @@ export function TimingScene({
     camera.position.set(0, followY.current + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
     look.set(0, followY.current, 0);
     camera.lookAt(look);
+    const rect = playArea.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku (P64 T4, T8-R3): kyv jezdce a okno věže kolem něj v `playRect` pod HUD – šířku dál drží `timingDistance`.
+      camera.position.copy(fitTall(camera, timingTallBox(play, followY.current, top, sliderInit.w), rect, { margin: 0 }).position);
+    }
   });
 
   const depth = TIMING.depth / UNIT;

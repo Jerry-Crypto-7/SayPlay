@@ -17,7 +17,7 @@ import { Html } from '@react-three/drei/web/Html';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group, Mesh, MeshStandardMaterial, PerspectiveCamera } from 'three';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
@@ -31,6 +31,7 @@ import { worldPlacement } from '../../Ghost';
 import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
+import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
 
@@ -53,6 +54,24 @@ const JUMP = 2.5;
  * 0,6 m drží střed soupeře na kraji ringu ve 0,9 šířky obrazu (bezpečná zóna `e2e/p58a-framing`).
  */
 const CAMERA = { elevation: (58 * Math.PI) / 180, margin: 1.3, side: 0.6 } as const;
+/**
+ * Na výšku telefonu (P64 T3): ring je kulatý, do šíře obrazu se musí vejít celý se soupeřem na kraji ringu ve 0,9
+ * šířky (P61 T6), takže blíž kamera nesmí; `fitTall` ho jen posadí do `playRect` pod horní pás HUD. Do stran drží
+ * `keep` šíři ringu ve hloubce středu jako dřív – zbytek `side` dá okraj `fitTall` (8 px). Sklon zůstává: strmější
+ * (70°) ring zvětšil jen o pár procent a postavy shora zmenšil (hrdina 0,0096 proti 0,0147 na Pixelu).
+ */
+const TALL_ELEVATION = CAMERA.elevation;
+const TALL_BOX = new Box3(new Vector3(-RING - CAMERA.margin, -0.3, -RING - CAMERA.margin), new Vector3(RING + CAMERA.margin, RIVAL.h * 2, RING + CAMERA.margin));
+const TALL_KEEP = new Box3(new Vector3(-RING - CAMERA.side / 2, 0, 0.4), new Vector3(RING + CAMERA.side / 2, 0, 0.4));
+const TALL_LOOK = new Vector3(0, 0, 0.4);
+const TALL_DIR = new Vector3(0, Math.sin(TALL_ELEVATION), -Math.cos(TALL_ELEVATION));
+
+/** Kamera vytlačování na výšku: na střed ringu jako na šířku, pak přes `fitTall` do `playRect`. */
+function placeTall(camera: PerspectiveCamera, rect: PlayRect): Vector3 {
+  camera.position.copy(TALL_LOOK).addScaledVector(TALL_DIR, 20);
+  camera.lookAt(TALL_LOOK);
+  return fitTall(camera, TALL_BOX, rect, { keep: TALL_KEEP }).position;
+}
 /** Výchozí soupeř, když popisek model nemá: rozzlobený býk z katalogu. */
 const DEFAULT_RIVAL = 'gen3d-angry-bull';
 
@@ -97,6 +116,8 @@ export function PushScene({ session, cast, surface, scene: look, ghost }: PushSc
   const clock = useRef(0);
   const memory = useRef({ seen: new Map<number, { x: number; z: number; yaw: number }>(), falling: [] as Faller[], round: 1, shrinkAt: -1 });
   const scratch = useMemo(() => ({ look: new Vector3(), probe: new Vector3() }), []);
+  const playRect = usePlayRectRef();
+  const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3 } | null>(null);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -200,11 +221,20 @@ export function PushScene({ session, cast, surface, scene: look, ghost }: PushSc
       tag.style.visibility = text === '' ? 'hidden' : 'visible';
     }
 
-    // Kamera: celý ring shora zezadu; na výšku telefonu rozhoduje šíře ringu.
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const distance = Math.max((RING + CAMERA.side) / (tan * camera.aspect), ((RING + CAMERA.margin) * 0.9) / tan);
-    camera.position.set(0, distance * Math.sin(CAMERA.elevation), -distance * Math.cos(CAMERA.elevation) - 0.6);
-    camera.lookAt(scratch.look.set(0, 0, 0.4));
+    const rect = playRect.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku telefonu (P64 T3) do `playRect`; spočítá se jen při změně obdélníku nebo poměru stran.
+      const cached = tallFrame.current;
+      if (cached === null || cached.rect !== rect || cached.aspect !== camera.aspect) tallFrame.current = { rect, aspect: camera.aspect, position: placeTall(camera, rect) };
+      camera.position.copy(tallFrame.current!.position);
+      camera.lookAt(scratch.look.copy(tallFrame.current!.position).addScaledVector(TALL_DIR, -1));
+    } else {
+      // Kamera: celý ring shora zezadu; na výšku telefonu rozhoduje šíře ringu.
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const distance = Math.max((RING + CAMERA.side) / (tan * camera.aspect), ((RING + CAMERA.margin) * 0.9) / tan);
+      camera.position.set(0, distance * Math.sin(CAMERA.elevation), -distance * Math.cos(CAMERA.elevation) - 0.6);
+      camera.lookAt(scratch.look.set(0, 0, 0.4));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

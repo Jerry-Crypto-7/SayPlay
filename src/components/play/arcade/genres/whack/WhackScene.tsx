@@ -17,7 +17,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useMemo, useRef } from 'react';
-import { type Group, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Group, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
@@ -28,6 +28,7 @@ import { WHACK } from '@/play/arcade/pieces/whack';
 
 import { renderHeld } from '../../effects/render-feel';
 import type { GhostPlacement } from '../../Ghost';
+import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
@@ -63,8 +64,37 @@ const HERO_FIT = 0.8;
 const HERO_LANE = FIELD_HALF - m(LANES.width) / 2;
 const HERO_GAP = LOOK.z * Math.cos(PITCH) - (LOOK.y - HERO.h / 2) * Math.sin(PITCH);
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
+/**
+ * Na výšku telefonu (P64 T3): řada pěti děr je 10 m široká a jen 2,4 m hluboká, zepředu by ji držela šíře obrazu
+ * a hrdina by zůstal malý (P61: 0,41 plochy na šířku). Kamera se proto natočí kolem svislé osy: řada běží šikmo
+ * nahoru po obrazovce, blízký konec dole, vzdálený nahoře, a do šíře obrazu jde jen průmět řady. Pořadí děr zleva
+ * doprava zůstává, takže prst je trefí podle `data-lane-edges` jako dřív (při 1,1 rad má díra na prst ~50 px).
+ * `hero` = vizuální měřítko hrdiny na výšku: i natočená řada drží kameru tak daleko, že hrdina by se stropem
+ * čitelnosti (2×, P58A) zůstal pod její podlahou (20 % výšky). Cíle se hrdiny nikdy nedotknou (kladivo míří do
+ * díry), takže větší postava nic neklame. Víc nepomáhá: nad podlahou ji čitelnost už nezvětšuje a větší krabice
+ * odsune kameru – 2,0 dalo na iPhonu 15 menší podíl (0,048) než 1,8 (0,054). README T3 má zkoušené kombinace.
+ */
+const TALL = { pitch: 0.9, yaw: 1.1, hero: 1.8 } as const;
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
+
+/**
+ * Na výšku do `playRect` (`fitTall`): hrdina (zvětšený `TALL.hero` a čitelností až 2×) a vykouknutý cíl svisle; do
+ * stran jen řada hrdiny a řada děr od krajní díry po krajní díru – natočená krabice s hloubkou by ji jinak zbytečně
+ * rozšířila.
+ */
+const HOLE_RIM = 0.9;
+const TALL_BOX = new Box3(new Vector3(-HERO_LANE - HOLE_RIM, 0, -0.75 * HERO.d), new Vector3(HERO_LANE + HOLE_RIM, HERO.h * 2 * TALL.hero, HOLE_Z + HOLE_RIM));
+const TALL_KEEP = new Box3(new Vector3(-HERO_LANE - HOLE_RIM, 0, 0), new Vector3(HERO_LANE + HOLE_RIM, TARGET, HOLE_Z));
+const TALL_LOOK = new Vector3(0, TARGET / 2, HOLE_Z / 2);
+const TALL_DIR = new Vector3(Math.sin(TALL.yaw) * Math.cos(TALL.pitch), Math.sin(TALL.pitch), -Math.cos(TALL.yaw) * Math.cos(TALL.pitch));
+
+/** Kamera bouchání na výšku: šikmo shora na střed řady, pak přes `fitTall` co nejblíž do `playRect`. */
+function placeTall(camera: PerspectiveCamera, rect: PlayRect): Vector3 {
+  camera.position.copy(TALL_LOOK).addScaledVector(TALL_DIR, 20);
+  camera.lookAt(TALL_LOOK);
+  return fitTall(camera, TALL_BOX, rect, { keep: TALL_KEEP }).position;
+}
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 
 /** Hranice mezi dírami l | l+1 v x jádra; kreslí se zrcadlově. */
@@ -186,6 +216,9 @@ export function WhackScene({ session, cast, surface, scene: look, ghost }: Whack
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look3 = useMemo(() => new Vector3(), []);
   const probe = useMemo(() => new Vector3(), []);
+  const playRect = usePlayRectRef();
+  const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3 } | null>(null);
+  const heroScaled = useRef(1);
   const heroRig = riggedCharacter(cast.player);
   // Duch dřívějšího běhu jezdí po pruzích svého běhu kousek za hrdinou (blíž ke kameře), čelem k dírám.
   const ghostSpot = useCallback((pose: GhostPose): GhostPlacement => [-pose.x / UNIT, 0, -HERO.d * 1.2, 0], []);
@@ -199,6 +232,14 @@ export function WhackScene({ session, cast, surface, scene: look, ghost }: Whack
     const player = state[HEADER.player] as number;
     const heroX = -at(player, BODY.x) / UNIT;
     hero.current?.position.set(heroX, 0, 0);
+    // Na výšku telefonu `playRect` (P64 T3), jinak `null`.
+    const rect = camera.aspect < 1 ? playRect.current : null;
+    // Měřítko hrdiny na výšku (`TALL.hero`) se zapíše jen při změně: čitelnost (`LegibleBodies`) ho vezme za nový základ.
+    const heroScale = rect !== null ? TALL.hero : 1;
+    if (hero.current !== null && heroScaled.current !== heroScale) {
+      hero.current.scale.setScalar(heroScale);
+      heroScaled.current = heroScale;
+    }
     moving.current = state[bodyBase(player) + BODY.x] !== prev[bodyBase(player) + BODY.x];
 
     // Kladivo visí nad dírou pruhu, který hráč zvolil (ťuk platí hned, hrdina dojde za ním); ťuk ho spustí.
@@ -256,11 +297,20 @@ export function WhackScene({ session, cast, surface, scene: look, ghost }: Whack
       });
     }
 
-    // Na výšku rozhoduje šíře řady děr, na šířku výška záběru (hrdina, díry, kladivo).
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const distance = Math.max((FIELD_HALF + 0.6) / (tan * camera.aspect), 2.8 / tan, HERO_LANE / (HERO_FIT * tan * camera.aspect) + HERO_GAP);
-    camera.position.set(LOOK.x, LOOK.y + Math.sin(PITCH) * distance, LOOK.z - Math.cos(PITCH) * distance);
-    camera.lookAt(look3.copy(LOOK));
+    if (rect !== null) {
+      // Na výšku telefonu (P64 T3) šikmo do `playRect`; spočítá se jen při změně obdélníku nebo poměru stran.
+      const cached = tallFrame.current;
+      if (cached === null || cached.rect !== rect || cached.aspect !== camera.aspect) tallFrame.current = { rect, aspect: camera.aspect, position: placeTall(camera, rect) };
+      camera.position.copy(tallFrame.current!.position);
+      camera.lookAt(look3.copy(tallFrame.current!.position).sub(TALL_DIR));
+    } else {
+      // Jako dřív (na šířku a dokud `playRect` není změřený): na výšku rozhoduje šíře řady děr, na šířku výška
+      // záběru (hrdina, díry, kladivo).
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const distance = Math.max((FIELD_HALF + 0.6) / (tan * camera.aspect), 2.8 / tan, HERO_LANE / (HERO_FIT * tan * camera.aspect) + HERO_GAP);
+      camera.position.set(LOOK.x, LOOK.y + Math.sin(PITCH) * distance, LOOK.z - Math.cos(PITCH) * distance);
+      camera.lookAt(look3.copy(LOOK));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

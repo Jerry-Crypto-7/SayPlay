@@ -23,7 +23,8 @@ import { browserRenderer } from '../scripts/browser-renderer';
  *
  * Tvrdí oracle T15: každá karta jiná hra v běžícím náhledu, jedno plátno feedu
  * (`contexts === 1`), ťuk → `play`, hra po gestech reaguje (vstupy přibyly, tik běží)
- * a feed při hraní stojí, scéna se mezi dvěma snímky mění (prázdné plátno ne),
+ * a feed při hraní stojí – na telefonu ani po svislém tahu po kroužku joysticku (P64 T7) –, scéna se mezi dvěma
+ * snímky mění (prázdné plátno ne),
  * na obrazovce žádný český řetězec. Časy se zapisují a porovnávají s `after-t8.json`.
  */
 
@@ -543,8 +544,25 @@ async function feedCheck(page: Page, profile: 'phone' | 'desktop', cpu: number):
         await expect(page.getByTestId('feed-hint')).toBeHidden();
         const inputsAfterTap = await page.evaluate(() => window.__playShell!.inputs().length);
         const tickAfterTap = (await feedProbe(page)).tick;
-        if (profile === 'phone') await playByTouch(page, fingers, control, PLAY_MS);
-        else await playByKeys(page, control, PLAY_MS);
+        if (profile === 'phone') {
+          // P64 T7: kroužek joysticku stojí v klidu vlevo dole; svislý tah po něm (nahoru i dolů) hru řídí a kartu
+          // feedu nepřetočí. Třetí karta vestavěného poolu je aréna (`move_free`).
+          expect(['move_free', 'fight'], 'the played card has a joystick').toContain(control);
+          const ring = stage(page).getByTestId('touch-stick');
+          await expect(ring).toBeVisible();
+          const home = await boxOf(ring);
+          const [x, y] = [home.x + home.width / 2, home.y + home.height / 2];
+          for (const reach of [-0.5, 0.15]) {
+            await fingers.press(1, x, y);
+            for (let step = 1; step <= 8; step += 1) await fingers.move(1, x, y + (box.height * reach * step) / 8);
+            await page.waitForTimeout(200);
+            await fingers.lift(1);
+          }
+          await page.waitForTimeout(500);
+          expect((await feedProbe(page)).versionId, 'a vertical drag on the ring turned the card').toBe(versionId);
+          expect(await scrollTop(), 'a vertical drag on the ring scrolled the feed').toBe(top);
+          await playByTouch(page, fingers, control, PLAY_MS);
+        } else await playByKeys(page, control, PLAY_MS);
         const after = await feedProbe(page);
         const inputsAfterPlay = await page.evaluate(() => window.__playShell!.inputs().length);
         const topAfter = await scrollTop();

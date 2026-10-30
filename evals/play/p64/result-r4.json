@@ -1,0 +1,1275 @@
+{
+ "schema": "p64-r4-result.v1",
+ "task": "T8-R7",
+ "holdout": {
+  "sha256": "9ea4d48cf03199dc8fbf7c8b255641b70cb69bdfc95cba870995719cf3bdbe1d",
+  "openedAt": "2026-10-30T13:27:55.371Z",
+  "commit": "a166cd9a",
+  "sentences": 24
+ },
+ "measurements": [
+  {
+   "name": "main",
+   "commit": "0da52829",
+   "measuredAt": "2026-10-30T13:43:43.130Z"
+  },
+  {
+   "name": "p64",
+   "commit": "fddd0e3b",
+   "measuredAt": "2026-10-30T13:58:25.985Z"
+  }
+ ],
+ "judge": {
+  "name": "codex exec",
+  "view": "phone",
+  "seed": 61026,
+  "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+  "concurrency": 1,
+  "calls": 24,
+  "judgedAt": "2026-10-30T13:58:49.710Z"
+ },
+ "plan": [
+  {
+   "id": "s64-01",
+   "sentence": "A mail carrier sprints down a snowy mountain road dodging rolling barrels and stray goats",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s64-02",
+   "sentence": "A clockwork mouse jumps across crumbling ledges above a flooded sewer",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s64-03",
+   "sentence": "A sheepdog chases runaway lambs around a muddy farmyard all afternoon",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-04",
+   "sentence": "A paper airplane glides over a busy harbor, weaving past ship masts and seagulls",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "s64-05",
+   "sentence": "A gardener waters every wilted flower bed across a royal palace garden before the queen wakes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-06",
+   "sentence": "A space cowboy blasts giant worms swarming around a desert outpost",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-07",
+   "sentence": "A grandma tosses snowballs at sneaky squirrels raiding her bird feeder",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-08",
+   "sentence": "A window cleaner stacks paint buckets onto a swaying scaffold without letting it topple",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-09",
+   "sentence": "A beach drummer pounds the bongos to the beat at a sunset party",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-10",
+   "sentence": "A young fencer faces the champion in a final duel under a stadium spotlight",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-11",
+   "sentence": "A hummingbird flutters up through a jungle waterfall dodging hanging vines",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p64-reading"
+    }
+   ]
+  },
+  {
+   "id": "s64-12",
+   "sentence": "A baker catches donuts falling from a broken oven chute in a paper bag",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-13",
+   "sentence": "A plumber bonks rubber ducks popping out of bathtub drains in an old hotel",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-14",
+   "sentence": "A scarecrow defends the cornfield from waves of hungry crows at dusk",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-15",
+   "sentence": "A sword master slices flying melons tossed over a bamboo garden wall",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-16",
+   "sentence": "A duckling crosses a busy harbor road full of forklifts to reach the pond",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-17",
+   "sentence": "A marching band grows by passing through magic gates along a parade street",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    }
+   ]
+  },
+  {
+   "id": "s64-18",
+   "sentence": "A jeweler combines matching pearls into bigger pearls on a velvet tray",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-19",
+   "sentence": "Two penguins shove each other out of an icy sumo ring on a frozen lake",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-20",
+   "sentence": "A street chef slices flying bananas thrown across a busy night market with a cleaver",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p64-reading"
+    }
+   ]
+  },
+  {
+   "id": "s64-21",
+   "sentence": "A young knight slices flying apples tossed by jesters in a castle orchard",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-22",
+   "sentence": "A circus clown stacks wobbly cakes onto a tall wedding tower without letting it topple",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-23",
+   "sentence": "A puppy catches tennis balls dropping from an apple tree in a sunny backyard",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "s64-24",
+   "sentence": "A potion brewer combines matching bubbles into bigger potions inside a bubbling cauldron",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  }
+ ],
+ "sentences": [
+  {
+   "id": "s64-01",
+   "sentence": "A mail carrier sprints down a snowy mountain road dodging rolling barrels and stray goats",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.46,
+     "reason": "A carrier-like runner and snowy mountain road fit the premise, but barrels and goats are unclear, and sparse obstacles make the play look repetitive."
+    },
+    "p64-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.7,
+     "reason": "The snowy road, runner, collectible trails, and obstacles suggest a readable phone runner, though mail delivery, rolling barrels, and stray goats are not evident."
+    },
+    "main-quick": {
+     "fidelity": 0.52,
+     "wouldPlay": 0.51,
+     "reason": "The carrier-like character, mountain road, and scattered animal-like obstacles partly match the sentence, but rolling barrels are unclear and the action looks sparse."
+    },
+    "main-reading": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.76,
+     "reason": "Snowfall, obstacle gates, collectible paths, and a large arch make an appealing runner, but the mail-carrier identity and requested barrel-and-goat threats are not apparent."
+    },
+    "main-after-reading": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.76,
+     "reason": "Snowfall, obstacle gates, collectible paths, and a large arch make an appealing runner, but the mail-carrier identity and requested barrel-and-goat threats are not apparent."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.7,
+     "reason": "The snowy road, runner, collectible trails, and obstacles suggest a readable phone runner, though mail delivery, rolling barrels, and stray goats are not evident."
+    }
+   }
+  },
+  {
+   "id": "s64-02",
+   "sentence": "A clockwork mouse jumps across crumbling ledges above a flooded sewer",
+   "scores": {
+    "p64-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.64,
+     "reason": "A mouse-like character traverses broken elevated ledges with visible obstacles, but the rooftop setting conveys neither a flooded sewer nor clear clockwork details."
+    },
+    "p64-quick": {
+     "fidelity": 0.52,
+     "wouldPlay": 0.69,
+     "reason": "The mouse, gaps, and obstacles suggest an appealing jumping challenge with a readable route, though the environment looks like city rooftops rather than a flooded sewer."
+    },
+    "main-quick": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "The mouse and elevated platforms are visible, but its oversized appearance obscures the route and neither crumbling hazards nor the flooded sewer setting reads clearly."
+    },
+    "main-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.54,
+     "reason": "The side view shows a mouse, platform gaps, and small obstacles that suggest a playable jumping course, but clockwork features and sewer flooding remain unclear."
+    },
+    "main-after-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.54,
+     "reason": "The side view shows a mouse, platform gaps, and small obstacles that suggest a playable jumping course, but clockwork features and sewer flooding remain unclear."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.64,
+     "reason": "A mouse-like character traverses broken elevated ledges with visible obstacles, but the rooftop setting conveys neither a flooded sewer nor clear clockwork details."
+    }
+   }
+  },
+  {
+   "id": "s64-03",
+   "sentence": "A sheepdog chases runaway lambs around a muddy farmyard all afternoon",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.34,
+     "wouldPlay": 0.38,
+     "reason": "A dog and a timed lamb-catching objective fit the chase, but no lambs or muddy farmyard are clearly visible, and the sparse grassy arena offers little apparent variety."
+    },
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.36,
+     "reason": "The labelled sheepdog and lamb-catching objective convey the premise, but the empty green setting lacks visible lambs, mud, or farm features and makes the gameplay look repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.36,
+     "reason": "The labelled sheepdog and lamb-catching objective convey the premise, but the empty green setting lacks visible lambs, mud, or farm features and makes the gameplay look repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.34,
+     "wouldPlay": 0.38,
+     "reason": "A dog and a timed lamb-catching objective fit the chase, but no lambs or muddy farmyard are clearly visible, and the sparse grassy arena offers little apparent variety."
+    }
+   }
+  },
+  {
+   "id": "s64-04",
+   "sentence": "A paper airplane glides over a busy harbor, weaving past ship masts and seagulls",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.49,
+     "reason": "Blue harbor water and tall masts suggest the setting, but the craft is not clearly a paper airplane, seagulls are unclear, and the oversized red obstacle makes the route hard to read."
+    },
+    "main-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.55,
+     "reason": "The harbor, masts, and bright ring targets suggest a weaving flight challenge, though the paper airplane and seagull threats are unclear; the visible targets make play moderately inviting."
+    },
+    "p64-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.53,
+     "reason": "Water, masts, and rings convey a harbor obstacle course, but the busy ship traffic, paper airplane, and seagulls are poorly established, leaving a readable yet visually sparse game."
+    },
+    "main-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.51,
+     "reason": "The water, mast silhouettes, and rings support harbor flight, but the craft and bird hazards remain indistinct, while the dominant red barrier makes the flying space look cramped."
+    },
+    "main-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.51,
+     "reason": "The water, mast silhouettes, and rings support harbor flight, but the craft and bird hazards remain indistinct, while the dominant red barrier makes the flying space look cramped."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.53,
+     "reason": "Water, masts, and rings convey a harbor obstacle course, but the busy ship traffic, paper airplane, and seagulls are poorly established, leaving a readable yet visually sparse game."
+    }
+   }
+  },
+  {
+   "id": "s64-05",
+   "sentence": "A gardener waters every wilted flower bed across a royal palace garden before the queen wakes",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.74,
+     "wouldPlay": 0.62,
+     "reason": "A watering-can gardener, wilted beds, and countdown convey the watering deadline, but the palace and queen are absent and the garden looks sparse."
+    },
+    "main-quick": {
+     "fidelity": 0.72,
+     "wouldPlay": 0.68,
+     "reason": "The gardener, flower targets, timer, and visible bee suggest a clear timed watering game with a hazard, though little establishes royalty."
+    },
+    "p64-reading": {
+     "fidelity": 0.74,
+     "wouldPlay": 0.7,
+     "reason": "Wilted beds, watering equipment, and a countdown support the objective, while the joystick and target markers make play readable despite the missing queen and palace."
+    },
+    "p64-quick": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.76,
+     "reason": "The gardener, flower beds, countdown, and alerted bee make the task and danger tangible, with clearer controls and stronger action framing but little royal setting."
+    },
+    "main-after-reading": {
+     "fidelity": 0.74,
+     "wouldPlay": 0.62,
+     "reason": "A watering-can gardener, wilted beds, and countdown convey the watering deadline, but the palace and queen are absent and the garden looks sparse."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.74,
+     "wouldPlay": 0.7,
+     "reason": "Wilted beds, watering equipment, and a countdown support the objective, while the joystick and target markers make play readable despite the missing queen and palace."
+    }
+   }
+  },
+  {
+   "id": "s64-06",
+   "sentence": "A space cowboy blasts giant worms swarming around a desert outpost",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.49,
+     "reason": "The desert, outpost, cowboy hat and firing effects fit the premise, but giant swarming worms and the space theme are unclear, while the sparse action limits appeal."
+    },
+    "p64-quick": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.59,
+     "reason": "The visible full cowboy, desert outpost and firing effects convey the setup more clearly, but giant worm swarms and sci-fi details remain weak, with a readable yet sparse playfield."
+    },
+    "main-after-reading": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.49,
+     "reason": "The desert, outpost, cowboy hat and firing effects fit the premise, but giant swarming worms and the space theme are unclear, while the sparse action limits appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.59,
+     "reason": "The visible full cowboy, desert outpost and firing effects convey the setup more clearly, but giant worm swarms and sci-fi details remain weak, with a readable yet sparse playfield."
+    }
+   }
+  },
+  {
+   "id": "s64-07",
+   "sentence": "A grandma tosses snowballs at sneaky squirrels raiding her bird feeder",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.44,
+     "wouldPlay": 0.52,
+     "reason": "A gray-haired character faces squirrel-like animals in snow, but the red projectile, unclear feeder, and polar-bear objective weaken the match despite readable aiming."
+    },
+    "p64-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.7,
+     "reason": "Grandma, a snowy bird-feeder setting, and a timed throwing challenge fit well, though squirrels and their raiding behavior are hard to distinguish."
+    },
+    "main-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.74,
+     "reason": "Grandma visibly throws toward bird feeders in a snowy yard with small animal targets, and the throw counter and timer give the game a clear challenge."
+    },
+    "p64-quick": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.56,
+     "reason": "Grandma and squirrel-like targets are visible in snow with a distant feeder-like object, but red ammunition and the polar-bear objective make the intended defense scenario unclear."
+    },
+    "main-after-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.74,
+     "reason": "Grandma visibly throws toward bird feeders in a snowy yard with small animal targets, and the throw counter and timer give the game a clear challenge."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.7,
+     "reason": "Grandma, a snowy bird-feeder setting, and a timed throwing challenge fit well, though squirrels and their raiding behavior are hard to distinguish."
+    }
+   }
+  },
+  {
+   "id": "s64-08",
+   "sentence": "A window cleaner stacks paint buckets onto a swaying scaffold without letting it topple",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.44,
+     "reason": "The stacking objective and precarious platforms suggest balancing, but no window cleaner, recognizable paint buckets, or swaying scaffold is visible, and the sparse scene makes play look unclear."
+    },
+    "main-quick": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.48,
+     "reason": "The stacking prompt and elevated platform loosely fit the premise, but the cleaner and scaffold are missing; the more consistent view makes the simple balancing challenge look slightly easier to follow."
+    },
+    "main-after-reading": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.48,
+     "reason": "The stacking prompt and elevated platform loosely fit the premise, but the cleaner and scaffold are missing; the more consistent view makes the simple balancing challenge look slightly easier to follow."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.44,
+     "reason": "The stacking objective and precarious platforms suggest balancing, but no window cleaner, recognizable paint buckets, or swaying scaffold is visible, and the sparse scene makes play look unclear."
+    }
+   }
+  },
+  {
+   "id": "s64-09",
+   "sentence": "A beach drummer pounds the bongos to the beat at a sunset party",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.58,
+     "reason": "The sandy beach and colored rhythm lanes suggest beach music, but no clear bongo drummer, sunset party, or beat-driven performance is visible, while incoming blocks offer a readable but basic game."
+    },
+    "p64-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.58,
+     "reason": "The beach scenery and rhythm-style track fit part of the premise, but a bongo-playing character and sunset celebration are missing, and the visible block-catching challenge looks approachable but repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.58,
+     "reason": "The sandy beach and colored rhythm lanes suggest beach music, but no clear bongo drummer, sunset party, or beat-driven performance is visible, while incoming blocks offer a readable but basic game."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.58,
+     "reason": "The beach scenery and rhythm-style track fit part of the premise, but a bongo-playing character and sunset celebration are missing, and the visible block-catching challenge looks approachable but repetitive."
+    }
+   }
+  },
+  {
+   "id": "s64-10",
+   "sentence": "A young fencer faces the champion in a final duel under a stadium spotlight",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.64,
+     "reason": "Two opponents and dodge/strike controls suggest a fencing duel with clear danger, but the outdoor arena lacks a visible stadium spotlight or final-match atmosphere."
+    },
+    "main-quick": {
+     "fidelity": 0.52,
+     "wouldPlay": 0.48,
+     "reason": "The side view makes the opposing fencers and attacks readable, but the sparse outdoor setting misses the stadium spotlight and the combat looks visually static."
+    },
+    "main-after-reading": {
+     "fidelity": 0.52,
+     "wouldPlay": 0.48,
+     "reason": "The side view makes the opposing fencers and attacks readable, but the sparse outdoor setting misses the stadium spotlight and the combat looks visually static."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.64,
+     "reason": "Two opponents and dodge/strike controls suggest a fencing duel with clear danger, but the outdoor arena lacks a visible stadium spotlight or final-match atmosphere."
+    }
+   }
+  },
+  {
+   "id": "s64-11",
+   "sentence": "A hummingbird flutters up through a jungle waterfall dodging hanging vines",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.22,
+     "reason": "A ball and stacked blocks suggest obstacle dodging, but no hummingbird, waterfall, jungle, or vines are visible, and the scene looks sparse."
+    },
+    "p64-quick": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.38,
+     "reason": "The ball obstacle course and colorful crowd runner show recognizable game objectives, but neither resembles the requested hummingbird journey and the switch feels inconsistent."
+    },
+    "main-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.3,
+     "reason": "Some hanging obstacles faintly suggest vines, but the ball course and crowd runner lack the bird and waterfall and appear visually disconnected."
+    },
+    "p64-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.24,
+     "reason": "The ball course includes hanging and stacked obstacles, but lacks the requested character and jungle waterfall, while the plain scenery and repeated failure screens offer limited appeal."
+    },
+    "main-after-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.22,
+     "reason": "A ball and stacked blocks suggest obstacle dodging, but no hummingbird, waterfall, jungle, or vines are visible, and the scene looks sparse."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.24,
+     "reason": "The ball course includes hanging and stacked obstacles, but lacks the requested character and jungle waterfall, while the plain scenery and repeated failure screens offer limited appeal."
+    }
+   }
+  },
+  {
+   "id": "s64-12",
+   "sentence": "A baker catches donuts falling from a broken oven chute in a paper bag",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.48,
+     "reason": "A baker, falling donuts, and a catch counter convey the goal, but no broken oven chute or clear paper bag is visible, and the sparse scene makes play look repetitive."
+    },
+    "p64-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.52,
+     "reason": "The baker beneath falling donuts communicates catching, but the broken oven chute and paper bag are unclear; the more spread-out falling objects make the action look slightly more engaging."
+    },
+    "main-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.48,
+     "reason": "A baker, falling donuts, and a catch counter convey the goal, but no broken oven chute or clear paper bag is visible, and the sparse scene makes play look repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.52,
+     "reason": "The baker beneath falling donuts communicates catching, but the broken oven chute and paper bag are unclear; the more spread-out falling objects make the action look slightly more engaging."
+    }
+   }
+  },
+  {
+   "id": "s64-13",
+   "sentence": "A plumber bonks rubber ducks popping out of bathtub drains in an old hotel",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.39,
+     "reason": "A plumber and drain-like holes convey the basic bonking setup, but ducks are barely evident, the bathtub and old hotel are absent, and the sparse playfield looks repetitive."
+    },
+    "p64-quick": {
+     "fidelity": 0.61,
+     "wouldPlay": 0.59,
+     "reason": "The plumber, visible rubber duck, mallet, and popping targets make the action clearer and more inviting, though the bare setting lacks a bathtub or recognizable old hotel."
+    },
+    "main-after-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.39,
+     "reason": "A plumber and drain-like holes convey the basic bonking setup, but ducks are barely evident, the bathtub and old hotel are absent, and the sparse playfield looks repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.61,
+     "wouldPlay": 0.59,
+     "reason": "The plumber, visible rubber duck, mallet, and popping targets make the action clearer and more inviting, though the bare setting lacks a bathtub or recognizable old hotel."
+    }
+   }
+  },
+  {
+   "id": "s64-14",
+   "sentence": "A scarecrow defends the cornfield from waves of hungry crows at dusk",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.65,
+     "reason": "A scarecrow guards a planted field against approaching crows in dusk lighting, though the corn is indistinct and the sparse action looks repetitive."
+    },
+    "p64-quick": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.69,
+     "reason": "The scarecrow, dusk-lit crop rows, and several advancing crows clearly convey the defense premise, with mounting threats suggesting a playable but visually simple challenge."
+    },
+    "main-after-reading": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.65,
+     "reason": "A scarecrow guards a planted field against approaching crows in dusk lighting, though the corn is indistinct and the sparse action looks repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.69,
+     "reason": "The scarecrow, dusk-lit crop rows, and several advancing crows clearly convey the defense premise, with mounting threats suggesting a playable but visually simple challenge."
+    }
+   }
+  },
+  {
+   "id": "s64-15",
+   "sentence": "A sword master slices flying melons tossed over a bamboo garden wall",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.56,
+     "wouldPlay": 0.46,
+     "reason": "A sword and flying melons suggest the slicing goal, but the bamboo garden wall and sword master are unclear, and the sparse action looks only mildly engaging."
+    },
+    "p64-quick": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.62,
+     "reason": "Visible melon pieces, a sword, and a black ball suggest slicing action with a hazard above a bamboo platform, though the garden wall and sword master remain unclear."
+    },
+    "main-after-reading": {
+     "fidelity": 0.56,
+     "wouldPlay": 0.46,
+     "reason": "A sword and flying melons suggest the slicing goal, but the bamboo garden wall and sword master are unclear, and the sparse action looks only mildly engaging."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.62,
+     "reason": "Visible melon pieces, a sword, and a black ball suggest slicing action with a hazard above a bamboo platform, though the garden wall and sword master remain unclear."
+    }
+   }
+  },
+  {
+   "id": "s64-16",
+   "sentence": "A duckling crosses a busy harbor road full of forklifts to reach the pond",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.65,
+     "reason": "A visible duckling faces busy lanes of forklifts toward blue water, though harbor details are limited and the crowded traffic makes routes hard to read."
+    },
+    "main-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.71,
+     "reason": "The duckling and forklift-filled crossing clearly fit the premise, but the pond and harbor are less apparent; the spacious starting area and clearer lane layout look more approachable."
+    },
+    "main-after-reading": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.71,
+     "reason": "The duckling and forklift-filled crossing clearly fit the premise, but the pond and harbor are less apparent; the spacious starting area and clearer lane layout look more approachable."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.65,
+     "reason": "A visible duckling faces busy lanes of forklifts toward blue water, though harbor details are limited and the crowded traffic makes routes hard to read."
+    }
+   }
+  },
+  {
+   "id": "s64-17",
+   "sentence": "A marching band grows by passing through magic gates along a parade street",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.68,
+     "reason": "The band visibly grows through arithmetic gates on a street with a saw hazard, though the ogre objective distracts from the parade and the course looks sparse."
+    },
+    "main-quick": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.74,
+     "reason": "Clear arithmetic gates, a growing marching group, and an approaching saw make an understandable phone runner, although the ogre objective and plain street weaken the parade theme."
+    },
+    "p64-reading": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.77,
+     "reason": "The magic-gate objective, growing marching band, and visible saw hazard closely match the premise and suggest accessible choices, though the parade setting remains visually plain."
+    },
+    "main-after-reading": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.74,
+     "reason": "Clear arithmetic gates, a growing marching group, and an approaching saw make an understandable phone runner, although the ogre objective and plain street weaken the parade theme."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.77,
+     "reason": "The magic-gate objective, growing marching band, and visible saw hazard closely match the premise and suggest accessible choices, though the parade setting remains visually plain."
+    }
+   }
+  },
+  {
+   "id": "s64-18",
+   "sentence": "A jeweler combines matching pearls into bigger pearls on a velvet tray",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.55,
+     "reason": "A labeled jeweler and pearl-merging objective fit the sentence, but the deep wooden chute lacks a clear velvet tray, and sparse play with an unexplained saw-like obstacle looks only mildly engaging."
+    },
+    "main-quick": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.52,
+     "reason": "Pearls of different sizes and a merging objective suggest the requested activity, but the character is less clearly a jeweler and the wooden chute, saw-like obstacle, and sparse action weaken both fidelity and appeal."
+    },
+    "main-after-reading": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.52,
+     "reason": "Pearls of different sizes and a merging objective suggest the requested activity, but the character is less clearly a jeweler and the wooden chute, saw-like obstacle, and sparse action weaken both fidelity and appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.55,
+     "reason": "A labeled jeweler and pearl-merging objective fit the sentence, but the deep wooden chute lacks a clear velvet tray, and sparse play with an unexplained saw-like obstacle looks only mildly engaging."
+    }
+   }
+  },
+  {
+   "id": "s64-19",
+   "sentence": "Two penguins shove each other out of an icy sumo ring on a frozen lake",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.64,
+     "reason": "Penguin-like figures visibly tussle near a circular ring’s edge, but the tan arena and gray surroundings weakly convey an icy frozen lake, and the overlapping bodies make the action hard to read."
+    },
+    "main-quick": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.7,
+     "reason": "The penguins, circular arena, and visible charge cues suggest a playable shoving contest, though crowded silhouettes obscure the two opponents and the setting lacks convincing ice or lake detail."
+    },
+    "main-after-reading": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.7,
+     "reason": "The penguins, circular arena, and visible charge cues suggest a playable shoving contest, though crowded silhouettes obscure the two opponents and the setting lacks convincing ice or lake detail."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.64,
+     "reason": "Penguin-like figures visibly tussle near a circular ring’s edge, but the tan arena and gray surroundings weakly convey an icy frozen lake, and the overlapping bodies make the action hard to read."
+    }
+   }
+  },
+  {
+   "id": "s64-20",
+   "sentence": "A street chef slices flying bananas thrown across a busy night market with a cleaver",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.48,
+     "reason": "A chef, flying bananas, blade, and dark market stalls support the slicing premise, but the market looks empty and the action sparse."
+    },
+    "p64-quick": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.36,
+     "reason": "A character with a mallet beside holes suggests whack-a-mole rather than banana slicing, with a readable play area but little visual excitement."
+    },
+    "main-quick": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3,
+     "reason": "The mallet-wielding character and row of mole holes show a simple tapping game with almost none of the requested food or market action."
+    },
+    "p64-reading": {
+     "fidelity": 0.67,
+     "wouldPlay": 0.5,
+     "reason": "The chef, airborne bananas, blade, and nighttime stalls convey the intended game, though the empty setting and limited visible action weaken its appeal."
+    },
+    "main-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.48,
+     "reason": "A chef, flying bananas, blade, and dark market stalls support the slicing premise, but the market looks empty and the action sparse."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.67,
+     "wouldPlay": 0.5,
+     "reason": "The chef, airborne bananas, blade, and nighttime stalls convey the intended game, though the empty setting and limited visible action weaken its appeal."
+    }
+   }
+  },
+  {
+   "id": "s64-21",
+   "sentence": "A young knight slices flying apples tossed by jesters in a castle orchard",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "A small armored knight, airborne fruit, and a slicing objective fit the premise, but jesters and a recognizable castle orchard are absent, and the sparse action looks only mildly engaging."
+    },
+    "p64-quick": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.44,
+     "reason": "The knight and airborne fruit suggest the requested slicing game, but no jesters or clear castle orchard appear, and the large empty play area makes the action look thin."
+    },
+    "main-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "A small armored knight, airborne fruit, and a slicing objective fit the premise, but jesters and a recognizable castle orchard are absent, and the sparse action looks only mildly engaging."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.44,
+     "reason": "The knight and airborne fruit suggest the requested slicing game, but no jesters or clear castle orchard appear, and the large empty play area makes the action look thin."
+    }
+   }
+  },
+  {
+   "id": "s64-22",
+   "sentence": "A circus clown stacks wobbly cakes onto a tall wedding tower without letting it topple",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.22,
+     "reason": "A clown is visible, but the orange platform and rocky setting show no recognizable cakes, wedding tower, or wobbling stack, and the obstructed view makes play look confusing."
+    },
+    "p64-quick": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.2,
+     "reason": "A clown and orange platform suggest a basic interaction, but no cake tower or circus setting is apparent, and large foreground rocks obscure the action."
+    },
+    "main-after-reading": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.22,
+     "reason": "A clown is visible, but the orange platform and rocky setting show no recognizable cakes, wedding tower, or wobbling stack, and the obstructed view makes play look confusing."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.2,
+     "reason": "A clown and orange platform suggest a basic interaction, but no cake tower or circus setting is apparent, and large foreground rocks obscure the action."
+    }
+   }
+  },
+  {
+   "id": "s64-23",
+   "sentence": "A puppy catches tennis balls dropping from an apple tree in a sunny backyard",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.72,
+     "reason": "A puppy, falling tennis balls, and a leafy backyard clearly convey the catching goal, though the tree lacks visible apples and the bomb adds an unrequested threat."
+    },
+    "p64-quick": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.69,
+     "reason": "The puppy and falling tennis balls make the goal readable in a bright backyard, but the apple tree is indistinct, the bomb is an added threat, and the sparse playfield looks somewhat repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.72,
+     "reason": "A puppy, falling tennis balls, and a leafy backyard clearly convey the catching goal, though the tree lacks visible apples and the bomb adds an unrequested threat."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.69,
+     "reason": "The puppy and falling tennis balls make the goal readable in a bright backyard, but the apple tree is indistinct, the bomb is an added threat, and the sparse playfield looks somewhat repetitive."
+    }
+   }
+  },
+  {
+   "id": "s64-24",
+   "sentence": "A potion brewer combines matching bubbles into bigger potions inside a bubbling cauldron",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.36,
+     "wouldPlay": 0.38,
+     "reason": "Matching bubbles and a merge objective are visible, but the tall chute lacks a recognizable brewer or bubbling cauldron, and the sparse action looks repetitive."
+    },
+    "p64-quick": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.49,
+     "reason": "Bubbles, a potion-themed merge reward, and scoring suggest the intended combining mechanic, while impact effects add appeal, though no clear brewer or cauldron is visible."
+    },
+    "main-after-reading": {
+     "fidelity": 0.36,
+     "wouldPlay": 0.38,
+     "reason": "Matching bubbles and a merge objective are visible, but the tall chute lacks a recognizable brewer or bubbling cauldron, and the sparse action looks repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.49,
+     "reason": "Bubbles, a potion-themed merge reward, and scoring suggest the intended combining mechanic, while impact effects add appeal, though no clear brewer or cauldron is visible."
+    }
+   }
+  }
+ ],
+ "skipped": [],
+ "medians": {
+  "main-quick": {
+   "fidelity": 0.48,
+   "wouldPlay": 0.485,
+   "n": 24
+  },
+  "main-after-reading": {
+   "fidelity": 0.5,
+   "wouldPlay": 0.5,
+   "n": 24
+  },
+  "p64-quick": {
+   "fidelity": 0.51,
+   "wouldPlay": 0.57,
+   "n": 24
+  },
+  "p64-after-reading": {
+   "fidelity": 0.605,
+   "wouldPlay": 0.59,
+   "n": 24
+  }
+ },
+ "gates": [
+  {
+   "id": "G1",
+   "pass": true,
+   "parts": {
+    "quick": true,
+    "afterReading": true
+   }
+  },
+  {
+   "id": "G2",
+   "pass": true,
+   "parts": {
+    "quick": true,
+    "afterReading": true
+   }
+  },
+  {
+   "id": "G3",
+   "pass": true,
+   "diffMedianMs": -382,
+   "source": "ttp-r6.json (T8-R6)"
+  },
+  {
+   "id": "G4",
+   "pass": true,
+   "ratio": 1,
+   "scenes": [
+    {
+     "id": "runner",
+     "A": 59.880239520962,
+     "B": 59.88023952095548,
+     "ratio": 1
+    },
+    {
+     "id": "arena",
+     "A": 59.880239520962,
+     "B": 59.880239520962,
+     "ratio": 1
+    },
+    {
+     "id": "grid-collect",
+     "A": 59.880239520962,
+     "B": 59.88023952095548,
+     "ratio": 1
+    },
+    {
+     "id": "glide",
+     "A": 59.880239520962,
+     "B": 59.880239520962,
+     "ratio": 1
+    },
+    {
+     "id": "walker",
+     "A": 59.880239520962,
+     "B": 59.880239520962,
+     "ratio": 1
+    },
+    {
+     "id": "ball",
+     "A": 59.88023952095548,
+     "B": 59.88023952095548,
+     "ratio": 1
+    }
+   ],
+   "source": "e2e/play-perf.spec.ts @measure, moto-g-power-emulated, 3 opakování na stranu"
+  },
+  {
+   "id": "G5",
+   "pass": true,
+   "robot": {
+    "games": 32,
+    "chains": 5,
+    "publishEligible": 32,
+    "botWins": 32,
+    "idleLoses": 32,
+    "replayEqual": 32,
+    "matchesServer": 32
+   },
+   "hash": "src/components/play/arcade/__tests__/p64-hash.test.ts 1/1"
+  },
+  {
+   "id": "G6",
+   "pass": true,
+   "source": "README T8-R2 (čerstvé úložiště, obě strany stejně)"
+  }
+ ],
+ "verdict": {
+  "pass": true,
+  "unmet": [],
+  "text": "připraveno k sloučení"
+ },
+ "games": {
+  "main": {
+   "games": 31,
+   "saved": 31,
+   "chains": 5,
+   "publishEligible": 31
+  },
+  "p64": {
+   "games": 32,
+   "saved": 32,
+   "chains": 5,
+   "publishEligible": 32
+  }
+ },
+ "spend": {
+  "before": 3.798,
+  "r4": {
+   "main": {
+    "calls": 23,
+    "usd": 0.7684
+   },
+   "p64": {
+    "calls": 23,
+    "usd": 0.7655
+   }
+  },
+  "roundCap": 2,
+  "round": 1.534,
+  "total": 5.332
+ }
+}

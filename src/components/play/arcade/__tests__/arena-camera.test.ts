@@ -12,7 +12,7 @@
  */
 
 import { writeFileSync } from 'node:fs';
-import { PerspectiveCamera, Vector3 } from 'three';
+import { Box3, BoxGeometry, Group, Mesh, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -23,7 +23,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpec } from '@/play/draft/draft';
 
-import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal } from '../arena/arena-camera';
+import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal, bandLift, shownBox } from '../arena/arena-camera';
 import { drawnOf, partOf } from '../arena/ArenaScene';
 import { bodiesOf } from '../bodies';
 
@@ -167,5 +167,64 @@ describe('the arena camera sits closer and keeps the nearest foe in frame (P56B 
     const before = median(runs.flatMap((run) => run.before.map((frame) => frame.distance)));
     const after = median(runs.flatMap((run) => run.after.map((frame) => frame.distance)));
     expect(after).toBeLessThanOrEqual(before * 0.8);
+  });
+});
+
+describe('on a portrait phone the whole hero box sits under the HUD band (P64, bandLift)', () => {
+  // iPhone 15 na výšku: lišta cíle končí v NDC 0,70 (audit `p64-portrait-audit`).
+  const TOP = 0.7;
+  const DISTANCE = 14;
+
+  /** Kvádr těla 0,8 × `h` × 0,8 m s patou v (`x`, 0, `z`). */
+  const body = (x: number, z: number, h = 1.6): Box3 => new Box3(new Vector3(x - 0.4, 0, z - 0.4), new Vector3(x + 0.4, h, z + 0.4));
+
+  /** Kamera arény nad `aim` jako `ArenaScene`, po `bandLift` vyjetá po své ose nahoru. */
+  function shot(hero: Box3): { camera: PerspectiveCamera; lift: number } {
+    const camera = new PerspectiveCamera(50, 393 / 659, 0.1, 500);
+    camera.position.set(0, DISTANCE * STYLED_TILT.sin, -DISTANCE * STYLED_TILT.cos);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld();
+    const before = camera.quaternion.clone();
+    const lift = bandLift(hero, camera.matrixWorldInverse, Math.tan((camera.fov * Math.PI) / 360), TOP);
+    camera.position.add(new Vector3(0, 1, 0).applyQuaternion(camera.quaternion).multiplyScalar(lift));
+    camera.updateMatrixWorld();
+    expect(camera.quaternion.equals(before)).toBe(true);
+    return { camera, lift };
+  }
+
+  /** Nejvyšší a nejnižší roh kvádru v NDC. */
+  function ndcOf(camera: PerspectiveCamera, box: Box3): { top: number; bottom: number } {
+    const ys = Array.from({ length: 8 }, (_, i) => new Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).project(camera).y);
+    return { top: Math.max(...ys), bottom: Math.min(...ys) };
+  }
+
+  it('a hero framed above the band comes down until its farthest top corner is on the band edge, no further', () => {
+    // Hrdina 8 m za bodem pohledu – hrozba u kamery táhla záběr k sobě (úkol na iPhonu: temeno v NDC 0,81–0,93).
+    const hero = body(-1, 8, 1.9);
+    const { camera, lift } = shot(hero);
+    expect(lift).toBeGreaterThan(0);
+    expect(ndcOf(camera, hero).top).toBeCloseTo(TOP, 6);
+  });
+
+  it('a hero already inside the band, or not drawn yet, leaves the camera where it was', () => {
+    expect(shot(body(0, 0)).lift).toBe(0);
+    expect(shot(new Box3()).lift).toBe(0);
+  });
+
+  it('the hero box is the drawn meshes, not the body size: a model scaled past its box still counts whole', () => {
+    const hero = new Group();
+    const model = new Mesh(new BoxGeometry(1, 2, 1));
+    model.position.y = 1;
+    hero.add(model);
+    hero.scale.setScalar(1.5);
+    const outline = new Mesh(new BoxGeometry(9, 9, 9));
+    outline.userData.ink = true;
+    hero.add(outline);
+    const hidden = new Mesh(new BoxGeometry(9, 9, 9));
+    hidden.visible = false;
+    hero.add(hidden);
+    const box = shownBox(hero, new Box3());
+    expect(box.max.y).toBeCloseTo(3, 6);
+    expect(box.max.x).toBeCloseTo(0.75, 6);
   });
 });

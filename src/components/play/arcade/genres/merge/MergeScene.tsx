@@ -19,7 +19,7 @@
 import { Html } from '@react-three/drei/web/Html';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { BoxGeometry, type BufferGeometry, type Group, type InstancedMesh, type Material, Matrix4, type Mesh, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Quaternion, SphereGeometry, Vector3 } from 'three';
+import { Box3, BoxGeometry, type BufferGeometry, type Group, type InstancedMesh, type Material, Matrix4, type Mesh, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Quaternion, SphereGeometry, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, nativeRule, unpackRotation } from '@/play/arcade/contract';
@@ -32,6 +32,7 @@ import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { loadBodyModel } from '../../look/load';
+import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps, fitModel } from '../../World';
 import { useMergeInput } from './merge-input';
@@ -62,6 +63,25 @@ const PREVIEW = { x: MERGE.half - 450, y: MERGE.lid + 1700, scale: 0.55 } as con
 const OVER_WARN = 12;
 /** Kamera: co se musí vejít (m) a kam kouká. */
 const FRAME = { halfWidth: HALF + WALL + 0.35, bottom: -0.4, top: DROPPER_Y + HERO.h + 0.5, elevation: 0.08 } as const;
+/**
+ * Na výšku telefonu (P64 T3): nádoba s dávkovačem je vyšší než široká, přes `fitTall` vyplní `playRect` a dávkovač
+ * zůstane pod horním pásem HUD. Do stran celá nádoba, okraj za ní smí ven. `TALL_HERO` = vizuální měřítko dávkovače
+ * na výšku: na iPhonu 15 (výšku drží nádoba) by jinak klesl pod 0,9 plochy auditu T1 (0,0421 proti 0,0582), kde ale
+ * ležel pod lištou cíle. Předmětů se nedotýká, nic neklame. Krabice nechá nad dávkovačem dvojí jeho výšku: postava
+ * v póze (obdélník sondy) je vyšší než kvádr `HERO` a s 1,2× ležela pod lištou cíle (`underHud` 1 na obou telefonech).
+ */
+const TALL_HERO = 1.25;
+const TALL_BOX = new Box3(new Vector3(-FRAME.halfWidth, FRAME.bottom, -DEPTH / 2 - WALL), new Vector3(FRAME.halfWidth, DROPPER_Y + HERO.h * TALL_HERO * 2, DEPTH / 2 + WALL));
+const TALL_KEEP = new Box3(new Vector3(-HALF - WALL, 0, -DEPTH / 2), new Vector3(HALF + WALL, DROPPER_Y + HERO.h, DEPTH / 2));
+const TALL_LOOK = TALL_BOX.getCenter(new Vector3());
+const TALL_DIR = new Vector3(0, FRAME.elevation, -1).normalize();
+
+/** Kamera slučování na výšku: zepředu jako na šířku, pak přes `fitTall` do `playRect`. */
+function placeTall(camera: PerspectiveCamera, rect: PlayRect): Vector3 {
+  camera.position.copy(TALL_LOOK).addScaledVector(TALL_DIR, 20);
+  camera.lookAt(TALL_LOOK);
+  return fitTall(camera, TALL_BOX, rect, { keep: TALL_KEEP }).position;
+}
 
 type MergeSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -193,6 +213,9 @@ export function MergeScene({ session, cast, surface, scene: look, enabled, ghost
     }),
     [],
   );
+  const playRect = usePlayRectRef();
+  const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3 } | null>(null);
+  const heroScaled = useRef(1);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -211,6 +234,14 @@ export function MergeScene({ session, cast, surface, scene: look, enabled, ghost
     const player = state[HEADER.player] as number;
     const dropperX = -m(lerp(player, BODY.x));
     hero.current?.position.set(dropperX, DROPPER_Y, 0);
+    // Na výšku telefonu `playRect` (P64 T3), jinak `null`; měřítko dávkovače se zapíše jen při změně (čitelnost
+    // `LegibleBodies` ho vezme za nový základ).
+    const rect = camera.aspect < 1 ? playRect.current : null;
+    const heroScale = rect !== null ? TALL_HERO : 1;
+    if (hero.current !== null && heroScaled.current !== heroScale) {
+      hero.current.scale.setScalar(heroScale);
+      heroScaled.current = heroScale;
+    }
 
     for (const slots of scratch.levels) slots.count = 0;
     scratch.stones.count = 0;
@@ -272,12 +303,20 @@ export function MergeScene({ session, cast, surface, scene: look, enabled, ghost
     lidMaterial.emissiveIntensity = over ? 0.4 + 0.4 * Math.abs(Math.sin(clock.current * 10)) : 0;
     if (fullTag.current !== null) fullTag.current.style.visibility = over && running ? 'visible' : 'hidden';
 
-    // Kamera zepředu: na výšku telefonu rozhoduje šíře nádoby, na šířku výška od dna po hrdinu.
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const midY = (FRAME.top + FRAME.bottom) / 2;
-    const distance = Math.max((FRAME.top - FRAME.bottom) / 2 / tan, FRAME.halfWidth / (tan * camera.aspect)) + DEPTH;
-    camera.position.set(0, midY + distance * FRAME.elevation, -distance);
-    camera.lookAt(scratch.look.set(0, midY, 0));
+    if (rect !== null) {
+      // Na výšku telefonu (P64 T3) do `playRect`; spočítá se jen při změně obdélníku nebo poměru stran.
+      const cached = tallFrame.current;
+      if (cached === null || cached.rect !== rect || cached.aspect !== camera.aspect) tallFrame.current = { rect, aspect: camera.aspect, position: placeTall(camera, rect) };
+      camera.position.copy(tallFrame.current!.position);
+      camera.lookAt(scratch.look.copy(tallFrame.current!.position).addScaledVector(TALL_DIR, -1));
+    } else {
+      // Kamera zepředu: na výšku telefonu rozhoduje šíře nádoby, na šířku výška od dna po hrdinu.
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const midY = (FRAME.top + FRAME.bottom) / 2;
+      const distance = Math.max((FRAME.top - FRAME.bottom) / 2 / tan, FRAME.halfWidth / (tan * camera.aspect)) + DEPTH;
+      camera.position.set(0, midY + distance * FRAME.elevation, -distance);
+      camera.lookAt(scratch.look.set(0, midY, 0));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

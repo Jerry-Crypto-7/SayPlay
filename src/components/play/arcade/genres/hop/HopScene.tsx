@@ -14,6 +14,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  Box3,
   BoxGeometry,
   BufferGeometry,
   Color,
@@ -41,6 +42,7 @@ import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { loadBodyModel } from '../../look/load';
+import { FIT_MARGIN_PX, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps, fitModel } from '../../World';
 import { useHopInput } from './hop-input';
@@ -64,6 +66,14 @@ const RUN_OUT = 10;
 const EAGLE_WARN = 90;
 /** Kamera: polovina šíře, která se musí vejít, náklon, rozsah vzdálenosti a kam před hrdinu kouká. */
 const CAMERA = { fit: HALF + 0.6, elevation: (58 * Math.PI) / 180, near: 9, far: 26, ahead: 2.6, follow: 5 } as const;
+/**
+ * Kamera na výšku (P64 T4, `fitTall`): pole běží nahoru po obrazovce. Celá šíře pole v řadě hrdiny vyplní šířku
+ * plátna (`keep`), hrdina stojí `behind` m nad spodní hranou krabice záběru a nad ním je `reach` z délky pole, která
+ * by se při téže šířce vešla do výšky `playRect` (perspektiva vzdálené řady zmenší, takže výšku nerozhoduje). Dřív
+ * stál hrdina uprostřed obrazovky a spodních 40 % byla tráva za ním. Ne strměji: hrdina je velký, jak dovolí šíře
+ * pole, a plošší pohled mu dá o pár procent víc výšky v obraze (P61 hlídá jeho podíl).
+ */
+const TALL = { elevation: (48 * Math.PI) / 180, behind: 0.75, reach: 0.7 } as const;
 /**
  * Nejbližší vozidlo pro sondu záběru (P58A T4): jen na poli (střed uvnitř krajních sloupců) a v řadě hrdiny
  * nebo nejvýš `NEAR_ROWS` před ním – dál už je za horním okrajem. Cíl cesty se počítá od stejné vzdálenosti.
@@ -298,9 +308,12 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
       size: new Vector3(),
       look: new Vector3(),
       probe: new Vector3(),
+      box: new Box3(),
+      keep: new Box3(),
     }),
     [rails],
   );
+  const playArea = usePlayRectRef();
   const heroRig = riggedCharacter(cast.player);
   const carModel = cast.props.obstacle ?? 'cc0-car-sedan';
   const truckModel = cast.props.obstacle ?? 'cc0-garbage-truck';
@@ -399,14 +412,31 @@ export function HopScene({ session, cast, surface, scene: look, enabled, ghost }
       shadow.current.scale.setScalar(0.3 + 0.9 * swoop);
     }
 
-    // Kamera za hrdinou: na výšku rozhoduje šíře pole, na šířku strop vzdálenosti.
+    // Kamera za hrdinou: na výšku `TALL` přes `fitTall`, bez změřeného `playRect` šíře pole, na šířku strop vzdálenosti.
     if (follow.current === null || Math.abs(follow.current - heroZ) > 12) follow.current = heroZ;
     follow.current += (heroZ - follow.current) * (1 - Math.exp(-delta * CAMERA.follow));
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const distance = Math.max(CAMERA.near, Math.min(CAMERA.far, CAMERA.fit / (tan * camera.aspect)));
-    const lookZ = follow.current + CAMERA.ahead;
-    camera.position.set(0, distance * Math.sin(CAMERA.elevation), lookZ - distance * Math.cos(CAMERA.elevation));
-    camera.lookAt(scratch.look.set(0, 0, lookZ));
+    const rect = playArea.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Výška `playRect` v metrech u hrdiny, když šíře pole vyplní šířku plátna; tolik pole se vejde nad hrdinu.
+      const across = (2 * HALF) / (1 - (2 * FIT_MARGIN_PX) / rect.canvas.width);
+      const high = ((across / camera.aspect) * (rect.ndc.top - rect.ndc.bottom)) / 2;
+      const ahead = Math.min(AHEAD * CELL, (TALL.reach * (high - HERO.h * Math.cos(TALL.elevation))) / Math.sin(TALL.elevation) - TALL.behind);
+      const from = follow.current - TALL.behind;
+      const lookZ = from + (TALL.behind + ahead) / 2;
+      camera.position.set(0, CAMERA.far * Math.sin(TALL.elevation), lookZ - CAMERA.far * Math.cos(TALL.elevation));
+      camera.lookAt(scratch.look.set(0, 0, lookZ));
+      scratch.box.min.set(-HALF, 0, from);
+      scratch.box.max.set(HALF, CAR_BOX[1], follow.current + ahead);
+      scratch.keep.min.set(-HALF, 0, follow.current);
+      scratch.keep.max.set(HALF, 0, follow.current);
+      camera.position.copy(fitTall(camera, scratch.box, rect, { keep: scratch.keep }).position);
+    } else {
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const distance = Math.max(CAMERA.near, Math.min(CAMERA.far, CAMERA.fit / (tan * camera.aspect)));
+      const lookZ = follow.current + CAMERA.ahead;
+      camera.position.set(0, distance * Math.sin(CAMERA.elevation), lookZ - distance * Math.cos(CAMERA.elevation));
+      camera.lookAt(scratch.look.set(0, 0, lookZ));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

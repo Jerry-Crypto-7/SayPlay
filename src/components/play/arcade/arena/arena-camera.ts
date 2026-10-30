@@ -4,6 +4,10 @@
  * bez plátna. Jen kresba: stav, hash ani robot se nemění.
  */
 
+import { Box3, type Matrix4, type Mesh, type Object3D, Vector3 } from 'three';
+
+import { isInk } from '../look/rig/InkOutline';
+
 /** Sklon kamery nad vodorovnou (sin, cos). */
 export interface Tilt {
   readonly sin: number;
@@ -191,6 +195,46 @@ export function arenaGoal(view: ArenaView, framing: ArenaFraming): { readonly go
   if (Math.hypot(threat.at.x - view.hero.x, threat.at.z - view.hero.z) >= THREAT_M) return { goal: view.lead, framed: false };
   const mid = { x: (view.lead.x + threat.at.x) / 2, z: (view.lead.z + threat.at.z) / 2 };
   return Math.max(heroReach(view, mid), centreReach(view, mid)) <= limit ? { goal: mid, framed: 'centre' } : { goal: view.lead, framed: false };
+}
+
+const corner = new Vector3();
+const meshBox = new Box3();
+
+/**
+ * Kvádr viditelných sítí těla ve světě – tytéž sítě jako sonda `__playFrame` (bez obrysu). Kvádr kreslení krát
+ * `legible` model podcení: hrdina úkolu na iPhonu s měřítkem 1 přečníval o 0,1 NDC. Riggovaná síť klidovou geometrií,
+ * ne pózou kostí (`posedBox` sondy stojí na telefonu jednotky ms za snímek): u hrdiny úkolu o ~0,05 NDC výš než póza,
+ * hrdina tak stojí o kousek níž, nikdy pod lištou.
+ */
+export function shownBox(object: Object3D, out: Box3): Box3 {
+  out.makeEmpty();
+  object.updateWorldMatrix(true, true);
+  object.traverseVisible((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true || isInk(mesh)) return;
+    if (mesh.geometry.boundingBox === null) mesh.geometry.computeBoundingBox();
+    out.union(meshBox.copy(mesh.geometry.boundingBox!).applyMatrix4(mesh.matrixWorld));
+  });
+  return out;
+}
+
+/**
+ * Na výšku (P64): o kolik metrů vyjet kamerou po její ose nahoru (obraz jede dolů, vzdálenost ani hrdina se nemění),
+ * aby celý kvádr hrdiny (`shownBox`, prostor kamery `view`, −z dopředu) ležel pod horním pásem HUD `top` (NDC) – řešič
+ * záběru počítá s pevným `TALL_TOP` 0,8 a lišta cíle končí níž (iPhone 15 v 0,70), hrozba u kamery pak temeno úkolu
+ * vytlačila pod ni. Jen hrdina: posun i pro taženou hrozbu nad pásem vystrčil ducha za hrdinou dolů z obrazu
+ * (`p58a-framing` arena.escape na iPhonu, README P64). Nikdy dolů: hrdina pod ovládáním palce je věc vzdálenosti.
+ * Prázdný kvádr nebo roh za kamerou → 0.
+ */
+export function bandLift(hero: Box3, view: Matrix4, tan: number, top: number): number {
+  if (hero.isEmpty()) return 0;
+  let lift = 0;
+  for (let i = 0; i < 8; i += 1) {
+    corner.set(i & 1 ? hero.max.x : hero.min.x, i & 2 ? hero.max.y : hero.min.y, i & 4 ? hero.max.z : hero.min.z).applyMatrix4(view);
+    if (corner.z >= 0) return 0;
+    lift = Math.max(lift, corner.y + top * tan * corner.z);
+  }
+  return lift;
 }
 
 /**

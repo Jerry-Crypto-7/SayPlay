@@ -23,7 +23,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { Color, type Mesh, type MeshBasicMaterial, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, Color, type Mesh, type MeshBasicMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { type ArcadeWorld, BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
@@ -36,6 +36,7 @@ import type { HeroAction } from '@/play/spec';
 import type { TargetBody } from '../arena/TargetsMount';
 import type { Burst } from '../effects/particles';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
+import { FIT_MARGIN_PX, fitTall, usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
 
 /** Co stanoviště potřebuje od scény arény: relaci (stav, pult z úrovně), sadu (barvy pultu) a činnost hrdiny (P37-0 T2). */
@@ -81,6 +82,9 @@ const ROW_MARGIN_M = 1;
 const FOLLOW = 5;
 /** Bod pohledu leží tolik před středem pultu (k hrdinovi). */
 const AIM_FRONT_M = 0.3;
+/** Na výšku (P64 T4) se do `playRect` vejde hrdina před pultem (z od −`z`, výška `h`, m) a věci na desce (`STATION_TOP_M` nad ní). */
+const HERO_ROOM = { z: 0.6, h: 1.8 } as const;
+const STATION_TOP_M = 0.5;
 
 const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
@@ -205,6 +209,9 @@ function ReadyRing({ session, interact, target, burst }: { readonly session: Arc
 function StationCamera({ session, counter, targets }: { readonly session: ArcadeSession; readonly counter: Box; readonly targets: readonly TargetBody[] }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const aim = useMemo(() => new Vector3(), []);
+  const bench = useMemo(() => new Box3(), []);
+  const row = useMemo(() => new Box3(), []);
+  const playArea = usePlayRectRef();
   const follow = useRef<number | null>(null);
   const introClock = useIntroClock();
 
@@ -225,6 +232,19 @@ function StationCamera({ session, counter, targets }: { readonly session: Arcade
     aim.set(x, counter.y + counter.h, counter.z - AIM_FRONT_M);
     camera.position.set(aim.x, aim.y + distance * Math.sin(PITCH), aim.z - distance * Math.cos(PITCH));
     camera.lookAt(aim);
+    const rect = playArea.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku (P64 T4): úsek pultu, který kamera do stran vidí, i s hrdinou před ním leží v `playRect` – nad tlačítkem
+      // „Use“ a pod HUD. Do stran se záběr nemění. Bod pohledu jede s kamerou, ať průlet míří tam, kam herní pohled.
+      const reach = distance * tan * camera.aspect * (1 - (2 * FIT_MARGIN_PX) / rect.canvas.width);
+      bench.min.set(x - reach, counter.y, -HERO_ROOM.z);
+      bench.max.set(x + reach, Math.max(counter.y + counter.h + STATION_TOP_M, HERO_ROOM.h), counter.z + counter.d / 2);
+      row.min.set(x - reach, aim.y, aim.z);
+      row.max.set(x + reach, aim.y, aim.z);
+      const fit = fitTall(camera, bench, rect, { keep: row }).position;
+      aim.add(fit).sub(camera.position);
+      camera.position.copy(fit);
+    }
     applyIntro(camera, aim, introLeft(introClock()));
     camera.updateMatrixWorld();
   });

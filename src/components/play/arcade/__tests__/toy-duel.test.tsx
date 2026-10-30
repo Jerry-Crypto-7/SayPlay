@@ -31,6 +31,8 @@ vi.mock('react', async (importOriginal) => {
     useMemo: (make: () => unknown) => make(),
     useRef: (current: unknown) => ({ current }),
     useEffect: () => undefined,
+    // Kontext bez poskytovatele = jeho výchozí hodnota (`usePlayRectRef` → `{ current: null }`, P64 T4).
+    useContext: (context: { _currentValue: unknown }) => context._currentValue,
   };
 });
 type Frame = (state: unknown, delta: number) => void;

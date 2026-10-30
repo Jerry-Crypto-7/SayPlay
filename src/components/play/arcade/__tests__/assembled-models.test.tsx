@@ -14,7 +14,7 @@ import type { ArcadeSession } from '../session';
 
 vi.mock('react', async original => ({...(await original<typeof import('react')>()),
  useState:(v:unknown)=>[typeof v==='function'?(v as ()=>unknown)():v,()=>undefined], useMemo:(f:()=>unknown)=>f(),useRef:(v:unknown)=>({current:v}),useEffect:()=>undefined,
- useSyncExternalStore:(_s:unknown,s:()=>unknown)=>s(),
+ useSyncExternalStore:(_s:unknown,s:()=>unknown)=>s(),useContext:(c:{_currentValue:unknown})=>c._currentValue,
 }));
 vi.mock('@react-three/fiber',async original=>({...await original<typeof import('@react-three/fiber')>(),useFrame:()=>undefined,useThree:(f:(v:{camera:PerspectiveCamera})=>unknown)=>f({camera:new PerspectiveCamera()})}));
 const cast={player:'fox',enemy:'robot',chaser:'bear',props:{},things:{part_0:'fish'}};

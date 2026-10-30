@@ -1,10 +1,33 @@
-import type { PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type PerspectiveCamera, type Vector3 } from 'three';
 import { BODY, UNIT, bodyBase, type ArcadeState } from '@/play/arcade/contract';
 import { walkerCell, type WalkerMap } from '@/play/arcade/pieces/walker';
 
+import type { PlayRect } from '../portrait-frame';
+import { fitChase } from '../track-camera';
+
+/**
+ * Bludiště na výšku (P64 T5): kamera vysoko nad hrdinou (`up`) a `back` m za ním, míří `ahead` m před něj. Do
+ * `playRect` se vejde okolí hrdiny `half` m do stran, od `behind` m za ním po `depth` m před ním – chodba a strážný
+ * v ní. Vzdálenost a posun dává `fitChase`. Šíře je na hraně: strážný o dvě buňky vedle (7,9 m) má zůstat v bezpečné
+ * zóně `p58a-framing` a každý metr navíc kameru odsune a zmenší hrdinu (shora je to skoro jen jeho půdorys).
+ */
+export const WALKER_TALL = { up: 28, back: 8, ahead: 2, half: 7.2, behind: 4, depth: 12, top: 2 } as const;
+
+const maze = new Box3();
+
 /** Same rendered metre coordinates as World: x is mirrored, z is unchanged. */
-export function placeWalker(camera: PerspectiveCamera, look: Vector3, x: number, z: number): void {
-  camera.position.set(x, camera.aspect < 1 ? 28 : 20, z - 8);
+export function placeWalker(camera: PerspectiveCamera, look: Vector3, x: number, z: number, rect: PlayRect | null = null): void {
+  if (camera.aspect < 1) {
+    const view = WALKER_TALL;
+    camera.position.set(x, view.up, z - view.back);
+    look.set(x, 0, z + view.ahead);
+    camera.lookAt(look);
+    maze.min.set(x - view.half, 0, z - view.behind);
+    maze.max.set(x + view.half, view.top, z + view.depth);
+    fitChase(camera, look, maze, rect);
+    return;
+  }
+  camera.position.set(x, 20, z - 8);
   look.set(x, 0, z + 2);
   camera.lookAt(look);
 }

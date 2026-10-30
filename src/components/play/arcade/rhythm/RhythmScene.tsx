@@ -16,7 +16,7 @@ import { renderHeld } from '../effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
@@ -33,6 +33,7 @@ import type { Box } from '../look/ground';
 import { Landmark } from '../look/Landmark';
 import type { Volume } from '../look/landmark-places';
 import { Scenery } from '../look/Scenery';
+import { fitTall, usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
 import { type BodyModel, beatPoseOf, initialBody } from '../timing/TimingScene';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
@@ -55,6 +56,13 @@ const LANES_PLAY: readonly Volume[] = [{ x0: -(RHYTHM.lanes * RHYTHM.laneW) / UN
 const HERO_M = { w: 0.8, h: 1.5, d: 0.6 };
 const HERO_GAP_M = 0.7;
 const HERO_Z_M = 0.6;
+/**
+ * Na výšku (P64 T4, `fitTall`): strměji (`pitch`) na bod `look` m za lištou, lišta s `side` m po stranách vyplní šířku
+ * plátna a pruhy `ahead` m před ní se vejdou do `playRect` pod HUD – pruhy běží nahoru po obrazovce až k obzoru. Bod
+ * pohledu na 9 m (šířka) by lištu na iPhonu stlačil ke spodní hraně a kamera by kvůli ní couvla (lišta 0,107 místo
+ * 0,136 plochy).
+ */
+const TALL = { side: 0.2, ahead: 8, pitch: (24 * Math.PI) / 180, look: 7 } as const;
 
 /** Hranice mezi pruhy (0|1, 1|2, 2|3) v `x` noty, jednotky jádra; kreslí se zrcadlově (`-x`). */
 const LANE_EDGES = Array.from({ length: RHYTHM.lanes - 1 }, (_, i) => (i + 1 - RHYTHM.lanes / 2) * RHYTHM.laneW);
@@ -95,6 +103,9 @@ export function RhythmScene({
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
   const edge = useMemo(() => new Vector3(), []);
+  const lanes = useMemo(() => new Box3(), []);
+  const atBar = useMemo(() => new Box3(), []);
+  const playArea = usePlayRectRef();
   // Okno čte základní ovládání: nad průběhem (P45C T14) je ovládání světa `pacing_control`.
   const hitWindow = (baseControlOf(world.control).params as { window?: number }).window ?? RHYTHM.window;
   const reach = hitWindow * RHYTHM.noteSpeed;
@@ -139,11 +150,25 @@ export function RhythmScene({
       toyPose.current = pose;
       applyToy({ group: hero }, pose, HERO_M.h);
     }
-    // Na výšku (mobil) kamera ustoupí a zvedne se, ať jsou vidět všechny čtyři pruhy u lišty.
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const back = Math.max(4.5, (bar.w + 0.8) / (2 * tan * camera.aspect) - 1);
-    camera.position.set(0, 3.2 * (back / 4.5), -back);
-    camera.lookAt(look);
+    const rect = playArea.current;
+    if (camera.aspect < 1 && rect !== null) {
+      // Na výšku (P64 T4): strmější pohled, lišta se všemi pruhy přes šířku plátna, pruhy před ní nahoru po obrazovce.
+      // Výchozí vzdálenost je jedno – `fitTall` kameru posune po ose pohledu, kam má být.
+      camera.position.set(0, 10 * Math.sin(TALL.pitch), TALL.look - 10 * Math.cos(TALL.pitch));
+      camera.lookAt(0, 0, TALL.look);
+      const half = bar.w / 2 + TALL.side;
+      lanes.min.set(-half, 0, -bar.d / 2 - TALL.side);
+      lanes.max.set(half, bar.h, TALL.ahead);
+      atBar.min.set(-half, 0, -bar.d / 2);
+      atBar.max.set(half, bar.h, bar.d / 2);
+      camera.position.copy(fitTall(camera, lanes, rect, { keep: atBar }).position);
+    } else {
+      // Bez změřeného `playRect` (a na mobilu dřív) kamera na výšku ustoupí a zvedne se, ať jsou vidět všechny čtyři pruhy u lišty.
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const back = Math.max(4.5, (bar.w + 0.8) / (2 * tan * camera.aspect) - 1);
+      camera.position.set(0, 3.2 * (back / 4.5), -back);
+      camera.lookAt(look);
+    }
     const host = surface?.current;
     if (host != null) {
       camera.updateMatrixWorld();

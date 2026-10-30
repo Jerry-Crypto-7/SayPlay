@@ -14,7 +14,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { type Group, IcosahedronGeometry, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Group, IcosahedronGeometry, type PerspectiveCamera, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
@@ -26,6 +26,7 @@ import { LANES, laneX } from '@/play/arcade/pieces/lanes';
 
 import { renderHeld } from '../../effects/render-feel';
 import type { GhostPlacement } from '../../Ghost';
+import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
@@ -46,11 +47,74 @@ const VIEW = { bottom: -0.4, top: CANOPY.bottom + CANOPY.h + 0.4 };
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
 /** Kolik volné výšky (na výšku telefonu) jde nad korunu místo pod zem. */
 const SKY_SHARE = 0.25;
+/**
+ * Na výšku telefonu (P64 T3): šíři obrazu drží pět pruhů, takže výšku pádu nejde zvětšit kamerou. Pád nad lapací
+ * čárou se proto natáhne do výšky `playRect` – ovoce padá od horní hrany jako na šířku, v témž počtu tiků; jádro
+ * ani hash to nevidí. Nejvýš tolikrát.
+ */
+const TALL_STRETCH = 2.6;
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
 /** Hranice mezi pruhy l | l+1 v x jádra; kreslí se zrcadlově. */
 const LANE_EDGES = Array.from({ length: LANES.count - 1 }, (_, lane) => laneX(lane) + LANES.width / 2);
+
+/** Výška pádu nad lapací čárou až po spodek koruny (m). */
+const FALL = CANOPY.bottom - CATCH_M;
+/** Kolik natažení pádu jde do zrychlení: na výšku věc nahoře padá pomaleji a k hrdinovi rychleji, jako volný pád. */
+const BEND = 0.5;
+
+/**
+ * Výška ve scéně z výšky jádra: nad lapací čárou natažená o `stretch` (na šířku 1 = beze změny), pod ní beze změny.
+ * Natažený pád se ohne (`BEND`, nejvýš 0,5): věc je dál nahoře déle a zrychluje k hrdinovi, horní a dolní kraj pádu
+ * i počet tiků zůstávají.
+ */
+function lifted(y: number, stretch: number): number {
+  if (y <= CATCH_M || stretch === 1) return y;
+  const u = Math.min(1, (y - CATCH_M) / FALL);
+  const bend = Math.min(BEND, (stretch - 1) * BEND);
+  return CATCH_M + (y - CATCH_M) * stretch + FALL * stretch * bend * u * (1 - u);
+}
+
+/**
+ * Rámování na výšku (P64 T3): co se vejít musí – do stran celé pruhy (`keep`), svisle od nohou hrdiny po spodek
+ * koruny nataženého pádu (nejvyšší místo, kde je věc vidět); okraj za pruhy, zem pod nohama a koruna smějí ven.
+ */
+function tallBoxes(stretch: number): { readonly box: Box3; readonly keep: Box3 } {
+  const top = lifted(CANOPY.bottom, stretch);
+  return {
+    box: new Box3(new Vector3(-FIELD_HALF - 0.5, -0.1, -HERO.d / 2), new Vector3(FIELD_HALF + 0.5, top, HERO.d / 2)),
+    keep: new Box3(new Vector3(-FIELD_HALF, 0, -HERO.d / 2), new Vector3(FIELD_HALF, top, HERO.d / 2)),
+  };
+}
+
+/**
+ * Kamera chytání na výšku: zepředu jako na šířku a přes `fitTall` do `playRect`, pád natažený tak, aby ho svisle
+ * nevázalo nic víc než šíře pruhů. Největší natažení hledá půlením: dokud se pád vejde kamerou, kterou drží
+ * pruhy, vzdálenost se nezmění.
+ */
+function placeTall(camera: PerspectiveCamera, rect: PlayRect): { readonly position: Vector3; readonly stretch: number } {
+  // Bod pohledu uprostřed krabice: `fitTall` ho posadí doprostřed `playRect` a krabice se rozloží na obě strany.
+  const fit = (stretch: number) => {
+    const { box, keep } = tallBoxes(stretch);
+    const y = (box.min.y + box.max.y) / 2;
+    camera.position.set(0, y, -10);
+    camera.lookAt(0, y, 0);
+    return fitTall(camera, box, rect, { keep });
+  };
+  const lanes = fit(1);
+  let low = 1;
+  let high = TALL_STRETCH;
+  if (fit(high).distance <= lanes.distance + 1e-6) low = high;
+  else {
+    for (let step = 0; step < 12; step += 1) {
+      const mid = (low + high) / 2;
+      if (fit(mid).distance <= lanes.distance + 1e-6) low = mid;
+      else high = mid;
+    }
+  }
+  return { position: fit(low).position, stretch: low };
+}
 
 type CatchSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -156,6 +220,9 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look3 = useMemo(() => new Vector3(), []);
   const probe = useMemo(() => new Vector3(), []);
+  const playRect = usePlayRectRef();
+  const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3; readonly stretch: number } | null>(null);
+  const canopy = useRef<Group | null>(null);
   const heroRig = riggedCharacter(cast.player);
   // Duch dřívějšího běhu jezdí po pruzích svého běhu kousek za rovinou hrdiny (dál od kamery), čelem ke kameře.
   const ghostSpot = useCallback((pose: GhostPose): GhostPlacement => [-pose.x / UNIT, 0, HERO.d, Math.PI], []);
@@ -172,21 +239,34 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
     const heroX = -at(player, BODY.x);
     hero.current?.position.set(heroX, 0, 0);
     moving.current = state[bodyBase(player) + BODY.x] !== prev[bodyBase(player) + BODY.x];
+    // Na výšku telefonu rámuje `playRect` (P64 T3); spočítá se jen při změně obdélníku nebo poměru stran.
+    const rect = playRect.current;
+    const cached = tallFrame.current;
+    if (camera.aspect >= 1 || rect === null) tallFrame.current = null;
+    else if (cached === null || cached.rect !== rect || cached.aspect !== camera.aspect) tallFrame.current = { rect, aspect: camera.aspect, ...placeTall(camera, rect) };
+    const tall = tallFrame.current;
+    const stretch = tall?.stretch ?? 1;
     for (const thing of things) {
       const group = groups.current[thing.index];
       if (group === null || group === undefined) continue;
       const base = bodyBase(thing.index);
       group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && catchInView(state, thing.index);
-      if (group.visible) group.position.set(-at(thing.index, BODY.x), at(thing.index, BODY.y), 0);
+      if (group.visible) group.position.set(-at(thing.index, BODY.x), lifted(at(thing.index, BODY.y), stretch), 0);
     }
-    // Na výšku rozhoduje šíře pruhů, na šířku výška pádu; volná výška jde z větší části pod zem (pole před hrdinou).
-    const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const needed = (VIEW.top - VIEW.bottom) / 2;
-    const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
-    const spare = distance * tan - needed;
-    const y = (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE;
-    camera.position.set(0, y, -distance);
-    camera.lookAt(look3.set(0, y, 0));
+    canopy.current?.position.set(0, lifted(CANOPY.bottom, stretch) - CANOPY.bottom, 0);
+    if (tall !== null) {
+      camera.position.copy(tall.position);
+      camera.lookAt(look3.set(tall.position.x, tall.position.y, 0));
+    } else {
+      // Na výšku rozhoduje šíře pruhů, na šířku výška pádu; volná výška jde z větší části pod zem (pole před hrdinou).
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const needed = (VIEW.top - VIEW.bottom) / 2;
+      const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
+      const spare = distance * tan - needed;
+      const y = (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE;
+      camera.position.set(0, y, -distance);
+      camera.lookAt(look3.set(0, y, 0));
+    }
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();
@@ -202,7 +282,9 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={24} />
       {/* Světlá deska (P55 T5) s lemem a spárami povrchu sady (P56B T11): ovoce, bomby i bonusy na ní čtou dál než na zelené. */}
       <LaneStrips look={look} z0={-1.5} z1={1.5} light={BOARD_LIGHT} fill={BOARD} />
-      <Canopy tint={look.flora?.leaf ?? look.tint[0]} />
+      <group ref={canopy}>
+        <Canopy tint={look.flora?.leaf ?? look.tint[0]} />
+      </group>
       <group ref={hero} userData={{ frame: 'hero' }}>
         {/* Kamera kouká po +z: hrdina se otočí čelem k ní. */}
         <group rotation={[0, Math.PI, 0]}>

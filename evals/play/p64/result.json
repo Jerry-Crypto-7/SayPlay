@@ -1,0 +1,1790 @@
+{
+ "schema": "p64-result.v1",
+ "task": "P64 T8 sealed portrait gate: main vs P64 on shared phone sheets (9:16), blind judge",
+ "holdout": {
+  "file": "evals/play/p64/holdout.json",
+  "sha256": "77c23c1f50f1a6588eb5538a75d54d801a6b754af92394a0c64bcd01b447d624",
+  "openedAt": "2026-10-29T14:03:04.057Z",
+  "commit": "7b6fc80e",
+  "sentences": 24
+ },
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": "e661855c",
+   "measuredAt": "2026-10-28T17:42:23.401Z",
+   "base": "http://127.0.0.1:3165"
+  },
+  {
+   "name": "p64",
+   "label": "p64",
+   "commit": "7b6fc80e",
+   "measuredAt": "2026-10-29T14:27:16.315Z",
+   "base": "http://127.0.0.1:3164"
+  }
+ ],
+ "judge": {
+  "name": "codex exec",
+  "view": "phone",
+  "seed": 61026,
+  "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+  "concurrency": 1,
+  "calls": 24,
+  "judgedAt": "2026-10-29T14:27:52.299Z"
+ },
+ "plan": [
+  {
+   "id": "p64-01",
+   "sentence": "A paperboy sprints down a rainy avenue at dawn, dodging barking dogs and open manholes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-02",
+   "sentence": "A stuntman climbs the scaffolding of a half-built skyscraper while loose bricks tumble down",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-03",
+   "sentence": "A retired wrestler brawls with mutant raccoons in the parking lot of an abandoned cinema",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-04",
+   "sentence": "A hot air balloon pilot steers over snowy peaks, dodging thunderclouds on the way to the summit festival",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-05",
+   "sentence": "A volunteer firefighter douses grass fires spreading across a windy hillside farm",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-06",
+   "sentence": "A space trucker fires at hungry barnacles clinging to the hull of her cargo ship",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-07",
+   "sentence": "A grumpy wizard hurls fireballs at stone golems in a crumbling mountain pass",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-08",
+   "sentence": "A circus strongman stacks wobbly crates as high as the tent roof without letting them topple",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-09",
+   "sentence": "A shy penguin dances on a frozen lake to win over the whole colony",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-10",
+   "sentence": "Two rival chefs duel with wooden spoons on a rooftop restaurant at sunset",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-11",
+   "sentence": "A clumsy baby owl flaps between tall pine trees on its first night out of the nest",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-12",
+   "sentence": "A sleepy bear catches falling honeycombs in a wooden bucket under a buzzing beehive",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-13",
+   "sentence": "A gardener bonks cheeky gophers popping up between the cabbage rows",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-14",
+   "sentence": "A lone shepherd defends the hilltop village from packs of hungry wolves through a long winter night",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-15",
+   "sentence": "A grandma with a kitchen knife slices flying apples flung over the orchard fence by a prankster",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-16",
+   "sentence": "A duckling crosses a busy highway full of trucks to reach the pond on the other side",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-17",
+   "sentence": "A tiny knight grows his army by marching through magic gates on a long castle road",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-18",
+   "sentence": "Drop glowing slime blobs into a glass tank so matching colors fuse into bigger blobs",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-19",
+   "sentence": "A plump walrus shoves noisy seals off a shrinking ice floe in the arctic sea",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-20",
+   "sentence": "A tortoise in a hurry crosses a four-lane freeway packed with honking buses",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-21",
+   "sentence": "A wizard's apprentice combines matching potion bottles into stronger elixirs inside a cauldron",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p64-22",
+   "sentence": "Two beetles bump each other off the edge of a mossy tree stump",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-23",
+   "sentence": "A lumberjack chops pinecones launched into the air by a grumpy squirrel",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p64-reading"
+    }
+   ]
+  },
+  {
+   "id": "p64-24",
+   "sentence": "A pizza chef drops each topping at the perfect moment onto a spinning pizza",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p64-reading"
+    },
+    {
+     "side": "D",
+     "kind": "main-quick"
+    }
+   ]
+  }
+ ],
+ "sentences": [
+  {
+   "id": "p64-01",
+   "sentence": "A paperboy sprints down a rainy avenue at dawn, dodging barking dogs and open manholes",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.64,
+     "reason": "A clear runner, dog-like figures, and dark road hazards suggest dodging threats at dawn, but rain, an urban avenue, and a paperboy identity are missing."
+    },
+    "p64-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.43,
+     "reason": "Visible rain, warm dawn lighting, buildings, and road hazards fit the setting, but the dim character and obscured threats make the action hard to read."
+    },
+    "main-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.72,
+     "reason": "The runner, dog-like obstacle, and dark road opening are readable with appealing dawn lighting, but the rural setting lacks rain and a clear paperboy identity."
+    },
+    "main-reading": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.51,
+     "reason": "Heavy rain, a dawn-colored street, a running figure, and dark road openings fit much of the sentence, though dogs and newspaper delivery are unclear and visibility is poor."
+    },
+    "main-after-reading": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.51,
+     "reason": "Heavy rain, a dawn-colored street, a running figure, and dark road openings fit much of the sentence, though dogs and newspaper delivery are unclear and visibility is poor."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.43,
+     "reason": "Visible rain, warm dawn lighting, buildings, and road hazards fit the setting, but the dim character and obscured threats make the action hard to read."
+    }
+   }
+  },
+  {
+   "id": "p64-02",
+   "sentence": "A stuntman climbs the scaffolding of a half-built skyscraper while loose bricks tumble down",
+   "scores": {
+    "p64-reading": {
+     "fidelity": 0.36,
+     "wouldPlay": 0.62,
+     "reason": "A labeled stuntman and construction backdrop fit partly, but the visible action is rooftop jumping past barriers rather than climbing scaffolding under falling bricks."
+    },
+    "p64-quick": {
+     "fidelity": 0.32,
+     "wouldPlay": 0.58,
+     "reason": "The character, rooftop gaps, and construction scenery suggest a usable platformer, but neither scaffold climbing nor tumbling bricks is visible."
+    },
+    "main-quick": {
+     "fidelity": 0.29,
+     "wouldPlay": 0.48,
+     "reason": "A clear side view shows a rooftop character and distant construction, but the sparse course offers little visible action and lacks the requested climbing and falling bricks."
+    },
+    "main-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.51,
+     "reason": "The rooftop character, construction backdrop, and red obstacle suggest simple platforming, but scaffolding ascent and loose-brick threats are absent."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.51,
+     "reason": "The rooftop character, construction backdrop, and red obstacle suggest simple platforming, but scaffolding ascent and loose-brick threats are absent."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.36,
+     "wouldPlay": 0.62,
+     "reason": "A labeled stuntman and construction backdrop fit partly, but the visible action is rooftop jumping past barriers rather than climbing scaffolding under falling bricks."
+    }
+   }
+  },
+  {
+   "id": "p64-03",
+   "sentence": "A retired wrestler brawls with mutant raccoons in the parking lot of an abandoned cinema",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.36,
+     "reason": "The objective targets retired wrestlers and the player looks like a raccoon, reversing the premise, while the grassy arena and sparse combat offer little variety."
+    },
+    "p64-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.48,
+     "reason": "Mutant raccoon enemies and clear attack controls support the brawling premise, but the player is also raccoon-like and the grassy setting lacks visible cinema or parking-lot features."
+    },
+    "main-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.56,
+     "reason": "A human-looking wrestler, mutant raccoon enemies, and visible attack effects best convey the requested brawl, though the arena looks like woodland rather than an abandoned cinema parking lot."
+    },
+    "p64-quick": {
+     "fidelity": 0.32,
+     "wouldPlay": 0.43,
+     "reason": "A human-looking fighter and combat effects suggest wrestling action, but the objective targets retired wrestlers, mutant raccoons are unclear, and the cinema parking-lot setting is absent."
+    },
+    "main-after-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.56,
+     "reason": "A human-looking wrestler, mutant raccoon enemies, and visible attack effects best convey the requested brawl, though the arena looks like woodland rather than an abandoned cinema parking lot."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.48,
+     "reason": "Mutant raccoon enemies and clear attack controls support the brawling premise, but the player is also raccoon-like and the grassy setting lacks visible cinema or parking-lot features."
+    }
+   }
+  },
+  {
+   "id": "p64-04",
+   "sentence": "A hot air balloon pilot steers over snowy peaks, dodging thunderclouds on the way to the summit festival",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.43,
+     "reason": "Snowfall and an aerial pilot suggest the premise, but the craft looks like a plane on a narrow course, with no clear balloon, thunderclouds, summit festival, or snowy peaks; obstacles offer some arcade appeal."
+    },
+    "main-quick": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.4,
+     "reason": "The snowy obstacle course conveys dodging hazards, but the plane-like craft and absent identifiable thunderclouds, peaks, and festival weakly match the sentence, while sparse scenery makes play look repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.4,
+     "reason": "The snowy obstacle course conveys dodging hazards, but the plane-like craft and absent identifiable thunderclouds, peaks, and festival weakly match the sentence, while sparse scenery makes play look repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.43,
+     "reason": "Snowfall and an aerial pilot suggest the premise, but the craft looks like a plane on a narrow course, with no clear balloon, thunderclouds, summit festival, or snowy peaks; obstacles offer some arcade appeal."
+    }
+   }
+  },
+  {
+   "id": "p64-05",
+   "sentence": "A volunteer firefighter douses grass fires spreading across a windy hillside farm",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.66,
+     "reason": "A firefighter, scattered grass fires, and farm props fit the premise, but the green pursuer distracts from firefighting and no clear water spray or wind is visible."
+    },
+    "main-quick": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.61,
+     "reason": "The firefighter and burning grassy farm establish the scenario, but the oversized floating object makes the action less readable and dousing is not apparent."
+    },
+    "p64-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.77,
+     "reason": "Visible spray toward a fire, grassy terrain, and a firefighter support the goal, while the joystick and highlighted pursuer suggest playable action despite little evidence of wind or spreading flames."
+    },
+    "p64-quick": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.7,
+     "reason": "The firefighter, fire patches, farm details, and visible spray convey firefighting, while the joystick supports phone play but the highlighted floating object obscures the threat."
+    },
+    "main-after-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.66,
+     "reason": "A firefighter, scattered grass fires, and farm props fit the premise, but the green pursuer distracts from firefighting and no clear water spray or wind is visible."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.77,
+     "reason": "Visible spray toward a fire, grassy terrain, and a firefighter support the goal, while the joystick and highlighted pursuer suggest playable action despite little evidence of wind or spreading flames."
+    }
+   }
+  },
+  {
+   "id": "p64-06",
+   "sentence": "A space trucker fires at hungry barnacles clinging to the hull of her cargo ship",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.68,
+     "wouldPlay": 0.58,
+     "reason": "A trucker aims at fiery barnacle-like threats on a ship-like surface, but their attachment to the hull is unclear and the sparse action looks repetitive."
+    },
+    "p64-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.72,
+     "reason": "The visible trucker, cargo-deck setting, glowing threats and aiming line convey the premise well, while larger enemies and clear shooting action look reasonably engaging."
+    },
+    "p64-quick": {
+     "fidelity": 0.67,
+     "wouldPlay": 0.64,
+     "reason": "The trucker and firing effects communicate combat in a spacecraft setting, though prominent gray rocks make the threats resemble asteroids more than hull-clinging barnacles."
+    },
+    "main-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.63,
+     "reason": "The ship-like deck, aiming trucker and fiery barnacle targets fit much of the premise, but the widely spaced enemies and mostly empty playfield suggest limited variety."
+    },
+    "main-after-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.63,
+     "reason": "The ship-like deck, aiming trucker and fiery barnacle targets fit much of the premise, but the widely spaced enemies and mostly empty playfield suggest limited variety."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.72,
+     "reason": "The visible trucker, cargo-deck setting, glowing threats and aiming line convey the premise well, while larger enemies and clear shooting action look reasonably engaging."
+    }
+   }
+  },
+  {
+   "id": "p64-07",
+   "sentence": "A grumpy wizard hurls fireballs at stone golems in a crumbling mountain pass",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.39,
+     "reason": "A wizard throws red projectiles, but the green field, hoop-like targets, and rock pile convey little of stone golems or a crumbling mountain pass, while sparse action limits appeal."
+    },
+    "p64-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.45,
+     "reason": "The larger wizard, red projectiles, and prominent stone formations slightly strengthen the premise and visual appeal, but recognizable golems, mountain terrain, and visible threats are missing."
+    },
+    "main-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.39,
+     "reason": "A wizard throws red projectiles, but the green field, hoop-like targets, and rock pile convey little of stone golems or a crumbling mountain pass, while sparse action limits appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.45,
+     "reason": "The larger wizard, red projectiles, and prominent stone formations slightly strengthen the premise and visual appeal, but recognizable golems, mountain terrain, and visible threats are missing."
+    }
+   }
+  },
+  {
+   "id": "p64-08",
+   "sentence": "A circus strongman stacks wobbly crates as high as the tent roof without letting them topple",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.2,
+     "reason": "A few pale crate-like objects suggest stacking, but no strongman, circus tent roof, or clear toppling threat is visible, and the sparse scene offers little gameplay appeal."
+    },
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.42,
+     "reason": "A tent and prominent block suggest the circus stacking premise, but no recognizable strongman or growing wobbly stack appears, while the colorful scene looks more inviting despite cluttered gameplay cues."
+    },
+    "main-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.42,
+     "reason": "A tent and prominent block suggest the circus stacking premise, but no recognizable strongman or growing wobbly stack appears, while the colorful scene looks more inviting despite cluttered gameplay cues."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.2,
+     "reason": "A few pale crate-like objects suggest stacking, but no strongman, circus tent roof, or clear toppling threat is visible, and the sparse scene offers little gameplay appeal."
+    }
+   }
+  },
+  {
+   "id": "p64-09",
+   "sentence": "A shy penguin dances on a frozen lake to win over the whole colony",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.57,
+     "reason": "The icy setting and small penguins support the premise, but the generic rhythm lanes show little shy dancing or colony courtship; clear tap targets and retry controls offer modest appeal."
+    },
+    "p64-quick": {
+     "fidelity": 0.39,
+     "wouldPlay": 0.6,
+     "reason": "Penguins around a frozen setting loosely fit the sentence, but winning over the colony and the dancer’s shyness are absent; the readable rhythm track and compact results panel look reasonably playable."
+    },
+    "main-after-reading": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.57,
+     "reason": "The icy setting and small penguins support the premise, but the generic rhythm lanes show little shy dancing or colony courtship; clear tap targets and retry controls offer modest appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.39,
+     "wouldPlay": 0.6,
+     "reason": "Penguins around a frozen setting loosely fit the sentence, but winning over the colony and the dancer’s shyness are absent; the readable rhythm track and compact results panel look reasonably playable."
+    }
+   }
+  },
+  {
+   "id": "p64-10",
+   "sentence": "Two rival chefs duel with wooden spoons on a rooftop restaurant at sunset",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.42,
+     "reason": "A chef and spoon attacks suggest a duel, but the gray tiled setting lacks a rooftop sunset and the hole-whacking sequence weakens the premise."
+    },
+    "p64-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.66,
+     "reason": "Two chef-like rivals face off with clear dodge and strike controls in warm lighting, though the enclosed setting does not clearly show a rooftop restaurant at sunset."
+    },
+    "main-reading": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.76,
+     "reason": "Two chefs duel with visible spoon-like weapons against an orange sunset skyline on a rooftop-like platform, with readable attack cues and simple phone controls."
+    },
+    "main-quick": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.34,
+     "reason": "A chef, spoon attacks, and dodge controls convey some combat, but the gray indoor-looking arena and largely absent rival miss the rooftop sunset duel."
+    },
+    "main-after-reading": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.76,
+     "reason": "Two chefs duel with visible spoon-like weapons against an orange sunset skyline on a rooftop-like platform, with readable attack cues and simple phone controls."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.66,
+     "reason": "Two chef-like rivals face off with clear dodge and strike controls in warm lighting, though the enclosed setting does not clearly show a rooftop restaurant at sunset."
+    }
+   }
+  },
+  {
+   "id": "p64-11",
+   "sentence": "A clumsy baby owl flaps between tall pine trees on its first night out of the nest",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.23,
+     "reason": "A faint nighttime forest and flap instruction suggest the premise, but the result panels obscure the owl, obstacles, and gameplay."
+    },
+    "main-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4,
+     "reason": "The visible owl and dark pine forest best convey the requested scene, though dim lighting and repeated failure panels limit the appeal."
+    },
+    "p64-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25,
+     "reason": "Faint forest silhouettes and a flap instruction partially match the premise, but the character and route between trees remain unclear."
+    },
+    "main-quick": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.16,
+     "reason": "The flap instruction hints at flight, but the otherwise black background and result panels show no identifiable owl, pine trees, or obstacles."
+    },
+    "main-after-reading": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4,
+     "reason": "The visible owl and dark pine forest best convey the requested scene, though dim lighting and repeated failure panels limit the appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25,
+     "reason": "Faint forest silhouettes and a flap instruction partially match the premise, but the character and route between trees remain unclear."
+    }
+   }
+  },
+  {
+   "id": "p64-12",
+   "sentence": "A sleepy bear catches falling honeycombs in a wooden bucket under a buzzing beehive",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.58,
+     "reason": "A bear with a bucket beneath falling golden objects conveys the catching goal, but no clear beehive or buzzing bees are visible, and the sparse scene offers limited apparent variety."
+    },
+    "p64-quick": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.54,
+     "reason": "The bear, bucket, and falling honey objects suggest the requested action, but sleepiness and a buzzing beehive are unclear, while the large empty playfield makes the gameplay look sparse."
+    },
+    "main-after-reading": {
+     "fidelity": 0.64,
+     "wouldPlay": 0.58,
+     "reason": "A bear with a bucket beneath falling golden objects conveys the catching goal, but no clear beehive or buzzing bees are visible, and the sparse scene offers limited apparent variety."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.54,
+     "reason": "The bear, bucket, and falling honey objects suggest the requested action, but sleepiness and a buzzing beehive are unclear, while the large empty playfield makes the gameplay look sparse."
+    }
+   }
+  },
+  {
+   "id": "p64-13",
+   "sentence": "A gardener bonks cheeky gophers popping up between the cabbage rows",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.56,
+     "reason": "A gardener, popping gophers, and a clear whacking objective fit the sentence, but cabbage rows are absent and the sparse playfield looks repetitive."
+    },
+    "p64-quick": {
+     "fidelity": 0.69,
+     "wouldPlay": 0.65,
+     "reason": "The gardener's visible tool, emerging gophers, and staged line of holes make the bonking action clearer and more inviting, though the setting still lacks recognizable cabbage rows."
+    },
+    "main-after-reading": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.56,
+     "reason": "A gardener, popping gophers, and a clear whacking objective fit the sentence, but cabbage rows are absent and the sparse playfield looks repetitive."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.69,
+     "wouldPlay": 0.65,
+     "reason": "The gardener's visible tool, emerging gophers, and staged line of holes make the bonking action clearer and more inviting, though the setting still lacks recognizable cabbage rows."
+    }
+   }
+  },
+  {
+   "id": "p64-14",
+   "sentence": "A lone shepherd defends the hilltop village from packs of hungry wolves through a long winter night",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.63,
+     "reason": "A lone defender, wolf pack, defensive barrier, and dark nighttime scene fit the premise, but winter and the hilltop village are weakly depicted; the simple action looks approachable but repetitive."
+    },
+    "main-quick": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.65,
+     "reason": "The shepherd, wolves, village label, and nighttime defense clearly convey the goal, though snow and village buildings are absent; visible enemy movement and progress suggest an accessible phone game."
+    },
+    "main-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.65,
+     "reason": "The shepherd, wolves, village label, and nighttime defense clearly convey the goal, though snow and village buildings are absent; visible enemy movement and progress suggest an accessible phone game."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.63,
+     "reason": "A lone defender, wolf pack, defensive barrier, and dark nighttime scene fit the premise, but winter and the hilltop village are weakly depicted; the simple action looks approachable but repetitive."
+    }
+   }
+  },
+  {
+   "id": "p64-15",
+   "sentence": "A grandma with a kitchen knife slices flying apples flung over the orchard fence by a prankster",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.48,
+     "reason": "A grandma-like character, flying apples, slicing instructions, and a fence convey the main action, but the orchard and prankster are absent and the sparse scene makes play look limited."
+    },
+    "main-quick": {
+     "fidelity": 0.51,
+     "wouldPlay": 0.52,
+     "reason": "The character, visible blade, flying apples, and fence suggest the slicing premise, but the orchard and prankster are missing; the clear play area and small effects offer modest arcade appeal."
+    },
+    "p64-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.5,
+     "reason": "The grandma label, blade, airborne apples, fence, and fence-related warning communicate more of the premise, though no orchard or prankster is visible and the action looks sparse."
+    },
+    "main-after-reading": {
+     "fidelity": 0.51,
+     "wouldPlay": 0.52,
+     "reason": "The character, visible blade, flying apples, and fence suggest the slicing premise, but the orchard and prankster are missing; the clear play area and small effects offer modest arcade appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.5,
+     "reason": "The grandma label, blade, airborne apples, fence, and fence-related warning communicate more of the premise, though no orchard or prankster is visible and the action looks sparse."
+    }
+   }
+  },
+  {
+   "id": "p64-16",
+   "sentence": "A duckling crosses a busy highway full of trucks to reach the pond on the other side",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.4,
+     "reason": "A duckling appears on a road, but later becomes a rock-like character, with little visible traffic and no pond; the sparse course offers limited appeal."
+    },
+    "main-reading": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.77,
+     "reason": "A yellow duckling faces many lanes of trucks with water beyond, closely matching the premise and suggesting an engaging crossing challenge despite cluttered obstacles."
+    },
+    "p64-reading": {
+     "fidelity": 0.94,
+     "wouldPlay": 0.84,
+     "reason": "The duckling, busy truck-filled highway, and water destination are all visible, with a clear overview that makes planning crossings look fun."
+    },
+    "main-quick": {
+     "fidelity": 0.23,
+     "wouldPlay": 0.36,
+     "reason": "The duckling and roadway fit partly, but rock-like later characters, sparse barriers, and no visible pond or busy truck traffic weaken both fidelity and appeal."
+    },
+    "main-after-reading": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.77,
+     "reason": "A yellow duckling faces many lanes of trucks with water beyond, closely matching the premise and suggesting an engaging crossing challenge despite cluttered obstacles."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.94,
+     "wouldPlay": 0.84,
+     "reason": "The duckling, busy truck-filled highway, and water destination are all visible, with a clear overview that makes planning crossings look fun."
+    }
+   }
+  },
+  {
+   "id": "p64-17",
+   "sentence": "A tiny knight grows his army by marching through magic gates on a long castle road",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.7,
+     "reason": "A small armored leader, growing troop count, numbered gates, stone castle road, and saw hazard convey the premise with a readable but visually repetitive progression."
+    },
+    "main-reading": {
+     "fidelity": 0.95,
+     "wouldPlay": 0.76,
+     "reason": "Clearly visible addition and multiplication gates, an expanding army behind a tiny knight, and a looming saw make the castle-road march feel faithful and immediately playable."
+    },
+    "p64-reading": {
+     "fidelity": 0.92,
+     "wouldPlay": 0.7,
+     "reason": "The knight-led army, arithmetic gates, long fortified road, and saw fit the sentence well, though the sparse stretch of road suggests limited moment-to-moment variety."
+    },
+    "p64-quick": {
+     "fidelity": 0.93,
+     "wouldPlay": 0.73,
+     "reason": "The tiny knight and growing soldiers approach clear reward-and-penalty gates along a castle road with a saw hazard, offering an appealingly simple choice-based runner."
+    },
+    "main-after-reading": {
+     "fidelity": 0.95,
+     "wouldPlay": 0.76,
+     "reason": "Clearly visible addition and multiplication gates, an expanding army behind a tiny knight, and a looming saw make the castle-road march feel faithful and immediately playable."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.92,
+     "wouldPlay": 0.7,
+     "reason": "The knight-led army, arithmetic gates, long fortified road, and saw fit the sentence well, though the sparse stretch of road suggests limited moment-to-moment variety."
+    }
+   }
+  },
+  {
+   "id": "p64-18",
+   "sentence": "Drop glowing slime blobs into a glass tank so matching colors fuse into bigger blobs",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.62,
+     "reason": "Green blobs of different sizes inside a transparent tank suggest dropping and merging, though glow and fusion are unclear and the sparse presentation limits appeal."
+    },
+    "p64-quick": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.59,
+     "reason": "Falling green blobs and larger blobs at the bottom support the merging premise, but the prominent human character distracts and the tank looks cramped for satisfying play."
+    },
+    "main-after-reading": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.62,
+     "reason": "Green blobs of different sizes inside a transparent tank suggest dropping and merging, though glow and fusion are unclear and the sparse presentation limits appeal."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.59,
+     "reason": "Falling green blobs and larger blobs at the bottom support the merging premise, but the prominent human character distracts and the tank looks cramped for satisfying play."
+    }
+   }
+  },
+  {
+   "id": "p64-19",
+   "sentence": "A plump walrus shoves noisy seals off a shrinking ice floe in the arctic sea",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.53,
+     "reason": "A walrus and seals with shove cues suggest the intended goal, but the beige floe and gray surroundings weakly convey Arctic ice and sea, and shrinking is unclear."
+    },
+    "p64-quick": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.62,
+     "reason": "The walrus, seals, charge cues, and visibly smaller floe better convey the shove-off challenge and shrinking threat, though the sparse beige-and-gray setting lacks a convincing Arctic atmosphere."
+    },
+    "main-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.53,
+     "reason": "A walrus and seals with shove cues suggest the intended goal, but the beige floe and gray surroundings weakly convey Arctic ice and sea, and shrinking is unclear."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.62,
+     "reason": "The walrus, seals, charge cues, and visibly smaller floe better convey the shove-off challenge and shrinking threat, though the sparse beige-and-gray setting lacks a convincing Arctic atmosphere."
+    }
+   }
+  },
+  {
+   "id": "p64-20",
+   "sentence": "A tortoise in a hurry crosses a four-lane freeway packed with honking buses",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.76,
+     "wouldPlay": 0.81,
+     "reason": "The visible tortoise, timer, and busy traffic convey an urgent crossing, while extra roads and rivers dilute the four-lane freeway premise; the clear layout looks inviting to play."
+    },
+    "p64-reading": {
+     "fidelity": 0.56,
+     "wouldPlay": 0.64,
+     "reason": "The tortoise and timed crossing are clear, but sparse, indistinct traffic weakens the packed-bus threat, and the repetitive roads look less engaging."
+    },
+    "p64-quick": {
+     "fidelity": 0.79,
+     "wouldPlay": 0.78,
+     "reason": "Dense traffic, a visible tortoise, and a timer sell a hazardous hurried crossing, though buses are indistinct and the many roads and rivers make the playfield busy."
+    },
+    "main-reading": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.75,
+     "reason": "The tortoise, timer, and prominent bus-like vehicles best convey the requested characters and threats, while rivers and numerous lanes stray from the setting and the changing vehicle scale reduces visual consistency."
+    },
+    "main-after-reading": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.75,
+     "reason": "The tortoise, timer, and prominent bus-like vehicles best convey the requested characters and threats, while rivers and numerous lanes stray from the setting and the changing vehicle scale reduces visual consistency."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.56,
+     "wouldPlay": 0.64,
+     "reason": "The tortoise and timed crossing are clear, but sparse, indistinct traffic weakens the packed-bus threat, and the repetitive roads look less engaging."
+    }
+   }
+  },
+  {
+   "id": "p64-21",
+   "sentence": "A wizard's apprentice combines matching potion bottles into stronger elixirs inside a cauldron",
+   "scores": {
+    "p64-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.45,
+     "reason": "An apprentice and potion bottles fit the premise, but the wooden chute and saw dominate, with no clear cauldron or visible transformation into stronger elixirs."
+    },
+    "main-quick": {
+     "fidelity": 0.49,
+     "wouldPlay": 0.55,
+     "reason": "The apprentice, bottles, and scoring feedback suggest potion-combining progress and a readable arcade loop, though the saw-filled wooden chute poorly conveys a cauldron or stronger elixirs."
+    },
+    "main-after-reading": {
+     "fidelity": 0.49,
+     "wouldPlay": 0.55,
+     "reason": "The apprentice, bottles, and scoring feedback suggest potion-combining progress and a readable arcade loop, though the saw-filled wooden chute poorly conveys a cauldron or stronger elixirs."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.45,
+     "reason": "An apprentice and potion bottles fit the premise, but the wooden chute and saw dominate, with no clear cauldron or visible transformation into stronger elixirs."
+    }
+   }
+  },
+  {
+   "id": "p64-22",
+   "sentence": "Two beetles bump each other off the edge of a mossy tree stump",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.64,
+     "reason": "Visible beetles, charge cues, and a circular edge convey bumping opponents out, but the plain arena lacks recognizable stump texture or moss and the action looks small."
+    },
+    "p64-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.72,
+     "reason": "The beetles visibly clash and approach the rim of a clear arena, making the action appealing, though the setting reads more as a flat platform than a mossy stump."
+    },
+    "p64-quick": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.65,
+     "reason": "Beetles clustered near the edge and charge labels suggest the intended combat, but overlapping cues clutter the action and the mossy tree-stump setting is weak."
+    },
+    "main-reading": {
+     "fidelity": 0.74,
+     "wouldPlay": 0.75,
+     "reason": "The beetles move from a central clash to combat at the rim in a clean, readable arena, although the smooth disk has little visible bark or moss."
+    },
+    "main-after-reading": {
+     "fidelity": 0.74,
+     "wouldPlay": 0.75,
+     "reason": "The beetles move from a central clash to combat at the rim in a clean, readable arena, although the smooth disk has little visible bark or moss."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.73,
+     "wouldPlay": 0.72,
+     "reason": "The beetles visibly clash and approach the rim of a clear arena, making the action appealing, though the setting reads more as a flat platform than a mossy stump."
+    }
+   }
+  },
+  {
+   "id": "p64-23",
+   "sentence": "A lumberjack chops pinecones launched into the air by a grumpy squirrel",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.62,
+     "reason": "The lumberjack, airborne pinecones, woodland setting, and squirrel warning fit the premise, but no grumpy squirrel visibly launches anything and the action looks sparse."
+    },
+    "p64-quick": {
+     "fidelity": 0.53,
+     "wouldPlay": 0.48,
+     "reason": "A lumberjack and airborne pinecones suggest the chopping task, but the bomb objective diverges from the squirrel premise and the large empty playfield looks uninviting."
+    },
+    "main-quick": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.58,
+     "reason": "The woodland platform, lumberjack, and airborne objects convey pinecone chopping, but the bomb warning replaces the squirrel threat and visible gameplay offers little variety."
+    },
+    "p64-reading": {
+     "fidelity": 0.63,
+     "wouldPlay": 0.51,
+     "reason": "The lumberjack, flying pinecone, and squirrel warning support the intended task, but no squirrel or launch is visible and the action occupies little of the otherwise empty playfield."
+    },
+    "main-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.62,
+     "reason": "The lumberjack, airborne pinecones, woodland setting, and squirrel warning fit the premise, but no grumpy squirrel visibly launches anything and the action looks sparse."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.63,
+     "wouldPlay": 0.51,
+     "reason": "The lumberjack, flying pinecone, and squirrel warning support the intended task, but no squirrel or launch is visible and the action occupies little of the otherwise empty playfield."
+    }
+   }
+  },
+  {
+   "id": "p64-24",
+   "sentence": "A pizza chef drops each topping at the perfect moment onto a spinning pizza",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.55,
+     "reason": "A chef stands beneath a large pizza-like platform with toppings and a timing challenge, though dropping toppings and pizza rotation are unclear."
+    },
+    "p64-quick": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.3,
+     "reason": "A chef and timing controls are visible, but red bars and a tiled target suggest an abstract timing game with no visible pizza or toppings."
+    },
+    "p64-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.6,
+     "reason": "A chef, topped pizza-like platform, and changing platform positions make the requested timing concept recognizable, though topping drops remain unclear."
+    },
+    "main-quick": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.32,
+     "reason": "The chef and moving red marker communicate a simple timing challenge, but the visible scene lacks the pizza and topping interaction central to the sentence."
+    },
+    "main-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.55,
+     "reason": "A chef stands beneath a large pizza-like platform with toppings and a timing challenge, though dropping toppings and pizza rotation are unclear."
+    },
+    "p64-after-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.6,
+     "reason": "A chef, topped pizza-like platform, and changing platform positions make the requested timing concept recognizable, though topping drops remain unclear."
+    }
+   }
+  }
+ ],
+ "skipped": [],
+ "medians": {
+  "main-quick": {
+   "fidelity": 0.5,
+   "wouldPlay": 0.555,
+   "n": 24
+  },
+  "main-after-reading": {
+   "fidelity": 0.645,
+   "wouldPlay": 0.565,
+   "n": 24
+  },
+  "p64-quick": {
+   "fidelity": 0.495,
+   "wouldPlay": 0.56,
+   "n": 24
+  },
+  "p64-after-reading": {
+   "fidelity": 0.625,
+   "wouldPlay": 0.6,
+   "n": 24
+  }
+ },
+ "timing": {
+  "runs": 3,
+  "gateProfile": "pixel7-cpu4",
+  "profiles": {
+   "pixel7-cpu4": [
+    {
+     "id": "s1-zombie-shooter-in-a-mall",
+     "A": [
+      11439,
+      17373,
+      null
+     ],
+     "B": [
+      20500,
+      17092,
+      null
+     ]
+    },
+    {
+     "id": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+     "A": [
+      9493,
+      10704,
+      8047
+     ],
+     "B": [
+      9270,
+      12079,
+      9637
+     ]
+    },
+    {
+     "id": "s3-a-knight-must-collect-three-keys-in-a-ha",
+     "A": [
+      25751,
+      9363,
+      9207
+     ],
+     "B": [
+      41246,
+      9414,
+      11582
+     ]
+    },
+    {
+     "id": "s4-a-hamster-escaping-a-supermarket-while-a",
+     "A": [
+      20719,
+      10699,
+      15222
+     ],
+     "B": [
+      24432,
+      12330,
+      20114
+     ]
+    },
+    {
+     "id": "s5-a-corgi-runs-through-a-park-grabbing-sau",
+     "A": [
+      15340,
+      9282,
+      13740
+     ],
+     "B": [
+      16446,
+      8748,
+      11647
+     ]
+    }
+   ],
+   "desktop": [
+    {
+     "id": "s1-zombie-shooter-in-a-mall",
+     "A": [
+      2951,
+      3886,
+      3685
+     ],
+     "B": [
+      7478,
+      5498,
+      4274
+     ]
+    },
+    {
+     "id": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+     "A": [
+      3530,
+      4651,
+      3101
+     ],
+     "B": [
+      4751,
+      4395,
+      3390
+     ]
+    },
+    {
+     "id": "s3-a-knight-must-collect-three-keys-in-a-ha",
+     "A": [
+      5797,
+      5028,
+      3994
+     ],
+     "B": [
+      5105,
+      5392,
+      4124
+     ]
+    },
+    {
+     "id": "s4-a-hamster-escaping-a-supermarket-while-a",
+     "A": [
+      6131,
+      5969,
+      3630
+     ],
+     "B": [
+      4483,
+      8631,
+      4298
+     ]
+    },
+    {
+     "id": "s5-a-corgi-runs-through-a-park-grabbing-sau",
+     "A": [
+      4975,
+      4294,
+      4278
+     ],
+     "B": [
+      5180,
+      5106,
+      4524
+     ]
+    }
+   ]
+  },
+  "medians": {
+   "pixel7-cpu4": {
+    "A": 11071.5,
+    "B": 12204.5,
+    "diff": 1133,
+    "pairedDiff": 1482.5,
+    "pass": false
+   },
+   "desktop": {
+    "A": 4278,
+    "B": 4751,
+    "diff": 473,
+    "pairedDiff": 364,
+    "pass": false
+   }
+  },
+  "gate": {
+   "id": "G3",
+   "pass": false
+  }
+ },
+ "fps": {
+  "tool": "e2e/play-perf.spec.ts @measure, moto-g-power-emulated (412 x 823 portrait, CPU 4x, Fast 4G), playing.fpsP50, 3 runs per side, scene by scene A/B",
+  "scenes": [
+   {
+    "id": "runner",
+    "A": [
+     30.030030030030687,
+     30.030030030030687,
+     30.030030030030687
+    ],
+    "B": [
+     30.030030030030687,
+     29.940119760481,
+     30.030030030030687
+    ]
+   },
+   {
+    "id": "arena",
+    "A": [
+     30.030030030030687,
+     59.88023952095548,
+     59.88023952095548
+    ],
+    "B": [
+     59.88023952095548,
+     59.88023952095548,
+     59.88023952095548
+    ]
+   },
+   {
+    "id": "grid-collect",
+    "A": [
+     29.94011976047937,
+     30.030030030027405,
+     30.030030030029046
+    ],
+    "B": [
+     30.030030030030687,
+     30.030030030029046,
+     20
+    ]
+   },
+   {
+    "id": "glide",
+    "A": [
+     30.030030030030687,
+     59.523809523799216,
+     30.030030030030687
+    ],
+    "B": [
+     30.030030030030687,
+     59.88023952095548,
+     30.030030030030687
+    ]
+   },
+   {
+    "id": "walker",
+    "A": [
+     59.88023952095548,
+     59.88023952095548,
+     29.94011976047774
+    ],
+    "B": [
+     30.120481927710184,
+     59.88023952095548,
+     30.030030030030687
+    ]
+   },
+   {
+    "id": "ball",
+    "A": [
+     59.523809523812105,
+     59.88023952095548,
+     59.88023952095548
+    ],
+    "B": [
+     30.030030030027405,
+     59.88023952095548,
+     30.030030030030687
+    ]
+   }
+  ],
+  "ratios": [
+   {
+    "id": "runner",
+    "A": 30.030030030030687,
+    "B": 30.030030030030687,
+    "ratio": 1
+   },
+   {
+    "id": "arena",
+    "A": 59.88023952095548,
+    "B": 59.88023952095548,
+    "ratio": 1
+   },
+   {
+    "id": "grid-collect",
+    "A": 30.030030030027405,
+    "B": 30.030030030029046,
+    "ratio": 1
+   },
+   {
+    "id": "glide",
+    "A": 30.030030030030687,
+    "B": 30.030030030030687,
+    "ratio": 1
+   },
+   {
+    "id": "walker",
+    "A": 59.88023952095548,
+    "B": 30.120481927710184,
+    "ratio": 0.503
+   },
+   {
+    "id": "ball",
+    "A": 59.88023952095548,
+    "B": 30.030030030030687,
+    "ratio": 0.502
+   }
+  ],
+  "median": 1,
+  "gate": {
+   "id": "G4",
+   "pass": true
+  }
+ },
+ "robot": {
+  "games": 55,
+  "quick": 36,
+  "reading": 19,
+  "chains": 5,
+  "server": {
+   "publishEligible": 55,
+   "botWins": 55,
+   "idleLoses": 55,
+   "replayEqual": 55
+  },
+  "offline": {
+   "botWins": 55,
+   "idleLoses": 55,
+   "replayEqual": 55,
+   "sameHashesAsServer": 55
+  },
+  "sets": {
+   "holdout": {
+    "games": 38,
+    "quick": 24,
+    "reading": 14,
+    "chains": 3,
+    "server": {
+     "publishEligible": 38,
+     "botWins": 38,
+     "idleLoses": 38,
+     "replayEqual": 38
+    },
+    "offline": {
+     "botWins": 38,
+     "idleLoses": 38,
+     "replayEqual": 38,
+     "sameHashesAsServer": 38
+    }
+   },
+   "dev": {
+    "games": 17,
+    "quick": 12,
+    "reading": 5,
+    "chains": 2,
+    "server": {
+     "publishEligible": 17,
+     "botWins": 17,
+     "idleLoses": 17,
+     "replayEqual": 17
+    },
+    "offline": {
+     "botWins": 17,
+     "idleLoses": 17,
+     "replayEqual": 17,
+     "sameHashesAsServer": 17
+    }
+   }
+  }
+ },
+ "guards": {
+  "G5": {
+   "pass": true,
+   "hashTest": "1/1",
+   "hashNote": "p64-hash.test.ts 'robot and idle player end exactly as in hash-baseline.json' green (22 prints = baseline, bot won, idle not, replay equal)",
+   "robot": {
+    "games": 55,
+    "chains": 5,
+    "publishEligible": 55,
+    "botWins": 55,
+    "idleLoses": 55,
+    "replayEqual": 55,
+    "matchesServer": 55
+   }
+  },
+  "G6": {
+   "pass": false,
+   "failedItem": "p61Landscape",
+   "landscapeGuard": "44/44",
+   "framingChromium": "48/48",
+   "heroSizeChromium": "10/10",
+   "p61Landscape": "Spec asserts portrait only (38/38 green); landscape heroShare compared offline. Against portrait.json before: 23/38 within 2 %, 15 over (max +57.6 % shooter, same on main, so pre-existing). Against main measured now (same spec, main e661855c on 3165): 33/38 within 2 %; the 5 outliers re-run on both sides: noise for Pixel 7 voyage, quest, throw; systematic for Pixel 7 arena branch 0.0112/0.0112 vs main 0.0101/0.0101 (+10.9 %) and iPhone 15 voyage branch 0.0284/0.0285 vs main 0.0233/0.0227 (+22-25 %). Pixel 7 landscape camera fingerprint is identical (guard green), so the arena shift is in the hero box/path, not the camera (inference); iPhone landscape is not covered by the guard.",
+   "desktopHud": "1/1 – desktop 1280×720: the HUD and the result card match main pixel for pixel (chromium, maxDiffPixels 0)"
+  },
+  "targeted": {
+   "vitest": {
+    "passed": 1510,
+    "failed": 0,
+    "files": 410,
+    "failures": [],
+    "knownPlansEnoent": []
+   },
+   "e2e": {
+    "p64-portrait-audit": {
+     "pixel7-touch": "22/22",
+     "iphone-touch": "22/22",
+     "failures": []
+    },
+    "p64-portrait-hud": {
+     "chromium": "1/1",
+     "pixel7-touch": "23/23",
+     "iphone-touch": "23/23",
+     "failures": []
+    },
+    "p64-thumb": {
+     "pixel7-touch": "25/25",
+     "iphone-touch": "24/25 first run, 1/1 re-run",
+     "failures": [
+      "iphone-touch shooter: controls in the bottom thumb zone – page.waitForFunction 90 s timeout waiting for __playFrame hero / byHand probe; re-run green – flake"
+     ]
+    },
+    "p64-landscape-guard": {
+     "chromium": "22/22",
+     "pixel7-touch": "22/22",
+     "failures": []
+    },
+    "p58a-framing": {
+     "chromium": "48/48",
+     "pixel7-touch": "24/24",
+     "iphone-touch": "23/24 first run, 1/1 re-run",
+     "failures": [
+      "iphone-touch quest.spatial – ECONNREFUSED 127.0.0.1:3164 (branch server killed by 2 h background limit); re-run green – infra"
+     ]
+    },
+    "p61-portrait": {
+     "pixel7-touch": "19/19",
+     "iphone-touch": "19/19",
+     "failures": [],
+     "note": "re-run only; first run 0/38 on ECONNREFUSED (server down) – infra"
+    },
+    "play-phone": {
+     "chromium": "6/6",
+     "pixel7-touch": "6/6",
+     "iphone-touch": "6/6",
+     "failures": [],
+     "note": "re-run only; first run ECONNREFUSED – infra"
+    },
+    "play-touch": {
+     "pixel7-touch": "6/7",
+     "iphone-touch": "6/7",
+     "failures": [
+      "pixel7-touch duel: the name tags never cover the Dodge!/Strike! cue – tick 195 'Strike!' under 'Knight' name tag; identical on re-run, green on main (e661855c) – real",
+      "iphone-touch duel: the name tags never cover the Dodge!/Strike! cue – tick 192 'Strike!' under 'Knight' name tag; identical on re-run, green on main (e661855c) – real"
+     ],
+     "note": "re-run only; first run ECONNREFUSED – infra"
+    },
+    "play-feed-phone": {
+     "chromium": "2/2",
+     "failures": []
+    },
+    "play-hero-size": {
+     "chromium": "10/10",
+     "failures": []
+    },
+    "interface-language": {
+     "chromium": "4/4",
+     "failures": []
+    },
+    "vr-enter": {
+     "chromium": "2/2",
+     "failures": []
+    },
+    "vr-diorama": {
+     "chromium": "15/15",
+     "failures": []
+    },
+    "vr-native": {
+     "chromium": "4/4",
+     "failures": []
+    },
+    "vr-hud": {
+     "chromium": "4/4",
+     "failures": []
+    }
+   }
+  },
+  "infra": "Branch server 3164 died ~17:28 local; restarted by this agent at 17:35:57 (PID 29284, PLAY_STORE_DIR D:/caches/p64/ttp-store-t8guards, no model key configured – reader reports BRANCH_UNCONFIGURED, nothing called). Main server for comparison started on 3165 and stopped by PID afterwards.",
+  "measuredAt": "2026-10-29T17:33:55Z",
+  "commit": "7b6fc80e"
+ },
+ "gates": [
+  {
+   "id": "G1",
+   "pass": false,
+   "parts": {
+    "quick": false,
+    "afterReading": true
+   }
+  },
+  {
+   "id": "G2",
+   "pass": true,
+   "parts": {
+    "quick": true,
+    "afterReading": true
+   }
+  },
+  {
+   "id": "G3",
+   "pass": false
+  },
+  {
+   "id": "G4",
+   "pass": true
+  },
+  {
+   "id": "G5",
+   "pass": true
+  },
+  {
+   "id": "G6",
+   "pass": false
+  }
+ ],
+ "verdict": {
+  "pass": false,
+  "unmet": [
+   "G1",
+   "G3",
+   "G6"
+  ],
+  "text": "nepřipraveno k sloučení"
+ },
+ "spend": {
+  "t1": 1.134,
+  "t8": {
+   "dev": {
+    "calls": 12,
+    "usd": 0.374
+   },
+   "holdout": {
+    "calls": 24,
+    "usd": 0.757
+   }
+  },
+  "cap": 4,
+  "total": 2.265
+ },
+ "judgeCalls": {
+  "codex": 24,
+  "claudeDev": 24
+ }
+}
