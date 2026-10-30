@@ -20,6 +20,9 @@ const README = join(DIR, 'README.md');
 const readLf = (path: string): string => readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
 
 interface Sentence { readonly id: string; readonly genre: string; readonly text: string }
+/** Žánry v době zapečetění obou sad; žánry P66 přišly až po nich a zapečetěná sada se nemění. */
+const P66_GENRES: readonly string[] = ['survivor', 'hole', 'steal', 'sort', 'arrows'];
+const SEALED_GENRES = GENRES.filter((genre) => !P66_GENRES.includes(genre));
 const holdout = (): Sentence[] => (JSON.parse(readLf(join(DIR, 'holdout.json'))) as { sentences: Sentence[] }).sentences;
 
 describe('P64 sealed portrait holdout', () => {
@@ -37,7 +40,7 @@ describe('P64 sealed portrait holdout', () => {
 
   it('covers every genre at least once, each sentence labelled with the genre the offline classifier picks today', () => {
     const sentences = holdout();
-    for (const genre of GENRES) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThan(0);
+    for (const genre of SEALED_GENRES) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThan(0);
     expect(sentences.filter((s) => classifyGenre(s.text, null).ranked[0]!.genre !== s.genre).map((s) => s.id)).toEqual([]);
   });
 
@@ -89,7 +92,7 @@ describe('P64 second sealed portrait holdout (T8-R3)', () => {
     const sentences = r3Holdout();
     expect(sentences).toHaveLength(24);
     expect(new Set(sentences.map((s) => s.id)).size).toBe(24);
-    for (const genre of GENRES) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThan(0);
+    for (const genre of SEALED_GENRES) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThan(0);
     for (const genre of ['timing', 'slice', 'catch', 'merge']) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThanOrEqual(2);
     expect(sentences.filter((s) => classifyGenre(s.text, null).ranked[0]!.genre !== s.genre).map((s) => s.id)).toEqual([]);
   });

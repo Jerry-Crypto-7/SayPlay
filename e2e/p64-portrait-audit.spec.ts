@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { type APIRequestContext, type Browser, devices, expect, type Page, test } from '@playwright/test';
 
-import { P64_CELLS } from './p64-cells';
+import { P64_AUDIT_CELLS } from './p64-cells';
 
 /**
  * Audit hry na výšku (P64 T1): každý žánr (a tři ovládání bez žánru, `p64-cells.ts`) na telefonu projektu
@@ -328,12 +328,12 @@ async function measure(browser: Browser, device: string, baseURL: string, url: s
 
 const readResults = (): Results => (existsSync(OUT) ? ((JSON.parse(readFileSync(OUT, 'utf8')) as { results?: Results }).results ?? {}) : {});
 
-/** Výsledek buňky do `audit.json` po každém testu, ať pád jednoho nesmaže ostatní; buňky v pořadí `P64_CELLS`. */
+/** Výsledek buňky do `audit.json` po každém testu, ať pád jednoho nesmaže ostatní; buňky v pořadí `P64_AUDIT_CELLS`. */
 function record(phone: string, key: string, result: CellResult): void {
   const results = readResults();
   const byPhone = ((results[PHASE] ??= {})[phone] ??= {});
   byPhone[key] = result;
-  results[PHASE]![phone] = Object.fromEntries(P64_CELLS.filter((c) => byPhone[c.key] !== undefined).map((c) => [c.key, byPhone[c.key]!]));
+  results[PHASE]![phone] = Object.fromEntries(P64_AUDIT_CELLS.filter((c) => byPhone[c.key] !== undefined).map((c) => [c.key, byPhone[c.key]!]));
   const about = {
     plan: 'P64 T1',
     measure: 'e2e/p64-portrait-audit.spec.ts',
@@ -358,7 +358,7 @@ async function publish(request: APIRequestContext, spec: unknown): Promise<strin
 test.describe('P64 portrait audit', () => {
   test.setTimeout(300_000);
 
-  for (const cell of P64_CELLS) {
+  for (const cell of P64_AUDIT_CELLS) {
     test(`${cell.key}: portrait framing, HUD and thumb controls`, async ({ browser, request }, testInfo) => {
       const phone = PHONES[testInfo.project.name];
       test.skip(phone === undefined, 'phone projects only');

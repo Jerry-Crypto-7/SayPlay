@@ -1067,3 +1067,21 @@ na telefonu – žádný z nich v tomto plánu není.
 | **Celkem P64** | **3,798** |
 
 Strop plánu 4 USD. Soudce: 24 volání Codexu (`codex exec`), předplatné.
+
+## T8-R4: sloučení s `main` (žánry P66)
+
+- **Sloučení** `fe0e0b16`: jediný konflikt v `ArcadeStage.tsx` (dva importy), `playwright.config.ts` dostal do `pixel7-touch` specy obou větví.
+- **Pečeť:** obě zapečetěné sady vznikly před žánry P66 (survivor, hole, steal, sort, arrows), pokrytí žánrů v `seal.test.ts` se proto soudí jen proti žánrům z doby pečeti. Sady samy se nemění.
+- **Buňky:** `P64_CELLS` (stráž šířky, hash v jádře) žánry P66 vynechává, hlídají je jejich vlastní e2e; audit na výšku je měří navíc přes `P64_AUDIT_CELLS` z ručních spec `e2e/fixtures/p66-*-spec.json`. Totéž v `p61-portrait` (na `main` tam žánry P66 padaly na chybějící větu).
+- **Hash:** `hash-baseline.json` přepsán (`P64_HASH=write`). Pohnuly se jen 4 buňky složené z věty (`draft`): semínko a tik, protože P66 zvedl `compilerVersion` na `genre.v6`. Výsledky her (výhra, prohra, skóre) stejné.
+- **Audit žánrů P66 na výšku** (větev, jen měření, žádná brána):
+
+| Žánr | Pixel 7 výplň | oříznuto | pod HUD | iPhone 15 výplň | oříznuto | pod HUD |
+|---|---|---|---|---|---|---|
+| survivor | 0,42 | 0,40 | 0,07 | 0,44 | 0,23 | 0,07 |
+| hole | 0,24 | 0 | 0 | 0,25 | 0 | 0 |
+| steal | 0,39 | 0 | 0,10 | 0,48 | 0 | 0,17 |
+| sort | 0,25 | 0 | 0 | 0,24 | 0 | **0,97** |
+| arrows | 0,24 | 0 | 0 | 0,25 | 0 | 0 |
+
+  Inference: survivor ořezává kraje arény a sort má na iPhonu skoro všechny cíle pod HUD. Žánry P66 rámuje vlastní šev `genres/portrait-first.ts`, ne `portrait-frame.ts` z P64; výměna (P66 T14) není v rozsahu P64 a nálezy patří tam.
