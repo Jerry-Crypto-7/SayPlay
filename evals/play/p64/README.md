@@ -1134,3 +1134,50 @@ Inference: po P66 se rychlá hra bez modelu ke slučování a vytlačování ned
 
 SHA-256 (LF bajty `r4/holdout.json`): `9ea4d48cf03199dc8fbf7c8b255641b70cb69bdfc95cba870995719cf3bdbe1d`
 
+**Měření.** Sada otevřena 30. 10. v 13:27Z (`r4/holdout-opened.json`, commit `a166cd9a`), teprve pak focení. Obě strany
+se čtečkou (`shots.mjs serve`, astra, strop 0,85 USD na stranu) a novým `PLAY_STORE_DIR`, jedna po druhé: `main`
+`0da52829` na 3165, větev `fddd0e3b` (kód hry = `a99dd645`) na 3164. 24 / 24 vět na každé straně, hra ze čtení vznikla
+u 7 vět na `main` a 8 na P64. Všech 31 her `main` a 32 her P64 je stažených a publikovatelných. Slepý soud Codexem na
+společných listech, pohled telefonu, seed 61026, jeden běh, 24 volání. Výsledek a přepočet v `result-r4.json`
+a `__tests__/result-r4.test.ts`.
+
+| strana | věrnost | hrál bych | n |
+|---|---|---|---|
+| `main` rychlá hra | 0,48 | 0,485 | 24 |
+| `main` po čtení | 0,50 | 0,50 | 24 |
+| P64 rychlá hra | 0,51 | 0,57 | 24 |
+| P64 po čtení | 0,605 | 0,59 | 24 |
+
+**G4 FPS** (`e2e/play-perf.spec.ts @measure`, Moto G Power na výšku, CPU 4×, A/B prokládaně po scénách, 3 opakování
+na stranu, servery bez čtečky): runner, arena, grid-collect, glide, walker i ball 59,9 / 59,9, medián B/A 1,00.
+**G5:** robot na všech 32 hrách P64 offline v novém procesu – vyhraje 32, nečinný nevyhraje 32, přehrání shodné 32,
+otisk = server 32; `p64-hash.test.ts` 1 / 1.
+
+| brána | práh | změřeno | stav |
+|---|---|---|---|
+| G1 „hrál bych“ | rychlá ≥ `main` + 0,05; po čtení ≥ `main` | rychlá 0,57 / 0,485 (+0,085); po čtení 0,59 / 0,50 | splněna |
+| G2 věrnost | rychlá i po čtení ≥ `main` − 0,02 | rychlá 0,51 / 0,48; po čtení 0,605 / 0,50 | splněna |
+| G3 čas do hratelné hry | P64 ≤ `main` + 200 ms (T8-R6) | Pixel 7 −382 ms | splněna |
+| G4 FPS | medián B/A ≥ 0,95 | 1,00 | splněna |
+| G5 hash a robot | vše shodné | hash 1/1, robot 32/32 | splněna |
+| G6 desktop a šířka | přeměřeno v T8-R2 | aréna i plavba na šířku stejně jako `main` | splněna |
+
+**Verdikt: připraveno k sloučení.**
+
+**Po větách** (rychlá hra, „hrál bych“ P64 − `main`). Deskové žánry (17 vět) medián +0,03, honičky (7 vět) +0,04.
+Krájení: s64-15 +0,16, s64-20 +0,06, s64-21 −0,04 – poprvé ve všech soudech není v součtu ztrátou. Největší zisky
+plošinovka s64-02 +0,21, bouchání s64-13 +0,20, souboj s64-10 +0,16; největší ztráty −0,06 (plavba s64-04, přeskákání
+s64-16, dav s64-17, vytlačování s64-19), všechny s výtkou na chybějící detail věty, ne na rámování. Inference: s64-20
+soudce popsal jako bouchání („palička u děr“) na obou stranách – žánr té věty se v rychlé hře nehraje jako krájení, to
+je nález pro výběr žánru, ne pro P64.
+
+| útrata čtení | USD |
+|---|---|
+| do T8-R3 (výše) | 3,798 |
+| T8-R7 `main` (23 volání) | 0,768 |
+| T8-R7 P64 (23 volání) | 0,766 |
+| **Kolo R4–R7** | **1,534** |
+| **Celkem P64** | **5,332** |
+
+Strop kola 2 USD (majitel 30. 10., nad původní 4 USD plánu). Soudce: 24 volání Codexu (`codex exec`), předplatné.
+
