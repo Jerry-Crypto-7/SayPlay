@@ -39,12 +39,18 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'merge.default': { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
   // P54C T12: vytlačování z ringu je živé (vlastní ovládání `push`, Rapier).
   'push.default': { move: 'roam', actions: ['push'], objective: 'defeat', threats: ['rival'] },
+  // P66 T12: the five P66 genres are live – their cells moved here from `STAGED_PRESETS` in one selection change.
+  'survivor.default': { move: 'roam', actions: ['autofire'], objective: 'defeat', threats: ['chaser'] },
+  'hole.default': { move: 'roam', actions: ['swallow'], objective: 'score', threats: [] },
+  'steal.default': { move: 'roam', actions: ['steal'], objective: 'score', threats: ['guard'] },
+  'sort.default': { move: 'stationary', actions: ['sort'], objective: 'score', threats: [] },
+  'arrows.default': { move: 'stationary', actions: ['unblock'], objective: 'score', threats: [] },
 };
 
 /**
- * Recipes of the eight P54C genres (T4). They stay out of `PRESETS` – every PRESETS entry is a
+ * Recipes of staged genres (P54C T4, P66 T2). They stay out of `PRESETS` – every PRESETS entry is a
  * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
- * P54C T12 made the last one live; the table stays for a genre whose own task has to fall back.
+ * P54C T12 and P66 T12 made the last ones live; the table stays for a genre whose own task has to fall back.
  */
 export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {};
 

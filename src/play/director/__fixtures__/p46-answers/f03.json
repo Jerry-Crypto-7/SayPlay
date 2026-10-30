@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:41.841Z",
- "ms": 5893,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:27:46.999Z",
+ "ms": 8483,
  "answer": {
-  "plan": "Create a shooter game where an elf archer fires arrows at goblins perched on treetops, with a simple wave‑based timing mechanic.",
+  "plan": "Create a shooter game where an elf archer fires arrows at goblins perched on treetops, with waves spawning over time.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -27,24 +27,24 @@
    "palette": "forest",
    "params": {
     "targetWidthPct": 50,
-    "movingTargets": 0,
-    "waves": null,
-    "enemies": null,
-    "targets": null,
+    "movingTargets": 1,
+    "waves": 5,
+    "enemies": 3,
+    "targets": 3,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": null
+    "timeLimit": 0
    },
    "counts": {
-    "enemy": null,
-    "target": null
+    "enemy": 3,
+    "target": 3
    },
    "ruleRoles": [
     {
      "id": "goblin",
      "kind": "chaser",
      "label": "goblin",
-     "count": null
+     "count": 3
     }
    ],
    "things": [
@@ -82,14 +82,14 @@
       {
        "wave": {
         "role": "goblin",
-        "count": 1,
+        "count": 3,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "wave_end",
+     "id": "wave_reset",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -97,7 +97,10 @@
      "if": null,
      "do": [
       {
-       "goPhase": "first"
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 60
+       }
       }
      ]
     }
@@ -121,15 +124,15 @@
    },
    "boss": {
     "role": "goblin",
-    "name": "Goblin Scout",
+    "name": "Goblin Horde",
     "attack": "shoot"
    },
    "abilities": [
     "shoot"
    ],
    "segments": [
-    "newFoe",
     "moving",
+    "newFoe",
     "faster"
    ]
   }

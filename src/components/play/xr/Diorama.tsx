@@ -24,6 +24,7 @@ import { LOOKS } from '@/play/arcade/look';
 import { deskHome, usePlayerFrame } from '@/play/xr/comfort';
 import { type DeskPose, type HandPose, type Layout, type Room, STAGE, carried, createDiorama, playAreaOf, stageFogOf } from '@/play/xr/diorama-scale';
 
+import { runnerPathOf } from '../arcade/runner/path';
 import type { ArcadeSession } from '../arcade/session';
 import { MOTION_PRIORITY } from './XrAim';
 import { XrSky, lookIdOf } from './XrSky';
@@ -101,7 +102,10 @@ export function Diorama({
   const space = useXR((xr) => xr.originReferenceSpace);
   const { room } = layout;
   const stage = room === STAGE;
-  const view = useMemo(() => createDiorama(playAreaOf(session.world), layout), [session, layout]);
+  const view = useMemo(() => {
+    const path = runnerPathOf(session.world);
+    return createDiorama(playAreaOf(session.world), layout, path === null ? undefined : (z) => path(z).y);
+  }, [session, layout]);
   const player = usePlayerFrame();
   const home = useMemo(() => deskHome(room, player), [room, player]);
   const desk = useRef<DeskPose>(home);

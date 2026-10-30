@@ -136,10 +136,12 @@ describe('P47B T6: an arena fight without abilities builds the world it had befo
     const built = worldOf(withAbilities(draftGameSpecWithMeta(text, 1).spec, []), 1);
     // Otisk, hash robota i nečinného hráče přeotisknuty po P51 (`genre.v5` dává nové hře finále a tep);
     // uložená `genre.v4` staví dál ef1c82ae… (c2d58dad, cb032be4).
-    expect(fingerprint(built)).toBe('c0c6a671a5706afa');
+    // P66 T10 (`genre.v6`): přeotisknuto – souboj má kola s výběrem vylepšení mezi vlnami; robot bere kartu 9 tiků
+    // po každé ze 4 nabídek (3322 → 3358). Dřív c0c6a671… (3322, c09bee0d; nečinný 805ca764).
+    expect(fingerprint(built)).toBe('e0b189be79983fad');
     expect(JSON.stringify([built.control, built.rules])).not.toMatch(/"guard"|ability_fight_guard/);
     const run = runBot(built);
-    expect([run.tick, run.hash]).toEqual([3322, 'c09bee0d']);
-    expect(replay(built, [], ARCADE_LIBRARY).hash).toBe('805ca764');
+    expect([run.tick, run.hash]).toEqual([3358, 'e01e47a7']);
+    expect(replay(built, [], ARCADE_LIBRARY).hash).toBe('baad0bd9');
   });
 });

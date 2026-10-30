@@ -1,0 +1,3038 @@
+{
+ "schema": "p66-result.v1",
+ "task": "T16",
+ "holdout": {
+  "file": "evals/play/p66/holdout.json",
+  "sha256": "42bf10ccca56ea5dab0b0c06cca9401701b3bb3980794c31da9a853c99c9e611",
+  "openedAt": "2026-10-29T18:45:57.692Z",
+  "commit": "da0183b5",
+  "sentences": 30,
+  "halves": {
+   "new": 15,
+   "general": 15
+  }
+ },
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": "e661855c",
+   "measuredAt": "2026-10-29T02:19:45.075Z",
+   "base": "http://127.0.0.1:3167"
+  },
+  {
+   "name": "p66",
+   "label": "p66",
+   "commit": null,
+   "measuredAt": "2026-10-29T19:17:34.518Z",
+   "base": "http://127.0.0.1:3166"
+  }
+ ],
+ "shots": {
+  "main": "D:/caches/p66/main-holdout (T1, e661855c)",
+  "p66": "D:/caches/p66/p66-holdout (da0183b5)",
+  "readingGames": {
+   "main": 17,
+   "p66": 9
+  },
+  "note": "first branch server hung after sentence 4 (EPIPE logging loop from an output pipe, not P66 code); restarted, sentences 5–30 shot by the second process, same settings"
+ },
+ "judge": {
+  "name": "codex exec",
+  "view": "phone",
+  "seed": 66016,
+  "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+  "concurrency": 1,
+  "calls": 30,
+  "judgedAt": "2026-10-29T19:18:20.072Z",
+  "fallback": null
+ },
+ "plan": [
+  {
+   "id": "p66-01",
+   "sentence": "a space marine survives a swarm of alien beetles on a red planet while his blaster fires on its own",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p66-reading"
+    }
+   ]
+  },
+  {
+   "id": "p66-02",
+   "sentence": "a viking fights off endless waves of trolls in a snowy forest and grows stronger after each wave",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-03",
+   "sentence": "a garden gnome holds out against hordes of slugs crawling in from every side of the vegetable patch",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-04",
+   "sentence": "a hole in the desert sand swallows cactuses, camels and tents, growing with every bite",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p66-05",
+   "sentence": "a giant drain in a toy room sucks in blocks, dolls and in the end the whole toy box",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p66-reading"
+    }
+   ]
+  },
+  {
+   "id": "p66-06",
+   "sentence": "an ever growing pit in a medieval town gulps carts, houses and finally the castle",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p66-reading"
+    }
+   ]
+  },
+  {
+   "id": "p66-07",
+   "sentence": "a mouse steals cheese wheels from the cat's kitchen and drags them back to its hole",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-08",
+   "sentence": "a bandit sneaks into the sheriff's office, grabs the bag of gold and rides it back to the hideout",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p66-reading"
+    }
+   ]
+  },
+  {
+   "id": "p66-09",
+   "sentence": "a squirrel raids the neighbour's garden for nuts and stashes them in its tree while the dog chases it",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-10",
+   "sentence": "sort the dirty laundry by colour into the right baskets",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-11",
+   "sentence": "a florist arranges red, white and yellow roses into the matching vases",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-12",
+   "sentence": "a robot at a recycling plant drops cans, bottles and paper into the right bins",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "D",
+     "kind": "main-reading"
+    }
+   ]
+  },
+  {
+   "id": "p66-13",
+   "sentence": "tap the boats out of the crowded harbour, each one sails off only the way its bow points",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-14",
+   "sentence": "free the sheep packed in the pen, a tapped sheep runs off the way it faces if nothing blocks it",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-15",
+   "sentence": "clear the jammed train yard by tapping each wagon so it rolls out along its track",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-reading"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-16",
+   "sentence": "a cowboy shoots tin cans off a fence at sunset",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-17",
+   "sentence": "a penguin slides down an icy mountain dodging rocks and snowmen",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-reading"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "main-quick"
+    },
+    {
+     "side": "D",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-18",
+   "sentence": "a monkey jumps from treetop to treetop to reach the golden banana at the top of the jungle",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-19",
+   "sentence": "a hot air balloon flies over the mountains to reach the festival",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-reading"
+    },
+    {
+     "side": "C",
+     "kind": "p66-reading"
+    },
+    {
+     "side": "D",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-20",
+   "sentence": "a gardener waters all the thirsty flowers in the park before noon",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-21",
+   "sentence": "throw paper balls into the trash can from across the office",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-22",
+   "sentence": "build the tallest pancake tower in the diner",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-23",
+   "sentence": "a frog drums to the beat in a swamp band",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-24",
+   "sentence": "two knights face off in a duel on a narrow bridge",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-25",
+   "sentence": "a little bird flaps between the pipes of an old factory",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-26",
+   "sentence": "a kangaroo catches falling coconuts on a tropical beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-27",
+   "sentence": "bonk the moles popping out of the golf course",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-28",
+   "sentence": "slice the watermelons a farmer tosses into the air",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-29",
+   "sentence": "a hedgehog crosses a busy highway at night",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p66-30",
+   "sentence": "two crabs shove each other off a rock at low tide",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p66-quick"
+    },
+    {
+     "side": "C",
+     "kind": "main-reading"
+    }
+   ]
+  }
+ ],
+ "sentences": [
+  {
+   "id": "p66-01",
+   "sentence": "a space marine survives a swarm of alien beetles on a red planet while his blaster fires on its own",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.94,
+     "wouldPlay": 0.8,
+     "reason": "A space marine faces clearly visible alien beetles on red terrain, with threat circles and a wave objective making combat look readable and engaging."
+    },
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.48,
+     "reason": "The armored marine fits, but the visible game is an obstacle runner through ruins with little evidence of beetle swarms or automatic blaster combat."
+    },
+    "p66-quick": {
+     "fidelity": 0.68,
+     "wouldPlay": 0.76,
+     "reason": "The marine, swarm-survival objective, projectiles, and combo feedback suggest lively combat, though the brown arena and indistinct enemies weaken the red-planet beetle theme."
+    },
+    "p66-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.7,
+     "reason": "The marine visibly shoots toward approaching enemies in a survival arena, but sparse threats and brown terrain make the swarm and red-planet setting less convincing."
+    },
+    "main-after-reading": {
+     "fidelity": 0.94,
+     "wouldPlay": 0.8,
+     "reason": "A space marine faces clearly visible alien beetles on red terrain, with threat circles and a wave objective making combat look readable and engaging."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.7,
+     "reason": "The marine visibly shoots toward approaching enemies in a survival arena, but sparse threats and brown terrain make the swarm and red-planet setting less convincing."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-02",
+   "sentence": "a viking fights off endless waves of trolls in a snowy forest and grows stronger after each wave",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.61,
+     "wouldPlay": 0.43,
+     "reason": "Snow, a Viking label, troll threats, and a wave objective fit the premise, but the forest and progression are unclear and tangled character silhouettes make combat hard to read."
+    },
+    "main-quick": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.51,
+     "reason": "The snowy arena, wave objective, and more distinct humanoid enemies convey the fight more clearly, though a forest and strengthening after waves are not evident and the oversized orange shapes look rough."
+    },
+    "main-after-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.51,
+     "reason": "The snowy arena, wave objective, and more distinct humanoid enemies convey the fight more clearly, though a forest and strengthening after waves are not evident and the oversized orange shapes look rough."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.61,
+     "wouldPlay": 0.43,
+     "reason": "Snow, a Viking label, troll threats, and a wave objective fit the premise, but the forest and progression are unclear and tangled character silhouettes make combat hard to read."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-03",
+   "sentence": "a garden gnome holds out against hordes of slugs crawling in from every side of the vegetable patch",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.24,
+     "wouldPlay": 0.65,
+     "reason": "A recognizable gnome and polished runner presentation look playable, but the road, barriers, and finish-line goal lack a vegetable patch and surrounding slug hordes."
+    },
+    "main-reading": {
+     "fidelity": 0.63,
+     "wouldPlay": 0.58,
+     "reason": "The gnome defends clearly planted vegetable rows from visible slugs, but sparse enemies approach along lanes rather than from every side, and the action looks limited."
+    },
+    "p66-quick": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.73,
+     "reason": "The gnome faces slugs scattered around an open arena with survival and combo goals suggesting engaging defense, although the vegetable patch is barely evident and the horde looks sparse."
+    },
+    "main-after-reading": {
+     "fidelity": 0.63,
+     "wouldPlay": 0.58,
+     "reason": "The gnome defends clearly planted vegetable rows from visible slugs, but sparse enemies approach along lanes rather than from every side, and the action looks limited."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.77,
+     "wouldPlay": 0.73,
+     "reason": "The gnome faces slugs scattered around an open arena with survival and combo goals suggesting engaging defense, although the vegetable patch is barely evident and the horde looks sparse."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-04",
+   "sentence": "a hole in the desert sand swallows cactuses, camels and tents, growing with every bite",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.45,
+     "reason": "The desert, camel, cactuses and tents fit the setting, but the visible aiming line and shooting objective suggest a shooter rather than a growing hole swallowing objects."
+    },
+    "p66-quick": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.35,
+     "reason": "A prominent hole and instructions to swallow cactuses and grow match the central mechanic, but the sparse desert shows no camels or tents and offers little visible variety."
+    },
+    "main-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.6,
+     "reason": "The detailed desert and camel within a circular marker look more inviting to explore, but swallowing, hole growth and tents are not visibly established."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.6,
+     "reason": "The detailed desert and camel within a circular marker look more inviting to explore, but swallowing, hole growth and tents are not visibly established."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.35,
+     "reason": "A prominent hole and instructions to swallow cactuses and grow match the central mechanic, but the sparse desert shows no camels or tents and offers little visible variety."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-05",
+   "sentence": "a giant drain in a toy room sucks in blocks, dolls and in the end the whole toy box",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.49,
+     "reason": "The wooden room, scattered blocks and doll fit the setting, but wolves and a survival objective replace the giant drain and toy-box progression; the chase looks moderately engaging."
+    },
+    "p66-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.51,
+     "reason": "The doll, blocks and toy-like furniture suggest a toy room, but the visible game centers on surviving wolves rather than sucking toys into a drain; the action looks reasonably playable."
+    },
+    "main-reading": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.38,
+     "reason": "The doll, scattered blocks, collection objective and giant-drain label partially match the premise, but no visible drain or swallowing action makes the gameplay look fairly static."
+    },
+    "p66-reading": {
+     "fidelity": 0.56,
+     "wouldPlay": 0.32,
+     "reason": "A large floor drain and a swallowing-and-growth objective capture the central mechanic, but the empty room lacks visible blocks, dolls and a toy box, leaving little apparent gameplay."
+    },
+    "main-after-reading": {
+     "fidelity": 0.42,
+     "wouldPlay": 0.38,
+     "reason": "The doll, scattered blocks, collection objective and giant-drain label partially match the premise, but no visible drain or swallowing action makes the gameplay look fairly static."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.56,
+     "wouldPlay": 0.32,
+     "reason": "A large floor drain and a swallowing-and-growth objective capture the central mechanic, but the empty room lacks visible blocks, dolls and a toy box, leaving little apparent gameplay."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-06",
+   "sentence": "an ever growing pit in a medieval town gulps carts, houses and finally the castle",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4,
+     "reason": "A prominent pit and swallowing goal fit the premise, but the sparse setting lacks a visible medieval town, carts, houses, or castle."
+    },
+    "main-quick": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.58,
+     "reason": "The character, floating platforms, and jump controls suggest a playable platformer, but show little connection to a growing pit swallowing a town."
+    },
+    "main-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.49,
+     "reason": "The cobbled street and cart objective partially fit the setting, but character-led pit dodging replaces the requested swallowing progression."
+    },
+    "p66-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.65,
+     "reason": "A large pit among carts and buildings on a cobbled street best conveys the town-swallowing game, although growth and eventual castle consumption are not visible."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.49,
+     "reason": "The cobbled street and cart objective partially fit the setting, but character-led pit dodging replaces the requested swallowing progression."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.65,
+     "reason": "A large pit among carts and buildings on a cobbled street best conveys the town-swallowing game, although growth and eventual castle consumption are not visible."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-07",
+   "sentence": "a mouse steals cheese wheels from the cat's kitchen and drags them back to its hole",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.62,
+     "reason": "A mouse, cheese wheels, and a tiled kitchen support the collection goal, but no cat or dragging cheese back to a hole is visible; the clear layout looks approachable but repetitive."
+    },
+    "main-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.48,
+     "reason": "The mouse, cheese wheels, kitchen clutter, and apparent hazards suggest a stealing challenge, but the cat and return-to-hole goal are unclear, while oversized objects make play look crowded."
+    },
+    "p66-quick": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.57,
+     "reason": "The mouse, cheese wheels, kitchen-like lane, and instruction to run them home convey collection and return, but no cat or dragging is visible, and the readable course looks rather sparse."
+    },
+    "main-after-reading": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.48,
+     "reason": "The mouse, cheese wheels, kitchen clutter, and apparent hazards suggest a stealing challenge, but the cat and return-to-hole goal are unclear, while oversized objects make play look crowded."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.65,
+     "wouldPlay": 0.57,
+     "reason": "The mouse, cheese wheels, kitchen-like lane, and instruction to run them home convey collection and return, but no cat or dragging is visible, and the readable course looks rather sparse."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-08",
+   "sentence": "a bandit sneaks into the sheriff's office, grabs the bag of gold and rides it back to the hideout",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.48,
+     "reason": "A bandit and gold-collection objective fit the premise, but the plain maze shows little sheriff-office detail, danger, or a ride to a hideout."
+    },
+    "main-quick": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.52,
+     "reason": "The western character and wooden setting partly fit, but obstacle running and crowd-versus-ogre objectives replace the stealth, gold theft, and getaway."
+    },
+    "p66-quick": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.49,
+     "reason": "The western runner has readable lanes and characters, but the crowd-growing round and repeated knockdowns show little of the requested robbery or escape."
+    },
+    "p66-reading": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.6,
+     "reason": "A visible gold bag, instruction to bring it home, and wooden interior support the theft-and-return premise, though sheriff threats, sneaking, and mounted escape are not evident."
+    },
+    "main-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.48,
+     "reason": "A bandit and gold-collection objective fit the premise, but the plain maze shows little sheriff-office detail, danger, or a ride to a hideout."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.57,
+     "wouldPlay": 0.6,
+     "reason": "A visible gold bag, instruction to bring it home, and wooden interior support the theft-and-return premise, though sheriff threats, sneaking, and mounted escape are not evident."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-09",
+   "sentence": "a squirrel raids the neighbour's garden for nuts and stashes them in its tree while the dog chases it",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.45,
+     "reason": "A squirrel and apparent dog occupy an obstacle-filled dirt path, but nut raiding and tree storage are unclear, and the cluttered runner looks only moderately appealing."
+    },
+    "main-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.7,
+     "reason": "A garden with nuts, a squirrel, and a pursuing dog conveys most of the premise with readable chase gameplay, though tree storage is not visible."
+    },
+    "p66-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "Nut collection and bringing nuts home are explicit, but the sparse court-like setting lacks a clear garden, storage tree, or chasing dog and looks repetitive."
+    },
+    "p66-quick": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.5,
+     "reason": "The squirrel, apparent dog, and obstacles suggest a chase, with an orange arch adding visual interest, but garden raiding and stashing nuts in a tree remain unclear."
+    },
+    "main-after-reading": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.7,
+     "reason": "A garden with nuts, a squirrel, and a pursuing dog conveys most of the premise with readable chase gameplay, though tree storage is not visible."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35,
+     "reason": "Nut collection and bringing nuts home are explicit, but the sparse court-like setting lacks a clear garden, storage tree, or chasing dog and looks repetitive."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-10",
+   "sentence": "sort the dirty laundry by colour into the right baskets",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3,
+     "reason": "A character is prompted to collect dirty laundry, but the mostly empty grassy setting shows no clear colour sorting or baskets and offers little visible gameplay variety."
+    },
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.4,
+     "reason": "A character can approach two basket-like containers and use them, but visible laundry and colour distinctions are sparse, making the sorting goal and interaction unclear."
+    },
+    "p66-quick": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.8,
+     "reason": "Coloured laundry, matching yellow, blue and red baskets, and visible score and combo feedback clearly convey the requested sorting task and an appealing phone-game loop."
+    },
+    "main-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3,
+     "reason": "A character is prompted to collect dirty laundry, but the mostly empty grassy setting shows no clear colour sorting or baskets and offers little visible gameplay variety."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.8,
+     "reason": "Coloured laundry, matching yellow, blue and red baskets, and visible score and combo feedback clearly convey the requested sorting task and an appealing phone-game loop."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-11",
+   "sentence": "a florist arranges red, white and yellow roses into the matching vases",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.38,
+     "reason": "A runner with jumping and robot combat shows almost none of the florist or rose-matching premise, though the action looks moderately playable."
+    },
+    "main-reading": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.42,
+     "reason": "A florist collects roses in a flower field, but no vase arrangement or color matching is visible and the activity looks repetitive."
+    },
+    "p66-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.67,
+     "reason": "Colored flower lanes and matching containers clearly suggest a rose-sorting puzzle, although white roses are unclear and blue elements weaken the requested palette."
+    },
+    "p66-quick": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.32,
+     "reason": "Running, robots, and a targeting view dominate instead of arranging roses in vases, and the disconnected activities look less appealing."
+    },
+    "main-after-reading": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.42,
+     "reason": "A florist collects roses in a flower field, but no vase arrangement or color matching is visible and the activity looks repetitive."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.67,
+     "reason": "Colored flower lanes and matching containers clearly suggest a rose-sorting puzzle, although white roses are unclear and blue elements weaken the requested palette."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-12",
+   "sentence": "a robot at a recycling plant drops cans, bottles and paper into the right bins",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.42,
+     "reason": "A robot is visible, but the grassy arena and star objectives show little recycling activity; movement looks playable but the goal feels generic."
+    },
+    "p66-reading": {
+     "fidelity": 0.86,
+     "wouldPlay": 0.76,
+     "reason": "A robot, industrial floor, conveyor lanes and colored sorting bins closely match the recycling task, with a clear layout that looks engaging on a phone."
+    },
+    "p66-quick": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.59,
+     "reason": "The robot and sorting lanes fit the basic action, but toys and grassy surroundings replace recyclables and the plant; the simple sorting layout still looks approachable."
+    },
+    "main-reading": {
+     "fidelity": 0.32,
+     "wouldPlay": 0.48,
+     "reason": "The robot and industrial surroundings fit, but visible star collection and obstacle dodging replace sorting waste into bins, making the gameplay look only loosely related."
+    },
+    "main-after-reading": {
+     "fidelity": 0.32,
+     "wouldPlay": 0.48,
+     "reason": "The robot and industrial surroundings fit, but visible star collection and obstacle dodging replace sorting waste into bins, making the gameplay look only loosely related."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.86,
+     "wouldPlay": 0.76,
+     "reason": "A robot, industrial floor, conveyor lanes and colored sorting bins closely match the recycling task, with a clear layout that looks engaging on a phone."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-13",
+   "sentence": "tap the boats out of the crowded harbour, each one sails off only the way its bow points",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3,
+     "reason": "The visible goal is collecting pearls in a sparse sandy area, with little sign of a crowded harbour or directional boat puzzle, and the play looks unclear."
+    },
+    "main-quick": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.45,
+     "reason": "Water, buoys and a lighthouse suggest a harbour, but the goal is traversing a long track to the finish rather than tapping boats out, though the course looks approachable."
+    },
+    "p66-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.7,
+     "reason": "A grid of boats with directional arrows and a clear-every-boat objective closely matches the requested puzzle, and its readable board looks appealing for quick phone play."
+    },
+    "main-after-reading": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3,
+     "reason": "The visible goal is collecting pearls in a sparse sandy area, with little sign of a crowded harbour or directional boat puzzle, and the play looks unclear."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.7,
+     "reason": "A grid of boats with directional arrows and a clear-every-boat objective closely matches the requested puzzle, and its readable board looks appealing for quick phone play."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-14",
+   "sentence": "free the sheep packed in the pen, a tapped sheep runs off the way it faces if nothing blocks it",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.4,
+     "reason": "A runner on a road with obstacles conveys movement but shows no packed sheep pen or directional freeing puzzle, and the action looks fairly generic."
+    },
+    "main-reading": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.35,
+     "reason": "The sheep-rescue objective loosely matches, but the visible character, coins, and platforms suggest a sparse exploration game rather than tapping blocked sheep in a pen."
+    },
+    "p66-quick": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.72,
+     "reason": "A fenced grid of sheep with directional arrows clearly suggests the requested release puzzle, though the pen looks lightly populated and successful exits are not shown."
+    },
+    "main-after-reading": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.35,
+     "reason": "The sheep-rescue objective loosely matches, but the visible character, coins, and platforms suggest a sparse exploration game rather than tapping blocked sheep in a pen."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.85,
+     "wouldPlay": 0.72,
+     "reason": "A fenced grid of sheep with directional arrows clearly suggests the requested release puzzle, though the pen looks lightly populated and successful exits are not shown."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-15",
+   "sentence": "clear the jammed train yard by tapping each wagon so it rolls out along its track",
+   "scores": {
+    "main-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.45,
+     "reason": "A wagon appears, but the grassy character-and-star clearing game shows little of a jammed rail yard or tapping wagons along tracks."
+    },
+    "p66-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.65,
+     "reason": "A compact yard with multiple wagons and directional arrows clearly suggests a train-clearing puzzle, though the large fox obscures part of the board."
+    },
+    "main-quick": {
+     "fidelity": 0.02,
+     "wouldPlay": 0.2,
+     "reason": "The visible whack-a-mole objective, holes, and central animal bear almost no relation to clearing trains, and the sparse scene offers little apparent variety."
+    },
+    "main-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.45,
+     "reason": "A wagon appears, but the grassy character-and-star clearing game shows little of a jammed rail yard or tapping wagons along tracks."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.65,
+     "reason": "A compact yard with multiple wagons and directional arrows clearly suggests a train-clearing puzzle, though the large fox obscures part of the board."
+    }
+   },
+   "half": "new"
+  },
+  {
+   "id": "p66-16",
+   "sentence": "a cowboy shoots tin cans off a fence at sunset",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35,
+     "reason": "The sunset and cowboy hat suggest the theme, but floating robots replace tin cans and no fence is visible; the sparse shooting scene looks repetitive."
+    },
+    "p66-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.36,
+     "reason": "A cowboy hat and sunset fit part of the prompt, but robot targets and the absence of a visible fence miss its central action; the aiming interface looks playable but visually limited."
+    },
+    "main-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35,
+     "reason": "The sunset and cowboy hat suggest the theme, but floating robots replace tin cans and no fence is visible; the sparse shooting scene looks repetitive."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.36,
+     "reason": "A cowboy hat and sunset fit part of the prompt, but robot targets and the absence of a visible fence miss its central action; the aiming interface looks playable but visually limited."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-17",
+   "sentence": "a penguin slides down an icy mountain dodging rocks and snowmen",
+   "scores": {
+    "p66-reading": {
+     "fidelity": 0.34,
+     "wouldPlay": 0.52,
+     "reason": "The snowy downhill course suggests an icy dodge game, but the character looks like a car and rocks mostly sit outside the narrow roadway, with no clear snowmen."
+    },
+    "main-reading": {
+     "fidelity": 0.34,
+     "wouldPlay": 0.55,
+     "reason": "The car-like character misses the penguin premise, though the snowy course and visible pickup feedback suggest a readable, lightly engaging phone runner."
+    },
+    "main-quick": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.58,
+     "reason": "A recognizable penguin slides through an icy mountain setting with rocks, but snowmen are unclear and the repeated darkened views make the action look visually confusing."
+    },
+    "p66-quick": {
+     "fidelity": 0.66,
+     "wouldPlay": 0.58,
+     "reason": "The penguin, snowy mountain route, and rocks fit much of the premise, but no clear snowmen appear and the darkened obstacle views weaken the otherwise appealing presentation."
+    },
+    "main-after-reading": {
+     "fidelity": 0.34,
+     "wouldPlay": 0.55,
+     "reason": "The car-like character misses the penguin premise, though the snowy course and visible pickup feedback suggest a readable, lightly engaging phone runner."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.34,
+     "wouldPlay": 0.52,
+     "reason": "The snowy downhill course suggests an icy dodge game, but the character looks like a car and rocks mostly sit outside the narrow roadway, with no clear snowmen."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-18",
+   "sentence": "a monkey jumps from treetop to treetop to reach the golden banana at the top of the jungle",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.42,
+     "reason": "A stylized monkey and lush jungle fit the premise, but visible platforms look like cliffs, with no jumping, treetop ascent, or golden banana shown, leaving the attractive scene feeling static."
+    },
+    "main-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.42,
+     "reason": "The monkey, jungle scenery, and movement controls suggest a platformer, but the nearly unchanged screenshots show no treetop traversal or golden banana and offer little visible gameplay variety."
+    },
+    "main-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.42,
+     "reason": "The monkey, jungle scenery, and movement controls suggest a platformer, but the nearly unchanged screenshots show no treetop traversal or golden banana and offer little visible gameplay variety."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.42,
+     "reason": "A stylized monkey and lush jungle fit the premise, but visible platforms look like cliffs, with no jumping, treetop ascent, or golden banana shown, leaving the attractive scene feeling static."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-19",
+   "sentence": "a hot air balloon flies over the mountains to reach the festival",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.58,
+     "reason": "A balloon, mountain backdrop, and festival objective fit the premise, but platform jumping dominates and the festival itself is unclear."
+    },
+    "main-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "The balloon and ring course suggest flying toward a finish, but mountains and a festival are not clearly visible, and the scene looks sparse."
+    },
+    "p66-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "The balloon and curved flight route offer a simple navigation challenge, but the visible setting and failure screens convey little of the mountain journey or festival."
+    },
+    "p66-quick": {
+     "fidelity": 0.58,
+     "wouldPlay": 0.58,
+     "reason": "The balloon, distant mountains, and stated festival destination support the premise, while the platform obstacles and run-and-jump controls suggest a less fitting but readable game."
+    },
+    "main-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "The balloon and ring course suggest flying toward a finish, but mountains and a festival are not clearly visible, and the scene looks sparse."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "The balloon and curved flight route offer a simple navigation challenge, but the visible setting and failure screens convey little of the mountain journey or festival."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-20",
+   "sentence": "a gardener waters all the thirsty flowers in the park before noon",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.66,
+     "reason": "The gardener, green park, flower-watering objective and countdown fit the sentence, though noon is not explicit and the sparse scene and close camera limit gameplay appeal."
+    },
+    "main-quick": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.7,
+     "reason": "The gardener, park flowers, watering objective and timer closely match the premise without explicitly showing noon, while the wider gameplay views make navigation and targets look clearer."
+    },
+    "main-after-reading": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.7,
+     "reason": "The gardener, park flowers, watering objective and timer closely match the premise without explicitly showing noon, while the wider gameplay views make navigation and targets look clearer."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.84,
+     "wouldPlay": 0.66,
+     "reason": "The gardener, green park, flower-watering objective and countdown fit the sentence, though noon is not explicit and the sparse scene and close camera limit gameplay appeal."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-21",
+   "sentence": "throw paper balls into the trash can from across the office",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.49,
+     "reason": "The throw counter and aiming target suggest a tossing game, but the rooftop-like setting, red balls, and hoop-like target poorly convey paper balls thrown into an office trash can."
+    },
+    "p66-quick": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.51,
+     "reason": "The visible ball and throw counter make the simple tossing challenge readable, but the sparse rooftop-like scene and hoop-like target do little to establish an office wastebasket game."
+    },
+    "main-after-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.49,
+     "reason": "The throw counter and aiming target suggest a tossing game, but the rooftop-like setting, red balls, and hoop-like target poorly convey paper balls thrown into an office trash can."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.46,
+     "wouldPlay": 0.51,
+     "reason": "The visible ball and throw counter make the simple tossing challenge readable, but the sparse rooftop-like scene and hoop-like target do little to establish an office wastebasket game."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-22",
+   "sentence": "build the tallest pancake tower in the diner",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.61,
+     "reason": "A visible pancake stack and diner furnishings fit the premise, but the low tower and obstructed view make the height-building challenge look limited."
+    },
+    "main-quick": {
+     "fidelity": 0.79,
+     "wouldPlay": 0.63,
+     "reason": "The pancake stack visibly grows in a diner setting, suggesting a simple stacking game, though foreground clutter obscures the action and little challenge is apparent."
+    },
+    "main-after-reading": {
+     "fidelity": 0.79,
+     "wouldPlay": 0.63,
+     "reason": "The pancake stack visibly grows in a diner setting, suggesting a simple stacking game, though foreground clutter obscures the action and little challenge is apparent."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.61,
+     "reason": "A visible pancake stack and diner furnishings fit the premise, but the low tower and obstructed view make the height-building challenge look limited."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-23",
+   "sentence": "a frog drums to the beat in a swamp band",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.43,
+     "reason": "The swamp scenery, frog figures, and rhythm lanes suggest the premise, but no frog visibly drums or performs with a band, and the sparse track looks repetitive."
+    },
+    "p66-quick": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.44,
+     "reason": "The swamp, frogs, and incoming beat tiles fit a rhythm game, but visible drumming and bandmates are missing, while the clear lanes and retry screen suggest basic phone playability."
+    },
+    "main-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.43,
+     "reason": "The swamp scenery, frog figures, and rhythm lanes suggest the premise, but no frog visibly drums or performs with a band, and the sparse track looks repetitive."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.48,
+     "wouldPlay": 0.44,
+     "reason": "The swamp, frogs, and incoming beat tiles fit a rhythm game, but visible drumming and bandmates are missing, while the clear lanes and retry screen suggest basic phone playability."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-24",
+   "sentence": "two knights face off in a duel on a narrow bridge",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "A knight, sword, and narrow bridge suggest the setting, but no opposing knight is visible and the action looks like dodging projectiles, with clear controls but sparse visual variety."
+    },
+    "p66-quick": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.44,
+     "reason": "The knight and narrow bridge fit part of the premise, but the visible threat is a projectile rather than a second knight, and the simple controls and retry screen suggest a basic, repetitive survival game."
+    },
+    "main-after-reading": {
+     "fidelity": 0.43,
+     "wouldPlay": 0.48,
+     "reason": "A knight, sword, and narrow bridge suggest the setting, but no opposing knight is visible and the action looks like dodging projectiles, with clear controls but sparse visual variety."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.44,
+     "reason": "The knight and narrow bridge fit part of the premise, but the visible threat is a projectile rather than a second knight, and the simple controls and retry screen suggest a basic, repetitive survival game."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-25",
+   "sentence": "a little bird flaps between the pipes of an old factory",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.68,
+     "wouldPlay": 0.48,
+     "reason": "A small round bird and industrial pipes convey the factory setting, but flapping and the route between obstacles are unclear, while the muted scene and prominent retry screen limit appeal."
+    },
+    "p66-quick": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.54,
+     "reason": "The bird, pipes, and worn industrial scenery fit the premise, with visible life and time indicators making play more legible, though the dark scene leaves the flight challenge unclear."
+    },
+    "main-after-reading": {
+     "fidelity": 0.68,
+     "wouldPlay": 0.48,
+     "reason": "A small round bird and industrial pipes convey the factory setting, but flapping and the route between obstacles are unclear, while the muted scene and prominent retry screen limit appeal."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.54,
+     "reason": "The bird, pipes, and worn industrial scenery fit the premise, with visible life and time indicators making play more legible, though the dark scene leaves the flight challenge unclear."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-26",
+   "sentence": "a kangaroo catches falling coconuts on a tropical beach",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.77,
+     "reason": "A kangaroo catches falling coconuts on a sunny beach beneath tropical foliage, with bombs and a visible bonus phase adding variety to the simple phone-friendly play."
+    },
+    "main-quick": {
+     "fidelity": 0.88,
+     "wouldPlay": 0.7,
+     "reason": "The kangaroo, falling coconuts, beach setting, and bomb hazards clearly convey the premise, though the sparse scenes suggest limited gameplay variety."
+    },
+    "main-after-reading": {
+     "fidelity": 0.88,
+     "wouldPlay": 0.7,
+     "reason": "The kangaroo, falling coconuts, beach setting, and bomb hazards clearly convey the premise, though the sparse scenes suggest limited gameplay variety."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.9,
+     "wouldPlay": 0.77,
+     "reason": "A kangaroo catches falling coconuts on a sunny beach beneath tropical foliage, with bombs and a visible bonus phase adding variety to the simple phone-friendly play."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-27",
+   "sentence": "bonk the moles popping out of the golf course",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.58,
+     "reason": "Moles emerging from holes on green turf and a central mallet convey the bonking goal, but golf-course details are sparse and the play area looks repetitive."
+    },
+    "p66-quick": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.62,
+     "reason": "Moles, turf holes, and a mallet fit the requested action, while visible impact effects add feedback, though the golf setting and gameplay variety remain limited."
+    },
+    "main-after-reading": {
+     "fidelity": 0.78,
+     "wouldPlay": 0.58,
+     "reason": "Moles emerging from holes on green turf and a central mallet convey the bonking goal, but golf-course details are sparse and the play area looks repetitive."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.8,
+     "wouldPlay": 0.62,
+     "reason": "Moles, turf holes, and a mallet fit the requested action, while visible impact effects add feedback, though the golf setting and gameplay variety remain limited."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-28",
+   "sentence": "slice the watermelons a farmer tosses into the air",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "A farm-like setting and airborne bombs suggest a slicing game, but the visible tosser looks like a fox and no recognizable watermelons or slicing action appear."
+    },
+    "p66-quick": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25,
+     "reason": "The farm-like setting loosely fits, but the fox-like tosser, barely visible airborne objects, and mostly empty playfield make the watermelon-slicing goal unclear and the action look sparse."
+    },
+    "main-after-reading": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3,
+     "reason": "A farm-like setting and airborne bombs suggest a slicing game, but the visible tosser looks like a fox and no recognizable watermelons or slicing action appear."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25,
+     "reason": "The farm-like setting loosely fits, but the fox-like tosser, barely visible airborne objects, and mostly empty playfield make the watermelon-slicing goal unclear and the action look sparse."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-29",
+   "sentence": "a hedgehog crosses a busy highway at night",
+   "scores": {
+    "p66-quick": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.66,
+     "reason": "A small spiky hedgehog faces a dark highway full of traffic with a clear crossing objective, though the distant view and dark vehicles make hazards harder to read."
+    },
+    "main-quick": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.64,
+     "reason": "The hedgehog, nighttime traffic, and crossing progress fit the premise well, but the crowded dark roadway and limited visible character movement make play look somewhat repetitive."
+    },
+    "main-after-reading": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.64,
+     "reason": "The hedgehog, nighttime traffic, and crossing progress fit the premise well, but the crowded dark roadway and limited visible character movement make play look somewhat repetitive."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.83,
+     "wouldPlay": 0.66,
+     "reason": "A small spiky hedgehog faces a dark highway full of traffic with a clear crossing objective, though the distant view and dark vehicles make hazards harder to read."
+    }
+   },
+   "half": "general"
+  },
+  {
+   "id": "p66-30",
+   "sentence": "two crabs shove each other off a rock at low tide",
+   "scores": {
+    "main-quick": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.39,
+     "reason": "A human runner navigates obstacles with no visible crabs, tidal rock, or shoving goal, and the changing courses look moderately engaging but visually confusing."
+    },
+    "p66-quick": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.43,
+     "reason": "The human runner and obstacle courses do not depict the requested crab confrontation or low-tide setting, though the visible routes suggest a straightforward phone game."
+    },
+    "main-reading": {
+     "fidelity": 0.69,
+     "wouldPlay": 0.65,
+     "reason": "Crabs crowd a circular arena with an explicit push-out goal, capturing the central conflict, but there appear to be more than two crabs and no clear low-tide setting; the simple arena looks accessible and fun."
+    },
+    "main-after-reading": {
+     "fidelity": 0.69,
+     "wouldPlay": 0.65,
+     "reason": "Crabs crowd a circular arena with an explicit push-out goal, capturing the central conflict, but there appear to be more than two crabs and no clear low-tide setting; the simple arena looks accessible and fun."
+    },
+    "p66-after-reading": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.43,
+     "reason": "The human runner and obstacle courses do not depict the requested crab confrontation or low-tide setting, though the visible routes suggest a straightforward phone game."
+    }
+   },
+   "half": "general"
+  }
+ ],
+ "medians": {
+  "all": {
+   "main-quick": {
+    "fidelity": 0.375,
+    "wouldPlay": 0.48,
+    "n": 30
+   },
+   "p66-quick": {
+    "fidelity": 0.63,
+    "wouldPlay": 0.555,
+    "n": 30
+   },
+   "main-after-reading": {
+    "fidelity": 0.455,
+    "wouldPlay": 0.48,
+    "n": 30
+   },
+   "p66-after-reading": {
+    "fidelity": 0.655,
+    "wouldPlay": 0.585,
+    "n": 30
+   }
+  },
+  "new": {
+   "main-quick": {
+    "fidelity": 0.25,
+    "wouldPlay": 0.45,
+    "n": 15
+   },
+   "p66-quick": {
+    "fidelity": 0.65,
+    "wouldPlay": 0.57,
+    "n": 15
+   },
+   "main-after-reading": {
+    "fidelity": 0.42,
+    "wouldPlay": 0.48,
+    "n": 15
+   },
+   "p66-after-reading": {
+    "fidelity": 0.66,
+    "wouldPlay": 0.65,
+    "n": 15
+   }
+  },
+  "general": {
+   "main-quick": {
+    "fidelity": 0.58,
+    "wouldPlay": 0.49,
+    "n": 15
+   },
+   "p66-quick": {
+    "fidelity": 0.58,
+    "wouldPlay": 0.54,
+    "n": 15
+   },
+   "main-after-reading": {
+    "fidelity": 0.48,
+    "wouldPlay": 0.49,
+    "n": 15
+   },
+   "p66-after-reading": {
+    "fidelity": 0.46,
+    "wouldPlay": 0.51,
+    "n": 15
+   }
+  }
+ },
+ "gates": [
+  {
+   "id": "G1",
+   "label": "P66 quick would-play median >= main + 0.05 (all 30) and >= main - 0.02 (general half)",
+   "value": 0.075,
+   "valueGeneral": 0.05,
+   "pass": true
+  },
+  {
+   "id": "G2",
+   "label": "P66 fidelity median >= main - 0.02, quick and after reading",
+   "value": 0.255,
+   "valueAfter": 0.2,
+   "pass": true
+  },
+  {
+   "id": "G3",
+   "label": "start pixel7-cpu4: median paired difference branch - main <= +200 ms (15 interleaved pairs)",
+   "value": -710,
+   "pass": true
+  },
+  {
+   "id": "G4",
+   "label": "FPS phone: median B/A over 19 existing genres >= 0.95; every new genre median >= 0.95 x slowest main genre",
+   "value": 1,
+   "newFloor": 28.5,
+   "pass": true
+  },
+  {
+   "id": "G5",
+   "label": "saved genre.v5 hashes unchanged; every holdout game: bot wins, idle loses, replays equal; every new genre losable",
+   "pass": true
+  },
+  {
+   "id": "G6",
+   "label": "genre: wrongRate on set 200 <= main, 0 moves between two old genres",
+   "value": 0.389,
+   "main": 0.389,
+   "oldToOld": 0,
+   "pass": true
+  },
+  {
+   "id": "G7",
+   "label": "e2e: interface-language, existing genres, five new genres and VR green (a test red on main too is main state)",
+   "pass": true
+  }
+ ],
+ "verdict": {
+  "pass": true,
+  "unmet": [],
+  "label": "připraveno k sloučení"
+ },
+ "timing": {
+  "runs": 3,
+  "A": {
+   "commit": "e661855c",
+   "port": 3167
+  },
+  "B": {
+   "commit": "da0183b5",
+   "port": 3166
+  },
+  "profiles": {
+   "pixel7-cpu4": [
+    {
+     "id": "s1-zombie-shooter-in-a-mall",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      7782,
+      6335,
+      7557
+     ],
+     "B": [
+      9210,
+      6372,
+      7493
+     ]
+    },
+    {
+     "id": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      6298,
+      5445,
+      5176
+     ],
+     "B": [
+      6064,
+      5259,
+      5617
+     ]
+    },
+    {
+     "id": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+     "sentence": "a little robot auto-fires at swarms of space bugs on a moon base until the giant queen bug shows up",
+     "A": [
+      6360,
+      5810,
+      5503
+     ],
+     "B": [
+      4412,
+      5170,
+      4793
+     ]
+    },
+    {
+     "id": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+     "sentence": "a black hole swallows the cars of a busy city",
+     "A": [
+      6383,
+      5786,
+      6017
+     ],
+     "B": [
+      4729,
+      4546,
+      4713
+     ]
+    },
+    {
+     "id": "s5-sort-the-colourful-candies-into-the-righ",
+     "sentence": "sort the colourful candies into the right jars in a sweet shop",
+     "A": [
+      9184,
+      17282,
+      6506
+     ],
+     "B": [
+      4720,
+      5390,
+      5269
+     ]
+    }
+   ],
+   "desktop": [
+    {
+     "id": "s1-zombie-shooter-in-a-mall",
+     "sentence": "zombie shooter in a mall",
+     "A": [
+      2776,
+      1603,
+      2099
+     ],
+     "B": [
+      2671,
+      2617,
+      2606
+     ]
+    },
+    {
+     "id": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+     "sentence": "A space marine shoots alien bugs in a mining colony",
+     "A": [
+      2240,
+      2037,
+      2163
+     ],
+     "B": [
+      2289,
+      2181,
+      2236
+     ]
+    },
+    {
+     "id": "s3-a-little-robot-auto-fires-at-swarms-of-s",
+     "sentence": "a little robot auto-fires at swarms of space bugs on a moon base until the giant queen bug shows up",
+     "A": [
+      2548,
+      2523,
+      2687
+     ],
+     "B": [
+      1912,
+      1949,
+      2123
+     ]
+    },
+    {
+     "id": "s4-a-black-hole-swallows-the-cars-of-a-busy",
+     "sentence": "a black hole swallows the cars of a busy city",
+     "A": [
+      1811,
+      2323,
+      1458
+     ],
+     "B": [
+      2359,
+      1997,
+      2203
+     ]
+    },
+    {
+     "id": "s5-sort-the-colourful-candies-into-the-righ",
+     "sentence": "sort the colourful candies into the right jars in a sweet shop",
+     "A": [
+      3394,
+      3222,
+      2367
+     ],
+     "B": [
+      2399,
+      2370,
+      2111
+     ]
+    }
+   ]
+  },
+  "medians": {
+   "pixel7-cpu4": {
+    "A": 6335,
+    "B": 5259,
+    "pairedDiff": -710
+   },
+   "desktop": {
+    "A": 2323,
+    "B": 2236,
+    "pairedDiff": -105
+   }
+  }
+ },
+ "fps": {
+  "profile": "moto-g-power-emulated",
+  "old": [
+   {
+    "genre": "runner",
+    "sentence": "temple run but you're a banana running from a monkey",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     57.3,
+     58.4,
+     57.5
+    ],
+    "drawnB": [
+     58.3,
+     57.7,
+     57.4
+    ],
+    "published": {
+     "A": [
+      "runner/default"
+     ],
+     "B": [
+      "runner/default"
+     ]
+    }
+   },
+   {
+    "genre": "platformer",
+    "sentence": "obby game with lava and spinning bars",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     58.9,
+     58.7,
+     59.1
+    ],
+    "drawnB": [
+     58.4,
+     58.2,
+     57.6
+    ],
+    "published": {
+     "A": [
+      "platformer/default"
+     ],
+     "B": [
+      "platformer/default"
+     ]
+    }
+   },
+   {
+    "genre": "arena",
+    "sentence": "a robot collects batteries on Mars",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     58.1,
+     56.6,
+     57.6
+    ],
+    "drawnB": [
+     56.9,
+     53.3,
+     57.9
+    ],
+    "published": {
+     "A": [
+      "arena/collect"
+     ],
+     "B": [
+      "arena/collect"
+     ]
+    }
+   },
+   {
+    "genre": "voyage",
+    "sentence": "race hot air balloons over a desert canyon",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     58.1,
+     57.2,
+     58.4
+    ],
+    "drawnB": [
+     57.1,
+     58.5,
+     57.6
+    ],
+    "published": {
+     "A": [
+      "null/null"
+     ],
+     "B": [
+      "null/null"
+     ]
+    }
+   },
+   {
+    "genre": "quest",
+    "sentence": "a chef flips pancakes in a busy kitchen",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     54.8,
+     56.9,
+     57
+    ],
+    "drawnB": [
+     58,
+     56.6,
+     50.2
+    ],
+    "published": {
+     "A": [
+      "quest/station"
+     ],
+     "B": [
+      "quest/station"
+     ]
+    }
+   },
+   {
+    "genre": "shooter",
+    "sentence": "zombie shooter in a mall",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     48.6,
+     48.4,
+     46.3
+    ],
+    "drawnB": [
+     48.5,
+     44.9,
+     48.9
+    ],
+    "published": {
+     "A": [
+      "shooter/default"
+     ],
+     "B": [
+      "shooter/default"
+     ]
+    }
+   },
+   {
+    "genre": "throw",
+    "sentence": "throw frisbees to a dog on a sunny beach",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     57.7,
+     57.7,
+     59.4
+    ],
+    "drawnB": [
+     57.5,
+     58.2,
+     57.9
+    ],
+    "published": {
+     "A": [
+      "throw/default"
+     ],
+     "B": [
+      "throw/default"
+     ]
+    }
+   },
+   {
+    "genre": "timing",
+    "sentence": "build the tallest pancake tower before it falls over",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     59.2,
+     55.7,
+     58.9
+    ],
+    "drawnB": [
+     58.4,
+     58.2,
+     58.8
+    ],
+    "published": {
+     "A": [
+      "timing/stack"
+     ],
+     "B": [
+      "timing/stack"
+     ]
+    }
+   },
+   {
+    "genre": "rhythm",
+    "sentence": "tap along to the drums at a jungle festival",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     54.6,
+     57,
+     56.7
+    ],
+    "drawnB": [
+     56.1,
+     58.9,
+     55.1
+    ],
+    "published": {
+     "A": [
+      "rhythm/default"
+     ],
+     "B": [
+      "rhythm/default"
+     ]
+    }
+   },
+   {
+    "genre": "duel",
+    "sentence": "a pirate duels a skeleton captain on a sinking ship",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     58.8,
+     58.8,
+     58.3
+    ],
+    "drawnB": [
+     46.1,
+     58.5,
+     59.1
+    ],
+    "published": {
+     "A": [
+      "duel/default"
+     ],
+     "B": [
+      "duel/default"
+     ]
+    }
+   },
+   {
+    "genre": "flap",
+    "sentence": "like flappy bird but underwater",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     59.1,
+     56.7,
+     59.1
+    ],
+    "drawnB": [
+     58.6,
+     58.9,
+     58.8
+    ],
+    "published": {
+     "A": [
+      "flap/default"
+     ],
+     "B": [
+      "flap/default"
+     ]
+    }
+   },
+   {
+    "genre": "catch",
+    "sentence": "Catch the falling eggs in a basket before they go splat.",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     58.8,
+     57.5,
+     51.5
+    ],
+    "drawnB": [
+     58.5,
+     45.6,
+     56
+    ],
+    "published": {
+     "A": [
+      "catch/default"
+     ],
+     "B": [
+      "catch/default"
+     ]
+    }
+   },
+   {
+    "genre": "whack",
+    "sentence": "bonk the gophers popping out of grandpa's lawn with a rubber chicken",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     48.9,
+     58.7,
+     57.8
+    ],
+    "drawnB": [
+     58,
+     58.7,
+     52.5
+    ],
+    "published": {
+     "A": [
+      "whack/default"
+     ],
+     "B": [
+      "whack/default"
+     ]
+    }
+   },
+   {
+    "genre": "defense",
+    "sentence": "defend the castle from waves of goblins",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     42.9,
+     56.1,
+     39.8
+    ],
+    "drawnB": [
+     46.2,
+     42.2,
+     39.7
+    ],
+    "published": {
+     "A": [
+      "defense/default"
+     ],
+     "B": [
+      "defense/default"
+     ]
+    }
+   },
+   {
+    "genre": "slice",
+    "sentence": "Slice flying watermelons in half with a samurai spoon!",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     46.2,
+     53.9,
+     56.1
+    ],
+    "drawnB": [
+     54.6,
+     54.2,
+     56.6
+    ],
+    "published": {
+     "A": [
+      "slice/default"
+     ],
+     "B": [
+      "slice/default"
+     ]
+    }
+   },
+   {
+    "genre": "hop",
+    "sentence": "a sloth tries to cross a busy jungle highway",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     47.7,
+     59.2,
+     58.7
+    ],
+    "drawnB": [
+     58.5,
+     59.5,
+     59
+    ],
+    "published": {
+     "A": [
+      "hop/default"
+     ],
+     "B": [
+      "hop/default"
+     ]
+    }
+   },
+   {
+    "genre": "crowd",
+    "sentence": "Lead a marching pencil army through numbered gates that add or subtract pencils, then crash the surviving squad into hostile erasers on a classroom desk.",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     57.5,
+     57.4,
+     53.4
+    ],
+    "drawnB": [
+     58.1,
+     58.1,
+     48.4
+    ],
+    "published": {
+     "A": [
+      "crowd/default"
+     ],
+     "B": [
+      "crowd/default"
+     ]
+    }
+   },
+   {
+    "genre": "merge",
+    "sentence": "A squirrel drops acorns onto a forest tray where identical pairs fuse into larger nuts, and I need to keep the tray from overflowing.",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     57.8,
+     59,
+     58.7
+    ],
+    "drawnB": [
+     58.5,
+     59,
+     57.4
+    ],
+    "published": {
+     "A": [
+      "merge/default"
+     ],
+     "B": [
+      "merge/default"
+     ]
+    }
+   },
+   {
+    "genre": "push",
+    "sentence": "a sumo wrestler pushes rivals out of a bouncy ring",
+    "A": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnA": [
+     50.1,
+     58.5,
+     58.5
+    ],
+    "drawnB": [
+     58.1,
+     58.1,
+     56.5
+    ],
+    "published": {
+     "A": [
+      "push/default"
+     ],
+     "B": [
+      "push/default"
+     ]
+    }
+   }
+  ],
+  "new": [
+   {
+    "genre": "survivor",
+    "sentence": "a lone knight survives endless waves of skeletons in a ruined castle courtyard, picking a new power after every wave",
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnB": [
+     43.5,
+     51.8,
+     56.1
+    ],
+    "published": [
+     "survivor/default"
+    ]
+   },
+   {
+    "genre": "hole",
+    "sentence": "a black hole swallows the cars of a busy city",
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnB": [
+     58.1,
+     56.8,
+     57.8
+    ],
+    "published": [
+     "hole/default"
+    ]
+   },
+   {
+    "genre": "steal",
+    "sentence": "a raccoon sneaks into the rival camp, grabs their picnic basket and runs it back to his tree before the rangers catch him",
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnB": [
+     59.1,
+     59.2,
+     57.4
+    ],
+    "published": [
+     "steal/default"
+    ]
+   },
+   {
+    "genre": "sort",
+    "sentence": "sort the colourful candies into the right jars in a sweet shop",
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnB": [
+     58.1,
+     58.1,
+     58.2
+    ],
+    "published": [
+     "sort/default"
+    ]
+   },
+   {
+    "genre": "arrows",
+    "sentence": "clear the jammed parking lot by tapping each car so it drives out the way it points",
+    "B": [
+     59.9,
+     59.9,
+     59.9
+    ],
+    "drawnB": [
+     57.8,
+     58.5,
+     58.3
+    ],
+    "published": [
+     "arrows/default"
+    ]
+   }
+  ],
+  "ratios": [
+   {
+    "genre": "runner",
+    "ratio": 1
+   },
+   {
+    "genre": "platformer",
+    "ratio": 1
+   },
+   {
+    "genre": "arena",
+    "ratio": 1
+   },
+   {
+    "genre": "voyage",
+    "ratio": 1
+   },
+   {
+    "genre": "quest",
+    "ratio": 1
+   },
+   {
+    "genre": "shooter",
+    "ratio": 1
+   },
+   {
+    "genre": "throw",
+    "ratio": 1
+   },
+   {
+    "genre": "timing",
+    "ratio": 1
+   },
+   {
+    "genre": "rhythm",
+    "ratio": 1
+   },
+   {
+    "genre": "duel",
+    "ratio": 1
+   },
+   {
+    "genre": "flap",
+    "ratio": 1
+   },
+   {
+    "genre": "catch",
+    "ratio": 1
+   },
+   {
+    "genre": "whack",
+    "ratio": 1
+   },
+   {
+    "genre": "defense",
+    "ratio": 1
+   },
+   {
+    "genre": "slice",
+    "ratio": 1
+   },
+   {
+    "genre": "hop",
+    "ratio": 1
+   },
+   {
+    "genre": "crowd",
+    "ratio": 1
+   },
+   {
+    "genre": "merge",
+    "ratio": 1
+   },
+   {
+    "genre": "push",
+    "ratio": 1
+   }
+  ],
+  "newFps": [
+   {
+    "genre": "survivor",
+    "fpsP50": 59.9,
+    "pass": true
+   },
+   {
+    "genre": "hole",
+    "fpsP50": 59.9,
+    "pass": true
+   },
+   {
+    "genre": "steal",
+    "fpsP50": 59.9,
+    "pass": true
+   },
+   {
+    "genre": "sort",
+    "fpsP50": 59.9,
+    "pass": true
+   },
+   {
+    "genre": "arrows",
+    "fpsP50": 59.9,
+    "pass": true
+   }
+  ],
+  "mainSlowest": {
+   "genre": "runner",
+   "fpsP50": 30,
+   "drawnFpsPlaying": 31.1,
+   "rule": "lowest fpsP50, ties by drawnFpsPlaying"
+  }
+ },
+ "robot": {
+  "scope": "P66 branch: every holdout game it published (30 quick + reading), fetched from the branch server and re-verified offline in a fresh process (verifyArcade / verifyChain)",
+  "games": 39,
+  "chains": 6,
+  "publishEligible": 39,
+  "botWins": 39,
+  "idleLoses": 39,
+  "replayEqual": 39,
+  "matchesServer": 39,
+  "failures": []
+ },
+ "hashes": {
+  "tests": 48,
+  "passed": 48,
+  "v6": {
+   "file": "src/play/arcade/__tests__/p66-hooks-existing.test.ts (hash-v6.json)",
+   "tests": 47,
+   "passed": 47
+  }
+ },
+ "losable": {
+  "survivor": {
+   "test": "survivor publication gate on 10 seeds (P66 T5) a weak bot (error threshold 500 ‰) loses on at least 8 of 10 seeds – the game can be lost",
+   "pass": true
+  },
+  "hole": {
+   "test": "hole: the bot wins, the idle player and the weak bot lose, replays match seed 1 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 2 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 3 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 4 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 5 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 6 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 7 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 8 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 9 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match seed 10 passes the publish gate: the bot wins, the idle player does not, two replays match | hole: the bot wins, the idle player and the weak bot lose, replays match the idle player loses when the first round clock runs out | hole: the bot wins, the idle player and the weak bot lose, replays match seed 1: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 2: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 3: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 4: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 5: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 6: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 7: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 8: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 9: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match seed 10: the weak bot that ignores the size threshold loses | hole: the bot wins, the idle player and the weak bot lose, replays match two replays of the bot record end in the same hash, another seed builds another city | hole: the bot wins, the idle player and the weak bot lose, replays match the weak bot window is a fixed share of windows, not chance | hole: the bot wins, the idle player and the weak bot lose, replays match the bot also wins with { items: 30 } | hole: the bot wins, the idle player and the weak bot lose, replays match the bot also wins with { items: 120 } | hole: the bot wins, the idle player and the weak bot lose, replays match the bot also wins with { rounds: 1 } | hole: the bot wins, the idle player and the weak bot lose, replays match the bot also wins with { rounds: 2 } | hole: the bot wins, the idle player and the weak bot lose, replays match the bot also wins with { seconds: 90 }",
+   "pass": true
+  },
+  "steal": {
+   "test": "steal genre gates (P66 T7) pin: a careless thief who never minds the guards loses on every seed (guards that never catch would make it a walk)",
+   "pass": true
+  },
+  "sort": {
+   "test": "sort as a game (P66 T8) a weak bot loses: one that sends a wrong item whenever it can loses all 10 seeds, one that slips every other tap most of them",
+   "pass": true
+  },
+  "arrows": {
+   "test": "arrows genre is playable (P66 T9) a weak bot that taps blocked pieces loses its hearts on every seed",
+   "pass": true
+  }
+ },
+ "route": {
+  "main": {
+   "test200": {
+    "sentences": 200,
+    "none": 25,
+    "counted": 175,
+    "wrong": 68,
+    "wrongRate": 0.389
+   },
+   "open": {
+    "sentences": 316,
+    "none": 9,
+    "counted": 307,
+    "wrong": 110,
+    "wrongRate": 0.358
+   }
+  },
+  "branch": {
+   "test200": {
+    "sentences": 200,
+    "none": 25,
+    "counted": 175,
+    "wrong": 68,
+    "wrongRate": 0.389
+   },
+   "open": {
+    "sentences": 316,
+    "none": 9,
+    "counted": 307,
+    "wrong": 109,
+    "wrongRate": 0.355
+   }
+  },
+  "commit": "da0183b5",
+  "oldToOld": [],
+  "toNew": [
+   {
+    "text": "give a lecture about black holes at the planetarium",
+    "from": "arena",
+    "to": "hole"
+   },
+   {
+    "text": "sort recycling on a fast conveyor belt at the dump",
+    "from": "quest",
+    "to": "sort"
+   },
+   {
+    "text": "a black hole that swallows a city, it gets bigger the more it eats",
+    "from": "arena",
+    "to": "hole"
+   }
+  ]
+ },
+ "e2e": {
+  "schema": "p66-t16-e2e.v1",
+  "measuredAt": "2026-10-29T21:46:55Z",
+  "branch": "da0183b5",
+  "main": "e661855c",
+  "totals": {
+   "chromium": {
+    "passed": 90,
+    "total": 92
+   },
+   "pixel7-touch": {
+    "passed": 35,
+    "total": 35
+   },
+   "iphone-touch": {
+    "passed": 13,
+    "total": 13
+   }
+  },
+  "specs": [
+   {
+    "spec": "play-catch",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-crowd",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-defense",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-hop",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-merge",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 1,
+    "redOnMain": 1,
+    "failedTitles": [
+     "an idle player merges nothing: the items turn to stone, the container overflows and the game is lost"
+    ]
+   },
+   {
+    "spec": "play-push",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 1,
+    "redOnMain": 1,
+    "failedTitles": [
+     "an idle player pushes nobody out and the game is lost"
+    ]
+   },
+   {
+    "spec": "play-shooter",
+    "project": "chromium",
+    "passed": 7,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-slice",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-whack",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-runner-path",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-survivor",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-survivor",
+    "project": "pixel7-touch",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-hole",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-hole",
+    "project": "pixel7-touch",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-steal",
+    "project": "chromium",
+    "passed": 1,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-steal",
+    "project": "pixel7-touch",
+    "passed": 1,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-sort",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-sort",
+    "project": "pixel7-touch",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-arrows",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-arrows",
+    "project": "pixel7-touch",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "p66-hooks",
+    "project": "chromium",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "p66-hooks",
+    "project": "pixel7-touch",
+    "passed": 3,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-share",
+    "project": "chromium",
+    "passed": 10,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-share",
+    "project": "pixel7-touch",
+    "passed": 10,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-phone",
+    "project": "chromium",
+    "passed": 6,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-phone",
+    "project": "pixel7-touch",
+    "passed": 6,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-phone",
+    "project": "iphone-touch",
+    "passed": 6,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-touch",
+    "project": "pixel7-touch",
+    "passed": 7,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-touch",
+    "project": "iphone-touch",
+    "passed": 7,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "play-feed-phone",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "interface-language",
+    "project": "chromium",
+    "passed": 4,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "vr-enter",
+    "project": "chromium",
+    "passed": 2,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "vr-diorama",
+    "project": "chromium",
+    "passed": 15,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "vr-native",
+    "project": "chromium",
+    "passed": 4,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   },
+   {
+    "spec": "vr-hud",
+    "project": "chromium",
+    "passed": 4,
+    "failed": 0,
+    "redOnMain": 0,
+    "failedTitles": []
+   }
+  ]
+ },
+ "vitest": {
+  "files": 1907,
+  "tests": 14794,
+  "passed": 14793,
+  "failed": [
+   "src/play/arcade/__tests__/runner-sections.test.ts › kořist i padající kámen leží ve volné mezeře: 20 semínek chycená kořist a dokázaný kámen"
+  ]
+ },
+ "spend": {
+  "t1": 1.6469,
+  "t13": 0.3422,
+  "t15": 1.046,
+  "t16": {
+   "calls": 26,
+   "usd": 0.873
+  },
+  "total": 3.908,
+  "cap": 4
+ }
+}

@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { hooksOf } from '@/play/arcade/hooks';
 import { draftGameSpec } from '@/play/draft/draft';
 import { readGameSpec } from '@/play/spec';
 
@@ -62,8 +63,11 @@ describe('drawn bodies', () => {
     const views = bodiesOf(createArcadeSession(built.world));
     const hidden = views.filter(drawsNothing);
     // Logická těla (P45B – věta dostane šablonu s logikou) jsou skrytá taky; drží je test níž.
+    // P66: běžec `genre.v6` má háčky se stavem – jejich počítadlo (`hooks.keeper`) je skryté tělo navíc.
+    const hooksKeeper = hooksOf(built.world.rules)?.keeper;
+    expect(hidden.filter((view) => view.index === hooksKeeper)).toEqual([expect.objectContaining({ role: ROLE.thing, kind: 'player', keeper: true })]);
     // Zbytek: počítadlo průběhu P45C (běžec je nová hra s křivkou), počítadlo tepu trati (P51 T7), počítadlo power-upů P46C a za nimi počítadlo komba.
-    expect(hidden.filter((view) => view.role !== ROLE.logic)).toEqual([expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.thing, kind: 'player' }), expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
+    expect(hidden.filter((view) => view.role !== ROLE.logic && view.index !== hooksKeeper)).toEqual([expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.thing, kind: 'player' }), expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
     expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.player);
     expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.powerup);
   });

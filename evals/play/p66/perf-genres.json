@@ -1,0 +1,24 @@
+{
+ "about": "P66 T1: one sentence per current genre for e2e/play-perf.spec.ts @measure (PERF_GAMES_FILE). Picked from opened sets only (never the 200 set or a sealed set): the first sentence whose quick game on main e661855c (draftGameSpecWithMeta, route-main.json -> draft) plays that genre, preferring one the blind labels also put first. The perf report records the genre the server actually published. tap = the clock waits for the first tap into the scene (TAP_TO_START in ArcadePlay.tsx), so the probe taps the canvas centre once after start.",
+ "games": [
+  { "id": "runner", "sentence": "temple run but you're a banana running from a monkey" },
+  { "id": "platformer", "sentence": "obby game with lava and spinning bars" },
+  { "id": "arena", "sentence": "a robot collects batteries on Mars" },
+  { "id": "voyage", "sentence": "race hot air balloons over a desert canyon" },
+  { "id": "quest", "sentence": "a chef flips pancakes in a busy kitchen" },
+  { "id": "shooter", "sentence": "zombie shooter in a mall", "tap": true },
+  { "id": "throw", "sentence": "throw frisbees to a dog on a sunny beach" },
+  { "id": "timing", "sentence": "build the tallest pancake tower before it falls over", "tap": true },
+  { "id": "rhythm", "sentence": "tap along to the drums at a jungle festival", "tap": true },
+  { "id": "duel", "sentence": "a pirate duels a skeleton captain on a sinking ship", "tap": true },
+  { "id": "flap", "sentence": "like flappy bird but underwater", "tap": true },
+  { "id": "catch", "sentence": "Catch the falling eggs in a basket before they go splat." },
+  { "id": "whack", "sentence": "bonk the gophers popping out of grandpa's lawn with a rubber chicken" },
+  { "id": "defense", "sentence": "defend the castle from waves of goblins" },
+  { "id": "slice", "sentence": "Slice flying watermelons in half with a samurai spoon!" },
+  { "id": "hop", "sentence": "a sloth tries to cross a busy jungle highway" },
+  { "id": "crowd", "sentence": "Lead a marching pencil army through numbered gates that add or subtract pencils, then crash the surviving squad into hostile erasers on a classroom desk." },
+  { "id": "merge", "sentence": "A squirrel drops acorns onto a forest tray where identical pairs fuse into larger nuts, and I need to keep the tray from overflowing." },
+  { "id": "push", "sentence": "a sumo wrestler pushes rivals out of a bouncy ring" }
+ ]
+}

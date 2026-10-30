@@ -14,6 +14,7 @@
 
 import { type ArcadeEffect, type ArcadeState, BODY, COUNTER, FLAG, HEADER, type PieceRef, ROLE, RUN_STATE, UNIT, bodyBase, nativeRule, targetStateOf } from '@/play/arcade/contract';
 import { abilityActive } from '@/play/arcade/abilities/state';
+import { type HookEffect, isHookEffect } from '@/play/arcade/hooks/contract';
 import { type BehaviourRef, behaviourBodies, behaviourPhaseOf, matches, shotBodies, telegraphOf } from '@/play/arcade/pieces/behaviours';
 import { BOSS } from '@/play/arcade/pieces/behaviours/boss';
 
@@ -166,6 +167,50 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
   if (run === RUN_STATE.won) add('win', player);
   else if (run === RUN_STATE.lost) add('lose', player);
   return events;
+}
+
+const NO_HOOKS: readonly HookEffect[] = [];
+
+/**
+ * Zprávy háčků z efektů tiku (P66 T4, vzor `comboOf` v `feel.ts`): létající skóre, hlášky, kola, nabídka a volba
+ * vylepšení, vzácný nález, boss. Jen čte. Hra bez háčků (`genre.v5`) je nemá, tik bez nich nic nealokuje.
+ */
+export function hookEffectsOf(effects: readonly ArcadeEffect[]): readonly HookEffect[] {
+  let hooks: HookEffect[] | null = null;
+  for (const effect of effects) if (isHookEffect(effect)) (hooks ??= []).push(effect);
+  return hooks ?? NO_HOOKS;
+}
+
+/**
+ * Posluchač zpráv háčků hry člověka (vrstva háčků, P66 T4): tik se zprávami → `listener`, restart relace (tik
+ * zpět) → `reset`. Jako sběrnice jen poslouchá – ukázka ani přehrání záznamu zprávy nevydají (`onEvents`).
+ */
+export function onHookEffects(
+  session: Pick<ArcadeSession, 'onEvents' | 'subscribe' | 'state'>,
+  listener: (effects: readonly HookEffect[], tick: number) => void,
+  reset: () => void,
+): () => void {
+  let seen = session.state()[HEADER.tick] as number;
+  const offEvents = session.onEvents((effects, tick) => {
+    const hooks = hookEffectsOf(effects);
+    if (hooks.length > 0) listener(hooks, tick);
+  });
+  const offState = session.subscribe(() => {
+    const tick = session.state()[HEADER.tick] as number;
+    if (tick < seen) reset();
+    seen = tick;
+  });
+  return () => {
+    offEvents();
+    offState();
+  };
+}
+
+/** Temeno těla `body` v metrech v osách jádra (x zrcadlí až scéna); tělo mimo svět je hráč. */
+export function bodyTopOf(state: ArcadeState, body: number): { readonly x: number; readonly y: number; readonly z: number } {
+  const at = body >= 0 && body < (state[HEADER.bodyCount] as number) ? body : (state[HEADER.player] as number);
+  const base = bodyBase(at);
+  return { x: (state[base + BODY.x] as number) / UNIT, y: ((state[base + BODY.y] as number) + (state[base + BODY.h] as number)) / UNIT, z: (state[base + BODY.z] as number) / UNIT };
 }
 
 /** Chování průběhu ve hře (P45C): odkazy z pravidla `pacing`; hra bez něj žádná nemá. */

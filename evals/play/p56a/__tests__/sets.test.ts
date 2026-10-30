@@ -54,7 +54,9 @@ describe('P56A sealed holdout', () => {
     const traps = sentences.filter((s) => s.family === 'trap');
     expect([targets.length, traps.length]).toEqual([60, 20]);
     expect(targets.filter((s) => !validMode(s.genre) || s.lure !== null).map((s) => s.id)).toEqual([]);
-    for (const genre of GENRES) expect(targets.filter((s) => s.genre!.startsWith(`${genre}.`)).length, genre).toBeGreaterThanOrEqual(3);
+    // Sada je zapečetěná před P66 – pět žánrů, které P66 T2 přidal, v ní být nemůže.
+    const sealed = GENRES.filter((genre) => !['survivor', 'hole', 'steal', 'sort', 'arrows'].includes(genre));
+    for (const genre of sealed) expect(targets.filter((s) => s.genre!.startsWith(`${genre}.`)).length, genre).toBeGreaterThanOrEqual(3);
     expect(traps.filter((s) => !validMode(s.lure) || (s.genre !== null && !validMode(s.genre)) || s.genre === s.lure).map((s) => s.id)).toEqual([]);
   });
 

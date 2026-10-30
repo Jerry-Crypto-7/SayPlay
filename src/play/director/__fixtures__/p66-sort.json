@@ -1,0 +1,17 @@
+{
+  "sentence": "a toy shop clerk puts teddy bears, robots and balls back on the right shelves",
+  "answer": {
+    "plan": "Tap the queues so each teddy bear, robot and ball goes to the shelf of its own kind.",
+    "spec": {
+      "genre": "sort",
+      "mode": "default",
+      "hero": "shop clerk",
+      "cast": [
+        { "label": "teddy bear", "does": "collect" },
+        { "label": "robot", "does": "collect" },
+        { "label": "ball", "does": "collect" }
+      ],
+      "setting": "toy shop"
+    }
+  }
+}

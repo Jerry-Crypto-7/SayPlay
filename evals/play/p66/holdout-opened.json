@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "42bf10ccca56ea5dab0b0c06cca9401701b3bb3980794c31da9a853c99c9e611",
+ "openedAt": "2026-10-29T18:45:57.692Z",
+ "commit": "da0183b5f1a1a31ed2d32d4193e46f57800380e4",
+ "by": "P66 T16 /go headless",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}

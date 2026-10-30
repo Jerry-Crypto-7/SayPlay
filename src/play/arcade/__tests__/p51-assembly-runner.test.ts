@@ -98,7 +98,8 @@ describe('P51 T5: collect arenas built from P42 parts get pacing with a boss', (
     it(`${id}: paced with a boss finale; idle never wins, replay equal, intermediate ≥ 0.8 with a finale`, async () => {
       const spec = draftGameSpecWithMeta(text, 1).spec;
       expect(generatorOf(spec)).toBe('arena_collect');
-      expect(spec.genre?.compilerVersion).toBe('genre.v5');
+      // Nová hra je od P66 T2 `genre.v6`; průběh P51 drží `genreAtLeast(…, 'genre.v5')`.
+      expect(spec.genre?.compilerVersion).toBe('genre.v6');
       expect(spec.assemblyParts?.map((part) => part.kind)).toEqual(parts);
       await preloadPhysics(spec, loadRapier);
       let intermediate = 0;
@@ -124,7 +125,7 @@ describe('P51 T5: collect arenas built from P42 parts get pacing with a boss', (
   it('a chaser part and a stored genre.v4 arena with parts stay unpaced', () => {
     const chaser = assembled('chaser');
     const hazard = assembled('hazard');
-    expect(hazard.genre?.compilerVersion).toBe('genre.v5');
+    expect(hazard.genre?.compilerVersion).toBe('genre.v6');
     expect(nativeRule(worldOf(hazard, 1).rules, 'pacing')).toBeDefined();
     const stored: GameSpecV1 = { ...hazard, genre: { ...(hazard.genre as NonNullable<GameSpecV1['genre']>), compilerVersion: 'genre.v4' } };
     for (const spec of [chaser, stored]) expect(nativeRule(worldOf(spec, 1).rules, 'pacing')).toBeUndefined();

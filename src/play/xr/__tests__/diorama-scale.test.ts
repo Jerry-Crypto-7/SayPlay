@@ -27,6 +27,7 @@ import { stageOf } from '@/play/compose/stage-registry';
 
 import {
   DESK,
+  DESK_LAYOUT,
   type DeskPose,
   type DioramaView,
   HEAD,
@@ -162,6 +163,20 @@ describe('the hero never leaves the desk', () => {
     const view = createDiorama(playAreaOf(worldOf('runner.default')));
     const frozen = view.frame(runOf('runner.default')[0]!);
     expect(lost(runOf('runner.default'), () => frozen).length).toBeGreaterThan(100);
+  });
+
+  it('the runner running down a valley of its drawn track stays on the desk; a fall below that ground still drops under it', () => {
+    // Kopce trati běžce (`runnerPathOf`) jsou jen kresba: jádro běží po rovině, scéna kreslí hrdinu o `ground(z)` výš či níž.
+    const ground = (z: number): number => -1.8 * Math.sin((Math.PI * Math.max(0, z)) / 40);
+    const drawn = runOf('runner.default').map((hero) => ({ ...hero, y: hero.y + ground(hero.z) }));
+    const view = createDiorama(playAreaOf(worldOf('runner.default')), DESK_LAYOUT, ground);
+    expect(lost(drawn, (hero) => view.frame(hero))).toEqual([]);
+    // Okno s rovnou zemí hrdinu v údolí ztratí pod deskou – kontrola výš kousne.
+    const flat = createDiorama(playAreaOf(worldOf('runner.default')));
+    expect(lost(drawn, (hero) => flat.frame(hero)).length).toBeGreaterThan(10);
+    // Pád do jámy: hrdina 2 m pod kreslenou zemí údolí zmizí pod deskou, okno za ním nejede.
+    const pit = { x: 0, y: ground(20) - 2, z: 20 };
+    expect(deskPointOf(view.frame(pit), pit).y).toBeLessThan(0);
   });
 
   it.each(TRACKS)('%s: the track scrolls inside the diorama while the desk stands', (id) => {

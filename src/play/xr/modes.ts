@@ -55,6 +55,12 @@ export const XR_MODES: Readonly<Record<GenreId, XrModeEntry>> = {
   crowd: { mode: 'surround', pose: 'track' },
   merge: { mode: 'desk', pose: 'table' },
   push: { mode: 'desk', pose: 'table' },
+  // Žánry P66 přišly po kole VR (T6); do vlastní úlohy VR hrají na stole jako každý nový žánr.
+  survivor: { mode: 'desk', pose: 'table' },
+  hole: { mode: 'desk', pose: 'table' },
+  steal: { mode: 'desk', pose: 'table' },
+  sort: { mode: 'desk', pose: 'table' },
+  arrows: { mode: 'desk', pose: 'table' },
 };
 
 /** Žánr, který tabulka nezná (starý spec bez žánru, nový žánr před svou úlohou VR), hraje na stole. */
@@ -87,6 +93,11 @@ const GENRE_OF_BOT: Readonly<Record<string, GenreId>> = {
   crowd_bot: 'crowd',
   merge_bot: 'merge',
   push_bot: 'push',
+  survivor_bot: 'survivor',
+  hole_bot: 'hole',
+  steal_bot: 'steal',
+  sort_bot: 'sort',
+  arrows_bot: 'arrows',
 };
 
 /** Žánr hratelného světa; `null` = svět bez žánru (starší ovládání `glide`, `walker`, `ball`). */

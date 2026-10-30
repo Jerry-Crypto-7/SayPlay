@@ -1,0 +1,25 @@
+{
+ "about": "P66 T1 dev set: 20 new English sentences, 4 per new genre (survivor, hole, steal, sort, arrows), each with a place and things from the sentence. Written 2026-10-28 before any P66 code change. Tuning on these is allowed.",
+ "sentences": [
+  { "id": "v01", "genre": "survivor", "text": "a lone knight survives endless waves of skeletons in a ruined castle courtyard, picking a new power after every wave" },
+  { "id": "v02", "genre": "survivor", "text": "a little robot auto-fires at swarms of space bugs on a moon base until the giant queen bug shows up" },
+  { "id": "v03", "genre": "survivor", "text": "survive the zombie horde in an abandoned shopping mall for as long as you can" },
+  { "id": "v04", "genre": "survivor", "text": "a hamster with a pea shooter holds out against hordes of angry cats in a messy kitchen" },
+  { "id": "v05", "genre": "hole", "text": "a black hole swallows the cars of a busy city" },
+  { "id": "v06", "genre": "hole", "text": "a hungry hole in the farmyard eats chickens, then tractors, then the whole barn" },
+  { "id": "v07", "genre": "hole", "text": "a sinkhole grows under a sunny beach and gulps down umbrellas, sandcastles and surfboards" },
+  { "id": "v08", "genre": "hole", "text": "a hole in the kitchen floor swallows plates and pots and finally the fridge" },
+  { "id": "v09", "genre": "steal", "text": "a raccoon sneaks into the rival camp, grabs their picnic basket and runs it back to his tree before the rangers catch him" },
+  { "id": "v10", "genre": "steal", "text": "steal the golden egg from the dragon's cave and carry it home to the village" },
+  { "id": "v11", "genre": "steal", "text": "a pirate crew raids the enemy ship for treasure chests and hauls them back to their own island" },
+  { "id": "v12", "genre": "steal", "text": "a ninja cat steals fish from the market stalls and brings them to her alley while guard dogs chase her" },
+  { "id": "v13", "genre": "sort", "text": "sort the colourful candies into the right jars in a sweet shop" },
+  { "id": "v14", "genre": "sort", "text": "a toy shop clerk puts teddy bears, robots and balls back on the right shelves" },
+  { "id": "v15", "genre": "sort", "text": "pour the coloured potions between bottles in a wizard lab until each bottle holds one colour" },
+  { "id": "v16", "genre": "sort", "text": "a mail sorter at the post office drops red, blue and yellow letters into the matching bags" },
+  { "id": "v17", "genre": "arrows", "text": "clear the jammed parking lot by tapping each car so it drives out the way it points" },
+  { "id": "v18", "genre": "arrows", "text": "a pile of arrows lies in a garden, tap them one by one so they fly off without hitting each other" },
+  { "id": "v19", "genre": "arrows", "text": "untangle the traffic jam at a busy crossroads: tap a bus and it leaves if the road ahead is clear" },
+  { "id": "v20", "genre": "arrows", "text": "slide the wooden fish out of the crowded pond, each fish only swims the way its nose points" }
+ ]
+}

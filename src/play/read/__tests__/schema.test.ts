@@ -9,7 +9,7 @@ import { LOOK_IDS } from '../../arcade/look';
 import { GENRE_MODULES } from '../../genre/modules';
 import { readerSystemPrompt } from '../prompt';
 import { READ_CONTROLS } from '../../spec';
-import { READING_JSON_SCHEMA, READY_GENRE_MODES, readingSchema, type Reading } from '../schema';
+import { READER_PENDING, READING_JSON_SCHEMA, READY_GENRE_MODES, readingSchema, type Reading } from '../schema';
 
 const READING: Reading = {
   control: 'runner',
@@ -47,8 +47,10 @@ describe('readingSchema P56A fields', () => {
     expect(readingSchema.safeParse({ ...READING, genre: { genre: 'runner', mode: 'stack' } }).success).toBe(false);
     expect(readingSchema.safeParse({ ...READING, genre: { genre: 'golf', mode: 'default' } }).success).toBe(false);
     expect(readingSchema.safeParse({ ...READING, genre: { genre: 'runner', mode: 'default', extra: 1 } }).success).toBe(false);
-    const ready = Object.values(GENRE_MODULES).flatMap((module) => (module.modes as readonly string[]).filter((mode) => module.availability(mode as never) === 'ready').map((mode) => `${module.id}.${mode}`));
+    // P66 T12: živé žánry, které čtečka ještě nepopisuje (`READER_PENDING`), čtení jmenovat nesmí – popíše je T13.
+    const ready = Object.values(GENRE_MODULES).filter((module) => !READER_PENDING.has(module.id)).flatMap((module) => (module.modes as readonly string[]).filter((mode) => module.availability(mode as never) === 'ready').map((mode) => `${module.id}.${mode}`));
     expect(READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`)).sort()).toEqual(ready.sort());
+    for (const genre of READER_PENDING) expect(readingSchema.safeParse({ ...READING, genre: { genre, mode: 'default' } }).success, genre).toBe(false);
   });
 
   it('takes a world only from the look sets and a title of 1 to 32 characters', () => {

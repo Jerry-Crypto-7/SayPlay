@@ -3,12 +3,12 @@
  "sentence": "Racing car escaping and shooting enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:11:57.149Z",
- "ms": 7629,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:26:31.394Z",
+ "ms": 9425,
  "answer": {
-  "plan": "Create a driving‑shooting hybrid where the player’s car races through an open country, evading obstacles while firing at enemy vehicles that spawn in waves.",
+  "plan": "Create a racing‑escape shooter where a car dodges and shoots enemies while racing through an open country.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -22,9 +22,9 @@
      "patrol": false
     },
     {
-     "label": "obstacle",
-     "does": "avoid",
-     "verb": "avoid",
+     "label": "road",
+     "does": "scenery",
+     "verb": "drive",
      "states": null,
      "patrol": false
     }
@@ -46,19 +46,19 @@
     "gravity": 1200,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 90
    },
    "ruleRoles": [
     {
      "id": "enemy",
      "kind": "chaser",
-     "label": "enemy car",
+     "label": "enemy",
      "count": null
     },
     {
-     "id": "obstacle",
-     "kind": "hazard",
-     "label": "rock",
+     "id": "road",
+     "kind": "prop",
+     "label": "road",
      "count": null
     }
    ],
@@ -69,33 +69,17 @@
      "physics": null
     },
     {
-     "role": "obstacle",
+     "role": "road",
      "start": "hidden",
      "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startTimer",
+     "id": "spawn_enemies",
      "verb": "wait",
      "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "race",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawnWave",
-     "verb": "wait",
-     "when": {
-      "timer": "race"
+      "phase": "start"
      },
      "if": null,
      "do": [
@@ -109,23 +93,7 @@
      ]
     },
     {
-     "id": "obstacleSpawn",
-     "verb": "wait",
-     "when": {
-      "timer": "race"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "obstacle",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "enemyShoot",
+     "id": "enemy_shoot",
      "verb": "shoot",
      "when": {
       "contact": [
@@ -145,15 +113,18 @@
     "vars": null,
     "timers": [
      {
-      "id": "race"
+      "id": "race_timer"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "mid"
+     },
+     {
+      "id": "end"
      }
     ],
     "events": null
@@ -164,8 +135,8 @@
     "attack": "shoot"
    },
    "abilities": [
-    "shoot",
-    "dash"
+    "dash",
+    "shoot"
    ],
    "segments": [
     "newFoe",

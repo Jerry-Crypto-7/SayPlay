@@ -384,7 +384,9 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
   it('landing stays unpaced: it builds exactly the world it had before pacing', () => {
     const spec = cellSpec('voyage.land');
     expect(GENRE_PACING.voyage_land).toBeUndefined();
-    for (const seed of SEEDS) expect(worldOf(spec, seed), `seed ${seed}`).toEqual(worldOf(storedOf(spec), seed));
+    // Tatáž hra přeložená před háčky P66 (`genre.v5`): `genre.v6` k ní přidá jen počítadlo a pravidlo háčků (T10).
+    const preHooks = { ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v5' } };
+    for (const seed of SEEDS) expect(worldOf(preHooks, seed), `seed ${seed}`).toEqual(worldOf(storedOf(spec), seed));
   });
 
   it('no finale adds a win rule or a win wrapper: the paced rules are the stored ones plus pacing, and pacing never wins', () => {
@@ -392,7 +394,8 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
       const spec = cellSpec(cell.id);
       const paced = worldOf(spec);
       const stored = worldOf(storedOf(spec));
-      expect(paced.rules.map((rule) => rule.id).filter((id) => id !== 'pacing'), cell.id).toEqual(stored.rules.map((rule) => rule.id));
+      // Pravidlo `hooks` (P66 T10, létající skóre) nic nevystřelí, takže ani nevyhraje – patří k průběhu nové hry.
+      expect(paced.rules.map((rule) => rule.id).filter((id) => id !== 'pacing' && id !== 'hooks'), cell.id).toEqual(stored.rules.map((rule) => rule.id));
       const mine = paced.rules.findIndex((rule) => rule.id === 'pacing');
       const bot = runBot(paced, ARCADE_LIBRARY, { profile: 'intermediate' });
       const winners = new Set<number>();

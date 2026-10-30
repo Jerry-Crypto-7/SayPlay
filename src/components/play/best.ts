@@ -5,6 +5,8 @@
  * výjimku a výsledek se vykreslí bez rekordu. Leží mimo hashovaný stav.
  */
 
+import type { CalloutId } from '@/play/arcade/hooks/contract';
+
 import { clockText } from './ui/GameHud';
 
 export const BEST_PREFIX = 'sp-best:';
@@ -72,6 +74,18 @@ export function bestGoal(best: Best | null, hz: number, survive: boolean): BestG
   if (best === null) return null;
   if (best.score > 0) return { text: `Best ${best.score.toLocaleString('en-US')}`, score: best.score };
   return survive ? null : { text: `Best ${clockText(best.ticks / hz)}`, score: null };
+}
+
+/** Hláška, kterou za běhu ohlásí přebitý cíl HUD (P66 T11) – id z uzavřeného seznamu `CALLOUTS`. */
+export type BestCheer = Extract<CalloutId, 'new_best' | 'beat_it'>;
+
+/**
+ * Přebil běh cíl HUD? Body nad rekordem = `new_best`, nad výzvou kamaráda = `beat_it`; cíl v čase
+ * (`score: null`) rozhodne až konec běhu. Jednou za běh to pohlídá vrstva háčků (`cheerView`).
+ */
+export function cheerOf(goal: BestGoal | null, dare: boolean, score: number): BestCheer | null {
+  if (goal === null || goal.score === null || score <= goal.score) return null;
+  return dare ? 'beat_it' : 'new_best';
 }
 
 /**

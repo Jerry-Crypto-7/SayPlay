@@ -116,6 +116,13 @@ const GENRE_FOE: Readonly<Record<GenreId, string>> = {
   crowd: 'wall',
   merge: 'fruit',
   push: 'rival',
+  // P66 T2: jen slova, která `DEFAULT_LABELS` už má – nové výchozí slovo by změnilo, které popisky z věty dostanou
+  // model (`_upgrade.ts`) a které se převlečou s místem (`compose.ts`), i u dnešních her („zombie“, „guard“).
+  survivor: 'goblin',
+  hole: 'car',
+  steal: 'robot',
+  sort: 'fruit',
+  arrows: 'car',
 };
 
 const placeRoles = (setting: string): PlaceRoles | null => {

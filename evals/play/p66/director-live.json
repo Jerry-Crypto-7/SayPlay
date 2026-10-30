@@ -1,0 +1,27 @@
+{
+ "schema": "p66-director-live.v1",
+ "about": "P66 T13 live check: 10 dev sentences of the new genres (LIVE in src/play/director/__tests__/p66-genres.test.ts) through the game after reading. evals/play/p61/shots.mjs serve on port 3166 (VERCEL_ENV=production, --cap-usd 0.5), paid reader gpt-6-astra, director model unreachable on purpose (MODEL_UNAVAILABLE), so only the reading is paid. Shots in D:/caches/p66/t13-live/, usage log D:/caches/p66/usage-t13.jsonl.",
+ "commit": "d3339426",
+ "measuredAt": "2026-10-29",
+ "rows": [
+  { "id": "v01", "label": "survivor", "quick": "survivor.default", "reading": null, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v02", "label": "survivor", "quick": "survivor.default", "reading": "survivor.default", "readingMs": 4059, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v05", "label": "hole", "quick": "hole.default", "reading": null, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v06", "label": "hole", "quick": "hole.default", "reading": null, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v09", "label": "steal", "quick": "catch.default", "reading": "steal.default", "readingMs": 5415, "status": "draft-final CHAIN" },
+  { "id": "v10", "label": "steal", "quick": "steal.default", "reading": "steal.default", "readingMs": 3334, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v13", "label": "sort", "quick": "sort.default", "reading": null, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v14", "label": "sort", "quick": "sort.default", "reading": "sort.default", "readingMs": 6144, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v17", "label": "arrows", "quick": "arrows.default", "reading": null, "status": "draft-final MODEL_UNAVAILABLE" },
+  { "id": "v19", "label": "arrows", "quick": "arrows.default", "reading": null, "status": "draft-final MODEL_UNAVAILABLE" }
+ ],
+ "summary": {
+  "readingGames": 4,
+  "readingInNewGenre": 4,
+  "readingInLabelledGenre": 4,
+  "rejectedByPublishGate": 0,
+  "finalGameInLabelledGenre": 10,
+  "mainBaselineReadingInNewGenre": 0
+ },
+ "spend": { "calls": 10, "withoutUsage": 0, "usd": 0.3422 }
+}

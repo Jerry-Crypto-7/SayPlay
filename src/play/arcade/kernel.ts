@@ -4,7 +4,8 @@
  * Tik: vstup → ovládání → pravidla `press` (P29A) → vezení na kinematickém tělese → integrace
  * (rychlost, gravitace) → stohování padajících těl → kolize AABB hráče s ostatními (pevné tělo zastaví
  * shora, zdola i z boku; přistání shora není náraz) → nesené tělo na hlavu hráče (P29A) → projektily (život,
- * zásah, odraz; P25G) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
+ * zásah, odraz; P25G) → pravidla → úklid. Svět s háčky (P66 T3, `hooks/index.ts`) má na začátku tiku přestávku po
+ * kole (svět stojí) a před bonusem výhry průchod háčků. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
  * náhodu, takže stav v tiku *t* je funkce počátečního stavu a vstupů 0..*t*.
  * Každá smyčka jde přes těla nebo pravidla světa, a těch je nejvýš
  * `ARCADE_LIMITS` (ohlídá `buildWorld`).
@@ -68,6 +69,8 @@ import {
   powerupCode,
   underlyingRule,
 } from './contract';
+import { isHookEffect } from './hooks/contract';
+import { type HookParams, comboBefore, hooksEnd, hooksOf, hooksStart } from './hooks';
 import { releasePhysics, stepPhysics } from './physics/step';
 
 /** Gravitace v jednotkách za tik² (8 → ~28,8 m/s², arkádově rychlý dopad). */
@@ -95,6 +98,8 @@ export interface ArcadeProgram {
   readonly bonus: ScoreBonusParams | null;
   /** Stav logiky (P45B): první slot prvního logického těla; `null` = svět bez logiky, žádný průchod logiky. */
   readonly logic: { readonly base: number } | null;
+  /** Háčky (P66 T3, pravidlo `hooks`): kola, vylepšení, vzácnost, zprávy; `null` = svět bez háčků tikne jako dřív. */
+  readonly hooks: HookParams | null;
 }
 
 export type ArcadeOutcome = 'running' | 'won' | 'lost';
@@ -114,6 +119,7 @@ export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeP
     // Bonus na konci počítá jádro: po výhře už žádné pravidlo nevystřelí. Složená hra (P42) má bonus v obalu.
     bonus: (world.rules.map(underlyingRule).find((ref) => ref.id === 'score_bonus')?.params as ScoreBonusParams | undefined) ?? null,
     logic: world.logic === undefined ? null : { base: bodyBase(world.logic.bodies[0] as number) },
+    hooks: hooksOf(world.rules),
   };
 }
 
@@ -812,6 +818,8 @@ function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: T
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
     else if (isLogicEffect(effect)) changed = applyLogic(state, effect);
+    // Zprávy háčků (P66 T2) stav nemění – jdou jen ven v efektech tiku; stav háčků píše průchod háčků (`hooks/index.ts`).
+    else if (isHookEffect(effect)) changed = false;
     else if (effect.kind === 'powerup') {
       // Power-up (P46C): nový nahradí starý, odpočet a konec drží obal ovládání (`tickPowerup`).
       const base = baseOf(effect.keeper);
@@ -919,6 +927,14 @@ function fireRules(effects: ArcadeEffect[], owners: number[] | undefined, progra
 /** Jeden tik. Po konci běhu (`won`/`lost`) nedělá nic. Vrací efekty, které pravidla v tiku vydala. */
 export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProgram, trace?: RuleTrace): readonly ArcadeEffect[] {
   if (state[HD.runState] !== RUN_STATE.running) return [];
+  const effects: ArcadeEffect[] = [];
+  // Háčky (P66 T3): v přestávce po kole svět stojí – běží jen volba karty a odpočet, tik jde dál.
+  const hooks = program.hooks;
+  if (hooks !== null && hooksStart(state, input, hooks, effects)) {
+    state[HD.tick] = (state[HD.tick] as number) + 1;
+    return effects;
+  }
+  const combo = hooks === null ? 1 : comboBefore(state, hooks);
   const count = state[HD.bodyCount] as number;
   const player = state[HD.player] as number;
   const none = { state, player, other: -1, source: -1, input };
@@ -928,7 +944,6 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
 
   program.control.piece.step(state, player, input, program.control.params);
   // Stisk (P29A): hned za ovládáním, aby hod nebo zvednutí vyšlo už v tomto tiku.
-  const effects: ArcadeEffect[] = [];
   const owners = trace === undefined ? undefined : [];
   const end: TickEnd = { won: false, lost: false };
   fireRules(effects, owners, program, 'press', none);
@@ -963,6 +978,8 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   settleRun(state, counted);
   // Logika (P45B) jen ve světě, který ji má: svět bez ní tikne bajt po bajtu jako dřív.
   if (program.logic !== null) logicPasses(state, effects, owners, program, none, trace);
+  // Háčky před bonusem: výhra před posledním kolem se vrátí na běh, bonus dostane až skutečná výhra.
+  if (hooks !== null) hooksEnd(state, effects, hooks, combo);
   if (program.bonus !== null && state[HD.runState] === RUN_STATE.won) finishScore(state, program.bonus);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;

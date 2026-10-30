@@ -3,12 +3,12 @@
  "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:48.832Z",
- "ms": 6990,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:27:59.432Z",
+ "ms": 12432,
  "answer": {
-  "plan": "Arena‑fight template for a stone golem vs. grave robbers in a desert temple",
+  "plan": "Create an arena‑fight game where a stone golem battles grave robbers inside an ancient desert temple, with timed waves of robbers and a final boss.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -17,7 +17,7 @@
     {
      "label": "grave robber",
      "does": "fight",
-     "verb": "crush",
+     "verb": "attack",
      "states": 2,
      "patrol": true
     },
@@ -41,16 +41,16 @@
     "itemSizePct": 120,
     "chasers": 2,
     "chaserSpeed": 70,
-    "enemies": 2,
+    "enemies": 3,
     "enemyHp": 5,
     "enemySpeed": 80,
-    "playerHp": 9,
+    "playerHp": 7,
     "lives": 3,
-    "targetScore": 0,
+    "targetScore": 2000,
     "timeLimit": 60
    },
    "counts": {
-    "enemy": 2,
+    "enemy": 3,
     "collectible": 5
    },
    "ruleRoles": [
@@ -58,7 +58,7 @@
      "id": "robber",
      "kind": "chaser",
      "label": "grave robber",
-     "count": 2
+     "count": 3
     },
     {
      "id": "gem",
@@ -84,14 +84,14 @@
      "id": "spawnRobbers",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "day"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "robber",
-        "count": 2,
+        "count": 3,
         "at": "edge"
        }
       }
@@ -101,7 +101,7 @@
      "id": "spawnGems",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "day"
      },
      "if": null,
      "do": [
@@ -115,63 +115,49 @@
      ]
     },
     {
-     "id": "robberChase",
+     "id": "phaseTransition",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "dusk"
      },
      "if": null,
      "do": [
       {
-       "set": {
-        "var": "chase",
-        "value": 1
-       }
+       "goPhase": "night"
       }
      ]
     },
     {
-     "id": "robberAttack",
+     "id": "nightWave",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "night"
      },
      "if": null,
      "do": [
       {
-       "set": {
-        "var": "attack",
-        "value": 1
+       "wave": {
+        "role": "robber",
+        "count": 2,
+        "at": "edge"
        }
       }
      ]
     }
    ],
    "logic": {
-    "vars": [
-     {
-      "id": "chase",
-      "start": 0
-     },
-     {
-      "id": "attack",
-      "start": 0
-     }
-    ],
+    "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "dusk"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "day"
      },
      {
-      "id": "mid"
-     },
-     {
-      "id": "end"
+      "id": "night"
      }
     ],
     "events": null
@@ -183,7 +169,7 @@
    },
    "abilities": [
     "dash",
-    "strike"
+    "shield"
    ],
    "segments": [
     "newFoe",

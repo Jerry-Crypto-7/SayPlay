@@ -39,9 +39,11 @@
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useRef, useState } from 'react';
 
+import type { Rarity } from '@/play/arcade/hooks/contract';
 import type { ShareRun } from '@/play/score/share-text';
 import type { Stars as StarCount } from '@/play/score/stars';
 
+import { FoundRow } from './arcade/hooks/RarityToast';
 import { isTyping } from './arcade/input';
 import { type BestOutcome, type Dare, dareVerdict } from './best';
 import { dareResult } from './board-client';
@@ -79,6 +81,8 @@ export interface RunFacts {
   readonly score?: { readonly value: number; readonly unit: string } | null;
   /** Hvězdy proti paru (P36B T1); chybí = hra hvězdy nemá (mřížka). */
   readonly stars?: StarCount | null;
+  /** Nálezy podle vzácnosti ze stavu háčků (P66 T4); chybí = hra bez vzácnosti. */
+  readonly found?: Readonly<Record<Rarity, number>> | null;
 }
 
 export interface RunResult {
@@ -439,6 +443,7 @@ export function PostRun({
             {result.best.text}
           </p>
         )}
+        {facts.found != null && <FoundRow found={facts.found} />}
         {result.dare !== null && (
           <p className="play-result-best" data-testid="play-dare-result" data-beat={String(result.dare.beat)}>
             {result.dare.text}

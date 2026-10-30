@@ -6,7 +6,7 @@
 
 import { saidMove } from '../compose/assemble';
 import { readCountedNouns, singular } from '../draft/lexicon';
-import type { GenreRanking } from '../genre/classify';
+import { type GenreRanking, SIGN_CELLS } from '../genre/classify';
 import { extractIntent } from '../intent';
 import type { VerbClass } from '../read/schema';
 import { VERB_MICROS } from './build';
@@ -58,7 +58,10 @@ export function chainReasons(sentence: string, read: SentenceRead, ranking: Genr
   // Počet musí patřit věci, kterou věta sbírá: „eight swords“, „three forest lanes“ cíl nejsou.
   const item = read.item === null ? null : singular(read.item.toLowerCase()).split(' ').at(-1);
   const counted = heard && GENERIC_CELLS.has(`${top.genre}.${top.mode}`) && readCountedNouns(sentence).some(({ noun }) => singular(noun) === item);
-  if (verbControls(read) >= 2 && !counted && !drivesAndShoots(sentence, read)) reasons.push('multi_verb');
+  // P66 T15: hlavní sloveso je znak žánru („grabs their basket and runs it back“ = krádež) a ten žánr vede – hraje
+  // všechna slovesa věty, řetěz ho nenabízí a dělal z krádeže chytání (soudce 0,25–0,35).
+  const signed = heard && ranking.pick !== null && SIGN_CELLS.has(`${top.genre}.${top.mode}`) && ranking.pick.genre === top.genre && ranking.pick.mode === top.mode;
+  if (verbControls(read) >= 2 && !counted && !signed && !drivesAndShoots(sentence, read)) reasons.push('multi_verb');
   // P61 T4: `generic` jen pro neslyšenou větu. Dřív i slyšená obecná buňka s náskokem pod 3 („skateboard“ → běžec 2).
   if (!heard) reasons.push('generic');
   if (CHAIN_CUES.test(sentence.toLowerCase())) reasons.push('cue');

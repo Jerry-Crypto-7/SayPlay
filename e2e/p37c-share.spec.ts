@@ -63,8 +63,8 @@ async function winWithDare(page: Page, id: string): Promise<{ readonly score: nu
 /** Každý „člověk“ z vlastní adresy: strop výzev je 1 za 10 s na volajícího. */
 const person = (n: number) => ({ extraHTTPHeaders: { 'x-forwarded-for': `198.51.100.${String(n)}` } });
 
-/** Cíl k překonání: body, nebo čas, když hra neboduje. */
-const dareLine = (score: number) => (score > 0 ? `Can you beat ${score.toLocaleString('en-US')}?` : /^Can you beat \d+\.\ds\?$/);
+/** Cíl k překonání: body, nebo čas, když hra neboduje (P66 T11: „Beat my …!“). */
+const dareLine = (score: number) => (score > 0 ? `Beat my ${score.toLocaleString('en-US')}!` : /^Beat my \d+\.\ds!$/);
 
 test.describe('/play/[id] – share the result as a spoiler-free grid (P37C T4)', () => {
   test('a win shares the game, the stars and the score to beat; the dare link goes as the url', async ({ browser, request }) => {
@@ -134,7 +134,8 @@ test.describe('/play/[id] – share the result as a spoiler-free grid (P37C T4)'
     const shared = await page.evaluate(() => (window as unknown as Captured).__shared[0]!);
     expect(shared.url).toMatch(/\?via=share$/);
     expect(shared.text).not.toMatch(/[⭐☆]/u);
-    expect(shared.text!.split('\n')[3]).toBe('So close. Can you beat it?');
+    // Nečinný běh nemá ani bod: prohra bez bodu „So close.“ neříká (P56A T9; tahle věta tu do P66 T11 zůstala stará).
+    expect(shared.text!.split('\n')[3]).toBe('Can you beat it?');
     await context.close();
   });
 });

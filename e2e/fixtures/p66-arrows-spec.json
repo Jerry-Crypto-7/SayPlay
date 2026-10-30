@@ -1,0 +1,69 @@
+{
+  "schema": "gamespec.v1",
+  "control": "arrows",
+  "controlParams": {
+    "generator": "arrows_grid",
+    "tuning": {
+      "rounds": 3
+    }
+  },
+  "genre": {
+    "id": "arrows",
+    "mode": "default",
+    "compilerVersion": "genre.v6"
+  },
+  "title": "Car Jam",
+  "archetype": "combat_lite",
+  "targetDurationSec": 72,
+  "theme": {
+    "setting": "parking lot",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "defeat_targets",
+    "description": "Tap cars to send them off along their arrows. One with something in its way bumps and costs a heart.",
+    "count": 30,
+    "role": "piece"
+  },
+  "mechanics": [
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "parking attendant"
+    },
+    {
+      "count": 30,
+      "id": "piece",
+      "kind": "target",
+      "label": "car"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Clear every car in 3 rounds!",
+    "controlsHint": "Tap one with a clear way out. Arrows and Space work too."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

@@ -28,9 +28,12 @@ import type { ControlId, GameRole, GameSpecV1 } from '../spec';
  * `genre.v3` (P46C T2): hra dostane power-upy (`placePowerups`); uložené `genre.v2` hrají jako dřív.
  * `genre.v4` (P47A T2): průběh i pod overlay šablonou P45B a finále podle žánru (`FINALE_GENRE_VERSION`); uložené `genre.v3` hrají jako dřív.
  * `genre.v5` (P51 T2): finále ve všech žánrech, nepřátelé a hustota událostí (`FINALE5_GENRE_VERSION`); uložené `genre.v4` hrají jako dřív.
- * Kontroly verze jsou „tahle a novější“ (`genreAtLeast`), nikdy rovnost s jednou verzí.
+ * `genre.v6` (P66 T2): háčky (kola, vylepšení mezi vlnami, vzácnost, `HOOKS_GENRE_VERSION` v `arcade/hooks/contract.ts`) a pět nových
+ * žánrů; uložené `genre.v5` hrají jako dřív (otisk `evals/play/p66/hash-baseline.json`).
+ * Kontroly verze jsou „tahle a novější“ (`genreAtLeast`), nikdy rovnost s jednou verzí. Typ je `string`, ne doslovná
+ * hodnota: stráž „jen před P66“ (`GENRE_COMPILER_VERSION !== 'genre.v5'` v `p66-hash.test.ts`) se tak po zvednutí verze přeloží.
  */
-export const GENRE_COMPILER_VERSION = 'genre.v5';
+export const GENRE_COMPILER_VERSION: string = 'genre.v6';
 
 /**
  * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji
@@ -44,8 +47,10 @@ export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'heal
  * Od P36A T10/T11 jedenáct žánrů: pět z P32 a šest vrácených ovládání (střelba, hod, načasování, rytmus, souboj, poletování).
  * P54C T4 přidá osm nových smyček jako kostry (`stagedGenre`): chytání, bouchání, obrana pruhů, krájení, přeskákání silnice,
  * dav a brány, pouštění a slučování, vytlačování z ringu. Hrají až po úloze svého žánru.
+ * P66 T2 přidá pět dalších koster: přežití ve vlnách (`survivor`), díra, která roste (`hole`), krádež (`steal`),
+ * třídění do nádob (`sort`) a šipky, které odletí, když mají volnou cestu (`arrows`). Hrají až po T5–T9.
  */
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -68,6 +73,11 @@ export const GENRE_MODES = {
   crowd: ['default'],
   merge: ['default'],
   push: ['default'],
+  survivor: ['default'],
+  hole: ['default'],
+  steal: ['default'],
+  sort: ['default'],
+  arrows: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -198,6 +208,11 @@ export const genreSpecSchema = z.discriminatedUnion('genre', [
   variant('crowd'),
   variant('merge'),
   variant('push'),
+  variant('survivor'),
+  variant('hole'),
+  variant('steal'),
+  variant('sort'),
+  variant('arrows'),
 ]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
@@ -230,6 +245,13 @@ export const FOE_DOES: Readonly<Record<GenreId, CastRole>> = {
   crowd: 'avoid',
   merge: 'scenery',
   push: 'fight',
+  // P66 T2: nepřítel vln padne pod automatickou střelbou, věci města díra polyká (role jí přidělí T6), strážce honí
+  // zloděje, věci k třídění a kusy šipek jsou jen kusy hádanky.
+  survivor: 'shoot_at',
+  hole: 'scenery',
+  steal: 'chase_me',
+  sort: 'scenery',
+  arrows: 'scenery',
 };
 
 /**
@@ -369,6 +391,12 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   crowd: {},
   merge: {},
   push: { default: { enemy: 'rivals' } },
+  // P66 T2: řádky nových žánrů předem, ze stejného důvodu; šipky staví mřížku z kol, ne z počtu.
+  survivor: { default: { enemy: 'enemies' } },
+  hole: { default: { collectible: 'items' } },
+  steal: { default: { collectible: 'loot', enemy: 'guards' } },
+  sort: { default: { collectible: 'items' } },
+  arrows: {},
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>

@@ -1,0 +1,72 @@
+{
+  "schema": "gamespec.v1",
+  "control": "survivor",
+  "controlParams": {
+    "generator": "survivor_waves"
+  },
+  "genre": {
+    "id": "survivor",
+    "mode": "default",
+    "compilerVersion": "genre.v6"
+  },
+  "title": "Knight vs Zombies",
+  "archetype": "combat_lite",
+  "targetDurationSec": 75,
+  "theme": {
+    "setting": "ruined town",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "defeat_targets",
+    "description": "Survive 36 zombies in 3 waves, pick an upgrade after each, then beat the boss.",
+    "count": 36,
+    "role": "enemy"
+  },
+  "mechanics": [
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "knight",
+      "count": 1
+    },
+    {
+      "count": 36,
+      "id": "enemy",
+      "kind": "chaser",
+      "label": "zombie"
+    },
+    {
+      "count": 1,
+      "id": "drop",
+      "kind": "collectible",
+      "label": "crystal"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Survive 3 waves of zombies, then the boss!",
+    "controlsHint": "Drag or arrows to move. You fire by yourself."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

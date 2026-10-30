@@ -56,8 +56,13 @@ export interface GenreRanking {
 export type GenreModules = { readonly [G in GenreId]: GenreModule<G> };
 
 type Pair = { readonly genre: GenreId; readonly mode: GenreMode };
-/** Úkol > pohyb > sběr > útěk – pořadí, ve kterém sloveso nese cíl věty. */
-type Kind = 'goal' | 'move' | 'pickup' | 'chase';
+/**
+ * Znak žánru > úkol > pohyb > sběr > útěk – pořadí, ve kterém sloveso nese cíl věty. Znak žánru (`sign`, P66 T12) je
+ * sloveso jen s druhou půlkou, která celou hru jmenuje („survives waves of“, „a hole … swallows“, „steals … carries it
+ * home“): když ji věta řekne, jmenuje hru přesněji než samotné sloveso úkolu („a hamster with a pea shooter holds out
+ * against hordes of cats“ – střílí se, ale hraje se přežití ve vlnách).
+ */
+type Kind = 'sign' | 'goal' | 'move' | 'pickup' | 'chase';
 
 const pair = (genre: GenreId, mode: GenreMode): Pair => ({ genre, mode });
 const RUNNER = pair('runner', 'default');
@@ -87,6 +92,12 @@ const HOP = pair('hop', 'default');
 const CROWD = pair('crowd', 'default');
 const MERGE = pair('merge', 'default');
 const PUSH = pair('push', 'default');
+// P66 T12: přežití ve vlnách, díra, krádež, třídění a šipky.
+const SURVIVOR = pair('survivor', 'default');
+const HOLE = pair('hole', 'default');
+const STEAL = pair('steal', 'default');
+const SORT = pair('sort', 'default');
+const ARROWS = pair('arrows', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -143,6 +154,18 @@ const ALIKE = String.raw`(?:matching|same|identical|equal|alike|twin|(?:into|to 
 const CONTAINER = String.raw`(?:jars?|box|boxes|baskets?|bowls?|cups?|containers?|buckets?|bottles?|tubes?|glass|tanks?|pots?|crates?)\b`;
 /** Odkud se soupeř vystrčí: ring, plošina, ostrov, ker, okraj. */
 const RING = String.raw`(?:rings?|arenas?|platforms?|islands?|rafts?|floes?|icebergs?|edges?|stages?|tables?|mats?|dohyo|ledges?|cliffs?|docks?|piers?|circles?)\b`;
+// P66 T12: znaky pěti nových žánrů. Každý je sloveso i s druhou půlkou, která hru jmenuje – samotné „survive“,
+// „eats“, „steals“, „tap“ dál hrají starý žánr.
+/** Proti čemu se přežívá: vlny, hordy, roje („survives endless waves of skeletons“, „the zombie horde“). */
+const HORDE = String.raw`(?:waves?|hordes?|swarms?|armies|army|onslaught|wave after wave)\b`;
+/** Díra jako podmět („a black hole“, „a hungry hole in the farmyard“), ne místo za předložkou („out of its hole“). */
+const HOLE_SUBJECT = String.raw`(?<!\b(?:of|in|into|from|through|down|inside|under|over|to|at|on|near|beside|by|with) )\b(?:a|an|the|one|this|that|my|your|our) (?:[a-z-]+ ){0,2}?(?:hole|sinkhole|pit|vortex|whirlpool)\b`;
+/** Kořist nesená domů („carry it home“, „hauls them back“, „brings them to her alley“). */
+const CARRY_HOME = String.raw`(?:carr(?:y|ies|ying)|bring(?:s|ing)?|brought|haul(?:s|ing)?|run(?:s|ning)?|ran|drag(?:s|ging)?|sneak(?:s|ing)?|rush(?:es|ing)?|fl(?:y|ies|ying)) (?:it |them |(?:the |their |his |her |its )?(?:[a-z'-]+ ){0,2}?[a-z'-]+ )?(?:all )?(?:back|home|to (?:his|her|their|its|my|your|our) (?:own )?[a-z-]+)\b`;
+/** Kam se třídí: nádoba, která věci sedí („on the right shelves“, „into the matching bags“). */
+const RIGHT_BIN = String.raw`(?:back )?(?:into|in|on|onto|to) (?:the |their |its |his |her |a )?(?:right|matching|correct|proper) (?:[a-z-]+ )?(?:shel(?:f|ves)|bins?|box(?:es)?|jars?|bags?|baskets?|buckets?|bottles?|tubes?|piles?|drawers?|crates?|racks?|trays?|cups?|slots?|spots?|places?|containers?|bowls?|chests?|carts?|trucks?|pens?|sacks?|tins?|lockers?|cages?)\b`;
+/** Kus, který po ťuknutí odjede („so it drives out“, „and it leaves“, „so they fly off“). */
+const LEAVES = String.raw`(?:so|and|to make|to let|then) (?:it|they|that one|each one) (?:only )?(?:drives? (?:out|off|away)|leaves?|fl(?:y|ies) (?:off|away|out)|slides? (?:out|off|away)|zooms? (?:off|out|away)|exits?|escapes?|gets? out|moves? out|rolls? (?:out|away)|pulls? out|sails? (?:out|off|away)|swims? (?:out|off|away))\b`;
 
 /**
  * Co sloveso dělá se svým předmětem (P39): režim slovesa to říká – střelba sestřelí, hod míří, rvačka a
@@ -168,6 +191,37 @@ const FAMILY_DOES: Readonly<Record<VerbFamily['object'], CastRole | null>> = { c
 const v = (verb: string, kind: Kind, pick: Pair | null, pattern: RegExp, does = objectDoes(verb, kind, pick)): Verb => ({ verb, kind, pick, pattern, does });
 
 const VERBS: readonly Verb[] = [
+  // P66 T12: znaky nových žánrů (`sign` jde před úkol). Přežívá se proti vlnám a hordám („survives endless waves of
+  // skeletons“, „holds out against hordes of cats“), hrdina střílí sám („auto-fires at swarms“) nebo si mezi vlnami
+  // vybírá sílu; „survive the storm“ zůstává útěkem a „defend the castle from waves of goblins“ obranou.
+  v('survive', 'sign', SURVIVOR, new RegExp([
+    String.raw`\b(?:surviv(?:e|es|ing)|outlast(?:s|ing)?|(?:hold|holds|holding) out|(?:fend|fends|fending) off|last(?:s|ing)? (?:against|through))(?= (?:against |through |off |the |an? |all |every |endless |wave after wave of )*(?:[a-z'-]+ ){0,2}?${HORDE})`,
+    String.raw`\bauto[- ]?(?:fir(?:e|es|ed|ing)|shoot(?:s|ing|er)?|aim(?:s|ing)?)\b`,
+    String.raw`\b(?:shoot|shoots|shooting|fire|fires|firing)(?= (?:[a-z]+ ){0,2}?(?:on (?:its|his|her|their|my|your) own|by (?:it|him|her|them|my|your)sel(?:f|ves)|automatically)\b)`,
+    String.raw`\b(?:pick(?:s|ing)?|choos(?:e|es|ing)|unlock(?:s|ing)?|earn(?:s|ing)?)(?= (?:a |an |one |new |the )*(?:[a-z]+ )?(?:powers?|upgrades?|perks?|skills?|power-?ups?|abilit(?:y|ies)) (?:after|between) (?:each |every |the )?waves?\b)`,
+  ].join('|'))),
+  // Díra, která polyká („a black hole swallows the cars“, „a sinkhole … gulps down umbrellas“); „eats“ bez díry je sběr.
+  v('swallow', 'sign', HOLE, new RegExp(String.raw`${HOLE_SUBJECT}[^.;!?]*?\b(?:swallow(?:s|ed|ing)?|gulp(?:s|ed|ing)?|devour(?:s|ed|ing)?|gobbl(?:e|es|ed|ing)|eat(?:s|ing)?|ate|suck(?:s|ed|ing)? (?:up|in|down)|consum(?:e|es|ed|ing))\b`)),
+  // Krádež je kořist nesená domů („steal the golden egg … and carry it home“, „grabs their picnic basket and runs it
+  // back“). Krádež bez cesty domů zůstává, kde byla: „steals fish while dodging the fishmonger“ sběrem s útěkem,
+  // „sneaks past guards to steal a fish“ plížením v bludišti se strážemi (P46A).
+  v('steal', 'sign', STEAL, new RegExp(String.raw`(?:\b(?:steal(?:s|ing)?|stole|snatch(?:es|ing)?|swip(?:e|es|ing)|nab(?:s|bing)?|raid(?:s|ing)?|loot(?:s|ing)?|rob(?:s|bing)?)\b|\bgrab(?:s|bing)?(?= (?:their|the [a-z-]+'s|the (?:enemy|rival|other))\b))(?=[^.;!?]*\b${CARRY_HOME})`)),
+  // Třídění: sloveso třídění („sort the candies“; ne „a sort of“ ani místnost „a sorting room“), věci do správné nádoby
+  // („puts … back on the right shelves“, „drops letters into the matching bags“), přelévání do jedné barvy, podle barvy.
+  v('sort', 'sign', SORT, new RegExp([
+    String.raw`\bsort(?:s|ed|ing)?\b(?! (?:of|rooms?|office|cent(?:er|re)|hat|facility|station|machine)\b)`,
+    String.raw`\b(?:put(?:s|ting)?|drop(?:s|ping)?|plac(?:e|es|ing)|send(?:s|ing)?|mov(?:e|es|ing)|toss(?:es|ing)?|slot(?:s|ting)?|fil(?:e|es|ing)|shelv(?:e|es|ing)|load(?:s|ing)?|pack(?:s|ing)?)(?= (?:[a-z0-9,'-]+ ){0,8}?${RIGHT_BIN})`,
+    String.raw`\bpour(?:s|ing)?(?=[^.;!?]*\b(?:one|a single) colou?r\b)`,
+    String.raw`\b(?:group(?:s|ing)?|arrang(?:e|es|ing)|separat(?:e|es|ing)|organi[sz](?:e|es|ing))(?= (?:[a-z0-9,'-]+ ){0,6}?by (?:colou?r|kind|type|shape|size)s?\b)`,
+  ].join('|'))),
+  // Šipky: ťuk, po kterém kus odjede („tap a bus and it leaves“), kus jede, kam ukazuje („the way it points“), zácpa
+  // k rozmotání („untangle the traffic jam“, „clear the jammed parking lot“).
+  v('tap', 'sign', ARROWS, new RegExp([
+    String.raw`\btap(?:s|ping|ped)?(?= (?:on )?(?:each|every|a|an|the|them|one|it)\b[^.;!?]*?\b${LEAVES})`,
+    String.raw`\b(?:the )?(?:way|direction) (?:it |they |its (?:[a-z]+ )?|their (?:[a-z]+ )?|the arrows? |each (?:[a-z]+ )?)(?:points?|faces?|is pointing|are pointing|is facing)\b`,
+    String.raw`\b(?:clear(?:s|ing)?|untangl(?:e|es|ing)|unjam(?:s|ming)?|empt(?:y|ies|ying)|unblock(?:s|ing)?|fre(?:e|es|eing)|solv(?:e|es|ing))(?= (?:the |a |an |this |that )?(?:[a-z'-]+ ){0,2}?(?:jam|jammed|gridlock(?:ed)?|clogged)\b)`,
+    String.raw`\bunpark(?:s|ing|ed)?\b|\btap[- ]away\b`,
+  ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
   v('extinguish', 'goal', SPATIAL, /\bextinguish(?:es|ing)?\b|\bput(?:s|ting)? out (?:the )?(?:fires?|flames?|blaze)\b|\bdous(?:e|es|ing)\b|\bspray(?:s|ing)? water\b|\bhos(?:e|es|ing) down\b/),
@@ -330,6 +384,9 @@ const VERBS: readonly Verb[] = [
   v('refuse', 'chase', ESCAPE, /\brefus(?:e|es|ing)\b/),
 ];
 
+/** Buňky, které hraje znak žánru (P66 T12): když je hlavním slovesem věty, jmenuje celou hru (`chain/decide.ts`). */
+export const SIGN_CELLS: ReadonlySet<string> = new Set(VERBS.filter((entry) => entry.kind === 'sign' && entry.pick !== null).map((entry) => `${entry.pick!.genre}.${entry.pick!.mode}`));
+
 /**
  * Jména her a věci, které žánr prozradí bez slovesa („like mario kart“, „a
  * match 3 game“): +2, takže rozhodnou jen věty, kde hlavní sloveso chybí.
@@ -361,7 +418,7 @@ const NAMES: readonly (readonly [Pair, RegExp])[] = [
   [STATION, /\bmatch[ -]?3\b|\bcandy crush\b|\btetris\b|\bmahjong\b|\bjenga\b|\bpuzzle\b|\bidle\b|\bclicker\b|\btycoon\b|\bovercooked\b|\bfarm game\b|\bsalon\b|\bmakeover\b|\bfashion\b|\bclinic\b|\bmatching game\b|\bword game\b|\bfishing\b|\bfactory\b|\bempire\b/],
 ];
 
-const KIND_ORDER: readonly Kind[] = ['goal', 'move', 'pickup', 'chase'];
+const KIND_ORDER: readonly Kind[] = ['sign', 'goal', 'move', 'pickup', 'chase'];
 
 /** Třída slovesa ze čtení modelem → režim; `null` = sběr podle zbytku věty. */
 const READ_CLASS: Partial<Record<VerbClass, Pair | null>> = {
@@ -411,9 +468,12 @@ export function verbPlayedBy(forms: readonly string[], genre: string, mode: stri
   const words = forms.map((form) => form.toLowerCase());
   // Základní tvar napřed: vzor „box“ chce „boxing“ nebo „box against“, samotné slovo seznamu by minul.
   // Týž základní tvar mívá víc řádků („defend“ – rvačka v Aréně i obrana pruhů, P54C T13): hraje ho každý z nich.
-  const named = VERBS.filter((candidate) => words.includes(candidate.verb));
-  const entries = named.length > 0 ? named : VERBS.filter((candidate) => words.some((word) => candidate.pattern.test(word))).slice(0, 1);
-  return entries.some((entry) => (entry.pick === null ? collects : entry.pick.genre === genre && entry.pick.mode === mode));
+  const plain = VERBS.filter((candidate) => candidate.kind !== 'sign');
+  const named = plain.filter((candidate) => words.includes(candidate.verb));
+  const entries = named.length > 0 ? named : plain.filter((candidate) => words.some((word) => candidate.pattern.test(word))).slice(0, 1);
+  // P66 T12: znak nového žánru („steal“, „sort“) hraje navíc svůj žánr; řádek starého žánru, který slovo hrál, neschová.
+  const signs = VERBS.filter((candidate) => candidate.kind === 'sign' && words.includes(candidate.verb));
+  return [...signs, ...entries].some((entry) => (entry.pick === null ? collects : entry.pick.genre === genre && entry.pick.mode === mode));
 }
 
 /** Věta (a čtení modelem, když je) → všechny režimy seřazené od nejlepšího. */
@@ -431,6 +491,8 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
   };
 
   const heard = VERBS.flatMap((entry) => {
+    // Znak žánru, který nehraje (kostra, dvojníci testů), věc nerozhoduje – sloveso starého žánru zůstává hlavní.
+    if (entry.kind === 'sign' && entry.pick !== null && !scores.has(key(entry.pick))) return [];
     const match = entry.pattern.exec(text);
     return match === null ? [] : [{ ...entry, at: match.index, end: match.index + match[0].length }];
   });
@@ -447,7 +509,10 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
 
   for (const entry of heard) {
     const isMain = entry === main;
-    add(entry.pick ?? pickup(), isMain ? 4 : 1, isMain ? `main verb "${entry.verb}"` : `verb "${entry.verb}"`);
+    // P66 T12: hlavní znak žánru je sloveso (+4) i jméno hry (+2 jako `NAMES`) – druhá půlka znaku hru jmenuje. Bez toho
+    // ho dorovná starý žánr ze slov kolem („tap the boats so they sail out“: sloveso, „boats“ a narážka plavby = 4).
+    const sign = isMain && entry.kind === 'sign';
+    add(entry.pick ?? pickup(), isMain ? (sign ? 6 : 4) : 1, isMain ? `main ${sign ? 'sign' : 'verb'} "${entry.verb}"` : `verb "${entry.verb}"`);
   }
 
   for (const [pick, pattern] of NAMES) {
