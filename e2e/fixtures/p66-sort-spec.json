@@ -1,0 +1,87 @@
+{
+  "schema": "gamespec.v1",
+  "control": "sort",
+  "controlParams": {
+    "generator": "sort_bins",
+    "tuning": {
+      "items": 45,
+      "rounds": 3
+    }
+  },
+  "genre": {
+    "id": "sort",
+    "mode": "default",
+    "compilerVersion": "genre.v6"
+  },
+  "title": "Fox Sort",
+  "archetype": "collect_exit",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "toy shop",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Send teddy bears, rubber ducks and balls to bins of their kind: fill 15 bins in 3 rounds, keep the shelf free.",
+    "count": 15,
+    "role": "sort0"
+  },
+  "mechanics": [],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+    },
+    {
+      "count": 1,
+      "id": "sort0",
+      "kind": "collectible",
+      "label": "teddy bear"
+    },
+    {
+      "count": 1,
+      "id": "sort1",
+      "kind": "collectible",
+      "label": "rubber duck"
+    },
+    {
+      "count": 1,
+      "id": "sort2",
+      "kind": "collectible",
+      "label": "ball"
+    },
+    {
+      "count": 1,
+      "id": "sort3",
+      "kind": "collectible",
+      "label": "teddy bear"
+    },
+    {
+      "count": 1,
+      "id": "sort4",
+      "kind": "collectible",
+      "label": "rubber duck"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Sort the teddy bears, rubber ducks and balls!",
+    "controlsHint": "Tap a line to send its front item. Arrows and Space work too."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

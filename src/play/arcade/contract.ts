@@ -13,6 +13,8 @@
 
 import type { z } from 'zod';
 
+import type { HookEffect } from './hooks/contract';
+
 /** Tik jádra za sekundu. */
 export const ARCADE_HZ = 60;
 /** Jednotek na metr – pozice, rozměry i rychlosti (za tik) jsou celá čísla. */
@@ -511,6 +513,13 @@ export const BUTTON = {
   ACTION_A: 1 << 9,
   /** Akce hrdiny B (P46A): druhá ze `spec.abilities`, klávesa K. */
   ACTION_B: 1 << 10,
+  /**
+   * Volba karty vylepšení 1–3 mezi vlnami (P66, `UPGRADE_PICK_BUTTONS` v `hooks/contract.ts`): klávesy 1/2/3 nebo
+   * klepnutí na kartu. Nové bity, které uložený záznam nemá – jen hry `genre.v6` s háčky je čtou.
+   */
+  PICK_1: 1 << 11,
+  PICK_2: 1 << 12,
+  PICK_3: 1 << 13,
 } as const;
 
 export const AXIS_MIN = -1000;
@@ -644,7 +653,12 @@ export type ArcadeEffect =
   | { readonly kind: 'stopTimer'; readonly timer: number }
   | { readonly kind: 'emit'; readonly event: number }
   /** Západka překročení meze proměnné (bit `bit` v `varLatch`); účetnictví spouštěče, stopu nehlásí. */
-  | { readonly kind: 'latch'; readonly bit: number; readonly on: boolean };
+  | { readonly kind: 'latch'; readonly bit: number; readonly on: boolean }
+  /**
+   * Zprávy háčků (P66, `hooks/contract.ts`): létající skóre, hláška, začátek a konec kola, nabídka a volba
+   * vylepšení, vzácný nález, vstup bosse. Stav nemění – jádro je jen propustí v efektech tiku scéně a HUD.
+   */
+  | HookEffect;
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),

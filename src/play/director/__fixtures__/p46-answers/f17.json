@@ -3,169 +3,27 @@
  "sentence": "a phoenix rises from the ashes over a burning desert",
  "axis": "flap",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:54.357Z",
- "ms": 5525,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:28:04.935Z",
+ "ms": 5503,
  "answer": {
-  "plan": "Create a flap‑style game where a phoenix soars over a burning desert, collecting ashes and avoiding fire hazards while a timer triggers a wave of embers.",
+  "plan": "Create a simple flap‑style game where a phoenix rises from ashes in a burning desert, with a single timed phase that starts the ascent.",
   "spec": {
    "genre": "flap",
    "mode": "default",
    "hero": "phoenix",
-   "cast": [
-    {
-     "label": "ash",
-     "does": "collect",
-     "verb": "rise",
-     "states": 2,
-     "patrol": false
-    },
-    {
-     "label": "ember",
-     "does": "avoid",
-     "verb": "fly",
-     "states": 2,
-     "patrol": true
-    },
-    {
-     "label": "fire",
-     "does": "avoid",
-     "verb": "burst",
-     "states": 2,
-     "patrol": false
-    }
-   ],
+   "cast": [],
    "heroAction": "none",
    "setting": "desert",
    "palette": "desert",
-   "params": {
-    "lengthM": 200,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 90
-   },
-   "ruleRoles": [
-    {
-     "id": "ash",
-     "kind": "collectible",
-     "label": "ash",
-     "count": 5
-    },
-    {
-     "id": "ember",
-     "kind": "hazard",
-     "label": "ember",
-     "count": 10
-    },
-    {
-     "id": "fire",
-     "kind": "hazard",
-     "label": "fire",
-     "count": 3
-    }
-   ],
-   "things": [
-    {
-     "role": "ash",
-     "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "ember",
-     "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "fire",
-     "start": "hidden",
-     "physics": true
-    }
-   ],
-   "rules": [
-    {
-     "id": "collect_ash",
-     "verb": "rise",
-     "when": {
-      "contact": [
-       "player",
-       "ash"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "grab": "other"
-      },
-      {
-       "score": 10
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "ember_wave",
-     "verb": "wait",
-     "when": {
-      "timer": "ember_wave_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "ember",
-        "count": 3,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "fire_wave",
-     "verb": "wait",
-     "when": {
-      "timer": "fire_wave_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "fire",
-        "count": 1,
-        "at": "edge"
-       }
-      }
-     ]
-    }
-   ],
-   "logic": {
-    "vars": null,
-    "timers": [
-     {
-      "id": "ember_wave_timer"
-     },
-     {
-      "id": "fire_wave_timer"
-     }
-    ],
-    "phases": [
-     {
-      "id": "first"
-     },
-     {
-      "id": "second"
-     }
-    ],
-    "events": null
-   },
+   "params": null,
+   "ruleRoles": null,
+   "things": null,
+   "rules": null,
+   "logic": null,
    "boss": null,
-   "abilities": [],
+   "abilities": null,
    "segments": null
   }
  },

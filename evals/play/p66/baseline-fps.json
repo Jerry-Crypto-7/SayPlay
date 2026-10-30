@@ -1,0 +1,799 @@
+{
+ "schema": "p66-baseline-fps.v1",
+ "about": "FPS of main e661855c per current genre in the phone profile of e2e/play-perf.spec.ts @measure (moto-g-power-emulated: 412x823 portrait, DPR 1.75, touch, CPU x4 and Fast 4G via CDP on this machine's GPU, not a phone). One sentence per genre from evals/play/p66/perf-genres.json (PERF_GAMES_FILE), 3 fresh-context runs each, robot plays via \"Show me how\", 10 s window. fpsP50 = fps from the median frame time, median of runs. Machine busy with other sessions; nobody waited for calm.",
+ "commit": "e661855c",
+ "server": "next start -p 3167, PLAY_READER=off, empty in-memory store",
+ "browser": "151.0.7922.34",
+ "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "repeats": 3,
+ "chunks": [
+  {
+   "measuredAt": "2026-10-28T17:53:06.293Z",
+   "games": [
+    "runner",
+    "platformer",
+    "arena",
+    "voyage",
+    "quest"
+   ]
+  },
+  {
+   "measuredAt": "2026-10-28T18:09:17.941Z",
+   "games": [
+    "shooter",
+    "throw",
+    "timing",
+    "rhythm",
+    "duel"
+   ]
+  },
+  {
+   "measuredAt": "2026-10-28T18:15:35.674Z",
+   "games": [
+    "flap",
+    "catch",
+    "whack",
+    "defense",
+    "slice"
+   ]
+  },
+  {
+   "measuredAt": "2026-10-28T18:22:08.862Z",
+   "games": [
+    "hop",
+    "crowd",
+    "merge",
+    "push"
+   ]
+  }
+ ],
+ "medianFpsP50AcrossGenres": 59.9,
+ "medianDrawnFpsAcrossGenres": 45.4,
+ "slowest": {
+  "genre": "runner",
+  "fpsP50": 30,
+  "drawnFpsPlaying": 31.1,
+  "rule": "lowest fpsP50, ties by drawnFpsPlaying"
+ },
+ "order": [
+  "runner 30 (drawn 31.1)",
+  "defense 30 (drawn 34.8)",
+  "flap 59.9 (drawn 40.2)",
+  "quest 59.9 (drawn 40.6)",
+  "shooter 59.9 (drawn 42.3)",
+  "merge 59.9 (drawn 42.9)",
+  "crowd 59.9 (drawn 43.1)",
+  "whack 59.9 (drawn 43.6)",
+  "slice 59.9 (drawn 45.4)",
+  "hop 59.9 (drawn 45.4)",
+  "throw 59.9 (drawn 46.3)",
+  "timing 59.9 (drawn 47.5)",
+  "voyage 59.9 (drawn 49.6)",
+  "duel 59.9 (drawn 49.9)",
+  "platformer 59.9 (drawn 50.3)",
+  "catch 59.9 (drawn 51.2)",
+  "arena 59.9 (drawn 55)",
+  "rhythm 59.9 (drawn 56.5)",
+  "push 59.9 (drawn 58.6)"
+ ],
+ "genres": {
+  "runner": {
+   "sentence": "temple run but you're a banana running from a monkey",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "runner",
+    "mode": "default"
+   },
+   "fpsP50": 30,
+   "fpsP5": 20,
+   "drawnFpsPlaying": 31.1,
+   "callsMedian": 59,
+   "trianglesMedian": 156795,
+   "firstTickMs": 7844.5,
+   "runs": [
+    {
+     "fpsP50": 30,
+     "drawnFrames": 325,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 30,
+     "drawnFrames": 312,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 29.9,
+     "drawnFrames": 235,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T17:53:06.293Z"
+  },
+  "platformer": {
+   "sentence": "obby game with lava and spinning bars",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "platformer",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 50.3,
+   "callsMedian": 87,
+   "trianglesMedian": 112502,
+   "firstTickMs": 5109.2,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 394,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 505,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 563,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T17:53:06.293Z"
+  },
+  "arena": {
+   "sentence": "a robot collects batteries on Mars",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "arena",
+    "mode": "collect"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 30,
+   "drawnFpsPlaying": 55,
+   "callsMedian": 86,
+   "trianglesMedian": 206248,
+   "firstTickMs": 4780.6,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 551,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 512,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 559,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T17:53:06.293Z"
+  },
+  "voyage": {
+   "sentence": "race hot air balloons over a desert canyon",
+   "published": null,
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 49.6,
+   "callsMedian": 91,
+   "trianglesMedian": 215518,
+   "firstTickMs": 5490.4,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 535,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 497,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 426,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T17:53:06.293Z"
+  },
+  "quest": {
+   "sentence": "a chef flips pancakes in a busy kitchen",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "quest",
+    "mode": "station"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 40.6,
+   "callsMedian": 59,
+   "trianglesMedian": 73293,
+   "firstTickMs": 5012,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 419,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 406,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 401,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T17:53:06.293Z"
+  },
+  "shooter": {
+   "sentence": "zombie shooter in a mall",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "shooter",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 42.3,
+   "callsMedian": 46,
+   "trianglesMedian": 84685,
+   "firstTickMs": 6810.3,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 424,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 410,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 433,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:09:17.941Z"
+  },
+  "throw": {
+   "sentence": "throw frisbees to a dog on a sunny beach",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "throw",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 46.3,
+   "callsMedian": 44,
+   "trianglesMedian": 69111,
+   "firstTickMs": 5102.1,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 464,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 425,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 479,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:09:17.941Z"
+  },
+  "timing": {
+   "sentence": "build the tallest pancake tower before it falls over",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "timing",
+    "mode": "stack"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 47.5,
+   "callsMedian": 62,
+   "trianglesMedian": 39948,
+   "firstTickMs": 6171.9,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 460,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 497,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 475,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:09:17.941Z"
+  },
+  "rhythm": {
+   "sentence": "tap along to the drums at a jungle festival",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "rhythm",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 30,
+   "drawnFpsPlaying": 56.5,
+   "callsMedian": 66,
+   "trianglesMedian": 38631,
+   "firstTickMs": 5477.6,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 566,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 566,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 482,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:09:17.941Z"
+  },
+  "duel": {
+   "sentence": "a pirate duels a skeleton captain on a sinking ship",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "duel",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 49.9,
+   "callsMedian": 46,
+   "trianglesMedian": 40350,
+   "firstTickMs": 5864,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 500,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 487,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 526,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:09:17.941Z"
+  },
+  "flap": {
+   "sentence": "like flappy bird but underwater",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "flap",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 40.2,
+   "callsMedian": 57,
+   "trianglesMedian": 25914,
+   "firstTickMs": 6320,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 478,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 0,
+     "robot": "idle-running",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 403,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:15:35.674Z"
+  },
+  "catch": {
+   "sentence": "Catch the falling eggs in a basket before they go splat.",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "catch",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 51.2,
+   "callsMedian": 46,
+   "trianglesMedian": 23207,
+   "firstTickMs": 5484.6,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 513,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 546,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 451,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:15:35.674Z"
+  },
+  "whack": {
+   "sentence": "bonk the gophers popping out of grandpa's lawn with a rubber chicken",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "whack",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 43.6,
+   "callsMedian": 59,
+   "trianglesMedian": 11059,
+   "firstTickMs": 6088,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 477,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 437,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 411,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:15:35.674Z"
+  },
+  "defense": {
+   "sentence": "defend the castle from waves of goblins",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "defense",
+    "mode": "default"
+   },
+   "fpsP50": 30,
+   "fpsP5": 20,
+   "drawnFpsPlaying": 34.8,
+   "callsMedian": 81,
+   "trianglesMedian": 39899,
+   "firstTickMs": 6728.1,
+   "runs": [
+    {
+     "fpsP50": 30,
+     "drawnFrames": 371,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 30,
+     "drawnFrames": 325,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 30,
+     "drawnFrames": 349,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:15:35.674Z"
+  },
+  "slice": {
+   "sentence": "Slice flying watermelons in half with a samurai spoon!",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "slice",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 45.4,
+   "callsMedian": 62,
+   "trianglesMedian": 19697,
+   "firstTickMs": 5671.8,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 468,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 436,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 455,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:15:35.674Z"
+  },
+  "hop": {
+   "sentence": "a sloth tries to cross a busy jungle highway",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "hop",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 45.4,
+   "callsMedian": 48,
+   "trianglesMedian": 170659,
+   "firstTickMs": 6272.3,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 455,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 456,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 447,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:22:08.862Z"
+  },
+  "crowd": {
+   "sentence": "Lead a marching pencil army through numbered gates that add or subtract pencils, then crash the surviving squad into hostile erasers on a classroom desk.",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "crowd",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 29.9,
+   "drawnFpsPlaying": 43.1,
+   "callsMedian": 30,
+   "trianglesMedian": 93315,
+   "firstTickMs": 6569.1,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 384,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 431,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 433,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:22:08.862Z"
+  },
+  "merge": {
+   "sentence": "A squirrel drops acorns onto a forest tray where identical pairs fuse into larger nuts, and I need to keep the tray from overflowing.",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "merge",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 20,
+   "drawnFpsPlaying": 42.9,
+   "callsMedian": 35,
+   "trianglesMedian": 34191,
+   "firstTickMs": 6868.8,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 399,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 430,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 558,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:22:08.862Z"
+  },
+  "push": {
+   "sentence": "a sumo wrestler pushes rivals out of a bouncy ring",
+   "published": {
+    "compilerVersion": "genre.v5",
+    "id": "push",
+    "mode": "default"
+   },
+   "fpsP50": 59.9,
+   "fpsP5": 59.5,
+   "drawnFpsPlaying": 58.6,
+   "callsMedian": 49,
+   "trianglesMedian": 24139,
+   "firstTickMs": 5401.5,
+   "runs": [
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 580,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 591,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    },
+    {
+     "fpsP50": 59.9,
+     "drawnFrames": 587,
+     "robot": "startDemo",
+     "endState": "won",
+     "errors": 0
+    }
+   ],
+   "measuredAt": "2026-10-28T18:22:08.862Z"
+  }
+ }
+}

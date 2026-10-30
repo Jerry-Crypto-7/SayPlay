@@ -1,0 +1,13 @@
+{
+  "sentence": "untangle the traffic jam at a busy crossroads: tap a bus and it leaves if the road ahead is clear",
+  "answer": {
+    "plan": "Tap the stuck buses one by one; each drives off the way it points when nothing blocks the road.",
+    "spec": {
+      "genre": "arrows",
+      "mode": "default",
+      "hero": "traffic cop",
+      "cast": [{ "label": "bus", "does": "scenery" }],
+      "setting": "busy crossroads"
+    }
+  }
+}

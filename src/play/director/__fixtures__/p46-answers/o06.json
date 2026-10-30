@@ -3,12 +3,12 @@
  "sentence": "Jumping arcade game in the forest",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:18.346Z",
- "ms": 6184,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:27:12.649Z",
+ "ms": 11074,
  "answer": {
-  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling logs and enemies that appear in timed waves.",
+  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling logs and enemies, with a simple timed wave mechanic.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,27 +19,34 @@
      "does": "collect",
      "verb": "collect",
      "states": null,
-     "patrol": null
+     "patrol": false
     },
     {
      "label": "log",
      "does": "avoid",
-     "verb": "avoid",
+     "verb": "jump",
      "states": null,
-     "patrol": null
+     "patrol": false
     },
     {
-     "label": "forest goblin",
-     "does": "chase_me",
-     "verb": "chase",
+     "label": "forest sprite",
+     "does": "scenery",
+     "verb": "none",
      "states": null,
-     "patrol": true
+     "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "forest",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 5,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": null
+   },
    "counts": {
     "collectible": 5
    },
@@ -57,7 +64,7 @@
      "count": 3
     },
     {
-     "id": "goblin",
+     "id": "enemy",
      "kind": "chaser",
      "label": "forest goblin",
      "count": 2
@@ -75,87 +82,93 @@
      "physics": null
     },
     {
-     "role": "goblin",
+     "role": "enemy",
      "start": "hidden",
      "physics": null
     }
    ],
    "rules": [
     {
-     "id": "spawn_acorn",
+     "id": "collect_acorn",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "acorn"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "avoid_log",
+     "verb": "jump",
+     "when": {
+      "contact": [
+       "player",
+       "log"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "enemy_wave",
      "verb": "spawn",
      "when": {
-      "phase": "first"
+      "timer": "wave1"
      },
      "if": null,
      "do": [
       {
        "spawn": {
-        "role": "acorn",
-        "at": "player"
+        "role": "enemy",
+        "at": "other"
        }
       }
      ]
     },
     {
-     "id": "spawn_log",
-     "verb": "spawn",
+     "id": "enemy_move",
+     "verb": "move",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "enemy"
+      ]
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "log",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_goblin",
-     "verb": "spawn",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
+       "damage": 1
+      },
       {
-       "spawn": {
-        "role": "goblin",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase_transition",
-     "verb": "wait",
-     "when": {
-      "timer": "phase_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      }
-     ]
-    },
-    {
-     "id": "wave_goblins",
-     "verb": "wave",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "goblin",
-        "count": 2,
-        "at": "edge"
-       }
+       "despawn": "self"
       }
      ]
     }
@@ -164,7 +177,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "wave1"
      }
     ],
     "phases": [

@@ -28,6 +28,11 @@ interface DevSentence { readonly id: string; readonly cell: string; readonly tex
 const DEV: { sentences: DevSentence[] } = JSON.parse(readLf(join(DIR, 'dev.json')));
 const DEV_CELLS = { 'arena.collect': 10, 'arena.escape': 4, 'quest.spatial': 5, 'quest.station': 4, duel: 4, throw: 3 };
 const HOLDOUT_GROUPS = { threat: 24, everyday: 15, fantasy: 12, 'non-game': 9 };
+/** Věty, které pozdější plán vědomě přesunul do jiného žánru; buňka v `dev.json` zůstává záznamem měření P47A. */
+const MOVED_LATER: Readonly<Record<string, string>> = {
+  // P66 T12: přežít hordu je žánr survivor, ne útěk v aréně.
+  e03: 'survivor',
+};
 
 /**
  * Věty všech ostatních sad `evals/play/**`: `sentences[].text|sentence` a `groups.*[].sentence`.
@@ -72,7 +77,7 @@ describe('P47A sets', () => {
     const counts: Record<string, number> = {};
     for (const sentence of DEV.sentences) counts[sentence.cell] = (counts[sentence.cell] ?? 0) + 1;
     expect(counts).toEqual(DEV_CELLS);
-    for (const sentence of DEV.sentences) expect(genreOfSpec(draftGameSpecWithMeta(sentence.text, 1).spec), sentence.id).toBe(sentence.cell);
+    for (const sentence of DEV.sentences) expect(genreOfSpec(draftGameSpecWithMeta(sentence.text, 1).spec), sentence.id).toBe(MOVED_LATER[sentence.id] ?? sentence.cell);
   });
 
   it('holdout matches its recorded SHA-256, also written in the README', () => {

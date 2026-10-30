@@ -56,6 +56,12 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'merge', mode: 'default', hero: 'cat', cast: [{ label: 'planet', does: 'collect' }], setting: 'outer space' },
   // P54C T12: vytlačování z ringu (Rapier).
   { genre: 'push', mode: 'default', hero: 'sumo wrestler', cast: [{ label: 'bull', does: 'fight' }], setting: 'bouncy ring' },
+  // P66 T12: pět nových žánrů je živých – přežití ve vlnách, díra, krádež, třídění a šipky.
+  { genre: 'survivor', mode: 'default', hero: 'knight', cast: [{ label: 'skeleton', does: 'shoot_at' }], setting: 'ruined castle' },
+  { genre: 'hole', mode: 'default', hero: 'black hole', cast: [{ label: 'car', does: 'collect' }], setting: 'busy city' },
+  { genre: 'steal', mode: 'default', hero: 'cat', cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'chase_me' }], setting: 'fish market' },
+  { genre: 'sort', mode: 'default', hero: 'shop clerk', cast: [{ label: 'teddy bear', does: 'collect' }, { label: 'ball', does: 'collect' }], setting: 'toy shop' },
+  { genre: 'arrows', mode: 'default', hero: 'valet', cast: [{ label: 'car', does: 'scenery' }], setting: 'parking lot' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */

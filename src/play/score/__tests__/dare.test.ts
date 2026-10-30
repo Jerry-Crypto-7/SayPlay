@@ -30,7 +30,8 @@ describe('packInputs / unpackInputs', () => {
     expect(typeof unpackInputs([ARCADE_LIMITS.maxTicks, 1, 1, 0])).toBe('string');
     expect(typeof unpackInputs([-1, 1, 1, 0])).toBe('string');
     expect(typeof unpackInputs([0, 0, 1, 0])).toBe('string');
-    expect(typeof unpackInputs([0, 1, 1 << 12, 0])).toBe('string');
+    // Bity 11–13 jsou od P66 T2 volba karty vylepšení (`BUTTON.PICK_1..3`); cizí je až bit nad nimi.
+    expect(typeof unpackInputs([0, 1, 1 << 20, 0])).toBe('string');
     expect(typeof unpackInputs([0, 1, 0, 1001])).toBe('string');
     expect(typeof unpackInputs([0, 1, 0.5, 0])).toBe('string');
     expect(typeof unpackInputs([0, 1, 1])).toBe('string');

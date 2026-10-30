@@ -32,9 +32,12 @@ export type ObjectiveId = (typeof OBJECTIVES)[number];
  * - pohyb: `lanes` = přeskok mezi pěti pruhy, `hop` = skok po polích, `crowd` = dav dvěma pruhy, `drop` = dávkovač nad nádobou;
  * - akce: `whack` = úder do vyskočeného cíle, `slice` = švih přes letící věci, `merge` = sloučit dvě stejné, `push` = vytlačit soupeře;
  * - cíl: `defend` = nepustit vlny k hradu.
+ * P66 T2 přidá akce svých pěti koster, každá dělá z receptu celou hru (`wholeGame`): `autofire` = hrdina střílí sám
+ * ve vlnách, `swallow` = díra polyká menší věci, `steal` = odnést kořist domů, `sort` = poslat věc do nádoby jejího
+ * druhu, `unblock` = klepnutý kus odletí volnou cestou.
  */
 export const GENRE_MOVES = ['lanes', 'hop', 'crowd', 'drop'] as const;
-export const GENRE_ACTIONS = ['whack', 'slice', 'merge', 'push'] as const;
+export const GENRE_ACTIONS = ['whack', 'slice', 'merge', 'push', 'autofire', 'swallow', 'steal', 'sort', 'unblock'] as const;
 export const GENRE_OBJECTIVES = ['defend'] as const;
 
 /** Co jde proti hrdinovi. `guard` = hlídka, která chytí, když vidí; `rival` = soupeř, který závodí nebo hraje proti. */

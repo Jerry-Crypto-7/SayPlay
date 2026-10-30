@@ -1,0 +1,16 @@
+{
+  "sentence": "steal the golden egg from the dragon's cave and carry it home to the village",
+  "answer": {
+    "plan": "Sneak into the cave, grab the golden egg and carry it back to the village while the dragon chases you.",
+    "spec": {
+      "genre": "steal",
+      "mode": "default",
+      "hero": "thief",
+      "cast": [
+        { "label": "golden egg", "does": "collect" },
+        { "label": "dragon", "does": "chase_me" }
+      ],
+      "setting": "dragon cave"
+    }
+  }
+}

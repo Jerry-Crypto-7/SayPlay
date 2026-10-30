@@ -25,9 +25,10 @@ const answer = (overrides: Record<string, unknown> = {}): Record<string, unknown
 
 describe('compact request', () => {
   // P46E T3: řádek novinek AI verze s příkladem na každý hlavní žánr – 12 701 B; strop 12 800 B.
-  it('stays under the 12 800 B prompt budget, asks for a live recipe and has its own cache version', () => {
+  // P66 T13: pět žánrů P66 (řádek žánru s větou a příkladem, buňky tabulky) – 13 970 B; strop 14 100 B.
+  it('stays under the 14 100 B prompt budget, asks for a live recipe and has its own cache version', () => {
     const request = buildCompactRequest(SENTENCE, draftGameSpecWithMeta(SENTENCE).genre);
-    expect(Buffer.byteLength(request.system + request.user, 'utf8')).toBeLessThanOrEqual(12_800);
+    expect(Buffer.byteLength(request.system + request.user, 'utf8')).toBeLessThanOrEqual(14_100);
     expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
     expect(request.system).toContain('LIVE COMBINATIONS');
     expect(request.system).toContain('unmet');

@@ -12,8 +12,10 @@
 import { type Phase, phasesFromCurve } from '../../compose/progression';
 import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
+import { type HookAsk, withoutHookTuning } from '../hooks';
+import { HOOKS_GENRE_VERSION, ROUNDS, type UpgradeId } from '../hooks/contract';
 import { RULE_TEMPLATES, type TemplateName } from '../rules/templates';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT, nativeRule, underlyingRule } from '../contract';
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
 import { BOSS, DROPPER, TURRET, bossBody } from './behaviours/boss';
@@ -744,10 +746,14 @@ export function timingFinaleSpeeds(params: TimingLevelParams): number[] {
   return Array.from({ length: params.rounds }, (_, round) => (round >= params.rounds - TIMING_FINALE.rounds ? Math.max(calm, TIMING_FINALE.speed) : calm));
 }
 
-/** Parametry generátoru ze specu jako v `arcadeWorldOf`: bez `generator`, s rozbaleným `tuning`. */
-function generatorParams(spec: GameSpecV1): Record<string, unknown> {
+/**
+ * Parametry generátoru ze specu: bez `generator`, s rozbaleným `tuning`. Klíče háčků (P66 T3) čte jen hra `genre.v6`
+ * a generátor je nevidí; starší spec je dostane jako dřív (a přísné schéma generátoru ho odmítne). Jediné místo pro
+ * kompilaci (`ownParams` v `arcade/compile.ts`), tempování i remix (`director/remix.ts`).
+ */
+export function generatorParams(spec: GameSpecV1): Record<string, unknown> {
   const { generator: _generator, tuning, ...own } = (spec.controlParams ?? {}) as Record<string, unknown> & { readonly tuning?: Record<string, unknown> };
-  return { ...own, ...tuning };
+  return { ...own, ...(genreAtLeast(spec, HOOKS_GENRE_VERSION) ? withoutHookTuning(tuning) : tuning) };
 }
 
 /**
@@ -1231,6 +1237,87 @@ function pacedControl(control: PieceRef): PieceRef | null {
   if (control.id === 'pacing_control') return control;
   const base = control.params.base as PieceRef | undefined;
   return typeof base === 'object' && base !== null && typeof base.id === 'string' ? pacedControl(base) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Háčky dosavadních žánrů (P66 T10): přestávka mezi vlnami za `genre.v6`
+
+/**
+ * Postup, na jehož stejné díly jdou kola hry, když to nejsou vlny: cíl průběhu (`pacing_control`) podle skóre
+ * (sběr arény – výhra na skóre tak přijde až po poslední značce) nebo padlých nepřátel (střelnice – vlny tam jdou
+ * podle pochodu, ne podle čítače). Cíl podle vln, času či trati kola nedá (`undefined`): kola jsou pak vlny.
+ */
+export function breakGoal(control: PieceRef): { readonly by: 'score' | 'fallen'; readonly role?: number; readonly need: number } | undefined {
+  const goal = pacedControl(control)?.params.goal as { readonly by: string; readonly need: number; readonly role?: number } | undefined;
+  if (goal?.by === 'score') return { by: 'score', need: goal.need };
+  if (goal?.by === 'fallen' && goal.role !== undefined) return { by: 'fallen', role: goal.role, need: goal.need };
+  return undefined;
+}
+
+/** Karty dosavadních žánrů: jen to, co v jejich hře něco dělá (`hookRequestOf` to ještě ověří proti hře). */
+export const GENRE_UPGRADES = {
+  fight: ['speed', 'fire_rate', 'extra_life'],
+  collect: ['speed', 'magnet', 'extra_life'],
+  shooter: ['extra_life', 'fire_rate', 'range'],
+  defense: ['extra_life', 'fire_rate', 'range'],
+} as const satisfies Readonly<Record<string, readonly UpgradeId[]>>;
+
+/** Kola střelnice: 6 vln (výchozí žánr) = výběr po každé druhé, 5 vln = po třetině padlých. */
+export const SHOOTER_ROUNDS = 3;
+
+/**
+ * Kola obrany: 3 na 4 vlny (výběr po 1. a 2. vlně, boss bez nového života před sebou). Změřeno na buňce `defense`
+ * (20 semínek, začátečník; `genre.v5` 0,55): 4 kola (výběr i před bossem) 0,9 – nad pásmem 0,3–0,7; 3 kola 0,45,
+ * 2 kola 0,5.
+ */
+export const DEFENSE_ROUNDS = 3;
+
+/** Žánry se sbíráním, jejichž věci dostanou vzácnost (když skóre nerozhoduje o výhře). */
+const RARITY_GENRES: readonly string[] = ['runner', 'platformer', 'catch', 'voyage'];
+
+/** Kola na `waves` vln: každá vlna jedno kolo do stropu kol, nad ním největší dělitel do 5 (kola na celé vlny), jinak 3. */
+export function roundsForWaves(waves: number): number {
+  if (waves <= ROUNDS.max) return waves;
+  for (let rounds = ROUNDS.max; rounds >= 2; rounds -= 1) if (waves % rounds === 0) return rounds;
+  return 3;
+}
+
+/**
+ * Cílové skóre ze specu, ne ze zkompilovaného `score_bonus.target`: sonda dosažitelného cíle (`reachableTarget` v
+ * `compile.ts`) staví svět s cílem 0, takže háčky podle zkompilovaného cíle by se v sondě a ve finálním světě lišily
+ * (recenze Fáze 3, F1). S cílem výhra přijde před posledním kolem a kola by ji jen vracela (F2) – hra kola nedostane.
+ */
+const targetsScore = (spec: GameSpecV1): boolean => (spec.scoring?.target ?? 0) > 0;
+
+/** Vyhrává se na skóre? Cílové skóre ze specu nebo sběr arény (`grow_to`); vzácnost by výhru zkrátila. */
+const winsOnScore = (spec: GameSpecV1, rules: readonly PieceRef[]): boolean => targetsScore(spec) || rules.some((ref) => underlyingRule(ref).id === 'grow_to');
+
+/**
+ * Háčky, které hra `genre.v6` dosavadního žánru dostane sama (P66 T10; volá `arcade/compile.ts` nad hotovými pravidly):
+ * - souboj, sběr arény, střelnice a obrana: kola s výběrem 1 ze 3 mezi vlnami – souboj na vlny (`roundsForWaves`),
+ *   obrana 3 kola na 4 vlny (`DEFENSE_ROUNDS`), sběr na stejné díly skóre (`breakGoal`), střelnice na třetiny padlých.
+ *   `extra_life` jen vrátí ztracený život (`heal`): s +1 navíc vyhrával začátečník na 20 semínkách 1,0 ve všech čtyřech
+ *   (`genre.v5` 0,45–0,95), s vrácením souboj 0,55, sběr 0,5, obrana 0,45, střelnice 1,0 (bez háčků 0,95). Sběr s akcí
+ *   hrdiny (úder, dash, štít) výběr nedostane: sedí na horní mezi pásma už bez háčků (začátečník 0,65–0,7 z 0,7, P52 T5)
+ *   a jakákoli karta ho přes ni přehoupla (0,75–0,8 i s jedinou nabídkou);
+ * - běžec, skákačka, chytání a plavba: vzácnost sebraných věcí, když je co sbírat a skóre nerozhoduje o výhře
+ *   (plavba bez turba věci nemá);
+ * - ostatní (a co se nevejde): jedno kolo – létající skóre a hlášky komba.
+ * Uložené hry (`genre.v5` a starší) se sem nedostanou, rozhoduje volající (`genreAtLeast`).
+ */
+export function genreHookOffer(spec: GameSpecV1, world: { readonly control: PieceRef; readonly rules: readonly PieceRef[]; readonly level: { readonly bodies: readonly BodyInit[] } }): HookAsk {
+  const genre = spec.genre?.id;
+  const mode = spec.genre?.mode;
+  const waves = (nativeRule(world.rules, 'arena_waves') ?? nativeRule(world.rules, 'defense_shot'))?.params.waves as readonly unknown[] | undefined;
+  const count = waves === undefined ? 0 : waves.length + 1;
+  if (targetsScore(spec)) return { rounds: 1 };
+  if (genre === 'arena' && mode === 'fight' && count >= 2) return { rounds: roundsForWaves(count), upgrades: GENRE_UPGRADES.fight, byWaves: true, heal: true };
+  if (genre === 'arena' && mode === 'collect' && count >= 2 && (spec.abilities?.length ?? 0) === 0 && breakGoal(world.control)?.by === 'score') return { rounds: roundsForWaves(count), upgrades: GENRE_UPGRADES.collect, heal: true };
+  if (genre === 'shooter' && breakGoal(world.control)?.by === 'fallen') return { rounds: SHOOTER_ROUNDS, upgrades: GENRE_UPGRADES.shooter, heal: true };
+  if (genre === 'defense' && count >= 2) return { rounds: Math.min(DEFENSE_ROUNDS, count), upgrades: GENRE_UPGRADES.defense, byWaves: true, heal: true };
+  const things = world.level.bodies.some((body) => body.role === 'collectible');
+  if (genre !== undefined && RARITY_GENRES.includes(genre) && things && !winsOnScore(spec, world.rules)) return { rounds: 1, rarity: true };
+  return { rounds: 1 };
 }
 
 /** Co sondovat (`verifyArcade`): první tělo (předloha) každého chování a bosse ve světě. */

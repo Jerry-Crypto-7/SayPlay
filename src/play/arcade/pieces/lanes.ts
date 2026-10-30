@@ -36,6 +36,13 @@ export function axisOfLane(lane: number): number {
   return center === 0 ? 1 : center;
 }
 
+/**
+ * Buňka mřížky v ose ťuku (P66 T2, šipky): osa 1 = buňka 0, …, `AXIS_MAX` = buňka 999. Nula zůstává „bez vstupu“,
+ * takže mřížka do 999 buněk projde dnešním záznamem (`InputEvent`) i výzvou beze změny formátu.
+ */
+export const axisOfCell = (cell: number): number => cell + 1;
+export const cellOfAxis = (axis: number): number => axis - 1;
+
 /** Střed pruhu ve světě (osa x). */
 export const laneX = (lane: number): number => (lane - LANE_START) * LANES.width;
 

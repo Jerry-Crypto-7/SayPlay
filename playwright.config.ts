@@ -79,7 +79,9 @@ export default defineConfig({
       name: 'pixel7-touch',
       // Řetěz mikroher (P56C T13) jede i tady: přechod kola a první kolo na telefonu. Rámování a plocha hry na
       // telefonu (P61 T6) taky – `p58a-framing` tu měří telefon projektu, `p61-portrait` výšku proti šířce.
-      testMatch: /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait)\.spec\.ts/,
+      // Nové žánry P66 (T5–T9) a háčky (T4, karty v zóně palce) se hrají na výšku prstem; v `chromium` jedou samy
+      // (nejsou v jeho `testIgnore`). Sdílený odkaz, rekord a výzva (P66 T11, `play-share`) se otevírají hlavně na telefonu.
+      testMatch: /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait|play-survivor|play-hole|play-steal|play-sort|play-arrows|p66-hooks|play-share)\.spec\.ts/,
       use: { ...devices['Pixel 7'], hasTouch: true },
     },
     // Safari a iPhone (P58C T3): hlavní cesta věta → hra → výhra → výzva na WebKitu. Přepínače

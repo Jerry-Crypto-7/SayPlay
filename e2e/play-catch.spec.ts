@@ -193,7 +193,8 @@ test.describe('catch on a phone (P54C T5)', () => {
     const end = await page.evaluate(() => (window.__playShell as unknown as HandProbe).idleRun());
     expect(end.runState).toBe('lost');
     await expect(page.getByTestId('hud-counter-collected')).toHaveAttribute('data-count', '0');
-    await expect(page.getByTestId('play-postrun')).toContainText('So close.', { timeout: 30_000 });
+    // Prohra bez bodu je „Try again!“, ne „So close.“ (P56A T9, `PostRun.tsx`) – očekávání z P54C bylo starší než to pravidlo.
+    await expect(page.getByTestId('play-postrun')).toContainText('Try again!', { timeout: 30_000 });
     await context.close();
   });
 });

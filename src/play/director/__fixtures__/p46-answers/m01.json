@@ -3,12 +3,12 @@
  "sentence": "toaster tornado",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:58.790Z",
- "ms": 4432,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:28:12.793Z",
+ "ms": 7857,
  "answer": {
-  "plan": "Escape from a chasing tornado",
+  "plan": "Create an arena‑escape game where a toaster must evade a tornado in a meadow, using a simple phase‑based timer to spawn the tornado and trigger its chase.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -22,9 +22,9 @@
      "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": null,
    "setting": "meadow",
-   "palette": "forest",
+   "palette": "meadow",
    "params": null,
    "counts": {
     "enemy": 1,
@@ -47,7 +47,7 @@
    ],
    "rules": [
     {
-     "id": "start_phase",
+     "id": "startPhase",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -56,28 +56,38 @@
      "do": [
       {
        "startTimer": {
-        "timer": "tornado_timer",
+        "timer": "spawn",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "tornado_appear",
+     "id": "spawnTornado",
      "verb": "wait",
      "when": {
-      "timer": "tornado_timer"
+      "timer": "spawn"
      },
      "if": null,
      "do": [
-      {
-       "goPhase": "second"
-      },
       {
        "spawn": {
         "role": "tornado",
         "at": "player"
        }
+      }
+     ]
+    },
+    {
+     "id": "tornadoChase",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "tornado"
       }
      ]
     }
@@ -86,7 +96,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "tornado_timer"
+      "id": "spawn"
      }
     ],
     "phases": [
@@ -104,12 +114,8 @@
     "name": "Whirling Tempest",
     "attack": "charge"
    },
-   "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "abilities": null,
+   "segments": null
   }
  },
  "failure": null

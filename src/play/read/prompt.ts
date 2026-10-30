@@ -43,6 +43,12 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'merge.default': 'you drop items into a box and two identical ones fuse into a bigger one',
   'crowd.default': 'you lead a group through gates (x2, +5) that grow or shrink it, then it fights',
   'push.default': 'you shove, ram or bump rivals off a ring, island, edge or plate',
+  // P66 T13: pět žánrů P66 – každý má ve větě svůj znak, proto před obecnými režimy. Krátké: prompt má strop 6 000 znaků.
+  'survivor.default': 'foes swarm in waves, the hero shoots by itself',
+  'hole.default': 'a hole swallows smaller things and grows',
+  'steal.default': 'you grab loot and run it home past guards',
+  'sort.default': 'you tap things into bins of their kind',
+  'arrows.default': 'you tap stuck pieces out the way they point',
   'hop.default': 'you hop forward row by row across roads, rails or rivers past traffic',
   'catch.default': 'things fall from above and you move under them to catch them or bounce them back up',
   'whack.default': 'things pop up from holes for a moment and you hit them before they hide',
@@ -82,7 +88,7 @@ export const PROMPT_EXAMPLES: readonly { readonly sentence: string; readonly gen
   { sentence: 'a ranger hikes up the frozen valley and defeats the yeti waiting at the top', genre: 'duel.default' },
   { sentence: 'chess against a grumpy owl, each captured piece turns into a feather', genre: null },
   { sentence: 'a talk show where a nervous robot answers the host and you pick every reply', genre: null },
-  { sentence: 'photograph sleepy bats in the attic, the clearest shots earn stars', genre: null },
+  // P66 T13: příklad focení netopýrů pryč kvůli stropu 6 000 znaků – focení jmenuje řádek žánru („shoot photos“) i řádek null.
 ];
 
 /** Pořadí řádků žánru v promptu: pořadí `MODE_HINTS`, režim bez řádku na konec (test promptu ho shodí). */

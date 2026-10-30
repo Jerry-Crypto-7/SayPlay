@@ -86,7 +86,8 @@ export interface ArcadeParts {
  */
 /** Obaly s `params.base` – doplňky, fáze, průběh, skládání a mutátory řetězu (P56C T15, `pieces/mirror.ts`). */
 const WRAPPING_CONTROLS: ReadonlySet<string> = new Set(['addon_control', 'phase_control', 'pacing_control', 'assembly_control', 'mirror_control']);
-const WRAPPING_BOTS: ReadonlySet<string> = new Set(['addon_bot', 'phase_bot', 'pacing_bot', 'assembly_bot', 'mirror_bot', 'vanishing_floor_bot']);
+/** Roboti s `params.base`; i robot háčků (`hooks_bot`, P66 T10), který obalí robota světa s výběrem vylepšení. */
+const WRAPPING_BOTS: ReadonlySet<string> = new Set(['addon_bot', 'phase_bot', 'pacing_bot', 'assembly_bot', 'mirror_bot', 'vanishing_floor_bot', 'hooks_bot']);
 export const baseControlOf = (control: PieceRef): PieceRef =>
   WRAPPING_CONTROLS.has(control.id) ? baseControlOf((control.params as { base: PieceRef }).base) : control;
 /** Základní robot pod obaly doplňků, fází, průběhu a skládání – scéna z něj čte trať (`course`). */

@@ -3,20 +3,18 @@
  "answers": "src/play/director/__fixtures__/p46-answers",
  "summary": {
   "n": 25,
-  "authored": 21,
-  "ready": 24,
-  "readyShare": 0.96,
+  "authored": 22,
+  "ready": 25,
+  "readyShare": 1,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.333,
-  "onlyCharacters": 8,
-  "boss": 7,
-  "action": 2,
-  "segments": 1,
+  "adds": 0.32,
+  "onlyCharacters": 9,
+  "boss": 5,
+  "action": 0,
+  "segments": 3,
   "actionLost": 0,
-  "reasons": {
-   "MALFORMED": 1
-  }
+  "reasons": {}
  },
  "rows": [
   {
@@ -40,8 +38,8 @@
   {
    "id": "d04",
    "sentence": "shoot down paper planes over a school playground",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -50,7 +48,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -90,8 +90,8 @@
   {
    "id": "f10",
    "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -102,7 +102,6 @@
    "keptLogic": true,
    "adds": [
     "boss",
-    "action",
     "characters"
    ],
    "actionLost": false
@@ -128,8 +127,8 @@
   {
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": null,
    "status": "ready",
    "reason": null,
    "rules": [
@@ -139,8 +138,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
-    "characters"
+    "segments"
    ],
    "actionLost": false
   },
@@ -157,10 +155,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "boss",
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -198,8 +193,8 @@
   {
    "id": "m03",
    "sentence": "Grandma kart",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": null,
    "status": "ready",
    "reason": null,
    "rules": [
@@ -209,7 +204,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "characters"
+    "segments"
    ],
    "actionLost": false
   },
@@ -226,7 +221,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -242,9 +239,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -295,16 +290,15 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
-    "action"
+    "boss"
    ],
    "actionLost": false
   },
   {
    "id": "o02",
    "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -339,17 +333,19 @@
   {
    "id": "o04",
    "sentence": "racing car escapes police and shoots enemies",
-   "directed": "draft",
-   "directedReason": "MALFORMED",
-   "status": "draft-final",
-   "reason": "MALFORMED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
    "rules": [
     3,
-    null
+    3
    ],
-   "keptRules": null,
-   "keptLogic": null,
-   "adds": [],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -389,8 +385,8 @@
   {
    "id": "o07",
    "sentence": "A ninja frog jumps across lily pads in a swamp",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -434,7 +430,8 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss"
+    "boss",
+    "characters"
    ],
    "actionLost": false
   },
