@@ -1,18 +1,19 @@
 {
  "total": 200,
  "before": {
-  "piece": 84,
-  "none": 116
+  "piece": 82,
+  "none": 118
  },
  "after": {
-  "piece": 84,
-  "template": 37,
-  "none": 79
+  "piece": 82,
+  "template": 38,
+  "none": 80
  },
  "byTemplate": {
   "collect_unlock": 1,
   "escape_countdown": 4,
   "defend_base": 4,
+  "waves_survive": 3,
   "boss_finale": 6,
   "race_clock": 3,
   "push": 3,
@@ -21,7 +22,6 @@
   "stack": 2,
   "build_floors": 2,
   "carry": 2,
-  "waves_survive": 2,
   "catch_count": 1
  },
  "topUncovered": [
@@ -535,8 +535,8 @@
   {
    "id": "s049",
    "verbClass": "move_free",
-   "drafted": "move_free",
-   "cover": "piece",
+   "drafted": "survivor",
+   "cover": "template",
    "template": "waves_survive",
    "verbs": [
     "shoot",
@@ -746,7 +746,7 @@
   {
    "id": "s071",
    "verbClass": "manipulate",
-   "drafted": "move_free",
+   "drafted": "sort",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -1130,8 +1130,8 @@
   {
    "id": "s111",
    "verbClass": "move_free",
-   "drafted": "move_free",
-   "cover": "piece",
+   "drafted": "hole",
+   "cover": "none",
    "template": null,
    "verbs": [
     "eat"

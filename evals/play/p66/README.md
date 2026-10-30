@@ -1161,6 +1161,12 @@ T15a: testy míří na hry P66 (otisk `main` přes `genre.v5`, přežití v aré
 
 `runner-sections` (dřív časový limit) tentokrát prošel.
 
+**Celá sada před `/ship` (30. 10.):** 20 690 / 20 714. Mimo složky regrese T15 zůstalo 20 červených, na `main` (`e661855c`) zelených – přeměřeno vědomě jejich generátory, kód hry beze změny:
+- `p41/golden/genres.json` + `replays.json` (`freeze.measure.ts`): 603 zmrazených přehrání má týž výsledek, tik, skóre i životy, mění se jen otisk světa a stavu. Příčina: `compilerVersion` `genre.v6` a díl `hooks` (jedno kolo = beze změny hry) ve světě. `stored.json` se nepíše (uložené hry z místního úložiště).
+- `rules/coverage-p41.json` (`coverage.ts --write-p41`): tři věty poptávky jdou do nových žánrů – s049 „survive waves of monsters … like vampire survivors“ survivor (dílek → šablona), s071 „sort colored balls into tubes“ sort, s111 „a black hole that swallows a city“ hole (dílek → nic, měřidlo zná jen stará ovládání).
+- `p47a/__tests__/sets.test.ts`: dev věta e03 „Survive a horde of skeletons …“ je od T12 survivor; buňka v `dev.json` zůstává záznamem P47A, test ji vede v `MOVED_LATER`.
+- `regression/golden.test.ts` (1 110 ms > 1 000 ms) byl časový limit pod zátěží celé sady; sám 8/8. `catalog-coverage` (1 780 vs 1 786 modelů) padá i na `main` – prostředí, ne P66.
+
 E2e proti `next start` 3131, projekty podle `playwright.config.ts`:
 - `chromium` 24 specifikací: **89 / 92**. Červené `play-merge` „an idle player merges nothing“ (časový limit) a `play-push` „an idle player pushes nobody out“ („Try again!“ místo „So close.“) jsou červené i na `main` (server 3132, týž spec z worktree `main`) – nejsou regrese P66.
 - `vr-diorama` „runner.default: … keeps the hero in view“: červený jen na větvi (na `main` zelený, opakováno samostatně `--workers=1`) – hrdina běžce v diorámatu od ticku 180 vyjede z pohledu. **Regrese** → T15b, opraveno `600f0f92`: semínko hry plyne z otisku specu, `genre.v6` tak dostal jiné semínko a kreslená trať běžce má na ~40 m údolí 1,86 m (na `main` kopec 1,03 m); diorama brala zem jako rovnou (`diorama-scale.ts`, `area.minY`) a kreslený hrdina zapadl pod desku. Spodek pohledu je teď kreslená zem pod hrdinou (výšky trati z `runnerPathOf`), pád do jámy dál mizí pod deskou. Jen kreslení, stav hry a `genre.v5` beze změny; `vr-*` 25/25, `play-runner-path` + `p66-hooks` 5/5.
