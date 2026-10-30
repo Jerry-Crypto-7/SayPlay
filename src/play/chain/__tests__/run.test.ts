@@ -57,8 +57,9 @@ describe('chain contract', () => {
     expect(current.rounds.map((round) => round.rate)).toEqual(RATE_STEPS.slice(0, KEYS.length));
   });
 
-  it('draws round seeds from the chain stream appended last', () => {
-    expect(SUBSYSTEMS.at(-1)).toBe('chain');
+  it('draws round seeds from the chain stream, appended after merge', () => {
+    // Za `chain` přibyly jen streamy háčků P66 (T2), takže `chain` zůstal sedmý.
+    expect(SUBSYSTEMS.indexOf('chain')).toBe(6);
     const stream = createStreams(SEED).chain;
     const expected = KEYS.map(() => nextInt(stream, 1, 0x7fffffff));
     expect(roundSeeds(SEED, KEYS.length)).toEqual(expected);

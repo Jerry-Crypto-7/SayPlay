@@ -130,6 +130,12 @@ export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
   crowd: 'gates grow your crowd to beat a fight boss; "grow a wolf pack through gates"',
   merge: 'drop collect items, two alike merge; "merge matching shells in a bucket"',
   push: 'push fight rivals out of a ring; "a walrus shoves seals off the iceberg"',
+  // P66 T13: pět žánrů P66 vlastními slovy; narážky modulu jsou úzké (T12), řádek říká, co se hraje.
+  survivor: 'roam while the hero fires by itself at shoot_at waves, pick an upgrade between waves, boss last; "a robot holds off alien bugs"',
+  hole: 'steer a hole that swallows collect things smaller than it and grows; "a pothole gulps a whole town"',
+  steal: 'grab the collect loot at a rival base, carry it home past chase_me guards; "a fox sneaks eggs out of the henhouse"',
+  sort: 'tap queues of collect things into bins of their kind or colour; "sort socks into baskets"',
+  arrows: 'tap stuck pieces, each leaves the way it points if clear; "free the boats from a packed harbour"',
 };
 
 /** Co o parametru hloubky (P36A T8) říká věta – v závorce za mezí. */

@@ -1,12 +1,12 @@
 {
  "about": "P45B T11: first answers of the compact director on local gpt-oss-20b for evals/play/p45b/director-sentences.json, judged offline by judgeLogicAnswer (src/play/director/__fixtures__/logic-answers.ts) – raw without and repaired with the phase-entry repair of the read path (withPhaseEntries). Target: >= 20/25 repaired write logic and pass with logic_proved. See evals/play/p45b/README.md.",
- "recordedAt": "2026-10-20T23:14:08.252Z",
- "judgedAt": "2026-10-20T23:14:26.248Z",
- "commit": "a035e5ad",
+ "recordedAt": "2026-10-29T14:30:02.109Z",
+ "judgedAt": "2026-10-29T14:30:43.781Z",
+ "commit": "9ecfc68e",
  "model": "gpt-oss-20b",
  "endpoint": "http://127.0.0.1:8792",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
  "raw": {
   "hit": 0,
   "of": 25
@@ -27,12 +27,12 @@
    "of": 25
   }
  },
- "phasesEntered": 14,
- "wroteLogic": 25,
+ "phasesEntered": 17,
+ "wroteLogic": 24,
  "answered": 25,
  "latencyMs": {
-  "p50": 6184,
-  "max": 12782
+  "p50": 9301,
+  "max": 24648
  },
  "rows": [
   {
@@ -43,47 +43,51 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (var:items, timer:phase1, phase:first, phase:second): ACTION_LOST: rabbit escape fox has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"collect_carrot\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"carrot\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"count\":{\"counter\":\"items\",\"amount\":1}}]},{\"id\":\"fox_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"fox\"]},\"if\":[{\"holding\":\"carrot\"}],\"do\":[{\"damage\":1}]}]; RULE_INVALID: /logic/timers/0: no rule starts timer phase1 – add a rule with {\"startTimer\":{\"timer\":\"phase1\",\"ticks\":…}}; rules as written: [{\"id\":\"collect_carrot\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"carrot\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"count\":{\"counter\":\"items\",\"amount\":1}}]},{\"id\":\"fox_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"fox\"]},\"if\":[{\"holding\":\"carrot\"}],\"do\":[{\"damage\":1}]}]; rule verbs dropped: collect, chase",
+   "why": "the game does not keep the answer's logic (timer:escape_timer, phase:first, phase:second): ACTION_LOST: rabbit escape fox has no action witness; ACTION_LOST: fox chaser rabbit has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"fox_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"fox\",\"at\":\"player\"}}]},{\"id\":\"carrot_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"carrot\",\"at\":\"player\"}}]},{\"id\":\"fox_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"fox\"]},\"if\":null,\"do\":[{\"damage\":1}]}]; RULE_INVALID: /logic/timers/0: no rule starts timer escape_timer – add a rule with {\"startTimer\":{\"timer\":\"escape_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"fox_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"fox\",\"at\":\"player\"}}]},{\"id\":\"carrot_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"carrot\",\"at\":\"player\"}}]},{\"id\":\"fox_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"fox\"]},\"if\":null,\"do\":[{\"damage\":1}]}]; rule verbs dropped: spawn, chase",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "runner",
-   "ms": 12782
+   "ms": 24648
   },
   {
    "id": "o02",
-   "passed": false,
-   "rawPassed": false,
-   "phasesEntered": [],
-   "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): things: role \"bull\" is built by the move_free game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
-   "fallbackReason": "VERB_UNPROVED",
-   "axis": "runner",
-   "ms": 8514
-  },
-  {
-   "id": "o03",
    "passed": false,
    "rawPassed": false,
    "phasesEntered": [
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:race, phase:first, phase:second): ACTION_LOST: car escape has no action witness; ACTION_LOST: car shoot enemy has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"race\",\"ticks\":60}}]},{\"id\":\"spawnWave\",\"verb\":\"wait\",\"when\":{\"timer\":\"race\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"enemy\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"obstacleSpawn\",\"verb\":\"wait\",\"when\":{\"timer\":\"race\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"obstacle\",\"at\":\"player\"}}]},{\"id\":\"enemyShoot\"; rule verbs dropped: wait, shoot",
+   "why": "not authored (UNREPAIRED): bot_wins: the bot lost at tick 3061, 0 m into the track",
+   "fallbackReason": "UNREPAIRED",
+   "axis": "runner",
+   "ms": 15042
+  },
+  {
+   "id": "o03",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "end",
+    "mid"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:race_timer, phase:start, phase:mid, phase:end): verbs_proved: VERB_UNPROVED:shoot – no rule with the verb \"shoot\" fired while the bot played",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "control:steer",
-   "ms": 7629
+   "ms": 9425
   },
   {
    "id": "o04",
    "passed": false,
    "rawPassed": false,
    "phasesEntered": [
-    "phase2"
+    "end",
+    "mid"
    ],
    "wroteLogic": true,
-   "why": "not authored (MALFORMED): /logic/phases/1: no rule enters phase phase2 – add a rule with {\"goPhase\":\"phase2\"}; /logic/timers/0: no rule starts timer phase1 – add a rule with {\"startTimer\":{\"timer\":\"phase1\",\"ticks\":…}}",
-   "fallbackReason": "MALFORMED",
+   "why": "the game does not keep the answer's logic (timer:race_timer, phase:start, phase:mid, phase:end): ACTION_LOST: car escape police has no action witness; ACTION_LOST: police chaser car has no action witness; ACTION_LOST: car shoot enemy has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase mid – add a rule with {\"goPhase\":\"mid\"}; rules as written: [{\"id\":\"police_spawn\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"police\",\"at\":\"player\"}}]},{\"id\":\"enemy_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"enemy\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"police_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"police\"]},\"if\":null,\"do\":[{\"damage\":1}]}]; RULE_INVALID: /logic/phases/2: no rule enters phase end – add a rule with {\"goPhase\":\"end\"}; rules as written: [{\"id\":\"police_spawn\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"police\",\"at\":\"player\"}}]},{\"id\":\"enemy_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"enemy\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"police_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"police\"]},\"if\":null,\"do\":[{\"damage\":1}]}]; RULE_INVALID: /logic/timers/0: no rule starts timer race_timer – add a rule with {\"startTimer\":{\"timer\":\"race_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"police_spawn\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"police\",\"at\":\"player\"}}]},{\"id\":\"enemy_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"enemy\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"police_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"police\"]},\"if\":null,\"do\":[{\"damage\":1}]}]; rule verbs dropped: wait, chase",
+   "fallbackReason": "VERB_UNPROVED",
    "axis": "control:steer",
-   "ms": 6666
+   "ms": 12859
   },
   {
    "id": "o05",
@@ -91,32 +95,36 @@
    "rawPassed": false,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:escape, phase:first, phase:second): things: role \"roomba\" is built by the move_free game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
+   "why": "the game does not keep the answer's logic (timer:escape, phase:first, phase:second): ACTION_LOST: hamster escape roomba has no action witness; RULE_INVALID: /rules/2/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"escape\",\"ticks\":60}}]},{\"id\":\"escapeTimer\",\"verb\":\"wait\",\"when\":{\"timer\":\"escape\"},\"if\":null,\"do\":[{\"goPhase\":\"second\"},{\"wave\":{\"role\":\"roomba\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"secondPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"toggle\":\"roomba\"},{\"despawn\":\"self; rule verbs dropped: wait",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "runner",
-   "ms": 8346
+   "ms": 17321
   },
   {
    "id": "o06",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [],
+   "phasesEntered": [
+    "second"
+   ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:phase_timer, phase:first, phase:second): RULE_INVALID: /logic/timers/0: no rule starts timer phase_timer – add a rule with {\"startTimer\":{\"timer\":\"phase_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_acorn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"acorn\",\"at\":\"player\"}}]},{\"id\":\"spawn_log\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"log\",\"at\":\"player\"}}]},{\"id\":\"spawn_goblin\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"goblin\",\"at\":\"player\"}}]},{\"id\":\"phase_transition\",\"; rule verbs dropped: spawn, wait, wave",
+   "why": "the game does not keep the answer's logic (timer:wave1, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"collect_acorn\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"acorn\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":100},{\"despawn\":\"self\"}]},{\"id\":\"avoid_log\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"log\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"enemy_wave\",\"verb\":\"spawn\",\"when\":{\"timer\":\"wave1\"},\"if\":null,\"do\":[{\"spawn\":; RULE_INVALID: /logic/timers/0: no rule starts timer wave1 – add a rule with {\"startTimer\":{\"timer\":\"wave1\",\"ticks\":…}}; rules as written: [{\"id\":\"collect_acorn\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"acorn\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":100},{\"despawn\":\"self\"}]},{\"id\":\"avoid_log\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"log\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"enemy_wave\",\"verb\":\"spawn\",\"when\":{\"timer\":\"wave1\"},\"if\":null,\"do\":[{\"spawn\":; RULE_INVALID: /rules/0/do/2: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"collect_acorn\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"acorn\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":100},{\"despawn\":\"self\"}]},{\"id\":\"avoid_log\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"log\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"enemy_wave\",\"verb\":\"spawn\",\"when\":{\"timer\":\"wave1\"},\"if\":null,\"do\":[{\"spawn\":; RULE_INVALID: /rules/1/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"collect_acorn\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"acorn\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":100},{\"despawn\":\"self\"}]},{\"id\":\"avoid_log\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"log\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"enemy_wave\",\"verb\":\"spawn\",\"when\":{\"timer\":\"wave1\"},\"if\":null,\"do\":[{\"spawn\":; RULE_INVALID: /rules/2/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"collect_acorn\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"acorn\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":100},{\"despawn\":\"self\"}]},{\"id\":\"avoid_log\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"log\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"enemy_wave\",\"verb\":\"spawn\",\"when\":{\"timer\":\"wave1\"},\"if\":null,\"do\":[{\"spawn\":; RULE_INVALID: /rules/3/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"collect_acorn\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"acorn\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":100},{\"despawn\":\"self\"}]},{\"id\":\"avoid_log\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"log\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"enemy_wave\",\"verb\":\"spawn\",\"when\":{\"timer\":\"wave1\"},\"if\":null,\"do\":[{\"spawn\":; rule verbs dropped: collect, jump, spawn, move",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "platformer",
-   "ms": 6184
+   "ms": 11074
   },
   {
    "id": "o07",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [],
+   "phasesEntered": [
+    "second"
+   ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:padwave, phase:first, phase:second): things: role \"pad\" is built by the platform game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
-   "fallbackReason": "VERB_UNPROVED",
+   "why": "not authored (UNREPAIRED): bot_wins: the bot lost at tick 2892, 172 m into the track",
+   "fallbackReason": "UNREPAIRED",
    "axis": "platformer",
-   "ms": 5668
+   "ms": 9301
   },
   {
    "id": "o08",
@@ -124,21 +132,23 @@
    "rawPassed": false,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:storm, phase:first, phase:second): ACTION_LOST: bee collect honey has no action witness; ACTION_LOST: storm hazard bee has no action witness; RULE_INVALID: /rules/2/do/2: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"startStormTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"storm\",\"ticks\":60}}]},{\"id\":\"stormArrives\",\"verb\":\"wait\",\"when\":{\"timer\":\"storm\"},\"if\":null,\"do\":[{\"goPhase\":\"second\"},{\"toggle\":\"storm\"}]},{\"id\":\"collectHoney\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"honey\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":10}; rule verbs dropped: wait, collect, avoid",
+   "why": "the game does not keep the answer's logic (timer:storm, phase:first, phase:second): ACTION_LOST: bee collect honey has no action witness; ACTION_LOST: storm hazard bee has no action witness; RULE_INVALID: /rules/3/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"startTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"storm\",\"ticks\":600}}]},{\"id\":\"stormArrival\",\"verb\":\"wait\",\"when\":{\"timer\":\"storm\"},\"if\":null,\"do\":[{\"goPhase\":\"second\"},{\"spawn\":{\"role\":\"storm\",\"at\":\"player\"}}]},{\"id\":\"collectHoney\",\"verb\":\"collect\",\"when\":{\"contact\":[\"player\",\"honey\"]},\"if\":null,\"do\":[{\"score\":10},{\"despawn\":\"oth; rule verbs dropped: wait, collect, avoid",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "arena",
-   "ms": 6502
+   "ms": 8010
   },
   {
    "id": "f01",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [],
+   "phasesEntered": [
+    "second"
+   ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): things: role \"knight\" is built by the lanes game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
+   "why": "the game does not keep the answer's logic (timer:spawn_timer, phase:first, phase:second): ACTION_LOST: hero collect knight has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_knights\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"knight\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"spawn_more\",\"verb\":\"wait\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"knight\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"phase_transition\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"spawn_timer\",\"tick; rule verbs dropped: wait",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "arena.collect",
-   "ms": 5430
+   "ms": 8552
   },
   {
    "id": "f03",
@@ -148,72 +158,69 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave_timer\",\"ticks\":60}}]},{\"id\":\"wave_spawn\",\"verb\":\"wait\",\"when\":{\"timer\":\"wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"goblin\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"wave_end\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"goPhase\":\"first\"}]}]; rule verbs dropped: wait",
+   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave_timer\",\"ticks\":60}}]},{\"id\":\"wave_spawn\",\"verb\":\"wait\",\"when\":{\"timer\":\"wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"goblin\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"wave_reset\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave_timer\",\"ticks\":60}}]}]; rule verbs dropped: wait",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "shooter",
-   "ms": 5893
+   "ms": 8483
   },
   {
    "id": "f10",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [
-    "end",
-    "mid"
-   ],
+   "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (var:chase, var:attack, timer:phase1, phase:start, phase:mid, phase:end): RULE_INVALID: /logic/phases/1: no rule enters phase mid – add a rule with {\"goPhase\":\"mid\"}; rules as written: [{\"id\":\"spawnRobbers\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"robber\",\"count\":2,\"at\":\"edge\"}}]},{\"id\":\"spawnGems\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"gem\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"robberChase\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"set\":{\"var\":\"chase\",\"value\":1}}]},{\"id\":\"robberAttack\",\"; RULE_INVALID: /logic/phases/2: no rule enters phase end – add a rule with {\"goPhase\":\"end\"}; rules as written: [{\"id\":\"spawnRobbers\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"robber\",\"count\":2,\"at\":\"edge\"}}]},{\"id\":\"spawnGems\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"gem\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"robberChase\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"set\":{\"var\":\"chase\",\"value\":1}}]},{\"id\":\"robberAttack\",\"; RULE_INVALID: /logic/timers/0: no rule starts timer phase1 – add a rule with {\"startTimer\":{\"timer\":\"phase1\",\"ticks\":…}}; rules as written: [{\"id\":\"spawnRobbers\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"robber\",\"count\":2,\"at\":\"edge\"}}]},{\"id\":\"spawnGems\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"gem\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"robberChase\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"set\":{\"var\":\"chase\",\"value\":1}}]},{\"id\":\"robberAttack\",\"; rule verbs dropped: wait",
-   "fallbackReason": "VERB_UNPROVED",
+   "why": "not authored (UNREPAIRED): bot_wins: the bot lost at tick 2952, -1 m into the track",
+   "fallbackReason": "UNREPAIRED",
    "axis": "arena.fight",
-   "ms": 6990
+   "ms": 12432
   },
   {
    "id": "f17",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [
-    "second"
-   ],
-   "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:ember_wave_timer, timer:fire_wave_timer, phase:first, phase:second): ACTION_LOST: phoenix rise ash has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"collect_ash\",\"verb\":\"rise\",\"when\":{\"contact\":[\"player\",\"ash\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":10},{\"despawn\":\"self\"}]},{\"id\":\"ember_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"ember_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"ember\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"fire_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"fire_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{; RULE_INVALID: /logic/timers/0: no rule starts timer ember_wave_timer – add a rule with {\"startTimer\":{\"timer\":\"ember_wave_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"collect_ash\",\"verb\":\"rise\",\"when\":{\"contact\":[\"player\",\"ash\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":10},{\"despawn\":\"self\"}]},{\"id\":\"ember_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"ember_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"ember\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"fire_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"fire_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{; RULE_INVALID: /logic/timers/1: no rule starts timer fire_wave_timer – add a rule with {\"startTimer\":{\"timer\":\"fire_wave_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"collect_ash\",\"verb\":\"rise\",\"when\":{\"contact\":[\"player\",\"ash\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":10},{\"despawn\":\"self\"}]},{\"id\":\"ember_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"ember_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"ember\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"fire_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"fire_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{; RULE_INVALID: /rules/0/do/2: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"collect_ash\",\"verb\":\"rise\",\"when\":{\"contact\":[\"player\",\"ash\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"},{\"score\":10},{\"despawn\":\"self\"}]},{\"id\":\"ember_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"ember_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"ember\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"fire_wave\",\"verb\":\"wait\",\"when\":{\"timer\":\"fire_wave_timer\"},\"if\":null,\"do\":[{\"wave\":{; rule verbs dropped: rise, wait",
-   "fallbackReason": "VERB_UNPROVED",
+   "phasesEntered": [],
+   "wroteLogic": false,
+   "why": "the answer declares no logic",
+   "fallbackReason": null,
    "axis": "flap",
-   "ms": 5525
+   "ms": 5503
   },
   {
    "id": "m01",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [],
+   "phasesEntered": [
+    "second"
+   ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:tornado_timer, phase:first, phase:second): things: role \"tornado\" is built by the move_free game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
+   "why": "the game does not keep the answer's logic (timer:spawn, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"spawn\",\"ticks\":60}}]},{\"id\":\"spawnTornado\",\"verb\":\"wait\",\"when\":{\"timer\":\"spawn\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"tornado\",\"at\":\"player\"}}]},{\"id\":\"tornadoChase\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"toggle\":\"tornado\"}]}]; rule verbs dropped: wait",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "arena.escape",
-   "ms": 4432
+   "ms": 7857
   },
   {
    "id": "m03",
-   "passed": false,
-   "rawPassed": false,
-   "phasesEntered": [],
-   "wroteLogic": true,
-   "why": "not authored (UNREPAIRED): things: role \"finish\" is built by the steer game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
-   "fallbackReason": "UNREPAIRED",
-   "axis": "control:steer",
-   "ms": 4976
-  },
-  {
-   "id": "m08",
    "passed": false,
    "rawPassed": false,
    "phasesEntered": [
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"slide_rock\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"rock\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"slide_coin\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"coin\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"score\":10},{\"despawn\":\"self\"}]}]; RULE_INVALID: /logic/timers/0: no rule starts timer phase1 – add a rule with {\"startTimer\":{\"timer\":\"phase1\",\"ticks\":…}}; rules as written: [{\"id\":\"slide_rock\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"rock\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"slide_coin\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"coin\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"score\":10},{\"despawn\":\"self\"}]}]; RULE_INVALID: /rules/0/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"slide_rock\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"rock\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"slide_coin\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"coin\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"score\":10},{\"despawn\":\"self\"}]}]; RULE_INVALID: /rules/1/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"slide_rock\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"rock\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"slide_coin\",\"verb\":\"slide\",\"when\":{\"contact\":[\"player\",\"coin\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"score\":10},{\"despawn\":\"self\"}]}]; rule verbs dropped: slide",
+   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): read without it",
+   "fallbackReason": null,
+   "axis": "control:steer",
+   "ms": 5915
+  },
+  {
+   "id": "m08",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:fall, phase:first, phase:second): things: role \"ice\" is built by the runner game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "runner",
-   "ms": 6972
+   "ms": 9756
   },
   {
    "id": "m09",
@@ -226,7 +233,7 @@
    "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): read without it",
    "fallbackReason": null,
    "axis": "platformer",
-   "ms": 3712
+   "ms": 8198
   },
   {
    "id": "m11",
@@ -236,10 +243,10 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:spawn, phase:first, phase:second): ACTION_LOST: dog catch mailmanaround has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start_phase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"spawn\",\"ticks\":60}}]},{\"id\":\"spawn_mailman\",\"verb\":\"wait\",\"when\":{\"timer\":\"spawn\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"mailman\",\"at\":\"player\"}}]},{\"id\":\"reset_phase\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"goPhase\":\"first\"}]}]; rule verbs dropped: wait",
+   "why": "the game does not keep the answer's logic (timer:chase, phase:first, phase:second): idle_loses: a player who does nothing wins at tick 240 – the game plays itself",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "control:move_free",
-   "ms": 4962
+   "ms": 9040
   },
   {
    "id": "m16",
@@ -249,23 +256,21 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:phase_timer, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_cars\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"car\",\"at\":\"player\"}}]},{\"id\":\"spawn_coins\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"coin\",\"at\":\"player\"}}]},{\"id\":\"car_collision\",\"verb\":\"collide\",\"when\":{\"contact\":[\"player\",\"car\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"coin_collect\",\"v; RULE_INVALID: /logic/timers/0: no rule starts timer phase_timer – add a rule with {\"startTimer\":{\"timer\":\"phase_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_cars\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"car\",\"at\":\"player\"}}]},{\"id\":\"spawn_coins\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"coin\",\"at\":\"player\"}}]},{\"id\":\"car_collision\",\"verb\":\"collide\",\"when\":{\"contact\":[\"player\",\"car\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"coin_collect\",\"v; RULE_INVALID: /rules/2/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"spawn_cars\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"car\",\"at\":\"player\"}}]},{\"id\":\"spawn_coins\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"coin\",\"at\":\"player\"}}]},{\"id\":\"car_collision\",\"verb\":\"collide\",\"when\":{\"contact\":[\"player\",\"car\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"coin_collect\",\"v; RULE_INVALID: /rules/3/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"spawn_cars\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"car\",\"at\":\"player\"}}]},{\"id\":\"spawn_coins\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"coin\",\"at\":\"player\"}}]},{\"id\":\"car_collision\",\"verb\":\"collide\",\"when\":{\"contact\":[\"player\",\"car\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"coin_collect\",\"v; rule verbs dropped: wait, collide, collect",
+   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"jump_over_car\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"car\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1}]}]; RULE_INVALID: /logic/timers/0: no rule starts timer phase1 – add a rule with {\"startTimer\":{\"timer\":\"phase1\",\"ticks\":…}}; rules as written: [{\"id\":\"jump_over_car\",\"verb\":\"jump\",\"when\":{\"contact\":[\"player\",\"car\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1}]}]; rule verbs dropped: jump",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "platformer",
-   "ms": 6835
+   "ms": 9243
   },
   {
    "id": "d01",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [
-    "second"
-   ],
+   "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:spawn, phase:first, phase:second): ACTION_LOST: fox obstacle hedgehog has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"spawn\",\"ticks\":60}}]},{\"id\":\"spawnFox\",\"verb\":\"wait\",\"when\":{\"timer\":\"spawn\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"fox\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"resetPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"goPhase\":\"first\"}]}]; rule verbs dropped: wait",
+   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): ACTION_LOST: fox obstacle hedgehog has no action witness; RULE_INVALID: /rules/2/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"phase1\",\"ticks\":60}}]},{\"id\":\"phase1Timer\",\"verb\":\"wait\",\"when\":{\"timer\":\"phase1\"},\"if\":null,\"do\":[{\"goPhase\":\"second\"}]},{\"id\":\"phase2\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"fox\",\"at\":\"other\"}}]}]; rule verbs dropped: wait",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "control:ball",
-   "ms": 6296
+   "ms": 8869
   },
   {
    "id": "d04",
@@ -273,58 +278,60 @@
    "rawPassed": false,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": "not authored (UNREPAIRED): things: role \"plane\" is built by the shooter game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
-   "fallbackReason": "UNREPAIRED",
+   "why": "the game does not keep the answer's logic (timer:wave, phase:first, phase:second): RULE_INVALID: /rules/0/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_plane\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"plane\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"spawn_plane\",\"verb\":\"wait\",\"when\":{\"timer\":\"wave\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"plane\",\"at\":\"other\"}}]},{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave\",\"ticks\":60}}]},{\"id\":\"next_wave\",\"verb; RULE_INVALID: /rules/1/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"shoot_plane\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"plane\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"spawn_plane\",\"verb\":\"wait\",\"when\":{\"timer\":\"wave\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"plane\",\"at\":\"other\"}}]},{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave\",\"ticks\":60}}]},{\"id\":\"next_wave\",\"verb; RULE_INVALID: /rules/3/do/1/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"shoot_plane\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"plane\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"spawn_plane\",\"verb\":\"wait\",\"when\":{\"timer\":\"wave\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"plane\",\"at\":\"other\"}}]},{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave\",\"ticks\":60}}]},{\"id\":\"next_wave\",\"verb; rule verbs dropped: shoot, wait",
+   "fallbackReason": "VERB_UNPROVED",
    "axis": "shooter",
-   "ms": 5090
+   "ms": 10169
   },
   {
    "id": "h02",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [],
+   "phasesEntered": [
+    "run"
+   ],
    "wroteLogic": true,
-   "why": "not authored (UNREPAIRED): bot_wins: the bot lost at tick 3001, 322 m into the track",
-   "fallbackReason": "UNREPAIRED",
+   "why": "the game does not keep the answer's logic (timer:race, phase:start, phase:run): read without it",
+   "fallbackReason": null,
    "axis": "control:steer",
-   "ms": 7803
+   "ms": 8092
   },
   {
    "id": "h05",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [
-    "second"
-   ],
+   "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:spawn, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"spawn\",\"ticks\":60}}]},{\"id\":\"spawnKangaroo\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"kangaroo\",\"at\":\"player\"}}]},{\"id\":\"winFight\",\"verb\":\"fight\",\"when\":{\"contact\":[\"player\",\"kangaroo\"]},\"if\":[{\"holding\":\"kangaroo\"}],\"do\":[{\"win\":true}]}]; rule verbs dropped: wait, spawn, fight",
+   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): abilities: the level has no place for an enemy to strike",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "duel",
-   "ms": 5134
+   "ms": 8822
   },
   {
    "id": "j08",
    "passed": false,
    "rawPassed": false,
    "phasesEntered": [
-    "second"
+    "night"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave_timer\",\"ticks\":60}}]},{\"id\":\"wave_spawn\",\"verb\":\"wait\",\"when\":{\"timer\":\"wave_timer\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"skeleton\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"wave_end\",\"verb\":\"wait\",\"when\":{\"phase\":\"second\"},\"if\":null,\"do\":[{\"goPhase\":\"first\"}]}]; rule verbs dropped: wait",
+   "why": "the game does not keep the answer's logic (timer:day_night, phase:day, phase:night): RULE_INVALID: /logic/phases/1: no rule enters phase night – add a rule with {\"goPhase\":\"night\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"day\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"skeleton\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"spawn_wave2\",\"verb\":\"wait\",\"when\":{\"phase\":\"night\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"skeleton\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"win_condition\",\"verb\":\"protect\",\"when\":{\"contact\":[\"player\",\"tower\"]},\"if\":[{\"counter\":{\"name\":\"health\",\"atLeast\":1,\"belo; RULE_INVALID: /logic/timers/0: no rule starts timer day_night – add a rule with {\"startTimer\":{\"timer\":\"day_night\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"day\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"skeleton\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"spawn_wave2\",\"verb\":\"wait\",\"when\":{\"phase\":\"night\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"skeleton\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"win_condition\",\"verb\":\"protect\",\"when\":{\"contact\":[\"player\",\"tower\"]},\"if\":[{\"counter\":{\"name\":\"health\",\"atLeast\":1,\"belo; rule verbs dropped: wait, protect",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "arena.fight",
-   "ms": 4859
+   "ms": 9662
   },
   {
    "id": "s002",
    "passed": false,
    "rawPassed": false,
-   "phasesEntered": [],
+   "phasesEntered": [
+    "second"
+   ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): things: role \"ghost\" is built by the move_free game itself and is visible from the start, so start:\"hidden\" cannot apply – give the hidden thing its own role id and kind",
+   "why": "the game does not keep the answer's logic (timer:phase_timer, phase:first, phase:second): ACTION_LOST: ghost obstacle knight has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_keys\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key1\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key2\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key3\",\"at\":\"player\"}}]},{\"id\":\"spawn_ghosts\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"ghost1\",\"at\":\"other\"}},{\"spawn\":{\"role\":\"ghost2\",\"at\":\"other\"}}]},{\"id\":\"ghost_chase\",\"ve; RULE_INVALID: /logic/timers/0: no rule starts timer phase_timer – add a rule with {\"startTimer\":{\"timer\":\"phase_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_keys\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key1\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key2\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key3\",\"at\":\"player\"}}]},{\"id\":\"spawn_ghosts\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"ghost1\",\"at\":\"other\"}},{\"spawn\":{\"role\":\"ghost2\",\"at\":\"other\"}}]},{\"id\":\"ghost_chase\",\"ve; RULE_INVALID: /rules/1/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"spawn_keys\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key1\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key2\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key3\",\"at\":\"player\"}}]},{\"id\":\"spawn_ghosts\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"ghost1\",\"at\":\"other\"}},{\"spawn\":{\"role\":\"ghost2\",\"at\":\"other\"}}]},{\"id\":\"ghost_chase\",\"ve; RULE_INVALID: /rules/1/do/1/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"spawn_keys\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key1\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key2\",\"at\":\"player\"}},{\"spawn\":{\"role\":\"key3\",\"at\":\"player\"}}]},{\"id\":\"spawn_ghosts\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"ghost1\",\"at\":\"other\"}},{\"spawn\":{\"role\":\"ghost2\",\"at\":\"other\"}}]},{\"id\":\"ghost_chase\",\"ve; rule verbs dropped: spawn, chase",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "arena.escape",
-   "ms": 6697
+   "ms": 11702
   },
   {
    "id": "s021",
@@ -334,10 +341,10 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:lava_wave, timer:bar_wave, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"lava_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"lava_wave\",\"ticks\":60}}]},{\"id\":\"lava_spawn\",\"verb\":\"wait\",\"when\":{\"timer\":\"lava_wave\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"lava\",\"at\":\"player\"}}]},{\"id\":\"bar_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"bar_wave\",\"ticks\":120}}]},{\"id\":\"bar_spawn; rule verbs dropped: wait",
+   "why": "the game does not keep the answer's logic (timer:spawn, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"spawn\",\"ticks\":60}}]},{\"id\":\"spawnHazards\",\"verb\":\"wait\",\"when\":{\"timer\":\"spawn\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"bar\",\"count\":1,\"at\":\"edge\"}},{\"wave\":{\"role\":\"lava\",\"count\":1,\"at\":\"edge\"}},{\"startTimer\":{\"timer\":\"spawn\",\"ticks\":60}}]},{\"id\":\"phaseChange\",\"verb\":\"wait\",\"when\":{\"pha; rule verbs dropped: wait",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "platformer",
-   "ms": 6052
+   "ms": 9842
   }
  ]
 }

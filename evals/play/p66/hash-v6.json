@@ -1,0 +1,847 @@
+{
+ "compilerVersion": "genre.v6",
+ "cells": [
+  {
+   "id": "arena:fight",
+   "seed": 1,
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "move_free",
+    "controlParams": {
+     "generator": "fight",
+     "tuning": {
+      "waves": 5
+     }
+    },
+    "genre": {
+     "compilerVersion": "genre.v6",
+     "id": "arena",
+     "mode": "fight"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "count": 1,
+     "description": "Dodge the wind-up, strike back and knock out 5 waves of zombies.",
+     "kind": "defeat_targets",
+     "role": "rival"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "explorer"
+     },
+     {
+      "count": 1,
+      "id": "rival",
+      "kind": "hazard",
+      "label": "zombie"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "scoring": {},
+    "targetDurationSec": 45,
+    "theme": {
+     "mood": "tense",
+     "setting": "farm at night",
+     "timeOfDay": "night"
+    },
+    "title": "Zombies Attack My Farm",
+    "tutorial": {
+     "controlsHint": "Drag or arrows to move, Attack or J to strike. Step aside when it winds up.",
+     "goalLine": "Knock out 5 waves of zombies."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "initial": "3f3dd363",
+   "bot": {
+    "tick": 3358,
+    "outcome": "won",
+    "hash": "e01e47a7"
+   },
+   "idle": {
+    "tick": 1464,
+    "outcome": "lost",
+    "hash": "baad0bd9"
+   }
+  },
+  {
+   "id": "arena:collect",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "move_free",
+    "controlParams": {
+     "generator": "arena_collect",
+     "tuning": {
+      "items": 10,
+      "waves": 3
+     }
+    },
+    "genre": {
+     "id": "arena",
+     "mode": "collect",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Squirrel Hunt",
+    "archetype": "collect_exit",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "park",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Collect 10 acorns in each of 3 waves before time runs out.",
+     "count": 10,
+     "role": "item"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "squirrel",
+      "count": 1
+     },
+     {
+      "count": 10,
+      "id": "item",
+      "kind": "collectible",
+      "label": "acorn"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Collect 10 acorns per wave, 3 waves.",
+     "controlsHint": "Drag or arrows to move."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "fb7f662a",
+   "bot": {
+    "tick": 3561,
+    "outcome": "won",
+    "hash": "d91e24c5"
+   },
+   "idle": {
+    "tick": 4214,
+    "outcome": "lost",
+    "hash": "f68ab87d"
+   }
+  },
+  {
+   "id": "shooter",
+   "seed": 1,
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "rise": 4,
+     "waves": 6
+    },
+    "genre": {
+     "compilerVersion": "genre.v6",
+     "id": "shooter",
+     "mode": "default"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "count": 6,
+     "description": "Stop 6 waves of crows before they reach you.",
+     "kind": "defeat_targets",
+     "role": "enemy"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "grumpy farmer"
+     },
+     {
+      "count": 1,
+      "id": "target",
+      "kind": "target",
+      "label": "corn"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "crow"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "scoring": {},
+    "targetDurationSec": 60,
+    "theme": {
+     "mood": "tense",
+     "setting": "field"
+    },
+    "title": "Grumpy Farmer",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Stop 6 waves of crows. Each wave is faster."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "initial": "3d0dbdfe",
+   "bot": {
+    "tick": 3391,
+    "outcome": "won",
+    "hash": "63439df6"
+   },
+   "idle": {
+    "tick": 1425,
+    "outcome": "lost",
+    "hash": "afba6db9"
+   }
+  },
+  {
+   "id": "defense",
+   "seed": 1,
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "lanes",
+    "controlParams": {
+     "generator": "lane_defense",
+     "tuning": {
+      "enemies": 30
+     }
+    },
+    "genre": {
+     "compilerVersion": "genre.v6",
+     "id": "defense",
+     "mode": "default"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "count": 30,
+     "description": "Hold the couch against 30 vacuum robots and their boss.",
+     "kind": "defeat_targets",
+     "role": "chaser"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "cat"
+     },
+     {
+      "count": 30,
+      "id": "chaser",
+      "kind": "chaser",
+      "label": "vacuum robot"
+     },
+     {
+      "count": 1,
+      "id": "castle",
+      "kind": "prop",
+      "label": "couch"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "scoring": {},
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "living_room",
+     "mood": "tense",
+     "setting": "living room"
+    },
+    "title": "Cat Defends Couch",
+    "tutorial": {
+     "controlsHint": "Tap a lane to shoot. Hold a lane to place a guard. Arrows and Space work too.",
+     "goalLine": "Hold the couch! Stop every vacuum robot."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "initial": "fde39ee6",
+   "bot": {
+    "tick": 2888,
+    "outcome": "won",
+    "hash": "f22e1b61"
+   },
+   "idle": {
+    "tick": 511,
+    "outcome": "lost",
+    "hash": "e5e7b6a7"
+   }
+  },
+  {
+   "id": "runner",
+   "seed": 1,
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "runner",
+    "controlParams": {
+     "feel": 2,
+     "lengthM": 60,
+     "obstacles": [
+      "hurdle",
+      "cone",
+      "crate"
+     ],
+     "patterns": 1,
+     "sections": 3
+    },
+    "genre": {
+     "compilerVersion": "genre.v6",
+     "id": "runner",
+     "mode": "default"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 1
+      }
+     }
+    ],
+    "objective": {
+     "description": "Run to the finish without hitting a trash can.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "pizza delivery guy"
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "trash can"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "tip"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "rules": [
+     {
+      "do": [
+       {
+        "win": true
+       }
+      ],
+      "id": "micro_clock",
+      "verb": "survive",
+      "when": {
+       "every": 360
+      }
+     }
+    ],
+    "schema": "gamespec.v1",
+    "scoring": {},
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "city",
+     "mood": "energetic",
+     "setting": "house"
+    },
+    "title": "Pizza Delivery Guy Sprint",
+    "tutorial": {
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+     "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "initial": "d83b474a",
+   "bot": {
+    "tick": 360,
+    "outcome": "won",
+    "hash": "bede308c"
+   },
+   "idle": {
+    "tick": 167,
+    "outcome": "lost",
+    "hash": "1297a4f8"
+   }
+  },
+  {
+   "id": "platformer",
+   "seed": 1,
+   "spec": {
+    "archetype": "hazard_crossing",
+    "assemblyParts": [
+     {
+      "kind": "hazard",
+      "motion": "fall",
+      "phase": 0,
+      "role": "part_0"
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "platform",
+    "controlParams": {
+     "checkpoints": true,
+     "tuning": {
+      "chunks": 1,
+      "feel": 2,
+      "sections": 3,
+      "segments": true,
+      "style": "tower"
+     }
+    },
+    "genre": {
+     "compilerVersion": "genre.v6",
+     "id": "platformer",
+     "mode": "default"
+    },
+    "logic": {
+     "phases": [
+      {
+       "id": "calm"
+      },
+      {
+       "id": "rush"
+      }
+     ],
+     "timers": [
+      {
+       "id": "rush"
+      }
+     ]
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "description": "Jump across the platforms to the flag without touching a rock.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "little frog"
+     },
+     {
+      "count": 5,
+      "id": "spikes",
+      "kind": "hazard",
+      "label": "rock"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "gem"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "flag"
+     },
+     {
+      "count": 1,
+      "id": "part_0",
+      "kind": "hazard",
+      "label": "lava"
+     }
+    ],
+    "rules": [
+     {
+      "do": [
+       {
+        "goPhase": "rush"
+       },
+       {
+        "startTimer": {
+         "ticks": 480,
+         "timer": "rush"
+        }
+       }
+      ],
+      "id": "herald",
+      "if": [
+       {
+        "inPhase": "calm"
+       }
+      ],
+      "verb": "herald",
+      "when": {
+       "every": 300
+      }
+     },
+     {
+      "do": [
+       {
+        "wave": {
+         "at": "player",
+         "count": 3,
+         "role": "coin"
+        }
+       }
+      ],
+      "id": "shower",
+      "verb": "shower",
+      "when": {
+       "phase": "rush"
+      }
+     },
+     {
+      "do": [
+       {
+        "goPhase": "calm"
+       }
+      ],
+      "id": "settle",
+      "verb": "settle",
+      "when": {
+       "timer": "rush"
+      }
+     }
+    ],
+    "schema": "gamespec.v1",
+    "scoring": {},
+    "targetDurationSec": 60,
+    "theme": {
+     "mood": "playful",
+     "setting": "lava"
+    },
+    "title": "Little Frog Spring",
+    "tutorial": {
+     "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+     "goalLine": "Dodge the lava. Reach the flag. Jump over gaps and hazards."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "initial": "94ad8e42",
+   "bot": {
+    "tick": 2603,
+    "outcome": "won",
+    "hash": "20b55efa"
+   },
+   "idle": {
+    "tick": 5281,
+    "outcome": "lost",
+    "hash": "31ca1af7"
+   }
+  },
+  {
+   "id": "catch",
+   "seed": 1,
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "lanes",
+    "controlParams": {
+     "generator": "catch_fall",
+     "tuning": {
+      "items": 30
+     }
+    },
+    "genre": {
+     "compilerVersion": "genre.v6",
+     "id": "catch",
+     "mode": "default"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "count": 30,
+     "description": "Catch 30 falling flies and dodge the bombs.",
+     "kind": "collect",
+     "role": "coin"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "frog"
+     },
+     {
+      "count": 30,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "fly"
+     },
+     {
+      "count": 1,
+      "id": "hazard",
+      "kind": "hazard",
+      "label": "bomb"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "scoring": {},
+    "targetDurationSec": 45,
+    "theme": {
+     "look": "underwater",
+     "mood": "playful",
+     "setting": "lily pad"
+    },
+    "title": "Frog Catch",
+    "tutorial": {
+     "controlsHint": "Tap a lane, drag, or use the arrows to move.",
+     "goalLine": "Catch 30 flies. Dodge the bombs!"
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "initial": "3a374493",
+   "bot": {
+    "tick": 2098,
+    "outcome": "won",
+    "hash": "266b7e39"
+   },
+   "idle": {
+    "tick": 576,
+    "outcome": "lost",
+    "hash": "e22ed910"
+   }
+  },
+  {
+   "id": "voyage",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "steer",
+    "controlParams": {
+     "generator": "voyage_race",
+     "difficulty": "normal",
+     "lengthM": 620,
+     "turbo": true,
+     "tuning": {
+      "terrain": "islands",
+      "sections": 3
+     }
+    },
+    "genre": {
+     "id": "voyage",
+     "mode": "race",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Pirate Ship Voyage",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "islands",
+     "mood": "adventurous",
+     "look": "beach"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Pass every gate, dodge the cannonball and reach the lighthouse.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "pirate ship",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "gate",
+      "kind": "checkpoint",
+      "label": "gate"
+     },
+     {
+      "count": 1,
+      "id": "hazard",
+      "kind": "hazard",
+      "label": "cannonball"
+     },
+     {
+      "count": 1,
+      "id": "turbo",
+      "kind": "collectible",
+      "label": "turbo"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "lighthouse"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Pass every gate and reach the lighthouse.",
+     "controlsHint": "Drag/arrows steer; down/2nd finger brakes. Grab turbo."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "ce2d6eba",
+   "bot": {
+    "tick": 2239,
+    "outcome": "won",
+    "hash": "f9c21bc4"
+   },
+   "idle": {
+    "tick": 4321,
+    "outcome": "lost",
+    "hash": "5552f53d"
+   }
+  }
+ ]
+}

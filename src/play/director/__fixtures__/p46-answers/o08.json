@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:30.518Z",
- "ms": 6502,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:27:29.962Z",
+ "ms": 8010,
  "answer": {
-  "plan": "Create a spatial quest where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple timer‑driven phase change to trigger the storm’s arrival.",
+  "plan": "Create a quest‑style game where a bee collects honey in a windy meadow while avoiding an approaching storm, using a simple two‑phase timer to trigger the storm’s arrival.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -18,14 +18,14 @@
      "label": "honey",
      "does": "collect",
      "verb": "gather",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "storm",
      "does": "avoid",
-     "verb": "hit",
-     "states": 2,
+     "verb": "approach",
+     "states": null,
      "patrol": false
     }
    ],
@@ -35,7 +35,7 @@
    "params": {
     "seconds": 60,
     "paceBudgetPct": 80,
-    "count": 1,
+    "count": 5,
     "chasers": 0,
     "lives": 3,
     "targetScore": 0,
@@ -50,7 +50,7 @@
      "id": "honey",
      "kind": "collectible",
      "label": "honey",
-     "count": 1
+     "count": 5
     },
     {
      "id": "storm",
@@ -73,7 +73,7 @@
    ],
    "rules": [
     {
-     "id": "startStormTimer",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -83,13 +83,13 @@
       {
        "startTimer": {
         "timer": "storm",
-        "ticks": 60
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "stormArrives",
+     "id": "stormArrival",
      "verb": "wait",
      "when": {
       "timer": "storm"
@@ -100,7 +100,10 @@
        "goPhase": "second"
       },
       {
-       "toggle": "storm"
+       "spawn": {
+        "role": "storm",
+        "at": "player"
+       }
       }
      ]
     },
@@ -113,20 +116,13 @@
        "honey"
       ]
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
-      {
-       "grab": "other"
-      },
       {
        "score": 10
       },
       {
-       "despawn": "self"
+       "despawn": "other"
       }
      ]
     },
@@ -145,7 +141,7 @@
        "damage": 1
       },
       {
-       "lose": true
+       "despawn": "self"
       }
      ]
     }
@@ -168,7 +164,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": [],
+   "abilities": null,
    "segments": null
   }
  },

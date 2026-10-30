@@ -1,0 +1,81 @@
+{
+  "schema": "gamespec.v1",
+  "control": "hole",
+  "controlParams": {
+    "generator": "hole_swallow",
+    "tuning": {
+      "k0": "2:thing:item1",
+      "k1": "1:thing:item2",
+      "k2": "0:gen3d-traffic-cone",
+      "k3": "1:cc0-traffic-barrier",
+      "k4": "1:gen3d-parking-meter",
+      "k5": "1:cc0-dumpster",
+      "k6": "2:cc0-van",
+      "k7": "2:gen3d-crosswalk-sign",
+      "k8": "2:cc0-bus",
+      "k9": "3:gen3d-street-clock",
+      "k10": "3:townhouse",
+      "k11": "3:gen3d-skyscraper",
+      "finale": "gen3d-glass-office-tower"
+    }
+  },
+  "genre": {
+    "id": "hole",
+    "mode": "default",
+    "compilerVersion": "genre.v6"
+  },
+  "title": "Black Hole",
+  "archetype": "collect_exit",
+  "targetDurationSec": 180,
+  "theme": {
+    "setting": "busy city",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Swallow things smaller than the hole to grow: 60 points in each of 3 rounds of 60 s, then the glass office tower.",
+    "count": 3,
+    "seconds": 60,
+    "role": "item1"
+  },
+  "mechanics": [],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "black hole",
+      "count": 1
+    },
+    {
+      "count": 1,
+      "id": "item1",
+      "kind": "collectible",
+      "label": "car"
+    },
+    {
+      "count": 1,
+      "id": "item2",
+      "kind": "collectible",
+      "label": "person"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Swallow the cars and grow to eat the glass office tower!",
+    "controlsHint": "Drag to move the hole. Arrows work too. Bigger things block it."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

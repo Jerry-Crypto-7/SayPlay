@@ -1,0 +1,72 @@
+{
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+    "generator": "fight",
+    "tuning": {
+      "enemies": 3,
+      "waves": 3,
+      "hookRounds": 3,
+      "hookUpgrades": "speed,fire_rate,extra_life"
+    }
+  },
+  "genre": {
+    "id": "arena",
+    "mode": "fight",
+    "compilerVersion": "genre.v6"
+  },
+  "title": "Knight Fights Three Wolves",
+  "archetype": "combat_lite",
+  "targetDurationSec": 45,
+  "theme": {
+    "setting": "meadow",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "defeat_targets",
+    "description": "Dodge the wind-up, strike back and knock out 3 waves of 3 wolves.",
+    "count": 3,
+    "role": "rival"
+  },
+  "mechanics": [
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "knight",
+      "count": 1
+    },
+    {
+      "id": "rival",
+      "kind": "hazard",
+      "label": "wolf",
+      "count": 3
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Knock out 3 waves of 3 wolves.",
+    "controlsHint": "Drag or arrows to move, Attack or J to strike. Step aside when it winds up."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  },
+  "scoring": {}
+}

@@ -1,0 +1,14 @@
+{
+  "sentence": "a little robot auto-fires at swarms of space bugs on a moon base until the giant queen bug shows up",
+  "answer": {
+    "plan": "The robot keeps moving and fires by itself at waves of space bugs; the giant queen bug comes last as the boss.",
+    "spec": {
+      "genre": "survivor",
+      "mode": "default",
+      "hero": "little robot",
+      "cast": [{ "label": "space bug", "does": "shoot_at" }],
+      "setting": "moon base",
+      "boss": { "role": "space bug", "name": "giant queen bug", "attack": "charge" }
+    }
+  }
+}

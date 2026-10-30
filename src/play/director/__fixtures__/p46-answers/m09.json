@@ -3,22 +3,39 @@
  "sentence": "ninja cat jumpin on rooftops plz",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:13:14.452Z",
- "ms": 3712,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:28:36.663Z",
+ "ms": 8198,
  "answer": {
-  "plan": "Create a platformer where a ninja cat jumps across rooftops, collecting nothing and avoiding no enemies, with a simple timed phase change that does not affect win/lose conditions.",
+  "plan": "Create a platformer where a ninja cat jumps across rooftops, collecting coins and avoiding obstacles, with a simple timed phase system that keeps the game running but never ends.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
    "hero": "ninja cat",
-   "cast": [],
+   "cast": [
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "grab",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "roof",
+     "does": "scenery",
+     "verb": "stand",
+     "states": null,
+     "patrol": false
+    }
+   ],
    "heroAction": "none",
    "setting": "rooftops",
    "palette": "city",
    "params": null,
-   "counts": null,
+   "counts": {
+    "collectible": null
+   },
    "ruleRoles": [],
    "things": [],
    "rules": [],

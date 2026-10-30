@@ -3,12 +3,12 @@
  "sentence": "my dog chasing the mailman,around the backyard lol",
  "axis": "control:move_free",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:13:19.481Z",
- "ms": 4962,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:28:45.703Z",
+ "ms": 9040,
  "answer": {
-  "plan": "Create an arena‑escape game where a dog chases a mailman around a backyard, with a simple timed phase change that spawns a new mailman after 1 second.",
+  "plan": "Create an arena‑escape game where a dog chases a mailman around a backyard, with timed phases that spawn the mailman and trigger a chase wave.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -20,12 +20,35 @@
      "verb": "chase",
      "states": null,
      "patrol": false
+    },
+    {
+     "label": "mailmanaround",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "backyard",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 30,
+    "seconds": 30,
+    "items": 1,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 3,
+    "enemySpeed": 60,
+    "playerHp": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
    "counts": {
     "enemy": 1,
     "collectible": null
@@ -47,7 +70,7 @@
    ],
    "rules": [
     {
-     "id": "start_phase",
+     "id": "startPhase",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -56,30 +79,31 @@
      "do": [
       {
        "startTimer": {
-        "timer": "spawn",
+        "timer": "chase",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "spawn_mailman",
+     "id": "chaseWave",
      "verb": "wait",
      "when": {
-      "timer": "spawn"
+      "timer": "chase"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
+       "wave": {
         "role": "mailman",
-        "at": "player"
+        "count": 1,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "reset_phase",
+     "id": "endPhase",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -87,7 +111,7 @@
      "if": null,
      "do": [
       {
-       "goPhase": "first"
+       "win": true
       }
      ]
     }
@@ -96,7 +120,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "spawn"
+      "id": "chase"
      }
     ],
     "phases": [
@@ -116,9 +140,9 @@
    },
    "abilities": [],
    "segments": [
+    "newFoe",
     "moving",
-    "faster",
-    "newFoe"
+    "faster"
    ]
   }
  },

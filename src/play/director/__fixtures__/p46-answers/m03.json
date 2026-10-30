@@ -3,12 +3,12 @@
  "sentence": "Grandma kart",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:13:03.767Z",
- "ms": 4976,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:28:18.708Z",
+ "ms": 5915,
  "answer": {
-  "plan": "Create a simple racing‑kart game set in an open country, where the kart must avoid rocks while racing to a finish line.",
+  "plan": "Create a simple racing kart game set on an open country track with a single obstacle rock to avoid, using a basic two‑phase timer logic.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -22,7 +22,7 @@
      "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": null,
    "setting": "open country",
    "palette": "cave",
    "params": {
@@ -41,83 +41,14 @@
     "targetScore": 0,
     "timeLimit": 0
    },
-   "ruleRoles": [
-    {
-     "id": "rock",
-     "kind": "hazard",
-     "label": "rock",
-     "count": null
-    },
-    {
-     "id": "finish",
-     "kind": "destination",
-     "label": "finish line",
-     "count": null
-    }
-   ],
-   "things": [
-    {
-     "role": "finish",
-     "start": "hidden",
-     "physics": null
-    }
-   ],
-   "rules": [
-    {
-     "id": "startTimer",
-     "verb": "wait",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "race",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phaseSwitch",
-     "verb": "wait",
-     "when": {
-      "timer": "race"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      },
-      {
-       "wave": {
-        "role": "rock",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "finishCheck",
-     "verb": "reach",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
-      }
-     ]
-    }
-   ],
+   "ruleRoles": [],
+   "things": [],
+   "rules": [],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "race"
+      "id": "phase1"
      }
     ],
     "phases": [

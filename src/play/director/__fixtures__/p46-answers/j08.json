@@ -3,12 +3,12 @@
  "sentence": "a wizard defends a crystal tower from flying skeletons",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:13:55.501Z",
- "ms": 4859,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:29:40.564Z",
+ "ms": 9662,
  "answer": {
-  "plan": "Create a defense‑style tower‑defender where a wizard protects a crystal tower from waves of flying skeletons, using a simple phase‑based wave system.",
+  "plan": "Create a defense game where a wizard protects a crystal tower from waves of flying skeletons, using spell‑casting and tower‑based mechanics.",
   "spec": {
    "genre": "defense",
    "mode": "default",
@@ -17,42 +17,42 @@
     {
      "label": "flying skeleton",
      "does": "shoot_at",
-     "verb": "shoot",
+     "verb": "attack",
      "states": null,
      "patrol": true
     },
     {
      "label": "crystal tower",
      "does": "reach",
-     "verb": "reach",
-     "states": 2,
+     "verb": "protect",
+     "states": null,
      "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": "spray",
    "setting": "tower",
    "palette": "castle",
    "params": {
-    "enemies": null,
+    "enemies": 10,
     "lives": 3,
-    "targetScore": 0,
-    "timeLimit": null
+    "targetScore": 2000,
+    "timeLimit": 90
    },
    "counts": {
-    "enemy": null
+    "enemy": 10
    },
    "ruleRoles": [
     {
      "id": "skeleton",
      "kind": "chaser",
      "label": "flying skeleton",
-     "count": null
+     "count": 10
     },
     {
      "id": "tower",
-     "kind": "destination",
+     "kind": "exit",
      "label": "crystal tower",
-     "count": null
+     "count": 1
     }
    ],
    "things": [
@@ -69,26 +69,10 @@
    ],
    "rules": [
     {
-     "id": "start_wave",
+     "id": "spawn_wave",
      "verb": "wait",
      "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "wave_timer",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "wave_spawn",
-     "verb": "wait",
-     "when": {
-      "timer": "wave_timer"
+      "phase": "day"
      },
      "if": null,
      "do": [
@@ -102,15 +86,43 @@
      ]
     },
     {
-     "id": "wave_end",
+     "id": "spawn_wave2",
      "verb": "wait",
      "when": {
-      "phase": "second"
+      "phase": "night"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "first"
+       "wave": {
+        "role": "skeleton",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "protect",
+     "when": {
+      "contact": [
+       "player",
+       "tower"
+      ]
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": null
+       }
+      }
+     ],
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -119,26 +131,26 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "day_night"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "day"
      },
      {
-      "id": "second"
+      "id": "night"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "flying skeleton",
-    "name": "Bone‑Harbinger",
+    "name": "Skeleton King",
     "attack": "shoot"
    },
    "abilities": [
-    "shield",
+    "shoot",
     "dash"
    ],
    "segments": [

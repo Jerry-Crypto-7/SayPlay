@@ -81,7 +81,10 @@ export default defineConfig({
       // telefonu (P61 T6) taky – `p58a-framing` tu měří telefon projektu, `p61-portrait` výšku proti šířce.
       // Audit na výšku a stráž kamery na šířku (P64 T1), HUD na výšku (P64 T6; jeho desktopová reference jede v `chromium`),
       // ovládání palce (P64 T7).
-      testMatch: /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb)\.spec\.ts/,
+      // Nové žánry P66 (T5–T9) a háčky (T4, karty v zóně palce) se hrají na výšku prstem; v `chromium` jedou samy
+      // (nejsou v jeho `testIgnore`). Sdílený odkaz, rekord a výzva (P66 T11, `play-share`) se otevírají hlavně na telefonu.
+      testMatch:
+        /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb|play-survivor|play-hole|play-steal|play-sort|play-arrows|p66-hooks|play-share)\.spec\.ts/,
       use: { ...devices['Pixel 7'], hasTouch: true },
     },
     // Safari a iPhone (P58C T3): hlavní cesta věta → hra → výhra → výzva na WebKitu. Přepínače

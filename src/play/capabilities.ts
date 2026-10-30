@@ -29,7 +29,7 @@ export interface ControlCapability {
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
   /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3; nástrahy `spikes`, `pipe`, `hazard` – P39 T9). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper' | 'boss' | 'item')[];
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper' | 'boss' | 'item' | 'drop' | 'item1' | 'item2' | 'item3' | 'loot' | 'sort0' | 'sort1' | 'sort2' | 'sort3' | 'sort4' | 'piece')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -137,6 +137,13 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   merge: arcade({ setting: true, cues: 'drop and merge, suika, 2048', roles: ['item'], finish: false, labels: ['player', 'item'], mechanics: LIVES_AND_TIMER }),
   // T12 vytlačování: soupeř v ringu (`rival`) nese model z popisku; životy bere pád hrdiny z ringu.
   push: arcade({ setting: true, cues: 'push rivals out of the ring, sumo', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER }),
+  // P66 T13: pět žánrů P66 čte role, které jejich modul zapíše (`genre/<g>.ts`); každou kreslí model z popisku
+  // (`things` v `ArcadePlay.tsx`, hrdinu `heroModel`), scéna kreslí sadu prostředí. Životy (3) čtou survivor, krádež a šipky.
+  survivor: arcade({ setting: true, cues: 'move, the hero fires on its own at waves of foes, pick an upgrade between waves, a boss at the end', roles: ['enemy', 'drop', 'boss'], finish: false, labels: ['player', 'enemy', 'drop', 'boss'], mechanics: ['health'] }),
+  hole: arcade({ setting: true, cues: 'steer a hole that swallows things smaller than itself and grows', roles: ['item1', 'item2', 'item3'], finish: false, labels: ['player', 'item1', 'item2', 'item3'], mechanics: [] }),
+  steal: arcade({ setting: true, cues: 'grab the loot from the rival base and carry it home while guards chase you', roles: ['loot', 'guard'], finish: false, labels: ['player', 'loot', 'guard'], mechanics: ['health'] }),
+  sort: arcade({ setting: true, cues: 'tap a queue to send its front item to the bin of the same kind or colour', roles: ['sort0', 'sort1', 'sort2', 'sort3', 'sort4'], finish: false, labels: ['player', 'sort0', 'sort1', 'sort2', 'sort3', 'sort4'], mechanics: [] }),
+  arrows: arcade({ setting: true, cues: 'tap a piece and it flies off along its arrow if the way out is clear', roles: ['piece'], finish: false, labels: ['player', 'piece'], mechanics: ['health'] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

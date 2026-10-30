@@ -27,6 +27,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
 
+import type { BestCheer } from '../best';
 import { keepClear } from './action-cue/NameLine';
 import { AbilityButton, ActionButton, abilitiesOf, actionsOf, useAbilityInput, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
@@ -43,6 +44,13 @@ import { HopScene } from './genres/hop/HopScene';
 import { CrowdScene } from './genres/crowd/CrowdScene';
 import { MergeScene } from './genres/merge/MergeScene';
 import { PushScene } from './genres/push/PushScene';
+import { SurvivorScene } from './genres/survivor/SurvivorScene';
+import { HoleScene } from './genres/hole/HoleScene';
+import { StealScene } from './genres/steal/StealScene';
+import { SortScene } from './genres/sort/SortScene';
+import { ArrowsScene } from './genres/arrows/ArrowsScene';
+import { HooksLayer } from './hooks/HooksLayer';
+import { PopAnchor } from './hooks/ScorePop';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -1095,8 +1103,10 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
       timers.add(timer);
     };
     const off = session.onEvents((events) => {
-      const amount = events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
-      const combo = comboOf(events);
+      // Tik se `score_pop` (háčky P66) kreslí čísla a kombo vrstva háčků nad tělem – tady by se zdvojila.
+      const hooked = events.some((event) => event.kind === 'score_pop');
+      const amount = hooked ? 0 : events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
+      const combo = hooked ? null : comboOf(events);
       const x = Number(surface.current?.dataset.playerX ?? 0);
       const left = 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50;
       const fresh: ScorePop[] = [];
@@ -1226,6 +1236,16 @@ const StageCanvas = memo(function StageCanvas({
             <MergeScene {...world} />
           ) : stage.scene === 'push' ? (
             <PushScene {...world} />
+          ) : stage.scene === 'survivor' ? (
+            <SurvivorScene {...world} />
+          ) : stage.scene === 'hole' ? (
+            <HoleScene {...world} />
+          ) : stage.scene === 'steal' ? (
+            <StealScene {...world} />
+          ) : stage.scene === 'sort' ? (
+            <SortScene {...world} />
+          ) : stage.scene === 'arrows' ? (
+            <ArrowsScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}
@@ -1240,6 +1260,8 @@ const StageCanvas = memo(function StageCanvas({
       <LegibleBodies control={control} foes={control === 'shooter' || stage.scene === 'arena'} />
       {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
       <PromptSpot session={session} surface={surface} />
+      {/* Létající skóre háčků (P66 T4) nad tělem: promítne popy vrstvy háčků kamerou scény. */}
+      <PopAnchor surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
       <Effects session={session} look={look} surface={surface} />
     </HostedCanvas>
@@ -1252,6 +1274,7 @@ export default function ArcadeStage({
   lookId = 'meadow',
   look: scene,
   enabled = true,
+  cheer = null,
   heroAction = 'none',
   ghost,
   abilityWords,
@@ -1268,6 +1291,8 @@ export default function ArcadeStage({
   readonly look?: Look;
   /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
   readonly enabled?: boolean;
+  /** Přebitý rekord či výzva za běhu (P66 T11, `cheerOf`): vrstva háčků ho ohlásí hláškou jednou za běh. */
+  readonly cheer?: BestCheer | null;
   /** Viditelná činnost hrdiny ze specu (P37-0 T2); jde do každé scény, kreslí ji až stopa vzhledu. Jádro ji nečte. */
   readonly heroAction?: HeroAction;
   /** Duch dřívějšího běhu (P37B T8, `GhostSlot.tsx`); scéna ho kreslí ve svém slotu. */
@@ -1356,6 +1381,8 @@ export default function ArcadeStage({
       <XrGame session={session} enabled={enabled} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {/* Háčky (P66 T4): létající skóre, hlášky, banner kola, karty vylepšení, nálezy; hra bez háčků nic nevykreslí. */}
+      {enabled && <HooksLayer session={session} cheer={cheer} />}
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}

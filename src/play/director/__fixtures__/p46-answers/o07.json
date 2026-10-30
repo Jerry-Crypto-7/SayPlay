@@ -3,12 +3,12 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:24.015Z",
- "ms": 5668,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:27:21.951Z",
+ "ms": 9301,
  "answer": {
-  "plan": "Create a platform‑style jump game where a ninja frog hops over lily pads in a swamp, with timed waves of lily‑pad obstacles that appear after each second.",
+  "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, collecting bananas while avoiding swamp hazards, with a simple time‑based wave mechanic.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -22,17 +22,24 @@
      "patrol": false
     },
     {
-     "label": "frog",
-     "does": "reach",
+     "label": "banana",
+     "does": "collect",
+     "verb": "grab",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "swamp eel",
+     "does": "avoid",
      "verb": "jump",
      "states": 2,
      "patrol": false
     },
     {
-     "label": "swamp",
-     "does": "scenery",
-     "verb": "none",
-     "states": null,
+     "label": "mud puddle",
+     "does": "avoid",
+     "verb": "jump",
+     "states": 2,
      "patrol": false
     }
    ],
@@ -42,36 +49,58 @@
    "params": {
     "lengthM": 200,
     "difficulty": 1,
-    "items": 3,
+    "items": 5,
     "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 0
+    "targetScore": 500,
+    "timeLimit": 90
    },
    "counts": {
-    "collectible": null
+    "collectible": 5
    },
    "ruleRoles": [
     {
-     "id": "pad",
+     "id": "lily",
      "kind": "destination",
      "label": "lily pad",
      "count": null
     },
     {
-     "id": "frog",
-     "kind": "exit",
-     "label": "ninja frog",
+     "id": "banana",
+     "kind": "collectible",
+     "label": "banana",
+     "count": 5
+    },
+    {
+     "id": "eel",
+     "kind": "hazard",
+     "label": "swamp eel",
+     "count": null
+    },
+    {
+     "id": "puddle",
+     "kind": "hazard",
+     "label": "mud puddle",
      "count": null
     }
    ],
    "things": [
     {
-     "role": "pad",
+     "role": "lily",
      "start": "hidden",
      "physics": null
     },
     {
-     "role": "frog",
+     "role": "banana",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "eel",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "puddle",
      "start": "hidden",
      "physics": null
     }
@@ -87,34 +116,31 @@
      "do": [
       {
        "startTimer": {
-        "timer": "padwave",
+        "timer": "wave",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "wavePads",
+     "id": "waveSpawn",
      "verb": "wait",
      "when": {
-      "timer": "padwave"
+      "timer": "wave"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "second"
-      },
-      {
        "wave": {
-        "role": "pad",
-        "count": 3,
+        "role": "banana",
+        "count": 1,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "resetWave",
+     "id": "nextPhase",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -122,10 +148,20 @@
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "padwave",
-        "ticks": 60
-       }
+       "goPhase": "third"
+      }
+     ]
+    },
+    {
+     "id": "endPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "third"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -134,7 +170,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "padwave"
+      "id": "wave"
      }
     ],
     "phases": [
@@ -143,6 +179,9 @@
      },
      {
       "id": "second"
+     },
+     {
+      "id": "third"
      }
     ],
     "events": null

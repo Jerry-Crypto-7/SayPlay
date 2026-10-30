@@ -201,6 +201,15 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number, prior:
       return (((after[logicBase(after) + LOGIC_SLOTS.eventPending] as number) >>> effect.event) & 1) === 1 ? `event ${nameOf(prior.names?.event, effect.event)} sent ${at}` : null;
     // Západka je účetnictví spouštěče, ne viditelná změna.
     case 'latch':
+    // Zprávy háčků (P66 T2) stav nemění, takže je jádro stopou nehlásí.
+    case 'score_pop':
+    case 'callout':
+    case 'round_start':
+    case 'round_clear':
+    case 'upgrade_offer':
+    case 'upgrade_pick':
+    case 'rare_found':
+    case 'boss_enter':
       return null;
   }
 }

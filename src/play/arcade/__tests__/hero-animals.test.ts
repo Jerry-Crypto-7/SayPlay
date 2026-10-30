@@ -32,6 +32,12 @@ const CONTROL: Readonly<Record<GenreId, string>> = {
   crowd: 'crowd',
   merge: 'merge',
   push: 'push',
+  // P66 T2: kostry nových žánrů mají ovládání téhož jména.
+  survivor: 'survivor',
+  hole: 'hole',
+  steal: 'steal',
+  sort: 'sort',
+  arrows: 'arrows',
 };
 
 /** Slovo věty → model, který to zvíře zobrazuje; `clips` = hýbe se klipy z GLB. */

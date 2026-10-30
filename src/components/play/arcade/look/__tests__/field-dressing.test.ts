@@ -205,8 +205,12 @@ describe('P62 T4: the play area itself is dressed', () => {
       const { world } = gameOf(row, seed);
       const verdict = verifyArcade(world);
       if (seed === 1) {
-        expect(hashArcade(instantiate(world)), 'start hash as on main').toBe(row.main.init);
-        expect(verdict.bot.hash, 'robot run hash as on main').toBe(row.main.bot);
+        // P66: nová věta je `genre.v6` (háčky mění hru); otisk `main` drží táž věta uložená jako `genre.v5`.
+        const { spec } = draftGameSpecWithMeta(row.sentence, 1);
+        const stored = arcadeWorldOf({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v5' } }, seed);
+        if (!stored.ok) throw new Error(stored.issues.join('; '));
+        expect(hashArcade(instantiate(stored.world)), 'start hash as on main').toBe(row.main.init);
+        expect(verifyArcade(stored.world).bot.hash, 'robot run hash as on main').toBe(row.main.bot);
       }
       expect(verdict.bot.outcome, `seed ${String(seed)}`).toBe('won');
       expect(verdict.idle.outcome, `seed ${String(seed)}`).not.toBe('won');

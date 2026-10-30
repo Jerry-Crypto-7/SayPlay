@@ -14,6 +14,7 @@ import { loadRapier } from '../../arcade/physics/world';
 import { draftGameSpecWithMeta } from '../../draft/draft';
 import type { GameSpecV1 } from '../../spec';
 import { GENRES, type GenreId } from '../contract';
+import { GENRE_MODULES } from '../modules';
 
 /** Slot scény → model, jak ho skládá `ArcadePlay` (`cast`): nepřítel střelnice, pronásledovatel, rekvizity, věci pravidel. */
 function sceneSlots(spec: GameSpecV1): Readonly<Record<string, string | undefined>> {
@@ -52,6 +53,12 @@ const ROWS: readonly Row[] = [
   { genre: 'crowd', sentence: 'a horde of zombies grows through gates in a city and attacks a dragon', place: 'city', slots: { 'thing.boss': 'dragon' } },
   { genre: 'merge', sentence: 'merge fruits in a jar in a kitchen', place: 'kitchen', slots: { coin: 'fruit' } },
   { genre: 'push', sentence: 'a polar bear shoves penguins off an ice floe in the arctic', place: 'arctic', slots: { rival: 'penguin' } },
+  // P66 T12: pět nových žánrů – nepřítel vln, věc, kterou díra polyká, kořist a strážce, druhy k třídění, kus v zácpě.
+  { genre: 'survivor', sentence: 'a knight survives waves of skeletons in a castle courtyard', place: 'castle courtyard', slots: { enemy: 'skeleton', 'thing.enemy': 'skeleton' } },
+  { genre: 'hole', sentence: 'a black hole swallows the cars of a busy city', place: 'busy city', slots: { 'thing.item1': 'car' } },
+  { genre: 'steal', sentence: 'a fox steals eggs from the farm and runs them back to its den while the farmer chases it', place: 'farm', slots: { 'thing.loot': 'egg', 'thing.guard': 'farmer' } },
+  { genre: 'sort', sentence: 'sort the apples and pears into the right baskets on a farm', place: 'farm', slots: { 'thing.sort0': 'apple', 'thing.sort1': 'pear' } },
+  { genre: 'arrows', sentence: 'tap each car so it drives out of the jammed parking lot', place: 'parking lot', slots: { 'thing.piece': 'car' } },
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */
@@ -68,8 +75,10 @@ beforeAll(async () => {
 });
 
 describe('P61 T3: the quick game wears the sentence’s setting and foe', () => {
-  it('covers every genre once', () => {
-    expect(ROWS.map((row) => row.genre).sort()).toEqual([...GENRES].sort());
+  it('covers every genre that plays once', () => {
+    // Kostra (`staged`) řádek nemá – návrh ji nevybere. Pět žánrů P66 řádky dostalo s T12, kdy je klasifikátor pustil.
+    const playing = GENRES.filter((genre) => GENRE_MODULES[genre].modes.some((mode) => GENRE_MODULES[genre].availability(mode as never) !== 'staged'));
+    expect(ROWS.map((row) => row.genre).sort()).toEqual([...playing].sort());
   });
 
   it.each([...ROWS, ...DEV_ROWS].map((row) => [row.genre, row.sentence, row] as const))('%s: %s', (genre, sentence, row) => {

@@ -138,6 +138,24 @@ describe('chainOrSingle', () => {
     });
   });
 
+  // P66 T15: dev věty, které řetěz dělal chytáním nebo běžcem (soudce 0,04–0,35) – znak žánru je hlavní sloveso a vede.
+  describe('a sentence whose main verb is a new genre sign plays that one game (P66 T15)', () => {
+    for (const [sentence, genre] of [
+      ['a raccoon sneaks into the rival camp, grabs their picnic basket and runs it back to his tree before the rangers catch him', 'steal'],
+      ['a ninja cat steals fish from the market stalls and brings them to her alley while guard dogs chase her', 'steal'],
+      ['slide the wooden fish out of the crowded pond, each fish only swims the way its nose points', 'arrows'],
+    ] as const) {
+      it(sentence, () => {
+        expect(decide(sentence)).toBe('single');
+        expect(draftGameSpecWithMeta(sentence, 1).genre?.genre).toBe(genre);
+      });
+    }
+
+    it('a sign that asks for rounds still makes a chain', () => {
+      expect(reasons('steal the golden egg from the dragon and carry it home, make it five levels')).toEqual(['cue']);
+    });
+  });
+
   it('a generic cell heard by a clear margin stays a single game', () => {
     const ranking = classifyGenre('steer a hot air balloon through the gaps between storm clouds', null);
     expect(`${ranking.ranked[0]!.genre}.${ranking.ranked[0]!.mode}`).toBe('voyage.race');

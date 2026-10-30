@@ -118,6 +118,12 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'crowd.default': 'crowd',
   'merge.default': 'merge',
   'push.default': 'push',
+  // P66 T13: pět žánrů P66, každý na svém ovládání.
+  'survivor.default': 'survivor',
+  'hole.default': 'hole',
+  'steal.default': 'steal',
+  'sort.default': 'sort',
+  'arrows.default': 'arrows',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -148,6 +154,11 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'crowd.default': 'A fox leads a crowd of foxes through gates in a dark forest past a wolf',
   'merge.default': 'A fox drops acorns into a jar in a dark forest and merges matching ones',
   'push.default': 'A fox pushes wolves out of a ring in a dark forest',
+  'survivor.default': 'A fox survives waves of wolves in a dark forest',
+  'hole.default': 'A fox steers a hole that swallows acorns in a dark forest',
+  'steal.default': 'A fox steals eggs from the wolf den in a dark forest and carries them home',
+  'sort.default': 'A fox sorts acorns into baskets in a dark forest',
+  'arrows.default': 'A fox taps stuck logs out of a jam in a dark forest',
 };
 
 /** Věta, ve které klíčová slova žádný nový žánr nečtou – žánr hry tu může dát jedině odpověď režiséra. */
@@ -198,8 +209,9 @@ describe('direct – the model answers', () => {
       expect(game.fallbackReason, name).toBe(unmet.length > 0 ? 'VERB_UNPROVED' : null);
       expect(game.spec.roles.find((role) => role.kind === 'player')?.label, name).toBe('fox');
     }
-    // Každý žánr ověří robot; s logikou P45B a průběhem P45C samotný test ~20 s.
-  }, 90_000);
+    // Každý žánr ověří robot; s logikou P45B a průběhem P45C samotný test ~20 s. P66 T13: pět žánrů navíc, pod zátěží
+    // sady 90 s nestačilo.
+  }, 180_000);
 
   it('a GameSpec body is unreadable – draft + MALFORMED after one call, the table no longer repairs it', async () => {
     const good = answerFixture('good-collect_exit');

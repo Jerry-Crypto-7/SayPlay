@@ -229,7 +229,8 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);
       expect(chain(world.control).map((ref) => ref.id)).not.toContain('pacing_control');
-      expect(world, `seed ${seed}`).toEqual(worldOf(storedOf(spec), seed));
+      // Tatáž hra přeložená před háčky P66 (`genre.v5`): `genre.v6` k ní přidá jen počítadlo a pravidlo háčků (T10).
+      expect(worldOf({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v5' } }, seed), `seed ${seed}`).toEqual(worldOf(storedOf(spec), seed));
     }
   });
 
@@ -349,7 +350,8 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
       const spec = cell.spec();
       const paced = worldOf(spec);
       const stored = worldOf(storedOf(spec));
-      const own = (id: string): boolean => id === 'pacing' || id === 'boss_beat_hit';
+      // `hooks` (P66 T10): kola a výběr vylepšení nové hry – pravidlo nic nevystřelí, takže ani nevyhraje.
+      const own = (id: string): boolean => id === 'pacing' || id === 'boss_beat_hit' || id === 'hooks';
       expect(paced.rules.map((rule) => rule.id).filter((id) => !own(id)), cell.id).toEqual(stored.rules.map((rule) => rule.id));
       const mine = new Set(paced.rules.flatMap((rule, index) => (own(rule.id) ? [index] : [])));
       const bot = runBot(paced, ARCADE_LIBRARY, { profile: 'intermediate' });

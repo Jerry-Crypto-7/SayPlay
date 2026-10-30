@@ -40,7 +40,7 @@
  * výzva nevyjde, odejde obyčejný odkaz a toast to řekne.
  *
  * Výsledek jako Wordle (P37C T4): s `result` dostane nabídka sdílení i text –
- * název hry, mřížku bez spoileru a cíl „Can you beat 2,450?“ (odkaz jde
+ * název hry, mřížku bez spoileru a cíl „Beat my 2,450!“ (P66 T11; odkaz jde
  * zvlášť jako `url`); do schránky jde týž text i s odkazem.
  */
 

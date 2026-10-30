@@ -3,12 +3,12 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:12:12.161Z",
- "ms": 8346,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:27:01.575Z",
+ "ms": 17321,
  "answer": {
-  "plan": "Arena escape: hamster evades a supermarket Roomba in a timed supermarket setting.",
+  "plan": "Arena escape – hamster evades a supermarket Roomba with a simple 2‑phase timer logic.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -36,7 +36,7 @@
     "chaserSpeed": 70,
     "enemies": 1,
     "enemyHp": 3,
-    "enemySpeed": 80,
+    "enemySpeed": 60,
     "playerHp": 3,
     "lives": 3,
     "targetScore": 0,
@@ -63,7 +63,7 @@
    ],
    "rules": [
     {
-     "id": "startTimer",
+     "id": "startPhase",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -73,13 +73,13 @@
       {
        "startTimer": {
         "timer": "escape",
-        "ticks": 600
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phaseSwitch",
+     "id": "escapeTimer",
      "verb": "wait",
      "when": {
       "timer": "escape"
@@ -99,15 +99,18 @@
      ]
     },
     {
-     "id": "chase",
-     "verb": "chase",
+     "id": "secondPhase",
+     "verb": "wait",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "toggle": "roomba"
+      },
+      {
+       "despawn": "self"
       }
      ]
     }
@@ -135,11 +138,7 @@
     "attack": "charge"
    },
    "abilities": [],
-   "segments": [
-    "moving",
-    "faster",
-    "newFoe"
-   ]
+   "segments": null
   }
  },
  "failure": null

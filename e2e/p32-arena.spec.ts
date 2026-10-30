@@ -423,7 +423,9 @@ async function shootFight(page: Page, prefix: string, warmUpMs = 0): Promise<rea
   const labels = await meterLabels(page);
   test.info().annotations.push({ type: 'meters', description: labels.join(' | ') });
   // Souboj jde od P36A T4 ve vlnách: soupeři vlny se číslují a každá vlna má o 1 HP víc (3 → 7 v páté).
-  expect(labels[1], 'HP soupeře po KO pro čtečku').toMatch(/^Rival [a-z ]+ \d+ health 0 of 7$/);
+  // Mez měřidla je nejvyšší HP, které obrazovka od skoku na `bot.tick - BEFORE_FINISH` viděla. Ve `genre.v6` (P66 T10)
+  // si robot před poslední vlnou vezme `fire_rate`, takže soupeř může mít první ránu za sebou už ve chvíli skoku (6 ze 7).
+  expect(labels[1], 'HP soupeře po KO pro čtečku').toMatch(/^Rival [a-z ]+ \d+ health 0 of [67]$/);
   return shots;
 }
 

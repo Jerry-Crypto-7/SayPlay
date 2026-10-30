@@ -3,194 +3,39 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "88459d2e",
- "directorPromptVersion": "efeb3cd3",
- "recordedAt": "2026-10-20T23:13:45.507Z",
- "ms": 7803,
+ "promptVersion": "d92e2927",
+ "directorPromptVersion": "649b7a2a",
+ "recordedAt": "2026-10-29T14:29:22.079Z",
+ "ms": 8092,
  "answer": {
-  "plan": "Create a supermarket‑race voyage where the player drives a shopping cart through aisles, avoiding obstacles and collecting items while a timer counts down.",
+  "plan": "Create a simple race‑style voyage game where the player drives a shopping cart through a supermarket, avoiding obstacles and collecting items while a timer counts down.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "shopping cart",
-   "cast": [
-    {
-     "label": "checkout counter",
-     "does": "reach",
-     "verb": "reach",
-     "states": 2,
-     "patrol": false
-    },
-    {
-     "label": "shelf",
-     "does": "avoid",
-     "verb": "avoid",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "price tag",
-     "does": "collect",
-     "verb": "collect",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "conveyor belt",
-     "does": "avoid",
-     "verb": "avoid",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "cashier",
-     "does": "chase_me",
-     "verb": "chase",
-     "states": null,
-     "patrol": true
-    }
-   ],
+   "cast": [],
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
    "params": {
-    "hazards": 1,
+    "hazards": 0,
     "turbo": 0,
     "roadWidth": 5000,
     "roadEntryWidth": 5000,
     "crashBudget": 3,
     "namedLandingTarget": 0,
     "touchdownSpeed": 30,
-    "gravityRisePct": 10,
-    "lengthM": 400,
-    "topSpeed": 250,
-    "gravity": 800,
+    "gravityRisePct": 0,
+    "lengthM": 300,
+    "topSpeed": 200,
+    "gravity": 400,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 60
    },
-   "ruleRoles": [
-    {
-     "id": "checkout",
-     "kind": "destination",
-     "label": "checkout counter",
-     "count": 1
-    },
-    {
-     "id": "shelf",
-     "kind": "hazard",
-     "label": "shelf",
-     "count": 1
-    },
-    {
-     "id": "tag",
-     "kind": "collectible",
-     "label": "price tag",
-     "count": 5
-    },
-    {
-     "id": "belt",
-     "kind": "hazard",
-     "label": "conveyor belt",
-     "count": 1
-    },
-    {
-     "id": "cashier",
-     "kind": "chaser",
-     "label": "cashier",
-     "count": 1
-    }
-   ],
-   "things": [
-    {
-     "role": "checkout",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "shelf",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "tag",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "belt",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "cashier",
-     "start": "hidden",
-     "physics": null
-    }
-   ],
-   "rules": [
-    {
-     "id": "startTimer",
-     "verb": "wait",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "race",
-        "ticks": 600
-       }
-      }
-     ]
-    },
-    {
-     "id": "raceTimer",
-     "verb": "wait",
-     "when": {
-      "timer": "race"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      }
-     ]
-    },
-    {
-     "id": "spawnCashier",
-     "verb": "wait",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "cashier",
-        "at": "other"
-       }
-      }
-     ]
-    },
-    {
-     "id": "reachCheckout",
-     "verb": "reach",
-     "when": {
-      "contact": [
-       "player",
-       "checkout"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
-      }
-     ]
-    }
-   ],
+   "ruleRoles": [],
+   "things": [],
+   "rules": [],
    "logic": {
     "vars": null,
     "timers": [
@@ -200,27 +45,17 @@
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "run"
      }
     ],
     "events": null
    },
-   "boss": {
-    "role": "cashier",
-    "name": "Cashier Chase",
-    "attack": "charge"
-   },
-   "abilities": [
-    "dash"
-   ],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "boss": null,
+   "abilities": [],
+   "segments": null
   }
  },
  "failure": null

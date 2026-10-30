@@ -40,6 +40,9 @@ import {
   UNIT,
   bodyBase,
 } from '../contract';
+import { UPGRADE_STEP } from '../hooks/contract';
+import { worldTickOf } from '../hooks/rounds';
+import { upgradeLevel } from '../hooks/upgrades';
 
 export const SHOOTER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type ShooterDifficulty = (typeof SHOOTER_DIFFICULTIES)[number];
@@ -90,7 +93,9 @@ export function aimAt(x: number, z: number): number {
  */
 const marchEntry = z.object({ body: z.int().min(1), at: z.int().min(1).max(ARCADE_LIMITS.maxTicks), vx: z.int(), vz: z.int().max(-1) }).strict();
 export type MarchEntry = z.infer<typeof marchEntry>;
-const controlParams = z.object({ march: z.array(marchEntry).min(1).max(48).optional() }).strict();
+/** Počítadlo háčků hry `genre.v6` s koly (P66 T10): pochod jde podle tiku světa bez přestávek (`worldTickOf`). */
+const hooksKeeper = z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1);
+const controlParams = z.object({ march: z.array(marchEntry).min(1).max(48).optional(), hooks: hooksKeeper.optional() }).strict();
 
 /** Ovládání: hráč stojí, osa nastaví míření, vlevo/vpravo ho posune, ťuk = spoušť; vlny za branou vyjdou podle pochodu. */
 export const shooterControl: ControlPiece<z.infer<typeof controlParams>> = {
@@ -100,7 +105,7 @@ export const shooterControl: ControlPiece<z.infer<typeof controlParams>> = {
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     if (params.march !== undefined) {
-      const tick = state[HEADER.tick] as number;
+      const tick = worldTickOf(state, params.hooks);
       for (const entry of params.march) {
         const enemy = bodyBase(entry.body);
         if (entry.at !== tick || ((state[enemy + BODY.flags] as number) & FLAG.alive) === 0) continue;
@@ -172,8 +177,21 @@ const gunParams = z
     template: z.int().min(0),
     magazine: z.int().min(1).max(50),
     reloadTicks: z.int().min(1).max(10 * ARCADE_HZ),
+    /** Počítadlo háčků hry s výběrem vylepšení (P66 T10): zbraň sama čte `fire_rate` a `range`. Uložené hry ho nemají. */
+    hooks: hooksKeeper.optional(),
   })
   .strict();
+
+/**
+ * Vylepšení zbraně (P66 T10, `UPGRADE_STEP`): `fire_rate` zkrátí rozestup ran o 20 % za stupeň (přebití ne), `range`
+ * zrychlí střelu o 20 % za stupeň – život střely zůstane, takže doletí o tolik dál (zásah jádro hledá protažením).
+ */
+function upgradedShot(state: Int32Array, keeper: number, cooldown: number, vx: number, vz: number): { readonly cooldown: number; readonly vx: number; readonly vz: number } {
+  const rate = upgradeLevel(state, keeper, 'fire_rate');
+  const range = 100 + UPGRADE_STEP.range * upgradeLevel(state, keeper, 'range');
+  const shorter = cooldown === SHOOTER.fireInterval ? cooldown - Math.trunc((cooldown * UPGRADE_STEP.fire_rate * rate) / 100) : cooldown;
+  return { cooldown: shorter, vx: Math.trunc((vx * range) / 100), vz: Math.trunc((vz * range) / 100) };
+}
 
 /** Zbraň: spoušť z ovládání → střela z hráče ve směru míření, čítače zásobníku. */
 export const gun: RulePiece<z.infer<typeof gunParams>> = {
@@ -186,14 +204,15 @@ export const gun: RulePiece<z.infer<typeof gunParams>> = {
     const base = bodyBase(player);
     const before = gunOf(state);
     const { fired, next } = gunTick(before, state[base + BODY.aux1] === 1, params);
+    const aimed = fired ? aimVelocity(state[base + BODY.aux0] as number) : { vx: 0, vz: 0 };
+    const shot = fired && params.hooks !== undefined ? upgradedShot(state, params.hooks, next.cooldown, aimed.vx, aimed.vz) : { cooldown: next.cooldown, ...aimed };
     const effects: ArcadeEffect[] = [];
     if (next.ammo !== before.ammo) effects.push({ kind: 'count', counter: 'ammo', amount: next.ammo - before.ammo });
     if (next.reserve !== before.reserve) effects.push({ kind: 'count', counter: 'reserve', amount: next.reserve - before.reserve });
-    if (next.cooldown !== before.cooldown) effects.push({ kind: 'count', counter: 'cooldown', amount: next.cooldown - before.cooldown });
+    if (shot.cooldown !== before.cooldown) effects.push({ kind: 'count', counter: 'cooldown', amount: shot.cooldown - before.cooldown });
     if (fired) {
-      const { vx, vz } = aimVelocity(state[base + BODY.aux0] as number);
       const z0 = (state[base + BODY.z] as number) + SHOOTER.playerD / 2;
-      effects.push({ kind: 'spawn', template: params.template, x: state[base + BODY.x] as number, y: SHOOTER.muzzleY, z: z0, vx, vy: 0, vz });
+      effects.push({ kind: 'spawn', template: params.template, x: state[base + BODY.x] as number, y: SHOOTER.muzzleY, z: z0, vx: shot.vx, vy: 0, vz: shot.vz });
     }
     return effects;
   },

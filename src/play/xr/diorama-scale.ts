@@ -129,8 +129,10 @@ const follow = (lo: number, size: number, at: number, band: Band): number => Mat
 /**
  * Okno dioramy nad hřištěm. Měřítko je pevné po celou hru (zoom za běhu by se houpal); okno jede za kresleným
  * hrdinou snímek po snímku (`frame`) – plynule, protože scény hrdinu mezi tiky prolínají. Stav okna je jen kresba.
+ * `ground` = o kolik scéna kreslí zem v hloubce `z` výš než rovinu jádra (m): kopce a údolí trati běžce
+ * (`runnerPathOf`); bez něj je zem rovná.
  */
-export function createDiorama(area: Box) {
+export function createDiorama(area: Box, ground: (z: number) => number = () => 0) {
   const scale = dioramaScale(area);
   const size = { x: TABLE.width / scale, y: TABLE.height / scale, z: TABLE.depth / scale };
   const fitsY = area.maxY - area.minY <= size.y;
@@ -143,8 +145,9 @@ export function createDiorama(area: Box) {
     frame(hero: Point | null): DioramaView {
       if (hero !== null) {
         lo.x = follow(lo.x, size.x, hero.x, band.x);
-        // Zem nikdy nad desku: hrdina pod zemí (pád do jámy) zmizí pod deskou, svět se za ním nepropadá.
-        lo.y = Math.max(area.minY, follow(lo.y, size.y, hero.y, band.y));
+        // Zem pod hrdinou nikdy nad desku: hrdina pod zemí (pád do jámy) zmizí pod deskou, svět se za ním nepropadá.
+        // Zem je ta kreslená – v údolí trati by jinak pod desku zapadl i hrdina, který po ní běží.
+        lo.y = Math.max(area.minY + ground(hero.z), follow(lo.y, size.y, hero.y, band.y));
         lo.z = follow(lo.z, size.z, hero.z, band.z);
       }
       return { scale, center: { x: lo.x + size.x / 2, y: lo.y, z: lo.z + size.z / 2 } };

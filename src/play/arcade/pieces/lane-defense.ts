@@ -40,6 +40,9 @@ import {
   bodyBase,
   bodyHp,
 } from '../contract';
+import { UPGRADE_STEP } from '../hooks/contract';
+import { worldTickOf } from '../hooks/rounds';
+import { upgradeLevel } from '../hooks/upgrades';
 import { EVENT_MARK, LANE_EVENTS, laneEventRng, planLaneEvents, stepLane } from './lane-events';
 import { LANES, LANE_START, heldTicks, laneOf, laneOfX, laneX, tappedIn } from './lanes';
 import { nextMultiplier } from './rules';
@@ -481,8 +484,22 @@ const shotParams = z
     defender: index,
     /** Tiky, kdy čítač vlny (`WAVE_COUNTER`) stoupne o 1. */
     waves: z.array(z.int().min(0).max(ARCADE_LIMITS.maxTicks)).max(DEFENSE.waves),
+    /**
+     * Počítadlo háčků hry `genre.v6` s koly (P66 T10): takt obránců a vlny jdou podle tiku světa bez přestávek
+     * (`worldTickOf`), luk čte `fire_rate`, obránci `range`. Uložené hry ho nemají.
+     */
+    hooks: index.optional(),
   })
   .strict();
+
+/**
+ * Vylepšení obrany (P66 T10, `UPGRADE_STEP`): `fire_rate` zkrátí přebití luku o 20 % za stupeň, `range` prodlouží
+ * dosah obránců (`DEFENSE.reach`) o 20 % za stupeň.
+ */
+const reloadOf = (state: Int32Array, keeper: number | undefined): number =>
+  keeper === undefined ? DEFENSE.reload : DEFENSE.reload - Math.trunc((DEFENSE.reload * UPGRADE_STEP.fire_rate * upgradeLevel(state, keeper, 'fire_rate')) / 100);
+const reachOf = (state: Int32Array, keeper: number | undefined): number =>
+  keeper === undefined ? DEFENSE.reach : Math.trunc((DEFENSE.reach * (100 + UPGRADE_STEP.range * upgradeLevel(state, keeper, 'range'))) / 100);
 
 const alive = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
 const kindOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.kind] as number;
@@ -534,13 +551,14 @@ export const defenseShotRule: RulePiece<z.infer<typeof shotParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player }, params) => {
     const effects: ArcadeEffect[] = [];
-    const tick = state[HEADER.tick] as number;
+    const tick = worldTickOf(state, params.hooks);
     const cooldown = state[HEADER.counters + COUNTER.cooldown] as number;
     const tap = tappedIn(state, player);
     if (tap !== null && cooldown === 0) {
       effects.push({ kind: 'spawn', template: params.bolt, x: laneX(tap), y: DEFENSE.bolt.y, z: DEFENSE.wall, vx: 0, vy: 0, vz: DEFENSE.bolt.speed });
-      effects.push({ kind: 'count', counter: 'cooldown', amount: DEFENSE.reload - 1 });
+      effects.push({ kind: 'count', counter: 'cooldown', amount: reloadOf(state, params.hooks) - 1 });
     } else if (cooldown > 0) effects.push({ kind: 'count', counter: 'cooldown', amount: -1 });
+    const reach = reachOf(state, params.hooks);
     const defenders = copiesOf(state, params.defender);
     if (heldTicks(state, player) === DEFENSE.hold) {
       const lane = laneOf(state, player);
@@ -551,7 +569,7 @@ export const defenseShotRule: RulePiece<z.infer<typeof shotParams>> = {
     for (const body of defenders) {
       const lane = laneOfX(state[bodyBase(body) + BODY.x] as number);
       if ((tick + lane * DEFENSE.stagger) % DEFENSE.volley !== 0) continue;
-      if (!marchersIn(state, lane).some((foe) => frontOf(state, foe) <= DEFENSE.wall + DEFENSE.reach)) continue;
+      if (!marchersIn(state, lane).some((foe) => frontOf(state, foe) <= DEFENSE.wall + reach)) continue;
       effects.push({ kind: 'spawn', template: params.arrow, x: laneX(lane), y: DEFENSE.arrow.y, z: DEFENSE.wall, vx: 0, vy: 0, vz: DEFENSE.arrow.speed });
     }
     if (params.waves.includes(tick)) effects.push({ kind: 'count', counter: WAVE_COUNTER, amount: 1 });

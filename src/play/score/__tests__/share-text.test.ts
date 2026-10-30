@@ -24,14 +24,24 @@ const run = (over: Partial<ShareRun>): ShareRun => ({
 describe('shareText', () => {
   it('a scored win names the game, shows stars and lives, and dares the score', () => {
     expect(shareText(run({ stars: 2, score: 2450, lives: 3 }), 'Frog dodge', URL)).toBe(
-      ['Frog dodge – sayplay', '⭐⭐☆ ❤️❤️❤️', '⏱️ 31.0s', 'Can you beat 2,450?', URL].join('\n'),
+      ['Frog dodge – sayplay', '⭐⭐☆ ❤️❤️❤️', '⏱️ 31.0s', 'Beat my 2,450!', URL].join('\n'),
     );
   });
 
   it('a timed win without points dares the time', () => {
     expect(shareText(run({ stars: 3, goal: { count: 5, need: 5 } }), 'Mushrooms', URL)).toBe(
-      ['Mushrooms – sayplay', '⭐⭐⭐ 🟩🟩🟩🟩🟩', '⏱️ 31.0s', 'Can you beat 31.0s?', URL].join('\n'),
+      ['Mushrooms – sayplay', '⭐⭐⭐ 🟩🟩🟩🟩🟩', '⏱️ 31.0s', 'Beat my 31.0s!', URL].join('\n'),
     );
+  });
+
+  // P66 T11: kamarád z odkazu dostane za cíl body, jen když nějaké jsou (`dareGoal`) – nula by byla „Beat my 0!“.
+  it('a win dares its own score as the next target, or its time when it scored nothing', () => {
+    const line = (over: Partial<ShareRun>) => shareText(run(over), 'Frog dodge', null).split('\n')[3];
+    expect(line({ score: 1240 })).toBe('Beat my 1,240!');
+    expect(line({ score: 10_000_000 })).toBe('Beat my 10,000,000!');
+    expect(line({ score: 0, seconds: 42 })).toBe('Beat my 42.0s!');
+    expect(line({ score: 0, survive: true })).toBe('Can you survive it too?');
+    expect(line({ won: false, score: 1240 })).toBe('So close. Can you beat it?');
   });
 
   it('a survival win without points dares to survive, not a number', () => {
@@ -61,7 +71,7 @@ describe('shareText', () => {
   });
 
   it('without a url there is no link line, for the share sheet that takes the link apart', () => {
-    expect(shareText(run({ score: 10 }), 'Frog dodge', null).split('\n')).toEqual(['Frog dodge – sayplay', '✅', '⏱️ 31.0s', 'Can you beat 10?']);
+    expect(shareText(run({ score: 10 }), 'Frog dodge', null).split('\n')).toEqual(['Frog dodge – sayplay', '✅', '⏱️ 31.0s', 'Beat my 10!']);
   });
 
   it('never runs past 280 characters: a long title is cut, the dare and the link stay whole', () => {
@@ -73,7 +83,7 @@ describe('shareText', () => {
       expect(text.split('\n')[0]).toMatch(/^A very long game title.*… – sayplay$/);
     }
     // Odkaz, který sám zabere skoro všechno: název ustoupí celý.
-    const huge = `https://sayplay.example/${'x'.repeat(220)}`;
+    const huge = `https://sayplay.example/${'x'.repeat(225)}`;
     const text = shareText(run({ score: 5 }), long, huge);
     expect(text.length).toBeLessThanOrEqual(SHARE_TEXT_MAX);
     expect(text.split('\n')[0]).toBe('sayplay');

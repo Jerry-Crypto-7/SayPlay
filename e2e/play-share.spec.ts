@@ -1,9 +1,40 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { expect, test } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
 import { startGame } from './play-start';
+
+interface HandProbe {
+  readonly handPlay: (until: 'score' | 'end' | number) => { readonly runState: string; readonly tick: number; readonly score: number };
+  readonly idleRun: () => { readonly runState: string; readonly tick: number };
+}
+
+/** Nabídka sdílení se v e2e nedá obsluhovat – zachytí se, co by dostala (i s klipem běhu, `canShare`). */
+async function captureShare(context: BrowserContext): Promise<void> {
+  await context.addInitScript(() => {
+    const shared: ShareData[] = [];
+    (window as unknown as { __shared: ShareData[] }).__shared = shared;
+    Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
+  });
+}
+
+/** Robot dohraje „rukou“ (lidský běh – jen ten posílá výzvu), vzor `p36-dare.spec.ts`. */
+async function winByHand(page: Page): Promise<{ readonly tick: number; readonly score: number }> {
+  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  const end = await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    return (window.__playShell as unknown as HandProbe).handPlay('end');
+  });
+  expect(end.runState).toBe('won');
+  await expect(page.getByTestId('play-postrun')).toBeVisible();
+  return end;
+}
+
+/** Každý „člověk“ z vlastní adresy: strop výzev je 1 za 10 s na volajícího. */
+const person = (n: number) => ({ extraHTTPHeaders: { 'x-forwarded-for': `198.51.100.${String(n)}` } });
 
 /**
  * Sdílený odkaz (P23-C T7): cizí prohlížeč bez cookies a bez úložiště jde
@@ -149,6 +180,106 @@ test.describe('/play/[id] – share landing', () => {
     // odkaz přežije restart, varování paměťového úložiště (P27D T5) se tedy nesmí ukázat.
     expect((await lasting).headers()['x-play-store']).toBe('file');
     await expect(page.getByText('the link stops working when it restarts')).toHaveCount(0);
+    await context.close();
+  });
+
+  // P66 T11: výhra pošle svoje skóre jako cíl („Beat my …!“) odkazem výzvy, tenhle prohlížeč si ho pamatuje
+  // jako rekord („Best …“) a kamarád z odkazu vidí „Beat …“; běh proti výzvě soudí výsledek.
+  test('a win dares its score: Best N here, Beat N for the friend, then So close. or You beat it! (P66 T11)', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const first = await browser.newContext(person(61));
+    await captureShare(first);
+    const page = await first.newPage();
+    await page.goto(url);
+    const posted = page.waitForResponse((response) => response.url().endsWith(`/api/play/games/${id}/dare`) && response.request().method() === 'POST');
+    await winByHand(page);
+    const dare = (await (await posted).json()) as { dareId: string; score: number; ticks: number };
+    const target = dare.score > 0 ? dare.score.toLocaleString('en-US') : `${(dare.ticks / 60).toFixed(1)}s`;
+    await page.getByTestId('play-share').click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length)).toBe(1);
+    const shared = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0]!);
+    expect(shared.url).toMatch(new RegExp(`/play/${id}\\?via=share&dare=${dare.dareId}$`));
+    expect(shared.text!.split('\n')).toContain(`Beat my ${target}!`);
+    // Další běh v tomhle prohlížeči má výhru jako rekord k překonání v HUD.
+    await page.getByTestId('play-replay').click();
+    await expect(page.getByTestId('hud-counter-best')).toHaveText(`Best ${target}`);
+    await first.close();
+
+    const second = await browser.newContext(person(62));
+    const other = await second.newPage();
+    await other.goto(`${url}?via=share&dare=${dare.dareId}`);
+    await expect(other.getByTestId('play-dare-goal')).toContainText(`Beat ${target}`, { timeout: 60_000 });
+    await expect(other.getByTestId('hud-counter-dare')).toHaveText(`Beat ${target}`);
+    await other.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    const lost = await other.evaluate(() => (window.__playShell as unknown as HandProbe).idleRun());
+    expect(lost.runState).toBe('lost');
+    await expect(other.locator('.play-result-title')).toHaveText('So close.');
+    await expect(other.getByTestId('play-dare-result')).toHaveAttribute('data-beat', 'false');
+    // Výhra proti výzvě: týž robot je shoda (So close.), rychlejší nebo s víc body by byl You beat it!.
+    await winByHand(other);
+    const beat = await other.getByTestId('play-dare-result').getAttribute('data-beat');
+    await expect(other.locator('.play-result-title')).toHaveText(beat === 'true' ? 'You beat it!' : 'So close.');
+    expect(await other.locator('body').innerText()).not.toMatch(/NaN|undefined/);
+    await second.close();
+  });
+
+  // P66 T11: přebitý rekord za běhu ohlásí hláška vrstvy háčků (i ve hře bez háčků) a pilulka „Best“ ustoupí.
+  test('beating the record mid-run calls out New best! and the Best pill gives way', async ({ browser }) => {
+    const context = await browser.newContext();
+    await context.addInitScript((key) => localStorage.setItem(key, JSON.stringify({ score: 1, ticks: 1, stars: 0 })), `sp-best:${id}`);
+    const page = await context.newPage();
+    await page.goto(url);
+    await expect(page.getByTestId('hud-counter-best')).toHaveText('Best 1', { timeout: 60_000 });
+    await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    // Robot „rukou“ do bodů nad rekordem: běh dál běží, body už rekord přebily.
+    const run = await page.evaluate(() => (window.__playShell as unknown as HandProbe).handPlay(1));
+    expect(run.runState).toBe('running');
+    expect(run.score).toBeGreaterThan(1);
+    const callout = page.getByTestId('hook-callout');
+    await expect(callout).toHaveText('New best!');
+    await expect(callout).toHaveAttribute('data-callout', 'new_best');
+    await expect(page.getByTestId('hud-counter-best')).toHaveCount(0);
+    // Hláška zhasne (1,2 s) a v tomhle běhu se nevrátí.
+    await expect(callout).toHaveCount(0, { timeout: 5_000 });
+    await page.waitForTimeout(1_000);
+    await expect(callout).toHaveCount(0);
+    await context.close();
+  });
+
+  // Okraj odkazu (P66 T11): `dare=` nese id výzvy, kterou server přehrál – holé číslo ani nesmysl cílem nejsou.
+  test('a dare that is a bare number or junk opens the plain game without a target', async ({ page }) => {
+    test.setTimeout(180_000);
+    for (const junk of ['1240', '-1', '99999999999', 'NaN']) {
+      await page.goto(`${url}?via=share&dare=${junk}`);
+      await expect(page.getByTestId('play-first-prompt')).toBeVisible({ timeout: 60_000 });
+      await expect(page.getByTestId('play-dare-goal')).toHaveCount(0);
+      await expect(page.getByTestId('hud-counter-dare')).toHaveCount(0);
+      expect(await page.locator('body').innerText()).not.toMatch(/NaN/);
+    }
+  });
+
+  // Soukromé okno (P66 T11): už sáhnout na `localStorage` hází – hra se dohraje, výhra nespadne a rekord nevznikne.
+  test('a private window without storage plays to the result and shows no Best pill', async ({ browser }) => {
+    test.setTimeout(120_000);
+    const context = await browser.newContext(person(63));
+    await context.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get: () => {
+          throw new DOMException('The operation is insecure.', 'SecurityError');
+        },
+      });
+    });
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(url);
+    await winByHand(page);
+    await expect(page.locator('.play-result-title')).toHaveText('You did it!');
+    await page.getByTestId('play-replay').click();
+    await expect(page.getByTestId('play-first-prompt')).toBeVisible();
+    await expect(page.getByTestId('hud-counter-best')).toHaveCount(0);
+    expect(errors).toEqual([]);
     await context.close();
   });
 
