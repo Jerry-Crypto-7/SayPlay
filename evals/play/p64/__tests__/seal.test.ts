@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { normalizeSentence } from '../../../../scripts/play-fidelity.mjs';
 import { GENRES } from '../../../../src/play/genre/contract';
 import { classifyGenre } from '../../../../src/play/genre/classify';
-import { knownSets, P64_HOLDOUT_SHA256, sha256Lf, textsOf } from '../seal';
+import { knownSets, P64_HOLDOUT_SHA256, P64_R3_HOLDOUT_SHA256, sha256Lf, textsOf } from '../seal';
 
 const PLAY = join(process.cwd(), 'evals', 'play');
 const DIR = join(PLAY, 'p64');
@@ -70,6 +70,36 @@ describe('P64 board-genre dev set', () => {
     expect(new Set(own).size).toBe(own.length);
     const sets = [...new Set([...knownSets(), 'p58b/holdout.json', 'p30/dev.json', 'p61/holdout.json', 'p62/holdout.json', 'p62/holdout-b.json', 'p63/holdout.json', 'p63/read-set.json', 'p63/reread-set.json', 'p64/holdout.json'])].filter((set) => existsSync(join(PLAY, set)));
     expect(sets).toContain('p64/holdout.json');
+    const seen = new Set(sets.flatMap((set) => textsOf(set).map((text) => normalizeSentence(text))));
+    expect(own.filter((text) => seen.has(text))).toEqual([]);
+  });
+});
+
+// T8-R3 krok 3: první sada je otevřená a kód se po ní změnil, brána běží na nové. Věta z `board-dev.json` by do ní
+// přenesla ladění kamer deskových žánrů.
+const r3Holdout = (): Sentence[] => (JSON.parse(readLf(join(DIR, 'r3', 'holdout.json'))) as { sentences: Sentence[] }).sentences;
+
+describe('P64 second sealed portrait holdout (T8-R3)', () => {
+  it('matches its recorded SHA-256, also written in the README', () => {
+    expect(sha256Lf(readLf(join(DIR, 'r3', 'holdout.json')))).toBe(P64_R3_HOLDOUT_SHA256);
+    expect(readLf(README)).toContain(P64_R3_HOLDOUT_SHA256);
+  });
+
+  it('has 24 sentences with unique ids, every genre at least once and the four board genres that lost twice', () => {
+    const sentences = r3Holdout();
+    expect(sentences).toHaveLength(24);
+    expect(new Set(sentences.map((s) => s.id)).size).toBe(24);
+    for (const genre of GENRES) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThan(0);
+    for (const genre of ['timing', 'slice', 'catch', 'merge']) expect(sentences.filter((s) => s.genre === genre).length, genre).toBeGreaterThanOrEqual(2);
+    expect(sentences.filter((s) => classifyGenre(s.text, null).ranked[0]!.genre !== s.genre).map((s) => s.id)).toEqual([]);
+  });
+
+  it('shares no sentence with the first P64 set, the board dev set or any known set', () => {
+    const own = r3Holdout().map((s) => normalizeSentence(s.text));
+    expect(new Set(own).size).toBe(own.length);
+    const dir = (name: string): string[] => readdirSync(join(PLAY, name)).filter((file) => file.endsWith('.json')).map((file) => `${name}/${file}`);
+    const sets = [...new Set([...knownSets(), 'p58b/holdout.json', ...dir('p56c'), ...dir('p30'), 'p61/holdout.json', 'p62/holdout.json', 'p62/holdout-b.json', 'p63/holdout.json', 'p63/read-set.json', 'p63/reread-set.json', 'p64/holdout.json', 'p64/board-dev.json'])].filter((set) => existsSync(join(PLAY, set)));
+    expect(sets).toEqual(expect.arrayContaining(['p30/dev.json', 'p56c/holdout.json', 'p64/holdout.json', 'p64/board-dev.json']));
     const seen = new Set(sets.flatMap((set) => textsOf(set).map((text) => normalizeSentence(text))));
     expect(own.filter((text) => seen.has(text))).toEqual([]);
   });

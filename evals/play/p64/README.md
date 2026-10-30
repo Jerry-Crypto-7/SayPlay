@@ -982,3 +982,15 @@ v kroku 1 a soudce u něj píše „skoro totéž jako A“ – kamera krájení
 Honičky se v tomto kroku nemění (jen `TimingScene`), přeskákání drží +0,125.
 
 Útrata 0 USD (čtečka vypnutá). Soudce 32 volání `claude -p`, předplatné.
+
+### Krok 3: nová zapečetěná sada
+
+První zapečetěná sada je otevřená (T8) a kód se po ní změnil (T8-R1 až R3), brána proto běží na nové sadě
+`r3/holdout.json`, zapečetěné 30. 10. dřív, než se na ní cokoli fotilo. 24 vět: r64-01 až r64-19 jedna na žánr
+v pořadí `GENRES` z nepoužitých kandidátů T1 (psáno 28. 10., nikdy nefoceno ani souzeno), r64-20 až r64-24 pět dalších
+deskových, čtyři nové: načasování (stoh), krájení, chytání, slučování (žánry, které v první sadě ztratily) a obrana.
+Žánr věty je to, co dnes vybere klasifikátor bez modelu, koncept bez modelu hraje týž žánr. Se žádnou známou sadou,
+první sadou P64 ani `board-dev.json` nesdílí větu (`__tests__/seal.test.ts`). Otevře se jednou přes `openSealedOnce`
+(`r3/holdout-opened.json`).
+
+SHA-256 (LF bajty `r3/holdout.json`): `231f085e878745a0a8895a8559661aa6fe23bca62e94145c1cbe5f0168d4e455`
