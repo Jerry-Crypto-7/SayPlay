@@ -23,6 +23,7 @@ import { TIMING } from '@/play/arcade/pieces/timing';
 import { P64_CELLS } from '../../../../../e2e/p64-cells';
 import type { CameraPrint } from '../ArcadeStage';
 import { FIT_MARGIN_PX, type PlayRect, fitTall, playRect } from '../portrait-frame';
+import { SLICE_SIZES, SLICE_TALL } from '../genres/slice/SliceScene';
 import { timingDistance, timingTallBox } from '../timing/TimingScene';
 
 interface Print {
@@ -259,6 +260,16 @@ describe('fitTall (P64 T2)', () => {
       const box = timingTallBox(new Box3(), TIMING.baseH / UNIT, goalTop(5), sliderW);
       expect(box.max.y).toBeGreaterThanOrEqual(goalTop(5) + 1);
       expect(box.min.y).toBe(0);
+    });
+  });
+
+  // T8-R5: kameru krájení na výšku drží šíře pruhů, hrdina a věci se proto zvětší – a pořád se vejdou do pruhu.
+  describe('slice portrait scale (T8-R5)', () => {
+    it('grows the hero and the thrown things at least 1.3x, the hero still inside its lane, a thing inside half a lane', () => {
+      expect(SLICE_TALL.hero).toBeGreaterThanOrEqual(1.3);
+      expect(SLICE_TALL.thing).toBeGreaterThanOrEqual(1.3);
+      expect(SLICE_SIZES.hero * SLICE_TALL.hero).toBeLessThan(SLICE_SIZES.lane);
+      expect(SLICE_SIZES.thing * SLICE_TALL.thing).toBeLessThanOrEqual(SLICE_SIZES.lane / 2);
     });
   });
 });

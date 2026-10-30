@@ -1085,3 +1085,18 @@ Strop plánu 4 USD. Soudce: 24 volání Codexu (`codex exec`), předplatné.
 | arrows | 0,24 | 0 | 0 | 0,25 | 0 | 0 |
 
   Inference: survivor ořezává kraje arény a sort má na iPhonu skoro všechny cíle pod HUD. Žánry P66 rámuje vlastní šev `genres/portrait-first.ts`, ne `portrait-frame.ts` z P64; výměna (P66 T14) není v rozsahu P64 a nálezy patří tam.
+
+## T8-R5: krájení na výšku (G1)
+
+- **Příčina** (z kódu a snímků r64-21): kameru krájení na výšku drží šíře pěti pruhů (`placeTall`), blíž nejít nemůže. Hrdina proto zůstal stejně malý jako v `main` a natažený let (`TALL_STRETCH` 2,2) nechal nad ním skoro prázdnou oblohu – věcí ve vzduchu je v jednom snímku jedna až dvě. Soudce to ve všech třech sadách popsal jako „prázdná plocha nad malým hrdinou“.
+- **Oprava:** na výšku vizuální měřítko `SLICE_TALL` – hrdina s čepelí 1,5× (1,8 m v pruhu 2 m), věci ve vzduchu 1,4× (0,98 m, do půl pruhu). Kamera, let ani jádro se nemění, na šířku měřítko 1. Pin v `portrait-frame.test.ts` (mutant hrdina 1× červený).
+- **Sonda** (`P64_CHECK=1`, před → po): hrdina Pixel 7 0,0593 → **0,0959**, iPhone 15 0,0725 → **0,0817**; `fill` 0,19 → 0,24 a 0,24 → 0,26; `cropped` a `underHud` 0. Stráž šířky, `p61-portrait` a `p58a-framing` u krájení zelené (7 / 7).
+- **Dev soud** (`board-dev.json`, jen krájení, `--judge claude`, 2 běhy, seed 61026; `main` = snímky `r3-main-dev`, `board-dev-slice-r5.json`):
+
+| věta | `main` hrál bych | P64 hrál bych | rozdíl | dřív (krok 2) |
+|---|---|---|---|---|
+| b64-03 | 0,275 | 0,315 | **+0,04** | −0,015 |
+| b64-04 | 0,425 | 0,435 | **+0,01** | −0,05 |
+
+  Výtka soudce zůstává „skoro totéž jako A“: rozdíl je malý a na dvou větách v šumu. Rozhodne až třetí zapečetěná brána (T8-R7).
+

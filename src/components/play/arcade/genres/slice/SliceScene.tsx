@@ -57,6 +57,14 @@ const SKY_SHARE = 0.05;
  * počtu tiků; jádro ani hash to nevidí. Nejvýš tolikrát.
  */
 const TALL_STRETCH = 2.2;
+/**
+ * Vizuální měřítko na výšku (P64 T8-R5): kameru drží šíře pruhů, takže blíž nejde a hrdina zůstal stejně malý jako
+ * v `main` pod skoro prázdnou nataženou oblohou (soud: −0,05 až −0,11 ve všech třech sadách). Hrdina s čepelí a věci
+ * ve vzduchu se proto zvětší – hrdina se vejde do pruhu, věc do mezery mezi pruhy; jádro ani hash to nevidí.
+ */
+export const SLICE_TALL = { hero: 1.5, thing: 1.4 } as const;
+/** Šíře pruhu a velikosti hrdiny a věci v metrech scény – pro pin měřítka na výšku. */
+export const SLICE_SIZES = { lane: LANE_M, hero: HERO.w, thing: THING } as const;
 /** Zásoba slotů: ovoce a bomb naráz ve vzduchu, stop čepele, rozseknutého ovoce a záblesků bomb. */
 const SLOTS = { fruit: 10, bomb: 5, bonus: 6, golden: 2, trails: 3, halves: 6, blasts: 2 } as const;
 /** Jak dlouho žije stopa čepele, půlky ovoce a záblesk bomby (s). */
@@ -257,6 +265,7 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
     const player = state[HEADER.player] as number;
     const heroX = -at(player, BODY.x);
     hero.current?.position.set(heroX, 0, 0);
+    hero.current?.scale.setScalar(tall !== null ? SLICE_TALL.hero : 1);
     moving.current = state[bodyBase(player) + BODY.x] !== prev[bodyBase(player) + BODY.x];
 
     // Švih: ťuk v tomhle tiku spustí stopu čepele v pruhu ťuku, šikmo ve směru od pruhu, kde hrdina stál.
@@ -305,6 +314,7 @@ export function SliceScene({ session, cast, surface, scene: look, ghost }: Slice
         const x = fresh ? -(state[bodyBase(body) + BODY.x] as number) / UNIT : -at(body, BODY.x);
         const y = fresh ? (state[bodyBase(body) + BODY.y] as number) / UNIT : at(body, BODY.y);
         group.position.set(x, y * stretch, PLANE_Z);
+        group.scale.setScalar(tall !== null ? SLICE_TALL.thing : 1);
         group.rotation.set(time.current * 1.7 + body, time.current * 2.3 + body * 0.7, 0);
       });
     };

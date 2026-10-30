@@ -1,0 +1,254 @@
+{
+ "schema": "p61-judge.v1",
+ "judgedAt": "2026-10-30T12:44:56.237Z",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+ "view": "phone",
+ "seed": 61026,
+ "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": null,
+   "measuredAt": "2026-10-29T20:52:25.649Z",
+   "base": "http://127.0.0.1:3165"
+  },
+  {
+   "name": "p64",
+   "label": "p64",
+   "commit": null,
+   "measuredAt": "2026-10-30T12:44:46.926Z",
+   "base": "http://127.0.0.1:3164"
+  }
+ ],
+ "plan": [
+  {
+   "id": "b64-03",
+   "sentence": "A samurai slices flying watermelons tossed into the air at a beach party",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  },
+  {
+   "id": "b64-04",
+   "sentence": "A pirate slices flying coconuts in half with his cutlass on a sunny beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p64-quick"
+    }
+   ]
+  }
+ ],
+ "runs": [
+  {
+   "run": 1,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.375,
+     "n": 2
+    },
+    "main-quick": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.375,
+     "n": 2
+    },
+    "p64-after-reading": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.39,
+     "n": 2
+    },
+    "p64-quick": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.39,
+     "n": 2
+    }
+   },
+   "sentences": [
+    {
+     "id": "b64-03",
+     "sentence": "A samurai slices flying watermelons tossed into the air at a beach party",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A character stands on a sandy, beach-like ground, but the task is to catch apples and dodge bombs, so there are no watermelons, no slicing, no clear samurai and no party, and the screenshots barely change."
+      },
+      "p64-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.33,
+       "reason": "It's nearly the same apple-catching and bomb-dodging game in a sandy setting, with a little more sense of things flying through the air, but it still has no watermelons, no slicing and no beach party."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A character stands on a sandy, beach-like ground, but the task is to catch apples and dodge bombs, so there are no watermelons, no slicing, no clear samurai and no party, and the screenshots barely change."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.33,
+       "reason": "It's nearly the same apple-catching and bomb-dodging game in a sandy setting, with a little more sense of things flying through the air, but it still has no watermelons, no slicing and no beach party."
+      }
+     }
+    },
+    {
+     "id": "b64-04",
+     "sentence": "A pirate slices flying coconuts in half with his cutlass on a sunny beach",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "A pirate with a cutlass stands on a sunny yellow beach with a coconut count and a few small flying coconuts, but no slicing is ever shown and the scene feels empty."
+      },
+      "p64-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It's nearly the same as A: a pirate with a sword on a sandy beach and some larger dark coconuts flying past, but no coconut gets cut and there's little action on screen."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "A pirate with a cutlass stands on a sunny yellow beach with a coconut count and a few small flying coconuts, but no slicing is ever shown and the scene feels empty."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It's nearly the same as A: a pirate with a sword on a sandy beach and some larger dark coconuts flying past, but no coconut gets cut and there's little action on screen."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  },
+  {
+   "run": 2,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.325,
+     "n": 2
+    },
+    "main-quick": {
+     "fidelity": 0.425,
+     "wouldPlay": 0.325,
+     "n": 2
+    },
+    "p64-after-reading": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.36,
+     "n": 2
+    },
+    "p64-quick": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.36,
+     "n": 2
+    }
+   },
+   "sentences": [
+    {
+     "id": "b64-03",
+     "sentence": "A samurai slices flying watermelons tossed into the air at a beach party",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A small character stands on a sandy, beach-like ground catching apples and dodging bombs, so there's no samurai, slicing or watermelons, and the screenshots look static and repetitive."
+      },
+      "p64-quick": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.3,
+       "reason": "It's the same apple-catching, bomb-dodging setup on sand, though one frame shows a fruit tossed into the air, which hints a little more at the throwing idea; there's still no samurai, slicing, watermelons or party."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A small character stands on a sandy, beach-like ground catching apples and dodging bombs, so there's no samurai, slicing or watermelons, and the screenshots look static and repetitive."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.3,
+       "reason": "It's the same apple-catching, bomb-dodging setup on sand, though one frame shows a fruit tossed into the air, which hints a little more at the throwing idea; there's still no samurai, slicing, watermelons or party."
+      }
+     }
+    },
+    {
+     "id": "b64-04",
+     "sentence": "A pirate slices flying coconuts in half with his cutlass on a sunny beach",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "A pirate with a cutlass stands on yellow sand, coconuts fly up, and the goal is to slice 30 of them while avoiding bombs, but the beach is bland with no sea or palms and no slicing is ever shown."
+      },
+      "p64-quick": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.42,
+       "reason": "It is almost the same as A with a few more coconuts in the air in the last shot, but the hazy, empty beach looks dull and the score stays at 0/30, so no slicing is shown."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.4,
+       "reason": "A pirate with a cutlass stands on yellow sand, coconuts fly up, and the goal is to slice 30 of them while avoiding bombs, but the beach is bland with no sea or palms and no slicing is ever shown."
+      },
+      "p64-after-reading": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.42,
+       "reason": "It is almost the same as A with a few more coconuts in the air in the last shot, but the hazy, empty beach looks dull and the score stays at 0/30, so no slicing is shown."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  }
+ ],
+ "variance": {
+  "pairs": 4,
+  "medianAbsDiff": {
+   "fidelity": 0.01,
+   "wouldPlay": 0.04,
+   "n": 4
+  },
+  "maxAbsDiff": {
+   "fidelity": 0.03,
+   "wouldPlay": 0.05
+  },
+  "diffs": [
+   {
+    "id": "b64-03",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-03",
+    "kind": "p64-quick",
+    "fidelity": 0.03,
+    "wouldPlay": 0.03
+   },
+   {
+    "id": "b64-04",
+    "kind": "main-quick",
+    "fidelity": 0,
+    "wouldPlay": 0.05
+   },
+   {
+    "id": "b64-04",
+    "kind": "p64-quick",
+    "fidelity": 0.02,
+    "wouldPlay": 0.03
+   }
+  ]
+ }
+}
