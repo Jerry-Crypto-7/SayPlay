@@ -1100,3 +1100,21 @@ Strop plánu 4 USD. Soudce: 24 volání Codexu (`codex exec`), předplatné.
 
   Výtka soudce zůstává „skoro totéž jako A“: rozdíl je malý a na dvou větách v šumu. Rozhodne až třetí zapečetěná brána (T8-R7).
 
+## T8-R6: G3 – přeměření
+
+Totéž měření jako v T8 (`first-playable-ab.mjs`, tytéž dvě úrovně profilů a 5 dev vět), jen nad sloučeným stavem:
+A = `main` `0da52829` (port 3165), B = větev `a99dd645` (port 3164), oba `next start` s prázdným `PLAY_STORE_DIR` a
+`PLAY_READER=off`, 0 USD. 5 běhů na stranu místo 3, dvojice A+B prokládaně se střídavým začátkem, na stroji nic jiného.
+Žádný běh nespadl (100 / 100).
+
+| Profil | `main` medián | P64 medián | rozdíl mediánů | párový rozdíl | Brána ≤ +200 ms |
+|---|---|---|---|---|---|
+| Pixel 7, CPU 4× | 9174 ms | 8792 ms | −382 ms | −41 ms | **splněna** |
+| desktop 1280×720 | 2943 ms | 2668 ms | −275 ms | −102 ms | bez brány |
+
+První snímek na Pixelu: `main` 5559 ms, P64 5631 ms (+72 ms, párově −124 ms). Po větách je nejhorší rytíř s klíči
+(+165 ms mediánů, párově +100 ms), pořád pod bránou.
+
+Inference: +1133 ms z T8 byla zátěž stroje, ne cena P64 – v klidném běhu bez souběžné práce je rozdíl v šumu na obě
+strany. CDP profil, který plán chtěl pro nesplněnou bránu, proto nebyl potřeba.
+
