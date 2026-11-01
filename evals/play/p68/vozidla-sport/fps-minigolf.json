@@ -1,0 +1,67 @@
+{
+  "browser": {
+    "chromium": {
+      "gated": true,
+      "frames": 600,
+      "windowMs": 10000,
+      "ticksPlayed": 279,
+      "demoTicks": 280,
+      "medianFrameMs": 16.7,
+      "medianFps": 59.9,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 33.3,
+      "gate": {
+        "medianFps": 40,
+        "p95Ms": 33.3
+      },
+      "pass": true,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "dpr": 1,
+      "quality": "high"
+    },
+    "pixel7-touch": {
+      "gated": false,
+      "frames": 592,
+      "windowMs": 10000,
+      "ticksPlayed": 279,
+      "demoTicks": 280,
+      "medianFrameMs": 16.7,
+      "medianFps": 59.9,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 166.7,
+      "gate": null,
+      "pass": null,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "dpr": 2.625,
+      "quality": "high"
+    },
+    "iphone-touch": {
+      "gated": false,
+      "frames": 329,
+      "windowMs": 10000,
+      "ticksPlayed": 278,
+      "demoTicks": 280,
+      "medianFrameMs": 16,
+      "medianFps": 62.5,
+      "p95FrameMs": 72,
+      "maxFrameMs": 159,
+      "gate": null,
+      "pass": null,
+      "gpu": "Apple GPU",
+      "viewport": {
+        "width": 393,
+        "height": 659
+      },
+      "dpr": 3,
+      "quality": "low"
+    }
+  }
+}

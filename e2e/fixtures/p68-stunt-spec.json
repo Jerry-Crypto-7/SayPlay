@@ -1,0 +1,79 @@
+{
+  "about": "P68V T5: hand-written stunt game for e2e/play-stunt.spec.ts – a monster truck jumps ramps and smashes crate piles in a desert. POST /api/play/games with { spec, seed }. Same spec as stunt-evidence.json → fixture (the module's own compile, gate-passing on seeds 1-10).",
+  "seed": 1,
+  "spec": {
+    "schema": "gamespec.v1",
+    "control": "stunt",
+    "controlParams": {
+      "generator": "stunt_track",
+      "tuning": {
+        "vehicle": "gen3d-monster-truck"
+      }
+    },
+    "genre": {
+      "id": "stunt",
+      "mode": "default",
+      "compilerVersion": "genre.v7"
+    },
+    "title": "Monster Truck Stunt Run",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 45,
+    "theme": {
+      "setting": "desert",
+      "mood": "adventurous",
+      "look": "desert"
+    },
+    "objective": {
+      "kind": "reach",
+      "description": "Jump the ramps, smash through the crates and reach the finish line.",
+      "role": "finish"
+    },
+    "mechanics": [
+      {
+        "id": "health",
+        "params": {
+          "max": 3
+        }
+      }
+    ],
+    "roles": [
+      {
+        "id": "player",
+        "kind": "player",
+        "label": "monster truck",
+        "count": 1
+      },
+      {
+        "count": 1,
+        "id": "pile",
+        "kind": "target",
+        "label": "crate"
+      },
+      {
+        "count": 1,
+        "id": "finish",
+        "kind": "exit",
+        "label": "finish line"
+      }
+    ],
+    "scoring": {},
+    "tutorial": {
+      "goalLine": "Jump, smash the crates, reach the finish line!",
+      "controlsHint": "Drag or arrows to steer. Down or the brake button brakes."
+    },
+    "verification": [
+      {
+        "id": "winnable",
+        "kind": "reachability",
+        "assert": {
+          "runState": "won"
+        }
+      }
+    ],
+    "budgets": {
+      "maxEntities": 40,
+      "maxRules": 120,
+      "maxTriangles": 200000
+    }
+  }
+}
