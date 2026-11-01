@@ -161,3 +161,24 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
   součet přesně na stropu, prázdné KV, strop skriptů, datum rezervy, držení rezervy, bez proměnných) zabil každou
   její test.
 - Review (security-reviewer): bez blokujícího nálezu; jediný nález (brána `live.mjs` hlídala klienta) opravený.
+
+## T2 – štítky žánrů, stráž žánru a výchozí stav `main`
+
+- **Štítky** `genre-labels.json`: 29 typů (24 žánrů + 5 nových her popsaných slovy, bez id z kódu), 606 vět
+  (`p30/test-200` + otevřené sady), `claude -p` v 31 dávkách po 20, souběh 1, 0 selhání. Holdout P68 neštítkovaný.
+  Všech 40 dev vět P68 dostalo jako `best` svou hru.
+- **Stráž** `genre-route.mjs` nad `main` 688d989d → `route-main.json`: `wrongRate` sada 200 **0,366** (64 ze 175,
+  25 vět bez hry), otevřené sady **0,345** (138 ze 400). `wrong` = věta má `best` a žánr není v `acceptable`;
+  věty bez hry se nepočítají (test `genre-route.test.ts` drží definici na třech ručních větách).
+- **Dosah nových her na sadě 200 je malý:** 14 vět (7 %) má novou hru v `best` nebo `acceptable`. stunt 1 + 3
+  (dnes arena 2, voyage 2), minigolf 0, railfps 0 + 2 (voyage 2), buildshift 0 + 4 (arena 2, quest 1, rhythm 1),
+  drawsave 3 + 1 (quest 2, arena 1, rhythm 1; 2 ze 3 `best` jsou dnes chybně). Na otevřených sadách (s 40 dev
+  větami) 8–9 `best` na hru; přešly by hlavně z voyage (stunt), arena (minigolf), shooter (railfps), quest
+  (buildshift) a arena (drawsave). Stráž v zapojení proto hlídá hlavně, aby nová hra nebrala věty těmto žánrům.
+- **Čas startu A/A** `baseline-start.json` (A = B = `main`, 6 vět, desktop a pixel7-cpu4, 3 běhy): 0 selhání, ale
+  brána T4 padá **jen šumem** – medián desktopu 4 055 ms > 3 000 ms a párový rozdíl telefonu 481 ms > 200 ms.
+  Inference: stroj vytížený ~90 % jinými relacemi P68; G4 zapojení na tom padne stejně, dokud se stroj nezklidní,
+  nebo se brána nesrovná s tímto šumem A/A (rozhodne T8 při první hře, zapíše se tam).
+- **FPS** `baseline-fps.json`: 24 žánrů na `moto-g-power-emulated` (CPU ×4, Fast 4G, GPU hostitele), 3 běhy,
+  čtyři dávky po šesti (test má strop 60 min). Medián 59,9 FPS u 18 žánrů, arena 59,5, runner / voyage / quest 30,
+  shooter 20; první tik 5,1–12,1 s (emulovaná síť). Věta voyage vydala hru bez záznamu žánru (`published: null`).
