@@ -25,8 +25,11 @@ export const BUILDSHIFT = {
   walls: [25, 29] as readonly number[],
   /** Kde prodavač stojí na začátku (uprostřed obchodu). */
   sellerStart: 17,
-  /** Tiky na buňku: prodavač (0,33 s) a zákazník (0,5 s). Cesta = Manhattanova vzdálenost × tiky na buňku. */
-  sellerTicks: 20,
+  /**
+   * Tiky na buňku: prodavač (0,67 s) a zákazník (0,5 s). Cesta = Manhattanova vzdálenost × tiky na buňku. Prodavač je
+   * tak pomalý, aby cesta pec → pult rozhodovala (T3): pec vedle pultu stihne frontu, pec v rohu ne.
+   */
+  sellerTicks: 40,
   customerTicks: 30,
   /** Mince na začátku a cena za obslouženého zákazníka. */
   startCoins: 6,

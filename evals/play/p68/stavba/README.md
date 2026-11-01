@@ -48,8 +48,9 @@ Plán: `plans/P68S-stavba-2026-10-31.md` (mimo git). Potřeby změn sdílených 
   `data-lane-cells`; nejvyšší osa 35 < `AXIS_MAX`.
 - **Stanoviště a ceny:** pec 3 mince (peče 1 věc za 120 tiků, drží nejvýš 2), pult 2 mince (zákazníci se řadí před
   něj), police 1 mince (drží až 3 věci, zkracuje cestu).
-- **Pohyb:** prodavač 20 tiků na buňku, zákazník 30 tiků na buňku; cesta = Manhattanova vzdálenost × tiky na buňku.
-  Prodavač nese jednu věc.
+- **Pohyb:** prodavač 40 tiků na buňku (T3: původně 20), zákazník 30 tiků na buňku; cesta = Manhattanova vzdálenost ×
+  tiky na buňku. Prodavač nese jednu věc. Při 20 tikách stihl i pec v nejvzdálenějším rohu frontu výchozího cíle
+  (špatné rozvržení vyhrálo 12/12), při 40 rozhoduje cesta pec → pult.
 - **Mince:** start 6, obsloužený zákazník +1 (stavět jde i během směny).
 - **Trpělivost:** 900 tiků (15 s) od vstupu; kdo odejde, ubere jeden ze 4 povolených odchodů.
 - **Okno stavby:** nejdéle 600 tiků (10 s), pak se obchod otevře sám; dřív ťukem na Open.
@@ -57,6 +58,17 @@ Plán: `plans/P68S-stavba-2026-10-31.md` (mimo git). Potřeby změn sdílených 
   po otevření, rozložení ze semínka (vlastní `pure-rand` stream).
 - **Konec:** výhra = obslouženo ≥ cíl; prohra = 4 odchody nebo hodiny 88 s (pravidlo `time_limit` max 90 s by
   v horizontu 5400 tiků nevystřelilo).
+
+## Robot a rozvržení (T3, 1. 11.)
+
+- **Robot** (`pieces/buildshift-bot.ts`): rozvržení pravidlem `planLayout` – pult 22 (nejblíž dveřím), pec 17 vedle
+  pultu, police 21 za zbylou minci, Open; během směny za 3 vydělané mince druhá pec 23. Obsluha `serveWithLayout(layout)`
+  je společná pro jakékoli rozvržení.
+- **Naměřeno** (`src/play/arcade/__tests__/buildshift-bot.test.ts`, 12 semínek, celý horizont): robot vyhraje 12/12 na
+  cíli 6, 12 i 20 (při ladění 40/40 semínek na každém cíli 6–20, výhra nejpozději v tiku ~2680); nečinný hráč prohraje
+  12/12; pec v rohu nejdál od pultu + jeden pult prohraje 12/12 s mediánem 4,5 obsloužených proti 12; stejná
+  stanoviště za stejné mince, jen pec tři řady za pultem místo vedle něj: medián 9 proti 20 na cíli 20.
+- **Otisk** běhů robota: `bot-runs.json`; vědomé přepsání `BUILDSHIFT_BOT_RUNS=write` při běhu testu.
 
 ## Dev věty
 
