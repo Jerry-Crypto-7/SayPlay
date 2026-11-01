@@ -130,5 +130,10 @@
     "id": "p68-buildshift",
     "sentence": "a cat opens a fish stall on the pier, sets up cutting tables and serves hungry seagulls until sunset",
     "answer": { "plan": "Build stations on the grid, open the stall and serve every seagull its fish before it walks out.", "spec": { "genre": "buildshift", "mode": "default", "hero": "cat", "cast": [{ "label": "seagull", "does": "collect" }, { "label": "fish", "does": "scenery" }], "setting": "pier" } }
+  },
+  {
+    "id": "p68-minigolf",
+    "sentence": "aim and tap to putt the ball across a candy land green, bouncing off lollipops to sink it in one shot",
+    "answer": { "plan": "Drag back from the ball, let go and bank it off the lollipops into the cup; par 2 on a straight lane.", "spec": { "genre": "minigolf", "mode": "default", "hero": "golf ball", "cast": [{ "label": "lollipop", "does": "scenery" }], "setting": "candy land", "params": { "bends": 0, "obstacles": 3, "par": 2 } } }
   }
 ]
