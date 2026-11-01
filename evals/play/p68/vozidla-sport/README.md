@@ -557,6 +557,12 @@ mantinely, dýně na soklech, jamka s vlajkou, tečky míření, pilulka „1 st
 míček je zvětšený čitelností (~⅕ šířky na výšku); na šířku je jamka malá a napůl za štítkem ducha; na snímku
 `portrait-hole` u míčku tmavě zelený nakloněný kotouč na stopce, jehož původ (model rakve, nebo duch) snímek neurčí.
 
+## Pull requesty
+
+- **#64** (T5b, 1. 11. 2026): https://github.com/Jerry-Crypto-7/Hackathon/pull/64 – větev
+  `features/P68V-vozidla-a-sport-2026-10-31` po `1275d410` (stunt připravený k zapojení, minigolf staged), blind-check
+  6/6. Nesloučený; další push větve (T11) aktualizuje týž PR.
+
 ## Hlídače
 
 - **Vlastnictví** – `owned-paths.mjs`: `git diff --name-only origin/main...HEAD | node evals/play/p68/vozidla-sport/owned-paths.mjs`
