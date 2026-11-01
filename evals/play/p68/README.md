@@ -108,3 +108,18 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
 - **Pozor railfps:** natáčení i střelba v každém tiku = 67 570 B a dveře výzvu odmítnou (413) – test to drží.
 - `e2e/play-share.spec.ts`: odkaz výzvy nové hry → dohrát → výsledek v `chromium` i `pixel7-touch`; bez specu
   přeskočeno.
+
+## T5 – herní aserce nad stopou stavu
+
+- `src/play/arcade/gameplay-assert.ts`: `traceRun` přehraje svět s robotem hry, nečinným hráčem nebo slabým robotem
+  (`novice`) a po každém tiku uloží kopii stavu jádra, vstup, `yawStep` a výsledek. Efekty pravidel (`win`, `score`)
+  do stopy nejdou; výsledek běhu je důkaz jen pro požadavky na výsledek.
+- `assertions.json` dostal ke každé větě `expect` strojové pole `check` (próza beze změny). Konvence, které kontroly
+  čtou: cíl = role `goal`, trosky = fyzikální nehráčská tělesa, míček = `FLAG.ball`, držák natočení = model
+  `railfps_rig`, chráněné tělo = hráč. Kategorie, které je nedodrží, dostanou červenou bránu s důkazem v textu.
+- `scripts/measure/gameplay-gate.mjs <specs.json> [--out]` → po hře a větě `win`, `lose`, `actions`, `failed`;
+  pád překladu nebo běhu se počítá do jmenovatele `n`.
+- Testy na ručních světech bez nových her (8): podvržené `win` bez průjezdu cílem neprojde `crosses-finish`, stojící
+  `yawStep` neprojde `aims`, vyhrávající nečinný hráč shodí `idle-loses`, ke každému kladný protějšek.
+  mutationStatus: pass – `crosses` čtoucí výsledek, `distinctYaw` čtoucí vstup místo stavu a `outcome` bez rozlišení
+  výhry a prohry shodí každý svůj test.
