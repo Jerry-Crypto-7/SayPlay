@@ -1,0 +1,75 @@
+{
+  "schema": "gamespec.v1",
+  "control": "buildshift",
+  "controlParams": {
+    "generator": "buildshift_shop",
+    "tuning": {
+      "goal": 10
+    }
+  },
+  "genre": {
+    "id": "buildshift",
+    "mode": "default",
+    "compilerVersion": "genre.v7"
+  },
+  "title": "Pizza Shift",
+  "archetype": "collect_exit",
+  "targetDurationSec": 75,
+  "theme": {
+    "setting": "tiny diner",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "collect",
+    "description": "Build your shop, open it and serve 10 robots their pizza before the shift ends.",
+    "count": 10,
+    "role": "customer"
+  },
+  "mechanics": [
+    {
+      "id": "health",
+      "params": {
+        "max": 4
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "chef",
+      "count": 1
+    },
+    {
+      "count": 10,
+      "id": "customer",
+      "kind": "collectible",
+      "label": "robot"
+    },
+    {
+      "count": 1,
+      "id": "goods",
+      "kind": "item",
+      "label": "pizza"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Serve 10 robots their pizza!",
+    "controlsHint": "Pick a station, tap a tile to build, tap Open. Then oven, counter!"
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}
