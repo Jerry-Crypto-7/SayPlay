@@ -515,7 +515,7 @@ testy `__tests__/minigolf-camera.test.ts` (5) a `minigolf-touch.test.ts` (8).
 | hra | milník | stupeň zjednodušení | splněno |
 |---|---|---|---|
 | `stunt` | 2. 11. 2026 (T5) | 0 (plný rozsah) | ano – 1. 11. 2026, `6272a38a`; FPS `chromium` medián 59,9 / p95 16,8 ms (brána ≥ 40 / ≤ 33,3 prošla), `pixel7-touch` 59,9 / 16,8, `iphone-touch` 15,2 / 101 ms (bez brány) |
-| `minigolf` | 3. 11. 2026 (T9) | 1 – celočíselné kutálení místo koule Rapieru (spike T6: Rapier zastavil 21/50 ran do 180 tiků, kutálení 50/50) | – |
+| `minigolf` | 3. 11. 2026 (T9) | 1 – celočíselné kutálení místo koule Rapieru (spike T6: Rapier zastavil 21/50 ran do 180 tiků, kutálení 50/50) | ano – 1. 11. 2026 (sha commitu T9 v `git log`, `test(play): minigolf end to end…`); FPS `chromium` medián 59,9 / p95 16,7 ms (brána prošla), `pixel7-touch` 59,9 / 16,7, `iphone-touch` 62,5 / 72 ms (bez brány) |
 
 **T5 (`stunt` e2e, 1. 11. 2026):** `e2e/play-stunt.spec.ts` z ručního specu `e2e/fixtures/p68-stunt-spec.json` (seed 1),
 12/12 na `chromium`, `pixel7-touch`, `iphone-touch`; `play-drive` a `play-physics-replay` na `chromium` 5/5. Žebřík
@@ -528,6 +528,34 @@ WebKit na Windows: plátno WebGL na snímcích prázdné (i u jiných her, `D:/c
 Oko (`D:/caches/p68/v/stunt/`): auto čitelné, rampy, hromady, letící bedny a úlomky, brána cíle i palec vidět; na šířku
 telefonu (839 × 412) sedí auto těsně nad dolní lištou HUD a stín skoku pod ní zmizí; štítek ducha „Best run“ leží na
 autě, když se jede přesně stopou robota.
+
+**T9 (`minigolf` e2e, 1. 11. 2026, před milníkem – stupeň zjednodušení zůstává 1):** `e2e/play-minigolf.spec.ts` z ručního
+specu `e2e/fixtures/p68-minigolf-spec.json` (= `SAMPLE` z `minigolf-module.test.ts`: jamka do L, tři dýně, pohyblivá
+rakev; seed 1), 12/12 na `chromium`, `pixel7-touch`, `iphone-touch`; `play-ball` na `chromium` 4/4.
+- *Telefon:* prst hraje podle `botWants` – stisk na 50 % šířky a 40 % výšky scény (pod horním pásem HUD, na vrstvě
+  `minigolf-pull`), natažení `pullFor(míření při stisku, osa, k)` roste o jedno nabití za každý tik, kdy robot drží
+  `HOLD`, puštění = `TAP`. Robot dá jamku na 2 rány (par 3), `Strokes` v DOM 2, měřič síly vidět, karta „You did it!“.
+- *Desktop:* `→` otočí míření, držený mezerník nabije (měřič > 0), puštěný odpálí: `HOLD` i `TAP` s osou > 0 v záznamu,
+  `Strokes` = 1; zbytek `handPlay` → výhra, `TAP` v záznamu = rány robota v Node (2).
+- *Nečinný:* `idleRun` → prohra, 0 `TAP`, karta prohry bez „You did it!“.
+- *Otisk:* záznam robota od tiku 0 dá v prohlížeči na všech třech projektech `43e13345` = Node (`minigolf-hash.json`;
+  `minigolf-replay.test.ts` pinuje otisk, rány robota – tik 17→65 osa 0 nabití 48, tik 169→214 osa 488 nabití 45 – a
+  míření 0 na tiku 0, ze kterého prst počítá tah).
+- *FPS* (`fps-minigolf.json`): jamka robota trvá 280 tiků (4,7 s), okno 10 s proto obsahuje celou ukázku (test hlídá,
+  že doběhla uvnitř okna) a ~5 s scény po výhře. Brána platí jen pro `chromium`.
+- *Míček a jamka na výšku:* u poslední rány (nabití 30, kamera usazená 1,2 s) oba celé v záběru (`__playFrame`
+  `hero` / `target`) na obou telefonech. Na šířku se to jen zapisuje (na všech projektech ano).
+
+Výklad: (1) **štítek ducha „Best run“ chytá dotyk.** Duch přehrává ověřený běh robota; když hráč hraje přesně jako robot,
+štítek leží nad míčkem – tam, kde hráč začíná tah („Drag back from the ball“). Na `iphone-touch` trefil stisk druhé rány
+`play-ghost-tag` místo vrstvy natažení: sdílený `Ghost.tsx` dává drei `Html` `pointerEvents="none"`, ale drei ho mimo
+režim `transform` nepoužije. Test proto začne tah o 10 % výšky níž a zakrytí zapíše (`blocked` v anotaci); oprava
+patří do `Ghost.tsx` (`integration.md`). (2) První `POST` po startu serveru u minigolfu 422 nevrací (na rozdíl od
+`stunt`) – minigolf Rapier nepotřebuje.
+Oko (`D:/caches/p68/v/minigolf/`, Pixel a Chromium; WebKit kreslí prázdné plátno jako u stunt): míček, trávník,
+mantinely, dýně na soklech, jamka s vlajkou, tečky míření, pilulka „1 stroke · par 3“ a měřič síly vidět. Slabiny:
+míček je zvětšený čitelností (~⅕ šířky na výšku); na šířku je jamka malá a napůl za štítkem ducha; na snímku
+`portrait-hole` u míčku tmavě zelený nakloněný kotouč na stopce, jehož původ (model rakve, nebo duch) snímek neurčí.
 
 ## Hlídače
 

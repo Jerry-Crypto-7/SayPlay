@@ -60,7 +60,14 @@ Kostra dopsala `play-stunt` a `play-minigolf` do `testMatch` projektů `pixel7-t
 - **VR a `throw-rig`:** vstup `throw-rig` ve VR posílá `HOLD` bez osy míření, což minigolfu vrátí míření rovně. VR
   minigolf P68V neplánuje; při zapojení do VR (`XR_MODES`) je potřeba osa i ve VR.
 
-_Další položky doplní T3–T10; každá s důvodem a testem._
+- **Štítek ducha „Best run“ chytá dotyk** (`Ghost.tsx`, sdílený). `<Html pointerEvents="none">` drei použije jen
+  v režimu `transform`; bez něj zůstane `span.sp-world-tag` klikatelný. Duch přehrává ověřený běh, takže při hraní
+  stopou robota štítek leží nad míčkem – přesně tam, kde hráč minigolfu začíná tah. Naměřeno v T9: na `iphone-touch`
+  trefil stisk druhé rány `play-ghost-tag` místo vrstvy natažení (test pak začne o 10 % výšky níž). Prosba:
+  `style={{ pointerEvents: 'none' }}` na `Html` ducha (nebo `pointer-events: none` na štítku). Test: stisk na místě
+  štítku → `elementFromPoint` je pod ním ležící vrstva.
+
+_Další položky doplní T10; každá s důvodem a testem._
 
 ## `stunt`
 
@@ -285,7 +292,8 @@ Při „zapoj minigolf“ (vše mimo soubory pruhu):
 - **Počty (volitelné):** `COUNT_PARAMS.minigolf` je `{}`; „with three bumpers“ by šlo vést do `obstacles`
   (`{ default: { enemy: 'obstacles' } }`), pokud P68-I chce počty z věty. Bez toho počet losuje stream.
 - **Osa s `HOLD` na plátně:** míření se drží jen z tiků s `HOLD` / `TAP` (README T6); vstup `throw-rig` na plátně ji musí
-  nést (`session.hold(axis)`), jinak míček letí rovně. Ověří T9.
+  nést (`session.hold(axis)`), jinak míček letí rovně. Ověřeno v T9: vrstva `MinigolfTouch` osu nese (prst i klávesy,
+  `HOLD` a `TAP` s osou > 0 v záznamu e2e).
 - Přednačtení fyziky, nový efekt ani nový popisek mimo `hud-labels-request.ts` (`strokes`, `par`) potřeba není.
 
 ### Fixture spec
@@ -293,3 +301,7 @@ Při „zapoj minigolf“ (vše mimo soubory pruhu):
 Vzor pro T9 (`e2e/fixtures/p68-minigolf-spec.json`): `SAMPLE` v `src/play/genre/__tests__/minigolf-module.test.ts` –
 `compileMinigolf` věty „mini golf in a haunted house with pumpkins and a moving coffin“ s `bends: 1, obstacles: 3`
 (dráha L, 3 odrazníky `cc0-pumpkin`, pohyblivá `gen3d-coffin`); publikační brána projde na seedech 1–10.
+
+`e2e/fixtures/p68-minigolf-spec.json` (T9) – týž spec, seed 1. Hraje ho `e2e/play-minigolf.spec.ts` bez zapojení hry:
+12/12 na `chromium`, `pixel7-touch` a `iphone-touch` (1. 11. 2026); otisk replaye prohlížeč = Node `43e13345`
+(`minigolf-hash.json`), FPS `fps-minigolf.json`.

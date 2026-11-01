@@ -2,14 +2,20 @@
  * Minigolf (P68 T6): replay od tiku 0. Dvě přehrání téhož záznamu = týž hash a shodné kontrolní body stavu po každé
  * ráně i po vrácení míčku z mimo dráhy; tentýž záznam posunutý o tik = jiný hash.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { type ArcadeWorld, BUTTON, HEADER, type InputEvent, NO_INPUT } from '../contract';
+import { compileGame } from '../../compile';
+import { readGameSpec } from '../../spec';
+import { type ArcadeWorld, BODY, BUTTON, HEADER, type InputEvent, NO_INPUT, bodyBase } from '../contract';
 import { buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { replayCheckpoints } from '../physics/replay-checkpoints';
 import { minigolfParts, outOfBoundsOf, strokesOf } from '../pieces/minigolf';
 import { minigolfAxisToward, minigolfChargeFor } from '../pieces/minigolf-roll';
+import { runBot } from '../verify';
 
 const parts = minigolfParts(5, { shape: 'L', obstacles: 3, moving: true });
 const layout = (parts.control.params as { layout: { route: [number, number][] } }).layout;
@@ -79,5 +85,57 @@ describe('minigolf replay from tick 0', () => {
     expect(replay(world, late, ARCADE_LIBRARY, horizon).hash).not.toBe(replay(world, inputs, ARCADE_LIBRARY, horizon).hash);
     const end = TAPS[1] + 10;
     expect(replay(world, late, ARCADE_LIBRARY, end).hash).not.toBe(replay(world, inputs, ARCADE_LIBRARY, end).hash);
+  });
+});
+
+/**
+ * Otisk pro prohlížeč (P68V T9): hra z ručního specu e2e (`e2e/fixtures/p68-minigolf-spec.json`) přeložená týmž
+ * kompilátorem jako server (`compileGame`), záznam robota ověřovače (`runBot`) přehraný od tiku 0. `minigolf-hash.json`
+ * drží Node otisk a rány robota; `e2e/play-minigolf.spec.ts` přehraje týž záznam v prohlížeči (`playWitness`) a musí
+ * dostat týž otisk. Prst e2e počítá tah od míření `aux0` při stisku – na tiku 0 je 0, pak osa poslední rány.
+ */
+describe('the e2e fixture replays from tick 0 to the pinned Node hash (T9)', () => {
+  const fixture = JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p68-minigolf-spec.json'), 'utf8')) as { seed: number; spec: unknown };
+  const pinned = JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p68/vozidla-sport/minigolf-hash.json'), 'utf8')) as {
+    seed: number;
+    node: { hash: string; outcome: string; tick: number; inputs: number };
+    strokes: readonly { hold: number; tap: number; axis: number; charge: number }[];
+  };
+  const compiled = (): ArcadeWorld => {
+    const read = readGameSpec(fixture.spec);
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const result = compileGame(read.value, fixture.seed);
+    if (!result.ok || result.value.arcade === undefined) throw new Error(result.ok ? 'no arcade world' : result.issues.join('; '));
+    return result.value.arcade;
+  };
+
+  it('compile → bot record → replay from tick 0 gives the hash and the strokes in minigolf-hash.json, twice', () => {
+    const world = compiled();
+    const record = runBot(world).inputs;
+    const first = replay(world, record, ARCADE_LIBRARY);
+    expect(replay(world, record, ARCADE_LIBRARY)).toEqual(first);
+    expect(pinned.seed).toBe(fixture.seed);
+    const node = { hash: first.hash, outcome: first.outcome, tick: first.tick, inputs: record.length };
+    expect(node, `Node run ${JSON.stringify(node)}`).toEqual(pinned.node);
+    // Rány robota: první tik `HOLD`, tik `TAP`, osa a nabití (= počet tiků `HOLD` před ranou).
+    const strokes: { hold: number; tap: number; axis: number; charge: number }[] = [];
+    let hold = -1;
+    let charge = 0;
+    for (const event of record) {
+      if ((event.buttons & BUTTON.HOLD) !== 0) {
+        if (hold < 0) hold = event.tick;
+        charge += 1;
+      }
+      if ((event.buttons & BUTTON.TAP) !== 0) {
+        strokes.push({ hold, tap: event.tick, axis: event.axis, charge });
+        [hold, charge] = [-1, 0];
+      }
+    }
+    expect(strokes, `strokes ${JSON.stringify(strokes)}`).toEqual(pinned.strokes);
+  });
+
+  it('starts aimed at axis 0, so the e2e finger can pull from a known aim', () => {
+    const state = instantiate(compiled());
+    expect(state[bodyBase(state[HEADER.player] as number) + BODY.aux0]).toBe(0);
   });
 });
