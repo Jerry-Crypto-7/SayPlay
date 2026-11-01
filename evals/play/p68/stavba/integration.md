@@ -111,8 +111,18 @@ Z kontroly kostry `5005bfe3` (T1):
 - **Rychlá hra (`draft/draft.ts`):** `GENRE_SETTING.buildshift` je `'shopping street'` – obchod je uvnitř; navrhuji
   `'cozy diner'`. `TEMPLATE_TITLE` už `shift` zná (titulek modulu „<Goods> Shift“). Sloveso řádku a výsledkové karty
   viz HUD labels.
-- **Kostra ještě není v `origin/main`.** Pruh stojí na WIP `5005bfe3`; potřebuje sloučenou kostru, aby šel PR jen
-  s vlastními soubory (README → Základ větve).
+- **Kostra je v `origin/main`** (#61, `15c81e6a`); větev na ni přenesena 1. 11. (README → Základ větve).
+
+Po přenosu na sloučenou kostru #61 (1. 11.):
+
+- **Sdílený test kostry zčervená, jakmile hra dorazí.** `src/play/genre/__tests__/p68-staged.test.ts` „a skeleton
+  does not compile: the game exists only as a hand-written spec until its category ships“ čeká u všech pěti her, že
+  `compile` hodí `/not live/`. Hotový modul `buildshift` překládá, takže test padá právě pro `buildshift` (jediná
+  červená z 64 cílených testů; 934/934 sdílených testů přes žánry zelených). Soubor patří P68-I. Žádost: v tom testu
+  smyčku omezit na hry, jejichž kategorie ještě nedodala (bez `buildshift`), nejpozději se sloučením tohoto PR.
+- **`READER_PENDING` už hry P68 obsahuje** (`read/schema.ts:41`) a test kostry říká, že kategorie smí modul přepnout na
+  `ready` dřív. Modul přesto zůstává `staged` (opatrnější čtení; `contract.test.ts`, `dressing.test.ts` a
+  `p66-staged.test.ts` se s `ready` nezkoušely). Přepnutí na `ready` zůstává jednořádková součást „zapoj buildshift“.
 
 Z e2e T6 (`e2e/play-buildshift.spec.ts`, 1. 11.):
 

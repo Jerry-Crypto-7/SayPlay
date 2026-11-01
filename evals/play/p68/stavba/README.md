@@ -5,14 +5,12 @@ Plán: `plans/P68S-stavba-2026-10-31.md` (mimo git). Potřeby změn sdílených 
 
 ## Základ větve
 
-- **Kostra P68-I zatím není v `origin/main`** (1. 11. 07:15, `origin/main` = `688d989d`). Větev proto stojí na jejich
-  lokálním WIP commitu `5005bfe3` („chore(play): WIP P68 T1 scaffold five staged games in registries“).
-- Až kostra dorazí do `origin/main` (squash PR `features/P68I-scaffold`, jiné sha), vlastní commity se přenesou
-  příkazem `git rebase --onto origin/main 5005bfe3`. Konflikty můžou vzniknout jen na kostrách, které tenhle pruh
-  přepisuje (`pieces/buildshift*.ts`, `genre/buildshift.ts`, `BuildshiftScene.tsx`, `e2e/play-buildshift.spec.ts`),
-  a na `integration.md` (kostra ho založí ze šablony – obsah se sloučí ručně). Vždy platí verze tohoto pruhu.
-- Do přenosu strážce kontroluje proti WIP základu:
-  `git diff --name-only 5005bfe3..HEAD | node evals/play/p68/stavba/own-files.mjs --stdin`.
+- **Větev stojí na `origin/main` `15c81e6a`** (kostra P68-I #61). Do 1. 11. stála na WIP commitu kostry `5005bfe3`;
+  1. 11. přenesena `git rebase --onto origin/main 5005bfe3` (11 vlastních commitů). Jediný konflikt: `integration.md`
+  (add/add – kostra ho založila ze šablony s „_Zatím nevyplněno._“), platí verze tohoto pruhu. Ostatní kostry
+  (`pieces/buildshift*.ts`, `genre/buildshift.ts`, `BuildshiftScene.tsx`, e2e) jsou ve WIP i v #61 shodné.
+  Vlastní soubory po přenosu bajt po bajtu stejné jako před ním (záloha `backup/P68S-pre-rebase-2026-11-01`).
+- Strážce: `node evals/play/p68/stavba/own-files.mjs` (proti `origin/main`, 21 vlastních cest, exit 0).
 
 ## Co kostra zmrazila (čteno z `5005bfe3`)
 
@@ -115,9 +113,18 @@ Plán: `plans/P68S-stavba-2026-10-31.md` (mimo git). Potřeby změn sdílených 
 
 Testy vitest znovu puštěné 1. 11. při T8 (všech 49 zelených); e2e z běhu T7 (`49f87ec3`).
 
+**Po přenosu na kostru #61 (1. 11., T9):** vlastních 6 souborů vitest + `p66-staged` + `p68-staged` 63/64 – jediná
+červená je sdílený test kostry „a skeleton does not compile“ pro `buildshift` (viz Odchylky); 18 sdílených testů, které
+procházejí všechny žánry (`contract`, `classify`, `dressing`, `sets`, `holdout`, `seal`, `director-*`, `p66-hash` …),
+934/934; `tsc` čistý; e2e znovu nad novým buildem 18/18 na třech projektech (stejná čísla: 10/10 v tiku 2338, špatné
+6/10, vyzvání 645 → výhra 10). FPS `chromium` 59,9 / p95 16,7 ms, `pixel7-touch` 59,9, `iphone-touch` 21,7.
+
 ## Odchylky od návrhu
 
-- **Základ větve:** WIP kostra P68-I `5005bfe3` místo `origin/main` (kostra tam zatím není) – viz Základ větve.
+- **Základ větve:** T1–T8 vznikly na WIP kostře P68-I `5005bfe3`, 1. 11. přeneseny na sloučenou kostru #61 – viz
+  Základ větve.
+- **Sdílený `p68-staged.test.ts` čeká, že `buildshift` nepřekládá** („a skeleton does not compile … until its category
+  ships“) – s hotovou hrou padá právě pro `buildshift`. Soubor je P68-I, požadavek v `integration.md`.
 - **Prodavač 40 tiků na buňku místo 20.** Při 20 vyhrálo i špatné rozvržení 12/12; až při 40 rozhoduje cesta pec → pult.
 - **Prohra hodinami v 88 s, ne koncem horizontu** – pravidlo `time_limit` (max 90 s) by v 5400 tikách nevystřelilo.
 - **Řada palety má pátou buňku s mincemi** (Oven, Counter, Shelf, Coins, Open); celkem 35 buněk jako v návrhu.
