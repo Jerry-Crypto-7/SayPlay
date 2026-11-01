@@ -184,7 +184,75 @@ hromad z „a tower of …“ / „smashes through …“; místo za poslední p
 
 ## `stunt` – scéna, kamera a palec (T4)
 
-_Vyplní T4._
+Soubory v `src/components/play/arcade/genres/stunt/`: `StuntScene.tsx` (scéna), `stunt-camera.ts` (póza kamery),
+`stunt-fx.ts` (jiskry a prach), `stunt-touch.ts` (gesto → `ArcadeInput`), `StuntTouch.tsx` (palec a počítadla jako DOM).
+Testy `__tests__/stunt-camera.test.ts`, `__tests__/stunt-touch.test.ts`.
+
+**Scéna.** Silnici, zem, kulisy a orientační bod kreslí `SteerBackdrop` závodu (import) z mantinelů světa a sady místa
+(`theme.look`). Rampy jsou **procedurální klíny** přesně podle jádra (výška 0 na `z0`, `h` na hraně `z1`): model
+`gen3d-ramp` je prkno na podpěře 0,84 × 1 × 2 m bez natahovatelných os; vepsaný do klínu 3 × 1,5 × 3,5 m by byl o polovinu
+užší než plocha, po které jádro auto vede, a směr stoupání modelu se bez prohlížeče ověřit nedá. Barva klínu = `look.block`
+sady, bez ní `sun` / `sun-deep`. Krabice hromad a trosky kreslí poloha a natočení ze stavu (`unpackRotation`, x zrcadlené
+jako `MergeScene`), model = druh těla (věc z věty z katalogu); slot trosky má model každé předlohy hry a ukáže ten svůj.
+Cíl = brána ze sloupů a slunečného pásu na místě těla `goal`. Vozidlo = druh hráče z generátoru (`stunt_track.vehicle`);
+výchozí `car` není model katalogu, pak hrdina obsazení (`cast.player`, u závodu `race-car`). Hodiny relace jdou v `useFrame`
+s prioritou −2, takže auto, trosky, jiskry i kamera čtou týž tik.
+
+**Kamera** `stuntCameraPose(state, aspect, rect, { prev, alpha, road, fov, reduced })` – čistá, bez `window`:
+- na šířku vlastní póza 2,9 m nad zemí a 6,8 m za autem, míří 11 m před auto na osu trati (`stripCurve` nad `roadShapeOf`);
+  `rect` se nečte;
+- na výšku nižší a bližší póza (3,2 m, 5,6 m), pak `fitTall` (`portrait-frame.ts`) s krabicí auto + 30 m osy trati před ním
+  (± 1 m); bod pohledu jede s kamerou o týž vektor. Na 412 × 839 s pásy 110 / 680 px má auto 18 % výšky plátna (strop
+  čitelnosti `LegibleBodies` 2× ho dotáhne na 20 %);
+- ve vzduchu kamera stoupá s autem a o 0,5 m navíc na metr výšky, bod pohledu o 0,6 m na metr (výška auta je spojitá
+  balistika jádra, takže plynule);
+- po nárazu (milost `stunt_crash`) tlumený otřes 15 tiků, nejvýš 0,2 m, směr z tiků milosti; `prefers-reduced-motion`
+  (`reducedMotion()` z `effects/feel.ts` čte scéna, ne funkce) ho vypne. Sdílený otřes `Effects` (0,14 m, 9 tiků po zásahu
+  hráče) jede dál navrch – vypnout ho bez sdílené změny nejde, přesah je 150 ms.
+
+**Odezva nárazu** `stunt-fx.ts`: vlastní sběrnice `createEffectsBus` (jen poslouchá relaci) → zásah hráče = 10 jisker,
+nová troska (rozbitá hromada) a dopad = 3 prachu na událost; nejvýš 24 částic naráz (nová dávka vytlačí nejstarší), dvě
+sítě instancí. Směry z tiku a pořadí, žádná náhoda. Záblesk, úlomky a obláček sdílené vrstvy zůstávají vedle.
+
+**Palec – šev a dvojí vstup.** `ArcadeStage` dává vstupu `steer` `useSteerInput`: nativní posluchače ukazatele na **celé**
+ploše hry (první prst = tah, druhý kdekoli = brzda) a klávesy (šipky / A-D s volantem `key-steer`, S / ↓ brzda).
+`StuntTouch` je proto DOM vrstva v ploše hry (vlastní kořen `createRoot` v kontejneru `stunt-overlay`, montuje ji
+`StuntScene` při `enabled`): plocha přes spodní polovinu scény a tlačítko brzdy **zastaví** svůj ukazatel
+(`stopPropagation` v nativním posluchači, jako `ActionButton`), takže týž prst neřídí dvakrát; klávesnici dál drží
+`useSteerInput`, v horní polovině scény řídí prst jeho tah (tatáž sémantika). Pohyb myši bez stisku se nečte (jinak by
+přepsal osu kláves). Okrajový případ: prst nahoře a palec dole naráz si `session.hold` přepisují – kdo se hnul naposled.
+Gesto: tah od místa stisku, mrtvá zóna 12 px, plná osa od 90 px (jako `DRAG_PX`); brzda = `BUTTON.DOWN`, dokud se drží;
+řídí první prst na ploše, prst na brzdě nikdy. Výsledek je tentýž `ArcadeInput` jako šipky a S / ↓ (test proti
+`driveInput`). Tlačítko `sp-btn sp-btn--primary play-fire` = jediná rajčatová akce, kolo palce 72 px na `--_stack`
+vpravo dole (≥ `--sp-size-touch-min`, ve spodních 45 %); třída `.play-fire` ho započítá do dolního pásu `playRect`.
+
+**Počítadla.** HUD (`ArcadePlay.hudCountersOf`, sdílený) čítače z počítadla hry nezná, bez sdílené změny je neukáže.
+Scéna proto kreslí vlastní pilulku vlevo dole (`sp-hud-pill`, `pointer-events: none`): `Smash` = `stuntCounter('smash')`
+(rozbité krabice), `Air` = `stuntCounter('jumps')` (skoky, `hud-labels-request.ts`: „tiky ve vzduchu přepočtené na skoky“).
+
+**Pro T5 (e2e):**
+- DOM: plocha palce `[data-testid="stunt-touch"]` (spodní polovina scény, `data-axis` = osa, kterou adaptér drží), brzda
+  `[data-testid="stunt-brake"]` (třída `is-pressed`, když drží), počítadla `hud-counter-smash` / `hud-counter-air`
+  s `data-count` v `[data-testid="stunt-counters"]`, vše v `[data-testid="stunt-overlay"]`; `arcade-stage` má
+  `data-player-x` (auto na obrazovce −1…1).
+- Prst podle `botWants`: osa `a` = tah o `stuntDragPx(a)` px od místa stisku (`stunt-touch.ts`), `BUTTON.DOWN` = držet
+  `stunt-brake`; osa 0 = prst pustit (nebo vrátit na místo stisku).
+- Desktop: šipky / A-D a S / ↓ (`useSteerInput`, beze změny).
+
+**Pro P68-I (sdílené soubory, nic z toho T4 neměnil):**
+- Čistá montáž palce (prosba už je v `integration.md`): až `GENRE_TOUCH` vykreslí `StuntTouch` (props = `GenreTouchProps`),
+  smazat `<StuntTouch>` ze `StageOverlay` ve `StuntScene.tsx` – jinak bude palec dvakrát.
+- Až HUD ukáže `smash` a `air` sám, smazat `<StuntCounters>` ze `StageOverlay`.
+- `FreshCamera` (`feed/StageHost.tsx`) nevrací `setViewOffset`, který na výšku nechává `SurvivorScene`; `StuntScene` ho
+  proto sama ruší (`clearViewOffset`). Oprava patří do `FreshCamera`.
+
+**Testy (pin):** kamera – na 412 × 839 leží auto i 30 m osy trati v hracím obdélníku na 5 tratích (všechny obtížnosti) po
+7 m, uprostřed i u obou mantinelů, na zemi i 4 m ve vzduchu; auto ≥ `LEGIBLE_SHARE.hero / LEGIBLE_CAP`; na šířku póza
+nezávislá na `rect`; ve vzduchu výš; otřes po nárazu, bez něj při reduced motion a po 15 tikách. Palec – plný tah a brzda
+= šipky / A-D a S / ↓, mrtvá zóna = osa 0, `stuntDragPx` je opak `stuntAxis`, druhý prst ani prst na brzdě neřídí.
+Rozbito schválně (vráceno ze zálohy): kamera na výšku bez `fitTall` → červený test obdélníku; otřes bez `reduced` →
+červený test otřesu; `air.lift` 0 → červený test výšky. Krabice bez 30 m trati test obdélníku nezčervená (trať je v záběru
+i tak, krabice mění jen velikost auta 18 % vs. 16 %) – zůstává podle plánu.
 
 ## `minigolf` – jádro a spike (T6)
 
