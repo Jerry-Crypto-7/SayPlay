@@ -6,16 +6,19 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { GameSpecV1 } from '../../spec';
 import { arcadeWorldOf } from '../compile';
 
-import { RAILFPS_AXES, RAILFPS_KEEPER_ROLE, RAILFPS_SLOTS, RAILFPS_YAW_STEPS } from '../../genre/p68-contract';
-import { type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyInit, type ControlPiece, HEADER, NO_INPUT, type RulePiece, bodyBase } from '../contract';
-import { assertGame, traceRun } from '../gameplay-assert';
+import { RAILFPS_AXES, RAILFPS_KEEPER_ROLE, RAILFPS_SLOTS, RAILFPS_YAW_STEPS, handSpec } from '../../genre/p68-contract';
+import { type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyInit, type ControlPiece, HEADER, NO_INPUT, ROLE, type RulePiece, bodyBase } from '../contract';
+import { type GameplayCheck, P68_ASSERTIONS, type StateTrace, assertGame, evaluateCheck, traceRun } from '../gameplay-assert';
 import { type ArcadeLibrary, buildWorld } from '../kernel';
+import { ARCADE_LIBRARY } from '../library';
+import { loadRapier } from '../physics/world';
+import { runBot } from '../verify';
 
 interface DriveParams {
   readonly speed: number;
@@ -128,7 +131,7 @@ describe('stunt: crosses-finish reads the vehicle position, not the win effect',
   it('passes when the vehicle body drives past the finish line', () => {
     const crossed = result('crosses-finish', 'stunt', world({ speed: 120, rules: [['win_at', 1000]] }));
     expect(crossed.pass).toBe(true);
-    expect(crossed.evidence).toMatch(/^player z 100\.\d m >= finish 100\.0 m/);
+    expect(crossed.evidence).toMatch(/^player front z 100\.\d m >= finish 100\.0 m/);
   });
 });
 
@@ -174,6 +177,70 @@ describe('railfps: the shot resolves when the turn arrives', () => {
     if (!built.ok) throw new Error(built.issues.join('; '));
     const hit = assertGame('railfps', built.world).find((entry) => entry.id === 'hit-on-fire');
     expect(hit).toMatchObject({ pass: true, evidence: expect.stringContaining('(step -4)') as unknown });
+  });
+});
+
+describe('vozidla-sport (T8): the bow crosses the line, the ball drops in, strokes count up, the weak player is the category one', () => {
+  const fixture = (game: 'stunt' | 'minigolf'): ArcadeWorld => {
+    const json = JSON.parse(readFileSync(join(process.cwd(), 'e2e', 'fixtures', `p68-${game}-spec.json`), 'utf8')) as unknown;
+    const built = arcadeWorldOf(handSpec(json) as GameSpecV1, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    return built.world;
+  };
+  const check = (game: string, id: string): GameplayCheck => (P68_ASSERTIONS.games[game]!.find((entry) => entry.id === id) as { check: GameplayCheck }).check;
+  /** Kopie stopy, v níž `edit` smí přepsat stav snímku `index` (záporný = od konce). */
+  const edited = (trace: StateTrace, index: number, edit: (state: Int32Array) => void): StateTrace => {
+    const at = index < 0 ? trace.frames.length + index : index;
+    const frames = trace.frames.map((frame, k) => {
+      if (k !== at) return frame;
+      const state = Int32Array.from(frame.state);
+      edit(state);
+      return { ...frame, state };
+    });
+    return { ...trace, frames };
+  };
+  beforeAll(async () => {
+    await loadRapier();
+  });
+
+  it('passes every stunt and minigolf assertion on the category fixtures', () => {
+    for (const game of ['stunt', 'minigolf'] as const) {
+      const failing = assertGame(game, fixture(game)).filter((entry) => !entry.pass).map((entry) => `${entry.id}: ${entry.evidence}`);
+      expect(failing, game).toEqual([]);
+    }
+  });
+
+  it('stunt: the finish is crossed by the front of the truck, and a line 1 m past the front is not', () => {
+    const trace = traceRun(fixture('stunt'), 'bot');
+    expect(evaluateCheck(check('stunt', 'crosses-finish'), trace)).toMatchObject({ pass: true, evidence: expect.stringContaining('player front z 507.3 m >= finish 507.3 m') as unknown });
+    const later = edited(trace, 0, (state) => {
+      for (let body = 0; bodyBase(body) < state.length; body += 1) if (state[bodyBase(body) + BODY.role] === ROLE.goal) state[bodyBase(body) + BODY.z] += 1000;
+    });
+    expect(evaluateCheck(check('stunt', 'crosses-finish'), later).pass).toBe(false);
+  });
+
+  it('minigolf: a won ball over the cup drops in only when slow enough to fall before it clears the cup', () => {
+    const trace = traceRun(fixture('minigolf'), 'bot');
+    expect(evaluateCheck(check('minigolf', 'ball-in-hole'), trace)).toMatchObject({ pass: true, evidence: expect.stringContaining('speed 48 <= drop speed 83') as unknown });
+    const fast = edited(trace, -1, (state) => {
+      state[bodyBase(state[HEADER.player]!) + BODY.vx] = 200;
+    });
+    expect(evaluateCheck(check('minigolf', 'ball-in-hole'), fast).pass).toBe(false);
+  });
+
+  it('minigolf: strokes rise with each shot up to par + 3, and a shot the counter never saw fails', () => {
+    const trace = traceRun(fixture('minigolf'), 'bot');
+    expect(evaluateCheck(check('minigolf', 'strokes-counted'), trace)).toMatchObject({ pass: true, evidence: 'strokes 2 (counter ammo rises), shot inputs 2, course limit 6' });
+    const extra = { ...trace, inputs: [...trace.inputs, { tick: trace.endTick + 1, buttons: BUTTON.TAP, axis: 0 }] };
+    expect(evaluateCheck(check('minigolf', 'strokes-counted'), extra).pass).toBe(false);
+  });
+
+  it('the weak player is the category weak bot: it loses both fixtures, where the slower-reaction novice still wins', () => {
+    for (const game of ['stunt', 'minigolf'] as const) {
+      const world = fixture(game);
+      expect(traceRun(world, 'weak-bot').outcome, game).toBe('lost');
+      expect(runBot(world, ARCADE_LIBRARY, { profile: 'novice' }).outcome, `${game} novice`).toBe('won');
+    }
   });
 });
 

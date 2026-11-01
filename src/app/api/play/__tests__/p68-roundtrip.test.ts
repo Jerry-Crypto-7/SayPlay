@@ -23,7 +23,7 @@ import { worldHasPhysics } from '@/play/arcade/kernel';
 import { axisOfCell } from '@/play/arcade/pieces/lanes';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { runBot } from '@/play/arcade/verify';
-import { DRAWSAVE_STROKE, P68_GENRES, P68_MAX_TICKS, RAILFPS_AXES } from '@/play/genre/p68-contract';
+import { DRAWSAVE_STROKE, P68_GENRES, P68_MAX_TICKS, RAILFPS_AXES, handSpec } from '@/play/genre/p68-contract';
 import { packInputs, unpackInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { readGameSpec } from '@/play/spec';
@@ -77,7 +77,7 @@ function blockerOf(name: string): string | null {
   const fixture = fixtureOf(name);
   if (!existsSync(fixture)) return `no hand spec e2e/fixtures/${name}-spec.json yet`;
   try {
-    const read = readGameSpec(JSON.parse(readFileSync(fixture, 'utf8')) as unknown);
+    const read = readGameSpec(handSpec(JSON.parse(readFileSync(fixture, 'utf8')) as unknown));
     if (!read.ok) return null;
     const made = arcadeWorldOf(read.value, 1);
     const skeleton = made.ok ? undefined : made.issues.find((issue) => issue.includes('is not built yet'));
@@ -92,7 +92,7 @@ if (P68_GENRES.some((genre) => existsSync(fixtureOf(`p68-${genre}`)))) await loa
 
 /** Celé kolo jedné hry: publikace → týž svět ze sdíleného odkazu → robot → výzva → přehrání. */
 async function roundTrip(name: string): Promise<void> {
-  const spec = JSON.parse(readFileSync(fixtureOf(name), 'utf8')) as unknown;
+  const spec = handSpec(JSON.parse(readFileSync(fixtureOf(name), 'utf8')) as unknown);
   const created = await createGame(post('/api/play/games', { spec }));
   expect(created.status, await created.clone().text()).toBeLessThan(300);
   const { versionId: id } = (await created.json()) as { versionId: string };

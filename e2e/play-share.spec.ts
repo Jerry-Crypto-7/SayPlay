@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
-import { P68_GENRES } from '../src/play/genre/p68-contract';
+import { P68_GENRES, handSpec } from '../src/play/genre/p68-contract';
 import { startGame } from './play-start';
 
 interface HandProbe {
@@ -308,7 +308,7 @@ test.describe("P68 games – a new game's dare (T6)", () => {
     test(`${genre}: open its dare, play it out, see the result (P68 T6)`, async ({ browser, request }, info) => {
       test.skip(!existsSync(fixture), `no hand spec e2e/fixtures/p68-${genre}-spec.json yet`);
       test.setTimeout(240_000);
-      const published = await request.post('/api/play/games', { data: { spec: JSON.parse(readFileSync(fixture, 'utf8')) as unknown } });
+      const published = await request.post('/api/play/games', { data: { spec: handSpec(JSON.parse(readFileSync(fixture, 'utf8')) as unknown) } });
       expect(published.status(), await published.text()).toBeLessThan(300);
       const { url } = (await published.json()) as { url: string };
       const id = url.split('/').at(-1)!;

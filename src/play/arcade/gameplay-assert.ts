@@ -20,6 +20,7 @@ import { type ArcadeLibrary, type ArcadeOutcome, instantiate, loadProgram, outco
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
 import { badLayout, serveWithLayout } from './pieces/buildshift-bot';
+import { MINIGOLF_BOT } from './pieces/minigolf-bot';
 
 /** Slot těla úrovně podle indexu těla (pořadí těl je součást hashe hry) a jména slotu `BODY`. */
 export interface BodySlot {
@@ -78,9 +79,18 @@ function rigOf(world: ArcadeWorld, state: ArcadeState): number {
  */
 const WEAK_BOTS: Readonly<Record<string, BotPiece>> = { buildshift_bot: serveWithLayout(badLayout()) as BotPiece };
 
+/**
+ * Slabý hráč jako parametry robota hry (T8): profil `novice` jen zpožďuje reakci, a to minigolf (rána z klidu) ani
+ * závod s předpovědí trati neoslabí – oba roboti vyhrají. Kategorie `vozidla-sport` proto slabého hráče definuje sama:
+ * `stunt` týž robot se zpožděním a chybou řízení (`STUNT_WEAK`), `minigolf` pevná chyba míření a síly (`MINIGOLF_BOT.weak`).
+ */
+const WEAK_PARAMS: Readonly<Record<string, Readonly<Record<string, unknown>>>> = { stunt_bot: { weak: true }, minigolf_bot: MINIGOLF_BOT.weak };
+
 function inputsOf(world: ArcadeWorld, driver: TraceDriver, library: ArcadeLibrary): readonly InputEvent[] {
   if (driver === 'idle') return [];
   if (driver === 'bot') return runBot(world, library).inputs;
+  const params = WEAK_PARAMS[world.bot.id];
+  if (params !== undefined) return runBot({ ...world, bot: { ...world.bot, params: { ...(world.bot.params as object), ...params } } }, library).inputs;
   const weak = WEAK_BOTS[world.bot.id];
   if (weak === undefined) return runBot(world, library, { profile: 'novice' }).inputs;
   return runBot(world, { ...library, bots: { ...library.bots, [world.bot.id]: weak } }).inputs;
@@ -127,7 +137,7 @@ export function traceRun(world: ArcadeWorld, driver: TraceDriver, ticks: number 
 export type GameplayCheck =
   /** Běh skončí výsledkem `is` do `maxTicks`. */
   | { readonly kind: 'outcome'; readonly is: 'won' | 'lost' }
-  /** Střed hráče překročí cílovou čáru: přední hrana (nejmenší z) živých těl role `goal` v tiku 0, bez nich `world.length`. */
+  /** Příď hráče (přední hrana těla) překročí cílovou čáru: přední hrana (nejmenší z) živých těl role `goal` v tiku 0, bez nich `world.length`. */
   | { readonly kind: 'crosses' }
   /** Hráč bez `FLAG.grounded` a aspoň `minClearance` nad nejvyšší pevnou plochou pod sebou, `minTicks` tiků v řadě. */
   | { readonly kind: 'airborne'; readonly minClearance: number; readonly minTicks: number }
@@ -141,8 +151,11 @@ export type GameplayCheck =
    * rychlosti nejvýš `maxSpeed` po `restTicks` tiků v řadě (nebo až do konce hry).
    */
   | { readonly kind: 'restsIn'; readonly maxSpeed: number; readonly restTicks: number }
-  /** Odpal = vstup s `TAP`. Údery = součet poklesů čítače `counter`, limit = jeho hodnota v tiku 0; údery = odpaly ≤ limit. */
-  | { readonly kind: 'strokes'; readonly counter: ArcadeCounter }
+  /**
+   * Odpal = vstup s `TAP`. Údery = součet poklesů čítače `counter`, limit = jeho hodnota v tiku 0; s `limit` součet
+   * nárůstů a limit = čítač `limit.counter` v tiku 0 + `limit.plus`. Údery = odpaly ≤ limit.
+   */
+  | { readonly kind: 'strokes'; readonly counter: ArcadeCounter; readonly limit?: { readonly counter: ArcadeCounter; readonly plus: number } }
   /** `yawStep` na držáku nabude aspoň `min` různých hodnot. */
   | { readonly kind: 'distinctYaw'; readonly min: number }
   /**
@@ -217,11 +230,12 @@ function crosses(trace: StateTrace): Verdict {
   let best = Number.NEGATIVE_INFINITY;
   for (const frame of trace.frames) {
     const player = frame.state[HEADER.player] as number;
-    const z = slot(frame.state, player, BODY.z);
-    if (z >= line) return verdict(true, `player z ${metres(z)} m >= finish ${metres(line)} m at tick ${String(frame.tick)}`);
+    // T8: čáru překročí příď vozidla (přední hrana těla), jako v závodě – ne jeho střed.
+    const z = slot(frame.state, player, BODY.z) + slot(frame.state, player, BODY.d) / 2;
+    if (z >= line) return verdict(true, `player front z ${metres(z)} m >= finish ${metres(line)} m at tick ${String(frame.tick)}`);
     best = Math.max(best, z);
   }
-  return verdict(false, `player reached z ${metres(best)} m < finish ${metres(line)} m; ${ended(trace)}`);
+  return verdict(false, `player front reached z ${metres(best)} m < finish ${metres(line)} m; ${ended(trace)}`);
 }
 
 /** Výška hráče nad nejvyšší pevnou plochou pod jeho půdorysem (vršek nejvýš 0,25 m nad chodidly), jinak nad zemí. */
@@ -333,6 +347,23 @@ function insideGoal(state: ArcadeState, body: number): boolean {
   return false;
 }
 
+/** Zrychlení volného pádu v jednotkách za tik² (9,81 m/s² při 60 tikách). */
+const FALL_PER_TICK2 = (9.81 * UNIT) / 3600;
+
+/**
+ * Nejvyšší rychlost (jednotky za tik), při které míček do jamky spadne, místo aby ji přeskočil: za dobu pádu o vlastní
+ * poloměr (`√(2r/g)`) neujede víc než průměr jamky (menší z šířky a hloubky těla `goal`). T8: hra, která výhrou skončí
+ * v okamžiku pádu, míček na ploše „v klidu“ nikdy neukáže – v klidu leží až na dně jamky, kam stav nevidí.
+ */
+function dropSpeed(state: ArcadeState, ball: number): number {
+  let cup = 0;
+  for (let goal = 0; goal < capacity(state); goal += 1) {
+    if (goal !== ball && isAlive(state, goal) && slot(state, goal, BODY.role) === ROLE.goal) cup = Math.max(cup, Math.min(slot(state, goal, BODY.w), slot(state, goal, BODY.d)));
+  }
+  const radius = Math.min(slot(state, ball, BODY.w), slot(state, ball, BODY.d)) / 2;
+  return cup / Math.sqrt((2 * radius) / FALL_PER_TICK2);
+}
+
 function restsIn(trace: StateTrace, maxSpeed: number, restTicks: number): Verdict {
   const balls = ballsOf((trace.frames[0] as TraceFrame).state);
   let longest = 0;
@@ -340,23 +371,37 @@ function restsIn(trace: StateTrace, maxSpeed: number, restTicks: number): Verdic
     let run = 0;
     for (let k = 0; k < trace.frames.length; k += 1) {
       const { state, tick } = trace.frames[k] as TraceFrame;
+      const speed = Math.hypot(slot(state, ball, BODY.vx), slot(state, ball, BODY.vy), slot(state, ball, BODY.vz));
       const still = [BODY.vx, BODY.vy, BODY.vz].every((v) => Math.abs(slot(state, ball, v)) <= maxSpeed);
-      run = isAlive(state, ball) && still && insideGoal(state, ball) ? run + 1 : 0;
+      const inside = isAlive(state, ball) && insideGoal(state, ball);
+      run = inside && still ? run + 1 : 0;
       longest = Math.max(longest, run);
       const final = k === trace.frames.length - 1 && trace.outcome !== 'running';
       if (run >= restTicks || (run > 0 && final)) return verdict(true, `ball body ${String(ball)} at rest in the hole zone for ${String(run)} ticks at tick ${String(tick)}`);
+      // Výhra v tiku, kdy střed míčku je nad jamkou a jede dost pomalu, aby do ní spadl (`dropSpeed`).
+      if (final && trace.outcome === 'won' && inside && speed <= dropSpeed(state, ball)) {
+        return verdict(true, `ball body ${String(ball)} drops into the hole zone at tick ${String(tick)}: speed ${speed.toFixed(0)} <= drop speed ${dropSpeed(state, ball).toFixed(0)} per tick`);
+      }
     }
   }
-  return verdict(false, `ball never at rest in a goal zone (longest ${String(longest)} ticks, needs ${String(restTicks)}); ${ended(trace)}`);
+  return verdict(false, `ball never at rest in a goal zone nor dropping into one at the win (longest rest ${String(longest)} ticks, needs ${String(restTicks)}); ${ended(trace)}`);
 }
 
-function strokes(trace: StateTrace, name: ArcadeCounter): Verdict {
+/**
+ * Údery: čítač `counter` klesá (zbývající rány, limit = hodnota v tiku 0), nebo s `limit` roste (rány od nuly, limit =
+ * čítač `limit.counter` v tiku 0 + `limit.plus`, např. par + 3 u `minigolf`).
+ */
+function strokes(trace: StateTrace, name: ArcadeCounter, cap?: { readonly counter: ArcadeCounter; readonly plus: number }): Verdict {
   const shots = trace.inputs.filter((input) => (input.buttons & BUTTON.TAP) !== 0).length;
-  const limit = counter((trace.frames[0] as TraceFrame).state, name);
+  const first = (trace.frames[0] as TraceFrame).state;
+  const limit = cap === undefined ? counter(first, name) : counter(first, cap.counter) + cap.plus;
   let used = 0;
-  for (let k = 1; k < trace.frames.length; k += 1) used += Math.max(0, counter((trace.frames[k - 1] as TraceFrame).state, name) - counter((trace.frames[k] as TraceFrame).state, name));
+  for (let k = 1; k < trace.frames.length; k += 1) {
+    const change = counter((trace.frames[k] as TraceFrame).state, name) - counter((trace.frames[k - 1] as TraceFrame).state, name);
+    used += Math.max(0, cap === undefined ? -change : change);
+  }
   const pass = limit > 0 && shots > 0 && used === shots && used <= limit;
-  return verdict(pass, `strokes ${String(used)} (counter ${name} drops), shot inputs ${String(shots)}, course limit ${String(limit)}`);
+  return verdict(pass, `strokes ${String(used)} (counter ${name} ${cap === undefined ? 'drops' : 'rises'}), shot inputs ${String(shots)}, course limit ${String(limit)}`);
 }
 
 function distinctYaw(trace: StateTrace, min: number): Verdict {
@@ -543,7 +588,7 @@ export function evaluateCheck(check: GameplayCheck, trace: StateTrace): Verdict 
     case 'restsIn':
       return restsIn(trace, check.maxSpeed, check.restTicks);
     case 'strokes':
-      return strokes(trace, check.counter);
+      return strokes(trace, check.counter, check.limit);
     case 'distinctYaw':
       return distinctYaw(trace, check.min);
     case 'hitOnFire':

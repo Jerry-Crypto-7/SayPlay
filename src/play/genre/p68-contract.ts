@@ -71,3 +71,9 @@ export const DRAWSAVE_STROKE = { input: 'cell-axis', hold: 'HOLD' } as const;
 
 /** Délka běhu, do které hra rozhodne výhru i prohru (90 s při 60 tikách). */
 export const P68_MAX_TICKS = 5400;
+
+/**
+ * Ruční spec hry z `e2e/fixtures/p68-<id>-spec.json`: holý GameSpecV1, nebo obal `{ about, seed, spec }`, který píše
+ * kategorie `vozidla-sport` (T8). GameSpecV1 pole `spec` nemá, takže obal se pozná jednoznačně.
+ */
+export const handSpec = (json: unknown): unknown => (json !== null && typeof json === 'object' && 'spec' in json ? (json as { spec: unknown }).spec : json);
