@@ -37,11 +37,13 @@ const MARGIN_PX = space['2'];
 
 /**
  * Míry scény, které čte i test čitelnosti (T9): zábrany stojí za místem nástupu nepřátel (m), značka sektoru je
- * klín na podlaze od kousku za obloukem dosahu po zábrany (m), zaměřovač je prstenec o poloměru `crosshairPx` (px).
+ * krátký klín na podlaze kousek za obloukem dosahu (m; T10 – klín až po zábrany byl z oka vysoký žlutý pruh),
+ * zaměřovač je prstenec o poloměru `crosshairPx` (px).
  */
 export const RAILFPS_LAYOUT = {
   barrier: RAILFPS.enemyFar / UNIT + 2,
   markNear: RAILFPS.reach / UNIT + 0.1,
+  markFar: RAILFPS.reach / UNIT + 3,
   crosshairPx: space['4'],
 } as const;
 

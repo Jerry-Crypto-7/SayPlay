@@ -67,10 +67,12 @@ describe('railfps phone readability at 412 × 839 (P68-F T9)', () => {
     const horizon = row(m(EYE_HEIGHT), 10);
     expectInBand(horizon - RAILFPS_LAYOUT.crosshairPx, 'crosshair top');
     expectInBand(horizon + RAILFPS_LAYOUT.crosshairPx, 'crosshair bottom');
-    // Značka sektoru je klín na podlaze od `markNear` po zábrany: celý mezi horizontem a zónou palce.
+    // Značka sektoru je krátký klín na podlaze od `markNear` po `markFar`: celý mezi horizontem a zónou palce.
     expectInBand(row(0, RAILFPS_LAYOUT.markNear), 'sector marker near edge');
-    expectInBand(row(0, RAILFPS_LAYOUT.barrier), 'sector marker far edge');
+    expectInBand(row(0, RAILFPS_LAYOUT.markFar), 'sector marker far edge');
     expect(row(0, RAILFPS_LAYOUT.markNear)).toBeGreaterThan(horizon + RAILFPS_LAYOUT.crosshairPx);
+    // T10: značka je nižší než polovina podlahy pod horizontem – čte se jako plocha u nohou, ne jako pruh k obzoru.
+    expect(row(0, RAILFPS_LAYOUT.markNear) - row(0, RAILFPS_LAYOUT.markFar)).toBeLessThan((row(0, RAILFPS_LAYOUT.markNear) - horizon) / 2);
   });
 
   it('no target of any height row is covered by the HUD band or the thumb zone, from the nearest to the farthest spawn', () => {

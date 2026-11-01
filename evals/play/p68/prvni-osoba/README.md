@@ -206,6 +206,30 @@ běží jen na `pixel7-touch`), 2,0 min.
 - **Zbývá:** značka sektoru je na podlaze vysoký žlutý pruh, výraznější než je potřeba; živý nepřítel proti stanici
   na snímku chybí (první nepřítel přichází mimo záběr).
 
+## Doladěno 4. 11. (T10)
+
+Hotovo už 1. 11. Změny od milníku 2. 11.: odezva zásahu (T8), čitelnost, stanice, šipky hrozby a delší hra (T9),
+HUD (T10).
+
+- **HUD jen stávajícími cestami:** srdce se životy (`lives` z `HUD_COUNTER_LABELS`), odpočet, pauza, cíl „Stop the
+  alien invaders before they reach you!“, úvodní karta „Tap to start / Tap to aim and shoot / Drag to look around“,
+  banner kola „Round N of 3“ přes háček kol. Žádný nový popisek.
+- **Lišta HP bosse** nad bossem ve stylu world-tag kitu (jako survivor), jen když je boss v záběru. Podklad papírový –
+  na rajčatovém podkladu kitu by úbytek rajčatové lišty nebyl vidět. Stejnou chybu má lišta bosse v `SurvivorScene.tsx`
+  (cizí soubor).
+- **Značka sektoru:** krátká podložka na podlaze (`reach` + 3 m, krytí 0,26) místo vysokého pruhu k horizontu;
+  `railfps-readability.test.ts` ji drží.
+- **Skóre bez počítadla:** popisek `score` neexistuje a žádná arkádová hra živé skóre neukazuje; skóre nesou vyskakovací
+  body, cíl Dare a výsledková karta.
+- `tutorial` modulu beze změny – už odpovídá tónu a změna by rozbila test proti `e2e/fixtures/p68-railfps-spec.json`.
+- Dvě nové potřeby v `integration.md`: počítadlo vln s existujícím popiskem `round` v `ArcadePlay.tsx` (banner „Round
+  2 of 3“ zmizí za 0,9 s) a `PowerupBadge.tsx` má číst `combo` i z `railfps_shot`.
+- **Ověření:** vitest 55/55 (5 souborů), build projde, `play-railfps` na `chromium` a `pixel7-touch` zelený (výhra za
+  43,5 s se 3 životy). `interface-language` běží jen na `chromium`; na čerstvě spuštěném serveru dvakrát spadl test
+  „squirrel“ (stavba hry > 5 s, timeout URL; věta dělá runner, railfps se netýká), na zahřátém serveru 4/4.
+- **FPS před a po:** milník 59,9 / p95 16,8 ms; po T9–T10 medián vždy 59,9, p95 kolísá se zátěží stroje mezi 16,8 a
+  33,4 ms (brána 33,3). Snímky `D:/caches/p68/F/shots/t10-pixel7-start.png`, `t10-pixel7-boss.png`.
+
 ### Nálezy pro T9 (z T6, vyřešené výše)
 
 - Robot vyhraje za 16,9 s, ale spec slibuje `targetDurationSec: 70`: tři vlny po 16 věcech jsou krátké.

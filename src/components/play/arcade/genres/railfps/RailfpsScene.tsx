@@ -14,22 +14,28 @@
  * podle nich dotykový adaptér (`RailfpsTouch.tsx`) a e2e přepočítají bod na obrazovce na sektor. Z téže pózy kreslí
  * šipky hrozeb mimo záběr (`ThreatArrows.tsx`, T9).
  *
- * Zaměřovač je prstenec uprostřed záběru (vždy střed natočení), značka sektoru je slunečný klín na podlaze v cílovém
- * sektoru míření – ukáže, kam se kamera točí a kam padne rána. Nic z toho se nehýbe samo. Nepřítel roste do čitelnosti
- * podle vzdálenosti (`foeScale`, nejvýš `LEGIBLE_CAP`); terče ne – zvětšený terč by zakryl sousední řádek výšky.
+ * Zaměřovač je prstenec uprostřed záběru (vždy střed natočení), značka sektoru je slabý slunečný klín na podlaze
+ * kousek za obloukem dosahu v cílovém sektoru míření – ukáže, kam se kamera točí a kam padne rána. Nic z toho se nehýbe
+ * samo. Nepřítel roste do čitelnosti podle vzdálenosti (`foeScale`, nejvýš `LEGIBLE_CAP`); terče ne – zvětšený terč by
+ * zakryl sousední řádek výšky.
+ *
+ * **HUD** (T10) kreslí jen stávající cesty obalu: životy a časovač (`ArcadePlay`), banner vlny (`RoundBanner` ze
+ * zprávy `round_start` pravidla `railfps_round`), létající skóre (`ScorePop`). Scéna sama přidá jen štítek ve světě
+ * kitu (`.sp-world-tag`): ukazatel HP bosse nad jeho hlavou, když je boss v záběru (mimo záběr ukazuje šipka hrozby).
  *
  * **Odezva zásahu** (T8, `RailfpsFeedback.tsx`): záblesk, paprsek, značka zásahu, rozpad terče, minutí a po ztrátě
  * života otřes a rajčatový okraj. Otřes je posun záběru v px, který scéna přičte až po své póze kamery; s
  * `prefers-reduced-motion` je nulový.
  */
 
+import { Html } from '@react-three/drei/web/Html';
 import { useFrame, useThree } from '@react-three/fiber';
 import { type ReactNode, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { type Group, type InstancedMesh, Matrix4, type Mesh, type PerspectiveCamera, RingGeometry } from 'three';
+import { type Group, type InstancedMesh, Matrix4, type Mesh, type PerspectiveCamera, RingGeometry, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
-import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
 import { type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 import { foeScale, riggedCharacter } from '@/play/arcade/models';
 import { RAILFPS, YAW, aimOf, foesOf, isEnemy, sameKind, yawStepOf } from '@/play/arcade/pieces/railfps-world';
@@ -74,6 +80,8 @@ const CROSSHAIR = { px: RAILFPS_LAYOUT.crosshairPx, at: 1 } as const;
 const JUMP = 2.5;
 /** Výchozí nepřítel, když popisek model nemá (jako přežití). */
 const DEFAULT_FOE = 'rigged:q-big-orc';
+/** Hlava bosse promítnutá do obrazu (NDC): štítek HP jen nad bossem v záběru. */
+const BOSS_HEAD = new Vector3();
 
 type RailfpsSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -173,6 +181,8 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
 
   const foes = useRef<(Group | null)[]>([]);
   const boss = useRef<Group | null>(null);
+  const bossHp = useRef<HTMLSpanElement | null>(null);
+  const bossBar = useRef<HTMLSpanElement | null>(null);
   const marks = useRef<(Group | null)[]>([]);
   const posts = useRef<(Mesh | null)[]>([]);
   const goal = useRef<Group | null>(null);
@@ -258,13 +268,19 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
       stand(group, body, FOE.h);
       memory.current.foeMoving[slot] = moving(body);
     }
+    let bossShown = false;
     if (boss.current !== null) {
       boss.current.visible = big !== undefined;
       if (big !== undefined) {
         stand(boss.current, big, BIG.h);
         memory.current.bossMoving = moving(big);
+        // Štítek HP je DOM (`Html`): neviditelná skupina ho neschová a mimo záběr by visel za krajem plátna.
+        BOSS_HEAD.set(boss.current.position.x, BIG.h * boss.current.scale.y, boss.current.position.z).project(camera);
+        bossShown = BOSS_HEAD.z < 1 && Math.abs(BOSS_HEAD.x) <= 1;
+        if (bossBar.current !== null) bossBar.current.style.width = `${String(Math.round((100 * bodyHp(state, big)) / Math.max(1, bodyHp(state, bossTemplate))))}%`;
       }
     }
+    if (bossHp.current !== null) bossHp.current.style.visibility = bossShown ? 'visible' : 'hidden';
     for (let slot = 0; slot < POOL.marks; slot += 1) {
       const group = marks.current[slot];
       if (group == null) continue;
@@ -297,7 +313,7 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
       </Instances>
       <Wedge r0={reach - 0.06} r1={reach + 0.06} half={FAN} y={0.01} tint={color.ink} opacity={0.6} />
       <group ref={goal}>
-        <Wedge r0={RAILFPS_LAYOUT.markNear} r1={BARRIER_R} half={YAW.stepDeg / 2} y={0.008} tint={color.sun} opacity={0.32} />
+        <Wedge r0={RAILFPS_LAYOUT.markNear} r1={RAILFPS_LAYOUT.markFar} half={YAW.stepDeg / 2} y={0.008} tint={color.sun} opacity={0.26} />
       </group>
       {/*
         Nízké zábrany za místem nástupu, přes které je vidět. Boční stěny podél krajních sektorů (T5) tu nejsou: stěna
@@ -342,6 +358,15 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
       ))}
       <group ref={boss} visible={false} userData={{ frame: 'target', item: 'boss', foe: true }}>
         <Figure model={bossModel} size={BIG} tint={color['tomato-deep']} moving={() => memory.current.bossMoving} />
+        {/*
+          Ukazatel HP bosse: štítek ve světě kitu jako u přežití, šířka pruhu = zbylé HP (T10). Podklad papírový:
+          rajčatový podklad kitu (`--sp-primary`) by pod rajčatovým pruhem ubývání HP schoval.
+        */}
+        <Html position={[0, BIG.h + 0.6, 0]} center pointerEvents="none" zIndexRange={[10, 0]}>
+          <span ref={bossHp} className="sp-world-tag" data-testid="railfps-boss-hp" style={{ display: 'inline-block', width: 'var(--sp-space-20)', padding: 'var(--sp-space-1)', background: 'var(--sp-surface)', visibility: 'hidden' }}>
+            <span ref={bossBar} style={{ display: 'block', height: 'var(--sp-space-2)', width: '100%', background: 'var(--sp-color-tomato)', borderRadius: 'var(--sp-radius-pill)' }} />
+          </span>
+        </Html>
       </group>
       {Array.from({ length: POOL.marks }, (_, slot) => (
         <group
