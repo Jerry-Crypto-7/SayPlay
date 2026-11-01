@@ -74,6 +74,9 @@ class PhysicsSession {
     // zem (měkké CCD zapadnutí zastaví, ale spolkne odraz).
     this.world.timestep = 1 / (ARCADE_HZ * PHYSICS_SUBSTEPS);
     this.world.numSolverIterations = 1;
+    // Vnitřní stopky Rapieru (`timingStep()` …) nikdo nečte, a každý krok kvůli nim čte hodiny prohlížeče
+    // (P68I T8: ~4 % času ověření stuntu). Simulaci nemění.
+    this.world.profilerEnabled = false;
     const ground = this.world.createRigidBody(rapier.RigidBodyDesc.fixed().setTranslation(0, -0.5, 0));
     this.world.createCollider(rapier.ColliderDesc.cuboid(500, 0.5, 500).setFriction(FRICTION.ground), ground);
   }
