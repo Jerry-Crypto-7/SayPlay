@@ -130,8 +130,9 @@ export const minigolfGenre: GenreModule<'minigolf'> = {
   cues: [...MINIGOLF_CUES],
   heroClasses: ['prop', 'animal', 'humanoid', 'robot'],
   paramBounds: MINIGOLF_GENRE,
-  // Viditelnost určila kostra P68-I (brána `ROUTE_PENDING` / `DIRECTOR_PENDING`); zapne ji „zapoj minigolf“.
-  availability: () => 'staged',
+  // Zapnuto v P68-I T9 („zapoj minigolf“, `vozidla-sport/integration.md` → Modul na `ready`); režisér a čtečka dál
+  // za branou `DIRECTOR_PENDING` / `READER_PENDING`.
+  availability: () => 'ready',
   compile: (spec) => {
     if (minigolfGenre.availability(spec.mode) !== 'ready') throw new Error('Genre minigolf is not live yet');
     return compileMinigolf(spec);

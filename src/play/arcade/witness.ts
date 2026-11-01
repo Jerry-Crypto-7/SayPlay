@@ -532,6 +532,8 @@ export class WitnessRecorder {
       this.add('obstacle', effect.body, player, tick, 'pile-slowed-the-car', state);
     }
     if (ref.id === 'buildshift_build' && effect.kind === 'spawn') this.add('shopbuild', player, null, tick, 'station-built', state);
+    // P68 T9: ránu minigolfu dokáže míček, který jamka přijme (skóre jamky padá jen s výhrou, `minigolf_hole`).
+    if (ref.id === 'minigolf_hole' && effect.kind === 'score') this.add('putt', player, null, tick, 'ball-sunk-in-cup', state);
     if ((ref.id === 'survivor_hit' || ref.id === 'survivor_round') && effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.enemy) this.add('defeat', player, effect.body, tick, 'enemy-shot-down', state);
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {

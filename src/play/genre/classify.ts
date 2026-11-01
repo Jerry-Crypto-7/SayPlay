@@ -102,6 +102,8 @@ const ARROWS = pair('arrows', 'default');
 const BUILDSHIFT = pair('buildshift', 'default');
 // P68 T8: závod s triky (skoky z ramp, bourání do hromad).
 const STUNT = pair('stunt', 'default');
+// P68 T9: jedna jamka minigolfu.
+const MINIGOLF = pair('minigolf', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -246,6 +248,15 @@ const VERBS: readonly Verb[] = [
     // „grind ramps“ je skatepark (P55 h79), ne skok vozidla.
     String.raw`(?<!\b(?:draw(?:s|ing)?|grind(?:s|ing)?) (?:a |an |the )?(?:[a-z-]+ )?)\bramps?\b`,
     String.raw`\b${VEHICLE}\b[^.;!?]*?\b(?:jump(?:s|ing)?|smash(?:es|ing)?|crash(?:es|ing)?|plows?|plowing|ploughs?|fl(?:y|ies|ying) off|launch(?:es|ing)? off|knock(?:s|ing)? (?:down|over))\b`,
+  ].join('|'))),
+  // P68 T9: minigolf – mini golf, crazy golf, rána „putt“, hole in one, golfový míček. Samotné „golf course“ znak není:
+  // „bonk the moles popping out of the golf course“ je bouchání (P66 p66-27), „a golfer drives a cart … collecting
+  // lost balls“ sbírání; „putting“ jen u míčku nebo greenu – „putting out fires“ je hašení. Golfový míček jen v pohybu
+  // dráhou („golf ball through a graveyard“) – „scooping up scattered golf balls“ je sbírání (stráž T9).
+  v('putt', 'sign', MINIGOLF, new RegExp([
+    String.raw`\bmini[- ]?golf\b|\bcrazy golf\b|\bputt-putt\b|\bputt(?:s|ed)?\b|\bholes? in one\b`,
+    String.raw`\bgolf ball (?:rolls? )?(?:through|past|into|around|across|between|over|under)\b`,
+    String.raw`\bputting (?:the |a |an )?(?:[a-z]+ )?(?:golf )?balls?\b|\bputting greens?\b`,
   ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
@@ -491,8 +502,9 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
  * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
+ * T9 zapojil `minigolf`.
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'railfps', 'buildshift', 'drawsave']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

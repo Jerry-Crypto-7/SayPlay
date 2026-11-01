@@ -204,8 +204,9 @@ export function Ghost({ source, session, label, place = worldPlacement, children
           <capsuleGeometry args={[size.radius, size.length, 4, 12]} />
         </mesh>
       )}
+      {/* drei `pointerEvents` platí jen v režimu `transform`: bez stylu by štítek nad míčkem minigolfu chytil tah hráče (P68 T9). */}
       <Html position={[0, size.h + TAG_LIFT_M, 0]} pointerEvents="none" zIndexRange={[10, 0]}>
-        <span ref={tag} className="sp-world-tag sp-world-tag--goal" data-testid="play-ghost-tag" style={{ visibility: 'hidden' }}>
+        <span ref={tag} className="sp-world-tag sp-world-tag--goal" data-testid="play-ghost-tag" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
           {GHOST_TAGS[label]}
         </span>
       </Html>
