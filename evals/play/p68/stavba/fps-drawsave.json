@@ -1,0 +1,41 @@
+{
+ "note": "P68-S T14: drawsave defence, 10 s of requestAnimationFrame deltas from 1 s before the draw phase ends (the touch-drawn roof, threats falling and bouncing). chromium asserts median >= 40 FPS and p95 <= 33.3 ms; touch projects record only. Written by e2e/play-drawsave.spec.ts.",
+ "runs": {
+  "chromium": {
+   "measuredAt": "2026-11-01T16:45:03.331Z",
+   "viewport": "1280x720",
+   "frames": 601,
+   "windowMs": 10000,
+   "medianFps": 59.9,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.7,
+   "maxFrameMs": 16.8,
+   "ticksDuring": 601,
+   "asserted": true
+  },
+  "iphone-touch": {
+   "measuredAt": "2026-11-01T16:46:17.362Z",
+   "viewport": "393x659",
+   "frames": 179,
+   "windowMs": 10000,
+   "medianFps": 18.5,
+   "medianFrameMs": 54,
+   "p95FrameMs": 67,
+   "maxFrameMs": 164,
+   "ticksDuring": 605,
+   "asserted": false
+  },
+  "pixel7-touch": {
+   "measuredAt": "2026-11-01T16:45:35.769Z",
+   "viewport": "412x839",
+   "frames": 591,
+   "windowMs": 10000,
+   "medianFps": 59.9,
+   "medianFrameMs": 16.7,
+   "p95FrameMs": 16.7,
+   "maxFrameMs": 183.3,
+   "ticksDuring": 601,
+   "asserted": false
+  }
+ }
+}
