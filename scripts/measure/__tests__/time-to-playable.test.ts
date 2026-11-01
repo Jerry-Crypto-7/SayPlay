@@ -123,6 +123,15 @@ describe('time-to-playable probe', () => {
     expect(result.note).toMatch(/never accepted the input/);
   });
 
+  // P68I T8: v jízdě a stuntu mezerník není herní klávesa – HUD hru pozastaví a karta pauzy zakryje střed plochy.
+  // Pauzu, kterou otevřel mezerník sondy, sonda zavře Esc; jinak každý druhý pokus stojí a potvrzení nepřijde nikdy.
+  it('a game that pauses on Space, which it does not play, is still measured playable', async () => {
+    const result = await measure({ url: `${base}/hud-game.html?accepts=1&spacepause=1`, surfaceSelector: 'canvas', timeoutMs: 10_000, gpu: false });
+
+    expect(result.playable).toBe(true);
+    expect(result.ms).toBeLessThanOrEqual(3000);
+  });
+
   // P68I R2: mřížkové hry (`Hud.tsx`) mají `play-tick` bez `data-inputs` – soudí se plochou jako před T4.
   it('a grid HUD without data-inputs is judged by the surface alone', async () => {
     const result = await measure({ url: `${base}/hud-game.html?grid=1`, surfaceSelector: 'canvas', timeoutMs: 10_000, gpu: false });

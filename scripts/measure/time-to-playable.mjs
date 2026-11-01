@@ -70,6 +70,13 @@ const FIRST_FRAME = 'data-ttp-first-frame';
 const POLL_MS = 100;
 /** HUD arkády s počítadly přijatého vstupu (`data-inputs`) a simulace (`data-tick`). */
 const ACCEPT_SELECTOR = '[data-testid=play-tick]';
+/** Karta pauzy HUD (`PauseCard`): hra, která mezerník nehraje (jízda, stunt), ji na mezerník otevře (`hudKey`). */
+const PAUSE_SELECTOR = '[data-testid=play-paused]';
+
+/** Pauzu, kterou otevřel mezerník sondy, zavře Esc jako hráč – jinak karta zakryje střed plochy a hra stojí. */
+async function closeOwnPause(page) {
+  if (await page.locator(PAUSE_SELECTOR).first().isVisible().catch(() => false)) await page.keyboard.press('Escape');
+}
 
 /**
  * Skript stránky: výchozí stav počítadel na každém živém prvku HUD arkády; vrací jejich počet. HUD bez `data-inputs`
@@ -173,12 +180,14 @@ const shot = (handle) => handle.screenshot({ animations: 'allow', caret: 'hide',
  * počítá, až když HUD vstup i přijal; jinak `{ accepted: false }`.
  */
 async function attempt(page, surface) {
+  await closeOwnPause(page);
   const before = await shot(surface.handle);
   const guarded = (await page.evaluate(markAccept, [ACCEPT_SELECTOR, STALE])) > 0;
   const centre = { x: surface.box.x + surface.box.width / 2, y: surface.box.y + surface.box.height / 2 };
   const inputAt = Date.now();
   await page.mouse.click(centre.x, centre.y);
   await page.keyboard.press('Space');
+  await closeOwnPause(page);
   await page.keyboard.down('ArrowRight');
   try {
     let surfaceOnly = false;
