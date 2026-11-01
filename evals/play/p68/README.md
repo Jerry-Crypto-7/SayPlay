@@ -140,3 +140,24 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
   `yawStep` neprojde `aims`, vyhrávající nečinný hráč shodí `idle-loses`, ke každému kladný protějšek.
   mutationStatus: pass – `crosses` čtoucí výsledek, `distinctYaw` čtoucí vstup místo stavu a `outcome` bez rozlišení
   výhry a prohry shodí každý svůj test.
+
+## T7 – měřicí kniha, součet stropů, rezerva pro porotu
+
+- **Měřicí kniha** `scripts/measure/eval-ledger.mjs`: placený měřicí běh jen když `WORLDSMITH_SPEND_STORE_PREFIX`
+  končí `-eval` a není produkční předponou (`PLAY_PROD_SPEND_PREFIX`, bez ní `worldsmith:spend`) a
+  `PLAY_EVAL_SPEND_CAP_USD` je kladná částka; jinak `fast-only` s důvodem. `p61/shots.mjs serve` pak spustí server
+  bez čtečky a bez klíče (strop čtečky v placeném režimu = menší z `--cap-usd` a měřicího stropu; kniha jde do
+  `WORLDSMITH_SPEND_STORE_*`, hry zůstávají v paměti), `p58e/live.mjs` skončí kódem 2 a pošle jen na místní
+  `shots.mjs serve` (vzdálený `--base` odmítne – platí server, ne klient; nález review).
+- **Součet stropů** v `scripts/cloud/check-env.mjs`: režisér + záloha + čtečka (+ skripty při `PLAY_SCRIPTS=on`)
+  ≤ `PLAY_TOTAL_SPEND_CAP_USD`, na setiny; chybějící celkový strop, chybějící nebo prázdné `KV_REST_API_*` a vadná
+  rezerva shodí kontrolu se jménem proměnné. `env.production.example` má nové proměnné prázdné – bez hodnot od
+  majitele (P59′) vzor kontrolou neprojde, a to schválně.
+- **Rezerva pro porotu** v `src/server/spend-cap.ts`, jen v knize režiséra: do `PLAY_JUDGING_FROM` (ISO datum, hodiny
+  serveru) strop − `PLAY_JUDGING_RESERVE_USD`, od data celý. Bez proměnných beze změny; překlep drží celý strop
+  (veřejný provoz hraje rychlou hru), nikdy ho neuvolní.
+- Testy: `cloud-check-env.test.ts`, `spend-cap-reserve.test.ts`, `eval-ledger.test.ts` – 88/88.
+  mutationStatus: pass – 10 úmyslných chyb (přípona `-eval`, produkční předpona, kladný strop, čtečka v součtu,
+  součet přesně na stropu, prázdné KV, strop skriptů, datum rezervy, držení rezervy, bez proměnných) zabil každou
+  její test.
+- Review (security-reviewer): bez blokujícího nálezu; jediný nález (brána `live.mjs` hlídala klienta) opravený.
