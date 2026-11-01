@@ -279,10 +279,10 @@ function titleFrom(sentence: string, fallback: string): string {
  * rychlé hry a přidal druhy, které jejich moduly opravdu skládají: „<Postava> Hole“, „<Postava> Heist“, „<Postava> Sort“.
  * Přežití („Knight vs Skeletons“) ani šipky („Car Jam“) šablonu „survivor“ / „arrows“ nevyrábějí, takže čtený název
  * „Zombie Survivor“ zůstává.
- * P68 T1 přidá předem druhy, kterými mají končit názvy modulů pěti her P68 („<Postava> Stunts“, „<Postava> Golf“,
- * „<Postava> Range“, „<Postava> Shift“, „<Postava> Rescue“); úloha zapojení je smí změnit podle modulu kategorie.
+ * Druhy názvů her P68 sem přidá až úloha „zapoj X“ (P68-I): dřív by slovo jako „rescue“ změnilo názvy, a tím
+ * i semínka, nových her 24 dosavadních žánrů (review T1).
  */
-const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort|stunts|golf|range|shift|rescue)$/i;
+const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort)$/i;
 
 /**
  * Název hry z věty (P56A T8): název čtení, když projde – nejvýš 32 znaků, filtr obsahu feedu (`blockedText` v
