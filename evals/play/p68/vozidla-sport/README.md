@@ -32,6 +32,21 @@ pruhu ji sloučila 1. 11. 2026 (čekání smyčkou á 10 min, ~2 h). Jména soub
 - **Směrování po kostře:** snímek `route-before.json` na `15c81e6a` dává stejné rozdělení 200 vět jako `688d989d`
   před kostrou (brána aktivace drží).
 
+## `stunt` – jádro (T2)
+
+_Vyplní T2: pravidla, generátor, trosky a rozpočet, výsledky mutací._
+
+## `minigolf` – jádro a spike (T6)
+
+_Vyplní T6: spike Rapier vs celočíselné kutálení (čísla, rozhodnutí), pravidla, výsledky mutací._
+
+## Milníky a žebřík zjednodušení
+
+| hra | milník | stupeň zjednodušení | splněno |
+|---|---|---|---|
+| `stunt` | 2. 11. 2026 (T5) | 0 (plný rozsah) | – |
+| `minigolf` | 3. 11. 2026 (T9) | 0 (plný rozsah) | – |
+
 ## Hlídače
 
 - **Vlastnictví** – `owned-paths.mjs`: `git diff --name-only origin/main...HEAD | node evals/play/p68/vozidla-sport/owned-paths.mjs`
