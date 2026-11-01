@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { schedule, stats, summarize, type AbResult } from '../first-playable-ab.mjs';
+import { gate, schedule, stats, summarize, type AbResult } from '../first-playable-ab.mjs';
 
 const targets = [
   { kind: 'sentence' as const, key: 's1', sentence: 'one' },
@@ -130,5 +130,70 @@ describe('summarize', () => {
 
     expect(row.diffMedian).toBeNull();
     expect(row.pairedDiffMedian).toBeNull();
+  });
+});
+
+/**
+ * Brána P68I T4: selhaný běh v mediánech chybí, takže medián zbytku vypadá
+ * dobře – bránu musí shodit sám. Desktop: B 2000 a 2200 (medián 2100), páry
+ * +100 a +100; telefon: páry +150 a +150.
+ */
+const pixel = (side: 'A' | 'B', pair: number, ms: number | null) => run(side, pair, ms, 's1', 'pixel7-cpu4');
+const withinLimits = (): AbResult[] => [
+  run('A', 0, 1900),
+  run('B', 0, 2000),
+  run('B', 1, 2200),
+  run('A', 1, 2100),
+  pixel('A', 2, 4000),
+  pixel('B', 2, 4150),
+  pixel('B', 3, 4300),
+  pixel('A', 3, 4150),
+];
+const failing = (results: AbResult[]) => gate(results).checks.filter((check) => !check.pass).map((check) => `${check.name}:${check.profile}`);
+
+describe('gate', () => {
+  it('passes with no failure, the desktop median of B within 3000 ms and both paired differences within 200 ms', () => {
+    const result = gate(withinLimits());
+
+    expect(result.pass).toBe(true);
+    expect(result.failedTotal).toBe(0);
+    expect(result.checks).toEqual([
+      { name: 'failedTotal', profile: null, value: 0, limit: 0, pass: true },
+      { name: 'medianB', profile: 'desktop', value: 2100, limit: 3000, pass: true },
+      { name: 'pairedDiffMedian', profile: 'desktop', value: 100, limit: 200, pass: true },
+      { name: 'pairedDiffMedian', profile: 'pixel7-cpu4', value: 150, limit: 200, pass: true },
+    ]);
+  });
+
+  it('a failed run fails the gate although the medians of the remaining runs stay within limits', () => {
+    const result = gate([...withinLimits(), run('B', 4, null), pixel('A', 5, null)]);
+
+    expect(result.pass).toBe(false);
+    expect(result.failed).toEqual({ A: 1, B: 1 });
+    expect(result.failedTotal).toBe(2);
+    expect(failing([...withinLimits(), run('B', 4, null)])).toEqual(['failedTotal:null']);
+  });
+
+  it('a desktop median of B over 3000 ms fails the gate; exactly 3000 ms passes', () => {
+    const slow = (b0: number, b1: number) => [run('A', 0, b0 - 100), run('B', 0, b0), run('B', 1, b1), run('A', 1, b1 - 100), ...withinLimits().slice(4)];
+
+    expect(failing(slow(3000, 3100))).toEqual(['medianB:desktop']);
+    expect(gate(slow(3000, 3100)).pass).toBe(false);
+    expect(gate(slow(2900, 3100)).pass).toBe(true);
+  });
+
+  it('a paired difference over 200 ms fails the gate on either profile; exactly 200 ms passes', () => {
+    const desktop = (delta: number) => [run('A', 0, 1800), run('B', 0, 1800 + delta), run('B', 1, 1900 + delta), run('A', 1, 1900), ...withinLimits().slice(4)];
+    const phone = (delta: number) => [...withinLimits().slice(0, 4), pixel('A', 2, 4000), pixel('B', 2, 4000 + delta), pixel('B', 3, 4100 + delta), pixel('A', 3, 4100)];
+
+    expect(failing(desktop(250))).toEqual(['pairedDiffMedian:desktop']);
+    expect(failing(phone(250))).toEqual(['pairedDiffMedian:pixel7-cpu4']);
+    expect(gate(desktop(200)).pass).toBe(true);
+    expect(gate(phone(200)).pass).toBe(true);
+  });
+
+  it('a profile that was not measured fails the gate instead of passing on a missing number', () => {
+    expect(failing(withinLimits().slice(0, 4))).toEqual(['pairedDiffMedian:pixel7-cpu4']);
+    expect(gate([]).pass).toBe(false);
   });
 });

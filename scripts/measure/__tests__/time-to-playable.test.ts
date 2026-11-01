@@ -2,6 +2,8 @@
  * Sonda „čas do hratelnosti“ (P49 T2). Sonda, která měří od špatného okamžiku
  * nebo uzná statický obrázek za hru, vrátí přesvědčivé číslo, které je špatně –
  * proto dvě fixture: hra hratelná po 800 ms a plocha, která na vstup nereaguje.
+ * `hud-game.html` (P68I T4) má HUD arkády: plocha reaguje vždy, vstup se zapíše
+ * jen s `?accepts=1` a tik stojí s `?frozen=1`.
  */
 
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -28,7 +30,7 @@ beforeAll(async () => {
       response.writeHead(404).end();
       return;
     }
-    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(readFileSync(join(FIXTURES, name)));
+    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(readFileSync(join(FIXTURES, name.replace(/\?.*$/, ''))));
   });
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -96,6 +98,29 @@ describe('time-to-playable probe', () => {
     expect(result.playable).toBe(true);
     expect(result.ms).toBeGreaterThanOrEqual(900);
     expect(result.ms).toBeLessThanOrEqual(3500);
+  });
+
+  // P68I T4: s HUD arkády nestačí změna plochy – vstup musí relace zapsat a simulace běžet.
+  it('a surface that changes on input while the HUD records no input is not playable', async () => {
+    const result = await measure({ url: `${base}/hud-game.html`, surfaceSelector: 'canvas', timeoutMs: 3000, gpu: false });
+
+    expect(result.playable).toBe(false);
+    expect(result.ms).toBeNull();
+    expect(result.note).toMatch(/never accepted the input/);
+  });
+
+  it('a game whose HUD counts the input and keeps ticking is playable', async () => {
+    const result = await measure({ url: `${base}/hud-game.html?accepts=1`, surfaceSelector: 'canvas', timeoutMs: 10_000, gpu: false });
+
+    expect(result.playable).toBe(true);
+    expect(result.ms).toBeLessThanOrEqual(3000);
+  });
+
+  it('a recorded input is not enough while the simulation tick stands still', async () => {
+    const result = await measure({ url: `${base}/hud-game.html?accepts=1&frozen=1`, surfaceSelector: 'canvas', timeoutMs: 3000, gpu: false });
+
+    expect(result.playable).toBe(false);
+    expect(result.note).toMatch(/never accepted the input/);
   });
 
   it('a page without any surface reports that, not a reaction failure', async () => {

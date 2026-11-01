@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>hud game</title>
+    <style>
+      body { margin: 0; background: #222; }
+      canvas { display: block; margin: 40px auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="640" height="360"></canvas>
+    <p><span data-testid="play-tick" data-tick="0" data-inputs="0"></span></p>
+    <script>
+      // HUD jako arkáda na /play (P68I T4): `data-tick` = simulovaný tik,
+      // `data-inputs` = vstupy zapsané relací. Plocha na vstup reaguje vždycky;
+      // `?accepts=1` vstup i zapíše, `?frozen=1` zastaví tiky.
+      const params = new URLSearchParams(location.search);
+      const accepts = params.get('accepts') === '1';
+      const frozen = params.get('frozen') === '1';
+      const hud = document.querySelector('[data-testid=play-tick]');
+      const canvas = document.getElementById('game');
+      const context = canvas.getContext('2d');
+      let x = 80;
+      let tick = 0;
+      let inputs = 0;
+      function draw() {
+        context.fillStyle = '#3a6ea5';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#f2c14e';
+        context.fillRect(x, 130, 100, 100);
+      }
+      draw();
+      if (!frozen) {
+        setInterval(() => {
+          tick += 1;
+          hud.setAttribute('data-tick', String(tick));
+        }, 16);
+      }
+      function move() {
+        x = (x + 120) % (canvas.width - 100);
+        draw();
+        if (accepts) {
+          inputs += 1;
+          hud.setAttribute('data-inputs', String(inputs));
+        }
+      }
+      window.addEventListener('keydown', (event) => {
+        if (event.code === 'Space' || event.code === 'ArrowRight') move();
+      });
+      canvas.addEventListener('pointerdown', move);
+    </script>
+  </body>
+</html>
