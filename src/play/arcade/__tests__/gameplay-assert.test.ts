@@ -267,3 +267,49 @@ describe('buildshift: coins on the shift body, the weak player builds badly', ()
     expect(real('bad-build-loses', shop(6))).toMatchObject({ pass: false });
   });
 });
+
+describe('drawsave (T12): the stroke writes a wall body, the hit hero is lost, the weak player draws off the hero', () => {
+  const fixture = (): ArcadeWorld => {
+    const json = JSON.parse(readFileSync(join(process.cwd(), 'e2e', 'fixtures', 'p68-drawsave-spec.json'), 'utf8')) as unknown;
+    const built = arcadeWorldOf(handSpec(json) as GameSpecV1, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    return built.world;
+  };
+  const check = (id: string): GameplayCheck => (P68_ASSERTIONS.games.drawsave!.find((entry) => entry.id === id) as { check: GameplayCheck }).check;
+  /** Kopie stopy, v níž `edit` přepíše stav každého snímku. */
+  const everyFrame = (trace: StateTrace, edit: (state: Int32Array) => void): StateTrace => ({
+    ...trace,
+    frames: trace.frames.map((frame) => {
+      const state = Int32Array.from(frame.state);
+      edit(state);
+      return { ...frame, state };
+    }),
+  });
+  const bodies = (state: Int32Array): number[] => Array.from({ length: (state.length - bodyBase(0)) / (bodyBase(1) - bodyBase(0)) }, (_, k) => k);
+
+  it('passes every requirement on the category fixture, the generic weak player included', () => {
+    const results = assertGame('drawsave', fixture());
+    expect(results.filter((entry) => !entry.pass).map((entry) => `${entry.id}: ${entry.evidence}`)).toEqual([]);
+    expect(results.map((entry) => entry.id)).toEqual(expect.arrayContaining(['stroke-makes-wall', 'idle-loses-protected', 'weak-loses']));
+  });
+
+  it('fails stroke-makes-wall when the stroke never writes the shape of an obstacle body', () => {
+    const bot = traceRun(fixture(), 'bot');
+    expect(evaluateCheck(check('stroke-makes-wall'), bot)).toMatchObject({ pass: true, evidence: expect.stringContaining('drew wall body') as unknown });
+    const blank = everyFrame(bot, (state) => {
+      for (const body of bodies(state)) if (state[bodyBase(body) + BODY.role] === ROLE.obstacle) for (const at of [BODY.x, BODY.y, BODY.vx, BODY.vy, BODY.aux0]) state[bodyBase(body) + at] = 0;
+    });
+    expect(evaluateCheck(check('stroke-makes-wall'), blank).pass).toBe(false);
+  });
+
+  it('passes idle-loses-protected only when an enemy touches the hero at the loss', () => {
+    const idle = traceRun(fixture(), 'idle');
+    expect(idle.outcome).toBe('lost');
+    expect(evaluateCheck(check('idle-loses-protected'), idle)).toMatchObject({ pass: true, evidence: expect.stringContaining('hit by enemy body') as unknown });
+    const far = everyFrame(idle, (state) => {
+      for (const body of bodies(state)) if (state[bodyBase(body) + BODY.role] === ROLE.enemy) state[bodyBase(body) + BODY.y] = 1_000_000;
+    });
+    expect(evaluateCheck(check('idle-loses-protected'), far).pass).toBe(false);
+    expect(evaluateCheck(check('idle-loses-protected'), traceRun(fixture(), 'bot')).pass).toBe(false);
+  });
+});

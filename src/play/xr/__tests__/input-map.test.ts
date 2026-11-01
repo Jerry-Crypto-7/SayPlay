@@ -14,6 +14,7 @@ import { ROUTE_PENDING } from '@/play/genre/classify';
 import type { GenreId } from '@/play/genre/contract';
 
 import { DEAD_ZONE, FLICK, IDLE, type Pad, type XrControl, analog, createFlick, createTriggerOwner, createXrDriver, laneAxisOfX, mapPad } from '../input-map';
+import { XR_UNOFFERED } from '../modes';
 
 const control = (input: Stage['input'], extra: Partial<XrControl> = {}): XrControl => ({ input, fire: false, attack: false, use: false, abilities: 0, ...extra });
 const pad = (over: Partial<Pad>): Pad => ({ ...IDLE, ...over });
@@ -120,6 +121,8 @@ describe('each control family maps the stick and the trigger like its keyboard',
     for (const [kind, stage] of Object.entries(STAGES)) {
       // Kostra P68 (brána aktivace) hraje ve VR na stole bez vlastního vstupu; zapojení hry ji odsud pustí a VR vstup musí přinést.
       if (ROUTE_PENDING.has(kind as GenreId)) continue;
+      // Hra, které se VR nenabízí (`XR_UNOFFERED`, P68 T12 drawsave), vstup ovladačů nepotřebuje.
+      if (XR_UNOFFERED.has(kind)) continue;
       const moved = [LEFT, RIGHT, UP, DOWN, TRIGGER].some((now) => {
         const step = from(stage.input, now);
         return step.axis !== 0 || step.held !== 0 || step.press !== 0 || step.drop;

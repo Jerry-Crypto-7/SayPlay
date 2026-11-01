@@ -20,6 +20,7 @@ import { ballLaunchEvidence, ballScoreEvidence, ballPinImpact, keeperBlockEviden
 import type { PieceRef } from './contract';
 import { pinFallen } from './pieces/ball';
 import { TIMING_SLOTS } from './pieces/timing';
+import { segmentCountOf } from './pieces/drawsave-world';
 
 export interface RoleBinding {
   readonly body: number;
@@ -534,6 +535,14 @@ export class WitnessRecorder {
     if (ref.id === 'buildshift_build' && effect.kind === 'spawn') this.add('shopbuild', player, null, tick, 'station-built', state);
     // P68 T9: ránu minigolfu dokáže míček, který jamka přijme (skóre jamky padá jen s výhrou, `minigolf_hole`).
     if (ref.id === 'minigolf_hole' && effect.kind === 'score') this.add('putt', player, null, tick, 'ball-sunk-in-cup', state);
+    // P68 T12: výhra obrany drawsave = postava přežila padající hrozby; kreslenou zeď dokáže výhra s aspoň jedním
+    // nakresleným úsekem (bez úseku postava nepřežije).
+    // Hrozba drawsave je vidět, když spadne shora (kopie předlohy hrozby z rozpisu `drawsave_wave`).
+    if (ref.id === 'drawsave_wave' && effect.kind === 'spawn') this.add('hazard', effect.template, player, tick, 'threat-fell-from-the-top', state);
+    if (ref.id === 'drawsave_wave' && effect.kind === 'win') {
+      this.add('survive', player, null, tick, 'survived-the-falling-threats', state);
+      if (segmentCountOf(state) > 0) this.add('drawwall', player, null, tick, 'drawn-wall-held-to-the-end', state);
+    }
     if ((ref.id === 'survivor_hit' || ref.id === 'survivor_round') && effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.enemy) this.add('defeat', player, effect.body, tick, 'enemy-shot-down', state);
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {

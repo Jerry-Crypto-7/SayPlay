@@ -63,6 +63,10 @@ const ROWS: readonly Row[] = [
   ...(GENRE_MODULES.minigolf.availability('default') === 'ready'
     ? [{ genre: 'minigolf', sentence: 'a crazy golf course in a haunted mansion where the ball has to roll past sliding coffins into the hole', place: 'haunted mansion', slots: { 'thing.mover': 'coffin' } } as const]
     : []),
+  // P68 T12: drawsave, stejná podmínka.
+  ...(GENRE_MODULES.drawsave.availability('default') === 'ready'
+    ? [{ genre: 'drawsave', sentence: 'draw a roof to save the cat from falling bombs in a desert canyon', place: 'desert canyon', slots: { 'thing.player': 'cat', 'thing.threat': 'bomb' } } as const]
+    : []),
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */

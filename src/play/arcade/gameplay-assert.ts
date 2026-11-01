@@ -13,7 +13,7 @@
  */
 
 import assertionsJson from '../../../evals/play/p68/assertions.json';
-import { P68_MAX_TICKS, RAILFPS_KEEPER_ROLE, RAILFPS_SLOTS, RAILFPS_YAW_STEPS, STUNT_DEBRIS_MAX } from '../genre/p68-contract';
+import { DRAWSAVE_STROKE, P68_MAX_TICKS, RAILFPS_KEEPER_ROLE, RAILFPS_SLOTS, RAILFPS_YAW_STEPS, STUNT_DEBRIS_MAX } from '../genre/p68-contract';
 
 import { type ArcadeCounter, type ArcadeInput, type ArcadeState, type ArcadeWorld, BODY, BODY_STRIDE, BUTTON, type BotPiece, COUNTER, FLAG, HEADER, HEADER_SIZE, type InputEvent, NO_INPUT, ROLE, UNIT, bodyBase, bodyHp, underlyingRule } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, instantiate, loadProgram, outcomeOf, step } from './kernel';
@@ -21,6 +21,8 @@ import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
 import { badLayout, serveWithLayout } from './pieces/buildshift-bot';
 import { MINIGOLF_BOT } from './pieces/minigolf-bot';
+import { DRAWSAVE, cellOf, colOf, heroCellOf } from './pieces/drawsave-world';
+import { axisOfCell } from './pieces/lanes';
 
 /** Slot těla úrovně podle indexu těla (pořadí těl je součást hashe hry) a jména slotu `BODY`. */
 export interface BodySlot {
@@ -62,6 +64,8 @@ const kindIndex = (world: ArcadeWorld, kind: string): number => world.kinds.inde
 const capacity = (state: ArcadeState): number => (state.length - HEADER_SIZE) / BODY_STRIDE;
 const slot = (state: ArcadeState, body: number, at: number): number => state[bodyBase(body) + at] as number;
 const isAlive = (state: ArcadeState, body: number): boolean => (slot(state, body, BODY.flags) & FLAG.alive) !== 0;
+/** Sloty tvaru zdi v předem vyhrazeném těle (konce úsečky a délka, `drawsave` `SEGMENT_SLOTS`). */
+const WALL_SHAPE: readonly number[] = [BODY.x, BODY.y, BODY.vx, BODY.vy, BODY.aux0];
 const counter = (state: ArcadeState, name: ArcadeCounter): number => state[HEADER.counters + COUNTER[name]] as number;
 const metres = (units: number): string => (units / UNIT).toFixed(1);
 
@@ -86,9 +90,24 @@ const WEAK_BOTS: Readonly<Record<string, BotPiece>> = { buildshift_bot: serveWit
  */
 const WEAK_PARAMS: Readonly<Record<string, Readonly<Record<string, unknown>>>> = { stunt_bot: { weak: true }, minigolf_bot: MINIGOLF_BOT.weak };
 
+/**
+ * Slabý hráč jako hotové vstupy (T12): robot `drawsave` profil nečte, `novice` by vyhrál. Kategorie `stavba` definuje
+ * slabého hráče jako čáru mimo postavu (`arcade/__tests__/drawsave.test.ts`: vodorovný tah ve druhé řadě na opačné
+ * polovině desky prohraje ≥ 10 z 12).
+ */
+const WEAK_INPUTS: Readonly<Record<string, (world: ArcadeWorld) => readonly InputEvent[]>> = {
+  drawsave_bot: (world) => {
+    const left = colOf(heroCellOf(instantiate(world))) >= DRAWSAVE.cols / 2;
+    const cells = left ? [cellOf(0, 1), cellOf(2, 1)] : [cellOf(5, 1), cellOf(7, 1)];
+    return cells.map((cell, k) => ({ tick: 5 + k, buttons: BUTTON[DRAWSAVE_STROKE.hold], axis: axisOfCell(cell) }));
+  },
+};
+
 function inputsOf(world: ArcadeWorld, driver: TraceDriver, library: ArcadeLibrary): readonly InputEvent[] {
   if (driver === 'idle') return [];
   if (driver === 'bot') return runBot(world, library).inputs;
+  const ready = WEAK_INPUTS[world.bot.id];
+  if (ready !== undefined) return ready(world);
   const params = WEAK_PARAMS[world.bot.id];
   if (params !== undefined) return runBot({ ...world, bot: { ...world.bot, params: { ...(world.bot.params as object), ...params } } }, library).inputs;
   const weak = WEAK_BOTS[world.bot.id];
@@ -541,6 +560,11 @@ function strokeWalls(trace: StateTrace, within: number): Verdict {
         if (isAlive(state, body) && !isAlive(before, body) && (slot(state, body, BODY.flags) & FLAG.solid) !== 0) {
           return verdict(true, `stroke from tick ${String((trace.frames[k] as TraceFrame).tick)} made solid body ${String(body)} at tick ${String(tick)}`);
         }
+        // P68 T12: zeď může být i předem vyhrazené tělo role překážky, kterému tah zapíše tvar (`drawsave` – úsečka
+        // v mrtvém slotu, srážky počítá hra sama): stav těla se během tahu změní, aniž by se tělo samo hýbalo.
+        if (slot(state, body, BODY.role) === ROLE.obstacle && WALL_SHAPE.some((at) => slot(state, body, at) !== slot(before, body, at))) {
+          return verdict(true, `stroke from tick ${String((trace.frames[k] as TraceFrame).tick)} drew wall body ${String(body)} at tick ${String(tick)}`);
+        }
       }
     }
   }
@@ -572,7 +596,32 @@ function protectedLost(trace: StateTrace): Verdict {
       return verdict(true, `protected body (player) ${!now.alive ? 'gone' : now.hp === 0 ? 'at 0 hp' : 'at 0 health'} at tick ${String(frame.tick)}`);
     }
   }
+  // P68 T12: hra, ve které jeden zásah prohrává a postava zůstane stát (`drawsave`): prohra, při které se postavy
+  // dotýká živý nepřítel (obdélníky z pozic a rozměrů, `y` = spodní hrana).
+  const last = trace.frames.at(-1) as TraceFrame;
+  if (trace.outcome === 'lost') {
+    const hit = touchingEnemy(last.state);
+    if (hit !== null) return verdict(true, `protected body (player) hit by enemy body ${String(hit)} when the run was lost at tick ${String(last.tick)}`);
+  }
   return verdict(false, `protected body (player) intact; ${ended(trace)}`);
+}
+
+/** Živé tělo role nepřítele, jehož obdélník se dotýká obdélníku hráče; `null` = žádné. */
+function touchingEnemy(state: ArcadeState): number | null {
+  const player = state[HEADER.player] as number;
+  const box = (body: number): readonly [number, number, number, number] => {
+    const x = slot(state, body, BODY.x);
+    const y = slot(state, body, BODY.y);
+    const halfW = slot(state, body, BODY.w) / 2;
+    return [x - halfW, x + halfW, y, y + slot(state, body, BODY.h)];
+  };
+  const [left, right, bottom, top] = box(player);
+  for (let body = 0; body < capacity(state); body += 1) {
+    if (body === player || !isAlive(state, body) || slot(state, body, BODY.role) !== ROLE.enemy) continue;
+    const [l, r, b, t] = box(body);
+    if (l <= right && r >= left && b <= top && t >= bottom) return body;
+  }
+  return null;
 }
 
 export function evaluateCheck(check: GameplayCheck, trace: StateTrace): Verdict {

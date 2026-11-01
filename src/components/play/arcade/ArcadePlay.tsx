@@ -46,6 +46,7 @@ import { type DarePublish, type LivePublish, publishDare, ShareButton } from '..
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { EnterVrButton } from '../xr/EnterVrButton';
+import { XR_UNOFFERED } from '@/play/xr/modes';
 import { type XrCounter, XrHudSource } from '../xr/xr-context';
 import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
@@ -995,8 +996,8 @@ function ArcadePlayGame({
                 </Button>
               )}
               {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} recording={filming} />}
-              {/* VR (P67 T1): každý prohlížeč, který VR umí, i ve feedu. */}
-              <EnterVrButton />
+              {/* VR (P67 T1): každý prohlížeč, který VR umí, i ve feedu; hra bez vstupu ovladačů (`XR_UNOFFERED`) ne. */}
+              {(spec.control === undefined || !XR_UNOFFERED.has(spec.control)) && <EnterVrButton />}
             </>
           )
         }

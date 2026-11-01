@@ -104,6 +104,8 @@ const BUILDSHIFT = pair('buildshift', 'default');
 const STUNT = pair('stunt', 'default');
 // P68 T9: jedna jamka minigolfu.
 const MINIGOLF = pair('minigolf', 'default');
+// P68 T12: nakresli čáru a ochraň postavu před padajícími věcmi.
+const DRAWSAVE = pair('drawsave', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -257,6 +259,18 @@ const VERBS: readonly Verb[] = [
     String.raw`\bmini[- ]?golf\b|\bcrazy golf\b|\bputt-putt\b|\bputt(?:s|ed)?\b|\bholes? in one\b`,
     String.raw`\bgolf ball (?:rolls? )?(?:through|past|into|around|across|between|over|under)\b`,
     String.raw`\bputting (?:the |a |an )?(?:[a-z]+ )?(?:golf )?balls?\b|\bputting greens?\b`,
+  ].join('|'))),
+  // P68 T12: drawsave – nakreslená čára, zeď, střecha nebo štít, který postavu chrání („draw a line to save the puppy“,
+  // „sketch a barrier“, „draw to protect grandma“, „with one stroke of a pen, guard …“). Kreslení bez ochrany znak
+  // není: „draw a picture of my cat“ je kreslicí program, „robots line up“ fronta obchodu (`stavba/integration.md`).
+  v('drawwall', 'sign', DRAWSAVE, new RegExp([
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)|doodl(?:e|es|ing)) (?:a |an |the |some |a few |few )?(?:[a-z-]+ )?(?:lines?|walls?|roofs?|shields?|barriers?|shelters?|domes?|umbrellas?)\b`,
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)) to (?:protect|save|shield|guard|keep)\b`,
+    String.raw`\bstroke of (?:a |the |your )?(?:pen|pencil|brush|marker|crayon)\b`,
+    // Bez slova o kreslení jen ochrana před věcmi, které padají shora („protect the cat from a rain of meteors“,
+    // „shield the frog from fifteen hailstones“, „help the hamster survive an asteroid shower“).
+    String.raw`\b(?:protect|shield|guard|save|keep)(?:s|ing)? (?:the |a |an |my |your |our |his |her |its |their |this )?(?:[a-z-]+ ){0,3}?from (?:the |a |an )?(?:[a-z]+ )?(?:(?:rain|shower|storm|hail) of |falling |tumbling |dropping )?(?:[a-z-]+ )?(?:meteors?|meteorites?|asteroids?|hailstones?|boulders?|rocks?|icicles?|bombs?|acid drops?|raindrops?|flower ?pots?)\b`,
+    String.raw`\bsurviv(?:e|es|ing) (?:a |an |the )?(?:[a-z-]+ )?(?:asteroid|meteor|meteorite|hail|rock|bomb) (?:showers?|storms?|rains?)\b`,
   ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
@@ -503,8 +517,9 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
  * T9 `minigolf` zapojil a vrátil: čas do hratelnosti na `pixel7-cpu4` (párově +429 ms, mez +0,2 s) neprošel.
+ * T12 zapojil `drawsave`.
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

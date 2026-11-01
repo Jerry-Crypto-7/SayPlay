@@ -42,8 +42,8 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry). */
-const WIRED: readonly string[] = [];
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry), T12 `drawsave`. */
+const WIRED: readonly string[] = ['drawsave'];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {

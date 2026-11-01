@@ -51,6 +51,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'stunt.default': { move: 'drive', actions: ['stunt'], objective: 'reach', threats: ['obstacle'] },
   // P68 T9: one minigolf hole is live – its cell moved here from `STAGED_PRESETS`.
   'minigolf.default': { move: 'stationary', actions: ['putt'], objective: 'score', threats: [] },
+  // P68 T12: draw-to-save is live – its cell moved here from `STAGED_PRESETS`.
+  'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },
 };
 
 /**
@@ -61,7 +63,6 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  */
 export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
   'railfps.default': { move: 'stationary', actions: ['railshoot'], objective: 'defeat', threats: ['chaser'] },
-  'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },
 };
 
 /**

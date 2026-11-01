@@ -66,6 +66,10 @@ const SAMPLES: readonly GenreSpec[] = [
   ...(GENRE_MODULES.minigolf.availability('default') === 'ready'
     ? [{ genre: 'minigolf', mode: 'default', hero: 'golf ball', cast: [{ label: 'windmill', does: 'scenery' }], setting: 'pirate island' } as GenreSpec]
     : []),
+  // P68 T12: drawsave, stejná podmínka.
+  ...(GENRE_MODULES.drawsave.availability('default') === 'ready'
+    ? [{ genre: 'drawsave', mode: 'default', hero: 'cat', cast: [{ label: 'bomb', does: 'avoid' }], setting: 'desert canyon' } as GenreSpec]
+    : []),
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
