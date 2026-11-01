@@ -36,6 +36,7 @@ import {
   segmentCountOf,
   segmentsOf,
 } from '../pieces/drawsave';
+import { roofStroke } from '../pieces/drawsave-bot';
 import { axisOfCell } from '../pieces/lanes';
 
 const HORIZON = P68_MAX_TICKS;
@@ -60,17 +61,8 @@ const stroke = (start: number, cells: readonly number[]): InputEvent[] => cells.
 
 const clampCol = (col: number): number => Math.max(0, Math.min(DRAWSAVE.cols - 1, col));
 
-/**
- * Prototyp robota: jeden tah ze dvou bodů = střecha nad postavou. Vysoký konec dvě řady nad ní a sloupec za ní
- * (u bližší stěny), nízký konec řadu nad ní a tři sloupce na volnou stranu – hrozby po střeše sjedou pryč od postavy.
- */
-function roof(world: ArcadeWorld): InputEvent[] {
-  const hero = heroCellOf(instantiate(world));
-  const toRight = colOf(hero) <= (DRAWSAVE.cols - 1) / 2;
-  const high = cellOf(clampCol(colOf(hero) + (toRight ? -1 : 1)), rowOf(hero) - 2);
-  const low = cellOf(clampCol(colOf(hero) + (toRight ? 3 : -3)), rowOf(hero) - 1);
-  return stroke(5, [high, low]);
-}
+/** Tah robota (`roofStroke` z kusu `drawsave_bot`): jeden tah ze dvou bodů = střecha nad postavou. */
+const roof = (world: ArcadeWorld): InputEvent[] => stroke(5, roofStroke(heroCellOf(instantiate(world))));
 
 /** Čára mimo: vodorovný tah ve druhé řadě na opačné polovině desky, než postava sedí. */
 function lineOff(world: ArcadeWorld): InputEvent[] {
