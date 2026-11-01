@@ -388,9 +388,12 @@ function hitOnFire(trace: StateTrace, within: number, arcDeg: number, tolerance:
       for (let j = k; j <= end && at < 0; j += 1) if (!isAlive((trace.frames[j] as TraceFrame).state, target)) at = j;
       if (at < 0) continue;
       gone += 1;
-      const wanted = stepToward(aimed.state, player, target, arcDeg);
-      if (Math.abs((aimed.yawStep as number) - wanted) <= tolerance) {
-        return verdict(true, `FIRE at tick ${String(aimed.tick)} with yawStep ${String(aimed.yawStep)}, target body ${String(target)} (step ${String(wanted)}) gone at tick ${String((trace.frames[at] as TraceFrame).tick)}`);
+      // „Zmizí, zatímco natočení míří na terč“: natočení i poloha terče ze stavu těsně před zmizením – výstřel
+      // se v `railfps` vyřeší až po dotočení k cíli, který FIRE nese v ose, ne v tiku vstupu.
+      const shot = trace.frames[at - 1] as TraceFrame;
+      const wanted = stepToward(shot.state, player, target, arcDeg);
+      if (Math.abs((shot.yawStep as number) - wanted) <= tolerance) {
+        return verdict(true, `FIRE at tick ${String(aimed.tick)}, yawStep ${String(shot.yawStep)} at tick ${String(shot.tick)}, target body ${String(target)} (step ${String(wanted)}) gone at tick ${String((trace.frames[at] as TraceFrame).tick)}`);
       }
     }
   }

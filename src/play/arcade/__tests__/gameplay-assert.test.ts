@@ -167,6 +167,16 @@ describe('lose: an idle player that wins breaks it', () => {
   });
 });
 
+describe('railfps: the shot resolves when the turn arrives', () => {
+  it('passes hit-on-fire on the category fixture: yawStep matches the target (15° a sector, 60° = 16 steps) when it vanishes', () => {
+    const spec = JSON.parse(readFileSync(join(process.cwd(), 'e2e', 'fixtures', 'p68-railfps-spec.json'), 'utf8')) as GameSpecV1;
+    const built = arcadeWorldOf(spec, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const hit = assertGame('railfps', built.world).find((entry) => entry.id === 'hit-on-fire');
+    expect(hit).toMatchObject({ pass: true, evidence: expect.stringContaining('(step -4)') as unknown });
+  });
+});
+
 describe('buildshift: coins on the shift body, the weak player builds badly', () => {
   const shop = (goal?: number): ArcadeWorld => {
     const spec = JSON.parse(readFileSync(join(process.cwd(), 'e2e', 'fixtures', 'p68-buildshift-spec.json'), 'utf8')) as GameSpecV1;
