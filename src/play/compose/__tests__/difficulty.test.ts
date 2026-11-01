@@ -13,7 +13,8 @@ import { compileRecipe } from '../compile';
  */
 // P68 T8/T11: závod s triky a stavbu obchodu začátečník P41 vyhraje 20/20 (`difficulty.json`); obtížnost drží slabý
 // robot kategorie (`stunt-bot.test.ts`: prohraje ≥ 8 z 10) a špatné rozvržení (`buildshift-bot.test.ts`: prohraje).
-const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default']);
+// P68 T9: minigolf taky 20/20; drží ho slabý robot `minigolf-bot.test.ts` (dojdou mu údery na ≥ 8 z 10 jamek).
+const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default']);
 
 it('pins measured novice and intermediate bounds for every current live recipe', () => {
   const report = JSON.parse(readFileSync('evals/play/p41/difficulty.json', 'utf8')) as {

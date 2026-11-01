@@ -82,8 +82,9 @@ describe('goal text of every dev sentence', () => {
     const spec = draft(text, reading);
     const cast = spec.roles.map((role) => singular(role.label.toLowerCase()));
     // Výchozí popisky rolí (`DEFAULT_LABELS`) jsou podstatná jména, která řádek umí říct, aniž je věta řekla.
-    // Slova šablon, která se s popisky jen potkají, rolí nejsou: „switch lanes“, „wind-up“, „rival vehicles“ (soupeři závodu).
-    const lines = goalLines(spec).map((line) => line.replace(/\bswitch lanes\b|\bwind-up\b|\brival vehicles\b/gi, ''));
+    // Slova šablon, která se s popisky jen potkají, rolí nejsou: „switch lanes“, „wind-up“, „rival vehicles“ (soupeři závodu),
+    // sloveso „as you can“ (minigolf P68 T9: „as few strokes as you can“ – plechovka hodu to není).
+    const lines = goalLines(spec).map((line) => line.replace(/\bswitch lanes\b|\bwind-up\b|\brival vehicles\b|\bas you can\b/gi, ''));
     const strays = lines.flatMap((line) => [...DEFAULT_LABELS].filter((label) => named(label, line) && !cast.some((role) => role === label || role.endsWith(` ${label}`)) && !said(label, text)));
     expect(strays).toEqual([]);
   });

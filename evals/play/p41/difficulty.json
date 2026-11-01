@@ -81,6 +81,7 @@
     "arrows.default",
     "buildshift.default",
     "stunt.default",
+    "minigolf.default",
     "runner.default+shoot_at",
     "runner.default+chase_me",
     "runner.default+chase_me+shoot_at",
@@ -1330,6 +1331,34 @@
         ]
       },
       "specHash": "c7158e78d84996b1e275c61893b6ea92edf9c9c40972b09e0f1c5edb37da6d9c",
+      "profiles": {
+        "novice": {
+          "runs": 20,
+          "wins": 20,
+          "winRate": 1,
+          "errors": 0,
+          "replayMismatches": 0
+        },
+        "intermediate": {
+          "runs": 20,
+          "wins": 20,
+          "winRate": 1,
+          "errors": 0,
+          "replayMismatches": 0
+        }
+      }
+    },
+    {
+      "cell": "minigolf.default",
+      "recipe": {
+        "move": "stationary",
+        "actions": [
+          "putt"
+        ],
+        "objective": "score",
+        "threats": []
+      },
+      "specHash": "7800e5de10b04cfabe739ac4e36d60bbedc02020c4a49cb723cdea267995a876",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -21415,6 +21444,446 @@
       "outcome": "won",
       "tick": 1808,
       "hash": "36523bac",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 299,
+      "hash": "2ef7ea84",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 271,
+      "hash": "58fd9f08",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 455,
+      "hash": "ad7e3281",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 419,
+      "hash": "750b2ec0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 294,
+      "hash": "d07fd567",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 266,
+      "hash": "95afcde3",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 150,
+      "hash": "cd657404",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 150,
+      "hash": "cd657404",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 460,
+      "hash": "e4a49a60",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 448,
+      "hash": "10f9b25c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 307,
+      "hash": "139e01f9",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 299,
+      "hash": "45dccdd0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 7,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 125,
+      "hash": "5063f57a",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 117,
+      "hash": "354d730d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 458,
+      "hash": "fc9da541",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 442,
+      "hash": "6aaa1fb1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 9,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 489,
+      "hash": "243b2f1e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 445,
+      "hash": "284b5f21",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 10,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 330,
+      "hash": "4af0ab6a",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 298,
+      "hash": "76dc822f",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 11,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 481,
+      "hash": "cf5e47e0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 441,
+      "hash": "b4306568",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 12,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 149,
+      "hash": "87157add",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 149,
+      "hash": "87157add",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 13,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 121,
+      "hash": "13c40fa2",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 121,
+      "hash": "13c40fa2",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 14,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 146,
+      "hash": "9b07aa98",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 146,
+      "hash": "9b07aa98",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 15,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 276,
+      "hash": "eb6d00c8",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 268,
+      "hash": "6ee8f4c0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 16,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 452,
+      "hash": "440e1395",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 419,
+      "hash": "126bd48f",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 286,
+      "hash": "05d3bf05",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 266,
+      "hash": "786eddb1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 18,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 126,
+      "hash": "e79d5fc0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 114,
+      "hash": "35544337",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 19,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 435,
+      "hash": "43b43067",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 407,
+      "hash": "e5c4b49e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 470,
+      "hash": "b532cac7",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "minigolf.default",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 442,
+      "hash": "51f8ecbb",
       "replayEqual": true,
       "error": null
     },

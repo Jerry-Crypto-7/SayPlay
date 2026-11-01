@@ -110,11 +110,11 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     }
   });
 
+  // P68 T9: „mini golf …“ od zapojení minigolfu hraje minigolf (`vozidla-sport/integration.md`), ne hod.
   it.each(THROW)('"%s" → throw', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence, 1);
-    expect(drafted.genre?.genre).toBe('throw');
-    expect(drafted.spec.control).toBe(sentence.startsWith('mini golf ') ? 'ball' : 'throw');
-    if (sentence.startsWith('mini golf ')) expect(drafted.spec.controlParams).toMatchObject({ goal: 'hole' });
+    expect(drafted.genre?.genre).toBe(sentence.startsWith('mini golf ') ? 'minigolf' : 'throw');
+    if (!sentence.startsWith('mini golf ')) expect(drafted.spec.control).toBe('throw');
   });
 
   it('popping, smashing and zapping stay a quest', () => {
@@ -338,7 +338,7 @@ describe('stored throw games without a budget build the world they had before ro
 });
 
 describe('the throw genre has a clock', () => {
-  it.each(['angry birds but with cats and cardboard boxes', 'bowling in a haunted alley', 'mini golf with windmills and loops'])('"%s": the robot wins, an idle player loses on the clock', (sentence) => {
+  it.each(['angry birds but with cats and cardboard boxes', 'bowling in a haunted alley', 'slingshot fruit at a giant blender'])('"%s": the robot wins, an idle player loses on the clock', (sentence) => {
     const game = publish(sentence);
     expect(game.idle.outcome).toBe('lost');
     expect(game.idle.seconds).toBeLessThanOrEqual(90);

@@ -90,7 +90,10 @@ describe('the mode comes from the world itself', () => {
     // Buňky skládané ze staršího ovládání (`glide`, `walker`, `ball`) nesou žánr jen jménem: hrají se jako dřív na stole.
     if (found === null) expect(['glide', 'walker', 'ball']).toContain(baseControlOf(world.control).id);
     else expect(found).toBe(genre);
-    expect(modeOf(found).mode === 'native').toBe(legacyNative(world));
+    // Minigolf (P68 T9) jede na `throw-rig`, ale VR nativní hod nedostal: rig ve VR neposílá osu míření
+    // (`vozidla-sport/integration.md` → „VR a `throw-rig`“), takže hraje na stole jako každá hra P68.
+    if (found === 'minigolf') expect(modeOf(found)).toEqual({ mode: 'desk', pose: 'table' });
+    else expect(modeOf(found).mode === 'native').toBe(legacyNative(world));
   });
 
   it('games saved before genres keep their way of playing', () => {

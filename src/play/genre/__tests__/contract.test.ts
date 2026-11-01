@@ -62,6 +62,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'steal', mode: 'default', hero: 'cat', cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'chase_me' }], setting: 'fish market' },
   { genre: 'sort', mode: 'default', hero: 'shop clerk', cast: [{ label: 'teddy bear', does: 'collect' }, { label: 'ball', does: 'collect' }], setting: 'toy shop' },
   { genre: 'arrows', mode: 'default', hero: 'valet', cast: [{ label: 'car', does: 'scenery' }], setting: 'parking lot' },
+  // P68 T9: minigolf je zapojený.
+  { genre: 'minigolf', mode: 'default', hero: 'golf ball', cast: [{ label: 'windmill', does: 'scenery' }], setting: 'pirate island' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
