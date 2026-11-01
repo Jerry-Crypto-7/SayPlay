@@ -61,3 +61,41 @@ Kostra P68-I je v `origin/main` jako `15c81e6a` (PR #61); větev na ni přešla 
   Dare round trip). Aserce „sektor zasaženého těla = natočení“ sama nezčervená – jádro zásah vždy vede do sektoru,
   kam hráč hledí, takže mířící chyba se ukáže jen ve výsledku. `traceRailfps` počítá zásah bez výstřelu: zabito
   („výstřel v témž tiku“ na záznamu nečinného a slabého hráče).
+
+## Modul žánru a věty (T4)
+
+- `src/play/genre/railfps.ts`: `compile` přes `legacySpec`, nepřítel z `castFor`, terč, místo → `theme.look`,
+  `objective.kind: 'defeat_targets'`, meze `targets` 8–36 a `waves` 2–5 podle jádra (stub kostry měl 3–60).
+  `availability` zůstává `'staged'` jako v kostře, `cues` prázdné (návrh narážek je v `integration.md`).
+- Fixture `e2e/fixtures/p68-railfps-spec.json` („Zap alien invaders in the space station hallway“) se přeloží,
+  projde `checkRailfpsLevel` a robot ji vyhraje. Test `src/play/genre/__tests__/railfps.test.ts` 13/13.
+- 20 vět (`sentences.json`; s13–s20 jsou dev věty P68-I d17–d24): **nepřítel 20/20, místo 19/20**.
+  První běh s01–s12 našel dvě chyby modulu (u „shooting gallery at the county fair“ se nepřítelem stala galerie nebo
+  pouť; nepřítel po „aim at“ se stal místem) – opravené v modulu, věty se nepřepisovaly.
+
+| Věta | Nepřítel | Místo |
+|---|---|---|
+| s01 Zap alien invaders in the space station hallway | alien invader ✓ | space station hallway ✓ |
+| s02 look around and shoot the zombies … abandoned mall | zombie ✓ | abandoned mall ✓ |
+| s03 stand on the castle wall and fire arrows at the skeletons … | skeleton ✓ | castle wall ✓ |
+| s04 blast the mutant rats swarming through the sewer tunnels | mutant rat ✓ | sewer tunnels ✓ |
+| s05 through your own eyes on a pirate ship, shoot the sea monsters … | sea monster ✓ | pirate ship ✓ |
+| s06 stand guard in a snowy forest and shoot the wolves … | wolf ✓ | snowy forest ✓ |
+| s07 aim at the giant spiders crawling down the walls of the old temple | giant spider ✓ | – ✗ („of the old temple“ bez známé předložky) |
+| s08 a shooting gallery at the county fair … wooden bears … | wooden bear ✓ | county fair ✓ |
+| s09 riding a hover sled across the frozen lake, zap the ice gremlins … | ice gremlin ✓ | frozen lake ✓ |
+| s10 inside a sunken submarine, shoot the killer sharks … | killer shark ✓ | sunken submarine ✓ |
+| s11 turn left and right in the dusty canyon and blast the scorpions … | scorpion ✓ | dusty canyon ✓ |
+| s12 ride a lava cart through the volcano and blast the fire imps … | fire imp ✓ | volcano ✓ |
+| s13 a first-person ride in a mine cart on rails … bats … dark tunnels | bat ✓ | dark tunnels ✓ |
+| s14 ride a train through the wild west and shoot the bandits … | bandit ✓ | wild west ✓ |
+| s15 an on-rails shooter on a river boat … crocodiles … swamp | crocodile ✓ | swamp ✓ |
+| s16 seen through the eyes of a kid on a roller coaster … clowns … | clown ✓ | roller coaster ✓ |
+| s17 a ghost train ride through a haunted house … ghosts … | ghost ✓ | haunted house ✓ |
+| s18 sit in a tour jeep … jungle road … angry monkeys … | angry monkey ✓ | jungle ✓ |
+| s19 a first person rail shooter on a space station monorail, blasting drones … | drone ✓ | space station monorail ✓ |
+| s20 ride a log flume through a pirate cove and soak the pirates … | pirate ✓ | pirate cove ✓ |
+
+- **Sdílený test červený od T4:** `p68-staged.test.ts:68` („a skeleton does not compile … until its category ships“)
+  čeká „not live“ od všech pěti her; hotový modul `railfps` se přeloží. Ostatní testy kostry (`p66-staged`,
+  `director-prompt`, `p68-hash`) zelené. Úprava testu patří P68-I – řádek v `integration.md`.
