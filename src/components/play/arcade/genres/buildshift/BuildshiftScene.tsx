@@ -14,24 +14,27 @@
  *   nese zboží v rukou; u stanoviště stojí za ním.
  * - **Paleta:** Oven, Counter, Shelf s cenou (vybraný druh vyjede a je slunečný, na co mince nestačí, je tlumený),
  *   **Coins** s počtem mincí a **Open** – jediná rajčatová akce, ve fázi stavby s ubývajícím pruhem okna stavby.
- * - Volná stavební buňka svítí, je-li vybraný druh a mince na něj; odmítnutý ťuk buňka krátce problikne poplachem,
- *   cíl prodavače má slunečný kroužek.
+ * - Volná stavební buňka svítí, je-li vybraný druh a mince na něj; odmítnutý ťuk buňka krátce problikne poplachem
+ *   a zatřese se, a chyběly-li mince, nad ní vyskočí cenovka s cenou. Cíl prodavače má slunečný kroužek.
+ * - **Odezva směny (T10):** obsloužený zákazník = nad pultem vyskočí „+1“ s mincí; na pultu leží počet čekajících
+ *   („3 in line“); v posledních 15 s hodin (rush jádra) visí na pravé zdi slunečná cedule **Rush!** místo květináče.
  *
  * Text (cedule, paleta) je kreslený do textur ve 3D, ne do DOM HUD – popisky „Served“ a „Coins“ zatím nejsou
  * v `HUD_COUNTER_LABELS` (požadavek v `integration.md`).
  *
  * Čte jen stav jádra (`buildshift-world.ts`) a tik kresby, do relace nic nepíše. Pohyb mimo hash: dech a rozhlížení
- * stojících zákazníků (vypne je `prefers-reduced-motion` i `?toy=off`), naskočení nového stanoviště, prolínání
- * poloh mezi tiky. Kamera stojí daleko s úzkým úhlem, proto scéna posune mlhu (a vzdálenou rovinu kamery) za desku
+ * stojících zákazníků a tep cedule Rush! (sám od sebe – vypne je `prefers-reduced-motion` i `?toy=off`), naskočení
+ * nového stanoviště, otřes odmítnuté buňky a výskok „+1“ (odpověď na akci – `prefers-reduced-motion` vypne otřes
+ * a výskok, cenovka a „+1“ jen stojí), prolínání poloh mezi tiky. Kamera stojí daleko s úzkým úhlem, proto scéna posune mlhu (a vzdálenou rovinu kamery) za desku
  * a při odchodu je vrátí. Plocha dostane `data-lane-cells` (buňky pro `lanes-input.ts`) a `data-player-x`.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CanvasTexture, Fog, type Group, type Material, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type PerspectiveCamera, type Quaternion, SRGBColorSpace, Vector3 } from 'three';
+import { Fog, type Group, type Material, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type PerspectiveCamera, type Quaternion, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
-import { BODY, HEADER, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
+import { BODY, HEADER, RUN_STATE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { riggedCharacter } from '@/play/arcade/models';
 import {
   BOARD_CELLS,
@@ -51,12 +54,14 @@ import {
   counterOfCustomer,
   customersOf,
   isBuildCell,
+  queueAt,
   rowOf,
   shiftSlot,
   shiftView,
   stationCode,
 } from '@/play/arcade/pieces/buildshift-world';
 
+import { reducedMotion } from '../../effects/feel';
 import { renderHeld } from '../../effects/render-feel';
 import { FieldGround } from '../../look/FieldGround';
 import { type PlayRect, usePlayRectRef } from '../../portrait-frame';
@@ -64,6 +69,7 @@ import { RiggedModel } from '../../RiggedModel';
 import { toyMotionOn } from '../../toy/applyToy';
 import { FittedModel, type WorldProps } from '../../World';
 import { GRID_BOX, VIEW, cellsAttr, placeCamera, tallFallback } from './buildshift-camera';
+import { type Label, card, coin, createLabel, disposeLabel, paint, words } from './buildshift-labels';
 
 type BuildshiftSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -98,83 +104,32 @@ const POOL = 12;
 const SELLER_CAP = 1.3;
 /** U stanoviště stojí prodavač za ním (m směrem k zadní stěně), dojíždí tolik za sekundu. */
 const BEHIND = { z: -0.75, ease: 12 } as const;
-/** Ukazatel nad hlavou: šířka a výška (m). */
-const BAR = { w: 1.1, h: 0.2, fill: 0.12 } as const;
+/** Ukazatel nad hlavou: šířka a výška (m). T10: větší, ať je trpělivost ve frontě čitelná i na telefonu. */
+const BAR = { w: 1.3, h: 0.28, fill: 0.18 } as const;
 /** Dech a rozhlížení stojícího zákazníka: perioda (s), výška dechu, úhel rozhlížení (rad). */
 const BREATH = { period: 2.6, amount: 0.03, look: 0.35 } as const;
 /** Naskočení nového stanoviště a probliknutí odmítnutého ťuku (s). */
 const POP_S = 0.22;
 const FLASH_S = 0.35;
+/**
+ * Otřes odmítnuté buňky: délka (s), výchylka (m, na telefonu ~5 px – strop otřesu HUD je 6 px, `08-game-hud.md`),
+ * kmitů za sekundu. Cenovka nad buňkou visí `PRICE_S`.
+ */
+const SHAKE = { s: 0.2, amount: 0.12, hz: 30 } as const;
+const PRICE_S = 0.9;
+/** Výskok „+1“ s mincí nad obslouženým: délka (s), výstup (m), naskočení (s, `duration-quick`), výška startu (m), kolik naráz. */
+const PLUS = { s: 0.9, rise: 0.8, pop: 0.16, y: 2.1, pool: 3 } as const;
+/** Tep cedule Rush!: perioda (s) a výchylka měřítka. */
+const RUSH_PULSE = { period: 0.8, amount: 0.06 } as const;
+/** Kartičky nad hlavou a na pultu (m). */
+const SIGN = { price: 0.9, plus: 0.9, queue: 0.95 } as const;
 /** Mlha začne tolik metrů za nejvzdálenějším rohem desky (s kulisou za zadní stěnou). */
 const FOG_CLEAR = 6;
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
-const LABEL_PX = 256;
-const FONT = 'Roboto, system-ui, sans-serif';
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 const kindOfCode = (code: number): StationKind | null => STATION_KINDS[code - 1] ?? null;
-
-// ---------------------------------------------------------------------------
-// Popisky ve 3D: plátno → textura, překreslí se jen při změně klíče.
-
-interface Label {
-  readonly canvas: HTMLCanvasElement;
-  readonly texture: CanvasTexture;
-  readonly material: MeshBasicMaterial;
-  key: string;
-}
-
-function createLabel(): Label {
-  const canvas = document.createElement('canvas');
-  canvas.width = LABEL_PX;
-  canvas.height = LABEL_PX;
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  texture.anisotropy = 4;
-  return { canvas, texture, material: new MeshBasicMaterial({ map: texture, toneMapped: false }), key: '' };
-}
-
-function paint(label: Label, key: string, draw: (context: CanvasRenderingContext2D) => void): void {
-  if (label.key === key) return;
-  const context = label.canvas.getContext('2d');
-  if (context === null) return;
-  label.key = key;
-  context.clearRect(0, 0, LABEL_PX, LABEL_PX);
-  draw(context);
-  label.texture.needsUpdate = true;
-}
-
-/** Karta kitu: plná barva, inkoustový okraj, zaoblené rohy (žádná průhlednost). */
-function card(context: CanvasRenderingContext2D, fill: string, border: number): void {
-  context.fillStyle = fill;
-  context.strokeStyle = color.ink;
-  context.lineWidth = border;
-  context.beginPath();
-  context.roundRect(border / 2 + 2, border / 2 + 2, LABEL_PX - border - 4, LABEL_PX - border - 4, 28);
-  context.fill();
-  context.stroke();
-}
-
-function words(context: CanvasRenderingContext2D, text: string, x: number, y: number, px: number, weight: number, fill: string): void {
-  context.font = `${weight} ${px}px ${FONT}`;
-  context.fillStyle = fill;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.fillText(text, x, y);
-}
-
-/** Mince: slunečný kotouč s inkoustovým okrajem, uvnitř cena. */
-function coin(context: CanvasRenderingContext2D, x: number, y: number, r: number, value: string): void {
-  context.fillStyle = color.sun;
-  context.strokeStyle = color.ink;
-  context.lineWidth = 6;
-  context.beginPath();
-  context.arc(x, y, r, 0, Math.PI * 2);
-  context.fill();
-  context.stroke();
-  if (value !== '') words(context, value, x, y + 2, r * 1.25, 900, color.ink);
-}
 
 // ---------------------------------------------------------------------------
 // Díly
@@ -209,7 +164,16 @@ interface StationRefs {
   group: Group | null;
   readonly goods: (Group | null)[];
   bake: Mesh | null;
+  /** Pult: kartička s počtem čekajících a její popisek (jen pult ho má). */
+  queue: Mesh | null;
+  readonly line: Label | null;
   readonly born: number;
+}
+
+/** Výskok „+1“: skupina, kdy začal (s kresby, −1 = volný). */
+interface Plus {
+  group: Group | null;
+  start: number;
 }
 
 interface StationView {
@@ -249,6 +213,11 @@ function reachOf(camera: PerspectiveCamera): number {
 export function BuildshiftScene({ session, cast, surface, scene: look }: BuildshiftSceneProps) {
   const world = session.world;
   const goal = useMemo(() => Number(nativeRule(world.rules, 'buildshift_goal')?.params.goal ?? BUILDSHIFT.goal.default), [world]);
+  /** První tik rushe (svět uložený před T10 rush nemá – cedule pak nevisí). */
+  const rushFrom = useMemo(() => {
+    const rush = (nativeRule(world.rules, 'buildshift_shift')?.params as { readonly rush?: readonly number[] } | undefined)?.rush ?? [];
+    return rush.length === 0 ? Number.POSITIVE_INFINITY : Math.min(...rush);
+  }, [world]);
   const goodsModel = cast.things?.goods ?? DEFAULT_GOODS;
   const customerModel = cast.things?.customer ?? (cast.enemy === '' ? DEFAULT_CUSTOMER : cast.enemy);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -262,7 +231,17 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
   const paletteTiles = useRef<(Group | null)[]>([]);
   const openBar = useRef<Mesh | null>(null);
   const flash = useRef<Mesh | null>(null);
-  const flashState = useRef({ cell: -1, until: 0, last: 0 });
+  /** Odmítnutý ťuk: buňka, do kdy bliká, začátek otřesu, poslední viděná hodnota slotu a cena, která chyběla (0 = žádná). */
+  const flashState = useRef({ cell: -1, until: 0, start: 0, last: 0, price: 0 });
+  const price = useRef<Group | null>(null);
+  /** Druh, který byl naposledy vybraný (ve fázi provozu ťuk na desku výběr smaže dřív, než ho scéna uvidí). */
+  const lastSelected = useRef(0);
+  /** Co otřes posunul: buňka (dlaždice a stanoviště se po otřesu vrátí). */
+  const shaken = useRef(-1);
+  const pluses = useRef<Plus[]>(Array.from({ length: PLUS.pool }, () => ({ group: null, start: -1 })));
+  const servedSeen = useRef(0);
+  const rushSign = useRef<Group | null>(null);
+  const pot = useRef<Group | null>(null);
   const ring = useRef<Group | null>(null);
   const hero = useRef<Group | null>(null);
   const heroInner = useRef<Group | null>(null);
@@ -293,15 +272,27 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
     }),
     [],
   );
-  const labels = useMemo(() => ({ palette: STATION_KINDS.map(() => createLabel()), coins: createLabel(), open: createLabel(), served: createLabel() }), []);
+  const labels = useMemo(() => {
+    const made = { palette: STATION_KINDS.map(() => createLabel()), coins: createLabel(), open: createLabel(), served: createLabel(), price: createLabel(), plus: createLabel(), rush: createLabel() };
+    // Neměnné kartičky se nakreslí hned: „+1“ s mincí a Rush!.
+    paint(made.plus, 'plus', (context) => {
+      card(context, color.paper, 12);
+      words(context, '+1', 100, 132, 112, 900, color.ink);
+      coin(context, 192, 128, 44, '');
+    });
+    paint(made.rush, 'rush', (context) => {
+      card(context, color.sun, 14);
+      words(context, 'Rush!', 128, 132, 78, 900, color.ink);
+    });
+    return made;
+  }, []);
+  /** Kartičky front u pultů (podle buňky); vznikají s pultem, uvolní je odchod scény. */
+  const lines = useRef(new Map<number, Label>());
 
   useEffect(
     () => () => {
       for (const material of [...materials.floor, materials.door, materials.open, materials.calm, materials.warn, materials.urgent, materials.bake]) material.dispose();
-      for (const label of [...labels.palette, labels.coins, labels.open, labels.served]) {
-        label.texture.dispose();
-        label.material.dispose();
-      }
+      for (const label of [...labels.palette, labels.coins, labels.open, labels.served, labels.price, labels.plus, labels.rush, ...lines.current.values()]) disposeLabel(label);
     },
     [materials, labels],
   );
@@ -354,7 +345,15 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
         if (kind !== null) next.push({ cell, kind });
       }
       for (const cell of [...stationRefs.current.keys()]) if (!next.some((station) => station.cell === cell)) stationRefs.current.delete(cell);
-      for (const { cell } of next) if (!stationRefs.current.has(cell)) stationRefs.current.set(cell, { group: null, goods: [], bake: null, born: now });
+      for (const { cell, kind } of next) {
+        if (stationRefs.current.has(cell)) continue;
+        let line: Label | null = null;
+        if (kind === 'counter') {
+          line = lines.current.get(cell) ?? createLabel();
+          lines.current.set(cell, line);
+        }
+        stationRefs.current.set(cell, { group: null, goods: [], bake: null, queue: null, line, born: now });
+      }
       setStations(next);
     }
 
@@ -402,29 +401,89 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       tile.material = canBuild && isBuildCell(cell) && view.stations[cell] === -1 ? materials.open : (materials.floor[(colOf(cell) + rowOf(cell)) % 2] as Material);
     });
 
-    // Odmítnutý ťuk (zabraná buňka, zeď, málo mincí): buňka krátce problikne poplachem.
+    // Odmítnutý ťuk (zabraná buňka, zeď, málo mincí): buňka krátce problikne poplachem a zatřese se; chyběly-li mince
+    // na vybraný druh, nad buňkou vyskočí cenovka. Ve fázi provozu ťuk na desku výběr smaže – cenu dá poslední viděný.
+    if (view.selected > 0) lastSelected.current = view.selected;
     const rejected = shiftSlot(state, SHIFT_SLOTS.rejected);
     const blink = flashState.current;
     if (rejected !== blink.last) {
       blink.last = rejected;
       if (rejected > 0) {
+        const tried = kindOfCode(view.phase === PHASE.build ? view.selected : lastSelected.current);
         blink.cell = rejected - 1;
+        blink.start = now;
         blink.until = now + FLASH_S;
+        blink.price = tried !== null && view.coins < STATION_COST[tried] ? STATION_COST[tried] : 0;
       }
+    }
+    const reduced = reducedMotion();
+    const shakeLeft = 1 - (now - blink.start) / SHAKE.s;
+    const shake = blink.cell >= 0 && shakeLeft > 0 && !reduced ? SHAKE.amount * shakeLeft * Math.sin((now - blink.start) * SHAKE.hz * Math.PI * 2) : 0;
+    if (shaken.current >= 0 && (shake === 0 || shaken.current !== blink.cell)) {
+      tiles.current[shaken.current]?.position.setX(m(cellX(shaken.current)));
+      stationRefs.current.get(shaken.current)?.group?.position.setX(m(cellX(shaken.current)));
+      shaken.current = -1;
+    }
+    if (shake !== 0) {
+      shaken.current = blink.cell;
+      tiles.current[blink.cell]?.position.setX(m(cellX(blink.cell)) + shake);
+      stationRefs.current.get(blink.cell)?.group?.position.setX(m(cellX(blink.cell)) + shake);
     }
     if (flash.current !== null) {
       flash.current.visible = blink.cell >= 0 && now < blink.until;
       // Na zdi nahoře, jinak na podlaze – pod stanovištěm vykouknou okraje.
-      if (flash.current.visible) flash.current.position.set(m(cellX(blink.cell)), (BUILDSHIFT.walls.includes(blink.cell) ? WALL.block : 0) + 0.03, m(cellZ(blink.cell)));
+      if (flash.current.visible) flash.current.position.set(m(cellX(blink.cell)) + shake, (BUILDSHIFT.walls.includes(blink.cell) ? WALL.block : 0) + 0.03, m(cellZ(blink.cell)));
+    }
+    if (price.current !== null) {
+      price.current.visible = blink.cell >= 0 && blink.price > 0 && now < blink.start + PRICE_S;
+      if (price.current.visible) {
+        paint(labels.price, String(blink.price), (context) => {
+          card(context, color.paper, 12);
+          coin(context, 128, 128, 84, String(blink.price));
+        });
+        const rise = reduced ? 1 : Math.min(1, (now - blink.start) / PLUS.pop);
+        price.current.position.set(m(cellX(blink.cell)), STATION_SIZE.h + 0.5 + 0.3 * rise, m(cellZ(blink.cell)));
+      }
     }
 
-    // Stanoviště: naskočení, zboží podle zásoby, pruh pečení.
+    // Obsloužený zákazník: nad prodavačem (stojí u pultu) vyskočí „+1“ s mincí. Restart relace počet vrátí na 0.
+    if (view.served < servedSeen.current) servedSeen.current = view.served;
+    const player = state[HEADER.player] as number;
+    const pb = bodyBase(player);
+    for (; servedSeen.current < view.served; servedSeen.current += 1) {
+      const free = pluses.current.reduce((oldest, plus) => (plus.start < oldest.start ? plus : oldest));
+      free.start = now;
+      free.group?.position.set(m(state[pb + BODY.x] as number), PLUS.y, m(state[pb + BODY.z] as number));
+    }
+    for (const plus of pluses.current) {
+      if (plus.group === null) continue;
+      const age = now - plus.start;
+      plus.group.visible = plus.start >= 0 && age < PLUS.s;
+      if (!plus.group.visible) continue;
+      // Naskočí s překmitem (`ease-pop`), pak stoupá; při omezeném pohybu jen stojí.
+      const pop = reduced ? 1 : Math.min(1, age / PLUS.pop);
+      plus.group.scale.setScalar(reduced ? 1 : pop < 1 ? pop * (1 + 0.25 * Math.sin(pop * Math.PI)) : 1);
+      plus.group.position.y = PLUS.y + (reduced ? 0 : PLUS.rise * (1 - (1 - age / PLUS.s) ** 2));
+    }
+
+    // Stanoviště: naskočení, zboží podle zásoby, pruh pečení, u pultu počet čekajících.
     for (const { cell, kind } of stations) {
       const refs = stationRefs.current.get(cell);
       const body = view.stations[cell] as number;
       if (refs === undefined || body < 0) continue;
       const base = bodyBase(body);
       refs.group?.scale.setScalar(0.6 + 0.4 * Math.min(1, (now - refs.born) / POP_S));
+      if (refs.queue !== null && refs.line !== null) {
+        const waiting = queueAt(state, cell).length;
+        refs.queue.visible = waiting > 0;
+        if (waiting > 0) {
+          paint(refs.line, String(waiting), (context) => {
+            card(context, color.paper, 10);
+            words(context, String(waiting), 128, 106, 120, 900, color.ink);
+            words(context, 'in line', 128, 208, 44, 700, color.ink);
+          });
+        }
+      }
       const stock = state[base + STATION_SLOTS.stock] as number;
       refs.goods.forEach((goods, k) => {
         if (goods !== null) goods.visible = k < stock;
@@ -439,8 +498,6 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
     }
 
     // Prodavač (hrdina): poloha mezi tiky, u stanoviště za ním, čelem po cestě, jinak ke dveřím.
-    const player = state[HEADER.player] as number;
-    const pb = bodyBase(player);
     const sx = lerp(prev[pb + BODY.x] as number, state[pb + BODY.x] as number, alpha);
     const sz = lerp(prev[pb + BODY.z] as number, state[pb + BODY.z] as number, alpha);
     const dx = (state[pb + BODY.x] as number) - (prev[pb + BODY.x] as number);
@@ -550,6 +607,13 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       words(context, 'Served', 128, 62, 44, 700, color.ink);
       words(context, `${view.served}/${goal}`, 128, 160, 88, 900, color.ink);
     });
+    // Rush (posledních 15 s hodin): cedule místo květináče, tepe jen bez omezeného pohybu.
+    const rushing = tick >= rushFrom && view.phase === PHASE.open && state[HEADER.runState] === RUN_STATE.running;
+    if (rushSign.current !== null && pot.current !== null) {
+      rushSign.current.visible = rushing;
+      pot.current.visible = !rushing;
+      rushSign.current.scale.setScalar(rushing && motion ? 1 + RUSH_PULSE.amount * Math.sin((now / RUSH_PULSE.period) * Math.PI * 2) : 1);
+    }
 
     const host = surface.current;
     if (host === null) return;
@@ -607,17 +671,24 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
                 <planeGeometry args={[TILE - 0.1, TILE - 0.1]} />
               </mesh>
             ) : (
-              // Květináč na druhé zdi.
-              <group position={[0, WALL.block, 0]}>
-                <mesh position={[0, 0.2, 0]} castShadow>
-                  <cylinderGeometry args={[0.35, 0.28, 0.4, 12]} />
-                  <meshStandardMaterial color={color['cream-deep']} roughness={0.8} />
-                </mesh>
-                <mesh position={[0, 0.7, 0]} castShadow>
-                  <sphereGeometry args={[0.5, 14, 10]} />
-                  <meshStandardMaterial color={color['mint-deep']} roughness={0.9} />
-                </mesh>
-              </group>
+              <>
+                {/* Květináč na druhé zdi; v rushi místo něj cedule Rush!. */}
+                <group ref={pot} position={[0, WALL.block, 0]}>
+                  <mesh position={[0, 0.2, 0]} castShadow>
+                    <cylinderGeometry args={[0.35, 0.28, 0.4, 12]} />
+                    <meshStandardMaterial color={color['cream-deep']} roughness={0.8} />
+                  </mesh>
+                  <mesh position={[0, 0.7, 0]} castShadow>
+                    <sphereGeometry args={[0.5, 14, 10]} />
+                    <meshStandardMaterial color={color['mint-deep']} roughness={0.9} />
+                  </mesh>
+                </group>
+                <group ref={rushSign} position={[0, WALL.block + 0.01, 0]} visible={false} userData={{ item: 'rush' }}>
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} material={labels.rush.material}>
+                    <planeGeometry args={[TILE - 0.1, TILE - 0.1]} />
+                  </mesh>
+                </group>
+              </>
             )}
           </group>
         ))}
@@ -690,6 +761,26 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
             <meshBasicMaterial color={color.sun} toneMapped={false} />
           </mesh>
         </group>
+        {/* Cenovka nad odmítnutou buňkou a výskoky „+1“, čelem ke kameře. */}
+        <group ref={price} visible={false} userData={{ item: 'price' }}>
+          <mesh rotation={[-VIEW.pitch, 0, 0]} material={labels.price.material}>
+            <planeGeometry args={[SIGN.price, SIGN.price]} />
+          </mesh>
+        </group>
+        {pluses.current.map((plus, index) => (
+          <group
+            key={index}
+            ref={(group) => {
+              plus.group = group;
+            }}
+            visible={false}
+            userData={{ item: 'plus' }}
+          >
+            <mesh rotation={[-VIEW.pitch, 0, 0]} material={labels.plus.material}>
+              <planeGeometry args={[SIGN.plus, SIGN.plus]} />
+            </mesh>
+          </group>
+        ))}
 
         {stations.map(({ cell, kind }) => {
           const refs = stationRefs.current.get(cell);
@@ -723,6 +814,21 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
                     if (refs !== undefined) refs.bake = mesh;
                   }}
                 />
+              ) : null}
+              {refs?.line != null ? (
+                // Počet čekajících leží na pultu (nad pultem by zakryl stanoviště za ním).
+                <mesh
+                  ref={(mesh) => {
+                    refs.queue = mesh;
+                  }}
+                  rotation={[-Math.PI / 2, 0, 0]}
+                  position={[0, STATION_SIZE.h + 0.02, 0]}
+                  material={refs.line.material}
+                  visible={false}
+                  userData={{ item: 'line' }}
+                >
+                  <planeGeometry args={[SIGN.queue, SIGN.queue]} />
+                </mesh>
               ) : null}
             </group>
           );

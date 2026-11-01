@@ -54,6 +54,13 @@ export const BUILDSHIFT = {
   /** Příchody: první zákazník tolik tiků po otevření, poslední nejpozději tolik tiků po otevření. */
   firstArrival: ARCADE_HZ,
   arrivalSpan: 60 * ARCADE_HZ,
+  /**
+   * „Rush“ (T10): v posledních tolika sekundách hodin přijde navíc `rushFor(cíl)` zákazníků během `rushSpan` tiků.
+   * Řádné příchody do té doby skončily (otevření nejpozději v 10 s + 61 s), takže pozdní hráč dostane poslední šanci.
+   * Trpělivost je stejně dlouhá, zákazník z rushe tedy odejde nejdřív s koncem hodin a život nestojí.
+   */
+  rushSeconds: 15,
+  rushSpan: 10 * ARCADE_HZ,
   /** Rozestup fronty u pultu (zákazník stojí před pultem směrem ke dveřím). */
   queueGap: 700,
   queueFront: 900,
@@ -230,6 +237,12 @@ export function sellerAt(state: ArcadeState, player: number, cell: number): bool
 
 /** Kolik zákazníků přijde za směnu s cílem `goal`: cíl a rezerva (aspoň 4, jinak půlka cíle). */
 export const customersFor = (goal: number): number => goal + Math.max(4, Math.ceil(goal / 2));
+
+/** Kolik zákazníků přinese rush: třetina cíle, aspoň 4 (strop 7 drží souběžné zákazníky pod zásobou scény). */
+export const rushFor = (goal: number): number => Math.max(4, Math.ceil(goal / 3));
+
+/** Tik hodin, od kterého běží rush (absolutně, jako `time_limit`). */
+export const RUSH_START = (BUILDSHIFT.seconds - BUILDSHIFT.rushSeconds) * ARCADE_HZ;
 
 /** Rozpis směny pro scénu a robota: fáze, mince, výběr, nese, cíl, obslouženo, zbývající odchody, stanoviště po buňkách. */
 export interface ShiftView {

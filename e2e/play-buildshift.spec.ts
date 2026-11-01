@@ -7,7 +7,7 @@ import { ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, BU
 import { type ArcadeProgram, hashArcade, instantiate, loadProgram, outcomeOf, step } from '../src/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '../src/play/arcade/library';
 import { type ShopLayout, badLayout, planLayout, serveWithLayout } from '../src/play/arcade/pieces/buildshift-bot';
-import { PALETTE, PHASE, STATION, STATION_COST, coinsOf, phaseOf, servedOf, stationCode, stationsByCell } from '../src/play/arcade/pieces/buildshift-world';
+import { PALETTE, PHASE, SHIFT_SLOTS, STATION, STATION_COST, coinsOf, phaseOf, servedOf, shiftSlot, stationCode, stationsByCell } from '../src/play/arcade/pieces/buildshift-world';
 import { axisOfCell, cellOfAxis } from '../src/play/arcade/pieces/lanes';
 import { unpackInputs } from '../src/play/score/dare';
 import { capture, ticks } from './play-native-input';
@@ -128,6 +128,29 @@ async function expectReachable(grid: Grid, page: Page, where: string, landscapeP
   expect(cell, `${where}: cell smaller than a touch target`).toBeGreaterThanOrEqual(floor);
   return cell;
 }
+
+/**
+ * Čitelnost na plátně (`__playFrame`, vzor `play-survivor.spec.ts`): podíl výšky plátna, který zabere prodavač (hrdina
+ * sondy) a nejbližší stanoviště ke středu záběru, a měřítko čitelnosti hrdiny (`LegibleBodies`, strop `LEGIBLE_CAP`).
+ */
+async function legibilityOf(page: Page) {
+  return page.evaluate(() => {
+    const frame = window.__playFrame!();
+    const share = (box: { readonly minY: number; readonly maxY: number } | null | undefined): number => (box == null ? 0 : (box.maxY - box.minY) / 2);
+    return { hero: share(frame.hero), legible: frame.legible.hero, station: share(frame.items.station?.box), heightPx: frame.height };
+  });
+}
+
+/**
+ * Mez čitelnosti stavby (podíl výšky plátna). Mez survivoru (`LEGIBLE_SHARE.hero` 20 %) deska 5 × 7 nesplní: celá deska
+ * musí být vidět a prodavač nad `SELLER_CAP` (1,3 buňky) zakryje buňku pod sebou. Naměřeno 1. 11. (T10): prodavač
+ * 7,5–13,2 %, stanoviště 5,7–7,0 % na třech projektech (na telefonu ~62 a ~47 px) – mez hlídá, že kamera neodjede
+ * a postavy se nezmenší.
+ */
+const BUILDSHIFT_LEGIBLE = { seller: 0.065, station: 0.05 } as const;
+
+/** Je kus scény se značkou `item` právě nakreslený (`__playFrame().items` vidí jen viditelné)? */
+const shownItem = (page: Page, item: string) => page.evaluate((name) => (window.__playFrame!().items[name]?.count ?? 0) > 0, item);
 
 const probe = (page: Page) => ({
   byHand: (on: boolean) => page.evaluate((value) => (window.__playShell as unknown as Probe).byHand(value), on),
@@ -312,15 +335,23 @@ test.describe('buildshift (P68-S T6)', () => {
     await shop.sync();
     await page.waitForTimeout(400);
     await shot(`open-${orientation(page)}`);
+    const legible = await legibilityOf(page);
+    test.info().annotations.push({ type: 'legible', description: `${info.project.name} ${orientation(page)}: ${JSON.stringify(legible)}` });
+    expect(legible.hero, `seller ${JSON.stringify(legible)}`).toBeGreaterThanOrEqual(BUILDSHIFT_LEGIBLE.seller);
+    expect(legible.station, `station ${JSON.stringify(legible)}`).toBeGreaterThanOrEqual(BUILDSHIFT_LEGIBLE.station);
 
     let midShot = false;
+    let plusShown = false;
     const run = await serveByTaps(shop, layout, async () => {
       if (midShot || servedOf(shop.state) < Math.floor(shop.goal / 2)) return;
       midShot = true;
       await shop.sync();
       await page.waitForTimeout(300);
+      // Obsloužený zákazník: nad pultem právě visí „+1“ s mincí (výskok trvá 0,9 s času kresby).
+      plusShown = await shownItem(page, 'plus');
       await shot(`service-${orientation(page)}`);
     });
+    expect(plusShown, 'a served customer pops a +1 with a coin').toBe(true);
     expect(run.outcome, `served ${String(run.served)} of ${String(shop.goal)} by tick ${String(shop.tick())}`).toBe('won');
     expect(run.served).toBeGreaterThanOrEqual(shop.goal);
     // Během směny robot staví i za vydělané mince (`later`): víc stanovišť, než postavila stavba prstem.
@@ -456,6 +487,12 @@ test.describe('buildshift (P68-S T6)', () => {
       // Na zabranou buňku se nestaví: prodavač jde k peci.
       await shop.tap(layout.opening.find((at) => at.kind === 'oven')!.cell);
       expect(stationsByCell(shop.state).filter((body) => body >= 0)).toHaveLength(layout.opening.length);
+      // Pec bez mincí (stavba je všechny utratila): stavba se odmítne a nad buňkou vyskočí cenovka.
+      expect(coinsOf(shop.state)).toBeLessThan(STATION_COST.oven);
+      await shop.tap(PALETTE.oven);
+      await shop.tap(0);
+      expect(shiftSlot(shop.state, SHIFT_SLOTS.rejected), 'the build without coins was rejected').toBe(1);
+      await expect.poll(() => shownItem(page, 'price'), { timeout: 5_000, intervals: [50] }).toBe(true);
       await page.waitForTimeout(400);
       await shotOf(page, info)(`open-${orientation(page)}`);
       expect(errors, errors.join('\n')).toEqual([]);
