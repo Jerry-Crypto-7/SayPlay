@@ -1,0 +1,4895 @@
+{
+ "measuredOn": "main 688d989d",
+ "compilerVersion": "genre.v6",
+ "cells": [
+  {
+   "id": "genre:runner",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "runner",
+    "controlParams": {
+     "obstacles": [
+      "hurdle",
+      "cone",
+      "crate"
+     ],
+     "feel": 2,
+     "sections": 3,
+     "patterns": 1
+    },
+    "genre": {
+     "id": "runner",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Fox Run",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "forest path",
+     "mood": "energetic",
+     "look": "forest"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Run to the finish without hitting a log.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "log"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "03019b10",
+   "bot": {
+    "tick": 3611,
+    "outcome": "won",
+    "hash": "d0db423f"
+   },
+   "idle": {
+    "tick": 651,
+    "outcome": "lost",
+    "hash": "0cb39879"
+   }
+  },
+  {
+   "id": "genre:platformer",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "platform",
+    "controlParams": {
+     "checkpoints": true,
+     "tuning": {
+      "feel": 2,
+      "sections": 3,
+      "segments": true,
+      "chunks": 1
+     }
+    },
+    "genre": {
+     "id": "platformer",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Frog Jump",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "floating platforms",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Jump across the platforms to the flag without touching a spike.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "frog",
+      "count": 1
+     },
+     {
+      "count": 5,
+      "id": "spikes",
+      "kind": "hazard",
+      "label": "spikes"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "gold coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "flag"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Reach the flag. Jump over gaps and hazards.",
+     "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "5b7f76a9",
+   "bot": {
+    "tick": 2839,
+    "outcome": "won",
+    "hash": "1efcb204"
+   },
+   "idle": {
+    "tick": 5281,
+    "outcome": "lost",
+    "hash": "5245e300"
+   }
+  },
+  {
+   "id": "genre:arena",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "move_free",
+    "controlParams": {
+     "generator": "arena_escape",
+     "seconds": 40,
+     "tuning": {
+      "items": 0,
+      "waves": 3
+     }
+    },
+    "genre": {
+     "id": "arena",
+     "mode": "escape",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Knight Escape",
+    "archetype": "survival_timer",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "dark castle hall",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "survive",
+     "description": "Stay away from the angry ghost for 40 seconds.",
+     "seconds": 40
+    },
+    "mechanics": [
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "seconds": 40,
+       "onEnd": "win"
+      }
+     },
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "knight",
+      "count": 1
+     },
+     {
+      "count": 2,
+      "id": "hunter",
+      "kind": "chaser",
+      "label": "angry ghost"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Survive 40 seconds.",
+     "controlsHint": "Drag or arrows to move."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "1ea79d9d",
+   "bot": {
+    "tick": 2400,
+    "outcome": "won",
+    "hash": "163cd632"
+   },
+   "idle": {
+    "tick": 608,
+    "outcome": "lost",
+    "hash": "fefb3e05"
+   }
+  },
+  {
+   "id": "genre:voyage",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "steer",
+    "controlParams": {
+     "generator": "voyage_race",
+     "difficulty": "normal",
+     "lengthM": 620,
+     "tuning": {
+      "terrain": "islands",
+      "sections": 3
+     }
+    },
+    "genre": {
+     "id": "voyage",
+     "mode": "race",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Pirate Ship Voyage",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "islands",
+     "mood": "adventurous",
+     "look": "beach"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Pass every gate, dodge the cannonball and reach the lighthouse.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "pirate ship",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "gate",
+      "kind": "checkpoint",
+      "label": "gate"
+     },
+     {
+      "count": 1,
+      "id": "hazard",
+      "kind": "hazard",
+      "label": "cannonball"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "lighthouse"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Pass every gate and reach the lighthouse.",
+     "controlsHint": "Drag or arrows to steer. Down or a second finger brakes."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "6f810ef8",
+   "bot": {
+    "tick": 2825,
+    "outcome": "won",
+    "hash": "b90537c2"
+   },
+   "idle": {
+    "tick": 4321,
+    "outcome": "lost",
+    "hash": "2d6bd206"
+   }
+  },
+  {
+   "id": "genre:quest",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "move_free",
+    "controlParams": {
+     "generator": "quest_spatial",
+     "tuning": {
+      "count": 5,
+      "states": 2,
+      "verb": "fix",
+      "rounds": 3,
+      "chasers": 1
+     }
+    },
+    "genre": {
+     "id": "quest",
+     "mode": "spatial",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Little Robot Quest",
+    "archetype": "switch_puzzle",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "factory",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "puzzle",
+     "description": "Fix all 5 machines in each of 3 rounds before the hunter catches you.",
+     "role": "target"
+    },
+    "mechanics": [
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "seconds": 88,
+       "onEnd": "lose"
+      }
+     },
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "little robot",
+      "count": 1
+     },
+     {
+      "count": 5,
+      "id": "target",
+      "kind": "target",
+      "label": "machines"
+     },
+     {
+      "count": 1,
+      "id": "hunter",
+      "kind": "chaser",
+      "label": "hunter"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Fix all 5 machines, 3 rounds.",
+     "controlsHint": "Drag or arrows to move, hold Use next to a target."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "cdb1ab59",
+   "bot": {
+    "tick": 3036,
+    "outcome": "won",
+    "hash": "5e835a1b"
+   },
+   "idle": {
+    "tick": 626,
+    "outcome": "lost",
+    "hash": "3e94e808"
+   }
+  },
+  {
+   "id": "genre:shooter",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "shooter",
+    "controlParams": {
+     "waves": 6,
+     "rise": 4
+    },
+    "genre": {
+     "id": "shooter",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Farmer Shootout",
+    "archetype": "combat_lite",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "forest",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Stop 6 waves of crows before they reach you.",
+     "count": 6,
+     "role": "enemy"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "farmer",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "target",
+      "kind": "target",
+      "label": "crow"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "crow"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Stop 6 waves of crows. Each wave is faster.",
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "3d0dbdfe",
+   "bot": {
+    "tick": 3391,
+    "outcome": "won",
+    "hash": "63439df6"
+   },
+   "idle": {
+    "tick": 1425,
+    "outcome": "lost",
+    "hash": "afba6db9"
+   }
+  },
+  {
+   "id": "genre:throw",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "throw",
+    "controlParams": {
+     "goal": "tower",
+     "budget": 48
+    },
+    "genre": {
+     "id": "throw",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Monkey Throw",
+    "archetype": "combat_lite",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "cans",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Hit every block in 87 seconds before you run out of throws.",
+     "count": 3,
+     "role": "target"
+    },
+    "mechanics": [
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "seconds": 87,
+       "onEnd": "lose"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "monkey",
+      "count": 1
+     },
+     {
+      "count": 3,
+      "id": "target",
+      "kind": "target",
+      "label": "block"
+     },
+     {
+      "count": 1,
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Hit every block in 87 seconds.",
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "6bbe4340",
+   "bot": {
+    "tick": 2020,
+    "outcome": "won",
+    "hash": "ce21c60a"
+   },
+   "idle": {
+    "tick": 5221,
+    "outcome": "lost",
+    "hash": "b3caa313"
+   }
+  },
+  {
+   "id": "genre:timing",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "timing",
+    "controlParams": {
+     "mode": "stack",
+     "speed": "slow",
+     "rounds": 36,
+     "rise": true,
+     "feel": 2
+    },
+    "genre": {
+     "id": "timing",
+     "mode": "stack",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Fox Stack",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "diner",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Stack 36 pancakes. Each one swings faster.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+     },
+     {
+      "count": 36,
+      "id": "block",
+      "kind": "collectible",
+      "label": "pancake"
+     },
+     {
+      "count": 1,
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed drop"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "top of the tower"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Stack 36 pancakes. Each one swings faster.",
+     "controlsHint": "Tap or Space to drop the block."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "8e5b19f0",
+   "bot": {
+    "tick": 1801,
+    "outcome": "won",
+    "hash": "e502091a"
+   },
+   "idle": {
+    "tick": 903,
+    "outcome": "lost",
+    "hash": "3239eed3"
+   }
+  },
+  {
+   "id": "genre:rhythm",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "rhythm",
+    "controlParams": {
+     "bpm": 120,
+     "beats": 66,
+     "ramp": true,
+     "lanes": true,
+     "feel": 2
+    },
+    "genre": {
+     "id": "rhythm",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Drummer Beat",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "time",
+     "mood": "energetic"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Hit each tile in its lane on the beat and play the song to the end.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "drummer",
+      "count": 1
+     },
+     {
+      "count": 12,
+      "id": "note",
+      "kind": "collectible",
+      "label": "tile"
+     },
+     {
+      "count": 1,
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed beat"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "last beat"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+     "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "6b93cffa",
+   "bot": {
+    "tick": 2146,
+    "outcome": "won",
+    "hash": "80541ff0"
+   },
+   "idle": {
+    "tick": 466,
+    "outcome": "lost",
+    "hash": "00ba7901"
+   }
+  },
+  {
+   "id": "genre:duel",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "duel",
+    "controlParams": {
+     "difficulty": "normal",
+     "rounds": 9
+    },
+    "genre": {
+     "id": "duel",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Samurai Duel",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "bridge",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Beat 9 rivals in a row. Each one attacks faster.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "samurai",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "rival",
+      "kind": "hazard",
+      "label": "rival"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "knockout"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Dodge the wind-up, strike in the opening. Beat 9 rivals.",
+     "controlsHint": "Tap right or Space to strike, tap left or Down to dodge."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "99ebbd69",
+   "bot": {
+    "tick": 2919,
+    "outcome": "won",
+    "hash": "6608cd8b"
+   },
+   "idle": {
+    "tick": 261,
+    "outcome": "lost",
+    "hash": "727af8f2"
+   }
+  },
+  {
+   "id": "genre:flap",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "flap",
+    "controlParams": {
+     "lengthM": 220,
+     "rise": true,
+     "feel": 2
+    },
+    "genre": {
+     "id": "flap",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Little Bird Flight",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "gaps",
+     "mood": "cheerful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Flap through the gaps between the pipes to the finish.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "little bird",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "pipe",
+      "kind": "hazard",
+      "label": "pipe"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Fly through the gaps to the finish. They get tighter.",
+     "controlsHint": "Tap or Space to flap."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "29395c2f",
+   "bot": {
+    "tick": 2375,
+    "outcome": "won",
+    "hash": "05267efc"
+   },
+   "idle": {
+    "tick": 38,
+    "outcome": "lost",
+    "hash": "a1260b3b"
+   }
+  },
+  {
+   "id": "genre:catch",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "lanes",
+    "controlParams": {
+     "generator": "catch_fall",
+     "tuning": {
+      "items": 30
+     }
+    },
+    "genre": {
+     "id": "catch",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Bear Catch",
+    "archetype": "collect_exit",
+    "targetDurationSec": 45,
+    "theme": {
+     "setting": "basket",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Catch 30 falling apples and dodge the bombs.",
+     "count": 30,
+     "role": "coin"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "bear",
+      "count": 1
+     },
+     {
+      "count": 30,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "apple"
+     },
+     {
+      "count": 1,
+      "id": "hazard",
+      "kind": "hazard",
+      "label": "bomb"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Catch 30 apples. Dodge the bombs!",
+     "controlsHint": "Tap a lane, drag, or use the arrows to move."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "3a374493",
+   "bot": {
+    "tick": 2098,
+    "outcome": "won",
+    "hash": "266b7e39"
+   },
+   "idle": {
+    "tick": 576,
+    "outcome": "lost",
+    "hash": "e22ed910"
+   }
+  },
+  {
+   "id": "genre:whack",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "lanes",
+    "controlParams": {
+     "generator": "whack_holes",
+     "tuning": {
+      "targets": 30
+     }
+    },
+    "genre": {
+     "id": "whack",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Fox Whack",
+    "archetype": "combat_lite",
+    "targetDurationSec": 45,
+    "theme": {
+     "setting": "forest",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Whack 30 moles as they pop up, but spare the bunnies.",
+     "count": 30,
+     "role": "target"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+     },
+     {
+      "count": 30,
+      "id": "target",
+      "kind": "target",
+      "label": "mole"
+     },
+     {
+      "count": 1,
+      "id": "hazard",
+      "kind": "hazard",
+      "label": "bunny"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Whack 30 moles. Spare the bunnies!",
+     "controlsHint": "Tap a hole to whack. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "7ea9a7cb",
+   "bot": {
+    "tick": 2083,
+    "outcome": "won",
+    "hash": "567832d7"
+   },
+   "idle": {
+    "tick": 504,
+    "outcome": "lost",
+    "hash": "2b92e58d"
+   }
+  },
+  {
+   "id": "genre:defense",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "lanes",
+    "controlParams": {
+     "generator": "lane_defense",
+     "tuning": {
+      "enemies": 30
+     }
+    },
+    "genre": {
+     "id": "defense",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Fox Defense",
+    "archetype": "combat_lite",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "forest",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Hold the castle wall against 30 marching goblins and their boss.",
+     "count": 30,
+     "role": "chaser"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+     },
+     {
+      "count": 30,
+      "id": "chaser",
+      "kind": "chaser",
+      "label": "marching goblin"
+     },
+     {
+      "count": 1,
+      "id": "castle",
+      "kind": "prop",
+      "label": "castle wall"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Hold the castle wall! Stop every marching goblin.",
+     "controlsHint": "Tap a lane to shoot. Hold a lane to place a guard. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "fde39ee6",
+   "bot": {
+    "tick": 2888,
+    "outcome": "won",
+    "hash": "f22e1b61"
+   },
+   "idle": {
+    "tick": 511,
+    "outcome": "lost",
+    "hash": "e5e7b6a7"
+   }
+  },
+  {
+   "id": "genre:slice",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "lanes",
+    "controlParams": {
+     "generator": "slice_arcs",
+     "tuning": {
+      "items": 30
+     }
+    },
+    "genre": {
+     "id": "slice",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Sushi Chef Slice",
+    "archetype": "collect_exit",
+    "targetDurationSec": 45,
+    "theme": {
+     "setting": "air",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Slice 30 flying fishes, but not the bombs.",
+     "count": 30,
+     "role": "coin"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "sushi chef",
+      "count": 1
+     },
+     {
+      "count": 30,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "fish"
+     },
+     {
+      "count": 1,
+      "id": "hazard",
+      "kind": "hazard",
+      "label": "bomb"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Slice 30 fishes. Not the bombs!",
+     "controlsHint": "Tap a lane to slash above the line. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "5e61a22c",
+   "bot": {
+    "tick": 2534,
+    "outcome": "won",
+    "hash": "edb99596"
+   },
+   "idle": {
+    "tick": 759,
+    "outcome": "lost",
+    "hash": "92d31567"
+   }
+  },
+  {
+   "id": "genre:hop",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "hop",
+    "controlParams": {
+     "generator": "hop_rows",
+     "tuning": {
+      "rows": 50
+     }
+    },
+    "genre": {
+     "id": "hop",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Chicken Crossing",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "busy road",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Hop 50 rows across roads, rivers and rails to the meadow. Dodge the cars.",
+     "count": 50,
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 2
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "chicken",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "car"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "meadow"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Cross 50 rows to the meadow!",
+     "controlsHint": "Tap to hop forward, swipe to hop sideways or back. Arrows work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "739f40a7",
+   "bot": {
+    "tick": 2443,
+    "outcome": "won",
+    "hash": "17328c71"
+   },
+   "idle": {
+    "tick": 360,
+    "outcome": "lost",
+    "hash": "80b7b06c"
+   }
+  },
+  {
+   "id": "genre:crowd",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "crowd",
+    "controlParams": {
+     "generator": "crowd_track"
+    },
+    "genre": {
+     "id": "crowd",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Then Army",
+    "archetype": "combat_lite",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "right doors",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Pick the better gate to grow your crowd, dodge the saws, then beat the ogre.",
+     "count": 1,
+     "role": "boss"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "then",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "saw"
+     },
+     {
+      "count": 1,
+      "id": "boss",
+      "kind": "target",
+      "label": "ogre"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Grow your crowd, then beat the ogre!",
+     "controlsHint": "Drag left or right to pick a gate. Arrows work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "5799a600",
+   "bot": {
+    "tick": 2138,
+    "outcome": "won",
+    "hash": "c29605e9"
+   },
+   "idle": {
+    "tick": 2087,
+    "outcome": "lost",
+    "hash": "3dda6bb6"
+   }
+  },
+  {
+   "id": "genre:merge",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "merge",
+    "controlParams": {
+     "generator": "merge_box"
+    },
+    "genre": {
+     "id": "merge",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Cat Merge",
+    "archetype": "collect_exit",
+    "targetDurationSec": 69,
+    "theme": {
+     "setting": "basket",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Drop ones squish togethers and merge two of a kind into bigger ones. Make 50 merges before time runs out.",
+     "count": 50,
+     "role": "item"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "cat",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "item",
+      "kind": "collectible",
+      "label": "ones squish together"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Merge 50 times before time runs out!",
+     "controlsHint": "Drag to move, let go to drop. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "8d49c6e7",
+   "bot": {
+    "tick": 3347,
+    "outcome": "won",
+    "hash": "abf7cf0b"
+   },
+   "idle": {
+    "tick": 1148,
+    "outcome": "lost",
+    "hash": "8d7bee6f"
+   }
+  },
+  {
+   "id": "genre:push",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "push",
+    "controlParams": {
+     "generator": "push_ring"
+    },
+    "genre": {
+     "id": "push",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Sumo Wrestler Push",
+    "archetype": "combat_lite",
+    "targetDurationSec": 89,
+    "theme": {
+     "setting": "forest",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Push 7 his rivals out of the ring in three rounds. Do not fall off yourself.",
+     "count": 7,
+     "role": "rival"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "sumo wrestler",
+      "count": 1
+     },
+     {
+      "count": 7,
+      "id": "rival",
+      "kind": "chaser",
+      "label": "his rival"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Push every his rival out of the ring!",
+     "controlsHint": "Drag to move, tap to lunge. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "9e24aa1f",
+   "bot": {
+    "tick": 3201,
+    "outcome": "won",
+    "hash": "b97344ac"
+   },
+   "idle": {
+    "tick": 2243,
+    "outcome": "lost",
+    "hash": "3c21ae84"
+   }
+  },
+  {
+   "id": "genre:survivor",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "survivor",
+    "controlParams": {
+     "generator": "survivor_waves"
+    },
+    "genre": {
+     "id": "survivor",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Knight vs Zombies",
+    "archetype": "combat_lite",
+    "targetDurationSec": 75,
+    "theme": {
+     "setting": "ruined town",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Survive 36 zombies in 3 waves, pick an upgrade after each, then beat the boss.",
+     "count": 36,
+     "role": "enemy"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "knight",
+      "count": 1
+     },
+     {
+      "count": 36,
+      "id": "enemy",
+      "kind": "chaser",
+      "label": "zombie"
+     },
+     {
+      "count": 1,
+      "id": "drop",
+      "kind": "collectible",
+      "label": "crystal"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Survive 3 waves of zombies, then the boss!",
+     "controlsHint": "Drag or arrows to move. You fire by yourself."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "bc5a76b1",
+   "bot": {
+    "tick": 2410,
+    "outcome": "won",
+    "hash": "707a202c"
+   },
+   "idle": {
+    "tick": 1031,
+    "outcome": "lost",
+    "hash": "c2ec3432"
+   }
+  },
+  {
+   "id": "genre:hole",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "hole",
+    "controlParams": {
+     "generator": "hole_swallow",
+     "tuning": {
+      "k0": "2:thing:item1",
+      "k1": "1:thing:item2",
+      "k2": "0:gen3d-traffic-cone",
+      "k3": "1:cc0-traffic-barrier",
+      "k4": "1:gen3d-parking-meter",
+      "k5": "1:cc0-dumpster",
+      "k6": "2:cc0-van",
+      "k7": "2:gen3d-crosswalk-sign",
+      "k8": "2:cc0-bus",
+      "k9": "3:gen3d-street-clock",
+      "k10": "3:townhouse",
+      "k11": "3:gen3d-skyscraper",
+      "finale": "gen3d-glass-office-tower"
+     }
+    },
+    "genre": {
+     "id": "hole",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Black Hole",
+    "archetype": "collect_exit",
+    "targetDurationSec": 180,
+    "theme": {
+     "setting": "busy city",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Swallow things smaller than the hole to grow: 60 points in each of 3 rounds of 60 s, then the glass office tower.",
+     "count": 3,
+     "seconds": 60,
+     "role": "item1"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "black hole",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "item1",
+      "kind": "collectible",
+      "label": "car"
+     },
+     {
+      "count": 1,
+      "id": "item2",
+      "kind": "collectible",
+      "label": "person"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Swallow the cars and grow to eat the glass office tower!",
+     "controlsHint": "Drag to move the hole. Arrows work too. Bigger things block it."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "775f7201",
+   "bot": {
+    "tick": 1624,
+    "outcome": "won",
+    "hash": "a5efd83d"
+   },
+   "idle": {
+    "tick": 1741,
+    "outcome": "lost",
+    "hash": "2042dcf0"
+   }
+  },
+  {
+   "id": "genre:steal",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "steal",
+    "controlParams": {
+     "generator": "steal_bases"
+    },
+    "genre": {
+     "id": "steal",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Cat Heist",
+    "archetype": "delivery",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "fish market",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "deliver",
+     "description": "Grab 3 fishes from the rival base and carry them home in 3 rounds. Dodge the dogs.",
+     "role": "loot"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "cat",
+      "count": 1
+     },
+     {
+      "id": "loot",
+      "kind": "collectible",
+      "label": "fish",
+      "count": 9
+     },
+     {
+      "id": "guard",
+      "kind": "chaser",
+      "label": "dog",
+      "count": 1
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Grab the fishes and run them home!",
+     "controlsHint": "Drag or arrows to move. Dodge the dogs."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "scoring": {}
+   },
+   "initial": "31e730cb",
+   "bot": {
+    "tick": 2287,
+    "outcome": "won",
+    "hash": "4a9e0f6f"
+   },
+   "idle": {
+    "tick": 1761,
+    "outcome": "lost",
+    "hash": "258adfcd"
+   }
+  },
+  {
+   "id": "genre:sort",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "sort",
+    "controlParams": {
+     "generator": "sort_bins",
+     "tuning": {
+      "items": 45,
+      "rounds": 3
+     }
+    },
+    "genre": {
+     "id": "sort",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Fox Sort",
+    "archetype": "collect_exit",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "toy shop",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Send teddy bears, rubber ducks and balls to bins of their kind: fill 15 bins in 3 rounds, keep the shelf free.",
+     "count": 15,
+     "role": "sort0"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fox",
+      "count": 1
+     },
+     {
+      "count": 1,
+      "id": "sort0",
+      "kind": "collectible",
+      "label": "teddy bear"
+     },
+     {
+      "count": 1,
+      "id": "sort1",
+      "kind": "collectible",
+      "label": "rubber duck"
+     },
+     {
+      "count": 1,
+      "id": "sort2",
+      "kind": "collectible",
+      "label": "ball"
+     },
+     {
+      "count": 1,
+      "id": "sort3",
+      "kind": "collectible",
+      "label": "teddy bear"
+     },
+     {
+      "count": 1,
+      "id": "sort4",
+      "kind": "collectible",
+      "label": "rubber duck"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Sort the teddy bears, rubber ducks and balls!",
+     "controlsHint": "Tap a line to send its front item. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "2aa66c57",
+   "bot": {
+    "tick": 3018,
+    "outcome": "won",
+    "hash": "b10682b2"
+   },
+   "idle": {
+    "tick": 1044,
+    "outcome": "lost",
+    "hash": "bdb5a528"
+   }
+  },
+  {
+   "id": "genre:arrows",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "arrows",
+    "controlParams": {
+     "generator": "arrows_grid",
+     "tuning": {
+      "rounds": 3
+     }
+    },
+    "genre": {
+     "id": "arrows",
+     "mode": "default",
+     "compilerVersion": "genre.v6"
+    },
+    "title": "Car Jam",
+    "archetype": "combat_lite",
+    "targetDurationSec": 72,
+    "theme": {
+     "setting": "parking lot",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Tap cars to send them off along their arrows. One with something in its way bumps and costs a heart.",
+     "count": 30,
+     "role": "piece"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "parking attendant"
+     },
+     {
+      "count": 30,
+      "id": "piece",
+      "kind": "target",
+      "label": "car"
+     }
+    ],
+    "scoring": {},
+    "tutorial": {
+     "goalLine": "Clear every car in 3 rounds!",
+     "controlsHint": "Tap one with a clear way out. Arrows and Space work too."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "cd4147fd",
+   "bot": {
+    "tick": 897,
+    "outcome": "won",
+    "hash": "ee6cb821"
+   },
+   "idle": {
+    "tick": 4321,
+    "outcome": "lost",
+    "hash": "f807d7a6"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/chase_escape.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Roomba Aisle",
+    "archetype": "chase_escape",
+    "theme": {
+     "setting": "supermarket at night",
+     "mood": "frantic"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Reach the exit doors before the Roomba catches you.",
+     "role": "exit"
+    },
+    "mechanics": [
+     {
+      "id": "chaser",
+      "params": {
+       "role": "roomba",
+       "speed": "normal",
+       "catchEffect": "lose"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "exit",
+       "when": "enter",
+       "effect": "win"
+      }
+     },
+     {
+      "id": "stun",
+      "params": {
+       "targetRole": "roomba",
+       "seconds": 4,
+       "uses": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "hamster"
+     },
+     {
+      "id": "roomba",
+      "kind": "chaser",
+      "label": "giant Roomba"
+     },
+     {
+      "id": "exit",
+      "kind": "exit",
+      "label": "exit doors"
+     },
+     {
+      "id": "cart",
+      "kind": "prop",
+      "label": "shopping cart",
+      "count": 3
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Escape through the exit doors. The Roomba hunts you.",
+     "controlsHint": "Tap where to run. Use a cart to stun the Roomba."
+    },
+    "verification": [
+     {
+      "id": "stun_freezes",
+      "kind": "keypoint",
+      "mechanic": "stun",
+      "setup": {
+       "placeAt": {
+        "roomba": "player"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "roomba"
+       }
+      ],
+      "assert": {
+       "firedMechanics": [
+        "stun"
+       ]
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/checkpoint_race.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Neon Gates",
+    "archetype": "checkpoint_race",
+    "theme": {
+     "setting": "neon racetrack",
+     "mood": "fast"
+    },
+    "objective": {
+     "kind": "checkpoints",
+     "description": "Pass five neon gates in order.",
+     "count": 5,
+     "role": "gate"
+    },
+    "mechanics": [
+     {
+      "id": "checkpoint",
+      "params": {
+       "role": "gate",
+       "count": 5,
+       "ordered": true
+      }
+     },
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "seconds": 90,
+       "onEnd": "lose"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "hoverbike"
+     },
+     {
+      "id": "gate",
+      "kind": "checkpoint",
+      "label": "neon gate",
+      "count": 5
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Pass all 5 gates in order before time runs out.",
+     "controlsHint": "Tap the next gate to race to it."
+    },
+    "verification": [
+     {
+      "id": "order_enforced",
+      "kind": "keypoint",
+      "mechanic": "checkpoint",
+      "setup": {
+       "counters": {
+        "gatesPassed": 0
+       }
+      },
+      "actions": [
+       {
+        "actionId": "moveTo",
+        "target": "gate"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "gatesPassed": 1
+       }
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/collect_exit.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Five Mushrooms",
+    "archetype": "collect_exit",
+    "theme": {
+     "setting": "moonlit forest clearing",
+     "mood": "calm"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Collect five glowing mushrooms, then step through the portal.",
+     "count": 5,
+     "role": "mushroom"
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "role": "mushroom",
+       "count": 5,
+       "counter": "collected"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "portal",
+       "when": "enter",
+       "effect": "win"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fox"
+     },
+     {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom",
+      "count": 5
+     },
+     {
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Collect 5 mushrooms, then reach the portal.",
+     "controlsHint": "Tap a mushroom to walk to it. Tap again to pick it up."
+    },
+    "verification": [
+     {
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      },
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+       "replayEqual": true
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/collect_exit_stealth.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Museum Heist",
+    "archetype": "collect_exit",
+    "theme": {
+     "setting": "museum at night",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Steal the diamond, then slip out through the exit.",
+     "count": 1,
+     "role": "diamond"
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "role": "diamond",
+       "count": 1,
+       "counter": "collected"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "exit",
+       "when": "enter",
+       "effect": "win"
+      }
+     },
+     {
+      "id": "patrol",
+      "params": {
+       "role": "guard",
+       "disposition": "bold",
+       "stops": 3,
+       "touchEffect": "lose",
+       "sight": true
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "raccoon"
+     },
+     {
+      "id": "diamond",
+      "kind": "collectible",
+      "label": "diamond",
+      "count": 1
+     },
+     {
+      "id": "exit",
+      "kind": "exit",
+      "label": "exit doors"
+     },
+     {
+      "id": "guard",
+      "kind": "patrol",
+      "label": "guard",
+      "count": 2
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Steal the diamond and get out. Stay off the guards' paths.",
+     "controlsHint": "Tap the diamond to sneak to it. Tap again to take it."
+    },
+    "verification": [
+     {
+      "id": "spotted_loses",
+      "kind": "keypoint",
+      "mechanic": "patrol",
+      "setup": {
+       "placeAt": {
+        "player": "guard"
+       }
+      },
+      "ticks": 3,
+      "assert": {
+       "runState": "lost"
+      }
+     },
+     {
+      "id": "diamond_counts",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "diamond"
+       }
+      ],
+      "ticks": 2,
+      "assert": {
+       "counters": {
+        "collected": 1
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+       "replayEqual": true
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/combat_lite.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Slime Cleanup",
+    "archetype": "combat_lite",
+    "theme": {
+     "setting": "sewer tunnel",
+     "mood": "cartoon"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Knock out all five slimes.",
+     "count": 5,
+     "role": "slime"
+    },
+    "mechanics": [
+     {
+      "id": "defeat",
+      "params": {
+       "role": "slime",
+       "count": 5,
+       "hitsPerTarget": 1
+      }
+     },
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "janitor"
+     },
+     {
+      "id": "slime",
+      "kind": "target",
+      "label": "slime blob",
+      "count": 5
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Knock out all 5 slimes.",
+     "controlsHint": "Tap a slime to approach, tap again to hit it."
+    },
+    "verification": [
+     {
+      "id": "hit_removes_slime",
+      "kind": "keypoint",
+      "mechanic": "defeat",
+      "setup": {
+       "counters": {
+        "defeated": 4
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "slime"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "defeated": 5
+       },
+       "runState": "won"
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "007f9d0f",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "27fc54a4"
+   },
+   "idle": {
+    "tick": 537,
+    "outcome": "lost",
+    "hash": "b489b026"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/delivery.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Fragile Cake",
+    "archetype": "delivery",
+    "theme": {
+     "setting": "busy kitchen",
+     "mood": "careful"
+    },
+    "objective": {
+     "kind": "deliver",
+     "description": "Carry the cake to the party table without breaking it.",
+     "role": "table"
+    },
+    "mechanics": [
+     {
+      "id": "carry",
+      "params": {
+       "itemRole": "cake",
+       "destinationRole": "table",
+       "fragile": true
+      }
+     },
+     {
+      "id": "patrol",
+      "params": {
+       "role": "waiter",
+       "disposition": "bold",
+       "stops": 3,
+       "touchEffect": "lose"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "chef"
+     },
+     {
+      "id": "cake",
+      "kind": "item",
+      "label": "fragile cake"
+     },
+     {
+      "id": "table",
+      "kind": "destination",
+      "label": "party table"
+     },
+     {
+      "id": "waiter",
+      "kind": "patrol",
+      "label": "hurried waiter"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Bring the cake to the party table. Avoid the waiter.",
+     "controlsHint": "Tap the cake, pick it up, then tap the table."
+    },
+    "verification": [
+     {
+      "id": "drop_at_table_wins",
+      "kind": "keypoint",
+      "mechanic": "carry",
+      "setup": {
+       "placeAt": {
+        "player": "table"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "cake"
+       }
+      ],
+      "ticks": 40,
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/delivery_orders.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Burger Rush",
+    "archetype": "delivery",
+    "theme": {
+     "setting": "burger diner",
+     "mood": "hectic"
+    },
+    "objective": {
+     "kind": "deliver",
+     "description": "Serve every customer the dish they ordered before the shift ends.",
+     "role": "customer"
+    },
+    "mechanics": [
+     {
+      "id": "carry",
+      "params": {
+       "itemRole": "burger",
+       "destinationRole": "customer",
+       "fragile": false,
+       "menu": [
+        "burger",
+        "fries"
+       ]
+      }
+     },
+     {
+      "id": "timer",
+      "params": {
+       "id": "shift",
+       "seconds": 90,
+       "onEnd": "lose"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "cook"
+     },
+     {
+      "id": "burger",
+      "kind": "item",
+      "label": "burger"
+     },
+     {
+      "id": "fries",
+      "kind": "item",
+      "label": "fries"
+     },
+     {
+      "id": "customer",
+      "kind": "destination",
+      "label": "hungry customer",
+      "count": 2
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Serve each customer the dish they ordered before time runs out.",
+     "controlsHint": "Tap a dish to grab it, then tap the customer who ordered it."
+    },
+    "verification": [
+     {
+      "id": "right_order_scores",
+      "kind": "keypoint",
+      "mechanic": "carry",
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "burger"
+       },
+       {
+        "actionId": "use",
+        "target": "customer"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "orders_served": 1
+       }
+      }
+     },
+     {
+      "id": "wrong_order_ignored",
+      "kind": "keypoint",
+      "mechanic": "carry",
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "fries"
+       },
+       {
+        "actionId": "use",
+        "target": "customer"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "orders_served": 0
+       }
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/hazard_crossing.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Lava Stepping Stones",
+    "archetype": "hazard_crossing",
+    "theme": {
+     "setting": "volcanic cavern",
+     "mood": "dangerous"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Cross the lava field to the far ledge.",
+     "role": "ledge"
+    },
+    "mechanics": [
+     {
+      "id": "hazard_zone",
+      "params": {
+       "role": "lava",
+       "effect": "lose",
+       "pulse": {
+        "onSeconds": 2,
+        "offSeconds": 4
+       }
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "ledge",
+       "when": "enter",
+       "effect": "win"
+      }
+     },
+     {
+      "id": "checkpoint",
+      "params": {
+       "role": "stone",
+       "count": 3,
+       "ordered": false
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "salamander"
+     },
+     {
+      "id": "lava",
+      "kind": "hazard",
+      "label": "lava vent",
+      "count": 5
+     },
+     {
+      "id": "stone",
+      "kind": "checkpoint",
+      "label": "stepping stone",
+      "count": 3
+     },
+     {
+      "id": "ledge",
+      "kind": "exit",
+      "label": "far ledge"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Reach the far ledge. Lava vents pulse.",
+     "controlsHint": "Tap a stepping stone when the lava is calm."
+    },
+    "verification": [
+     {
+      "id": "lava_off_is_safe",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+       "placeAt": {
+        "player": "lava"
+       },
+       "entityStates": {
+        "lava": "off"
+       }
+      },
+      "ticks": 20,
+      "assert": {
+       "runState": "running"
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/survival_timer.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Red Tiles",
+    "archetype": "survival_timer",
+    "theme": {
+     "setting": "neon arena",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "survive",
+     "description": "Survive 60 seconds while red floor tiles pulse.",
+     "seconds": 60
+    },
+    "mechanics": [
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "seconds": 60,
+       "onEnd": "win"
+      }
+     },
+     {
+      "id": "hazard_zone",
+      "params": {
+       "role": "tile",
+       "effect": "lose",
+       "pulse": {
+        "onSeconds": 3,
+        "offSeconds": 5
+       }
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "robot"
+     },
+     {
+      "id": "tile",
+      "kind": "hazard",
+      "label": "red floor tile",
+      "count": 6
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Stay off the red tiles for 60 seconds.",
+     "controlsHint": "Tap a safe spot to move there."
+    },
+    "verification": [
+     {
+      "id": "tile_kills_when_on",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+       "placeAt": {
+        "player": "tile"
+       }
+      },
+      "ticks": 80,
+      "assert": {
+       "runState": "lost"
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "ends",
+      "kind": "termination",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/switch_puzzle.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Not Green",
+    "archetype": "switch_puzzle",
+    "theme": {
+     "setting": "stone vault",
+     "mood": "puzzling"
+    },
+    "objective": {
+     "kind": "puzzle",
+     "description": "Press red and blue, but not green, to open the door.",
+     "role": "door"
+    },
+    "mechanics": [
+     {
+      "id": "switch",
+      "params": {
+       "switchRoles": [
+        "red",
+        "blue",
+        "green"
+       ],
+       "doorRole": "door",
+       "required": [
+        "red",
+        "blue"
+       ]
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "door",
+       "when": "enter",
+       "effect": "win"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "explorer"
+     },
+     {
+      "id": "red",
+      "kind": "switch",
+      "label": "red button"
+     },
+     {
+      "id": "blue",
+      "kind": "switch",
+      "label": "blue button"
+     },
+     {
+      "id": "green",
+      "kind": "switch",
+      "label": "green button"
+     },
+     {
+      "id": "door",
+      "kind": "door",
+      "label": "vault door"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Open the vault door with the right buttons.",
+     "controlsHint": "Tap a button to walk there, tap again to press it."
+    },
+    "verification": [
+     {
+      "id": "red_blue_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+       "entityStates": {
+        "red": "on"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "blue"
+       }
+      ],
+      "assert": {
+       "locked": {
+        "door": false
+       }
+      }
+     },
+     {
+      "id": "green_blocks",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+       "entityStates": {
+        "red": "on",
+        "blue": "on"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "green"
+       }
+      ],
+      "assert": {
+       "locked": {
+        "door": true
+       }
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/switch_puzzle_crates.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Crate Plates",
+    "archetype": "switch_puzzle",
+    "theme": {
+     "setting": "robot warehouse",
+     "mood": "puzzling"
+    },
+    "objective": {
+     "kind": "puzzle",
+     "description": "Push a crate onto each pressure plate to open the door.",
+     "role": "door"
+    },
+    "mechanics": [
+     {
+      "id": "switch",
+      "params": {
+       "switchRoles": [
+        "red",
+        "blue"
+       ],
+       "doorRole": "door",
+       "required": [
+        "red",
+        "blue"
+       ],
+       "crateRole": "box"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "door",
+       "when": "enter",
+       "effect": "win"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "lost robot"
+     },
+     {
+      "id": "red",
+      "kind": "switch",
+      "label": "red plate"
+     },
+     {
+      "id": "blue",
+      "kind": "switch",
+      "label": "blue plate"
+     },
+     {
+      "id": "box",
+      "kind": "prop",
+      "label": "crate",
+      "count": 2
+     },
+     {
+      "id": "door",
+      "kind": "door",
+      "label": "warehouse door"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Push a crate onto every plate to open the door.",
+     "controlsHint": "Tap a crate to push it one step toward its plate."
+    },
+    "verification": [
+     {
+      "id": "crate_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+       "entityStates": {
+        "blue": "on"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "box"
+       },
+       {
+        "actionId": "use",
+        "target": "box"
+       },
+       {
+        "actionId": "use",
+        "target": "box"
+       }
+      ],
+      "ticks": 40,
+      "assert": {
+       "entityStates": {
+        "red": "on"
+       },
+       "locked": {
+        "door": false
+       }
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/switch_puzzle_ordered.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Shelf Order",
+    "archetype": "switch_puzzle",
+    "theme": {
+     "setting": "kitchen shelves",
+     "mood": "puzzling"
+    },
+    "objective": {
+     "kind": "puzzle",
+     "description": "Knock off the red, blue and green vases in that order to reach the fish.",
+     "role": "door"
+    },
+    "mechanics": [
+     {
+      "id": "switch",
+      "params": {
+       "switchRoles": [
+        "red",
+        "blue",
+        "green"
+       ],
+       "doorRole": "door",
+       "required": [
+        "red",
+        "blue",
+        "green"
+       ],
+       "ordered": true
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "door",
+       "when": "enter",
+       "effect": "win"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "cat"
+     },
+     {
+      "id": "red",
+      "kind": "switch",
+      "label": "red vase"
+     },
+     {
+      "id": "blue",
+      "kind": "switch",
+      "label": "blue vase"
+     },
+     {
+      "id": "green",
+      "kind": "switch",
+      "label": "green vase"
+     },
+     {
+      "id": "door",
+      "kind": "door",
+      "label": "fish bowl"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Knock the vases off in the right order to reach the fish.",
+     "controlsHint": "Tap a vase to walk there, tap again to knock it off."
+    },
+    "verification": [
+     {
+      "id": "right_order_opens",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+       "entityStates": {
+        "red": "on",
+        "blue": "on"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "green"
+       }
+      ],
+      "assert": {
+       "locked": {
+        "door": false
+       }
+      }
+     },
+     {
+      "id": "wrong_order_resets",
+      "kind": "keypoint",
+      "mechanic": "switch",
+      "setup": {
+       "entityStates": {
+        "red": "on"
+       }
+      },
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "green"
+       }
+      ],
+      "assert": {
+       "entityStates": {
+        "red": "off"
+       },
+       "locked": {
+        "door": true
+       }
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/p25d/collect_exit_hidden.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Hide and Seek Room",
+    "archetype": "collect_exit",
+    "theme": {
+     "setting": "cluttered attic bedroom",
+     "mood": "curious"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Search the room for three hidden toys, then leave through the door.",
+     "count": 3,
+     "role": "mushroom"
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "role": "mushroom",
+       "count": 3,
+       "counter": "collected",
+       "hiddenIn": "spot"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "portal",
+       "when": "enter",
+       "effect": "win"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "kid"
+     },
+     {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "toy",
+      "count": 3
+     },
+     {
+      "id": "spot",
+      "kind": "prop",
+      "label": "hiding spot",
+      "count": 5
+     },
+     {
+      "id": "portal",
+      "kind": "exit",
+      "label": "door"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Find 3 hidden toys, then leave through the door.",
+     "controlsHint": "Tap a hiding spot to search it. Tap a toy to pick it up."
+    },
+    "verification": [
+     {
+      "id": "hidden_item_does_not_count",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "ticks": 10,
+      "assert": {
+       "counters": {
+        "collected": 0
+       }
+      }
+     },
+     {
+      "id": "found_item_counts",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "actions": [
+       {
+        "actionId": "moveTo",
+        "target": "spot"
+       },
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "ticks": 10,
+      "assert": {
+       "counters": {
+        "collected": 1
+       }
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+       "replayEqual": true
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/p25d/collect_exit_moving_walls.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Shifting Maze",
+    "archetype": "collect_exit",
+    "theme": {
+     "setting": "stone hedge maze",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Collect three keys, then reach the exit. The walls shift back and forth.",
+     "count": 3,
+     "role": "mushroom"
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "role": "mushroom",
+       "count": 3,
+       "counter": "collected"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "portal",
+       "when": "enter",
+       "effect": "win"
+      }
+     },
+     {
+      "id": "hazard_zone",
+      "params": {
+       "role": "wall",
+       "effect": "lose",
+       "pulse": {
+        "onSeconds": 2,
+        "offSeconds": 2,
+        "alternate": true
+       }
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "explorer"
+     },
+     {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "key",
+      "count": 3
+     },
+     {
+      "id": "portal",
+      "kind": "exit",
+      "label": "maze exit"
+     },
+     {
+      "id": "wall",
+      "kind": "hazard",
+      "label": "moving wall",
+      "count": 4
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Collect 3 keys, then reach the exit. Walls shift every 2 s.",
+     "controlsHint": "Tap to walk. Never step where a wall stands."
+    },
+    "verification": [
+     {
+      "id": "standing_wall_loses",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+       "placeAt": {
+        "player": "wall"
+       }
+      },
+      "ticks": 5,
+      "assert": {
+       "runState": "lost"
+      }
+     },
+     {
+      "id": "moved_wall_is_safe",
+      "kind": "keypoint",
+      "mechanic": "hazard_zone",
+      "setup": {
+       "placeAt": {
+        "player": "wall"
+       },
+       "entityStates": {
+        "wall": "off"
+       }
+      },
+      "ticks": 20,
+      "assert": {
+       "runState": "running"
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+       "replayEqual": true
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/__fixtures__/p25d/collect_exit_red_light.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "title": "Red Light Green Light",
+    "archetype": "collect_exit",
+    "theme": {
+     "setting": "sandy playground field",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "collect",
+     "description": "Collect three marbles, then reach the finish line. Freeze while the light is red.",
+     "count": 3,
+     "role": "mushroom"
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "role": "mushroom",
+       "count": 3,
+       "counter": "collected"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "role": "portal",
+       "when": "enter",
+       "effect": "win"
+      }
+     },
+     {
+      "id": "timer",
+      "params": {
+       "id": "light",
+       "seconds": 120,
+       "onEnd": "lose",
+       "phases": {
+        "goSeconds": 2,
+        "stopSeconds": 2,
+        "watcher": "watcher"
+       }
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "kid"
+     },
+     {
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "marble",
+      "count": 3
+     },
+     {
+      "id": "portal",
+      "kind": "exit",
+      "label": "finish line"
+     },
+     {
+      "id": "watcher",
+      "kind": "prop",
+      "label": "giant doll"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Collect 3 marbles, then cross the finish line. Freeze on red.",
+     "controlsHint": "Tap a marble to walk to it. Stand still while the doll watches."
+    },
+    "verification": [
+     {
+      "id": "moving_on_red_loses",
+      "kind": "keypoint",
+      "mechanic": "timer",
+      "setup": {
+       "flags": {
+        "light_red": true
+       }
+      },
+      "actions": [
+       {
+        "actionId": "moveTo",
+        "target": "portal"
+       }
+      ],
+      "ticks": 6,
+      "assert": {
+       "runState": "lost"
+      }
+     },
+     {
+      "id": "standing_on_red_is_safe",
+      "kind": "keypoint",
+      "mechanic": "timer",
+      "setup": {
+       "flags": {
+        "light_red": true
+       }
+      },
+      "ticks": 30,
+      "assert": {
+       "runState": "running"
+      }
+     },
+     {
+      "id": "third_marble_counts",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 2
+       }
+      },
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 3
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      }
+     },
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     },
+     {
+      "id": "replay",
+      "kind": "replay",
+      "assert": {
+       "replayEqual": true
+      }
+     }
+    ]
+   },
+   "initial": "cbebe8b8",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "0458bfe3"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "f5e1e0c3"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/arena.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "move_free",
+    "controlParams": {
+     "density": "normal",
+     "goal": "grow"
+    },
+    "title": "Big Fish Pond",
+    "archetype": "survival_timer",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "shallow pond seen from above",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "survive",
+     "description": "Eat smaller fish to grow, keep away from bigger ones, and outgrow them all within 40 seconds.",
+     "seconds": 40
+    },
+    "mechanics": [
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "seconds": 40,
+       "onEnd": "lose"
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "little fish"
+     },
+     {
+      "id": "hunter",
+      "kind": "hazard",
+      "label": "big fish",
+      "count": 3
+     },
+     {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "plankton",
+      "count": 12
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Outgrow every hunter within 40 seconds.",
+     "controlsHint": "Drag or arrows to swim. You are blue: eat yellow and green, flee red."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "c2782248",
+   "bot": {
+    "tick": 86,
+    "outcome": "won",
+    "hash": "5e5e5084"
+   },
+   "idle": {
+    "tick": 261,
+    "outcome": "lost",
+    "hash": "163638e3"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/duel.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "duel",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "title": "Rooftop Duel",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 45,
+    "theme": {
+     "setting": "a rooftop at night",
+     "mood": "tense"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Dodge the swings, strike in the openings and knock your rival out.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "fighter"
+     },
+     {
+      "id": "rival",
+      "kind": "hazard",
+      "label": "ninja"
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "knockout"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Dodge the wind-up, strike in the opening. Knock out the rival.",
+     "controlsHint": "Tap right or Space to strike, tap left or Down to dodge."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "3b2d9482",
+   "bot": {
+    "tick": 357,
+    "outcome": "won",
+    "hash": "14cfe72e"
+   },
+   "idle": {
+    "tick": 231,
+    "outcome": "lost",
+    "hash": "ad36440c"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/flap.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "flap",
+    "controlParams": {
+     "difficulty": "normal",
+     "lengthM": 120
+    },
+    "title": "Pipe Flutter",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "bright sky over green pipes",
+     "mood": "cheerful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Flap through the gaps between the pipes to the finish.",
+     "role": "finish"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "bird"
+     },
+     {
+      "id": "pipe",
+      "kind": "hazard",
+      "label": "pipe",
+      "count": 5
+     },
+     {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Fly through the pipe gaps to the finish.",
+     "controlsHint": "Tap or Space to flap."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "04c74b31",
+   "bot": {
+    "tick": 1214,
+    "outcome": "won",
+    "hash": "d1675890"
+   },
+   "idle": {
+    "tick": 32,
+    "outcome": "lost",
+    "hash": "a32ce76d"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/platform.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "platform",
+    "controlParams": {
+     "difficulty": "normal",
+     "lengthM": 90,
+     "checkpoints": true
+    },
+    "title": "Spike Hop",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "floating stone platforms",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Jump across the platforms to the flag without touching the spikes.",
+     "role": "finish"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "hero"
+     },
+     {
+      "id": "spikes",
+      "kind": "hazard",
+      "label": "spikes",
+      "count": 5
+     },
+     {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "flag"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Reach the flag. Jump over gaps and spikes.",
+     "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "e2e305c9",
+   "bot": {
+    "tick": 1251,
+    "outcome": "won",
+    "hash": "c27cf076"
+   },
+   "idle": {
+    "tick": 5400,
+    "outcome": "running",
+    "hash": "83518756"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/rhythm.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "rhythm",
+    "controlParams": {
+     "bpm": 120,
+     "density": "normal",
+     "beats": 48
+    },
+    "title": "Beat Tiles",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 30,
+    "theme": {
+     "setting": "a neon stage",
+     "mood": "energetic"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Tap each tile as it reaches the line and play the song to the last beat.",
+     "role": "finish"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "drummer"
+     },
+     {
+      "id": "note",
+      "kind": "collectible",
+      "label": "tile",
+      "count": 12
+     },
+     {
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed beat"
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "last beat"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Tap as each tile hits the line. Three misses end the song.",
+     "controlsHint": "Tap or Space on the beat. M toggles sound."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "cfa981de",
+   "bot": {
+    "tick": 1561,
+    "outcome": "won",
+    "hash": "0c0b70fc"
+   },
+   "idle": {
+    "tick": 250,
+    "outcome": "lost",
+    "hash": "6778fc3e"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/runner.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "runner",
+    "controlParams": {
+     "speed": "normal",
+     "density": "high",
+     "lengthM": 250
+    },
+    "title": "Obstacle Dash",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "sunny arcade track",
+     "mood": "energetic"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Run to the finish line without hitting an obstacle.",
+     "role": "finish"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "runner"
+     },
+     {
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "hurdle"
+     },
+     {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "7304f0f2",
+   "bot": {
+    "tick": 1522,
+    "outcome": "won",
+    "hash": "862e58ad"
+   },
+   "idle": {
+    "tick": 165,
+    "outcome": "lost",
+    "hash": "424c63d1"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/shooter.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "title": "Target Range",
+    "archetype": "combat_lite",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "dusty shooting range at sunset",
+     "mood": "action"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Hit every target and stop every wave before it reaches you.",
+     "count": 4,
+     "role": "target"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "ranger"
+     },
+     {
+      "id": "target",
+      "kind": "target",
+      "label": "target",
+      "count": 4
+     },
+     {
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "robot"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Hit every target and stop the waves.",
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "375691e4",
+   "bot": {
+    "tick": 1055,
+    "outcome": "won",
+    "hash": "33d90e50"
+   },
+   "idle": {
+    "tick": 1057,
+    "outcome": "lost",
+    "hash": "91219a22"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/steer.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "steer",
+    "controlParams": {
+     "difficulty": "normal",
+     "lengthM": 450
+    },
+    "title": "Tire Wall Rally",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "twisty race track lined with tire walls",
+     "mood": "fast"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Steer through the bends and cross the finish line before the rival cars.",
+     "role": "finish"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "race car"
+     },
+     {
+      "id": "barrier",
+      "kind": "hazard",
+      "label": "tire barrier",
+      "count": 5
+     },
+     {
+      "id": "rival",
+      "kind": "patrol",
+      "label": "rival car",
+      "count": 3
+     },
+     {
+      "id": "turbo",
+      "kind": "collectible",
+      "label": "turbo",
+      "count": 3
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Beat the rival cars to the finish line.",
+     "controlsHint": "Drag or arrows to steer. Down or a second finger brakes."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "9ec19226",
+   "bot": {
+    "tick": 1406,
+    "outcome": "won",
+    "hash": "50dc21f3"
+   },
+   "idle": {
+    "tick": 2256,
+    "outcome": "lost",
+    "hash": "2747103e"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/throw.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "throw",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "title": "Toss Up",
+    "archetype": "combat_lite",
+    "targetDurationSec": 60,
+    "theme": {
+     "setting": "sunny park lawn",
+     "mood": "playful"
+    },
+    "objective": {
+     "kind": "defeat_targets",
+     "description": "Hit every target before you run out of throws.",
+     "count": 3,
+     "role": "target"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "thrower"
+     },
+     {
+      "id": "target",
+      "kind": "target",
+      "label": "target",
+      "count": 3
+     },
+     {
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Hit every target before the throws run out.",
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "57cde84e",
+   "bot": {
+    "tick": 777,
+    "outcome": "won",
+    "hash": "ff0295d0"
+   },
+   "idle": {
+    "tick": 5400,
+    "outcome": "running",
+    "hash": "4ca5d739"
+   }
+  },
+  {
+   "id": "fixture:src/play/arcade/__fixtures__/timing.json",
+   "seed": 1,
+   "spec": {
+    "schema": "gamespec.v1",
+    "control": "timing",
+    "controlParams": {
+     "mode": "stack",
+     "speed": "normal",
+     "rounds": 8
+    },
+    "title": "Tower Stack",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 45,
+    "theme": {
+     "setting": "a windy hilltop at sunset",
+     "mood": "cheerful"
+    },
+    "objective": {
+     "kind": "reach",
+     "description": "Stop each swinging block over the tower. Stack eight to reach the top.",
+     "role": "finish"
+    },
+    "mechanics": [],
+    "roles": [
+     {
+      "id": "player",
+      "kind": "player",
+      "label": "crane"
+     },
+     {
+      "id": "block",
+      "kind": "collectible",
+      "label": "block",
+      "count": 8
+     },
+     {
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed drop"
+     },
+     {
+      "id": "finish",
+      "kind": "exit",
+      "label": "top of the tower"
+     }
+    ],
+    "tutorial": {
+     "goalLine": "Stop each block over the tower. Stack 8 to win.",
+     "controlsHint": "Tap or Space to drop the block."
+    },
+    "verification": [
+     {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+       "runState": "won"
+      }
+     }
+    ],
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    }
+   },
+   "initial": "e3b09d10",
+   "bot": {
+    "tick": 401,
+    "outcome": "won",
+    "hash": "42e29231"
+   },
+   "idle": {
+    "tick": 201,
+    "outcome": "lost",
+    "hash": "32d76c02"
+   }
+  }
+ ]
+}

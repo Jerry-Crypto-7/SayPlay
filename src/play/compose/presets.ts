@@ -51,8 +51,15 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * Recipes of staged genres (P54C T4, P66 T2). They stay out of `PRESETS` – every PRESETS entry is a
  * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
  * P54C T12 and P66 T12 made the last ones live; the table stays for a genre whose own task has to fall back.
+ * P68 T1 stages its five games here; each P68-I activation task moves its own line to `PRESETS`.
  */
-export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {};
+export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
+  'stunt.default': { move: 'drive', actions: ['stunt'], objective: 'reach', threats: ['obstacle'] },
+  'minigolf.default': { move: 'stationary', actions: ['putt'], objective: 'score', threats: [] },
+  'railfps.default': { move: 'stationary', actions: ['railshoot'], objective: 'defeat', threats: ['chaser'] },
+  'buildshift.default': { move: 'stationary', actions: ['shopbuild'], objective: 'score', threats: [] },
+  'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },
+};
 
 /**
  * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested

@@ -134,6 +134,11 @@ const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
   steal: 'a heist game',
   sort: 'a sorting game',
   arrows: 'a tap-away puzzle',
+  stunt: 'a stunt race',
+  minigolf: 'a mini golf game',
+  railfps: 'a first-person rail shooter',
+  buildshift: 'a shop building game',
+  drawsave: 'a draw-to-save puzzle',
 };
 
 /** Hra žánru (P32B T2) se jmenuje podle žánru a režimu – ovládání pahýlu je jen dnešní náhrada. */

@@ -29,6 +29,8 @@ const CLASS_OF_CONTROL: Readonly<Record<ControlId, VerbClass>> = {
   walker: 'move_free', ball: 'throw', lanes: 'steer', hop: 'tap_go', crowd: 'steer', merge: 'manipulate', push: 'move_free',
   // P66 T2: kostry nových žánrů – pohyb po ploše, třídění a šipky jsou ruční práce s věcmi.
   survivor: 'move_free', hole: 'move_free', steal: 'move_free', sort: 'manipulate', arrows: 'manipulate',
+  // P68 T1: kostry pěti her P68 – jízda náklonem, odpal jako hod, míření a střelba, stavba a kreslení rukou.
+  stunt: 'steer', minigolf: 'throw', railfps: 'aim_shoot', buildshift: 'manipulate', drawsave: 'manipulate',
 };
 
 const roleOf = (spec: GameSpecV1, ...kinds: readonly GameSpecV1['roles'][number]['kind'][]): string | null =>

@@ -449,6 +449,13 @@ const PAIRS: readonly Pair[] = GENRES.flatMap((genre) => GENRE_MODES[genre].map(
 const key = (p: Pair): string => `${p.genre}.${p.mode}`;
 
 /**
+ * Brána aktivace (P68 T1): žánry, které klasifikátor nevidí, i když je kategorie přepne na `ready` a napíše jim
+ * narážky – obdoba `DIRECTOR_PENDING` režiséra. Hra je do té doby dostupná jen ručním specem (fixture). Žánr odsud
+ * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `STAGED_CONTROLS`.
+ */
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+
+/**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards
  * acorns before winter comes“, P36A T11): napřed sběr v Aréně – volná chůze po
  * scéně z věty s věcmi z prostředí sedí skoro každému tématu –, pak ostatní
@@ -481,7 +488,8 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
   const availability = (p: Pair): ModeAvailability => (modules[p.genre] as GenreModule).availability(p.mode as never);
   // Kostra žánru (P54C T4, `staged`) nehraje: v pořadí není vůbec, ani na konci – skladatel i návrh zkoušejí celé pořadí.
-  const pairs = PAIRS.filter((p) => availability(p) !== 'staged');
+  // Žánr brány aktivace (`ROUTE_PENDING`, P68 T1) taky ne, i když ho jeho kategorie už přepnula na `ready`.
+  const pairs = PAIRS.filter((p) => availability(p) !== 'staged' && !ROUTE_PENDING.has(p.genre));
   const scores = new Map<string, { score: number; why: string[] }>(pairs.map((p) => [key(p), { score: 0, why: [] }]));
   const add = (p: Pair, points: number, why: string): void => {
     const entry = scores.get(key(p));

@@ -295,7 +295,8 @@ export class WitnessRecorder {
       this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
     this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
     // P66 T12: přežití, díra a krádež se hýbou po ploše jako aréna (vstup `arena`).
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes', hop: 'hop', crowd: 'crowd', push: 'roam', survivor: 'roam', hole: 'roam', steal: 'roam' };
+    // P68 T1: závod s triky jede jako plavba (`drive`); minigolf, střelnice z očí, stavba a kreslení hrdinou nehýbou.
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes', hop: 'hop', crowd: 'crowd', push: 'roam', survivor: 'roam', hole: 'roam', steal: 'roam', stunt: 'drive' };
     this.movementVerb = this.control === 'steer' && baseControlOf(this.world.control).params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
     for (const binding of this.bindings.values()) {

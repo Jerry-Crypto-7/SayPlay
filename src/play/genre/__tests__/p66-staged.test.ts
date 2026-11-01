@@ -19,6 +19,7 @@ import { SUBSYSTEMS } from '@/sim/rng';
 import { classifyGenre } from '../classify';
 import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreId, genreSpecSchema } from '../contract';
 import { GENRE_MODULES, compileGenre } from '../index';
+import { P68_GENRES } from '../p68-contract';
 
 const P66 = ['survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
 type P66Genre = (typeof P66)[number];
@@ -47,8 +48,9 @@ beforeAll(async () => {
 });
 
 describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', () => {
-  it('the contract has 24 genres: the 19 before P66 and five live ones with one default mode and their own cues', () => {
-    expect(GENRES).toHaveLength(24);
+  it('the contract has 24 genres before P68: the 19 before P66 and five live ones with one default mode and their own cues', () => {
+    // P68 T1 přidal pět dalších koster (`p68-staged.test.ts`) – 24 platí pro žánry do P66.
+    expect(GENRES.filter((genre) => !(P68_GENRES as readonly string[]).includes(genre))).toHaveLength(24);
     for (const genre of P66) {
       expect(GENRES).toContain(genre);
       expect(GENRE_MODES[genre as GenreId]).toEqual(['default']);
@@ -66,7 +68,8 @@ describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', ()
   });
 
   it('every P66 genre has a live cell with its own recipe and none is left staged', () => {
-    expect(Object.keys(STAGED_PRESETS)).toEqual([]);
+    // Kostry P68 (T1) mají buňku ve `STAGED_PRESETS`; žádný žánr P66 ne.
+    expect(Object.keys(STAGED_PRESETS).filter((id) => (P66 as readonly string[]).includes(id.split('.')[0]!))).toEqual([]);
     for (const genre of P66) {
       const cell = ALLOWED.find((entry) => entry.id === `${genre}.default`);
       expect(cell?.status, genre).toBe('live');
@@ -117,8 +120,8 @@ describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', ()
 });
 
 describe('genre.v6 and the hooks contract (P66 T2)', () => {
-  it('new games are genre.v6', () => {
-    expect(GENRE_COMPILER_VERSION).toBe('genre.v6');
+  it('new games are genre.v7 (P68 T1 moved on from genre.v6, which brought the hooks)', () => {
+    expect(GENRE_COMPILER_VERSION).toBe('genre.v7');
   });
 
   it('the hook streams come after every stream that existed, so saved games draw what they drew before', () => {

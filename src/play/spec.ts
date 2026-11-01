@@ -260,7 +260,7 @@ export const tutorialSchema = z
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball', 'lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball', 'lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /**
@@ -269,7 +269,8 @@ export type ControlId = (typeof CONTROLS)[number];
  * věty k novým žánrům posílá až klasifikátor (T13), který ho odsud vyjme spolu se čtením modelem.
  * P66 T2 přidá ovládání svých pěti koster ze stejného důvodu; věty k nim pošle až klasifikátor (P66 T12).
  */
-export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows'];
+// P68 T1: ovládání pěti koster P68 ze stejného důvodu; každé odsud vyjme jen úloha „zapoj X“ v P68-I.
+export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'];
 
 /** Ovládání, mezi kterými volí čtení modelem: všechna kromě `STAGED_CONTROLS`, v pořadí `CONTROLS`. */
 export const READ_CONTROLS = CONTROLS.filter((id) => !STAGED_CONTROLS.includes(id)) as unknown as readonly [ControlId, ...ControlId[]];
@@ -490,6 +491,12 @@ export const CONTROL_PARAMS = {
   steal: z.object({}).strict(),
   sort: z.object({}).strict(),
   arrows: z.object({}).strict(),
+  // P68 T1: ovládání pěti koster P68, ze stejného důvodu.
+  stunt: z.object({}).strict(),
+  minigolf: z.object({}).strict(),
+  railfps: z.object({}).strict(),
+  buildshift: z.object({}).strict(),
+  drawsave: z.object({}).strict(),
 } as const;
 
 /**
@@ -528,6 +535,11 @@ const SPEC_CONTROL_PARAMS = {
   steal: delegated(CONTROL_PARAMS.steal),
   sort: delegated(CONTROL_PARAMS.sort),
   arrows: delegated(CONTROL_PARAMS.arrows),
+  stunt: delegated(CONTROL_PARAMS.stunt),
+  minigolf: delegated(CONTROL_PARAMS.minigolf),
+  railfps: delegated(CONTROL_PARAMS.railfps),
+  buildshift: delegated(CONTROL_PARAMS.buildshift),
+  drawsave: delegated(CONTROL_PARAMS.drawsave),
 } as const;
 
 export const gameSpecSchema = z
@@ -562,6 +574,11 @@ export const gameSpecSchema = z
         SPEC_CONTROL_PARAMS.steal,
         SPEC_CONTROL_PARAMS.sort,
         SPEC_CONTROL_PARAMS.arrows,
+        SPEC_CONTROL_PARAMS.stunt,
+        SPEC_CONTROL_PARAMS.minigolf,
+        SPEC_CONTROL_PARAMS.railfps,
+        SPEC_CONTROL_PARAMS.buildshift,
+        SPEC_CONTROL_PARAMS.drawsave,
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),

@@ -144,6 +144,13 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   steal: arcade({ setting: true, cues: 'grab the loot from the rival base and carry it home while guards chase you', roles: ['loot', 'guard'], finish: false, labels: ['player', 'loot', 'guard'], mechanics: ['health'] }),
   sort: arcade({ setting: true, cues: 'tap a queue to send its front item to the bin of the same kind or colour', roles: ['sort0', 'sort1', 'sort2', 'sort3', 'sort4'], finish: false, labels: ['player', 'sort0', 'sort1', 'sort2', 'sort3', 'sort4'], mechanics: [] }),
   arrows: arcade({ setting: true, cues: 'tap a piece and it flies off along its arrow if the way out is clear', roles: ['piece'], finish: false, labels: ['player', 'piece'], mechanics: ['health'] }),
+  // P68 T1: ovládání pěti koster P68 ještě nemají svět, takže nic nečtou; role, popisky a mechaniky doplní úloha
+  // „zapoj X“ podle `integration.md` kategorie.
+  stunt: arcade({ cues: 'drive a vehicle over ramps and jumps, crash through debris, cross the finish line', roles: [], finish: false, labels: [], mechanics: [] }),
+  minigolf: arcade({ cues: 'charge and release to putt the ball around obstacles into the hole in few strokes', roles: [], finish: false, labels: [], mechanics: [] }),
+  railfps: arcade({ cues: 'ride a rail through your own eyes, turn to aim and shoot the targets before they hit you', roles: [], finish: false, labels: [], mechanics: [] }),
+  buildshift: arcade({ cues: 'build shop stations on the grid, spend the stock and serve customers before the shift ends', roles: [], finish: false, labels: [], mechanics: [] }),
+  drawsave: arcade({ cues: 'draw a wall with your finger to protect the hero from the threats until time runs out', roles: [], finish: false, labels: [], mechanics: [] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

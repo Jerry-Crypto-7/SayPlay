@@ -123,6 +123,12 @@ const GENRE_FOE: Readonly<Record<GenreId, string>> = {
   steal: 'robot',
   sort: 'fruit',
   arrows: 'car',
+  // P68 T1: ze stejného důvodu jen slova, která `DEFAULT_LABELS` už má.
+  stunt: 'rock',
+  minigolf: 'rock',
+  railfps: 'robot',
+  buildshift: 'robot',
+  drawsave: 'bomb',
 };
 
 const placeRoles = (setting: string): PlaceRoles | null => {

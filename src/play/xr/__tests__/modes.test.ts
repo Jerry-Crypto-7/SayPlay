@@ -17,6 +17,7 @@ import { LANES, laneX } from '@/play/arcade/pieces/lanes';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 import { stageOf } from '@/play/compose/stage-registry';
+import { ROUTE_PENDING } from '@/play/genre/classify';
 import { GENRES } from '@/play/genre/contract';
 import { readGameSpec } from '@/play/spec';
 
@@ -76,7 +77,8 @@ describe('every genre has a mode and a pose', () => {
 
 describe('the mode comes from the world itself', () => {
   it('recognises a live cell of every genre', () => {
-    expect(new Set(cells.map((cell) => genreOfWorld(cell.world)))).toEqual(new Set([...GENRES, null]));
+    // Kostra P68 v bráně aktivace živou buňku nemá; zapojení hry ji odsud pustí a test pak buňku chce.
+    expect(new Set(cells.map((cell) => genreOfWorld(cell.world)))).toEqual(new Set([...GENRES.filter((genre) => !ROUTE_PENDING.has(genre)), null]));
   });
 
   it.each(cells.map((cell) => [cell.id, cell] as const))('%s: its genre, and native exactly as before the table', (_id, { genre, world }) => {

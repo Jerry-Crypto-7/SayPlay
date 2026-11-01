@@ -413,8 +413,9 @@ describe('hole: the genre module', () => {
     expect(draft.cast?.[0]).toEqual({ label: 'car', does: 'collect' });
   });
 
-  it('the e2e fixture is the compiled sentence', () => {
+  it('the e2e fixture is the compiled sentence, saved as genre.v6', () => {
+    // Fixture je uložená hra `genre.v6` (otisk `p68-hash.test.ts` ji tak drží); P68 T1 zvedl jen verzi nových her.
     const fixture = JSON.parse(readFileSync(new URL('../../../../e2e/fixtures/p66-hole-spec.json', import.meta.url), 'utf8')) as unknown;
-    expect(fixture).toEqual(JSON.parse(JSON.stringify(SPEC)));
+    expect(fixture).toEqual(JSON.parse(JSON.stringify({ ...SPEC, genre: { ...SPEC.genre, compilerVersion: 'genre.v6' } })));
   });
 });

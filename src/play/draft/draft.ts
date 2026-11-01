@@ -279,6 +279,8 @@ function titleFrom(sentence: string, fallback: string): string {
  * rychlé hry a přidal druhy, které jejich moduly opravdu skládají: „<Postava> Hole“, „<Postava> Heist“, „<Postava> Sort“.
  * Přežití („Knight vs Skeletons“) ani šipky („Car Jam“) šablonu „survivor“ / „arrows“ nevyrábějí, takže čtený název
  * „Zombie Survivor“ zůstává.
+ * Druhy názvů her P68 sem přidá až úloha „zapoj X“ (P68-I): dřív by slovo jako „rescue“ změnilo názvy, a tím
+ * i semínka, nových her 24 dosavadních žánrů (review T1).
  */
 const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort)$/i;
 
@@ -1157,6 +1159,12 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   steal: 'rival base',
   sort: 'toy shop',
   arrows: 'parking lot',
+  // P68 T1: výchozí místa pěti her P68 (úloha zapojení je smí změnit podle `integration.md`).
+  stunt: 'desert canyon',
+  minigolf: 'mini golf course',
+  railfps: 'abandoned factory',
+  buildshift: 'shopping street',
+  drawsave: 'meadow',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 

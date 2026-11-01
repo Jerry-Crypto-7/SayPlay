@@ -145,5 +145,11 @@ export function genreDoubles(fallback: readonly string[] = []): { readonly [G in
     steal: stagedGenre('steal', []),
     sort: stagedGenre('sort', []),
     arrows: stagedGenre('arrows', []),
+    // Kostry P68 (T1), ze stejného důvodu.
+    stunt: stagedGenre('stunt', []),
+    minigolf: stagedGenre('minigolf', []),
+    railfps: stagedGenre('railfps', []),
+    buildshift: stagedGenre('buildshift', []),
+    drawsave: stagedGenre('drawsave', []),
   };
 }

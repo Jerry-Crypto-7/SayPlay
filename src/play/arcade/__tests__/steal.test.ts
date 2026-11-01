@@ -307,11 +307,12 @@ describe('steal genre module (P66 T7)', () => {
     if (!read.ok) throw new Error(read.issues.join('; '));
     const spec = compileWith(stealGenre as GenreModule, read.value);
     expect(spec.control).toBe('steal');
-    expect(spec.genre).toEqual({ id: 'steal', mode: 'default', compilerVersion: 'genre.v6' });
+    expect(spec.genre).toEqual({ id: 'steal', mode: 'default', compilerVersion: 'genre.v7' });
     expect(arcadeWorldOf(spec, 1).ok).toBe(true);
     expect(readGenreSpec({ genre: 'steal', mode: 'default', hero: 'fox', setting: 'forest', params: { rounds: 5 } }).ok).toBe(false);
-    // Ruční spec e2e je přesně překlad žánru – fixture se od modulu tiše neodchýlí.
-    expect(JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p66-steal-spec.json'), 'utf8'))).toEqual(spec);
+    // Ruční spec e2e je přesně překlad žánru – fixture se od modulu tiše neodchýlí. Je to uložená hra `genre.v6`
+    // (drží ji otisk `p68-hash.test.ts`); P68 T1 zvedl jen verzi nových her.
+    expect(JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p66-steal-spec.json'), 'utf8'))).toEqual({ ...spec, genre: { ...spec.genre, compilerVersion: 'genre.v6' } });
   });
 
   it('reads the loot and the guards from the sentence cast, with defaults when the sentence names none', () => {

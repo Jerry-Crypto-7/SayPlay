@@ -30,6 +30,14 @@ export const STAGES = {
   steal: { scene: 'steal', input: 'arena' },
   sort: { scene: 'sort', input: 'lanes' },
   arrows: { scene: 'arrows', input: 'lanes' },
+  // P68 T1: kostry pěti her P68, scény `genres/<žánr>/` (zatím jen podlaha), vstupy zmrazené v `P68_INPUT`
+  // (`genre/p68-contract.ts`). `genre` = vlastní dotykový adaptér hry z `genres/touch-registry.ts`, který volá jen
+  // `session.press` / `session.hold` – tvar záznamu se nemění.
+  stunt: { scene: 'stunt', input: 'steer' },
+  minigolf: { scene: 'minigolf', input: 'throw-rig' },
+  railfps: { scene: 'railfps', input: 'genre' },
+  buildshift: { scene: 'buildshift', input: 'lanes' },
+  drawsave: { scene: 'drawsave', input: 'genre' },
 } as const;
 export type Stage = (typeof STAGES)[keyof typeof STAGES];
 export function stageOf(control: string): Stage | null {

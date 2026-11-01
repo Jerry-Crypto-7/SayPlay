@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { GENRES } from '../src/play/genre/contract';
 import { compileGenre, GENRE_MODULES, readGenreSpec } from '../src/play/genre/index';
+import { P68_GENRES } from '../src/play/genre/p68-contract';
 
 /**
  * Buňky rámování P64 (T1): 19 žánrů jako `p61-portrait` – hra z `p58a/framing-cells.json`, žánr, který tam není,
@@ -47,6 +48,13 @@ function cellOf(key: string): P64Cell {
  */
 const P66_GENRES: readonly string[] = ['survivor', 'hole', 'steal', 'sort', 'arrows'];
 
-export const P64_CELLS: readonly P64Cell[] = [...GENRES.filter((genre) => !P66_GENRES.includes(genre)), 'control:steer', 'control:walker', 'control:ball'].map(cellOf);
+/**
+ * Hry P68 (T1) jsou kostry, které se nepřeloží: do auditu na výšku jdou, až kategorie dodá ruční spec
+ * `e2e/fixtures/p68-<id>-spec.json`; stráže P64 (šířka, hash) je nehlídají, jako P66.
+ */
+const P68_FIXTURE = (key: string): string => join(process.cwd(), `e2e/fixtures/p68-${key}-spec.json`);
+const P68_CELLS: readonly P64Cell[] = P68_GENRES.filter((genre) => existsSync(P68_FIXTURE(genre))).map((genre) => ({ key: genre, id: 'p68-fixture', spec: JSON.parse(readFileSync(P68_FIXTURE(genre), 'utf8')) as unknown }));
 
-export const P64_AUDIT_CELLS: readonly P64Cell[] = [...P64_CELLS, ...P66_GENRES.map(cellOf)];
+export const P64_CELLS: readonly P64Cell[] = [...GENRES.filter((genre) => !P66_GENRES.includes(genre) && !(P68_GENRES as readonly string[]).includes(genre)), 'control:steer', 'control:walker', 'control:ball'].map(cellOf);
+
+export const P64_AUDIT_CELLS: readonly P64Cell[] = [...P64_CELLS, ...P66_GENRES.map(cellOf), ...P68_CELLS];

@@ -30,10 +30,15 @@ import type { ControlId, GameRole, GameSpecV1 } from '../spec';
  * `genre.v5` (P51 T2): finále ve všech žánrech, nepřátelé a hustota událostí (`FINALE5_GENRE_VERSION`); uložené `genre.v4` hrají jako dřív.
  * `genre.v6` (P66 T2): háčky (kola, vylepšení mezi vlnami, vzácnost, `HOOKS_GENRE_VERSION` v `arcade/hooks/contract.ts`) a pět nových
  * žánrů; uložené `genre.v5` hrají jako dřív (otisk `evals/play/p66/hash-baseline.json`).
+ * `genre.v7` (P68 T1): pět dalších žánrů (`P68_GENRE_VERSION`, `p68-contract.ts`) a osa natočení `railfps`; uložené `genre.v6`
+ * hrají jako dřív (otisk `evals/play/p68/hash-baseline.json`). Staré žánry pod `genre.v7` chování nemění.
  * Kontroly verze jsou „tahle a novější“ (`genreAtLeast`), nikdy rovnost s jednou verzí. Typ je `string`, ne doslovná
  * hodnota: stráž „jen před P66“ (`GENRE_COMPILER_VERSION !== 'genre.v5'` v `p66-hash.test.ts`) se tak po zvednutí verze přeloží.
  */
-export const GENRE_COMPILER_VERSION: string = 'genre.v6';
+export const GENRE_COMPILER_VERSION: string = 'genre.v7';
+
+/** Od této verze platí žánry P68 a sémantika osy natočení `railfps` (kontrola přes `genreAtLeast`). */
+export const P68_GENRE_VERSION = 'genre.v7';
 
 /**
  * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji
@@ -49,8 +54,11 @@ export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'heal
  * dav a brány, pouštění a slučování, vytlačování z ringu. Hrají až po úloze svého žánru.
  * P66 T2 přidá pět dalších koster: přežití ve vlnách (`survivor`), díra, která roste (`hole`), krádež (`steal`),
  * třídění do nádob (`sort`) a šipky, které odletí, když mají volnou cestu (`arrows`). Hrají až po T5–T9.
+ * P68 T1 přidá pět koster z jiných pohledů: závod s triky a troskami (`stunt`), minigolf (`minigolf`), střelnice z očí
+ * na kolejích (`railfps`), směna se stavbou obchodu (`buildshift`) a kresli a zachraň (`drawsave`). Hrají až po
+ * úloze kategorie a zapnutí v P68-I („zapoj X“, brána `ROUTE_PENDING` + `DIRECTOR_PENDING`).
  */
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows'] as const;
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -78,6 +86,11 @@ export const GENRE_MODES = {
   steal: ['default'],
   sort: ['default'],
   arrows: ['default'],
+  stunt: ['default'],
+  minigolf: ['default'],
+  railfps: ['default'],
+  buildshift: ['default'],
+  drawsave: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -213,6 +226,11 @@ export const genreSpecSchema = z.discriminatedUnion('genre', [
   variant('steal'),
   variant('sort'),
   variant('arrows'),
+  variant('stunt'),
+  variant('minigolf'),
+  variant('railfps'),
+  variant('buildshift'),
+  variant('drawsave'),
 ]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
@@ -252,6 +270,13 @@ export const FOE_DOES: Readonly<Record<GenreId, CastRole>> = {
   steal: 'chase_me',
   sort: 'scenery',
   arrows: 'scenery',
+  // P68 T1: překážka na trati triků, terče střelnice z očí se sestřelí, zákazníci obchodu a ohrožení kresby jsou
+  // kusy hry (role jim přidělí úloha kategorie), minigolf nepřítele nemá.
+  stunt: 'avoid',
+  minigolf: 'scenery',
+  railfps: 'shoot_at',
+  buildshift: 'scenery',
+  drawsave: 'avoid',
 };
 
 /**
@@ -397,6 +422,13 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   steal: { default: { collectible: 'loot', enemy: 'guards' } },
   sort: { default: { collectible: 'items' } },
   arrows: {},
+  // P68 T1: řádky koster předem, ať je úlohy kategorií nepíšou do sdíleného souboru; meze drží modul žánru.
+  // Trať triků, jamky a stavba obchodu staví z kol a úrovní, ne z počtu; terče střelnice a hrozby kresby počet mají.
+  stunt: {},
+  minigolf: {},
+  railfps: { default: { enemy: 'targets' } },
+  buildshift: {},
+  drawsave: { default: { enemy: 'threats' } },
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>
