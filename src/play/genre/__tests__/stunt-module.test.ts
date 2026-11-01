@@ -48,20 +48,25 @@ beforeAll(async () => {
 
 describe('stunt genre module: wired by P68-I (T8)', () => {
   // P68-I T8 (zapojení, podle `integration.md` → „Požadované změny“ 1): registr nese hotový modul, klasifikátor hru
-  // vidí; režisér a čtečka zůstávají za branou do placeného přenahrání P46E (plán P68-I, R5).
-  it('the registry module is the live one: ready, compiling, the same cues, bounds and draft as the scaffold', () => {
-    expect(GENRE_MODULES.stunt).toBe(stuntLiveGenre);
+  // vidí; režisér a čtečka zůstávají za branou do placeného přenahrání P46E (plán P68-I, R5). Brána času do hratelnosti
+  // 1. 11. neprošla, takže hra je zpátky v `ROUTE_PENDING` a registr nese hotový modul jako `staged` (`integration-log.md`).
+  it('the registry module compiles like the live one and is ready only once the game leaves the activation gate', () => {
+    expect(GENRE_MODULES.stunt.compile).toBe(stuntLiveGenre.compile);
+    expect(GENRE_MODULES.stunt.availability('default')).toBe(ROUTE_PENDING.has('stunt') ? 'staged' : 'ready');
     expect(stuntLiveGenre.availability('default')).toBe('ready');
     expect(stuntGenre.cues).toBe(stuntLiveGenre.cues);
     expect(stuntGenre.paramBounds).toBe(stuntLiveGenre.paramBounds);
     expect(stuntGenre.draftFill).toBe(stuntLiveGenre.draftFill);
-    expect(ROUTE_PENDING.has('stunt')).toBe(false);
     expect(DIRECTOR_PENDING.has('stunt')).toBe(true);
   });
 
-  it('wired, the classifier puts stunt first on every one of its own dev sentences', () => {
+  it('wired, the classifier puts stunt first on every one of its own dev sentences; held back, it never ranks it', () => {
     expect(DEV).toHaveLength(10);
-    for (const { text } of DEV) expect(classifyGenre(text, null).ranked[0]?.genre, text).toBe('stunt');
+    for (const { text } of DEV) {
+      const ranked = classifyGenre(text, null).ranked.map((choice) => choice.genre);
+      if (ROUTE_PENDING.has('stunt')) expect(ranked, text).not.toContain('stunt');
+      else expect(ranked[0], text).toBe('stunt');
+    }
   });
 
   it('cues are a list of stunt words – ramps, jumps, crashes – and never a plain race or drive (that is voyage)', () => {

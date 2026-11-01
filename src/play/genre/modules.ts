@@ -56,8 +56,9 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   sort: sortGenre,
   arrows: arrowsGenre,
   // P68 T1: kostry pěti her z jiných pohledů – každá kategorie přepíše jen svůj soubor; zapne je P68-I („zapoj X“).
-  // P68 T8: závod s triky je zapojený – registr nese hotový modul kategorie místo kostry.
-  stunt: stuntLiveGenre,
+  // P68 T8: registr nese hotový modul kategorie (skladatel ho přeloží), ale `staged`: čas do hratelnosti proti `main`
+  // neprošel (`evals/play/p68/integration-log.md`) a hra je zpátky v `ROUTE_PENDING`. Zapojení = `stuntLiveGenre`.
+  stunt: { ...stuntLiveGenre, availability: () => 'staged' },
   minigolf: minigolfGenre,
   railfps: railfpsGenre,
   buildshift: buildshiftGenre,

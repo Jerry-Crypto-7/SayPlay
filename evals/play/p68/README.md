@@ -264,3 +264,24 @@ z předplatného s týmž zadáním (`answers.json`), ne astra. Na 20 dev větá
 - `p68-roundtrip` buildshift prošel bez `skip`. Čas do hratelnosti a e2e se neměřily – hru zastavila FPS dřív.
 - Výklad brány: „brány hry zelené“ = každá brána z AC bez výjimky; herní brána na dev větách se čte jako všechny
   věty (výhra, prohra, akce), ne jako práh G2 ≥ 80 % z T15.
+
+## T8 – zapojení `stunt` (nesplněno 1. 11., čas do hratelnosti)
+
+- Rychlá hra byla zapnutá (`ce35f6fa` až `e1e6e628`): stráž žánru čistá, herní brána na dev větách 19/19, FPS
+  `pixel7-touch` 59,9 FPS / p95 16,8 ms, e2e 44 ✓, `p68-roundtrip` bez `skip`. Neprošel jen **čas do hratelnosti**,
+  takže hra **zůstává v `ROUTE_PENDING`**, registr nese hotový modul jako `staged` (skladatel ho dál umí přeložit)
+  a PR zapojení se neotevřel. Směrování, znak žánru, svědek a meze P41 zůstávají pro nový pokus.
+- **Čísla** (3 dev věty × 3 běhy proti `main` 688d989d, kde tytéž věty hrají lehké hry bez fyziky): desktop medián
+  B 3 674 ms (mez 3 000), párový rozdíl +1 307 ms (mez +200), pixel7-cpu4 +2 616 ms; 0 selhání.
+- **Kde rozdíl vzniká** (HAR a profil procesoru): tvorba na serveru (`POST /api/play/games`) trvá 1,1–1,5 s místo
+  0,3–0,4 s. Robot ověřuje tentýž svět třikrát – skladatel (`compose` → `verifyArcade`), kompilace (`compileArcade`:
+  robot + přehrání) a publikace (`reportFor` → `verifyArcade`: dvě přehrání a nečinný hráč) – a ~75 % času je krok
+  Rapieru. Na klientu přidá stažení Rapieru (2,2 MB) a modely ~0,2 s do prvního snímku a ~0,4 s do hratelnosti.
+- **Kolo oprav** (sdílený `arcade/physics/step.ts`): vypnuté vnitřní stopky Rapieru (`profilerEnabled`), které každý
+  krok čtou hodiny – v profilu ~4 % času ověření stuntu; simulace beze změny (determinismus a otisky her 142/142).
+  Druhá zkoušená úprava – spící tělesa nečíst zpět do stavu – dala v sondě fází spolu se stopkami 1,79 → 1,62 s (−10 %),
+  ale změnila otisk hry `merge` (P66/P68 hash), takže je pryč. Chybí ~1,1 s, proto se čas do hratelnosti znovu
+  neměřil – výsledek brány by byl tentýž (inference z čísel výš).
+- **Co by bránu mohlo zavřít** (inference, pro T15 a kategorii): jedno ověření místo tří (výsledek skladatele sdílený
+  s publikací) a stahování Rapieru souběžně s tvorbou. Mez +200 ms proti hře bez fyziky je pro závod s Rapierem
+  těsná i potom; T15 rozhodne, jestli platí i pro hry s fyzikou (týká se i `minigolf`, T9).

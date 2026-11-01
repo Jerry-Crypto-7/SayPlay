@@ -31,7 +31,7 @@ const FAKE_CUES = vi.hoisted(() => ({
 }));
 
 // Podvrh: modul každé nové hry jako by ho kategorie dodala hotový (překlad zůstává kostrový – hází).
-// T8: `stunt` je zapojený – registr nese skutečný `stuntLiveGenre` (ready, narážky kategorie), podvrh kostry ho nepřepíše.
+// T8: registr nese skutečný `stuntLiveGenre` (narážky kategorie, `staged` v `modules.ts`), podvrh kostry ho nepřepíše.
 vi.mock('../stunt', async (real) => {
   const actual = await real<typeof import('../stunt')>();
   return { ...actual, stuntGenre: { ...actual.stuntGenre, availability: () => 'ready', cues: FAKE_CUES.stunt } };
@@ -42,8 +42,8 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` vrácený (brány hry), T8 `stunt`. */
-const WIRED: readonly string[] = ['stunt'];
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` i T8 `stunt` vrácené (brány hry). */
+const WIRED: readonly string[] = [];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {
@@ -67,7 +67,8 @@ describe('P68 skeletons (T1)', () => {
 
   it('the stand-in modules are ready with cues, so the gate below is what keeps them hidden, not `staged`', () => {
     for (const genre of P68) {
-      expect(GENRE_MODULES[genre as GenreId].availability('default' as never), genre).toBe('ready');
+      // T8 vrátil `stunt` s hotovým modulem kategorie – registr ho drží `staged` sám (`modules.ts`), brána navíc.
+      expect(GENRE_MODULES[genre as GenreId].availability('default' as never), genre).toBe(genre === 'stunt' ? 'staged' : 'ready');
       expect(GENRE_MODULES[genre as GenreId].cues.length, genre).toBeGreaterThan(0);
     }
   });

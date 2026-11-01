@@ -30,7 +30,9 @@ const NEW = new Set(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 const DEV = json<{ sentences: { id: string; genre: string; text: string }[] }>('dev.json').sentences.filter((s) => s.genre === 'stunt');
 const CATEGORY = json<{ sentences: { game: string; text: string }[] }>('vozidla-sport/dev.json').sentences.filter((s) => s.game === 'stunt');
 
-describe('stunt is routed (P68 T8)', () => {
+// Brána času do hratelnosti 1. 11. neprošla (`integration-log.md`) a hra je zpátky v `ROUTE_PENDING`; směrování
+// a stráž zůstávají pro nový pokus – testy zapojení se vrátí samy, jakmile hra bránu opustí.
+describe.skipIf(ROUTE_PENDING.has('stunt'))('stunt is routed (P68 T8)', () => {
   it('is out of the activation gate', () => {
     expect(ROUTE_PENDING.has('stunt')).toBe(false);
   });
@@ -84,11 +86,20 @@ describe('the route guard over the P68 labels (P68 T8)', () => {
 // Bez toho věta dostane obyčejný závod se jménem stuntu – bez ramp, hromad a slabého robota, který prohraje.
 describe('the quick game of a stunt sentence is the stunt race (P68 T8)', () => {
   beforeAll(async () => { await loadRapier(); });
-  it('drafts the stunt module, not the plain drive', () => {
+  it.skipIf(ROUTE_PENDING.has('stunt'))('drafts the stunt module, not the plain drive', () => {
     for (const { text } of DEV.slice(0, 3)) {
       const meta = draftGameSpecWithMeta(text, 1);
       expect(meta.genre?.genre, text).toBe('stunt');
       expect(meta.spec.control, text).toBe('stunt');
+    }
+  }, 120_000);
+
+  // Held back, no quick game may be the stunt race: the unwired-publish guard (R1/R3) would refuse it on production.
+  it.runIf(ROUTE_PENDING.has('stunt'))('held back, no dev sentence drafts the stunt race', () => {
+    for (const { text } of [...DEV, ...CATEGORY]) {
+      const meta = draftGameSpecWithMeta(text, 1);
+      expect(meta.genre?.genre, text).not.toBe('stunt');
+      expect(meta.spec.control, text).not.toBe('stunt');
     }
   }, 120_000);
 });
