@@ -115,7 +115,93 @@ téhož tiku (Rapier by jí nechal točení staré, `fits` drží tentýž colli
 
 ## `minigolf` – jádro a spike (T6)
 
-_Vyplní T6: spike Rapier vs celočíselné kutálení (čísla, rozhodnutí), pravidla, výsledky mutací._
+**Rozhodnutí: celočíselné kutálení v jádře = stupeň 1 žebříku zjednodušení `minigolf`.** Koule Rapieru se útlumem
+nezastaví spolehlivě. Datum 1. 11. 2026, před milníkem – stupeň zvolila čísla spiku, ne kalendář.
+
+### Spike (1. 11. 2026)
+
+Rovná chodba 3,6–4 m s mantinely, 50 ran: síla (nabití) 15 / 35 / 60 střídavě, směr osou −400…400, každá rána
+přehraná dvakrát od tiku 0. „Stojí" = poloha se už nepohne; limit `MINIGOLF.stopTicks` = 180 tiků (3 s).
+
+| varianta | nabití | stojí do 180 tiků | nestojí ani za 600 | medián / max tiků do klidu | odraz od mantinelu | přehrání shodná |
+|---|---|---|---|---|---|---|
+| koule Rapieru + útlum 2 j/tik ve stavu | 15 | 17/17 | 0 | 142 / 147 | 0 | 50/50 |
+|  | 35 | 4/17 | 8 | 181 / 185 | 8 | |
+|  | 60 | 0/16 | 12 | 231 / 231 | 12 | |
+| celočíselné kutálení (`minigolf-roll.ts`) | 15 | 17/17 | 0 | 25 / 29 | 0 | 50/50 |
+|  | 35 | 17/17 | 0 | 53 / 69 | 12 | |
+|  | 60 | 16/16 | 0 | 98 / 119 | 12 (2 přeskočily mantinel = mimo dráhu) | |
+
+Proč Rapier neprošel: útlum přepíše jen lineární rychlost, rotace koule zůstane a tření ji vrací do pohybu – koule
+po „zastavení" dál leze (24–310 tiků) a míček s odrazem se do 600 tiků nezastaví vůbec. Rána s nabitím 60 navíc
+skončí v průměru ~6,7 m od odpaliště místo 14,5 m (skluz před valením, odrazy). Celočíselné kutálení zastaví každou ránu, střed míčku nikdy nepřejde
+vnitřní líc mantinelu (max |x| = 1800) a fyzika Rapieru se pro minigolf vůbec nenačítá. Skripty spiku jsou mimo repo
+(`D:/caches/p68/v/t6-spike-*.test.ts.txt`, čísla `t6-spike-*.json`).
+
+### Jádro
+
+- **`pieces/minigolf-roll.ts`** – čisté celočíselné funkce, které sdílí ovládání, robot i scéna: `MINIGOLF` (konstanty),
+  `minigolfAim(axis)` (osa → směr jako bod na obvodu čtverce, žádná trigonometrie: 0 = +z, +500 = +x, ±1000 = −z),
+  `minigolfAxisToward(dx, dz)` (opak), `minigolfSpeed(charge)` = `ballSpeed(charge) − BALL.minSpeed` (4–240 j/tik),
+  `minigolfShot`, `minigolfDamp` (rychlost −2 j/tik se stejným směrem, ≤ 2 = stojí), `minigolfRoll` (tik: podkroky
+  ≤ 100 j, vytlačení po ose menšího průniku, odraz kolmé složky 700 ‰ mantinel / 800 ‰ odrazník, kolmá rychlost
+  > 180 = přeskok mantinelu), `minigolfDistance(charge)` = 4·charge² + 2·charge (uzavřený vzorec rány po ose),
+  `minigolfRest(axis, charge)` (přesný klid na volné ploše) a `minigolfChargeFor(axis, distance)`.
+- **`pieces/minigolf-hole.ts`** – generátor ze streamu `minigolf` (`createStreams(seed).rounds` + 2× `jump()`, mimo
+  všechny `SUBSYSTEMS`): dlaždice 4 × 4 m, tvar rovná (3–4 dlaždice) / L (3 + 2–3 vlevo či vpravo) / S (3 + 2 napříč +
+  2–3), mantinely na volných hranách, odpaliště vzadu první dlaždice, jamka (Ø 1 m) v poslední, 1–3 odrazníky mimo
+  trasu, nejvýš jedna pohyblivá překážka (kinematická, kyvadlo jádra, rozsah 2 m, rychlost 25/40/50 → perioda 80/50/40
+  tiků) v prostřední dlaždici úseku. Par = úseky trasy + 1: rovná 2, L 3, S 4. `checkMinigolfHole(level, layout)`
+  ověří: trasa končí ve středu jamky; z odpaliště a z každého bodu vede k dalšímu volná přímka v pásu 0,35 m od mantinelů
+  a odrazníků; pohyblivá překážka ji pustí aspoň v jedné krajní poloze; každý úsek ujede jedna rána (≤ 14,02 m); body
+  trasy leží na dráze; nic nezakrývá jamku.
+- **`pieces/minigolf.ts`** – ovládání `minigolf`, pravidlo `minigolf_hole`, generátor `minigolf_course` (jména kostry).
+  Hráč **je** míček. Rána jen když míček stojí; mimo dráhu = míček zpět na místo poslední rány + 1 rána; v jamce =
+  střed v kruhu jamky a rychlost ≤ 60 j/tik (rychlejší přeletí); výhra = v jamce do limitu ran (par + 3), skóre
+  `100 × (limit + 1 − rány)`; prohra = stojící míček po vyčerpání ran, nebo poslední tik horizontu 90 s.
+
+### Výklad nejasností (konzervativně)
+
+- **Směr je absolutní a drží se ve stavu** (`aux0` hráče), aby kamera T8 měla směr ze stavu: tik s `HOLD` nebo `TAP`
+  ho vždy přepíše osou (i nulou = +z), jiný tik jen nenulovou osou. Vstup tedy musí s nabíjením nést osu jako
+  `ball-input` (`session.hold(axis)` + `HOLD`, puštění `press(TAP, axis)`). Vstup `throw-rig` ve VR posílá `HOLD` bez
+  osy – míření ve VR by potřebovalo paprsek (VR minigolf není v plánu P68V).
+- **Puštění za pohybu** ránu nedá a nabití zahodí (měřič se vyprázdní); nabíjet za pohybu jde.
+- **Mimo dráhu** vzniká přeskokem mantinelu (kolmá rychlost > 180 j/tik; plná rána kolmo je 240): skutečný jev
+  minigolfu a jediná cesta ven z ohrazené dráhy. Střed míčku mimo dlaždice → pravidlo vydá `respawn`.
+- **Trasa robota** je v parametrech světa (`layout.route`, i v parametrech robota), ne jako těla: úroveň nemá volné
+  pole a mrtvá těla by se pletla scéně i katalogu modelů. Body trasy jsou mezicíle (rohy dráhy, pak jamka), ne odrazy.
+- **Pohyblivá překážka jen na přání** (`moving: true`); tvar a počet odrazníků bez parametru losuje stream.
+- **Všechna těla hřiště jsou nepevná** (`solid: false`) – srážky míčku řeší jen `minigolfRoll`, jádro žádnou nepřidá
+  a nezruší odraz. Dlaždice leží pod zemí (y −100…0), jamka taky, takže ani nevyvolají kontakt.
+
+### API pro T7 (robot) a T8 (scéna)
+
+- Rozložení: `layout` v parametrech ovládání, pravidla i robota (`MinigolfLayout`): `hole` (index), `floor`, `rails`,
+  `bumpers` (`[první, počet]`), `mover?` (index), `route` (`[x, z][]`, 1–3 body, poslední = střed jamky).
+- Stav: míček = hráč (`x/z`, `vx/vz` = rychlost příštího tiku, klid = obě 0); míření `aux0` (osa), nabití `aux1`
+  (0–60); místo poslední rány `HEADER.respawnX/Z`; čítače `MINIGOLF_COUNTER` – rány `ammo`, par `reserve`, návraty
+  z mimo dráhy `items` (`strokesOf`, `parOf`, `outOfBoundsOf`); skóre `score` jen při výhře.
+- Síla: nabití = počet tiků `HOLD`; `minigolfChargeFor(axis, vzdálenost)` vrátí nejmenší nabití, které dojede
+  (přesně jako hra), `minigolfDistance(charge)` je uzavřený vzorec po ose. Pohyblivá překážka:
+  `minigolfMoverAt(mover, tick)` = její poloha v tiku (kyvadlo jádra), `minigolfRoll` dovolí robotu ránu přehrát
+  i s překážkami.
+
+### Pro P68-I (sdílené soubory – nic se neměnilo)
+
+- **Přednačtení fyziky není potřeba:** svět minigolfu nemá těleso `FLAG.physics`, Rapier se nenačítá.
+- HUD `Strokes` / `Par` čtou čítače `ammo` / `reserve` (popisky už v `hud-labels-request.ts`).
+- Druhy `minigolf-hole`, `minigolf-green`, `minigolf-rail` nejsou modely katalogu – kreslí je scéna T8 procedurálně.
+
+### Testy
+
+`src/play/arcade/__tests__/minigolf.test.ts` (16) a `minigolf-replay.test.ts` (3): týž seed = táž jamka, 30 seedů =
+≥ 29 různých; `checkMinigolfHole` na 200 seedech a na všech tvarech × 1–3 odrazníky × s/bez pohyblivé (12 seedů);
+kontrola chytí zablokovanou trasu, trasu mimo jamku, dlouhý úsek a překážku, která nikdy neuhne; rána ve směru osy
+zastaví do `stopTicks` přesně tam, kam říká `minigolfRest`; plná rána 14 520 j za 120 tiků; odraz od mantinelu; rychlý
+míček jamku přeletí, pomalý spadne; puštění za pohybu nic nezmění; přeskok mantinelu vrátí míček a přičte ránu;
+prohra vyčerpáním ran i časem; pohyblivá překážka sedí na `minigolfMoverAt` a míček odrazí bez průniku; replay od
+tiku 0 dvakrát týž hash a shodné kontrolní body po každé ráně i po návratu z mimo dráhy; posun o tik = jiný hash.
 
 ## Milníky a žebřík zjednodušení
 
