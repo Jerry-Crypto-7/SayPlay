@@ -1,0 +1,37 @@
+{
+  "about": "P68V T5: the verifier bot's record of the e2e stunt game (e2e/fixtures/p68-stunt-spec.json, seed 1) replayed from tick 0. node = compileGame + runBot + replay in Node (src/play/arcade/__tests__/stunt-replay.test.ts pins it); browser = the same record replayed in the page by the __playShell probe (playWitness, then capture().hash), written by e2e/play-stunt.spec.ts per Playwright project.",
+  "seed": 1,
+  "fixture": "e2e/fixtures/p68-stunt-spec.json",
+  "node": {
+    "hash": "ec27fd3c",
+    "outcome": "won",
+    "tick": 1895,
+    "inputs": 1748
+  },
+  "moments": {
+    "jumpPeak": 1516,
+    "jumpLanded": 1542,
+    "smash": 208,
+    "idleCrash": 338
+  },
+  "browser": {
+    "chromium": {
+      "hash": "ec27fd3c",
+      "outcome": "won",
+      "tick": 1895,
+      "equal": true
+    },
+    "pixel7-touch": {
+      "hash": "ec27fd3c",
+      "outcome": "won",
+      "tick": 1895,
+      "equal": true
+    },
+    "iphone-touch": {
+      "hash": "ec27fd3c",
+      "outcome": "won",
+      "tick": 1895,
+      "equal": true
+    }
+  }
+}
