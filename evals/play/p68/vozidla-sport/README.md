@@ -514,8 +514,20 @@ testy `__tests__/minigolf-camera.test.ts` (5) a `minigolf-touch.test.ts` (8).
 
 | hra | milník | stupeň zjednodušení | splněno |
 |---|---|---|---|
-| `stunt` | 2. 11. 2026 (T5) | 0 (plný rozsah) | – |
+| `stunt` | 2. 11. 2026 (T5) | 0 (plný rozsah) | ano – 1. 11. 2026, `6272a38a`; FPS `chromium` medián 59,9 / p95 16,8 ms (brána ≥ 40 / ≤ 33,3 prošla), `pixel7-touch` 59,9 / 16,8, `iphone-touch` 15,2 / 101 ms (bez brány) |
 | `minigolf` | 3. 11. 2026 (T9) | 1 – celočíselné kutálení místo koule Rapieru (spike T6: Rapier zastavil 21/50 ran do 180 tiků, kutálení 50/50) | – |
+
+**T5 (`stunt` e2e, 1. 11. 2026):** `e2e/play-stunt.spec.ts` z ručního specu `e2e/fixtures/p68-stunt-spec.json` (seed 1),
+12/12 na `chromium`, `pixel7-touch`, `iphone-touch`; `play-drive` a `play-physics-replay` na `chromium` 5/5. Žebřík
+nebyl potřeba. Otisk: záznam robota od tiku 0 dá v prohlížeči na všech třech projektech `ec27fd3c` = Node
+(`stunt-hash.json`, drží `stunt-replay.test.ts`, který také pinuje tiky snímků). FPS `fps-stunt.json` (10 s ukázky robota).
+Výklad: (1) nečinný hráč dostane kartu prohry „Try again!“, ne „So close.“ – sdílený `runResult` dává „So close.“ jen
+prohře s body (P56A T9); (2) prst na Chromiu: CDP `touchMove` bez zvednutého prstu brzdu nepustil (brzda zůstala držet
+do konce), test proto zvedá všechny prsty a zbylé pokládá znovu na místo stisku – vada emulace, ne hry; (3) iPhone =
+WebKit na Windows: plátno WebGL na snímcích prázdné (i u jiných her, `D:/caches/p64/audit/iphone15`), FPS jen zapsané.
+Oko (`D:/caches/p68/v/stunt/`): auto čitelné, rampy, hromady, letící bedny a úlomky, brána cíle i palec vidět; na šířku
+telefonu (839 × 412) sedí auto těsně nad dolní lištou HUD a stín skoku pod ní zmizí; štítek ducha „Best run“ leží na
+autě, když se jede přesně stopou robota.
 
 ## Hlídače
 
