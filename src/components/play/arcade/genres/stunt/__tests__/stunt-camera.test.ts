@@ -23,6 +23,13 @@ const PHONE = { width: 412, height: 839 } as const;
 const RECT: PlayRect = playRect(PHONE, 110, 680);
 const TALL = PHONE.width / PHONE.height;
 const WIDE = 16 / 9;
+/**
+ * Pixel 7 na šířku (snímky e2e T5, 1. 11. 2026): spodní hrana řádku cíle 120 px, horní hrana kola brzdy `.play-fire`
+ * 256 px – brzda je v `PLAY_FLOOR`, takže `usePlayRect` dá dolní pás tam, ne až u dolní řady HUD (337 px).
+ */
+const LANDSCAPE_PHONE = { width: 839, height: 412 } as const;
+const LANDSCAPE = LANDSCAPE_PHONE.width / LANDSCAPE_PHONE.height;
+const WIDE_RECT: PlayRect = playRect(LANDSCAPE_PHONE, 120, 256);
 /** Tolerance průmětu (NDC): fit drží 8 px okraj, tohle je jen zaokrouhlení. */
 const EPS = 1e-3;
 
@@ -57,6 +64,13 @@ function carCorners(state: ArcadeState): Vector3[] {
   const v = (slot: number): number => (state[p + slot] as number) / UNIT;
   const box = new Box3(new Vector3(-v(BODY.x) - v(BODY.w) / 2, v(BODY.y), v(BODY.z) - v(BODY.d) / 2), new Vector3(-v(BODY.x) + v(BODY.w) / 2, v(BODY.y) + v(BODY.h), v(BODY.z) + v(BODY.d) / 2));
   return [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
+}
+
+/** Stín auta: jeho půdorys na zemi (y 0) – ve skoku leží pod autem, kde ho dřív dolní pás schoval. */
+function shadowCorners(state: ArcadeState): Vector3[] {
+  return carCorners(state)
+    .filter((_, i) => (i & 2) === 0)
+    .map((corner) => new Vector3(corner.x, 0, corner.z));
 }
 
 /** Osa trati od auta po 30 m před ním, po metru. */
@@ -103,17 +117,44 @@ describe('stunt chase camera (stuntCameraPose)', () => {
     expect(share).toBeGreaterThanOrEqual(LEGIBLE_SHARE.hero / LEGIBLE_CAP);
   });
 
-  it('in landscape the pose does not depend on the play rect', () => {
+  it('839 × 412 landscape: car + shadow above `rect.ndc.bottom`, aim under `rect.ndc.top`', () => {
+    for (const [seed, difficulty] of [[3, 'easy'], [28, 'hard'], [57, 'hard']] as const) {
+      const { world, state, road } = trackWorld(seed, difficulty);
+      const end = world.length / UNIT - 35;
+      const misses: string[] = [];
+      for (let z = 0; z <= end; z += 7) {
+        const center = road(z).center;
+        const half = road(z).width / 2 - 1;
+        for (const x of [center, center - half, center + half]) {
+          // Vrchol skoku jádra je 2,5 m (`stuntFlight` při plné rychlosti) – 3 m má rezervu.
+          for (const y of [0, 1.5, 3]) {
+            const placed = carAt(state, x, y, z);
+            const pose = stuntCameraPose(placed, LANDSCAPE, WIDE_RECT, { road });
+            const camera = cameraOf(pose, LANDSCAPE);
+            // Stín se hlídá na zemi; ve skoku ho kamera nedrží (AC: skok čitelný i bez stínu – kamera stoupá s autem).
+            const low = Math.min(...[...carCorners(placed), ...(y === 0 ? shadowCorners(placed) : [])].map((corner) => corner.project(camera).y));
+            const aim = pose.look.clone().project(camera).y;
+            if (low < WIDE_RECT.ndc.bottom - EPS) misses.push(`seed ${seed} car (${x.toFixed(1)}, ${y}, ${z}): low ${low.toFixed(3)} < ${WIDE_RECT.ndc.bottom.toFixed(3)}`);
+            if (aim > WIDE_RECT.ndc.top + EPS) misses.push(`seed ${seed} car (${x.toFixed(1)}, ${y}, ${z}): aim ${aim.toFixed(3)} > ${WIDE_RECT.ndc.top.toFixed(3)}`);
+          }
+        }
+      }
+      expect(misses.slice(0, 5)).toEqual([]);
+    }
+  });
+
+  it('landscape: pose unchanged with no rect or when the car already clears it', () => {
     const { state, road } = trackWorld(11);
     const placed = carAt(state, road(60).center + 1.5, 0, 60);
-    const other = playRect({ width: 1280, height: 720 }, 200, 500);
-    const a = stuntCameraPose(placed, WIDE, RECT, { road });
-    const b = stuntCameraPose(placed, WIDE, other, { road });
-    const c = stuntCameraPose(placed, WIDE, null, { road });
+    const roomy = playRect(LANDSCAPE_PHONE, 0, LANDSCAPE_PHONE.height);
+    const a = stuntCameraPose(placed, LANDSCAPE, null, { road });
+    const b = stuntCameraPose(placed, LANDSCAPE, roomy, { road });
     expect(b.position.toArray()).toEqual(a.position.toArray());
-    expect(c.position.toArray()).toEqual(a.position.toArray());
     expect(b.look.toArray()).toEqual(a.look.toArray());
-    expect(c.look.toArray()).toEqual(a.look.toArray());
+    // Bez měřeného pásu leží stín na telefonu na šířku pod ním; s pásem se pohled sklopí (bod pohledu níž).
+    const camera = cameraOf(a, LANDSCAPE);
+    expect(Math.min(...shadowCorners(placed).map((corner) => corner.project(camera).y))).toBeLessThan(WIDE_RECT.ndc.bottom);
+    expect(stuntCameraPose(placed, LANDSCAPE, WIDE_RECT, { road }).look.y).toBeLessThan(a.look.y);
   });
 
   it('rises with the car in the air, higher than on the ground, in both orientations', () => {

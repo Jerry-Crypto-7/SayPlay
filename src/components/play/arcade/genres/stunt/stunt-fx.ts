@@ -19,8 +19,8 @@ export const STUNT_FX = {
   max: 24,
   /** Jiskry: počet za událost, život (tiky), rychlost do strany a nahoru (m/tik), velikost (m), tíže (m/tik²), výška zrodu. */
   spark: { count: 10, life: 18, speed: 0.13, lift: 0.08, size: 0.1, gravity: 0.008, rise: 0.4 },
-  /** Prach: pomalejší, delší, u země, roste a řídne. */
-  dust: { count: 3, life: 36, speed: 0.035, lift: 0.02, size: 0.45, gravity: 0, rise: 0.1 },
+  /** Prach: pomalejší, u země, roste a řídne. Malý a krátký (T4-R1): na telefonu dřív zakrýval auto i počítadla. */
+  dust: { count: 3, life: 22, speed: 0.03, lift: 0.012, size: 0.28, gravity: 0, rise: 0.05 },
 } as const;
 
 export type StuntParticleKind = 'spark' | 'dust';

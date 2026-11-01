@@ -204,8 +204,12 @@ s prioritou −2, takže auto, trosky, jiskry i kamera čtou týž tik.
 - na výšku nižší a bližší póza (3,2 m, 5,6 m), pak `fitTall` (`portrait-frame.ts`) s krabicí auto + 30 m osy trati před ním
   (± 1 m); bod pohledu jede s kamerou o týž vektor. Na 412 × 839 s pásy 110 / 680 px má auto 18 % výšky plátna (strop
   čitelnosti `LegibleBodies` 2× ho dotáhne na 20 %);
-- ve vzduchu kamera stoupá s autem a o 0,5 m navíc na metr výšky, bod pohledu o 0,6 m na metr (výška auta je spojitá
-  balistika jádra, takže plynule);
+- ve vzduchu kamera stoupá s autem a o 0,5 m navíc na metr výšky, bod pohledu o 0,2 m na metr (T4-R1, dřív 0,6 –
+  auto ve skoku padalo k dolnímu okraji; výška auta je spojitá balistika jádra, takže plynule);
+- **na šířku (T4-R1):** leží-li auto (na zemi i se stínem) pod dolním pásem `playRect` – na telefonu je to horní hrana
+  kola brzdy `.play-fire` – `clearFloor` sklopí pohled přesně o úhel, který ho zvedne 8 px nad pás, nejvýš tak, aby bod
+  pohledu zůstal pod horním pásem. Test na 839 × 412 (pásy 120 / 256 px): auto a stín nad pásem po celé trati, na zemi
+  i ve skoku do 3 m (vrchol jádra 2,5 m). Bez změřeného pásu a když auto pás nekříží, póza beze změny;
 - po nárazu (milost `stunt_crash`) tlumený otřes 15 tiků, nejvýš 0,2 m, směr z tiků milosti; `prefers-reduced-motion`
   (`reducedMotion()` z `effects/feel.ts` čte scéna, ne funkce) ho vypne. Sdílený otřes `Effects` (0,14 m, 9 tiků po zásahu
   hráče) jede dál navrch – vypnout ho bez sdílené změny nejde, přesah je 150 ms.

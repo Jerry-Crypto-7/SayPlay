@@ -3,7 +3,8 @@
  * Čistá funkce stavu a poměru stran – žádné `window`, žádná paměť mezi snímky; scéna ji volá ve `useFrame`.
  *
  * - **Na šířku** vlastní póza: kamera `back` m za autem a `up` m nad zemí, do strany jde za autem jen z části
- *   (`follow`), míří `ahead` m před auto na osu trati – zatáčka před autem je v záběru. Hrací obdélník ji nemění.
+ *   (`follow`), míří `ahead` m před auto na osu trati – zatáčka před autem je v záběru. Leží-li auto (na zemi i se
+ *   stínem) pod dolním pásem hracího obdélníku, `clearFloor` sklopí pohled, až je nad ním (T4-R1, telefon na šířku).
  * - **Na výšku** (`aspect < 1`) táž póza (nižší sklon, blíž), pak `fitTall` (`portrait-frame.ts`) dojede po ose pohledu
  *   a nahoru, až krabice hry – auto a `frame.ahead` m trati před ním (osa ± `frame.half`) – leží v hracím obdélníku
  *   mezi horním pásem HUD a tlačítkem brzdy. Bod pohledu jede o týž vektor, takže `lookAt` na něj fit nevrátí.
@@ -20,7 +21,7 @@ import { Box3, PerspectiveCamera, Vector3 } from 'three';
 import { type ArcadeState, BODY, HEADER, UNIT, bodyBase, graceOf } from '@/play/arcade/contract';
 import { STUNT } from '@/play/arcade/pieces/stunt-track';
 
-import { type PlayRect, fitTall } from '../../portrait-frame';
+import { FIT_MARGIN_PX, type PlayRect, fitTall } from '../../portrait-frame';
 
 export const STUNT_CAMERA = {
   /** Úhel pohledu plátna (`STAGE_CANVAS`, `FreshCamera`). */
@@ -31,7 +32,7 @@ export const STUNT_CAMERA = {
   /** Póza na výšku před fitem: blíž a níž, ať je auto čitelné (`LEGIBLE_SHARE.hero`) a 30 m trati se vejde nad brzdu. */
   tall: { up: 3.2, back: 5.6, ahead: 12, lookUp: 0.6, follow: 0.7, followLook: 0.5 },
   /** Ve vzduchu: kamera navíc o `lift` m a bod pohledu o `look` m na metr výšky auta. */
-  air: { lift: 0.5, look: 0.6 },
+  air: { lift: 0.5, look: 0.2 },
   /** Krabice fitu na výšku (m): okraj kolem auta, kus za ním, trať `ahead` m před ním po `step` m a `half` m od osy. */
   frame: { pad: 0.3, behind: 0.5, top: 0.4, ahead: 30, step: 5, half: 1 },
   /** Otřes po nárazu: tolik tiků od začátku milosti, nejvýš tolik metrů. */
@@ -64,6 +65,7 @@ const JUMP_M = 5;
 const scratch = new PerspectiveCamera();
 const box = new Box3();
 const point = new Vector3();
+const axis = new Vector3();
 
 /** Auto ve scéně (m): spodní střed interpolovaný mezi `prev` a `state`, rozměry ze stavu. Scéna kreslí auto odsud, kamera míří sem. */
 export function stuntCarAt(state: ArcadeState, prev: ArcadeState | undefined, alpha: number): { readonly x: number; readonly y: number; readonly z: number; readonly w: number; readonly h: number; readonly d: number } {
@@ -76,8 +78,40 @@ export function stuntCarAt(state: ArcadeState, prev: ArcadeState | undefined, al
 }
 
 /**
+ * Na šířku (telefon 839 × 412) leží auto v póze `wide` u dolního okraje a dolní pás HUD (u dotyku kolo brzdy
+ * `.play-fire`) ho i se stínem skoku přikryl. Pohled se proto sklopí kolem osy kamery doprava právě o tolik, aby kvádr
+ * auta a na zemi jeho půdorys (stín) ležely `FIT_MARGIN_PX` nad `rect.ndc.bottom` – rotace kolem osy x kamery mění
+ * jen úhel bodu v rovině y–z, takže úhel je přesný bez hledání. Nejvýš tak, aby bod pohledu (trať `ahead` m před
+ * autem) zůstal pod horním pásem. Auto, které už leží nad pásem, pózu nemění. Poloha kamery zůstává, mění se `look`.
+ */
+function clearFloor(position: Vector3, look: Vector3, car: ReturnType<typeof stuntCarAt>, rect: PlayRect, fov: number, aspect: number): void {
+  scratch.fov = fov;
+  scratch.aspect = aspect;
+  scratch.near = STUNT_CAMERA.near;
+  scratch.zoom = 1;
+  scratch.position.copy(position);
+  scratch.lookAt(look);
+  scratch.updateMatrixWorld();
+  scratch.updateProjectionMatrix();
+  let low = Infinity;
+  for (const y of car.y > 0 ? [car.y, car.y + car.h] : [0, car.h]) {
+    for (const dx of [-car.w / 2, car.w / 2]) {
+      for (const dz of [-car.d / 2, car.d / 2]) low = Math.min(low, point.set(car.x + dx, y, car.z + dz).project(scratch).y);
+    }
+  }
+  const margin = (2 * FIT_MARGIN_PX) / rect.canvas.height;
+  const want = rect.ndc.bottom + margin;
+  if (low >= want) return;
+  const t = Math.tan((fov * Math.PI) / 360);
+  const pitch = Math.min(Math.atan(-low * t) - Math.atan(-want * t), Math.atan(rect.ndc.top * t));
+  if (pitch <= 0) return;
+  axis.setFromMatrixColumn(scratch.matrixWorld, 0);
+  look.sub(position).applyAxisAngle(axis, -pitch).add(position);
+}
+
+/**
  * Póza kamery za autem pro stav `state` a poměr stran plátna `aspect`. `rect` = hrací obdélník (`usePlayRectRef`);
- * `null` = ještě nezměřený – na výšku pak zůstane póza před fitem. Na šířku se `rect` nečte.
+ * `null` = ještě nezměřený – na výšku pak zůstane póza před fitem, na šířku póza `wide` bez sklopení (`clearFloor`).
  */
 export function stuntCameraPose(state: ArcadeState, aspect: number, rect: PlayRect | null, options: StuntCameraOptions = {}): StuntCameraPose {
   const car = stuntCarAt(state, options.prev, options.alpha ?? 1);
@@ -90,6 +124,7 @@ export function stuntCameraPose(state: ArcadeState, aspect: number, rect: PlayRe
   const position = new Vector3(here + (car.x - here) * view.follow, view.up + car.y * (1 + air.lift), car.z - view.back);
   const look = new Vector3(car.x + (there - car.x) * view.followLook, view.lookUp + car.y * air.look, car.z + view.ahead);
 
+  if (!tall && rect !== null) clearFloor(position, look, car, rect, options.fov ?? STUNT_CAMERA.fov, aspect);
   if (tall && rect !== null) {
     scratch.fov = options.fov ?? STUNT_CAMERA.fov;
     scratch.aspect = aspect;

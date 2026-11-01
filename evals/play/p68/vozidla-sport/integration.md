@@ -81,8 +81,9 @@ Kostra dopsala `play-stunt` a `play-minigolf` do `testMatch` projektů `pixel7-t
 | `minigolf` | 1 – celočíselné kutálení místo koule Rapieru | spike T6: Rapier zastavil 21/50 ran do 180 tiků, kutálení 50/50; pohyblivá překážka i odrazníky zůstaly |
 
 **Nesplněné:**
-- `stunt` na telefonu na šířku: auto sedí těsně nad dolní lištou HUD a stín skoku pod ní mizí; rampa vypadá jako
-  plochá dlaždice, prach místy kryje auto (snímky T5) – úloha T4-R1, v tomto předání **nesplněné**.
+- ~~`stunt` na telefonu na šířku: auto sedí těsně nad dolní lištou HUD a stín skoku pod ní mizí; rampa vypadá jako
+  plochá dlaždice, prach místy kryje auto~~ – splněno v T4-R1 (1. 11. 2026): kamera na šířku sklopí pohled nad dolní
+  pás, rampa má pruhy napříč nájezdem a tmavou hranu, prach je menší a kratší; `play-stunt` 12/12, snímky prohlédnuté.
 - Štítek ducha „Best run“ chytá dotyk nad míčkem (sdílený `Ghost.tsx`, výš) – **nesplněné**, mimo soubory pruhu.
 - Fyzický telefon neměřen (FPS jen hostitel a emulace); WebKit na Windows kreslí prázdné plátno, iPhone je ověřený
   sondou záběru a DOM, ne okem.

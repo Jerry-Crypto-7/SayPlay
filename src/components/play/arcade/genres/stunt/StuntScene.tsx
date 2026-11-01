@@ -51,6 +51,9 @@ const HEADING_MIN = 120;
 /** Skok dál než tohle (m) mezi tiky je nové tělo nebo restart, ne pohyb – neinterpoluje se. */
 const JUMP_M = 2;
 
+/** Pruhy napříč nájezdem rampy, podíl délky od paty. */
+const RAMP_STRIPES = [0.3, 0.6] as const;
+
 /** Klín rampy: náběh od `z0` (výška 0) po hranu `z1` (výška `h`), svislá zadní stěna; počátek ve středu půdorysu. */
 function rampGeometry(w: number, h: number, d: number): ExtrudeGeometry {
   const profile = new Shape();
@@ -74,14 +77,32 @@ function Ramps({ ramps, look }: { readonly ramps: readonly StuntRamp[]; readonly
   useEffect(() => () => shapes.forEach((geometry) => geometry.dispose()), [shapes]);
   // Boky klínu v barvě hmoty sady, plocha nájezdu světlejší (bez sady dřevo kitu: slunečná plocha, tmavší boky).
   const [side, top] = look.block ?? [color['sun-deep'], color.sun];
+  // Z kamery za autem byl klín jen plochá dlaždice (T4-R1): pruhy napříč nájezdem se sklonem zkracují a tmavá hrana
+  // na vrcholu ukáže, kde rampa končí a jak je vysoká.
   return (
     <>
-      {ramps.map((ramp, index) => (
-        <mesh key={index} geometry={shapes.get(`${ramp.w}/${ramp.h}/${ramp.z1 - ramp.z0}`)} position={[-m(ramp.x), 0, m((ramp.z0 + ramp.z1) / 2)]} castShadow receiveShadow>
-          <meshStandardMaterial attach="material-0" color={side} roughness={0.8} />
-          <meshStandardMaterial attach="material-1" color={top} roughness={0.7} />
-        </mesh>
-      ))}
+      {ramps.map((ramp, index) => {
+        const w = m(ramp.w);
+        const h = m(ramp.h);
+        const d = m(ramp.z1 - ramp.z0);
+        const slope = Math.atan2(h, d);
+        return (
+          <mesh key={index} geometry={shapes.get(`${ramp.w}/${ramp.h}/${ramp.z1 - ramp.z0}`)} position={[-m(ramp.x), 0, m((ramp.z0 + ramp.z1) / 2)]} castShadow receiveShadow>
+            <meshStandardMaterial attach="material-0" color={side} roughness={0.8} />
+            <meshStandardMaterial attach="material-1" color={top} roughness={0.7} />
+            {RAMP_STRIPES.map((f) => (
+              <mesh key={f} position={[0, f * h + 0.015, -d / 2 + f * d]} rotation={[-slope, 0, 0]}>
+                <boxGeometry args={[w * 0.92, 0.02, Math.min(0.35, d * 0.12)]} />
+                <meshStandardMaterial color={side} roughness={0.8} />
+              </mesh>
+            ))}
+            <mesh position={[0, h + 0.03, d / 2 - 0.09]}>
+              <boxGeometry args={[w, 0.06, 0.18]} />
+              <meshStandardMaterial color={side} roughness={0.8} />
+            </mesh>
+          </mesh>
+        );
+      })}
     </>
   );
 }
