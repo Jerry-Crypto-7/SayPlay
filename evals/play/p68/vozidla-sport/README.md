@@ -113,6 +113,14 @@ téhož tiku (Rapier by jí nechal točení staré, `fits` drží tentýž colli
 | hráč s `FLAG.physics` | ovládání hráči příznak nastaví | `the player never carries FLAG.physics and the debris budget holds from tick 0 to the end` (+ 13 dalších: auto stojí) |
 | `debrisMax` nehlídaný | `stunt_impact` spawnuje bez rozpočtu | `live debris never exceed debrisMax, even with two full piles hit back to back` (12 > 8) |
 
+## `stunt` – robot, důkaz a modul (T3)
+
+_Vyplní T3._
+
+## `stunt` – scéna, kamera a palec (T4)
+
+_Vyplní T4._
+
 ## `minigolf` – jádro a spike (T6)
 
 **Rozhodnutí: celočíselné kutálení v jádře = stupeň 1 žebříku zjednodušení `minigolf`.** Koule Rapieru se útlumem
@@ -214,6 +222,14 @@ tiku 0 dvakrát týž hash a shodné kontrolní body po každé ráně i po náv
 
 Pohyb překážky v hashovaném stavu dělá kyvadlo jádra (`kernel.ts`, sdílené, jen tiky); wall-clock by mohl zabloudit jen
 do předpovědi `minigolfMoverAt`, kterou čeká robot T7 a scéna T8 – test ji drží na stavu jádra tik po tiku.
+
+## `minigolf` – robot, důkaz a modul (T7)
+
+_Vyplní T7._
+
+## `minigolf` – scéna, kamera a natažení (T8)
+
+_Vyplní T8._
 
 ## Milníky a žebřík zjednodušení
 
