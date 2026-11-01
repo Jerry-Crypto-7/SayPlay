@@ -123,6 +123,14 @@ describe('time-to-playable probe', () => {
     expect(result.note).toMatch(/never accepted the input/);
   });
 
+  // P68I R2: mřížkové hry (`Hud.tsx`) mají `play-tick` bez `data-inputs` – soudí se plochou jako před T4.
+  it('a grid HUD without data-inputs is judged by the surface alone', async () => {
+    const result = await measure({ url: `${base}/hud-game.html?grid=1`, surfaceSelector: 'canvas', timeoutMs: 10_000, gpu: false });
+
+    expect(result.playable).toBe(true);
+    expect(result.ms).toBeLessThanOrEqual(3000);
+  });
+
   it('a page without any surface reports that, not a reaction failure', async () => {
     const result = await measure({ url: `${base}/dead-game.html`, surfaceSelector: 'iframe', timeoutMs: 1500, gpu: false });
 

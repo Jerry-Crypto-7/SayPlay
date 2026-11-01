@@ -96,7 +96,8 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
 - Každý běh má vlastní prohlížeč i kontext (žádná sdílená cache), páry AB/BA beze změny.
 - Sonda uzná hratelnost na HUD arkády jen když po vstupu vzroste `data-inputs` i `data-tick`; samotná změna plochy
   nestačí. Cizí weby dál podle plochy.
-- **Známá díra (R2):** mřížkové hry (`Hud.tsx`) `data-inputs` nemají, proto je sonda teď měří jako nehratelné.
+- R2: mřížkové hry (`Hud.tsx`) `data-inputs` nemají; sonda jejich HUD vynechá a soudí je plochou jako před T4
+  (test `?grid=1`).
 - Testy: `first-playable-ab.test.ts`, `time-to-playable.test.ts` (fixture `hud-game.html`). mutationStatus: pass.
 
 ## T6 – sdílení, Dare a přehrání

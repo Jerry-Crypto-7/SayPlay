@@ -71,11 +71,14 @@ const POLL_MS = 100;
 /** HUD arkády s počítadly přijatého vstupu (`data-inputs`) a simulace (`data-tick`). */
 const ACCEPT_SELECTOR = '[data-testid=play-tick]';
 
-/** Skript stránky: výchozí stav počítadel na každém živém prvku HUD; vrací jejich počet. */
+/**
+ * Skript stránky: výchozí stav počítadel na každém živém prvku HUD arkády; vrací jejich počet. HUD bez `data-inputs`
+ * (mřížkové hry, `Hud.tsx`) se vynechá, takže se taková stránka soudí jen plochou.
+ */
 function markAccept([selector, stale]) {
   let count = 0;
   for (const element of document.querySelectorAll(selector)) {
-    if (element.hasAttribute(stale)) continue;
+    if (element.hasAttribute(stale) || !element.hasAttribute('data-inputs')) continue;
     element.__ttpAccept = { inputs: Number(element.getAttribute('data-inputs')), tick: Number(element.getAttribute('data-tick')) };
     count += 1;
   }

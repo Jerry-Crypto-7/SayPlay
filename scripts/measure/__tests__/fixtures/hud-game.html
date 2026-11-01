@@ -14,11 +14,13 @@
     <script>
       // HUD jako arkáda na /play (P68I T4): `data-tick` = simulovaný tik,
       // `data-inputs` = vstupy zapsané relací. Plocha na vstup reaguje vždycky;
-      // `?accepts=1` vstup i zapíše, `?frozen=1` zastaví tiky.
+      // `?accepts=1` vstup i zapíše, `?frozen=1` zastaví tiky, `?grid=1` HUD
+      // mřížkové hry (`Hud.tsx`) bez `data-inputs` (P68I R2).
       const params = new URLSearchParams(location.search);
       const accepts = params.get('accepts') === '1';
       const frozen = params.get('frozen') === '1';
       const hud = document.querySelector('[data-testid=play-tick]');
+      if (params.get('grid') === '1') hud.removeAttribute('data-inputs');
       const canvas = document.getElementById('game');
       const context = canvas.getContext('2d');
       let x = 80;
