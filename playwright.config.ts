@@ -90,8 +90,10 @@ export default defineConfig({
       // Nové žánry P66 (T5–T9) a háčky (T4, karty v zóně palce) se hrají na výšku prstem; v `chromium` jedou samy
       // (nejsou v jeho `testIgnore`). Sdílený odkaz, rekord a výzva (P66 T11, `play-share`) se otevírají hlavně na telefonu.
       // Pět her P68 (T1, e2e píšou kategorie) na telefonu i na iPhonu; v `chromium` jedou samy.
+      // Brána FPS her P68 (`play-perf` `@p68-fps`, P68I T3) tu a v `iphone-touch`; `@measure` z téhož souboru ne.
       testMatch:
-        /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb|play-survivor|play-hole|play-steal|play-sort|play-arrows|p66-hooks|play-share|play-stunt|play-minigolf|play-railfps|play-buildshift|play-drawsave)\.spec\.ts/,
+        /(play-touch|play-chain|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb|play-survivor|play-hole|play-steal|play-sort|play-arrows|p66-hooks|play-share|play-stunt|play-minigolf|play-railfps|play-buildshift|play-drawsave|play-perf)\.spec\.ts/,
+      grepInvert: /@measure/,
       use: { ...devices['Pixel 7'], hasTouch: true },
     },
     // Safari a iPhone (P58C T3): hlavní cesta věta → hra → výhra → výzva na WebKitu. Přepínače
@@ -104,9 +106,9 @@ export default defineConfig({
     {
       name: 'iphone-touch',
       // Stráž kamery na šířku i tady (P64 T8-R2): plavbu na šířku iPhonu 15 Pixel nepokrývá. Pět her P68 (T1) taky.
-      testMatch: /(play-create|play-touch|play-chain|p36-dare|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb|play-stunt|play-minigolf|play-railfps|play-buildshift|play-drawsave)\.spec\.ts/,
-      // Rozložení vedle feedu je desktopové; mobilní profil z něj změna velikosti okna neudělá.
-      grepInvert: /desktop \d+×\d+/,
+      testMatch: /(play-create|play-touch|play-chain|p36-dare|play-phone|p58a-framing|p61-portrait|p64-portrait-audit|p64-landscape-guard|p64-portrait-hud|p64-thumb|play-stunt|play-minigolf|play-railfps|play-buildshift|play-drawsave|play-perf)\.spec\.ts/,
+      // Rozložení vedle feedu je desktopové; mobilní profil z něj změna velikosti okna neudělá. `@measure` z `play-perf` taky ne.
+      grepInvert: /desktop \d+×\d+|@measure/,
       use: { ...devices['iPhone 15'], hasTouch: true, launchOptions: { args: [] } },
     },
     /**

@@ -2,35 +2,35 @@
  "about": "P68 T1: required actions per new game, frozen 2026-11-01 before the categories start. Every assertion reads the state trace (body positions and roles, inputs, outcome), never win/score effects a rule emits. 60 ticks = 1 s. Each game: the bot wins, the idle player and a weak bot lose, all within maxTicks.",
  "maxTicks": 5400,
  "every": [
-  { "id": "bot-wins", "run": "bot", "expect": "outcome win before maxTicks" },
-  { "id": "idle-loses", "run": "idle", "expect": "outcome lose before maxTicks" },
-  { "id": "weak-loses", "run": "weak-bot", "expect": "outcome lose before maxTicks" }
+  { "id": "bot-wins", "run": "bot", "expect": "outcome win before maxTicks", "check": { "kind": "outcome", "is": "won" } },
+  { "id": "idle-loses", "run": "idle", "expect": "outcome lose before maxTicks", "check": { "kind": "outcome", "is": "lost" } },
+  { "id": "weak-loses", "run": "weak-bot", "expect": "outcome lose before maxTicks", "check": { "kind": "outcome", "is": "lost" } }
  ],
  "games": {
   "stunt": [
-   { "id": "crosses-finish", "run": "bot", "expect": "the player's vehicle body crosses the finish line before tick 5400 (90 s)" },
-   { "id": "one-jump", "run": "bot", "expect": "at least one jump: the vehicle is >= 0.5 m above the ground for >= 12 consecutive ticks" },
-   { "id": "debris-hit", "run": "bot", "expect": "at least one crash moves or removes a debris body (debris bodies <= STUNT_DEBRIS_MAX = 24)" }
+   { "id": "crosses-finish", "run": "bot", "expect": "the player's vehicle body crosses the finish line before tick 5400 (90 s)", "check": { "kind": "crosses" } },
+   { "id": "one-jump", "run": "bot", "expect": "at least one jump: the vehicle is >= 0.5 m above the ground for >= 12 consecutive ticks", "check": { "kind": "airborne", "minClearance": 500, "minTicks": 12 } },
+   { "id": "debris-hit", "run": "bot", "expect": "at least one crash moves or removes a debris body (debris bodies <= STUNT_DEBRIS_MAX = 24)", "check": { "kind": "disturbs", "minMove": 1000, "near": 2000 } }
   ],
   "minigolf": [
-   { "id": "ball-in-hole", "run": "bot", "expect": "the ball comes to rest inside the hole zone" },
-   { "id": "strokes-counted", "run": "bot", "expect": "strokes = number of shot inputs in the trace, and strokes <= the course limit" }
+   { "id": "ball-in-hole", "run": "bot", "expect": "the ball comes to rest inside the hole zone", "check": { "kind": "restsIn", "maxSpeed": 1, "restTicks": 10 } },
+   { "id": "strokes-counted", "run": "bot", "expect": "strokes = number of shot inputs in the trace, and strokes <= the course limit", "check": { "kind": "strokes", "counter": "ammo" } }
   ],
   "railfps": [
-   { "id": "aims", "run": "bot", "expect": "yawStep (game state slot RAILFPS_SLOTS.yawStep) takes >= 3 distinct values" },
-   { "id": "hit-on-fire", "run": "bot", "expect": "a target body disappears within 30 ticks after a FIRE input while yawStep matches the target's step" },
-   { "id": "idle-hurt", "run": "idle", "expect": "the idle player loses lives" }
+   { "id": "aims", "run": "bot", "expect": "yawStep (game state slot RAILFPS_SLOTS.yawStep) takes >= 3 distinct values", "check": { "kind": "distinctYaw", "min": 3 } },
+   { "id": "hit-on-fire", "run": "bot", "expect": "a target body disappears within 30 ticks after a FIRE input while yawStep matches the target's step", "check": { "kind": "hitOnFire", "within": 30, "arcDeg": 90, "tolerance": 1 } },
+   { "id": "idle-hurt", "run": "idle", "expect": "the idle player loses lives", "check": { "kind": "counterDrops", "counter": "health" } }
   ],
   "buildshift": [
-   { "id": "builds", "run": "bot", "expect": "the player builds >= 2 stations on grid cells" },
-   { "id": "spends", "run": "bot", "expect": "the resource count drops after a build" },
-   { "id": "serves", "run": "bot", "expect": "served customers reach the shift goal" },
-   { "id": "bad-build-loses", "run": "weak-bot", "expect": "a bot that builds badly loses" }
+   { "id": "builds", "run": "bot", "expect": "the player builds >= 2 stations on grid cells", "check": { "kind": "builds", "within": 10, "min": 2 } },
+   { "id": "spends", "run": "bot", "expect": "the resource count drops after a build", "check": { "kind": "spends", "counters": ["ammo", "reserve"], "within": 10 } },
+   { "id": "serves", "run": "bot", "expect": "served customers reach the shift goal", "check": { "kind": "reaches", "counter": "items", "goalParam": "goal" } },
+   { "id": "bad-build-loses", "run": "weak-bot", "expect": "a bot that builds badly loses", "check": { "kind": "outcome", "is": "lost" } }
   ],
   "drawsave": [
-   { "id": "stroke-makes-wall", "run": "bot", "expect": "a stroke (cell-axis inputs under HOLD) creates wall bodies" },
-   { "id": "protected-survives", "run": "bot", "expect": "the protected body survives to the end" },
-   { "id": "idle-loses-protected", "run": "idle", "expect": "without a stroke the protected body is lost" }
+   { "id": "stroke-makes-wall", "run": "bot", "expect": "a stroke (cell-axis inputs under HOLD) creates wall bodies", "check": { "kind": "strokeWalls", "within": 10 } },
+   { "id": "protected-survives", "run": "bot", "expect": "the protected body survives to the end", "check": { "kind": "survives" } },
+   { "id": "idle-loses-protected", "run": "idle", "expect": "without a stroke the protected body is lost", "check": { "kind": "protectedLost" } }
   ]
  }
 }

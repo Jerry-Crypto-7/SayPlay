@@ -1,8 +1,9 @@
 import { expect, test, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { startGame } from './play-start';
+import { P68_GENRES } from '../src/play/genre/p68-contract';
+import { openPause, startGame } from './play-start';
 
 /**
  * Sonda výkonu hry (P28E T1, audit §7). Tag `@measure` ji drží mimo běžné
@@ -95,6 +96,8 @@ declare global {
       firstTickMs: number | null;
       begin(): void;
       end(): PerfWindow;
+      /** Surové intervaly snímků (ms) posledního okna `begin`–`end`. */
+      raw(): number[];
     };
   }
 }
@@ -126,6 +129,8 @@ function installPerfProbe(): void {
   let last = 0;
   let intervals: number[] = [];
   let perFrame: { calls: number; triangles: number }[] = [];
+  // Ověření brány `@p68-fps` (P68I T3): `?perfSlowMs=60` zatíží každý snímek. Jen parametr testu, hra ho nečte.
+  const slowMs = Number(new URLSearchParams(location.search).get('perfSlowMs') ?? 0);
   const quantile = (values: number[], q: number): number | null => {
     if (values.length === 0) return null;
     const sorted = [...values].sort((a, b) => a - b);
@@ -142,6 +147,7 @@ function installPerfProbe(): void {
     triangles = 0;
     const shell = (window as unknown as { __playShell?: { tick(): number } }).__playShell;
     if (probe.firstTickMs === null && shell !== undefined && shell.tick() > 0) probe.firstTickMs = performance.now();
+    if (slowMs > 0) for (const until = performance.now() + slowMs; performance.now() < until; );
     requestAnimationFrame(tick);
   };
   const probe = {
@@ -174,6 +180,9 @@ function installPerfProbe(): void {
         trianglesMedian: quantile(drawn.map((f) => f.triangles), 0.5),
         trianglesMax: drawn.length === 0 ? null : Math.max(...drawn.map((f) => f.triangles)),
       };
+    },
+    raw() {
+      return [...intervals];
     },
   };
   window.__perf = probe;
@@ -356,3 +365,105 @@ test('@measure play performance: legacy and P41 movements × desktop and emulate
     }
   }
 });
+
+/**
+ * Brána FPS her P68 (P68I T3) – na rozdíl od `@measure` tvrdá a v běžném `npm run test:e2e`. Jede jen v projektech
+ * `pixel7-touch` (Chromium, CPU ×4 přes CDP) a `iphone-touch` (WebKit bez škrcení – GPU i CPU hostitele, ne iPhone).
+ * Hra z ručního specu `e2e/fixtures/<key>-spec.json` (výchozí `p68-<id>` pro každou hru P68; hra bez specu se
+ * přeskočí), robot ji hraje ukázkou 20 s a sonda měří intervaly snímků: medián ≥ 40 FPS a p95 intervalu ≤ 33,3 ms.
+ *
+ *   FALLBACK_SMOKE_URL=http://127.0.0.1:3180 npx playwright test e2e/play-perf.spec.ts --project=pixel7-touch --project=iphone-touch
+ *
+ * `P68_FPS_FIXTURES=p66-arrows` změří jiný ruční spec (kontrola mechaniky), `P68_FPS_SLOW_MS=60` zatíží každý snímek
+ * (brána musí zčervenat), `P68_FPS_OUT` = jiný soubor výsledků než `evals/play/p68/fps.json`.
+ */
+/**
+ * `gated: false` – jen zápis do `fps.json`. WebKit na hostiteli s Windows dal 1. 11. hotové hře `p66-arrows`, která
+ * v `pixel7-touch` při CPU ×4 drží medián 59,9 FPS, jen 15–19 FPS: měří hostitele, ne hru (README P68, T3). iPhone
+ * měří fyzicky P59′.
+ */
+const FPS_PROJECTS: Readonly<Record<string, { readonly cpu: number; readonly gated: boolean; readonly profile: string }>> = {
+  'pixel7-touch': { cpu: 4, gated: true, profile: 'Chromium, Pixel 7 viewport and touch, CPU throttled x4 via CDP, host GPU' },
+  'iphone-touch': { cpu: 1, gated: false, profile: 'WebKit, iPhone 15 viewport and touch, no CPU throttling (WebKit has no CDP), host GPU and CPU – not an iPhone; recorded, not gated' },
+};
+const FPS_KEYS: readonly string[] = process.env.P68_FPS_FIXTURES?.split(',') ?? P68_GENRES.map((genre) => `p68-${genre}`);
+const FPS_PLAY_MS = 20_000;
+const FPS_MIN = 40;
+const FRAME_P95_MAX_MS = 33.3;
+/** Dva snímky 60 Hz (= 30 FPS, ještě v bráně) časovač rAF přečte jako 33,3–33,4 ms; bez tolerance by o nich rozhodoval šum. */
+const VSYNC_JITTER_MS = 0.5;
+
+for (const key of FPS_KEYS) {
+  test(`@p68-fps ${key}: median FPS >= ${FPS_MIN} and p95 frame <= ${FRAME_P95_MAX_MS} ms on an emulated phone`, async ({ page, request, browserName }, info) => {
+    const project = FPS_PROJECTS[info.project.name];
+    test.skip(project === undefined, 'P68 FPS gate runs only in pixel7-touch and iphone-touch');
+    const fixture = join(process.cwd(), 'e2e', 'fixtures', `${key}-spec.json`);
+    test.skip(!existsSync(fixture), `no hand spec e2e/fixtures/${key}-spec.json yet`);
+    test.setTimeout(4 * 60_000);
+
+    const published = await request.post('/api/play/games', { data: { spec: JSON.parse(readFileSync(fixture, 'utf8')) as unknown } });
+    expect(published.status(), await published.text()).toBeLessThan(300);
+    const { url } = (await published.json()) as { url: string };
+    const slowMs = Number(process.env.P68_FPS_SLOW_MS ?? 0);
+
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.addInitScript(installPerfProbe);
+    if (browserName === 'chromium') await (await page.context().newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: project!.cpu });
+    await page.goto(slowMs > 0 ? `${url}${url.includes('?') ? '&' : '?'}perfSlowMs=${String(slowMs)}` : url);
+    await startGame(page);
+    await page.waitForFunction(() => window.__perf?.firstDrawMs !== null, undefined, { timeout: 120_000 });
+    // Robot: „Show me how“ z karty pauzy přehraje záznam robota v reálném čase a pauzu sám zruší.
+    await openPause(page);
+    await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
+    const robot = 'startDemo';
+
+    await page.evaluate(() => window.__perf!.begin());
+    await sleep(FPS_PLAY_MS);
+    const playing = await page.evaluate(() => window.__perf!.end());
+    const intervals = await page.evaluate(() => window.__perf!.raw());
+    const gpu = await page.evaluate(() => {
+      const gl = document.createElement('canvas').getContext('webgl2');
+      const debug = gl?.getExtension('WEBGL_debug_renderer_info');
+      return gl && debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : null;
+    });
+    const sorted = [...intervals].sort((a, b) => a - b);
+    const at = (q: number): number | null => (sorted.length === 0 ? null : (sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] as number));
+    const medianMs = at(0.5);
+    const p95Ms = at(0.95);
+    const fps = medianMs === null || medianMs === 0 ? null : 1000 / medianMs;
+
+    const out = process.env.P68_FPS_OUT ?? join('evals', 'play', 'p68', 'fps.json');
+    mkdirSync(join(out, '..'), { recursive: true });
+    // simplified: čtení a zápis celého souboru za test, sedí na `workers: 1`; při paralelních workerech zapisovat po projektu.
+    const report: { results: Record<string, unknown> } = existsSync(out)
+      ? (JSON.parse(readFileSync(out, 'utf8')) as { results: Record<string, unknown> })
+      : { version: 'p68-fps-v1', gate: { fpsMedianMin: FPS_MIN, frameP95MaxMs: FRAME_P95_MAX_MS, vsyncJitterMs: VSYNC_JITTER_MS, playMs: FPS_PLAY_MS }, results: {} } as { results: Record<string, unknown> };
+    report.results[`${key}/${info.project.name}`] = {
+      game: key,
+      project: info.project.name,
+      profile: project!.profile,
+      gated: project!.gated,
+      cpuThrottle: project!.cpu,
+      measuredAt: new Date().toISOString(),
+      browser: `${browserName} ${page.context().browser()?.version() ?? '?'}`,
+      gpu,
+      robot,
+      slowMs,
+      fpsMedian: fps,
+      frameMedianMs: medianMs,
+      frameP95Ms: p95Ms,
+      drawnFrames: playing.drawnFrames,
+      errors,
+      intervals: intervals.map((ms) => Math.round(ms * 10) / 10),
+    };
+    writeFileSync(out, `${JSON.stringify(report, null, 1)}\n`);
+
+    expect(errors).toEqual([]);
+    expect(playing.drawnFrames, `${key}: the game drew no frame while the robot played`).toBeGreaterThan(0);
+    if (!project!.gated) return;
+    expect(fps, `${key}: median FPS on ${info.project.name}`).not.toBeNull();
+    expect(fps!, `${key}: median FPS on ${info.project.name}`).toBeGreaterThanOrEqual(FPS_MIN);
+    expect(p95Ms!, `${key}: p95 frame interval on ${info.project.name}`).toBeLessThanOrEqual(FRAME_P95_MAX_MS + VSYNC_JITTER_MS);
+  });
+}

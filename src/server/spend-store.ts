@@ -359,9 +359,9 @@ export function storePrefix(env: Record<string, string | undefined>): string {
  * nasazení, které se jen jmenuje jinak. `storePrefix()` na tom rozdílu stojí:
  * jen `unset` smí dostat holý základ.
  */
-type EnvironmentScope = 'production' | 'preview' | 'unset' | 'unrecognized';
+export type EnvironmentScope = 'production' | 'preview' | 'unset' | 'unrecognized';
 
-function environmentScope(env: Record<string, string | undefined>): EnvironmentScope {
+export function environmentScope(env: Record<string, string | undefined>): EnvironmentScope {
   const raw = env.VERCEL_ENV?.trim().toLowerCase() ?? '';
   if (raw === 'production') return 'production';
   if (raw === 'preview') return 'preview';

@@ -175,7 +175,7 @@ export function readAnswer(value, count, keys) {
 const CLAUDE = process.platform === 'win32' ? path.join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe') : 'claude';
 
 /** Jedna slepá otázka: prázdný `mkdtemp` jako cwd, bez nástrojů, bez CLAUDE.md, hooků a paměti (`--safe-mode`). */
-function ask(question) {
+export function ask(question) {
   const cwd = mkdtempSync(path.join(os.tmpdir(), 'labels-'));
   const args = ['-p', '--safe-mode', '--strict-mcp-config', '--tools', '', '--no-session-persistence', '--model', MODEL, '--output-format', 'json', '--json-schema', JSON.stringify(ANSWER_SCHEMA), question];
   return new Promise((done) => {

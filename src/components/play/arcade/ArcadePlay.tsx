@@ -217,6 +217,7 @@ function ArcadeHud({
   spec,
   world,
   snapshot,
+  inputs,
   heading,
   bonus,
   paused,
@@ -229,6 +230,8 @@ function ArcadeHud({
   readonly spec: GameSpecV1;
   readonly world: ArcadeWorld;
   readonly snapshot: ArcadeSnapshot;
+  /** Vstupy zapsané relací (`data-inputs`): sonda času do hratelnosti podle nich pozná přijatý vstup (P68I T4). */
+  readonly inputs: number;
   readonly heading: 'h1' | 'h2';
   readonly bonus: number;
   readonly paused: boolean;
@@ -264,7 +267,7 @@ function ArcadeHud({
             {lives}
             {clock === null ? '' : ` · ${clock}`}
           </span>{' '}
-          <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
+          <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick} data-inputs={inputs}>
             {progressLabel(spec, snapshot)}
           </span>
         </p>
@@ -433,6 +436,7 @@ function ArcadePlayGame({
     return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  const inputCount = useSyncExternalStore(session.subscribe, () => session.inputs().length, () => 0);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
   const cast = useMemo(() => {
@@ -971,6 +975,7 @@ function ArcadePlayGame({
         spec={spec}
         world={arcade}
         snapshot={snapshot}
+        inputs={inputCount}
         heading={inFeed || offline ? 'h2' : 'h1'}
         bonus={bonus}
         paused={paused}
