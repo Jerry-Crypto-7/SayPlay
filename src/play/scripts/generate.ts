@@ -34,6 +34,8 @@ export interface ScriptRequest {
   readonly params: Readonly<Record<string, number>>;
   /** Opravné kolo: předchozí kód a jeho chyby; `null` = první pokus. */
   readonly repair: { readonly code: string; readonly issues: readonly string[] } | null;
+  /** Kolik ms smí volání trvat: zbytek okna trasy (revize T13), ne pevná mez písaře. */
+  readonly timeoutMs: number;
 }
 
 /** Odpověď písaře: kód a útrata volání; `null` = nic nepřišlo (strop, vypínač, výpadek). */
@@ -56,8 +58,8 @@ export interface ScriptedOutcome {
   readonly spec: GameSpecV1 | null;
   readonly attempts: readonly ScriptAttempt[];
   readonly spentUsd: number;
-  /** Proč skript nebyl: hra bez skriptu, písař nic nevrátil, nebo dvakrát neprošel. */
-  readonly reason: 'ok' | 'unsupported' | 'no-answer' | 'invalid';
+  /** Proč skript nebyl: hra bez skriptu, písař nic nevrátil, na volání písaře nezbyl čas, nebo dvakrát neprošel. */
+  readonly reason: 'ok' | 'unsupported' | 'no-answer' | 'no-time' | 'invalid';
 }
 
 /** Hra, pro kterou skript píše, a její parametry; `null` = spec takovou hru nehraje. */
@@ -84,18 +86,27 @@ async function attempt(code: string, spec: GameSpecV1, seed: number, target: Non
   return issues.length > 0 ? done(issues, run.polls) : done([], run.polls, scripted);
 }
 
+/** Okno volání písaře: do `deadline` (ms epochy) a jen se zbytkem aspoň `minCallMs`. */
+export interface ScriptWindow {
+  readonly deadline: number;
+  readonly minCallMs: number;
+}
+
 /**
  * Úroveň ze skriptu pro `spec` na semínku `seed`: první pokus, při neúspěchu jedno opravné kolo s chybami.
- * Hra, pro kterou skript nepíše, se nezkouší (písař se nevolá).
+ * Hra, pro kterou skript nepíše, se nezkouší (písař se nevolá). Písař se nevolá ani se zbytkem okna pod `minCallMs`
+ * (revize T13) a timeout volání je zbytek do `deadline`; bez okna (offline pilot) čas nerozhoduje.
  */
-export async function scriptedLevel(spec: GameSpecV1, seed: number, sentence: string, writer: ScriptWriter): Promise<ScriptedOutcome> {
+export async function scriptedLevel(spec: GameSpecV1, seed: number, sentence: string, writer: ScriptWriter, window: ScriptWindow = { deadline: Number.POSITIVE_INFINITY, minCallMs: 0 }): Promise<ScriptedOutcome> {
   const target = scriptGameOf(spec);
   if (target === null) return { spec: null, attempts: [], spentUsd: 0, reason: 'unsupported' };
   const attempts: ScriptAttempt[] = [];
   let spentUsd = 0;
   let repair: ScriptRequest['repair'] = null;
   for (let round = 0; round < 2; round += 1) {
-    const answer = await writer({ sentence, game: target.game, params: target.params, repair });
+    const timeoutMs = window.deadline - Date.now();
+    if (timeoutMs < window.minCallMs) return { spec: null, attempts, spentUsd, reason: 'no-time' };
+    const answer = await writer({ sentence, game: target.game, params: target.params, repair, timeoutMs });
     if (answer === null) return { spec: null, attempts, spentUsd, reason: 'no-answer' };
     spentUsd += answer.costUsd;
     const tried = await attempt(answer.code, spec, seed, target);
@@ -136,7 +147,8 @@ export function paidScriptWriter(env: Env = process.env): ScriptWriter {
     const config = chatConfigFromEnv(env, 'WORLDSMITH_FALLBACK', { localModel: 'local-fallback', localMaxOutputTokens: 4096, hostedMaxOutputTokens: 4096, timeoutMs: 60_000 });
     if (config === null) return null;
     const call: GenerationCall = { prompt: request.sentence, request: { model: config.model, system: SCRIPT_SYSTEM_PROMPT, user: scriptUserMessage(request), outputSchema: SCRIPT_SCHEMA } };
-    const branch = upstreamBranch(config, fetch);
+    // Timeout zkrácený na zbytek okna trasy (revize T13): `WORLDSMITH_FALLBACK_TIMEOUT_MS` smí být delší než celé okno.
+    const branch = upstreamBranch({ ...config, timeoutMs: Math.min(config.timeoutMs, request.timeoutMs) }, fetch);
     if ((await killState(env, fetch).then((state) => state.upstream, () => true)) === true) return null;
     const reservation = await processScriptsSpendCap().reserve(branch.worstCaseUsd(call));
     if (!reservation.ok) return null;

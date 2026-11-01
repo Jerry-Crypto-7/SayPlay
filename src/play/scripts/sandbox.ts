@@ -48,9 +48,13 @@ let loading: Promise<QuickJs> | undefined;
 /**
  * Modul QuickJS, jednou na proces či stránku. Varianta s `.wasm` vedle sebe, ne s wasm vloženým v JS: vložený
  * řetězec minifikátor Next přepíše na neplatný osmičkový escape (build 1. 11. spadl na serveru i v klientu).
+ * Nenačtený modul (chybějící `.wasm` v balíku funkce) se nedrží (revize T13): další volání zkusí načtení znovu.
  */
 export function loadQuickJs(): Promise<QuickJs> {
-  loading ??= newQuickJSWASMModuleFromVariant(variant);
+  loading ??= newQuickJSWASMModuleFromVariant(variant).catch((thrown: unknown) => {
+    loading = undefined;
+    throw thrown;
+  });
   return loading;
 }
 
