@@ -87,6 +87,41 @@ function callCapProblem(vars, { cap, calls, tokens, price, maxTokens: fixedToken
   return Number(callCap) < needed ? { name: calls, reason: `call cap bites before the dollar cap (needs at least ${String(Math.ceil(needed))})` } : null;
 }
 
+/** Knihy, jejichž stropy se sčítají do `PLAY_TOTAL_SPEND_CAP_USD`; čtečka se počítá, kdykoli má strop vyplněný. */
+const SUMMED_CAPS = ['WORLDSMITH_SPEND_CAP_USD', 'WORLDSMITH_FALLBACK_SPEND_CAP_USD', 'PLAY_READER_SPEND_CAP_USD'];
+/** Celé ISO datum (jako `judgingReserveFromEnv` v `src/server/spend-cap.ts`); `Date.parse` sám přečte i „8. 11.“. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/;
+
+/**
+ * P68I T7: součet stropů, sdílené úložiště a rezerva pro porotu. Stropy jsou kumulativní a každý zvlášť může sedět,
+ * zatímco jejich součet přeleze rozpočet (audit P59, bod P); bez `KV_REST_API_*` kniha stropů odmítá všechno, nebo
+ * se resetuje se studeným startem. Prázdná hodnota = chybějící (`vercel env pull` píše citlivé proměnné prázdné).
+ */
+function totalProblems(vars) {
+  const problems = [];
+  for (const name of ['KV_REST_API_URL', 'KV_REST_API_TOKEN']) {
+    if ((vars[name]?.trim() ?? '') === '') problems.push({ name, reason: 'shared store missing or empty: the spend ledgers need it' });
+  }
+  const scripts = vars.PLAY_SCRIPTS?.trim() === 'on';
+  if (scripts && amount(vars.PLAY_SCRIPTS_SPEND_CAP_USD) === null) problems.push({ name: 'PLAY_SCRIPTS_SPEND_CAP_USD', reason: 'spend cap missing or not a dollar amount while PLAY_SCRIPTS is on' });
+  const summed = scripts ? [...SUMMED_CAPS, 'PLAY_SCRIPTS_SPEND_CAP_USD'] : SUMMED_CAPS;
+  // Chybějící dílčí strop hlásí jeho vlastní kontrola; do součtu jde jako nula.
+  const sum = summed.reduce((total, name) => total + (amount(vars[name]) ?? 0), 0);
+  const total = amount(vars.PLAY_TOTAL_SPEND_CAP_USD);
+  if (total === null) problems.push({ name: 'PLAY_TOTAL_SPEND_CAP_USD', reason: 'total spend cap missing or not a dollar amount' });
+  // Setiny: 30 + 20 v plovoucí čárce nesmí přelézt 50.
+  else if (Math.round(sum * 100) > Math.round(total * 100)) problems.push({ name: 'PLAY_TOTAL_SPEND_CAP_USD', reason: `the caps add up to ${sum.toFixed(2)} USD, more than the total (${summed.join(' + ')})` });
+  const from = vars.PLAY_JUDGING_FROM?.trim() ?? '';
+  const reserve = vars.PLAY_JUDGING_RESERVE_USD?.trim() ?? '';
+  if (from !== '' || reserve !== '') {
+    if (!ISO_DATE.test(from) || !Number.isFinite(Date.parse(from))) problems.push({ name: 'PLAY_JUDGING_FROM', reason: 'judging reserve needs an ISO date (2026-11-08T09:00:00Z); a typo holds the whole director cap' });
+    const usd = amount(reserve);
+    const cap = amount(vars.WORLDSMITH_SPEND_CAP_USD);
+    if (usd === null || (cap !== null && usd > cap)) problems.push({ name: 'PLAY_JUDGING_RESERVE_USD', reason: 'judging reserve missing, not a dollar amount, or above WORLDSMITH_SPEND_CAP_USD' });
+  }
+  return problems;
+}
+
 /** Proměnné, kvůli kterým nasazení neprojde, s důvodem; prázdné pole = v pořádku. */
 export function checkEnv(vars) {
   const problems = [];
@@ -126,6 +161,7 @@ export function checkEnv(vars) {
       if (amount(vars[ledger[side]]) !== amount(vars[first[side]])) problems.push({ name: ledger[side], reason: `same model as ${first.model}, so the price must match ${first[side]}` });
     }
   }
+  problems.push(...totalProblems(vars));
   // Volitelná: prázdná = 2. Hodnotu mimo mez by server zahodil a jel na 2, tady se to řekne dřív.
   const slots = vars.PLAY_DIRECTOR_SLOTS?.trim() ?? '';
   if (slots !== '' && !(/^\d+$/.test(slots) && Number(slots) >= 1 && Number(slots) <= MAX_PLAY_DIRECTOR_SLOTS)) {

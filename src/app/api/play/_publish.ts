@@ -17,12 +17,13 @@ import { createHash } from 'node:crypto';
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
-import { PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
+import { generatorOf, PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { arcadeReport } from '@/play/arcade/verify';
 import type { ChainWorld } from '@/play/chain/contract';
 import { verifyChain } from '@/play/chain/verify';
 import type { Honesty } from '@/play/draft/unsupported';
+import { ROUTE_PENDING } from '@/play/genre/classify';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealChainVersion, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
 import { BUILTIN_IDS } from '@/play/version/builtin';
@@ -30,7 +31,7 @@ import { previewOf } from '@/play/version/preview';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
-import { sharedStoreFromEnv } from '@/server/spend-store';
+import { environmentScope, isServerless, sharedStoreFromEnv } from '@/server/spend-store';
 
 import { getCompiler } from './_compiler';
 import { startCustomEnv } from './_env';
@@ -160,6 +161,23 @@ const COMPILE_MESSAGE: Readonly<Record<CompileGameReason, string>> = {
 export type SpecRead = { readonly ok: true; readonly value: GameSpecV1 } | { readonly ok: false; readonly response: Response };
 
 /**
+ * Kde stráž nezapojených her P68 odmítá (R3): produkce podle `environmentScope` (jako kniha útraty), a nasazení,
+ * které se nepředstavilo – vlastní jméno prostředí, nebo bez `VERCEL_ENV` na platformě či nad sdíleným úložištěm.
+ * Preview a místní běh bez sdíleného úložiště pustí ruční specy kategorií (e2e). Místní `VERCEL_ENV=production`
+ * (placený běh) je produkce i tady – e2e ruční spec P68 pak dostane 422 „not live yet“, schválně.
+ * Veřejný server mimo Vercel bez sdíleného úložiště by vypadal jako místní běh; jediná taková cesta v repu
+ * (`ops/host`) sdílenou knihu vyžaduje (`ops/host/preflight.mjs`), takže tam stráž odmítá (review R3).
+ */
+function servesPublicFeed(env: Record<string, string | undefined>): boolean {
+  const scope = environmentScope(env);
+  if (scope === 'production' || scope === 'unrecognized') return true;
+  return scope === 'unset' && (isServerless(env) || sharedStoreFromEnv(env) !== null);
+}
+
+/** Generátory světů pěti her P68 (jména kusů zmrazená v T1, `src/play/arcade/library.ts`). */
+const P68_GENERATORS: Readonly<Record<string, string>> = { stunt: 'stunt_track', minigolf: 'minigolf_course', railfps: 'railfps_rail', buildshift: 'buildshift_shop', drawsave: 'drawsave_level' };
+
+/**
  * Spec od cizího projde `readGameSpec` dřív, než se z něj cokoli počítá –
  * i semínko. Hash nad surovým tělem by rekurzí spadl na hluboko vnořeném poli
  * (nález revize T3); validovaný spec má hloubku danou schématem.
@@ -167,6 +185,16 @@ export type SpecRead = { readonly ok: true; readonly value: GameSpecV1 } | { rea
 export function readSpecOrFail(input: unknown): SpecRead {
   const read = readGameSpec(input);
   if (!read.ok) return { ok: false, response: fail(422, 'SPEC_REJECTED', `${read.reason}: ${read.issues[0] ?? 'the game description was rejected'}`) };
+  // P68I R1: hra P68 před „zapoj X“ nesmí do feedu ani ručním specem (POST hry, remix) – brána aktivace drží jen
+  // klasifikátor a režiséra. Jen na produkci: e2e a testy kategorií publikují ruční specy her touto cestou.
+  // Id ovládání pěti her P68 jsou shodná s id žánru, takže jedna množina hlídá `control` i `genre.id`; svět ale
+  // vybírá generátor a ten staví hru pod jakýmkoli ovládáním (`controlParams.generator`, nález review R1).
+  const pending = ROUTE_PENDING as ReadonlySet<string>;
+  const generator = generatorOf(read.value);
+  const unwired = pending.has(read.value.control ?? '') || pending.has(read.value.genre?.id ?? '') || [...pending].some((id) => P68_GENERATORS[id] === generator);
+  if (unwired && servesPublicFeed(process.env)) {
+    return { ok: false, response: fail(422, 'SPEC_REJECTED', 'this game type is not live yet') };
+  }
   return { ok: true, value: read.value };
 }
 

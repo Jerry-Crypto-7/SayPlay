@@ -14,8 +14,8 @@
  *   po ose x, pak z; v cíli vezme hotovou věc z pece, odloží nebo vezme na polici, obslouží prvního ve frontě),
  *   zákazníci (trpělivost, přiřazení k pultu s nejkratší frontou, chůze na místo ve frontě);
  * - `buildshift_build` (stisk, hned za ovládáním): vystaví stanoviště z předlohy na buňce žádosti o stavbu;
- * - `buildshift_shift` (tik): příchody zákazníků dveřmi podle rozpisu od otevření, obsloužení → `items` a body,
- *   odchody → ztráta života;
+ * - `buildshift_shift` (tik): příchody zákazníků dveřmi podle rozpisu od otevření a rush v posledních 15 s hodin
+ *   (T10), obsloužení → `items` a body, odchody → ztráta života;
  * - `buildshift_goal` (čítače): obslouženo ≥ cíl = výhra; `out_of_health` = moc odchodů, `time_limit` = konec směny.
  *
  * Determinismus: celá čísla, náhoda jen při stavbě (příchody z `pure-rand` přes `createCompileRng`, stream `spawn`),
@@ -51,6 +51,7 @@ import {
   CUSTOMER_SLOTS,
   PALETTE,
   PHASE,
+  RUSH_START,
   SHIFT_SLOTS,
   STATION,
   STATION_COST,
@@ -66,6 +67,7 @@ import {
   manhattan,
   queueAt,
   queueSpot,
+  rushFor,
   sellerAt,
   stationCode,
   stationsByCell,
@@ -317,11 +319,16 @@ const shiftParams = z
     /** Příchody zákazníků v ticích od otevření, vzestupně. */
     arrivals: z.array(z.int().min(1).max(ARCADE_LIMITS.maxTicks)).min(1).max(64),
     points: z.int().min(1).max(100),
+    /**
+     * Příchody rushe (T10) v ticích hodin (absolutně, jako `time_limit`), vzestupně. Volitelné: svět uložený před T10
+     * pole nemá a přehraje se beze změny.
+     */
+    rush: z.array(z.int().min(1).max(ARCADE_LIMITS.maxTicks)).max(16).optional(),
   })
   .strict();
 export type BuildshiftShiftParams = z.infer<typeof shiftParams>;
 
-/** Průběh směny (tik): příchody dveřmi podle rozpisu, obsloužení → `items` a body, odchody → ztráta života. */
+/** Průběh směny (tik): příchody dveřmi podle rozpisu a rushe, obsloužení → `items` a body, odchody → ztráta života. */
 export const buildshiftShift: RulePiece<BuildshiftShiftParams> = {
   id: 'buildshift_shift',
   params: shiftParams,
@@ -335,10 +342,13 @@ export const buildshiftShift: RulePiece<BuildshiftShiftParams> = {
     if (served > 0) effects.push({ kind: 'count', counter: 'items', amount: served }, { kind: 'score', amount: served * params.points });
     if (walked > 0) effects.push({ kind: 'damage', amount: walked });
     if ((state[slot(params.keeper, 'phase')] as number) !== PHASE.open) return effects;
-    const since = (state[HEADER.tick] as number) - (state[slot(params.keeper, 'openTick')] as number);
-    for (const at of params.arrivals) {
-      if (at === since) effects.push({ kind: 'spawn', template: params.customer, x: cellX(BUILDSHIFT.door), y: 0, z: cellZ(BUILDSHIFT.door), vx: 0, vy: 0, vz: 0 });
-    }
+    const tick = state[HEADER.tick] as number;
+    const since = tick - (state[slot(params.keeper, 'openTick')] as number);
+    const arrive = (): void => {
+      effects.push({ kind: 'spawn', template: params.customer, x: cellX(BUILDSHIFT.door), y: 0, z: cellZ(BUILDSHIFT.door), vx: 0, vy: 0, vz: 0 });
+    };
+    for (const at of params.arrivals) if (at === since) arrive();
+    for (const at of params.rush ?? []) if (at === tick) arrive();
     return effects;
   },
 };
@@ -390,6 +400,23 @@ export function arrivalTicks(seed: number, count: number): number[] {
   return out;
 }
 
+/**
+ * Příchody rushe v ticích hodin: první v `RUSH_START`, všechny do `rushSpan` po něm, rozestupy z vah 60–140 % ze streamu
+ * `pacing` (příchody směny losuje `spawn`, takže se rozpisy navzájem nepohnou), vzestupně a každý v jiném tiku.
+ */
+export function rushTicks(seed: number, count: number): number[] {
+  const rng = createCompileRng(seed, 'pacing');
+  const weights = Array.from({ length: count }, () => rng.int(60, 140));
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const out: number[] = [];
+  let acc = 0;
+  for (const weight of weights) {
+    out.push(Math.max((out.at(-1) ?? RUSH_START - 1) + 1, RUSH_START + Math.floor((BUILDSHIFT.rushSpan * acc) / total)));
+    acc += weight;
+  }
+  return out;
+}
+
 const body = (role: BodyInit['role'], kind: string, size: { readonly w: number; readonly h: number; readonly d: number }, extra: Partial<BodyInit> = {}): BodyInit => ({ role, kind, x: 0, y: 0, z: 0, ...size, solid: false, ...extra });
 
 /**
@@ -407,7 +434,11 @@ function shopLevel(): BodyInit[] {
   ];
 }
 
-/** Volné sloty spawnu: všechna stanoviště na stavebních buňkách a všichni zákazníci směny s největším cílem. */
+/**
+ * Volné sloty spawnu: všechna stanoviště na stavebních buňkách a všichni zákazníci směny s největším cílem. Rush se
+ * nepřičítá: jádro bere sloty odešlých a obsloužených zákazníků znovu a v rushi jich žije nejvýš 7 + doznívající
+ * řádné příchody (počet slotů je součást stavu, přičtení by pohnulo otiskem každé hry).
+ */
 export const SPAWN_SLOTS = BOARD_CELLS - 1 - BUILDSHIFT.walls.length + customersFor(BUILDSHIFT.goal.max);
 
 /** Tvrzení „hratelné z konstrukce“ nad úrovní a příchody; prázdné pole = hratelné. */
@@ -439,7 +470,7 @@ export const buildshiftShop: ModeGeneratorPiece<BuildshiftParams> = {
     const { keeper, customer } = BUILDSHIFT_BODIES;
     const rules: PieceRef[] = [
       { id: 'buildshift_build', params: { keeper } },
-      { id: 'buildshift_shift', params: { keeper, customer, arrivals, points: BUILDSHIFT.points } },
+      { id: 'buildshift_shift', params: { keeper, customer, arrivals, points: BUILDSHIFT.points, rush: rushTicks(seed, rushFor(params.goal)) } },
       { id: 'buildshift_goal', params: { goal: params.goal } },
       { id: 'out_of_health', params: {} },
       { id: 'time_limit', params: { seconds: BUILDSHIFT.seconds } },

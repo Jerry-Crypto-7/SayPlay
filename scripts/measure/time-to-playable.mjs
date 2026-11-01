@@ -27,6 +27,14 @@
  * potvrzené dvojice. Rozlišení je jeden pokus (~0,6 s): hra připravená
  * uprostřed pokusu se pozná až v dalším.
  *
+ * **Přijatý vstup (P68I T4):** má-li stránka HUD naší arkády
+ * (`[data-testid=play-tick]`, mimo plochy z doby před odesláním věty), nestačí
+ * změna plochy – po vstupu musí na témže prvku vzrůst `data-inputs` (vstupy,
+ * které relace zapsala) **i** `data-tick` (simulace běží). Animovaná načítací
+ * obrazovka nebo ukázka robota tak hratelnost nepředstírá. Prvek bez
+ * `data-inputs` neroste nikdy, tedy nehratelný – raději selhání než tichý návrat
+ * k samotné ploše. Cizí web ten prvek nemá a soudí se jen podle plochy.
+ *
  * Snímá se screenshot stránky (kompozitor), ne `toDataURL` plátna – WebGL bez
  * `preserveDrawingBuffer` i cizí iframe tak vidí stejně jako hráč. Snímek je
  * v CSS pixelech: na telefonu s hustotou 2,6 a 4× zpomaleným CPU trval snímek
@@ -60,6 +68,32 @@ const STALE = 'data-ttp-stale';
 /** Epoch ms konce prvního snímku, ve kterém plátno kreslilo (`markFirstFrame`). */
 const FIRST_FRAME = 'data-ttp-first-frame';
 const POLL_MS = 100;
+/** HUD arkády s počítadly přijatého vstupu (`data-inputs`) a simulace (`data-tick`). */
+const ACCEPT_SELECTOR = '[data-testid=play-tick]';
+
+/**
+ * Skript stránky: výchozí stav počítadel na každém živém prvku HUD arkády; vrací jejich počet. HUD bez `data-inputs`
+ * (mřížkové hry, `Hud.tsx`) se vynechá, takže se taková stránka soudí jen plochou.
+ */
+function markAccept([selector, stale]) {
+  let count = 0;
+  for (const element of document.querySelectorAll(selector)) {
+    if (element.hasAttribute(stale) || !element.hasAttribute('data-inputs')) continue;
+    element.__ttpAccept = { inputs: Number(element.getAttribute('data-inputs')), tick: Number(element.getAttribute('data-tick')) };
+    count += 1;
+  }
+  return count;
+}
+
+/** Skript stránky: vzrostly na některém prvku od `markAccept` vstupy i tik? (`NaN` neroste.) */
+function acceptedSince([selector, stale]) {
+  for (const element of document.querySelectorAll(selector)) {
+    const before = element.__ttpAccept;
+    if (before === undefined || element.hasAttribute(stale)) continue;
+    if (Number(element.getAttribute('data-inputs')) > before.inputs && Number(element.getAttribute('data-tick')) > before.tick) return true;
+  }
+  return false;
+}
 
 /**
  * Skript stránky (běží před jejími skripty): kreslicí volání WebGL zapíše své
@@ -135,24 +169,31 @@ const shot = (handle) => handle.screenshot({ animations: 'allow', caret: 'hide',
 
 /**
  * Jeden pokus: snímek → vstup → snímky do 500 ms. Vrací čas a snímky změny,
- * nebo `null`, když plocha nezareagovala.
+ * nebo `null`, když plocha nezareagovala. Na stránce s HUD arkády se změna
+ * počítá, až když HUD vstup i přijal; jinak `{ accepted: false }`.
  */
 async function attempt(page, surface) {
   const before = await shot(surface.handle);
+  const guarded = (await page.evaluate(markAccept, [ACCEPT_SELECTOR, STALE])) > 0;
   const centre = { x: surface.box.x + surface.box.width / 2, y: surface.box.y + surface.box.height / 2 };
   const inputAt = Date.now();
   await page.mouse.click(centre.x, centre.y);
   await page.keyboard.press('Space');
   await page.keyboard.down('ArrowRight');
   try {
+    let surfaceOnly = false;
     while (Date.now() - inputAt <= REACT_MS) {
       await wait(POLL_MS);
+      // Počítadla před snímkem: v `seenAt` už platí obojí.
+      const accepted = !guarded || (await page.evaluate(acceptedSince, [ACCEPT_SELECTOR, STALE]));
       const after = await shot(surface.handle);
       const seenAt = Date.now();
       const pct = await changedPct(before, after);
-      if (pct !== null && pct >= CHANGE_PCT) return { seenAt, pct, before, after };
+      if (pct === null || pct < CHANGE_PCT) continue;
+      if (accepted) return { seenAt, pct, before, after, accepted: true };
+      surfaceOnly = true;
     }
-    return null;
+    return surfaceOnly ? { accepted: false } : null;
   } finally {
     await page.keyboard.up('ArrowRight');
   }
@@ -184,8 +225,8 @@ export async function measure(config) {
       const prompt = page.locator(config.promptSelector).first();
       await prompt.fill(config.sentence ?? '', { timeout: timeoutMs });
       // Hra, která na stránce tvorby hrála už před odesláním (doporučená hra,
-      // feed), není ta nová – jinak se změří ona.
-      await page.$$eval(surfaceSelector, (elements, mark) => elements.forEach((element) => element.setAttribute(mark, '')), STALE);
+      // feed), není ta nová – jinak se změří ona, její plocha i její HUD.
+      await page.$$eval(`${surfaceSelector}, ${ACCEPT_SELECTOR}`, (elements, mark) => elements.forEach((element) => element.setAttribute(mark, '')), STALE);
       result.t0 = Date.now();
       if (config.submitSelector) await page.locator(config.submitSelector).first().click({ timeout: timeoutMs });
       else await prompt.press('Enter');
@@ -200,6 +241,8 @@ export async function measure(config) {
     if (config.startSelector) await page.locator(config.startSelector).first().click({ timeout: Math.max(1, deadline - Date.now()) });
 
     let sawSurface = false;
+    /** Plocha se na vstup změnila, ale HUD arkády ho nepřijal. */
+    let sawUnaccepted = false;
     /** Reakce, která čeká na potvrzení hned následujícím pokusem na téže ploše. */
     let pending = null;
     while (Date.now() < deadline) {
@@ -214,7 +257,8 @@ export async function measure(config) {
         if (pending !== null && !(await pending.handle.evaluate((element, other) => element === other, surface.handle).catch(() => false))) pending = null;
         result.attempts += 1;
         const hit = await attempt(page, surface);
-        if (hit === null) {
+        if (hit === null || !hit.accepted) {
+          sawUnaccepted ||= hit !== null;
           pending = null;
           continue;
         }
@@ -249,7 +293,11 @@ export async function measure(config) {
       }
     }
     if (!result.playable) {
-      result.note = sawSurface ? `timeout after ${timeoutMs} ms: surface never reacted to input` : `timeout after ${timeoutMs} ms: no surface matching ${surfaceSelector}`;
+      result.note = !sawSurface
+        ? `timeout after ${timeoutMs} ms: no surface matching ${surfaceSelector}`
+        : sawUnaccepted
+          ? `timeout after ${timeoutMs} ms: surface changed but the game never accepted the input (data-inputs and data-tick did not both grow)`
+          : `timeout after ${timeoutMs} ms: surface never reacted to input`;
       result.gameUrl = page.url();
       if (config.screenshotDir) await page.screenshot({ path: join(config.screenshotDir, 'timeout.png') }).catch(() => undefined);
     }
