@@ -583,6 +583,13 @@ narážky, assety s kandidáty z CC0 kitů, požadavky na sdílené soubory, že
 - **#64** (T5b, 1. 11. 2026): https://github.com/Jerry-Crypto-7/Hackathon/pull/64 – větev
   `features/P68V-vozidla-a-sport-2026-10-31` po `1275d410` (stunt připravený k zapojení, minigolf staged), blind-check
   6/6. Nesloučený; další push větve (T11) aktualizuje týž PR.
+- **T11** (1. 11. 2026): `origin/main` mezitím přijal #63 (P68-S, jen soubory `buildshift` a sdílený
+  `p68-staged.test.ts`) – sloučeno bez konfliktu (`ec0becfb`), `owned-paths` 0. Po sloučení nový build a znovu:
+  vitest 7468/7472 (čtyři časové limity mimo pruh – `runner-sections` a `swarm (f)` jako v T10, dvakrát
+  `p51-dead-time`; `runner-sections` znovu červený i sám při vytížení procesoru 97 %; kód `src/play/arcade` mimo
+  soubory pruhu je s `origin/main` bajtově stejný), e2e her 24/24, `play-drive`, `play-ball`,
+  `play-physics-replay` zelené, `interface-language` napoprvé po startu serveru znovu `/play?g=` a sám zelený 4/4.
+  Push aktualizuje #64 (název a popis pro obě hry), nový PR se nezakládá.
 
 ## Hlídače
 
