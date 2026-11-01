@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { ARCADE_LIMITS, type ArcadeWorld, type InputEvent, START_LIVES } from '../../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type InputEvent, START_LIVES } from '../../contract';
 import { completeHooks } from '../../hooks';
 import { buildWorld, replay } from '../../kernel';
 import { ARCADE_LIBRARY } from '../../library';
@@ -78,6 +78,16 @@ describe('railfps bot (P68-F T3)', () => {
       expect(bot.tick, what).toBeLessThanOrEqual(ARCADE_LIMITS.maxTicks);
       expect(trace.outcome, what).toBe('won');
       expect(trace.losses, what).toEqual([]);
+    }
+  });
+
+  it('paces the default level near the promised length: the bot needs 35 to 60 s, the slowest level leaves 15 s of the limit (T9)', () => {
+    const seconds = cases().map(({ what, bot }) => ({ what, at: bot.tick / ARCADE_HZ }));
+    console.log(`railfps bot win (s): ${seconds.map(({ what, at }) => `${what} ${at.toFixed(1)}`).join('; ')}`);
+    for (const { what, at } of seconds) {
+      if (what.endsWith('default')) expect(at, what).toBeGreaterThanOrEqual(35);
+      if (what.endsWith('default')) expect(at, what).toBeLessThanOrEqual(60);
+      expect(at, what).toBeLessThanOrEqual(RAILFPS.seconds - 15);
     }
   });
 

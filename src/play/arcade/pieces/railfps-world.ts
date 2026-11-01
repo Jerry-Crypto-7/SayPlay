@@ -52,10 +52,15 @@ export const RAILFPS = {
   targetFar: 16 * UNIT,
   enemyNear: 18 * UNIT,
   enemyFar: 22 * UNIT,
-  /** Kdy v kole vyjde první nepřítel a rozestup dalších (tiky hodin kola); s každým kolem o `gapShrink` kratší. */
-  firstEnemy: 40,
-  gapMin: 70,
-  gapMax: 110,
+  /**
+   * Rozvrh vln (T9): terče i nepřátelé vycházejí po jednom napřeskáčku, ne terče všechny naráz. Rozestup příchodů
+   * (tiky hodin kola) je `pace` dělené počtem věcí celé hry, v mezích `gapMin`..`gapMax`, s každým kolem o `gapShrink`
+   * kratší (ne pod `gapMin`); jednotlivý rozestup kolísá ±¼. Výchozí hra (16 věcí, 3 vlny) tak robotovi trvá ~45 s
+   * místo 16 s a slib `targetDurationSec: 70` (člověk je pomalejší než robot) sedí; 36 věcí zůstane hustých jako dřív.
+   */
+  pace: 3000,
+  gapMin: 60,
+  gapMax: 200,
   gapShrink: 8,
   /** Podíl nepřátel ve vlně (procenta, zaokrouhleno nahoru); zbytek jsou terče. */
   enemyPct: 60,

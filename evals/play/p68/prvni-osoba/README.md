@@ -178,7 +178,35 @@ běží jen na `pixel7-touch`), 2,0 min.
 - Měření FPS při tomto běhu: medián 59,9, p95 33,4 ms (o 0,1 ms nad bránou; běžely i servery 3180/3181). Odezva
   na ukázku robota nereaguje – nález pro T9.
 
-### Nálezy pro T9
+## Čitelnost na telefonu a šipky hrozby (T9)
+
+- **Tmavý pruh pryč:** boční stěny chodby byly ploché stěny v ose oka, takže z nich byl vidět jen 0,4m konec – ten
+  dělal pruh. Stěny jsou odstraněné, ne překreslené.
+- **Stanice vypadá jako stanice:** panorama „inside a spaceship“ (konzole, okna), šedá kovová podlaha, tyrkysové
+  zábrany – vše existující assety. Když panorama patří konkrétnímu místu, obecné kulisy sady (rakety, přistávací moduly)
+  se nekreslí. Kovovou podlahu dostane každé „space“ místo; scéna pozná místo jen podle štítků panoramatu, text
+  místa nedostává.
+- **Šipky hrozby** `ThreatArrows.tsx`: rajčatová šipka s inkoustovým okrajem u okraje obrazovky na straně nepřítele
+  mimo záběr nejblíž `reach`, nejvýš 2, `data-testid="railfps-threat-left|right"`, 44 px, jen ukazatel (na ťuk
+  nereaguje). Test strany z ručního stavu (dvě různé záměny strany test shodí); e2e na obou telefonech ukáže levou
+  šipku pro sektor −2.
+- **Tempo (změna jádra):** terče a nepřátelé chodí po jednom, promíchaně; rozestup je pevný časový rozpočet dělený
+  počtem věcí. Robot na výchozí úrovni 15,1–16,1 s → **43,0–44,7 s** (nejméně terčů 19,9–21,9 s, nejvíc 46,1–48,9 s,
+  nejméně vln 45,1–48,5 s, nejvíc vln 38,9–41,8 s). Slabý i nečinný hráč dál prohrávají, Dare balík pod 64 kB. Nový
+  test v `railfps-bot.test.ts` drží výchozí úroveň na 35–60 s a nejpomalejší aspoň 15 s pod limitem.
+- **Testy:** `railfps-readability.test.ts` 9/9 (nepřítel ve 22 m ≥ 10 % výšky na 412 × 839, zaměřovač a značka mimo
+  horní pás HUD i zónu palce, terče nezakryté HUD); cílená sada 135/135; build projde; e2e na třech projektech 7
+  prošlo, 2 přeskočené, telefony vyhrají v tiku 2610 (43,5 s) se 3 životy.
+- **FPS** (CPU stroje 100 % od jiných pruhů): před opravou 2× medián 59,9 / p95 33,4 ms (brána neprošla). Oprava:
+  hrany sektorů a zábrany jako 2 instancované meshe místo 17, zábrany bez stínů. Po opravě: 59,9 / 33,3 ms (těsně nad
+  bránou, nezaokrouhleně) a **59,9 / 16,8 ms (prošla, v `fps.json`)**. Medián má velkou rezervu, p95 kolísá se
+  zátěží stroje.
+- Snímky: `D:/caches/p68/F/shots/t9-before-*.png` (před), `t9-pixel7-touch-threat.png`, `t9-iphone-touch-threat.png`
+  (po; plátno na iPhonu se tentokrát vykreslilo).
+- **Zbývá:** značka sektoru je na podlaze vysoký žlutý pruh, výraznější než je potřeba; živý nepřítel proti stanici
+  na snímku chybí (první nepřítel přichází mimo záběr).
+
+### Nálezy pro T9 (z T6, vyřešené výše)
 
 - Robot vyhraje za 16,9 s, ale spec slibuje `targetDurationSec: 70`: tři vlny po 16 věcech jsou krátké.
 - Na `pixel7-touch-enemy.png` zabírá boční stěna chodby levých ~40 % obrazu jako tmavý pruh bez detailu.

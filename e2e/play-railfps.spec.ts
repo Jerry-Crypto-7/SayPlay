@@ -21,6 +21,8 @@ import { HUD_COUNTER_LABELS } from './hud-labels';
  * - herní aserce: po prvním ťuku mimo střed záznam nese ťuknutý sektor, natočení ve stavu (kamera ho jen kreslí)
  *   na něm skončí a skóre stoupne; nečinný hráč prohraje;
  * - odezva zásahu (T8): po tomtéž ťuku je na zaměřovači značka zásahu (`railfps-hit-marker`), snímek `t8-<projekt>-hit.png`;
+ * - šipky hrozeb (T9, telefon na výšku): když robot chce sektor mimo záběr a nepřítel žije, šipka u kraje ukazuje
+ *   sektor nepřítele, který kamera nekreslí, na jeho straně; snímek `t9-<projekt>-threat.png`;
  * - nepřítel z věty je ve scéně a jeho model se stáhl, popisky počítadel z uzavřeného seznamu, žádná chyba stránky;
  * - Dare: výhra pošle záznam, server ho přehraje na týž výsledek a odkaz s výzvou otevře hru s cílem vyzyvatele;
  * - `@measure` (jen `pixel7-touch`): 20 s hry robotem, snímky přes `requestAnimationFrame` → `fps.json`.
@@ -237,7 +239,7 @@ interface Played {
  * přírůstek skóre aspoň za nepřítele), `'end'` hraje do konce. První ťuk mimo střed se ověří vždy: tiky bez dalších
  * stisků, dokud rána nepadne, jeden tik navíc (scéna kreslí natočení předchozího tiku) a čtení natočení ze scény.
  */
-async function playByPointer(page: Page, pointer: Pointer, until: 'aimed' | 'end', onEnemy: () => Promise<void>, onHit: () => Promise<void>): Promise<Played> {
+async function playByPointer(page: Page, pointer: Pointer, until: 'aimed' | 'end', onEnemy: () => Promise<void>, onHit: () => Promise<void>, onOffView: () => Promise<void>): Promise<Played> {
   let step: Step = await page.evaluate(() => {
     const shell = window.__playShell as unknown as ArcadeProbe;
     shell.byHand(true);
@@ -308,6 +310,8 @@ async function playByPointer(page: Page, pointer: Pointer, until: 'aimed' | 'end
           continue;
         }
       } else if (goal !== sector) {
+        // T9: robot chce sektor mimo záběr a nepřítel žije – šipka hrozby by teď měla být u kraje.
+        if (step.enemies > 0) await onOffView();
         // Mimo záběr: tah prstem (rozhlédnutí) z protější strany, jeden tik s drženou osou, puštění.
         const turn = sector * YAW.stepDeg - v.yaw;
         const dir = Math.sign(turn);
@@ -412,8 +416,38 @@ test.describe('railfps (P68-F T6)', () => {
       await expect(marker).toBeVisible({ timeout: 2_000 });
       await page.screenshot({ path: join(SHOTS, `t8-${info.project.name}-hit.png`) });
     };
-    const played = await playByPointer(page, pointer, touch ? 'end' : 'aimed', onEnemy, onHit);
-    console.log(`railfps ${info.project.name}: ${JSON.stringify({ last: played.last, taps: played.taps, looks: played.looks, aimed: played.aimed })}`);
+    let threat: { readonly side: string; readonly sector: number; readonly yaw: number } | null = null;
+    const onOffView = async () => {
+      if (threat !== null || !touch) return;
+      // Šipky a natočení ze stejného snímku: scéna píše obojí v témže `useFrame`.
+      const seen = await page.evaluate(() => {
+        const host = document.querySelector<HTMLElement>('[data-railfps-yaw]')!;
+        const canvas = (host.querySelector('canvas') ?? host).getBoundingClientRect();
+        const arrows = [...document.querySelectorAll<HTMLElement>('[data-testid^="railfps-threat-"]')]
+          .filter((element) => !element.hidden)
+          .map((element) => {
+            const box = element.getBoundingClientRect();
+            return { side: element.dataset.testid!.slice('railfps-threat-'.length), sector: Number(element.dataset.sector), x: box.left + box.width / 2, width: box.width, height: box.height };
+          });
+        return { yaw: Number(host.dataset.railfpsYaw), fov: Number(host.dataset.railfpsFov), box: { x: canvas.left, y: canvas.top, width: canvas.width, height: canvas.height }, arrows };
+      });
+      if (seen.arrows.length === 0) return;
+      const v: View = { yaw: seen.yaw, fov: seen.fov, box: seen.box };
+      // T9: nejvýš dvě šipky, každá u kraje na straně sektoru nepřítele, kterého kamera nekreslí, a velká jako dotykový cíl.
+      expect(seen.arrows.length).toBeLessThanOrEqual(2);
+      for (const arrow of seen.arrows) {
+        const what = `threat arrow ${JSON.stringify(arrow)} at yaw ${String(v.yaw)}`;
+        expect(sectorToScreen(arrow.sector, v.yaw, aspectOf(v), v.fov), `${what}: its enemy is off view`).toBeNull();
+        expect(arrow.side, what).toBe(arrow.sector * YAW.stepDeg < v.yaw ? 'left' : 'right');
+        expect(arrow.side === 'left' ? arrow.x < v.box.x + v.box.width / 4 : arrow.x > v.box.x + (3 * v.box.width) / 4, `${what}: at its edge`).toBe(true);
+        expect(Math.min(arrow.width, arrow.height), what).toBeGreaterThanOrEqual(44);
+      }
+      await page.screenshot({ path: join(SHOTS, `t9-${info.project.name}-threat.png`) });
+      threat = { side: seen.arrows[0]!.side, sector: seen.arrows[0]!.sector, yaw: v.yaw };
+    };
+    const played = await playByPointer(page, pointer, touch ? 'end' : 'aimed', onEnemy, onHit, onOffView);
+    console.log(`railfps ${info.project.name}: ${JSON.stringify({ last: played.last, taps: played.taps, looks: played.looks, aimed: played.aimed, threat })}`);
+    if (touch) expect(threat, 'a threat arrow showed an enemy off view on the portrait phone').not.toBeNull();
     expect(played.enemySeen, 'an enemy of the sentence walked in').toBe(true);
     expect(played.aimed, 'an off-center tap aimed and hit').not.toBeNull();
     expect(marked, 'the hit marker was checked after the hit').toBe(true);
@@ -481,8 +515,8 @@ test.describe('railfps (P68-F T6)', () => {
     await page.waitForSelector('[data-testid="play-demo-start"]', { timeout: 10_000 });
     await press('play-demo-start');
     await expect(page.getByTestId('play-demo')).toBeVisible({ timeout: 10_000 });
-    // Snímky se počítají jen za běhu ukázky. Robot vyhraje dřív než za 20 s (svědek ~17 s): po konci se ukázka pustí
-    // znovu (konec ukázky → hra hráči → pauza → Show me how) a mezera mezi běhy se nepočítá.
+    // Snímky se počítají jen za běhu ukázky. Od T9 robot vyhraje za ~45 s; kdyby skončil dřív než za 20 s, ukázka se
+    // pustí znovu (konec ukázky → hra hráči → pauza → Show me how) a mezera mezi běhy se nepočítá.
     const { intervals, ticksPlayed, restarts } = await page.evaluate(
       (ms) =>
         new Promise<{ intervals: number[]; ticksPlayed: number; restarts: number }>((resolve) => {
@@ -538,7 +572,7 @@ test.describe('railfps (P68-F T6)', () => {
     const report = {
       schema: 'p68-railfps-fps.v1',
       about:
-        'railfps FPS self-check (P68-F T6): Playwright project pixel7-touch (412x839 portrait, touch), CPU x4 via CDP like the phone profile of e2e/play-perf.spec.ts that produced evals/play/p66/baseline-fps.json; this machine GPU, not a phone. Robot plays via "Show me how" (real-time demo of the verified run), restarted after each win because the witness wins in under 20 s; frames are requestAnimationFrame intervals in the page counted only while the demo runs, 20 s in total. medianFps = 1000 / median frame time.',
+        'railfps FPS self-check (P68-F T6, re-measured in T9): Playwright project pixel7-touch (412x839 portrait, touch), CPU x4 via CDP like the phone profile of e2e/play-perf.spec.ts that produced evals/play/p66/baseline-fps.json; this machine GPU, not a phone. Robot plays via "Show me how" (real-time demo of the verified run), restarted after a win inside the window; frames are requestAnimationFrame intervals in the page counted only while the demo runs, 20 s in total. medianFps = 1000 / median frame time.',
       measuredAt: new Date().toISOString(),
       fixture: 'e2e/fixtures/p68-railfps-spec.json',
       windowMs: FPS_WINDOW_MS,

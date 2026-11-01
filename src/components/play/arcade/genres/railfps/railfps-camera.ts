@@ -36,6 +36,16 @@ export const RAILFPS_VIEW = { tallFovDeg: 68, wideFovDeg: 50 } as const;
 const MARGIN_PX = space['2'];
 
 /**
+ * Míry scény, které čte i test čitelnosti (T9): zábrany stojí za místem nástupu nepřátel (m), značka sektoru je
+ * klín na podlaze od kousku za obloukem dosahu po zábrany (m), zaměřovač je prstenec o poloměru `crosshairPx` (px).
+ */
+export const RAILFPS_LAYOUT = {
+  barrier: RAILFPS.enemyFar / UNIT + 2,
+  markNear: RAILFPS.reach / UNIT + 0.1,
+  crosshairPx: space['4'],
+} as const;
+
+/**
  * Největší tangenta nad i pod horizontem, kterou pás hry musí ukázat: střed každého řádku na dosah nepřítele
  * a celý terč (± půl výšky) v nejbližší vzdálenosti, kde terč vzniká.
  */
@@ -76,6 +86,13 @@ export function cameraPose(fromStep: number, toStep: number, t: number, aspect: 
     shift: half - (rect.px.top + rect.px.bottom) / 2,
   };
 }
+
+/**
+ * Řádek plátna (px od horní hrany), kde póza kreslí bod ve výšce `heightM` ve vodorovné vzdálenosti `distanceM` před
+ * okem; `height` je výška plátna. Horizont oka leží uprostřed pásu hry (`shift`), bez naklánění nezávisí na sloupci.
+ */
+export const screenRowOf = (heightM: number, distanceM: number, pose: RailfpsPose, height: number): number =>
+  height / 2 - pose.shift + ((EYE_M - heightM) / distanceM / halfTan(pose.fovDeg)) * (height / 2);
 
 /** Postaví kameru podle pózy; `width × height` je plátno (CSS px). Poměr stran kamery drží R3F. */
 export function applyPose(camera: PerspectiveCamera, pose: RailfpsPose, width: number, height: number): void {
