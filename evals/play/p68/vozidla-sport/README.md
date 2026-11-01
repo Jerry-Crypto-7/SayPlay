@@ -102,7 +102,16 @@ téhož tiku (Rapier by jí nechal točení staré, `fits` drží tentýž colli
   `preloadPhysics` je najdou bez úprav.
 - Nový efekt ani popisek čítače hlavičky není potřeba (`smash` a `air` jsou na počítadle, popisky v `hud-labels-request.ts`).
 
-**Mutace** (Test level full; každá musí shodit aspoň jeden test): _doplní se po commitu jádra._
+**Mutace** (Test level full, nad commitem `0a56e155`, každá zvlášť a vrácená `git checkout`): `mutationStatus` = **5/5 zabito**.
+
+| mutace | jak | červené testy |
+|---|---|---|
+| rozptyl z `Math.random` (tabulka v generátoru) | `stuntScatter` losuje mimo stream | `the same seed builds the same track and scatter table, another seed another track` |
+| rozptyl z `Math.random` (za běhu v pravidle) | `kick` bere řádek tabulky s náhodným posunem | `two replays of the same record agree at every checkpoint, and with the recorded run`; `a record shifted by one tick gives another hash`; `two replays of a driven record on a generated track give the same hash and outcome` |
+| impulz o tik později než kontakt | `stunt_impact` měří průnik z polohy auta o tik dřív | `the contact tick throws the pile: at least two crates move more than a metre within 30 ticks` |
+| despawn bez `FLAG.alive` = 0 | `stunt_debris` vydá `stateChange` místo `despawn` | `debris go dark after debrisLife ticks (FLAG.alive = 0) and the next pile reuses the slot`; `the scenario has an impact, a despawn of the first debris and a reuse of its slot, in that order`; `two replays … agree at every checkpoint …` |
+| hráč s `FLAG.physics` | ovládání hráči příznak nastaví | `the player never carries FLAG.physics and the debris budget holds from tick 0 to the end` (+ 13 dalších: auto stojí) |
+| `debrisMax` nehlídaný | `stunt_impact` spawnuje bez rozpočtu | `live debris never exceed debrisMax, even with two full piles hit back to back` (12 > 8) |
 
 ## `minigolf` – jádro a spike (T6)
 
