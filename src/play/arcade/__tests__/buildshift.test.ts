@@ -28,6 +28,7 @@ import {
   stationCode,
 } from '../pieces/buildshift';
 import { axisOfCell } from '../pieces/lanes';
+import { runBot } from '../verify';
 
 const HORIZON = 5400;
 
@@ -145,5 +146,24 @@ describe('buildshift kernel (P68-S T2)', () => {
     const again = replay(world, unpacked as InputEvent[], ARCADE_LIBRARY, HORIZON);
     expect(again).toEqual(direct);
     expect(direct.outcome).not.toBe('running');
+  });
+
+  it('a bot run survives packInputs → unpackInputs and replays to the same hash, outcome and served; without its build taps it does not (T7)', () => {
+    const world = worldOf(7);
+    const bot = runBot(world);
+    expect(bot.outcome).toBe('won');
+    const served = servedOf(run(world, bot.inputs));
+    expect(served).toBeGreaterThanOrEqual(BUILDSHIFT.goal.default);
+    const unpacked = unpackInputs(packInputs(bot.inputs));
+    if (typeof unpacked === 'string') throw new Error(unpacked);
+    expect(unpacked).toEqual(bot.inputs);
+    const state = run(world, unpacked);
+    expect({ hash: hashArcade(state), outcome: outcomeOf(state), served: servedOf(state) }).toEqual({ hash: bot.hash, outcome: bot.outcome, served });
+    // Rovnost není samozřejmá: týž záznam bez ťuků stavby (výběr v paletě a stavba před Open) otevře prázdný obchod.
+    const open = bot.inputs.findIndex((event) => event.axis === axisOfCell(PALETTE.open));
+    expect(open).toBeGreaterThanOrEqual(2);
+    const bare = run(world, bot.inputs.slice(open));
+    expect({ outcome: outcomeOf(bare), served: servedOf(bare) }).not.toEqual({ outcome: bot.outcome, served });
+    expect(servedOf(bare)).toBeLessThan(served);
   });
 });

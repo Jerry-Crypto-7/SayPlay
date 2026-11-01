@@ -3,12 +3,13 @@ import { join } from 'node:path';
 
 import { type APIRequestContext, devices, expect, type Page, test, type TestInfo } from '@playwright/test';
 
-import { ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, BUTTON, HEADER, NO_INPUT, nativeRule } from '../src/play/arcade/contract';
+import { ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, BUTTON, COUNTER, HEADER, type InputEvent, NO_INPUT, nativeRule } from '../src/play/arcade/contract';
 import { type ArcadeProgram, hashArcade, instantiate, loadProgram, outcomeOf, step } from '../src/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '../src/play/arcade/library';
 import { type ShopLayout, badLayout, planLayout, serveWithLayout } from '../src/play/arcade/pieces/buildshift-bot';
 import { PALETTE, PHASE, STATION, STATION_COST, coinsOf, phaseOf, servedOf, stationCode, stationsByCell } from '../src/play/arcade/pieces/buildshift-world';
 import { axisOfCell, cellOfAxis } from '../src/play/arcade/pieces/lanes';
+import { unpackInputs } from '../src/play/score/dare';
 import { capture, ticks } from './play-native-input';
 
 /**
@@ -26,6 +27,9 @@ import { capture, ticks } from './play-native-input';
  * - Snímky na výšku i na šířku do `D:/caches/p68/stavba/shots/` (`P68_STAVBA_SHOTS` cestu přepíše), žádná chyba
  *   stránky ani konzole. FPS: 10 s snímků přes `requestAnimationFrame` v provozu; `chromium` hlídá medián ≥ 40 FPS
  *   a p95 doby snímku ≤ 33,3 ms, telefony jen zapíší. Čísla do `evals/play/p68/stavba/fps.json`.
+ * - **Sdílení a Dare (T7, vzor `p36-dare.spec.ts`):** výhra ťuky pošle běh na server (`POST …/dare`), odkaz nese id
+ *   výzvy, kamarád na něm vidí cíl k překonání a uložený záznam – i se ťuky stavby – se v Node přehraje na tentýž
+ *   výsledek, počet obsloužených a hash jako původní běh.
  */
 
 const FIXTURE = join(process.cwd(), 'e2e/fixtures/p68-buildshift-spec.json');
@@ -235,6 +239,35 @@ async function serveByTaps(shop: Shop, layout: ShopLayout, onTick?: () => Promis
   return { outcome: outcomeOf(shop.state), served: servedOf(shop.state), taps };
 }
 
+/** Záznam přehraný v Node jako `replay` jádra, jen vrací konečný stav (obsloužení nejsou v `ReplayResult`). */
+function playRecord(world: ArcadeWorld, inputs: readonly InputEvent[]): ArcadeState {
+  const state = instantiate(world);
+  const program = loadProgram(world, ARCADE_LIBRARY);
+  let next = 0;
+  for (let tick = 0; tick < ARCADE_LIMITS.maxTicks && outcomeOf(state) === 'running'; tick += 1) {
+    while (next < inputs.length && (inputs[next] as InputEvent).tick < tick) next += 1;
+    const event = inputs[next];
+    step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
+  }
+  return state;
+}
+
+/** Nabídka sdílení se v e2e nedá obsluhovat – zachytí se, co by dostala (vzor `p36-dare.spec.ts`). */
+const SHARE_CAPTURE = () => {
+  const shared: ShareData[] = [];
+  Object.assign(window, { __shared: shared });
+  Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+  Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
+};
+const sharedOf = (page: Page) => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared);
+
+/**
+ * Každý „člověk“ z vlastní adresy: strop výzev je 1 za 10 s na volajícího a bez hlavičky je každý požadavek na
+ * localhostu týž volající (vzor `p36-dare.spec.ts`). Projekt má vlastní adresu, ať se běhy projektů nepřetahují.
+ */
+const PERSON: Readonly<Record<string, number>> = { chromium: 61, 'pixel7-touch': 62, 'iphone-touch': 63 };
+const person = (info: TestInfo, friend: boolean) => ({ 'x-forwarded-for': `198.51.100.${String((PERSON[info.project.name] ?? 60) + (friend ? 100 : 0))}` });
+
 function shotOf(page: Page, info: TestInfo) {
   mkdirSync(SHOTS, { recursive: true });
   return (name: string) => page.screenshot({ path: join(SHOTS, `${info.project.name}-${name}.png`) });
@@ -330,6 +363,71 @@ test.describe('buildshift (P68-S T6)', () => {
     expect(end.runState).toBe('lost');
     await expect(page.getByTestId('play-postrun')).toContainText('Try again!', { timeout: 30_000 });
     expect(errors, errors.join('\n')).toEqual([]);
+  });
+
+  test('buildshift: share and Dare – the friend sees the target and the stored run replays the touch build to the same result', async ({ page, browser, request }, info) => {
+    test.setTimeout(600_000);
+    const touch = info.project.use.hasTouch === true;
+    await page.context().setExtraHTTPHeaders(person(info, false));
+    await page.addInitScript(SHARE_CAPTURE);
+    const errors = watchErrors(page);
+    const shop = await openShop(page, request, game, touch);
+    const posted = page.waitForResponse((response) => response.url().endsWith(`/api/play/games/${game.id}/dare`) && response.request().method() === 'POST', { timeout: 120_000 });
+
+    // Výhra ťuky: stavba prstem, provoz týmiž ťuky; výhra hráče sama pošle běh na server.
+    const layout = planLayout();
+    await buildByTaps(shop, layout);
+    const run = await serveByTaps(shop, layout);
+    expect(run.outcome).toBe('won');
+    const original = { outcome: run.outcome, served: run.served, tick: shop.tick(), score: shop.state[HEADER.counters + COUNTER.score] as number, hash: hashArcade(shop.state) };
+    const response = await posted;
+    // 201 nová výzva; 200, když tentýž běh už výzvou je (druhý průchod sadou nad týmž serverem).
+    expect([200, 201], await response.text()).toContain(response.status());
+    const dare = (await response.json()) as { dareId: string; score: number; ticks: number };
+    expect({ score: dare.score, ticks: dare.ticks }).toEqual({ score: original.score, ticks: original.tick });
+
+    // Odkaz ze sdílení nese id výzvy.
+    await expect(page.getByTestId('play-postrun')).toContainText('You did it!', { timeout: 30_000 });
+    const share = page.getByTestId('play-share');
+    if (touch) await share.tap();
+    else await share.click();
+    await expect.poll(async () => (await sharedOf(page)).length).toBe(1);
+    const link = (await sharedOf(page))[0]!.url!;
+    expect(link).toMatch(new RegExp(`/play/${game.id}\\?via=share&dare=${dare.dareId}$`));
+
+    // Uložený běh = ťuky prstu od první stavby; přehraný v Node dá tentýž výsledek, obsloužené i hash.
+    const stored = (await (await request.get(`/api/play/games/${game.id}/dare/${dare.dareId}`)).json()) as { score: number; ticks: number; hash: string; replay: { readonly inputs: unknown } | null };
+    expect(stored.replay, 'the dare keeps its run').not.toBeNull();
+    const inputs = unpackInputs(stored.replay!.inputs);
+    if (typeof inputs === 'string') throw new Error(inputs);
+    expect(inputs).toEqual((await capture(page)).inputs);
+    const buildTaps = [...layout.opening.flatMap((at) => [PALETTE_OF[at.kind], at.cell]), PALETTE.open];
+    expect(inputs.slice(0, buildTaps.length).map((event) => cellOfAxis(event.axis)), 'the stored run starts with the build taps').toEqual(buildTaps);
+    const replayed = playRecord(shop.world, inputs);
+    expect({ outcome: outcomeOf(replayed), served: servedOf(replayed), tick: replayed[HEADER.tick], score: replayed[HEADER.counters + COUNTER.score], hash: hashArcade(replayed) }).toEqual(original);
+    expect({ score: stored.score, ticks: stored.ticks, hash: stored.hash }).toEqual({ score: original.score, ticks: original.tick, hash: original.hash });
+    expect(errors, errors.join('\n')).toEqual([]);
+
+    // Kamarád otevře odkaz: cíl výzvy je vidět na kartě startu i v HUD.
+    const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = info.project.use;
+    const friend = await browser.newContext({ viewport, userAgent, deviceScaleFactor, isMobile, hasTouch, baseURL: info.project.use.baseURL, extraHTTPHeaders: person(info, true) });
+    try {
+      const pageB = await friend.newPage();
+      const errorsB = watchErrors(pageB);
+      await pageB.goto(link);
+      const clock = `${(dare.ticks / 60).toFixed(1)}s`;
+      await expect(pageB.getByTestId('play-dare-goal')).toHaveText(dare.score > 0 ? `Beat ${dare.score.toLocaleString('en-US')} in ${clock}` : `Beat ${clock}`, { timeout: 60_000 });
+      await expect(pageB.getByTestId('hud-counter-dare')).toContainText('Beat');
+      await expect(pageB.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'buildshift');
+      // Snímek až s nakreslenou deskou: mřížku zapisuje scéna v prvním snímku.
+      await expect(pageB.getByTestId('arcade-stage')).toHaveAttribute('data-lane-cells', /^5,7,/, { timeout: 90_000 });
+      await settledGrid(pageB);
+      await shotOf(pageB, info)(`dare-${orientation(pageB)}`);
+      expect(errorsB, errorsB.join('\n')).toEqual([]);
+    } finally {
+      await friend.close();
+    }
+    test.info().annotations.push({ type: 'dare', description: `dare ${dare.dareId}: score ${String(dare.score)}, ${String(dare.ticks)} ticks; replay ${outcomeOf(replayed)} served ${String(servedOf(replayed))} (original ${original.outcome} ${String(original.served)})` });
   });
 
   test('buildshift: the other orientation keeps the whole grid under the thumb and builds by taps', async ({ browser, request }, info) => {
