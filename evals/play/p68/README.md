@@ -182,3 +182,71 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
 - **FPS** `baseline-fps.json`: 24 žánrů na `moto-g-power-emulated` (CPU ×4, Fast 4G, GPU hostitele), 3 běhy,
   čtyři dávky po šesti (test má strop 60 min). Medián 59,9 FPS u 18 žánrů, arena 59,5, runner / voyage / quest 30,
   shooter 20; první tik 5,1–12,1 s (emulovaná síť). Věta voyage vydala hru bez záznamu žánru (`published: null`).
+
+## T13 – hybridní pilot (skripty úrovní v QuickJS)
+
+**Co to je.** Za přepínačem `PLAY_SCRIPTS=on` (výchozí vypnuto) napíše model při AI verzi krátký program
+`build(api)`, který rozvrhne trať hry `hop` (přeskákání): které řady jsou silnice, řeka nebo koleje a odkud jede
+provoz. Program běží jednou, v době tvorby, v sandboxu QuickJS; uloží se jen jeho výsledek (data úrovně, otisk kódu,
+verze běhu) a hraje se z něj důvěryhodným runtimem – při hraní se žádný cizí kód nespouští.
+
+- **Cílová hra `hop`:** žádná z `stunt` / `minigolf` / `buildshift` zatím není zapojená (AC).
+- **Kde co je:** `src/play/scripts/` – `sandbox.ts` (VM), `api.ts` (`place`, `path`, `rng.int`, `param`),
+  `validate.ts` (zakázaná jména, meze, robot), `generate.ts` (písař, opravné kolo, šablona při druhém selhání),
+  `lab.ts` (zkušební sada determinismu). Trať z dat: `hopScriptedLayout` v `hop-course.ts` – pruhy počítá táž
+  konstrukce jako šablona, takže zaručený přechod pásu platí dál a `checkHopLevel` ho ověří znovu.
+- **Závislost:** `quickjs-emscripten-core` 0.32.0 + `@jitl/quickjs-wasmfile-release-sync` 0.32.0 (+ jejich
+  `@jitl/quickjs-ffi-types`), přesné verze, MIT podle `LICENSE` balíků (soubor varianty nese i MIT licenci QuickJS,
+  Bellard a Gordon); zapsané v `disclosure.json` a `DISCLOSURE.md` v témže commitu.
+
+**Co sandbox drží (testy `sandbox.test.ts` 10, `validate.test.ts` 19, `upgrade-scripts.test.ts` 4):**
+- Nekonečná smyčka skončí na rozpočtu vždy na stejném místě: 19 600 losů a 2 000 100 kroků, třikrát za sebou;
+  smyčka bez volání API přesně na 2 010 000 krocích.
+- `Date` a `Math.random` ve VM nejsou ani pod jménem složeným za běhu; v kódu jsou chybou ověření ještě před VM.
+- Paměť 16 MB, zásobník 128 kB; po přetečení jede další běh normálně. Každý běh má vlastní kontext.
+- Data mimo mřížku, start, cíl nebo pravidla pásů se odmítnou; uložený spec s daty mimo schéma se nepřečte.
+- Přepínač vypnutý (i jakákoli hodnota kromě `on`): písař se nezavolá a AI verze je přesně spec režiséra.
+
+**mutationStatus: pass** – 5 úmyslných chyb, každá zčervenala testy a byla vrácená (`diff -q` proti záloze):
+rozpočet podle hodin místo kroků (3 testy), bez mazání `Date` / `Math.random` (2), vypnuté meze dat (7),
+vypnutá kontrola přepínače v `_upgrade` (2), vypnutý seznam zakázaných jmen (4).
+
+**Node = Chromium = WebKit:** `e2e/p68-scripts.spec.ts` na `/play/lab/scripts` – 4 programy × 3 semínka (náhoda
+hostitele, plovoucí matematika uvnitř QuickJS, dvě zastavení rozpočtem), kanonický JSON 6 652 bajtů. Shodný bajt po
+bajtu v projektech `chromium` i `webkit-desktop` (1/1 a 1/1).
+
+**Rychlá hra QuickJS nenese:** po `npm run build` prošel skript všechny chunky z klientských manifestů tras
+(`page_client-reference-manifest.js`): `/play` (30 chunků) a `/play/[id]` (32) nemají žádnou značku QuickJS, žádné
+`.wasm` a nenačítají ani líně chunky s QuickJS. Kontrola funguje: chunk `/play/lab/scripts` je načítá.
+
+**Měření (jen offline):** měřicí kniha nastavená není (`fast-only`: chybí předpona `-eval` a
+`PLAY_EVAL_SPEND_CAP_USD`), takže astra nenapsala nic a nic se neutratilo. Odpovědi napsal **zástupce** – `claude -p`
+z předplatného s týmž zadáním (`answers.json`), ne astra. Na 20 dev větách (`hybrid/dev.json`):
+- 20 pokusů, 20 platných dat, 20 prošlo robotem (výhra robota i prohra nečinného do 90 s) hned napoprvé,
+  0 selhání (selhání by šla do jmenovatele), útrata 0 USD;
+- ověření + robot na pokus: p50 91 ms, p95 397 ms (bez modelu, přehrání `answers.json`); zástupce psal p50 17,2 s,
+  p95 22,4 s – o astře to nic neříká;
+- slepý soudce neběžel: AI verze se skriptem a bez něj bez astry nevznikly. T14 z toho bez placeného běhu
+  `eligible` neudělá.
+
+**Odchylky od AC a proč:**
+- **Rozpočet 2 000 000 = kroků interpretu, ne volání obsluhy.** QuickJS volá obsluhu jednou za 10 000 kroků;
+  2 M volání by nekonečná smyčka pálila ~10 min. Obsluha kroky počítá, volání API přičte 100 kroků (smyčka nad API
+  by jinak trvala ~8 s).
+- **Zásobník 128 kB:** při 512 kB přetekl dřív nativní zásobník Node a modul se rozbil; 256 kB ještě prošlo.
+- **Varianta s `.wasm` vedle sebe, ne vložená:** vložený wasm minifikátor Next přepsal na neplatný kód (build
+  spadl v klientu i na serveru). Server ji načítá z `node_modules` (`serverExternalPackages` v `next.config.mjs`).
+- **Soubory mimo seznam:** `hop-course.ts` a `hop.ts` (trať z dat), `spec.ts` a `compile.ts` (pole `scriptLevel`,
+  hraní z dat), `_publish.ts` (ruční spec `scriptLevel` nenese – jako dřív, kdy ho odmítalo schéma; i remix hry se
+  skriptem ručním specem), `spend-cap.ts` (vlastní kniha `PLAY_SCRIPTS_SPEND_CAP_USD`), `level.ts` (čistá část
+  ověření pro klientskou laboratoř), `lab.ts` a `ScriptsLab.tsx`, `lab-gate.test.ts`, `next.config.mjs`,
+  `.env.example`, `hybrid/pilot.mjs` a `answers.json`.
+- **`api.path` hop odmítne:** hop nemá tratě, jen řady; `path` je v API pro budoucí hry.
+- **Herní aserce:** výhra robota a prohra nečinného (AC „výhra i prohra“); slabý robot se nežádá – šablona hop to
+  taky nesplňuje.
+- **Dev věty:** 7 z 20 rychlá hra poslala jinam (aréna, běžec, plošinovka, chodec); přepsané slovesem „crosses“, ať
+  pilot měří skript, ne směrování.
+- **AI verze se skriptem se publikuje jen na semínku, na kterém ji robot ověřil** (pruhy závisí na semínku).
+- simplified: běh je synchronní; skript, který plní paměť drobnými poli, drží server ~12 s, než spadne na
+  `out of memory`. Před zapnutím v produkci přesunout do workeru.
+- `npm install` nahradil junction `node_modules` (na worktree P64) skutečným adresářem; P64 zůstal beze změny.
