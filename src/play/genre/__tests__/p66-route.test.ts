@@ -28,8 +28,14 @@ const branch = json<RouteFile>('p66/route-branch.json');
 const before = new Map(main.rows.map((row) => [row.text, row]));
 
 /** Dnešní žánr rychlé hry každé označené věty – stejně jako `genre-route.mjs` (první režim `classifyGenre(věta, null)`). */
+// P68 T11+: hry P68 štítky P66 neznají – větu, kterou vyhrála hra P68, soudí stráž P68 (`evals/play/p68/genre-route.mjs`,
+// `p68-route-<id>.test.ts`); tady zůstává na trase zapsané v `route-branch.json`. Druhý žánr za hrou P68 se pohnout smí:
+// znak hry je hlavní sloveso a sloveso starého žánru pak nese +1 místo +4 („an octopus runs a floating soup kiosk“).
+const P68 = new Set(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+const recordedRoute = new Map(json<RouteFile>('p66/route-branch.json').rows.map((row) => [row.text, { genre: row.genre, mode: row.mode }]));
 const now = labels.map((sentence) => {
-  const top = classifyGenre(sentence.text, null).ranked[0]!;
+  const first = classifyGenre(sentence.text, null).ranked[0]!;
+  const top = P68.has(first.genre) ? recordedRoute.get(sentence.text)! : first;
   return { ...sentence, sets: sentence.sets.map((s) => `${s.set}#${s.id}`), genre: top.genre, mode: top.mode };
 });
 const inTest = (row: { sets: readonly string[] }): boolean => row.sets.some((s) => s.startsWith(`${TEST_SET}#`));

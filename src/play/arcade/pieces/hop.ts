@@ -18,7 +18,7 @@
 import { z } from 'zod';
 
 import { ARCADE_LIMITS, AXIS_MAX, type ArcadeEffect, type ArcadeInput, BODY, BUTTON, COUNTER, type ControlPiece, FLAG, HEADER, HIT_GRACE, type ModeGeneratorPiece, type ModeParts, ROLE, type RulePiece, START_LIVES, bodyBase } from '../contract';
-import { DIR, HOP, HOP_BODIES, HOP_HALF, HOP_STEP, type HopLane, type HopLayout, type HopParams, ROW, checkHopLevel, colOf, colX, grassRows, hopLayout, hopLevel, hopParams, laneX, rowOf } from './hop-course';
+import { DIR, HOP, HOP_BODIES, HOP_HALF, HOP_STEP, type HopLane, type HopLayout, type HopParams, type HopScriptLevel, ROW, checkHopLevel, colOf, colX, grassRows, hopLayout, hopLevel, hopParams, hopScriptBands, hopScriptedLayout, laneX, rowOf } from './hop-course';
 import { nextMultiplier } from './rules';
 
 export * from './hop-course';
@@ -155,6 +155,16 @@ export function hopParts(seed: number, params: HopParams, health: number | undef
   const layout = hopLayout(seed, params);
   const parts = hopWorldOf(layout, health ?? START_LIVES);
   return { ...parts, issues: checkHopLevel(parts.level, layout, params) };
+}
+
+/**
+ * Díly světa z dat úrovně skriptu (P68 T13): rozvržení `hopScriptedLayout`, tatáž pravidla a robot jako šablona.
+ * `issues` = pravidla trati z dat (`hopScriptBands`) a tvrzení „hratelné z konstrukce“ (`checkHopLevel`).
+ */
+export function hopScriptedParts(seed: number, level: HopScriptLevel, health: number | undefined): ModeParts {
+  const layout = hopScriptedLayout(seed, level);
+  const parts = hopWorldOf(layout, health ?? START_LIVES);
+  return { ...parts, issues: [...hopScriptBands(level).issues, ...checkHopLevel(parts.level, layout, { rows: level.rows })] };
 }
 
 /** Svět z hotového rozvržení (i ručního v testech): cíl je jeho poslední řada. */

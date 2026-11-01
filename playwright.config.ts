@@ -100,7 +100,8 @@ export default defineConfig({
     // renderu z `use` výš jsou pro Chromium, WebKit dostane prázdné `launchOptions`.
     {
       name: 'webkit-desktop',
-      testMatch: /(play-create|play-chain|p36-dare|p44b-friends-loop)\.spec\.ts/,
+      // Skripty úrovní (P68I T13): data úrovně z QuickJS bajt po bajtu jako v Node i ve WebKitu; v `chromium` jedou samy.
+      testMatch: /(play-create|play-chain|p36-dare|p44b-friends-loop|p68-scripts)\.spec\.ts/,
       use: { ...devices['Desktop Safari'], launchOptions: { args: [] } },
     },
     {

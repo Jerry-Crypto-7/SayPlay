@@ -170,13 +170,14 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 export const buildshiftGenre: GenreModule<'buildshift'> = {
   id: 'buildshift',
   modes: ['default'],
-  // Jen slova obchodu a obsluhy; žádné, které vlastní jiný žánr (P68-I je zúží, když stráž najde krádež).
-  cues: ['shop', 'diner', 'cafe', 'café', 'bakery', 'restaurant', 'serve', 'customers', 'run a'],
+  // Jen slova obchodu a obsluhy; žádné, které vlastní jiný žánr. P68-I T11 zúžil (stráž žánru, `integration-log.md`):
+  // `shop` slyší „shopping“, `cafe`/`café`/`restaurant` vyhrály věty bez slovesa („a cat naps in a rainy café“),
+  // `run a` slyší „run a marathon“; obchod a jeho stavbu nese znak žánru `serve` v `classify.ts`.
+  cues: ['diner', 'serve', 'customers'],
   heroClasses: ['humanoid', 'animal', 'robot'],
   paramBounds: { customers: { min: BUILDSHIFT.goal.min, max: BUILDSHIFT.goal.max } },
-  // `staged`, dokud ji nezapojí P68-I („zapoj buildshift“ přepne na `ready`, viz `evals/play/p68/stavba/integration.md`):
-  // `ready` by ji ukázal čtečce (`READER_PENDING` P68 hry nemá) a sdíleným testům „každý žánr, který hraje“. Ruční spec
-  // hraje i tak – překlad ani svět dostupnost nečtou.
+  // `ready` až zapojením v P68-I T11 („zapoj buildshift“, `evals/play/p68/stavba/integration.md` → Zapnutí); brány
+  // hry 1. 11. neprošly (`evals/play/p68/integration-log.md`), proto zatím `staged`.
   availability: () => 'staged',
   compile: (spec) => {
     const goal = spec.params?.customers ?? BUILDSHIFT.goal.default;

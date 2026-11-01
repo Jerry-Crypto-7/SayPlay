@@ -1,0 +1,26 @@
+{
+  "about": "P68I T13: 20 dev vět pilotu skriptů úrovní (hra hop, přeskákání). Vlastní slova, mimo šablony: každá věta chce určité pořadí nebo počet překážek, které šablona hop losuje ze semínka. Sedm vět prvního znění rychlá hra poslala jinam (aréna, běžec, plošinovka, chodec); přepsané slovesem „crosses“, ať pilot měří skript, ne směrování. Holdout P68 se nečte.",
+  "game": "hop",
+  "sentences": [
+    "a duckling crosses the road and then three little streams to reach its mother",
+    "a hedgehog crosses a six lane motorway at rush hour",
+    "a raccoon crosses railway tracks twice and then a muddy river with floating logs",
+    "a penguin crosses a snowy road and then an icy river with drifting floes",
+    "a squirrel crosses a quiet village road and then a wide river on log rafts",
+    "a cat crosses a railway yard full of trains",
+    "a frog crosses one tiny road and then a huge swamp river",
+    "a chicken crosses a highway where every lane is faster than the one before",
+    "a lost puppy crosses a market street, a canal and a tram line to get home",
+    "a bunny crosses a road and then five rivers in a row",
+    "a goose crosses a park road and then a pond with floating branches",
+    "a fox crosses a busy road and then the river under the bridge",
+    "a snail crosses a slow country road full of tractors",
+    "a lizard crosses the desert highway, the old rail line and a dry riverbed with a flash flood",
+    "a turtle crosses two small streets and a big busy avenue to reach the sea",
+    "a mouse crosses a road, a stream, a road, a stream, again and again",
+    "a hen crosses the farm road, the river by the mill and the train line to the market",
+    "a beaver crosses a logging road and then rides logs down three river channels",
+    "a kitten crosses a road where all the traffic comes from the left",
+    "a deer crosses a forest road, a railway and finally a rushing river"
+  ]
+}

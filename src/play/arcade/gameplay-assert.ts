@@ -15,10 +15,17 @@
 import assertionsJson from '../../../evals/play/p68/assertions.json';
 import { P68_MAX_TICKS, RAILFPS_KEEPER_ROLE, RAILFPS_SLOTS, RAILFPS_YAW_STEPS, STUNT_DEBRIS_MAX } from '../genre/p68-contract';
 
-import { type ArcadeCounter, type ArcadeInput, type ArcadeState, type ArcadeWorld, BODY, BODY_STRIDE, BUTTON, COUNTER, FLAG, HEADER, HEADER_SIZE, type InputEvent, NO_INPUT, ROLE, UNIT, bodyBase, bodyHp, underlyingRule } from './contract';
+import { type ArcadeCounter, type ArcadeInput, type ArcadeState, type ArcadeWorld, BODY, BODY_STRIDE, BUTTON, type BotPiece, COUNTER, FLAG, HEADER, HEADER_SIZE, type InputEvent, NO_INPUT, ROLE, UNIT, bodyBase, bodyHp, underlyingRule } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, instantiate, loadProgram, outcomeOf, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
+import { badLayout, serveWithLayout } from './pieces/buildshift-bot';
+
+/** Slot těla úrovně podle indexu těla (pořadí těl je součást hashe hry) a jména slotu `BODY`. */
+export interface BodySlot {
+  readonly body: number;
+  readonly slot: keyof typeof BODY;
+}
 import { runBot } from './verify';
 
 // ---------------------------------------------------------------------------
@@ -65,9 +72,18 @@ function rigOf(world: ArcadeWorld, state: ArcadeState): number {
   return -1;
 }
 
+/**
+ * Slabý hráč hry, kde dovednost je rozvržení, ne reakce: v obchodě `buildshift` vyhraje i pomalý robot s dobrým
+ * rozvržením, takže „slabý“ = táž obsluha nad pevně špatným rozvržením kategorie (`badLayout`, důkaz P68-S T3).
+ */
+const WEAK_BOTS: Readonly<Record<string, BotPiece>> = { buildshift_bot: serveWithLayout(badLayout()) as BotPiece };
+
 function inputsOf(world: ArcadeWorld, driver: TraceDriver, library: ArcadeLibrary): readonly InputEvent[] {
   if (driver === 'idle') return [];
-  return runBot(world, library, driver === 'weak-bot' ? { profile: 'novice' } : {}).inputs;
+  if (driver === 'bot') return runBot(world, library).inputs;
+  const weak = WEAK_BOTS[world.bot.id];
+  if (weak === undefined) return runBot(world, library, { profile: 'novice' }).inputs;
+  return runBot(world, { ...library, bots: { ...library.bots, [world.bot.id]: weak } }).inputs;
 }
 
 /**
@@ -141,8 +157,11 @@ export type GameplayCheck =
    * aspoň `min` staveb na různých buňkách (různé x, z).
    */
   | { readonly kind: 'builds'; readonly within: number; readonly min: number }
-  /** Některý z čítačů `counters` do `within` tiků po stavbě klesne pod hodnotu před ní. */
-  | { readonly kind: 'spends'; readonly counters: readonly ArcadeCounter[]; readonly within: number }
+  /**
+   * Některý z čítačů `counters` – nebo slot `slots` těla úrovně (zásoba, kterou hra drží mimo čítače, např. mince
+   * obchodu na těle směny) – do `within` tiků po stavbě klesne pod hodnotu před ní.
+   */
+  | { readonly kind: 'spends'; readonly counters: readonly ArcadeCounter[]; readonly slots?: readonly BodySlot[]; readonly within: number }
   /** Čítač `counter` dosáhne cíle = první číselný parametr `goalParam` mezi pravidly světa. */
   | { readonly kind: 'reaches'; readonly counter: ArcadeCounter; readonly goalParam: string }
   /** Tah = souvislé tiky s `HOLD` a nenulovou osou; během tahu nebo `within` tiků po něm ožije pevné tělo (zeď). */
@@ -429,18 +448,22 @@ function builds(trace: StateTrace, within: number, min: number): Verdict {
   return verdict(cells.size >= min, `${String(cells.size)} stations built on distinct cells (needs ${String(min)})${list.length > 0 ? `: ${list.slice(0, 4).join('; ')}` : ''}`);
 }
 
-function spends(trace: StateTrace, names: readonly ArcadeCounter[], within: number): Verdict {
+function spends(trace: StateTrace, names: readonly ArcadeCounter[], slots: readonly BodySlot[], within: number): Verdict {
   const all = buildsOf(trace, within);
   if (all.length === 0) return verdict(false, 'no build in the run');
+  const sources = [
+    ...names.map((name) => ({ label: name, read: (state: ArcadeState) => counter(state, name) })),
+    ...slots.map((at) => ({ label: `body ${String(at.body)}.${at.slot}`, read: (state: ArcadeState) => slot(state, at.body, BODY[at.slot]) })),
+  ];
   for (const build of all) {
     const before = (trace.frames[build.frame - 1] as TraceFrame).state;
     for (let j = build.frame; j <= Math.min(trace.frames.length - 1, build.frame + within); j += 1) {
       const frame = trace.frames[j] as TraceFrame;
-      const name = names.find((candidate) => counter(frame.state, candidate) < counter(before, candidate));
-      if (name !== undefined) return verdict(true, `${name} ${String(counter(before, name))} -> ${String(counter(frame.state, name))} at tick ${String(frame.tick)} after the build of body ${String(build.body)}`);
+      const source = sources.find((candidate) => candidate.read(frame.state) < candidate.read(before));
+      if (source !== undefined) return verdict(true, `${source.label} ${String(source.read(before))} -> ${String(source.read(frame.state))} at tick ${String(frame.tick)} after the build of body ${String(build.body)}`);
     }
   }
-  return verdict(false, `${String(all.length)} builds, none followed by a drop of ${names.join('/')} within ${String(within)} ticks`);
+  return verdict(false, `${String(all.length)} builds, none followed by a drop of ${sources.map((source) => source.label).join('/')} within ${String(within)} ticks`);
 }
 
 function reaches(trace: StateTrace, name: ArcadeCounter, goalParam: string): Verdict {
@@ -527,7 +550,7 @@ export function evaluateCheck(check: GameplayCheck, trace: StateTrace): Verdict 
     case 'builds':
       return builds(trace, check.within, check.min);
     case 'spends':
-      return spends(trace, check.counters, check.within);
+      return spends(trace, check.counters, check.slots ?? [], check.within);
     case 'reaches':
       return reaches(trace, check.counter, check.goalParam);
     case 'strokeWalls':

@@ -44,6 +44,7 @@ import { progressionParts } from './pieces/progression-parts';
 import { FINALE5_GENRE_VERSION, breakGoal, genreAtLeast, genreHookOffer, generatorParams, pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
+import { hopScriptedParts } from './pieces/hop';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
@@ -237,7 +238,12 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const plain = { ...spec, controlParams: ownParams(spec) } as GameSpecV1;
   const base = { ...plain, controlParams: addonControlParams(plain) } as GameSpecV1;
   // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
-  const generated = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
+  // Úroveň ze skriptu (P68 T13): jen generátor, pro který skript píše, a s počtem řad, který skript dostal.
+  const scripted = spec.scriptLevel?.levelData;
+  if (scripted !== undefined && (generator !== 'hop_rows' || (params?.data as { readonly rows?: number } | undefined)?.rows !== scripted.rows)) {
+    return { ok: false, issues: [`/scriptLevel: a ${scripted.game} level with ${scripted.rows} rows does not fit the ${generator} generator of this spec`] };
+  }
+  const generated = scripted !== undefined ? hopScriptedParts(seed, scripted, health) : mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
   const own = pacingParts(progressionParts(generated, spec), spec, seed, generator);
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };

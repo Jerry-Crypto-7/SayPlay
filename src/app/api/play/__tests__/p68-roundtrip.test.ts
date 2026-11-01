@@ -138,9 +138,13 @@ beforeEach(() => {
   __resetProcessVersionStore();
   resetRateWindows();
   vi.useFakeTimers({ now: 1_700_000_000_000, toFake: ['Date'] });
+  // Sada běží s `VERCEL_ENV=production` (vitest.config) a tam stráž R1/R3 ruční spec nezapojené hry odmítne (422).
+  // Kolo hry před zapojením je místní / preview běh kategorie – ten stráž pouští; jeden proces dál doložený.
+  vi.stubEnv('VERCEL_ENV', 'preview');
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });

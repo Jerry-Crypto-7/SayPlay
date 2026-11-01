@@ -3,8 +3,14 @@
  * `win` bez průjezdu cílem, neprojde `stunt`; svět, kde se `yawStep` nehne, neprojde `railfps`; vyhrávající nečinný
  * hráč shodí `idle-loses`. Ke každému zápornému případu kladný, ať kontrola neprochází jen tím, že vždy selže.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
+import type { GameSpecV1 } from '../../spec';
+import { arcadeWorldOf } from '../compile';
 
 import { RAILFPS_AXES, RAILFPS_KEEPER_ROLE, RAILFPS_SLOTS, RAILFPS_YAW_STEPS } from '../../genre/p68-contract';
 import { type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyInit, type ControlPiece, HEADER, NO_INPUT, type RulePiece, bodyBase } from '../contract';
@@ -158,5 +164,29 @@ describe('lose: an idle player that wins breaks it', () => {
     const idle = result('idle-loses', 'minigolf', world({ rules: [['win_on_tap'], ['lose_at', 300]] }));
     expect(idle.pass).toBe(true);
     expect(result('bot-wins', 'minigolf', world({ rules: [['win_on_tap'], ['lose_at', 300]] })).pass).toBe(true);
+  });
+});
+
+describe('buildshift: coins on the shift body, the weak player builds badly', () => {
+  const shop = (goal?: number): ArcadeWorld => {
+    const spec = JSON.parse(readFileSync(join(process.cwd(), 'e2e', 'fixtures', 'p68-buildshift-spec.json'), 'utf8')) as GameSpecV1;
+    const tuned = goal === undefined ? spec : ({ ...spec, controlParams: { generator: 'buildshift_shop', tuning: { goal } } } as GameSpecV1);
+    const built = arcadeWorldOf(tuned, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    return built.world;
+  };
+  const real = (id: string, w: ArcadeWorld) => assertGame('buildshift', w).find((entry) => entry.id === id) as { pass: boolean; evidence: string };
+
+  it('reads the spend from the coins slot of the shift body, not from ammo or reserve', () => {
+    expect(real('spends', shop())).toMatchObject({ pass: true, evidence: 'body 1.y 6 -> 4 at tick 10 after the build of body 7' });
+  });
+
+  it('loses with the bad layout at the fixture goal, so the weak player is not the winning bot', () => {
+    expect(real('weak-loses', shop()).pass).toBe(true);
+    expect(real('bad-build-loses', shop()).pass).toBe(true);
+  });
+
+  it('still fails when the bad layout serves a small goal in time (the gate is not decorative)', () => {
+    expect(real('bad-build-loses', shop(6))).toMatchObject({ pass: false });
   });
 });

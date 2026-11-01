@@ -1,0 +1,9 @@
+{
+ "schema": "p68-director-live.v1",
+ "game": "buildshift",
+ "about": "P68 T11 live check: 2 P68 dev sentences of the game through the AI version (astra as director) on the measurement ledger. Not run: PLAY_EVAL_SPEND_CAP_USD is not set in this environment, so the plan's money rule allows only the free quick game. The offline check is src/play/director/__tests__/p68-buildshift.test.ts (3 recorded answers authored, compiled and published by the robot).",
+ "measured": false,
+ "reason": "PLAY_EVAL_SPEND_CAP_USD unset",
+ "sentences": ["d25", "d31"],
+ "spendUsd": 0
+}

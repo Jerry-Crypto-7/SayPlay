@@ -36,7 +36,8 @@ const word = z.string().min(1).max(40);
  * Živé žánry, které čtečka zatím nejmenuje – jako `DIRECTOR_PENDING` u režiséra: bez řádku popisu v promptu čtečky by
  * je model volil naslepo a schéma odpovědi by se pohnulo dřív než prompt. P66 T12 pustil pět nových žánrů do rychlé
  * hry, P66 T13 je čtečce popsal (`MODE_HINTS`). P68 T1 (brána aktivace): pět her P68 – kategorie smí modul přepnout
- * na `ready`, čtečka ho uvidí, až ho odsud odebere úloha „zapoj X“ v P68-I (spolu s `ROUTE_PENDING` a `DIRECTOR_PENDING`).
+ * na `ready`, čtečka ho uvidí, až ho odsud odebere úloha „zapoj X“ v P68-I (spolu s `ROUTE_PENDING` a `DIRECTOR_PENDING`). T11 pustil `buildshift` jen do rychlé hry; čtečka a režisér
+ * ho dostanou spolu (R5 v plánu P68-I), řádek `MODE_HINTS` je připravený.
  */
 export const READER_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 

@@ -427,7 +427,8 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   stunt: {},
   minigolf: {},
   railfps: { default: { enemy: 'targets' } },
-  buildshift: {},
+  // T11: počet zákazníků z věty (žádost `stavba/integration.md`); mez 6–20 drží modul.
+  buildshift: { default: { collectible: 'customers' } },
   drawsave: { default: { enemy: 'threats' } },
 };
 

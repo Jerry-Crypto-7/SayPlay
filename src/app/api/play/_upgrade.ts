@@ -51,9 +51,10 @@ import type { Reading } from '@/play/read/schema';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
+import { type ScriptWriter, paidScriptWriter, scriptedLevel, scriptsEnabled } from '@/play/scripts/generate';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector, mayPayChainRead } from './_director';
+import { DIRECTOR_BUDGET_MS, MIN_CALL_MS, directorQueuePosition, directorSlotFree, getDirector, mayPayChainRead } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -379,7 +380,7 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
  * se od rychlé hry liší (`readingDiffers`: žánr, svět, nepřítel nebo sbíraná věc) a z věty neukáže méně (`namesNoLess`, P63 T3). Čtení se tím neplatí znovu a publikace
  * na model nečeká; výsledek upgradu počká jen na dokončení zápisu, aby ho `after()` nezmrazil v půlce.
  */
-export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void): Promise<UpgradeOutcome> {
+export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void, scriptWriter?: ScriptWriter): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   let reading: Promise<string | null> = Promise.resolve(null);
   const onDraft = (spec: GameSpecV1, grid: boolean, read: Reading | null): void => {
@@ -391,7 +392,7 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
       return published.versionId;
     });
   };
-  const outcome = await directorUpgrade(versions, draft, request, director, seeds, onDraft).finally(() => reading);
+  const outcome = await directorUpgrade(versions, draft, request, director, seeds, onDraft, scriptWriter).finally(() => reading);
   // P63 T6: konec bez AI verze nese hru ze čtení jako konec řetězu. Režie, která skončí hned po čtení (model nedostupný,
   // strop), doběhne v téže chvíli jako publikace – `pending` s hrou ze čtení klient mezi dvěma dotazy mine a zůstal by
   // na rychlé hře (živě dev s002, s003, s021: hra ze čtení uložená, hráč ji nedostal). Hotová AI verze má přednost.
@@ -399,7 +400,35 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   return outcome.status === 'draft-final' && readingId !== null ? { ...outcome, reading: { versionId: readingId } } : outcome;
 }
 
-async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: NonNullable<DirectorDeps['onDraft']>): Promise<UpgradeOutcome> {
+/**
+ * Pod tolik zbytku rozpočtu režie písař skriptu neodejde (revize T13). Písař je astra (konfigurace placené zálohy
+ * režiséra), tak platí mez režiséra pro astru `MIN_CALL_MS`: kratší zbytek by zaplatil volání, které skoro jistě
+ * nedoběhne, a `maxDuration` by funkci zabil i s AI verzí, kterou režisér už zaplatil, a s nevyrovnanou rezervací
+ * stropu skriptů. Okno je totéž jako režiséra (`startedAt + DIRECTOR_BUDGET_MS`), takže kompilaci a zápisu zůstane
+ * jejich 30 s do `maxDuration`. Funkce, ne konstanta: hodnota se čte až při volání, takže testy, které `_director`
+ * mockují bez `MIN_CALL_MS`, modul načtou.
+ */
+export const scriptWriterMinMs = (): number => MIN_CALL_MS;
+
+/**
+ * AI verze s úrovní ze skriptu (P68 T13), nebo beze změny: hra, pro kterou skript nepíše, skript, který dvakrát
+ * neprošel, písař bez času v okně trasy i jakákoli chyba cestou (nenačtený QuickJS, písař, ověření; revize T13)
+ * nechají spec režiséra – ten je zaplacený a publikuje se. Úroveň ze skriptu závisí na semínku, takže se publikuje
+ * jen na tom, na kterém ji robot ověřil.
+ */
+async function withLevelScript(draftId: string, spec: GameSpecV1, seeds: number[], request: UpgradeRequest, writer: ScriptWriter): Promise<[GameSpecV1, number[]]> {
+  const seed = seeds[0] as number;
+  try {
+    const outcome = await scriptedLevel(spec, seed, request.sentence, writer, { deadline: request.startedAt + DIRECTOR_BUDGET_MS, minCallMs: scriptWriterMinMs() });
+    if (outcome.reason !== 'unsupported') console.warn(`[play] level script of ${draftId} ended ${outcome.reason} after ${outcome.attempts.length} attempt(s), ${outcome.spentUsd.toFixed(4)} USD`);
+    return outcome.spec === null ? [spec, seeds] : [outcome.spec, [seed]];
+  } catch (thrown) {
+    console.warn(`[play] level script of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
+    return [spec, seeds];
+  }
+}
+
+async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: NonNullable<DirectorDeps['onDraft']>, scriptWriter: ScriptWriter | undefined): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
     if (failure !== undefined) recordUpgradeFailure(draftId, request.sentence, reason, failure);
@@ -452,6 +481,8 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
     if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source] = [again.spec, again.seeds, added, nudged.source];
   }
+  // P68 T13: úroveň ze skriptu jen za `PLAY_SCRIPTS=on`; vypnutý přepínač (výchozí) nesahá na nic.
+  if (scriptsEnabled()) [upgraded, preservingSeeds] = await withLevelScript(draftId, upgraded, preservingSeeds, request, scriptWriter ?? paidScriptWriter());
   const directorMs = performance.now() - directorStarted;
 
   const published = await publishReadSpec(versions, upgraded, preservingSeeds, draftId, {

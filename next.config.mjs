@@ -39,6 +39,9 @@ const nextConfig = {
   // AC úlohy T4 to hlídá grepem, takže se ten druhý název v tomhle souboru
   // nesmí objevit ani v komentáři — a při prvním psaní se objevil.
   transpilePackages: ['three'],
+  // QuickJS (P68I T13): server ho načítá z `node_modules` (varianta si `emscripten-module.wasm` čte vedle sebe),
+  // nebalí ho. Prohlížeč (jen `/play/lab/scripts`) dostane `.wasm` jako asset webpacku.
+  serverExternalPackages: ['quickjs-emscripten-core', '@jitl/quickjs-wasmfile-release-sync'],
 };
 
 // Analyzer je devDependency, takže se importuje jen když se opravdu analyzuje.
