@@ -120,6 +120,12 @@ Po přenosu na sloučenou kostru #61 (1. 11.):
   `compile` hodí `/not live/`. Hotový modul `buildshift` překládá, takže test padá právě pro `buildshift` (jediná
   červená z 64 cílených testů; 934/934 sdílených testů přes žánry zelených). Soubor patří P68-I. Žádost: v tom testu
   smyčku omezit na hry, jejichž kategorie ještě nedodala (bez `buildshift`), nejpozději se sloučením tohoto PR.
+- **`p68-roundtrip.test.ts` (z #65) je pro `buildshift` červený už na `main` po #65.** `vitest.config.mts:45` pouští
+  všechny testy s `VERCEL_ENV=production`, a stráž nezapojených her (`_publish.ts:194-196`) proto ruční spec
+  `e2e/fixtures/p68-buildshift-spec.json` odmítne s 422 „this game type is not live yet“. Test hru přeskakuje jen
+  u kostry (`blockerOf`), hotový modul ho tedy pustí přímo na vlastní stráž. #66 to nezpůsobil (odmítnutí padne před
+  prvním tikem jádra). Soubor patří P68-I. Žádost: v kole publikace nastavit `VERCEL_ENV` na `preview` (např.
+  `vi.stubEnv`), nebo hry z `ROUTE_PENDING` přeskakovat do „zapoj X“. Stejně narazí každá další kategorie, která dodá.
 - **`READER_PENDING` už hry P68 obsahuje** (`read/schema.ts:41`) a test kostry říká, že kategorie smí modul přepnout na
   `ready` dřív. Modul přesto zůstává `staged` (opatrnější čtení; `contract.test.ts`, `dressing.test.ts` a
   `p66-staged.test.ts` se s `ready` nezkoušely). Přepnutí na `ready` zůstává jednořádková součást „zapoj buildshift“.
@@ -167,3 +173,100 @@ Ze sdílení a vyzvání T7 (`e2e/play-buildshift.spec.ts`, 1. 11.):
 <!-- p68-ready: buildshift -->
 
 p68-ready: buildshift
+
+---
+
+# P68-S stavba – co potřebuje zapojení (`drawsave`)
+
+Volitelná druhá hra pruhu (T12–T14, 1. 11.). Hotová, až tu bude značka `p68-ready: drawsave`.
+
+## Pitch (drawsave)
+
+- **Hint for the reader (`read/prompt.ts` `MODE_HINTS`):**
+  `'drawsave.default': 'you draw a few lines with your finger on a side-view board; then things fall, bounce off your lines, and the character you protect must survive 10 seconds'`
+- **Line for the director (`director/prompt.ts`):**
+  `drawsave: 'draw lines to shield a character from falling things for 10 seconds; "draw a line to save the puppy from falling rocks", "shield the frog from fifteen hailstones"'`
+- **Pick it when** something falls on or rains down on a character and the player protects it by drawing a line, wall
+  or roof.
+- **Do not pick it when** the player catches the falling things (`catch`), moves the hero to dodge them, shoots or
+  slices them, or builds defences over many waves (`defense`).
+- **Params:** `threats` 1–30, default 10 = how many things fall (the number in the sentence, clamped). Fixed: drawing
+  6 s or until the ink runs out (10 cells, at most 12 segments), then 10 s of falling; one hit loses, no lives.
+- **Roles:** hero = the protected character, `threat` (hazard, label from the sentence, count = `threats`).
+
+## Sentences (drawsave)
+
+**Belong here** (`evals/play/p68/stavba/dev-drawsave.json`; `draftFill` 10/10 exact):
+
+| Sentence | Protected | Threat | Count |
+|---|---|---|---|
+| draw a line to save the puppy from falling rocks | puppy | rock | 10 |
+| protect the sleeping cat from a rain of meteors | cat | meteor | 10 |
+| draw walls so the little chick survives 20 falling bombs | chick | bomb | 20 |
+| help the hamster survive an asteroid shower | hamster | asteroid | 10 |
+| a baby penguin is in danger, draw lines to shield it from falling icicles | penguin | icicle | 10 |
+| keep the robot safe from acid drops by drawing a roof | robot | acid drop | 10 |
+| draw to protect grandma from 5 falling flower pots | grandma | flower pot | 5 |
+| shield the frog from fifteen hailstones | frog | hailstone | 15 |
+| save the precious egg from tumbling boulders | egg | boulder | 10 |
+| bees are attacking, draw a wall to save the teddy bear | teddy bear | bee | 10 |
+
+**Belong elsewhere** (expected route – inference, the classifier was not run on them):
+
+| Sentence | Route |
+|---|---|
+| catch the falling apples in a basket | `catch.default` |
+| slice the fruit flying across the screen | `slice` |
+| whack the moles before they hide | `whack` |
+| build towers to stop the zombie waves | `defense` |
+| shoot down the meteors before they hit the city | `shooter` |
+| robots line up for pizza at my tiny diner | `buildshift` |
+| draw a picture of my cat | `null` (a drawing app, no game) |
+| paint the walls of my house blue | `null` |
+| save the princess from the dragon's castle | `quest` |
+| a puppy runs and jumps over falling rocks | runner / platformer (the hero moves) |
+
+## Cues (drawsave)
+
+- **Module (`drawsave.ts`):** `draw`, `line`, `protect from falling`, `save the`.
+- **Collisions to check in the route guard (inference, not measured):** `line` – „robots **line** up for pizza“
+  (`buildshift`); `save the` – rescue adventures (`quest`); `draw` – drawing without a threat (`null`).
+- **Do not take:** `catch`, `slice`, `shoot`, `dodge`, `tower`, `wave`.
+
+## Assets (drawsave)
+
+No new files in `public/`. Board, lines, ink bar and threat markers are primitive geometry in brand tokens; the hero
+model comes from today's catalog by the sentence label.
+
+## Fixture spec (drawsave)
+
+`e2e/fixtures/p68-drawsave-spec.json` – překlad modulu pro „draw a line to save the puppy from falling rocks“, 10 hrozeb
+(test `src/play/genre/__tests__/drawsave.test.ts` hlídá, že fixtura = překlad a projde `readGameSpec`).
+
+## Contract needs (drawsave)
+
+- **Registrace a vstup – beze změny.** Kostra #61 hru registruje (`library.ts`, `stage-registry.ts` `input: 'genre'`,
+  pohled `side`); vstup podle `DRAWSAVE_STROKE` (`HOLD` + buňka v ose po dobu tahu). Adaptér `DrawsaveTouch.tsx` volá
+  i `session.holdButtons(HOLD)` – jádro potřebuje `HOLD` v každém tiku tahu; tvar záznamu se nemění.
+- **`testMatch` – beze změny:** `play-drawsave` je v `playwright.config.ts` u všech tří projektů.
+- **Zapnutí:** `drawsaveGenre.availability` vrací `staged`; přepnutí na `ready` a vyjmutí z `ROUTE_PENDING` /
+  `DIRECTOR_PENDING` je součást „zapoj drawsave“.
+- **`p68-roundtrip.test.ts` je pro `drawsave` červený ze stejného důvodu jako pro `buildshift`** (fixtura teď existuje,
+  stráž nezapojených her pod `VERCEL_ENV=production` vrátí 422) – viz požadavek výš.
+- **Časovač HUD počítá nahoru:** `limitOf` v `ArcadePlay.tsx` hru nezná. Scéna ukazuje kreslení a obranu pruhem;
+  žádost: limit 16 s (6 s kreslení + 10 s obrany), nebo časovač u `drawsave` skrýt.
+- **Na šířku telefonu jsou buňky 20–24 px** (na výšku 36,6–49,4 px): sdílená jmenovka hrdiny (`ArcadeStage`) zakryje
+  asi 4 × 2 buňky a dolní řada HUD bere desce místo – stejná žádost jako u palety `buildshift`.
+- **`draftRoles` čte „in danger“ jako prostředí** („a penguin is in danger“ → setting „danger“). Modul to obchází,
+  oprava patří do sdíleného `draftRoles`.
+- **Otevřené pro lidskou zkoušku (P59′):** Chromium po rychlém tahu někdy spolkne další ťuk (klik nevznikne) – e2e
+  nechává prst 150 ms v klidu před zvednutím; kreslení klávesnicí zatím chybí (`12-accessibility.md`).
+
+## HUD labels (drawsave)
+
+- **Text the game shows (English, `11-voice-copy.md`):** goal line „Draw lines to shield the <hero> from <n> falling
+  <threats> for 10 seconds.“ (shorter fallbacks under 120 characters); the scene itself shows no text.
+
+<!-- p68-ready: drawsave -->
+
+p68-ready: drawsave

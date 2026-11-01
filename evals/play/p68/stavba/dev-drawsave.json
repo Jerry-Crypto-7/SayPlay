@@ -1,0 +1,16 @@
+{
+  "about": "P68-S T13 dev set: 10 own English sentences about drawing lines to save someone from falling threats (drawsave), each with the expected protected character (the hero, singular), threat (singular) and threats (number before the threat clamped to 1..30, default 10). Written 2026-11-01 before the drawsave reader. Tuning on these is allowed; the sealed P68-I holdout is never read.",
+  "threatBounds": { "min": 1, "default": 10, "max": 30 },
+  "sentences": [
+    { "id": "d01", "genre": "drawsave", "text": "draw a line to save the puppy from falling rocks", "protected": "puppy", "threat": "rock", "threats": 10 },
+    { "id": "d02", "genre": "drawsave", "text": "protect the sleeping cat from a rain of meteors", "protected": "cat", "threat": "meteor", "threats": 10 },
+    { "id": "d03", "genre": "drawsave", "text": "draw walls so the little chick survives 20 falling bombs", "protected": "chick", "threat": "bomb", "threats": 20 },
+    { "id": "d04", "genre": "drawsave", "text": "help the hamster survive an asteroid shower", "protected": "hamster", "threat": "asteroid", "threats": 10 },
+    { "id": "d05", "genre": "drawsave", "text": "a baby penguin is in danger, draw lines to shield it from falling icicles", "protected": "penguin", "threat": "icicle", "threats": 10 },
+    { "id": "d06", "genre": "drawsave", "text": "keep the robot safe from acid drops by drawing a roof", "protected": "robot", "threat": "acid drop", "threats": 10 },
+    { "id": "d07", "genre": "drawsave", "text": "draw to protect grandma from 5 falling flower pots", "protected": "grandma", "threat": "flower pot", "threats": 5 },
+    { "id": "d08", "genre": "drawsave", "text": "shield the frog from fifteen hailstones", "protected": "frog", "threat": "hailstone", "threats": 15 },
+    { "id": "d09", "genre": "drawsave", "text": "save the precious egg from tumbling boulders", "protected": "egg", "threat": "boulder", "threats": 10 },
+    { "id": "d10", "genre": "drawsave", "text": "bees are attacking, draw a wall to save the teddy bear", "protected": "teddy bear", "threat": "bee", "threats": 10 }
+  ]
+}

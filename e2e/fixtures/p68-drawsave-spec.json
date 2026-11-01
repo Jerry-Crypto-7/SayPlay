@@ -1,0 +1,58 @@
+{
+  "schema": "gamespec.v1",
+  "control": "drawsave",
+  "controlParams": {
+    "generator": "drawsave_level"
+  },
+  "genre": {
+    "id": "drawsave",
+    "mode": "default",
+    "compilerVersion": "genre.v7"
+  },
+  "title": "Save the Puppy",
+  "archetype": "survival_timer",
+  "targetDurationSec": 30,
+  "theme": {
+    "setting": "meadow",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "survive",
+    "description": "Draw lines to shield the puppy from 10 falling rocks for 10 seconds.",
+    "seconds": 10
+  },
+  "mechanics": [],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "puppy",
+      "count": 1
+    },
+    {
+      "count": 10,
+      "id": "threat",
+      "kind": "hazard",
+      "label": "rock"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Keep the puppy safe from the rocks!",
+    "controlsHint": "Drag across the grid to draw a wall, then let go. Ink runs out!"
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

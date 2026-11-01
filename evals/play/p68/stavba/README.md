@@ -146,7 +146,68 @@ kontroly, takže sloučen ručně po vlastních 7 souborech vitest 55/55. `own-f
   `iphone-touch` 14,7 – WebKit softwarově na tomto stroji, ne iPhone.
 - Brand grep z T5 (hex, fialová) nad `genres/buildshift` nic nenašel.
 
+**Vyleštěno – PR #66 sloučený do `main` 1. 11. (squash `851c085b`)**, ručně (repo nemá automatické sloučení, PR nemá
+kontroly). Do `main` mezitím přišel #65 (brány P68-I: `_publish.ts`, `ArcadePlay.tsx`, `playwright.config.ts`), proto
+vše znovu nad sloučeným stavem (`85c61d46`, strom = `main`), nový build:
+
+| Co | Výsledek |
+|---|---|
+| e2e `play-buildshift.spec.ts`, `chromium` + `pixel7-touch` + `iphone-touch` | 18/18; dobré 10/10 v tiku 2338, špatné 6/10, vyzvání 645 → výhra 10 |
+| Čitelnost prodavač / stanoviště | 13,2 / 6,4 % (`chromium`), 7,5 / 5,7 % (`pixel7-touch`), 9,4 / 7,0 % (`iphone-touch`) |
+| Vitest: vlastní testy + `genre-route`, `p68-unwired-publish`, `p68-roundtrip` | 63/68, 4 přeskočené (hry bez specu), 1 červená: `p68-roundtrip` pro `buildshift` – sdílený test P68-I, požadavek v `integration.md` |
+| `tsc` | čistý |
+
+## drawsave – brána proveditelnosti T12 (1. 11.): prošlo
+
+**Kostra:** `drawsave` je v `origin/main` registrovaný (#61): `library.ts` (`drawsave`, `drawsave_level`, `drawsave_bot`),
+`stage-registry.ts` (`scene: 'drawsave'`, `input: 'genre'`), `contract.ts` (žánr, pohled `side`). Vstup je zmrazený
+v `p68-contract.ts` jako tah – každý tik tahu `HOLD` + buňka v ose (`DRAWSAVE_STROKE`) –, ne ťuk; platí kostra.
+
+**Jádro** (`pieces/drawsave.ts`, `drawsave-world.ts`): deska 8 × 12, `UNIT` 1000 na buňku. Každá nová buňka pod `HOLD`
+je bod, sousední body jednoho tahu dají úsečku, puštění začne nový tah. Inkoust 10 buněk (délka mezi středy buněk:
+1000 rovně, 1414 úhlopříčně), nejvýš 12 úseček. Kreslení 360 tiků (6 s), dřív při došlém inkoustu. Hrozby (param
+`threats` 1–30, výchozí 10, každá druhá míří na sloupec postavy): gravitace 6/tik², strop 420/tik, odraz 50 %, hrozba
+300, čára 100 – kontakt na 200, takže strop rychlosti je schválně nad dvojnásobkem a bez průběžné (swept) kontroly by
+hrozba čárou proskočila. Postava v řádcích 8–11 přežije 600 tiků → výhra; kolo končí nejpozději v tiku 959 z 5400.
+
+| Brána (`drawsave.test.ts`, 6/6) | Výsledek |
+|---|---|
+| Stejný záznam × 2 = stejný hash v každém z 5400 tiků | 12 semínek × 2 záznamy |
+| `packInputs` → `unpackInputs` → přehrání | stejný hash i výsledek, 24/24 |
+| Robot „střecha“ / nečinný / čára mimo | výhra 12/12 / prohra 12/12 / prohra 12/12 (stejně při 1 i 30 hrozbách) |
+| Průlet čarou mezi tiky | 3888 sestrojených případů, všechny odraženy (243 by bez swept kontroly proletělo) |
+| Hrozba položená na šikmou čáru, 4 s | leží nebo sklouzne z konce, nikdy neprojde |
+
+Mutace (každá vrácená): náhoda ve spawnu → determinismus a přehrání červené; stav tahu mimo stav hry → červené;
+čáry mimo kolizi → robot 0/12; kolize jen v nové pozici → průlet červený; špatný typ těla u zásahu → nečinný 0/12;
+nezaokrouhlená pozice kontaktu → test „4 s na čáře“ červený. `tsc` čistý.
+
+**Inference k ladění (T13):** náhodné čmárání vyhrálo 5/12 a robot vyhraje i při 30 hrozbách – prototyp je spíš lehký.
+`drawsave_bot` je pořád zástupce z kostry, takže publikační ověření hry projde až s robotem T13.
+
+## drawsave – hratelné (T13–T14, 1. 11.)
+
+| Co | Kontrola | Výsledek |
+|---|---|---|
+| Robot a modul žánru (T13) | `src/play/genre/__tests__/drawsave.test.ts` | `draftFill` 10/10 dev vět, `verifyArcade` 10/10 s výhrou robota, záznam robota ≥ 2 body (nečinný robot → červené) |
+| Jádro (T12) | `src/play/arcade/__tests__/drawsave.test.ts` | 6/6 |
+| Kamera (T14) | `genres/drawsave/__tests__/drawsave-camera.test.ts` | 25/25 na 7 viewportech; posun o buňku → červené |
+| e2e (T14) | `e2e/play-drawsave.spec.ts`, `chromium` + `pixel7-touch` + `iphone-touch` | 18/18: střecha tahem výhra v tiku 960, čára mimo a nečinný prohra v 442, vyzvání 370 → týž výsledek a hash |
+| Nejmenší buňka | e2e + test kamery | na výšku 36,6–49,4 px, na šířku telefonu 20–24 px (sdílený HUD, `integration.md`) |
+| FPS (`fps-drawsave.json`) | e2e T14 | `chromium` 59,9 / p95 16,7 ms (brána drží); `pixel7-touch` 59,9 / 16,7; `iphone-touch` 18,5 – WebKit softwarově |
+| Brand grep, `tsc`, strážce | – | čisté, exit 0 |
+
+Požadavky na zapojení: `integration.md` → `drawsave`.
+
+**PR #68 sloučený do `main` 1. 11. (squash `995b1cf3`)**, ručně jako Jerry (auto-merge repo nepovoluje), 17 vlastních
+souborů. Před pushem sloučen `main` s #62 (railfps) a #64 (stunt, minigolf) – jen jejich soubory, nic sdíleného;
+vlastní vitest 79/79 (`drawsave` + `buildshift`), `tsc` čistý, `own-files.mjs` exit 0. Hra zůstává `staged` za
+`ROUTE_PENDING` / `DIRECTOR_PENDING`.
+
 ## Odchylky od návrhu
+
+- **`drawsave` se kreslí tahem, ne ťukem „spoj tečky“:** kostra zmrazila vstup `DRAWSAVE_STROKE` (`HOLD` + buňka).
+  Body vznikají z buněk, přes které tah vede, takže „spojování teček“ zůstává, jen prstem bez zvedání.
 
 - **Čitelnost pod mezí survivoru** (`LEGIBLE_SHARE.hero` 20 %, při stropu `LEGIBLE_CAP` 16 %): celá deska 5 × 7 musí
   být vidět a prodavač větší než 1,3 buňky (`SELLER_CAP`) zakryje buňku, na kterou hráč ťuká. e2e proto hlídá vlastní
