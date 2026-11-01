@@ -34,7 +34,75 @@ pruhu ji sloučila 1. 11. 2026 (čekání smyčkou á 10 min, ~2 h). Jména soub
 
 ## `stunt` – jádro (T2)
 
-_Vyplní T2: pravidla, generátor, trosky a rozpočet, výsledky mutací._
+Soubory: `src/play/arcade/pieces/stunt.ts` (ovládání `stunt`, pravidlo `stunt_crash`, generátor `stunt_track`,
+`STUNT_RULES`), `stunt-track.ts` (konstanty `STUNT`, trať, `stuntParts`, `checkStuntLevel`), `stunt-impact.ts`
+(`stunt_impact`, `stunt_debris`). Testy `src/play/arcade/__tests__/stunt.test.ts`, `stunt-replay.test.ts`.
+Stupeň zjednodušení **0** – trosky Rapieru s rozpočtem fungují, žebřík nebyl potřeba.
+
+**Kdo co dělá v tiku** (hráč-auto zůstává kinematické, nikdy `FLAG.physics`; solver, tření ani podkroky se nemění):
+
+| kus | spouštěč | co dělá |
+|---|---|---|
+| `stunt` (ovládání) | – | účetnictví minulého tiku (hodiny trosek, rozbité krabice → `smash`, body, zpomalení na 70 %; vzduch → `air`, `jumps`, body), pak jízda: na zemi `steerControl` (import, bez turba), ve vzduchu stálá rychlost vpřed a řízení ztlumené na ±24/tik, po nárazu 24 tiků omráčení; na rampě drží auto na ploše klínu a dává mu `vy` = `vz · h / d` (+ `GRAVITY`, kterou jádro hned odečte) |
+| `stunt_crash` | kontakt | pevná překážka a ztráta rychlosti > 60 jednotek/tik (rozdíl mezi rychlostí po ovládání a po kolizi jádra) = `damage` 1 s milostí 60 tiků; první tik omráčení srazí rychlost na 40 % |
+| `stunt_impact` | tik | celočíselné AABB auta proti živým krabicím hromad; zasažená hromada se **v témže tiku** celá rozletí: krabice `despawn`, na jejím místě `spawn` trosky z předlohy s rychlostí z auta + řádek tabulky rozptylu; nad rozpočet jen `despawn` |
+| `stunt_debris` | tik | `despawn` trosky s hodinami na nule (HP trosky = zbylé tiky), pod `fallY` nebo za vnější hranou mantinelu |
+| `finish`, `out_of_health`, `time_limit`, `score_bonus` | knihovna | cíl = výhra; životy 0 nebo limit = prohra; bonus za životy a zbylé sekundy |
+
+**Trať (`stunt_track`):** okruh `steerPatternTrack` (vzory, bez soupeřů a turba) rozříznutý za rovinkami ≥ 16 m; do řezu
+se vloží rovný úsek se středem a šířkou té rovinky – s rampou (6 m rovinka, klín 3 × 1,5 × 3,5 m, dojezd = nejdelší
+skok + 10 m) nebo s hromadou (12 m před, 8 m za). Zbytek trati se posune, zatáčky zůstanou, cíl je dál na konci.
+Úseky, posuny do strany a tabulka rozptylu jsou ze streamu `stunt` (`stuntRng`: `createStreams(seed).rounds.clone()`
++ `jump()` = stream, který by dostal podsystém `stunt` připsaný na konec `SUBSYSTEMS`; tabulka o další `jump()`).
+Výchozí trať ~500 m: robot řízení (`steer_bot` po ose) ji projede za 1713–1883 tiků (29–31 s, 10 semínek), limit
+46–50 s; nečinné auto narazí v první zatáčce a prohraje na limit (10/10).
+
+**Čísla skoku** (`stuntFlight`, celočíselně jako jádro): při 300 j/tik 12 tiků na rampě, 41 ve vzduchu (0,7 s), dopad
+15,9 m od začátku rampy, vrchol 2,5 m; při 150 j/tik 29 tiků, 8 m. Krabice 0,9 m, hromada 3–6 krabic v řadách
+2+1 / 3+1 / 3+2 / 3+2+1, odraz 0,2. Troska letí `vz` = 80 % rychlosti auta ± 40, `vy` = 25 % + 10–60, do strany od
+osy auta 40 + půl boční rychlosti ± 40 (j/tik); žije 150 tiků.
+
+**Rozpočet a sloty:** živých trosek nejvýš `STUNT.debrisMax` = 8 v každém tiku (hlídá `stunt_impact`; zbytek hromady
+jen zhasne); volných slotů spawnu je tolik, kolik krabic (≤ 24 = `STUNT_DEBRIS_MAX`), takže strop drží pravidlo, ne
+kapacita. Fyzikálních těl naráz nejvýš počet krabic (≤ 24). Spawn bere první mrtvý slot od `spawnBase` → troska další
+hromady dostane slot zhaslé trosky. `stunt_impact` je v seznamu před `stunt_debris`: slot zhaslý v tiku nevezme troska
+téhož tiku (Rapier by jí nechal točení staré, `fits` drží tentýž collider).
+
+**Nejasné body – zvolený konzervativní výklad:**
+- *„pravidlo zapíše troskám vx/vy/vz“* – pravidlo jádra stav samo nemění (`contract.ts`), nový efekt „nastav rychlost“
+  by byl sdílená změna. Proto hromada = krabice Rapieru od tiku 0 a náraz je vymění za trosky efektem `spawn` s rychlostí
+  v témže tiku (Rapier je převezme v dalším kroku přes `create` → `teleport`). Tím je zároveň splněné „slot se znovu
+  použije pro další hromadu“ – sloty krabic úrovně by se nevrátily nikdy.
+- *„auto přitom zpomalí o pevný podíl“* – zpomalí ovládání v následujícím tiku (pravidlo rychlost hráče měnit nemůže);
+  totéž `smash`, `impacts` a body za krabice (počítadlo ovládání, ne efekt). Rozdíl 1 tik je pod rozlišením oka.
+- *Země Rapieru* je čtverec ±500 m (`physics/step.ts`): hromady jen v úsecích končících do 480 m, rampy kdekoli
+  (auto fyzikální není). Trať tak může mít ~500–620 m a hra ~30 s plným plynem.
+- *Skok* nemá vlastní pravidlo: ovládání vede auto po klínu a za hranou letí gravitací jádra; přistání je obyčejný
+  dopad jádra (`y ≤ 0`), náraz se z něj nepočítá. Skok = aspoň 6 tiků ve vzduchu.
+- *Obtížnost* bere šířku a vzory trati z řízení (`easy`/`normal`/`hard`); vlastní meze stuntu nemá.
+
+**API pro T3 (robot, důkaz) a T4 (scéna):**
+- `STUNT_BODIES` = `{ player: 0, keeper: 1, firstTemplate: 2 }`; čítače `STUNT_SLOTS` na počítadle: `air` (tiky ve vzduchu),
+  `smash` (rozbité krabice), `jumps`, `impacts` (trefené hromady), pracovní `streak`, `preVx`, `preVz`, `dead`; čtení
+  `stuntCounter(state, 'air')`, životy `stuntLivesOf(state)` (= čítač `health`), výsledek `outcomeOf` jádra.
+- Trosky: `stuntDebrisOf(state)` (živá fyzikální těla od `spawnBase`), `isDebris`, zbylé tiky = `bodyHp`; natočení
+  `unpackRotation(aux0, aux1)`. Krabice hromad = parametry `stunt_impact` (`piles[]: { first, count, template }`).
+- Rampy: `world.control.params.ramps` (`{ x, z0, z1, w, h }`), `rampUnder`, `rampHeightAt`, `stuntFlight`, `stuntReach`.
+- Parametry robota `stunt_bot` (vydává je generátor, robot je zatím pahýl): `topSpeed`, `course` (osa po trase rozcestí
+  jako `steer_bot`, `halfWidths`), `ramps`, `firstBox`, `piles` (počty), `keeper`.
+- Pravidla: `finish`, `stunt_crash`, `stunt_impact`, `stunt_debris`, `out_of_health`, `time_limit`, `score_bonus` (7 z 16).
+  Efekty tiku pro scénu: `damage` (náraz do mantinelu), `despawn` + `spawn` (rozbitá hromada), `despawn` (zhasnutí).
+- Konstanty `STUNT` (rychlost, rampa, hromada, vzduch, náraz, rozpočet, limit); parametry generátoru `stuntTrackParams`:
+  `difficulty`, `lengthM` 200–360, `ramps` 2–4, `piles` 2–4, `boxes` 3–6, `vehicle`, `things` (1–4 modely).
+
+**Pro P68-I (sdílené soubory, nic z toho pruh neměnil):**
+- `src/sim/rng.ts`: připsat `'stunt'` na konec `SUBSYSTEMS` (za `rounds`) – `createStreams(seed).stunt` pak vydá přesně
+  stream, který si jádro stuntu odvozuje samo; bez toho by další připsaný podsystém losoval totéž co stunt.
+- Přednačtení Rapieru: hra má fyzikální tělesa v počátečním stavu (krabice i předlohy), `worldHasPhysics` /
+  `preloadPhysics` je najdou bez úprav.
+- Nový efekt ani popisek čítače hlavičky není potřeba (`smash` a `air` jsou na počítadle, popisky v `hud-labels-request.ts`).
+
+**Mutace** (Test level full; každá musí shodit aspoň jeden test): _doplní se po commitu jádra._
 
 ## `minigolf` – jádro a spike (T6)
 
