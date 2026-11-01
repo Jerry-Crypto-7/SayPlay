@@ -23,7 +23,7 @@
   ],
   "buildshift": [
    { "id": "builds", "run": "bot", "expect": "the player builds >= 2 stations on grid cells", "check": { "kind": "builds", "within": 10, "min": 2 } },
-   { "id": "spends", "run": "bot", "expect": "the resource count drops after a build", "check": { "kind": "spends", "counters": ["ammo", "reserve"], "within": 10 } },
+   { "id": "spends", "run": "bot", "expect": "the resource count drops after a build", "check": { "kind": "spends", "counters": ["ammo", "reserve"], "slots": [{ "body": 1, "slot": "y" }], "within": 10 } },
    { "id": "serves", "run": "bot", "expect": "served customers reach the shift goal", "check": { "kind": "reaches", "counter": "items", "goalParam": "goal" } },
    { "id": "bad-build-loses", "run": "weak-bot", "expect": "a bot that builds badly loses", "check": { "kind": "outcome", "is": "lost" } }
   ],
