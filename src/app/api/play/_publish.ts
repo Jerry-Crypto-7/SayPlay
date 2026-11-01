@@ -23,6 +23,7 @@ import { arcadeReport } from '@/play/arcade/verify';
 import type { ChainWorld } from '@/play/chain/contract';
 import { verifyChain } from '@/play/chain/verify';
 import type { Honesty } from '@/play/draft/unsupported';
+import { ROUTE_PENDING } from '@/play/genre/classify';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealChainVersion, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
 import { BUILTIN_IDS } from '@/play/version/builtin';
@@ -167,6 +168,13 @@ export type SpecRead = { readonly ok: true; readonly value: GameSpecV1 } | { rea
 export function readSpecOrFail(input: unknown): SpecRead {
   const read = readGameSpec(input);
   if (!read.ok) return { ok: false, response: fail(422, 'SPEC_REJECTED', `${read.reason}: ${read.issues[0] ?? 'the game description was rejected'}`) };
+  // P68I R1: hra P68 před „zapoj X“ nesmí do feedu ani ručním specem (POST hry, remix) – brána aktivace drží jen
+  // klasifikátor a režiséra. Jen na produkci: e2e a testy kategorií publikují ruční specy her touto cestou.
+  // Id ovládání pěti her P68 jsou shodná s id žánru, takže jedna množina hlídá `control` i `genre.id`.
+  const pending = ROUTE_PENDING as ReadonlySet<string>;
+  if (process.env.VERCEL_ENV?.trim() === 'production' && (pending.has(read.value.control ?? '') || pending.has(read.value.genre?.id ?? ''))) {
+    return { ok: false, response: fail(422, 'SPEC_REJECTED', 'this game type is not live yet') };
+  }
   return { ok: true, value: read.value };
 }
 
