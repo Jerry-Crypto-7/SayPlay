@@ -60,6 +60,20 @@ describe('raw-spec publish of an unwired P68 game (R1)', () => {
     expect(response.status, await response.clone().text()).toBe(201);
   });
 
+  it('treats production the way the spend ledger does: any case, and a deployment that does not name itself', () => {
+    const refused = (env: Record<string, string>) => {
+      for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
+      const ok = readSpecOrFail(asP68('stunt', 'both')).ok;
+      vi.unstubAllEnvs();
+      return !ok;
+    };
+    expect(refused({ VERCEL_ENV: 'Production' })).toBe(true);
+    expect(refused({ VERCEL_ENV: 'staging' })).toBe(true);
+    expect(refused({ VERCEL_ENV: '', VERCEL: '1' })).toBe(true);
+    expect(refused({ VERCEL_ENV: '', KV_REST_API_URL: 'https://example-kv.upstash.io', KV_REST_API_TOKEN: 'token' })).toBe(true);
+    expect(refused({ VERCEL_ENV: 'preview', VERCEL: '1' })).toBe(false);
+  });
+
   it('reads a P68 spec outside production, where e2e and category tests publish their hand specs', () => {
     vi.stubEnv('VERCEL_ENV', '');
     expect(readSpecOrFail(asP68('stunt', 'both')).ok).toBe(true);

@@ -31,7 +31,7 @@ import { previewOf } from '@/play/version/preview';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
-import { sharedStoreFromEnv } from '@/server/spend-store';
+import { environmentScope, isServerless, sharedStoreFromEnv } from '@/server/spend-store';
 
 import { getCompiler } from './_compiler';
 import { startCustomEnv } from './_env';
@@ -160,6 +160,18 @@ const COMPILE_MESSAGE: Readonly<Record<CompileGameReason, string>> = {
 
 export type SpecRead = { readonly ok: true; readonly value: GameSpecV1 } | { readonly ok: false; readonly response: Response };
 
+/**
+ * Kde stráž nezapojených her P68 odmítá (R3): produkce podle `environmentScope` (jako kniha útraty), a nasazení,
+ * které se nepředstavilo – vlastní jméno prostředí, nebo bez `VERCEL_ENV` na platformě či nad sdíleným úložištěm.
+ * Preview a místní běh bez sdíleného úložiště pustí ruční specy kategorií (e2e). Místní `VERCEL_ENV=production`
+ * (placený běh) je produkce i tady – e2e ruční spec P68 pak dostane 422 „not live yet“, schválně.
+ */
+function servesPublicFeed(env: Record<string, string | undefined>): boolean {
+  const scope = environmentScope(env);
+  if (scope === 'production' || scope === 'unrecognized') return true;
+  return scope === 'unset' && (isServerless(env) || sharedStoreFromEnv(env) !== null);
+}
+
 /** Generátory světů pěti her P68 (jména kusů zmrazená v T1, `src/play/arcade/library.ts`). */
 const P68_GENERATORS: Readonly<Record<string, string>> = { stunt: 'stunt_track', minigolf: 'minigolf_course', railfps: 'railfps_rail', buildshift: 'buildshift_shop', drawsave: 'drawsave_level' };
 
@@ -178,7 +190,7 @@ export function readSpecOrFail(input: unknown): SpecRead {
   const pending = ROUTE_PENDING as ReadonlySet<string>;
   const generator = generatorOf(read.value);
   const unwired = pending.has(read.value.control ?? '') || pending.has(read.value.genre?.id ?? '') || [...pending].some((id) => P68_GENERATORS[id] === generator);
-  if (unwired && process.env.VERCEL_ENV?.trim() === 'production') {
+  if (unwired && servesPublicFeed(process.env)) {
     return { ok: false, response: fail(422, 'SPEC_REJECTED', 'this game type is not live yet') };
   }
   return { ok: true, value: read.value };
