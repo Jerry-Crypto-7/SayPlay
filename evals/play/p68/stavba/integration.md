@@ -1,13 +1,36 @@
-# P68 – předání k zapojení: kategorie `stavba` (P68-S)
+# P68-S stavba – co potřebuje zapojení (`buildshift`)
 
-Hry `buildshift` a volitelně `drawsave`. Každá hra má vlastní sekci podle `../integration-template.md` (popis, věty,
-narážky, assety, požadované změny kontraktu, fixture spec) a vlastní značku `p68-ready: <id>` (HTML komentář), přidanou
-až když je hra hotová. `drawsave` bez značky do 6. 11. 12:00 CET zapíše P68-I jako nesplněnou.
+Požadavky pruhu P68-S na P68-I. Hra je hotová, až tu bude značka `p68-ready: buildshift`.
 
-## `buildshift`
+## Pitch
 
-_Zatím nevyplněno._
+_(T8)_
 
-## `drawsave`
+## Sentences
 
-_Zatím nevyplněno._
+_(T8: 20 vět pro klasifikátor a čtečku)_
+
+## Cues
+
+_(T4/T8)_
+
+## Assets
+
+_(T8: jen z dnešního katalogu; nový asset = požadavek s licencí a zdrojem)_
+
+## Fixture spec
+
+_(T4: `e2e/fixtures/p68-buildshift-spec.json`)_
+
+## Contract needs
+
+Z kontroly kostry `5005bfe3` (T1):
+
+- **Žádná změna kontraktu není potřeba ke hraní.** Vstup `lanes` nese stavbu i provoz (ťuk + osa buňky), pohled `top`
+  je povolený, horizont 5400 tiků stačí, `CONTROL_PARAMS.buildshift` bez parametrů vyhovuje (cíl jde přes generátor).
+- **Kostra ještě není v `origin/main`.** Pruh stojí na WIP `5005bfe3`; potřebuje sloučenou kostru, aby šel PR jen
+  s vlastními soubory (README → Základ větve).
+
+## HUD labels
+
+_(T5/T10: „Served“ a „Coins“ do `HUD_COUNTER_LABELS`; do té doby čísla ve 3D scéně)_
