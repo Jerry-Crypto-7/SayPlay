@@ -557,6 +557,27 @@ mantinely, dýně na soklech, jamka s vlajkou, tečky míření, pilulka „1 st
 míček je zvětšený čitelností (~⅕ šířky na výšku); na šířku je jamka malá a napůl za štítkem ducha; na snímku
 `portrait-hole` u míčku tmavě zelený nakloněný kotouč na stopce, jehož původ (model rakve, nebo duch) snímek neurčí.
 
+## Předání a regrese (T10, 1. 11. 2026)
+
+`integration.md` je úplný pro obě hry (`bd0e6db8`): id, `Stage` a vstup, popis pro režiséra a čtečku, meze, věty a
+narážky, assety s kandidáty z CC0 kitů, požadavky na sdílené soubory, žebřík a **nesplněné** body, obě značky
+`p68-ready`. Regrese na `0dcbfb9b` (stejný `.next` jako T9 – po buildu se měnily jen testy a dokumenty):
+
+- **Vitest** (`src/play/arcade src/play/genre genres/stunt genres/minigolf evals/play/p68/vozidla-sport`, 791 souborů):
+  7454/7456. Dvě červené jsou časové limity mimo pruh: `runner-sections` (STACK_TRACE_ERROR) sám znovu zelený;
+  `swarm (f)` „≤ 0,05 ms na tik“ změřil 0,056 i sám. Kód, který `swarm` měří (`pieces/behaviours`, `kernel`,
+  `contract`, `physics`, `library`, `verify`), je na větvi, na místě odbočení i na `origin/main` (`24309951`)
+  bajtově stejný a pruh mimo soubory `stunt*` / `minigolf*` v `src/play/arcade` nic nemění – stejné číslo by dal
+  `origin/main`; procesor byl při běhu vytížený na 59 % (souběžné běhy jiných pruhů). Není regrese.
+- **Hlídače:** `owned-paths` nad `git diff --name-only origin/main...HEAD` vrátil 0; `routing-guard` 3/3,
+  `solver-untouched` 2/2, `dev-sentences` 2/2, `owned-paths.test` 5/5.
+- **E2e** na serveru 3168: `play-stunt` + `play-minigolf` na `chromium`, `pixel7-touch`, `iphone-touch` 24/24;
+  `play-drive`, `play-ball`, `interface-language` na `chromium` zelené; `play-physics-replay` 1/1 se serverem
+  spuštěným s `PLAY_LAB=1` (bez něj je laboratoř v produkci 404 – hlavička specu to říká). `interface-language`
+  jednou spadl na URL `/play?g=<hash>` místo `/play/<hash>` (5 s limit `toHaveURL` pod zátěží), sám znovu zelený.
+- FPS z opakovaného běhu: `chromium` a `pixel7-touch` beze změny, posunul se jen `iphone-touch` (bez brány);
+  `fps-*.json` zůstávají z T5/T9.
+
 ## Pull requesty
 
 - **#64** (T5b, 1. 11. 2026): https://github.com/Jerry-Crypto-7/Hackathon/pull/64 – větev
