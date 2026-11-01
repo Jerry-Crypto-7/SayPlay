@@ -120,3 +120,40 @@ Kostra P68-I je v `origin/main` jako `15c81e6a` (PR #61); větev na ni přešla 
   (nejede po kolejích). Bez ducha replaye a bez lišty HP bosse (T8/T10).
 - Testy `railfps-camera.test.ts` 16/16 (mutace zrcadlení a znaménka svislého posunu: 8/16 červených), `npm run build`
   projde.
+
+## Milník 2. 11. (T6)
+
+Běh nad buildem větve (`npm run build`, `next start -p 3172`, `PLAY_READER=off`), 1. 11. 2026:
+`e2e/play-railfps.spec.ts` na `chromium`, `iphone-touch`, `pixel7-touch` – **7 prošlo, 2 přeskočené** (měření FPS
+běží jen na `pixel7-touch`), 2,0 min.
+
+- **Publikace:** `POST /api/play/games` s `e2e/fixtures/p68-railfps-spec.json` vrátí `201`, i když je modul `staged`;
+  dostupnost čtou jen klasifikátor, režisér a čtečka. Sdílený soubor se měnit nemusí.
+- **Telefon** (`pixel7-touch` dotyk přes CDP, `iphone-touch` syntetické `PointerEvent` ve WebKitu): prst dohraje hru
+  k výhře. Robot ověřovače (`botWants`) řekne sektor, test ho přepočte inverzí kamery (`sectorToScreen`
+  z `data-railfps-yaw` / `data-railfps-fov`) na sloupec obrazovky a ťukne; sektor mimo záběr nejdřív natočí tahem.
+  Pixel 22 ťuků a 57 tahů, iPhone 21 ťuků a 45 tahů; výhra v tiku 1012 (16,9 s), 845 bodů, 3 životy – jako svědek.
+- **Desktop** (`chromium`): klik myší na nepřítele mimo střed (sektor −4 → −3, skóre 20 → 35) a zbytek
+  `handPlay('end')` → výhra.
+- **Herní aserce v prohlížeči:** po prvním ťuku mimo střed záznam nese ťuknutý sektor, natočení ve stavu skončí na něm
+  a skóre stoupne; `idleRun()` prohraje. Nepřítel z věty: `bodies('enemy') > 0`, scéna kreslí roli `enemy`, GLB modelu
+  nepřítele přišlo `200`. Popisky počítadel jen z `HUD_COUNTER_LABELS`, žádná chyba stránky.
+- **Dare:** na všech třech projektech `POST /api/play/games/[id]/dare` přijat, server přehrál záznam na tentýž výsledek,
+  odkaz `?via=share&dare=` otevře hru s „Beat 845“.
+- **Pin (mutace):** ťuk mimo střed přesměrovaný do středu obrazovky → červené na `chromium` i `pixel7-touch`
+  („recorded sector“ očekáváno −2, přišlo 0 / −1); spec vrácen ze zálohy.
+- **FPS** (`@measure`, `pixel7-touch`, CPU ×4 jako profil `phone` v `play-perf.spec.ts`; robot přes „Show me how“,
+  20 s, ukázka se po výhře pouští znovu): **medián 59,9 FPS, p95 16,8 ms, nejdelší snímek 116,7 ms** (`fps.json`).
+  Brána medián ≥ 0,95 × 30 (runner, nejpomalejší v `evals/play/p66/baseline-fps.json`) = 28,5 a p95 ≤ 33,3 ms –
+  **prošla**. Předběžný běh v odkládacím worktree měl jednou p95 33,4 ms (stroj nebyl v klidu, jiné buildy).
+- **Snímky:** `D:/caches/p68/F/shots/` – `<projekt>-start.png`, `-enemy.png`, `-result.png` pro všechny tři projekty,
+  `chromium-aim.png`, `pixel7-touch-landscape.png`, `iphone-touch-landscape.png`.
+
+### Nálezy pro T9
+
+- Robot vyhraje za 16,9 s, ale spec slibuje `targetDurationSec: 70`: tři vlny po 16 věcech jsou krátké.
+- Na `pixel7-touch-enemy.png` zabírá boční stěna chodby levých ~40 % obrazu jako tmavý pruh bez detailu.
+- Scéna „space station hallway“ nevypadá jako stanice (oranžová zem, noční nebe) – `theme.look` místa se do chodby
+  nepromítá.
+- `iphone-touch-enemy.png` ukazuje prázdné plátno; start a snímek na šířku scénu mají. Inference: WebKit fotí plátno,
+  které se při ručních hodinách nepřekreslilo; hra sama běží (výhra, ťuky do nakreslených sektorů).

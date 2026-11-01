@@ -1,8 +1,8 @@
 # P68 – předání k zapojení: kategorie `prvni-osoba` (P68-F)
 
 Hra `railfps`. Sekce podle `../integration-template.md` v jejím pořadí, navíc `## VR` (jen poznámka). Značka
-`p68-ready` na konci zatím stojí ve tvaru šablony (hra není hotová); na `railfps` ji přepne úloha, která dokončí e2e
-`play-railfps`. Čísla „dnes“ jsou naměřená 1. 11. 2026 nad kostrou P68-I (`classifyGenre(věta, null)`, bez čtení).
+`p68-ready` na konci (hodnota `railfps`) platí od T6: herní aserce zelené (`pieces/__tests__/railfps-bot.test.ts`) a e2e
+`play-railfps` bez `skip` zelený na `chromium`, `iphone-touch`, `pixel7-touch`. Čísla „dnes“ jsou naměřená 1. 11. 2026 nad kostrou P68-I (`classifyGenre(věta, null)`, bez čtení).
 
 ## `railfps`
 
@@ -150,4 +150,4 @@ vstup `genre` nezná), režim zapsat v `src/play/xr/modes.ts` (dnes z kostry `ra
 Do řezu VR hru nenabízet – stejná cesta jako nepodporované ovládání.
 
 <!-- Značku níže přidat až když je hra hotová (herní aserce z `assertions.json` zelené, e2e `play-<id>` bez `skip`). -->
-<!-- p68-ready: <id> -->
+<!-- p68-ready: railfps -->
