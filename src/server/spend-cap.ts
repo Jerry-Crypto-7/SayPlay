@@ -998,6 +998,7 @@ export function resetProcessSpendCap(): void {
   delete (globalThis as Record<string, unknown>)[PROCESS_CAP_KEY];
   delete (globalThis as Record<string, unknown>)[FALLBACK_CAP_KEY];
   delete (globalThis as Record<string, unknown>)[READER_CAP_KEY];
+  delete (globalThis as Record<string, unknown>)[SCRIPTS_CAP_KEY];
   resetProcessLedger();
 }
 
@@ -1064,6 +1065,29 @@ export function readerSpendCapFromEnv(env: Record<string, string | undefined>): 
   const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
   const callCap = callCapFrom(env.PLAY_READER_CALL_CAP);
   return new SpendCap({ enabled: true, capUsd, callCap }, null, ledgerFromEnv(env, fetch, READER_BOOK), null);
+}
+
+/**
+ * **Strop písaře skriptů úrovní** (P68 T13, pilot za `PLAY_SCRIPTS`) – čtvrtý strop procesu, táž doktrína jako
+ * čtečka: vlastní částka `PLAY_SCRIPTS_SPEND_CAP_USD` (chybí = 0, placený písař pak nevolá), vlastní počet volání
+ * `PLAY_SCRIPTS_CALL_CAP`, vlastní kniha (`SCRIPTS_BOOK`). `check-env.mjs` ji přičte do součtu stropů, když
+ * `PLAY_SCRIPTS=on`.
+ */
+export function processScriptsSpendCap(): SpendCap {
+  const holder = globalThis as Record<string, unknown>;
+  holder[SCRIPTS_CAP_KEY] ??= scriptsSpendCapFromEnv(process.env);
+  return holder[SCRIPTS_CAP_KEY] as SpendCap;
+}
+
+const SCRIPTS_CAP_KEY = '__worldsmithScriptsSpendCap';
+
+/** Kniha písaře skriptů: klíče `<předpona>:scripts:*`. */
+export const SCRIPTS_BOOK = 'scripts';
+
+export function scriptsSpendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
+  const parsed = Number(env.PLAY_SCRIPTS_SPEND_CAP_USD);
+  const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  return new SpendCap({ enabled: true, capUsd, callCap: callCapFrom(env.PLAY_SCRIPTS_CALL_CAP) }, null, ledgerFromEnv(env, fetch, SCRIPTS_BOOK), null);
 }
 
 // Táž doktrína jako u dolarů: chybějící proměnná je výchozí hodnota, vadná je
