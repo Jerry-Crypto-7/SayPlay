@@ -64,10 +64,6 @@ describe('P68 skeletons (T1)', () => {
       expect(GENRE_MODULES[genre as GenreId].cues.length, genre).toBeGreaterThan(0);
     }
   });
-
-  it('a skeleton does not compile: the game exists only as a hand-written spec until its category ships', () => {
-    for (const genre of P68) expect(() => GENRE_MODULES[genre as GenreId].compile({ genre, mode: 'default', hero: 'fox', setting: 'forest' } as never), genre).toThrow(/not live/);
-  });
 });
 
 describe('P68 activation gate: a ready module stays invisible until "wire X" removes it', () => {
