@@ -88,3 +88,23 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
   začátečník 11→9). Sonda ověřila, že razítko `genre.v7` hraje na těchto buňkách všech 20 semínek obou profilů
   bit po bitu jako `genre.v6` – staré řádky byly zastaralé už na `688d989d` (P66 přeměřil jen své řádky), ne posun
   způsobený T1.
+
+## T4 – protokol měření času
+
+- `first-playable-ab.mjs` má v souhrnu `gate`: `failedTotal` (selhání A i B), `pass` jen při 0 selháních, mediánu B
+  ≤ 3 000 ms (desktop) a párovém rozdílu ≤ 200 ms (desktop i pixel7-cpu4). Neměřený profil bránu shodí.
+- Každý běh má vlastní prohlížeč i kontext (žádná sdílená cache), páry AB/BA beze změny.
+- Sonda uzná hratelnost na HUD arkády jen když po vstupu vzroste `data-inputs` i `data-tick`; samotná změna plochy
+  nestačí. Cizí weby dál podle plochy.
+- **Známá díra (R2):** mřížkové hry (`Hud.tsx`) `data-inputs` nemají, proto je sonda teď měří jako nehratelné.
+- Testy: `first-playable-ab.test.ts`, `time-to-playable.test.ts` (fixture `hud-game.html`). mutationStatus: pass.
+
+## T6 – sdílení, Dare a přehrání
+
+- `src/app/api/play/__tests__/p68-roundtrip.test.ts`: hra s ručním specem `e2e/fixtures/p68-<id>-spec.json` projde
+  publikací, `/play/<id>`, výzvou Dare i dvojím přehráním se stejným výsledkem, skóre a hashem; bez specu nebo
+  s kostrou modulu `it.skip` s důvodem. Totéž kolo jede jako kontrola na ručním specu `p66-arrows`.
+- Strop těla 64 kB, nejhorší stopa za 90 s: railfps 64 870 B (FIRE každý druhý tik), drawsave 58 937 B (1 000 buněk).
+- **Pozor railfps:** natáčení i střelba v každém tiku = 67 570 B a dveře výzvu odmítnou (413) – test to drží.
+- `e2e/play-share.spec.ts`: odkaz výzvy nové hry → dohrát → výsledek v `chromium` i `pixel7-touch`; bez specu
+  přeskočeno.
