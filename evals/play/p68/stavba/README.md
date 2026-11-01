@@ -119,6 +119,10 @@ procházejí všechny žánry (`contract`, `classify`, `dressing`, `sets`, `hold
 934/934; `tsc` čistý; e2e znovu nad novým buildem 18/18 na třech projektech (stejná čísla: 10/10 v tiku 2338, špatné
 6/10, vyzvání 645 → výhra 10). FPS `chromium` 59,9 / p95 16,7 ms, `pixel7-touch` 59,9, `iphone-touch` 21,7.
 
+**PR #63 sloučený do `main` 1. 11. (squash `24309951`).** Repo nemá zapnuté automatické sloučení a PR nemá žádné
+kontroly, takže sloučen ručně po vlastních 7 souborech vitest 55/55. `own-files.mjs` hlásí jen `p68-staged.test.ts`
+(smazaný blok kostry, viz Odchylky). Hra zůstává skrytá za `ROUTE_PENDING` / `DIRECTOR_PENDING`.
+
 ## Odchylky od návrhu
 
 - **Základ větve:** T1–T8 vznikly na WIP kostře P68-I `5005bfe3`, 1. 11. přeneseny na sloučenou kostru #61 – viz
