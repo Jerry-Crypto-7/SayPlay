@@ -428,7 +428,87 @@ bez opravy míření robot při ladění prohrál na S 2/10 – test výhry 30/3
 
 ## `minigolf` – scéna, kamera a natažení (T8)
 
-_Vyplní T8._
+Soubory v `src/components/play/arcade/genres/minigolf/`: `MinigolfScene.tsx` (scéna), `minigolf-camera.ts` (čistá
+kamera), `minigolf-touch.ts` (čisté gesto → `ArcadeInput`), `MinigolfTouch.tsx` (DOM vrstva natažení a klávesnice),
+testy `__tests__/minigolf-camera.test.ts` (5) a `minigolf-touch.test.ts` (8).
+
+### Scéna
+
+- Dráha z těl úrovně: dlaždice = trávník (`colorHex.grass`), mantinely (`cream-deep`), jamka procedurálně (černý
+  kalíšek Ø 1 m s okrajem) a v ní vlajka `finish-flag`; odrazníky a pohyblivá překážka přes `modelIdOf` (model druhu
+  těla – výchozí `tire-barrier` / `crate`, popisky rolí `barrier` / `obstacle`, druh z věty od T7) na tmavém soklu
+  v půdorysu těla (kde se míček opravdu odrazí). Povrch, kulisy a horizont sady (`FieldGround`, `Scenery`,
+  `HorizonBackdrop`). Míček kreslí model svého druhu (`gen3d-golf-ball`), ne hrdinu věty (`cast.player`).
+- x jádra se zrcadlí jako v aréně: kladná osa míří na obrazovce doprava. Míček se valí (natočení podle ujeté dráhy),
+  po výhře sedí v kalíšku. Stopa míření = 10 teček na trávníku ve směru `aux0`, délka 1,2 m bez nabití, s nabitím
+  dojezd rány (`minigolfDistance`) do 5 m; jen když míček stojí. Sonda záběru: míček `frame: 'hero'`, jamka `'target'`.
+- Scéna sama volá `session.advance` (jako ostatní scény žánrů) – kostra to nedělala, hodiny by stály.
+
+### Kamera (`minigolfCameraPose(state, aspect, rect, course, fov)`)
+
+- Klid: 2,6 m za míčkem po ose míření ze stavu, 1,1 m nad zemí, pohled 2,2 m před míček. Míček v pohybu: 3,6 m za,
+  2,2 m nad, pohled 1,2 m před; osa zůstává z `aux0` (ne ze směru valení). Přechod tlumí scéna (5/s).
+- Na výšku `fitTall` (`usePlayRectRef`) s krabicí míček + cíl ± 0,6 m (cíl do 1,6 m = vlajka). Cíl
+  (`minigolfFocus`) = nejvzdálenější bod trasy, ke kterému vede přímka celá po dlaždicích (vzorky po 0,25 m): na rovné
+  dráze jamka, z odpaliště L / S roh, z rohu další bod. Na šířku vlastní póza, `rect` ji nemění (test).
+- Statická část jamky (`minigolfCourseView(world.initial, layout)`) je čtvrtý parametr; plán psal `(state, aspect,
+  rect)`, jamka ve stavu není (rozložení je v parametrech ovládání).
+
+### Natažení a klávesnice
+
+- **Prst** kdekoli ve vrstvě (`data-testid="minigolf-pull"`, celá stage, nad plátnem, pod HUD): rána jde proti tahu
+  vůči ose míření ze stavu při stisku (tah dolů = vpřed, dolů-vlevo = vpřed-vpravo, nahoru = zpět ke kameře). Mrtvá
+  zóna 24 px (puštění v ní = zrušení, nabití `DOWN`), za ní 3 px na tik nabití, plná síla (60) od 204 px.
+- **Tik** (`puttInput`): `HOLD` s osou, dokud nabití ve stavu nedožene délku tahu, pak osa bez tlačítek, po puštění
+  `TAP` s osou. Puštění dřív, než nabití dožene, ránu odloží (≤ 60 tiků) – síla = délka tahu. Zkrácení tahu o víc než
+  4 nabití nabití shodí (`DOWN`) a nabije znovu (přetečení ≤ 4 snese několik tiků v jednom snímku).
+- **Klávesnice** (desktop): ←/→ (A/D) otáčí osu o 5 za tik (54°/s) a o 5 hned při stisku, mezerník držený nabíjí,
+  puštěný odpálí. Mezerník má `preventDefault` i při opakování – jinak by ho HUD vzal jako pauzu (`useHudKeys`).
+  Prst a klávesnice jsou tatáž funkce: tah s nabitím N a osou A dá přesně týž záznam (N× `HOLD`+A, pak `TAP`+A) jako
+  mezerník držený N tiků s osou A (test, i hash stavu).
+- **Bez dvojího odpálení:** `ArcadeStage` pro vstup `throw-rig` na plátně nic nemontuje (jen VR přes `xr/input-map.ts`)
+  a minigolf nemá blaster, akce ani schopnosti – klávesy a dotyk má jen tato vrstva. Žádné akční tlačítko.
+- **Montáž:** `GENRE_TOUCH` montuje jen vstup `genre`, takže scéna připojí `MinigolfTouch` do `surface` vlastním
+  kořenem Reactu (`createRoot`; drei `Html` by vrstvu schoval, když je počátek světa za kamerou). Props jsou
+  `GenreTouchProps` (`{ session }`) – P68-I ho může montovat registrem beze změny komponenty.
+- Rána za pohybu míčku je pravidlo jádra (puštění nic nedá, nabití pryč); vrstva ho nehlídá.
+
+### HUD – co ukazuje dnes a popisky
+
+- **Dnes HUD minigolfu nemá žádné počítadlo:** `hudCountersOf` (`ArcadePlay.tsx`) skládá popisky jen z
+  `spec.control` a pravidel (`shots` pro `shooter`/`throw`/`ball`, `ammo` u blasteru, `lives`, cíl Dare, `collected`).
+  Minigolf nedostane nic → pilulka postupu chybí, vidět je jen časovač (počítá nahoru) a pauza; čtečka dostane
+  „0 % · skóre points“ a „{z míčku} m“ (`progressLabel`). `snapshot.shots` = `ammo` + `reserve` = rány + par.
+- **Bez sdílené úpravy hra popisky nedá** – žádný háček žánru do `hudCountersOf` není. Náhrada do zapojení:
+  `MinigolfTouch` kreslí vlastní pilulku vlevo dole nad dolní řadou (`--_stack`): `hud-counter-strokes`
+  (`data-count` = rány, text „1 stroke“ / „2 strokes“) a `hud-counter-par` („par 3“). **Až P68-I přidá
+  `strokes` / `par` do `hudCountersOf`, pilulku ze `MinigolfTouch` smazat** (jinak dvě stejná `data-testid`).
+
+### Pro T9 (e2e)
+
+- Selektory: `[data-testid="minigolf-pull"]` (plocha tahu, `data-pulling="true"` během gesta),
+  `[data-testid="minigolf-power"]` (`role="meter"`, `aria-valuenow` = nabití ze stavu, vidět jen během gesta),
+  `[data-testid="hud-counter-strokes"]` / `hud-counter-par` (`data-count`), `[data-testid="minigolf-score"]`.
+- Začátek tahu na výšku: kdekoli pod horním pásem HUD (spodní hrana `.play-hud-progress, .play-hud-corner,
+  .play-hud-goal`) a nad dolní řadou – např. 50 % šířky, 40 % výšky stage; plný tah dolů (≤ 204 px) se tam vejde.
+  Pohyby prstu jdou do vrstvy i nad HUD (zachycení ukazatele).
+- Tah pro přání robota: `pullFor(base, axis, charge)` z `minigolf-touch.ts` (`base` = `aux0` míčku ve stavu při
+  stisku) – přesný opak `pullBack`, souřadnice smí být necelé. Puštění kdykoli po tahu (rána počká na nabití).
+- Klávesnice: `ArrowLeft` / `ArrowRight` (5 os za tik), `Space` držet a pustit.
+
+### Sdílené potřeby (P68-I, nic se neměnilo)
+
+1. `hudCountersOf` / `progressLabel` v `ArcadePlay.tsx`: počítadla `strokes` (`MINIGOLF_COUNTER.strokes` = `ammo`)
+   a `par` (`reserve`) pro ovládání `minigolf`; pak smazat náhradní pilulku (viz výš).
+2. Čistá montáž `MinigolfTouch`: registr dotyku i pro `throw-rig` (nebo vstup `genre` pro minigolf); pak smazat
+   `useTouchLayer` ve scéně.
+
+### Ověřeno
+
+`npx vitest run src/components/play/arcade/genres/minigolf` 13/13; spolu s jádry `stunt`/`minigolf`, `p68-hash`,
+`p68-staged` a hlídači pruhu 120/120. Rozbito schválně (pin, nepovinné): znaménko `dx` v `pullBack` → 2 testy
+červené; póza na výšku bez `fitTall` → test rámování červený. `npm run build` prošel. Na živém prohlížeči neověřeno
+(e2e je T9).
 
 ## Milníky a žebřík zjednodušení
 
