@@ -1,0 +1,25 @@
+{
+ "about": "P68V T1 dev sentences: 10 for stunt (a short stunt race: ramps, jumps, crashing into piles of things) and 10 for minigolf (one hole, obstacles from the sentence). Written 2026-11-01 for this lane; tuning is allowed only on these. None of them appears in evals/play/p30/test-200.json or any other sentence set under evals/play (dev-sentences.test.ts checks the text). The sealed P68 holdout lives outside this worktree and is never opened here.",
+ "sentences": [
+  { "id": "v-s01", "game": "stunt", "text": "a monster truck jumps the ramp into a tower of crates in a desert" },
+  { "id": "v-s02", "game": "stunt", "text": "a police car smashes through a wall of barrels on a frozen lake" },
+  { "id": "v-s03", "game": "stunt", "text": "a pizza delivery scooter jumps the canal and crashes into a stack of boxes in venice" },
+  { "id": "v-s04", "game": "stunt", "text": "a red sports car drifts down the canyon road and smashes a pile of cones" },
+  { "id": "v-s05", "game": "stunt", "text": "a school bus flies off a ramp into a heap of watermelons at the county fair" },
+  { "id": "v-s06", "game": "stunt", "text": "a dune buggy jumps the sand hills and crashes into a wall of tires on the beach" },
+  { "id": "v-s07", "game": "stunt", "text": "a tractor jumps the hay bales and plows through a fence on the farm" },
+  { "id": "v-s08", "game": "stunt", "text": "an ice cream truck crashes through a pyramid of crates on a rooftop in new york" },
+  { "id": "v-s09", "game": "stunt", "text": "a garbage truck smashes a tower of trash cans and jumps the bridge in the city" },
+  { "id": "v-s10", "game": "stunt", "text": "a stunt rider on a motorbike jumps three ramps through a junkyard full of old cars" },
+  { "id": "v-m01", "game": "minigolf", "text": "mini golf through a volcano with lava bumpers" },
+  { "id": "v-m02", "game": "minigolf", "text": "putt the golf ball past a spinning windmill on a candy island" },
+  { "id": "v-m03", "game": "minigolf", "text": "a mini golf hole inside a pirate ship with cannon barrels as bumpers" },
+  { "id": "v-m04", "game": "minigolf", "text": "putt a ball around the dinosaur bones in a museum mini golf course" },
+  { "id": "v-m05", "game": "minigolf", "text": "minigolf on the moon with craters and a rocket blocking the hole" },
+  { "id": "v-m06", "game": "minigolf", "text": "putt the ball through a castle gate and over the drawbridge" },
+  { "id": "v-m07", "game": "minigolf", "text": "a crazy golf course in the jungle with logs and a sliding snake" },
+  { "id": "v-m08", "game": "minigolf", "text": "sink a hole in one on a mini golf green under the sea between coral rocks" },
+  { "id": "v-m09", "game": "minigolf", "text": "mini golf in a haunted house with pumpkins and a moving coffin" },
+  { "id": "v-m10", "game": "minigolf", "text": "putt a golf ball across a snowy hill past the penguins to the flag" }
+ ]
+}
