@@ -8,6 +8,10 @@
  *     `PLAY_READER_KEY`; do logu, výstupu ani repa nikdy. `VERCEL_ENV=production` dá strop knihu procesu (bez ní
  *     strop odmítne vše, paměť „Místní placený běh chce VERCEL_ENV“). Útratu zapisuje `p58e/usage-preload.mjs`.
  *     Proces žije jako rodič serveru: pouštět jako úlohu na pozadí, zastavit podle PID z prvního řádku.
+ *     P68I T7: čtení se platí jen z měřicí knihy (`scripts/measure/eval-ledger.mjs`: `WORLDSMITH_SPEND_STORE_PREFIX`
+ *     končící `-eval`, kladný `PLAY_EVAL_SPEND_CAP_USD`, strop čtečky je menší z něj a `--cap-usd`). Bez ní server
+ *     hraje jen rychlou hru a první řádek nese `EVAL_LEDGER=fast-only <důvod>`. Kniha útraty jde do
+ *     `WORLDSMITH_SPEND_STORE_*`, je-li zadané (pak je strop kumulativní napříč běhy); hry zůstávají v paměti.
  *
  *   node evals/play/p61/shots.mjs shoot --set <sada.json> [--range 0..11] --out <dir> --label main --base http://127.0.0.1:3161
  *     Věta po větě (jeden proces naráz – souběžné focení server zasekne): POST věty → rychlá hra, hned 3 snímky
@@ -25,6 +29,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { evalLedger } from '../../../scripts/measure/eval-ledger.mjs';
+
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
 const PRICE = { in: 10, out: 50 };
@@ -39,23 +45,33 @@ function serve() {
   const port = flag('--port', '3161');
   const usageLog = flag('--usage-log');
   const key = process.env.OPENAI_API_KEY;
-  if (!usageLog || !key) throw new Error('serve needs --usage-log and OPENAI_API_KEY from node --env-file=<P58B>/.env.local');
+  const ledger = evalLedger(process.env);
+  const paid = ledger.mode === 'paid';
+  if (paid && (!usageLog || !key)) throw new Error('serve needs --usage-log and OPENAI_API_KEY from node --env-file=<P58B>/.env.local');
+  console.log(paid ? `EVAL_LEDGER=paid ${ledger.prefix} cap ${String(ledger.capUsd)} USD` : `EVAL_LEDGER=fast-only ${ledger.reason}`);
   const env = { ...process.env };
-  for (const name of ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'ANTHROPIC_WORKSPACE_ID', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'WORLDSMITH_SPEND_STORE_URL', 'WORLDSMITH_SPEND_STORE_TOKEN', 'WORLDSMITH_FALLBACK_ENDPOINT']) delete env[name];
+  // Hry jen v paměti procesu: `KV_REST_API_*` je i úložiště her, měřené hry nemají co dělat ve feedu.
+  const drop = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'ANTHROPIC_WORKSPACE_ID', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'WORLDSMITH_FALLBACK_ENDPOINT'];
+  for (const name of paid ? drop : [...drop, 'WORLDSMITH_SPEND_STORE_URL', 'WORLDSMITH_SPEND_STORE_TOKEN']) delete env[name];
+  const reader = paid
+    ? {
+        PLAY_READER: 'on',
+        PLAY_READER_PATH: 'ai',
+        PLAY_READER_ENDPOINT: 'openai:https://api.openai.com',
+        PLAY_READER_MODEL: 'gpt-6-astra',
+        PLAY_READER_KEY: key,
+        PLAY_READER_EFFORT: 'low',
+        PLAY_READER_USD_PER_MTOK_IN: String(PRICE.in),
+        PLAY_READER_USD_PER_MTOK_OUT: String(PRICE.out),
+        PLAY_READER_SPEND_CAP_USD: String(Math.min(Number(flag('--cap-usd', '2')), ledger.capUsd)),
+        P58E_USAGE_LOG: path.resolve(usageLog),
+      }
+    : { PLAY_READER: 'off' };
   Object.assign(env, {
     NODE_ENV: 'production',
     VERCEL_ENV: 'production',
     NODE_OPTIONS: `--import ${pathToFileURL(path.join(ROOT, 'evals/play/p58e/usage-preload.mjs')).href}`,
-    P58E_USAGE_LOG: path.resolve(usageLog),
-    PLAY_READER: 'on',
-    PLAY_READER_PATH: 'ai',
-    PLAY_READER_ENDPOINT: 'openai:https://api.openai.com',
-    PLAY_READER_MODEL: 'gpt-6-astra',
-    PLAY_READER_KEY: key,
-    PLAY_READER_EFFORT: 'low',
-    PLAY_READER_USD_PER_MTOK_IN: String(PRICE.in),
-    PLAY_READER_USD_PER_MTOK_OUT: String(PRICE.out),
-    PLAY_READER_SPEND_CAP_USD: flag('--cap-usd', '2'),
+    ...reader,
     PLAY_READER_CALL_CAP: '200',
     PLAY_READER_CALLS_PER_CALLER: '1000',
     // Režisér je objednaný, ale jeho model nikam nevede: brány čtení (`mayPayRead`) ho potřebují nastaveného,
