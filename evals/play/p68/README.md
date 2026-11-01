@@ -1,0 +1,90 @@
+# P68 – pět nových her z jiných pohledů
+
+P68-I (integrace) je jediný pruh, který mění sdílené soubory. T1 postavil kostru: pět her je v každém sdíleném
+registru jako `staged`, rozhraní jsou zmrazená a hra se uživateli neukáže, dokud ji úloha „zapoj X“ v P68-I nezapne.
+Kategorie P68-V / P68-F / P68-S staví hry jen ve svých souborech (seznam níže).
+
+## Hry a kategorie
+
+| Hra | Kategorie (plán) | Vstup | Povolené pohledy | Adresář předání |
+|---|---|---|---|---|
+| `stunt` – závod s triky a troskami | `vozidla-sport` (P68-V) | `steer` | `chase` | `vozidla-sport/integration.md` |
+| `minigolf` | `vozidla-sport` (P68-V) | `throw-rig` | `shoulder`, `top` | `vozidla-sport/integration.md` |
+| `railfps` – střelnice z očí na kolejích | `prvni-osoba` (P68-F) | `genre` (vlastní dotykový adaptér) | `first` | `prvni-osoba/integration.md` |
+| `buildshift` – směna se stavbou obchodu | `stavba` (P68-S) | `lanes` s buňkou v ose (`cellAxisAt`) | `top` | `stavba/integration.md` |
+| `drawsave` – kresli a zachraň (volitelná) | `stavba` (P68-S) | `genre` (vlastní dotykový adaptér) | `side` | `stavba/integration.md` |
+
+## Soubory předané kategoriím
+
+Každá hra `<id>` (kategorie mění jen tyto, plus své testy a fixtures a `evals/play/p68/<kategorie>/**`):
+
+- `src/play/genre/<id>.ts` – modul žánru (`stagedGenre`); kategorie smí přepnout na `ready` a psát `cues`.
+- `src/play/arcade/pieces/<id>.ts` a `<id>-bot.ts` – generátor, pravidla, ovládání a robot (kostry).
+- `src/components/play/arcade/genres/<id>/<Id>Scene.tsx` – scéna (zatím podlaha); `railfps` a `drawsave` navíc
+  `<Id>Touch.tsx` (dotykový adaptér, props `{ session }`, volá jen `session.press` / `session.hold`).
+- `e2e/play-<id>.spec.ts` – e2e hry (zatím jeden `test.skip`); projekty `chromium`, `pixel7-touch`, `iphone-touch`.
+- `evals/play/p68/<kategorie>/integration.md` – předání podle `integration-template.md`; značka `p68-ready: <id>`
+  (HTML komentář) až když je hra hotová.
+
+## Zmrazená rozhraní (T1)
+
+- `src/play/genre/p68-contract.ts` – `P68_GENRES`, `P68_INPUT`, `P68_VIEWS` (další pohled jen přes `integration.md`
+  a zapojení), `RAILFPS_YAW_STEPS = 16` (osa ↔ `yawStep` −16..16, adaptér posílá jen hodnoty z `RAILFPS_AXES`, slot
+  `RAILFPS_SLOTS.yawStep` v celočíselném stavu hry, kamera ho jen sleduje, mimo hash), `STUNT_DEBRIS_MAX = 24`,
+  `DRAWSAVE_STROKE` (buňky mřížky v ose s `HOLD` po dobu tahu), `P68_MAX_TICKS = 5400`. Nastavení solveru Rapieru
+  se nemění.
+- Tvar vstupu `ArcadeInput { buttons, axis }`, záznam, `packInputs` a serverový replay Dare se nemění.
+- `GENRE_COMPILER_VERSION = 'genre.v7'` (`P68_GENRE_VERSION`). Nové hry a sémantika osy natočení jen od `genre.v7`
+  (`genreAtLeast`); staré žánry pod `genre.v7` hrají stejně. Otisk 24 žánrů na `genre.v6` z `688d989d` drží
+  `src/play/arcade/__tests__/p68-hash.test.ts` nad `hash-baseline.json` (posunutý seed jedné buňky test shodí – ověřeno).
+- Brány: `gates.json` (G1–G7, prahy pro T15), požadované akce na hru: `assertions.json` (nad stopou stavu, ne nad
+  efekty pravidel).
+
+## Brána aktivace
+
+Hra je neviditelná, dokud je ve všech třech množinách: `ROUTE_PENDING` (`src/play/genre/classify.ts`, klasifikátor
+a rychlá hra), `DIRECTOR_PENDING` (`src/play/director/answer-schema.ts`, režisér) a `READER_PENDING`
+(`src/play/read/schema.ts`, čtečka), a její ovládání v `STAGED_CONTROLS` (`src/play/spec.ts`). Odebírá ji jen úloha
+„zapoj X“ v P68-I. `src/play/genre/__tests__/p68-staged.test.ts` podvrhne moduly všech pěti her jako hotové (`ready`
+a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P68 dev), prompt ani schéma režiséra a prompt
+čtečky.
+
+## Věty
+
+- `dev.json` – 40 vět (8 na hru); smí se na nich ladit.
+- Zapečetěná sada – 105 vět (15 na hru, 30 obecných přes ≥ 10 dosavadních žánrů) **mimo repo**:
+  `D:/caches/p68/sealed/holdout.json` (kopie `F:/Backups/Hackaton/2026-11-01/p68-holdout.json`). V repu je jen otisk
+  `P68_HOLDOUT_SHA256` v `seal.ts`: `f24fadb05ce96ae1a14816eef66d751ddd41ea3eeedc07a4f43f4139ffd43c61`. Neladí se na ní; otevře ji jednou T15
+  přes `openSealedOnce`. Test pečeti (`__tests__/seal.test.ts`) hlídá otisk a složení, kde soubor existuje, a vždy
+  dev sadu proti všem známým sadám.
+
+## Rozhodnutí a odchylky (T1)
+
+- **`READER_PENDING` přidán do brány aktivace.** Plán jmenoval jen `ROUTE_PENDING` a `DIRECTOR_PENDING`, ale čtečka
+  čte `ready` režimy z modulů sama (`READY_GENRE_MODES`); bez třetí brány by hra přepnutá kategorií na `ready` vešla
+  do promptu čtečky. Test neviditelnosti to hlídá.
+- Mimo seznam souborů plánu: `src/play/intent/contract.ts` (akce `stunt|putt|railshoot|shopbuild|drawwall` pro
+  `STAGED_PRESETS`), `e2e/p61-portrait.spec.ts` a `e2e/p64-cells.ts` (P68 buňky vynechané, dokud hra nehraje),
+  `src/play/arcade/__tests__/hero-animals.test.ts`, `src/play/genre/__tests__/doubles.ts`.
+- VR `input-map.ts` nemá větev pro vstup `genre`: kostra je ve VR `desk`; vlastní VR vstup přijde se zapojením.
+  `xr/__tests__/input-map.test.ts` a `modes.test.ts` hry z `ROUTE_PENDING` vynechají – výjimka zmizí sama, jakmile
+  zapojení hru z brány odebere, a test pak VR vstup i živou buňku vyžádá.
+
+## `genre.v6` → `genre.v7`: co se přemrazilo a proč (T1)
+
+- **Testy, které pinovaly `genre.v6` jako současnou verzi**, pinují `genre.v7` (důvod: nové hry jsou od T1 `genre.v7`):
+  `pacing-template`, `p51-assembly-runner`, `p51-dead-time`, `p52-fight-balance`, `arrows`, `steal`, `p66-staged`
+  (tam navíc 24 žánrů = žánry před P68 a `STAGED_PRESETS` bez žánru P66 – kostry P68 v něm být mají).
+- **Fixtures P66** (`e2e/fixtures/p66-{hole,sort,survivor}-spec.json`) zůstávají uložené hry `genre.v6` – drží je otisk
+  `p68-hash.test.ts`. Testy `hole`, `sort`, `survivor` je porovnají s překladem orazítkovaným `genre.v6`.
+- **Zlaté výstupy P41** (`p41/golden/genres.json`) přemrazené `freeze.measure.ts`: pohnula se jen verze a otisk specu,
+  0 z 814 otisků světa; `replays.json` beze změny.
+- **Semínko nové hry** se počítá z celého specu včetně verze (`seedFrom` v `_publish.ts`), takže stejná věta pod
+  `genre.v7` dostane jiné semínko než pod `genre.v6`. Uložené hry mají své semínko a hrají stejně. Proto otisk P64
+  (`p64/hash-baseline.json`) přepsán: 4 buňky (`voyage`, `slice`, `crowd`, `merge`) mají nové semínko, robot dál
+  vyhrává a nečinný prohrává; ostatní beze změny.
+- **Obtížnost P41** (`p41/difficulty.json`) přeměřená `difficulty.measure.ts`: otisky specu nové; 4 profily ze 134 mají
+  jiný počet výher (`arena.collect` začátečník 10→11, `arena.fight` začátečník 9→6 a pokročilý 19→20, `defense`
+  začátečník 11→9). Sonda ověřila, že razítko `genre.v7` hraje na těchto buňkách všech 20 semínek obou profilů
+  bit po bitu jako `genre.v6` – staré řádky byly zastaralé už na `688d989d` (P66 přeměřil jen své řádky), ne posun
+  způsobený T1.

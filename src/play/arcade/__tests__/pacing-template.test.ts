@@ -84,9 +84,9 @@ beforeAll(async () => {
 });
 
 describe('pacing under a P45B overlay template', () => {
-  it('new games are genre.v6 and still get the genre.v5 and genre.v4 finales', () => {
+  it('new games are genre.v7 (P68 T1) and still get the genre.v5 and genre.v4 finales', () => {
     // P66 T2 zvedl překlad na `genre.v6` (háčky a nové žánry); finále drží `genreAtLeast` od své verze dál.
-    expect(GENRE_COMPILER_VERSION).toBe('genre.v6');
+    expect(GENRE_COMPILER_VERSION).toBe('genre.v7');
     expect(FINALE5_GENRE_VERSION).toBe('genre.v5');
     expect(FINALE_GENRE_VERSION).toBe('genre.v4');
   });

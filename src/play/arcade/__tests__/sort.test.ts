@@ -76,8 +76,10 @@ const SHELF_ROUND: SortRound = { bins: [0, 1], show: 1, queues: [[1, 1, 1], [0, 
 const taps = (world: ArcadeWorld, queues: readonly number[], gap = 2): InputEvent[] => queues.map((queue, index) => ({ tick: 1 + index * gap, ...tapOf(gameOf(world), 0, queue) }));
 
 describe('sort as a game (P66 T8)', () => {
-  it('the e2e fixture is the compiled game of its idea', () => {
-    expect(specOf()).toEqual(FIXTURE);
+  it('the e2e fixture is the compiled game of its idea, saved as genre.v6', () => {
+    // Fixture je uložená hra `genre.v6` (otisk `p68-hash.test.ts` ji tak drží); P68 T1 zvedl jen verzi nových her.
+    const spec = specOf();
+    expect({ ...spec, genre: { ...spec.genre, compilerVersion: 'genre.v6' } }).toEqual(FIXTURE);
   });
 
   it('passes the publish gate on 10 seeds', () => {

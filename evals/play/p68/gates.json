@@ -1,0 +1,52 @@
+{
+ "about": "P68 T1: gates every new game must pass on the sealed holdout (T15). G1-G5 decide; G6 is secondary and cannot rescue a game that fails G1-G5; G7 is recorded without a threshold. Frozen 2026-11-01 before the categories start.",
+ "games": ["stunt", "minigolf", "railfps", "buildshift", "drawsave"],
+ "gates": {
+  "G1-routing": {
+   "newSentencesPerGame": 15,
+   "minRoutedToOwnGame": 12,
+   "general": { "sentences": 30, "wrongRate": "<= main", "movesBetweenOldGenres": 0 },
+   "path": "quick game (no model)"
+  },
+  "G2-playable": {
+   "tool": "scripts/play/gameplay-gate.mjs",
+   "sentencesPerGame": 15,
+   "minPassing": 12,
+   "pass": ["bot wins", "idle player loses", "weak bot loses", "every required action in assertions.json happens"],
+   "maxTicks": 5400,
+   "denominatorIncludesCompileOrPublishFailures": true
+  },
+  "G3-fps": {
+   "spec": "e2e/play-perf.spec.ts @p68-fps",
+   "projects": ["pixel7-touch", "iphone-touch"],
+   "fpsMedianMin": 40,
+   "frameP95MaxMs": 33.3
+  },
+  "G4-time-to-playable": {
+   "tool": "scripts/measure/first-playable-ab.mjs",
+   "pairs": "fresh, main vs branch, 3 sentences per game x 3 runs",
+   "failedRunsMax": 0,
+   "medianMaxSec": 3.0,
+   "pairedMaxOverMainSec": 0.2,
+   "playable": "first accepted input, not a surface change"
+  },
+  "G5-determinism": {
+   "green": ["src/play/arcade/__tests__/p68-hash.test.ts", "src/play/arcade/__tests__/p66-hash.test.ts", "hash-v6"],
+   "roundtrip": "p68-roundtrip without skip"
+  },
+  "G6-quality": {
+   "secondary": true,
+   "sheets": "--view phone",
+   "judge": "codex, concurrency 1, image only as sheet.png in an empty mkdtemp",
+   "wouldPlayNewMedianMin": "main + 0.10",
+   "wouldPlayGeneralMin": "main - 0.02",
+   "fidelityMin": "main - 0.02"
+  },
+  "G7-ai-version": {
+   "threshold": null,
+   "sample": "astra, 2 sentences per game + 4 general, via the eval spend ledger (T7)",
+   "record": ["stayed in new game", "passed publish gate", "failures", "spend USD"]
+  }
+ },
+ "overall": ["saved games genre.v6 and older replay bit for bit", "interface-language", "play-share", "e2e of every wired game", "vr-enter", "vr-diorama", "vr-native", "vr-hud"]
+}

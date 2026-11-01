@@ -14,7 +14,7 @@
  */
 
 import { addAfterEffect, useFrame, useThree } from '@react-three/fiber';
-import { Fragment, type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, type ReactNode, Suspense, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, Matrix4, Mesh, type Object3D, PerspectiveCamera, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
@@ -49,6 +49,12 @@ import { HoleScene } from './genres/hole/HoleScene';
 import { StealScene } from './genres/steal/StealScene';
 import { SortScene } from './genres/sort/SortScene';
 import { ArrowsScene } from './genres/arrows/ArrowsScene';
+import { StuntScene } from './genres/stunt/StuntScene';
+import { MinigolfScene } from './genres/minigolf/MinigolfScene';
+import { RailfpsScene } from './genres/railfps/RailfpsScene';
+import { BuildshiftScene } from './genres/buildshift/BuildshiftScene';
+import { DrawsaveScene } from './genres/drawsave/DrawsaveScene';
+import { GENRE_TOUCH } from './genres/touch-registry';
 import { HooksLayer } from './hooks/HooksLayer';
 import { PopAnchor } from './hooks/ScorePop';
 import { isTyping, runnerGesture } from './input';
@@ -1246,6 +1252,16 @@ const StageCanvas = memo(function StageCanvas({
             <SortScene {...world} />
           ) : stage.scene === 'arrows' ? (
             <ArrowsScene {...world} />
+          ) : stage.scene === 'stunt' ? (
+            <StuntScene {...world} />
+          ) : stage.scene === 'minigolf' ? (
+            <MinigolfScene {...world} />
+          ) : stage.scene === 'railfps' ? (
+            <RailfpsScene {...world} />
+          ) : stage.scene === 'buildshift' ? (
+            <BuildshiftScene {...world} />
+          ) : stage.scene === 'drawsave' ? (
+            <DrawsaveScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}
@@ -1358,6 +1374,8 @@ export default function ArcadeStage({
   useTapInput(session, surface, enabled && input === 'tap', control === 'rhythm');
   useDuelInput(session, surface, enabled && input === 'duel');
   useLanesInput(session, surface, enabled && input === 'lanes');
+  // Vstup `genre` (P68 T1): hra si nese vlastní dotykový adaptér, který volá jen `session.press` / `session.hold`.
+  const GenreTouch = input === 'genre' ? GENRE_TOUCH[control] : undefined;
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
   // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.
   const ticking = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
@@ -1387,6 +1405,7 @@ export default function ArcadeStage({
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} cue={duelZoneCue} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
+      {enabled && GenreTouch !== undefined && <Suspense fallback={null}><GenreTouch session={session} /></Suspense>}
       {/* Na telefonu na výšku (P64 T7, `play.css`) dole nad ovládáním a bez věty o klávesnici. */}
       {enabled && control === 'ball' && session.world.control.id === 'assembly_control' && <div className="play-pause-hint play-ball-hint" data-testid="ball-dribble-hint">
         Left side: drag to move. Right side: aim and release to shoot.<span className="play-ball-hint-keys"> Keyboard: arrows move, Q/E aim, Space shoots.</span>

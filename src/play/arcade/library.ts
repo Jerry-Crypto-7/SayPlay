@@ -44,6 +44,16 @@ import { SORT_RULES, sortBins, sortControl } from './pieces/sort';
 import { sortBot } from './pieces/sort-bot';
 import { ARROWS_RULES, arrowsControl, arrowsGrid } from './pieces/arrows';
 import { arrowsBot } from './pieces/arrows-bot';
+import { STUNT_RULES, stuntControl, stuntTrack } from './pieces/stunt';
+import { stuntBot } from './pieces/stunt-bot';
+import { MINIGOLF_RULES, minigolfControl, minigolfCourse } from './pieces/minigolf';
+import { minigolfBot } from './pieces/minigolf-bot';
+import { RAILFPS_RULES, railfpsControl, railfpsRail } from './pieces/railfps';
+import { railfpsBot } from './pieces/railfps-bot';
+import { BUILDSHIFT_RULES, buildshiftControl, buildshiftShop } from './pieces/buildshift';
+import { buildshiftBot } from './pieces/buildshift-bot';
+import { DRAWSAVE_RULES, drawsaveControl, drawsaveLevel } from './pieces/drawsave';
+import { drawsaveBot } from './pieces/drawsave-bot';
 import { fightBot } from './pieces/fight-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
@@ -114,6 +124,12 @@ const BASE_BOTS = {
   steal_bot: stealBot,
   sort_bot: sortBot,
   arrows_bot: arrowsBot,
+  // P68 T1: roboti pěti koster P68; tělo napíše kategorie pod týmž jménem.
+  stunt_bot: stuntBot,
+  minigolf_bot: minigolfBot,
+  railfps_bot: railfpsBot,
+  buildshift_bot: buildshiftBot,
+  drawsave_bot: drawsaveBot,
 } as const;
 
 /**
@@ -154,6 +170,12 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   steal_bases: stealBases,
   sort_bins: sortBins,
   arrows_grid: arrowsGrid,
+  // P68 T1: kostry pěti her P68 – svět nepostaví (`modeStub`), dokud je kategorie nenaplní.
+  stunt_track: stuntTrack,
+  minigolf_course: minigolfCourse,
+  railfps_rail: railfpsRail,
+  buildshift_shop: buildshiftShop,
+  drawsave_level: drawsaveLevel,
 };
 
 const BASE_CONTROLS = {
@@ -186,6 +208,12 @@ const BASE_CONTROLS = {
   steal: stealControl,
   sort: sortControl,
   arrows: arrowsControl,
+  // P68 T1: ovládání pěti koster P68 (scény `genres/<žánr>/` podle `STAGES`); hýbat začnou s kategorií.
+  stunt: stuntControl,
+  minigolf: minigolfControl,
+  railfps: railfpsControl,
+  buildshift: buildshiftControl,
+  drawsave: drawsaveControl,
 } as const;
 
 const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
@@ -196,7 +224,7 @@ const PROGRESSION_CONTROLS = { ...FIGHT_CONTROLS, pacing_control: makePacingCont
 const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece },
-  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, arena_wake: arenaWake as RulePiece, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES, ...HOP_RULES, ...CROWD_RULES, ...MERGE_RULES, ...PUSH_RULES, ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES },
+  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, arena_wake: arenaWake as RulePiece, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES, ...HOP_RULES, ...CROWD_RULES, ...MERGE_RULES, ...PUSH_RULES, ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES, ...STUNT_RULES, ...MINIGOLF_RULES, ...RAILFPS_RULES, ...BUILDSHIFT_RULES, ...DRAWSAVE_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

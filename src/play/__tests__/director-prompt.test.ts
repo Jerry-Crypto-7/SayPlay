@@ -25,6 +25,7 @@ import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
 import { CAST_ROLES, type GenreModule } from '../genre/contract';
+import { P68_GENRES } from '../genre/p68-contract';
 import { GENRE_MODULES } from '../genre/index';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
 import { liveCells } from '../compose/allowed';
@@ -143,7 +144,8 @@ describe('director prompt', () => {
 
   // P54C T14: odpověď smí jmenovat živé žánry pruhů oběma tvary. T14b: i žánry fáze 3 – kostra už žádná nezbyla.
   it('accepts the eight new genres as a recipe and as a legacy GenreSpec', () => {
-    expect(DIRECTOR_PENDING.size).toBe(0);
+    // Brána aktivace drží jen kostry P68 (T1); jinou kostru režisér nemá.
+    expect([...DIRECTOR_PENDING].filter((genre) => !(P68_GENRES as readonly string[]).includes(genre))).toEqual([]);
     const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
     const genres = variants.flatMap((variant) => variant.properties.genre?.enum ?? []);
     const content = { hero: 'fox', setting: 'forest', unmet: [] };

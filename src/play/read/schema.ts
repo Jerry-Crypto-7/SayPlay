@@ -35,9 +35,10 @@ const word = z.string().min(1).max(40);
 /**
  * Živé žánry, které čtečka zatím nejmenuje – jako `DIRECTOR_PENDING` u režiséra: bez řádku popisu v promptu čtečky by
  * je model volil naslepo a schéma odpovědi by se pohnulo dřív než prompt. P66 T12 pustil pět nových žánrů do rychlé
- * hry, P66 T13 je čtečce popsal (`MODE_HINTS`) – seznam je prázdný.
+ * hry, P66 T13 je čtečce popsal (`MODE_HINTS`). P68 T1 (brána aktivace): pět her P68 – kategorie smí modul přepnout
+ * na `ready`, čtečka ho uvidí, až ho odsud odebere úloha „zapoj X“ v P68-I (spolu s `ROUTE_PENDING` a `DIRECTOR_PENDING`).
  */
-export const READER_PENDING: ReadonlySet<string> = new Set<string>();
+export const READER_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 
 /** Režimy, které hrají (`availability = 'ready'`), po žánrech – jen ty smí čtečka jmenovat (P56A T3). */
 export const READY_GENRE_MODES: readonly { readonly genre: GenreModule['id']; readonly modes: readonly [string, ...string[]] }[] = (Object.values(GENRE_MODULES) as GenreModule[])

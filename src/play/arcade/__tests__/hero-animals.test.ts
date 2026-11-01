@@ -38,6 +38,12 @@ const CONTROL: Readonly<Record<GenreId, string>> = {
   steal: 'steal',
   sort: 'sort',
   arrows: 'arrows',
+  // P68 T1: kostry pěti her P68 taky.
+  stunt: 'stunt',
+  minigolf: 'minigolf',
+  railfps: 'railfps',
+  buildshift: 'buildshift',
+  drawsave: 'drawsave',
 };
 
 /** Slovo věty → model, který to zvíře zobrazuje; `clips` = hýbe se klipy z GLB. */

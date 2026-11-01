@@ -61,6 +61,12 @@ export const XR_MODES: Readonly<Record<GenreId, XrModeEntry>> = {
   steal: { mode: 'desk', pose: 'table' },
   sort: { mode: 'desk', pose: 'table' },
   arrows: { mode: 'desk', pose: 'table' },
+  // Kostry P68 (T1): na stole, dokud úloha „zapoj X“ nezapíše skutečný režim podle `integration.md` kategorie.
+  stunt: { mode: 'desk', pose: 'table' },
+  minigolf: { mode: 'desk', pose: 'table' },
+  railfps: { mode: 'desk', pose: 'table' },
+  buildshift: { mode: 'desk', pose: 'table' },
+  drawsave: { mode: 'desk', pose: 'table' },
 };
 
 /** Žánr, který tabulka nezná (starý spec bez žánru, nový žánr před svou úlohou VR), hraje na stole. */
@@ -98,6 +104,11 @@ const GENRE_OF_BOT: Readonly<Record<string, GenreId>> = {
   steal_bot: 'steal',
   sort_bot: 'sort',
   arrows_bot: 'arrows',
+  stunt_bot: 'stunt',
+  minigolf_bot: 'minigolf',
+  railfps_bot: 'railfps',
+  buildshift_bot: 'buildshift',
+  drawsave_bot: 'drawsave',
 };
 
 /** Žánr hratelného světa; `null` = svět bez žánru (starší ovládání `glide`, `walker`, `ball`). */

@@ -96,12 +96,13 @@ function play(world: ArcadeWorld, inputs: readonly InputEvent[]): Played {
 const ofKind = <K extends HookEffect['kind']>(played: Played, kind: K) => played.events.filter((event): event is Extract<HookEffect, { kind: K }> & { tick: number } => event.kind === kind);
 
 describe('survivor world (P66 T5)', () => {
-  it('the e2e fixture is exactly what the genre module compiles, and a GameSpec reads it', () => {
+  it('the e2e fixture is exactly what the genre module compiles, saved as genre.v6, and a GameSpec reads it', () => {
+    // Fixture je uložená hra `genre.v6` (otisk `p68-hash.test.ts` ji tak drží); P68 T1 zvedl jen verzi nových her.
     const fixture = JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p66-survivor-spec.json'), 'utf8')) as unknown;
-    expect(fixture).toEqual(JSON.parse(JSON.stringify(SPEC)));
+    expect(fixture).toEqual(JSON.parse(JSON.stringify({ ...SPEC, genre: { ...SPEC.genre, compilerVersion: 'genre.v6' } })));
     const read = readGameSpec(fixture);
     expect(read.ok, read.ok ? '' : read.issues.join('; ')).toBe(true);
-    expect(SPEC.genre).toEqual({ id: 'survivor', mode: 'default', compilerVersion: 'genre.v6' });
+    expect(SPEC.genre).toEqual({ id: 'survivor', mode: 'default', compilerVersion: 'genre.v7' });
     expect(SPEC.control).toBe('survivor');
     // P66 T12: živý pro výběr – narážky v modulu, buňka receptu v `PRESETS` (`p66-staged.test.ts`).
     expect(module.availability('default' as never)).toBe('ready');

@@ -185,7 +185,8 @@ test.describe('portrait framing on the phone', () => {
   test.setTimeout(300_000);
 
   // Žánry P66 přišly po P61: nemají hru z `p58a` ani větu a na výšku je hlídají jejich vlastní e2e (`play-survivor` …).
-  for (const genre of GENRES.filter((id) => !['survivor', 'hole', 'steal', 'sort', 'arrows'].includes(id))) {
+  // Kostry P68 (T1) se nepřeloží – měří je až e2e jejich kategorie.
+  for (const genre of GENRES.filter((id) => !['survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'].includes(id))) {
     test(`${genre}: the hero keeps its share of the screen in portrait`, async ({ browser, request }, testInfo) => {
       const phone = PHONES[testInfo.project.name];
       test.skip(phone === undefined, 'phone projects only');

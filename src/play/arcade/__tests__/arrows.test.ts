@@ -99,12 +99,13 @@ describe('arrows genre is playable (P66 T9)', () => {
     const spec = specOf();
     expect(readGameSpec(spec).ok).toBe(true);
     expect(spec.control).toBe('arrows');
-    expect(spec.genre).toEqual({ id: 'arrows', mode: 'default', compilerVersion: 'genre.v6' });
+    expect(spec.genre).toEqual({ id: 'arrows', mode: 'default', compilerVersion: 'genre.v7' });
     expect(spec.roles.find((role) => role.id === 'piece')).toMatchObject({ kind: 'target', label: 'car', count: totalPieces(ARROWS.rounds.default) });
     expect(spec.tutorial.goalLine.length).toBeLessThanOrEqual(50);
     expect(readGenreSpec({ genre: 'arrows', mode: 'default', hero: 'fox', setting: 'pen', params: { rounds: 6 } }).ok).toBe(false);
-    // Ruční spec e2e je přesně překlad žánru – fixture se od modulu tiše neodchýlí.
-    expect(JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p66-arrows-spec.json'), 'utf8'))).toEqual(spec);
+    // Ruční spec e2e je přesně překlad žánru – fixture se od modulu tiše neodchýlí. Je to uložená hra `genre.v6`
+    // (drží ji otisk `p68-hash.test.ts`); P68 T1 zvedl jen verzi nových her.
+    expect(JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p66-arrows-spec.json'), 'utf8'))).toEqual({ ...spec, genre: { ...spec.genre, compilerVersion: 'genre.v6' } });
   });
 
   it('reads the pieces from the sentence: the thing it sends away comes first, a car without one', () => {

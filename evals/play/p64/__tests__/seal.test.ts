@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { normalizeSentence } from '../../../../scripts/play-fidelity.mjs';
 import { GENRES } from '../../../../src/play/genre/contract';
+import { P68_GENRES } from '../../../../src/play/genre/p68-contract';
 import { classifyGenre } from '../../../../src/play/genre/classify';
 import { knownSets, P64_HOLDOUT_SHA256, P64_R3_HOLDOUT_SHA256, P64_R4_HOLDOUT_SHA256, sha256Lf, textsOf } from '../seal';
 
@@ -22,7 +23,8 @@ const readLf = (path: string): string => readFileSync(path, 'utf8').replace(/\r\
 interface Sentence { readonly id: string; readonly genre: string; readonly text: string }
 /** Žánry v době zapečetění obou sad; žánry P66 přišly až po nich a zapečetěná sada se nemění. */
 const P66_GENRES: readonly string[] = ['survivor', 'hole', 'steal', 'sort', 'arrows'];
-const SEALED_GENRES = GENRES.filter((genre) => !P66_GENRES.includes(genre));
+/** Sada je zapečetěná před P66 a P68 – žánry, které přidaly, v ní být nemůžou. */
+const SEALED_GENRES = GENRES.filter((genre) => !P66_GENRES.includes(genre) && !(P68_GENRES as readonly string[]).includes(genre));
 const holdout = (): Sentence[] => (JSON.parse(readLf(join(DIR, 'holdout.json'))) as { sentences: Sentence[] }).sentences;
 
 describe('P64 sealed portrait holdout', () => {
