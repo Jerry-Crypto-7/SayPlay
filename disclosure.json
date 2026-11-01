@@ -703,6 +703,32 @@
       "scope": "prod"
     },
     {
+      "name": "@jitl/quickjs-ffi-types@0.32.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@jitl/quickjs-ffi-types/-/quickjs-ffi-types-0.32.0.tgz",
+      "authorOrProvider": "Jake Teton-Landis",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "quickjs-emscripten copyright (c) 2019-2024 Jake Teton-Landis",
+      "scope": "prod"
+    },
+    {
+      "name": "@jitl/quickjs-wasmfile-release-sync@0.32.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@jitl/quickjs-wasmfile-release-sync/-/quickjs-wasmfile-release-sync-0.32.0.tgz",
+      "authorOrProvider": "Jake Teton-Landis",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "quickjs-emscripten copyright (c) 2019-2024 Jake Teton-Landis",
+      "scope": "prod"
+    },
+    {
       "name": "@jridgewell/sourcemap-codec@1.5.5",
       "kind": "library",
       "source": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
@@ -2941,6 +2967,19 @@
         "plné znění licence"
       ],
       "attribution": "Copyright (c) 2019 Forrest Sun",
+      "scope": "prod"
+    },
+    {
+      "name": "quickjs-emscripten-core@0.32.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/quickjs-emscripten-core/-/quickjs-emscripten-core-0.32.0.tgz",
+      "authorOrProvider": "Jake Teton-Landis",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "quickjs-emscripten copyright (c) 2019-2024 Jake Teton-Landis",
       "scope": "prod"
     },
     {
