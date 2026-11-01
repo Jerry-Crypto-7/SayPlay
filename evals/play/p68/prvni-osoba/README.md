@@ -44,3 +44,20 @@ Kostra P68-I je v `origin/main` jako `15c81e6a` (PR #61); větev na ni přešla 
   generované úrovni); výstřel bez čekání na doraz (západka, prázdný sektor, jiný sektor); zásah bez kontroly sektoru
   (tytéž + boss); `win` po první vlně (výhra až po poslední vlně, generovaná úroveň, meze generátoru); `Math.random`
   v generátoru (týž seed, grep zdroje).
+
+## Robot, prohrávající hráči a záznam (T3)
+
+- `railfps-bot.ts`: robot míří na nejbližší hrozbu (nejkratší čas do `reach`, při shodě nejmenší otočení); slabý
+  hráč `railfpsWeakInputs(world)` je pevný záznam – FIRE každých 30 tiků do sektorů 0, 1, 0, −1.
+  `railfps-trace.ts`: `traceRailfps(world, inputs, library, horizon?)` – knihovnu bere jako argument jako `replay`
+  jádra, protože nic v `pieces/` neimportuje `library.ts`.
+- Zásahy čte záznam z hlášení pravidla `railfps_shot` (despawn tímto pravidlem), ne z rozdílu živých těl: slot
+  uvolněný zásahem může v témž tiku obsadit nový příchozí a nepřítel na `reach` v tiku výstřelu by jinak vypadal jako
+  zásah.
+- Výsledky (54 kombinací mezí a seedů): robot vyhraje za 10–39 s (výchozí meze 15–17 s) bez ztráty života, slabý
+  i nečinný prohrají za 11–85 s. Dare: záznam robota ~280 B, nejhorší případ (robot + tah každý tik) 62,1 kB < 64 kB.
+- Testy: `railfps-bot.test.ts` 10/10, `railfps-dare.test.ts` 3/3.
+- **`mutationStatus: pass`** – robot o sektor vedle: zabito (výhra robota, ≥3 zásahy mimo střed, počet zásahů,
+  Dare round trip). Aserce „sektor zasaženého těla = natočení“ sama nezčervená – jádro zásah vždy vede do sektoru,
+  kam hráč hledí, takže mířící chyba se ukáže jen ve výsledku. `traceRailfps` počítá zásah bez výstřelu: zabito
+  („výstřel v témž tiku“ na záznamu nečinného a slabého hráče).
