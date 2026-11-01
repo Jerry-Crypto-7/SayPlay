@@ -220,7 +220,7 @@ do předpovědi `minigolfMoverAt`, kterou čeká robot T7 a scéna T8 – test j
 | hra | milník | stupeň zjednodušení | splněno |
 |---|---|---|---|
 | `stunt` | 2. 11. 2026 (T5) | 0 (plný rozsah) | – |
-| `minigolf` | 3. 11. 2026 (T9) | 0 (plný rozsah) | – |
+| `minigolf` | 3. 11. 2026 (T9) | 1 – celočíselné kutálení místo koule Rapieru (spike T6: Rapier zastavil 21/50 ran do 180 tiků, kutálení 50/50) | – |
 
 ## Hlídače
 

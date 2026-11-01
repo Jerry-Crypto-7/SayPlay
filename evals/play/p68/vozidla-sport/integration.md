@@ -25,7 +25,11 @@ Kostra dopsala `play-stunt` a `play-minigolf` do `testMatch` projektů `pixel7-t
 
 ## Přednačtení fyziky
 
-_Vyplní T2 (`stunt`: hromady trosek s `FLAG.physics` od tiku 0) a T6 (`minigolf`: podle rozhodnutí spike)._
+- `stunt`: bedny v hromadách jsou tělesa Rapieru (`FLAG.physics`) od tiku 0, takže `worldHasPhysics` / `preloadPhysics`
+  Rapier přednačte bez změny. Hráč-auto zůstává kinematické.
+- `minigolf`: Rapier se nenačítá vůbec. Spike T6 (50 ran, síly 15/35/60): koule Rapieru s celočíselným útlumem se do
+  180 tiků zastavila jen 21/50 (útlum brzdí posun, ne rotaci; tření ji dál tlačí), celočíselné kutálení v jádře 50/50
+  (nejdéle 119 tiků), obě verze replay 50/50 shodně. Míček se kutálí v jádře, těla dráhy jsou nepevná.
 
 ## Požadavky na sdílené soubory (souhrn)
 
@@ -34,6 +38,15 @@ _Vyplní T2 (`stunt`: hromady trosek s `FLAG.physics` od tiku 0) a T6 (`minigolf
   míčku. Do zapojení je scéna vykreslí sama jako DOM vrstvu; prosba: registr i pro tyto dvě hry (`GENRE_TOUCH[control]`
   bez podmínky `input === 'genre'`, nebo vstup `genre`). Test: `stunt-touch.test.ts` / `minigolf-touch.test.ts`
   (gesto = tentýž `ArcadeInput` jako klávesnice).
+
+- **Stream PRNG `stunt` v `src/sim/rng.ts`.** Prosba: připsat `'stunt'` na konec `SUBSYSTEMS` (za `rounds`). Do té
+  doby si jádro `stunt` tentýž stream odvozuje samo (`jump()` od seedu hry), takže po zápisu do sdíleného seznamu se
+  otisk nezmění. Test: `stunt.test.ts` („the same seed builds the same track and scatter table“) a `stunt-replay.test.ts`.
+- **Popisky počítadel `minigolf`.** Rány leží v počítadle `ammo`, par v `reserve` (`strokesOf`, `parOf`); HUD je má
+  ukázat jako `strokes` a `par` (`hud-labels-request.ts`), ne jako `ammo`. Řeší T8/T9; když to bez sdíleného HUD nejde,
+  prosba se upřesní tady.
+- **VR a `throw-rig`:** vstup `throw-rig` ve VR posílá `HOLD` bez osy míření, což minigolfu vrátí míření rovně. VR
+  minigolf P68V neplánuje; při zapojení do VR (`XR_MODES`) je potřeba osa i ve VR.
 
 _Další položky doplní T3–T10; každá s důvodem a testem._
 
