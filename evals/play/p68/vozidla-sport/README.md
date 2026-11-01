@@ -115,7 +115,72 @@ téhož tiku (Rapier by jí nechal točení staré, `fits` drží tentýž colli
 
 ## `stunt` – robot, důkaz a modul (T3)
 
-_Vyplní T3._
+Soubory: `src/play/arcade/pieces/stunt-bot.ts` (`stunt_bot`, `STUNT_BOT`, `STUNT_WEAK`), `stunt-trace.ts`
+(`stuntEvidence`), modul `src/play/genre/stunt.ts`, výsledky `stunt-evidence.json`. Testy
+`src/play/arcade/__tests__/stunt-bot.test.ts`, `src/play/genre/__tests__/stunt-module.test.ts`. Datum 1. 11. 2026 je
+před milníkem stuntu (2. 11.) → stupeň zjednodušení **0**.
+
+**Robot** jede jako robot řízení (`steerBot.decide` importem): dostane stav s předpovědí „teď“ a osu trati, ve které
+je u každé rampy a hromady osou cíl. Předpověď počítá jako ovládání `stunt` (rampa, vzduch se ztlumeným řízením,
+omráčení). Cíl platí od `lead` (9 m) za začátkem rovinky před úsekem s trikem do konce úseku – rovinka má osu i šířku
+úseku (tak ho generátor vkládá); prvních 9 m drží skutečnou osu, jinak by ho pohled 7 m před sebe v úzkém schodu
+zatáčky (šířka 3,6 m) poslal do rohu mantinelu (to byla první verze: 5/30 proher). U hromady míří na bod rozsahu
+krabic nejblíž ose (stačí trefit jednu). Navíc **brzdí před ostrou zatáčkou**: schod osy ≥ 1 m do 24 tiků jízdy
+a rychlost nad 240 → brzda (robot řízení sám brzdil jen na části tratí, 0 tiků na 12/30).
+
+**Slabý robot** (`params.weak`): v předpovědi nezapočítá vlastních posledních 8 vstupů (zpoždění reakce navíc; víc
+nejde – robot vidí jen stav 8 tiků starý a minulost si nepamatuje) a k ose přičte chybu ±350 ‰, která mění stranu po
+50 tikách. Prohrává naráženími v úzkých schodech (3 životy). Výchozí trať: prohra 29/30. Mimo test, na kratších
+tratích s náhodnými počty (délka 200–360, rampy/hromady 2–4): jen 19/30 – na širokých tratích bez úzkých schodů
+slabý robot dojede. Zvětšení chyby osy ani zesílení řízení (1,5–3×) to nezměnilo; náraz do 11 m široké silnice
+by chtěl chybu, která už není „slabý hráč“. Zapsáno pro P68-I (aserce `weak-loses` na zapečetěné sadě).
+
+**Důkaz** `stuntEvidence(world, inputs)` přehraje záznam od tiku 0 a čte jen polohy těles, vstupy a hlavičku –
+ne efekt `win`, čítače hry (`STUNT_SLOTS`) ani parametry pravidel: skok = ≥ 0,5 m nad povrchem (zem, nebo plocha
+klínu rampy z tělesa rampy) ≥ 12 tiků za sebou; náraz = zmizelá krabice hromady (fyzikální tělo živé od tiku 0);
+posunutá troska = tělo ze slotu spawnu > 1 m od místa vzniku; cíl = příď za přední hranou cíle v jeho šířce; brzda
+= `DOWN` na zemi a rychlost opravdu klesla. Vrací i `hash` konce – rovná se hashi běhu robota.
+
+**Čísla** (`stunt-evidence.json`, 10 semínek × 3 obtížnosti, výchozí trať): robot 30/30 výher za 30,4–35,0 s,
+0 nárazů do mantinelu, ≥ 3 skoky (nejdelší 38–39 tiků), 3 hromady, 15 krabic pryč, 15 posunutých trosek,
+≤ 15 fyzikálních těl, brzda ≥ 158 tiků; slabý 29/30 proher (9/10, 10/10, 10/10); nečinný 30/30 proher do 51 s.
+Zmrazené aserce P68-I (`assertions.json`): `bot-wins`, `idle-loses`, `crosses-finish`, `one-jump`, `debris-hit`
+splněné 30/30; `weak-loses` 29/30 (prah plánu 8/10 na obtížnost splněný). Publikační brána (`compileArcade`
++ `verifyArcade`) na semínkách 1–10: 10/10 publikovatelných. Na kratších tratích s náhodnými počty robot 30/30 bez
+nárazu (průzkum, mimo test).
+
+**Pin** (`stunt-bot.test.ts`): laboratorní trať s rampou a hromadou stranou osy – řidič po ose vyhraje, ale důkaz
+ukáže 0 skoků a 0 hromad; robot na téže trati skočí i trefí. Svět bez pravidla `finish`: běh prohraje a důkaz přesto
+hlásí průjezd cílem (cíl z polohy, ne z výhry).
+
+**Modul** `stunt.ts`: `compileStunt` (spec → `control: 'stunt'`, `controlParams: { generator: 'stunt_track',
+tuning: { vehicle, difficulty?, lengthM?, ramps?, piles? } }`, role `pile` (`target`, věc z věty) a `finish`
+(`exit`), 3 životy, `theme.look` z `lookFor`), `paramBounds` (rampy 2–4, hromady 2–4, `lengthM` 200–360,
+`difficulty` 1–3 = easy/normal/hard), `draftFill` (vozidlo = slovo vozidla s ≤ 2 slovy před ním → `modelOf`; věc
+hromad z „a tower of …“ / „smashes through …“; místo za poslední předložkou místa), `cues` jako seznam (bez „race“,
+„drive“, „drift“).
+
+**Nejasné body – zvolený konzervativní výklad:**
+- *Viditelnost a `p68-staged.test.ts`.* Blok „a skeleton does not compile“ chce, aby `compile` modulu v registru
+  házel. Plán dovoluje blok ve větvi smazat, brief úlohy ale sdílený test měnit zakazuje (a `owned-paths` by cestu
+  odmítl) → kostra zůstává: `stuntGenre` v registru = narážky, meze a návrh hotové hry, ale `staged` a `compile` hází;
+  hotový modul je `stuntLiveGenre` (`compile: compileStunt`, `ready`). Zapojení = `stuntGenre = stuntLiveGenre`.
+- *Věc hromad ve specu.* `tuning` nese jen čísla, booleany a krátké řetězce, generátor chce pole `things` → hromady
+  zůstávají model `crate`; věc z věty nese popisek role `pile`, ze kterého ji scéna (T4) může kreslit.
+  Čistší cesta: skalární klíč `thing` v `stuntTrackParams` (`stunt-track.ts`, soubor pruhu, mimo soubory T3).
+- *Kompilace specu přidá hře pravidlo `hooks` (1 kolo, `genre.v7`) a druhé `score_bonus` (`scoring: {}`
+  z `legacySpec`)* – sdílená cesta všech žánrů; robot, brána ani důkaz to nemění, ponecháno.
+- *Přednačtení Rapieru* – oprava zápisu T2: `preloadPhysics` rozhoduje podle specu (`specNeedsPhysics`: `ball`,
+  `merge`, `push`, věci s fyzikou), ne podle světa; `stunt` tam není. Publikace (`_publish.ts`) Rapier načítá už při
+  importu modulu, takže to obvykle projde, ale první požadavek po startu serveru může dostat `PHYSICS_NOT_LOADED`
+  (422 `WORLD_REJECTED`). Prosba do `integration.md`.
+
+**Pro T5 (e2e):** tělo `POST /api/play/games` = `{ "spec": <fixture.spec>, "seed": 1 }` ze `stunt-evidence.json`
+(test drží, že je to přesně překlad modulu a projde branou; projde na semínkách 1–10). Vstup `steer`: osa / šipky
+řídí, `DOWN` brzdí, plyn je automatický. `botWants()` sondy `__playShell` vrací rozhodnutí `stunt_bot` (reakce
+8 tiků, ruka robota světa). Čítače hry na počítadle (tělo 1):
+`air` (tiky ve vzduchu), `smash` (rozbité krabice), `jumps`, `impacts` (`stuntCounter`). Pro jistotu proti
+`PHYSICS_NOT_LOADED` jeden opakovaný POST, nebo zahřátí serveru požadavkem dřív.
 
 ## `stunt` – scéna, kamera a palec (T4)
 

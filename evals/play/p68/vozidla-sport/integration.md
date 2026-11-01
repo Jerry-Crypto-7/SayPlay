@@ -54,32 +54,105 @@ _Další položky doplní T3–T10; každá s důvodem a testem._
 
 ### Popis pro režiséra a čtečku
 
-_Vyplní T3._
+Krátký kaskadérský závod (~30–35 s): hráč řídí vozidlo z věty po trati se zatáčkami, najíždí na rampy a skáče,
+prorazí hromady věcí z věty, před ostrou zatáčkou brzdí; náraz do mantinelu stojí život (3), vyhrává průjezd cílem
+před limitem trati, prohrává tři nárazy nebo limit.
+
+Řádek pitche pro režiséra (anglicky, `GENRE_PITCH.stunt`): *short stunt race – steer a vehicle over ramps for big
+jumps, smash through piles of things, brake for sharp bends, reach the finish before time runs out; hitting the
+barrier costs a life*.
+
+Co z věty kam (`compileStunt` v `src/play/genre/stunt.ts`):
+- **hrdina** = vozidlo, model hráče `modelOf(hero)` → `tuning.vehicle` (jinak `car`); třídy hrdiny vehicle, animal,
+  humanoid, robot. Čtečka: hrdina je to, co jede („a stunt rider on a motorbike“ → motorbike).
+- **první věc obsazení, která není cíl** = věc v hromadách → role `pile` (`target`); jinak `crate`.
+- **věc s `reach`** = popisek cíle (role `finish`, `exit`); jinak „finish line“.
+- **místo** → `theme.look` (`lookFor`).
+- **parametry** (`params`, celá čísla): `ramps` 2–4 (výchozí 3), `piles` 2–4 (3), `lengthM` 200–360 (340; okruh
+  řízení před vložením triků, výsledná trať ~300–580 m), `difficulty` 1–3 = easy / normal / hard (šířka a zatáčky).
+  Počty rolí (`COUNT_PARAMS.stunt`) žádné.
 
 ### Věty pro klasifikátor
 
-_Vyplní T3 (20 vět, věty, které sem nepatří)._
+Mají skončit ve `stunt` (1–10 = dev věty pruhu `dev.json`, 11–20 nové):
+
+1. a monster truck jumps the ramp into a tower of crates in a desert
+2. a police car smashes through a wall of barrels on a frozen lake
+3. a pizza delivery scooter jumps the canal and crashes into a stack of boxes in venice
+4. a red sports car drifts down the canyon road and smashes a pile of cones
+5. a school bus flies off a ramp into a heap of watermelons at the county fair
+6. a dune buggy jumps the sand hills and crashes into a wall of tires on the beach
+7. a tractor jumps the hay bales and plows through a fence on the farm
+8. an ice cream truck crashes through a pyramid of crates on a rooftop in new york
+9. a garbage truck smashes a tower of trash cans and jumps the bridge in the city
+10. a stunt rider on a motorbike jumps three ramps through a junkyard full of old cars
+11. a fire truck launches off a ramp over the river and smashes into a pile of crates at the docks
+12. a go-kart jumps three ramps on a moon base and crashes into a tower of space barrels
+13. a skateboarding dog ramps over the fountain and knocks down a stack of paint cans in the park
+14. a delivery van does a stunt jump over the train tracks and plows through a wall of pumpkins
+15. an ambulance jumps the broken bridge and smashes through a stack of hay bales in the village
+16. a quad bike flies off the sand dune ramp and crashes into a pyramid of coconuts on the island
+17. a taxi does daredevil jumps between skyscraper rooftops and smashes through a wall of boxes
+18. a toy car races over ramps on the kitchen table and knocks over a tower of cups
+19. a snowmobile jumps the ice ramp and smashes into a heap of snowmen in the mountains
+20. a monster truck ramps over a row of old buses and crashes into a pile of tires in the stadium
+
+**Nesmí** skončit ve `stunt` (podobná slova, jiná hra):
+- obyčejný závod bez skoku a bourání → `voyage`: „race a sports car around the city“, „drive a rusty van through
+  a rainy harbor“ (`test-200`), „a speedboat races between islands“;
+- „a jellyfish drifts upward avoiding fishing nets“ (`test-200`) – proto „drift“ není narážka;
+- „draw a ramp so the rolling apple does not fall into the river“ (dev P68 `drawsave`) – „ramp“ dá stuntu +1,
+  `drawsave` musí vyhrát svým slovesem kreslení;
+- „a frog jumps over logs to reach the pond“ → `platformer` („jump over“ proto není narážka).
+- Hraniční: „a monster truck crushes cars in a mud arena“ (`test-200`) má narážku „monster truck“ – bourání do věcí
+  sem patří; rozhodne P68-I při zapojení podle `route-before.json`.
 
 ### Narážky
 
-_Vyplní T3._
+`STUNT_CUES` v `src/play/genre/stunt.ts`: `stunt`, `ramp`, `jump the`, `jumps the`, `crash into`, `crashes into`,
+`crash through`, `crashes through`, `smash through`, `smashes through`, `plows through`, `monster truck`,
+`daredevil`, `demolition`, `race over`, `races over`. `cuePattern` ohýbá jen poslední slovo, proto obě osoby slovesa.
+Nad starými sadami (`p30/test-200`, `p30/dev`, `p66/dev`) zasáhnou jen „monster truck“ v jedné větě `test-200`
+(viz hraniční výše); v dev P68 cizí hry jen „ramp“ v jedné větě `drawsave`. Dokud je `stunt` v `ROUTE_PENDING`,
+narážky výběr nemění (`routing-guard.test.ts` zelený, `stunt-module.test.ts` ověřuje, že klasifikátor stunt neřadí
+ani na jeho vlastních dev větách).
 
 ### Parametry a meze
 
-_Vyplní T3 (`paramBounds`)._
+`STUNT_PARAM_BOUNDS`: `ramps` 2–4, `piles` 2–4, `lengthM` 200–360, `difficulty` 1–3. Mimo meze `readGenreSpec`
+odmítne (test). Generátor `stunt_track` bere navíc `boxes` 3–6 (modul ho nevystavuje, výchozí 5).
 
 ### Assety
+
+Nic nového v `public/**`. Vozidla dev vět mají model katalogu (`modelOf`: monster truck, police car, scooter, race
+car, school bus, ride, tractor, garbage truck, motorbike), rampa `gen3d-ramp`, krabice `crate`.
 
 | Soubor | Licence | Zdroj | Poznámka |
 |---|---|---|---|
 
 ### Požadované změny sdíleného kontraktu
 
-_Vyplní T3–T5._
+1. **Zapojení („zapoj stunt“).** V registru je `stuntGenre` pořád kostra (`staged`, `compile` hází), aby držel blok
+   „a skeleton does not compile“ v `p68-staged.test.ts`. Hotový modul je `stuntLiveGenre` ve `stunt.ts`. Kroky:
+   `stuntGenre = stuntLiveGenre` (soubor pruhu, jedna řádka – nebo import v `genre/index.ts`), odebrat `stunt`
+   z `ROUTE_PENDING`, `DIRECTOR_PENDING`, `READER_PENDING` a `STAGED_CONTROLS`, buňku `stunt.default` ze
+   `STAGED_PRESETS` do `PRESETS`, smazat stunt z bloku „skeleton does not compile“. Test: `stunt-module.test.ts`
+   (první blok se po zapojení obrátí na `ready` + překlad).
+2. **Přednačtení Rapieru podle specu.** `specNeedsPhysics` (`src/play/arcade/compile.ts`) zná `ball`, `merge`,
+   `push` a věci s fyzikou, ne `stunt` – `preloadPhysics` pro stunt Rapier nenačte a `compileArcade` vrátí
+   `PHYSICS_NOT_LOADED`, pokud ho nenačetl nikdo dřív (`_publish.ts` ho načítá při importu, takže hlavně první
+   požadavek po startu). Prosba: `spec.control === 'stunt'` do `specNeedsPhysics`. Test: stunt spec →
+   `specNeedsPhysics` true; `publishReadSpec` na čerstvém procesu projde.
+3. **Věc hromad přes `tuning`** (volitelné). `tuning` nese jen čísla, booleany a řetězce do 40 znaků, generátor chce
+   pole `things` → hromady jsou ve světě `crate` a věc z věty nese role `pile`. Buď pruh přidá skalární `thing`
+   do `stuntTrackParams`, nebo P68-I povolí v `tuning` pole řetězců.
+4. Stream `stunt` v `SUBSYSTEMS` a popisky `smash` / `air` – viz souhrn nahoře (T2, T1).
 
 ### Fixture spec
 
-_Vyplní T5 (`e2e/fixtures/p68-stunt-spec.json`)._
+Vzorek (T3): `stunt-evidence.json` → `fixture` – `POST /api/play/games` s tělem `{ "spec": <fixture.spec>,
+"seed": 1 }` (monster truck, bedny, poušť; projde branou na semínkách 1–10). Soubor
+`e2e/fixtures/p68-stunt-spec.json` založí T5.
 
 ## `minigolf`
 
