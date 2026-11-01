@@ -91,7 +91,7 @@ const controlParams = z
 export type RailfpsControlParams = z.infer<typeof controlParams>;
 
 /** Hodiny kola: nové kolo (háčky ho po přestávce zvedly) je vynulují, každý tik mimo přestávku přičte jeden. */
-function tickClock(state: ArcadeState, keeper: number, hooks: number): void {
+export function tickClock(state: ArcadeState, keeper: number, hooks: number): void {
   const base = bodyBase(keeper);
   const round = roundOf(state, hooks);
   if (state[base + RIG.round] !== round) {

@@ -41,6 +41,8 @@ export interface RailfpsTrace {
   readonly shots: readonly RailfpsTraceShot[];
   readonly hits: readonly RailfpsTraceHit[];
   readonly losses: readonly RailfpsTraceLoss[];
+  /** Tiky splněných kol: začala přestávka háčků, nebo běh skončil výhrou (poslední kolo). */
+  readonly clears: readonly number[];
   readonly outcome: ArcadeOutcome;
   /** Odehraných tiků; poslední odehraný tik je `tick − 1`. */
   readonly tick: number;
@@ -62,6 +64,7 @@ export function traceRailfps(world: ArcadeWorld, inputs: readonly InputEvent[], 
   const shots: RailfpsTraceShot[] = [];
   const hits: RailfpsTraceHit[] = [];
   const losses: RailfpsTraceLoss[] = [];
+  const clears: number[] = [];
   let next = 0;
   for (let tick = 0; tick < horizon && outcomeOf(state) === 'running'; tick += 1) {
     while (next < inputs.length && (inputs[next] as InputEvent).tick < tick) next += 1;
@@ -77,6 +80,7 @@ export function traceRailfps(world: ArcadeWorld, inputs: readonly InputEvent[], 
     for (const body of struck) hits.push({ tick, body, sector: foeSector(before, body) });
     const lost = health(before) - health(state);
     if (lost > 0) losses.push({ tick, lives: lost });
+    if ((inBreak(state, hooks) && !inBreak(before, hooks)) || outcomeOf(state) === 'won') clears.push(tick);
   }
-  return { sectors, shots, hits, losses, outcome: outcomeOf(state), tick: state[HEADER.tick] as number, hash: hashArcade(state) };
+  return { sectors, shots, hits, losses, clears, outcome: outcomeOf(state), tick: state[HEADER.tick] as number, hash: hashArcade(state) };
 }

@@ -238,3 +238,28 @@ HUD (T10).
   nepromítá.
 - `iphone-touch-enemy.png` ukazuje prázdné plátno; start a snímek na šířku scénu mají. Inference: WebKit fotí plátno,
   které se při ručních hodinách nepřekreslilo; hra sama běží (výhra, ťuky do nakreslených sektorů).
+
+## Volitelně: najdi anomálii (T11)
+
+- **Pravidlo přeskočení:** 1. 11. 2026 ≤ 4. 11. a T10 hotová se zeleným e2e → staví se. Jen vlastní soubory, žádná
+  registrace; potřeba registrace je řádek „T11“ v `integration.md`.
+- **Jádro** `pieces/railfps-anomaly.ts`: tatáž osa a míření jako střelnice (`aimTick`, držák `RIG`, `tickClock` z
+  `railfps.ts`). Místnost 9 sektorů × 2 předměty (tvar = rekvizita místa z věty, řádek výšky, barva, velikost,
+  vzdálenost). Každé kolo (výchozí 3, meze 2–5) se ve 2.–4. s hodin kola v jiném sektoru změní jeden předmět: barva,
+  velikost, chybí, nebo přibyl. Ťuk na sektor změny po změně = kolo (100 bodů, přestávka háčků, po posledním výhra);
+  ťuk jinam **nebo dřív, než se cokoli změnilo** = ztráta života; změna nenalezená do 8 s = prohra. Výchozí postup
+  (plán ho nevymezil): časový limit kola končí hru, ne jen kolo – nečinný hráč by jinak kola „přežil“.
+- **Robot** `railfps_spot_bot` zná sektor změny a ťukne, až změnu ve svém zpožděném pohledu vidí. Chyba nalezená
+  testem: hned po přestávce robot vidí nové kolo, ale hodiny ještě s časem minulého kola (vynuluje je až první tik
+  kola) a ťukl předčasně (seed 1, 3 kola: ztráta života) – robot teď hodiny bere jen, když patří tomuto kolu.
+- **Záznam:** `traceRailfps` hlásí nově i `clears` (tik začátku přestávky háčků nebo výhry); test drží, že každé
+  splněné kolo má v témž tiku ránu do sektoru změny.
+- **Scéna** `genres/railfps/AnomalyScene.tsx` (nevolaná): póza kamery z `railfps-camera.ts`, předměty na podstavcích
+  v barvách kitu (slunečná, nebeská, mátová, žvýkačková – rajčatová zůstává akci), změna se ukáže od tiku změny. U
+  rekvizity z katalogu modelů změnu barvy nese jen podstavec. Build projde; snímek až po registraci.
+- **Testy** `pieces/__tests__/railfps-anomaly.test.ts` 7/7: robot vyhraje na 5 semínkách × 2, 3 a 5 kolech bez ztráty
+  života a s jednou ranou na kolo; nečinný prohraje v tiku změna + 8 s + 1; náhodně ťukající (od první změny) prohraje;
+  ťuk na správný sektor před změnou stojí život; dvě přehrání týž hash; změna vždy v sektoru −4..+4, každé kolo jiný
+  sektor, na předmětu, který místnost má (200 semínek); zdroj bez `Math.random`/`Date.now`/`performance.now`.
+- **Záměrná chyba** (pin, `mutationStatus: none`, ověřeno navíc): pravidlo uzná ránu do libovolného sektoru → test
+  náhodného hráče zčervenal („round 0: expected 0 to be 2“), jádro vrácené ze zálohy.
