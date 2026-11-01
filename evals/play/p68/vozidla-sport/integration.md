@@ -158,19 +158,92 @@ Vzorek (T3): `stunt-evidence.json` → `fixture` – `POST /api/play/games` s t�
 
 ### Popis pro režiséra a čtečku
 
-_Vyplní T7._
+Jedna jamka minigolfu: hráč míří, drží pro sílu a pustí – míček se kutálí po dráze s mantinely, odráží se od překážek
+a zastaví se. Vyhraje, když míček spadne do jamky do limitu ran (par + 3); prohraje, když rány dojdou nebo uběhne 90 s.
+Pohled přes rameno za míčkem.
+
+Co z věty jde kam (modul `src/play/genre/minigolf.ts`, `draftFill` + `compileMinigolf`):
+- **hrdina** je vždy míček (`golf ball`, model `gen3d-golf-ball`) – postava z věty („a penguin plays mini golf“) jen do
+  popisku, nehraje;
+- **místo** (`setting`) za `in / inside / on / at / under / across` bez golfových slov na konci („in a museum mini golf
+  course“ → `museum`), jinak místo ze slovníku;
+- **překážky** = věci za `with / past / around / between / through / over / behind / beside / under` (víc spojí čárka
+  nebo „and“), `does: 'scenery'`. Odrazníky dostanou model první věci, kterou katalog zná (`sceneModelOf`): „cannon
+  barrels“ → `cc0-barrel`, „craters and a rocket“ → `rocket`;
+- **pohyblivá překážka** = věc, kterou věta hýbe („spinning windmill“, „sliding snake“, „moving coffin“, `moving /
+  sliding / spinning / swinging / rolling / rotating / turning / sweeping …`) → `patrol: true` v obsazení, `params.moving 1`
+  a její model;
+- **tvar a par**: „L“, „zigzag“ ani „par 3“ modul ze slov nečte – nese je režisér v `params` (`bends`, `par`); bez nich
+  tvar a počet odrazníků losuje stream jamky.
+
+Pro čtečku: jedna věc obsazení s `patrol` = pohyblivá překážka; ostatní věci = odrazníky; jamka, vlajka, míček, hůl,
+„course“ a „green“ nejsou věci dráhy (modul je zahodí).
 
 ### Věty pro klasifikátor
 
-_Vyplní T7 (20 vět, věty, které sem nepatří)._
+Mají skončit v `minigolf` (1–10 = `dev.json` pruhu, 11–20 nové):
+
+1. mini golf through a volcano with lava bumpers
+2. putt the golf ball past a spinning windmill on a candy island
+3. a mini golf hole inside a pirate ship with cannon barrels as bumpers
+4. putt a ball around the dinosaur bones in a museum mini golf course
+5. minigolf on the moon with craters and a rocket blocking the hole
+6. putt the ball through a castle gate and over the drawbridge
+7. a crazy golf course in the jungle with logs and a sliding snake
+8. sink a hole in one on a mini golf green under the sea between coral rocks
+9. mini golf in a haunted house with pumpkins and a moving coffin
+10. putt a golf ball across a snowy hill past the penguins to the flag
+11. putt a glowing ball through a neon arcade past spinning fans
+12. a par 3 mini golf hole in a candy factory with gumdrop bumpers
+13. minigolf inside a space station with floating crates and a swinging robot arm
+14. putt around the hay bales on a farm mini golf course
+15. hole in one challenge in a toy store between wooden blocks and a rolling train
+16. mini golf through a dragon cave with treasure chests in the way
+17. putt the ball between snowmen at a winter mini golf park
+18. a zigzag mini golf hole in a jungle temple with stone statues
+19. golf ball through a haunted graveyard past tombstones and a swinging gate
+20. a mini golf course on a rooftop with flower pots and a sliding air vent
+
+NESMÍ skončit v `minigolf` (podobná slova, jiná hra):
+
+| věta | patří | proč |
+|---|---|---|
+| kick the ball past the goalkeeper into the goal | míč (`ball`) | kop do branky, ne rána do jamky |
+| throw the basketball into the hoop before time runs out | `throw` | hod do koše |
+| shoot hoops at the fair and sink three in a row | `throw` | „sink“ bez golfu je koš |
+| bonk the moles popping out of the golf course | `whack` (holdout P66 `p66-27`) | „golf course“ je tu jen místo – narážka `golf course` mu přidá bod, `whack` musí vyhrát slovesem |
+| a golfer drives a cart across the golf course collecting lost balls | sbírání (`arena` collect) | jízda a sběr; totéž riziko narážky `golf course` |
+| a monster truck jumps the ramp into a tower of crates | `stunt` | |
+| bowl a strike down the lane | (P69C bowling) | koule do kuželek, ne jamka |
 
 ### Narážky
 
-_Vyplní T7._
+`cues` modulu (zatím jen seznam, klasifikátor je díky `ROUTE_PENDING` nečte; `routing-guard` pruhu zelený):
+`mini golf`, `minigolf`, `putt`, `golf course`, `hole in one`, `golf ball through`.
+
+Proč nekradou: v 200 větách `p30/test-200.json` ani v dev sadách P30 a P66 se žádná z nich nevyskytuje (sken textu
+sad pod `evals/play`; v `p68/dev.json` jsou jen věty minigolfu d09–d15). Výskyty jinde, které P68-I při zapojení přepočítá:
+- `p66/holdout.json` `p66-27` „bonk the moles popping out of the golf course“ (`whack`) – `golf course` dá minigolfu
+  bod, sloveso `bonk` + `moles` musí dál vyhrát;
+- `p62/holdout-b.json` `b20` „A golfer chips balls past sand traps and ponds on a seaside golf course“ (dnes `throw`,
+  `p66/route-main.json`) – po zapojení nejspíš `minigolf`, což sedí, ale změní snímek směrování;
+- `p54c/holdout.json` `h80` „mini golf in a haunted castle, sink the ball in as few shots as possible“ je tam
+  `distractor` s `genre: null` (hra tehdy nebyla) – po zapojení patří `minigolf`, očekávání sady je potřeba přepsat;
+- `demand/corpus.json`, `p36/depth.json`: „mini golf with windmills and loops“ – po zapojení `minigolf`.
 
 ### Parametry a meze
 
-_Vyplní T7 (`paramBounds`)._
+`paramBounds` (celá čísla v `GenreSpec.params`; `compileMinigolf` je převede na `tuning` generátoru `minigolf_course`):
+
+| parametr | meze | do `tuning` | poznámka |
+|---|---|---|---|
+| `bends` | 0–2 | `shape`: 0 `straight`, 1 `L`, 2 `S` | bez něj tvar losuje stream |
+| `obstacles` | 1–3 | `obstacles` | počet odrazníků; bez něj losuje stream |
+| `moving` | 0–1 | `moving: true` | bez parametru 1, když věta něčím hýbe (`patrol`) |
+| `par` | 2–4 | `par` | bez `bends` určí tvar (2 rovná, 3 L, 4 S); nikdy pod počet úseků trasy (`bends + 1`) |
+
+Modely odrazníků a pohyblivé překážky jdou do `tuning.bumper` / `tuning.mover` (id katalogu z `sceneModelOf`).
+Výchozí obsazení a místo: `tire-barrier` / `crate`, místo `mini golf course` (`draft.ts`).
 
 ### Assety
 
@@ -180,8 +253,24 @@ _Vyplní T7 (`paramBounds`)._
 
 ### Požadované změny sdíleného kontraktu
 
-_Vyplní T7–T9._
+Při „zapoj minigolf“ (vše mimo soubory pruhu):
+- **Modul na `ready`.** `src/play/genre/minigolf.ts` je `staged` a jeho `compile` do té doby hází jako kostra (drží blok
+  „a skeleton does not compile“ v `p68-staged.test.ts`). Zapojení přepne `availability: () => 'ready'` – `compile` pak
+  volá `compileMinigolf` bez další změny – a odstraní blok kostry (odstraňuje ho i PR P68S). Test:
+  `minigolf-module.test.ts` („stays staged: compile throws like the scaffold“, překlad a brána přes `compileMinigolf`).
+- **Brány aktivace:** `minigolf` pryč z `ROUTE_PENDING` (`classify.ts`), `DIRECTOR_PENDING` (`director/answer-schema.ts`)
+  a `STAGED_CONTROLS` (`spec.ts`, kvůli `READ_CONTROLS`). Pak přepočítat snímek směrování a sady z oddílu Narážky.
+- **Popis pro čtečku** `capabilities.ts` (`minigolf`): dnes `roles: []`, `labels: []`. Prosba: `roles: ['bumper', 'mover']`,
+  `labels: ['player', 'bumper', 'mover']` a do `cues` „things from the sentence are bumpers, a moving one (spinning,
+  sliding) sweeps across the lane“ – role `bumper` a `mover` (`kind: 'prop'`) píše `compileMinigolf`.
+- **Počty (volitelné):** `COUNT_PARAMS.minigolf` je `{}`; „with three bumpers“ by šlo vést do `obstacles`
+  (`{ default: { enemy: 'obstacles' } }`), pokud P68-I chce počty z věty. Bez toho počet losuje stream.
+- **Osa s `HOLD` na plátně:** míření se drží jen z tiků s `HOLD` / `TAP` (README T6); vstup `throw-rig` na plátně ji musí
+  nést (`session.hold(axis)`), jinak míček letí rovně. Ověří T9.
+- Přednačtení fyziky, nový efekt ani nový popisek mimo `hud-labels-request.ts` (`strokes`, `par`) potřeba není.
 
 ### Fixture spec
 
-_Vyplní T9 (`e2e/fixtures/p68-minigolf-spec.json`)._
+Vzor pro T9 (`e2e/fixtures/p68-minigolf-spec.json`): `SAMPLE` v `src/play/genre/__tests__/minigolf-module.test.ts` –
+`compileMinigolf` věty „mini golf in a haunted house with pumpkins and a moving coffin“ s `bends: 1, obstacles: 3`
+(dráha L, 3 odrazníky `cc0-pumpkin`, pohyblivá `gen3d-coffin`); publikační brána projde na seedech 1–10.

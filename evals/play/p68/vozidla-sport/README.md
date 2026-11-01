@@ -358,7 +358,73 @@ do předpovědi `minigolfMoverAt`, kterou čeká robot T7 a scéna T8 – test j
 
 ## `minigolf` – robot, důkaz a modul (T7)
 
-_Vyplní T7._
+Datum 1. 11. 2026 (`date +%F`), před milníkem 3. 11. – stupeň zjednodušení zůstává **1** (celočíselné kutálení z T6).
+Soubory: `pieces/minigolf-bot.ts` (`minigolf_bot`), `pieces/minigolf-trace.ts` (`minigolfEvidence`), modul
+`src/play/genre/minigolf.ts`, testy `arcade/__tests__/minigolf-bot.test.ts` (10), `genre/__tests__/minigolf-module.test.ts`
+(6), výsledky `minigolf-evidence.json` (test ho přepočítá a porovná).
+
+**Robot** hraje jen vstupem: `HOLD` s osou × nabití tiků, pak `TAP` s toutéž osou; reakce 8 tiků (nabití = `aux1`
+ve stavu + `HOLD` z `recent`, `TAP` v `recent` = rána letí).
+- *Kam:* z místa, kde míček stojí, zkusí body trasy od jamky zpět a vezme první, kam rána podle `minigolfRoll`
+  (mantinely a odrazníky, čistá funkce jádra) opravdu dojede – jamka: míček v jamce (zkusí i nabití ±1); roh: zastaví do
+  0,7 m bez nárazu. Míček mimo trasu (slabý robot, náraz) → bod s nejvyšším indexem, ke kterému se rána aspoň o polovinu
+  přiblíží.
+- *Síla:* uzavřený vzorec `4c² + 2c` obrácený na nejmenší `c`, opravený přesným `minigolfRest` o šikmou ránu.
+- *Míření se stáčením:* celočíselný útlum (`Math.trunc` složek) ubírá menší složce rychlosti relativně víc, takže
+  dlouhá šikmá rána se stočí k ose – 7,6 m rána minula jamku o 0,8 m. `minigolfAimAt` proto osu opraví o úhel, o který se
+  klid rány minul s cílem (nejvýš 6 kroků). Bez opravy robot na S prohrával (2/10 seedů).
+- *Pohyblivá překážka:* robot čeká na první tik puštění (do 2 period kyvadla), kdy stojící míček během nabíjení i celá
+  rána překážku minou – hrubé síto odstupem, pak kutálení s překážkou v poloze `minigolfMoverAt` (ukotvené na viděný stav)
+  musí dát přesně dráhu bez ní. Bez okna hraje hned.
+
+**Slabý robot** = týž robot s `MINIGOLF_BOT.weak` (`aimError` 120 jednotek osy ≈ 13–27°, `powerPct` 60 % nabití) –
+krátké rány vedle, vyčerpá limit ran. **Nečinný** hráč prohraje na posledním tiku 90 s.
+
+**Důkaz** `minigolfEvidence(world, inputs)` přehraje záznam od tiku 0 a čte jen stav po každém tiku: `strokes` (čítač),
+`shots` (tiky s `TAP`), `aimChanges` (`aux0` se změnil), `chargeTicks` (`aux1` rostl), `bounces` (rychlost po tiku ≠
+samotný útlum), `outOfBounds`, `holed` (střed míčku v kruhu jamky a rychlost ≤ `holeSpeed` na konci), `outcome`, `ticks`.
+
+| 10 seedů × | robot vyhrál (rány) | slabý prohrál vyčerpáním ran | nečinný prohrál časem |
+|---|---|---|---|
+| lehká: rovná, 1 odrazník | 10/10 (1 = jamka na ránu, par 2) | 10/10 | 10/10 |
+| střední: L, 2 odrazníky, pohyblivá | 10/10 (2, par 3) | 10/10 | 10/10 |
+| těžká: S, 3 odrazníky, pohyblivá | 10/10 (3, par 4) | 10/10 | 10/10 |
+
+Zmrazené aserce P68 (`evals/play/p68/assertions.json`) na 30 jamkách: `bot-wins`, `idle-loses`, `weak-loses`,
+`ball-in-hole`, `strokes-counted` – všechny **30/30**. Publikační brána (`compileArcade` + `verifyArcade`, jako
+`POST /api/play/games`) projde vzorovým specem na 10/10 seedech a každou z 10 dev vět.
+
+**Výklad nejasností (konzervativně):**
+- *„Obtížnost“* minigolf nemá; tři obtížnosti testu = tvar a překážky (tabulka výš).
+- *„Jamka s odrazem“* = jamka, jejíž trasa zatáčí (L, S – T6 body trasy původně nazýval „body odrazu“): tam robot
+  přemíří v každém rohu (`aimChanges ≥ úseky − 1`). Robot světa se na vygenerovaných jamkách neodráží nikdy (úseky trasy
+  jsou volné konstrukcí a do pohyblivé překážky nenarazí – `bounces` 0 na 20 jamkách s ní); čítač `bounces` drží test se
+  ručním odrazem od mantinelu a slabý robot (odrazy na 19/30 jamkách). Čekání drží test „slepý“ robot: týž robot bez
+  překážky v parametrech do ní aspoň jednou narazí.
+- *„Míček skončí v jamce“* (`ball-in-hole`) = střed v kruhu jamky a rychlost do `holeSpeed`; výhra běh ukončí, míček
+  „spadl“. *`strokes-counted`* = čítač ran = počet `TAP` v záznamu (robot nepouští za pohybu a nevyletí z dráhy).
+- *Modul zůstává `staged`* a jeho `compile` hází jako kostra (`p68-staged.test.ts`, blok „a skeleton does not compile“);
+  skutečný překlad je `compileMinigolf`, `compile` ho zavolá, jakmile `availability` vrátí `ready` – zapojení přepne jen
+  tenhle řádek. Narážky jsou v `cues` (klasifikátor je nečte díky `ROUTE_PENDING`; `routing-guard` zelený).
+- *Hrdina* je vždy míček (`golf ball`); věci z věty jsou překážky, věc, kterou věta hýbe („spinning windmill“,
+  „sliding snake“, „moving coffin“), je pohyblivá překážka (`patrol` v obsazení → `moving`). Jádro bere jeden model
+  odrazníků a jeden pohyblivé překážky: odrazníky dostanou model první věci, kterou katalog zná (`sceneModelOf`).
+
+**Pro T8 (scéna, natažení):** šikmá rána se na dlouhé dráze stáčí k ose (výš) – stopa míření, která má ukázat, kam
+míček dojede, ji spočítá přesně `minigolfRest(osa, nabití)`; míření prstem na jamku bez opravy bude u dlouhých šikmých
+ran o kus vedle. `minigolfAimAt(dx, dz)` vrátí osu a nabití, které na bod opravdu dojedou.
+
+**Pro T9 (e2e):** vstup = `session.hold(axis)` + `HOLD` po `charge` tiků, pak `press(TAP, axis)`; `botWants` sondy dá
+přesně tohle (robot světa `minigolf_bot`, reakce 8). Počítadla: rány `ammo` → `Strokes`, par `reserve` → `Par`.
+Robot dá rovnou jamku na 1 ránu, L na 2, S na 3 (pod par); běh trvá 2–8 s. Vzorový spec pro
+`e2e/fixtures/p68-minigolf-spec.json` (dráha L, 3 odrazníky-dýně, pohyblivá rakev; brána 10/10 seedů) = `SAMPLE`
+v `minigolf-module.test.ts` = `compileMinigolf` věty „mini golf in a haunted house with pumpkins and a moving coffin“
+s `bends: 1, obstacles: 3`:
+`{"control":"minigolf","controlParams":{"generator":"minigolf_course","tuning":{"shape":"L","obstacles":3,"moving":true,"bumper":"cc0-pumpkin","mover":"gen3d-coffin"}},"genre":{"id":"minigolf","mode":"default","compilerVersion":"genre.v7"}, …}`
+(celý v testu; `scoring: {}`, `mechanics: []`, role `player` `golf ball`, `hole`, `bumper`, `mover`).
+
+**Rozbito schválně:** úroveň testu `pin`, `mutationStatus` = none. Čekání na překážku drží test se „slepým“ robotem;
+bez opravy míření robot při ladění prohrál na S 2/10 – test výhry 30/30 by to chytil.
 
 ## `minigolf` – scéna, kamera a natažení (T8)
 
