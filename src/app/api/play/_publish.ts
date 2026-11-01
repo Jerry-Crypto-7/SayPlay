@@ -165,6 +165,8 @@ export type SpecRead = { readonly ok: true; readonly value: GameSpecV1 } | { rea
  * které se nepředstavilo – vlastní jméno prostředí, nebo bez `VERCEL_ENV` na platformě či nad sdíleným úložištěm.
  * Preview a místní běh bez sdíleného úložiště pustí ruční specy kategorií (e2e). Místní `VERCEL_ENV=production`
  * (placený běh) je produkce i tady – e2e ruční spec P68 pak dostane 422 „not live yet“, schválně.
+ * Veřejný server mimo Vercel bez sdíleného úložiště by vypadal jako místní běh; jediná taková cesta v repu
+ * (`ops/host`) sdílenou knihu vyžaduje (`ops/host/preflight.mjs`), takže tam stráž odmítá (review R3).
  */
 function servesPublicFeed(env: Record<string, string | undefined>): boolean {
   const scope = environmentScope(env);
