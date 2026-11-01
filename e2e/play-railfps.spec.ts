@@ -20,6 +20,7 @@ import { HUD_COUNTER_LABELS } from './hud-labels';
  * - desktop (`chromium`): klik myší na nepřítele mimo střed zvýší skóre, zbytek dohraje `handPlay('end')`;
  * - herní aserce: po prvním ťuku mimo střed záznam nese ťuknutý sektor, natočení ve stavu (kamera ho jen kreslí)
  *   na něm skončí a skóre stoupne; nečinný hráč prohraje;
+ * - odezva zásahu (T8): po tomtéž ťuku je na zaměřovači značka zásahu (`railfps-hit-marker`), snímek `t8-<projekt>-hit.png`;
  * - nepřítel z věty je ve scéně a jeho model se stáhl, popisky počítadel z uzavřeného seznamu, žádná chyba stránky;
  * - Dare: výhra pošle záznam, server ho přehraje na týž výsledek a odkaz s výzvou otevře hru s cílem vyzyvatele;
  * - `@measure` (jen `pixel7-touch`): 20 s hry robotem, snímky přes `requestAnimationFrame` → `fps.json`.
@@ -236,7 +237,7 @@ interface Played {
  * přírůstek skóre aspoň za nepřítele), `'end'` hraje do konce. První ťuk mimo střed se ověří vždy: tiky bez dalších
  * stisků, dokud rána nepadne, jeden tik navíc (scéna kreslí natočení předchozího tiku) a čtení natočení ze scény.
  */
-async function playByPointer(page: Page, pointer: Pointer, until: 'aimed' | 'end', onEnemy: () => Promise<void>): Promise<Played> {
+async function playByPointer(page: Page, pointer: Pointer, until: 'aimed' | 'end', onEnemy: () => Promise<void>, onHit: () => Promise<void>): Promise<Played> {
   let step: Step = await page.evaluate(() => {
     const shell = window.__playShell as unknown as ArcadeProbe;
     shell.byHand(true);
@@ -299,6 +300,8 @@ async function playByPointer(page: Page, pointer: Pointer, until: 'aimed' | 'end
           expect(sectorOfYaw(hit.drawnYaw)).not.toBe(from);
           // Hit happened: the score rose.
           expect(hit.after, `score ${JSON.stringify(hit)}`).toBeGreaterThan(hit.before);
+          // T8: the tap that hit shows the hit marker on the crosshair.
+          await onHit();
           if (!needEnemy || hit.after - hit.before >= RAILFPS.points.enemy) aimed = hit;
           step = { now: checked.now, wants: checked.wants, enemies: checked.enemies };
           if (aimed !== null && until === 'aimed') break;
@@ -400,10 +403,20 @@ test.describe('railfps (P68-F T6)', () => {
       expect(drawn, 'enemy groups drawn by the scene').toBeGreaterThan(0);
       await shot('enemy');
     };
-    const played = await playByPointer(page, pointer, touch ? 'end' : 'aimed', onEnemy);
+    let marked = false;
+    const onHit = async () => {
+      if (marked) return;
+      marked = true;
+      // Odezva zásahu (T8): po ťuku, který trefil, je na zaměřovači značka zásahu; snímek pro oko.
+      const marker = page.getByTestId('railfps-hit-marker');
+      await expect(marker).toBeVisible({ timeout: 2_000 });
+      await page.screenshot({ path: join(SHOTS, `t8-${info.project.name}-hit.png`) });
+    };
+    const played = await playByPointer(page, pointer, touch ? 'end' : 'aimed', onEnemy, onHit);
     console.log(`railfps ${info.project.name}: ${JSON.stringify({ last: played.last, taps: played.taps, looks: played.looks, aimed: played.aimed })}`);
     expect(played.enemySeen, 'an enemy of the sentence walked in').toBe(true);
     expect(played.aimed, 'an off-center tap aimed and hit').not.toBeNull();
+    expect(marked, 'the hit marker was checked after the hit').toBe(true);
     await expect.poll(() => models.some((model) => model.url.endsWith(foePath) && model.status === 200), { message: `enemy model ${foeModel} at ${foePath}; got ${JSON.stringify(models)}`, timeout: 30_000 }).toBe(true);
 
     let end: { runState: string; tick: number; score: number };

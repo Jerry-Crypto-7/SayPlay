@@ -13,9 +13,12 @@
  * podle nich dotykový adaptér (`RailfpsTouch.tsx`) a e2e přepočítají bod na obrazovce na sektor.
  *
  * Zaměřovač je prstenec uprostřed záběru (vždy střed natočení), značka sektoru je slunečný klín na podlaze v cílovém
- * sektoru míření – ukáže, kam se kamera točí a kam padne rána. Nic z toho se nehýbe samo, takže
- * `prefers-reduced-motion` nemá co vypnout. Nepřítel roste do čitelnosti podle vzdálenosti (`foeScale`, nejvýš
- * `LEGIBLE_CAP`); terče ne – zvětšený terč by zakryl sousední řádek výšky.
+ * sektoru míření – ukáže, kam se kamera točí a kam padne rána. Nic z toho se nehýbe samo. Nepřítel roste do čitelnosti
+ * podle vzdálenosti (`foeScale`, nejvýš `LEGIBLE_CAP`); terče ne – zvětšený terč by zakryl sousední řádek výšky.
+ *
+ * **Odezva zásahu** (T8, `RailfpsFeedback.tsx`): záblesk, paprsek, značka zásahu, rozpad terče, minutí a po ztrátě
+ * života otřes a rajčatový okraj. Otřes je posun záběru v px, který scéna přičte až po své póze kamery; s
+ * `prefers-reduced-motion` je nulový.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -37,6 +40,7 @@ import { playRect, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
 import { HUD_BAND_PX, THUMB_ZONE_PX } from '../portrait-first';
+import { type FeedbackShake, NO_SHAKE, RailfpsFeedback } from './RailfpsFeedback';
 import { applyPose, cameraPose, heightShare, scenePoint } from './railfps-camera';
 
 const m = (units: number): number => units / UNIT;
@@ -109,6 +113,7 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
   const goal = useRef<Group | null>(null);
   const crosshair = useRef<Group | null>(null);
   const memory = useRef({ foeMoving: [] as boolean[], bossMoving: false });
+  const kick = useRef<FeedbackShake>(NO_SHAKE);
 
   // Vlastní pole a posun záběru jen pro tuhle scénu; po odchodu se vrátí.
   useEffect(() => {
@@ -131,6 +136,12 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
     const rect = measured.current ?? playRect(size, HUD_BAND_PX, size.height - THUMB_ZONE_PX);
     const pose = cameraPose(yawStepOf(prev, keeper), yawStepOf(state, keeper), alpha, camera.aspect, rect);
     applyPose(camera, pose, size.width, size.height);
+    // Otřes po ztrátě života (`RailfpsFeedback`): posun záběru v px nad pózou, mimo stav i data pro dotyk.
+    const shake = kick.current;
+    if (shake.x !== 0 || shake.y !== 0) {
+      camera.setViewOffset(size.width, size.height, shake.x, pose.shift + shake.y, size.width, size.height);
+      camera.updateProjectionMatrix();
+    }
     const host = surface.current;
     if (host !== null) {
       const yaw = pose.yawDeg.toFixed(2);
@@ -302,6 +313,7 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
           <meshBasicMaterial color={color.ink} transparent depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
         </mesh>
       </group>
+      <RailfpsFeedback session={session} keeper={keeper} surface={surface} kick={kick} />
     </>
   );
 }

@@ -160,6 +160,24 @@ běží jen na `pixel7-touch`), 2,0 min.
 - Sdílený `p68-staged.test.ts:68` je na větvi červený (viz T4); podle plánu P68-I blok odstraní PR P68-S.
 - Auto-merge repo nepovoluje; PR slučuje vlastník.
 
+## Odezva zásahu (T8)
+
+- `genres/railfps/RailfpsFeedback.tsx` čte jen efekty tiku přes sběrnici a stav ke kresbě: výstřel → záblesk u spodního
+  okraje a paprsek k zaměřovači (překryv obrazovky – výstřel jde vždy tam, kam hledí kamera, takže 3D paprsek by
+  vypadal stejně); zásah → rajčatové X kolem zaměřovače (`data-testid="railfps-hit-marker"`) a nejvýš 12 střepů;
+  ztráta života → otřes kamery (mimo hash, vypnutý při `prefers-reduced-motion`) a záblesk okraje v barvě tokenu;
+  minutí → slabší jiná odezva.
+- Minutí se nepozná z efektů (výstřel do prázdného sektoru žádný efekt nevydá), čte se z prodlevy zbraně při kresbě.
+  Když jeden snímek pokryje 13 a víc tiků (zásek), jedno minutí se neukáže.
+- Sdílený `Effects.tsx` k tomu přidá vlastní obláček 14 částic na každý despawn a malý otřes při ztrátě života; strop
+  12 střepů platí jen pro vlastní efekty hry.
+- Test `__tests__/railfps-feedback.test.tsx` 13/13 (počty z ručního seznamu efektů, reduced motion → 0 otřesů, stav
+  hry po vykreslení bajtově shodný; zápis do stavu i „zásah“ od nepřítele na `reach` shodí testy). E2e: po ťuku na
+  terč je značka zásahu vidět na všech třech projektech (7 prošlo, 2 přeskočené). Snímky
+  `D:/caches/p68/F/shots/t8-*-hit.png`.
+- Měření FPS při tomto běhu: medián 59,9, p95 33,4 ms (o 0,1 ms nad bránou; běžely i servery 3180/3181). Odezva
+  na ukázku robota nereaguje – nález pro T9.
+
 ### Nálezy pro T9
 
 - Robot vyhraje za 16,9 s, ale spec slibuje `targetDurationSec: 70`: tři vlny po 16 věcech jsou krátké.
