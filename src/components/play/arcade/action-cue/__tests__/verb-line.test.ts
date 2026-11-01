@@ -18,6 +18,8 @@ describe('verbLine', () => {
   it('names the played verb and the thing it is done to', () => {
     expect(verbLine(spec('shooter', { kind: 'defeat_targets', role: 'enemy' }, [{ id: 'enemy', kind: 'hazard', label: 'goblin' }]))).toBe('Shoot the goblins!');
     expect(verbLine(spec('move_free', { kind: 'collect', role: 'item' }, [{ id: 'item', kind: 'collectible', label: 'pearl' }]))).toBe('Grab the pearls!');
+    // P68 T11: zákazníci v obchodě se obsluhují, ne sbírají.
+    expect(verbLine(spec('buildshift', { kind: 'collect', role: 'customer' }, [{ id: 'customer', kind: 'collectible', label: 'robot' }]))).toBe('Serve the robots!');
     expect(verbLine(spec('throw', { kind: 'defeat_targets', role: 'target' }, [{ id: 'target', kind: 'target', label: 'passing ship' }]))).toBe('Throw at the passing ships!');
     expect(verbLine(spec('duel', { kind: 'reach', role: 'finish' }, [{ id: 'rival', kind: 'hazard', label: 'frost giants' }]))).toBe('Beat the frost giants!');
   });

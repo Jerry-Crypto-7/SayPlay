@@ -1,0 +1,146 @@
+{
+ "about": "P68I T13: zástupné odpovědi písaře skriptu – claude -p z předplatného se zadáním SCRIPT_SYSTEM_PROMPT, NE astra. Kolo 0 = první pokus, 1 = opravné kolo s výpisem chyb.",
+ "writer": "claude -p (subscription stand-in)",
+ "answers": [
+  {
+   "sentence": "a duckling crosses the road and then three little streams to reach its mother",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var rng = api.rng;\n  function lane(fromLeft) {\n    return fromLeft ? rng.int(0, 3) : rng.int(5, 8);\n  }\n  // The road: one band of 3-4 lanes, alternating traffic direction\n  var roadStart = Math.max(3, Math.floor(R * 0.12));\n  var roadLen = rng.int(3, 4);\n  var left = rng.int(0, 1) === 1;\n  var roadEnd = roadStart - 1;\n  for (var z = roadStart; z < roadStart + roadLen && z < R - 1; z++) {\n    api.place(\"road\", lane(left), z);\n    left = !left;\n    roadEnd = z;\n  }\n  // Then three little streams (1-2 rows each), spread out with grass between\n  var after = roadEnd + 2;\n  var avail = (R - 1) - after;\n  var seg = Math.floor(avail / 3);\n  if (seg < 3) { seg = 3; }\n  for (var i = 0; i < 3; i++) {\n    var base = after + i * seg;\n    var maxOff = seg - 3;\n    if (maxOff < 1) { maxOff = 1; }\n    var s = base + rng.int(1, maxOff);\n    var len = rng.int(1, 2);\n    var dirLeft = rng.int(0, 1) === 1;\n    for (var k = 0; k < len; k++) {\n      var row = s + k;\n      if (row >= R - 1 || row >= base + seg - 1) { break; }\n      api.place(\"river\", lane(dirLeft), row);\n      dirLeft = !dirLeft;\n    }\n  }\n}",
+   "writerMs": 21429,
+   "exit": 0
+  },
+  {
+   "sentence": "a hedgehog crosses a six lane motorway at rush hour",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var rng = api.rng;\n  // Six-lane motorway: two carriageways of 3 lanes, split by a grass central reservation.\n  // Total footprint 7 rows (3 road + 1 grass + 3 road).\n  var minStart = 3;\n  var maxStart = R - 1 - 7;\n  var mid = Math.floor(R / 2) - 3;\n  var lo = Math.max(minStart, mid - 4);\n  var hi = Math.min(maxStart, mid + 4);\n  if (hi < lo) { hi = lo; }\n  var s = rng.int(lo, hi);\n  var i;\n  // First carriageway: traffic from the left\n  for (i = 0; i < 3; i++) {\n    if (s + i < R) { api.place(\"road\", rng.int(0, 3), s + i); }\n  }\n  // Row s + 3 stays grass: the central reservation to rest on\n  // Second carriageway: traffic from the right\n  for (i = 4; i < 7; i++) {\n    if (s + i < R) { api.place(\"road\", rng.int(5, 8), s + i); }\n  }\n}",
+   "writerMs": 15829,
+   "exit": 0
+  },
+  {
+   "sentence": "a raccoon crosses railway tracks twice and then a muddy river with floating logs",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var rng = api.rng;\n  var last = R - 1;\n  function side() {\n    return rng.int(0, 1) === 0 ? rng.int(0, 3) : rng.int(5, 8);\n  }\n  function band(kind, start, len) {\n    var placed = 0;\n    for (var i = 0; i < len; i++) {\n      var z = start + i;\n      if (z >= 3 && z <= last) { api.place(kind, side(), z); placed++; }\n    }\n    return placed;\n  }\n  // First railway crossing\n  var z = 3 + rng.int(3, 6);\n  var len1 = rng.int(1, 2);\n  z += band(\"rail\", z, len1);\n  // Grass rest between the tracks\n  z += rng.int(4, 7);\n  // Second railway crossing\n  var len2 = rng.int(1, 2);\n  z += band(\"rail\", z, len2);\n  // Grass before the muddy river, placed later in the course\n  z += rng.int(5, 8);\n  var target = Math.floor(R * 0.6) + rng.int(0, 3);\n  if (target > z) { z = target; }\n  // Muddy river with floating logs: a full 3-row band\n  var riverLen = 3;\n  if (z + riverLen - 1 > last) { riverLen = last - z + 1; }\n  if (riverLen > 0) { band(\"river\", z, riverLen); }\n}",
+   "writerMs": 18724,
+   "exit": 0
+  },
+  {
+   "sentence": "a penguin crosses a snowy road and then an icy river with drifting floes",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var rng = api.rng;\n  var last = R - 1;\n  function side() {\n    return rng.int(0, 1) === 0 ? rng.int(0, 3) : rng.int(5, 8);\n  }\n  function band(kind, start, len) {\n    var placed = 0;\n    for (var i = 0; i < len; i++) {\n      var z = start + i;\n      if (z >= 3 && z <= last) { api.place(kind, side(), z); placed++; }\n    }\n    return placed;\n  }\n  // Snowy road: one band of 3-5 lanes of cars\n  var z = 3 + rng.int(3, 6);\n  z += band(\"road\", z, rng.int(3, 5));\n  // Snowy grass to rest on before the river\n  z += rng.int(6, 10);\n  var target = Math.floor(R * 0.5) + rng.int(0, 4);\n  if (target > z) { z = target; }\n  // Icy river with drifting floes: 2-3 rows\n  var riverLen = rng.int(2, 3);\n  if (z + riverLen - 1 > last) { riverLen = last - z + 1; }\n  if (riverLen > 0) { band(\"river\", z, riverLen); }\n}",
+   "writerMs": 12198,
+   "exit": 0
+  },
+  {
+   "sentence": "a squirrel crosses a quiet village road and then a wide river on log rafts",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var rng = api.rng;\n  var last = R - 1;\n  function side() {\n    return rng.int(0, 1) === 0 ? rng.int(0, 3) : rng.int(5, 8);\n  }\n  // Quiet village road: a short band of 1-2 lanes\n  var roadStart = 3 + rng.int(4, 8);\n  var roadLen = rng.int(1, 2);\n  for (var i = 0; i < roadLen; i++) {\n    var rz = roadStart + i;\n    if (rz >= 3 && rz <= last) { api.place(\"road\", side(), rz); }\n  }\n  // Grass meadow to rest on, then the wide river (full 3-row band of log rafts)\n  var riverStart = roadStart + roadLen + rng.int(8, 14);\n  var minRiver = Math.floor(R * 0.5);\n  if (riverStart < minRiver) { riverStart = minRiver + rng.int(0, 4); }\n  var riverLen = 3;\n  if (riverStart + riverLen - 1 > last) { riverLen = last - riverStart + 1; }\n  var dir = side();\n  for (var j = 0; j < riverLen; j++) {\n    var vz = riverStart + j;\n    if (vz >= 3 && vz <= last) {\n      api.place(\"river\", (j % 2 === 0) ? dir : (dir <= 3 ? rng.int(5, 8) : rng.int(0, 3)), vz);\n    }\n  }\n}",
+   "writerMs": 14687,
+   "exit": 0
+  },
+  {
+   "sentence": "a cat crosses a railway yard full of trains",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var rng = api.rng;\n  var last = R - 1;\n  var fromLeft = rng.int(0, 1) === 0;\n  var z = 3 + rng.int(0, 1);\n  var bands = 0;\n  while (z <= last) {\n    var len = rng.int(1, 2);\n    if (z + len - 1 > last) { len = last - z + 1; }\n    for (var i = 0; i < len; i++) {\n      var x = fromLeft ? rng.int(0, 3) : rng.int(5, 8);\n      api.place(\"rail\", x, z + i);\n      fromLeft = !fromLeft;\n    }\n    bands++;\n    var gap = (bands % 4 === 0) ? 2 : rng.int(1, 2);\n    z += len + gap;\n  }\n}",
+   "writerMs": 15380,
+   "exit": 0
+  },
+  {
+   "sentence": "a frog crosses one tiny road and then a huge swamp river",
+   "round": 0,
+   "code": "function build(api) {\n  var R = api.param(\"rows\");\n  var last = R - 1;\n  var rng = api.rng;\n  var roadZ = 3 + rng.int(0, 1);\n  if (roadZ <= last) {\n    var rx = rng.int(0, 1) === 0 ? rng.int(0, 3) : rng.int(5, 8);\n    api.place(\"road\", rx, roadZ);\n  }\n  var z = roadZ + 2 + rng.int(0, 1);\n  var fromLeft = rng.int(0, 1) === 0;\n  while (z <= last) {\n    var len = rng.int(2, 3);\n    if (z + len - 1 > last) { len = last - z + 1; }\n    for (var i = 0; i < len; i++) {\n      var x = fromLeft ? rng.int(0, 3) : rng.int(5, 8);\n      api.place(\"river\", x, z + i);\n      fromLeft = !fromLeft;\n    }\n    z += len + rng.int(1, 2);\n  }\n}",
+   "writerMs": 14797,
+   "exit": 0
+  },
+  {
+   "sentence": "a chicken crosses a highway where every lane is faster than the one before",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var last = rows - 1;\n  var rng = api.rng;\n  var z = 3;\n  var band = 0;\n  while (z <= last) {\n    var len = Math.min(5, 3 + Math.floor(band / 2));\n    len = Math.min(len, rng.int(len - 1, len));\n    if (len < 1) { len = 1; }\n    if (z + len - 1 > last) { len = last - z + 1; }\n    var half = Math.ceil(len / 2);\n    for (var i = 0; i < len; i++) {\n      var x = i < half ? rng.int(0, 3) : rng.int(5, 8);\n      api.place(\"road\", x, z + i);\n    }\n    z += len + rng.int(1, 2);\n    band++;\n  }\n}",
+   "writerMs": 15696,
+   "exit": 0
+  },
+  {
+   "sentence": "a lost puppy crosses a market street, a canal and a tram line to get home",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var first = 3;\n  var last = rows - 1;\n  var sections = [\n    { kind: \"road\", min: 2, max: 4 },\n    { kind: \"river\", min: 1, max: 3 },\n    { kind: \"rail\", min: 1, max: 2 }\n  ];\n  var per = Math.floor((last - first + 1) / sections.length);\n  for (var s = 0; s < sections.length; s++) {\n    var sec = sections[s];\n    var start = first + s * per;\n    var end = (s === sections.length - 1) ? last : start + per - 2;\n    var z = start;\n    while (z <= end) {\n      var len = r.int(sec.min, sec.max);\n      if (len > end - z + 1) { len = end - z + 1; }\n      for (var i = 0; i < len; i++) {\n        var x = r.int(0, 1) === 0 ? r.int(0, 3) : r.int(5, 8);\n        api.place(sec.kind, x, z + i);\n      }\n      z += len + r.int(1, 2);\n    }\n  }\n}",
+   "writerMs": 22506,
+   "exit": 0
+  },
+  {
+   "sentence": "a bunny crosses a road and then five rivers in a row",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var last = rows - 1;\n  function side() {\n    return r.int(0, 1) === 0 ? r.int(0, 3) : r.int(5, 8);\n  }\n  var z = r.int(3, 5);\n  var roadLen = r.int(2, 3);\n  for (var i = 0; i < roadLen; i++) {\n    api.place(\"road\", side(), z + i);\n  }\n  z += roadLen + r.int(2, 4);\n  for (var k = 0; k < 5; k++) {\n    var len = r.int(2, 3);\n    if (z + len - 1 > last) { len = last - z + 1; }\n    if (len < 1) { break; }\n    for (var j = 0; j < len; j++) {\n      api.place(\"river\", side(), z + j);\n    }\n    z += len + r.int(2, 4);\n  }\n}",
+   "writerMs": 19598,
+   "exit": 0
+  },
+  {
+   "sentence": "a goose crosses a park road and then a pond with floating branches",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var last = rows - 1;\n  function side() {\n    return r.int(0, 1) === 0 ? r.int(0, 3) : r.int(5, 8);\n  }\n  var z = r.int(4, 6);\n  var roadLen = r.int(1, 2);\n  for (var i = 0; i < roadLen; i++) {\n    api.place(\"road\", side(), z + i);\n  }\n  z += roadLen + r.int(3, 5);\n  var bands = 3;\n  for (var k = 0; k < bands; k++) {\n    var len = r.int(2, 3);\n    if (z + len - 1 > last) { len = last - z + 1; }\n    if (len < 1) { break; }\n    var flip = r.int(0, 1);\n    for (var j = 0; j < len; j++) {\n      var fromLeft = ((j + flip) % 2) === 0;\n      api.place(\"river\", fromLeft ? r.int(0, 3) : r.int(5, 8), z + j);\n    }\n    z += len + r.int(1, 2);\n  }\n}",
+   "writerMs": 17396,
+   "exit": 0
+  },
+  {
+   "sentence": "a fox crosses a busy road and then the river under the bridge",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  function lane(fromLeft) {\n    return fromLeft ? r.int(0, 3) : r.int(5, 8);\n  }\n  var z = r.int(10, 16);\n  var roadLen = r.int(4, 5);\n  var flip = r.int(0, 1);\n  for (var i = 0; i < roadLen; i++) {\n    api.place(\"road\", lane(((i + flip) % 2) === 0), z + i);\n  }\n  z += roadLen + r.int(6, 10);\n  var riverLen = r.int(2, 3);\n  if (z + riverLen > rows - 1) { riverLen = rows - 1 - z; }\n  flip = r.int(0, 1);\n  for (var j = 0; j < riverLen; j++) {\n    api.place(\"river\", lane(((j + flip) % 2) === 0), z + j);\n  }\n}",
+   "writerMs": 22436,
+   "exit": 0
+  },
+  {
+   "sentence": "a snail crosses a slow country road full of tractors",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var len = r.int(4, 5);\n  var start = Math.floor(rows / 2) - 2 + r.int(-2, 2);\n  if (start < 3) { start = 3; }\n  if (start + len > rows - 1) { start = rows - 1 - len; }\n  var flip = r.int(0, 1);\n  for (var i = 0; i < len; i++) {\n    var fromLeft = ((i + flip) % 2) === 0;\n    var x = fromLeft ? r.int(0, 3) : r.int(5, 8);\n    api.place(\"road\", x, start + i);\n  }\n}",
+   "writerMs": 16230,
+   "exit": 0
+  },
+  {
+   "sentence": "a lizard crosses the desert highway, the old rail line and a dry riverbed with a flash flood",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  function side(i, flip) {\n    return ((i + flip) % 2) === 0 ? r.int(0, 3) : r.int(5, 8);\n  }\n  function clampStart(s, len, minS) {\n    if (s < minS) { s = minS; }\n    if (s + len > rows - 1) { s = rows - 1 - len; }\n    return s;\n  }\n  var i;\n  // 1. desert highway: a wide road band early on\n  var roadLen = r.int(4, 5);\n  var roadStart = clampStart(Math.floor(rows * 0.12) + r.int(0, 2), roadLen, 3);\n  var flip = r.int(0, 1);\n  for (i = 0; i < roadLen; i++) {\n    api.place(\"road\", side(i, flip), roadStart + i);\n  }\n  // 2. old rail line: one or two tracks in the middle, after a grass rest\n  var railLen = r.int(1, 2);\n  var railStart = clampStart(Math.floor(rows * 0.42) + r.int(-2, 2), railLen, roadStart + roadLen + 3);\n  for (i = 0; i < railLen; i++) {\n    api.place(\"rail\", side(i, r.int(0, 1)), railStart + i);\n  }\n  // 3. dry riverbed hit by a flash flood: a full river band near the end\n  var riverLen = 3;\n  var riverStart = clampStart(Math.floor(rows * 0.68) + r.int(-2, 2), riverLen, railStart + railLen + 3);\n  flip = r.int(0, 1);\n  for (i = 0; i < riverLen; i++) {\n    api.place(\"river\", side(i, flip), riverStart + i);\n  }\n}",
+   "writerMs": 17425,
+   "exit": 0
+  },
+  {
+   "sentence": "a turtle crosses two small streets and a big busy avenue to reach the sea",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var last = rows - 2;\n  function side(i, flip) {\n    return ((i + flip) % 2) === 0 ? r.int(0, 3) : r.int(5, 8);\n  }\n  function band(start, len, minStart) {\n    if (start < minStart) { start = minStart; }\n    if (start + len - 1 > last) { len = last - start + 1; }\n    if (len < 1) { return minStart; }\n    var flip = r.int(0, 1);\n    for (var i = 0; i < len; i++) {\n      api.place(\"road\", side(i, flip), start + i);\n    }\n    return start + len;\n  }\n  // first small street: one or two lanes\n  var next = band(Math.floor(rows * 0.16) + r.int(-1, 1), r.int(1, 2), 3);\n  // second small street: two lanes, after a grass rest\n  next = band(Math.floor(rows * 0.36) + r.int(-1, 1), 2, next + 3);\n  // the big busy avenue: five lanes, alternating directions\n  next = band(Math.floor(rows * 0.62) + r.int(-2, 2), 5, next + 4);\n  // the rest is calm grass leading down to the sea at the goal row\n}",
+   "writerMs": 16959,
+   "exit": 0
+  },
+  {
+   "sentence": "a mouse crosses a road, a stream, a road, a stream, again and again",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var last = rows - 2;\n  var z = 3;\n  var i = 0;\n  while (z <= last) {\n    var kind = (i % 2 === 0) ? \"road\" : \"river\";\n    var len = kind === \"road\" ? r.int(1, 3) : r.int(1, 2);\n    if (z + len - 1 > last) { len = last - z + 1; }\n    var flip = r.int(0, 1);\n    for (var k = 0; k < len; k++) {\n      var x = ((k + flip) % 2 === 0) ? r.int(0, 3) : r.int(5, 8);\n      api.place(kind, x, z + k);\n    }\n    z += len + r.int(1, 2);\n    i++;\n  }\n}",
+   "writerMs": 17203,
+   "exit": 0
+  },
+  {
+   "sentence": "a hen crosses the farm road, the river by the mill and the train line to the market",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  function band(kind, start, len) {\n    var flip = r.int(0, 1);\n    for (var k = 0; k < len; k++) {\n      var z = start + k;\n      if (z < 3 || z >= rows) continue;\n      var x = ((k + flip) % 2 === 0) ? r.int(0, 3) : r.int(5, 8);\n      api.place(kind, x, z);\n    }\n  }\n  var roadLen = r.int(2, 3);\n  var riverLen = r.int(2, 3);\n  var railLen = r.int(1, 2);\n  var roadStart = Math.max(3, Math.floor(rows * 0.15) + r.int(0, 2));\n  var riverStart = Math.max(roadStart + roadLen + 2, Math.floor(rows * 0.45) + r.int(-1, 1));\n  var railStart = Math.max(riverStart + riverLen + 2, Math.floor(rows * 0.75) + r.int(-1, 1));\n  if (railStart + railLen > rows - 1) { railStart = rows - 1 - railLen; }\n  band(\"road\", roadStart, roadLen);\n  band(\"river\", riverStart, riverLen);\n  band(\"rail\", railStart, railLen);\n}",
+   "writerMs": 18490,
+   "exit": 0
+  },
+  {
+   "sentence": "a beaver crosses a logging road and then rides logs down three river channels",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  function band(kind, start, len) {\n    var flip = r.int(0, 1);\n    for (var k = 0; k < len; k++) {\n      var z = start + k;\n      if (z < 3 || z > rows - 2) continue;\n      var x = ((k + flip) % 2 === 0) ? r.int(0, 3) : r.int(5, 8);\n      api.place(kind, x, z);\n    }\n  }\n  var roadStart = 5 + r.int(0, 2);\n  var roadLen = r.int(3, 4);\n  band(\"road\", roadStart, roadLen);\n  var next = roadStart + roadLen;\n  for (var i = 0; i < 3; i++) {\n    var start = next + r.int(4, 7);\n    var len = r.int(2, 3);\n    band(\"river\", start, len);\n    next = start + len;\n  }\n}",
+   "writerMs": 17924,
+   "exit": 0
+  },
+  {
+   "sentence": "a kitten crosses a road where all the traffic comes from the left",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var z = 3 + r.int(0, 2);\n  while (z < rows - 1) {\n    var len = r.int(2, 4);\n    for (var k = 0; k < len && z < rows - 1; k++) {\n      api.place(\"road\", r.int(0, 3), z);\n      z++;\n    }\n    z += r.int(2, 4);\n  }\n}",
+   "writerMs": 16257,
+   "exit": 0
+  },
+  {
+   "sentence": "a deer crosses a forest road, a railway and finally a rushing river",
+   "round": 0,
+   "code": "function build(api) {\n  var rows = api.param(\"rows\");\n  var r = api.rng;\n  var last = rows - 2;\n  function side(k) { return (k % 2 === 0) ? r.int(0, 3) : r.int(5, 8); }\n  function band(kind, len, z) {\n    var flip = r.int(0, 1);\n    for (var k = 0; k < len && z <= last; k++) {\n      api.place(kind, side(k + flip), z);\n      z++;\n    }\n    return z;\n  }\n  var z = 3 + r.int(0, 1);\n  var i;\n  for (i = 0; i < 2 && z <= last; i++) {\n    z = band(\"road\", r.int(2, 4), z);\n    z += r.int(1, 2);\n  }\n  z += r.int(1, 2);\n  for (i = 0; i < 2 && z <= last; i++) {\n    z = band(\"rail\", r.int(1, 2), z);\n    z += r.int(2, 3);\n  }\n  z += r.int(0, 1);\n  for (i = 0; i < 3 && z <= last; i++) {\n    z = band(\"river\", r.int(2, 3), z);\n    z += r.int(1, 2);\n  }\n}",
+   "writerMs": 21440,
+   "exit": 0
+  }
+ ]
+}

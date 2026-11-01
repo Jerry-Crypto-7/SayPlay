@@ -282,7 +282,7 @@ function titleFrom(sentence: string, fallback: string): string {
  * Druhy názvů her P68 sem přidá až úloha „zapoj X“ (P68-I): dřív by slovo jako „rescue“ změnilo názvy, a tím
  * i semínka, nových her 24 dosavadních žánrů (review T1).
  */
-const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort)$/i;
+const TEMPLATE_TITLE = /^\S+ (run|quest|beat|stack|escape|duel|hunt|catch|slice|whack|defense|race|drive|score|hop|merge|push|crowd|army|flap|flight|throw|shoot|shootout|land|dash|fight|jump|crossing|chase|hole|heist|sort|shift)$/i;
 
 /**
  * Název hry z věty (P56A T8): název čtení, když projde – nejvýš 32 znaků, filtr obsahu feedu (`blockedText` v
@@ -1163,7 +1163,7 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   stunt: 'desert canyon',
   minigolf: 'mini golf course',
   railfps: 'abandoned factory',
-  buildshift: 'shopping street',
+  buildshift: 'cozy diner', // T11: obchod je uvnitř (`stavba/integration.md`)
   drawsave: 'meadow',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };

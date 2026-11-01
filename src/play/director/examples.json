@@ -125,5 +125,10 @@
     "id": "p66-arrows",
     "sentence": "slide the wooden fish out of the crowded pond, each fish only swims the way its nose points",
     "answer": { "plan": "Tap a wooden fish; it swims out the way its nose points if the path is clear, else it bumps.", "spec": { "genre": "arrows", "mode": "default", "hero": "fisher", "cast": [{ "label": "fish", "does": "scenery" }], "setting": "crowded pond" } }
+  },
+  {
+    "id": "p68-buildshift",
+    "sentence": "a cat opens a fish stall on the pier, sets up cutting tables and serves hungry seagulls until sunset",
+    "answer": { "plan": "Build stations on the grid, open the stall and serve every seagull its fish before it walks out.", "spec": { "genre": "buildshift", "mode": "default", "hero": "cat", "cast": [{ "label": "seagull", "does": "collect" }, { "label": "fish", "does": "scenery" }], "setting": "pier" } }
   }
 ]

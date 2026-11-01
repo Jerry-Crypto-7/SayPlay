@@ -98,6 +98,8 @@ const HOLE = pair('hole', 'default');
 const STEAL = pair('steal', 'default');
 const SORT = pair('sort', 'default');
 const ARROWS = pair('arrows', 'default');
+// P68 T11: směna se stavbou obchodu.
+const BUILDSHIFT = pair('buildshift', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -166,6 +168,10 @@ const CARRY_HOME = String.raw`(?:carr(?:y|ies|ying)|bring(?:s|ing)?|brought|haul
 const RIGHT_BIN = String.raw`(?:back )?(?:into|in|on|onto|to) (?:the |their |its |his |her |a )?(?:right|matching|correct|proper) (?:[a-z-]+ )?(?:shel(?:f|ves)|bins?|box(?:es)?|jars?|bags?|baskets?|buckets?|bottles?|tubes?|piles?|drawers?|crates?|racks?|trays?|cups?|slots?|spots?|places?|containers?|bowls?|chests?|carts?|trucks?|pens?|sacks?|tins?|lockers?|cages?)\b`;
 /** Kus, který po ťuknutí odjede („so it drives out“, „and it leaves“, „so they fly off“). */
 const LEAVES = String.raw`(?:so|and|to make|to let|then) (?:it|they|that one|each one) (?:only )?(?:drives? (?:out|off|away)|leaves?|fl(?:y|ies) (?:off|away|out)|slides? (?:out|off|away)|zooms? (?:off|out|away)|exits?|escapes?|gets? out|moves? out|rolls? (?:out|away)|pulls? out|sails? (?:out|off|away)|swims? (?:out|off|away))\b`;
+/** Obchod, do kterého chodí zákazníci (P68 T11) – ne město, farma ani dílna bez pultu. */
+const SHOP = String.raw`(?:shops?|stores?|caf[eé]s?|diners?|bakery|bakeries|restaurants?|stands?|stalls?|trucks?|bars?|parlou?rs?|canteens?|joints?|kiosks?|tea ?rooms?)`;
+/** Determinant před obchodem: „a“, „my“, „your own“. */
+const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
 
 /**
  * Co sloveso dělá se svým předmětem (P39): režim slovesa to říká – střelba sestřelí, hod míří, rvačka a
@@ -221,6 +227,22 @@ const VERBS: readonly Verb[] = [
     String.raw`\b(?:the )?(?:way|direction) (?:it |they |its (?:[a-z]+ )?|their (?:[a-z]+ )?|the arrows? |each (?:[a-z]+ )?)(?:points?|faces?|is pointing|are pointing|is facing)\b`,
     String.raw`\b(?:clear(?:s|ing)?|untangl(?:e|es|ing)|unjam(?:s|ming)?|empt(?:y|ies|ying)|unblock(?:s|ing)?|fre(?:e|es|eing)|solv(?:e|es|ing))(?= (?:the |a |an |this |that )?(?:[a-z'-]+ ){0,2}?(?:jam|jammed|gridlock(?:ed)?|clogged)\b)`,
     String.raw`\bunpark(?:s|ing|ed)?\b|\btap[- ]away\b`,
+  ].join('|'))),
+  // P68 T11: směna v obchodě, který si hráč postaví. Jedna z půlek stačí: konec pracovní směny („before the shift
+  // ends“; samotná „a night shift at the hospital“ obchod není), stavění stanovišť („place grills and counters“), vlastní obchod („runs a donut shop“, „build
+  // your own ice cream parlour“), obsluha zákazníků, zákazníci, kteří do obchodu chodí („line up for pizza at my
+  // diner“). Jedno pracoviště, objednávka za objednávkou („a chef cooks burgers at one grill“) zůstává stanovištěm.
+  v('serve', 'sign', BUILDSHIFT, new RegExp([
+    String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
+    String.raw`\b(?:build(?:s|ing)?|plac(?:e|es|ing)|lay(?:s|ing)? out|set(?:s|ting)? up|buy(?:s|ing)?|put(?:s|ting)? down)(?= (?:[a-z'-]+ ){0,3}?(?:ovens?|counters?|tills?|grills?|stations?|freezers?|workbenches?|benches|lifts?)\b)`,
+    String.raw`\b(?:run(?:s|ning)?|open(?:s|ing)?|own(?:s|ing)?|lay(?:s|ing)? out|set(?:s|ting)? up|build(?:s|ing)?) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
+    String.raw`\bshop (?:management|manager|sim(?:ulator)?|tycoon)\b`,
+    String.raw`\bserv(?:e|es|ing)\b(?= (?:[a-z'-]+ ){0,4}?customers?\b)`,
+    String.raw`\b(?:lines? up|lining up|queu(?:e|es|ing)(?: up)?|com(?:e|es|ing)|drops? by|crowds?|orders?|wants?) (?:[a-z'-]+ ){0,4}?(?:(?:at|to|into|in) )?${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
+    // „my taco truck has to feed 20 astronauts“, „serve tea … in a cozy tea room“, „a coffee shop where workers want …“.
+    String.raw`\b${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP} (?:has to|have to|must|needs? to) (?:feed|serve|sell)\b`,
+    String.raw`\b(?:serv(?:e|es|ing)|sell(?:s|ing)?)\b[^.;!?]*?\b(?:in|at) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
+    String.raw`\b${SHOP} where (?:[a-z0-9'-]+ ){0,4}?(?:wants?|com(?:e|es)|lines? up|queu(?:e|es)|orders?)\b`,
   ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
@@ -451,7 +473,8 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
 /**
  * Brána aktivace (P68 T1): žánry, které klasifikátor nevidí, i když je kategorie přepne na `ready` a napíše jim
  * narážky – obdoba `DIRECTOR_PENDING` režiséra. Hra je do té doby dostupná jen ručním specem (fixture). Žánr odsud
- * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `STAGED_CONTROLS`.
+ * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
+ * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
  */
 export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 

@@ -271,6 +271,106 @@ function courseOf(rng: Rng, params: HopParams): HopLayout {
   return { kinds, lanes: lanes.map((lane) => ({ ...lane, warm: Math.floor(order.indexOf(lane.row) / HOP.rowsPerWarmTick) })), bands };
 }
 
+// ---------------------------------------------------------------------------
+// Trať ze skriptu úrovně (P68 T13, pilot za `PLAY_SCRIPTS`)
+
+/** Druhy řad, které smí skript `build(api)` položit (`api.place(kind, x, z)`). */
+export const HOP_SCRIPT_KINDS = ['road', 'river', 'rail'] as const;
+/** Odkud jede provoz řady: sloupec `x` v `api.place` pod středem = zleva, nad ním = zprava, střed = ze semínka. */
+export const HOP_SCRIPT_SIDES = ['left', 'right', 'any'] as const;
+const KIND_ROW = { road: ROW.road, river: ROW.river, rail: ROW.rail } as const;
+/** Nejvíc řad jednoho pásu podle druhu (nejširší z třetin `roadLanes`, `riverLanes`, `railLanes`). */
+export const HOP_SCRIPT_BAND_MAX = { road: 5, river: 3, rail: 2 } as const;
+
+/**
+ * Data úrovně, která skript vyrobí a hra uloží (`spec.scriptLevel.levelData`): kolik řad a které řady jsou silnice,
+ * řeka nebo koleje, s nimi strana provozu. Pruhy (rychlosti, periody, fáze) dopočítá důvěryhodný kód ze semínka
+ * (`hopScriptedLayout`), takže zaručený přechod pásu drží tatáž konstrukce jako u šablony.
+ */
+export const hopScriptLevel = z
+  .object({
+    game: z.literal('hop'),
+    rows: z.int().min(HOP.rows.min).max(HOP.rows.max),
+    lanes: z
+      .array(
+        z
+          .object({
+            row: z.int().min(HOP.startGrass).max(HOP.rows.max - 1),
+            kind: z.enum(HOP_SCRIPT_KINDS),
+            side: z.enum(HOP_SCRIPT_SIDES),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(HOP.rows.max - HOP.startGrass),
+  })
+  .strict();
+export type HopScriptLevel = z.infer<typeof hopScriptLevel>;
+
+/**
+ * Pásy dat úrovně: souvislé řady jednoho druhu. `issues` = co trať poruší – řada mimo start a cíl, dvě položení téže
+ * řady, dva pásy bez trávy mezi sebou, pás širší než `HOP_SCRIPT_BAND_MAX`.
+ */
+export function hopScriptBands(level: HopScriptLevel): { readonly bands: HopBand[]; readonly issues: string[] } {
+  const issues: string[] = [];
+  const lanes = [...level.lanes].sort((a, b) => a.row - b.row);
+  const bands: HopBand[] = [];
+  for (const [index, lane] of lanes.entries()) {
+    if (lane.row >= level.rows) issues.push(`row ${lane.row} is the goal row or past it (the course has ${level.rows} rows, the goal row stays grass)`);
+    const before = lanes[index - 1];
+    if (before !== undefined && before.row === lane.row) {
+      issues.push(`row ${lane.row} is placed twice`);
+      continue;
+    }
+    const band = bands.at(-1);
+    if (before !== undefined && band !== undefined && before.row === lane.row - 1) {
+      if (before.kind !== lane.kind) issues.push(`rows ${before.row} (${before.kind}) and ${lane.row} (${lane.kind}) need a grass row between them`);
+      else {
+        bands[bands.length - 1] = { ...band, count: band.count + 1 };
+        continue;
+      }
+    }
+    bands.push({ kind: KIND_ROW[lane.kind], first: lane.row, count: 1 });
+  }
+  for (const band of bands) {
+    const kind = HOP_SCRIPT_KINDS[band.kind - 1] as (typeof HOP_SCRIPT_KINDS)[number];
+    if (band.count > HOP_SCRIPT_BAND_MAX[kind]) issues.push(`the ${kind} band at row ${band.first} has ${band.count} rows, at most ${HOP_SCRIPT_BAND_MAX[kind]}`);
+  }
+  return { bands, issues };
+}
+
+const SCRIPT_SALT = 0x5c41;
+
+/**
+ * Rozvržení z dat úrovně: druhy řad a pásy ze skriptu, pruhy každého pásu stejnou konstrukcí jako `courseOf`
+ * (`bandLanes` ze semínka, znovu, dokud robot čeká déle než `HOP.longestWait`), strana provozu ze skriptu. Směr pruhu
+ * zaručený přechod prostředním sloupcem nemění (`laneX` je v něm souměrné); `checkHopLevel` ho přesto ověří znovu.
+ */
+export function hopScriptedLayout(seed: number, level: HopScriptLevel): HopLayout {
+  const rng = createCompileRng(seed ^ SCRIPT_SALT);
+  const last = level.rows;
+  const sides = new Map(level.lanes.map((lane) => [lane.row, lane.side]));
+  const kinds: number[] = Array.from({ length: last + 1 }, () => ROW.grass);
+  const lanes: HopLane[] = [];
+  const { bands } = hopScriptBands(level);
+  const sided = (band: HopLane[]): HopLane[] =>
+    band.map((lane) => {
+      const side = sides.get(lane.row);
+      return side === 'left' ? { ...lane, dir: 1 } : side === 'right' ? { ...lane, dir: -1 } : lane;
+    });
+  for (const { kind, first, count } of bands) {
+    const third = Math.min(2, Math.floor((3 * first) / last));
+    let band = sided(bandLanes(rng, kind, first, count, third));
+    for (let tries = 1; tries < HOP.bandTries && bandWait(band) > HOP.longestWait; tries += 1) band = sided(bandLanes(rng, kind, first, count, third));
+    for (const lane of band) {
+      kinds[lane.row] = kind;
+      lanes.push(lane);
+    }
+  }
+  const order = [...new Set(lanes.map((lane) => lane.row))];
+  return { kinds, lanes: lanes.map((lane) => ({ ...lane, warm: Math.floor(order.indexOf(lane.row) / HOP.rowsPerWarmTick) })), bands };
+}
+
 /**
  * Pruhy jednoho pásu: směry se střídají a pás má jednu periodu, takže se jeho provoz po ní opakuje. Silnice: každá řada
  * je kolona aut (pod-pruhy téže řady s posunutou fází) s jedinou mezerou na přeskok; řeka: jedna kláda s vodou za

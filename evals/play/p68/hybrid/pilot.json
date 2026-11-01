@@ -1,0 +1,396 @@
+{
+ "about": "P68I T13: pilot skriptů úrovní, jen offline část. Měřicí kniha nebyla nastavená (fast-only), takže astra nepsala nic a nic se neutratilo; odpovědi jsou zástupné (claude -p z předplatného), ne astra. Selhání jsou ve jmenovateli.",
+ "ledger": {
+  "mode": "fast-only",
+  "reason": "WORLDSMITH_SPEND_STORE_PREFIX must name a separate ledger ending in -eval"
+ },
+ "writer": "claude -p (subscription stand-in, not astra)",
+ "game": "hop",
+ "sentences": 20,
+ "attempts": 20,
+ "firstTryPassed": 20,
+ "validDataAttempts": 20,
+ "passedBot": 20,
+ "failed": 0,
+ "passRateOfSentences": 1,
+ "passRateOfAttempts": 1,
+ "failures": {
+  "unsupported": 0,
+  "no-answer": 0,
+  "invalid": 0
+ },
+ "spentUsd": 0,
+ "extensionMs": {
+  "note": "Offline: sandbox + ověření + robot na pokus (bez modelu). Čas písaře zástupce je zvlášť a o astře nic neříká.",
+  "validationP50": 91,
+  "validationP95": 397,
+  "standInWriterP50": 17203,
+  "standInWriterP95": 22436
+ },
+ "judge": {
+  "run": false,
+  "reason": "Slepý soudce porovnává AI verzi se skriptem a bez něj; bez měřicí knihy AI verze (astra) nevznikla, takže není co soudit."
+ },
+ "results": [
+  {
+   "sentence": "a duckling crosses the road and then three little streams to reach its mother",
+   "quickGame": "hop",
+   "seed": 544746346,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    13000
+   ],
+   "validationMs": 130,
+   "totalMs": 131,
+   "lanes": 9
+  },
+  {
+   "sentence": "a hedgehog crosses a six lane motorway at rush hour",
+   "quickGame": "hop",
+   "seed": 104113096,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    11400
+   ],
+   "validationMs": 59,
+   "totalMs": 59,
+   "lanes": 6
+  },
+  {
+   "sentence": "a raccoon crosses railway tracks twice and then a muddy river with floating logs",
+   "quickGame": "hop",
+   "seed": 1444129612,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    12500
+   ],
+   "validationMs": 27,
+   "totalMs": 27,
+   "lanes": 6
+  },
+  {
+   "sentence": "a penguin crosses a snowy road and then an icy river with drifting floes",
+   "quickGame": "hop",
+   "seed": 567714738,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    12400
+   ],
+   "validationMs": 48,
+   "totalMs": 48,
+   "lanes": 6
+  },
+  {
+   "sentence": "a squirrel crosses a quiet village road and then a wide river on log rafts",
+   "quickGame": "hop",
+   "seed": 864958367,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    11400
+   ],
+   "validationMs": 41,
+   "totalMs": 41,
+   "lanes": 4
+  },
+  {
+   "sentence": "a cat crosses a railway yard full of trains",
+   "quickGame": "hop",
+   "seed": 1972329063,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    17200
+   ],
+   "validationMs": 44,
+   "totalMs": 44,
+   "lanes": 21
+  },
+  {
+   "sentence": "a frog crosses one tiny road and then a huge swamp river",
+   "quickGame": "hop",
+   "seed": 1901660304,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    18100
+   ],
+   "validationMs": 102,
+   "totalMs": 102,
+   "lanes": 27
+  },
+  {
+   "sentence": "a chicken crosses a highway where every lane is faster than the one before",
+   "quickGame": "hop",
+   "seed": 1337036130,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    19100
+   ],
+   "validationMs": 503,
+   "totalMs": 503,
+   "lanes": 35
+  },
+  {
+   "sentence": "a lost puppy crosses a market street, a canal and a tram line to get home",
+   "quickGame": "hop",
+   "seed": 1719046874,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    21400
+   ],
+   "validationMs": 142,
+   "totalMs": 142,
+   "lanes": 27
+  },
+  {
+   "sentence": "a bunny crosses a road and then five rivers in a row",
+   "quickGame": "hop",
+   "seed": 591982023,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    15900
+   ],
+   "validationMs": 120,
+   "totalMs": 120,
+   "lanes": 15
+  },
+  {
+   "sentence": "a goose crosses a park road and then a pond with floating branches",
+   "quickGame": "hop",
+   "seed": 13001798,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    13300
+   ],
+   "validationMs": 77,
+   "totalMs": 77,
+   "lanes": 9
+  },
+  {
+   "sentence": "a fox crosses a busy road and then the river under the bridge",
+   "quickGame": "hop",
+   "seed": 683776345,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    12100
+   ],
+   "validationMs": 79,
+   "totalMs": 79,
+   "lanes": 7
+  },
+  {
+   "sentence": "a snail crosses a slow country road full of tractors",
+   "quickGame": "hop",
+   "seed": 1134187969,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    11200
+   ],
+   "validationMs": 37,
+   "totalMs": 37,
+   "lanes": 4
+  },
+  {
+   "sentence": "a lizard crosses the desert highway, the old rail line and a dry riverbed with a flash flood",
+   "quickGame": "hop",
+   "seed": 660426440,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    13000
+   ],
+   "validationMs": 131,
+   "totalMs": 131,
+   "lanes": 10
+  },
+  {
+   "sentence": "a turtle crosses two small streets and a big busy avenue to reach the sea",
+   "quickGame": "hop",
+   "seed": 1580153493,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    12600
+   ],
+   "validationMs": 132,
+   "totalMs": 132,
+   "lanes": 9
+  },
+  {
+   "sentence": "a mouse crosses a road, a stream, a road, a stream, again and again",
+   "quickGame": "hop",
+   "seed": 648100160,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    20400
+   ],
+   "validationMs": 386,
+   "totalMs": 386,
+   "lanes": 26
+  },
+  {
+   "sentence": "a hen crosses the farm road, the river by the mill and the train line to the market",
+   "quickGame": "hop",
+   "seed": 726144358,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    12200
+   ],
+   "validationMs": 50,
+   "totalMs": 50,
+   "lanes": 6
+  },
+  {
+   "sentence": "a beaver crosses a logging road and then rides logs down three river channels",
+   "quickGame": "hop",
+   "seed": 152223838,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    13700
+   ],
+   "validationMs": 91,
+   "totalMs": 91,
+   "lanes": 12
+  },
+  {
+   "sentence": "a kitten crosses a road where all the traffic comes from the left",
+   "quickGame": "hop",
+   "seed": 1549671664,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    16400
+   ],
+   "validationMs": 397,
+   "totalMs": 397,
+   "lanes": 22
+  },
+  {
+   "sentence": "a deer crosses a forest road, a railway and finally a rushing river",
+   "quickGame": "hop",
+   "seed": 1042968493,
+   "outcome": "ok",
+   "attempts": 1,
+   "validData": 1,
+   "botPassed": true,
+   "issues": [
+    []
+   ],
+   "polls": [
+    16300
+   ],
+   "validationMs": 160,
+   "totalMs": 160,
+   "lanes": 19
+  }
+ ]
+}

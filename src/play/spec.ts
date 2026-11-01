@@ -41,6 +41,7 @@ import { heroActionSchema } from './hero-action';
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { SEGMENT_NEWS } from './arcade/pieces/pacing';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
+import { hopScriptLevel } from './arcade/pieces/hop-course';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
 import { DUEL, DUEL_DIFFICULTIES } from './arcade/pieces/duel';
@@ -542,6 +543,16 @@ const SPEC_CONTROL_PARAMS = {
   drawsave: delegated(CONTROL_PARAMS.drawsave),
 } as const;
 
+/** `spec.scriptLevel` (P68 T13): data úrovně ze skriptu, SHA-256 kódu a verze běhu QuickJS + API. */
+export const scriptLevelSchema = z
+  .object({
+    levelData: hopScriptLevel,
+    codeDigest: z.string().regex(/^[0-9a-f]{64}$/, 'codeDigest: SHA-256 of the script, lowercase hex'),
+    runtimeVersion: z.string().min(1).max(80),
+  })
+  .strict();
+export type ScriptLevel = z.infer<typeof scriptLevelSchema>;
+
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
@@ -645,6 +656,12 @@ export const gameSpecSchema = z
      * uložená hra bez pole má tentýž `gameSpecHash`; render si doplní `none`.
      */
     heroAction: heroActionSchema.optional(),
+    /**
+     * Úroveň ze skriptu (P68 T13, pilot za `PLAY_SCRIPTS`): data, která v době tvorby vyrobil `build(api)` v QuickJS
+     * (`src/play/scripts/`), otisk kódu a verze běhu. Hraje se z dat důvěryhodným runtimem, kód se znovu nespouští.
+     * Jen ovládání, pro které skript píše (`hop`). Bez výchozí hodnoty: uložená hra bez pole má tentýž `gameSpecHash`.
+     */
+    scriptLevel: scriptLevelSchema.optional(),
   })
   .strict();
 

@@ -29,7 +29,7 @@ export interface ControlCapability {
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
   /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3; nástrahy `spikes`, `pipe`, `hazard` – P39 T9). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper' | 'boss' | 'item' | 'drop' | 'item1' | 'item2' | 'item3' | 'loot' | 'sort0' | 'sort1' | 'sort2' | 'sort3' | 'sort4' | 'piece')[];
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper' | 'boss' | 'item' | 'drop' | 'item1' | 'item2' | 'item3' | 'loot' | 'sort0' | 'sort1' | 'sort2' | 'sort3' | 'sort4' | 'piece' | 'customer' | 'goods')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -149,7 +149,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   stunt: arcade({ cues: 'drive a vehicle over ramps and jumps, crash through debris, cross the finish line', roles: [], finish: false, labels: [], mechanics: [] }),
   minigolf: arcade({ cues: 'charge and release to putt the ball around obstacles into the hole in few strokes', roles: [], finish: false, labels: [], mechanics: [] }),
   railfps: arcade({ cues: 'ride a rail through your own eyes, turn to aim and shoot the targets before they hit you', roles: [], finish: false, labels: [], mechanics: [] }),
-  buildshift: arcade({ cues: 'build shop stations on the grid, spend the stock and serve customers before the shift ends', roles: [], finish: false, labels: [], mechanics: [] }),
+  // T11: zákazníky a zboží kreslí scéna z popisku (`things.customer` / `things.goods`), odchody bez obsluhy = životy.
+  buildshift: arcade({ cues: 'build shop stations on the grid, spend the stock and serve customers before the shift ends', roles: ['customer', 'goods'], finish: false, labels: ['player', 'customer', 'goods'], mechanics: ['health'] }),
   drawsave: arcade({ cues: 'draw a wall with your finger to protect the hero from the threats until time runs out', roles: [], finish: false, labels: [], mechanics: [] }),
 };
 

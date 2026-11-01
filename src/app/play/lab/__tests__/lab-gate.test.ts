@@ -54,7 +54,7 @@ afterEach(() => {
 
 describe('/play/lab/* without PLAY_LAB', () => {
   it('covers every lab page there is', () => {
-    expect(PAGES.sort()).toEqual(['ghost', 'physics', 'rules', 'terrain']);
+    expect(PAGES.sort()).toEqual(['ghost', 'physics', 'rules', 'scripts', 'terrain']);
   });
 
   it.each(PAGES)('%s is a 404 decided at request time, after connection()', async (name) => {

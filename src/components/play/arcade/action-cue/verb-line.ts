@@ -61,6 +61,8 @@ export function verbLine(spec: Pick<GameSpecV1, 'control' | 'addons' | 'objectiv
   const named = roles.find((role) => role.id === spec.objective.role && OBJECT_KINDS[verb]!.includes(role.kind));
   const thing = named ?? roles.find((role) => OBJECT_KINDS[verb]!.includes(role.kind));
   if (thing === undefined) return SHORT[verb] ?? null;
-  const line = SAY[verb]!(many(thing.label.trim().toLowerCase()));
+  // P68 T11: v obchodě (`buildshift`) se zákazníci obsluhují, ne sbírají (`stavba/integration.md` → HUD labels).
+  const say = spec.control === 'buildshift' && verb === 'collect' ? (things: string) => `Serve the ${things}!` : SAY[verb]!;
+  const line = say(many(thing.label.trim().toLowerCase()));
   return line.length <= VERB_LINE_MAX ? line : (SHORT[verb] ?? null);
 }

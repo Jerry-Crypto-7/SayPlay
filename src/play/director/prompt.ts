@@ -136,6 +136,8 @@ export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
   steal: 'grab the collect loot at a rival base, carry it home past chase_me guards; "a fox sneaks eggs out of the henhouse"',
   sort: 'tap queues of collect things into bins of their kind or colour; "sort socks into baskets"',
   arrows: 'tap stuck pieces, each leaves the way it points if clear; "free the boats from a packed harbour"',
+  // P68 T11: řádek kategorie stavba (`evals/play/p68/stavba/integration.md` → Pitch).
+  buildshift: 'build the stations of a small shop on a grid, open it and serve arriving customers their goods before the shift ends; "robots line up for pizza at my tiny diner", "serve 12 cats their milk"',
 };
 
 /** Co o parametru hloubky (P36A T8) říká věta – v závorce za mezí. */

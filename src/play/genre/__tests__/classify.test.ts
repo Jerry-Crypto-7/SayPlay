@@ -388,7 +388,8 @@ describe('classifyGenre', () => {
   it('keeps the whole keyword order of the 19 old genres of every dev sentence without a reading (P56A baseline)', () => {
     const baseline = JSON.parse(readFileSync(new URL('../../../../evals/play/p56a/baseline.json', import.meta.url), 'utf8')) as { sets: Record<string, { rows: { id: string; ranked: string }[] }> };
     const sets = { p30Dev: 'p30/dev.json', p54cDev: 'p54c/dev.json', p55HoldoutOpened: 'p55/holdout.json' };
-    const P66 = new Set(['survivor', 'hole', 'steal', 'sort', 'arrows']);
+    // P68 T11: hry P68 výchozí čísla P56A taky znát nemohla – vyjmou se stejně jako žánry P66.
+    const P66 = new Set(['survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
     const firsts: string[] = [];
     for (const [name, path] of Object.entries(sets)) {
       const was = new Map(baseline.sets[name]!.rows.map((row) => [row.id, row.ranked]));
