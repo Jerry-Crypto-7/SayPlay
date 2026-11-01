@@ -263,3 +263,21 @@ HUD (T10).
   sektor, na předmětu, který místnost má (200 semínek); zdroj bez `Math.random`/`Date.now`/`performance.now`.
 - **Záměrná chyba** (pin, `mutationStatus: none`, ověřeno navíc): pravidlo uzná ránu do libovolného sektoru → test
   náhodného hráče zčervenal („round 0: expected 0 to be 2“), jádro vrácené ze zálohy.
+
+## Kontrola vlastnictví a druhý push (T12)
+
+- `git fetch origin` 1. 11.: `origin/main` = `15c81e6a` (kostra P68-I), předek `HEAD`; PR #62 ještě nesloučený –
+  merge nebyl potřeba, push aktualizuje týž PR, nový se nezakládá.
+- `git diff --name-only origin/main...HEAD` = 29 souborů. Povolené cesty: `src/play/genre/railfps.ts` a
+  `__tests__/railfps.test.ts`; `src/play/arcade/pieces/railfps{,-anomaly,-bot,-level,-trace,-world}.ts` a 4 testy;
+  `src/components/play/arcade/genres/railfps/**` (6 souborů + 3 testy); `e2e/play-railfps.spec.ts`,
+  `e2e/fixtures/p68-railfps-spec.json`; `evals/play/p68/prvni-osoba/**` (README, `integration.md`, `fps.json`,
+  `sentences.json`, test). **Mimo ně jediný:** `src/play/genre/__tests__/p68-staged.test.ts` – smazaný blok „a
+  skeleton does not compile“, totožný s commitem P68S `96fef11a` (diff proti větvi P68S = 0 řádků), výslovně schválený
+  majitelem v plánu 1. 11.; nevrací se.
+- Absolutní cesty uživatele v commitech: žádná skutečná. Jediný nález hledaného řetězce je text samotné kontroly
+  v řádku T7b výše (bez jména uživatele).
+- Cílené testy 98/98 (10 souborů, včetně `p68-staged` 6/6 a `genres/railfps`), `npm run build` projde,
+  `play-railfps` na `chromium`, `pixel7-touch` a `iphone-touch` 7 prošlo a 2 přeskočené (měření FPS běží jen na
+  Pixel 7): výhra na obou telefonech za 2610 tiků se 3 životy. FPS: medián 59,9, p95 33,3 ms – na hraně brány 33,3
+  jako v T10 (kolísá se zátěží stroje); přepsaný `fps.json` vrácený.
