@@ -99,3 +99,24 @@ Kostra P68-I je v `origin/main` jako `15c81e6a` (PR #61); větev na ni přešla 
 - **Sdílený test červený od T4:** `p68-staged.test.ts:68` („a skeleton does not compile … until its category ships“)
   čeká „not live“ od všech pěti her; hotový modul `railfps` se přeloží. Ostatní testy kostry (`p66-staged`,
   `director-prompt`, `p68-hash`) zelené. Úprava testu patří P68-I – řádek v `integration.md`.
+
+## Scéna, kamera a dotyk (T5)
+
+- `genres/railfps/railfps-camera.ts` (čisté funkce): `cameraPose(fromStep, toStep, t, aspect, rect)` bere kroky
+  natočení −16..16, ne sektory; `screenToSector(ndcX, yawDeg, aspect, fovDeg)` bere x −1..1, inverze
+  `sectorToScreen` vrací x nebo `null`, když střed sektoru leží mimo obraz.
+- Oko 1,6 m (prostřední řádek terčů), svislé zorné pole 68° na výšku a 50° na šířku (samo se rozšíří, když je pás hry
+  moc nízký). Na 412 × 839 je vidět ~2,4 sektoru, na 1280 × 720 ~5,3. Nepřítel ve 22 m potřebuje zvětšení 1,9×
+  (výška) a 1,3× (šířka) na 10 % výšky obrazu, strop je 2×. Zvětšují se jen nepřátelé a boss; terč by zakryl sousední
+  řádek výšky.
+- `RailfpsTouch.tsx` místo plánového `RailfpsRig.tsx` (vstup `genre` z kostry). Ťuk střílí při puštění, takže tah
+  na rozhlédnutí nikdy nevystřelí; tah otočí pohled o 1,5× úhlu prstu, puštění pošle `hold(0)`. Klávesy: šipky a A/D
+  o sektor, F/J/Enter/mezerník výstřel (stage pro `input: 'genre'` žádné klávesy nemapuje).
+- Adaptér dostává jen `{ session }`: plátno najde přes rodiče a natočení i zorné pole, které scéna opravdu vykreslila,
+  čte z `data-railfps-yaw` / `data-railfps-fov` na stage. Čistší by byl `surface` v `GenreTouchProps` – potřeba
+  v `integration.md`.
+- Scéna kostry neposouvala hodiny relace (hra by stála); nová scéna je posouvá jako ostatní žánrové scény.
+- Zaměřovač a značka sektoru jsou ve 3D (prstenec ve středu, klín v barvě slunce na podlaze), kamera stojí v počátku
+  (nejede po kolejích). Bez ducha replaye a bez lišty HP bosse (T8/T10).
+- Testy `railfps-camera.test.ts` 16/16 (mutace zrcadlení a znaménka svislého posunu: 8/16 červených), `npm run build`
+  projde.
