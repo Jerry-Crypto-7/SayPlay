@@ -149,6 +149,17 @@ běží jen na `pixel7-touch`), 2,0 min.
 - **Snímky:** `D:/caches/p68/F/shots/` – `<projekt>-start.png`, `-enemy.png`, `-result.png` pro všechny tři projekty,
   `chromium-aim.png`, `pixel7-touch-landscape.png`, `iphone-touch-landscape.png`.
 
+## První PR (T7b)
+
+- `origin/main` = `15c81e6a` (kostra P68-I), předek `HEAD` – merge nebyl potřeba.
+- Kontrola vlastnictví: `git diff --name-only origin/main...HEAD` = 21 souborů, všechny v povolených cestách
+  (`src/play/genre/railfps.ts` a jeho test, `src/play/arcade/pieces/railfps*` a testy,
+  `src/components/play/arcade/genres/railfps/**`, `e2e/play-railfps.spec.ts`, `e2e/fixtures/p68-railfps-spec.json`,
+  `evals/play/p68/prvni-osoba/**`); mimo ně nic. `C:/Users/` v commitech: 0.
+- Cílené testy 401/401 (23 souborů), `npm run build` projde, e2e na třech projektech zelený (Milník výše, týž kód).
+- Sdílený `p68-staged.test.ts:68` je na větvi červený (viz T4); podle plánu P68-I blok odstraní PR P68-S.
+- Auto-merge repo nepovoluje; PR slučuje vlastník.
+
 ### Nálezy pro T9
 
 - Robot vyhraje za 16,9 s, ale spec slibuje `targetDurationSec: 70`: tři vlny po 16 věcech jsou krátké.

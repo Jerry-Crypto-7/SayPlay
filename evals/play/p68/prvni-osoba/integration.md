@@ -132,7 +132,7 @@ Jemnější krok osy než `RAILFPS_YAW_STEPS = 16` hra nepotřebuje: 9 sektorů 
 | `src/play/director/answer-schema.ts` | `railfps` pryč z `DIRECTOR_PENDING` | režisér hru dnes nenabízí | prompt režiséra má řádek `railfps` | plán |
 | `src/play/spec.ts` | `railfps` pryč ze `STAGED_CONTROLS` | čtení modelem ovládání nevidí; `classify.ts` ho jmenuje spolu s `ROUTE_PENDING` a `DIRECTOR_PENDING` | `READ_CONTROLS` obsahuje `railfps` | T7 |
 | `src/play/genre/railfps.ts` (soubor hry, přepíná P68-I) | `availability` → `'ready'`, `cues` podle „Narážky“ | modul drží hodnotu kostry `staged`, aktivace je úloha „zapoj railfps“ | test modulu: `availability` = `ready` | plán |
-| `src/play/genre/__tests__/p68-staged.test.ts` | ř. 68–69: vyřadit `railfps` ze smyčky „a skeleton does not compile“ (nebo smyčku omezit na hry, jejichž modul je ještě kostra) | test čeká „not live“ od všech pěti her, „dokud kategorie nedodá hru“; hotový modul `railfps` se přeloží, takže od T4 test padá | sada zelená | T4 |
+| `src/play/genre/__tests__/p68-staged.test.ts` | ř. 68–69: vyřadit `railfps` ze smyčky „a skeleton does not compile“ (nebo smyčku omezit na hry, jejichž modul je ještě kostra) | test čeká „not live“ od všech pěti her, „dokud kategorie nedodá hru“; hotový modul `railfps` se přeloží, takže od T4 test padá. Plán P68-I (1. 11.) uvádí, že blok odstraní PR P68-S; po jeho sloučení řádek odpadá | sada zelená | T4 |
 | `src/components/play/arcade/genres/touch-registry.ts` (`GenreTouchProps`) | předat adaptéru i `surface` (prvek stage) | adaptér dostává jen `{ session }`, plátno hledá přes rodiče a natočení s zorným polem čte z `data-railfps-yaw` / `data-railfps-fov`; funguje, ale je křehké | `RailfpsTouch` bez hledání rodiče, e2e `play-railfps` zelený | T5 |
 
 ## Fixture spec
