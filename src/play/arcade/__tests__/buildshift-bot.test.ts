@@ -14,10 +14,10 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { ARCADE_LIMITS, type ArcadeWorld, BUTTON, type InputEvent, NO_INPUT } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, BUTTON, HEADER, type InputEvent, NO_INPUT } from '../contract';
 import { type ArcadeLibrary, buildWorld, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { BUILDSHIFT, PALETTE, PHASE, STATION_COST, buildshiftShop, isBuildCell, manhattan, phaseOf, servedOf } from '../pieces/buildshift';
+import { BUILDSHIFT, PALETTE, PHASE, RUSH_START, STATION_COST, buildshiftShop, isBuildCell, manhattan, phaseOf, rushFor, servedOf } from '../pieces/buildshift';
 import { type ShopLayout, badLayout, buildshiftBot, planLayout, serveWithLayout } from '../pieces/buildshift-bot';
 import { axisOfCell } from '../pieces/lanes';
 import { runBot, verifyArcade } from '../verify';
@@ -26,9 +26,13 @@ const HORIZON = ARCADE_LIMITS.maxTicks;
 const SEEDS = [101, 118, 135, 152, 169, 186, 203, 220, 237, 254, 271, 288] as const;
 const GOALS = { min: BUILDSHIFT.goal.min, default: BUILDSHIFT.goal.default, max: BUILDSHIFT.goal.max } as const;
 const RUNS_FILE = fileURLToPath(new URL('../../../../evals/play/p68/stavba/bot-runs.json', import.meta.url));
+/** Dev věty T1 (cíl z věty v mezích 6..20); ladí se jen na nich, holdout P68-I se nečte. */
+const DEV = JSON.parse(readFileSync(fileURLToPath(new URL('../../../../evals/play/p68/stavba/dev.json', import.meta.url)), 'utf8')) as {
+  readonly sentences: readonly { readonly id: string; readonly goal: number }[];
+};
 
-function worldOf(seed: number, goal: number): ArcadeWorld {
-  const parts = buildshiftShop.parts(seed, buildshiftShop.params.parse({ goal }), undefined);
+function worldOf(seed: number, goal: number, health?: number): ArcadeWorld {
+  const parts = buildshiftShop.parts(seed, buildshiftShop.params.parse({ goal }), health);
   expect(parts.issues ?? []).toEqual([]);
   const built = buildWorld({ seed, control: parts.control, rules: parts.rules, bot: parts.bot, level: parts.level, health: parts.health }, ARCADE_LIBRARY);
   if (!built.ok) throw new Error(built.issues.join('; '));
@@ -169,6 +173,52 @@ describe('buildshift bot (P68-S T3)', () => {
     const fast = servedWith(near);
     const slow = servedWith(far);
     expect(fast - slow).toBeGreaterThanOrEqual(0.25 * fast);
+  });
+
+  it('a rush brings extra customers in the last 15 s of the clock, from the seed, and none of them can walk out before the clock ends', () => {
+    const rushOf = (world: ArcadeWorld): readonly number[] => (world.rules.find((ref) => ref.id === 'buildshift_shift')?.params as { readonly rush?: readonly number[] }).rush ?? [];
+    expect(RUSH_START).toBe((BUILDSHIFT.seconds - BUILDSHIFT.rushSeconds) * ARCADE_HZ);
+    // Zákazník z rushe odejde nejdřív s koncem hodin: rush je šance navíc, ne past na životy.
+    expect(RUSH_START + BUILDSHIFT.patience).toBeGreaterThanOrEqual(BUILDSHIFT.seconds * ARCADE_HZ);
+    for (const goal of Object.values(GOALS)) {
+      for (const seed of SEEDS.slice(0, 4)) {
+        const rush = rushOf(worldOf(seed, goal));
+        expect(rush).toHaveLength(rushFor(goal));
+        expect(rush.length).toBeGreaterThanOrEqual(4);
+        expect(rush.every((at, k) => at >= RUSH_START && at < RUSH_START + BUILDSHIFT.rushSpan && (k === 0 || at > (rush[k - 1] as number)))).toBe(true);
+      }
+    }
+    expect(rushOf(worldOf(SEEDS[0], GOALS.default))).not.toEqual(rushOf(worldOf(SEEDS[1], GOALS.default)));
+    // Směna, která dojde až k hodinám (nečinný hráč se životy navíc): zákazníci rushe opravdu přijdou dveřmi.
+    const world = worldOf(SEEDS[2], GOALS.default, 99);
+    const program = loadProgram(world, ARCADE_LIBRARY);
+    const state = instantiate(world);
+    const shiftRule = world.rules.findIndex((ref) => ref.id === 'buildshift_shift');
+    let late = 0;
+    while (outcomeOf(state) === 'running') {
+      const tick = state[HEADER.tick] as number;
+      step(state, NO_INPUT, program, (rule, effect) => {
+        if (rule === shiftRule && effect.kind === 'spawn' && tick >= RUSH_START - 1) late += 1;
+      });
+    }
+    expect(outcomeOf(state)).toBe('lost');
+    expect(state[HEADER.tick] as number).toBeGreaterThanOrEqual(BUILDSHIFT.seconds * ARCADE_HZ);
+    expect(late).toBe(rushFor(GOALS.default));
+  });
+
+  it('the bot wins and an idle player loses the goal of every dev sentence on three seeds', () => {
+    const failures: string[] = [];
+    for (const sentence of DEV.sentences) {
+      for (const seed of SEEDS.slice(0, 3)) {
+        const world = worldOf(seed, sentence.goal);
+        const bot = runBot(world);
+        if (bot.outcome !== 'won' || bot.tick > HORIZON) failures.push(`${sentence.id} seed ${String(seed)}: bot ${bot.outcome} at ${String(bot.tick)}`);
+        const idle = replay(world, [] as InputEvent[], ARCADE_LIBRARY, HORIZON);
+        if (idle.outcome !== 'lost') failures.push(`${sentence.id} seed ${String(seed)}: idle ${idle.outcome}`);
+      }
+    }
+    expect(DEV.sentences).toHaveLength(20);
+    expect(failures).toEqual([]);
   });
 
   it('the bot runs match the recorded snapshot (rewrite with BUILDSHIFT_BOT_RUNS=write)', () => {
