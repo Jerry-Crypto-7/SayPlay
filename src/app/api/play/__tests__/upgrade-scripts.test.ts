@@ -17,7 +17,9 @@ import { memoryVersionStore } from '@/play/version';
 
 import { DIRECTOR_BUDGET_MS } from '../_director';
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
-import { SCRIPT_WRITER_MIN_MS, directUpgrade } from '../_upgrade';
+import { directUpgrade, scriptWriterMinMs } from '../_upgrade';
+
+const SCRIPT_WRITER_MIN_MS = scriptWriterMinMs();
 
 vi.mock('quickjs-emscripten-core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('quickjs-emscripten-core')>();

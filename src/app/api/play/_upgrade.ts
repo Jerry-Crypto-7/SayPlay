@@ -405,9 +405,10 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
  * režiséra), tak platí mez režiséra pro astru `MIN_CALL_MS`: kratší zbytek by zaplatil volání, které skoro jistě
  * nedoběhne, a `maxDuration` by funkci zabil i s AI verzí, kterou režisér už zaplatil, a s nevyrovnanou rezervací
  * stropu skriptů. Okno je totéž jako režiséra (`startedAt + DIRECTOR_BUDGET_MS`), takže kompilaci a zápisu zůstane
- * jejich 30 s do `maxDuration`.
+ * jejich 30 s do `maxDuration`. Funkce, ne konstanta: hodnota se čte až při volání, takže testy, které `_director`
+ * mockují bez `MIN_CALL_MS`, modul načtou.
  */
-export const SCRIPT_WRITER_MIN_MS = MIN_CALL_MS;
+export const scriptWriterMinMs = (): number => MIN_CALL_MS;
 
 /**
  * AI verze s úrovní ze skriptu (P68 T13), nebo beze změny: hra, pro kterou skript nepíše, skript, který dvakrát
@@ -418,7 +419,7 @@ export const SCRIPT_WRITER_MIN_MS = MIN_CALL_MS;
 async function withLevelScript(draftId: string, spec: GameSpecV1, seeds: number[], request: UpgradeRequest, writer: ScriptWriter): Promise<[GameSpecV1, number[]]> {
   const seed = seeds[0] as number;
   try {
-    const outcome = await scriptedLevel(spec, seed, request.sentence, writer, { deadline: request.startedAt + DIRECTOR_BUDGET_MS, minCallMs: SCRIPT_WRITER_MIN_MS });
+    const outcome = await scriptedLevel(spec, seed, request.sentence, writer, { deadline: request.startedAt + DIRECTOR_BUDGET_MS, minCallMs: scriptWriterMinMs() });
     if (outcome.reason !== 'unsupported') console.warn(`[play] level script of ${draftId} ended ${outcome.reason} after ${outcome.attempts.length} attempt(s), ${outcome.spentUsd.toFixed(4)} USD`);
     return outcome.spec === null ? [spec, seeds] : [outcome.spec, [seed]];
   } catch (thrown) {
