@@ -12,9 +12,13 @@
  * buňky s rezervou, kterou pinuje test. Mlhu a vzdálenou rovinu kvůli vzdálenosti posouvá scéna (`BuildshiftScene`).
  *
  * **Na výšku** (`camera.aspect < 1`) přes `fitTall` z `portrait-frame.ts` do hracího obdélníku (`usePlayRectRef`),
- * deska pak sjede ke spodní hraně – paleta je pod palcem. **Na šířku** vlastní póza: 7 řad po ≥ 44 px se na 390 px
- * výšky pod pás HUD (120 px s řádkem cíle) nevejde, takže deska zabere celou výšku plátna ve sloupci mezi rohy HUD
- * (`wideFrame`): pilulka postupu vlevo a časovač s pauzou vpravo leží vedle vzdálených řad, ne na nich.
+ * deska pak sjede ke spodní hraně – paleta je pod palcem. **Na šířku** vlastní póza: 7 řad se na 390 px výšky pod
+ * horní pás HUD (120 px s řádkem cíle) nevejde, takže deska zabere výšku ve sloupci mezi rohy HUD (`wideFrame`):
+ * pilulka postupu vlevo a časovač s pauzou vpravo leží vedle vzdálených řad, ne na nich. Dolní řada HUD (Restart,
+ * „Change one thing“, sdílení) ale vede přes celou šířku, takže dolní hrana rámu je i na šířku horní hrana dolního
+ * pásu hracího obdélníku – jinak by tlačítka ležela přes paletu a ťuk by místo stavby otevřel změnu hry (e2e T6).
+ * Na šířku telefonu (343–390 px výšky) tak buňka vyjde 36–42 px, pod `--sp-size-touch-min`; 44 px chce dolní řadu
+ * HUD mimo sloupec desky (požadavek v `evals/play/p68/stavba/integration.md`).
  */
 
 import { Box3, MathUtils, type PerspectiveCamera, Vector3 } from 'three';
@@ -71,10 +75,10 @@ const CENTER = GRID_BOX.getCenter(new Vector3()).setY(0);
 /** Směr od středu desky ke kameře: za dveřmi (−z) a nad nimi pod `VIEW.pitch`. */
 const BACK = new Vector3(0, Math.sin(VIEW.pitch), -Math.cos(VIEW.pitch));
 
-/** Na šířku: sloupec mezi rohy HUD přes celou výšku plátna (px, y dolů). */
-export function wideFrame(canvas: Canvas): FrameRect {
+/** Na šířku: sloupec mezi rohy HUD od horní hrany plátna po dolní pás hracího obdélníku `rect` (px, y dolů). */
+export function wideFrame(canvas: Canvas, rect: PlayRect): FrameRect {
   const corner = Math.min(VIEW.cornerPx, canvas.width / 4);
-  return { left: corner, top: VIEW.edgePx, right: canvas.width - corner, bottom: canvas.height - VIEW.edgePx };
+  return { left: corner, top: VIEW.edgePx, right: canvas.width - corner, bottom: Math.min(canvas.height, rect.px.bottom) - VIEW.edgePx };
 }
 
 /** Kamera kouká na střed desky ze směru `BACK` (zatím z libovolné dálky). */
@@ -136,13 +140,13 @@ function fitFrame(camera: PerspectiveCamera, box: Box3, frame: FrameRect, canvas
 export const tallFallback = (canvas: Canvas): PlayRect => playRect(canvas, space['4'] + size['hud-pill'] + space['3'], canvas.height);
 
 /**
- * Postaví kameru: zorný úhel, polohu a orientaci (matice světa aktualizované). Na výšku `rect` = hrací obdélník
- * z `usePlayRectRef` (nebo `tallFallback`), na šířku se nečte.
+ * Postaví kameru: zorný úhel, polohu a orientaci (matice světa aktualizované). `rect` = hrací obdélník z
+ * `usePlayRectRef` (nebo `tallFallback`); na šířku se z něj čte jen dolní pás.
  */
 export function placeCamera(camera: PerspectiveCamera, canvas: Canvas, rect: PlayRect): void {
   if (camera.aspect >= 1) {
     aim(camera, VIEW.wideFov);
-    camera.position.copy(fitFrame(camera, GRID_BOX, wideFrame(canvas), canvas));
+    camera.position.copy(fitFrame(camera, GRID_BOX, wideFrame(canvas, rect), canvas));
     camera.updateMatrixWorld();
     return;
   }

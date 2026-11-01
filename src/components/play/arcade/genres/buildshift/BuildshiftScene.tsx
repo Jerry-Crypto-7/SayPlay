@@ -359,8 +359,9 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
     }
 
     // Kamera: póza jen při změně plátna, obdélníku nebo orientace; každý snímek se jen obnoví (otřes ji smí pohnout).
+    // Hrací obdélník i na šířku: dolní řada HUD vede přes celou šířku a paleta musí ležet nad ní.
     const tall = camera.aspect < 1;
-    const rect = tall ? playRect.current : null;
+    const rect = playRect.current;
     const known = poseKey.current;
     if (known === null || known.rect !== rect || known.width !== three.size.width || known.height !== three.size.height || known.tall !== tall) {
       poseKey.current = { rect, width: three.size.width, height: three.size.height, tall };
