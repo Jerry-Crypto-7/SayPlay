@@ -45,6 +45,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'steal.default': { move: 'roam', actions: ['steal'], objective: 'score', threats: ['guard'] },
   'sort.default': { move: 'stationary', actions: ['sort'], objective: 'score', threats: [] },
   'arrows.default': { move: 'stationary', actions: ['unblock'], objective: 'score', threats: [] },
+  // P68 T11: the build-shift shop is live – its cell moved here from `STAGED_PRESETS`.
+  'buildshift.default': { move: 'stationary', actions: ['shopbuild'], objective: 'score', threats: [] },
 };
 
 /**
@@ -57,7 +59,6 @@ export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
   'stunt.default': { move: 'drive', actions: ['stunt'], objective: 'reach', threats: ['obstacle'] },
   'minigolf.default': { move: 'stationary', actions: ['putt'], objective: 'score', threats: [] },
   'railfps.default': { move: 'stationary', actions: ['railshoot'], objective: 'defeat', threats: ['chaser'] },
-  'buildshift.default': { move: 'stationary', actions: ['shopbuild'], objective: 'score', threats: [] },
   'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },
 };
 

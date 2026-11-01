@@ -73,7 +73,9 @@ const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input'
  * dav, slučování, vytlačování) – seznam je prázdný. Žánr, který úloha pustí živě dřív, než ho režisér nabídne, sem přidá.
  * P66 T12 pustil pět nových žánrů do rychlé hry, P66 T13 je režisérovi popsal (`GENRE_PITCH`) – seznam je zase prázdný.
  * P68 T1 (brána aktivace): pět her P68 je tu od kostry. Kategorie smí modul přepnout na `ready` a psát narážky;
- * režisér ho uvidí, až ho odsud odebere úloha „zapoj X“ v P68-I – nikdo jiný.
+ * režisér ho uvidí, až ho odsud odebere úloha „zapoj X“ v P68-I – nikdo jiný. T11 pustil `buildshift` jen do rychlé
+ * hry (jako P66 T12): nabídka režisérovi pohne schématem odpovědi, a tím otiskem nahraných odpovědí P46E, které jde
+ * znovu nahrát jen placeně přes měřicí knihu (R5 v plánu P68-I).
  */
 export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 

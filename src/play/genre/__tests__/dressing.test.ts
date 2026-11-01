@@ -59,6 +59,8 @@ const ROWS: readonly Row[] = [
   { genre: 'steal', sentence: 'a fox steals eggs from the farm and runs them back to its den while the farmer chases it', place: 'farm', slots: { 'thing.loot': 'egg', 'thing.guard': 'farmer' } },
   { genre: 'sort', sentence: 'sort the apples and pears into the right baskets on a farm', place: 'farm', slots: { 'thing.sort0': 'apple', 'thing.sort1': 'pear' } },
   { genre: 'arrows', sentence: 'tap each car so it drives out of the jammed parking lot', place: 'parking lot', slots: { 'thing.piece': 'car' } },
+  // P68 T11: obchod je zapojený.
+  { genre: 'buildshift', sentence: 'run a cat cafe and serve 12 cats their milk', place: 'cafe', slots: { 'thing.customer': 'cat', 'thing.goods': 'milk' } },
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */

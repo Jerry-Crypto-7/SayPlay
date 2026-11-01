@@ -38,6 +38,9 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
+/** Hry, které už úloha „zapoj X“ pustila (T11 `buildshift`) – brána aktivace drží jen zbytek. */
+const WIRED: readonly string[] = ['buildshift'];
+const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {
   const json = JSON.parse(readFileSync(join(PLAY, set), 'utf8')) as { text: string }[] | { sentences: { text: string }[] };
@@ -67,22 +70,24 @@ describe('P68 skeletons (T1)', () => {
 });
 
 describe('P68 activation gate: a ready module stays invisible until "wire X" removes it', () => {
-  it('every new game sits in all three gates', () => {
+  it('every new game not yet wired sits in all three gates; a wired one in none', () => {
+    for (const genre of PENDING) expect(ROUTE_PENDING.has(genre), `${genre} ROUTE_PENDING`).toBe(true);
+    // T11 pustil `buildshift` jen do rychlé hry; režisér a čtečka čekají na R5 (placený re-record P46E).
+    for (const genre of WIRED) expect(ROUTE_PENDING.has(genre as GenreId), `${genre} ROUTE_PENDING`).toBe(false);
     for (const genre of P68) {
-      expect(ROUTE_PENDING.has(genre), `${genre} ROUTE_PENDING`).toBe(true);
       expect(DIRECTOR_PENDING.has(genre), `${genre} DIRECTOR_PENDING`).toBe(true);
       expect(READ_CONTROLS, genre).not.toContain(genre);
     }
   });
 
-  it('the classifier never ranks a new game on any P30, P66 or P68 dev sentence', () => {
+  it('the classifier never ranks a new game not yet wired on any P30, P66 or P68 dev sentence', () => {
     const sentences = [...sentencesOf('p30/dev.json'), ...sentencesOf('p66/dev.json'), ...sentencesOf('p68/dev.json')];
     expect(sentences.length).toBeGreaterThanOrEqual(120);
-    const leaked = sentences.flatMap((sentence) => classifyGenre(sentence, null).ranked.filter((choice) => (P68 as readonly string[]).includes(choice.genre)).map((choice) => `${choice.genre}: ${sentence}`));
+    const leaked = sentences.flatMap((sentence) => classifyGenre(sentence, null).ranked.filter((choice) => (PENDING as readonly string[]).includes(choice.genre)).map((choice) => `${choice.genre}: ${sentence}`));
     expect(leaked).toEqual([]);
   });
 
-  it('the director prompt, its genre lines and its answer schema name no new game', () => {
+  it('the director prompt, its genre lines and its answer schema name no new game not yet wired', () => {
     const lines = genrePromptLines();
     const system = directorSystemPrompt();
     const schema = JSON.stringify(GENRE_ANSWER_SCHEMA);
@@ -93,7 +98,7 @@ describe('P68 activation gate: a ready module stays invisible until "wire X" rem
     }
   });
 
-  it('the reader prompt names no new game or control', () => {
+  it('the reader prompt names no new game or control not yet wired', () => {
     const prompt = readerSystemPrompt();
     for (const genre of P68) expect(mentions(prompt, genre), genre).toBe(false);
   });

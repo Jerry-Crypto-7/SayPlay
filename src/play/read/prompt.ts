@@ -55,6 +55,9 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'slice.default': 'things are tossed or fly through the air and you cut them midair',
   'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard, and you hold every path',
   'quest.spatial': 'you walk to objects one by one and act on each (light, fix, pop, free, clean, deliver), even with a chaser',
+  // P68 T11: před stanovištěm, ať „serve customers in my diner“ nevezme jedno pracoviště. V promptu je až s R5 (brána
+  // `READER_PENDING`); pak prompt přeroste strop 6 000 znaků o ~170 a věta „genre is null … managing a shop“ se změní.
+  'buildshift.default': 'you build a small shop (ovens, counters, shelves) on a grid, open it and serve customers who come for one food or drink before they walk out',
   'quest.station': 'you stay at one stove, bench or workplace and cook, brew, fix or craft, order after order',
   'shooter.default': 'you stand, aim and shoot foes or targets coming at you',
   'throw.default': 'you aim an arc and throw at a target, hoop or stack',

@@ -62,6 +62,7 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'steal', mode: 'default', hero: 'cat', cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'chase_me' }], setting: 'fish market' },
   { genre: 'sort', mode: 'default', hero: 'shop clerk', cast: [{ label: 'teddy bear', does: 'collect' }, { label: 'ball', does: 'collect' }], setting: 'toy shop' },
   { genre: 'arrows', mode: 'default', hero: 'valet', cast: [{ label: 'car', does: 'scenery' }], setting: 'parking lot' },
+  { genre: 'buildshift', mode: 'default', hero: 'chef', cast: [{ label: 'robot', does: 'collect' }, { label: 'pizza', does: 'scenery' }], setting: 'diner' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
