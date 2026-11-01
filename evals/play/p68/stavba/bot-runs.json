@@ -1,0 +1,293 @@
+{
+ "note": "P68-S T3: buildshift bot runs (goal, seed -> served, outcome, tick, final hash). Rewrite on purpose: BUILDSHIFT_BOT_RUNS=write.",
+ "runs": [
+  {
+   "goal": 6,
+   "seed": 101,
+   "served": 6,
+   "outcome": "won",
+   "tick": 1902,
+   "hash": "cf7996ed"
+  },
+  {
+   "goal": 6,
+   "seed": 118,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2028,
+   "hash": "ee79fa61"
+  },
+  {
+   "goal": 6,
+   "seed": 135,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2066,
+   "hash": "94115009"
+  },
+  {
+   "goal": 6,
+   "seed": 152,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2659,
+   "hash": "4f72f0d3"
+  },
+  {
+   "goal": 6,
+   "seed": 169,
+   "served": 6,
+   "outcome": "won",
+   "tick": 1992,
+   "hash": "9eaea519"
+  },
+  {
+   "goal": 6,
+   "seed": 186,
+   "served": 6,
+   "outcome": "won",
+   "tick": 1956,
+   "hash": "fd2c5f51"
+  },
+  {
+   "goal": 6,
+   "seed": 203,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2023,
+   "hash": "36f1164f"
+  },
+  {
+   "goal": 6,
+   "seed": 220,
+   "served": 6,
+   "outcome": "won",
+   "tick": 1960,
+   "hash": "5439fb59"
+  },
+  {
+   "goal": 6,
+   "seed": 237,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2265,
+   "hash": "1a6eb57b"
+  },
+  {
+   "goal": 6,
+   "seed": 254,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2021,
+   "hash": "23dce3d7"
+  },
+  {
+   "goal": 6,
+   "seed": 271,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2142,
+   "hash": "3a2ca5e9"
+  },
+  {
+   "goal": 6,
+   "seed": 288,
+   "served": 6,
+   "outcome": "won",
+   "tick": 2145,
+   "hash": "59c33e9b"
+  },
+  {
+   "goal": 12,
+   "seed": 101,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2512,
+   "hash": "2dabff0b"
+  },
+  {
+   "goal": 12,
+   "seed": 118,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2590,
+   "hash": "b3379141"
+  },
+  {
+   "goal": 12,
+   "seed": 135,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2422,
+   "hash": "5f867815"
+  },
+  {
+   "goal": 12,
+   "seed": 152,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2467,
+   "hash": "49ad5f23"
+  },
+  {
+   "goal": 12,
+   "seed": 169,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2522,
+   "hash": "c77d279d"
+  },
+  {
+   "goal": 12,
+   "seed": 186,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2467,
+   "hash": "49ad5f23"
+  },
+  {
+   "goal": 12,
+   "seed": 203,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2313,
+   "hash": "47a73388"
+  },
+  {
+   "goal": 12,
+   "seed": 220,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2479,
+   "hash": "fef6c760"
+  },
+  {
+   "goal": 12,
+   "seed": 237,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2569,
+   "hash": "a5991d0e"
+  },
+  {
+   "goal": 12,
+   "seed": 254,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2555,
+   "hash": "b638ca03"
+  },
+  {
+   "goal": 12,
+   "seed": 271,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2404,
+   "hash": "1bf1cb71"
+  },
+  {
+   "goal": 12,
+   "seed": 288,
+   "served": 12,
+   "outcome": "won",
+   "tick": 2396,
+   "hash": "fcf1145a"
+  },
+  {
+   "goal": 20,
+   "seed": 101,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2697,
+   "hash": "62ea5fdc"
+  },
+  {
+   "goal": 20,
+   "seed": 118,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2523,
+   "hash": "65a1eff3"
+  },
+  {
+   "goal": 20,
+   "seed": 135,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2567,
+   "hash": "9337aefe"
+  },
+  {
+   "goal": 20,
+   "seed": 152,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2473,
+   "hash": "efc9527d"
+  },
+  {
+   "goal": 20,
+   "seed": 169,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2559,
+   "hash": "92a6a803"
+  },
+  {
+   "goal": 20,
+   "seed": 186,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2581,
+   "hash": "c2c0f928"
+  },
+  {
+   "goal": 20,
+   "seed": 203,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2571,
+   "hash": "6ad987ed"
+  },
+  {
+   "goal": 20,
+   "seed": 220,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2617,
+   "hash": "bc8822aa"
+  },
+  {
+   "goal": 20,
+   "seed": 237,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2585,
+   "hash": "7af1cc60"
+  },
+  {
+   "goal": 20,
+   "seed": 254,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2575,
+   "hash": "2a2eb2ee"
+  },
+  {
+   "goal": 20,
+   "seed": 271,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2617,
+   "hash": "6ca8c4cf"
+  },
+  {
+   "goal": 20,
+   "seed": 288,
+   "served": 20,
+   "outcome": "won",
+   "tick": 2485,
+   "hash": "c7a151b0"
+  }
+ ]
+}
