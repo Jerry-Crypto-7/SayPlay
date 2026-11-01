@@ -8,7 +8,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+
+import { loadRapier } from '@/play/arcade/physics/world';
+import { draftGameSpecWithMeta } from '@/play/draft';
 
 import { ROUTE_PENDING, classifyGenre } from '../classify';
 
@@ -75,4 +78,17 @@ describe('the route guard over the P68 labels (P68 T8)', () => {
     for (const row of branch.rows) if (row.genre === 'stunt') expect(row.acceptable, row.text).toContain('stunt');
     expect(branch.wrongRate.test200.wrongRate).toBeLessThanOrEqual(main.wrongRate.test200.wrongRate);
   });
+});
+
+// Skladatel staví recept `drive` obecnou jízdou (`driveSpec`); stunt je celá hra na `drive` a hraje ho jeho modul.
+// Bez toho věta dostane obyčejný závod se jménem stuntu – bez ramp, hromad a slabého robota, který prohraje.
+describe('the quick game of a stunt sentence is the stunt race (P68 T8)', () => {
+  beforeAll(async () => { await loadRapier(); });
+  it('drafts the stunt module, not the plain drive', () => {
+    for (const { text } of DEV.slice(0, 3)) {
+      const meta = draftGameSpecWithMeta(text, 1);
+      expect(meta.genre?.genre, text).toBe('stunt');
+      expect(meta.spec.control, text).toBe('stunt');
+    }
+  }, 120_000);
 });

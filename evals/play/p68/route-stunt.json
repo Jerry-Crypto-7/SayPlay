@@ -1,11 +1,11 @@
 {
  "schema": "p68-genre-route.v1",
- "commit": "ce35f6fa+wip",
+ "commit": "495db211+T8",
  "root": "D:/claude/Hackaton/.claude/worktrees/P68I-integrace-2026-10-31",
- "measuredAt": "2026-11-01T18:20:09.629Z",
+ "measuredAt": "2026-11-01T18:46:23.059Z",
  "labels": "evals/play/p68/genre-labels.json",
  "about": "genre = classifyGenre(sentence, null).ranked[0] (quick game, no model); draft = draftGameSpecWithMeta(sentence, 1).genre (composer; grid = archetype fallback). wrong = best != none and genre not in acceptable; none is not counted. Labels: 29 types (P68).",
- "seconds": 198,
+ "seconds": 136,
  "wrongRate": {
   "test200": {
    "sentences": 200,
