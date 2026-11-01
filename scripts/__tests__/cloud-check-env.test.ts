@@ -6,7 +6,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -33,6 +33,10 @@ const GOOD = {
   // Záloha: 8000 × 10 USD/Mtok = 0,08 USD → 20 USD potřebuje 250 volání.
   WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT: '10',
   WORLDSMITH_FALLBACK_CALL_CAP: '300',
+  // P68I T7: součet stropů (30 + 20) se vejde do celkového a kniha stropů má sdílené úložiště.
+  PLAY_TOTAL_SPEND_CAP_USD: '50',
+  KV_REST_API_URL: 'https://example-kv.upstash.io',
+  KV_REST_API_TOKEN: 'token',
 } as const;
 
 const names = (vars: Record<string, string>) => checkEnv(vars).map((problem) => problem.name);
@@ -97,6 +101,9 @@ describe('checkEnv', () => {
   it('lists every problem, not just the first', () => {
     expect(names({ WORLDSMITH_MODEL_PROFILE: 'subscription', WORLDSMITH_MODEL_ENDPOINT: 'codex-cli' }).sort()).toEqual(
       [
+        'KV_REST_API_TOKEN',
+        'KV_REST_API_URL',
+        'PLAY_TOTAL_SPEND_CAP_USD',
         'WORLDSMITH_CALL_CAP',
         'WORLDSMITH_FALLBACK_CALL_CAP',
         'WORLDSMITH_FALLBACK_SPEND_CAP_USD',
@@ -161,7 +168,7 @@ describe('checkEnv – optional play director slots (P53 T1)', () => {
 
 describe('checkEnv – the sentence reader (P58B T4)', () => {
   // Čtečka astra jen pro AI verzi: 1024 tokenů × 50 USD/Mtok = 0,0512 USD → 20 USD potřebuje 391 volání.
-  const READER = { PLAY_READER: 'on', PLAY_READER_PATH: 'ai', PLAY_READER_SPEND_CAP_USD: '20', PLAY_READER_USD_PER_MTOK_OUT: '50', PLAY_READER_CALL_CAP: '391' } as const;
+  const READER = { PLAY_READER: 'on', PLAY_READER_PATH: 'ai', PLAY_READER_SPEND_CAP_USD: '20', PLAY_READER_USD_PER_MTOK_OUT: '50', PLAY_READER_CALL_CAP: '391', PLAY_TOTAL_SPEND_CAP_USD: '70' } as const;
 
   it('passes a reader that reads for the AI version under its own caps, and checks nothing while it is off', () => {
     expect(checkEnv({ ...GOOD, ...READER })).toEqual([]);
@@ -210,6 +217,7 @@ describe('checkEnv – one model, one price in every ledger (P59)', () => {
     WORLDSMITH_FALLBACK_MODEL: 'gpt-6-astra', WORLDSMITH_FALLBACK_USD_PER_MTOK_IN: '10', WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT: '50', WORLDSMITH_FALLBACK_CALL_CAP: '60',
     PLAY_READER: 'on', PLAY_READER_PATH: 'ai', PLAY_READER_MODEL: 'gpt-6-astra', PLAY_READER_SPEND_CAP_USD: '20',
     PLAY_READER_USD_PER_MTOK_IN: '10', PLAY_READER_USD_PER_MTOK_OUT: '50', PLAY_READER_CALL_CAP: '400',
+    PLAY_TOTAL_SPEND_CAP_USD: '70',
   } as const;
 
   it('passes the same model priced the same in the fallback and the reader', () => {
@@ -227,6 +235,44 @@ describe('checkEnv – one model, one price in every ledger (P59)', () => {
   });
 });
 
+describe('checkEnv – the sum of the caps and the shared store (P68I T7)', () => {
+  it('passes a sum exactly at the total cap and fails one cent over it, naming the total', () => {
+    expect(checkEnv({ ...GOOD, PLAY_TOTAL_SPEND_CAP_USD: '50' })).toEqual([]);
+    expect(names({ ...GOOD, PLAY_TOTAL_SPEND_CAP_USD: '49.99' })).toEqual(['PLAY_TOTAL_SPEND_CAP_USD']);
+  });
+
+  it('counts the reader cap in the sum', () => {
+    expect(names({ ...GOOD, PLAY_READER_SPEND_CAP_USD: '5' })).toEqual(['PLAY_TOTAL_SPEND_CAP_USD']);
+  });
+
+  it.each(['', 'fifty', '-1'])('refuses a missing or unreadable total cap "%s"', (total) => {
+    expect(names({ ...GOOD, PLAY_TOTAL_SPEND_CAP_USD: total })).toEqual(['PLAY_TOTAL_SPEND_CAP_USD']);
+    const { PLAY_TOTAL_SPEND_CAP_USD: _drop, ...without } = GOOD;
+    expect(names(without)).toEqual(['PLAY_TOTAL_SPEND_CAP_USD']);
+  });
+
+  it.each(['KV_REST_API_URL', 'KV_REST_API_TOKEN'] as const)('refuses a missing or empty %s: without the shared store every cap refuses or resets', (name) => {
+    const { [name]: _drop, ...without } = GOOD;
+    expect(names(without)).toEqual([name]);
+    // `vercel env pull` píše citlivé proměnné prázdné.
+    expect(names({ ...GOOD, [name]: '' })).toEqual([name]);
+  });
+
+  it('adds the script cap only while PLAY_SCRIPTS is on, and wants it then', () => {
+    expect(checkEnv({ ...GOOD, PLAY_SCRIPTS_SPEND_CAP_USD: '10' })).toEqual([]);
+    expect(names({ ...GOOD, PLAY_SCRIPTS: 'on', PLAY_SCRIPTS_SPEND_CAP_USD: '10' })).toEqual(['PLAY_TOTAL_SPEND_CAP_USD']);
+    expect(checkEnv({ ...GOOD, PLAY_SCRIPTS: 'on', PLAY_SCRIPTS_SPEND_CAP_USD: '10', PLAY_TOTAL_SPEND_CAP_USD: '60' })).toEqual([]);
+    expect(names({ ...GOOD, PLAY_SCRIPTS: 'on' })).toEqual(['PLAY_SCRIPTS_SPEND_CAP_USD']);
+  });
+
+  it('checks the judging reserve: both or neither, an ISO date and an amount within the director cap', () => {
+    expect(checkEnv({ ...GOOD, PLAY_JUDGING_FROM: '2026-11-08T09:00:00Z', PLAY_JUDGING_RESERVE_USD: '10' })).toEqual([]);
+    expect(names({ ...GOOD, PLAY_JUDGING_FROM: '8. 11.', PLAY_JUDGING_RESERVE_USD: '10' })).toEqual(['PLAY_JUDGING_FROM']);
+    expect(names({ ...GOOD, PLAY_JUDGING_FROM: '2026-11-08', PLAY_JUDGING_RESERVE_USD: '31' })).toEqual(['PLAY_JUDGING_RESERVE_USD']);
+    expect(names({ ...GOOD, PLAY_JUDGING_RESERVE_USD: '10' })).toEqual(['PLAY_JUDGING_FROM']);
+  });
+});
+
 describe('parseEnvFile', () => {
   it('reads dotenv lines the way vercel env pull writes them', () => {
     const text = ['# comment', '', 'export A=1', 'B="two words"', "C='x'", 'D=plain # note', 'E=', '  F = spaced  ', 'not a line'].join('\n');
@@ -235,9 +281,13 @@ describe('parseEnvFile', () => {
 });
 
 describe('node scripts/cloud/check-env.mjs', () => {
-  it('passes the production example', () => {
+  // P68I T7: vzor nese celkový strop bez hodnoty (nastaví majitel v P59′) a úložiště dodá integrace Vercelu.
+  it('fails the production example only on what the owner and the store integration fill in', () => {
     const { status, out } = run(EXAMPLE);
-    expect(status, out).toBe(0);
+    expect(status, out).toBe(1);
+    expect(out.trim().split('\n').map((line) => line.split(':')[0]).sort()).toEqual(['KV_REST_API_TOKEN', 'KV_REST_API_URL', 'PLAY_TOTAL_SPEND_CAP_USD']);
+    const filled = envFile(`${readFileSync(EXAMPLE, 'utf8')}\nPLAY_TOTAL_SPEND_CAP_USD=70\nKV_REST_API_URL=https://example-kv.upstash.io\nKV_REST_API_TOKEN=token\n`);
+    expect(run(filled).status).toBe(0);
   });
 
   it('fails with 1 and names the variable, never its value', () => {

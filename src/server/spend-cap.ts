@@ -102,6 +102,16 @@ export interface CapControl {
   readonly callCap?: number;
 }
 
+/**
+ * Rezerva pro porotu (P68I T7): před `fromMs` (hodiny serveru, ne hashovaný stav hry) platí strop zmenšený
+ * o `reserveUsd`, od `fromMs` celý. `now` je jen pro testy.
+ */
+export interface JudgingReserve {
+  readonly reserveUsd: number;
+  readonly fromMs: number;
+  readonly now: () => number;
+}
+
 export interface CapSnapshot extends CapControl {
   readonly spentUsd: number;
   readonly reservedUsd: number;
@@ -444,17 +454,28 @@ export class SpendCap {
    * (`readControlFrom()`), takže tenhle zdroj nemůže přebít nic, co je na disku.
    */
   readonly #controlStore: ControlStore | null;
+  /** `null` = žádná rezerva pro porotu, strop jako dřív. */
+  readonly #judging: JudgingReserve | null;
 
   constructor(
     defaults: CapControl,
     controlPath: string | null = null,
     ledger: SpendLedger | null = memoryLedger(),
     controlStore: ControlStore | null = null,
+    judging: JudgingReserve | null = null,
   ) {
     this.#defaults = defaults;
     this.#controlPath = controlPath;
     this.#ledger = ledger;
     this.#controlStore = controlStore;
+    this.#judging = judging;
+  }
+
+  /** Strop po rezervě pro porotu: před datem zmenšený o rezervu, nikdy pod nulu. */
+  #afterReserve(control: CapControl): CapControl {
+    const judging = this.#judging;
+    if (judging === null || judging.now() >= judging.fromMs) return control;
+    return { ...control, capUsd: Math.max(0, control.capUsd - judging.reserveUsd) };
   }
 
   /**
@@ -503,12 +524,12 @@ export class SpendCap {
   }
 
   #outcome(read: ControlRead): ControlOutcome {
-    if (read.kind === 'absent') return { kind: 'ok', control: this.#defaults };
+    if (read.kind === 'absent') return { kind: 'ok', control: this.#afterReserve(this.#defaults) };
     if (read.kind === 'broken') return this.#broken(read.source, read.detail);
     const parsed = parseControl(read.value, this.#defaults);
     return parsed === null
       ? this.#broken(read.source, 'it does not describe a spend cap this server can read')
-      : { kind: 'ok', control: this.#bounded(parsed, read.writtenAtMs) };
+      : { kind: 'ok', control: this.#afterReserve(this.#bounded(parsed, read.writtenAtMs)) };
   }
 
   /**
@@ -1052,7 +1073,29 @@ function callCapFrom(rawCalls: string | undefined): number {
   return Number.isInteger(parsedCalls) && parsedCalls >= 0 ? parsedCalls : 0;
 }
 
-export function spendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
+/**
+ * Rezerva pro porotu z `PLAY_JUDGING_FROM` (ISO datum) a `PLAY_JUDGING_RESERVE_USD` (P68I T7). Chybí-li kterákoli,
+ * `null` = strop jako dřív. Vadná hodnota drží pro porotu **celý strop napořád** – táž doktrína jako u dolarů níž:
+ * překlep nesmí tiše uvolnit peníze, nula zastaví veřejný provoz a je vidět (a `check-env.mjs` ji chytí před nasazením).
+ */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/;
+
+export function judgingReserveFromEnv(env: Record<string, string | undefined>, now: () => number = Date.now): JudgingReserve | null {
+  const rawFrom = env.PLAY_JUDGING_FROM?.trim() ?? '';
+  const rawUsd = env.PLAY_JUDGING_RESERVE_USD?.trim() ?? '';
+  if (rawFrom === '' || rawUsd === '') return null;
+  // Jen ISO tvar: `Date.parse` ve V8 přečte i „8. 11.“ jako rok 2001, a rezerva by se tiše uvolnila.
+  const fromMs = ISO_DATE.test(rawFrom) ? Date.parse(rawFrom) : Number.NaN;
+  const reserveUsd = /^\d+(\.\d+)?$/.test(rawUsd) ? Number(rawUsd) : Number.NaN;
+  if (!Number.isFinite(fromMs) || !Number.isFinite(reserveUsd)) return { reserveUsd: Number.POSITIVE_INFINITY, fromMs: Number.POSITIVE_INFINITY, now };
+  return { reserveUsd, fromMs, now };
+}
+
+/**
+ * Rezerva pro porotu platí jen tady – v knize režiséra, kterou platí veřejný provoz. Záloha a čtečka mají vlastní
+ * malé stropy; jedna částka rezervy odečtená v každé knize by zamkla trojnásobek.
+ */
+export function spendCapFromEnv(env: Record<string, string | undefined>, now: () => number = Date.now): SpendCap {
   const raw = env.WORLDSMITH_SPEND_CAP_USD;
   const parsed = raw === undefined ? DEFAULT_CAP_USD : Number(raw);
   const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
@@ -1068,5 +1111,6 @@ export function spendCapFromEnv(env: Record<string, string | undefined>): SpendC
     // obchod, tatáž předpona. Bez vyplněných `WORLDSMITH_SPEND_STORE_*` je to
     // `null` a platí jen soubor, přesně jako dřív.
     controlStoreFromEnv(env),
+    judgingReserveFromEnv(env, now),
   );
 }

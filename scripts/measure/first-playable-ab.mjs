@@ -16,7 +16,10 @@
  * přes celé měření; každý cíl dostane dvojici A+B hned po sobě a strana, která
  * jde první, se po dvojicích střídá (AB, BA, AB …) – kdyby druhý běh dvojice
  * těžil z teplé cache disku, dopadne to na obě strany stejně.
- * Běh, který hratelný nebyl, je selhání: do časů se nepočítá, jen do `failed`.
+ * Každý běh spouští vlastní prohlížeč i kontext (`measure`), takže žádný nesdílí
+ * cache ani úložiště s předchozím.
+ * Běh, který hratelný nebyl, je selhání: do časů se nepočítá, jen do `failed` –
+ * a do `gate.failedTotal`, takže shodí `gate.pass` (P68I T4).
  * `diffMedian` = medián B − medián A; `pairedDiffMedian` = medián rozdílů B − A
  * uvnitř dvojic, kde hrály obě strany (citlivější na pomalé výkyvy stroje).
  */
@@ -117,6 +120,31 @@ export function summarize(results, metric = 'ms') {
   };
 }
 
+/** Meze brány času do hratelnosti (P68I T4, G4 plánu). */
+export const GATE = { medianBMaxMs: 3000, medianBProfiles: ['desktop'], pairedDiffMaxMs: 200, pairedDiffProfiles: ['desktop', 'pixel7-cpu4'] };
+
+/**
+ * Brána nad časem do hratelnosti: `pass` jen bez jediného selhání A ani B,
+ * s mediánem B do 3 000 ms na desktopu a párovým rozdílem B − A do 200 ms na
+ * desktopu i telefonu. Selhaný běh v mediánech chybí, proto ho nese
+ * `failedTotal`. Profil, který se neměřil, má hodnotu `null` a bránu shodí –
+ * chybějící číslo není splněná mez.
+ */
+export function gate(results) {
+  const failedOf = (side) => results.filter((result) => result.side === side && valueOf(result, 'ms') === null).length;
+  const failed = { A: failedOf('A'), B: failedOf('B') };
+  const failedTotal = failed.A + failed.B;
+  const byProfile = summarize(results).byProfile;
+  const rowOf = (profile) => byProfile.find((row) => row.profile === profile);
+  const check = (name, profile, value, limit) => ({ name, profile, value, limit, pass: value !== null && value <= limit });
+  const checks = [
+    check('failedTotal', null, failedTotal, 0),
+    ...GATE.medianBProfiles.map((profile) => check('medianB', profile, rowOf(profile)?.B.median ?? null, GATE.medianBMaxMs)),
+    ...GATE.pairedDiffProfiles.map((profile) => check('pairedDiffMedian', profile, rowOf(profile)?.pairedDiffMedian ?? null, GATE.pairedDiffMaxMs)),
+  ];
+  return { failedTotal, failed, checks, pass: checks.every((item) => item.pass) };
+}
+
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 const slug = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 
@@ -176,12 +204,12 @@ async function main(config) {
     pauseMs,
     sentences: config.sentences ?? [],
     sharedSentences: config.sharedSentences ?? [],
-    summary: summarize(results),
+    summary: { ...summarize(results), gate: gate(results) },
     summaryFirstFrame: summarize(results, 'firstFrameMs'),
     results: results.map(({ har: _har, ...rest }) => rest),
   };
   if (config.out) writeFileSync(config.out, `${JSON.stringify(report, null, 2)}\n`);
-  process.stdout.write(`${JSON.stringify({ playable: report.summary.byProfile, firstFrame: report.summaryFirstFrame.byProfile })}\n`);
+  process.stdout.write(`${JSON.stringify({ gate: report.summary.gate, playable: report.summary.byProfile, firstFrame: report.summaryFirstFrame.byProfile })}\n`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

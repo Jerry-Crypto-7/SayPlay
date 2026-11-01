@@ -88,3 +88,97 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
   začátečník 11→9). Sonda ověřila, že razítko `genre.v7` hraje na těchto buňkách všech 20 semínek obou profilů
   bit po bitu jako `genre.v6` – staré řádky byly zastaralé už na `688d989d` (P66 přeměřil jen své řádky), ne posun
   způsobený T1.
+
+## T4 – protokol měření času
+
+- `first-playable-ab.mjs` má v souhrnu `gate`: `failedTotal` (selhání A i B), `pass` jen při 0 selháních, mediánu B
+  ≤ 3 000 ms (desktop) a párovém rozdílu ≤ 200 ms (desktop i pixel7-cpu4). Neměřený profil bránu shodí.
+- Každý běh má vlastní prohlížeč i kontext (žádná sdílená cache), páry AB/BA beze změny.
+- Sonda uzná hratelnost na HUD arkády jen když po vstupu vzroste `data-inputs` i `data-tick`; samotná změna plochy
+  nestačí. Cizí weby dál podle plochy.
+- R2: mřížkové hry (`Hud.tsx`) `data-inputs` nemají; sonda jejich HUD vynechá a soudí je plochou jako před T4
+  (test `?grid=1`).
+- Testy: `first-playable-ab.test.ts`, `time-to-playable.test.ts` (fixture `hud-game.html`). mutationStatus: pass.
+
+## T3 – brána FPS na emulovaném telefonu
+
+- `e2e/play-perf.spec.ts` `@p68-fps`: hra z ručního specu `e2e/fixtures/p68-<id>-spec.json` (bez něj přeskočeno),
+  robot hraje ukázkou z karty pauzy 20 s, sonda měří intervaly rAF. Tvrdě: medián ≥ 40 FPS, p95 intervalu
+  ≤ 33,3 ms + 0,5 ms (dva snímky 60 Hz časovač čte jako 33,3–33,4 ms; bez tolerance by o hře se ztraceným snímkem
+  rozhodoval šum). Výsledky po hře a projektu se surovými intervaly a GPU do `fps.json`.
+- Projekty: `pixel7-touch` (Chromium, CPU ×4) hradí; `play-perf` je v jejich `testMatch` a `@measure` v nich vyřazuje
+  `grepInvert` (projektový `grep` by vyřadil všechny ostatní spec soubory projektu).
+- **Odchylka: `iphone-touch` jen zapisuje, nehradí.** WebKit na tomto stroji dal hotové hře `p66-arrows` 18–19 FPS
+  (p95 81–112 ms), zatímco Chromium s CPU ×4 tutéž hru drží na 59,9 FPS. Měří hostitele, ne hru; tvrdá brána by
+  shodila každou hru. iPhone změří fyzicky P59′.
+- Ověření 1. 11. (stroj vytížený na ~90 % jinými relacemi): kontrola `P68_FPS_FIXTURES=p66-arrows` na `pixel7-touch`
+  zelená (59,9 FPS, p95 33,3 ms); tatáž s `P68_FPS_SLOW_MS=60` (každý snímek +60 ms) červená (12,0 FPS, p95 117 ms).
+  Při jiném měření téže hry vyšlo p95 50 ms – p95 kolísá se zátěží stroje, červenou p95 u nové hry proto ověřit
+  prokládaně s kontrolou `p66-arrows`; je-li červená i kontrola, je to stroj.
+
+## T6 – sdílení, Dare a přehrání
+
+- `src/app/api/play/__tests__/p68-roundtrip.test.ts`: hra s ručním specem `e2e/fixtures/p68-<id>-spec.json` projde
+  publikací, `/play/<id>`, výzvou Dare i dvojím přehráním se stejným výsledkem, skóre a hashem; bez specu nebo
+  s kostrou modulu `it.skip` s důvodem. Totéž kolo jede jako kontrola na ručním specu `p66-arrows`.
+- Strop těla 64 kB, nejhorší stopa za 90 s: railfps 64 870 B (FIRE každý druhý tik), drawsave 58 937 B (1 000 buněk).
+- **Pozor railfps:** natáčení i střelba v každém tiku = 67 570 B a dveře výzvu odmítnou (413) – test to drží.
+- `e2e/play-share.spec.ts`: odkaz výzvy nové hry → dohrát → výsledek v `chromium` i `pixel7-touch`; bez specu
+  přeskočeno.
+
+## T5 – herní aserce nad stopou stavu
+
+- `src/play/arcade/gameplay-assert.ts`: `traceRun` přehraje svět s robotem hry, nečinným hráčem nebo slabým robotem
+  (`novice`) a po každém tiku uloží kopii stavu jádra, vstup, `yawStep` a výsledek. Efekty pravidel (`win`, `score`)
+  do stopy nejdou; výsledek běhu je důkaz jen pro požadavky na výsledek.
+- `assertions.json` dostal ke každé větě `expect` strojové pole `check` (próza beze změny). Konvence, které kontroly
+  čtou: cíl = role `goal`, trosky = fyzikální nehráčská tělesa, míček = `FLAG.ball`, držák natočení = model
+  `railfps_rig`, chráněné tělo = hráč. Kategorie, které je nedodrží, dostanou červenou bránu s důkazem v textu.
+- `scripts/measure/gameplay-gate.mjs <specs.json> [--out]` → po hře a větě `win`, `lose`, `actions`, `failed`;
+  pád překladu nebo běhu se počítá do jmenovatele `n`.
+- Testy na ručních světech bez nových her (8): podvržené `win` bez průjezdu cílem neprojde `crosses-finish`, stojící
+  `yawStep` neprojde `aims`, vyhrávající nečinný hráč shodí `idle-loses`, ke každému kladný protějšek.
+  mutationStatus: pass – `crosses` čtoucí výsledek, `distinctYaw` čtoucí vstup místo stavu a `outcome` bez rozlišení
+  výhry a prohry shodí každý svůj test.
+
+## T7 – měřicí kniha, součet stropů, rezerva pro porotu
+
+- **Měřicí kniha** `scripts/measure/eval-ledger.mjs`: placený měřicí běh jen když `WORLDSMITH_SPEND_STORE_PREFIX`
+  končí `-eval` a není produkční předponou (`PLAY_PROD_SPEND_PREFIX`, bez ní `worldsmith:spend`) a
+  `PLAY_EVAL_SPEND_CAP_USD` je kladná částka; jinak `fast-only` s důvodem. `p61/shots.mjs serve` pak spustí server
+  bez čtečky a bez klíče (strop čtečky v placeném režimu = menší z `--cap-usd` a měřicího stropu; kniha jde do
+  `WORLDSMITH_SPEND_STORE_*`, hry zůstávají v paměti), `p58e/live.mjs` skončí kódem 2 a pošle jen na místní
+  `shots.mjs serve` (vzdálený `--base` odmítne – platí server, ne klient; nález review).
+- **Součet stropů** v `scripts/cloud/check-env.mjs`: režisér + záloha + čtečka (+ skripty při `PLAY_SCRIPTS=on`)
+  ≤ `PLAY_TOTAL_SPEND_CAP_USD`, na setiny; chybějící celkový strop, chybějící nebo prázdné `KV_REST_API_*` a vadná
+  rezerva shodí kontrolu se jménem proměnné. `env.production.example` má nové proměnné prázdné – bez hodnot od
+  majitele (P59′) vzor kontrolou neprojde, a to schválně.
+- **Rezerva pro porotu** v `src/server/spend-cap.ts`, jen v knize režiséra: do `PLAY_JUDGING_FROM` (ISO datum, hodiny
+  serveru) strop − `PLAY_JUDGING_RESERVE_USD`, od data celý. Bez proměnných beze změny; překlep drží celý strop
+  (veřejný provoz hraje rychlou hru), nikdy ho neuvolní.
+- Testy: `cloud-check-env.test.ts`, `spend-cap-reserve.test.ts`, `eval-ledger.test.ts` – 88/88.
+  mutationStatus: pass – 10 úmyslných chyb (přípona `-eval`, produkční předpona, kladný strop, čtečka v součtu,
+  součet přesně na stropu, prázdné KV, strop skriptů, datum rezervy, držení rezervy, bez proměnných) zabil každou
+  její test.
+- Review (security-reviewer): bez blokujícího nálezu; jediný nález (brána `live.mjs` hlídala klienta) opravený.
+
+## T2 – štítky žánrů, stráž žánru a výchozí stav `main`
+
+- **Štítky** `genre-labels.json`: 29 typů (24 žánrů + 5 nových her popsaných slovy, bez id z kódu), 606 vět
+  (`p30/test-200` + otevřené sady), `claude -p` v 31 dávkách po 20, souběh 1, 0 selhání. Holdout P68 neštítkovaný.
+  Všech 40 dev vět P68 dostalo jako `best` svou hru.
+- **Stráž** `genre-route.mjs` nad `main` 688d989d → `route-main.json`: `wrongRate` sada 200 **0,366** (64 ze 175,
+  25 vět bez hry), otevřené sady **0,345** (138 ze 400). `wrong` = věta má `best` a žánr není v `acceptable`;
+  věty bez hry se nepočítají (test `genre-route.test.ts` drží definici na třech ručních větách).
+- **Dosah nových her na sadě 200 je malý:** 14 vět (7 %) má novou hru v `best` nebo `acceptable`. stunt 1 + 3
+  (dnes arena 2, voyage 2), minigolf 0, railfps 0 + 2 (voyage 2), buildshift 0 + 4 (arena 2, quest 1, rhythm 1),
+  drawsave 3 + 1 (quest 2, arena 1, rhythm 1; 2 ze 3 `best` jsou dnes chybně). Na otevřených sadách (s 40 dev
+  větami) 8–9 `best` na hru; přešly by hlavně z voyage (stunt), arena (minigolf), shooter (railfps), quest
+  (buildshift) a arena (drawsave). Stráž v zapojení proto hlídá hlavně, aby nová hra nebrala věty těmto žánrům.
+- **Čas startu A/A** `baseline-start.json` (A = B = `main`, 6 vět, desktop a pixel7-cpu4, 3 běhy): 0 selhání, ale
+  brána T4 padá **jen šumem** – medián desktopu 4 055 ms > 3 000 ms a párový rozdíl telefonu 481 ms > 200 ms.
+  Inference: stroj vytížený ~90 % jinými relacemi P68; G4 zapojení na tom padne stejně, dokud se stroj nezklidní,
+  nebo se brána nesrovná s tímto šumem A/A (rozhodne T8 při první hře, zapíše se tam).
+- **FPS** `baseline-fps.json`: 24 žánrů na `moto-g-power-emulated` (CPU ×4, Fast 4G, GPU hostitele), 3 běhy,
+  čtyři dávky po šesti (test má strop 60 min). Medián 59,9 FPS u 18 žánrů, arena 59,5, runner / voyage / quest 30,
+  shooter 20; první tik 5,1–12,1 s (emulovaná síť). Věta voyage vydala hru bez záznamu žánru (`published: null`).

@@ -9,7 +9,9 @@
  * Spend: the server runs with `usage-preload.mjs`, which appends the provider's own `usage` of every api.openai.com call
  * to a JSONL file (`--usage-log`); cost = tokens × the prices the server runs with (`PRICE`), as `costUsd()` books it.
  *
- * Run: `node evals/play/p58e/live.mjs --usage-log <file> [--base http://127.0.0.1:3131]`. Writes `live.json` and
+ * Run: `WORLDSMITH_SPEND_STORE_PREFIX=<…-eval> PLAY_EVAL_SPEND_CAP_USD=<usd> node evals/play/p58e/live.mjs --usage-log <file>
+ * [--base http://127.0.0.1:3131]` against `evals/play/p61/shots.mjs serve --port 3131` (same env) – without the eval ledger
+ * (`scripts/measure/eval-ledger.mjs`) or with a non-local `--base` it exits 2. Writes `live.json` and
  * `live-chain-reading.png` next to this file.
  */
 
@@ -18,6 +20,8 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium, devices } from '@playwright/test';
 
+import { evalLedger } from '../../../scripts/measure/eval-ledger.mjs';
+
 const arg = (name, fallback) => {
   const at = process.argv.indexOf(`--${name}`);
   return at === -1 ? fallback : process.argv[at + 1];
@@ -25,6 +29,18 @@ const arg = (name, fallback) => {
 const BASE = arg('base', 'http://127.0.0.1:3131');
 const USAGE_LOG = arg('usage-log');
 if (!USAGE_LOG) throw new Error('--usage-log is required');
+// P68I T7: celý běh je placené čtení, takže bez měřicí knihy (`-eval` předpona, kladný strop) se nepošle ani věta.
+// Platí ale server, ne tenhle klient: cíl je jen místní `evals/play/p61/shots.mjs serve --port 3131`, který tutéž
+// knihu kontroluje ve svém procesu – vzdálený `--base` (produkce, preview) by účtoval do své knihy.
+const ledger = evalLedger(process.env);
+if (ledger.mode !== 'paid') {
+  console.error(`fast-only: ${ledger.reason}`);
+  process.exit(2);
+}
+if (!['127.0.0.1', 'localhost', '[::1]'].includes(new URL(BASE).hostname)) {
+  console.error(`--base must be a local shots.mjs serve, not ${new URL(BASE).host}`);
+  process.exit(2);
+}
 
 /** Prices the server runs with (`PLAY_READER_USD_PER_MTOK_*`): astra, as P58B T7 and P58D. */
 const PRICE = { in: 10, out: 50 };
