@@ -185,6 +185,20 @@ nezaokrouhlená pozice kontaktu → test „4 s na čáře“ červený. `tsc` �
 **Inference k ladění (T13):** náhodné čmárání vyhrálo 5/12 a robot vyhraje i při 30 hrozbách – prototyp je spíš lehký.
 `drawsave_bot` je pořád zástupce z kostry, takže publikační ověření hry projde až s robotem T13.
 
+## drawsave – hratelné (T13–T14, 1. 11.)
+
+| Co | Kontrola | Výsledek |
+|---|---|---|
+| Robot a modul žánru (T13) | `src/play/genre/__tests__/drawsave.test.ts` | `draftFill` 10/10 dev vět, `verifyArcade` 10/10 s výhrou robota, záznam robota ≥ 2 body (nečinný robot → červené) |
+| Jádro (T12) | `src/play/arcade/__tests__/drawsave.test.ts` | 6/6 |
+| Kamera (T14) | `genres/drawsave/__tests__/drawsave-camera.test.ts` | 25/25 na 7 viewportech; posun o buňku → červené |
+| e2e (T14) | `e2e/play-drawsave.spec.ts`, `chromium` + `pixel7-touch` + `iphone-touch` | 18/18: střecha tahem výhra v tiku 960, čára mimo a nečinný prohra v 442, vyzvání 370 → týž výsledek a hash |
+| Nejmenší buňka | e2e + test kamery | na výšku 36,6–49,4 px, na šířku telefonu 20–24 px (sdílený HUD, `integration.md`) |
+| FPS (`fps-drawsave.json`) | e2e T14 | `chromium` 59,9 / p95 16,7 ms (brána drží); `pixel7-touch` 59,9 / 16,7; `iphone-touch` 18,5 – WebKit softwarově |
+| Brand grep, `tsc`, strážce | – | čisté, exit 0 |
+
+Požadavky na zapojení: `integration.md` → `drawsave`.
+
 ## Odchylky od návrhu
 
 - **`drawsave` se kreslí tahem, ne ťukem „spoj tečky“:** kostra zmrazila vstup `DRAWSAVE_STROKE` (`HOLD` + buňka).
