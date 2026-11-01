@@ -203,6 +203,18 @@ míček jamku přeletí, pomalý spadne; puštění za pohybu nic nezmění; př
 prohra vyčerpáním ran i časem; pohyblivá překážka sedí na `minigolfMoverAt` a míček odrazí bez průniku; replay od
 tiku 0 dvakrát týž hash a shodné kontrolní body po každé ráně i po návratu z mimo dráhy; posun o tik = jiný hash.
 
+### Rozbito schválně (`mutationStatus`: 4/4 červené, 1. 11. 2026 na `b3514033`)
+
+| mutace | kde | červený test |
+|---|---|---|
+| útlum z plovoucí čárky bez zaokrouhlení | `minigolfDamp` bez `Math.trunc` | `damps in integers and always slows down`; `rolls the ball the way the axis points and rests within stopTicks exactly where the roll formula says` |
+| rána povolená za pohybu | ovládání: podmínka klidu vždy pravdivá | `ignores a release while the ball still rolls: no stroke, the roll goes on unchanged` |
+| jamka bez prahu rychlosti | `minigolf_hole`: rychlost se nekontroluje | `rolls a fast ball over the hole and drops a slow one in` |
+| pohyblivá překážka podle wall-clocku | `minigolfMoverAt` z `Date.now()` místo tiku | `moves in ticks along its period, as the closed form says` |
+
+Pohyb překážky v hashovaném stavu dělá kyvadlo jádra (`kernel.ts`, sdílené, jen tiky); wall-clock by mohl zabloudit jen
+do předpovědi `minigolfMoverAt`, kterou čeká robot T7 a scéna T8 – test ji drží na stavu jádra tik po tiku.
+
 ## Milníky a žebřík zjednodušení
 
 | hra | milník | stupeň zjednodušení | splněno |
