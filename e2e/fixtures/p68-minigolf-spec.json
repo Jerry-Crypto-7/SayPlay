@@ -1,0 +1,29 @@
+{
+  "about": "P68V T9: hand-written minigolf game for e2e/play-minigolf.spec.ts – an L-shaped hole in a haunted house, three pumpkin bumpers and a moving coffin. POST /api/play/games with { spec, seed }. Same spec as SAMPLE in src/play/genre/__tests__/minigolf-module.test.ts (compileMinigolf of 'mini golf in a haunted house with pumpkins and a moving coffin', bends 1, obstacles 3; gate-passing on seeds 1-10).",
+  "seed": 1,
+  "spec": {
+    "schema": "gamespec.v1",
+    "control": "minigolf",
+    "controlParams": {
+      "generator": "minigolf_course",
+      "tuning": { "shape": "L", "obstacles": 3, "moving": true, "bumper": "cc0-pumpkin", "mover": "gen3d-coffin" }
+    },
+    "genre": { "id": "minigolf", "mode": "default", "compilerVersion": "genre.v7" },
+    "title": "Haunted House Mini Golf",
+    "archetype": "hazard_crossing",
+    "targetDurationSec": 30,
+    "theme": { "setting": "haunted house", "mood": "playful" },
+    "objective": { "kind": "reach", "description": "Putt the ball around the obstacles into the hole in as few strokes as you can.", "role": "hole" },
+    "mechanics": [],
+    "roles": [
+      { "id": "player", "kind": "player", "label": "golf ball", "count": 1 },
+      { "count": 1, "id": "hole", "kind": "destination", "label": "hole" },
+      { "count": 3, "id": "bumper", "kind": "prop", "label": "pumpkin" },
+      { "count": 1, "id": "mover", "kind": "prop", "label": "coffin" }
+    ],
+    "scoring": {},
+    "tutorial": { "goalLine": "Sink the ball in as few strokes as you can!", "controlsHint": "Drag back from the ball and let go. Keys: arrows aim, hold Space." },
+    "verification": [{ "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }],
+    "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+  }
+}

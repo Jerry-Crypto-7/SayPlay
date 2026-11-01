@@ -1,0 +1,1230 @@
+{
+ "schema": "p68v-route.v1",
+ "commit": "15c81e6a",
+ "set": "evals/play/p30/test-200.json",
+ "about": "genre/mode = classifyGenre(sentence, null).ranked[0] (quick game, no model) on every sentence of the sealed P30 set. routing-guard.test.ts recomputes it on the branch and fails on any change.",
+ "count": 200,
+ "genres": {
+  "arena": 93,
+  "quest": 42,
+  "voyage": 20,
+  "rhythm": 6,
+  "runner": 6,
+  "timing": 5,
+  "duel": 5,
+  "platformer": 5,
+  "throw": 4,
+  "push": 2,
+  "defense": 2,
+  "flap": 2,
+  "shooter": 2,
+  "hole": 1,
+  "sort": 1,
+  "slice": 1,
+  "catch": 1,
+  "whack": 1,
+  "hop": 1
+ },
+ "rows": [
+  {
+   "id": "t001",
+   "text": "Explain how volcanoes erupt to a ten year old",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t002",
+   "text": "help me write a birthday poem for my mom",
+   "genre": "timing",
+   "mode": "stack"
+  },
+  {
+   "id": "t003",
+   "text": "my morning commute on a crowded train",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t004",
+   "text": "a tax audit at a boring accounting office",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t005",
+   "text": "Summarize the french revolution",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t006",
+   "text": "doing laundry on a sunday afternoon",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t007",
+   "text": "walking to the dentist in the rain",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t008",
+   "text": "my cat knocking a glass off the kitchen table",
+   "genre": "push",
+   "mode": "default"
+  },
+  {
+   "id": "t009",
+   "text": "Write me a cover letter for a barista job",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t010",
+   "text": "teach me the history of the roman empire in five minutes",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t011",
+   "text": "meditate on a quiet mountaintop at sunrise",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t012",
+   "text": "a job interview at a tech company",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t013",
+   "text": "paint my living room walls blue",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t014",
+   "text": "I need to study for my chemistry exam tomorrow",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t015",
+   "text": "traders panic as the stock market crashes on a monday",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t016",
+   "text": "cooking spaghetti for twenty hungry guests",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t017",
+   "text": "give a lecture about black holes at the planetarium",
+   "genre": "hole",
+   "mode": "default"
+  },
+  {
+   "id": "t018",
+   "text": "renewing my passport at city hall",
+   "genre": "timing",
+   "mode": "stack"
+  },
+  {
+   "id": "t019",
+   "text": "a yoga class on the beach at sunset",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t020",
+   "text": "fix a leaking pipe under the sink",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t021",
+   "text": "my dog is afraid of the vacuum cleaner",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t022",
+   "text": "grocery shopping list for a vegan week",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t023",
+   "text": "how does wifi get from the router to my phone",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t024",
+   "text": "breaking up with my boyfriend over text",
+   "genre": "duel",
+   "mode": "default"
+  },
+  {
+   "id": "t025",
+   "text": "the water cycle for my science homework",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t026",
+   "text": "calm my nerves before a big presentation",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t027",
+   "text": "organize my messy closet",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t028",
+   "text": "negotiating a raise with my boss",
+   "genre": "duel",
+   "mode": "default"
+  },
+  {
+   "id": "t029",
+   "text": "planting tomatoes on my balcony",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t030",
+   "text": "learning to ride a bike without training wheels",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t031",
+   "text": "Write a haiku about autumn leaves",
+   "genre": "timing",
+   "mode": "stack"
+  },
+  {
+   "id": "t032",
+   "text": "waiting in line at the post office",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t033",
+   "text": "a first date at a bowling alley",
+   "genre": "throw",
+   "mode": "default"
+  },
+  {
+   "id": "t034",
+   "text": "the solar system explained for kids",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t035",
+   "text": "my neighbor mowing the lawn at 7am",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t036",
+   "text": "recycling plastic bottles at school",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t037",
+   "text": "grandpa telling war stories by the fireplace",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t038",
+   "text": "riding a red double decker bus through rainy london",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t039",
+   "text": "choosing a name for my new puppy at the animal shelter",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t040",
+   "text": "fill out a mortgage application for our first house",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t041",
+   "text": "the life cycle of a butterfly",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t042",
+   "text": "an office party where nobody talks to each other",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t043",
+   "text": "remember where I parked my car at the airport",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t044",
+   "text": "wedding speech for my best friend",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t045",
+   "text": "lightning strikes a scarecrow in a wheat field during a thunderstorm",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t046",
+   "text": "my toddler refuses to eat broccoli",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t047",
+   "text": "a sunday picnic by the lake with sandwiches and lemonade",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t048",
+   "text": "caring for grandma in a hospital room",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t049",
+   "text": "a shepherd dog herds sheep into a pen before the storm",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t050",
+   "text": "juggle flaming torches on a circus stage",
+   "genre": "rhythm",
+   "mode": "default"
+  },
+  {
+   "id": "t051",
+   "text": "a raccoon rummages through trash cans for pizza crusts",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t052",
+   "text": "polish every window of a skyscraper before sunset",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t053",
+   "text": "a lifeguard rescues swimmers caught in a riptide",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t054",
+   "text": "a mailman delivers packages while angry dogs chase him",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t055",
+   "text": "sweep the leaves off a temple courtyard before the monks wake",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t056",
+   "text": "carve a pumpkin on a halloween porch",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t057",
+   "text": "sort recycling on a fast conveyor belt at the dump",
+   "genre": "sort",
+   "mode": "default"
+  },
+  {
+   "id": "t058",
+   "text": "a bee pollinates flowers across a sunny meadow",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t059",
+   "text": "untie knots in a giant ball of yarn for a kitten",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t060",
+   "text": "a baker decorates cupcakes as orders pile up",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t061",
+   "text": "wrap presents at the north pole before christmas eve",
+   "genre": "rhythm",
+   "mode": "default"
+  },
+  {
+   "id": "t062",
+   "text": "a farmer milks cows before the sun comes up",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t063",
+   "text": "a spider weaves a web between two lamp posts",
+   "genre": "rhythm",
+   "mode": "default"
+  },
+  {
+   "id": "t064",
+   "text": "tame a wild horse on a dusty ranch",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t065",
+   "text": "a janitor mops the floor of a haunted school at midnight",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t066",
+   "text": "a firefighter hoses down flames in a burning bakery",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t067",
+   "text": "inflate the biggest bubblegum bubble without popping it at a candy store",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t068",
+   "text": "a crab pinches the toes of sunbathers on a crowded beach",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t069",
+   "text": "a gardener prunes hedges into animal shapes",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t070",
+   "text": "knit a scarf for a snowman",
+   "genre": "rhythm",
+   "mode": "default"
+  },
+  {
+   "id": "t071",
+   "text": "shovel snow off the driveway before school",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t072",
+   "text": "a beaver builds a dam across a rushing river",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t073",
+   "text": "guide ducklings safely across a village pond to their mother",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t074",
+   "text": "a squid inks sharks that get too close",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t075",
+   "text": "a monk rings a huge temple bell to wake the valley",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t076",
+   "text": "a chameleon blends into jungle leaves so the eagle cannot see it",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t077",
+   "text": "a woodpecker drills holes in a giant oak tree",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t078",
+   "text": "a barber shaves a sleeping giant",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t079",
+   "text": "a mole digs tunnels under a vegetable garden",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t080",
+   "text": "a clockmaker winds a hundred clocks before midnight strikes",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t081",
+   "text": "scoop ice cream for a line of impatient penguins",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t082",
+   "text": "a hermit crab trades shells with his neighbors",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t083",
+   "text": "a magpie snatches shiny spoons from a café terrace",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t084",
+   "text": "a sailor ties knots as a storm hits the ship",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t085",
+   "text": "a kid pulls a kite out of a tall pine tree",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t086",
+   "text": "an octopus opens jars in an aquarium to free trapped crabs",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t087",
+   "text": "a waiter balances ten plates across a crowded restaurant",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t088",
+   "text": "a lumberjack chops logs faster than his rival",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t089",
+   "text": "a hen hatches eggs while foxes prowl the farm",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t090",
+   "text": "a pharmacist mixes potions for a line of sick goblins",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t091",
+   "text": "a dentist pulls teeth from a grumpy crocodile",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t092",
+   "text": "a painter restores a faded mural in a subway station",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t093",
+   "text": "a hamster spins its wheel to power a tiny city",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t094",
+   "text": "a lighthouse keeper guides ships through a foggy night",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t095",
+   "text": "a scientist freezes lava flows with an ice ray",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t096",
+   "text": "a zookeeper feeds lions without getting eaten",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t097",
+   "text": "a sushi chef slices fish tossed into the air",
+   "genre": "slice",
+   "mode": "default"
+  },
+  {
+   "id": "t098",
+   "text": "an astronaut repairs solar panels on a spinning space station",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t099",
+   "text": "a dragon hatchling learns to breathe fire",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t100",
+   "text": "a wizard duels a necromancer on a floating island",
+   "genre": "duel",
+   "mode": "default"
+  },
+  {
+   "id": "t101",
+   "text": "a unicorn gallops across rainbow clouds collecting stars",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t102",
+   "text": "an elf archer defends the forest gate from orcs",
+   "genre": "defense",
+   "mode": "default"
+  },
+  {
+   "id": "t103",
+   "text": "a vampire sneaks through a village without waking anyone",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t104",
+   "text": "a troll guards a bridge and asks riddles",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t105",
+   "text": "a mermaid races dolphins to a sunken treasure",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t106",
+   "text": "a phoenix rises from the ashes and flies over a burning desert",
+   "genre": "flap",
+   "mode": "default"
+  },
+  {
+   "id": "t107",
+   "text": "a goblin king throws gold coins at knights storming his cave",
+   "genre": "throw",
+   "mode": "default"
+  },
+  {
+   "id": "t108",
+   "text": "a fairy lights lanterns in a dark enchanted forest",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t109",
+   "text": "a werewolf howls at the moon to summon its pack",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t110",
+   "text": "a sorceress freezes a lake so her army can cross it",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t111",
+   "text": "a knight and a dragon play chess in a tower",
+   "genre": "duel",
+   "mode": "default"
+  },
+  {
+   "id": "t112",
+   "text": "a ghost ship sails through a storm full of sea serpents",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t113",
+   "text": "a young witch delivers potions by broomstick over a rainy town",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t114",
+   "text": "a centaur hunts wild boars in an ancient forest",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t115",
+   "text": "a giant stomps through a medieval city flattening towers",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t116",
+   "text": "a stone golem protects a sleeping village from bandits",
+   "genre": "defense",
+   "mode": "default"
+  },
+  {
+   "id": "t117",
+   "text": "a little dragon collects gems in a crystal cave",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t118",
+   "text": "a ranger tames a griffin on a snowy mountain",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t119",
+   "text": "a necromancer raises skeletons to battle a paladin",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t120",
+   "text": "a genie grants three wishes to a street thief",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t121",
+   "text": "a hobbit sneaks past a sleeping dragon to take a golden cup",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t122",
+   "text": "a wizard's apprentice mops a flooded tower with enchanted brooms",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t123",
+   "text": "a knight on horseback jousts against a robot",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t124",
+   "text": "a dwarf mines gold deep under a snowy mountain",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t125",
+   "text": "a fairy godmother turns pumpkins into carriages",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t126",
+   "text": "a cyclops bowls boulders at tiny heroes",
+   "genre": "throw",
+   "mode": "default"
+  },
+  {
+   "id": "t127",
+   "text": "a witch's cat rides a broom through a haunted night sky",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t128",
+   "text": "a kraken drags pirate ships under the waves",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t129",
+   "text": "an ice queen builds a castle out of snow",
+   "genre": "quest",
+   "mode": "station"
+  },
+  {
+   "id": "t130",
+   "text": "a dragon rider races through canyon arches",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t131",
+   "text": "an enchanted sword chooses its hero in a stone circle",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t132",
+   "text": "a leprechaun buries pots of gold at the end of rainbows",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t133",
+   "text": "a baby dragon learns to fly over a volcanic island",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t134",
+   "text": "orcs and elves play football in a muddy swamp",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t135",
+   "text": "a mage bounces fireballs off castle walls to hit goblins",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t136",
+   "text": "a pixie paints dewdrops on spider webs at dawn",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t137",
+   "text": "a ninja frog leaps between swinging ropes over a waterfall",
+   "genre": "platformer",
+   "mode": "default"
+  },
+  {
+   "id": "t138",
+   "text": "zombie chickens attack a farm at night and you shoot them with corn",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t139",
+   "text": "an endless run through a candy factory avoiding gummy bears",
+   "genre": "runner",
+   "mode": "default"
+  },
+  {
+   "id": "t140",
+   "text": "a paper airplane glides through an office without hitting the ceiling fans",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t141",
+   "text": "race lawnmowers around a suburban backyard",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t142",
+   "text": "a cowboy lassos runaway cattle in a dusty canyon",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t143",
+   "text": "shoot hoops with a gorilla at the zoo",
+   "genre": "shooter",
+   "mode": "default"
+  },
+  {
+   "id": "t144",
+   "text": "a turtle dodges falling coconuts on a tropical beach",
+   "genre": "runner",
+   "mode": "default"
+  },
+  {
+   "id": "t145",
+   "text": "a boxer fights a robot in an underground ring",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t146",
+   "text": "tap on the beat to make jellyfish glow at a deep sea concert",
+   "genre": "rhythm",
+   "mode": "default"
+  },
+  {
+   "id": "t147",
+   "text": "stack sandwiches as tall as the fridge",
+   "genre": "timing",
+   "mode": "stack"
+  },
+  {
+   "id": "t148",
+   "text": "flappy dragon through ice pillars",
+   "genre": "flap",
+   "mode": "default"
+  },
+  {
+   "id": "t149",
+   "text": "a monster truck crushes cars in a mud arena",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t150",
+   "text": "a panda slides down a bamboo slope collecting dumplings",
+   "genre": "runner",
+   "mode": "default"
+  },
+  {
+   "id": "t151",
+   "text": "sniper mission on a snowy mountain to hit a spy",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t152",
+   "text": "a goat climbs a cliff dodging falling rocks",
+   "genre": "platformer",
+   "mode": "default"
+  },
+  {
+   "id": "t153",
+   "text": "a piano duel between two cats in a jazz bar",
+   "genre": "duel",
+   "mode": "default"
+  },
+  {
+   "id": "t154",
+   "text": "drift a rusty van through a rainy harbor",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t155",
+   "text": "a fish grows by eating plastic junk in a polluted river",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t156",
+   "text": "aliens invade new york and you pilot a fighter jet",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t157",
+   "text": "a sumo cat pushes dogs off a rooftop",
+   "genre": "push",
+   "mode": "default"
+  },
+  {
+   "id": "t158",
+   "text": "catch falling apples in a basket before they hit the ground",
+   "genre": "catch",
+   "mode": "default"
+  },
+  {
+   "id": "t159",
+   "text": "a skier zigzags down a slalom course between flags",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t160",
+   "text": "escape a giant rolling boulder in an ancient temple",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t161",
+   "text": "a firefly lights the way through a dark swamp maze",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t162",
+   "text": "a samurai slices arrows out of the air",
+   "genre": "arena",
+   "mode": "fight"
+  },
+  {
+   "id": "t163",
+   "text": "hit the brakes on a roller coaster at a seaside fair",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t164",
+   "text": "a hot dog runs away from a hungry crowd at a baseball game",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t165",
+   "text": "dodgeball against robots in a school gym",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t166",
+   "text": "a hamster ball rolls through a maze of pipes",
+   "genre": "runner",
+   "mode": "default"
+  },
+  {
+   "id": "t167",
+   "text": "a sheriff and an outlaw face off in a ghost town",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t168",
+   "text": "fly a helicopter through a canyon full of wind turbines",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t169",
+   "text": "a jellyfish drifts upward avoiding fishing nets",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t170",
+   "text": "a basketball robot shoots three pointers on a rooftop court",
+   "genre": "shooter",
+   "mode": "default"
+  },
+  {
+   "id": "t171",
+   "text": "a DJ keeps a crowd jumping by hitting beats in time",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t172",
+   "text": "karate chop wooden boards in a dojo",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t173",
+   "text": "bumper boats in a lagoon full of hippos",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t174",
+   "text": "a cheese wheel rolls down a hill chased by villagers",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t175",
+   "text": "whack moles in a vegetable patch before they eat the carrots",
+   "genre": "whack",
+   "mode": "default"
+  },
+  {
+   "id": "t176",
+   "text": "a pelican dives from the sky to catch fish",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t177",
+   "text": "snowboard down an avalanche while grabbing coins",
+   "genre": "runner",
+   "mode": "default"
+  },
+  {
+   "id": "t178",
+   "text": "a hacker races through a neon cyberspace tunnel",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t179",
+   "text": "a knight on a pogo stick bounces over spikes",
+   "genre": "platformer",
+   "mode": "default"
+  },
+  {
+   "id": "t180",
+   "text": "a crow drops stones into a pitcher to raise the water",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t181",
+   "text": "tennis against a giraffe on a grass court",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t182",
+   "text": "a submarine torpedoes giant squids in the deep",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t183",
+   "text": "a courier bike dodges taxis in rush hour manhattan",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t184",
+   "text": "launch fireworks over a lake so they burst at the right height",
+   "genre": "throw",
+   "mode": "default"
+  },
+  {
+   "id": "t185",
+   "text": "a goalkeeper saves penalty kicks from a team of octopuses",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t186",
+   "text": "a bat navigates a pitch black cave using echoes",
+   "genre": "voyage",
+   "mode": "race"
+  },
+  {
+   "id": "t187",
+   "text": "a hamster bartender slides drinks down a long counter",
+   "genre": "runner",
+   "mode": "default"
+  },
+  {
+   "id": "t188",
+   "text": "a ghost haunts a museum and scares the night guard",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t189",
+   "text": "outrun a tornado on a tractor across the prairie",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t190",
+   "text": "a trampoline park where you bounce to grab balloons",
+   "genre": "platformer",
+   "mode": "default"
+  },
+  {
+   "id": "t191",
+   "text": "an ant carries crumbs back to the anthill avoiding a boot",
+   "genre": "quest",
+   "mode": "spatial"
+  },
+  {
+   "id": "t192",
+   "text": "time your swings on a trapeze to catch your partner",
+   "genre": "timing",
+   "mode": "precision"
+  },
+  {
+   "id": "t193",
+   "text": "a gecko sticks to walls and climbs a lighthouse",
+   "genre": "platformer",
+   "mode": "default"
+  },
+  {
+   "id": "t194",
+   "text": "pinball inside a giant slot machine",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t195",
+   "text": "a rhino charges through a savanna knocking over jeeps",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t196",
+   "text": "a synchronized swimming team moves to the music in an olympic pool",
+   "genre": "rhythm",
+   "mode": "default"
+  },
+  {
+   "id": "t197",
+   "text": "hide from a T-rex in a jungle ranger station",
+   "genre": "arena",
+   "mode": "escape"
+  },
+  {
+   "id": "t198",
+   "text": "a bowler knocks down pins made of ice",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t199",
+   "text": "a llama spits at tourists who try to take selfies",
+   "genre": "arena",
+   "mode": "collect"
+  },
+  {
+   "id": "t200",
+   "text": "a snail must cross a highway at rush hour",
+   "genre": "hop",
+   "mode": "default"
+  }
+ ]
+}

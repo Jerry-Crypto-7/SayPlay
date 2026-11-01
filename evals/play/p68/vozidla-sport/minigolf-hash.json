@@ -1,0 +1,45 @@
+{
+  "about": "P68V T9: the verifier bot's record of the e2e minigolf game (e2e/fixtures/p68-minigolf-spec.json, seed 1) replayed from tick 0. node = compileGame + runBot + replay in Node, strokes = the bot's putts in that record (first HOLD tick, TAP tick, axis, charge); src/play/arcade/__tests__/minigolf-replay.test.ts pins both. browser = the same record replayed in the page by the __playShell probe (playWitness, then capture().hash), written by e2e/play-minigolf.spec.ts per Playwright project.",
+  "seed": 1,
+  "fixture": "e2e/fixtures/p68-minigolf-spec.json",
+  "node": {
+    "hash": "43e13345",
+    "outcome": "won",
+    "tick": 280,
+    "inputs": 95
+  },
+  "strokes": [
+    {
+      "hold": 17,
+      "tap": 65,
+      "axis": 0,
+      "charge": 48
+    },
+    {
+      "hold": 169,
+      "tap": 214,
+      "axis": 488,
+      "charge": 45
+    }
+  ],
+  "browser": {
+    "chromium": {
+      "hash": "43e13345",
+      "outcome": "won",
+      "tick": 280,
+      "equal": true
+    },
+    "pixel7-touch": {
+      "hash": "43e13345",
+      "outcome": "won",
+      "tick": 280,
+      "equal": true
+    },
+    "iphone-touch": {
+      "hash": "43e13345",
+      "outcome": "won",
+      "tick": 280,
+      "equal": true
+    }
+  }
+}
