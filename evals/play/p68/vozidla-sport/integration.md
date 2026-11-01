@@ -9,7 +9,7 @@ hotová. P68-I zapne každou hru zvlášť, jakmile její značka dorazí do `or
 | id | Stage (`stage-registry.ts`) | vstup | pohled (`P68_VIEWS`) | stav |
 |---|---|---|---|---|
 | `stunt` | `scene: 'stunt'` | `steer` | `chase` | hotová – e2e 12/12 (T5), `p68-ready: stunt` |
-| `minigolf` | `scene: 'minigolf'` | `throw-rig` | `shoulder` | jádro, robot a scéna (T6–T8); e2e čeká (T9) |
+| `minigolf` | `scene: 'minigolf'` | `throw-rig` | `shoulder` | hotová – e2e 12/12 (T9), `p68-ready: minigolf` |
 
 Kostra P68-I (`origin/main` `15c81e6a`) dala oběma hrám vstup, který plán čeká.
 
@@ -67,7 +67,25 @@ Kostra dopsala `play-stunt` a `play-minigolf` do `testMatch` projektů `pixel7-t
   `style={{ pointerEvents: 'none' }}` na `Html` ducha (nebo `pointer-events: none` na štítku). Test: stisk na místě
   štítku → `elementFromPoint` je pod ním ležící vrstva.
 
-_Další položky doplní T10; každá s důvodem a testem._
+- **Řádky do `e2e/play-perf.spec.ts`.** Obě hry si FPS měří samy (`fps-stunt.json`, `fps-minigolf.json`: 10 s ukázky
+  robota, medián ≥ 40 FPS, p95 ≤ 33,3 ms na `chromium`). Prosba: přidat `stunt` (fixture `p68-stunt-spec.json`) a
+  `minigolf` (`p68-minigolf-spec.json`) do sdíleného měření, ať hlídá i budoucí změny scén. Minigolf trvá 4,7 s, okno
+  10 s proto zachytí i scénu po výhře.
+- **Nové druhy efektů v `contract.ts`:** žádné. Náraz `stunt` jde přes `spawn` / `despawn` / `damage`, minigolf efekty nemá.
+
+## Žebřík zjednodušení a co je nesplněné
+
+| hra | stupeň | co to znamená |
+|---|---|---|
+| `stunt` | 0 – plný rozsah | skoky z ramp, brzda, trosky z kontaktů s rozpočtem, poškození, cíl |
+| `minigolf` | 1 – celočíselné kutálení místo koule Rapieru | spike T6: Rapier zastavil 21/50 ran do 180 tiků, kutálení 50/50; pohyblivá překážka i odrazníky zůstaly |
+
+**Nesplněné:**
+- `stunt` na telefonu na šířku: auto sedí těsně nad dolní lištou HUD a stín skoku pod ní mizí; rampa vypadá jako
+  plochá dlaždice, prach místy kryje auto (snímky T5) – úloha T4-R1, v tomto předání **nesplněné**.
+- Štítek ducha „Best run“ chytá dotyk nad míčkem (sdílený `Ghost.tsx`, výš) – **nesplněné**, mimo soubory pruhu.
+- Fyzický telefon neměřen (FPS jen hostitel a emulace); WebKit na Windows kreslí prázdné plátno, iPhone je ověřený
+  sondou záběru a DOM, ne okem.
 
 ## `stunt`
 
@@ -148,7 +166,13 @@ car, school bus, ride, tractor, garbage truck, motorbike), rampa `gen3d-ramp`, k
 
 | Soubor | Licence | Zdroj | Poznámka |
 |---|---|---|---|
-| – | – | – | žádný nový soubor; vše z dnešního katalogu |
+| – | – | – | žádný nový soubor v `public/**`; vozidla, `gen3d-ramp`, `crate` z dnešního katalogu |
+| kandidát: Kenney Car Kit (45 souborů) | Creative Commons CC0 (stránka kitu, 1. 11. 2026) | https://kenney.nl/assets/car-kit | low-poly vozidla navíc (dodávka, sanitka, hasiči z vět 11–20); licenci před přidáním ověřit po souborech v archivu |
+| kandidát: Kenney Racing Kit (110 souborů) | Creative Commons CC0 (stránka kitu, 1. 11. 2026) | https://kenney.nl/assets/racing-kit | rampa jako klín, mantinely, brána cíle, pneumatiky do hromad místo procedurálních |
+| kandidát: Quaternius Cars Pack (8 modelů, FBX/OBJ/Blend) | CC0 (stránka balíku, 1. 11. 2026) | https://quaternius.com/packs/cars.html | závodní a městská auta; po souborech neověřeno |
+
+Procedurální ve scéně: trať, mantinely, hromady (bedny `crate` v mřížce), prach a jiskry. Náhrada `nearest`: vozidlo,
+které katalog nezná, dostane `car` (`tuning.vehicle`).
 
 ### Požadované změny sdíleného kontraktu
 
@@ -275,7 +299,12 @@ Výchozí obsazení a místo: `tire-barrier` / `crate`, místo `mini golf course
 
 | Soubor | Licence | Zdroj | Poznámka |
 |---|---|---|---|
-| jamka (chybí v katalogu) | – | procedurální geometrie ve scéně | kandidát CC0: Kenney Minigolf Kit (licenci ověřit po souborech v T10) |
+| jamka (chybí v katalogu) | – | procedurální geometrie ve scéně | černý kalíšek Ø 1 m s okrajem, vlajka `finish-flag` z katalogu |
+| míček | katalog | `gen3d-golf-ball` | |
+| odrazníky / pohyblivá překážka | katalog | `sceneModelOf` věci z věty, výchozí `tire-barrier` / `crate` | fixture: `cc0-pumpkin`, `gen3d-coffin` |
+| kandidát: Kenney Minigolf Kit (125 souborů) | Creative Commons CC0 (stránka kitu, 1. 11. 2026) | https://kenney.nl/assets/minigolf-kit | dílce dráhy (rovinka, roh, jamka, rampa, větrný mlýn) místo procedurálních; licenci před přidáním ověřit po souborech v archivu |
+
+Nic nového v `public/**`.
 
 ### Požadované změny sdíleného kontraktu
 
@@ -303,5 +332,9 @@ Vzor pro T9 (`e2e/fixtures/p68-minigolf-spec.json`): `SAMPLE` v `src/play/genre/
 (dráha L, 3 odrazníky `cc0-pumpkin`, pohyblivá `gen3d-coffin`); publikační brána projde na seedech 1–10.
 
 `e2e/fixtures/p68-minigolf-spec.json` (T9) – týž spec, seed 1. Hraje ho `e2e/play-minigolf.spec.ts` bez zapojení hry:
-12/12 na `chromium`, `pixel7-touch` a `iphone-touch` (1. 11. 2026); otisk replaye prohlížeč = Node `43e13345`
-(`minigolf-hash.json`), FPS `fps-minigolf.json`.
+12/12 na `chromium`, `pixel7-touch` a `iphone-touch` (1. 11. 2026, `3d577865`). Herní aserce z `assertions.json`
+(`bot-wins`, `idle-loses`, `weak-loses`, `ball-in-hole`, `strokes-counted`) drží `minigolf-bot.test.ts` nad
+`minigolf-trace.ts` (30/30 jamek); otisk replaye prohlížeč = Node `43e13345` (`minigolf-hash.json`), FPS
+`fps-minigolf.json`.
+
+<!-- p68-ready: minigolf -->
