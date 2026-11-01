@@ -76,6 +76,21 @@ Plán: `plans/P68S-stavba-2026-10-31.md` (mimo git). Potřeby změn sdílených 
   není v `evals/play/p30/test-200.json` ani v jiné sadě vět pod `evals/play` – 1. 11. zelený (7/7 i se strážcem).
 - Zapečetěný holdout P68-I se neotevírá ani nehledá.
 
+## e2e T6 (1. 11.)
+
+- `e2e/play-buildshift.spec.ts` zelený na `chromium`, `pixel7-touch`, `iphone-touch` (5 testů na projekt) proti
+  `npm run build` + `next start -p 3683` (`PLAY_READER=off`, úložiště her `D:/caches/p68/stavba/store`).
+- **Stavba i provoz skutečnými ťuky.** `handPlay('end')` z plánu se nepoužívá: relaci restartuje a přehraje robotovu
+  vlastní stavbu, takže by stavbu prstem neověřil. Provoz proto hraje společná obsluha `serveWithLayout` nad rozvržením,
+  které prst postavil; každý její ťuk jde prstem (myší na `chromium`) na buňku z `data-lane-cells`. Node vede dvojče
+  hry a po každém ťuku porovná hash s prohlížečem.
+- **Naměřeno (fixtura, cíl 10):** dobré rozvržení 10/10, výhra v tiku 2338 (30 ťuků obsluhy); špatné (`badLayout`, pec
+  v rohu 0, jeden pult 22) 6/10 a prohra; nečinný hráč prohraje. Stejně na všech třech projektech.
+- `badLayout` se přesunul z testu T3 do `pieces/buildshift-bot.ts`, aby vitest i e2e měly jednu definici.
+- **Oprava kamery na šířku:** paleta ležela pod dolní řadou HUD (ťuk na Counter otevřel „Change one thing“). Rám na šířku
+  teď končí nad dolním pásem hracího obdélníku; buňka na šířku telefonu 34,6–36,9 px (požadavek v `integration.md`).
+- FPS (10 s, rAF, provoz bez obsluhy): `fps.json`. Snímky: `D:/caches/p68/stavba/shots/`.
+
 ## Rozhodnutí bez člověka
 
 - 1. 11.: stavět na WIP kostře místo čekání na `origin/main` (důvod: kostra se v PR už jen dokončuje, jména jsou

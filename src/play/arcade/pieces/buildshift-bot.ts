@@ -28,6 +28,7 @@ import {
   STATION_SLOTS,
   type ShiftView,
   type StationKind,
+  cellOf,
   cellX,
   cellZ,
   colOf,
@@ -105,6 +106,18 @@ export function planLayout(coins: number = BUILDSHIFT.startCoins): ShopLayout {
   }
   if (left >= STATION_COST.shelf) opening.push({ kind: 'shelf', cell: take(byCounter) });
   return { opening, later: [{ kind: 'oven', cell: take(byCounter) }] };
+}
+
+/**
+ * Pevné špatné rozvržení (důkaz T3, e2e T6): jeden pult z `planLayout` u dveří a pec ve stavebním rohu nejdál od něj;
+ * nic dalšího se nestaví. Stejná obsluha `serveWithLayout` nad ním prohraje.
+ */
+export function badLayout(): ShopLayout {
+  const counter = (planLayout().opening.find((at) => at.kind === 'counter') as Placement).cell;
+  const [right, back] = [BUILDSHIFT.cols - 1, BUILDSHIFT.rows - 1];
+  const corners = [cellOf(0, 0), cellOf(right, 0), cellOf(0, back), cellOf(right, back)].filter(isBuildCell);
+  const oven = corners.reduce((best, cell) => (manhattan(cell, counter) > manhattan(best, counter) ? cell : best));
+  return { opening: [{ kind: 'counter', cell: counter }, { kind: 'oven', cell: oven }], later: [] };
 }
 
 interface Spot {

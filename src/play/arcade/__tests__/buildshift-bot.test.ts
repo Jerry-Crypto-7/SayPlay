@@ -17,8 +17,8 @@ import { describe, expect, it } from 'vitest';
 import { ARCADE_LIMITS, type ArcadeWorld, BUTTON, type InputEvent, NO_INPUT } from '../contract';
 import { type ArcadeLibrary, buildWorld, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { BUILDSHIFT, PALETTE, PHASE, STATION_COST, buildshiftShop, cellOf, isBuildCell, manhattan, phaseOf, servedOf } from '../pieces/buildshift';
-import { type ShopLayout, buildshiftBot, planLayout, serveWithLayout } from '../pieces/buildshift-bot';
+import { BUILDSHIFT, PALETTE, PHASE, STATION_COST, buildshiftShop, isBuildCell, manhattan, phaseOf, servedOf } from '../pieces/buildshift';
+import { type ShopLayout, badLayout, buildshiftBot, planLayout, serveWithLayout } from '../pieces/buildshift-bot';
 import { axisOfCell } from '../pieces/lanes';
 import { runBot, verifyArcade } from '../verify';
 
@@ -80,14 +80,6 @@ const cost = (layout: ShopLayout): number => layout.opening.reduce((sum, at) => 
 
 /** Pult z rozvržení pravidlem (u dveří). */
 const COUNTER = (planLayout().opening.find((at) => at.kind === 'counter') as { readonly cell: number }).cell;
-
-/** Špatné rozvržení: jeden pult u dveří a pec ve stavebním rohu nejdál od něj; nic dalšího se nestaví. */
-function badLayout(): ShopLayout {
-  const [right, back] = [BUILDSHIFT.cols - 1, BUILDSHIFT.rows - 1];
-  const corners = [cellOf(0, 0), cellOf(right, 0), cellOf(0, back), cellOf(right, back)].filter(isBuildCell);
-  const oven = corners.reduce((best, cell) => (manhattan(cell, COUNTER) > manhattan(best, COUNTER) ? cell : best));
-  return { opening: [{ kind: 'counter', cell: COUNTER }, { kind: 'oven', cell: oven }], later: [] };
-}
 
 const botShifts = new Map<number, Shift[]>();
 const botShiftsAt = (goal: number): Shift[] => {
