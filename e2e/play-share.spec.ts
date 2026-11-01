@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
+import { P68_GENRES } from '../src/play/genre/p68-contract';
 import { startGame } from './play-start';
 
 interface HandProbe {
@@ -293,4 +294,54 @@ test.describe('/play/[id] – share landing', () => {
     expect(image.status()).toBe(404);
     expect(((await image.json()) as { error: { code: string } }).error.code).toBe('NOT_FOUND');
   });
+});
+
+/**
+ * Výzva nové hry P68 (P68-I T6): hra z ručního specu `e2e/fixtures/p68-<id>-spec.json`, výhra „rukou“ pošle výzvu,
+ * kamarád otevře její odkaz, dohraje a dostane výsledek proti ní. Server přehraje i jeho běh: týž běh robota je táž
+ * výzva (200, týž `dareId`), takže záznam z prohlížeče dal na serveru týž hash konce. Hra bez specu se přeskočí –
+ * dnes všech pět, spec dodá kategorie. Jede v `chromium` i `pixel7-touch`.
+ */
+test.describe("P68 games – a new game's dare (T6)", () => {
+  for (const [index, genre] of P68_GENRES.entries()) {
+    const fixture = join(process.cwd(), 'e2e', 'fixtures', `p68-${genre}-spec.json`);
+    test(`${genre}: open its dare, play it out, see the result (P68 T6)`, async ({ browser, request }, info) => {
+      test.skip(!existsSync(fixture), `no hand spec e2e/fixtures/p68-${genre}-spec.json yet`);
+      test.setTimeout(240_000);
+      const published = await request.post('/api/play/games', { data: { spec: JSON.parse(readFileSync(fixture, 'utf8')) as unknown } });
+      expect(published.status(), await published.text()).toBeLessThan(300);
+      const { url } = (await published.json()) as { url: string };
+      const id = url.split('/').at(-1)!;
+      const isDare = (response: { url(): string; request(): { method(): string } }): boolean => response.url().endsWith(`/api/play/games/${id}/dare`) && response.request().method() === 'POST';
+      // Každá hra a projekt z vlastních adres: strop výzev je 1 za 10 s na volajícího.
+      const caller = 70 + (info.project.name === 'pixel7-touch' ? 20 : 0) + 2 * index;
+
+      const author = await browser.newContext(person(caller));
+      const page = await author.newPage();
+      await page.goto(url);
+      const posted = page.waitForResponse(isDare);
+      await winByHand(page);
+      const made = await posted;
+      // Ruční spec je pokaždé táž verze: druhý projekt na témž serveru najde týž běh uložený (200), první ho uloží (201).
+      expect([200, 201], await made.text()).toContain(made.status());
+      const dare = (await made.json()) as { dareId: string; score: number; ticks: number };
+      await author.close();
+
+      const friend = await browser.newContext(person(caller + 1));
+      const other = await friend.newPage();
+      await other.goto(`${url}?via=share&dare=${dare.dareId}`);
+      const target = dare.score > 0 ? dare.score.toLocaleString('en-US') : `${(dare.ticks / 60).toFixed(1)}s`;
+      await expect(other.getByTestId('play-dare-goal')).toContainText(`Beat ${target}`, { timeout: 60_000 });
+      const replayed = other.waitForResponse(isDare);
+      const end = await winByHand(other);
+      expect({ score: end.score, ticks: end.tick }).toEqual({ score: dare.score, ticks: dare.ticks });
+      const again = await replayed;
+      expect(again.status(), await again.text()).toBe(200);
+      expect(((await again.json()) as { dareId: string }).dareId).toBe(dare.dareId);
+      const beat = await other.getByTestId('play-dare-result').getAttribute('data-beat');
+      await expect(other.locator('.play-result-title')).toHaveText(beat === 'true' ? 'You beat it!' : 'So close.');
+      expect(await other.locator('body').innerText()).not.toMatch(/NaN|undefined/);
+      await friend.close();
+    });
+  }
 });
