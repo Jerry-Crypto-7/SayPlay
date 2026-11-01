@@ -46,8 +46,8 @@ export const STUNT_CUES = [
   'ramp',
   'jump the',
   'jumps the',
-  'crash into',
-  'crashes into',
+  // P68-I T8: „crash into“ bez vozidla kradlo davovou hru (P55 h45 „… we crash into a mob of knights“); náraz vozidla
+  // slyší znak žánru `stunt` v `classify.ts` (`integration-log.md`).
   'crash through',
   'crashes through',
   'smash through',

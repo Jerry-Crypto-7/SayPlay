@@ -451,7 +451,8 @@ function reachableTarget(spec: GameSpecV1, seed: number, target: number): number
 }
 
 /** Chce spec fyzikální tělesa (P29A T13)? Jen pak se smí stahovat Rapier. */
-export const specNeedsPhysics = (spec: GameSpecV1): boolean => spec.control === 'ball' || spec.control === 'merge' || spec.control === 'push' || (spec.things ?? []).some((thing) => thing.physics === true);
+// P68 T8: `stunt` – bedny v hromadách jsou tělesa Rapieru od tiku 0 (`vozidla-sport/integration.md`).
+export const specNeedsPhysics = (spec: GameSpecV1): boolean => spec.control === 'ball' || spec.control === 'merge' || spec.control === 'push' || spec.control === 'stunt' || (spec.things ?? []).some((thing) => thing.physics === true);
 
 /**
  * Načte Rapier, když ho hra potřebuje; hra bez fyziky modul nestáhne. Jádro je

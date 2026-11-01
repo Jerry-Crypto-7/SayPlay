@@ -31,15 +31,19 @@ const FAKE_CUES = vi.hoisted(() => ({
 }));
 
 // Podvrh: modul každé nové hry jako by ho kategorie dodala hotový (překlad zůstává kostrový – hází).
-vi.mock('../stunt', async (real) => ({ stuntGenre: { ...(await real<typeof import('../stunt')>()).stuntGenre, availability: () => 'ready', cues: FAKE_CUES.stunt } }));
+// T8: `stunt` je zapojený – registr nese skutečný `stuntLiveGenre` (ready, narážky kategorie), podvrh kostry ho nepřepíše.
+vi.mock('../stunt', async (real) => {
+  const actual = await real<typeof import('../stunt')>();
+  return { ...actual, stuntGenre: { ...actual.stuntGenre, availability: () => 'ready', cues: FAKE_CUES.stunt } };
+});
 vi.mock('../minigolf', async (real) => ({ minigolfGenre: { ...(await real<typeof import('../minigolf')>()).minigolfGenre, availability: () => 'ready', cues: FAKE_CUES.minigolf } }));
 vi.mock('../railfps', async (real) => ({ railfpsGenre: { ...(await real<typeof import('../railfps')>()).railfpsGenre, availability: () => 'ready', cues: FAKE_CUES.railfps } }));
 vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<typeof import('../buildshift')>()).buildshiftGenre, availability: () => 'ready', cues: FAKE_CUES.buildshift } }));
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` vrácený (brány hry). */
-const WIRED: readonly string[] = [];
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` vrácený (brány hry), T8 `stunt`. */
+const WIRED: readonly string[] = ['stunt'];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {
@@ -72,7 +76,7 @@ describe('P68 skeletons (T1)', () => {
 describe('P68 activation gate: a ready module stays invisible until "wire X" removes it', () => {
   it('every new game not yet wired sits in all three gates; a wired one in none', () => {
     for (const genre of PENDING) expect(ROUTE_PENDING.has(genre), `${genre} ROUTE_PENDING`).toBe(true);
-    // T11 pustil `buildshift` jen do rychlé hry; režisér a čtečka čekají na R5 (placený re-record P46E).
+    // Zapojené hry jdou jen do rychlé hry; režisér a čtečka čekají na R5 (placený re-record P46E).
     for (const genre of WIRED) expect(ROUTE_PENDING.has(genre as GenreId), `${genre} ROUTE_PENDING`).toBe(false);
     for (const genre of P68) {
       expect(DIRECTOR_PENDING.has(genre), `${genre} DIRECTOR_PENDING`).toBe(true);

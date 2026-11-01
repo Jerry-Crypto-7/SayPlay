@@ -22,7 +22,7 @@ import { shooterGenre } from './shooter';
 import { sliceGenre } from './slice';
 import { sortGenre } from './sort';
 import { stealGenre } from './steal';
-import { stuntGenre } from './stunt';
+import { stuntLiveGenre } from './stunt';
 import { survivorGenre } from './survivor';
 import { throwGenre } from './throw';
 import { timingGenre } from './timing';
@@ -56,7 +56,8 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   sort: sortGenre,
   arrows: arrowsGenre,
   // P68 T1: kostry pěti her z jiných pohledů – každá kategorie přepíše jen svůj soubor; zapne je P68-I („zapoj X“).
-  stunt: stuntGenre,
+  // P68 T8: závod s triky je zapojený – registr nese hotový modul kategorie místo kostry.
+  stunt: stuntLiveGenre,
   minigolf: minigolfGenre,
   railfps: railfpsGenre,
   buildshift: buildshiftGenre,

@@ -62,6 +62,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'steal', mode: 'default', hero: 'cat', cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'chase_me' }], setting: 'fish market' },
   { genre: 'sort', mode: 'default', hero: 'shop clerk', cast: [{ label: 'teddy bear', does: 'collect' }, { label: 'ball', does: 'collect' }], setting: 'toy shop' },
   { genre: 'arrows', mode: 'default', hero: 'valet', cast: [{ label: 'car', does: 'scenery' }], setting: 'parking lot' },
+  // P68 T8: závod s triky je zapojený.
+  { genre: 'stunt', mode: 'default', hero: 'monster truck', cast: [{ label: 'crate', does: 'avoid' }], setting: 'desert' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */

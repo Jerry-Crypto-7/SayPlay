@@ -47,6 +47,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'arrows.default': { move: 'stationary', actions: ['unblock'], objective: 'score', threats: [] },
   // P68 T11: the build-shift shop is live – its cell moved here from `STAGED_PRESETS`.
   'buildshift.default': { move: 'stationary', actions: ['shopbuild'], objective: 'score', threats: [] },
+  // P68 T8: the stunt race is live.
+  'stunt.default': { move: 'drive', actions: ['stunt'], objective: 'reach', threats: ['obstacle'] },
 };
 
 /**
@@ -56,7 +58,6 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * P68 T1 stages its five games here; each P68-I activation task moves its own line to `PRESETS`.
  */
 export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
-  'stunt.default': { move: 'drive', actions: ['stunt'], objective: 'reach', threats: ['obstacle'] },
   'minigolf.default': { move: 'stationary', actions: ['putt'], objective: 'score', threats: [] },
   'railfps.default': { move: 'stationary', actions: ['railshoot'], objective: 'defeat', threats: ['chaser'] },
   'drawsave.default': { move: 'stationary', actions: ['drawwall'], objective: 'survive', threats: ['hazard'] },

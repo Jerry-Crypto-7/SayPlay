@@ -46,26 +46,26 @@ beforeAll(async () => {
   await loadRapier();
 });
 
-describe('stunt genre module: visibility stays with the P68-I gate (T3)', () => {
-  it('the registry module is the scaffold to the outside: staged, a compile that refuses, the same cues, bounds and draft', () => {
-    expect(GENRE_MODULES.stunt).toBe(stuntGenre);
-    expect(stuntGenre.availability('default')).toBe('staged');
-    expect(() => stuntGenre.compile({ genre: 'stunt', mode: 'default', hero: 'fox', setting: 'forest' })).toThrow(/not live/);
+describe('stunt genre module: wired by P68-I (T8)', () => {
+  // P68-I T8 (zapojení, podle `integration.md` → „Požadované změny“ 1): registr nese hotový modul, klasifikátor hru
+  // vidí; režisér a čtečka zůstávají za branou do placeného přenahrání P46E (plán P68-I, R5).
+  it('the registry module is the live one: ready, compiling, the same cues, bounds and draft as the scaffold', () => {
+    expect(GENRE_MODULES.stunt).toBe(stuntLiveGenre);
+    expect(stuntLiveGenre.availability('default')).toBe('ready');
     expect(stuntGenre.cues).toBe(stuntLiveGenre.cues);
     expect(stuntGenre.paramBounds).toBe(stuntLiveGenre.paramBounds);
     expect(stuntGenre.draftFill).toBe(stuntLiveGenre.draftFill);
-    expect(stuntLiveGenre.availability('default')).toBe('ready');
-    expect(ROUTE_PENDING.has('stunt')).toBe(true);
+    expect(ROUTE_PENDING.has('stunt')).toBe(false);
     expect(DIRECTOR_PENDING.has('stunt')).toBe(true);
   });
 
-  it('with its real cues the classifier still never ranks stunt, not even on its own dev sentences', () => {
+  it('wired, the classifier puts stunt first on every one of its own dev sentences', () => {
     expect(DEV).toHaveLength(10);
-    for (const { text } of DEV) expect(classifyGenre(text, null).ranked.map((choice) => choice.genre), text).not.toContain('stunt');
+    for (const { text } of DEV) expect(classifyGenre(text, null).ranked[0]?.genre, text).toBe('stunt');
   });
 
   it('cues are a list of stunt words – ramps, jumps, crashes – and never a plain race or drive (that is voyage)', () => {
-    expect(STUNT_CUES).toEqual(expect.arrayContaining(['stunt', 'ramp', 'jump the', 'crash into', 'smash through', 'monster truck']));
+    expect(STUNT_CUES).toEqual(expect.arrayContaining(['stunt', 'ramp', 'jump the', 'smash through', 'monster truck']));
     for (const plain of ['race', 'drive', 'ride', 'car', 'truck', 'drift']) expect(STUNT_CUES, plain).not.toContain(plain);
   });
 
