@@ -1,0 +1,26 @@
+{
+  "about": "P68-S T1 dev set: 20 new English sentences about one shift in a shop (buildshift), each with the expected customer (singular), goods (singular) and goal (number from the sentence clamped to the goal bounds 6..20, default 12). Written 2026-11-01 before any buildshift code. Tuning on these is allowed; the sealed P68-I holdout is never read.",
+  "goalBounds": { "min": 6, "default": 12, "max": 20 },
+  "sentences": [
+    { "id": "s01", "genre": "buildshift", "text": "robots line up for pizza at my tiny diner", "customer": "robot", "goods": "pizza", "goal": 12 },
+    { "id": "s02", "genre": "buildshift", "text": "run a cat cafe and serve 12 cats their milk", "customer": "cat", "goods": "milk", "goal": 12 },
+    { "id": "s03", "genre": "buildshift", "text": "a penguin opens a stand on the beach and sells ice cream to 15 sweaty tourists", "customer": "tourist", "goods": "ice cream", "goal": 15 },
+    { "id": "s04", "genre": "buildshift", "text": "build a bakery where hungry dragons come for fresh bread", "customer": "dragon", "goods": "bread", "goal": 12 },
+    { "id": "s05", "genre": "buildshift", "text": "my little taco truck has to feed 20 hungry astronauts tacos before launch", "customer": "astronaut", "goods": "taco", "goal": 20 },
+    { "id": "s06", "genre": "buildshift", "text": "zombies want burgers at the midnight burger joint, serve 9 of them", "customer": "zombie", "goods": "burger", "goal": 9 },
+    { "id": "s07", "genre": "buildshift", "text": "set up a lemonade stand and sell lemonade to 10 thirsty kids", "customer": "kid", "goods": "lemonade", "goal": 10 },
+    { "id": "s08", "genre": "buildshift", "text": "a raccoon runs a donut shop and sleepy police dogs come for donuts", "customer": "police dog", "goods": "donut", "goal": 12 },
+    { "id": "s09", "genre": "buildshift", "text": "open a sushi bar and serve sushi to 14 picky cats", "customer": "cat", "goods": "sushi", "goal": 14 },
+    { "id": "s10", "genre": "buildshift", "text": "aliens order noodles at my space station noodle shop", "customer": "alien", "goods": "noodles", "goal": 12 },
+    { "id": "s11", "genre": "buildshift", "text": "a busy coffee shop where 16 office workers want their morning coffee", "customer": "office worker", "goods": "coffee", "goal": 16 },
+    { "id": "s12", "genre": "buildshift", "text": "run a candy store and serve 8 greedy goblins their candy", "customer": "goblin", "goods": "candy", "goal": 8 },
+    { "id": "s13", "genre": "buildshift", "text": "monsters queue for cupcakes at the haunted cupcake bakery", "customer": "monster", "goods": "cupcake", "goal": 12 },
+    { "id": "s14", "genre": "buildshift", "text": "my hot dog stand has to serve hot dogs to 30 football fans at halftime", "customer": "football fan", "goods": "hot dog", "goal": 20 },
+    { "id": "s15", "genre": "buildshift", "text": "a fox runs a juice bar and sells fresh juice to 11 forest animals", "customer": "forest animal", "goods": "juice", "goal": 11 },
+    { "id": "s16", "genre": "buildshift", "text": "pirates come for fish at the harbour fish shop", "customer": "pirate", "goods": "fish", "goal": 12 },
+    { "id": "s17", "genre": "buildshift", "text": "serve tea to 7 sleepy grandmas in a cozy tea room", "customer": "grandma", "goods": "tea", "goal": 7 },
+    { "id": "s18", "genre": "buildshift", "text": "ghosts drop by my spooky pie shop for a slice of pie", "customer": "ghost", "goods": "pie", "goal": 12 },
+    { "id": "s19", "genre": "buildshift", "text": "run the school canteen and give lunch to 18 noisy students", "customer": "student", "goods": "lunch", "goal": 18 },
+    { "id": "s20", "genre": "buildshift", "text": "dinosaurs crowd my ice cream parlour wanting milkshakes, serve 3 of them", "customer": "dinosaur", "goods": "milkshake", "goal": 6 }
+  ]
+}
