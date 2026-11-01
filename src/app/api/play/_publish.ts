@@ -195,6 +195,9 @@ export function readSpecOrFail(input: unknown): SpecRead {
   if (unwired && servesPublicFeed(process.env)) {
     return { ok: false, response: fail(422, 'SPEC_REJECTED', 'this game type is not live yet') };
   }
+  // P68 T13: data úrovně ze skriptu (`scriptLevel`) píše jen server v AI verzi za `PLAY_SCRIPTS=on` – ruční spec je
+  // nenese, jako před pilotem, kdy je odmítalo schéma.
+  if (read.value.scriptLevel !== undefined) return { ok: false, response: fail(422, 'SPEC_REJECTED', 'level scripts are written by the server only') };
   return { ok: true, value: read.value };
 }
 
