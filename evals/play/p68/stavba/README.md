@@ -123,7 +123,35 @@ procházejí všechny žánry (`contract`, `classify`, `dressing`, `sets`, `hold
 kontroly, takže sloučen ručně po vlastních 7 souborech vitest 55/55. `own-files.mjs` hlásí jen `p68-staged.test.ts`
 (smazaný blok kostry, viz Odchylky). Hra zůstává skrytá za `ROUTE_PENDING` / `DIRECTOR_PENDING`.
 
+## Vyleštění T10 (1. 11.)
+
+- **Rush:** v posledních 15 s směny (od tiku 4380 = (88 − 15) · 60) přijde navíc max(4, ⌈cíl / 3⌉) zákazníků, ze
+  semínka (proud `pacing`). Odcházejí nejdřív s koncem hodin – nestojí život, dávají poslední šanci. Rush je volitelný
+  parametr pravidla `buildshift_shift`; dřív uložené hry ho nemají a přehrají se beze změny.
+- **Odezva ve scéně (mimo hash):** zamítnutá stavba zatřese buňkou, bez mincí ukáže cenu; obsloužený zákazník vyskočí
+  „+1“ s mincí; na pultu počet čekajících („3 in line“), během rushe cedule „Rush!“; větší pruhy trpělivosti. Při
+  `prefers-reduced-motion` se nic netřese, nevyskakuje ani netepe.
+- **Robot na dev větách:** `buildshift-bot.test.ts` – robot vyhraje a nečinný hráč prohraje na všech 20 dev větách
+  (3 semínka u každé); rozbitý spawn rushe (0 zákazníků místo 4) test shodí. Vitest 19/19 (`buildshift-bot`,
+  `buildshift`, `genre/buildshift`), `tsc` čistý.
+- **`bot-runs.json` beze změny, vědomě:** robot vyhraje nejpozději v tiku 2697, rush začíná v 4380 – na jeho běhy
+  nedosáhne, otisk se nezměnil.
+- **e2e 18/18** na `chromium`, `pixel7-touch`, `iphone-touch` nad buildem `e079cbb7`: dobré rozvržení 10/10 v tiku
+  2338 (výhra), špatné 6/10 (prohra – rush ho nezachránil), vyzvání 645 → výhra 10; „+1“ v půlce provozu viditelné,
+  ťuk na stanoviště bez mincí → zamítnuto a cenovka.
+- **Čitelnost** (podíl výšky plátna při otevření obchodu): prodavač 13,2 % `chromium` na šířku, 7,5 % `pixel7-touch`
+  a 9,4 % `iphone-touch` na výšku; nejbližší stanoviště 6,4 / 5,7 / 7,0 %. Aserce v e2e: prodavač ≥ 6,5 %,
+  stanoviště ≥ 5 % (viz Odchylky).
+- **FPS** (`fps.json`): `chromium` 59,9 FPS, p95 16,8 ms (brána ≥ 40 / ≤ 33,3 drží); `pixel7-touch` 59,9, p95 16,8;
+  `iphone-touch` 14,7 – WebKit softwarově na tomto stroji, ne iPhone.
+- Brand grep z T5 (hex, fialová) nad `genres/buildshift` nic nenašel.
+
 ## Odchylky od návrhu
+
+- **Čitelnost pod mezí survivoru** (`LEGIBLE_SHARE.hero` 20 %, při stropu `LEGIBLE_CAP` 16 %): celá deska 5 × 7 musí
+  být vidět a prodavač větší než 1,3 buňky (`SELLER_CAP`) zakryje buňku, na kterou hráč ťuká. e2e proto hlídá vlastní
+  mez pod naměřenými hodnotami (prodavač ≥ 6,5 %, stanoviště ≥ 5 %), aby kamera neodjela a postavy se nezmenšily.
+  Na telefonu je prodavač ~62 px a stanoviště ~47 px vysoké.
 
 - **Základ větve:** T1–T8 vznikly na WIP kostře P68-I `5005bfe3`, 1. 11. přeneseny na sloučenou kostru #61 – viz
   Základ větve.

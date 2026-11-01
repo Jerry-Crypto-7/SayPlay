@@ -141,6 +141,14 @@ async function legibilityOf(page: Page) {
   });
 }
 
+/**
+ * Mez čitelnosti stavby (podíl výšky plátna). Mez survivoru (`LEGIBLE_SHARE.hero` 20 %) deska 5 × 7 nesplní: celá deska
+ * musí být vidět a prodavač nad `SELLER_CAP` (1,3 buňky) zakryje buňku pod sebou. Naměřeno 1. 11. (T10): prodavač
+ * 7,5–13,2 %, stanoviště 5,7–7,0 % na třech projektech (na telefonu ~62 a ~47 px) – mez hlídá, že kamera neodjede
+ * a postavy se nezmenší.
+ */
+const BUILDSHIFT_LEGIBLE = { seller: 0.065, station: 0.05 } as const;
+
 /** Je kus scény se značkou `item` právě nakreslený (`__playFrame().items` vidí jen viditelné)? */
 const shownItem = (page: Page, item: string) => page.evaluate((name) => (window.__playFrame!().items[name]?.count ?? 0) > 0, item);
 
@@ -329,6 +337,8 @@ test.describe('buildshift (P68-S T6)', () => {
     await shot(`open-${orientation(page)}`);
     const legible = await legibilityOf(page);
     test.info().annotations.push({ type: 'legible', description: `${info.project.name} ${orientation(page)}: ${JSON.stringify(legible)}` });
+    expect(legible.hero, `seller ${JSON.stringify(legible)}`).toBeGreaterThanOrEqual(BUILDSHIFT_LEGIBLE.seller);
+    expect(legible.station, `station ${JSON.stringify(legible)}`).toBeGreaterThanOrEqual(BUILDSHIFT_LEGIBLE.station);
 
     let midShot = false;
     let plusShown = false;
