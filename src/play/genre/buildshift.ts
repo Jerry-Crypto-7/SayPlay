@@ -176,8 +176,9 @@ export const buildshiftGenre: GenreModule<'buildshift'> = {
   cues: ['diner', 'serve', 'customers'],
   heroClasses: ['humanoid', 'animal', 'robot'],
   paramBounds: { customers: { min: BUILDSHIFT.goal.min, max: BUILDSHIFT.goal.max } },
-  // `ready` od zapojení v P68-I T11 („zapoj buildshift“, `evals/play/p68/stavba/integration.md` → Zapnutí).
-  availability: () => 'ready',
+  // `ready` až zapojením v P68-I T11 („zapoj buildshift“, `evals/play/p68/stavba/integration.md` → Zapnutí); brány
+  // hry 1. 11. neprošly (`evals/play/p68/integration-log.md`), proto zatím `staged`.
+  availability: () => 'staged',
   compile: (spec) => {
     const goal = spec.params?.customers ?? BUILDSHIFT.goal.default;
     const customer = castFor(spec, 'collect', 'chase_me', 'reach', 'fight', 'shoot_at', 'avoid', 'throw_at')?.label ?? BUILDSHIFT_DEFAULTS.customer;

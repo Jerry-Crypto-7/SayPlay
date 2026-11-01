@@ -28,7 +28,9 @@ const DEV = json<{ sentences: { id: string; genre: string; text: string }[] }>('
 const CATEGORY = json<{ text: string }[] | { sentences: { text: string }[] }>('stavba/dev.json');
 const CATEGORY_TEXTS = (Array.isArray(CATEGORY) ? CATEGORY : CATEGORY.sentences).map((row) => row.text);
 
-describe('buildshift is routed (P68 T11)', () => {
+// Brány hry 1. 11. neprošly (FPS `pixel7-touch`, `integration-log.md`) a hra je zpátky v `ROUTE_PENDING`; směrování
+// se ověří znovu, až ji T11 po opravě kategorie pustí.
+describe.skipIf(ROUTE_PENDING.has('buildshift'))('buildshift is routed (P68 T11)', () => {
   it('is out of the activation gate', () => {
     expect(ROUTE_PENDING.has('buildshift')).toBe(false);
   });

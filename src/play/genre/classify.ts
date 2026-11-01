@@ -473,9 +473,10 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
 /**
  * Brána aktivace (P68 T1): žánry, které klasifikátor nevidí, i když je kategorie přepne na `ready` a napíše jim
  * narážky – obdoba `DIRECTOR_PENDING` režiséra. Hra je do té doby dostupná jen ručním specem (fixture). Žánr odsud
- * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 zapojil `buildshift`.
+ * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
+ * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'drawsave']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

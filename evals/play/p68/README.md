@@ -250,3 +250,17 @@ z předplatného s týmž zadáním (`answers.json`), ne astra. Na 20 dev větá
 - simplified: běh je synchronní; skript, který plní paměť drobnými poli, drží server ~12 s, než spadne na
   `out of memory`. Před zapnutím v produkci přesunout do workeru.
 - `npm install` nahradil junction `node_modules` (na worktree P64) skutečným adresářem; P64 zůstal beze změny.
+
+## T11 – zapojení `buildshift` (nesplněno 1. 11., čeká na kategorii)
+
+- Rychlá hra byla zapnutá (`819bece3`) a stráž žánru čistá, ale brány hry neprošly, takže hra **zůstává
+  v `ROUTE_PENDING`** a PR zapojení se neotevřel. Čísla a žádosti pro kategorii: `integration-log.md`.
+- **FPS (tvrdá brána):** `pixel7-touch` medián 59,9 FPS, p95 snímku 49,9 ms (mez 33,8) ve 3 bězích ze 3;
+  kontrolní `p66-arrows` prokládaně prošel. Dlouhé snímky hlavně v prvních 4 s stavby.
+- **Herní brána:** jedno kolo opravy ve sdílené `gameplay-assert.ts` – `spends` čte i slot těla úrovně (`slots`
+  v `assertions.json`; mince obchodu jsou na těle směny), slabý hráč obchodu = obsluha nad `badLayout()`.
+  Po opravě fixture ✓, dev 7/8, věty kategorie 17/20, 0 `failed`; zbytek je v souborech kategorie (malý cíl ≤ 8
+  nejde prohrát, „for one shift“ čte jako počet zákazníků).
+- `p68-roundtrip` buildshift prošel bez `skip`. Čas do hratelnosti a e2e se neměřily – hru zastavila FPS dřív.
+- Výklad brány: „brány hry zelené“ = každá brána z AC bez výjimky; herní brána na dev větách se čte jako všechny
+  věty (výhra, prohra, akce), ne jako práh G2 ≥ 80 % z T15.
