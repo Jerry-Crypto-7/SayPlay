@@ -1,0 +1,25 @@
+{
+  "about": "P68-F T4: 20 English ideas for the first-person rail shooter (railfps). Each names the enemy you shoot and the place you ride through; `enemy` must be a word of the compiled enemy role label and `setting` a part of `theme.setting` after draftFill + compile. s13-s20 are the railfps dev sentences d17-d24 of evals/play/p68/dev.json (tuning on them is allowed); s01-s12 were written for this task before the module was tuned; their first run found two general bugs (s08: 'a shooting gallery at the county fair' read the gallery or the fair as the enemy; s07: the enemy after 'aim at' became the place) and both were fixed in the module, not by rewording. T7 lists them in integration.md.",
+  "sentences": [
+    { "id": "s01", "text": "Zap alien invaders in the space station hallway", "enemy": "alien", "setting": "space station" },
+    { "id": "s02", "text": "look around and shoot the zombies shambling toward you in the abandoned mall", "enemy": "zombie", "setting": "mall" },
+    { "id": "s03", "text": "stand on the castle wall and fire arrows at the skeletons climbing up", "enemy": "skeleton", "setting": "castle" },
+    { "id": "s04", "text": "blast the mutant rats swarming through the sewer tunnels", "enemy": "rat", "setting": "sewer" },
+    { "id": "s05", "text": "through your own eyes on a pirate ship, shoot the sea monsters rising from the waves", "enemy": "sea monster", "setting": "pirate ship" },
+    { "id": "s06", "text": "stand guard in a snowy forest and shoot the wolves running out of the trees", "enemy": "wolf", "setting": "snowy forest" },
+    { "id": "s07", "text": "aim at the giant spiders crawling down the walls of the old temple", "enemy": "spider", "setting": "temple" },
+    { "id": "s08", "text": "a shooting gallery at the county fair where you hit the wooden bears before they roll past", "enemy": "bear", "setting": "county fair" },
+    { "id": "s09", "text": "riding a hover sled across the frozen lake, zap the ice gremlins chasing you", "enemy": "gremlin", "setting": "frozen lake" },
+    { "id": "s10", "text": "inside a sunken submarine, shoot the killer sharks before they bite through the hull", "enemy": "shark", "setting": "submarine" },
+    { "id": "s11", "text": "turn left and right in the dusty canyon and blast the scorpions crawling at you", "enemy": "scorpion", "setting": "canyon" },
+    { "id": "s12", "text": "ride a lava cart through the volcano and blast the fire imps jumping onto the track", "enemy": "imp", "setting": "volcano" },
+    { "id": "s13", "source": "dev d17", "text": "a first-person ride in a mine cart on rails, turning to shoot the bats that swoop at you in the dark tunnels", "enemy": "bat", "setting": "tunnel" },
+    { "id": "s14", "source": "dev d18", "text": "ride a train through the wild west and shoot the bandits on horseback before they jump aboard", "enemy": "bandit", "setting": "wild west" },
+    { "id": "s15", "source": "dev d19", "text": "an on-rails shooter on a river boat where you aim at crocodiles leaping out of the swamp", "enemy": "crocodile", "setting": "swamp" },
+    { "id": "s16", "source": "dev d20", "text": "seen through the eyes of a kid on a roller coaster, splat paint balloons at clowns popping up along the track", "enemy": "clown", "setting": "roller coaster" },
+    { "id": "s17", "source": "dev d21", "text": "a ghost train ride through a haunted house where you zap the ghosts flying at your cart with a flashlight", "enemy": "ghost", "setting": "haunted house" },
+    { "id": "s18", "source": "dev d22", "text": "sit in a tour jeep that follows the jungle road on its own and fire at the angry monkeys throwing coconuts at you", "enemy": "monkey", "setting": "jungle" },
+    { "id": "s19", "source": "dev d23", "text": "a first person rail shooter on a space station monorail, blasting drones before they reach you", "enemy": "drone", "setting": "space station" },
+    { "id": "s20", "source": "dev d24", "text": "ride a log flume through a pirate cove and soak the pirates with a water cannon before they fire at your log", "enemy": "pirate", "setting": "pirate cove" }
+  ]
+}

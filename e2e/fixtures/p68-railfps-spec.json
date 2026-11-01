@@ -1,0 +1,72 @@
+{
+  "schema": "gamespec.v1",
+  "control": "railfps",
+  "controlParams": {
+    "generator": "railfps_rail"
+  },
+  "genre": {
+    "id": "railfps",
+    "mode": "default",
+    "compilerVersion": "genre.v7"
+  },
+  "title": "Alien Invader Range",
+  "archetype": "combat_lite",
+  "targetDurationSec": 70,
+  "theme": {
+    "setting": "space station hallway",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "defeat_targets",
+    "description": "Hit all 16 in 3 waves: 10 alien invaders and 6 targets. Stop them before they reach you.",
+    "count": 16,
+    "role": "enemy"
+  },
+  "mechanics": [
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "astronaut",
+      "count": 1
+    },
+    {
+      "count": 10,
+      "id": "enemy",
+      "kind": "chaser",
+      "label": "alien invader"
+    },
+    {
+      "count": 6,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+    }
+  ],
+  "scoring": {},
+  "tutorial": {
+    "goalLine": "Stop the alien invaders before they reach you!",
+    "controlsHint": "Tap to aim and shoot. Drag or arrows to look around."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

@@ -1,0 +1,33 @@
+{
+ "schema": "p68-railfps-fps.v1",
+ "about": "railfps FPS self-check (P68-F T6, re-measured in T9): Playwright project pixel7-touch (412x839 portrait, touch), CPU x4 via CDP like the phone profile of e2e/play-perf.spec.ts that produced evals/play/p66/baseline-fps.json; this machine GPU, not a phone. Robot plays via \"Show me how\" (real-time demo of the verified run), restarted after a win inside the window; frames are requestAnimationFrame intervals in the page counted only while the demo runs, 20 s in total. medianFps = 1000 / median frame time.",
+ "measuredAt": "2026-11-01T10:58:07.676Z",
+ "fixture": "e2e/fixtures/p68-railfps-spec.json",
+ "windowMs": 20000,
+ "cpuSlowdown": 4,
+ "frames": 1148,
+ "playedMs": 20016,
+ "ticksPlayed": 1203,
+ "demoRestarts": 0,
+ "medianFrameMs": 16.7,
+ "medianFps": 59.9,
+ "p95FrameMs": 16.8,
+ "maxFrameMs": 183.3,
+ "baseline": {
+  "file": "evals/play/p66/baseline-fps.json",
+  "commit": "e661855c",
+  "slowest": {
+   "genre": "runner",
+   "fpsP50": 30,
+   "drawnFpsPlaying": 31.1,
+   "rule": "lowest fpsP50, ties by drawnFpsPlaying"
+  }
+ },
+ "gate": {
+  "minMedianFps": 28.5,
+  "maxP95FrameMs": 33.3,
+  "medianOk": true,
+  "p95Ok": true,
+  "passed": true
+ }
+}
