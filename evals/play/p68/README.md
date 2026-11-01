@@ -100,6 +100,22 @@ a narážky) a hlídá, že je přesto nevidí klasifikátor (věty P30, P66 a P
   (test `?grid=1`).
 - Testy: `first-playable-ab.test.ts`, `time-to-playable.test.ts` (fixture `hud-game.html`). mutationStatus: pass.
 
+## T3 – brána FPS na emulovaném telefonu
+
+- `e2e/play-perf.spec.ts` `@p68-fps`: hra z ručního specu `e2e/fixtures/p68-<id>-spec.json` (bez něj přeskočeno),
+  robot hraje ukázkou z karty pauzy 20 s, sonda měří intervaly rAF. Tvrdě: medián ≥ 40 FPS, p95 intervalu
+  ≤ 33,3 ms + 0,5 ms (dva snímky 60 Hz časovač čte jako 33,3–33,4 ms; bez tolerance by o hře se ztraceným snímkem
+  rozhodoval šum). Výsledky po hře a projektu se surovými intervaly a GPU do `fps.json`.
+- Projekty: `pixel7-touch` (Chromium, CPU ×4) hradí; `play-perf` je v jejich `testMatch` a `@measure` v nich vyřazuje
+  `grepInvert` (projektový `grep` by vyřadil všechny ostatní spec soubory projektu).
+- **Odchylka: `iphone-touch` jen zapisuje, nehradí.** WebKit na tomto stroji dal hotové hře `p66-arrows` 18–19 FPS
+  (p95 81–112 ms), zatímco Chromium s CPU ×4 tutéž hru drží na 59,9 FPS. Měří hostitele, ne hru; tvrdá brána by
+  shodila každou hru. iPhone změří fyzicky P59′.
+- Ověření 1. 11. (stroj vytížený na ~90 % jinými relacemi): kontrola `P68_FPS_FIXTURES=p66-arrows` na `pixel7-touch`
+  zelená (59,9 FPS, p95 33,3 ms); tatáž s `P68_FPS_SLOW_MS=60` (každý snímek +60 ms) červená (12,0 FPS, p95 117 ms).
+  Při jiném měření téže hry vyšlo p95 50 ms – p95 kolísá se zátěží stroje, červenou p95 u nové hry proto ověřit
+  prokládaně s kontrolou `p66-arrows`; je-li červená i kontrola, je to stroj.
+
 ## T6 – sdílení, Dare a přehrání
 
 - `src/app/api/play/__tests__/p68-roundtrip.test.ts`: hra s ručním specem `e2e/fixtures/p68-<id>-spec.json` projde
