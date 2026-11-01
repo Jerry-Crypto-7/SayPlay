@@ -91,6 +91,46 @@ Plán: `plans/P68S-stavba-2026-10-31.md` (mimo git). Potřeby změn sdílených 
   teď končí nad dolním pásem hracího obdélníku; buňka na šířku telefonu 34,6–36,9 px (požadavek v `integration.md`).
 - FPS (10 s, rAF, provoz bez obsluhy): `fps.json`. Snímky: `D:/caches/p68/stavba/shots/`.
 
+## Sdílení a vyzvání T7 (1. 11.)
+
+- Dobré rozvržení postavené prstem, výhra, sdílení → vyzvání „Beat 645 in 39.0s“. Záznam ťuků (`packInputs`) se
+  v Node přehraje do stejné výhry, 10 obsloužených, stejný tik, skóre i hash; druhý prohlížeč otevře odkaz a vidí cíl.
+- Stejný záznam bez ťuků stavby skončí prohrou s 0 obsloužených – trvalá aserce, že stavba je v záznamu, ne mimo něj.
+
+## Hratelné – milník 2. 11. (stav 1. 11.)
+
+| Co | Kontrola | Výsledek |
+|---|---|---|
+| Jádro (T2, T7) | `src/play/arcade/__tests__/buildshift.test.ts` | 6/6 |
+| Robot a rozvržení (T3) | `src/play/arcade/__tests__/buildshift-bot.test.ts` | 8/8 |
+| Modul žánru (T4) | `src/play/genre/__tests__/buildshift.test.ts` | 3/3; `draftFill` 20/20 dev vět, 20/20 projde `verifyArcade` |
+| Kamera a buňky (T5, T6) | `genres/buildshift/__tests__/buildshift-camera.test.ts` | 25/25 |
+| Dev věty a strážce souborů (T1) | `evals/play/p68/stavba/__tests__/{dev,own-files}.test.ts` | 2/2 + 5/5 |
+| e2e stavba, provoz, sdílení, vyzvání (T6, T7) | `e2e/play-buildshift.spec.ts` | 18/18 (`chromium`, `pixel7-touch`, `iphone-touch`) |
+| Robot, 12 semínek, cíl 6 / 12 / 20 | `bot-runs.json` | 12/12 výher na každém cíli; výhra v tiku medián 2028 / 2479 / 2575, nejpozději 2697 z 5400 |
+| Nečinný hráč | `buildshift-bot.test.ts` | prohra 12/12 |
+| Špatné rozvržení (pec v rohu, jeden pult) | `buildshift-bot.test.ts`, e2e | prohra 12/12, medián 4,5 obsloužených proti 12; e2e 6/10 |
+| FPS, 10 s provozu (`fps.json`) | e2e T6 | `chromium` 59,9 FPS, p95 16,8 ms (brána ≥ 40 / ≤ 33,3); `pixel7-touch` 59,9, p95 33,3; `iphone-touch` 16 – WebKit softwarově na tomto stroji, ne iPhone |
+| Snímky | `D:/caches/p68/stavba/shots/` (mimo git) | 24: stavba, otevřeno, provoz, výsledek, špatné rozvržení, vyzvání – na výšku i na šířku |
+
+Testy vitest znovu puštěné 1. 11. při T8 (všech 49 zelených); e2e z běhu T7 (`49f87ec3`).
+
+## Odchylky od návrhu
+
+- **Základ větve:** WIP kostra P68-I `5005bfe3` místo `origin/main` (kostra tam zatím není) – viz Základ větve.
+- **Prodavač 40 tiků na buňku místo 20.** Při 20 vyhrálo i špatné rozvržení 12/12; až při 40 rozhoduje cesta pec → pult.
+- **Prohra hodinami v 88 s, ne koncem horizontu** – pravidlo `time_limit` (max 90 s) by v 5400 tikách nevystřelilo.
+- **Řada palety má pátou buňku s mincemi** (Oven, Counter, Shelf, Coins, Open); celkem 35 buněk jako v návrhu.
+- **Provoz v e2e ťuky přes `serveWithLayout`, ne `handPlay('end')`** – ten by stavbu přehrál robotem.
+- **Na šířku telefonu buňka 34,6–36,9 px, pod 44 px** (`--sp-size-touch-min`) – paleta musí ležet nad dolní řadou HUD.
+  Bez změny sdíleného `play.css` to nejde opravit; požadavek v `integration.md`.
+- **`availability` zůstává `staged`** do zapojení P68-I (s `ready` by žánr viděla čtečka a sdílené testy).
+- **Cíl vyzvání v bodech („Beat 645“), ne v obsloužených**, a **karta „Tap to start“ na výšku zakrývá popisky palety**
+  do prvního ťuku – obojí sdílené, požadavky v `integration.md`.
+- **`iphone-touch` (WebKit na Windows) po změně kvality kreslí prázdné plátno** – i u šipek P66, ne scénou; e2e otevírá
+  druhou orientaci rovnou v ní.
+- **Vlastní `playwright.stavba.config.ts` nebyl potřeba** – kostra dala `play-buildshift` do `testMatch` obou telefonů.
+
 ## Rozhodnutí bez člověka
 
 - 1. 11.: stavět na WIP kostře místo čekání na `origin/main` (důvod: kostra se v PR už jen dokončuje, jména jsou

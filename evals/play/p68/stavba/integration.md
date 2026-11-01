@@ -133,6 +133,16 @@ Z e2e T6 (`e2e/play-buildshift.spec.ts`, 1. 11.):
   stroje nejde poznat. e2e proto druhou orientaci otevírá rovnou v ní a snímek `iphone-touch-service-live-portrait.png`
   je prázdný. Medián na WebKitu 16 FPS (`fps.json`) je software render tohoto stroje, ne iPhone.
 
+Ze sdílení a vyzvání T7 (`e2e/play-buildshift.spec.ts`, 1. 11.):
+
+- **Cíl vyzvání je v bodech, ne v obsloužených.** Kamarád uvidí „Beat 645 in 39.0s“ (`play-dare-goal`, skóre z
+  `COUNTER.score`); v obchodě ale hráč počítá obsloužené zákazníky a 645 mu nic neřekne. Přehrání sedí (výhra, 10
+  obsloužených, stejný hash). Žádost: u her, kde výhru dělá počet (`objective` s cílem, u `buildshift` obsloužení),
+  ukázat cíl jako „Serve 10 in 39.0s“ / „Beat 10 served in 39.0s“; body nechat jen hrám bez počtu.
+- **Karta „Tap to start“ na výšku zakrývá popisky palety** (Oven, Counter, Shelf) až do prvního ťuku. Hráč tak před
+  startem nevidí, co bude stavět. Žádost: na výšku kartu u her s `input: 'lanes'` posadit nad desku (horní třetina
+  hracího obdélníku), nebo ji zprůhlednit nad dolním pásem `data-lane-cells`.
+
 ## HUD labels
 
 - **Request:** add `served` and `coins` to `HUD_COUNTER_LABELS` (`e2e/hud-labels.ts`). Until then the scene draws
