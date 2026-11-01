@@ -524,6 +524,14 @@ export class WitnessRecorder {
     if (ref.id === 'arrows_tap' && effect.kind === 'despawn') this.add('unblock', player, effect.body, tick, 'piece-flew-off-clear-path', state);
     if (ref.id === 'steal_home' && effect.kind === 'despawn') for (const verb of ['steal', 'deliver']) this.add(verb, player, effect.body, tick, 'loot-carried-home', state);
     if (ref.id === 'survivor_fire' && effect.kind === 'spawn') this.add('autofire', player, null, tick, 'shot-fired-without-input', state);
+    // P68 T8/T11: kusy receptů závodu s triky a stavby obchodu. Krabici hromady odebere jen náraz auta – rozbitá hromada
+    // je trik a zároveň překážka v cestě (náraz autu ubere rychlost, `stunt.ts`). Stanoviště obchodu vystaví jen ťuk
+    // stavby (`buildshift_build`); předloha stanoviště vazbu role nemá, proto bez předmětu.
+    if (ref.id === 'stunt_impact' && effect.kind === 'despawn') {
+      this.add('stunt', player, effect.body, tick, 'pile-smashed-apart', state);
+      this.add('obstacle', effect.body, player, tick, 'pile-slowed-the-car', state);
+    }
+    if (ref.id === 'buildshift_build' && effect.kind === 'spawn') this.add('shopbuild', player, null, tick, 'station-built', state);
     if ((ref.id === 'survivor_hit' || ref.id === 'survivor_round') && effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.enemy) this.add('defeat', player, effect.body, tick, 'enemy-shot-down', state);
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {

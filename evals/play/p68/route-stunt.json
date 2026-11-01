@@ -1,11 +1,11 @@
 {
  "schema": "p68-genre-route.v1",
- "commit": "7328d1a3+T8",
+ "commit": "ce35f6fa+wip",
  "root": "D:/claude/Hackaton/.claude/worktrees/P68I-integrace-2026-10-31",
- "measuredAt": "2026-11-01T17:56:36.177Z",
+ "measuredAt": "2026-11-01T18:20:09.629Z",
  "labels": "evals/play/p68/genre-labels.json",
  "about": "genre = classifyGenre(sentence, null).ranked[0] (quick game, no model); draft = draftGameSpecWithMeta(sentence, 1).genre (composer; grid = archetype fallback). wrong = best != none and genre not in acceptable; none is not counted. Labels: 29 types (P68).",
- "seconds": 278,
+ "seconds": 198,
  "wrongRate": {
   "test200": {
    "sentences": 200,
@@ -27,8 +27,8 @@
    "sentences": 200,
    "none": 25,
    "counted": 175,
-   "wrong": 61,
-   "wrongRate": 0.349
+   "wrong": 62,
+   "wrongRate": 0.354
   },
   "open": {
    "sentences": 406,
@@ -46,8 +46,7 @@
     "share": 0.02,
     "from": {
      "voyage": 2,
-     "stunt": 1,
-     "arena": 1
+     "arena": 2
     }
    },
    "open": {
@@ -2163,9 +2162,9 @@
     "push",
     "arena"
    ],
-   "genre": "stunt",
-   "mode": "default",
-   "draft": "stunt"
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "voyage"
   },
   {
    "text": "a panda slides down a bamboo slope collecting dumplings",

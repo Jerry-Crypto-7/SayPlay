@@ -236,11 +236,13 @@ const VERBS: readonly Verb[] = [
   // ends“; samotná „a night shift at the hospital“ obchod není), stavění stanovišť („place grills and counters“), vlastní obchod („runs a donut shop“, „build
   // your own ice cream parlour“), obsluha zákazníků, zákazníci, kteří do obchodu chodí („line up for pizza at my
   // diner“). Jedno pracoviště, objednávka za objednávkou („a chef cooks burgers at one grill“) zůstává stanovištěm.
-  // P68 T8: závod s triky. Rampa, kaskadér, „monster truck“, nebo vozidlo, které skáče, bourá či prorazí hromadu věcí
+  // P68 T8: závod s triky. Rampa, kaskadér, nebo vozidlo, které skáče, bourá či prorazí hromadu věcí
   // („a police car smashes through a wall of barrels“). Samotná jízda nebo závod bez skoku a bourání zůstává plavbou,
   // skok bez vozidla plošinovkou („a frog jumps over logs“), nakreslená rampa kreslení (`drawsave`).
   v('stunt', 'sign', STUNT, new RegExp([
-    String.raw`\bstunts?\b|\bdaredevils?\b|\bdemolition\b|\bmonster trucks?\b`,
+    // „monster truck“ sám znak není: „a monster truck racing other trucks and firing missiles“ (P42) je bojový závod
+    // arény; slovo zůstává narážkou modulu (+1, `stunt.ts`) a skok či náraz trucku znak slyší větou vozidla níž.
+    String.raw`\bstunts?\b|\bdaredevils?\b|\bdemolition\b`,
     // „grind ramps“ je skatepark (P55 h79), ne skok vozidla.
     String.raw`(?<!\b(?:draw(?:s|ing)?|grind(?:s|ing)?) (?:a |an |the )?(?:[a-z-]+ )?)\bramps?\b`,
     String.raw`\b${VEHICLE}\b[^.;!?]*?\b(?:jump(?:s|ing)?|smash(?:es|ing)?|crash(?:es|ing)?|plows?|plowing|ploughs?|fl(?:y|ies|ying) off|launch(?:es|ing)? off|knock(?:s|ing)? (?:down|over))\b`,
