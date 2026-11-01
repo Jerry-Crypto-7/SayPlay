@@ -199,6 +199,11 @@ nezaokrouhlená pozice kontaktu → test „4 s na čáře“ červený. `tsc` �
 
 Požadavky na zapojení: `integration.md` → `drawsave`.
 
+**PR #68 sloučený do `main` 1. 11. (squash `995b1cf3`)**, ručně jako Jerry (auto-merge repo nepovoluje), 17 vlastních
+souborů. Před pushem sloučen `main` s #62 (railfps) a #64 (stunt, minigolf) – jen jejich soubory, nic sdíleného;
+vlastní vitest 79/79 (`drawsave` + `buildshift`), `tsc` čistý, `own-files.mjs` exit 0. Hra zůstává `staged` za
+`ROUTE_PENDING` / `DIRECTOR_PENDING`.
+
 ## Odchylky od návrhu
 
 - **`drawsave` se kreslí tahem, ne ťukem „spoj tečky“:** kostra zmrazila vstup `DRAWSAVE_STROKE` (`HOLD` + buňka).
