@@ -120,6 +120,12 @@ Po přenosu na sloučenou kostru #61 (1. 11.):
   `compile` hodí `/not live/`. Hotový modul `buildshift` překládá, takže test padá právě pro `buildshift` (jediná
   červená z 64 cílených testů; 934/934 sdílených testů přes žánry zelených). Soubor patří P68-I. Žádost: v tom testu
   smyčku omezit na hry, jejichž kategorie ještě nedodala (bez `buildshift`), nejpozději se sloučením tohoto PR.
+- **`p68-roundtrip.test.ts` (z #65) je pro `buildshift` červený už na `main` po #65.** `vitest.config.mts:45` pouští
+  všechny testy s `VERCEL_ENV=production`, a stráž nezapojených her (`_publish.ts:194-196`) proto ruční spec
+  `e2e/fixtures/p68-buildshift-spec.json` odmítne s 422 „this game type is not live yet“. Test hru přeskakuje jen
+  u kostry (`blockerOf`), hotový modul ho tedy pustí přímo na vlastní stráž. #66 to nezpůsobil (odmítnutí padne před
+  prvním tikem jádra). Soubor patří P68-I. Žádost: v kole publikace nastavit `VERCEL_ENV` na `preview` (např.
+  `vi.stubEnv`), nebo hry z `ROUTE_PENDING` přeskakovat do „zapoj X“. Stejně narazí každá další kategorie, která dodá.
 - **`READER_PENDING` už hry P68 obsahuje** (`read/schema.ts:41`) a test kostry říká, že kategorie smí modul přepnout na
   `ready` dřív. Modul přesto zůstává `staged` (opatrnější čtení; `contract.test.ts`, `dressing.test.ts` a
   `p66-staged.test.ts` se s `ready` nezkoušely). Přepnutí na `ready` zůstává jednořádková součást „zapoj buildshift“.

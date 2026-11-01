@@ -146,6 +146,17 @@ kontroly, takže sloučen ručně po vlastních 7 souborech vitest 55/55. `own-f
   `iphone-touch` 14,7 – WebKit softwarově na tomto stroji, ne iPhone.
 - Brand grep z T5 (hex, fialová) nad `genres/buildshift` nic nenašel.
 
+**Vyleštěno – PR #66 sloučený do `main` 1. 11. (squash `851c085b`)**, ručně (repo nemá automatické sloučení, PR nemá
+kontroly). Do `main` mezitím přišel #65 (brány P68-I: `_publish.ts`, `ArcadePlay.tsx`, `playwright.config.ts`), proto
+vše znovu nad sloučeným stavem (`85c61d46`, strom = `main`), nový build:
+
+| Co | Výsledek |
+|---|---|
+| e2e `play-buildshift.spec.ts`, `chromium` + `pixel7-touch` + `iphone-touch` | 18/18; dobré 10/10 v tiku 2338, špatné 6/10, vyzvání 645 → výhra 10 |
+| Čitelnost prodavač / stanoviště | 13,2 / 6,4 % (`chromium`), 7,5 / 5,7 % (`pixel7-touch`), 9,4 / 7,0 % (`iphone-touch`) |
+| Vitest: vlastní testy + `genre-route`, `p68-unwired-publish`, `p68-roundtrip` | 63/68, 4 přeskočené (hry bez specu), 1 červená: `p68-roundtrip` pro `buildshift` – sdílený test P68-I, požadavek v `integration.md` |
+| `tsc` | čistý |
+
 ## Odchylky od návrhu
 
 - **Čitelnost pod mezí survivoru** (`LEGIBLE_SHARE.hero` 20 %, při stropu `LEGIBLE_CAP` 16 %): celá deska 5 × 7 musí
