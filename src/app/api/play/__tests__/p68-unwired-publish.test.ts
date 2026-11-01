@@ -45,6 +45,10 @@ describe('raw-spec publish of an unwired P68 game (R1)', () => {
       expect(read.ok, part).toBe(false);
       if (!read.ok) expect(read.response.status).toBe(422);
     }
+    // Svět vybírá generátor: šipky s generátorem kaskadérské dráhy by postavily nezapojenou hru.
+    const viaGenerator = readSpecOrFail({ ...ARROWS, controlParams: { generator: 'stunt_track' } });
+    expect(viaGenerator.ok).toBe(false);
+    if (!viaGenerator.ok) expect(await viaGenerator.response.text()).toContain('not live yet');
     const response = await publish(asP68('railfps', 'both'));
     expect(response.status).toBe(422);
     expect(await response.text()).toContain('not live yet');
