@@ -1,0 +1,1904 @@
+{
+  "about": "Interleaved A/B time to first playable on /play: the same sentences and shared games on two servers, runs paired back to back. Method: evals/play/first-playable/README.md.",
+  "measuredAt": "2026-11-01T10:25:42.884Z",
+  "a": {
+    "url": "http://127.0.0.1:3181",
+    "label": "main 688d989d (next start -p 3181, PLAY_READER=off)"
+  },
+  "b": {
+    "url": "http://127.0.0.1:3181",
+    "label": "main 688d989d (same server, A/A noise check)"
+  },
+  "probe": "scripts/measure/time-to-playable.mjs via scripts/measure/first-playable-ab.mjs",
+  "profiles": {
+    "desktop": {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "pixel7-cpu4": {
+      "device": "Pixel 7",
+      "cpuThrottle": 4
+    }
+  },
+  "runs": 3,
+  "pauseMs": 5000,
+  "sentences": [
+    "zombie shooter in a mall",
+    "A space marine shoots alien bugs in a mining colony",
+    "A knight must collect three keys in a haunted castle while dodging ghosts.",
+    "a stunt race where a monster truck jumps over ramps and smashes through stacks of crates on the way to the finish line",
+    "a first-person ride in a mine cart on rails, turning to shoot the bats that swoop at you in the dark tunnels",
+    "run a burger shop for one shift: place grills and counters on the grid, spend coins and serve every customer before closing time"
+  ],
+  "sharedSentences": [],
+  "summary": {
+    "byTarget": [
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s1-zombie-shooter-in-a-mall",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 4355,
+          "min": 3504,
+          "max": 4432
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 4090,
+          "min": 2949,
+          "max": 4640
+        },
+        "diffMedian": -265,
+        "pairedDiffMedian": -342
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 3748,
+          "min": 2672,
+          "max": 5229
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 3562,
+          "min": 3403,
+          "max": 4019
+        },
+        "diffMedian": -186,
+        "pairedDiffMedian": -186
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 4226,
+          "min": 3067,
+          "max": 4356
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 4372,
+          "min": 4135,
+          "max": 4604
+        },
+        "diffMedian": 146,
+        "pairedDiffMedian": 378
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6514,
+          "min": 3404,
+          "max": 6950
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5092,
+          "min": 3659,
+          "max": 6616
+        },
+        "diffMedian": -1422,
+        "pairedDiffMedian": -1858
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 3995,
+          "min": 3558,
+          "max": 4205
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 3887,
+          "min": 3342,
+          "max": 4175
+        },
+        "diffMedian": -108,
+        "pairedDiffMedian": -108
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 4072,
+          "min": 3898,
+          "max": 4381
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 3905,
+          "min": 3862,
+          "max": 4306
+        },
+        "diffMedian": -167,
+        "pairedDiffMedian": -210
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-zombie-shooter-in-a-mall",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 22230,
+          "min": 19023,
+          "max": 31002
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 45320,
+          "min": 19554,
+          "max": 49771
+        },
+        "diffMedian": 23090,
+        "pairedDiffMedian": 18769
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 14877,
+          "min": 12175,
+          "max": 18318
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 15285,
+          "min": 11303,
+          "max": 16562
+        },
+        "diffMedian": 408,
+        "pairedDiffMedian": -872
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 13743,
+          "min": 12026,
+          "max": 19440
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 16138,
+          "min": 14421,
+          "max": 20411
+        },
+        "diffMedian": 2395,
+        "pairedDiffMedian": 4112
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6657,
+          "min": 6624,
+          "max": 6980
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6480,
+          "min": 5988,
+          "max": 8792
+        },
+        "diffMedian": -177,
+        "pairedDiffMedian": -144
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 13766,
+          "min": 13574,
+          "max": 15064
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 15414,
+          "min": 12778,
+          "max": 59011
+        },
+        "diffMedian": 1648,
+        "pairedDiffMedian": 1840
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8065,
+          "min": 7282,
+          "max": 13808
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 7713,
+          "min": 7074,
+          "max": 9918
+        },
+        "diffMedian": -352,
+        "pairedDiffMedian": -991
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 4138.5,
+          "min": 2672,
+          "max": 6950
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 4054.5,
+          "min": 2949,
+          "max": 6616
+        },
+        "diffMedian": -84,
+        "pairedDiffMedian": -198
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 13754.5,
+          "min": 6624,
+          "max": 31002
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 14853,
+          "min": 5988,
+          "max": 59011
+        },
+        "diffMedian": 1098.5,
+        "pairedDiffMedian": 481
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "desktop",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 4138.5,
+          "min": 2672,
+          "max": 6950
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 4054.5,
+          "min": 2949,
+          "max": 6616
+        },
+        "diffMedian": -84,
+        "pairedDiffMedian": -198
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 13754.5,
+          "min": 6624,
+          "max": 31002
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 14853,
+          "min": 5988,
+          "max": 59011
+        },
+        "diffMedian": 1098.5,
+        "pairedDiffMedian": 481
+      }
+    ],
+    "gate": {
+      "failedTotal": 0,
+      "failed": {
+        "A": 0,
+        "B": 0
+      },
+      "checks": [
+        {
+          "name": "failedTotal",
+          "profile": null,
+          "value": 0,
+          "limit": 0,
+          "pass": true
+        },
+        {
+          "name": "medianB",
+          "profile": "desktop",
+          "value": 4054.5,
+          "limit": 3000,
+          "pass": false
+        },
+        {
+          "name": "pairedDiffMedian",
+          "profile": "desktop",
+          "value": -198,
+          "limit": 200,
+          "pass": true
+        },
+        {
+          "name": "pairedDiffMedian",
+          "profile": "pixel7-cpu4",
+          "value": 481,
+          "limit": 200,
+          "pass": false
+        }
+      ],
+      "pass": false
+    }
+  },
+  "summaryFirstFrame": {
+    "byTarget": [
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s1-zombie-shooter-in-a-mall",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 1856,
+          "min": 1811,
+          "max": 2409
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 2109,
+          "min": 1703,
+          "max": 2807
+        },
+        "diffMedian": 253,
+        "pairedDiffMedian": -108
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 2799,
+          "min": 1584,
+          "max": 4132
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 2624,
+          "min": 2410,
+          "max": 2843
+        },
+        "diffMedian": -175,
+        "pairedDiffMedian": -175
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 2437,
+          "min": 1285,
+          "max": 2550
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 2791,
+          "min": 2627,
+          "max": 3127
+        },
+        "diffMedian": 354,
+        "pairedDiffMedian": 690
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 2930,
+          "min": 2765,
+          "max": 2930
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 2871,
+          "min": 2109,
+          "max": 3169
+        },
+        "diffMedian": -59,
+        "pairedDiffMedian": 106
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 2871,
+          "min": 2610,
+          "max": 3181
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 2771,
+          "min": 2551,
+          "max": 3001
+        },
+        "diffMedian": -100,
+        "pairedDiffMedian": -100
+      },
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 3353,
+          "min": 3182,
+          "max": 3667
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 3226,
+          "min": 3093,
+          "max": 3603
+        },
+        "diffMedian": -127,
+        "pairedDiffMedian": -260
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-zombie-shooter-in-a-mall",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 7103,
+          "min": 6073,
+          "max": 7295
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6277,
+          "min": 6127,
+          "max": 7969
+        },
+        "diffMedian": -826,
+        "pairedDiffMedian": 204
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6803,
+          "min": 6397,
+          "max": 8373
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6834,
+          "min": 6223,
+          "max": 6880
+        },
+        "diffMedian": 31,
+        "pairedDiffMedian": -580
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5878,
+          "min": 5646,
+          "max": 7338
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 7339,
+          "min": 7157,
+          "max": 7726
+        },
+        "diffMedian": 1461,
+        "pairedDiffMedian": 1461
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5372,
+          "min": 5224,
+          "max": 5877
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5468,
+          "min": 4821,
+          "max": 7323
+        },
+        "diffMedian": 96,
+        "pairedDiffMedian": 244
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8191,
+          "min": 7995,
+          "max": 8584
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 8617,
+          "min": 7971,
+          "max": 9044
+        },
+        "diffMedian": 426,
+        "pairedDiffMedian": 426
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6581,
+          "min": 5850,
+          "max": 8196
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 6402,
+          "min": 5808,
+          "max": 8436
+        },
+        "diffMedian": -179,
+        "pairedDiffMedian": 240
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "desktop",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 2782,
+          "min": 1285,
+          "max": 4132
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 2799,
+          "min": 1703,
+          "max": 3603
+        },
+        "diffMedian": 17,
+        "pairedDiffMedian": -79.5
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 6692,
+          "min": 5224,
+          "max": 8584
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 7018.5,
+          "min": 4821,
+          "max": 9044
+        },
+        "diffMedian": 326.5,
+        "pairedDiffMedian": 242
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "desktop",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 2782,
+          "min": 1285,
+          "max": 4132
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 2799,
+          "min": 1703,
+          "max": 3603
+        },
+        "diffMedian": 17,
+        "pairedDiffMedian": -79.5
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 18,
+          "median": 6692,
+          "min": 5224,
+          "max": 8584
+        },
+        "B": {
+          "failed": 0,
+          "n": 18,
+          "median": 7018.5,
+          "min": 4821,
+          "max": 9044
+        },
+        "diffMedian": 326.5,
+        "pairedDiffMedian": 242
+      }
+    ]
+  },
+  "results": [
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 4355,
+      "firstFrameMs": 1811,
+      "note": "surface also changes without input (1.66 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527114162,
+      "tPlayable": 1793527118517,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 2949,
+      "firstFrameMs": 1703,
+      "note": "surface also changes without input (1.55 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527128149,
+      "tPlayable": 1793527131098,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 1,
+      "pair": 1,
+      "playable": true,
+      "ms": 4019,
+      "firstFrameMs": 2843,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527139312,
+      "tPlayable": 1793527143331,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 1,
+      "pair": 1,
+      "playable": true,
+      "ms": 5229,
+      "firstFrameMs": 4132,
+      "note": "surface also changes without input (1.18 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527151964,
+      "tPlayable": 1793527157193,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "A",
+      "run": 1,
+      "pair": 2,
+      "playable": true,
+      "ms": 4356,
+      "firstFrameMs": 2550,
+      "note": "surface also changes without input (20.11 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527165182,
+      "tPlayable": 1793527169538,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "B",
+      "run": 1,
+      "pair": 2,
+      "playable": true,
+      "ms": 4135,
+      "firstFrameMs": 2791,
+      "note": "surface also changes without input (18.04 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527177600,
+      "tPlayable": 1793527181735,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "B",
+      "run": 1,
+      "pair": 3,
+      "playable": true,
+      "ms": 6616,
+      "firstFrameMs": 2109,
+      "note": null,
+      "attempts": 7,
+      "t0": 1793527190831,
+      "tPlayable": 1793527197447,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "A",
+      "run": 1,
+      "pair": 3,
+      "playable": true,
+      "ms": 3404,
+      "firstFrameMs": 2930,
+      "note": "surface also changes without input (1.23 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527205229,
+      "tPlayable": 1793527208633,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "A",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 4205,
+      "firstFrameMs": 3181,
+      "note": "surface also changes without input (15.74 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527216365,
+      "tPlayable": 1793527220570,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "B",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 4175,
+      "firstFrameMs": 3001,
+      "note": "surface also changes without input (16.02 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527228880,
+      "tPlayable": 1793527233055,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "B",
+      "run": 1,
+      "pair": 5,
+      "playable": true,
+      "ms": 4306,
+      "firstFrameMs": 3603,
+      "note": "surface also changes without input (1.14 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527241586,
+      "tPlayable": 1793527245892,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "A",
+      "run": 1,
+      "pair": 5,
+      "playable": true,
+      "ms": 3898,
+      "firstFrameMs": 3182,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527254334,
+      "tPlayable": 1793527258232,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 1,
+      "pair": 6,
+      "playable": true,
+      "ms": 19023,
+      "firstFrameMs": 6073,
+      "note": "surface also changes without input (3.2 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527269051,
+      "tPlayable": 1793527288074,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 1,
+      "pair": 6,
+      "playable": true,
+      "ms": 19554,
+      "firstFrameMs": 6277,
+      "note": "surface also changes without input (3.95 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527306583,
+      "tPlayable": 1793527326137,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 1,
+      "pair": 7,
+      "playable": true,
+      "ms": 11303,
+      "firstFrameMs": 6223,
+      "note": "surface also changes without input (4.26 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527341172,
+      "tPlayable": 1793527352475,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 1,
+      "pair": 7,
+      "playable": true,
+      "ms": 12175,
+      "firstFrameMs": 6803,
+      "note": "surface also changes without input (5.28 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527367144,
+      "tPlayable": 1793527379319,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "A",
+      "run": 1,
+      "pair": 8,
+      "playable": true,
+      "ms": 13743,
+      "firstFrameMs": 7338,
+      "note": "surface also changes without input (36.68 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527393467,
+      "tPlayable": 1793527407210,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "B",
+      "run": 1,
+      "pair": 8,
+      "playable": true,
+      "ms": 20411,
+      "firstFrameMs": 7157,
+      "note": "surface also changes without input (31.19 % in 300 ms) – check the screenshot",
+      "attempts": 4,
+      "t0": 1793527424775,
+      "tPlayable": 1793527445186,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "B",
+      "run": 1,
+      "pair": 9,
+      "playable": true,
+      "ms": 6480,
+      "firstFrameMs": 5468,
+      "note": "surface also changes without input (1.35 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527463865,
+      "tPlayable": 1793527470345,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "A",
+      "run": 1,
+      "pair": 9,
+      "playable": true,
+      "ms": 6624,
+      "firstFrameMs": 5224,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527483117,
+      "tPlayable": 1793527489741,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "A",
+      "run": 1,
+      "pair": 10,
+      "playable": true,
+      "ms": 13574,
+      "firstFrameMs": 8191,
+      "note": "surface also changes without input (37.08 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527503600,
+      "tPlayable": 1793527517174,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "B",
+      "run": 1,
+      "pair": 10,
+      "playable": true,
+      "ms": 15414,
+      "firstFrameMs": 8617,
+      "note": "surface also changes without input (62.8 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527533443,
+      "tPlayable": 1793527548857,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "B",
+      "run": 1,
+      "pair": 11,
+      "playable": true,
+      "ms": 7074,
+      "firstFrameMs": 5808,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527565222,
+      "tPlayable": 1793527572296,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "A",
+      "run": 1,
+      "pair": 11,
+      "playable": true,
+      "ms": 8065,
+      "firstFrameMs": 6581,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527584364,
+      "tPlayable": 1793527592429,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 2,
+      "pair": 12,
+      "playable": true,
+      "ms": 3504,
+      "firstFrameMs": 1856,
+      "note": "surface also changes without input (1.64 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527602677,
+      "tPlayable": 1793527606181,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 2,
+      "pair": 12,
+      "playable": true,
+      "ms": 4640,
+      "firstFrameMs": 2807,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527614436,
+      "tPlayable": 1793527619076,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 2,
+      "pair": 13,
+      "playable": true,
+      "ms": 3403,
+      "firstFrameMs": 2410,
+      "note": "surface also changes without input (1.82 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527627010,
+      "tPlayable": 1793527630413,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 2,
+      "pair": 13,
+      "playable": true,
+      "ms": 2672,
+      "firstFrameMs": 1584,
+      "note": "surface also changes without input (1.18 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527639265,
+      "tPlayable": 1793527641937,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "A",
+      "run": 2,
+      "pair": 14,
+      "playable": true,
+      "ms": 3067,
+      "firstFrameMs": 1285,
+      "note": "surface also changes without input (20.4 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527651104,
+      "tPlayable": 1793527654171,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "B",
+      "run": 2,
+      "pair": 14,
+      "playable": true,
+      "ms": 4372,
+      "firstFrameMs": 2627,
+      "note": "surface also changes without input (21.41 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527662288,
+      "tPlayable": 1793527666660,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "B",
+      "run": 2,
+      "pair": 15,
+      "playable": true,
+      "ms": 5092,
+      "firstFrameMs": 2871,
+      "note": null,
+      "attempts": 4,
+      "t0": 1793527674543,
+      "tPlayable": 1793527679635,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "A",
+      "run": 2,
+      "pair": 15,
+      "playable": true,
+      "ms": 6950,
+      "firstFrameMs": 2765,
+      "note": null,
+      "attempts": 7,
+      "t0": 1793527687417,
+      "tPlayable": 1793527694367,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "A",
+      "run": 2,
+      "pair": 16,
+      "playable": true,
+      "ms": 3558,
+      "firstFrameMs": 2610,
+      "note": "surface also changes without input (18.35 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527702254,
+      "tPlayable": 1793527705812,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "B",
+      "run": 2,
+      "pair": 16,
+      "playable": true,
+      "ms": 3342,
+      "firstFrameMs": 2551,
+      "note": "surface also changes without input (16.93 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527713948,
+      "tPlayable": 1793527717290,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "B",
+      "run": 2,
+      "pair": 17,
+      "playable": true,
+      "ms": 3862,
+      "firstFrameMs": 3093,
+      "note": "surface also changes without input (1.07 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527725426,
+      "tPlayable": 1793527729288,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "A",
+      "run": 2,
+      "pair": 17,
+      "playable": true,
+      "ms": 4072,
+      "firstFrameMs": 3353,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793527737295,
+      "tPlayable": 1793527741367,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 2,
+      "pair": 18,
+      "playable": true,
+      "ms": 22230,
+      "firstFrameMs": 7103,
+      "note": "surface also changes without input (4.55 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527755278,
+      "tPlayable": 1793527777508,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 2,
+      "pair": 18,
+      "playable": true,
+      "ms": 45320,
+      "firstFrameMs": 7969,
+      "note": "surface also changes without input (5.95 % in 300 ms) – check the screenshot",
+      "attempts": 7,
+      "t0": 1793527794046,
+      "tPlayable": 1793527839366,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 2,
+      "pair": 19,
+      "playable": true,
+      "ms": 15285,
+      "firstFrameMs": 6834,
+      "note": "surface also changes without input (8.42 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527855981,
+      "tPlayable": 1793527871266,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 2,
+      "pair": 19,
+      "playable": true,
+      "ms": 18318,
+      "firstFrameMs": 8373,
+      "note": "surface also changes without input (7.93 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527887323,
+      "tPlayable": 1793527905641,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "A",
+      "run": 2,
+      "pair": 20,
+      "playable": true,
+      "ms": 12026,
+      "firstFrameMs": 5878,
+      "note": "surface also changes without input (51.58 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527923340,
+      "tPlayable": 1793527935366,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "B",
+      "run": 2,
+      "pair": 20,
+      "playable": true,
+      "ms": 16138,
+      "firstFrameMs": 7339,
+      "note": "surface also changes without input (30.32 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793527951389,
+      "tPlayable": 1793527967527,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "B",
+      "run": 2,
+      "pair": 21,
+      "playable": true,
+      "ms": 5988,
+      "firstFrameMs": 4821,
+      "note": "surface also changes without input (1.2 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793527984614,
+      "tPlayable": 1793527990602,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "A",
+      "run": 2,
+      "pair": 21,
+      "playable": true,
+      "ms": 6980,
+      "firstFrameMs": 5877,
+      "note": "surface also changes without input (2.65 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528003130,
+      "tPlayable": 1793528010110,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "A",
+      "run": 2,
+      "pair": 22,
+      "playable": true,
+      "ms": 13766,
+      "firstFrameMs": 7995,
+      "note": "surface also changes without input (16.33 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528023279,
+      "tPlayable": 1793528037045,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "B",
+      "run": 2,
+      "pair": 22,
+      "playable": true,
+      "ms": 12778,
+      "firstFrameMs": 7971,
+      "note": "surface also changes without input (28.73 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528053000,
+      "tPlayable": 1793528065778,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "B",
+      "run": 2,
+      "pair": 23,
+      "playable": true,
+      "ms": 7713,
+      "firstFrameMs": 6402,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528082540,
+      "tPlayable": 1793528090253,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "A",
+      "run": 2,
+      "pair": 23,
+      "playable": true,
+      "ms": 7282,
+      "firstFrameMs": 5850,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528103120,
+      "tPlayable": 1793528110402,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 3,
+      "pair": 24,
+      "playable": true,
+      "ms": 4432,
+      "firstFrameMs": 2409,
+      "note": "surface also changes without input (1.75 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528119375,
+      "tPlayable": 1793528123807,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 3,
+      "pair": 24,
+      "playable": true,
+      "ms": 4090,
+      "firstFrameMs": 2109,
+      "note": "surface also changes without input (1.19 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528133369,
+      "tPlayable": 1793528137459,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 3,
+      "pair": 25,
+      "playable": true,
+      "ms": 3562,
+      "firstFrameMs": 2624,
+      "note": "surface also changes without input (1.06 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528145764,
+      "tPlayable": 1793528149326,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 3,
+      "pair": 25,
+      "playable": true,
+      "ms": 3748,
+      "firstFrameMs": 2799,
+      "note": "surface also changes without input (1.05 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528157418,
+      "tPlayable": 1793528161166,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "A",
+      "run": 3,
+      "pair": 26,
+      "playable": true,
+      "ms": 4226,
+      "firstFrameMs": 2437,
+      "note": "surface also changes without input (21.23 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528169372,
+      "tPlayable": 1793528173598,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "B",
+      "run": 3,
+      "pair": 26,
+      "playable": true,
+      "ms": 4604,
+      "firstFrameMs": 3127,
+      "note": "surface also changes without input (20.95 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528181923,
+      "tPlayable": 1793528186527,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "B",
+      "run": 3,
+      "pair": 27,
+      "playable": true,
+      "ms": 3659,
+      "firstFrameMs": 3169,
+      "note": "surface also changes without input (1.24 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528194974,
+      "tPlayable": 1793528198633,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "A",
+      "run": 3,
+      "pair": 27,
+      "playable": true,
+      "ms": 6514,
+      "firstFrameMs": 2930,
+      "note": null,
+      "attempts": 6,
+      "t0": 1793528206709,
+      "tPlayable": 1793528213223,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "A",
+      "run": 3,
+      "pair": 28,
+      "playable": true,
+      "ms": 3995,
+      "firstFrameMs": 2871,
+      "note": "surface also changes without input (15.88 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528221838,
+      "tPlayable": 1793528225833,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "B",
+      "run": 3,
+      "pair": 28,
+      "playable": true,
+      "ms": 3887,
+      "firstFrameMs": 2771,
+      "note": "surface also changes without input (18.49 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528234203,
+      "tPlayable": 1793528238090,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "B",
+      "run": 3,
+      "pair": 29,
+      "playable": true,
+      "ms": 3905,
+      "firstFrameMs": 3226,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528246243,
+      "tPlayable": 1793528250148,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "desktop",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "A",
+      "run": 3,
+      "pair": 29,
+      "playable": true,
+      "ms": 4381,
+      "firstFrameMs": 3667,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528258296,
+      "tPlayable": 1793528262677,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "A",
+      "run": 3,
+      "pair": 30,
+      "playable": true,
+      "ms": 31002,
+      "firstFrameMs": 7295,
+      "note": "surface also changes without input (3.46 % in 300 ms) – check the screenshot",
+      "attempts": 5,
+      "t0": 1793528274659,
+      "tPlayable": 1793528305661,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-zombie-shooter-in-a-mall",
+      "side": "B",
+      "run": 3,
+      "pair": 30,
+      "playable": true,
+      "ms": 49771,
+      "firstFrameMs": 6127,
+      "note": "surface also changes without input (2.89 % in 300 ms) – check the screenshot",
+      "attempts": 10,
+      "t0": 1793528321737,
+      "tPlayable": 1793528371508,
+      "url": "http://127.0.0.1:3181/play/f9a33891d8f0cac797ff7afbf5ed3922"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "B",
+      "run": 3,
+      "pair": 31,
+      "playable": true,
+      "ms": 16562,
+      "firstFrameMs": 6880,
+      "note": "surface also changes without input (6.84 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793528392611,
+      "tPlayable": 1793528409173,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-a-space-marine-shoots-alien-bugs-in-a-mi",
+      "side": "A",
+      "run": 3,
+      "pair": 31,
+      "playable": true,
+      "ms": 14877,
+      "firstFrameMs": 6397,
+      "note": "surface also changes without input (2.48 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793528423345,
+      "tPlayable": 1793528438222,
+      "url": "http://127.0.0.1:3181/play/9d3680bcee71a859dd64491a632d4561"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "A",
+      "run": 3,
+      "pair": 32,
+      "playable": true,
+      "ms": 19440,
+      "firstFrameMs": 5646,
+      "note": "surface also changes without input (40.69 % in 300 ms) – check the screenshot",
+      "attempts": 4,
+      "t0": 1793528451756,
+      "tPlayable": 1793528471196,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-a-knight-must-collect-three-keys-in-a-ha",
+      "side": "B",
+      "run": 3,
+      "pair": 32,
+      "playable": true,
+      "ms": 14421,
+      "firstFrameMs": 7726,
+      "note": "surface also changes without input (43.49 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793528488349,
+      "tPlayable": 1793528502770,
+      "url": "http://127.0.0.1:3181/play/a4b99beac114ee49ccfff0702d98f631"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "B",
+      "run": 3,
+      "pair": 33,
+      "playable": true,
+      "ms": 8792,
+      "firstFrameMs": 7323,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528522067,
+      "tPlayable": 1793528530859,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-a-stunt-race-where-a-monster-truck-jumps",
+      "side": "A",
+      "run": 3,
+      "pair": 33,
+      "playable": true,
+      "ms": 6657,
+      "firstFrameMs": 5372,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528543260,
+      "tPlayable": 1793528549917,
+      "url": "http://127.0.0.1:3181/play/735979d36441a5e33712f9b409eaff88"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "A",
+      "run": 3,
+      "pair": 34,
+      "playable": true,
+      "ms": 15064,
+      "firstFrameMs": 8584,
+      "note": "surface also changes without input (63.37 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793528562783,
+      "tPlayable": 1793528577847,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-a-first-person-ride-in-a-mine-cart-on-ra",
+      "side": "B",
+      "run": 3,
+      "pair": 34,
+      "playable": true,
+      "ms": 59011,
+      "firstFrameMs": 9044,
+      "note": "surface also changes without input (60.44 % in 300 ms) – check the screenshot",
+      "attempts": 11,
+      "t0": 1793528596425,
+      "tPlayable": 1793528655436,
+      "url": "http://127.0.0.1:3181/play/32ca02bf6c0c1aa5bfaa3605a1ef3070"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "B",
+      "run": 3,
+      "pair": 35,
+      "playable": true,
+      "ms": 9918,
+      "firstFrameMs": 8436,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793528673850,
+      "tPlayable": 1793528683768,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-run-a-burger-shop-for-one-shift-place-gr",
+      "side": "A",
+      "run": 3,
+      "pair": 35,
+      "playable": true,
+      "ms": 13808,
+      "firstFrameMs": 8196,
+      "note": "surface also changes without input (92.27 % in 300 ms) – check the screenshot",
+      "attempts": 4,
+      "t0": 1793528702812,
+      "tPlayable": 1793528716620,
+      "url": "http://127.0.0.1:3181/play/757414322f2adcfd0b84de0d0588058a"
+    }
+  ]
+}
