@@ -8,8 +8,8 @@ hotová. P68-I zapne každou hru zvlášť, jakmile její značka dorazí do `or
 
 | id | Stage (`stage-registry.ts`) | vstup | pohled (`P68_VIEWS`) | stav |
 |---|---|---|---|---|
-| `stunt` | `scene: 'stunt'` | `steer` | `chase` | kostra (T1) |
-| `minigolf` | `scene: 'minigolf'` | `throw-rig` | `shoulder` | kostra (T1) |
+| `stunt` | `scene: 'stunt'` | `steer` | `chase` | hotová – e2e 12/12 (T5), `p68-ready: stunt` |
+| `minigolf` | `scene: 'minigolf'` | `throw-rig` | `shoulder` | jádro, robot a scéna (T6–T8); e2e čeká (T9) |
 
 Kostra P68-I (`origin/main` `15c81e6a`) dala oběma hrám vstup, který plán čeká.
 
@@ -141,6 +141,7 @@ car, school bus, ride, tractor, garbage truck, motorbike), rampa `gen3d-ramp`, k
 
 | Soubor | Licence | Zdroj | Poznámka |
 |---|---|---|---|
+| – | – | – | žádný nový soubor; vše z dnešního katalogu |
 
 ### Požadované změny sdíleného kontraktu
 
@@ -163,8 +164,14 @@ car, school bus, ride, tractor, garbage truck, motorbike), rampa `gen3d-ramp`, k
 ### Fixture spec
 
 Vzorek (T3): `stunt-evidence.json` → `fixture` – `POST /api/play/games` s tělem `{ "spec": <fixture.spec>,
-"seed": 1 }` (monster truck, bedny, poušť; projde branou na semínkách 1–10). Soubor
-`e2e/fixtures/p68-stunt-spec.json` založí T5.
+"seed": 1 }` (monster truck, bedny, poušť; projde branou na semínkách 1–10).
+
+`e2e/fixtures/p68-stunt-spec.json` (T5) – týž spec, seed 1. Hraje ho `e2e/play-stunt.spec.ts` bez zapojení hry:
+12/12 na `chromium`, `pixel7-touch` a `iphone-touch` (1. 11. 2026, `6272a38a`). Herní aserce z `assertions.json`
+(`crosses-finish`, `one-jump`, `debris-hit` + robot vyhraje, nečinný a slabý robot prohrají) drží `stunt-bot.test.ts`
+nad `stunt-trace.ts`; otisk replaye prohlížeč = Node `ec27fd3c` (`stunt-hash.json`), FPS `fps-stunt.json`.
+
+<!-- p68-ready: stunt -->
 
 ## `minigolf`
 
