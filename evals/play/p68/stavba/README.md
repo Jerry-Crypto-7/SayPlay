@@ -157,7 +157,38 @@ vše znovu nad sloučeným stavem (`85c61d46`, strom = `main`), nový build:
 | Vitest: vlastní testy + `genre-route`, `p68-unwired-publish`, `p68-roundtrip` | 63/68, 4 přeskočené (hry bez specu), 1 červená: `p68-roundtrip` pro `buildshift` – sdílený test P68-I, požadavek v `integration.md` |
 | `tsc` | čistý |
 
+## drawsave – brána proveditelnosti T12 (1. 11.): prošlo
+
+**Kostra:** `drawsave` je v `origin/main` registrovaný (#61): `library.ts` (`drawsave`, `drawsave_level`, `drawsave_bot`),
+`stage-registry.ts` (`scene: 'drawsave'`, `input: 'genre'`), `contract.ts` (žánr, pohled `side`). Vstup je zmrazený
+v `p68-contract.ts` jako tah – každý tik tahu `HOLD` + buňka v ose (`DRAWSAVE_STROKE`) –, ne ťuk; platí kostra.
+
+**Jádro** (`pieces/drawsave.ts`, `drawsave-world.ts`): deska 8 × 12, `UNIT` 1000 na buňku. Každá nová buňka pod `HOLD`
+je bod, sousední body jednoho tahu dají úsečku, puštění začne nový tah. Inkoust 10 buněk (délka mezi středy buněk:
+1000 rovně, 1414 úhlopříčně), nejvýš 12 úseček. Kreslení 360 tiků (6 s), dřív při došlém inkoustu. Hrozby (param
+`threats` 1–30, výchozí 10, každá druhá míří na sloupec postavy): gravitace 6/tik², strop 420/tik, odraz 50 %, hrozba
+300, čára 100 – kontakt na 200, takže strop rychlosti je schválně nad dvojnásobkem a bez průběžné (swept) kontroly by
+hrozba čárou proskočila. Postava v řádcích 8–11 přežije 600 tiků → výhra; kolo končí nejpozději v tiku 959 z 5400.
+
+| Brána (`drawsave.test.ts`, 6/6) | Výsledek |
+|---|---|
+| Stejný záznam × 2 = stejný hash v každém z 5400 tiků | 12 semínek × 2 záznamy |
+| `packInputs` → `unpackInputs` → přehrání | stejný hash i výsledek, 24/24 |
+| Robot „střecha“ / nečinný / čára mimo | výhra 12/12 / prohra 12/12 / prohra 12/12 (stejně při 1 i 30 hrozbách) |
+| Průlet čarou mezi tiky | 3888 sestrojených případů, všechny odraženy (243 by bez swept kontroly proletělo) |
+| Hrozba položená na šikmou čáru, 4 s | leží nebo sklouzne z konce, nikdy neprojde |
+
+Mutace (každá vrácená): náhoda ve spawnu → determinismus a přehrání červené; stav tahu mimo stav hry → červené;
+čáry mimo kolizi → robot 0/12; kolize jen v nové pozici → průlet červený; špatný typ těla u zásahu → nečinný 0/12;
+nezaokrouhlená pozice kontaktu → test „4 s na čáře“ červený. `tsc` čistý.
+
+**Inference k ladění (T13):** náhodné čmárání vyhrálo 5/12 a robot vyhraje i při 30 hrozbách – prototyp je spíš lehký.
+`drawsave_bot` je pořád zástupce z kostry, takže publikační ověření hry projde až s robotem T13.
+
 ## Odchylky od návrhu
+
+- **`drawsave` se kreslí tahem, ne ťukem „spoj tečky“:** kostra zmrazila vstup `DRAWSAVE_STROKE` (`HOLD` + buňka).
+  Body vznikají z buněk, přes které tah vede, takže „spojování teček“ zůstává, jen prstem bez zvedání.
 
 - **Čitelnost pod mezí survivoru** (`LEGIBLE_SHARE.hero` 20 %, při stropu `LEGIBLE_CAP` 16 %): celá deska 5 × 7 musí
   být vidět a prodavač větší než 1,3 buňky (`SELLER_CAP`) zakryje buňku, na kterou hráč ťuká. e2e proto hlídá vlastní
