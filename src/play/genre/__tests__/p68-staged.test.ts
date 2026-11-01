@@ -42,8 +42,8 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` i T8 `stunt` vrácené (brány hry), T9 `minigolf`. */
-const WIRED: readonly string[] = ['minigolf'];
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry). */
+const WIRED: readonly string[] = [];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {
@@ -67,8 +67,8 @@ describe('P68 skeletons (T1)', () => {
 
   it('the stand-in modules are ready with cues, so the gate below is what keeps them hidden, not `staged`', () => {
     for (const genre of P68) {
-      // T8 vrátil `stunt` s hotovým modulem kategorie – registr ho drží `staged` sám (`modules.ts`), brána navíc.
-      expect(GENRE_MODULES[genre as GenreId].availability('default' as never), genre).toBe(genre === 'stunt' ? 'staged' : 'ready');
+      // T8 vrátil `stunt` a T9 `minigolf` s hotovým modulem kategorie – registr je drží `staged` sám (`modules.ts`), brána navíc.
+      expect(GENRE_MODULES[genre as GenreId].availability('default' as never), genre).toBe(genre === 'stunt' || genre === 'minigolf' ? 'staged' : 'ready');
       expect(GENRE_MODULES[genre as GenreId].cues.length, genre).toBeGreaterThan(0);
     }
   });

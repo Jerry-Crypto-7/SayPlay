@@ -62,8 +62,10 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'steal', mode: 'default', hero: 'cat', cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'chase_me' }], setting: 'fish market' },
   { genre: 'sort', mode: 'default', hero: 'shop clerk', cast: [{ label: 'teddy bear', does: 'collect' }, { label: 'ball', does: 'collect' }], setting: 'toy shop' },
   { genre: 'arrows', mode: 'default', hero: 'valet', cast: [{ label: 'car', does: 'scenery' }], setting: 'parking lot' },
-  // P68 T9: minigolf je zapojený.
-  { genre: 'minigolf', mode: 'default', hero: 'golf ball', cast: [{ label: 'windmill', does: 'scenery' }], setting: 'pirate island' },
+  // P68 T9: vzorek minigolfu platí, jen když registr hru pouští (T9 ji vrátil za bránu – `modules.ts`).
+  ...(GENRE_MODULES.minigolf.availability('default') === 'ready'
+    ? [{ genre: 'minigolf', mode: 'default', hero: 'golf ball', cast: [{ label: 'windmill', does: 'scenery' }], setting: 'pirate island' } as GenreSpec]
+    : []),
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */

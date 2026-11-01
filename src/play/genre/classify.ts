@@ -502,9 +502,9 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
  * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
- * T9 zapojil `minigolf`.
+ * T9 `minigolf` zapojil a vrátil: čas do hratelnosti na `pixel7-cpu4` (párově +429 ms, mez +0,2 s) neprošel.
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'railfps', 'buildshift', 'drawsave']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards
