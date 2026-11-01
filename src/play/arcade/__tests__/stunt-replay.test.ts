@@ -5,9 +5,14 @@
  * pohled stejně – tady se rozejde stav celého pole `Int32Array`.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, type BodyInit, FLAG, HEADER, type InputEvent, NO_INPUT, bodyBase } from '../contract';
+import { compileGame } from '../../compile';
+import { readGameSpec } from '../../spec';
+import { type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, type BodyInit, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, bodyBase } from '../contract';
 import { buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { replayCheckpoints } from '../physics/replay-checkpoints';
@@ -15,7 +20,8 @@ import { releasePhysics } from '../physics/step';
 import { loadRapier } from '../physics/world';
 import { STEER } from '../pieces/steer';
 import { steerBot } from '../pieces/steer-bot';
-import { STUNT, type StuntLayout, stuntParts, stuntTrack } from '../pieces/stunt';
+import { STUNT, STUNT_BODIES, type StuntLayout, stuntParts, stuntTrack } from '../pieces/stunt';
+import { runBot } from '../verify';
 
 beforeAll(async () => {
   await loadRapier();
@@ -157,4 +163,83 @@ describe('replay of a generated track', () => {
     expect(b).toEqual(a);
     expect(a.outcome).not.toBe('running');
   });
+});
+
+/**
+ * Otisk pro prohlížeč (P68V T5): hra z ručního specu e2e (`e2e/fixtures/p68-stunt-spec.json`) přeložená týmž
+ * kompilátorem jako server (`compileGame`), záznam robota ověřovače (`runBot`) přehraný od tiku 0. `stunt-hash.json`
+ * drží Node otisk; `e2e/play-stunt.spec.ts` přehraje týž záznam v prohlížeči (`playWitness` sondy) a musí dostat týž.
+ */
+describe('the e2e fixture replays from tick 0 to the pinned Node hash (T5)', () => {
+  const fixture = JSON.parse(readFileSync(join(process.cwd(), 'e2e/fixtures/p68-stunt-spec.json'), 'utf8')) as { seed: number; spec: unknown };
+  const pinned = JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p68/vozidla-sport/stunt-hash.json'), 'utf8')) as {
+    seed: number;
+    node: { hash: string; outcome: string; tick: number; inputs: number };
+    moments: { jumpPeak: number; jumpLanded: number; smash: number; idleCrash: number };
+  };
+  let world: ArcadeWorld;
+  let inputs: readonly InputEvent[];
+  beforeAll(() => {
+    const read = readGameSpec(fixture.spec);
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const compiled = compileGame(read.value, fixture.seed);
+    if (!compiled.ok || compiled.value.arcade === undefined) throw new Error(compiled.ok ? 'no arcade world' : compiled.issues.join('; '));
+    world = compiled.value.arcade;
+    inputs = runBot(world).inputs;
+  });
+
+  it('compile → bot record → replay from tick 0 gives the hash in stunt-hash.json, twice', () => {
+    const first = replay(world, inputs, ARCADE_LIBRARY);
+    expect(replay(world, inputs, ARCADE_LIBRARY)).toEqual(first);
+    expect(first.hash).toBe(runBot(world).hash);
+    expect(first.outcome).toBe('won');
+    expect(pinned.seed).toBe(fixture.seed);
+    const node = { hash: first.hash, outcome: first.outcome, tick: first.tick, inputs: inputs.length };
+    expect(node, `Node run ${JSON.stringify(node)}`).toEqual(pinned.node);
+  }, 120_000);
+
+  it('the screenshot moments (peak of the first jump, first pile hit, idle wall crash) are where stunt-hash.json says', () => {
+    /** Tik = `HEADER.tick` po kroku – tentýž, který vrací `tickByHand` sondy. */
+    const walk = (record: readonly InputEvent[]) => {
+      const program = loadProgram(world, ARCADE_LIBRARY);
+      const state = instantiate(world);
+      const spawnBase = state[HEADER.spawnBase] as number;
+      const crates: number[] = [];
+      for (let i = 0; i < spawnBase; i += 1) if (((state[bodyBase(i) + BODY.flags] as number) & (FLAG.alive | FLAG.physics)) === (FLAG.alive | FLAG.physics)) crates.push(i);
+      const lives = state[HEADER.counters + COUNTER.health] as number;
+      let peak = { tick: -1, y: 0 };
+      let jumpOver = false;
+      let landed = -1;
+      let smash = -1;
+      let crash = -1;
+      let next = 0;
+      try {
+        for (let tick = 0; tick < 5400 && state[HEADER.runState] === 0; tick += 1) {
+          while (next < record.length && (record[next] as InputEvent).tick < tick) next += 1;
+          const event = record[next];
+          step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
+          const y = state[bodyBase(STUNT_BODIES.player) + BODY.y] as number;
+          if (!jumpOver && y > 0 && y > peak.y) peak = { tick: tick + 1, y };
+          else if (!jumpOver && y <= 0 && peak.tick >= 0) {
+            jumpOver = true;
+            landed = tick + 1;
+          }
+          if (smash < 0 && crates.some((box) => !alive(state, box))) smash = tick + 1;
+          if (crash < 0 && (state[HEADER.counters + COUNTER.health] as number) < lives) crash = tick + 1;
+        }
+      } finally {
+        releasePhysics(state);
+      }
+      return { jumpPeak: peak.tick, peakY: peak.y, landed, smash, crash };
+    };
+    const bot = walk(inputs);
+    const idle = walk([]);
+    // Vrchol skoku je nad rampou (výška 1,5 m), auto pak dopadne; robot trefí hromadu; nečinné auto narazí do mantinelu.
+    expect(bot.peakY).toBeGreaterThan(STUNT.ramp.h);
+    expect(bot.landed).toBeGreaterThan(bot.jumpPeak);
+    expect(bot.smash).toBeGreaterThan(0);
+    expect(idle.crash).toBeGreaterThan(0);
+    const moments = { jumpPeak: bot.jumpPeak, jumpLanded: bot.landed, smash: bot.smash, idleCrash: idle.crash };
+    expect(moments, `moments ${JSON.stringify(moments)}`).toEqual(pinned.moments);
+  }, 120_000);
 });

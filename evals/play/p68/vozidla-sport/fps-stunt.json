@@ -1,0 +1,65 @@
+{
+  "about": "P68V T5: 10 s of the stunt e2e game (e2e/fixtures/p68-stunt-spec.json, seed 1) played in real time by the verifier bot's demo ('Show me how'); frame times from requestAnimationFrame measured in the page, outside the game. Gate (P68-I): median >= 40 FPS and p95 <= 33.3 ms, chromium only (host GPU). Emulated phones are recorded without a gate. Written by e2e/play-stunt.spec.ts per Playwright project.",
+  "browser": {
+    "chromium": {
+      "gated": true,
+      "frames": 601,
+      "windowMs": 10000,
+      "ticksPlayed": 602,
+      "medianFrameMs": 16.7,
+      "medianFps": 59.9,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "gate": {
+        "medianFps": 40,
+        "p95Ms": 33.3
+      },
+      "pass": true,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "dpr": 1,
+      "quality": "high"
+    },
+    "pixel7-touch": {
+      "gated": false,
+      "frames": 601,
+      "windowMs": 10000,
+      "ticksPlayed": 602,
+      "medianFrameMs": 16.7,
+      "medianFps": 59.9,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "gate": null,
+      "pass": null,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "dpr": 2.625,
+      "quality": "high"
+    },
+    "iphone-touch": {
+      "gated": false,
+      "frames": 150,
+      "windowMs": 10000,
+      "ticksPlayed": 607,
+      "medianFrameMs": 66,
+      "medianFps": 15.2,
+      "p95FrameMs": 86,
+      "maxFrameMs": 94,
+      "gate": null,
+      "pass": null,
+      "gpu": "Apple GPU",
+      "viewport": {
+        "width": 393,
+        "height": 659
+      },
+      "dpr": 3,
+      "quality": "low"
+    }
+  }
+}
