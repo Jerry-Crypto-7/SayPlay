@@ -22,7 +22,7 @@ import { shooterGenre } from './shooter';
 import { sliceGenre } from './slice';
 import { sortGenre } from './sort';
 import { stealGenre } from './steal';
-import { stuntGenre } from './stunt';
+import { stuntLiveGenre } from './stunt';
 import { survivorGenre } from './survivor';
 import { throwGenre } from './throw';
 import { timingGenre } from './timing';
@@ -56,8 +56,12 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   sort: sortGenre,
   arrows: arrowsGenre,
   // P68 T1: kostry pěti her z jiných pohledů – každá kategorie přepíše jen svůj soubor; zapne je P68-I („zapoj X“).
-  stunt: stuntGenre,
-  minigolf: minigolfGenre,
+  // P68 T8: registr nese hotový modul kategorie (skladatel ho přeloží), ale `staged`: čas do hratelnosti proti `main`
+  // neprošel (`evals/play/p68/integration-log.md`) a hra je zpátky v `ROUTE_PENDING`. Zapojení = `stuntLiveGenre`.
+  stunt: { ...stuntLiveGenre, availability: () => 'staged' },
+  // P68 T9: tentýž stav pro minigolf – čas do hratelnosti na `pixel7-cpu4` párově +429 ms (mez +200) neprošel.
+  // Zapojení = `minigolfGenre`.
+  minigolf: { ...minigolfGenre, availability: () => 'staged' },
   railfps: railfpsGenre,
   buildshift: buildshiftGenre,
   drawsave: drawsaveGenre,

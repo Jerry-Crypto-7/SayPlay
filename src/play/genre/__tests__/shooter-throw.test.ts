@@ -24,7 +24,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type MarchEntry, shooterRules } from '@/play/arcade/pieces/shooter';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
-import { classifyGenre } from '@/play/genre/classify';
+import { ROUTE_PENDING, classifyGenre } from '@/play/genre/classify';
 import { compileGenre } from '@/play/genre';
 import { type GenreModule, type GenreSpec, castFor } from '@/play/genre/contract';
 import { compileWith } from '@/play/genre/index';
@@ -110,11 +110,16 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     }
   });
 
+  // P68 T9: „mini golf …“ hraje minigolf (`vozidla-sport/integration.md`), jakmile ho brána pustí; za ní míč do jamky.
   it.each(THROW)('"%s" → throw', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence, 1);
-    expect(drafted.genre?.genre).toBe('throw');
-    expect(drafted.spec.control).toBe(sentence.startsWith('mini golf ') ? 'ball' : 'throw');
-    if (sentence.startsWith('mini golf ')) expect(drafted.spec.controlParams).toMatchObject({ goal: 'hole' });
+    const golf = sentence.startsWith('mini golf ');
+    expect(drafted.genre?.genre).toBe(golf && !ROUTE_PENDING.has('minigolf') ? 'minigolf' : 'throw');
+    if (!golf) expect(drafted.spec.control).toBe('throw');
+    else if (ROUTE_PENDING.has('minigolf')) {
+      expect(drafted.spec.control).toBe('ball');
+      expect(drafted.spec.controlParams).toMatchObject({ goal: 'hole' });
+    }
   });
 
   it('popping, smashing and zapping stay a quest', () => {
@@ -338,7 +343,7 @@ describe('stored throw games without a budget build the world they had before ro
 });
 
 describe('the throw genre has a clock', () => {
-  it.each(['angry birds but with cats and cardboard boxes', 'bowling in a haunted alley', 'mini golf with windmills and loops'])('"%s": the robot wins, an idle player loses on the clock', (sentence) => {
+  it.each(['angry birds but with cats and cardboard boxes', 'bowling in a haunted alley', 'slingshot fruit at a giant blender'])('"%s": the robot wins, an idle player loses on the clock', (sentence) => {
     const game = publish(sentence);
     expect(game.idle.outcome).toBe('lost');
     expect(game.idle.seconds).toBeLessThanOrEqual(90);

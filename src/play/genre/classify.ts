@@ -100,6 +100,12 @@ const SORT = pair('sort', 'default');
 const ARROWS = pair('arrows', 'default');
 // P68 T11: směna se stavbou obchodu.
 const BUILDSHIFT = pair('buildshift', 'default');
+// P68 T8: závod s triky (skoky z ramp, bourání do hromad).
+const STUNT = pair('stunt', 'default');
+// P68 T9: jedna jamka minigolfu.
+const MINIGOLF = pair('minigolf', 'default');
+// P68 T12: nakresli čáru a ochraň postavu před padajícími věcmi.
+const DRAWSAVE = pair('drawsave', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -170,6 +176,8 @@ const RIGHT_BIN = String.raw`(?:back )?(?:into|in|on|onto|to) (?:the |their |its
 const LEAVES = String.raw`(?:so|and|to make|to let|then) (?:it|they|that one|each one) (?:only )?(?:drives? (?:out|off|away)|leaves?|fl(?:y|ies) (?:off|away|out)|slides? (?:out|off|away)|zooms? (?:off|out|away)|exits?|escapes?|gets? out|moves? out|rolls? (?:out|away)|pulls? out|sails? (?:out|off|away)|swims? (?:out|off|away))\b`;
 /** Obchod, do kterého chodí zákazníci (P68 T11) – ne město, farma ani dílna bez pultu. */
 const SHOP = String.raw`(?:shops?|stores?|caf[eé]s?|diners?|bakery|bakeries|restaurants?|stands?|stalls?|trucks?|bars?|parlou?rs?|canteens?|joints?|kiosks?|tea ?rooms?)`;
+/** Vozidlo závodu s triky (P68 T8) – auto, náklaďák, motorka, traktor, sněžný skútr. */
+const VEHICLE = String.raw`(?:cars?|trucks?|vans?|bus(?:es)?|buggy|buggies|scooters?|motorbikes?|motorcycles?|dirt ?bikes?|tractors?|go-?karts?|karts?|taxis?|ambulances?|jeeps?|quads?|snowmobiles?|bulldozers?|lorr(?:y|ies)|pickups?)`;
 /** Determinant před obchodem: „a“, „my“, „your own“. */
 const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
 
@@ -232,6 +240,38 @@ const VERBS: readonly Verb[] = [
   // ends“; samotná „a night shift at the hospital“ obchod není), stavění stanovišť („place grills and counters“), vlastní obchod („runs a donut shop“, „build
   // your own ice cream parlour“), obsluha zákazníků, zákazníci, kteří do obchodu chodí („line up for pizza at my
   // diner“). Jedno pracoviště, objednávka za objednávkou („a chef cooks burgers at one grill“) zůstává stanovištěm.
+  // P68 T8: závod s triky. Rampa, kaskadér, nebo vozidlo, které skáče, bourá či prorazí hromadu věcí
+  // („a police car smashes through a wall of barrels“). Samotná jízda nebo závod bez skoku a bourání zůstává plavbou,
+  // skok bez vozidla plošinovkou („a frog jumps over logs“), nakreslená rampa kreslení (`drawsave`).
+  v('stunt', 'sign', STUNT, new RegExp([
+    // „monster truck“ sám znak není: „a monster truck racing other trucks and firing missiles“ (P42) je bojový závod
+    // arény; slovo zůstává narážkou modulu (+1, `stunt.ts`) a skok či náraz trucku znak slyší větou vozidla níž.
+    String.raw`\bstunts?\b|\bdaredevils?\b|\bdemolition\b`,
+    // „grind ramps“ je skatepark (P55 h79), ne skok vozidla.
+    String.raw`(?<!\b(?:draw(?:s|ing)?|grind(?:s|ing)?) (?:a |an |the )?(?:[a-z-]+ )?)\bramps?\b`,
+    String.raw`\b${VEHICLE}\b[^.;!?]*?\b(?:jump(?:s|ing)?|smash(?:es|ing)?|crash(?:es|ing)?|plows?|plowing|ploughs?|fl(?:y|ies|ying) off|launch(?:es|ing)? off|knock(?:s|ing)? (?:down|over))\b`,
+  ].join('|'))),
+  // P68 T9: minigolf – mini golf, crazy golf, rána „putt“, hole in one, golfový míček. Samotné „golf course“ znak není:
+  // „bonk the moles popping out of the golf course“ je bouchání (P66 p66-27), „a golfer drives a cart … collecting
+  // lost balls“ sbírání; „putting“ jen u míčku nebo greenu – „putting out fires“ je hašení. Golfový míček jen v pohybu
+  // dráhou („golf ball through a graveyard“) – „scooping up scattered golf balls“ je sbírání (stráž T9).
+  v('putt', 'sign', MINIGOLF, new RegExp([
+    String.raw`\bmini[- ]?golf\b|\bcrazy golf\b|\bputt-putt\b|\bputt(?:s|ed)?\b|\bholes? in one\b`,
+    String.raw`\bgolf ball (?:rolls? )?(?:through|past|into|around|across|between|over|under)\b`,
+    String.raw`\bputting (?:the |a |an )?(?:[a-z]+ )?(?:golf )?balls?\b|\bputting greens?\b`,
+  ].join('|'))),
+  // P68 T12: drawsave – nakreslená čára, zeď, střecha nebo štít, který postavu chrání („draw a line to save the puppy“,
+  // „sketch a barrier“, „draw to protect grandma“, „with one stroke of a pen, guard …“). Kreslení bez ochrany znak
+  // není: „draw a picture of my cat“ je kreslicí program, „robots line up“ fronta obchodu (`stavba/integration.md`).
+  v('drawwall', 'sign', DRAWSAVE, new RegExp([
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)|doodl(?:e|es|ing)) (?:a |an |the |some |a few |few )?(?:[a-z-]+ )?(?:lines?|walls?|roofs?|shields?|barriers?|shelters?|domes?|umbrellas?)\b`,
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)) to (?:protect|save|shield|guard|keep)\b`,
+    String.raw`\bstroke of (?:a |the |your )?(?:pen|pencil|brush|marker|crayon)\b`,
+    // Bez slova o kreslení jen ochrana před věcmi, které padají shora („protect the cat from a rain of meteors“,
+    // „shield the frog from fifteen hailstones“, „help the hamster survive an asteroid shower“).
+    String.raw`\b(?:protect|shield|guard|save|keep)(?:s|ing)? (?:the |a |an |my |your |our |his |her |its |their |this )?(?:[a-z-]+ ){0,3}?from (?:the |a |an )?(?:[a-z]+ )?(?:(?:rain|shower|storm|hail) of |falling |tumbling |dropping )?(?:[a-z-]+ )?(?:meteors?|meteorites?|asteroids?|hailstones?|boulders?|rocks?|icicles?|bombs?|acid drops?|raindrops?|flower ?pots?)\b`,
+    String.raw`\bsurviv(?:e|es|ing) (?:a |an |the )?(?:[a-z-]+ )?(?:asteroid|meteor|meteorite|hail|rock|bomb) (?:showers?|storms?|rains?)\b`,
+  ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
     String.raw`\b(?:build(?:s|ing)?|plac(?:e|es|ing)|lay(?:s|ing)? out|set(?:s|ting)? up|buy(?:s|ing)?|put(?:s|ting)? down)(?= (?:[a-z'-]+ ){0,3}?(?:ovens?|counters?|tills?|grills?|stations?|freezers?|workbenches?|benches|lifts?)\b)`,
@@ -475,8 +515,11 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * narážky – obdoba `DIRECTOR_PENDING` režiséra. Hra je do té doby dostupná jen ručním specem (fixture). Žánr odsud
  * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
  * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
+ * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
+ * T9 `minigolf` zapojil a vrátil: čas do hratelnosti na `pixel7-cpu4` (párově +429 ms, mez +0,2 s) neprošel.
+ * T12 zapojil `drawsave`.
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

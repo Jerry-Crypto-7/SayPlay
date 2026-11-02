@@ -11,8 +11,9 @@ import { describe, expect, it } from 'vitest';
 import { loadRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft/draft';
 
+// „golf mini putt on a pirate ship“ ze sondy hraje od P68 T9 minigolf (znak „putt“); míč drží táž věta bez putování.
 const SENTENCES = [
-  'golf mini putt on a pirate ship',
+  'golf on a pirate ship',
   'basketball free throws',
   'a hedgehog rolls down a mushroom hill',
   'golf mini game',

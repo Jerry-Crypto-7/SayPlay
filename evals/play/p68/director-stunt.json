@@ -1,0 +1,9 @@
+{
+ "schema": "p68-director-live.v1",
+ "game": "stunt",
+ "about": "P68 T8 live check: 2 P68 dev sentences of the game through the AI version (astra as director) on the measurement ledger. Not run: PLAY_EVAL_SPEND_CAP_USD is not set in this environment, so the plan's money rule allows only the free quick game. Reader and director stay gated for stunt (DIRECTOR_PENDING / READER_PENDING, R5); the quick game is routed.",
+ "measured": false,
+ "reason": "PLAY_EVAL_SPEND_CAP_USD unset",
+ "sentences": [],
+ "spendUsd": 0
+}

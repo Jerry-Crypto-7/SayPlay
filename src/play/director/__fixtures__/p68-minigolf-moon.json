@@ -1,0 +1,1 @@
+{"sentence":"minigolf on the moon with craters and low gravity","answer":{"plan":"Putt along a winding S-shaped lane on the moon, banking off craters, into the hole within par.","spec":{"genre":"minigolf","mode":"default","hero":"golf ball","cast":[{"label":"crater","does":"scenery"}],"setting":"moon","params":{"bends":2,"obstacles":2,"par":4}}}}

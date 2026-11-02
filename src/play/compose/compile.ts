@@ -273,7 +273,8 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
   if (move === 'roam' && recipe.objective === 'catch' && recipe.actions.length === 0 && recipe.threats.length === 0 && parts.length === 0) {
     return catchSpec(recipe, { ...content, params: { ...CATCH_TUNING, ...content.params } });
   }
-  if (move === 'drive') {
+  // P68 T8: závod s triky je celá hra na pohybu `drive` – hraje ho jeho modul (níž), ne obecná jízda.
+  if (move === 'drive' && !wholeGame(assembly)) {
     base = driveSpec({ ...recipe, objective: ['race', 'escape'].includes(recipe.objective) ? recipe.objective : 'reach',
       actions: recipe.actions.filter(action => ['shoot', 'collect', 'deliver'].includes(action)),
       threats: recipe.threats.filter(threat => ['rival', 'chaser', 'obstacle'].includes(threat)) },

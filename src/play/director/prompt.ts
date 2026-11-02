@@ -138,6 +138,8 @@ export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
   arrows: 'tap stuck pieces, each leaves the way it points if clear; "free the boats from a packed harbour"',
   // P68 T11: řádek kategorie stavba (`evals/play/p68/stavba/integration.md` → Pitch).
   buildshift: 'build the stations of a small shop on a grid, open it and serve arriving customers their goods before the shift ends; "robots line up for pizza at my tiny diner", "serve 12 cats their milk"',
+  // P68 T9: kategorie vozidla-sport (`evals/play/p68/vozidla-sport/integration.md` → Popis); s R6 (brána `DIRECTOR_PENDING`).
+  minigolf: 'one mini golf hole: the hero is always the ball, cast things are bumpers, one with patrol sweeps across the lane, sink it within par + 3 strokes; "putt past a spinning windmill on a pirate ship"',
 };
 
 /** Co o parametru hloubky (P36A T8) říká věta – v závorce za mezí. */

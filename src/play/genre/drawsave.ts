@@ -152,12 +152,14 @@ export const drawsaveGenre: GenreModule<'drawsave'> = {
   modes: ['default'],
   // Slova kresby a záchrany; „protect“ jen s tím, co padá (obranu hradu vlastní `defense`). P68-I je zúží, když stráž
   // najde krádež („save the“ je široké).
-  cues: ['draw', 'line', 'protect from falling', 'save the'],
+  // P68-I T12 zúžilo `draw` → `draw a line` a `line` → `draw lines`: samotné „line“ bralo frontu obchodu („robots
+  // line up for pizza“, `buildshift`) a „draw“ kreslicí program („draw a picture of my cat“) – `integration-log.md`.
+  cues: ['draw a line', 'draw lines', 'protect from falling', 'save the'],
   heroClasses: ['animal', 'humanoid', 'prop', 'robot'],
   paramBounds: { threats: { min: DRAWSAVE.threats.min, max: DRAWSAVE.threats.max } },
-  // `staged`, dokud ji nezapojí P68-I („zapoj drawsave“ přepne na `ready`): `ready` by ji ukázal čtečce a sdíleným
-  // testům „každý žánr, který hraje“. Ruční spec hraje i tak – překlad ani svět dostupnost nečtou.
-  availability: () => 'staged',
+  // Zapnuto v P68-I T12 („zapoj drawsave“, `stavba/integration.md` → Zapnutí); režisér a čtečka dál za branou
+  // `DIRECTOR_PENDING` / `READER_PENDING`.
+  availability: () => 'ready',
   compile: (spec) => {
     const threats = spec.params?.threats ?? DRAWSAVE.threats.default;
     const one = singular(castFor(spec, ...THREAT_DOES)?.label ?? DRAWSAVE_DEFAULTS.threat);

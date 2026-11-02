@@ -69,6 +69,12 @@ export const XR_MODES: Readonly<Record<GenreId, XrModeEntry>> = {
   drawsave: { mode: 'desk', pose: 'table' },
 };
 
+/**
+ * Hry bez vstupu ovladačů VR (P68 T12): drawsave kreslí tahem prstu po svislé desce (`HOLD` + buňka v ose) a paprsek
+ * ovladače na desku zatím nemíří – VR se jim nenabízí (`stavba/integration.md` VR režim nežádá; zápis v `integration-log.md`).
+ */
+export const XR_UNOFFERED: ReadonlySet<string> = new Set<string>(['drawsave']);
+
 /** Žánr, který tabulka nezná (starý spec bez žánru, nový žánr před svou úlohou VR), hraje na stole. */
 export const DESK_MODE: XrModeEntry = { mode: 'desk', pose: 'table' };
 

@@ -1,11 +1,21 @@
 import { beforeAll, expect, it } from 'vitest';
 import { loadRapier } from '../../arcade/physics/world';
 import { draftGameSpecWithMeta } from '../../draft';
+import { ROUTE_PENDING } from '../../genre/classify';
 
 beforeAll(loadRapier);
 
+// P68 T9: „mini golf …“ hraje minigolf (`vozidla-sport/integration.md`); hraje se golfovým míčkem do jamky.
+// Za branou aktivace (T9 hru vrátil) ji hraje míč do jamky – řádek `golf on a pirate ship` níž.
+it.skipIf(ROUTE_PENDING.has('minigolf'))('mini golf with windmills and loops putts the golf ball into the hole', () => {
+  const game = draftGameSpecWithMeta('mini golf with windmills and loops');
+  expect(game.genre?.genre).toBe('minigolf');
+  expect(game.spec.roles.find(role => role.kind === 'player')?.label).toBe('golf ball');
+  expect(game.spec.roles.find(role => role.id === 'hole')?.label).toBe('hole');
+});
+
 it.each([
-  ['mini golf with windmills and loops', 'hole', 'golf ball'],
+  ['golf on a pirate ship', 'hole', 'golf ball'],
   ['basketball free throws', 'hoop', 'basketball'],
 ] as const)('%s uses the actual sports equipment', (sentence, goal, ball) => {
   const game = draftGameSpecWithMeta(sentence);

@@ -60,6 +60,8 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'buildshift.default': 'you build a small shop (ovens, counters, shelves) on a grid, open it and serve customers who come for one food or drink before they walk out',
   'quest.station': 'you stay at one stove, bench or workplace and cook, brew, fix or craft, order after order',
   'shooter.default': 'you stand, aim and shoot foes or targets coming at you',
+  // P68 T9: před hodem, ať „sink the ball“ u golfu nevezme koš. V promptu je až s R6 (brána `READER_PENDING`).
+  'minigolf.default': 'you putt a ball along a walled lane past bumpers into a hole in as few strokes as you can',
   'throw.default': 'you aim an arc and throw at a target, hoop or stack',
   'timing.stack': 'you stack a tall tower, dropping each swinging piece onto the last',
   'timing.precision': 'you stop a sweeping marker inside a small zone',

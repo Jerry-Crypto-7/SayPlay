@@ -2,7 +2,7 @@ import { expect, test, type Browser, type BrowserContextOptions, type Page } fro
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { P68_GENRES } from '../src/play/genre/p68-contract';
+import { P68_GENRES, handSpec } from '../src/play/genre/p68-contract';
 import { openPause, startGame } from './play-start';
 
 /**
@@ -401,7 +401,7 @@ for (const key of FPS_KEYS) {
     test.skip(!existsSync(fixture), `no hand spec e2e/fixtures/${key}-spec.json yet`);
     test.setTimeout(4 * 60_000);
 
-    const published = await request.post('/api/play/games', { data: { spec: JSON.parse(readFileSync(fixture, 'utf8')) as unknown } });
+    const published = await request.post('/api/play/games', { data: { spec: handSpec(JSON.parse(readFileSync(fixture, 'utf8')) as unknown) } });
     expect(published.status(), await published.text()).toBeLessThan(300);
     const { url } = (await published.json()) as { url: string };
     const slowMs = Number(process.env.P68_FPS_SLOW_MS ?? 0);

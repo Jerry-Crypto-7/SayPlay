@@ -53,12 +53,13 @@ const SAMPLE = {
 const SAMPLE_SENTENCE = 'mini golf in a haunted house with pumpkins and a moving coffin';
 
 describe('minigolf genre module (P68 T7)', () => {
-  it('lists its cues and param bounds and stays staged: compile throws like the scaffold until "wire minigolf"', () => {
+  // P68-I T9 („zapoj minigolf“, `integration.md` → Modul na `ready`): modul je živý a překlad jde přes `compileMinigolf`.
+  it('lists its cues and param bounds and is ready: compile is compileMinigolf', () => {
     expect(minigolfGenre.cues).toEqual(['mini golf', 'minigolf', 'putt', 'golf course', 'hole in one', 'golf ball through']);
     expect(minigolfGenre.paramBounds).toEqual({ bends: { min: 0, max: 2 }, obstacles: { min: 1, max: 3 }, moving: { min: 0, max: 1 }, par: { min: 2, max: 4 } });
-    expect(minigolfGenre.availability('default')).toBe('staged');
+    expect(minigolfGenre.availability('default')).toBe('ready');
     const spec = specOf(SAMPLE_SENTENCE);
-    expect(() => minigolfGenre.compile(spec)).toThrow(/not live/);
+    expect(minigolfGenre.compile(spec)).toEqual(compileMinigolf(spec));
     expect(compileMinigolf(spec).control).toBe('minigolf');
   });
 

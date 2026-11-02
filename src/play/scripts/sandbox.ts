@@ -25,9 +25,8 @@ export const SCRIPT_BUDGET_POLLS = 2_000_000;
 /** Kolik kroků rozpočtu stojí jedno volání API (`api.place`, `api.rng.int`…). */
 export const HOST_CALL_POLLS = 100;
 /**
- * Paměť VM. simplified: běh je synchronní a skript, který paměť plní drobnými poli, ji u stropu přetřásá úklidem
- * (naměřeno ~12 s, než spadne na `out of memory`) – tak dlouho drží i smyčku událostí serveru. Před zapnutím
- * přepínače v produkci přesunout běh do workeru (`worker_threads`) s vlastním limitem.
+ * Paměť VM. Skript, který paměť plní drobnými poli, ji u stropu přetřásá úklidem (naměřeno ~12 s, než spadne na
+ * `out of memory`); na serveru běží ve vlastním vlákně a pojistka hodin (`isolated.ts`) ho utne dřív.
  */
 export const SCRIPT_MEMORY_BYTES = 16 * 1024 * 1024;
 /**
@@ -36,6 +35,8 @@ export const SCRIPT_MEMORY_BYTES = 16 * 1024 * 1024;
  * nechává rezervu i hlubšímu volání v prohlížeči.
  */
 export const SCRIPT_STACK_BYTES = 128 * 1024;
+/** Nejdelší chybová zpráva běhu (revize R4). */
+export const SCRIPT_ERROR_CHARS = 300;
 /** Verze běhu, která se ukládá k datům úrovně: knihovna, varianta a verze API skriptu. */
 export const SCRIPT_RUNTIME_VERSION = 'quickjs-emscripten-core@0.32.0+wasmfile-release-sync/script-api.v1';
 
@@ -58,7 +59,8 @@ export function loadQuickJs(): Promise<QuickJs> {
   return loading;
 }
 
-export type ScriptErrorKind = 'budget' | 'memory' | 'stack' | 'syntax' | 'no-build' | 'thrown';
+/** `timeout` vrací jen běh ve vlákně (`isolated.ts`), když ho zabije pojistka hodin. */
+export type ScriptErrorKind = 'budget' | 'memory' | 'stack' | 'syntax' | 'no-build' | 'thrown' | 'timeout';
 export interface ScriptRunError {
   readonly kind: ScriptErrorKind;
   readonly message: string;
@@ -109,7 +111,8 @@ export function runScript(quickjs: QuickJs, code: string, options: ScriptRunOpti
   const context = runtime.newContext({ intrinsics: { ...DefaultIntrinsics, Date: false } });
   const owned: QuickJSHandle[] = [];
   let poisoned = false;
-  const fail = (kind: ScriptErrorKind, message: string): ScriptRun => ({ ok: false, error: { kind, message }, recording: host.recording, polls });
+  // Zpráva jde do opravného zadání placeného písaře: skript ji umí nafouknout (`throw "x".repeat(12e6)`), tak ji uřízne.
+  const fail = (kind: ScriptErrorKind, message: string): ScriptRun => ({ ok: false, error: { kind, message: message.slice(0, SCRIPT_ERROR_CHARS) }, recording: host.recording, polls });
   const failed = (error: QuickJSHandle, during: 'define' | 'build'): ScriptRun => {
     const { name, message } = messageOf(context, error);
     if (overBudget) return fail('budget', `the script ran over its budget of ${budget} interpreter steps`);

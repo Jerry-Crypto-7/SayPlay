@@ -11,7 +11,12 @@ import { compileRecipe } from '../compile';
  * ho přežijí na 20/20, krádež ho prohraje na 16/20 (`evals/play/p66/README.md` → T12). Měření je zapsané a hlídá se
  * dál (běhy, chyby, přehrání, pokročilý ≥ 0,8); jen pásmo začátečníka se u nich nevynucuje – je to nález pro T15.
  */
-const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default']);
+// P68 T8/T11: závod s triky a stavbu obchodu začátečník P41 vyhraje 20/20 (`difficulty.json`); obtížnost drží slabý
+// robot kategorie (`stunt-bot.test.ts`: prohraje ≥ 8 z 10) a špatné rozvržení (`buildshift-bot.test.ts`: prohraje).
+// P68 T9: minigolf taky 20/20; drží ho slabý robot `minigolf-bot.test.ts` (dojdou mu údery na ≥ 8 z 10 jamek).
+// P68 T12: drawsave taky 20/20 (robot kategorie profil nečte); drží ho čára mimo postavu (`arcade/__tests__/drawsave.test.ts`:
+// prohraje ≥ 10 z 12) – profil začátečníka je žádost kategorii v `integration-log.md`.
+const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default', 'drawsave.default']);
 
 it('pins measured novice and intermediate bounds for every current live recipe', () => {
   const report = JSON.parse(readFileSync('evals/play/p41/difficulty.json', 'utf8')) as {

@@ -77,8 +77,12 @@ describe('every genre has a mode and a pose', () => {
 
 describe('the mode comes from the world itself', () => {
   it('recognises a live cell of every genre', () => {
-    // Kostra P68 v bráně aktivace živou buňku nemá; zapojení hry ji odsud pustí a test pak buňku chce.
-    expect(new Set(cells.map((cell) => genreOfWorld(cell.world)))).toEqual(new Set([...GENRES.filter((genre) => !ROUTE_PENDING.has(genre)), null]));
+    // Kostra P68 v bráně aktivace živou buňku nemá; zapojení hry ji odsud pustí a test pak buňku chce. Hra vrácená
+    // za bránu po branách hry (T11 `buildshift`, T8 `stunt`) buňku v `PRESETS` drží pro nový pokus – smí ji mít.
+    const seen = new Set(cells.map((cell) => genreOfWorld(cell.world)));
+    for (const genre of GENRES.filter((id) => !ROUTE_PENDING.has(id))) expect(seen.has(genre), genre).toBe(true);
+    for (const genre of seen) expect(genre === null || GENRES.includes(genre), String(genre)).toBe(true);
+    expect(seen.has(null)).toBe(true);
   });
 
   it.each(cells.map((cell) => [cell.id, cell] as const))('%s: its genre, and native exactly as before the table', (_id, { genre, world }) => {
@@ -86,7 +90,10 @@ describe('the mode comes from the world itself', () => {
     // Buňky skládané ze staršího ovládání (`glide`, `walker`, `ball`) nesou žánr jen jménem: hrají se jako dřív na stole.
     if (found === null) expect(['glide', 'walker', 'ball']).toContain(baseControlOf(world.control).id);
     else expect(found).toBe(genre);
-    expect(modeOf(found).mode === 'native').toBe(legacyNative(world));
+    // Minigolf (P68 T9) jede na `throw-rig`, ale VR nativní hod nedostal: rig ve VR neposílá osu míření
+    // (`vozidla-sport/integration.md` → „VR a `throw-rig`“), takže hraje na stole jako každá hra P68.
+    if (found === 'minigolf') expect(modeOf(found)).toEqual({ mode: 'desk', pose: 'table' });
+    else expect(modeOf(found).mode === 'native').toBe(legacyNative(world));
   });
 
   it('games saved before genres keep their way of playing', () => {

@@ -14,11 +14,11 @@
   ],
   "minigolf": [
    { "id": "ball-in-hole", "run": "bot", "expect": "the ball comes to rest inside the hole zone", "check": { "kind": "restsIn", "maxSpeed": 1, "restTicks": 10 } },
-   { "id": "strokes-counted", "run": "bot", "expect": "strokes = number of shot inputs in the trace, and strokes <= the course limit", "check": { "kind": "strokes", "counter": "ammo" } }
+   { "id": "strokes-counted", "run": "bot", "expect": "strokes = number of shot inputs in the trace, and strokes <= the course limit", "check": { "kind": "strokes", "counter": "ammo", "limit": { "counter": "reserve", "plus": 3 } } }
   ],
   "railfps": [
    { "id": "aims", "run": "bot", "expect": "yawStep (game state slot RAILFPS_SLOTS.yawStep) takes >= 3 distinct values", "check": { "kind": "distinctYaw", "min": 3 } },
-   { "id": "hit-on-fire", "run": "bot", "expect": "a target body disappears within 30 ticks after a FIRE input while yawStep matches the target's step", "check": { "kind": "hitOnFire", "within": 30, "arcDeg": 90, "tolerance": 1 } },
+   { "id": "hit-on-fire", "run": "bot", "expect": "a target body disappears within 30 ticks after a FIRE input while yawStep matches the target's step", "check": { "kind": "hitOnFire", "within": 30, "arcDeg": 60, "tolerance": 1 } },
    { "id": "idle-hurt", "run": "idle", "expect": "the idle player loses lives", "check": { "kind": "counterDrops", "counter": "health" } }
   ],
   "buildshift": [
