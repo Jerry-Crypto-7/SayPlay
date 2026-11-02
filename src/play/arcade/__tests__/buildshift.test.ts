@@ -16,6 +16,7 @@ import {
   BUILDSHIFT,
   PALETTE,
   PHASE,
+  SHIFT_SLOTS,
   STATION,
   STATION_COST,
   arrivalTicks,
@@ -23,7 +24,9 @@ import {
   coinsOf,
   customersFor,
   phaseOf,
+  rejectedCellOf,
   servedOf,
+  shiftSlot,
   shiftView,
   stationCode,
 } from '../pieces/buildshift';
@@ -108,6 +111,18 @@ describe('buildshift kernel (P68-S T2)', () => {
     expect(min).toBeGreaterThanOrEqual(0);
     const view = shiftView(state);
     expect([0, 1, 2, 3].map((cell) => stationCode(state, view.stations[cell] as number))).toEqual([STATION.oven, STATION.oven, 0, 0]);
+  });
+
+  it('every rejected tap is a new rejection, even on the same cell, and keeps its cell (P68-L T1)', () => {
+    const world = worldOf(3);
+    const seen: number[] = [];
+    run(world, [tap(1, 22), tap(40, 22), tap(80, 22)], (s, tick) => {
+      if (tick === 1 || tick === 40 || tick === 80) seen.push(shiftSlot(s, SHIFT_SLOTS.rejected));
+    }, 81);
+    // Ťuk na prázdnou buňku bez vybraného druhu: zamítnutí v každém tiku jiné (scéna ho pozná), buňka zůstává 22.
+    expect(new Set(seen).size).toBe(3);
+    expect(seen.map(rejectedCellOf)).toEqual([22, 22, 22]);
+    expect(rejectedCellOf(0)).toBe(-1);
   });
 
   it('the same seed and record give the same hash after every tick; another seed brings other arrivals', () => {

@@ -31,7 +31,8 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Color, Fog, type Group, InstancedMesh, type Material, Matrix4, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type PerspectiveCamera, PlaneGeometry, type Quaternion, Vector3 } from 'three';
+import { BoxGeometry, Color, Fog, type Group, InstancedMesh, type Material, Matrix4, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, PlaneGeometry, type Quaternion, Vector3 } from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
 import { BODY, HEADER, RUN_STATE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
@@ -55,6 +56,7 @@ import {
   customersOf,
   isBuildCell,
   queueAt,
+  rejectedCellOf,
   rowOf,
   shiftSlot,
   shiftView,
@@ -122,6 +124,14 @@ const FLASH_S = 0.35;
  */
 const SHAKE = { s: 0.2, amount: 0.12, hz: 30 } as const;
 const PRICE_S = 0.9;
+/**
+ * Nápověda „vyber stanici“ (P68-L T1) po ťuku na desku bez výběru: karty druhů v paletě svítí slunečně `s` sekund,
+ * posledních `fade` vyhasínají, a každá poskočí o `hop` m (po `stagger` s za sebou, skok trvá `hopS`). Dohasne dřív,
+ * než přijde další ťuk sondy (~0,75 s na desktopu), takže i opakovaný ťuk na tutéž buňku je vidět jako změna.
+ */
+const HINT = { s: 0.7, fade: 0.35, hop: 0.3, stagger: 0.06, hopS: 0.4 } as const;
+const HINT_TINT = new Color(color.sun);
+const WHITE = new Color(1, 1, 1);
 /** Výskok „+1“ s mincí nad obslouženým: délka (s), výstup (m), naskočení (s, `duration-quick`), výška startu (m), kolik naráz. */
 const PLUS = { s: 0.9, rise: 0.8, pop: 0.16, y: 2.1, pool: 3 } as const;
 /** Tep cedule Rush!: perioda (s) a výchylka měřítka. */
@@ -131,6 +141,39 @@ const SIGN = { price: 0.9, plus: 0.9, queue: 0.95 } as const;
 /** Mlha začne tolik metrů za nejvzdálenějším rohem desky (s kulisou za zadní stěnou). */
 const FOG_CLEAR = 6;
 const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
+
+/** Podstavce palety (tři druhy, Coins, Open) jako instance jedné sítě: výška kvádru (m). */
+const BASE_H = 0.16;
+const BASE_CELLS = [...STATION_KINDS.map((kind) => PALETTE[kind]), PALETTE.coins, PALETTE.open];
+
+/**
+ * Nízké stěny (zadní, boční a přední bloky 25 a 29) jako jedna síť (P68-L T1): pět kvádrů po vlastní síti stálo na
+ * Pixelu 7 (CPU ×4) deset volání kreslení snímku (barva i stín), stejně jako pět podstavců palety.
+ */
+function wallGeometry(): BoxGeometry {
+  const parts = [
+    new BoxGeometry(2 * HALF + 2 * WALL.t, WALL.h, WALL.t).translate(0, WALL.h / 2, BACK_Z - WALL.t / 2),
+    ...[-1, 1].map((side) => new BoxGeometry(WALL.t, WALL.h, BUILDSHIFT.rows * CELL).translate(side * (HALF + WALL.t / 2), WALL.h / 2, BACK_Z + (BUILDSHIFT.rows * CELL) / 2)),
+    ...BUILDSHIFT.walls.map((cell) => new BoxGeometry(TILE, WALL.block, TILE).translate(m(cellX(cell)), WALL.block / 2, m(cellZ(cell)))),
+  ];
+  const merged = mergeGeometries(parts) as BoxGeometry;
+  for (const part of parts) part.dispose();
+  return merged;
+}
+
+/**
+ * Kulisa za zadní stěnou stín nevrhá (stínový průchod rigu ji kreslí síť po síti; květináč nese značku přímo). Rig
+ * značí sítě bez `userData.rigShadow` (`ShadowFlags`), modely se dotahují později – proto průchod při každé kontrole.
+ */
+function dropShadows(root: Object3D | null): void {
+  root?.traverse((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true || mesh.userData.rigShadow === 'receive') return;
+    mesh.userData.rigShadow = 'receive';
+    mesh.castShadow = false;
+    mesh.receiveShadow = true;
+  });
+}
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
@@ -236,7 +279,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
   const openBar = useRef<Mesh | null>(null);
   const flash = useRef<Mesh | null>(null);
   /** Odmítnutý ťuk: buňka, do kdy bliká, začátek otřesu, poslední viděná hodnota slotu a cena, která chyběla (0 = žádná). */
-  const flashState = useRef({ cell: -1, until: 0, start: 0, last: 0, price: 0 });
+  const flashState = useRef({ cell: -1, until: 0, start: 0, last: 0, price: 0, hint: -Infinity });
   const price = useRef<Group | null>(null);
   /** Druh, který byl naposledy vybraný (ve fázi provozu ťuk na desku výběr smaže dřív, než ho scéna uvidí). */
   const lastSelected = useRef(0);
@@ -307,6 +350,26 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
     mesh.computeBoundingSphere();
     return { mesh, cells, index: new Map(cells.map((cell, i) => [cell, i])), shown };
   }, [materials]);
+  const walls = useMemo(wallGeometry, []);
+  /** Podstavce palety jedním voláním; vybraný nebo poskakující druh posune svou instanci (`baseY` = poslední výška). */
+  const bases = useMemo(() => {
+    const mesh = new InstancedMesh(new BoxGeometry(TILE, BASE_H, TILE), new MeshStandardMaterial({ color: color.ink, roughness: 0.9 }), BASE_CELLS.length);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    // Poskok zvedne kartu nad kouli mezí instancí; pět kvádrů ořez nepotřebuje.
+    mesh.frustumCulled = false;
+    BASE_CELLS.forEach((cell, i) => mesh.setMatrixAt(i, tileMatrix.makeTranslation(m(cellX(cell)), BASE_H / 2, m(cellZ(cell)))));
+    return { mesh, baseY: new Float32Array(BASE_CELLS.length) };
+  }, []);
+  const liftBase = (i: number, y: number): void => {
+    if (bases.baseY[i] === y) return;
+    bases.baseY[i] = y;
+    const cell = BASE_CELLS[i] as number;
+    bases.mesh.setMatrixAt(i, tileMatrix.makeTranslation(m(cellX(cell)), BASE_H / 2 + y, m(cellZ(cell))));
+    bases.mesh.instanceMatrix.needsUpdate = true;
+  };
+  const backdrop = useRef<Group | null>(null);
+  const shadowCheck = useRef(0);
   const shiftTile = (cell: number, dx: number): void => {
     const i = floor.index.get(cell);
     if (i === undefined) return;
@@ -320,8 +383,12 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       for (const label of [...labels.palette, labels.coins, labels.open, labels.served, labels.price, labels.plus, labels.rush, ...lines.current.values()]) disposeLabel(label);
       floor.mesh.geometry.dispose();
       floor.mesh.dispose();
+      walls.dispose();
+      bases.mesh.geometry.dispose();
+      (bases.mesh.material as Material).dispose();
+      bases.mesh.dispose();
     },
-    [materials, labels, floor],
+    [materials, labels, floor, walls, bases],
   );
 
   /**
@@ -458,6 +525,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
 
     // Odmítnutý ťuk (zabraná buňka, zeď, málo mincí): buňka krátce problikne poplachem a zatřese se; chyběly-li mince
     // na vybraný druh, nad buňkou vyskočí cenovka. Ve fázi provozu ťuk na desku výběr smaže – cenu dá poslední viděný.
+    // Ťuk na desku bez vybraného druhu ve fázi stavby navíc rozsvítí a nadhodí paletu (P68-L T1): „vyber stanici“.
     if (view.selected > 0) lastSelected.current = view.selected;
     const rejected = shiftSlot(state, SHIFT_SLOTS.rejected);
     const blink = flashState.current;
@@ -465,10 +533,11 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       blink.last = rejected;
       if (rejected > 0) {
         const tried = kindOfCode(view.phase === PHASE.build ? view.selected : lastSelected.current);
-        blink.cell = rejected - 1;
+        blink.cell = rejectedCellOf(rejected);
         blink.start = now;
         blink.until = now + FLASH_S;
         blink.price = tried !== null && view.coins < STATION_COST[tried] ? STATION_COST[tried] : 0;
+        if (view.phase === PHASE.build && view.selected === 0) blink.hint = now;
       }
     }
     const reduced = reducedMotion();
@@ -629,18 +698,26 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       }
     });
 
-    // Paleta: vybraný druh vyjede, ceny podle mincí, Open rajčatový jen ve fázi stavby.
+    // Paleta: vybraný druh vyjede, ceny podle mincí, Open rajčatový jen ve fázi stavby. Nápověda (ťuk bez výběru):
+    // karty druhů zežloutnou přes barvu materiálu (bez překreslení textury) a postupně poskočí, pak doběhnou zpět.
     const building = view.phase === PHASE.build;
+    const hintAge = now - blink.hint;
+    const hint = hintAge >= 0 && hintAge < HINT.s ? Math.min(1, (HINT.s - hintAge) / HINT.fade) : 0;
     STATION_KINDS.forEach((kind, k) => {
       const selected = selectedKind === kind;
       const affordable = view.coins >= STATION_COST[kind];
-      paint(labels.palette[k] as Label, `${selected}|${affordable}`, (context) => {
+      const label = labels.palette[k] as Label;
+      paint(label, `${selected}|${affordable}`, (context) => {
         card(context, selected ? color.sun : affordable ? color.paper : color['cream-deep'], selected ? 16 : 10);
         coin(context, 200, 56, 34, String(STATION_COST[kind]));
         words(context, STATION_NAME[kind], 128, 216, 44, 700, affordable || selected ? color.ink : color['ink-soft']);
       });
-      paletteTiles.current[k]?.position.setY(selected ? 0.18 : 0);
+      label.material.color.copy(WHITE).lerp(HINT_TINT, hint);
+      const hop = hint > 0 && !reduced ? HINT.hop * Math.max(0, Math.sin(Math.PI * clamp01((hintAge - k * HINT.stagger) / HINT.hopS))) : 0;
+      paletteTiles.current[k]?.position.setY((selected ? 0.18 : 0) + hop);
+      liftBase(k, (selected ? 0.18 : 0) + hop);
     });
+    if (shadowCheck.current++ % 30 === 0) dropShadows(backdrop.current);
     paint(labels.coins, String(view.coins), (context) => {
       card(context, color.paper, 10);
       coin(context, 74, 108, 40, '');
@@ -688,23 +765,12 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
           <meshStandardMaterial color={color['ink-soft']} roughness={1} />
         </mesh>
         <primitive object={floor.mesh} />
-        {/* Nízké stěny: zadní a boční; přední zeď jsou buňky 25 a 29 vedle dveří. */}
-        <mesh position={[0, WALL.h / 2, BACK_Z - WALL.t / 2]} castShadow receiveShadow>
-          <boxGeometry args={[2 * HALF + 2 * WALL.t, WALL.h, WALL.t]} />
+        {/* Nízké stěny: zadní a boční; přední zeď jsou buňky 25 a 29 vedle dveří (jedna síť, `wallGeometry`). */}
+        <mesh geometry={walls} castShadow receiveShadow>
           <meshStandardMaterial color={color['sky-deep']} roughness={0.8} />
         </mesh>
-        {[-1, 1].map((side) => (
-          <mesh key={side} position={[side * (HALF + WALL.t / 2), WALL.h / 2, BACK_Z + (BUILDSHIFT.rows * CELL) / 2]} castShadow receiveShadow>
-            <boxGeometry args={[WALL.t, WALL.h, BUILDSHIFT.rows * CELL]} />
-            <meshStandardMaterial color={color['sky-deep']} roughness={0.8} />
-          </mesh>
-        ))}
         {BUILDSHIFT.walls.map((cell) => (
           <group key={cell} position={[m(cellX(cell)), 0, m(cellZ(cell))]}>
-            <mesh position={[0, WALL.block / 2, 0]} castShadow receiveShadow>
-              <boxGeometry args={[TILE, WALL.block, TILE]} />
-              <meshStandardMaterial color={color['sky-deep']} roughness={0.8} />
-            </mesh>
             {cell === BUILDSHIFT.walls[0] ? (
               // Cedule Served: počet obsloužených a cíl, plochá na zdi.
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, WALL.block + 0.01, 0]} material={labels.served.material} userData={{ item: 'served' }}>
@@ -712,13 +778,13 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
               </mesh>
             ) : (
               <>
-                {/* Květináč na druhé zdi; v rushi místo něj cedule Rush!. */}
+                {/* Květináč na druhé zdi (stín nevrhá); v rushi místo něj cedule Rush!. */}
                 <group ref={pot} position={[0, WALL.block, 0]}>
-                  <mesh position={[0, 0.2, 0]} castShadow>
+                  <mesh position={[0, 0.2, 0]} receiveShadow userData={{ rigShadow: 'receive' }}>
                     <cylinderGeometry args={[0.35, 0.28, 0.4, 12]} />
                     <meshStandardMaterial color={color['cream-deep']} roughness={0.8} />
                   </mesh>
-                  <mesh position={[0, 0.7, 0]} castShadow>
+                  <mesh position={[0, 0.7, 0]} receiveShadow userData={{ rigShadow: 'receive' }}>
                     <sphereGeometry args={[0.5, 14, 10]} />
                     <meshStandardMaterial color={color['mint-deep']} roughness={0.9} />
                   </mesh>
@@ -733,13 +799,16 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
           </group>
         ))}
         {/* Za zadní stěnou zázemí obchodu: na výšku vyplní místo nad deskou. */}
-        {[-3.4, 0, 3.4].map((x) => (
-          <group key={x} position={[x, 0, BACK_Z - 1.2]}>
-            <FittedModel id={x === 0 ? 'gen3d-bread-rack' : 'cc0-kitchencabinet'} w={2.6} h={1.6} d={1.2} fallback={color['cream-deep']} />
-          </group>
-        ))}
+        <group ref={backdrop}>
+          {[-3.4, 0, 3.4].map((x) => (
+            <group key={x} position={[x, 0, BACK_Z - 1.2]}>
+              <FittedModel id={x === 0 ? 'gen3d-bread-rack' : 'cc0-kitchencabinet'} w={2.6} h={1.6} d={1.2} fallback={color['cream-deep']} />
+            </group>
+          ))}
+        </group>
 
-        {/* Paleta: tři druhy stanovišť s cenou, mince, Open. */}
+        {/* Paleta: tři druhy stanovišť s cenou, mince, Open; podstavce všech pěti jsou jedna síť (`bases`). */}
+        <primitive object={bases.mesh} />
         {STATION_KINDS.map((kind, k) => (
           <group
             key={kind}
@@ -749,10 +818,6 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
             position={[m(cellX(PALETTE[kind])), 0, m(cellZ(PALETTE[kind]))]}
             userData={{ item: `palette-${kind}` }}
           >
-            <mesh position={[0, 0.08, 0]} castShadow receiveShadow>
-              <boxGeometry args={[TILE, 0.16, TILE]} />
-              <meshStandardMaterial color={color.ink} roughness={0.9} />
-            </mesh>
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.165, 0]} material={labels.palette[k]!.material}>
               <planeGeometry args={[TILE - 0.04, TILE - 0.04]} />
             </mesh>
@@ -762,19 +827,11 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
           </group>
         ))}
         <group position={[m(cellX(PALETTE.coins)), 0, m(cellZ(PALETTE.coins))]} userData={{ item: 'coins' }}>
-          <mesh position={[0, 0.08, 0]} castShadow receiveShadow>
-            <boxGeometry args={[TILE, 0.16, TILE]} />
-            <meshStandardMaterial color={color.ink} roughness={0.9} />
-          </mesh>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.165, 0]} material={labels.coins.material}>
             <planeGeometry args={[TILE - 0.04, TILE - 0.04]} />
           </mesh>
         </group>
         <group position={[m(cellX(PALETTE.open)), 0, m(cellZ(PALETTE.open))]} userData={{ item: 'open' }}>
-          <mesh position={[0, 0.08, 0]} castShadow receiveShadow>
-            <boxGeometry args={[TILE, 0.16, TILE]} />
-            <meshStandardMaterial color={color.ink} roughness={0.9} />
-          </mesh>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.165, 0]} material={labels.open.material}>
             <planeGeometry args={[TILE - 0.04, TILE - 0.04]} />
           </mesh>
