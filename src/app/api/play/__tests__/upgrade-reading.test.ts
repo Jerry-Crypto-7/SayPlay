@@ -271,6 +271,54 @@ describe('the reading game (P58D T1)', () => {
   }, 120_000);
 });
 
+/**
+ * P68 R8, živá kontrola `evals/play/p68/director-drawsave.json` (d36): rychlá hra je sestavená jízda (závod lodí), čtení
+ * najde `drawsave` a hru ze čtení publikuje, režisér odpoví kresbou („Save the Apple“, hrozba řeka). AI verze se dřív
+ * měřila svědky akcí závodu a skončila roubem na závod lodí. Čtení i odpověď jsou přepsané z té kontroly (surové
+ * odpovědi kniha neukládá): žánr, hrdina a hrozba, jak je běh zapsal.
+ */
+const D36 = {
+  text: 'draw a ramp so the rolling apple does not fall into the river',
+  reading: {
+    control: 'move_free', verbs: [{ word: 'draw', class: 'manipulate' }], hero: 'apple', roles: [{ noun: 'river', kind: 'hazard', count: null }],
+    setting: 'riverbank', mood: null, numbers: { seconds: null, counts: [] }, genre: { genre: 'drawsave', mode: 'default' }, sure: true,
+    foe: 'river', item: 'ramp', world: null, title: 'Save the Apple',
+  } satisfies Reading,
+  answer: { plan: 'Draw a ramp under the rolling apple so it rolls over the river; keep it dry until the time runs out.', spec: { genre: 'drawsave', mode: 'default', hero: 'apple', cast: [{ label: 'river', does: 'avoid' }], setting: 'riverbank', params: { threats: 10 } } },
+};
+
+describe('the AI version builds on the reading game (P68 R8)', () => {
+  it('d36: the quick game races boats, the reading draws to save – the AI version draws to save', async () => {
+    reader(D36.reading);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, D36.text);
+    expect(quick.spec.control).not.toBe('drawsave');
+    const outcome = await directUpgrade(store, quick, request(D36.text), director(D36.answer).make);
+    const [reading] = (await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading');
+    expect(reading?.spec.genre?.id).toBe('drawsave');
+    expect(outcome.status).toBe('ready');
+    const ai = await store.get(outcome.status === 'ready' ? outcome.versionId : '');
+    expect(ai?.spec.genre?.id).toBe('drawsave');
+    expect(ai?.spec.roles.find((role) => role.id === 'threat')?.label).toBe('river');
+    // Rodič zůstává rychlá hra: `publishedUpgrade` a stránka ji hledají pod ní.
+    expect(ai).toMatchObject({ relation: 'upgrade', version: { parentId: quick.version.versionId } });
+  }, 180_000);
+
+  it.each([['d36', D36], ['s002', OTHER]] as const)('%s: a later attempt finds the AI version built on the reading game in the store and pays nothing', async (_id, row) => {
+    reader(row.reading);
+    const store = memoryVersionStore();
+    const quick = await quickGame(store, row.text);
+    const first = await directUpgrade(store, quick, request(row.text), director(row.answer).make);
+    expect(first.status).toBe('ready');
+    __resetUpgrades();
+    resetProcessAnswerStore();
+    const again = director(row.answer);
+    seam.director = again.make;
+    expect(await upgradeOf(store, quick, request(row.text))).toEqual({ status: 'ready', versionId: first.status === 'ready' ? first.versionId : '' });
+    expect(again.modelCalls()).toBe(0);
+  }, 180_000);
+});
+
 describe('the reading game page (P58D T2)', () => {
   /** `upgrade` z props shellu `/play/[id]`: kde se stránka ptá na AI verzi. */
   async function upgradeUrlOn(id: string): Promise<unknown> {
