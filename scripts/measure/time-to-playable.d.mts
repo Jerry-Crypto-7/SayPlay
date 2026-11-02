@@ -38,5 +38,7 @@ export interface ProbeResult {
 
 export declare const CHANGE_PCT: number;
 export declare const REACT_MS: number;
+export declare const GPU_ARGS: readonly string[];
+export declare const SOFTWARE_ARGS: readonly string[];
 export declare function changedPct(before: Buffer, after: Buffer): Promise<number | null>;
 export declare function measure(config: ProbeConfig): Promise<ProbeResult>;
