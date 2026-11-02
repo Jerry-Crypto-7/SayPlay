@@ -1,6 +1,7 @@
 /**
  * Kamera minigolfu (P68 T8): přes rameno nízko za míčkem, dívá se po ose míření ze stavu (`aux0` míčku, ne z prstu).
- * Míček v pohybu sleduje z vyšší a vzdálenější pózy, po zastavení se vrátí nízko za něj (přechod tlumí scéna).
+ * Míček v pohybu sleduje z vyšší a vzdálenější pózy, po zastavení se vrátí nízko za něj (přechod tlumí scéna podle
+ * `minigolfFollow`, na tiku 0 bez tlumení).
  *
  * - **Na výšku** (`aspect < 1`) jede póza přes `fitTall` (`portrait-frame.ts`), aby míček i cíl ležely v hracím
  *   obdélníku mezi horním pásem HUD a dolní řadou. Cíl = jamka, nebo nejvzdálenější bod trasy, na který je z míčku
@@ -33,7 +34,20 @@ export const MINIGOLF_CAMERA = {
   flag: 1.6,
   /** Krok vzorků přímky (jednotky) při hledání bodu trasy, na který je z míčku vidět. */
   sample: 250,
+  /** Tlumení přechodu mezi pózami (1/s); `delta` snímku nad `maxDelta` s se počítá jako `maxDelta`. */
+  follow: 5,
+  maxDelta: 0.1,
 } as const;
+
+/**
+ * Kolik zbytku cesty k nové póze kamera ujede za snímek (P68-L T3): první snímek a celý tik 0 – před prvním vstupem
+ * i po restartu – celou cestu, jinak tlumeně. Na tiku 0 se póza mění, jen když se přeměří hrací obdélník (HUD se
+ * během načítání skládá); tlumený přechod z toho dělal ~1 s pohybu plochy bez vstupu (Pixel 7 na výšku: 58 % pixelů)
+ * a hra kreslila každý snímek jiný obraz. Skok je jeden snímek, pak plocha stojí.
+ */
+export function minigolfFollow(delta: number, tick: number, framed: boolean): number {
+  return framed && tick > 0 ? 1 - Math.exp(-MINIGOLF_CAMERA.follow * Math.min(delta, MINIGOLF_CAMERA.maxDelta)) : 1;
+}
 
 /** Statická část jamky pro kameru (jednotky jádra): jamka, trasa (rohy, pak jamka) a dlaždice dráhy. */
 export interface MinigolfCourseView {

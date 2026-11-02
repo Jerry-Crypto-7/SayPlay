@@ -13,7 +13,7 @@ import { type MinigolfShape, minigolfLayout } from '@/play/arcade/pieces/minigol
 import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
 import { type PlayRect, playRect } from '../../../portrait-frame';
-import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraPose, minigolfCourseView, minigolfFocus } from '../minigolf-camera';
+import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraPose, minigolfCourseView, minigolfFocus, minigolfFollow } from '../minigolf-camera';
 
 /** Pixel 7 na výšku v CSS px: horní pás HUD (pilulky a řádek cíle) a dolní řada tlačítek. */
 const PHONE = { width: 412, height: 839 } as const;
@@ -148,5 +148,31 @@ describe('minigolf camera (P68 T8)', () => {
     // Míření ze stavu, ne z rychlosti: míček jede bokem, kamera dál kouká po ose.
     const sideways = minigolfCameraPose(put(state, tx, tz + 2000, 0, 80, 0), WIDE, null, course);
     expect(headings(sideways, 0).view.z).toBeCloseTo(1, 6);
+  });
+
+  it('stands still before the first input: at tick 0 a re-measured play rect moves the camera in one frame, after the start it eases (P68-L T3)', () => {
+    const { state, course } = holeOf(4, 'straight');
+    // Na tiku 0 se HUD během načítání přeskládá: hrací obdélník je jiný, póza na výšku taky.
+    const first = minigolfCameraPose(state, TALL, RECT, course);
+    const remeasured = minigolfCameraPose(state, TALL, playRect(PHONE, 300, 600), course);
+    expect(remeasured.position.distanceTo(first.position)).toBeGreaterThan(0.1);
+    // Smyčka scény (`MinigolfScene`): oko jede k póze o `minigolfFollow` cesty za snímek.
+    const run = (tick: number): number[] => {
+      const eye = first.position.clone();
+      return Array.from({ length: 30 }, () => {
+        const before = eye.clone();
+        eye.lerp(remeasured.position, minigolfFollow(1 / 60, tick, true));
+        return eye.distanceTo(before);
+      });
+    };
+    const idle = run(0);
+    expect(idle[0]).toBeGreaterThan(0.1);
+    expect(Math.max(...idle.slice(1)), 'no frame after the jump moves the camera').toBeLessThan(1e-9);
+    // Po prvním vstupu tlumeně: za snímek jen kus cesty a pohyb trvá přes víc snímků.
+    const playing = run(1);
+    expect(playing[0]).toBeLessThan(0.2 * idle[0]!);
+    expect(playing.filter((moved) => moved > 1e-3).length).toBeGreaterThan(10);
+    // První snímek scény i po startu bez tlumení.
+    expect(minigolfFollow(1 / 60, 5, false)).toBe(1);
   });
 });
