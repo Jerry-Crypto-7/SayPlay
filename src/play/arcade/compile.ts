@@ -477,15 +477,16 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
   const wanted = spec.scoring?.target ?? 0;
   const made = arcadeWorldOf(spec, seed, wanted > 0 ? (reachableTarget(spec, seed, wanted) ?? wanted) : undefined);
   if (!made.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: made.issues };
-  const { world } = made;
+  const { world, roleBindings } = made;
   // Bez načteného Rapieru by robot spadl na výjimce jádra; volající má zavolat `preloadPhysics`.
   if (worldHasPhysics(world) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: [PHYSICS_NOT_LOADED] };
-  const bot = runBot(world);
-  rememberBotRun(world, bot);
+  // S vazbami rolí: týž běh (vazby robota neřídí) poslouží i přiznání u věty (`witnessRuns`, P68-L T2).
+  const bot = runBot(world, ARCADE_LIBRARY, { roleBindings });
   if (bot.outcome !== 'won') return { ok: false, reason: 'UNWINNABLE', issues: [`the bot ${bot.outcome === 'lost' ? 'lost' : 'did not finish'} at tick ${bot.tick}, ${bot.distanceM} m into the track`] };
   // Trať, kterou vyhraje i nečinný hráč, je vada rozvržení – dveře publikace
   // zkusí další semínko, místo aby `verifyArcade` hru až potom odmítl (R3).
   const idle = replay(world, [], ARCADE_LIBRARY);
+  rememberBotRun(world, bot, roleBindings, idle);
   if (idle.outcome === 'won') return { ok: false, reason: 'LAYOUT_FAILED', issues: [`a player who does nothing wins at tick ${idle.tick}`] };
   return {
     ok: true,

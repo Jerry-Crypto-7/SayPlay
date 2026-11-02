@@ -9,6 +9,8 @@ import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 
 import { ARCADE_COMPILER_VERSION } from '../compile';
 import { HIT_GRACE } from '../contract';
+import { verifyArcade, witnessRuns } from '../verify';
+import { bindRoles } from '../witness';
 import flapFixture from '../__fixtures__/flap.json';
 import platformFixture from '../__fixtures__/platform.json';
 import runnerFixture from '../__fixtures__/runner.json';
@@ -75,6 +77,28 @@ describe('control v GameSpec a směrování kompilace', () => {
     expect(report.keypoints.filter((keypoint) => !keypoint.passed)).toEqual([]);
     expect(report.publishEligible).toBe(true);
     expect(report.witness.winsAtTick).toBe(compiled.value.winsAtTick);
+  });
+
+  // P68-L T2: tvorba hry pouští robota i nečinného hráče na svět jednou – kontrola publikace (`verifyArcade` bez vazeb)
+  // i přiznání (`witnessRuns` s vazbami, bez sond) vezmou běhy kompilace; výsledek je týž jako čerstvé ověření kopie
+  // světa, kterou kompilace neviděla. Se sondou hrozby (běžec) jde vítězný běh znovu, se svědky sondy.
+  it.each([
+    ['flap, bez sond', flapFixture, true],
+    ['běžec, se sondou', runnerFixture, false],
+  ] as const)('publikace a přiznání nepouštějí běhy kompilace znovu, ověření zůstává stejné (%s)', (_name, fixture, reused) => {
+    const spec = read(fixture);
+    const compiled = compileGame(spec, 1);
+    if (!compiled.ok || compiled.value.arcade === undefined) throw new Error('compile failed');
+    const world = compiled.value.arcade;
+    const verdict = verifyArcade(world);
+    const witnessed = witnessRuns(world, undefined, bindRoles(spec, world));
+    expect(verifyArcade(world).idle).toBe(verdict.idle);
+    expect(witnessed.bot.inputs === verdict.bot.inputs).toBe(reused);
+    const fresh = { ...world };
+    const control = verifyArcade(fresh);
+    expect(control.idle).not.toBe(verdict.idle);
+    expect(verdict).toEqual(control);
+    expect(witnessed).toEqual(witnessRuns(fresh, undefined, bindRoles(spec, fresh)));
   });
 
   it('stejný spec a seed = stejný svět; jiný seed = jiný', () => {

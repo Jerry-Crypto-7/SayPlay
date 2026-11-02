@@ -38,7 +38,7 @@ import {
   timerLeft,
   varValue,
 } from './contract';
-import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
+import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, type ReplayResult, step } from './kernel';
 import { underlyingRule } from './addons';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
@@ -626,10 +626,22 @@ export interface ArcadeVerdict {
   readonly publishEligible: boolean;
 }
 
-/** Běh robota z `compileArcade` (týž svět, výchozí volby): kontrola publikace ho nepouští podruhé (P46B R4, běžec ≈ 1 s). */
-const compiledRuns = new WeakMap<ArcadeWorld, BotRun>();
-export function rememberBotRun(world: ArcadeWorld, run: BotRun): void {
-  compiledRuns.set(world, run);
+/**
+ * Běhy z `compileArcade` (týž svět, výchozí knihovna): vítězný robot s vazbami rolí světa a nečinný hráč. Kontrola
+ * publikace (`verifyArcade` bez vazeb) je nepouští podruhé (P46B R4, běžec ≈ 1 s) a přiznání (`witnessRuns` s týmiž
+ * vazbami, bez sond) vezme týž běh i se svědky – u závodu s Rapierem stál každý běh navíc ~0,35 s (P68-L T2). Vazby
+ * robota neřídí, jen zapisují svědky: běh bez nich má tytéž vstupy, výsledek i otisk. Přehrání (`replayEqual`) se
+ * nepamatují – jsou to důkaz determinismu.
+ */
+interface CompiledRuns {
+  readonly bot: BotRun;
+  /** `JSON` vazeb, se kterými robot běžel; `null` = bez vazeb (bez svědků). */
+  readonly bindings: string | null;
+  readonly idle: ReplayResult | null;
+}
+const compiledRuns = new WeakMap<ArcadeWorld, CompiledRuns>();
+export function rememberBotRun(world: ArcadeWorld, run: BotRun, roleBindings?: readonly RoleBinding[], idle?: ReplayResult): void {
+  compiledRuns.set(world, { bot: run, bindings: roleBindings === undefined ? null : JSON.stringify(roleBindings), idle: idle ?? null });
 }
 
 /**
@@ -685,9 +697,12 @@ export function witnessRuns(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_
     const probe = runBot(probeWorld, library, { roleBindings: [...(roleBindings ?? []), binding], probeBody: body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
-  // Bez vazeb nemá běh svědka ani sondy (výš), takže je to týž běh jako `runBot(world)` v kompilaci.
-  const known = roleBindings === undefined && library === ARCADE_LIBRARY ? compiledRuns.get(world) : undefined;
-  return { bot: known ?? runBot(world, library, { roleBindings, threatProofs: probes }), probes };
+  // Bez vazeb nemá běh svědka ani sondy (výš), takže je to týž běh jako v kompilaci, jen bez jejích svědků. S týmiž
+  // vazbami a bez sond (`threatProofs` prázdné) je to týž běh i se svědky.
+  const known = library === ARCADE_LIBRARY ? compiledRuns.get(world) : undefined;
+  if (known !== undefined && roleBindings === undefined) return { bot: known.bindings === null ? known.bot : { ...known.bot, witnesses: [] }, probes };
+  if (known !== undefined && probes.length === 0 && known.bindings !== null && known.bindings === JSON.stringify(roleBindings)) return { bot: known.bot, probes };
+  return { bot: runBot(world, library, { roleBindings, threatProofs: probes }), probes };
 }
 
 /** S vazbami z `arcadeWorldOf` navíc změří trojice a samostatné sondy hrozeb; uložený svět ani publikační bránu nemění. */
@@ -699,7 +714,7 @@ export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE
   const first = replay(world, bot.inputs, library);
   const second = replay(world, bot.inputs, library);
   const replayEqual = first.hash === second.hash && first.hash === bot.hash;
-  const idle = replay(world, [], library);
+  const idle = (library === ARCADE_LIBRARY ? compiledRuns.get(world)?.idle : null) ?? replay(world, [], library);
 
   const failures: string[] = [];
   if (bot.outcome === 'lost') failures.push(`bot_wins: the bot lost at tick ${bot.tick}, ${bot.distanceM} m into the track`);
