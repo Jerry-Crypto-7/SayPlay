@@ -3,13 +3,15 @@
  "sentence": "A rabbit steals carrots and runs from a fox",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:26:06.923Z",
- "ms": 24648,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:08:25.977Z",
+ "ms": 11571,
  "answer": {
-  "plan": "Arena escape with a rabbit evading a fox while gathering carrots",
+  "plan": "Arena escape with rabbit collecting carrots while evading a fox",
   "spec": {
+   "genre": "arena",
+   "mode": "escape",
    "hero": "rabbit",
    "cast": [
     {
@@ -30,83 +32,100 @@
    "heroAction": "none",
    "setting": "forest trail",
    "palette": "forest",
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 60,
+    "seconds": 30,
+    "items": 5,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 3,
+    "enemySpeed": 60,
+    "playerHp": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
    "counts": {
     "enemy": 1,
-    "collectible": 1,
-    "target": 0
+    "collectible": 5
    },
    "ruleRoles": [
+    {
+     "id": "carrot",
+     "kind": "collectible",
+     "label": "carrot",
+     "count": 5
+    },
     {
      "id": "fox",
      "kind": "chaser",
      "label": "fox",
      "count": 1
-    },
-    {
-     "id": "carrot",
-     "kind": "collectible",
-     "label": "carrot",
-     "count": 1
     }
    ],
    "things": [
     {
-     "role": "fox",
+     "role": "carrot",
      "start": "hidden",
      "physics": null
     },
     {
-     "role": "carrot",
+     "role": "fox",
      "start": "hidden",
      "physics": null
     }
    ],
    "rules": [
     {
-     "id": "fox_spawn",
-     "verb": "spawn",
+     "id": "startPhase",
+     "verb": "wait",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
+       "startTimer": {
+        "timer": "escape",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "escapeTimer",
+     "verb": "wait",
+     "when": {
+      "timer": "escape"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
         "role": "fox",
-        "at": "player"
+        "count": 1,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "carrot_spawn",
-     "verb": "spawn",
+     "id": "secondPhase",
+     "verb": "wait",
      "when": {
-      "phase": "first"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "carrot",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "fox_chase",
-     "verb": "chase",
-     "when": {
-      "contact": [
-       "player",
-       "fox"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "damage": 1
+       "toggle": "carrot"
       }
      ]
     }
@@ -115,7 +134,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape_timer"
+      "id": "escape"
      }
     ],
     "phases": [
@@ -140,32 +159,7 @@
     "newFoe",
     "moving",
     "faster"
-   ],
-   "recipe": {
-    "phases": [
-     {
-      "start": 0,
-      "speedPercent": 100,
-      "add": null
-     },
-     {
-      "start": 60,
-      "speedPercent": 120,
-      "add": null
-     }
-    ],
-    "dependsOn": null,
-    "move": "run",
-    "actions": [
-     "collect"
-    ],
-    "objective": "escape",
-    "threats": [
-     "chaser"
-    ]
-   },
-   "params": null,
-   "unmet": []
+   ]
   }
  },
  "failure": null

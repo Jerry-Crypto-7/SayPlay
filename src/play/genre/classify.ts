@@ -106,6 +106,8 @@ const STUNT = pair('stunt', 'default');
 const MINIGOLF = pair('minigolf', 'default');
 // P68 T12: nakresli čáru a ochraň postavu před padajícími věcmi.
 const DRAWSAVE = pair('drawsave', 'default');
+// P68 T10: střelnice z vlastních očí na kolejích.
+const RAILFPS = pair('railfps', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -177,6 +179,10 @@ const LEAVES = String.raw`(?:so|and|to make|to let|then) (?:it|they|that one|eac
 /** Obchod, do kterého chodí zákazníci (P68 T11) – ne město, farma ani dílna bez pultu. */
 const SHOP = String.raw`(?:shops?|stores?|caf[eé]s?|diners?|bakery|bakeries|restaurants?|stands?|stalls?|trucks?|bars?|parlou?rs?|canteens?|joints?|kiosks?|tea ?rooms?)`;
 /** Vozidlo závodu s triky (P68 T8) – auto, náklaďák, motorka, traktor, sněžný skútr. */
+/** P68 T10: výstřel střelnice z očí – sloveso, kterým hráč míří nebo střílí („splat paint balloons“, „soak the pirates“). */
+const RAIL_SHOT = String.raw`(?:shoot(?:s|ing)?|fir(?:e|es|ing)|blast(?:s|ing)?|zap(?:s|ping)?|aim(?:s|ing)?|splat(?:s|ting)?|soak(?:s|ing)?)\b`;
+/** Jízda, která hráče veze sama (kolej, horská dráha, vláček, důlní vozík, sáně) – ne vozidlo, které řídí. */
+const RAIL_RIDE = String.raw`(?:ghost train|mine ?carts?|roller ?coasters?|log flumes?|monorails?|(?:rid(?:e|es|ing)|sit(?:s|ting)?) (?:in |on |aboard )?(?:a|an|the) (?:[a-z-]+ ){0,2}?(?:trains?|carts?|sleds?|sleighs?|jeeps?|boats?|rafts?|trams?|trolleys?|coasters?|flumes?|wagons?))\b`;
 const VEHICLE = String.raw`(?:cars?|trucks?|vans?|bus(?:es)?|buggy|buggies|scooters?|motorbikes?|motorcycles?|dirt ?bikes?|tractors?|go-?karts?|karts?|taxis?|ambulances?|jeeps?|quads?|snowmobiles?|bulldozers?|lorr(?:y|ies)|pickups?)`;
 /** Determinant před obchodem: „a“, „my“, „your own“. */
 const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
@@ -271,6 +277,24 @@ const VERBS: readonly Verb[] = [
     // „shield the frog from fifteen hailstones“, „help the hamster survive an asteroid shower“).
     String.raw`\b(?:protect|shield|guard|save|keep)(?:s|ing)? (?:the |a |an |my |your |our |his |her |its |their |this )?(?:[a-z-]+ ){0,3}?from (?:the |a |an )?(?:[a-z]+ )?(?:(?:rain|shower|storm|hail) of |falling |tumbling |dropping )?(?:[a-z-]+ )?(?:meteors?|meteorites?|asteroids?|hailstones?|boulders?|rocks?|icicles?|bombs?|acid drops?|raindrops?|flower ?pots?)\b`,
     String.raw`\bsurviv(?:e|es|ing) (?:a |an |the )?(?:[a-z-]+ )?(?:asteroid|meteor|meteorite|hail|rock|bomb) (?:showers?|storms?|rains?)\b`,
+  ].join('|'))),
+  // P68 T10: railfps – hráč stojí nebo ho veze kolej a otáčí se za tím, co se k němu blíží. Znak chce slovo o pohledu
+  // z očí, kolejích, střelnici, otáčení na místě nebo jízdě, která veze sama, **spolu** se slovesem výstřelu: „a
+  // first-person race“ nebo „walk through a first-person maze“ nestřílí, „a top-down shooter“ ani „a space shooter where
+  // your ship blasts“ pohled z očí nemá (`prvni-osoba/integration.md` → Narážky).
+  v('railshoot', 'sign', RAILFPS, new RegExp([
+    String.raw`\b(?:first[- ]person|through (?:my|your|his|her|their|its|the|a) (?:own )?eyes|on[- ]rails|rail[- ]shooters?)\b(?=[^.;!?]*\b${RAIL_SHOT})`,
+    String.raw`\b${RAIL_SHOT}(?=[^.;!?]*\b(?:first[- ]person|through (?:my|your|his|her|their|its|the|a) (?:own )?eyes|on[- ]rails)\b)`,
+    // Střelnice jen s výstřelem ve větě: „Shooting gallery at the county fair, hit the ducks …“ (otevřený holdout P55
+    // h65) by jinak pohnula pořadím starých žánrů, které drží zlatý test P56A.
+    String.raw`\brail[- ]shooters?\b|\bshooting galler(?:y|ies)\b(?=[^.;!?]*\b${RAIL_SHOT})|\b${RAIL_SHOT}(?=[^.;!?]*\bshooting galler(?:y|ies)\b)`,
+    String.raw`\b(?:look(?:s|ing)? around|turn(?:s|ing)? (?:left and right|around)|turning to)\b(?=[^.;!?]*\b${RAIL_SHOT})`,
+    String.raw`\b${RAIL_RIDE}(?=[^.;!?]*\b${RAIL_SHOT})`,
+    String.raw`\bstand(?:s|ing)? (?:guard|watch|on|in|at|atop)\b[^.;!?]*?\band ${RAIL_SHOT}`,
+    String.raw`\b(?:zap(?:s|ping)?|shoot(?:s|ing)?|blast(?:s|ing)?)\b[^.;!?]*?\b(?:hallways?|corridors?)\b`,
+    // Hráč stojí a nepřátelé lezou nebo se hrnou k němu („blast the mutant rats swarming through the sewer tunnels“,
+    // „aim at the giant spiders crawling down the walls“, „shoot the killer sharks before they bite through the hull“).
+    String.raw`^(?:inside [^,]+, )?${RAIL_SHOT} (?:at )?(?:the |all |every )?(?:[a-z-]+ ){0,2}?[a-z-]+s (?:swarming|crawling|creeping|shambling|charging|rushing|marching|swooping|climbing|before they bite)\b`,
   ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
@@ -514,12 +538,13 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * Brána aktivace (P68 T1): žánry, které klasifikátor nevidí, i když je kategorie přepne na `ready` a napíše jim
  * narážky – obdoba `DIRECTOR_PENDING` režiséra. Hra je do té doby dostupná jen ručním specem (fixture). Žánr odsud
  * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
- * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
+ * vrátil: 1. 11. FPS na `pixel7-touch` a herní brána, 2. 11. po opravě kategorie (#72) čas do hratelnosti (desktop
+ * vstup nepřijatý do 120 s, `pixel7-cpu4` párově +633 ms) – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
  * T9 `minigolf` zapojil a vrátil: čas do hratelnosti na `pixel7-cpu4` (párově +429 ms, mez +0,2 s) neprošel.
- * T12 zapojil `drawsave`.
+ * T12 zapojil `drawsave`, T10 `railfps`.
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'railfps', 'buildshift']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'buildshift']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards
@@ -572,7 +597,9 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
   });
   // P38: „a jumping game where you shoot animals“ – skok nebo běh nese žánr a střelba jede jako doplněk
   // (`ride`, v návrhu věc obsazení s `does: 'shoot_at'`); samotná střelba by skákání zahodila.
-  const shot = heard.some((entry) => entry.verb === 'shoot');
+  // P68 T10: u střelnice z očí skáče nepřítel („bandits … before they jump aboard“), hráč stojí – znak `railshoot`
+  // nosič skoku nepustí.
+  const shot = heard.some((entry) => entry.verb === 'shoot') && !heard.some((entry) => entry.verb === 'railshoot');
   const carrier = shot ? heard.find((entry) => entry.kind === 'move' && (entry.pick === PLATFORMER || entry.pick === RUNNER)) : undefined;
   const main = carrier ?? [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
   const firstMove = heard.filter((entry) => entry.kind === 'move').sort((a, b) => a.at - b.at)[0];

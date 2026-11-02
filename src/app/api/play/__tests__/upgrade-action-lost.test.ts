@@ -75,4 +75,18 @@ describe('upgrade preserves played actions from the stored quick version', () =>
     expect(await upgradeOf(store, quick, request())).toEqual({ status: 'ready', versionId: cached.version.versionId });
     expect(director.calls).toBe(0);
   });
+
+  // P68 R8: AI verze stavěná na hře ze čtení drží akce té hry, akci rychlé hry ztratit smí. Hledání v úložišti ji dřív
+  // měřilo jen rychlou hrou, odmítlo ji a po restartu procesu zaplatilo režiséra znovu.
+  it('reuses a cached upgrade that keeps the stored reading game actions though it loses the quick ones', async () => {
+    const store = memoryVersionStore(), quick = await save(store, spec(true, true));
+    const read = await publishReadSpec(store, spec(false, false), [1], quick.version.versionId, { relation: 'reading', origin: { sentence, seed: 1, readBy: 'model' } });
+    if (!read.ok) throw new Error(`Reading fixture failed real publication: ${JSON.stringify(read.issues)}`);
+    const cached = await save(store, { ...spec(false, false), title: 'Zombie Errand' }, quick);
+    expect(lostActions(extractIntent(sentence), await actionEvidence(quick.spec, quick.version.seed, quick.arcade), await actionEvidence(cached.spec, cached.version.seed, cached.arcade))).not.toEqual([]);
+    director.candidate = spec(false, false);
+    __resetUpgrades();
+    expect(await upgradeOf(store, quick, request())).toEqual({ status: 'ready', versionId: cached.version.versionId });
+    expect(director.calls).toBe(0);
+  });
 });

@@ -1,0 +1,60 @@
+{
+ "schema": "p68-director-live.v1",
+ "game": "drawsave",
+ "about": "P68 live check: 2 P68 dev sentences of the game through the AI version on the eval ledger (evals/play/p61/shots.mjs serve, VERCEL_ENV=production, astra as reader and director). quick = the quick game, reading = the game after reading (only when the reading picks another genre), ai = the director's AI version.",
+ "measured": true,
+ "measuredAt": "2026-11-02T08:26:24.775Z",
+ "ledger": {
+  "prefix": "worldsmith:p68-eval",
+  "capUsd": 5
+ },
+ "sentences": [
+  "d36",
+  "d38"
+ ],
+ "patched": "The run wrote quick/ai as null for games without spec.genre (an assembled ride) and counted d36 as finalInGame by falling back to the reading game. Rows and summary below are corrected by hand from the same server's games (GET /api/play/games/<id> and /upgrade on :3187, same session); director-live.mjs is fixed in the same commit to record ids and controls and to judge the final game by the AI version.",
+ "rows": [
+  {
+   "id": "d36",
+   "sentence": "draw a ramp so the rolling apple does not fall into the river",
+   "quickId": "a184c66963f854b5d593ef0e9ade6213",
+   "quickMs": 2728,
+   "quick": "control:assembly_control",
+   "readingMs": 11921,
+   "reading": "drawsave.default",
+   "status": "ready",
+   "reason": null,
+   "aiMs": 95062,
+   "aiId": "7cc07a71976562af717694044a721da2",
+   "ai": "control:assembly_control",
+   "note": "Quick game: a boat race (boat, shark, turbo, finish line). The reading found drawsave and published a reading game. The director (6 billed calls) answered with the game ('Save the Apple', threat: river), but the AI version is built on the quick game and must keep its witnessed actions, so it ended as a graft on the boat race with an added 'river' threat (adds: [])."
+  },
+  {
+   "id": "d38",
+   "sentence": "with one stroke of a pen, guard a sleeping baby dragon from the arrows of knights until the countdown ends",
+   "quickId": "3932176f75fad7fcdbec4488d68cf676",
+   "quickMs": 100,
+   "quick": "drawsave.default",
+   "reading": null,
+   "readingMs": null,
+   "status": "ready",
+   "reason": null,
+   "aiMs": 25359,
+   "aiId": "cda56e60f17d611fe31cd468ee0b0b9b",
+   "ai": "drawsave.default",
+   "note": "One billed director call. The AI version stays drawsave with 10 arrows, but its hero is 'explorer' instead of the baby dragon (title 'Save the Explorer', adds: [])."
+  }
+ ],
+ "summary": {
+  "quickInGame": 1,
+  "readingInGame": 1,
+  "aiReady": 2,
+  "aiInGame": 1,
+  "finalInGame": 1
+ },
+ "spend": {
+  "calls": 9,
+  "withoutUsage": 0,
+  "usd": 1.8052
+ }
+}

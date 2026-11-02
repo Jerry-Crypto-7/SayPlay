@@ -162,17 +162,21 @@ function forgetSettled(map: Map<string, Job>): void {
   }
 }
 
-/** Dítě návrhu, které už je autorskou verzí – z úložiště, ne z paměti procesu. */
+/**
+ * Dítě návrhu, které už je autorskou verzí – z úložiště, ne z paměti procesu. Drží akce rychlé hry, nebo hry ze čtení
+ * (P68 R8: AI verze postavená na hře ze čtení se měřila jejími svědky, ne svědky rychlé hry).
+ */
 async function publishedUpgrade(versions: VersionStore, draft: PublishedGame, sentence: string): Promise<string | null> {
   const draftId = draft.version.versionId;
+  const children = (await Promise.all((await versions.childrenOf(draftId)).map((childId) => versions.get(childId)))).filter((child): child is PublishedGame => child?.version.parentId === draftId);
+  const upgrades = children.filter((child) => child.relation === 'upgrade');
+  if (upgrades.length === 0) return null;
   const intent = extractIntent(sentence);
-  let before: Awaited<ReturnType<typeof actionEvidence>> | undefined;
-  for (const childId of await versions.childrenOf(draftId)) {
-    const child = await versions.get(childId);
-    if (child?.relation !== 'upgrade' || child.version.parentId !== draftId) continue;
-    before ??= await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
+  const bases = [draft, ...children.filter((child) => child.relation === 'reading')];
+  const witnessed = await Promise.all(bases.map((base) => actionEvidence(base.spec, base.version.seed, base.arcade)));
+  for (const child of upgrades) {
     const after = await actionEvidence(child.spec, child.version.seed, child.arcade);
-    if (lostActions(intent, before, after).length === 0) return childId;
+    if (witnessed.some((before) => lostActions(intent, before, after).length === 0)) return child.version.versionId;
   }
   return null;
 }
@@ -315,10 +319,10 @@ export function readingDiffers(quick: GameSpecV1, read: GameSpecV1, grid = read.
  * Hra ze čtení jako dítě rychlé hry (P58D T1); `null` = nevyšla – jen řádek logu, AI verze na ní nezávisí.
  * `fresh: false` = uložil ji už dřívější pokus, takže ji hráč zná.
  */
-async function publishReading(versions: VersionStore, draftId: string, request: UpgradeRequest, spec: GameSpecV1, seeds: readonly number[]): Promise<{ readonly versionId: string; readonly fresh: boolean } | null> {
+async function publishReading(versions: VersionStore, draftId: string, request: UpgradeRequest, spec: GameSpecV1, seeds: readonly number[]): Promise<{ readonly game: PublishedGame; readonly fresh: boolean } | null> {
   try {
     const published = await publishReadSpec(versions, spec, seeds, draftId, { relation: 'reading', origin: { sentence: request.sentence, seed: request.seed, readBy: 'model' } });
-    if (published.ok) return { versionId: published.value.game.version.versionId, fresh: published.value.status === 201 };
+    if (published.ok) return { game: published.value.game, fresh: published.value.status === 201 };
     console.warn(`[play] reading version of ${draftId} not published: ${published.issues?.[0] ?? String(published.response.status)}`);
   } catch (thrown) {
     console.warn(`[play] reading version of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
@@ -371,7 +375,7 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   if (!namesNoLess(chain.chain!.rounds.map((round) => round.spec), spec, reading)) return CHAIN_FINAL;
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(sentence.trim()));
   const published = await publishReading(versions, chainId, request, spec, seeds);
-  return published === null ? CHAIN_FINAL : found(published.versionId, published.fresh);
+  return published === null ? CHAIN_FINAL : found(published.game.version.versionId, published.fresh);
 }
 
 /**
@@ -379,25 +383,26 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
  * `onReading` (P58D T1): id hry ze čtení – návrh, který režie postaví ze čtení pro AI verzi, publikovaný hned, když
  * se od rychlé hry liší (`readingDiffers`: žánr, svět, nepřítel nebo sbíraná věc) a z věty neukáže méně (`namesNoLess`, P63 T3). Čtení se tím neplatí znovu a publikace
  * na model nečeká; výsledek upgradu počká jen na dokončení zápisu, aby ho `after()` nezmrazil v půlce.
+ * Publikovaná hra ze čtení je základ AI verze (P68 R8): hráč na ni přešel, tak AI verze staví na ní a drží její akce.
  */
 export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector, onReading?: (versionId: string, fresh: boolean) => void, scriptWriter?: ScriptWriter): Promise<UpgradeOutcome> {
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
-  let reading: Promise<string | null> = Promise.resolve(null);
+  let reading: Promise<PublishedGame | null> = Promise.resolve(null);
   const onDraft = (spec: GameSpecV1, grid: boolean, read: Reading | null): void => {
     // P63 T3: ani hra, která z rolí čtení ukáže méně než rychlá hra; návrh bez čtení (vypnutá čtečka) se nemá s čím srovnat.
     if (!readingDiffers(draft.spec, spec, grid) || (read !== null && !namesNoLess([draft.spec], spec, read))) return;
     reading = publishReading(versions, draft.version.versionId, request, spec, seeds).then((published) => {
       if (published === null) return null;
-      onReading?.(published.versionId, published.fresh);
-      return published.versionId;
+      onReading?.(published.game.version.versionId, published.fresh);
+      return published.game;
     });
   };
-  const outcome = await directorUpgrade(versions, draft, request, director, seeds, onDraft, scriptWriter).finally(() => reading);
+  const outcome = await directorUpgrade(versions, draft, request, director, seeds, onDraft, () => reading, scriptWriter).finally(() => reading);
   // P63 T6: konec bez AI verze nese hru ze čtení jako konec řetězu. Režie, která skončí hned po čtení (model nedostupný,
   // strop), doběhne v téže chvíli jako publikace – `pending` s hrou ze čtení klient mezi dvěma dotazy mine a zůstal by
   // na rychlé hře (živě dev s002, s003, s021: hra ze čtení uložená, hráč ji nedostal). Hotová AI verze má přednost.
-  const readingId = await reading;
-  return outcome.status === 'draft-final' && readingId !== null ? { ...outcome, reading: { versionId: readingId } } : outcome;
+  const readingGame = await reading;
+  return outcome.status === 'draft-final' && readingGame !== null ? { ...outcome, reading: { versionId: readingGame.version.versionId } } : outcome;
 }
 
 /**
@@ -428,7 +433,12 @@ async function withLevelScript(draftId: string, spec: GameSpecV1, seeds: number[
   }
 }
 
-async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: NonNullable<DirectorDeps['onDraft']>, scriptWriter: ScriptWriter | undefined): Promise<UpgradeOutcome> {
+/**
+ * `readingGame`: hra ze čtení, kterou `onDraft` publikoval během režie (P68 R8) – AI verze bere ji jako základ (roub,
+ * svědci akcí, novinky), rodičem i frontou zůstává rychlá hra `draft`. Bez ní (čtení nic jiného nenašlo, publikace
+ * nevyšla) je základ rychlá hra jako dřív.
+ */
+async function directorUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector, seeds: readonly number[], onDraft: NonNullable<DirectorDeps['onDraft']>, readingGame: () => Promise<PublishedGame | null>, scriptWriter: ScriptWriter | undefined): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
     if (failure !== undefined) recordUpgradeFailure(draftId, request.sentence, reason, failure);
@@ -454,17 +464,20 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   const declined = (): UpgradeOutcome => final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (directed.source === 'draft' && rejected === null) return declined();
   const aiSpec = rejected ?? directed.spec;
+  // P68 R8 (živě d36): hra ze čtení hraje jinou hru než rychlá – AI verze měřená svědky rychlé hry by kresbu zahodila
+  // a skončila roubem na závod lodí. Publikace hry ze čtení na model nečeká, takže je hotová dřív než režie.
+  const base = (await readingGame()) ?? draft;
   // Název nerozhoduje (jako `renamedQuick` níž): rychlá verze má od P56A T8 název z věty, modul režiséra svou šablonu.
-  if (gameSpecHash({ ...aiSpec, title: draft.spec.title }) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: aiSpec });
+  if (gameSpecHash({ ...aiSpec, title: base.spec.title }) === gameSpecHash(base.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: aiSpec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 
   const intent = extractIntent(request.sentence);
-  const before = await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
+  const before = await actionEvidence(base.spec, base.version.seed, base.arcade);
   // Mřížková rychlá verze (`tap_go`: záloha, když se nepřeloží žádný žánr, nebo starší uložená hra) arkádový svět
   // nemá – novinky není s čím srovnat, `adds` chybí a druhý pokus s pokynem se nezkouší.
-  const quick: PlayedGame | null = draft.arcade === undefined ? null : { spec: draft.spec, world: draft.arcade, witnesses: before };
-  const picked = await upgradeCandidate(draft, aiSpec, seeds, intent, before, rejected !== null);
+  const quick: PlayedGame | null = base.arcade === undefined ? null : { spec: base.spec, world: base.arcade, witnesses: before };
+  const picked = await upgradeCandidate(base, aiSpec, seeds, intent, before, rejected !== null);
   if (picked === null && rejected !== null) return declined();
   if (picked === null) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
   let upgraded = picked.spec;
@@ -477,7 +490,7 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   if (quick !== null && adds?.length === 0 && directorSlotFree()) {
     // `false`: slot se mezi kontrolou výš a voláním (čtení vypínače a cache po síti) mohl obsadit – pak se nečeká.
     const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false)(request.sentence);
-    const again = nudged.source === 'draft' ? null : await upgradeCandidate(draft, nudged.spec, seeds, intent, before);
+    const again = nudged.source === 'draft' ? null : await upgradeCandidate(base, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
     if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source] = [again.spec, again.seeds, added, nudged.source];
   }

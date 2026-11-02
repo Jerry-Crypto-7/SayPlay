@@ -136,7 +136,8 @@ describe('the director prompt describes logic within budget', () => {
     const growth = system.length - extras.reduce((sum, line) => sum + line.length + 1, 0) - MAIN_SYSTEM_PROMPT_CHARS;
     expect(growth).toBeGreaterThan(0);
     // P66 T13: +1 261 znaků za pět žánrů P66 (řádky žánrů a buňky tabulky), logika beze změny – strop 1 500 → 2 800.
-    expect(growth).toBeLessThanOrEqual(2_800);
+    // P68 R7: +288 za `drawsave` (řádek žánru a buňka tabulky), logika beze změny – strop 2 800 → 3 100.
+    expect(growth).toBeLessThanOrEqual(3_100);
     const lines = system.split('\n');
     expect(lines.filter((line) => line.startsWith('logic – '))).toHaveLength(1);
     const example = lines.filter((line) => line.startsWith('LOGIC EXAMPLE: '));

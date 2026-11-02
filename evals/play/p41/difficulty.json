@@ -83,6 +83,7 @@
     "stunt.default",
     "minigolf.default",
     "drawsave.default",
+    "railfps.default",
     "runner.default+shoot_at",
     "runner.default+chase_me",
     "runner.default+chase_me+shoot_at",
@@ -1395,6 +1396,36 @@
           "runs": 20,
           "wins": 20,
           "winRate": 1,
+          "errors": 0,
+          "replayMismatches": 0
+        },
+        "intermediate": {
+          "runs": 20,
+          "wins": 20,
+          "winRate": 1,
+          "errors": 0,
+          "replayMismatches": 0
+        }
+      }
+    },
+    {
+      "cell": "railfps.default",
+      "recipe": {
+        "move": "stationary",
+        "actions": [
+          "railshoot"
+        ],
+        "objective": "defeat",
+        "threats": [
+          "chaser"
+        ]
+      },
+      "specHash": "46cb2c26ac5f0ee272240ab1e2118504af86e53cacf9780cc62c8e2ab38d11ee",
+      "profiles": {
+        "novice": {
+          "runs": 20,
+          "wins": 0,
+          "winRate": 0,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -33355,6 +33386,446 @@
       "outcome": "won",
       "tick": 960,
       "hash": "1452ab02",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 1,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1830,
+      "hash": "b4616950",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2451,
+      "hash": "c6623113",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 2,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1799,
+      "hash": "02403949",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2485,
+      "hash": "b24dd8f6",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 3,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1878,
+      "hash": "500e3873",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2512,
+      "hash": "ad2bc300",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 4,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1865,
+      "hash": "6941ee54",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2451,
+      "hash": "1589cfe4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 5,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1885,
+      "hash": "2acdd597",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2537,
+      "hash": "134c0364",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 6,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1854,
+      "hash": "1bfcf753",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2553,
+      "hash": "34464c7c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 7,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1980,
+      "hash": "af5d2244",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2653,
+      "hash": "9ad77fd4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 8,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2022,
+      "hash": "4b72b850",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2650,
+      "hash": "50ff893b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 9,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2013,
+      "hash": "4e59ea74",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2634,
+      "hash": "e9ba2e4e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1657,
+      "hash": "56a8102a",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2305,
+      "hash": "65af6d4c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1903,
+      "hash": "1115e7eb",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2495,
+      "hash": "d9f32c1c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 12,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1802,
+      "hash": "b96b1f39",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2354,
+      "hash": "5f425531",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 13,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2065,
+      "hash": "ec8a04d2",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2668,
+      "hash": "7a366066",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1940,
+      "hash": "5c645137",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2500,
+      "hash": "2d2ef016",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 15,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1828,
+      "hash": "8441ae77",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2517,
+      "hash": "67b95d8d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 16,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1804,
+      "hash": "113b2bad",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2373,
+      "hash": "11170d0d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 17,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1846,
+      "hash": "9a175773",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2438,
+      "hash": "2b2ac9b3",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 18,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1856,
+      "hash": "a680d32f",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2501,
+      "hash": "f3d94579",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1708,
+      "hash": "906a1a5e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2297,
+      "hash": "3f5d4502",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 20,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1997,
+      "hash": "3f35dc54",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2568,
+      "hash": "267c1b8e",
       "replayEqual": true,
       "error": null
     }

@@ -3,12 +3,12 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:29:03.817Z",
- "ms": 8869,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:10:35.883Z",
+ "ms": 6851,
  "answer": {
-  "plan": "Create a platformer where a hedgehog rolls down a mushroom hill while dodging foxes.",
+  "plan": "Create a rolling‑hill platformer where the hedgehog rolls downhill while dodging foxes.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -17,7 +17,7 @@
     {
      "label": "fox",
      "does": "avoid",
-     "verb": "roll",
+     "verb": "obstacle",
      "states": null,
      "patrol": false
     }
@@ -25,7 +25,14 @@
    "heroAction": "none",
    "setting": "mushroom hill",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 1,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
    "counts": {
     "collectible": null
    },
@@ -46,47 +53,47 @@
    ],
    "rules": [
     {
-     "id": "startPhase",
-     "verb": "wait",
+     "id": "foxSpawn",
+     "verb": "spawn",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "phase1",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase1Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase1"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      }
-     ]
-    },
-    {
-     "id": "phase2",
-     "verb": "wait",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
        "spawn": {
         "role": "fox",
-        "at": "other"
+        "at": "player"
        }
+      }
+     ]
+    },
+    {
+     "id": "foxMove",
+     "verb": "move",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "fox"
+      }
+     ]
+    },
+    {
+     "id": "foxAvoid",
+     "verb": "avoid",
+     "when": {
+      "contact": [
+       "player",
+       "fox"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
       }
      ]
     }

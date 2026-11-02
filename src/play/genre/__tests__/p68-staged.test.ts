@@ -14,6 +14,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA } from '@/play/director/answer-schema';
 import { directorSystemPrompt, genrePromptLines } from '@/play/director/prompt';
 import { readerSystemPrompt } from '@/play/read/prompt';
+import { READER_PENDING } from '@/play/read/schema';
 import { READ_CONTROLS } from '@/play/spec';
 
 import { ROUTE_PENDING, classifyGenre } from '../classify';
@@ -42,8 +43,10 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry), T12 `drawsave`. */
-const WIRED: readonly string[] = ['drawsave'];
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry), T12 `drawsave`, T10 `railfps`. */
+const WIRED: readonly string[] = ['drawsave', 'railfps'];
+/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`). */
+const OFFERED: readonly string[] = ['drawsave'];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {
@@ -77,10 +80,11 @@ describe('P68 skeletons (T1)', () => {
 describe('P68 activation gate: a ready module stays invisible until "wire X" removes it', () => {
   it('every new game not yet wired sits in all three gates; a wired one in none', () => {
     for (const genre of PENDING) expect(ROUTE_PENDING.has(genre), `${genre} ROUTE_PENDING`).toBe(true);
-    // Zapojené hry jdou jen do rychlé hry; režisér a čtečka čekají na R5 (placený re-record P46E).
     for (const genre of WIRED) expect(ROUTE_PENDING.has(genre as GenreId), `${genre} ROUTE_PENDING`).toBe(false);
+    // Režisér a čtečka dostanou hru až s placeným re-recordem P46E (R5–R7); `drawsave` od R7.
     for (const genre of P68) {
-      expect(DIRECTOR_PENDING.has(genre), `${genre} DIRECTOR_PENDING`).toBe(true);
+      expect(DIRECTOR_PENDING.has(genre), `${genre} DIRECTOR_PENDING`).toBe(!OFFERED.includes(genre));
+      expect(READER_PENDING.has(genre), `${genre} READER_PENDING`).toBe(!OFFERED.includes(genre));
       expect(READ_CONTROLS, genre).not.toContain(genre);
     }
   });
@@ -92,19 +96,20 @@ describe('P68 activation gate: a ready module stays invisible until "wire X" rem
     expect(leaked).toEqual([]);
   });
 
-  it('the director prompt, its genre lines and its answer schema name no new game not yet wired', () => {
+  it('the director prompt, its genre lines and its answer schema name no new game not offered to it', () => {
     const lines = genrePromptLines();
     const system = directorSystemPrompt();
     const schema = JSON.stringify(GENRE_ANSWER_SCHEMA);
     for (const genre of P68) {
-      expect(mentions(lines, genre), `${genre} in genre lines`).toBe(false);
-      expect(mentions(system, genre), `${genre} in director prompt`).toBe(false);
-      expect(schema.includes(`"${genre}"`), `${genre} in answer schema`).toBe(false);
+      const offered = OFFERED.includes(genre);
+      expect(mentions(lines, genre), `${genre} in genre lines`).toBe(offered);
+      expect(mentions(system, genre), `${genre} in director prompt`).toBe(offered);
+      expect(schema.includes(`"${genre}"`), `${genre} in answer schema`).toBe(offered);
     }
   });
 
-  it('the reader prompt names no new game or control not yet wired', () => {
+  it('the reader prompt names no new game or control not offered to it', () => {
     const prompt = readerSystemPrompt();
-    for (const genre of P68) expect(mentions(prompt, genre), genre).toBe(false);
+    for (const genre of P68) expect(mentions(prompt, genre), genre).toBe(OFFERED.includes(genre));
   });
 });

@@ -52,9 +52,9 @@ const wavesOf = (world: ArcadeWorld): RailfpsRoundParams['waves'] => (world.rule
 const tuningOf = (spec: GameSpecV1): object => (spec.controlParams as { readonly tuning?: object } | undefined)?.tuning ?? {};
 
 describe('railfps genre module (P68-F T4)', () => {
-  it('keeps the scaffold availability and is the registered module', () => {
-    // Hodnota kostry P68-I T1 (`stagedGenre('railfps', …)` → `staged`): žánr nekrade věty jiným hrám, dokud ho nezapne P68-I.
-    expect(railfpsGenre.availability('default')).toBe('staged');
+  it('is ready and is the registered module', () => {
+    // P68-I T10 hru zapnul (`integration.md` → požadovaná změna `railfps.ts`: `availability` → `ready`).
+    expect(railfpsGenre.availability('default')).toBe('ready');
     expect(GENRE_MODULES.railfps).toBe(railfpsGenre);
   });
 

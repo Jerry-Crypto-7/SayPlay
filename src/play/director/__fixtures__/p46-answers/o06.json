@@ -3,12 +3,12 @@
  "sentence": "Jumping arcade game in the forest",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:27:12.649Z",
- "ms": 11074,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:10.499Z",
+ "ms": 7750,
  "answer": {
-  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling logs and enemies, with a simple timed wave mechanic.",
+  "plan": "Create a platformer where a fox jumps across forest platforms, collecting acorns while avoiding falling rocks and enemies, with a simple timed wave mechanic.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -22,9 +22,9 @@
      "patrol": false
     },
     {
-     "label": "log",
+     "label": "rock",
      "does": "avoid",
-     "verb": "jump",
+     "verb": "fall",
      "states": null,
      "patrol": false
     },
@@ -58,15 +58,15 @@
      "count": 5
     },
     {
-     "id": "log",
+     "id": "rock",
      "kind": "hazard",
-     "label": "log",
+     "label": "rock",
      "count": 3
     },
     {
      "id": "enemy",
      "kind": "chaser",
-     "label": "forest goblin",
+     "label": "forest sprite",
      "count": 2
     }
    ],
@@ -77,7 +77,7 @@
      "physics": null
     },
     {
-     "role": "log",
+     "role": "rock",
      "start": "hidden",
      "physics": null
     },
@@ -107,7 +107,7 @@
        "grab": "other"
       },
       {
-       "score": 100
+       "score": 10
       },
       {
        "despawn": "self"
@@ -115,19 +115,15 @@
      ]
     },
     {
-     "id": "avoid_log",
-     "verb": "jump",
+     "id": "avoid_rock",
+     "verb": "avoid",
      "when": {
       "contact": [
        "player",
-       "log"
+       "rock"
       ]
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
        "damage": 1
@@ -138,24 +134,8 @@
      ]
     },
     {
-     "id": "enemy_wave",
-     "verb": "spawn",
-     "when": {
-      "timer": "wave1"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "enemy",
-        "at": "other"
-       }
-      }
-     ]
-    },
-    {
-     "id": "enemy_move",
-     "verb": "move",
+     "id": "enemy_chase",
+     "verb": "chase",
      "when": {
       "contact": [
        "player",
@@ -177,7 +157,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave1"
+      "id": "wave_timer"
      }
     ],
     "phases": [

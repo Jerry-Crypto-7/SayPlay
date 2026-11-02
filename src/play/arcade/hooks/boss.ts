@@ -8,8 +8,12 @@
 import { type ArcadeEffect, BODY, FLAG, HEADER, type PieceRef, bodyBase, nativeRule } from '../contract';
 import type { HookEffect } from './contract';
 
-/** Předloha bosse finále, jak ji nese `boss_beat` (i pod obalem složené hry); bez finále `undefined`. */
-export const bossTemplateOf = (rules: readonly PieceRef[]): number | undefined => nativeRule(rules, 'boss_beat')?.params.boss as number | undefined;
+/**
+ * Předloha bosse finále, jak ji nese `boss_beat` (i pod obalem složené hry), nebo boss poslední vlny střelnice z očí
+ * (`railfps_shot`, P68 T10); bez finále `undefined`.
+ */
+export const bossTemplateOf = (rules: readonly PieceRef[]): number | undefined =>
+  (nativeRule(rules, 'boss_beat') ?? nativeRule(rules, 'railfps_shot'))?.params.boss as number | undefined;
 
 /** Živá kopie předlohy `template` na místě vstupu (`spawn` ji tam položil); bez nálezu předloha sama. */
 function copyAt(state: Int32Array, template: number, x: number, z: number): number {

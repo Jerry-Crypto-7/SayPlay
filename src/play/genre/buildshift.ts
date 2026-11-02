@@ -188,7 +188,7 @@ export const buildshiftGenre: GenreModule<'buildshift'> = {
   heroClasses: ['humanoid', 'animal', 'robot'],
   paramBounds: { customers: { min: SHIFT_GOAL_MIN, max: BUILDSHIFT.goal.max } },
   // `ready` až zapojením v P68-I T11 („zapoj buildshift“, `evals/play/p68/stavba/integration.md` → Zapnutí); brány
-  // hry 1. 11. neprošly (`evals/play/p68/integration-log.md`), proto zatím `staged`.
+  // hry 1. 11. ani 2. 11. neprošly (`evals/play/p68/integration-log.md`), proto zatím `staged`.
   availability: () => 'staged',
   compile: (spec) => {
     const goal = spec.params?.customers ?? BUILDSHIFT.goal.default;

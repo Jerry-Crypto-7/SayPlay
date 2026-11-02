@@ -124,6 +124,8 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'steal.default': 'steal',
   'sort.default': 'sort',
   'arrows.default': 'arrows',
+  // P68 R7: Kresli a zachraň.
+  'drawsave.default': 'drawsave',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -159,6 +161,7 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'steal.default': 'A fox steals eggs from the wolf den in a dark forest and carries them home',
   'sort.default': 'A fox sorts acorns into baskets in a dark forest',
   'arrows.default': 'A fox taps stuck logs out of a jam in a dark forest',
+  'drawsave.default': 'Draw a line to save the fox from falling wolves in a dark forest',
 };
 
 /** Věta, ve které klíčová slova žádný nový žánr nečtou – žánr hry tu může dát jedině odpověď režiséra. */

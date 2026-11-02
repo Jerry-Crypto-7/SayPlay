@@ -3,12 +3,12 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:29:22.079Z",
- "ms": 8092,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:10:47.859Z",
+ "ms": 5345,
  "answer": {
-  "plan": "Create a simple race‑style voyage game where the player drives a shopping cart through a supermarket, avoiding obstacles and collecting items while a timer counts down.",
+  "plan": "Create a simple race‑style voyage game where a shopping cart speeds through a supermarket, with a single timed phase change that triggers a wave of rival carts.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -17,22 +17,7 @@
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
-   "params": {
-    "hazards": 0,
-    "turbo": 0,
-    "roadWidth": 5000,
-    "roadEntryWidth": 5000,
-    "crashBudget": 3,
-    "namedLandingTarget": 0,
-    "touchdownSpeed": 30,
-    "gravityRisePct": 0,
-    "lengthM": 300,
-    "topSpeed": 200,
-    "gravity": 400,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 60
-   },
+   "params": null,
    "ruleRoles": [],
    "things": [],
    "rules": [],
@@ -40,22 +25,28 @@
     "vars": null,
     "timers": [
      {
-      "id": "race"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "run"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": null,
-   "abilities": [],
-   "segments": null
+   "abilities": [
+    "dash"
+   ],
+   "segments": [
+    "moving",
+    "newFoe",
+    "faster"
+   ]
   }
  },
  "failure": null

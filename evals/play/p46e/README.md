@@ -77,3 +77,12 @@ Režisér nabízí čtyři žánry pruhů (chytání, bouchání, obrana, kráje
 - j08 a nově f01 (drak brání poklad před rytíři) odpověděly obranou; f01 tím ztratil nové postavy (`adds: []`).
 - Soud logiky P45B (`director-logic.json`): `logic_proved` raw 2 → 0, s opravou vstupu do fáze 4 → 3 z 25; logiku napíše 23 místo 25.
 - Jsou to nové odpovědi modelu, ne staré odpovědi novou cestou: rozdíl je změna promptu a šum nahrávky dohromady a po řádcích ho nerozlišuji.
+
+## P68 R7 (2. 11.): nové nahrávky s promptem `76b43756`
+
+Režisér nabízí `drawsave` (Kresli a zachraň, P68), takže verze kompaktního promptu přešla `d92e2927` → `76b43756`. Všech 25 odpovědí je nahraných znovu (`record.cmd`, gpt-oss-20b lokálně, 0 USD, 25 volání bez selhání, p50 6,9 s, max 11,8 s) a `after.json` přeměřený.
+
+- `ready` 25 z 25 a `keptRules` / `keptLogic` 100 % beze změny; `direct()` dá hru z odpovědi u 22 z 25 jako dřív.
+- **`adds` 0,32 → 0,44**: boss 5 → 9, akce 0 → 3, úseky 3 → 1. Jen postavy 9 → 9.
+- **o03 („Racing car escaping and shooting enemies“) odpověděl `drawsave`** (dřív `voyage`) – jediná odpověď z 25 s novou hrou, a špatně. `direct()` ji odmítne (`VERB_UNPROVED`: závod ani střelba v kresbě nejsou) a AI verze vyjde přes roub na rychlou hru závodu s bossem a postavami. Výsledek hráče tedy drží; je to jeden vzorek modelu 20b, ne opakovaný vzor.
+- Soud logiky P45B (`director-logic.json`): `logic_proved` raw i s opravou 0 z 25 jako dřív; logiku napíše 25 místo 24.

@@ -3,12 +3,12 @@
  "sentence": "racing car escapes police and shoots enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:26:44.254Z",
- "ms": 12859,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:08:50.951Z",
+ "ms": 7625,
  "answer": {
-  "plan": "Create a racing‑shooting car game where the player evades police chasers while blasting enemy drones on a highway.",
+  "plan": "Create a racing‑shooting car game where the player drives away from police while blasting enemies on a highway.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -30,7 +30,7 @@
     }
    ],
    "heroAction": "none",
-   "setting": "open highway",
+   "setting": "open country",
    "palette": "desert",
    "params": {
     "hazards": 0,
@@ -76,10 +76,26 @@
    ],
    "rules": [
     {
-     "id": "police_spawn",
+     "id": "startRace",
      "verb": "wait",
      "when": {
       "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "policeSpawn",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
      },
      "if": null,
      "do": [
@@ -92,35 +108,45 @@
      ]
     },
     {
-     "id": "enemy_wave",
+     "id": "enemyWave",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "race"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "enemy",
-        "count": 5,
+        "count": 3,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "police_chase",
-     "verb": "chase",
+     "id": "policeChase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "police"
-      ]
+      "phase": "chase"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "toggle": "police"
+      }
+     ]
+    },
+    {
+     "id": "endRace",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -129,7 +155,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "race_timer"
+      "id": "race"
      }
     ],
     "phases": [
@@ -137,7 +163,7 @@
       "id": "start"
      },
      {
-      "id": "mid"
+      "id": "chase"
      },
      {
       "id": "end"
@@ -145,20 +171,9 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "police",
-    "name": "Police Pursuit",
-    "attack": "charge"
-   },
-   "abilities": [
-    "dash",
-    "shoot"
-   ],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "boss": null,
+   "abilities": null,
+   "segments": null
   }
  },
  "failure": null

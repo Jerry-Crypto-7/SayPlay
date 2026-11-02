@@ -3,12 +3,12 @@
  "sentence": "a kangaroo jumps over cars then collects coins on the highway",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:28:54.947Z",
- "ms": 9243,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:10:29.031Z",
+ "ms": 6575,
  "answer": {
-  "plan": "Create a platform‑style runner where a kangaroo hops over cars and gathers coins along a highway, with a simple time‑based phase change that spawns a wave of cars.",
+  "plan": "Create a platformer where a kangaroo hops over cars and gathers coins on a highway.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -38,7 +38,7 @@
     "items": 8,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": null
+    "timeLimit": 0
    },
    "counts": {
     "collectible": 8

@@ -3,12 +3,12 @@
  "sentence": "boxing a kangaroo in the australian outback",
  "axis": "duel",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:29:30.901Z",
- "ms": 8822,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:10:53.609Z",
+ "ms": 5750,
  "answer": {
-  "plan": "Arena fight where the hero boxes a kangaroo in the outback, with timed phases and a single enemy wave.",
+  "plan": "arena fight against a kangaroo in the Australian outback",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -22,14 +22,14 @@
      "patrol": false
     }
    ],
-   "heroAction": "throw",
+   "heroAction": "none",
    "setting": "australian outback",
-   "palette": "desert",
+   "palette": "cave",
    "params": {
-    "entryDistance": 8000,
+    "entryDistance": 12000,
     "chaseLead": 60,
-    "seconds": 30,
-    "items": 1,
+    "seconds": 60,
+    "items": 5,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 1,
@@ -40,7 +40,7 @@
     "playerHp": 5,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 30
+    "timeLimit": 60
    },
    "counts": {
     "enemy": 1,
@@ -63,7 +63,7 @@
    ],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -72,17 +72,17 @@
      "do": [
       {
        "startTimer": {
-        "timer": "phase1",
+        "timer": "fight",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phase1Timer",
+     "id": "enterFight",
      "verb": "wait",
      "when": {
-      "timer": "phase1"
+      "timer": "fight"
      },
      "if": null,
      "do": [
@@ -99,7 +99,7 @@
      ]
     },
     {
-     "id": "secondPhase",
+     "id": "fightPhase",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -107,7 +107,10 @@
      "if": null,
      "do": [
       {
-       "win": true
+       "spawn": {
+        "role": "kangaroo",
+        "at": "player"
+       }
       }
      ]
     }
@@ -116,7 +119,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "fight"
      }
     ],
     "phases": [
@@ -134,10 +137,7 @@
     "name": "Roo Rumble",
     "attack": "charge"
    },
-   "abilities": [
-    "strike",
-    "dash"
-   ],
+   "abilities": [],
    "segments": [
     "newFoe",
     "moving",

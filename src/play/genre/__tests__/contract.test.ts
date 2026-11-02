@@ -70,6 +70,14 @@ const SAMPLES: readonly GenreSpec[] = [
   ...(GENRE_MODULES.drawsave.availability('default') === 'ready'
     ? [{ genre: 'drawsave', mode: 'default', hero: 'cat', cast: [{ label: 'bomb', does: 'avoid' }], setting: 'desert canyon' } as GenreSpec]
     : []),
+  // P68 T10: railfps, stejná podmínka.
+  ...(GENRE_MODULES.railfps.availability('default') === 'ready'
+    ? [{ genre: 'railfps', mode: 'default', hero: 'cowboy', cast: [{ label: 'bandit', does: 'shoot_at' }], setting: 'wild west' } as GenreSpec]
+    : []),
+  // P68 T11: buildshift, stejná podmínka.
+  ...(GENRE_MODULES.buildshift.availability('default') === 'ready'
+    ? [{ genre: 'buildshift', mode: 'default', hero: 'chef', cast: [{ label: 'robot', does: 'collect' }, { label: 'pizza', does: 'scenery' }], setting: 'diner' } as GenreSpec]
+    : []),
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */

@@ -34,7 +34,8 @@ export function boostKeepers(world: ArcadeWorld): BoostKeepers {
   let powerup: number | undefined;
   let combo: number | undefined;
   for (const rule of world.rules.map(underlyingRule)) {
-    if (rule.id !== 'pickup' && rule.id !== 'shot_hit') continue;
+    // P68 T10: zásah střelnice z očí (`railfps_shot`) nese kombo stejně jako `shot_hit`.
+    if (rule.id !== 'pickup' && rule.id !== 'shot_hit' && rule.id !== 'railfps_shot') continue;
     const params = rule.params as { readonly combo?: number; readonly powerup?: { readonly keeper: number } };
     combo ??= params.combo;
     powerup ??= params.powerup?.keeper;

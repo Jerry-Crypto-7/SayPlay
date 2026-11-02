@@ -1,0 +1,1 @@
+{"sentence":"draw to protect grandma from 5 falling flower pots","answer":{"plan":"Draw a short wall over grandma's head; five flower pots tumble from the balconies and glance off it for 10 seconds.","spec":{"genre":"drawsave","mode":"default","hero":"grandma","cast":[{"label":"flower pot","does":"avoid"}],"setting":"street below balconies","params":{"threats":5}}}}

@@ -3,12 +3,12 @@
  "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:27:59.432Z",
- "ms": 12432,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:45.346Z",
+ "ms": 7411,
  "answer": {
-  "plan": "Create an arena‑fight game where a stone golem battles grave robbers inside an ancient desert temple, with timed waves of robbers and a final boss.",
+  "plan": "Arena fight where a stone golem battles grave robbers in an ancient desert temple, with timed waves of robbers and a final boss.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -46,7 +46,7 @@
     "enemySpeed": 80,
     "playerHp": 7,
     "lives": 3,
-    "targetScore": 2000,
+    "targetScore": 0,
     "timeLimit": 60
    },
    "counts": {
@@ -124,23 +124,6 @@
      "do": [
       {
        "goPhase": "night"
-      }
-     ]
-    },
-    {
-     "id": "nightWave",
-     "verb": "wait",
-     "when": {
-      "phase": "night"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "robber",
-        "count": 2,
-        "at": "edge"
-       }
       }
      ]
     }

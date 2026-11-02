@@ -1,0 +1,1 @@
+{"sentence":"protect the sleeping cat from a rain of meteors","answer":{"plan":"Draw a roof over the sleeping cat, then ten meteors rain down and bounce off it; the cat must last 10 seconds.","spec":{"genre":"drawsave","mode":"default","hero":"cat","cast":[{"label":"meteor","does":"avoid"}],"setting":"rooftop at night","params":{"threats":10}}}}

@@ -72,8 +72,10 @@ export const XR_MODES: Readonly<Record<GenreId, XrModeEntry>> = {
 /**
  * Hry bez vstupu ovladačů VR (P68 T12): drawsave kreslí tahem prstu po svislé desce (`HOLD` + buňka v ose) a paprsek
  * ovladače na desku zatím nemíří – VR se jim nenabízí (`stavba/integration.md` VR režim nežádá; zápis v `integration-log.md`).
+ * P68 T10: railfps míří kvantovaným sektorem osy, otočení hlavy na sektor `xr/input-map.ts` zatím nepřevádí
+ * (`prvni-osoba/integration.md` → VR: „do řezu VR hru nenabízet“).
  */
-export const XR_UNOFFERED: ReadonlySet<string> = new Set<string>(['drawsave']);
+export const XR_UNOFFERED: ReadonlySet<string> = new Set<string>(['drawsave', 'railfps']);
 
 /** Žánr, který tabulka nezná (starý spec bez žánru, nový žánr před svou úlohou VR), hraje na stole. */
 export const DESK_MODE: XrModeEntry = { mode: 'desk', pose: 'table' };

@@ -103,15 +103,16 @@ const isRide = (label: string): boolean => RIDES.has(label.toLowerCase().split('
 export const railfpsGenre: GenreModule<'railfps'> = {
   id: 'railfps',
   modes: ['default'],
-  // Narážky zapíná až P68-I „zapoj railfps“ (`classify.ts`, `integration.md`); kostra je neměla.
-  cues: [],
+  // P68-I T10 („zapoj railfps“): doplněk znaku `railshoot` v `classify.ts`, který nese pohled se střelbou
+  // (`integration.md` → Narážky).
+  cues: ['first person', 'on rails', 'rail shooter'],
   heroClasses: ['humanoid', 'robot', 'animal', 'monster'],
   paramBounds: {
     targets: { min: RAILFPS.targets.min, max: RAILFPS.targets.max },
     waves: { min: RAILFPS.waves.min, max: RAILFPS.waves.max },
   },
-  // Hodnota kostry P68-I T1 (`stagedGenre`): aktivace je úloha P68-I, ne této větve.
-  availability: () => 'staged',
+  // Zapnuto v P68-I T10 („zapoj railfps“); režisér a čtečka dál za branou `DIRECTOR_PENDING` / `READER_PENDING`.
+  availability: () => 'ready',
   compile: (spec) => {
     const targets = spec.params?.targets ?? RAILFPS.targets.default;
     const waves = spec.params?.waves ?? RAILFPS.waves.default;
