@@ -49,7 +49,8 @@ describe('raw-spec publish of an unwired P68 game (R1)', () => {
     const viaGenerator = readSpecOrFail({ ...ARROWS, controlParams: { generator: 'stunt_track' } });
     expect(viaGenerator.ok).toBe(false);
     if (!viaGenerator.ok) expect(await viaGenerator.response.text()).toContain('not live yet');
-    const response = await publish(asP68('railfps', 'both'));
+    // Celá cesta POST s poslední hrou za branou – pevné jméno zčervenalo, když T10 zapojil `railfps`.
+    const response = await publish(asP68([...ROUTE_PENDING].at(-1)!, 'both'));
     expect(response.status).toBe(422);
     expect(await response.text()).toContain('not live yet');
   });
