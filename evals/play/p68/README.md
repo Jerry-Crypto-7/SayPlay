@@ -251,6 +251,16 @@ z předplatného s týmž zadáním (`answers.json`), ne astra. Na 20 dev větá
   `out of memory`. Před zapnutím v produkci přesunout do workeru.
 - `npm install` nahradil junction `node_modules` (na worktree P64) skutečným adresářem; P64 zůstal beze změny.
 
+## T14 – verdikt hybridu (2. 11.)
+
+**Verdikt T14: `off`** (`hybrid/decision.json`, přepočet z `hybrid/pilot.json` v `__tests__/hybrid-decision.test.ts`).
+Splněné: platná data prošla robotem ve 20 z 20 pokusů (100 %, selhání by šla do jmenovatele) a Node, Chromium
+i WebKit dávají tytéž úrovně (0 rozdílů, `e2e/p68-scripts.spec.ts`). Nesplněné, protože pilot jel bez měřicí knihy
+a písařem byl zástupce `claude -p`, ne astra: slepý soudce „hrál bych“ se skriptem proti bez skriptu neběžel,
+p95 prodloužení AI verze a útrata na AI verzi nejsou změřené. Přepínač `PLAY_SCRIPTS` zůstává vypnutý.
+Rozhodnuto 2. 11., ne až 5. 11.: T13 je uzavřený a do 5. 11. žádný další běh pilotu není v plánu; když pilot
+někdo přeměří placeně, test verdikt přepočítá a `decision.json` musí následovat.
+
 ## R7 – čtečka a režisér nabízejí `drawsave` (2. 11.)
 
 - **Nabídka:** `drawsave` pryč z `DIRECTOR_PENDING` a `READER_PENDING`; řádek režiséra = Pitch kategorie

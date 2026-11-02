@@ -1,0 +1,14 @@
+{
+  "about": "P68I T14: verdikt hybridu (skripty úrovní v QuickJS za PLAY_SCRIPTS) přepočítaný z hybrid/pilot.json; test evals/play/p68/__tests__/hybrid-decision.test.ts drží shodu. 'eligible' = jen způsobilost, přepínač v kódu zůstává vypnutý; zapnutí v produkci je krok majitele v P59′.",
+  "decidedAt": "2026-11-02",
+  "pilot": "evals/play/p68/hybrid/pilot.json",
+  "engineDiffs": 0,
+  "engineDiffsSource": "e2e/p68-scripts.spec.ts na /play/lab/scripts: 4 programy × 3 semínka, Node = Chromium = WebKit (T13)",
+  "passRateOfAttempts": 1,
+  "verdict": "off",
+  "reasons": [
+    "blind judge did not run, so \"would play\" with a script is unmeasured",
+    "p95 extension of the AI version unmeasured (astra wrote nothing)",
+    "spend on the AI version not recorded (no measuring ledger, stand-in writer)"
+  ]
+}
