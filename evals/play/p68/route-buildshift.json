@@ -1,11 +1,11 @@
 {
  "schema": "p68-genre-route.v1",
- "commit": "147a98e5",
+ "commit": "466384a4+T11",
  "root": "D:/claude/Hackaton/.claude/worktrees/P68I-integrace-2026-10-31",
- "measuredAt": "2026-11-01T15:28:50.883Z",
+ "measuredAt": "2026-11-02T13:54:38.493Z",
  "labels": "evals/play/p68/genre-labels.json",
  "about": "genre = classifyGenre(sentence, null).ranked[0] (quick game, no model); draft = draftGameSpecWithMeta(sentence, 1).genre (composer; grid = archetype fallback). wrong = best != none and genre not in acceptable; none is not counted. Labels: 29 types (P68).",
- "seconds": 342,
+ "seconds": 176,
  "wrongRate": {
   "test200": {
    "sentences": 200,
@@ -18,8 +18,8 @@
    "sentences": 406,
    "none": 6,
    "counted": 400,
-   "wrong": 132,
-   "wrongRate": 0.33
+   "wrong": 121,
+   "wrongRate": 0.303
   }
  },
  "wrongRateDraft": {
@@ -34,8 +34,8 @@
    "sentences": 406,
    "none": 6,
    "counted": 400,
-   "wrong": 125,
-   "wrongRate": 0.313
+   "wrong": 111,
+   "wrongRate": 0.278
   }
  },
  "reach": {
@@ -94,11 +94,9 @@
     "acceptable": 11,
     "share": 0.027,
     "from": {
-     "shooter": 6,
-     "platformer": 2,
-     "arena": 1,
-     "quest": 1,
-     "voyage": 1
+     "railfps": 8,
+     "shooter": 2,
+     "arena": 1
     }
    }
   },
@@ -141,11 +139,10 @@
     "acceptable": 11,
     "share": 0.027,
     "from": {
-     "arena": 4,
-     "quest": 2,
-     "defense": 2,
-     "voyage": 2,
-     "throw": 1
+     "drawsave": 7,
+     "arena": 2,
+     "quest": 1,
+     "voyage": 1
     }
    }
   }
@@ -8246,9 +8243,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "shooter",
+   "genre": "railfps",
    "mode": "default",
-   "draft": "voyage"
+   "draft": "railfps"
   },
   {
    "text": "ride a train through the wild west and shoot the bandits on horseback before they jump aboard",
@@ -8260,9 +8257,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "platformer",
+   "genre": "railfps",
    "mode": "default",
-   "draft": "voyage"
+   "draft": "railfps"
   },
   {
    "text": "an on-rails shooter on a river boat where you aim at crocodiles leaping out of the swamp",
@@ -8274,9 +8271,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "platformer",
+   "genre": "railfps",
    "mode": "default",
-   "draft": "voyage"
+   "draft": "railfps"
   },
   {
    "text": "seen through the eyes of a kid on a roller coaster, splat paint balloons at clowns popping up along the track",
@@ -8288,9 +8285,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "quest",
-   "mode": "spatial",
-   "draft": "quest"
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
   },
   {
    "text": "a ghost train ride through a haunted house where you zap the ghosts flying at your cart with a flashlight",
@@ -8302,9 +8299,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "voyage",
-   "mode": "race",
-   "draft": "voyage"
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
   },
   {
    "text": "sit in a tour jeep that follows the jungle road on its own and fire at the angry monkeys throwing coconuts at you",
@@ -8316,9 +8313,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "shooter",
+   "genre": "railfps",
    "mode": "default",
-   "draft": "voyage"
+   "draft": "railfps"
   },
   {
    "text": "a first person rail shooter on a space station monorail, blasting drones before they reach you",
@@ -8330,9 +8327,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "shooter",
+   "genre": "railfps",
    "mode": "default",
-   "draft": "shooter"
+   "draft": "railfps"
   },
   {
    "text": "ride a log flume through a pirate cove and soak the pirates with a water cannon before they fire at your log",
@@ -8344,9 +8341,9 @@
     "railfps",
     "shooter"
    ],
-   "genre": "shooter",
+   "genre": "railfps",
    "mode": "default",
-   "draft": "voyage"
+   "draft": "railfps"
   },
   {
    "text": "run a burger shop for one shift: place grills and counters on the grid, spend coins and serve every customer before closing time",
@@ -8466,9 +8463,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "defense",
+   "genre": "drawsave",
    "mode": "default",
-   "draft": "defense"
+   "draft": "drawsave"
   },
   {
    "text": "draw a wall to shield a little chick on a windy cliff ledge from flying leaves and twigs for ten seconds",
@@ -8479,9 +8476,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "voyage",
-   "mode": "race",
-   "draft": "voyage"
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
   },
   {
    "text": "scribble a shield around an egg so the angry bees cannot reach it before time is up",
@@ -8492,9 +8489,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "arena",
-   "mode": "collect",
-   "draft": "arena"
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
   },
   {
    "text": "draw a ramp so the rolling apple does not fall into the river",
@@ -8518,9 +8515,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "quest",
-   "mode": "station",
-   "draft": "quest"
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
   },
   {
    "text": "with one stroke of a pen, guard a sleeping baby dragon from the arrows of knights until the countdown ends",
@@ -8531,9 +8528,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "defense",
+   "genre": "drawsave",
    "mode": "default",
-   "draft": "defense"
+   "draft": "drawsave"
   },
   {
    "text": "draw a roof over the sandcastle to keep the seagulls and the waves away from it for a whole minute",
@@ -8544,9 +8541,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "arena",
-   "mode": "collect",
-   "draft": "arena"
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
   },
   {
    "text": "a goldfish bowl teeters on a shelf, draw lines to stop it tumbling off while the cat swats at it until time runs out",
@@ -8557,9 +8554,9 @@
    "acceptable": [
     "drawsave"
    ],
-   "genre": "throw",
+   "genre": "drawsave",
    "mode": "default",
-   "draft": "throw"
+   "draft": "drawsave"
   }
  ]
 }

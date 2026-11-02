@@ -538,7 +538,8 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * Brána aktivace (P68 T1): žánry, které klasifikátor nevidí, i když je kategorie přepne na `ready` a napíše jim
  * narážky – obdoba `DIRECTOR_PENDING` režiséra. Hra je do té doby dostupná jen ručním specem (fixture). Žánr odsud
  * odebírá jen úloha „zapoj X“ v P68-I, spolu s `DIRECTOR_PENDING` a `READER_PENDING`. T11 `buildshift` zapojil a
- * vrátil: FPS brána na `pixel7-touch` (p95 snímku 49,9 ms) a herní brána (dev 7/8) neprošly – `integration-log.md`.
+ * vrátil: 1. 11. FPS na `pixel7-touch` a herní brána, 2. 11. po opravě kategorie (#72) čas do hratelnosti (desktop
+ * vstup nepřijatý do 120 s, `pixel7-cpu4` párově +633 ms) – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
  * T9 `minigolf` zapojil a vrátil: čas do hratelnosti na `pixel7-cpu4` (párově +429 ms, mez +0,2 s) neprošel.
  * T12 zapojil `drawsave`, T10 `railfps`.

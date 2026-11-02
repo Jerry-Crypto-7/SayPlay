@@ -71,6 +71,10 @@ const ROWS: readonly Row[] = [
   ...(GENRE_MODULES.railfps.availability('default') === 'ready'
     ? [{ genre: 'railfps', sentence: 'look around and shoot the zombies shambling toward you in the abandoned mall', place: 'abandoned mall', slots: { 'thing.enemy': 'zombie' } } as const]
     : []),
+  // P68 T11: buildshift, stejná podmínka.
+  ...(GENRE_MODULES.buildshift.availability('default') === 'ready'
+    ? [{ genre: 'buildshift', sentence: 'run a cat cafe and serve 12 cats their milk', place: 'cafe', slots: { 'thing.customer': 'cat', 'thing.goods': 'milk' } } as const]
+    : []),
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */
