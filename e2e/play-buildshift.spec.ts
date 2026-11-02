@@ -7,7 +7,7 @@ import { ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, BU
 import { type ArcadeProgram, hashArcade, instantiate, loadProgram, outcomeOf, step } from '../src/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '../src/play/arcade/library';
 import { type ShopLayout, badLayout, planLayout, serveWithLayout } from '../src/play/arcade/pieces/buildshift-bot';
-import { PALETTE, PHASE, SHIFT_SLOTS, STATION, STATION_COST, coinsOf, phaseOf, servedOf, shiftSlot, stationCode, stationsByCell } from '../src/play/arcade/pieces/buildshift-world';
+import { PALETTE, PHASE, SHIFT_SLOTS, STATION, STATION_COST, coinsOf, phaseOf, rejectedCellOf, servedOf, shiftSlot, stationCode, stationsByCell } from '../src/play/arcade/pieces/buildshift-world';
 import { axisOfCell, cellOfAxis } from '../src/play/arcade/pieces/lanes';
 import { unpackInputs } from '../src/play/score/dare';
 import { capture, ticks } from './play-native-input';
@@ -491,7 +491,7 @@ test.describe('buildshift (P68-S T6)', () => {
       expect(coinsOf(shop.state)).toBeLessThan(STATION_COST.oven);
       await shop.tap(PALETTE.oven);
       await shop.tap(0);
-      expect(shiftSlot(shop.state, SHIFT_SLOTS.rejected), 'the build without coins was rejected').toBe(1);
+      expect(rejectedCellOf(shiftSlot(shop.state, SHIFT_SLOTS.rejected)), 'the build without coins was rejected').toBe(0);
       await expect.poll(() => shownItem(page, 'price'), { timeout: 5_000, intervals: [50] }).toBe(true);
       await page.waitForTimeout(400);
       await shotOf(page, info)(`open-${orientation(page)}`);
