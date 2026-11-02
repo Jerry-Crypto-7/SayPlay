@@ -1,0 +1,66 @@
+{
+ "schema": "p68-director-live.v1",
+ "game": "minigolf",
+ "about": "P68 live check: 2 P68 dev sentences of the game through the AI version on the eval ledger (evals/play/p61/shots.mjs serve, VERCEL_ENV=production, astra as reader and director). quick = the quick game, reading = the game after reading (only when the reading picks another genre), ai = the director's AI version.",
+ "measured": true,
+ "measuredAt": "2026-11-02T22:36:52.060Z",
+ "ledger": {
+  "prefix": "worldsmith:p68-eval",
+  "capUsd": 5
+ },
+ "sentences": [
+  "d09",
+  "d12"
+ ],
+ "rows": [
+  {
+   "id": "d09",
+   "sentence": "a game of minigolf on a pirate island course, putting the ball past cannons and treasure chests into the hole",
+   "quickId": "cb4b7265a0d190007935325981cb6a46",
+   "quickMs": 2593,
+   "quick": "minigolf.default",
+   "readingId": null,
+   "reading": null,
+   "readingMs": null,
+   "status": "ready",
+   "reason": null,
+   "aiMs": 66673,
+   "aiId": "e92f1486b42ad88e0c9db5385aa0509e",
+   "ai": "minigolf.default",
+   "note": "Run 1 (serve --cap-usd 0.3 --director-cap-usd 1.2): one director call (49 822 prompt tokens, 0.536 USD) and two repair calls (0.065 USD together)."
+  },
+  {
+   "id": "d12",
+   "sentence": "a crazy golf course in a haunted mansion where the ball has to roll past sliding coffins into the hole",
+   "quickId": "3a912aba25d18c7739d2a7130c04b833",
+   "quickMs": 2645,
+   "quick": "minigolf.default",
+   "readingId": null,
+   "reading": null,
+   "readingMs": null,
+   "status": "ready",
+   "reason": null,
+   "aiMs": 47132,
+   "aiId": "94c737f65fd76a79efc33c563d22c5f3",
+   "ai": "minigolf.default",
+   "note": "Run 2, a fresh server (serve --cap-usd 0.05 --director-cap-usd 0.93, so the eval book stays under 5 USD). In run 1 the reading kept minigolf, but the director call was refused by the process cap: d09 had spent 0.60 of 1.2 USD and the call reserves its worst case (~0.9 USD), so it ended MODEL_UNAVAILABLE after 3.2 s. Run 2: one director call (0.536 USD), no repair."
+  }
+ ],
+ "summary": {
+  "quickInGame": 2,
+  "readingInGame": 0,
+  "aiReady": 2,
+  "aiInGame": 2,
+  "finalInGame": 2
+ },
+ "spend": {
+  "calls": 6,
+  "withoutUsage": 0,
+  "usd": 1.2749,
+  "runs": [
+   { "ids": ["d09", "d12"], "calls": 5, "usd": 0.7385 },
+   { "ids": ["d12"], "calls": 1, "usd": 0.5364 }
+  ],
+  "book": "R7 1.81 + R9 1.47 + R12 1.27 = 4.55 of the 5 USD eval cap (the book is per process, the total is tallied here)."
+ }
+}

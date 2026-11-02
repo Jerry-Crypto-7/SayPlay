@@ -318,6 +318,25 @@ někdo přeměří placeně, test verdikt přepočítá a `decision.json` musí 
     R9 1,5 USD).
 - R5 (buildshift) se k nahrávce nepřidal: registr ho drží `staged` po nesplněné bráně T11 (`511d0676`).
 
+## R12 – `minigolf` znovu zapojený po opravě P68-L T3 (2. 11.)
+
+- **Rychlá hra** (`9a7d86b2`): vrácené `6e07caf2`, minigolf pryč z `ROUTE_PENDING`, registr `ready`. Brány znovu:
+  čas do hratelnosti proti `main` 688d989d (dev d09–d11 × 3 běhy, 0 selhání ze 36) desktop párově −842 ms,
+  `pixel7-cpu4` párově −463 ms (T9: +429, mez +200); stráž žánru čistá, herní brána 18/18, `pixel7-touch`
+  59,9 FPS, e2e 46/46.
+- **Proč je telefon najednou rychlejší** (`79b6121d`): sonda času teď vypíná OpenXR pro obě strany. Na tomhle PC
+  hlásí Chromium VR přes SteamVR a hra, která VR umí, startovala cestou VR pomaleji. Část zlepšení je tedy oprava
+  měření, ne hry; obě strany se ale měří stejně.
+- **Čtečka a režisér** (`eb9aa88b`): minigolf pryč z `DIRECTOR_PENDING` a `READER_PENDING`; řádek čtečky zkrácený
+  na „you putt a ball past bumpers into a hole“ kvůli stropu promptu 6 000 znaků. Nahrávky P46E znovu lokálně,
+  0 USD; testy 635/0.
+- **Živá kontrola** (`director-minigolf.json`, astra jako čtečka i režisér, kniha `worldsmith:p68-eval`,
+  **1,27 USD**, 6 volání): d09 i d12 – rychlá hra, čtení i AI verze `minigolf`, AI verze za 67 s a 47 s.
+  d12 napoprvé skončil `MODEL_UNAVAILABLE`: strop procesu (1,2 USD) po d09 neměl volných 0,9 USD, které volání
+  režiséra rezervuje na nejhorší případ. Opakování na novém serveru se stropem 0,93 USD, aby kniha nepřesáhla 5 USD
+  (R7 1,81 + R9 1,47 + R12 1,27 = 4,55 USD).
+- Obsah AI verzí (hrdina, překážky) se nekontroloval: hry žijí jen v paměti serveru a skript zapisuje jen žánr.
+
 ## T9 – zapojení `minigolf` (nesplněno 1. 11., čas do hratelnosti na telefonu)
 
 - Rychlá hra byla zapnutá (`9edc6781`, `f47cf939`): stráž žánru čistá, herní brána 18/18 na větách, které do
