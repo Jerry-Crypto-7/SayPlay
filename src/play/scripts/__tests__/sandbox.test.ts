@@ -6,7 +6,7 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { POLLS_PER_INTERRUPT, SCRIPT_BUDGET_POLLS, type QuickJs, loadQuickJs, runScript } from '../sandbox';
+import { POLLS_PER_INTERRUPT, SCRIPT_BUDGET_POLLS, SCRIPT_ERROR_CHARS, type QuickJs, loadQuickJs, runScript } from '../sandbox';
 
 let quickjs: QuickJs;
 beforeAll(async () => {
@@ -95,6 +95,14 @@ describe('memory, stack and isolation', () => {
     expect(run('globalThis.leak = 1; function build(api) {}').ok).toBe(true);
     const second = run('function build(api) { if (typeof leak !== "undefined") api.place("road", 4, 3); }');
     expect(second.recording.places).toEqual([]);
+  });
+
+  it('cuts an error message the script blew up, thrown or through a bad API argument', () => {
+    const thrown = run('function build(api) { throw "x".repeat(1e5); }');
+    expect(thrown.ok ? '' : thrown.error.kind).toBe('thrown');
+    expect(thrown.ok ? 0 : thrown.error.message.length).toBe(SCRIPT_ERROR_CHARS);
+    const api = run('function build(api) { api.place("x".repeat(1e5), 1, 1); }');
+    expect(api.ok ? 0 : api.error.message.length).toBe(SCRIPT_ERROR_CHARS);
   });
 
   it('reports a missing build function, a syntax error and a bad API call', () => {

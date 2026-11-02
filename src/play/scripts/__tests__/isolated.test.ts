@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { runScriptIsolated } from '../isolated';
+import { SCRIPT_WORKERS_MAX, runScriptIsolated } from '../isolated';
 import { LAB_PROGRAMS, LAB_SEEDS } from '../lab';
 import { type QuickJs, loadQuickJs, runScript } from '../sandbox';
 
@@ -37,6 +37,19 @@ describe('wall clock', () => {
     expect(elapsed).toBeLessThan(wallMs + 1_500);
     // 20 ms tiky po celou dobu běhu: smyčka událostí hlavního vlákna nestála.
     expect(ticks).toBeGreaterThanOrEqual(Math.floor(wallMs / 20 / 2));
+  });
+});
+
+describe('workers at once', () => {
+  it(`at most ${SCRIPT_WORKERS_MAX} run together, the rest wait, and the clock of each starts with its own worker`, async () => {
+    const wallMs = 800;
+    const started = performance.now();
+    const runs = await Promise.all(Array.from({ length: 2 * SCRIPT_WORKERS_MAX }, () => runScriptIsolated(STUCK_IN_BUILTIN, { game: 'hop', params: { rows: 30 }, seed: 7 }, wallMs)));
+    const elapsed = performance.now() - started;
+    expect(runs.map((run) => (run.ok ? '' : run.error.kind))).toEqual(Array.from({ length: 2 * SCRIPT_WORKERS_MAX }, () => 'timeout'));
+    // Dvě vlny po `wallMs`: všechny naráz by skončily za jedno `wallMs`.
+    expect(elapsed).toBeGreaterThanOrEqual(2 * wallMs - 20);
+    expect(elapsed).toBeLessThan(2 * wallMs + 2_000);
   });
 });
 

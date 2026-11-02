@@ -35,6 +35,8 @@ export const SCRIPT_MEMORY_BYTES = 16 * 1024 * 1024;
  * nechává rezervu i hlubšímu volání v prohlížeči.
  */
 export const SCRIPT_STACK_BYTES = 128 * 1024;
+/** Nejdelší chybová zpráva běhu (revize R4). */
+export const SCRIPT_ERROR_CHARS = 300;
 /** Verze běhu, která se ukládá k datům úrovně: knihovna, varianta a verze API skriptu. */
 export const SCRIPT_RUNTIME_VERSION = 'quickjs-emscripten-core@0.32.0+wasmfile-release-sync/script-api.v1';
 
@@ -109,7 +111,8 @@ export function runScript(quickjs: QuickJs, code: string, options: ScriptRunOpti
   const context = runtime.newContext({ intrinsics: { ...DefaultIntrinsics, Date: false } });
   const owned: QuickJSHandle[] = [];
   let poisoned = false;
-  const fail = (kind: ScriptErrorKind, message: string): ScriptRun => ({ ok: false, error: { kind, message }, recording: host.recording, polls });
+  // Zpráva jde do opravného zadání placeného písaře: skript ji umí nafouknout (`throw "x".repeat(12e6)`), tak ji uřízne.
+  const fail = (kind: ScriptErrorKind, message: string): ScriptRun => ({ ok: false, error: { kind, message: message.slice(0, SCRIPT_ERROR_CHARS) }, recording: host.recording, polls });
   const failed = (error: QuickJSHandle, during: 'define' | 'build'): ScriptRun => {
     const { name, message } = messageOf(context, error);
     if (overBudget) return fail('budget', `the script ran over its budget of ${budget} interpreter steps`);

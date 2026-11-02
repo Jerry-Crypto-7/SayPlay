@@ -49,11 +49,44 @@ function spawn(job: { readonly code: string; readonly options: ScriptRunOptions 
 }
 
 /**
+ * Kolik vláken skriptu běží v procesu naráz; další čekají ve frontě a hodiny jim běží až od startu vlákna. Vlákno drží
+ * ~45 MB (revize R4: 16 souběžných zaseknutých skriptů = ~0,8 GB na 3 s). Fronta, ne odmítnutí: odmítnutý běh by
+ * spustil opravné kolo, tedy další placené volání písaře.
+ */
+export const SCRIPT_WORKERS_MAX = 2;
+let running = 0;
+const waiting: (() => void)[] = [];
+
+function acquire(): Promise<void> {
+  if (running < SCRIPT_WORKERS_MAX) {
+    running += 1;
+    return Promise.resolve();
+  }
+  return new Promise((resume) => waiting.push(resume));
+}
+
+/** Uvolněné místo přejde rovnou na prvního čekajícího, takže ho mezitím nepředběhne nový běh. */
+function release(): void {
+  const next = waiting.shift();
+  if (next === undefined) running -= 1;
+  else next();
+}
+
+/**
  * `runScript` ve vlastním vlákně: výsledek je bajt po bajtu tentýž jako v hlavním vlákně, jen běh delší než `wallMs`
  * skončí `timeout`. Vlákno, které umře bez odpovědi (QuickJS se nenačte), promise zamítne – volající to bere jako
  * jakoukoli chybu cestou.
  */
-export function runScriptIsolated(code: string, options: ScriptRunOptions, wallMs = SCRIPT_WALL_MS): Promise<IsolatedRun> {
+export async function runScriptIsolated(code: string, options: ScriptRunOptions, wallMs = SCRIPT_WALL_MS): Promise<IsolatedRun> {
+  await acquire();
+  try {
+    return await runInWorker(code, options, wallMs);
+  } finally {
+    release();
+  }
+}
+
+function runInWorker(code: string, options: ScriptRunOptions, wallMs: number): Promise<IsolatedRun> {
   return new Promise((resolve, reject) => {
     const worker = spawn({ code, options });
     const timer = setTimeout(() => {
