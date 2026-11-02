@@ -43,8 +43,8 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry), T12 `drawsave`, T10 `railfps`. */
-const WIRED: readonly string[] = ['drawsave', 'railfps'];
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` a T8 `stunt` vrácené (brány hry), T12 `drawsave`, T10 `railfps`, R12 `minigolf`. */
+const WIRED: readonly string[] = ['drawsave', 'railfps', 'minigolf'];
 /** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`, R9 `railfps`). */
 const OFFERED: readonly string[] = ['drawsave', 'railfps'];
 /** Ovládání, které čtečka smí volit (`STAGED_CONTROLS`): R9 vyjal `railfps`, R7 `drawsave` v seznamu nechal. */
@@ -72,8 +72,8 @@ describe('P68 skeletons (T1)', () => {
 
   it('the stand-in modules are ready with cues, so the gate below is what keeps them hidden, not `staged`', () => {
     for (const genre of P68) {
-      // T8 vrátil `stunt` a T9 `minigolf` s hotovým modulem kategorie – registr je drží `staged` sám (`modules.ts`), brána navíc.
-      expect(GENRE_MODULES[genre as GenreId].availability('default' as never), genre).toBe(genre === 'stunt' || genre === 'minigolf' ? 'staged' : 'ready');
+      // T8 vrátil `stunt` s hotovým modulem kategorie – registr ho drží `staged` sám (`modules.ts`), brána navíc.
+      expect(GENRE_MODULES[genre as GenreId].availability('default' as never), genre).toBe(genre === 'stunt' ? 'staged' : 'ready');
       expect(GENRE_MODULES[genre as GenreId].cues.length, genre).toBeGreaterThan(0);
     }
   });

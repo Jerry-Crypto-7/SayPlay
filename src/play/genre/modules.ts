@@ -59,9 +59,8 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   // P68 T8: registr nese hotový modul kategorie (skladatel ho přeloží), ale `staged`: čas do hratelnosti proti `main`
   // neprošel (`evals/play/p68/integration-log.md`) a hra je zpátky v `ROUTE_PENDING`. Zapojení = `stuntLiveGenre`.
   stunt: { ...stuntLiveGenre, availability: () => 'staged' },
-  // P68 T9: tentýž stav pro minigolf – čas do hratelnosti na `pixel7-cpu4` párově +429 ms (mez +200) neprošel.
-  // Zapojení = `minigolfGenre`.
-  minigolf: { ...minigolfGenre, availability: () => 'staged' },
+  // P68 R12: minigolf znovu zapojený po opravě kategorie P68-L T3 (T9 ho vrátil kvůli času do hratelnosti).
+  minigolf: minigolfGenre,
   railfps: railfpsGenre,
   buildshift: buildshiftGenre,
   drawsave: drawsaveGenre,
