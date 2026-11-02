@@ -31,7 +31,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Fog, type Group, type Material, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type PerspectiveCamera, type Quaternion, Vector3 } from 'three';
+import { Color, Fog, type Group, InstancedMesh, type Material, Matrix4, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type PerspectiveCamera, PlaneGeometry, type Quaternion, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, HEADER, RUN_STATE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
@@ -62,8 +62,10 @@ import {
 } from '@/play/arcade/pieces/buildshift-world';
 
 import { reducedMotion } from '../../effects/feel';
+import { compileForComposer } from '../../../feed/StageHost';
 import { renderHeld } from '../../effects/render-feel';
 import { FieldGround } from '../../look/FieldGround';
+import { loadsPending, loadsSettled } from '../../look/pending-loads';
 import { type PlayRect, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { toyMotionOn } from '../../toy/applyToy';
@@ -80,6 +82,9 @@ const HALF = (BUILDSHIFT.cols * CELL) / 2;
 const BACK_Z = m(cellZ(0)) - CELL / 2;
 const FRONT_Z = m(cellZ(PALETTE.oven)) + CELL / 2;
 const TILE = CELL - 0.1;
+/** Barvy dlaždic podle kódu: 0 a 1 šachovnice, 2 dveře, 3 volná buňka, na kterou jde stavět. */
+const TILE_COLORS = [color.cream, color['cream-deep'], color.mint, color['sun-soft']].map((hex) => new Color(hex));
+const tileMatrix = new Matrix4();
 const STATION_SIZE = { w: m(BUILDSHIFT.station.w), h: m(BUILDSHIFT.station.h), d: m(BUILDSHIFT.station.d) };
 const SELLER = { w: m(BUILDSHIFT.seller.w), h: m(BUILDSHIFT.seller.h), d: m(BUILDSHIFT.seller.d) };
 /** Zákazník se kreslí o kus větší než jeho tělo, ať je z výšky poznat, kdo to je. */
@@ -227,7 +232,6 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
   const clock = useRef(0);
   const stationKey = useRef('');
   const stationRefs = useRef(new Map<number, StationRefs>());
-  const tiles = useRef<(Mesh | null)[]>([]);
   const paletteTiles = useRef<(Group | null)[]>([]);
   const openBar = useRef<Mesh | null>(null);
   const flash = useRef<Mesh | null>(null);
@@ -262,9 +266,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
 
   const materials = useMemo(
     () => ({
-      floor: [new MeshStandardMaterial({ color: color.cream, roughness: 0.9 }), new MeshStandardMaterial({ color: color['cream-deep'], roughness: 0.9 })] as const,
-      door: new MeshStandardMaterial({ color: color.mint, roughness: 0.9 }),
-      open: new MeshStandardMaterial({ color: color['sun-soft'], roughness: 0.8 }),
+      floor: new MeshStandardMaterial({ roughness: 0.9 }),
       calm: new MeshBasicMaterial({ color: color['mint-deep'], toneMapped: false }),
       warn: new MeshBasicMaterial({ color: color.sun, toneMapped: false }),
       urgent: new MeshBasicMaterial({ color: color.alarm, toneMapped: false }),
@@ -288,14 +290,63 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
   }, []);
   /** Kartičky front u pultů (podle buňky); vznikají s pultem, uvolní je odchod scény. */
   const lines = useRef(new Map<number, Label>());
+  /**
+   * Podlaha desky jedním voláním kreslení (P68-K T2): 33 dlaždic po vlastní síti byla na Pixelu 7 (CPU ×4) skoro třetina
+   * volání snímku. Barva dlaždice (šachovnice, dveře, volná buňka) je barva instance, otřes posune její matici.
+   */
+  const floor = useMemo(() => {
+    const cells = Array.from({ length: BOARD_CELLS }, (_, cell) => cell).filter((cell) => !BUILDSHIFT.walls.includes(cell));
+    const mesh = new InstancedMesh(new PlaneGeometry(TILE, TILE), materials.floor, cells.length);
+    mesh.receiveShadow = true;
+    const shown = new Int8Array(cells.length);
+    cells.forEach((cell, i) => {
+      mesh.setMatrixAt(i, tileMatrix.makeRotationX(-Math.PI / 2).setPosition(m(cellX(cell)), 0.01, m(cellZ(cell))));
+      shown[i] = cell === BUILDSHIFT.door ? 2 : (colOf(cell) + rowOf(cell)) % 2;
+      mesh.setColorAt(i, TILE_COLORS[shown[i] as number] as Color);
+    });
+    mesh.computeBoundingSphere();
+    return { mesh, cells, index: new Map(cells.map((cell, i) => [cell, i])), shown };
+  }, [materials]);
+  const shiftTile = (cell: number, dx: number): void => {
+    const i = floor.index.get(cell);
+    if (i === undefined) return;
+    floor.mesh.setMatrixAt(i, tileMatrix.makeRotationX(-Math.PI / 2).setPosition(m(cellX(cell)) + dx, 0.01, m(cellZ(cell))));
+    floor.mesh.instanceMatrix.needsUpdate = true;
+  };
 
   useEffect(
     () => () => {
-      for (const material of [...materials.floor, materials.door, materials.open, materials.calm, materials.warn, materials.urgent, materials.bake]) material.dispose();
+      for (const material of [materials.floor, materials.calm, materials.warn, materials.urgent, materials.bake]) material.dispose();
       for (const label of [...labels.palette, labels.coins, labels.open, labels.served, labels.price, labels.plus, labels.rush, ...lines.current.values()]) disposeLabel(label);
+      floor.mesh.geometry.dispose();
+      floor.mesh.dispose();
     },
-    [materials, labels],
+    [materials, labels, floor],
   );
+
+  /**
+   * Předehřátí (P68-K T2): programy shaderů všech materiálů scény, i skrytých (zboží, zákazníci z fondu, cenovka, +1,
+   * kruh cíle), se přeloží mimo hlavní vlákno hned po načtení modelů. Bez něj je three překládal až při prvním
+   * zobrazení: na Pixelu 7 (CPU ×4) stál start dema snímek s ~280 ms překladu a první zboží a zákazník 44–64 ms.
+   * Postup je `readyToDraw` z `StageHost` (ten drží jen vyměněnou scénu, ne první): překládat, dokud další průchod po
+   * doběhnutí načítání nepřidá program.
+   */
+  const get = useThree((three) => three.get);
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      for (let pass = 0; live; pass += 1) {
+        const before = get().gl.info.programs?.length ?? 0;
+        await compileForComposer(get());
+        if (pass > 0 && loadsPending() === 0 && (get().gl.info.programs?.length ?? 0) === before) return;
+        await loadsSettled();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [get]);
 
   // Zorný úhel, vzdálená rovina a mlha patří rigu: po odchodu scény se vrátí, stejně jako buňky na ploše.
   useEffect(() => {
@@ -396,9 +447,13 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
     // Dlaždice: volná stavební buňka svítí, když je vybraný druh a mince na něj.
     const selectedKind = kindOfCode(view.selected);
     const canBuild = selectedKind !== null && view.coins >= STATION_COST[selectedKind];
-    tiles.current.forEach((tile, cell) => {
-      if (tile === null || tile === undefined || cell === BUILDSHIFT.door) return;
-      tile.material = canBuild && isBuildCell(cell) && view.stations[cell] === -1 ? materials.open : (materials.floor[(colOf(cell) + rowOf(cell)) % 2] as Material);
+    floor.cells.forEach((cell, i) => {
+      if (cell === BUILDSHIFT.door) return;
+      const code = canBuild && isBuildCell(cell) && view.stations[cell] === -1 ? 3 : (colOf(cell) + rowOf(cell)) % 2;
+      if (floor.shown[i] === code) return;
+      floor.shown[i] = code;
+      floor.mesh.setColorAt(i, TILE_COLORS[code] as Color);
+      floor.mesh.instanceColor!.needsUpdate = true;
     });
 
     // Odmítnutý ťuk (zabraná buňka, zeď, málo mincí): buňka krátce problikne poplachem a zatřese se; chyběly-li mince
@@ -420,13 +475,13 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
     const shakeLeft = 1 - (now - blink.start) / SHAKE.s;
     const shake = blink.cell >= 0 && shakeLeft > 0 && !reduced ? SHAKE.amount * shakeLeft * Math.sin((now - blink.start) * SHAKE.hz * Math.PI * 2) : 0;
     if (shaken.current >= 0 && (shake === 0 || shaken.current !== blink.cell)) {
-      tiles.current[shaken.current]?.position.setX(m(cellX(shaken.current)));
+      shiftTile(shaken.current, 0);
       stationRefs.current.get(shaken.current)?.group?.position.setX(m(cellX(shaken.current)));
       shaken.current = -1;
     }
     if (shake !== 0) {
       shaken.current = blink.cell;
-      tiles.current[blink.cell]?.position.setX(m(cellX(blink.cell)) + shake);
+      shiftTile(blink.cell, shake);
       stationRefs.current.get(blink.cell)?.group?.position.setX(m(cellX(blink.cell)) + shake);
     }
     if (flash.current !== null) {
@@ -632,22 +687,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
           <planeGeometry args={[2 * HALF, FRONT_Z - BACK_Z]} />
           <meshStandardMaterial color={color['ink-soft']} roughness={1} />
         </mesh>
-        {Array.from({ length: BOARD_CELLS }, (_, cell) =>
-          BUILDSHIFT.walls.includes(cell) ? null : (
-            <mesh
-              key={cell}
-              ref={(mesh) => {
-                tiles.current[cell] = mesh;
-              }}
-              rotation={[-Math.PI / 2, 0, 0]}
-              position={[m(cellX(cell)), 0.01, m(cellZ(cell))]}
-              material={cell === BUILDSHIFT.door ? materials.door : (materials.floor[(colOf(cell) + rowOf(cell)) % 2] as Material)}
-              receiveShadow
-            >
-              <planeGeometry args={[TILE, TILE]} />
-            </mesh>
-          ),
-        )}
+        <primitive object={floor.mesh} />
         {/* Nízké stěny: zadní a boční; přední zeď jsou buňky 25 a 29 vedle dveří. */}
         <mesh position={[0, WALL.h / 2, BACK_Z - WALL.t / 2]} castShadow receiveShadow>
           <boxGeometry args={[2 * HALF + 2 * WALL.t, WALL.h, WALL.t]} />

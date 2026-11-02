@@ -281,3 +281,20 @@ HUD (T10).
   `play-railfps` na `chromium`, `pixel7-touch` a `iphone-touch` 7 prošlo a 2 přeskočené (měření FPS běží jen na
   Pixel 7): výhra na obou telefonech za 2610 tiků se 3 životy. FPS: medián 59,9, p95 33,3 ms – na hraně brány 33,3
   jako v T10 (kolísá se zátěží stroje); přepsaný `fps.json` vrácený.
+
+## Pomalá ruka prohraje (P68-K T1, 2. 11.)
+
+Žádost P68-I z T10: robot s profilem `novice` vyhrál fixture v tiku 2616 z 5400, hra nešla prohrát pomalou rukou.
+
+- **Oprava – přepadení:** na začátku 2. a 3. vlny vyskočí nepřítel blízko, na sektoru ±4 od středu pohledu (pohled
+  se na začátku kola vrací doprostřed). Okno zásahu `rushReaction` je 16 tiků + čas otočky + 1 tik: rychlá ruka ho
+  trefí, `novice` ne a přijde o život. Přepadení je tolik, kolik má hra životů. Šipka hrozby (`ThreatArrows`) ho
+  ohlásí 45 tiků (~0,75 s) předem, aby se člověk stihl natočit; roboti šipku nečtou.
+- **Herní brána** (`assertGame`, beze změny sdílených souborů): fixture × 10 semínek + 8 dev vět + 20 vět kategorie =
+  38 světů, `bot-wins`, `idle-loses`, `weak-loses`, `aims`, `hit-on-fire`, `idle-hurt` vše ✓. Na fixture `novice`
+  prohraje 10/10, `intermediate` vyhraje 10/10; všechny meze generátoru 15/15.
+- **Testy:** sady railfps 499/499, otisky `p66-hash` / `p68-hash` beze změny, tsc čistý; úmyslná chyba
+  (`rushReaction` 30) shodila nový test.
+- **FPS** `pixel7-touch` (CPU ×4), 2 běhy prokládaně s `p66-arrows`: 59,9 FPS, p95 33,2 / 33,3 ms (kontrola 59,9 /
+  33,3) ✓. **e2e** `play-railfps` chromium + pixel7-touch 4 prošlo, 1 přeskočený (FPS jen na Pixel 7).
+- **Neověřeno:** jak se přepadení hraje člověku na skutečném telefonu.

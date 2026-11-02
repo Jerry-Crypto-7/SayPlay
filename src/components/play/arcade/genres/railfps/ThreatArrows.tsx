@@ -31,19 +31,19 @@ export interface Threat {
 /**
  * Hrozby mimo záběr: živí nepřátelé (i boss), jejichž sektor kamera s natočením `yawDeg`, poměrem `aspect` a polem
  * `fovDeg` nekreslí (`sectorToScreen` je `null`; nepřítel jde po paprsku středu sektoru). Na každé straně ten nejblíž
- * dosahu, při shodě nižší tělo; seřazené od nejbližšího.
+ * dosahu, při shodě nižší tělo; seřazené od nejbližšího. `coming` = přepadení, která teprve vzniknou (`rushesAhead`):
+ * šipka je ohlásí předem (tělo −1), ať se člověk stihne natočit.
  */
-export function offscreenThreats(state: ArcadeState, yawDeg: number, aspect: number, fovDeg: number): Threat[] {
+export function offscreenThreats(state: ArcadeState, yawDeg: number, aspect: number, fovDeg: number, coming: readonly { readonly sector: number; readonly distance: number }[] = []): Threat[] {
   const nearest = new Map<ThreatSide, Threat>();
-  for (const body of foesOf(state)) {
-    if (!isEnemy(state, body)) continue;
-    const sector = foeSector(state, body);
-    if (sectorToScreen(sector, yawDeg, aspect, fovDeg) !== null) continue;
+  const consider = (body: number, sector: number, distance: number): void => {
+    if (sectorToScreen(sector, yawDeg, aspect, fovDeg) !== null) return;
     const side: ThreatSide = sector * YAW.stepDeg < yawDeg ? 'left' : 'right';
-    const distance = foeDistance(state, body);
     const held = nearest.get(side);
     if (held === undefined || distance < held.distance || (distance === held.distance && body < held.body)) nearest.set(side, { side, body, sector, distance });
-  }
+  };
+  for (const body of foesOf(state)) if (isEnemy(state, body)) consider(body, foeSector(state, body), foeDistance(state, body));
+  for (const rush of coming) consider(-1, rush.sector, rush.distance);
   return [...nearest.values()].sort((a, b) => a.distance - b.distance || a.body - b.body);
 }
 
