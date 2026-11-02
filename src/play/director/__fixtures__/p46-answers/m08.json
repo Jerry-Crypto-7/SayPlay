@@ -3,12 +3,12 @@
  "sentence": "a pengiun tht slides down a mountin",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:28:28.465Z",
- "ms": 9756,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:10:11.166Z",
+ "ms": 8112,
  "answer": {
-  "plan": "Create a runner game where a penguin slides down a mountain, collecting coins and avoiding rocks, with a simple timed phase that spawns a wave of falling ice blocks.",
+  "plan": "runner",
   "spec": {
    "genre": "runner",
    "mode": "default",
@@ -17,21 +17,14 @@
     {
      "label": "rock",
      "does": "avoid",
-     "verb": "slide over",
+     "verb": "slide",
      "states": null,
      "patrol": false
     },
     {
      "label": "coin",
      "does": "collect",
-     "verb": "slide over",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "ice block",
-     "does": "avoid",
-     "verb": "fall",
+     "verb": "slide",
      "states": null,
      "patrol": false
     }
@@ -45,78 +38,86 @@
     "density": 1,
     "fullRowPct": 50,
     "ride": 1,
-    "items": 5,
-    "obstacles": 3,
+    "items": 10,
+    "obstacles": 5,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": null
+    "timeLimit": 60
    },
    "counts": {
-    "enemy": 1,
-    "collectible": 5
+    "enemy": 5,
+    "collectible": 10
    },
    "ruleRoles": [
     {
-     "id": "ice",
+     "id": "rock",
      "kind": "hazard",
-     "label": "ice block",
-     "count": 1
+     "label": "rock",
+     "count": 5
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 10
     }
    ],
    "things": [
     {
-     "role": "ice",
+     "role": "rock",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "coin",
      "start": "hidden",
      "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startPhase",
-     "verb": "wait",
+     "id": "slide_rock",
+     "verb": "slide",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "rock"
+      ]
      },
-     "if": null,
-     "do": [
+     "if": [
       {
-       "startTimer": {
-        "timer": "fall",
-        "ticks": 60
-       }
+       "notHolding": true
       }
-     ]
-    },
-    {
-     "id": "fallPhase",
-     "verb": "wait",
-     "when": {
-      "timer": "fall"
-     },
-     "if": null,
+     ],
      "do": [
       {
-       "goPhase": "second"
+       "damage": 1
       },
       {
-       "wave": {
-        "role": "ice",
-        "count": 1,
-        "at": "edge"
-       }
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "secondPhase",
-     "verb": "wait",
+     "id": "slide_coin",
+     "verb": "slide",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "coin"
+      ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
-       "toggle": "ice"
+       "score": 10
+      },
+      {
+       "despawn": "self"
       }
      ]
     }
@@ -125,7 +126,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "fall"
+      "id": "tick"
      }
     ],
     "phases": [
@@ -138,7 +139,11 @@
     ],
     "events": null
    },
-   "boss": null,
+   "boss": {
+    "role": "none",
+    "name": "none",
+    "attack": "charge"
+   },
    "abilities": [],
    "segments": null
   }

@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:29:52.266Z",
- "ms": 11702,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:11:08.943Z",
+ "ms": 9562,
  "answer": {
-  "plan": "Create an arena‑escape game where a knight collects three keys in a haunted castle while ghosts chase him.",
+  "plan": "Arena escape with a knight collecting keys while evading ghosts in a haunted castle",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -23,8 +23,8 @@
     },
     {
      "label": "ghost",
-     "does": "chase_me",
-     "verb": "chase",
+     "does": "avoid",
+     "verb": "obstacle",
      "states": null,
      "patrol": true
     }
@@ -33,7 +33,7 @@
    "setting": "haunted castle",
    "palette": "castle",
    "params": {
-    "entryDistance": 8000,
+    "entryDistance": 12000,
     "chaseLead": 60,
     "seconds": 60,
     "items": 3,
@@ -44,7 +44,7 @@
     "enemies": 2,
     "enemyHp": 3,
     "enemySpeed": 60,
-    "playerHp": 5,
+    "playerHp": 3,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 60
@@ -89,27 +89,27 @@
     {
      "role": "key1",
      "start": "hidden",
-     "physics": false
+     "physics": true
     },
     {
      "role": "key2",
      "start": "hidden",
-     "physics": false
+     "physics": true
     },
     {
      "role": "key3",
      "start": "hidden",
-     "physics": false
+     "physics": true
     },
     {
      "role": "ghost1",
      "start": "hidden",
-     "physics": false
+     "physics": true
     },
     {
      "role": "ghost2",
      "start": "hidden",
-     "physics": false
+     "physics": true
     }
    ],
    "rules": [
@@ -164,8 +164,8 @@
      ]
     },
     {
-     "id": "ghost_chase",
-     "verb": "chase",
+     "id": "ghost_patrol",
+     "verb": "patrol",
      "when": {
       "contact": [
        "player",
@@ -178,13 +178,102 @@
        "damage": 1
       }
      ]
+    },
+    {
+     "id": "ghost_patrol2",
+     "verb": "patrol",
+     "when": {
+      "contact": [
+       "player",
+       "ghost2"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    },
+    {
+     "id": "collect_key1",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key1"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "collect_key2",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key2"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "collect_key3",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key3"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "win",
+     "when": {
+      "counter": {
+       "name": "score",
+       "atLeast": 300
+      }
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
     }
    ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "escape_timer"
      }
     ],
     "phases": [
@@ -197,17 +286,9 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "ghost",
-    "name": "Haunted Specter",
-    "attack": "charge"
-   },
-   "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "boss": null,
+   "abilities": null,
+   "segments": null
   }
  },
  "failure": null

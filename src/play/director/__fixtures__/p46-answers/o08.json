@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:27:29.962Z",
- "ms": 8010,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:25.452Z",
+ "ms": 7063,
  "answer": {
-  "plan": "Create a quest‑style game where a bee collects honey in a windy meadow while avoiding an approaching storm, using a simple two‑phase timer to trigger the storm’s arrival.",
+  "plan": "Create a spatial quest where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple two‑phase timer to trigger the storm’s arrival.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -24,7 +24,7 @@
     {
      "label": "storm",
      "does": "avoid",
-     "verb": "approach",
+     "verb": "hit",
      "states": null,
      "patrol": false
     }
@@ -35,7 +35,7 @@
    "params": {
     "seconds": 60,
     "paceBudgetPct": 80,
-    "count": 5,
+    "count": null,
     "chasers": 0,
     "lives": 3,
     "targetScore": 0,
@@ -50,7 +50,7 @@
      "id": "honey",
      "kind": "collectible",
      "label": "honey",
-     "count": 5
+     "count": 1
     },
     {
      "id": "storm",
@@ -73,7 +73,7 @@
    ],
    "rules": [
     {
-     "id": "startTimer",
+     "id": "startStormTimer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -83,13 +83,13 @@
       {
        "startTimer": {
         "timer": "storm",
-        "ticks": 600
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "stormArrival",
+     "id": "stormArrives",
      "verb": "wait",
      "when": {
       "timer": "storm"
@@ -119,7 +119,7 @@
      "if": null,
      "do": [
       {
-       "score": 10
+       "score": 1
       },
       {
        "despawn": "other"
@@ -138,10 +138,7 @@
      "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "lose": true
       }
      ]
     }
@@ -163,8 +160,12 @@
     ],
     "events": null
    },
-   "boss": null,
-   "abilities": null,
+   "boss": {
+    "role": "storm",
+    "name": "Tempest",
+    "attack": "throw"
+   },
+   "abilities": [],
    "segments": null
   }
  },

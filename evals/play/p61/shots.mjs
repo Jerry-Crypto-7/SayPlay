@@ -12,6 +12,8 @@
  *     končící `-eval`, kladný `PLAY_EVAL_SPEND_CAP_USD`, strop čtečky je menší z něj a `--cap-usd`). Bez ní server
  *     hraje jen rychlou hru a první řádek nese `EVAL_LEDGER=fast-only <důvod>`. Kniha útraty jde do
  *     `WORLDSMITH_SPEND_STORE_*`, je-li zadané (pak je strop kumulativní napříč běhy); hry zůstávají v paměti.
+ *     P68I R7: `--director-cap-usd <usd>` (jen placeně) objedná i režiséra astra se stropem nejvýš měřicí strop minus
+ *     strop čtečky – součet obou stropů měřicí strop nepřekročí. Bez volby režisér dál nikam nevede.
  *
  *   node evals/play/p61/shots.mjs shoot --set <sada.json> [--range 0..11] --out <dir> --label main --base http://127.0.0.1:3161
  *     Věta po větě (jeden proces naráz – souběžné focení server zasekne): POST věty → rychlá hra, hned 3 snímky
@@ -53,6 +55,30 @@ function serve() {
   // Hry jen v paměti procesu: `KV_REST_API_*` je i úložiště her, měřené hry nemají co dělat ve feedu.
   const drop = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'ANTHROPIC_WORKSPACE_ID', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'WORLDSMITH_FALLBACK_ENDPOINT'];
   for (const name of paid ? drop : [...drop, 'WORLDSMITH_SPEND_STORE_URL', 'WORLDSMITH_SPEND_STORE_TOKEN']) delete env[name];
+  const readerCapUsd = Math.min(Number(flag('--cap-usd', '2')), paid ? ledger.capUsd : 0);
+  const directorCapUsd = paid ? Math.min(Number(flag('--director-cap-usd', '0')), ledger.capUsd - readerCapUsd) : 0;
+  if (paid && directorCapUsd > 0) console.log(`DIRECTOR=gpt-6-astra cap ${String(directorCapUsd)} USD`);
+  // Režisér, který nikam nevede: brány čtení (`mayPayRead`) ho potřebují nastaveného, zaplatit se nemá nic než čtení.
+  // Volání skončí hned `MODEL_UNAVAILABLE`.
+  const director =
+    directorCapUsd > 0
+      ? {
+          WORLDSMITH_MODEL_ENDPOINT: 'openai:https://api.openai.com',
+          WORLDSMITH_MODEL_KEY: key,
+          WORLDSMITH_MODEL: 'gpt-6-astra',
+          WORLDSMITH_MODEL_PROFILE: 'metered',
+          WORLDSMITH_USD_PER_MTOK_IN: String(PRICE.in),
+          WORLDSMITH_USD_PER_MTOK_OUT: String(PRICE.out),
+          WORLDSMITH_SPEND_CAP_USD: String(directorCapUsd),
+        }
+      : {
+          WORLDSMITH_MODEL_ENDPOINT: 'openai:http://127.0.0.1:9',
+          WORLDSMITH_MODEL_KEY: 'unreachable',
+          WORLDSMITH_MODEL: 'none',
+          WORLDSMITH_MODEL_PROFILE: 'api',
+          WORLDSMITH_USD_PER_MTOK_OUT: '1',
+          WORLDSMITH_SPEND_CAP_USD: '100',
+        };
   const reader = paid
     ? {
         PLAY_READER: 'on',
@@ -63,7 +89,7 @@ function serve() {
         PLAY_READER_EFFORT: 'low',
         PLAY_READER_USD_PER_MTOK_IN: String(PRICE.in),
         PLAY_READER_USD_PER_MTOK_OUT: String(PRICE.out),
-        PLAY_READER_SPEND_CAP_USD: String(Math.min(Number(flag('--cap-usd', '2')), ledger.capUsd)),
+        PLAY_READER_SPEND_CAP_USD: String(readerCapUsd),
         P58E_USAGE_LOG: path.resolve(usageLog),
       }
     : { PLAY_READER: 'off' };
@@ -74,15 +100,8 @@ function serve() {
     ...reader,
     PLAY_READER_CALL_CAP: '200',
     PLAY_READER_CALLS_PER_CALLER: '1000',
-    // Režisér je objednaný, ale jeho model nikam nevede: brány čtení (`mayPayRead`) ho potřebují nastaveného,
-    // zaplatit se nemá nic než čtení. Volání skončí hned `MODEL_UNAVAILABLE`.
     WORLDSMITH_BRANCH: 'live',
-    WORLDSMITH_MODEL_ENDPOINT: 'openai:http://127.0.0.1:9',
-    WORLDSMITH_MODEL_KEY: 'unreachable',
-    WORLDSMITH_MODEL: 'none',
-    WORLDSMITH_MODEL_PROFILE: 'api',
-    WORLDSMITH_USD_PER_MTOK_OUT: '1',
-    WORLDSMITH_SPEND_CAP_USD: '100',
+    ...director,
     PLAY_DIRECTOR_CALLS_PER_CALLER: '1000',
   });
   const child = spawn(process.execPath, [path.join(ROOT, 'node_modules/next/dist/bin/next'), 'start', '-p', port, '-H', '127.0.0.1'], { cwd: ROOT, env, stdio: ['ignore', 'inherit', 'inherit'] });

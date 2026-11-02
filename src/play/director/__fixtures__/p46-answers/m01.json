@@ -3,12 +3,12 @@
  "sentence": "toaster tornado",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:28:12.793Z",
- "ms": 7857,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:56.972Z",
+ "ms": 6070,
  "answer": {
-  "plan": "Create an arena‑escape game where a toaster must evade a tornado in a meadow, using a simple phase‑based timer to spawn the tornado and trigger its chase.",
+  "plan": "Create an arena‑escape game where a toaster must avoid a chasing tornado in a meadow, using a simple two‑phase timer logic.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -26,10 +26,7 @@
    "setting": "meadow",
    "palette": "meadow",
    "params": null,
-   "counts": {
-    "enemy": 1,
-    "collectible": null
-   },
+   "counts": null,
    "ruleRoles": [
     {
      "id": "tornado",
@@ -47,7 +44,7 @@
    ],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "start_phase",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -56,30 +53,34 @@
      "do": [
       {
        "startTimer": {
-        "timer": "spawn",
+        "timer": "phase_timer",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "spawnTornado",
+     "id": "phase_transition",
      "verb": "wait",
      "when": {
-      "timer": "spawn"
+      "timer": "phase_timer"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
         "role": "tornado",
-        "at": "player"
+        "count": 1,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "tornadoChase",
+     "id": "phase_second",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -96,7 +97,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "spawn"
+      "id": "phase_timer"
      }
     ],
     "phases": [
@@ -109,11 +110,7 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "tornado",
-    "name": "Whirling Tempest",
-    "attack": "charge"
-   },
+   "boss": null,
    "abilities": null,
    "segments": null
   }

@@ -3,12 +3,12 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:27:01.575Z",
- "ms": 17321,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:02.748Z",
+ "ms": 11797,
  "answer": {
-  "plan": "Arena escape – hamster evades a supermarket Roomba with a simple 2‑phase timer logic.",
+  "plan": "Arena escape: hamster evades a supermarket Roomba while collecting coins",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -20,16 +20,23 @@
      "verb": "chase",
      "states": null,
      "patrol": false
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
    "params": {
-    "entryDistance": 8000,
+    "entryDistance": 12000,
     "chaseLead": 60,
     "seconds": 30,
-    "items": 1,
+    "items": 5,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 1,
@@ -44,7 +51,7 @@
    },
    "counts": {
     "enemy": 1,
-    "collectible": null
+    "collectible": 5
    },
    "ruleRoles": [
     {
@@ -52,6 +59,12 @@
      "kind": "chaser",
      "label": "supermarket roomba",
      "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 5
     }
    ],
    "things": [
@@ -59,58 +72,59 @@
      "role": "roomba",
      "start": "hidden",
      "physics": null
+    },
+    {
+     "role": "coin",
+     "start": "hidden",
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startPhase",
-     "verb": "wait",
+     "id": "roomba_spawn",
+     "verb": "spawn",
      "when": {
-      "phase": "first"
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "escape",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "escapeTimer",
-     "verb": "wait",
-     "when": {
-      "timer": "escape"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      },
-      {
-       "wave": {
+       "spawn": {
         "role": "roomba",
-        "count": 1,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "secondPhase",
-     "verb": "wait",
+     "id": "coin_spawn",
+     "verb": "spawn",
      "when": {
-      "phase": "second"
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "toggle": "roomba"
-      },
+       "spawn": {
+        "role": "coin",
+        "at": "other"
+       }
+      }
+     ]
+    },
+    {
+     "id": "roomba_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "roomba"
+      ]
+     },
+     "if": null,
+     "do": [
       {
-       "despawn": "self"
+       "damage": 1
       }
      ]
     }
@@ -119,15 +133,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape"
+      "id": "escape_timer"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "escape"
      }
     ],
     "events": null
@@ -137,8 +151,14 @@
     "name": "Roomba Rumble",
     "attack": "charge"
    },
-   "abilities": [],
-   "segments": null
+   "abilities": [
+    "dash"
+   ],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
   }
  },
  "failure": null

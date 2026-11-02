@@ -1,0 +1,1 @@
+{"sentence":"keep the robot safe from acid drops by drawing a roof","answer":{"plan":"Sketch a sloped roof above the robot so the acid drops slide off to the side; survive 10 seconds of the downpour.","spec":{"genre":"drawsave","mode":"default","hero":"robot","cast":[{"label":"acid drop","does":"avoid"}],"setting":"chemical lab","params":{"threats":14}}}}

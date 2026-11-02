@@ -3,10 +3,10 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:27:21.951Z",
- "ms": 9301,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:18.388Z",
+ "ms": 7888,
  "answer": {
   "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, collecting bananas while avoiding swamp hazards, with a simple time‑based wave mechanic.",
   "spec": {
@@ -31,14 +31,7 @@
     {
      "label": "swamp eel",
      "does": "avoid",
-     "verb": "jump",
-     "states": 2,
-     "patrol": false
-    },
-    {
-     "label": "mud puddle",
-     "does": "avoid",
-     "verb": "jump",
+     "verb": "dodge",
      "states": 2,
      "patrol": false
     }
@@ -52,7 +45,7 @@
     "items": 5,
     "lives": 3,
     "targetScore": 500,
-    "timeLimit": 90
+    "timeLimit": 60
    },
    "counts": {
     "collectible": 5
@@ -75,12 +68,6 @@
      "kind": "hazard",
      "label": "swamp eel",
      "count": null
-    },
-    {
-     "id": "puddle",
-     "kind": "hazard",
-     "label": "mud puddle",
-     "count": null
     }
    ],
    "things": [
@@ -98,70 +85,63 @@
      "role": "eel",
      "start": "hidden",
      "physics": null
-    },
-    {
-     "role": "puddle",
-     "start": "hidden",
-     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startTimer",
-     "verb": "wait",
+     "id": "jump_to_lily",
+     "verb": "jump",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "lily"
+      ]
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "wave",
-        "ticks": 60
-       }
+       "score": 100
+      },
+      {
+       "checkpoint": "self"
       }
      ]
     },
     {
-     "id": "waveSpawn",
-     "verb": "wait",
+     "id": "collect_banana",
+     "verb": "grab",
      "when": {
-      "timer": "wave"
+      "contact": [
+       "player",
+       "banana"
+      ]
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "banana",
-        "count": 1,
-        "at": "edge"
-       }
+       "score": 50
+      },
+      {
+       "grab": "other"
       }
      ]
     },
     {
-     "id": "nextPhase",
-     "verb": "wait",
+     "id": "avoid_eel",
+     "verb": "dodge",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "eel"
+      ]
      },
      "if": null,
      "do": [
       {
-       "goPhase": "third"
-      }
-     ]
-    },
-    {
-     "id": "endPhase",
-     "verb": "wait",
-     "when": {
-      "phase": "third"
-     },
-     "if": null,
-     "do": [
+       "damage": 1
+      },
       {
-       "win": true
+       "respawn": true
       }
      ]
     }
@@ -179,9 +159,6 @@
      },
      {
       "id": "second"
-     },
-     {
-      "id": "third"
      }
     ],
     "events": null

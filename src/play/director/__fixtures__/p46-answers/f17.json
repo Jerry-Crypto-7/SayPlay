@@ -3,27 +3,124 @@
  "sentence": "a phoenix rises from the ashes over a burning desert",
  "axis": "flap",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:28:04.935Z",
- "ms": 5503,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:09:50.901Z",
+ "ms": 5555,
  "answer": {
-  "plan": "Create a simple flap‑style game where a phoenix rises from ashes in a burning desert, with a single timed phase that starts the ascent.",
+  "plan": "Create a flap‑style game where a phoenix repeatedly rises from ashes in a burning desert, with a simple two‑phase timer that respawns the ashes each second.",
   "spec": {
    "genre": "flap",
    "mode": "default",
    "hero": "phoenix",
-   "cast": [],
+   "cast": [
+    {
+     "label": "ash",
+     "does": "collect",
+     "verb": "rise",
+     "states": 2,
+     "patrol": false
+    }
+   ],
    "heroAction": "none",
-   "setting": "desert",
+   "setting": "burning desert",
    "palette": "desert",
-   "params": null,
-   "ruleRoles": null,
-   "things": null,
-   "rules": null,
-   "logic": null,
+   "params": {
+    "lengthM": 200,
+    "lives": 1,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
+   "ruleRoles": [
+    {
+     "id": "ash",
+     "kind": "collectible",
+     "label": "ash",
+     "count": 1
+    }
+   ],
+   "things": [
+    {
+     "role": "ash",
+     "start": "hidden",
+     "physics": false
+    }
+   ],
+   "rules": [
+    {
+     "id": "spawnAsh",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ash",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "respawnAsh",
+     "verb": "wait",
+     "when": {
+      "timer": "respawn"
+     },
+     "if": null,
+     "do": [
+      {
+       "despawn": "self"
+      },
+      {
+       "spawn": {
+        "role": "ash",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "collectAsh",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "ash"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "respawn"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   },
    "boss": null,
-   "abilities": null,
+   "abilities": [],
    "segments": null
   }
  },

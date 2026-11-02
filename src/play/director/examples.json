@@ -135,5 +135,10 @@
     "id": "p68-minigolf",
     "sentence": "aim and tap to putt the ball across a candy land green, bouncing off lollipops to sink it in one shot",
     "answer": { "plan": "Drag back from the ball, let go and bank it off the lollipops into the cup; par 2 on a straight lane.", "spec": { "genre": "minigolf", "mode": "default", "hero": "golf ball", "cast": [{ "label": "lollipop", "does": "scenery" }], "setting": "candy land", "params": { "bends": 0, "obstacles": 3, "par": 2 } } }
+  },
+  {
+    "id": "p68-drawsave",
+    "sentence": "draw a wall to shield a little chick on a windy cliff ledge from flying leaves and twigs for ten seconds",
+    "answer": { "plan": "Draw a slanted wall over the chick before the wind starts, then leaves and twigs blow down and glance off it; the chick must last 10 seconds.", "spec": { "genre": "drawsave", "mode": "default", "hero": "chick", "cast": [{ "label": "leaf", "does": "avoid" }], "setting": "windy cliff ledge", "params": { "threats": 12 } } }
   }
 ]

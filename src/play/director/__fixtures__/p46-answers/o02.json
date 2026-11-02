@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:26:21.968Z",
- "ms": 15042,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:08:34.369Z",
+ "ms": 8391,
  "answer": {
-  "plan": "Arena fight with Amanita mushrooms vs bulls, featuring chase, escape, and shooting mechanics.",
+  "plan": "Arena fight with bulls, Amanita mushrooms dodge and shoot back.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -60,7 +60,7 @@
     "enemySpeed": 80,
     "playerHp": 5,
     "lives": 3,
-    "targetScore": 2000,
+    "targetScore": 0,
     "timeLimit": 60
    },
    "counts": {
@@ -95,7 +95,7 @@
    ],
    "rules": [
     {
-     "id": "spawn_bulls",
+     "id": "bull_spawn",
      "verb": "spawn",
      "when": {
       "phase": "first"
@@ -111,52 +111,27 @@
      ]
     },
     {
-     "id": "spawn_acorn",
-     "verb": "spawn",
+     "id": "bull_wave",
+     "verb": "wave",
      "when": {
-      "phase": "first"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "acorn",
-        "at": "other"
+       "wave": {
+        "role": "bull",
+        "count": 2,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "bull_chase",
-     "verb": "chase",
+     "id": "bull_move",
+     "verb": "move",
      "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "toggle": "bull"
-      }
-     ]
-    },
-    {
-     "id": "bull_shoot",
-     "verb": "shoot",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "toggle": "bull"
-      }
-     ]
-    },
-    {
-     "id": "bull_fight",
-     "verb": "fight",
-     "when": {
-      "phase": "first"
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -185,7 +160,7 @@
    },
    "boss": {
     "role": "bull",
-    "name": "Charging Bull",
+    "name": "Bovine Brute",
     "attack": "charge"
    },
    "abilities": [

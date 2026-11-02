@@ -3,12 +3,12 @@
  "sentence": "Grandma kart",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "d92e2927",
- "directorPromptVersion": "649b7a2a",
- "recordedAt": "2026-10-29T14:28:18.708Z",
- "ms": 5915,
+ "promptVersion": "76b43756",
+ "directorPromptVersion": "e520cf73",
+ "recordedAt": "2026-11-02T08:10:03.053Z",
+ "ms": 6081,
  "answer": {
-  "plan": "Create a simple racing kart game set on an open country track with a single obstacle rock to avoid, using a basic two‑phase timer logic.",
+  "plan": "Create a simple racing kart game where the player drives a kart around an open country track, avoiding rocks and collecting coins, with a timed checkpoint system that triggers a wave of obstacles.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -20,35 +20,123 @@
      "verb": "avoid",
      "states": null,
      "patrol": false
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
     }
    ],
-   "heroAction": null,
+   "heroAction": "none",
    "setting": "open country",
    "palette": "cave",
    "params": {
-    "hazards": 1,
-    "turbo": 0,
-    "roadWidth": 5000,
-    "roadEntryWidth": 5000,
+    "hazards": 0,
+    "turbo": 1,
+    "roadWidth": 8000,
+    "roadEntryWidth": 8000,
     "crashBudget": 3,
     "namedLandingTarget": 0,
     "touchdownSpeed": 30,
     "gravityRisePct": 10,
     "lengthM": 400,
     "topSpeed": 250,
-    "gravity": 800,
+    "gravity": 1200,
     "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 0
+    "targetScore": 5000,
+    "timeLimit": 90
    },
-   "ruleRoles": [],
-   "things": [],
-   "rules": [],
+   "ruleRoles": [
+    {
+     "id": "rock",
+     "kind": "hazard",
+     "label": "rock",
+     "count": null
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "rock",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "coin",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "checkpoint",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "checkpointWave",
+     "verb": "wait",
+     "when": {
+      "timer": "checkpoint"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "rock",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "resetWave",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "first"
+      },
+      {
+       "wave": {
+        "role": "coin",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "checkpoint"
      }
     ],
     "phases": [
@@ -62,7 +150,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": [],
+   "abilities": null,
    "segments": null
   }
  },

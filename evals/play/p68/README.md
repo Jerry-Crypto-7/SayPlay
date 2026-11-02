@@ -251,6 +251,30 @@ z předplatného s týmž zadáním (`answers.json`), ne astra. Na 20 dev větá
   `out of memory`. Před zapnutím v produkci přesunout do workeru.
 - `npm install` nahradil junction `node_modules` (na worktree P64) skutečným adresářem; P64 zůstal beze změny.
 
+## R7 – čtečka a režisér nabízejí `drawsave` (2. 11.)
+
+- **Nabídka:** `drawsave` pryč z `DIRECTOR_PENDING` a `READER_PENDING`; řádek režiséra = Pitch kategorie
+  (`stavba/integration.md`), příklad režiséra z dev d34, tři odpovědi `p68-drawsave-*.json` (věty z tabulky
+  kategorie, ne dev) se přeloží, drží hrozbu i počet a projdou publikační branou (`p68-drawsave.test.ts`).
+- **Strop promptu čtečky (6 000 znaků):** bez řádku hry zbývalo 15 znaků. Řádek čtečky je proto zkrácený na vlastní
+  slova („you draw lines to shield someone from falling things“) a ze šesti starých řádků vypadla jen slova, která
+  řádek říká dvakrát („through the air“ vedle „midair“, „from above“ u „fall“, „for a moment“ u „before they hide“,
+  „tall“, „identical ones“ → „alike“, „, and“ → „;“). Prompt má 5 998 znaků. Rozhodnutí: krátit opakovaná slova,
+  ne ubrat příklad (P66 T13 ubral příklad; tady by každý příklad vrátil chybu, kvůli které v P58B vznikl).
+- **Strop růstu promptu režiséra** 2 800 → 3 100 (+288 za řádek žánru a buňku tabulky).
+- **Nahrávky P46E znovu** lokálně gpt-oss-20b, 0 USD (`evals/play/p46e/README.md` → P68 R7): `ready` 25/25 beze
+  změny, `adds` 0,32 → 0,44. Jediná odpověď s novou hrou je špatně – o03 (závodní auto střílí nepřátele) →
+  `drawsave`; `direct()` ji odmítne a AI verze zůstane u závodu.
+- **Živá kontrola** (`director-drawsave.json`, `director-live.mjs` nad `shots.mjs serve --director-cap-usd 2`,
+  astra jako čtečka i režisér, měřicí kniha `worldsmith:p68-eval`, **1,81 USD**, 9 volání):
+  - d38 (rychlá hra trefí): AI verze `drawsave` za 25 s, ale hrdina „explorer“ místo dráčka.
+  - d36 (rychlá hra = závod lodí): **čtení hru najde** a hra ze čtení vznikne za 12 s; režisér odpoví kresbou, ale AI
+    verze se staví na rychlé hře a musí držet její akce, takže skončí jako roub na závod lodí (95 s, 6 volání).
+    Poslední hra hráče je tedy `drawsave` u 1 ze 2 vět. Příčina je sdílená (AI verze kotví na rychlé hře i tam,
+    kde čtení našlo jinou hru) → R8.
+- R5 (buildshift) a R6 (minigolf) se k nahrávce nepřidaly: obě hry drží registr jako `staged` po nesplněných
+  branách T11 a T9, takže by je prompt nevypsal ani bez `DIRECTOR_PENDING` (`readyModes`).
+
 ## T9 – zapojení `minigolf` (nesplněno 1. 11., čas do hratelnosti na telefonu)
 
 - Rychlá hra byla zapnutá (`9edc6781`, `f47cf939`): stráž žánru čistá, herní brána 18/18 na větách, které do

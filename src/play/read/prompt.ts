@@ -40,7 +40,9 @@ const VERB_HINTS: Record<(typeof VERB_CLASSES)[number], string> = {
  * hráč něco dělá.
  */
 export const MODE_HINTS: Readonly<Record<string, string>> = {
-  'merge.default': 'you drop items into a box and two identical ones fuse into a bigger one',
+  // P68 R7: kvůli stropu 6 000 znaků pryč jen slova, která řádek říká dvakrát (merge, catch, whack, slice, defense,
+  // timing.stack) – rozdíly mezi žánry beze změny.
+  'merge.default': 'you drop items in a box and two alike fuse into a bigger one',
   'crowd.default': 'you lead a group through gates (x2, +5) that grow or shrink it, then it fights',
   'push.default': 'you shove, ram or bump rivals off a ring, island, edge or plate',
   // P66 T13: pět žánrů P66 – každý má ve větě svůj znak, proto před obecnými režimy. Krátké: prompt má strop 6 000 znaků.
@@ -49,11 +51,13 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'steal.default': 'you grab loot and run it home past guards',
   'sort.default': 'you tap things into bins of their kind',
   'arrows.default': 'you tap stuck pieces out the way they point',
+  // P68 R7 (`stavba/integration.md` → Pitch, zkrácený na strop): kresba je znak hry, proto před chytáním (`catch`).
+  'drawsave.default': 'you draw lines to shield someone from falling things',
   'hop.default': 'you hop forward row by row across roads, rails or rivers past traffic',
-  'catch.default': 'things fall from above and you move under them to catch them or bounce them back up',
-  'whack.default': 'things pop up from holes for a moment and you hit them before they hide',
-  'slice.default': 'things are tossed or fly through the air and you cut them midair',
-  'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard, and you hold every path',
+  'catch.default': 'things fall and you move under them to catch them or bounce them back up',
+  'whack.default': 'things pop up from holes and you hit them before they hide',
+  'slice.default': 'things are tossed or fly and you cut them midair',
+  'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard; you hold every path',
   'quest.spatial': 'you walk to objects one by one and act on each (light, fix, pop, free, clean, deliver), even with a chaser',
   // P68 T11: před stanovištěm, ať „serve customers in my diner“ nevezme jedno pracoviště. V promptu je až s R5 (brána
   // `READER_PENDING`); pak prompt přeroste strop 6 000 znaků o ~170 a věta „genre is null … managing a shop“ se změní.
@@ -63,7 +67,7 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   // P68 T9: před hodem, ať „sink the ball“ u golfu nevezme koš. V promptu je až s R6 (brána `READER_PENDING`).
   'minigolf.default': 'you putt a ball along a walled lane past bumpers into a hole in as few strokes as you can',
   'throw.default': 'you aim an arc and throw at a target, hoop or stack',
-  'timing.stack': 'you stack a tall tower, dropping each swinging piece onto the last',
+  'timing.stack': 'you stack a tower, dropping each swinging piece onto the last',
   'timing.precision': 'you stop a sweeping marker inside a small zone',
   'timing.bridge': 'you grow a plank long enough to span a gap',
   'rhythm.default': 'you tap notes as they reach a line, in time with music',
