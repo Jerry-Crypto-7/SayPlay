@@ -3,12 +3,12 @@
  "sentence": "my dog chasing the mailman,around the backyard lol",
  "axis": "control:move_free",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:52:30.111Z",
- "ms": 8337,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:20.655Z",
+ "ms": 5622,
  "answer": {
-  "plan": "Arena escape: a dog chases a mailman around a backyard, dodging obstacles and collecting treats while avoiding a wandering wolf.",
+  "plan": "arena escape with a dog chasing a mailman in a backyard",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -20,27 +20,6 @@
      "verb": "chase",
      "states": null,
      "patrol": false
-    },
-    {
-     "label": "wolf",
-     "does": "chase_me",
-     "verb": "hunt",
-     "states": null,
-     "patrol": true
-    },
-    {
-     "label": "treat",
-     "does": "collect",
-     "verb": "grab",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "mailbox",
-     "does": "reach",
-     "verb": "reach",
-     "states": 2,
-     "patrol": false
     }
    ],
    "heroAction": "chop",
@@ -50,46 +29,28 @@
     "entryDistance": 8000,
     "chaseLead": 60,
     "seconds": 30,
-    "items": 5,
+    "items": 1,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
-    "chasers": 2,
+    "chasers": 1,
     "chaserSpeed": 70,
     "enemies": 1,
     "enemyHp": 3,
-    "enemySpeed": 50,
+    "enemySpeed": 60,
     "playerHp": 3,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 30
    },
    "counts": {
-    "enemy": 2,
-    "collectible": 5
+    "enemy": 1,
+    "collectible": null
    },
    "ruleRoles": [
     {
      "id": "mailman",
      "kind": "chaser",
      "label": "mailman",
-     "count": 1
-    },
-    {
-     "id": "wolf",
-     "kind": "chaser",
-     "label": "wolf",
-     "count": 1
-    },
-    {
-     "id": "treat",
-     "kind": "collectible",
-     "label": "treat",
-     "count": 5
-    },
-    {
-     "id": "mailbox",
-     "kind": "destination",
-     "label": "mailbox",
      "count": 1
     }
    ],
@@ -98,26 +59,11 @@
      "role": "mailman",
      "start": "hidden",
      "physics": null
-    },
-    {
-     "role": "wolf",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "treat",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "mailbox",
-     "start": "hidden",
-     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startTimer",
+     "id": "start",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -126,17 +72,17 @@
      "do": [
       {
        "startTimer": {
-        "timer": "escape",
-        "ticks": 600
+        "timer": "chase",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "escapePhase",
+     "id": "chase",
      "verb": "wait",
      "when": {
-      "timer": "escape"
+      "timer": "chase"
      },
      "if": null,
      "do": [
@@ -149,29 +95,6 @@
         "count": 1,
         "at": "edge"
        }
-      },
-      {
-       "wave": {
-        "role": "wolf",
-        "count": 1,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "reachMailbox",
-     "verb": "reach",
-     "when": {
-      "contact": [
-       "player",
-       "mailbox"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
       }
      ]
     }
@@ -180,7 +103,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape"
+      "id": "chase"
      }
     ],
     "phases": [
@@ -195,12 +118,11 @@
    },
    "boss": {
     "role": "mailman",
-    "name": "Mailman Marauder",
+    "name": "Mailman",
     "attack": "charge"
    },
    "abilities": [
-    "dash",
-    "grab"
+    "dash"
    ],
    "segments": [
     "newFoe",

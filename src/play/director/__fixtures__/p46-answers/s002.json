@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:53:28.079Z",
- "ms": 7265,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:20:06.560Z",
+ "ms": 7053,
  "answer": {
-  "plan": "Create an arena‑escape game where a knight collects three keys while ghosts chase him in a haunted castle.",
+  "plan": "Create an arena‑escape game where a knight collects three keys in a haunted castle while avoiding ghosts.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -23,8 +23,8 @@
     },
     {
      "label": "ghost",
-     "does": "chase_me",
-     "verb": "chase",
+     "does": "avoid",
+     "verb": "obstacle",
      "states": null,
      "patrol": true
     }
@@ -55,85 +55,65 @@
    },
    "ruleRoles": [
     {
-     "id": "ghost",
-     "kind": "chaser",
-     "label": "ghost",
-     "count": 2
-    },
-    {
      "id": "key",
      "kind": "collectible",
      "label": "key",
      "count": 3
+    },
+    {
+     "id": "ghost",
+     "kind": "chaser",
+     "label": "ghost",
+     "count": 2
     }
    ],
    "things": [
     {
-     "role": "ghost",
-     "start": "hidden",
-     "physics": true
-    },
-    {
      "role": "key",
      "start": "hidden",
-     "physics": true
+     "physics": null
+    },
+    {
+     "role": "ghost",
+     "start": "hidden",
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startTimer",
-     "verb": "wait",
+     "id": "spawn_keys",
+     "verb": "spawn",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "phase1",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phaseTransition",
-     "verb": "wait",
-     "when": {
-      "timer": "phase1"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      },
-      {
-       "wave": {
-        "role": "ghost",
-        "count": 2,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "ghostSpawn",
-     "verb": "spawn",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
        "spawn": {
-        "role": "ghost",
+        "role": "key",
         "at": "player"
        }
       }
      ]
     },
     {
-     "id": "ghostChase",
+     "id": "spawn_ghosts",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ghost",
+        "at": "other"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ghost_chase",
      "verb": "chase",
      "when": {
       "contact": [
@@ -141,7 +121,11 @@
        "ghost"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
@@ -153,7 +137,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "escape_timer"
      }
     ],
     "phases": [
@@ -172,11 +156,7 @@
     "attack": "charge"
    },
    "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "segments": null
   }
  },
  "failure": null

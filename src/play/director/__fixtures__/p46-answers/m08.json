@@ -3,10 +3,10 @@
  "sentence": "a pengiun tht slides down a mountin",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:52:15.730Z",
- "ms": 10408,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:07.866Z",
+ "ms": 7303,
  "answer": {
   "plan": "runner",
   "spec": {
@@ -42,7 +42,7 @@
     "obstacles": 3,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 60
    },
    "counts": {
     "enemy": 3,
@@ -66,58 +66,68 @@
     {
      "role": "rock",
      "start": "hidden",
-     "physics": true
+     "physics": null
     },
     {
      "role": "coin",
      "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "slide_rock",
+     "id": "slide_start",
      "verb": "slide",
      "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
+      "phase": "first"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "startTimer": {
+        "timer": "slide",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "slide_coin",
+     "id": "slide_phase",
      "verb": "slide",
      "when": {
-      "contact": [
-       "player",
-       "coin"
-      ]
+      "timer": "slide"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "score": 10
+       "goPhase": "second"
       },
       {
-       "despawn": "self"
+       "wave": {
+        "role": "rock",
+        "count": 3,
+        "at": "edge"
+       }
+      },
+      {
+       "wave": {
+        "role": "coin",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "slide_end",
+     "verb": "slide",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -126,7 +136,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "slide"
      }
     ],
     "phases": [
@@ -139,9 +149,17 @@
     ],
     "events": null
    },
-   "boss": null,
+   "boss": {
+    "role": "rock",
+    "name": "Boulder",
+    "attack": "stomp"
+   },
    "abilities": [],
-   "segments": null
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
   }
  },
  "failure": null

@@ -271,8 +271,8 @@ export type ControlId = (typeof CONTROLS)[number];
  * P66 T2 přidá ovládání svých pěti koster ze stejného důvodu; věty k nim pošle až klasifikátor (P66 T12).
  */
 // P68 T1: ovládání pěti koster P68 ze stejného důvodu; každé odsud vyjme jen úloha „zapoj X“ v P68-I. R9 vyjal
-// `railfps` (hraje od T10, čtečka ho nabízí).
-export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'buildshift', 'drawsave'];
+// `railfps` (hraje od T10, čtečka ho nabízí), R12 `minigolf`.
+export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push', 'survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'buildshift', 'drawsave'];
 
 /** Ovládání, mezi kterými volí čtení modelem: všechna kromě `STAGED_CONTROLS`, v pořadí `CONTROLS`. */
 export const READ_CONTROLS = CONTROLS.filter((id) => !STAGED_CONTROLS.includes(id)) as unknown as readonly [ControlId, ...ControlId[]];

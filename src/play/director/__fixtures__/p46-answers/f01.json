@@ -3,12 +3,12 @@
  "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
  "axis": "arena.collect",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:51:27.034Z",
- "ms": 8103,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:27.504Z",
+ "ms": 5955,
  "answer": {
-  "plan": "Create a volcano‑based defense game where a dragon protects its gold hoard from attacking knights.",
+  "plan": "Create a defense game where a dragon protects its gold hoard from greedy knights inside a volcano.",
   "spec": {
    "genre": "defense",
    "mode": "default",
@@ -18,14 +18,14 @@
      "label": "greedy knight",
      "does": "shoot_at",
      "verb": "attack",
-     "states": null,
+     "states": 2,
      "patrol": true
     },
     {
      "label": "gold hoard",
      "does": "reach",
      "verb": "defend",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
@@ -33,24 +33,24 @@
    "setting": "volcano",
    "palette": "volcano",
    "params": {
-    "enemies": 20,
+    "enemies": 50,
     "lives": 3,
-    "targetScore": 5000,
-    "timeLimit": null
+    "targetScore": 2000,
+    "timeLimit": 90
    },
    "counts": {
-    "enemy": 20
+    "enemy": 50
    },
    "ruleRoles": [
     {
      "id": "knight",
      "kind": "chaser",
      "label": "greedy knight",
-     "count": 20
+     "count": 5
     },
     {
      "id": "hoard",
-     "kind": "destination",
+     "kind": "target",
      "label": "gold hoard",
      "count": 1
     }
@@ -59,12 +59,12 @@
     {
      "role": "knight",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
      "role": "hoard",
      "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
@@ -85,32 +85,28 @@
      ]
     },
     {
-     "id": "wave_knights",
-     "verb": "wave",
+     "id": "move_knights",
+     "verb": "move",
      "when": {
-      "phase": "second"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "knight",
-        "count": 5,
-        "at": "edge"
-       }
+       "toggle": "knight"
       }
      ]
     },
     {
-     "id": "toggle_hoard",
-     "verb": "toggle",
+     "id": "attack_knights",
+     "verb": "shoot",
      "when": {
-      "phase": "second"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "toggle": "hoard"
+       "damage": 1
       }
      ]
     }
@@ -134,15 +130,11 @@
    },
    "boss": {
     "role": "greedy knight",
-    "name": "Knight of the Volcano",
+    "name": "Vicious Knight",
     "attack": "charge"
    },
    "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "segments": null
   }
  },
  "failure": null

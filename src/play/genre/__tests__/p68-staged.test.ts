@@ -45,10 +45,10 @@ vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
 /** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` a T8 `stunt` vrácené (brány hry), T12 `drawsave`, T10 `railfps`, R12 `minigolf`. */
 const WIRED: readonly string[] = ['drawsave', 'railfps', 'minigolf'];
-/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`, R9 `railfps`). */
-const OFFERED: readonly string[] = ['drawsave', 'railfps'];
-/** Ovládání, které čtečka smí volit (`STAGED_CONTROLS`): R9 vyjal `railfps`, R7 `drawsave` v seznamu nechal. */
-const READ_CONTROL_OFFERED: readonly string[] = ['railfps'];
+/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`, R9 `railfps`, R12 `minigolf`). */
+const OFFERED: readonly string[] = ['drawsave', 'railfps', 'minigolf'];
+/** Ovládání, které čtečka smí volit (`STAGED_CONTROLS`): R9 vyjal `railfps`, R12 `minigolf`, R7 `drawsave` v seznamu nechal. */
+const READ_CONTROL_OFFERED: readonly string[] = ['railfps', 'minigolf'];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {

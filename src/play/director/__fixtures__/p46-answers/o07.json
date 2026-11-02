@@ -3,10 +3,10 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:51:10.512Z",
- "ms": 9953,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:15.225Z",
+ "ms": 6593,
  "answer": {
   "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, collecting bananas while avoiding swamp hazards.",
   "spec": {
@@ -29,16 +29,9 @@
      "patrol": false
     },
     {
-     "label": "frog spawn",
-     "does": "reach",
-     "verb": "jump",
-     "states": 2,
-     "patrol": false
-    },
-    {
      "label": "swamp water",
      "does": "avoid",
-     "verb": "jump",
+     "verb": "dodge",
      "states": 2,
      "patrol": false
     }
@@ -81,23 +74,23 @@
     {
      "role": "banana",
      "start": "hidden",
-     "physics": false
+     "physics": true
     },
     {
      "role": "lilyPad",
      "start": "hidden",
-     "physics": false
+     "physics": true
     },
     {
      "role": "water",
      "start": "hidden",
-     "physics": false
+     "physics": true
     }
    ],
    "rules": [
     {
      "id": "collectBanana",
-     "verb": "grab",
+     "verb": "collect",
      "when": {
       "contact": [
        "player",
@@ -122,8 +115,8 @@
      ]
     },
     {
-     "id": "reachLilyPad",
-     "verb": "jump",
+     "id": "reachPad",
+     "verb": "reach",
      "when": {
       "contact": [
        "player",
@@ -139,7 +132,7 @@
     },
     {
      "id": "avoidWater",
-     "verb": "jump",
+     "verb": "avoid",
      "when": {
       "contact": [
        "player",

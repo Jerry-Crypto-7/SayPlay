@@ -3,38 +3,36 @@
  "answers": "src/play/director/__fixtures__/p46-answers",
  "summary": {
   "n": 25,
-  "authored": 19,
-  "ready": 23,
-  "readyShare": 0.92,
+  "authored": 20,
+  "ready": 24,
+  "readyShare": 0.96,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.304,
-  "onlyCharacters": 7,
+  "adds": 0.292,
+  "onlyCharacters": 11,
   "boss": 7,
   "action": 1,
   "segments": 0,
   "actionLost": 0,
   "reasons": {
-   "MALFORMED": 2
+   "MALFORMED": 1
   }
  },
  "rows": [
   {
    "id": "d01",
    "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
-   "status": "ready",
-   "reason": null,
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
    "rules": [
     0,
-    0
+    null
    ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
    "actionLost": false
   },
   {
@@ -50,7 +48,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -82,9 +82,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "boss"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -127,8 +125,8 @@
   {
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -138,7 +136,6 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
     "characters"
    ],
    "actionLost": false
@@ -157,7 +154,8 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss"
+    "boss",
+    "characters"
    ],
    "actionLost": false
   },
@@ -197,7 +195,7 @@
    "id": "m03",
    "sentence": "Grandma kart",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -206,7 +204,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -222,14 +222,16 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
    "id": "m09",
    "sentence": "ninja cat jumpin on rooftops plz",
-   "directed": "authored",
-   "directedReason": null,
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -264,8 +266,8 @@
   {
    "id": "m16",
    "sentence": "a kangaroo jumps over cars then collects coins on the highway",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -299,8 +301,8 @@
   {
    "id": "o02",
    "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -317,38 +319,6 @@
   {
    "id": "o03",
    "sentence": "Racing car escaping and shooting enemies",
-   "directed": "draft",
-   "directedReason": "MALFORMED",
-   "status": "draft-final",
-   "reason": "MALFORMED",
-   "rules": [
-    3,
-    null
-   ],
-   "keptRules": null,
-   "keptLogic": null,
-   "adds": [],
-   "actionLost": false
-  },
-  {
-   "id": "o04",
-   "sentence": "racing car escapes police and shoots enemies",
-   "directed": "draft",
-   "directedReason": "MALFORMED",
-   "status": "draft-final",
-   "reason": "MALFORMED",
-   "rules": [
-    3,
-    null
-   ],
-   "keptRules": null,
-   "keptLogic": null,
-   "adds": [],
-   "actionLost": false
-  },
-  {
-   "id": "o05",
-   "sentence": "Hamster escapes a supermarket Roomba",
    "directed": "authored",
    "directedReason": "VERB_UNPROVED",
    "status": "ready",
@@ -359,14 +329,52 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o04",
+   "sentence": "racing car escapes police and shoots enemies",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o05",
+   "sentence": "Hamster escapes a supermarket Roomba",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
    "id": "o06",
    "sentence": "Jumping arcade game in the forest",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [

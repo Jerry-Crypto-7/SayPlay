@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:50:24.007Z",
- "ms": 10212,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:17:38.699Z",
+ "ms": 8046,
  "answer": {
-  "plan": "Arena fight with Amanita mushrooms vs bulls, featuring chase, escape, and shooting mechanics.",
+  "plan": "arena fight mode with bulls as chasers and shooters, Amanita mushrooms as hero, forest trail setting",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -18,28 +18,28 @@
      "label": "bull",
      "does": "fight",
      "verb": "fight",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "chase_me",
      "verb": "chase",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "shoot_at",
      "verb": "shoot",
-     "states": 2,
+     "states": null,
      "patrol": false
     },
     {
      "label": "acorn",
      "does": "collect",
      "verb": "collect",
-     "states": 2,
+     "states": null,
      "patrol": false
     }
    ],
@@ -53,18 +53,18 @@
     "items": 10,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
-    "chasers": 2,
+    "chasers": 3,
     "chaserSpeed": 70,
     "enemies": 2,
     "enemyHp": 5,
     "enemySpeed": 80,
     "playerHp": 5,
     "lives": 3,
-    "targetScore": 2000,
+    "targetScore": 0,
     "timeLimit": 60
    },
    "counts": {
-    "enemy": 2,
+    "enemy": 3,
     "collectible": 1
    },
    "ruleRoles": [
@@ -72,7 +72,7 @@
      "id": "bull",
      "kind": "chaser",
      "label": "bull",
-     "count": 2
+     "count": 3
     },
     {
      "id": "acorn",
@@ -85,35 +85,45 @@
     {
      "role": "bull",
      "start": "hidden",
-     "physics": true
+     "physics": null
     },
     {
      "role": "acorn",
      "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "bull_fight",
-     "verb": "fight",
+     "id": "bull_spawn",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "phase": "first"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
-      },
+       "spawn": {
+        "role": "bull",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "bull_wave",
+     "verb": "wave",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
       {
-       "despawn": "self"
+       "wave": {
+        "role": "bull",
+        "count": 3,
+        "at": "edge"
+       }
       }
      ]
     },
@@ -126,63 +136,10 @@
        "bull"
       ]
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
        "damage": 1
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "bull_shoot",
-     "verb": "shoot",
-     "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "acorn_collect",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "acorn"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "score": 100
-      },
-      {
-       "despawn": "self"
       }
      ]
     }
@@ -191,7 +148,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "phase_timer"
      }
     ],
     "phases": [
@@ -206,7 +163,7 @@
    },
    "boss": {
     "role": "bull",
-    "name": "Charging Bull",
+    "name": "Rampaging Bull",
     "attack": "charge"
    },
    "abilities": [

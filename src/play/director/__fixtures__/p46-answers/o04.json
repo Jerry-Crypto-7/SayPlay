@@ -3,15 +3,15 @@
  "sentence": "racing car escapes police and shoots enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:50:43.173Z",
- "ms": 11508,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:17:52.128Z",
+ "ms": 7110,
  "answer": {
-  "plan": "Create a racing‑shooting car game where the car evades police chasers while firing at enemy drones.",
+  "plan": "Create a racing‑car shooter set on an open road where police chase the player and the car can shoot enemy vehicles.",
   "spec": {
-   "genre": "shooter",
-   "mode": "default",
+   "genre": "voyage",
+   "mode": "race",
    "hero": "car",
    "cast": [
     {
@@ -19,7 +19,7 @@
      "does": "chase_me",
      "verb": "chase",
      "states": null,
-     "patrol": true
+     "patrol": false
     },
     {
      "label": "enemy",
@@ -33,18 +33,20 @@
    "setting": "open country",
    "palette": "desert",
    "params": {
-    "targetWidthPct": 80,
-    "movingTargets": 1,
-    "waves": 5,
-    "enemies": 6,
-    "targets": 8,
+    "hazards": 0,
+    "turbo": 1,
+    "roadWidth": 8000,
+    "roadEntryWidth": 8000,
+    "crashBudget": 3,
+    "namedLandingTarget": 0,
+    "touchdownSpeed": 30,
+    "gravityRisePct": 10,
+    "lengthM": 400,
+    "topSpeed": 300,
+    "gravity": 1200,
     "lives": 3,
-    "targetScore": 2000,
-    "timeLimit": 60
-   },
-   "counts": {
-    "enemy": 6,
-    "target": 8
+    "targetScore": 0,
+    "timeLimit": 90
    },
    "ruleRoles": [
     {
@@ -55,9 +57,9 @@
     },
     {
      "id": "enemy",
-     "kind": "target",
-     "label": "enemy drone",
-     "count": 6
+     "kind": "hazard",
+     "label": "enemy car",
+     "count": 3
     }
    ],
    "things": [
@@ -74,7 +76,56 @@
    ],
    "rules": [
     {
-     "id": "police_chase",
+     "id": "startRace",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 90
+       }
+      }
+     ]
+    },
+    {
+     "id": "policeSpawn",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "police",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "enemyWave",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "enemy",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "policeChase",
      "verb": "chase",
      "when": {
       "contact": [
@@ -82,11 +133,7 @@
        "police"
       ]
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
        "damage": 1
@@ -98,7 +145,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "race"
      }
     ],
     "phases": [
@@ -106,10 +153,7 @@
       "id": "start"
      },
      {
-      "id": "wave"
-     },
-     {
-      "id": "end"
+      "id": "running"
      }
     ],
     "events": null

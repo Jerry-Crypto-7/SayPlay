@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:51:18.930Z",
- "ms": 8417,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:21.548Z",
+ "ms": 6323,
  "answer": {
-  "plan": "Create a quest‑style honey‑collecting bee game set in a windy meadow with a looming storm that triggers a timed phase change.",
+  "plan": "Create a quest‑style game where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple phase‑based timer to trigger the storm’s arrival.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -73,64 +73,45 @@
    ],
    "rules": [
     {
-     "id": "startTimer",
+     "id": "startPhase",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
-        "timer": "storm",
-        "ticks": 600
+        "timer": "storm_timer",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "stormTrigger",
+     "id": "stormArrival",
      "verb": "wait",
      "when": {
-      "timer": "storm"
+      "timer": "storm_timer"
      },
      "if": null,
      "do": [
       {
-       "toggle": "storm"
+       "goPhase": "storm"
       },
       {
-       "goPhase": "storming"
+       "spawn": {
+        "role": "storm",
+        "at": "player"
+       }
       }
      ]
     },
     {
-     "id": "collectHoney",
-     "verb": "collect",
+     "id": "stormHazard",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "honey"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "score": 10
-      },
-      {
-       "despawn": "other"
-      }
-     ]
-    },
-    {
-     "id": "avoidStorm",
-     "verb": "avoid",
-     "when": {
-      "contact": [
-       "player",
-       "storm"
-      ]
+      "phase": "storm"
      },
      "if": null,
      "do": [
@@ -144,20 +125,24 @@
     "vars": null,
     "timers": [
      {
-      "id": "storm"
+      "id": "storm_timer"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "storming"
+      "id": "storm"
      }
     ],
     "events": null
    },
-   "boss": null,
+   "boss": {
+    "role": "storm",
+    "name": "Tempest",
+    "attack": "throw"
+   },
    "abilities": [],
    "segments": null
   }

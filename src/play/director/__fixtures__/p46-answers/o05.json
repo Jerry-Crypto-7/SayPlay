@@ -3,12 +3,12 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:50:51.632Z",
- "ms": 8459,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:02.089Z",
+ "ms": 9960,
  "answer": {
-  "plan": "arena escape",
+  "plan": "Arena escape: hamster evades a supermarket Roomba while collecting coins",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -29,11 +29,30 @@
      "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": "dig",
    "setting": "supermarket",
    "palette": "supermarket",
-   "params": null,
-   "counts": null,
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 60,
+    "seconds": 30,
+    "items": 10,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 3,
+    "enemySpeed": 60,
+    "playerHp": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
+   "counts": {
+    "enemy": 1,
+    "collectible": 10
+   },
    "ruleRoles": [
     {
      "id": "roomba",
@@ -45,7 +64,7 @@
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 5
+     "count": 10
     }
    ],
    "things": [
@@ -62,7 +81,7 @@
    ],
    "rules": [
     {
-     "id": "start_timer",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -78,7 +97,7 @@
      ]
     },
     {
-     "id": "escape_phase",
+     "id": "phaseTransition",
      "verb": "wait",
      "when": {
       "timer": "escape"
@@ -90,16 +109,16 @@
       },
       {
        "wave": {
-        "role": "roomba",
-        "count": 1,
+        "role": "coin",
+        "count": 5,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "roomba_chase",
-     "verb": "chase",
+     "id": "roombaSpawn",
+     "verb": "spawn",
      "when": {
       "phase": "second"
      },
@@ -114,23 +133,18 @@
      ]
     },
     {
-     "id": "win_escape",
-     "verb": "escape",
+     "id": "roombaChase",
+     "verb": "chase",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "roomba"
+      ]
      },
-     "if": [
-      {
-       "counter": {
-        "name": "health",
-        "atLeast": 1,
-        "below": null
-       }
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "win": true
+       "damage": 1
       }
      ]
     }
@@ -158,7 +172,8 @@
     "attack": "charge"
    },
    "abilities": [
-    "dash"
+    "dash",
+    "grab"
    ],
    "segments": [
     "newFoe",

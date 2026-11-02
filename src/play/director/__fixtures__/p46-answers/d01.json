@@ -3,21 +3,19 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:52:49.684Z",
- "ms": 10344,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:34.316Z",
+ "ms": 6513,
  "answer": {
-  "plan": "Create a rolling‑hill platformer where a hedgehog rolls down a mushroom hill while avoiding foxes.",
+  "plan": "runner",
   "spec": {
-   "genre": "platformer",
-   "mode": "default",
    "hero": "hedgehog",
    "cast": [
     {
      "label": "fox",
      "does": "avoid",
-     "verb": "obstacle",
+     "verb": "chase_me",
      "states": null,
      "patrol": false
     }
@@ -25,28 +23,16 @@
    "heroAction": "none",
    "setting": "mushroom hill",
    "palette": "forest",
-   "params": {
-    "lengthM": 200,
-    "difficulty": 1,
-    "items": 1,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 0
-   },
    "counts": {
-    "collectible": null
+    "enemy": 1,
+    "collectible": null,
+    "target": null
    },
    "ruleRoles": [
     {
      "id": "fox",
-     "kind": "hazard",
+     "kind": "chaser",
      "label": "fox",
-     "count": 3
-    },
-    {
-     "id": "hillEnd",
-     "kind": "destination",
-     "label": "hill bottom",
      "count": 1
     }
    ],
@@ -54,67 +40,112 @@
     {
      "role": "fox",
      "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "hillEnd",
-     "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "avoidFox",
+     "id": "start",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "roll",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "roll",
+     "verb": "wait",
+     "when": {
+      "timer": "roll"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "fox",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "avoid",
      "verb": "avoid",
      "when": {
-      "contact": [
-       "player",
-       "fox"
-      ]
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
        "damage": 1
-      },
-      {
-       "lose": true
-      }
-     ]
-    },
-    {
-     "id": "reachBottom",
-     "verb": "reach",
-     "when": {
-      "contact": [
-       "player",
-       "hillEnd"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
       }
      ]
     }
    ],
    "logic": {
     "vars": null,
-    "timers": null,
+    "timers": [
+     {
+      "id": "roll"
+     }
+    ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "play"
+      "id": "second"
      }
     ],
     "events": null
    },
-   "boss": null,
+   "boss": {
+    "role": "fox",
+    "name": "Sneaky Fox",
+    "attack": "charge"
+   },
    "abilities": [],
-   "segments": null
+   "segments": null,
+   "recipe": {
+    "phases": [
+     {
+      "start": 0,
+      "speedPercent": 100,
+      "add": null
+     },
+     {
+      "start": 1,
+      "speedPercent": 120,
+      "add": null
+     },
+     {
+      "start": 2,
+      "speedPercent": 120,
+      "add": null
+     }
+    ],
+    "dependsOn": null,
+    "move": "run",
+    "actions": [],
+    "objective": "reach",
+    "threats": [
+     "chaser"
+    ]
+   },
+   "params": null,
+   "unmet": []
   }
  },
  "failure": null

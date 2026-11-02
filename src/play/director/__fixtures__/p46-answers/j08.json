@@ -3,10 +3,10 @@
  "sentence": "a wizard defends a crystal tower from flying skeletons",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:53:20.813Z",
- "ms": 6298,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:59.506Z",
+ "ms": 5542,
  "answer": {
   "plan": "Create a defense game where a wizard protects a crystal tower from waves of flying skeletons.",
   "spec": {
@@ -33,20 +33,20 @@
    "setting": "tower",
    "palette": "castle",
    "params": {
-    "enemies": 10,
+    "enemies": null,
     "lives": 3,
-    "targetScore": 2000,
-    "timeLimit": 90
+    "targetScore": 0,
+    "timeLimit": null
    },
    "counts": {
-    "enemy": 10
+    "enemy": null
    },
    "ruleRoles": [
     {
      "id": "skeleton",
      "kind": "chaser",
      "label": "flying skeleton",
-     "count": 10
+     "count": null
     },
     {
      "id": "tower",
@@ -72,49 +72,48 @@
      "id": "spawn_wave",
      "verb": "wait",
      "when": {
-      "phase": "day"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "skeleton",
-        "count": 5,
-        "at": "edge"
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "spawn_wave2",
+     "id": "wave_start",
      "verb": "wait",
      "when": {
-      "phase": "night"
+      "timer": "wave_timer"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "skeleton",
-        "count": 5,
+        "count": 3,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "win_condition",
-     "verb": "reach",
+     "id": "skeleton_attack",
+     "verb": "shoot",
      "when": {
       "contact": [
        "player",
-       "tower"
+       "skeleton"
       ]
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "damage": 1
       }
      ]
     }
@@ -123,33 +122,26 @@
     "vars": null,
     "timers": [
      {
-      "id": "day_night"
+      "id": "wave_timer"
      }
     ],
     "phases": [
      {
-      "id": "day"
+      "id": "first"
      },
      {
-      "id": "night"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "flying skeleton",
-    "name": "Skeleton King",
+    "name": "Bone‑Knight",
     "attack": "shoot"
    },
-   "abilities": [
-    "shoot",
-    "shield"
-   ],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "abilities": [],
+   "segments": null
   }
  },
  "failure": null

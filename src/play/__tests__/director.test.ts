@@ -128,6 +128,8 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'drawsave.default': 'drawsave',
   // P68 R9: střelnice z očí na kolejích.
   'railfps.default': 'railfps',
+  // P68 R12: minigolf.
+  'minigolf.default': 'minigolf',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -165,6 +167,7 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'arrows.default': 'A fox taps stuck logs out of a jam in a dark forest',
   'drawsave.default': 'Draw a line to save the fox from falling wolves in a dark forest',
   'railfps.default': 'A fox rides a mine cart on rails in a dark forest and shoots the wolves in first person',
+  'minigolf.default': 'A fox putts into the hole on a dark forest mini golf course past a wolf',
 };
 
 /** Věta, ve které klíčová slova žádný nový žánr nečtou – žánr hry tu může dát jedině odpověď režiséra. */

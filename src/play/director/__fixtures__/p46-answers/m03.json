@@ -3,12 +3,12 @@
  "sentence": "Grandma kart",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "476d8b8c",
- "directorPromptVersion": "869f1b91",
- "recordedAt": "2026-11-02T14:52:05.321Z",
- "ms": 6209,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:00.563Z",
+ "ms": 5514,
  "answer": {
-  "plan": "Create a simple racing‑voyage kart game with a rock obstacle and a two‑phase timer logic.",
+  "plan": "Create a racing kart game where the player drives through an open country, avoiding rocks that appear as hazards.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -28,27 +28,109 @@
    "params": {
     "hazards": 1,
     "turbo": 0,
-    "roadWidth": 5000,
-    "roadEntryWidth": 5000,
+    "roadWidth": 8000,
+    "roadEntryWidth": 8000,
     "crashBudget": 3,
     "namedLandingTarget": 0,
     "touchdownSpeed": 30,
     "gravityRisePct": 10,
-    "lengthM": 400,
+    "lengthM": 500,
     "topSpeed": 250,
-    "gravity": 800,
+    "gravity": 1200,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 60
    },
-   "ruleRoles": [],
-   "things": [],
-   "rules": [],
+   "ruleRoles": [
+    {
+     "id": "rock",
+     "kind": "hazard",
+     "label": "rock",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "rock",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phaseTransition",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "rock",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "rockSpawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "rock",
+        "at": "other"
+       }
+      }
+     ]
+    },
+    {
+     "id": "avoidRock",
+     "verb": "avoid",
+     "when": {
+      "contact": [
+       "player",
+       "rock"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "race"
      }
     ],
     "phases": [
