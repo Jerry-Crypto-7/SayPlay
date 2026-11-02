@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { readShift } from '../../genre/buildshift';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, BUTTON, HEADER, type InputEvent, NO_INPUT } from '../contract';
 import { type ArcadeLibrary, buildWorld, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
@@ -155,6 +156,17 @@ describe('buildshift bot (P68-S T3)', () => {
     const good = median(botShiftsAt(GOALS.default).map((shift) => shift.served));
     const poor = median(shifts.map((shift) => shift.served));
     expect(poor).toBeLessThanOrEqual(0.6 * good);
+  });
+
+  it('the bad layout loses every seed at every goal a sentence asks for, 6 to 12 (P68-K T2)', () => {
+    // Malý cíl (6–8) dřív vyhrálo i špatné rozvržení; věta s ním teď dostane dolní mez 9.
+    const goals = [6, 7, 8, 9, 10, 11, 12].map((count) => readShift(`serve ${String(count)} cats their milk`).goal);
+    expect(goals).toEqual([9, 9, 9, 9, 10, 11, 12]);
+    const library = libraryWith(badLayout());
+    for (const goal of new Set(goals)) {
+      const won = SEEDS.filter((seed) => runBot(worldOf(seed, goal as number), library).outcome === 'won');
+      expect(won, `goal ${String(goal)}`).toEqual([]);
+    }
   });
 
   it('two admissible layouts at the same budget differ in median served by at least 25 %', () => {
