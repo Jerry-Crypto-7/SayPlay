@@ -55,6 +55,15 @@ describe('buildshift genre (P68-S T4)', () => {
     expect(misses.length, misses.join('\n')).toBeLessThanOrEqual(2);
   });
 
+  it('a number that counts the shift or the time is not the count of customers (P68-K T2)', () => {
+    const goalOf = (text: string): number | undefined => (module.draftFill(text, null) as { params?: { customers?: number } }).params?.customers;
+    // Dev P68 d25: „one“ patří směně → bez čísla u zákazníků výchozí cíl 12.
+    expect(goalOf('run a burger shop for one shift: place grills and counters on the grid, spend coins and serve every customer before closing time')).toBeUndefined();
+    expect(goalOf('run a diner for two hours and serve 10 robots their soup')).toBe(10);
+    expect(goalOf('serve 15 customers')).toBe(15);
+    expect(goalOf('serve 6 cats their milk')).toBe(9);
+  });
+
   it('the hand spec of the e2e fixture is the module translation', () => {
     const spec = specOf(CONTENT);
     if (process.env.BUILDSHIFT_WRITE_FIXTURE === '1' || !existsSync(FIXTURE_PATH)) writeFileSync(FIXTURE_PATH, `${JSON.stringify(spec, null, 2)}\n`);

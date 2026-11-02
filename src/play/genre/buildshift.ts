@@ -1,11 +1,11 @@
 /**
  * Žánr Směna se stavbou obchodu (P68, kategorie `stavba`): hráč z omezeného rozpočtu mincí postaví na mřížce obchodu
  * pece, pulty a police, otevře a posílá prodavače mezi nimi; zákazníci z věty přicházejí dveřmi a chtějí zboží z věty.
- * Cíl = obsloužit tolik zákazníků, kolik věta řekne (`customers` 6–20, výchozí 12). Vstup `lanes` (ťuk s buňkou v ose),
+ * Cíl = obsloužit tolik zákazníků, kolik věta řekne (`customers` 9–20, výchozí 12). Vstup `lanes` (ťuk s buňkou v ose),
  * pohled shora (`top`); ovládání `buildshift`, generátor `buildshift_shop` v `arcade/pieces/buildshift.ts`.
  *
  * **Z věty:** zákazník = kdo přichází („robots line up“, „serve 12 cats“), zboží = co chtějí („for pizza“, „their milk“;
- * zboží v názvu obchodu – „ice cream parlour“ – jen když jiné není), počet = cíl v mezích (`serve 3 of them` → 6).
+ * zboží v názvu obchodu – „ice cream parlour“ – jen když jiné není), počet = cíl v mezích (`serve 3 of them` → 9); číslo u směny nebo času („for one shift“, „two hours“) počet není.
  * Majitel („a raccoon runs a donut shop“) je hrdina, obchod je místo.
  *
  * Do kostry P68-I T1 patří brána aktivace: dokud úloha „zapoj buildshift“ žánr nevyjme z `ROUTE_PENDING`
@@ -125,12 +125,16 @@ function customerOfWords(words: readonly string[]): string | null {
   return singular(noun.join(' '));
 }
 
+/** Jednotka času za číslem: „for one shift“, „two hours“ počítají čas, ne zákazníky (dev d25, P68-K T2). */
+const TIME_UNIT = /^(?:shifts?|days?|nights?|hours?|minutes?|seconds?|mornings?|evenings?|afternoons?|weeks?|months?|years?|rounds?|turns?)\b/;
+
 /** Počet a zákazník za číslem („serve 12 cats“, „16 office workers want“); „serve 9 of them“ = jen počet. */
 function countedOf(text: string): { readonly count: number; readonly customer: string | null } | null {
   NUMBER.lastIndex = 0;
   for (let match = NUMBER.exec(text); match !== null; match = NUMBER.exec(text)) {
     const raw = match[1] as string;
     const count = /^\d+$/.test(raw) ? Number(raw) : (NUMBER_WORDS[raw] as number);
+    if (TIME_UNIT.test(text.slice(match.index + match[0].length))) continue;
     const words: string[] = [];
     for (const word of text.slice(match.index + match[0].length).split(/[\s,.!?;]+/)) {
       if (word === '' || STOP.has(word) || isGoods(word) || words.length === 3) break;
@@ -151,8 +155,15 @@ function arrivingOf(text: string): string | null {
   return words.length === 0 ? null : customerOfWords(words.slice(-3));
 }
 
-/** Cíl v mezích generátoru. */
-const goalOf = (count: number): number => Math.min(BUILDSHIFT.goal.max, Math.max(BUILDSHIFT.goal.min, count));
+/**
+ * Nejmenší cíl, který dostane věta nebo spec (P68-K T2). Generátor bere 6–20, ale při cíli 6–8 vyhrálo i špatné
+ * rozvržení (pec v nejvzdálenějším rohu) na všech 12 semínkách, i se 2 životy – malý cíl nešel prohrát. Od 9 prohraje
+ * vždy; cíle ≥ 9 se nemění.
+ */
+export const SHIFT_GOAL_MIN = 9;
+
+/** Cíl v mezích žánru. */
+const goalOf = (count: number): number => Math.min(BUILDSHIFT.goal.max, Math.max(SHIFT_GOAL_MIN, count));
 
 /** Co věta o směně říká bez AI: zákazník, zboží, cíl, majitel a obchod. Chybějící = `null`. */
 export function readShift(sentence: string): { readonly customer: string | null; readonly goods: string | null; readonly goal: number | null; readonly owner: string | null; readonly shop: string | null } {
@@ -175,7 +186,7 @@ export const buildshiftGenre: GenreModule<'buildshift'> = {
   // `run a` slyší „run a marathon“; obchod a jeho stavbu nese znak žánru `serve` v `classify.ts`.
   cues: ['diner', 'serve', 'customers'],
   heroClasses: ['humanoid', 'animal', 'robot'],
-  paramBounds: { customers: { min: BUILDSHIFT.goal.min, max: BUILDSHIFT.goal.max } },
+  paramBounds: { customers: { min: SHIFT_GOAL_MIN, max: BUILDSHIFT.goal.max } },
   // `ready` až zapojením v P68-I T11 („zapoj buildshift“, `evals/play/p68/stavba/integration.md` → Zapnutí); brány
   // hry 1. 11. neprošly (`evals/play/p68/integration-log.md`), proto zatím `staged`.
   availability: () => 'staged',

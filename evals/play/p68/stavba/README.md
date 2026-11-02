@@ -231,6 +231,27 @@ vlastní vitest 79/79 (`drawsave` + `buildshift`), `tsc` čistý, `own-files.mjs
   druhou orientaci rovnou v ní.
 - **Vlastní `playwright.stavba.config.ts` nebyl potřeba** – kostra dala `play-buildshift` do `testMatch` obou telefonů.
 
+## buildshift – opravy pro zapojení (P68-K T2, 2. 11.)
+
+Tři žádosti P68-I z T11 (deník zapojení), vyřízené v souborech hry:
+
+- **Zasekávání (FPS):** profil CDP na `pixel7-touch` (CPU ×4) ukázal dvě příčiny. Překlad shaderů při prvním výskytu
+  zboží, zákazníka a při startu dema (snímky 44–284 ms) – scéna teď po načtení modelů přeloží programy všech
+  materiálů, i skrytých, mimo hlavní vlákno (`compileForComposer`, smyčka jako `readyToDraw`). A 33 dlaždic podlahy
+  po vlastní síti, skoro třetina volání kreslení – podlaha je teď jedna `InstancedMesh`, barva dlaždice je barva
+  instance a otřes posune matici instance. Brána 3 běhy ze 3: p95 33,3–33,4 ms (mez 33,8), dlouhé snímky 0,6–1,6 %
+  (dřív 5,4 %), kontrolní `p66-arrows` beze změny.
+- **Malý cíl jde prohrát:** méně životů nestačí – špatné rozvržení vyhrálo cíl 6 na 12/12 semínek i se 2 životy.
+  Věta i spec proto dostanou nejméně 9 zákazníků (`SHIFT_GOAL_MIN`, `paramBounds.customers` 9–20; „serve 6 cats“ →
+  9). Generátor `buildshift_shop` dál bere 6–20 (sdílený test brány staví svět s cílem 6, aby ukázal, že brána
+  není dekorativní). Dev věty s12, s17, s20 čekají cíl 9. Cíle ≥ 9 beze změny.
+- **„for one shift“:** číslo před jednotkou času (směna, den, hodina, kolo…) není počet zákazníků; dev P68 d25 →
+  výchozí 12, „serve 15 customers“ → 15.
+- **Brány:** herní brána 38 světů (fixture × 10 + dev P68 8 + dev kategorie 20) – všech 7 kontrol ✓, 0 `failed`;
+  e2e `play-buildshift` chromium + pixel7-touch 12/12; sady buildshift, `gameplay-assert`, `p68-hash`, staged
+  testy 187/187.
+- **Pro režiséra (R5):** nahraná odpověď `p68-buildshift-diner.json` má `customers: 8`, s mezí 9 neprojde čtením specu.
+
 ## Rozhodnutí bez člověka
 
 - 1. 11.: stavět na WIP kostře místo čekání na `origin/main` (důvod: kostra se v PR už jen dokončuje, jména jsou
