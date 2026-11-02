@@ -3,15 +3,17 @@
  * písař skriptu se nezavolá a publikovaná AI verze je přesně spec režiséra. Zapnutý: úroveň ze skriptu se uloží
  * k verzi (`scriptLevel` s otiskem kódu); dvakrát neplatný skript = AI verze bez skriptu, druhé volání neslo chyby.
  * Revize T13: písař bez času v okně trasy se nevolá a nenačtený QuickJS AI verzi neshodí – obojí nechá spec režiséra.
+ * R4: skript běží ve vlastním vlákně a zaseknutý uvnitř vestavěné funkce skončí na pojistce hodin.
  */
 
 import { createHash } from 'node:crypto';
+import { Worker } from 'node:worker_threads';
 
-import { newQuickJSWASMModuleFromVariant } from 'quickjs-emscripten-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
 import type { ScriptRequest, ScriptWriter } from '@/play/scripts/generate';
+import { SCRIPT_WALL_MS } from '@/play/scripts/isolated';
 import type { GameSpecV1 } from '@/play/spec';
 import { memoryVersionStore } from '@/play/version';
 
@@ -21,14 +23,16 @@ import { directUpgrade, scriptWriterMinMs } from '../_upgrade';
 
 const SCRIPT_WRITER_MIN_MS = scriptWriterMinMs();
 
-vi.mock('quickjs-emscripten-core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('quickjs-emscripten-core')>();
-  return { ...actual, newQuickJSWASMModuleFromVariant: vi.fn(actual.newQuickJSWASMModuleFromVariant) };
+vi.mock('node:worker_threads', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:worker_threads')>();
+  return { ...actual, Worker: vi.fn(function Worker(...args: ConstructorParameters<typeof actual.Worker>) { return new actual.Worker(...args); }) };
 });
 
 const SENTENCE = 'a chicken crossing a busy road';
 const LEVEL = 'function build(api) { const rows = api.param("rows"); for (let z = 4; z < rows - 2; z += 4) { api.place("road", 2, z); api.place("road", 6, z + 1); } }';
 const BROKEN = 'function build(api) { api.place("road", 4, Date.now() % 40); }';
+/** Práce uvnitř `indexOf` mezi kontrolními body rozpočtu: v hlavním vlákně ~24 s na pokus, než ji rozpočet zastaví (R4). */
+const STUCK_IN_BUILTIN = 'function build(api) { const s = "a".repeat(4000); let n = 0; for (;;) n += s.indexOf("b") + 1; }';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -72,19 +76,37 @@ describe('PLAY_SCRIPTS gates the level script of the AI version', () => {
     expect(published.scriptLevel).toBeUndefined();
   }, 120_000);
 
-  // Modul QuickJS se drží na proces: tenhle test musí být v souboru první, který ho načte.
-  it('on: a QuickJS module that fails to load leaves the director version, and the next upgrade loads it again', async () => {
+  // Každý běh skriptu má vlastní vlákno s vlastním QuickJS (R4): vlákno, které se nenačte, shodí jen ten běh.
+  it('on: a script worker whose QuickJS fails to load leaves the director version, and the next upgrade runs again', async () => {
     vi.stubEnv('PLAY_SCRIPTS', 'on');
-    const load = vi.mocked(newQuickJSWASMModuleFromVariant);
-    const loadsBefore = load.mock.calls.length;
-    load.mockRejectedValueOnce(new Error('emscripten-module.wasm is missing from the bundle'));
+    const { Worker: RealWorker } = await vi.importActual<typeof import('node:worker_threads')>('node:worker_threads');
+    const spawn = vi.mocked(Worker);
+    const spawnsBefore = spawn.mock.calls.length;
+    spawn.mockImplementationOnce(function Unloadable() {
+      return new RealWorker("throw new Error('emscripten-module.wasm is missing from the bundle')", { eval: true });
+    } as never);
     const writer = vi.fn<ScriptWriter>(async () => ({ code: LEVEL, costUsd: 0 }));
     const failed = await upgradeWith(writer);
     expect(writer).toHaveBeenCalledTimes(1);
     expect(failed.published).toEqual(failed.ai);
     const again = await upgradeWith(writer);
-    expect(load.mock.calls.length - loadsBefore).toBe(2);
+    expect(spawn.mock.calls.length - spawnsBefore).toBe(2);
     expect(again.published.scriptLevel?.codeDigest).toBe(createHash('sha256').update(LEVEL).digest('hex'));
+  }, 120_000);
+
+  it('on: a script stuck inside one built-in call is killed by the wall clock in both rounds, and the director version publishes', async () => {
+    vi.stubEnv('PLAY_SCRIPTS', 'on');
+    const requests: ScriptRequest[] = [];
+    const writer = vi.fn<ScriptWriter>(async (request) => {
+      requests.push(request);
+      return { code: STUCK_IN_BUILTIN, costUsd: 0 };
+    });
+    const started = performance.now();
+    const { ai, published } = await upgradeWith(writer);
+    expect(writer).toHaveBeenCalledTimes(2);
+    expect(requests[1]?.repair?.issues).toEqual([`timeout: the script ran over its wall clock of ${SCRIPT_WALL_MS} ms`]);
+    expect(published).toEqual(ai);
+    expect(performance.now() - started).toBeLessThan(2 * SCRIPT_WALL_MS + 10_000);
   }, 120_000);
 
   it('on: with too little of the route window left the writer is not called and the director version publishes', async () => {

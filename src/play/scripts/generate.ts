@@ -18,7 +18,8 @@ import { costUsd, processScriptsSpendCap } from '@/server/spend-cap';
 import { chatConfigFromEnv, upstreamBranch } from '@/server/upstream';
 
 import type { ScriptGame } from './api';
-import { SCRIPT_RUNTIME_VERSION, loadQuickJs, runScript } from './sandbox';
+import { runScriptIsolated } from './isolated';
+import { SCRIPT_RUNTIME_VERSION } from './sandbox';
 import { scriptLevelFromRecording, scriptSourceIssues, scriptedSpecIssues } from './validate';
 
 type Env = Record<string, string | undefined>;
@@ -77,7 +78,7 @@ async function attempt(code: string, spec: GameSpecV1, seed: number, target: Non
   const done = (issues: readonly string[], polls: number | null, scripted: GameSpecV1 | null = null) => ({ spec: scripted, attempt: { code, issues, polls, ms: Math.round(performance.now() - started) } });
   const source = scriptSourceIssues(code);
   if (source.length > 0) return done(source, null);
-  const run = runScript(await loadQuickJs(), code, { game: target.game, params: target.params, seed });
+  const run = await runScriptIsolated(code, { game: target.game, params: target.params, seed });
   if (!run.ok) return done([`${run.error.kind}: ${run.error.message}`], run.polls);
   const level = scriptLevelFromRecording(target.game, run.recording, target.params);
   if (!level.ok) return done(level.issues, run.polls);

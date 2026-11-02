@@ -25,9 +25,8 @@ export const SCRIPT_BUDGET_POLLS = 2_000_000;
 /** Kolik kroků rozpočtu stojí jedno volání API (`api.place`, `api.rng.int`…). */
 export const HOST_CALL_POLLS = 100;
 /**
- * Paměť VM. simplified: běh je synchronní a skript, který paměť plní drobnými poli, ji u stropu přetřásá úklidem
- * (naměřeno ~12 s, než spadne na `out of memory`) – tak dlouho drží i smyčku událostí serveru. Před zapnutím
- * přepínače v produkci přesunout běh do workeru (`worker_threads`) s vlastním limitem.
+ * Paměť VM. Skript, který paměť plní drobnými poli, ji u stropu přetřásá úklidem (naměřeno ~12 s, než spadne na
+ * `out of memory`); na serveru běží ve vlastním vlákně a pojistka hodin (`isolated.ts`) ho utne dřív.
  */
 export const SCRIPT_MEMORY_BYTES = 16 * 1024 * 1024;
 /**
@@ -58,7 +57,8 @@ export function loadQuickJs(): Promise<QuickJs> {
   return loading;
 }
 
-export type ScriptErrorKind = 'budget' | 'memory' | 'stack' | 'syntax' | 'no-build' | 'thrown';
+/** `timeout` vrací jen běh ve vlákně (`isolated.ts`), když ho zabije pojistka hodin. */
+export type ScriptErrorKind = 'budget' | 'memory' | 'stack' | 'syntax' | 'no-build' | 'thrown' | 'timeout';
 export interface ScriptRunError {
   readonly kind: ScriptErrorKind;
   readonly message: string;

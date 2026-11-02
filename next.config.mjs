@@ -42,6 +42,15 @@ const nextConfig = {
   // QuickJS (P68I T13): server ho načítá z `node_modules` (varianta si `emscripten-module.wasm` čte vedle sebe),
   // nebalí ho. Prohlížeč (jen `/play/lab/scripts`) dostane `.wasm` jako asset webpacku.
   serverExternalPackages: ['quickjs-emscripten-core', '@jitl/quickjs-wasmfile-release-sync'],
+  // Vlákno skriptu úrovně (P68 R4, `src/play/scripts/isolated.ts`): webpack ho zabalí jako vlastní soubor
+  // `chunks/script-worker.js`, sledování souborů funkce ho ale samo nevidí (bez něj by na platformě každý skript
+  // skončil chybou a AI verze vždy bez skriptu).
+  outputFileTracingIncludes: { '/api/play/**': ['./.next/server/chunks/script-worker.js'] },
+  webpack: (config, { isServer, nextRuntime }) => {
+    // Výchozí cesta vlákna je veřejná cesta prohlížeče `/_next/`; na serveru leží vedle ostatních chunků.
+    if (isServer && nextRuntime === 'nodejs') config.output.workerPublicPath = './';
+    return config;
+  },
 };
 
 // Analyzer je devDependency, takže se importuje jen když se opravdu analyzuje.
