@@ -67,6 +67,7 @@ import {
   manhattan,
   queueAt,
   queueSpot,
+  rejectionOf,
   rushFor,
   sellerAt,
   stationCode,
@@ -102,12 +103,17 @@ function open(state: ArcadeState, keeper: number): void {
   state[slot(keeper, 'selected')] = 0;
 }
 
+/** Zamítnutý ťuk: buňka a tik (`rejectionOf`), takže i opakovaný ťuk na tutéž buňku je pro scénu nové zamítnutí. */
+const reject = (state: ArcadeState, keeper: number, cell: number): void => {
+  state[slot(keeper, 'rejected')] = rejectionOf(cell, state[HEADER.tick] as number);
+};
+
 /** Stavba na buňce: jen volná stavební buňka a jen s dostatkem mincí; mince ubude hned, stanoviště vystaví pravidlo. */
 function tryBuild(state: ArcadeState, keeper: number, cell: number, code: number): boolean {
   const kind = KIND_OF_CODE[code];
   const coins = state[slot(keeper, 'coins')] as number;
   if (kind === undefined || !isBuildCell(cell) || stationsByCell(state)[cell] !== -1 || coins < STATION_COST[kind]) {
-    state[slot(keeper, 'rejected')] = cell + 1;
+    reject(state, keeper, cell);
     return false;
   }
   state[slot(keeper, 'coins')] = coins - STATION_COST[kind];
@@ -131,7 +137,7 @@ function tap(state: ArcadeState, keeper: number, cell: number): void {
   const selected = state[slot(keeper, 'selected')] as number;
   if (phase === PHASE.build) {
     if (selected > 0) tryBuild(state, keeper, cell, selected);
-    else state[slot(keeper, 'rejected')] = cell + 1;
+    else reject(state, keeper, cell);
     return;
   }
   // Provoz: vybraný druh na volnou stavební buňku = stavba za vydělané mince; jinak tam jde prodavač.

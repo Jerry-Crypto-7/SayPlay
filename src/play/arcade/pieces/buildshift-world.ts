@@ -102,8 +102,8 @@ export const templateOf = (code: number): number => BUILDSHIFT_BODIES.keeper + c
  * Stav směny na těle-počítadle (mrtvá předloha za prodavačem): fáze (0 stavba, 1 provoz), mince, vybraný druh palety
  * (0 = nic), co prodavač nese (0/1), cíl prodavače (buňka + 1, 0 = stojí), tik otevření, žádost o stavbu tohoto tiku
  * (buňka + 1 a kód druhu – stanoviště vystaví pravidlo `buildshift_build`), obsloužení a odešlí v tomto tiku
- * (pravidlo `buildshift_shift` z nich udělá efekty) a poslední zamítnutý ťuk (buňka + 1, scéna jím zatřese).
- * Píše jen ovládání, pravidla čtou.
+ * (pravidlo `buildshift_shift` z nich udělá efekty) a poslední zamítnutý ťuk (buňka + 1 a tik, `rejectedCellOf` –
+ * scéna jím zatřese). Píše jen ovládání, pravidla čtou.
  */
 export const SHIFT_SLOTS = {
   phase: BODY.x,
@@ -120,6 +120,17 @@ export const SHIFT_SLOTS = {
 } as const;
 
 export const PHASE = { build: 0, open: 1 } as const;
+
+/**
+ * Zamítnutý ťuk (`SHIFT_SLOTS.rejected`) = buňka + 1 + `REJECT_STAMP` × (tik + 1). Tik dělá z každého zamítnutí novou
+ * hodnotu – druhý ťuk na tutéž prázdnou buňku bez výběru scéna jinak neviděla a hráč (i sonda času do hratelnosti,
+ * P68-L T1) nedostal žádnou odezvu.
+ */
+export const REJECT_STAMP = 64;
+if (GRID_CELLS + 1 >= REJECT_STAMP) throw new Error('buildshift: the grid does not fit the rejection stamp');
+export const rejectionOf = (cell: number, tick: number): number => cell + 1 + REJECT_STAMP * (tick + 1);
+/** Buňka zamítnutého ťuku z hodnoty slotu, nebo −1, když žádný nebyl. */
+export const rejectedCellOf = (value: number): number => (value > 0 ? (value % REJECT_STAMP) - 1 : -1);
 
 /**
  * Stanoviště (živá kopie předlohy): `aux0` = postup pečení (pec), `aux1` = hotové věci (pec) nebo zásoba (police).

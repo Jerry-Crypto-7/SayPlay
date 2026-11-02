@@ -55,6 +55,7 @@ import {
   customersOf,
   isBuildCell,
   queueAt,
+  rejectedCellOf,
   rowOf,
   shiftSlot,
   shiftView,
@@ -122,6 +123,14 @@ const FLASH_S = 0.35;
  */
 const SHAKE = { s: 0.2, amount: 0.12, hz: 30 } as const;
 const PRICE_S = 0.9;
+/**
+ * Nápověda „vyber stanici“ (P68-L T1) po ťuku na desku bez výběru: karty druhů v paletě svítí slunečně `s` sekund,
+ * posledních `fade` vyhasínají, a každá poskočí o `hop` m (po `stagger` s za sebou, skok trvá `hopS`). Dohasne dřív,
+ * než přijde další ťuk sondy (~0,75 s na desktopu), takže i opakovaný ťuk na tutéž buňku je vidět jako změna.
+ */
+const HINT = { s: 0.7, fade: 0.35, hop: 0.3, stagger: 0.06, hopS: 0.4 } as const;
+const HINT_TINT = new Color(color.sun);
+const WHITE = new Color(1, 1, 1);
 /** Výskok „+1“ s mincí nad obslouženým: délka (s), výstup (m), naskočení (s, `duration-quick`), výška startu (m), kolik naráz. */
 const PLUS = { s: 0.9, rise: 0.8, pop: 0.16, y: 2.1, pool: 3 } as const;
 /** Tep cedule Rush!: perioda (s) a výchylka měřítka. */
@@ -236,7 +245,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
   const openBar = useRef<Mesh | null>(null);
   const flash = useRef<Mesh | null>(null);
   /** Odmítnutý ťuk: buňka, do kdy bliká, začátek otřesu, poslední viděná hodnota slotu a cena, která chyběla (0 = žádná). */
-  const flashState = useRef({ cell: -1, until: 0, start: 0, last: 0, price: 0 });
+  const flashState = useRef({ cell: -1, until: 0, start: 0, last: 0, price: 0, hint: -Infinity });
   const price = useRef<Group | null>(null);
   /** Druh, který byl naposledy vybraný (ve fázi provozu ťuk na desku výběr smaže dřív, než ho scéna uvidí). */
   const lastSelected = useRef(0);
@@ -458,6 +467,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
 
     // Odmítnutý ťuk (zabraná buňka, zeď, málo mincí): buňka krátce problikne poplachem a zatřese se; chyběly-li mince
     // na vybraný druh, nad buňkou vyskočí cenovka. Ve fázi provozu ťuk na desku výběr smaže – cenu dá poslední viděný.
+    // Ťuk na desku bez vybraného druhu ve fázi stavby navíc rozsvítí a nadhodí paletu (P68-L T1): „vyber stanici“.
     if (view.selected > 0) lastSelected.current = view.selected;
     const rejected = shiftSlot(state, SHIFT_SLOTS.rejected);
     const blink = flashState.current;
@@ -465,10 +475,11 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       blink.last = rejected;
       if (rejected > 0) {
         const tried = kindOfCode(view.phase === PHASE.build ? view.selected : lastSelected.current);
-        blink.cell = rejected - 1;
+        blink.cell = rejectedCellOf(rejected);
         blink.start = now;
         blink.until = now + FLASH_S;
         blink.price = tried !== null && view.coins < STATION_COST[tried] ? STATION_COST[tried] : 0;
+        if (view.phase === PHASE.build && view.selected === 0) blink.hint = now;
       }
     }
     const reduced = reducedMotion();
@@ -629,17 +640,23 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       }
     });
 
-    // Paleta: vybraný druh vyjede, ceny podle mincí, Open rajčatový jen ve fázi stavby.
+    // Paleta: vybraný druh vyjede, ceny podle mincí, Open rajčatový jen ve fázi stavby. Nápověda (ťuk bez výběru):
+    // karty druhů zežloutnou přes barvu materiálu (bez překreslení textury) a postupně poskočí, pak doběhnou zpět.
     const building = view.phase === PHASE.build;
+    const hintAge = now - blink.hint;
+    const hint = hintAge >= 0 && hintAge < HINT.s ? Math.min(1, (HINT.s - hintAge) / HINT.fade) : 0;
     STATION_KINDS.forEach((kind, k) => {
       const selected = selectedKind === kind;
       const affordable = view.coins >= STATION_COST[kind];
-      paint(labels.palette[k] as Label, `${selected}|${affordable}`, (context) => {
+      const label = labels.palette[k] as Label;
+      paint(label, `${selected}|${affordable}`, (context) => {
         card(context, selected ? color.sun : affordable ? color.paper : color['cream-deep'], selected ? 16 : 10);
         coin(context, 200, 56, 34, String(STATION_COST[kind]));
         words(context, STATION_NAME[kind], 128, 216, 44, 700, affordable || selected ? color.ink : color['ink-soft']);
       });
-      paletteTiles.current[k]?.position.setY(selected ? 0.18 : 0);
+      label.material.color.copy(WHITE).lerp(HINT_TINT, hint);
+      const hop = hint > 0 && !reduced ? HINT.hop * Math.max(0, Math.sin(Math.PI * clamp01((hintAge - k * HINT.stagger) / HINT.hopS))) : 0;
+      paletteTiles.current[k]?.position.setY((selected ? 0.18 : 0) + hop);
     });
     paint(labels.coins, String(view.coins), (context) => {
       card(context, color.paper, 10);
