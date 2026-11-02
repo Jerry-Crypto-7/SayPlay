@@ -16,6 +16,7 @@ import {
   YAW,
   bossSpeedOf,
   enemySpeedAt,
+  isRushDistance,
   walkTicks,
 } from './railfps-world';
 
@@ -28,7 +29,9 @@ const END_MARGIN = 2 * 60;
 /**
  * Nejrychlejší vyčištění vlny `k` (tiky hodin kola), nebo hláška, kterého nepřítele hráč nestihne. Nepřátelé jdou
  * v pořadí podle termínu (poslední tik, kdy je zásah ještě před `reach`), terče po nich; před každým cílem reakce
- * robota, otočka a rozestup ran, boss `bossHp` ran za sebou. První otočka vlny jde přes celý oblouk.
+ * robota, otočka a rozestup ran, boss `bossHp` ran za sebou. První otočka vlny jde přes celý oblouk – jen když
+ * první příchod přijde až po návratu pohledu doprostřed (ovládání ho na začátku kola vrací o krok za tik, nejvýš
+ * půl oblouku), jde od středu. Přepadení (`rushDistance`) tím model počítá přesně: vzniká, když hráč nic nedělá.
  */
 export function waveClearTicks(wave: readonly RailfpsArrival[], k: number): { readonly ticks: number; readonly late: string[] } {
   const late: string[] = [];
@@ -41,7 +44,7 @@ export function waveClearTicks(wave: readonly RailfpsArrival[], k: number): { re
     .sort((a, b) => a.deadline - b.deadline || a.at - b.at);
   const targets = wave.filter(([, template]) => template === RAILFPS_BODIES.target).map(([at, , sector]) => ({ at, sector }));
   let t = 0;
-  let cur = Number.NaN;
+  let cur = (wave[0]?.[0] ?? 0) > YAW.maxSector * YAW.turnTicks ? 0 : Number.NaN;
   let lastShot = -RAILFPS.fireInterval;
   const shoot = (at: number, sector: number, shots: number): number => {
     const turn = Number.isNaN(cur) ? 2 * YAW.maxSector : Math.abs(sector - cur);
@@ -58,6 +61,16 @@ export function waveClearTicks(wave: readonly RailfpsArrival[], k: number): { re
   });
   for (const target of targets) shoot(target.at, target.sector, 1);
   return { ticks: t, late };
+}
+
+/**
+ * Přepadení vlny, která vzniknou do `rushWarn` tiků hodin kola (`clock` = hodiny posledního tiku; příchod `at` vznikne
+ * v tiku, kdy hodiny dojdou na `at`). Scéna je ohlásí šipkou hrozby; jádro ani robot je nečtou.
+ */
+export function rushesAhead(wave: readonly RailfpsArrival[] | undefined, clock: number): { readonly sector: number; readonly distance: number }[] {
+  return (wave ?? [])
+    .filter(([at, template, , , distance]) => template === RAILFPS_BODIES.enemy && isRushDistance(distance) && at > clock && at - clock <= RAILFPS.rushWarn)
+    .map(([, , sector, , distance]) => ({ sector, distance }));
 }
 
 /** Tvrzení „hratelné z konstrukce“ nad úrovní střelnice z očí a rozvrhem vln; prázdné pole = hratelná. */

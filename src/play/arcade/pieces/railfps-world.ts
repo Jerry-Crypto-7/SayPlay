@@ -75,6 +75,19 @@ export const RAILFPS = {
   seconds: 85,
   /** Reakce robota (tiky) – kontrola úrovně s ní počítá u každého cíle. */
   botReaction: 8,
+  /**
+   * Přepadení (P68-K T1): na začátku pozdějších vln vyskočí nepřítel blízko na kraji (sektor ±4) a hned běží. Okno
+   * zásahu je přesně reakce `rushReaction` + otočka + 1 tik: robot (8 tiků) i středně zkušený hráč (12) ho stihnou,
+   * pomalá ruka (profil `novice`, 20) ne – a přijde o život. Přepadení je tolik, kolik má hra životů (od poslední vlny,
+   * nejvýš `rushPerWave` na vlnu): první `rushFirst` tiků po začátku kola (pohled je už zpátky uprostřed), další po
+   * `rushGap` na opačném kraji (i pomalý hráč je do té doby natočený na minulém), běžné příchody vlny až po nich.
+   * Scéna ho ohlásí šipkou hrozby `rushWarn` tiků předem – člověk se stihne natočit, robot šipku nevidí.
+   */
+  rushReaction: 16,
+  rushFirst: 45,
+  rushGap: 90,
+  rushPerWave: 2,
+  rushWarn: 45,
   player: { w: 600, h: 1700, d: 600 },
   target: { w: 1000, h: 1000, d: 300 },
   enemy: { w: 900, h: 1800, d: 900 },
@@ -277,6 +290,15 @@ export const bossSpeedOf = (speed: number): number => Math.trunc((speed * RAILFP
 
 /** Tiky chůze od vzniku ve vzdálenosti `distance` do `reach`. */
 export const walkTicks = (distance: number, speed: number): number => Math.ceil(Math.max(0, distance - RAILFPS.reach) / speed);
+
+/**
+ * Vzdálenost vzniku přepadení: nepřítel s rychlostí `speed` dojde na `reach` přesně za `rushReaction` + `turnSteps`
+ * + 1 tiků (půl kroku rezervy na zaokrouhlení polohy na paprsku). Běžní nepřátelé vznikají dál než `enemyNear`.
+ */
+export const rushDistance = (turnSteps: number, speed: number): number => RAILFPS.reach + (RAILFPS.rushReaction + turnSteps + 1) * speed - (speed >> 1);
+
+/** Příchod nepřítele blíž než pás běžného vzniku je přepadení. */
+export const isRushDistance = (distance: number): boolean => distance < RAILFPS.enemyNear;
 
 /** Spodní hrana terče v řádku `row`. */
 export const targetY = (row: number): number => (HEIGHT_ROWS[row] as number) - RAILFPS.target.h / 2;

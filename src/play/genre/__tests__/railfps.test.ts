@@ -15,6 +15,7 @@ import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
 import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { assertGame, traceRun } from '@/play/arcade/gameplay-assert';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { RAILFPS, RAILFPS_BODIES, type RailfpsRoundParams, checkRailfpsLevel, railfpsRail } from '@/play/arcade/pieces/railfps';
 import { runBot } from '@/play/arcade/verify';
@@ -118,6 +119,30 @@ interface Sentence {
   readonly enemy: string;
   readonly setting: string;
 }
+
+describe('railfps: a slow hand loses (P68-K T1)', () => {
+  const fixtureSpec = (): GameSpecV1 => {
+    const read = readGameSpec(JSON.parse(readFileSync(join(process.cwd(), FIXTURE), 'utf8')));
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    return read.value;
+  };
+  const TEN = Array.from({ length: 10 }, (_, k) => k + 1);
+
+  it('on the fixture the novice weak player of the gameplay gate loses >= 8 of 10 seeds and the default bot wins >= 9 of 10', () => {
+    const rows = TEN.map((seed) => {
+      const world = worldOf(fixtureSpec(), seed);
+      return { seed, bot: runBot(world, ARCADE_LIBRARY).outcome, weak: traceRun(world, 'weak-bot').outcome };
+    });
+    expect(rows.filter((row) => row.bot === 'won').length, JSON.stringify(rows)).toBeGreaterThanOrEqual(9);
+    expect(rows.filter((row) => row.weak === 'lost').length, JSON.stringify(rows)).toBeGreaterThanOrEqual(8);
+  });
+
+  it('the whole gameplay gate passes on the fixture: win, idle and weak losses, aims, hit-on-fire, idle-hurt', () => {
+    const results = assertGame('railfps', worldOf(fixtureSpec(), 1));
+    expect(results.map((entry) => entry.id)).toEqual(expect.arrayContaining(['bot-wins', 'idle-loses', 'weak-loses', 'aims', 'hit-on-fire', 'idle-hurt']));
+    expect(results.filter((entry) => !entry.pass)).toEqual([]);
+  });
+});
 
 describe('railfps sentences keep their enemy and place (P68-F T4)', () => {
   const { sentences } = JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p68/prvni-osoba/sentences.json'), 'utf8')) as { readonly sentences: readonly Sentence[] };

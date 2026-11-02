@@ -35,10 +35,13 @@ import { type Group, type InstancedMesh, Matrix4, type Mesh, type PerspectiveCam
 
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
-import { BODY, FLAG, HEADER, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, UNIT, bodyBase, bodyHp, underlyingRule } from '@/play/arcade/contract';
+import { roundOf } from '@/play/arcade/hooks/rounds';
 import { type InteriorFloor, type Look, SURFACES } from '@/play/arcade/look';
 import { foeScale, riggedCharacter } from '@/play/arcade/models';
-import { RAILFPS, YAW, aimOf, foesOf, isEnemy, sameKind, yawStepOf } from '@/play/arcade/pieces/railfps-world';
+import type { RailfpsRoundParams } from '@/play/arcade/pieces/railfps';
+import { rushesAhead } from '@/play/arcade/pieces/railfps-level';
+import { RAILFPS, YAW, aimOf, clockOf, foesOf, isEnemy, sameKind, yawStepOf } from '@/play/arcade/pieces/railfps-world';
 
 import { renderHeld } from '../../effects/render-feel';
 import { HorizonBackdrop } from '../../look/Backdrop';
@@ -167,6 +170,8 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
   const size = useThree((three) => three.size);
   const measured = usePlayRectRef();
   const { keeper, boss: bossTemplate } = useMemo(() => baseControlOf(world.control).params as { readonly keeper: number; readonly boss: number }, [world]);
+  // Rozvrh vln pro ohlášení přepadení (P68-K T1): šipka hrozby vyskočí dřív než nepřítel.
+  const round = useMemo(() => world.rules.map(underlyingRule).find((ref) => ref.id === 'railfps_round')?.params as RailfpsRoundParams | undefined, [world]);
   const foeModel = cast.enemy === '' ? DEFAULT_FOE : cast.enemy;
   const bossModel = cast.boss?.model ?? cast.things?.boss ?? foeModel;
   const markModel = cast.props.target ?? cast.things?.target ?? 'target';
@@ -211,8 +216,9 @@ export function RailfpsScene({ session, cast, surface, scene: look }: RailfpsSce
     const rect = measured.current ?? playRect(size, HUD_BAND_PX, size.height - THUMB_ZONE_PX);
     const pose = cameraPose(yawStepOf(prev, keeper), yawStepOf(state, keeper), alpha, camera.aspect, rect);
     applyPose(camera, pose, size.width, size.height);
-    // Šipky hrozeb mimo záběr (T9) z pózy, kterou tenhle snímek kreslí.
-    threats.current?.paint(running ? offscreenThreats(state, pose.yawDeg, camera.aspect, pose.fovDeg) : [], rect);
+    // Šipky hrozeb mimo záběr (T9) z pózy, kterou tenhle snímek kreslí; i přepadení, která teprve přijdou.
+    const coming = round === undefined ? [] : rushesAhead(round.waves[roundOf(state, round.hooks)], clockOf(state, keeper));
+    threats.current?.paint(running ? offscreenThreats(state, pose.yawDeg, camera.aspect, pose.fovDeg, coming) : [], rect);
     // Otřes po ztrátě života (`RailfpsFeedback`): posun záběru v px nad pózou, mimo stav i data pro dotyk.
     const shake = kick.current;
     if (shake.x !== 0 || shake.y !== 0) {

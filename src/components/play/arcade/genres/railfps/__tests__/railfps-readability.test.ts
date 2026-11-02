@@ -15,7 +15,7 @@ import { completeHooks } from '@/play/arcade/hooks';
 import { buildWorld, instantiate } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { LEGIBLE_SHARE, foeScale } from '@/play/arcade/models';
-import { EYE_HEIGHT, HEIGHT_ROWS, RAILFPS, RAILFPS_BODIES, YAW, railfpsRail, rayPoint, targetY } from '@/play/arcade/pieces/railfps';
+import { EYE_HEIGHT, HEIGHT_ROWS, RAILFPS, RAILFPS_BODIES, type RailfpsRoundParams, YAW, railfpsRail, rayPoint, rushesAhead, targetY } from '@/play/arcade/pieces/railfps';
 
 import { playRect } from '../../../portrait-frame';
 import { HUD_BAND_PX, THUMB_ZONE_PX } from '../../portrait-first';
@@ -169,5 +169,23 @@ describe('railfps threat arrows from a hand-made state (P68-F T9)', () => {
   it('with no enemy alive there is no arrow', () => {
     const { state } = stage([[target, 4, 9_000]]);
     expect(arrowsAt(state, 0)).toEqual([]);
+  });
+
+  it('a coming rush (P68-K T1) gets its arrow rushWarn ticks before it spawns, from the generated schedule, and none after', () => {
+    const parts = railfpsRail.parts(1, railfpsRail.params.parse({}), undefined);
+    const waves = (parts.rules.find((ref) => ref.id === 'railfps_round')!.params as RailfpsRoundParams).waves;
+    const [at, , sector] = waves[1]![0]!;
+    expect(Math.abs(sector)).toBe(YAW.maxSector);
+    const { state } = stage([]);
+    const pose = poseAt(0);
+    const arrows = (clock: number): string[] => offscreenThreats(state, pose.yawDeg, ASPECT, pose.fovDeg, rushesAhead(waves[1], clock)).map((threat) => `${threat.side}:${String(threat.sector)}`);
+    expect(arrows(at - RAILFPS.rushWarn - 1)).toEqual([]);
+    expect(arrows(at - RAILFPS.rushWarn)).toEqual([`${sector < 0 ? 'left' : 'right'}:${String(sector)}`]);
+    expect(arrows(at - 1)).toHaveLength(1);
+    // Vznikl: od teď ho hlásí živé tělo, ne rozvrh.
+    expect(arrows(at)).toEqual([]);
+    // Běžný nepřítel z rozvrhu ohlášený není.
+    const plain = waves[1]!.findIndex(([, template, , , distance]) => template === RAILFPS_BODIES.enemy && distance >= RAILFPS.enemyNear);
+    expect(rushesAhead(waves[1], waves[1]![plain]![0] - 1)).toEqual([]);
   });
 });

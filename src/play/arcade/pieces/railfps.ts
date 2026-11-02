@@ -62,7 +62,9 @@ import {
   foesOf,
   isEnemy,
   rayPoint,
+  rushDistance,
   sameKind,
+  sectorToStep,
   shotOf,
   targetY,
   walkEnemy,
@@ -109,6 +111,11 @@ export const railfpsControl: ControlPiece<RailfpsControlParams> = {
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     tickClock(state, params.keeper, params.hooks);
+    // Nové kolo: kolej hráče převezla dál, pohled se vrací doprostřed (o krok za tik) a rozdělaná rána propadne.
+    if (clockOf(state, params.keeper) === 1) {
+      state[bodyBase(params.keeper) + RIG.goal] = 0;
+      state[bodyBase(params.keeper) + RIG.latch] = 0;
+    }
     const p = bodyBase(player);
     state[p + BODY.vx] = 0;
     state[p + BODY.vz] = 0;
@@ -261,23 +268,51 @@ const STEP = 500;
 /** Průměrný rozestup příchodů (tiky) ve hře s `total` věcmi: `pace` na celou hru, v mezích `gapMin`..`gapMax`. */
 export const railfpsGap = (total: number): number => Math.min(RAILFPS.gapMax, Math.max(RAILFPS.gapMin, Math.floor(RAILFPS.pace / Math.max(1, total))));
 
+/** Nepřátel vlny `k` mimo bosse – jen ti můžou přepadnout. */
+const plainEnemies = (size: number, k: number, waves: number): number => Math.ceil((size * RAILFPS.enemyPct) / 100) - (k === waves - 1 ? 1 : 0);
+
 /**
- * Příchody vlny `k`: terče a nepřátelé po jednom napřeskáčku (pořadí druhů ze streamu, sektory bez opakování, dokud
- * jich je dost, řádky výšky ze streamu), první v tiku 1, další po rozestupu `gap` (s každým kolem o `gapShrink`
- * kratším, ne pod `gapMin`) ± ¼. Poslední vlna končí bossem.
+ * Přepadení po vlnách: `lives` dohromady (pomalá ruka přijde o všechny životy), od poslední vlny dopředu, nejvýš
+ * `rushPerWave` na vlnu a nejvýš tolik, kolik má vlna nepřátel mimo bosse. První vlna jen tehdy, když pozdější nestačí.
  */
-export function railfpsWave(seed: number, k: number, size: number, waves: number, gap: number): RailfpsArrival[] {
+export function railfpsRushes(sizes: readonly number[], lives: number): number[] {
+  const out = sizes.map(() => 0);
+  let left = lives;
+  for (let k = sizes.length - 1; k >= 0 && left > 0; k -= 1) {
+    out[k] = Math.min(left, RAILFPS.rushPerWave, plainEnemies(sizes[k] as number, k, sizes.length));
+    left -= out[k] as number;
+  }
+  return out;
+}
+
+/**
+ * Příchody vlny `k`: nejdřív `rushes` přepadení (první v tiku `rushFirst` na kraji ze streamu – pohled je po začátku
+ * kola zpátky uprostřed, další po `rushGap` na opačném kraji; vzdálenost `rushDistance` z otočky a rychlosti kola),
+ * pak terče a zbylí nepřátelé po jednom napřeskáčku (pořadí druhů ze streamu, sektory bez opakování, dokud jich je
+ * dost, řádky výšky ze streamu), první v tiku 1 (po přepadení o `rushGap` za posledním), další po rozestupu `gap`
+ * (s každým kolem o `gapShrink` kratším, ne pod `gapMin`) ± ¼. Poslední vlna končí bossem. Vlna bez přepadení
+ * čte stream stejně jako dřív.
+ */
+export function railfpsWave(seed: number, k: number, size: number, waves: number, gap: number, rushes = 0): RailfpsArrival[] {
   const rng = createCompileRng(seed, 'spawn');
-  const enemies = Math.ceil((size * RAILFPS.enemyPct) / 100);
+  const enemies = Math.ceil((size * RAILFPS.enemyPct) / 100) - rushes;
   const sectors: number[] = [];
-  while (sectors.length < size) sectors.push(...rng.shuffle(SECTORS));
+  while (sectors.length < size - rushes) sectors.push(...rng.shuffle(SECTORS));
   const last = k === waves - 1;
   // Boss stojí mimo míchání: vždy poslední příchod poslední vlny.
-  const kinds: number[] = rng.shuffle([...Array.from({ length: size - enemies }, () => RAILFPS_BODIES.target), ...Array.from({ length: last ? enemies - 1 : enemies }, () => RAILFPS_BODIES.enemy)]);
+  const kinds: number[] = rng.shuffle([...Array.from({ length: size - rushes - enemies }, () => RAILFPS_BODIES.target), ...Array.from({ length: last ? enemies - 1 : enemies }, () => RAILFPS_BODIES.enemy)]);
   if (last) kinds.push(RAILFPS_BODIES.boss);
   const step = Math.max(RAILFPS.gapMin, gap - k * RAILFPS.gapShrink);
   const out: RailfpsArrival[] = [];
-  let at = 1;
+  const speed = enemySpeedAt(k);
+  let side = rushes > 0 && rng.int(0, 1) === 0 ? -1 : 1;
+  for (let n = 0; n < rushes; n += 1) {
+    // Z prostředku na kraj je půl oblouku, z kraje na opačný kraj celý.
+    const turn = sectorToStep(n === 0 ? YAW.maxSector : 2 * YAW.maxSector);
+    out.push([RAILFPS.rushFirst + n * RAILFPS.rushGap, RAILFPS_BODIES.enemy, side * YAW.maxSector, 0, rushDistance(turn, speed)]);
+    side = -side;
+  }
+  let at = rushes === 0 ? 1 : RAILFPS.rushFirst + rushes * RAILFPS.rushGap;
   kinds.forEach((from, n) => {
     const sector = sectors[n] as number;
     if (from === RAILFPS_BODIES.target) out.push([at, from, sector, rng.int(0, 2), rng.int(RAILFPS.targetNear / STEP, RAILFPS.targetFar / STEP) * STEP]);
@@ -319,7 +354,8 @@ export const railfpsRail: ModeGeneratorPiece<RailfpsParams> = {
     const seeds = roundSeeds(seed, params.waves);
     const sizes = railfpsWaveSizes(params.targets, params.waves);
     const gap = railfpsGap(sizes.reduce((sum, size) => sum + size, 0));
-    const schedule = sizes.map((size, k) => railfpsWave(seeds[k] as number, k, size, params.waves, gap));
+    const rushes = railfpsRushes(sizes, health ?? START_LIVES);
+    const schedule = sizes.map((size, k) => railfpsWave(seeds[k] as number, k, size, params.waves, gap, rushes[k]));
     const { keeper, boss } = RAILFPS_BODIES;
     // Počítadlo háčků přidá `withHooks` hned za tělesa úrovně – ovládání, pravidla i robot ho znají už teď.
     const hooks = level.bodies.length;
