@@ -333,7 +333,8 @@ export class WitnessRecorder {
           this.origins.set(copy, origin);
           // P66 T12: pád nepřítele přežití je v obalu `ifAlive` (dvě střely téhož tiku srazí jen jednou); jádro obal
           // rozbalí na místě, takže svědek vidí efekty uvnitř jen s původem. Jen přežití – obaly schopností (P46A) dál ne.
-          if (copy.kind === 'ifAlive' && effective.id.startsWith('survivor_')) for (const inner of copy.effects) this.origins.set(inner, origin);
+          // P68 T10: rána a dosah střelnice z očí (`railfps_shot`, `railfps_round`) jsou v témže obalu.
+          if (copy.kind === 'ifAlive' && (effective.id.startsWith('survivor_') || effective.id.startsWith('railfps_'))) for (const inner of copy.effects) this.origins.set(inner, origin);
           return copy;
         });
       },
@@ -539,6 +540,13 @@ export class WitnessRecorder {
     // nakresleným úsekem (bez úseku postava nepřežije).
     // Hrozba drawsave je vidět, když spadne shora (kopie předlohy hrozby z rozpisu `drawsave_wave`).
     if (ref.id === 'drawsave_wave' && effect.kind === 'spawn') this.add('hazard', effect.template, player, tick, 'threat-fell-from-the-top', state);
+    // P68 T10: střelnice z očí. Rána `railfps_shot`, po které cíl zmizí, je výstřel z kolejí i sražený cíl; nepřítel,
+    // kterého `railfps_round` odebere na dosah hráče (vzal život), k hráči došel – pronásledovatel receptu.
+    if (ref.id === 'railfps_shot' && effect.kind === 'despawn') {
+      this.add('railshoot', player, null, tick, 'target-shot-from-the-rail', state);
+      this.add('defeat', player, effect.body, tick, 'target-shot-from-the-rail', state);
+    }
+    if (ref.id === 'railfps_round' && effect.kind === 'despawn') this.add('chaser', effect.body, player, tick, 'enemy-reached-the-rail', state);
     if (ref.id === 'drawsave_wave' && effect.kind === 'win') {
       this.add('survive', player, null, tick, 'survived-the-falling-threats', state);
       if (segmentCountOf(state) > 0) this.add('drawwall', player, null, tick, 'drawn-wall-held-to-the-end', state);

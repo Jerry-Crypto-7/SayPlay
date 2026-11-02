@@ -95,7 +95,8 @@ describe('classifyGenre', () => {
     ['A knight frees the prisoners in a tower', 'quest.spatial', 'free'],
     ['A chef flips burgers', 'quest.station', 'cook'],
     ['A space marine shoots alien bugs in a mining colony', 'shooter.default', 'shoot'],
-    ['shoot the ghosts in a haunted carnival shooting gallery', 'shooter.default', 'shoot'],
+    // P68 T10: střelnice s výstřelem je railfps (`prvni-osoba/integration.md`: přepsat očekávání poptávky s052).
+    ['shoot the ghosts in a haunted carnival shooting gallery', 'railfps.default', 'railshoot'],
     ['throwing snowballs at kids behind a snow fort', 'throw.default', 'throw'],
     ['bowling in a haunted alley', 'throw.default', 'throw'],
     ['satisfying game where you pop stuff', 'quest.spatial', 'hit'],

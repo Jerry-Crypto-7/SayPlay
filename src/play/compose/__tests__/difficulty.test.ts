@@ -16,7 +16,9 @@ import { compileRecipe } from '../compile';
 // P68 T9: minigolf taky 20/20; drží ho slabý robot `minigolf-bot.test.ts` (dojdou mu údery na ≥ 8 z 10 jamek).
 // P68 T12: drawsave taky 20/20 (robot kategorie profil nečte); drží ho čára mimo postavu (`arcade/__tests__/drawsave.test.ts`:
 // prohraje ≥ 10 z 12) – profil začátečníka je žádost kategorii v `integration-log.md`.
-const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default', 'drawsave.default']);
+// P68 T10: railfps naopak – začátečník prohraje 20/20 (přepadení na začátku vln, P68-K T1), pokročilý vyhraje 20/20;
+// pomalá ruka má prohrát (`railfps.test.ts`, herní brána `weak-loses`).
+const OWN_DIFFICULTY: ReadonlySet<string> = new Set(['hole.default', 'steal.default', 'sort.default', 'arrows.default', 'buildshift.default', 'stunt.default', 'minigolf.default', 'drawsave.default', 'railfps.default']);
 
 it('pins measured novice and intermediate bounds for every current live recipe', () => {
   const report = JSON.parse(readFileSync('evals/play/p41/difficulty.json', 'utf8')) as {

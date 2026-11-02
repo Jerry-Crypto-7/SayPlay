@@ -148,7 +148,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // „zapoj X“ podle `integration.md` kategorie.
   stunt: arcade({ cues: 'drive a vehicle over ramps and jumps, crash through debris, cross the finish line', roles: [], finish: false, labels: [], mechanics: [] }),
   minigolf: arcade({ cues: 'charge and release to putt the ball around obstacles into the hole in few strokes', roles: [], finish: false, labels: [], mechanics: [] }),
-  railfps: arcade({ cues: 'ride a rail through your own eyes, turn to aim and shoot the targets before they hit you', roles: [], finish: false, labels: [], mechanics: [] }),
+  // P68 T10: role, místo a 3 životy, které modul zapisuje (`prvni-osoba/integration.md`, vzor `survivor`).
+  railfps: arcade({ setting: true, cues: 'ride a rail through your own eyes, turn to aim and shoot the targets before they hit you', roles: ['enemy', 'target', 'boss'], finish: false, labels: ['player', 'enemy', 'target', 'boss'], mechanics: ['health'] }),
   // T11: zákazníky a zboží kreslí scéna z popisku (`things.customer` / `things.goods`), odchody bez obsluhy = životy.
   buildshift: arcade({ cues: 'build shop stations on the grid, spend the stock and serve customers before the shift ends', roles: ['customer', 'goods'], finish: false, labels: ['player', 'customer', 'goods'], mechanics: ['health'] }),
   drawsave: arcade({ cues: 'draw a wall with your finger to protect the hero from the threats until time runs out', roles: [], finish: false, labels: [], mechanics: [] }),

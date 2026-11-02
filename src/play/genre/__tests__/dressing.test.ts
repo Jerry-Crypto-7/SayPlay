@@ -67,6 +67,10 @@ const ROWS: readonly Row[] = [
   ...(GENRE_MODULES.drawsave.availability('default') === 'ready'
     ? [{ genre: 'drawsave', sentence: 'draw a roof to save the cat from falling bombs in a desert canyon', place: 'desert canyon', slots: { 'thing.player': 'cat', 'thing.threat': 'bomb' } } as const]
     : []),
+  // P68 T10: railfps (věta kategorie s02), stejná podmínka.
+  ...(GENRE_MODULES.railfps.availability('default') === 'ready'
+    ? [{ genre: 'railfps', sentence: 'look around and shoot the zombies shambling toward you in the abandoned mall', place: 'abandoned mall', slots: { 'thing.enemy': 'zombie' } } as const]
+    : []),
 ];
 
 /** Dev věty P61, které `main` prohrál na prostředí nebo protivníkovi (`evals/play/p61/baseline-dev.json`). */

@@ -41,8 +41,9 @@ const SHOOT = [
   'a spaceship shooting asteroids and ufos, retro vibes',
   'shooting range with bottles and targets',
   'fps where u shoot paint at robots',
-  'shoot the ghosts in a haunted carnival shooting gallery',
 ];
+/** P68 T10: střelnice s výstřelem hraje střelnice z očí (`prvni-osoba/integration.md`, poptávka s052). */
+const RAIL_GALLERY = 'shoot the ghosts in a haunted carnival shooting gallery';
 
 /** Věty poptávky, kde hráč hází, odpaluje nebo kutálí. */
 const THROW = [
@@ -97,6 +98,12 @@ function enemySpeeds(world: ArcadeWorld): number[] {
 const livesOf = (world: ArcadeWorld): number => instantiate(world)[HEADER.counters + COUNTER.health] as number;
 
 describe('shooter and throw sentences pick their genre (P36A T10)', () => {
+  it(`"${RAIL_GALLERY}" → railfps`, () => {
+    const drafted = draftGameSpecWithMeta(RAIL_GALLERY, 1);
+    expect(drafted.genre?.genre).toBe('railfps');
+    expect(drafted.spec.control).toBe('railfps');
+  });
+
   it.each(SHOOT)('"%s" → shooter', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence, 1);
     if (sentence.startsWith('a spaceship ')) {
@@ -208,7 +215,8 @@ describe('shooter and throw read the cast', () => {
 });
 
 describe('the shooter genre has depth', () => {
-  it.each(['A space marine shoots alien bugs in a mining colony', 'zombie shooter in a mall', 'shoot the ghosts in a haunted carnival shooting gallery'])(
+  // P68 T10: třetí věta („… haunted carnival shooting gallery“) hraje railfps, hloubku střílečky drží zbylé dvě.
+  it.each(['A space marine shoots alien bugs in a mining colony', 'zombie shooter in a mall'])(
     '"%s": the robot wins in 30–90 s, an idle player loses, three lives',
     (sentence) => {
       const game = publish(sentence);

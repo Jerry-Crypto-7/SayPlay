@@ -66,6 +66,7 @@ import { HOOKS_GENRE_VERSION, type UpgradeId } from './hooks/contract';
 import { ARROWS_RULES } from './pieces/arrows';
 import { FIGHT } from './pieces/fight';
 import { HOLE_RULES } from './pieces/hole';
+import { RAILFPS_RULES } from './pieces/railfps';
 import { SORT_RULES } from './pieces/sort';
 import { STEAL_RULES } from './pieces/steal';
 import { SURVIVOR_RULES } from './pieces/survivor';
@@ -394,8 +395,11 @@ const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike'
 /** Totéž pro uložené hry se `scoring` (P36A): bez úderu. */
 const LEGACY_COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit'];
 
-/** Pravidla pěti nových žánrů P66 (T5–T9); každé, které bere parametr `combo` (jako `pickup`), zvedá kombo. */
-const HOOKED_GENRE_RULES: Readonly<Record<string, RulePiece>> = { ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES };
+/**
+ * Pravidla pěti nových žánrů P66 (T5–T9) a střelnice z očí P68 (T10, `railfps_shot`); každé, které bere parametr
+ * `combo` (jako `pickup`), zvedá kombo.
+ */
+const HOOKED_GENRE_RULES: Readonly<Record<string, RulePiece>> = { ...SURVIVOR_RULES, ...HOLE_RULES, ...STEAL_RULES, ...SORT_RULES, ...ARROWS_RULES, ...RAILFPS_RULES };
 
 /** Zdroje komba hry `genre.v6` (P66 T3): `COMBO_SOURCES` a pravidla nových žánrů ve světě, jejichž parametry `combo` vezmou. */
 function hookedComboSources(rules: readonly PieceRef[]): readonly string[] {
