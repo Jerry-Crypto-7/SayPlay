@@ -1,0 +1,1 @@
+{"sentence":"stand on the castle wall and fire arrows at the skeletons climbing up","answer":{"plan":"Hold the castle wall and turn to shoot an arrow at every skeleton before it climbs over; four short waves.","spec":{"genre":"railfps","mode":"default","hero":"archer","cast":[{"label":"skeleton","does":"shoot_at"}],"setting":"castle wall","params":{"targets":16,"waves":4}}}}

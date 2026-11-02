@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:37.934Z",
- "ms": 6058,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:38.399Z",
+ "ms": 10894,
  "answer": {
-  "plan": "Create a shooter where an elf archer fires at goblins that spawn from trees, with a simple wave‑based timer system.",
+  "plan": "Create a shooter game where an elf archer shoots goblins from treetops, with a simple 60‑second timer that triggers a wave of goblins and ends the level when all goblins are destroyed.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -23,28 +23,28 @@
     }
    ],
    "heroAction": "none",
-   "setting": "forest clearing",
+   "setting": "forest canopy",
    "palette": "forest",
    "params": {
     "targetWidthPct": 50,
-    "movingTargets": 1,
-    "waves": 5,
-    "enemies": 3,
-    "targets": 3,
+    "movingTargets": 0,
+    "waves": null,
+    "enemies": null,
+    "targets": null,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 60
    },
    "counts": {
-    "enemy": 3,
-    "target": 3
+    "enemy": null,
+    "target": null
    },
    "ruleRoles": [
     {
      "id": "goblin",
      "kind": "chaser",
      "label": "goblin",
-     "count": 3
+     "count": null
     }
    ],
    "things": [
@@ -56,7 +56,7 @@
    ],
    "rules": [
     {
-     "id": "start_wave",
+     "id": "start_timer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -80,24 +80,51 @@
      "if": null,
      "do": [
       {
+       "goPhase": "second"
+      },
+      {
        "wave": {
         "role": "goblin",
-        "count": 3,
+        "count": 5,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "next_phase",
-     "verb": "wait",
+     "id": "despawn_goblin",
+     "verb": "shoot",
      "when": {
-      "phase": "second"
+      "hit": "goblin"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "third"
+       "despawn": "self"
+      },
+      {
+       "score": 100
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 0,
+        "below": 1
+       }
+      }
+     ],
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -115,26 +142,13 @@
      },
      {
       "id": "second"
-     },
-     {
-      "id": "third"
      }
     ],
     "events": null
    },
-   "boss": {
-    "role": "goblin",
-    "name": "Goblin Horde",
-    "attack": "shoot"
-   },
-   "abilities": [
-    "shoot"
-   ],
-   "segments": [
-    "moving",
-    "newFoe",
-    "faster"
-   ]
+   "boss": null,
+   "abilities": null,
+   "segments": null
   }
  },
  "failure": null

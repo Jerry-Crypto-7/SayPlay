@@ -136,8 +136,11 @@ function markFirstFrame(attribute) {
     });
 }
 
-const GPU_ARGS = ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'];
-const SOFTWARE_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+// Telefon ani běžný počítač VR runtime nemá. Se SteamVR na měřicím PC hlásí Chromium immersive-vr bez brýlí a hra,
+// která umí VR, jde cestou XR (P68-L T1: první snímek 2,5 s místo 0,7 s). Stejný vypínač jako NO_HOST_VR v playwright.config.ts.
+const NO_HOST_VR = '--disable-features=OpenXR';
+export const GPU_ARGS = ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', NO_HOST_VR];
+export const SOFTWARE_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', NO_HOST_VR];
 
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 const round = (value) => Math.round(value * 100) / 100;

@@ -3,10 +3,10 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:02.748Z",
- "ms": 11797,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:02.089Z",
+ "ms": 9960,
  "answer": {
   "plan": "Arena escape: hamster evades a supermarket Roomba while collecting coins",
   "spec": {
@@ -29,14 +29,14 @@
      "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": "dig",
    "setting": "supermarket",
    "palette": "supermarket",
    "params": {
-    "entryDistance": 12000,
+    "entryDistance": 8000,
     "chaseLead": 60,
     "seconds": 30,
-    "items": 5,
+    "items": 10,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 1,
@@ -51,7 +51,7 @@
    },
    "counts": {
     "enemy": 1,
-    "collectible": 5
+    "collectible": 10
    },
    "ruleRoles": [
     {
@@ -64,7 +64,7 @@
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 5
+     "count": 10
     }
    ],
    "things": [
@@ -81,10 +81,46 @@
    ],
    "rules": [
     {
-     "id": "roomba_spawn",
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "escape",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phaseTransition",
+     "verb": "wait",
+     "when": {
+      "timer": "escape"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "coin",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "roombaSpawn",
      "verb": "spawn",
      "when": {
-      "phase": "start"
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -97,23 +133,7 @@
      ]
     },
     {
-     "id": "coin_spawn",
-     "verb": "spawn",
-     "when": {
-      "phase": "start"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "coin",
-        "at": "other"
-       }
-      }
-     ]
-    },
-    {
-     "id": "roomba_chase",
+     "id": "roombaChase",
      "verb": "chase",
      "when": {
       "contact": [
@@ -133,15 +153,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape_timer"
+      "id": "escape"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "escape"
+      "id": "second"
      }
     ],
     "events": null
@@ -152,7 +172,8 @@
     "attack": "charge"
    },
    "abilities": [
-    "dash"
+    "dash",
+    "grab"
    ],
    "segments": [
     "newFoe",

@@ -3,29 +3,114 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:47.859Z",
- "ms": 5345,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:47.315Z",
+ "ms": 6616,
  "answer": {
-  "plan": "Create a simple race‑style voyage game where a shopping cart speeds through a supermarket, with a single timed phase change that triggers a wave of rival carts.",
+  "plan": "Create a voyage‑race game where a shopping cart races through a supermarket, with a simple two‑phase timer that starts the race and ends it after a set time. The cart must reach a finish line to win.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "shopping cart",
-   "cast": [],
+   "cast": [
+    {
+     "label": "finish line",
+     "does": "reach",
+     "verb": "finish",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shelf",
+     "does": "avoid",
+     "verb": "avoid",
+     "states": 2,
+     "patrol": false
+    }
+   ],
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
    "params": null,
-   "ruleRoles": [],
-   "things": [],
-   "rules": [],
+   "ruleRoles": [
+    {
+     "id": "finish",
+     "kind": "destination",
+     "label": "finish line",
+     "count": 1
+    },
+    {
+     "id": "shelf",
+     "kind": "hazard",
+     "label": "shelf",
+     "count": 5
+    }
+   ],
+   "things": [
+    {
+     "role": "finish",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "shelf",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "goSecondPhase",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      }
+     ]
+    },
+    {
+     "id": "reachFinish",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "finish"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "race"
      }
     ],
     "phases": [
@@ -39,14 +124,8 @@
     "events": null
    },
    "boss": null,
-   "abilities": [
-    "dash"
-   ],
-   "segments": [
-    "moving",
-    "newFoe",
-    "faster"
-   ]
+   "abilities": [],
+   "segments": null
   }
  },
  "failure": null

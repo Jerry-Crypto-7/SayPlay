@@ -3,12 +3,12 @@
  "sentence": "Jumping arcade game in the forest",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:10.499Z",
- "ms": 7750,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:08.631Z",
+ "ms": 6542,
  "answer": {
-  "plan": "Create a platformer where a fox jumps across forest platforms, collecting acorns while avoiding falling rocks and enemies, with a simple timed wave mechanic.",
+  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling branches. The game uses a simple two‑phase timer to spawn new platforms and increase difficulty.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -17,22 +17,15 @@
     {
      "label": "acorn",
      "does": "collect",
-     "verb": "collect",
-     "states": null,
+     "verb": "grab",
+     "states": 2,
      "patrol": false
     },
     {
-     "label": "rock",
+     "label": "branch",
      "does": "avoid",
-     "verb": "fall",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "forest sprite",
-     "does": "scenery",
-     "verb": "none",
-     "states": null,
+     "verb": "jump_over",
+     "states": 2,
      "patrol": false
     }
    ],
@@ -44,8 +37,8 @@
     "difficulty": 1,
     "items": 5,
     "lives": 3,
-    "targetScore": 0,
-    "timeLimit": null
+    "targetScore": 500,
+    "timeLimit": 60
    },
    "counts": {
     "collectible": 5
@@ -58,97 +51,81 @@
      "count": 5
     },
     {
-     "id": "rock",
+     "id": "branch",
      "kind": "hazard",
-     "label": "rock",
+     "label": "branch",
      "count": 3
-    },
-    {
-     "id": "enemy",
-     "kind": "chaser",
-     "label": "forest sprite",
-     "count": 2
     }
    ],
    "things": [
     {
      "role": "acorn",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
-     "role": "rock",
+     "role": "branch",
      "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "enemy",
-     "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "collect_acorn",
-     "verb": "collect",
+     "id": "spawn_platforms",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "acorn"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "grab": "other"
-      },
-      {
-       "score": 10
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "avoid_rock",
-     "verb": "avoid",
-     "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "startTimer": {
+        "timer": "spawn",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "enemy_chase",
-     "verb": "chase",
+     "id": "spawn_new",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "enemy"
-      ]
+      "timer": "spawn"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "goPhase": "second"
       },
       {
-       "despawn": "self"
+       "wave": {
+        "role": "branch",
+        "count": 1,
+        "at": "edge"
+       }
+      },
+      {
+       "wave": {
+        "role": "acorn",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reset",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "spawn",
+        "ticks": 60
+       }
       }
      ]
     }
@@ -157,7 +134,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "spawn"
      }
     ],
     "phases": [
@@ -171,7 +148,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": null,
+   "abilities": [],
    "segments": null
   }
  },

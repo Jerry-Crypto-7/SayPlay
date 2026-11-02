@@ -3,12 +3,12 @@
  "sentence": "a phoenix rises from the ashes over a burning desert",
  "axis": "flap",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:50.901Z",
- "ms": 5555,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:18:49.936Z",
+ "ms": 5198,
  "answer": {
-  "plan": "Create a flap‑style game where a phoenix repeatedly rises from ashes in a burning desert, with a simple two‑phase timer that respawns the ashes each second.",
+  "plan": "Create a simple flap‑style game where a phoenix rises over a burning desert, with a single timed phase change that triggers a visual effect.",
   "spec": {
    "genre": "flap",
    "mode": "default",
@@ -23,18 +23,13 @@
     }
    ],
    "heroAction": "none",
-   "setting": "burning desert",
+   "setting": "desert",
    "palette": "desert",
-   "params": {
-    "lengthM": 200,
-    "lives": 1,
-    "targetScore": 0,
-    "timeLimit": 0
-   },
+   "params": null,
    "ruleRoles": [
     {
      "id": "ash",
-     "kind": "collectible",
+     "kind": "prop",
      "label": "ash",
      "count": 1
     }
@@ -48,7 +43,7 @@
    ],
    "rules": [
     {
-     "id": "spawnAsh",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -56,23 +51,23 @@
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "ash",
-        "at": "player"
+       "startTimer": {
+        "timer": "rise",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "respawnAsh",
+     "id": "risePhase",
      "verb": "wait",
      "when": {
-      "timer": "respawn"
+      "timer": "rise"
      },
      "if": null,
      "do": [
       {
-       "despawn": "self"
+       "goPhase": "second"
       },
       {
        "spawn": {
@@ -83,18 +78,15 @@
      ]
     },
     {
-     "id": "collectAsh",
-     "verb": "collect",
+     "id": "endPhase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "ash"
-      ]
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "score": 1
+       "toggle": "ash"
       },
       {
        "despawn": "self"
@@ -106,7 +98,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "respawn"
+      "id": "rise"
      }
     ],
     "phases": [

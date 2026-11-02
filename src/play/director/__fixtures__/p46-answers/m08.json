@@ -3,10 +3,10 @@
  "sentence": "a pengiun tht slides down a mountin",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:11.166Z",
- "ms": 8112,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:07.866Z",
+ "ms": 7303,
  "answer": {
   "plan": "runner",
   "spec": {
@@ -38,28 +38,28 @@
     "density": 1,
     "fullRowPct": 50,
     "ride": 1,
-    "items": 10,
-    "obstacles": 5,
+    "items": 5,
+    "obstacles": 3,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 60
    },
    "counts": {
-    "enemy": 5,
-    "collectible": 10
+    "enemy": 3,
+    "collectible": 5
    },
    "ruleRoles": [
     {
      "id": "rock",
      "kind": "hazard",
      "label": "rock",
-     "count": 5
+     "count": 3
     },
     {
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 10
+     "count": 5
     }
    ],
    "things": [
@@ -76,48 +76,58 @@
    ],
    "rules": [
     {
-     "id": "slide_rock",
+     "id": "slide_start",
      "verb": "slide",
      "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
+      "phase": "first"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "startTimer": {
+        "timer": "slide",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "slide_coin",
+     "id": "slide_phase",
      "verb": "slide",
      "when": {
-      "contact": [
-       "player",
-       "coin"
-      ]
+      "timer": "slide"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "score": 10
+       "goPhase": "second"
       },
       {
-       "despawn": "self"
+       "wave": {
+        "role": "rock",
+        "count": 3,
+        "at": "edge"
+       }
+      },
+      {
+       "wave": {
+        "role": "coin",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "slide_end",
+     "verb": "slide",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -126,7 +136,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "tick"
+      "id": "slide"
      }
     ],
     "phases": [
@@ -140,12 +150,16 @@
     "events": null
    },
    "boss": {
-    "role": "none",
-    "name": "none",
-    "attack": "charge"
+    "role": "rock",
+    "name": "Boulder",
+    "attack": "stomp"
    },
    "abilities": [],
-   "segments": null
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
   }
  },
  "failure": null

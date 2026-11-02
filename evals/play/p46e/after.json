@@ -3,36 +3,36 @@
  "answers": "src/play/director/__fixtures__/p46-answers",
  "summary": {
   "n": 25,
-  "authored": 22,
-  "ready": 25,
-  "readyShare": 1,
+  "authored": 20,
+  "ready": 24,
+  "readyShare": 0.96,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.44,
-  "onlyCharacters": 9,
-  "boss": 9,
-  "action": 3,
-  "segments": 1,
+  "adds": 0.292,
+  "onlyCharacters": 11,
+  "boss": 7,
+  "action": 1,
+  "segments": 0,
   "actionLost": 0,
-  "reasons": {}
+  "reasons": {
+   "MALFORMED": 1
+  }
  },
  "rows": [
   {
    "id": "d01",
    "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
-   "status": "ready",
-   "reason": null,
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
    "rules": [
     0,
-    0
+    null
    ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
    "actionLost": false
   },
   {
@@ -49,7 +49,6 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
     "characters"
    ],
    "actionLost": false
@@ -83,16 +82,14 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "boss"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
    "id": "f10",
    "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -103,7 +100,6 @@
    "keptLogic": true,
    "adds": [
     "boss",
-    "action",
     "characters"
    ],
    "actionLost": false
@@ -130,7 +126,7 @@
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -140,7 +136,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "action"
+    "characters"
    ],
    "actionLost": false
   },
@@ -158,7 +154,8 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss"
+    "boss",
+    "characters"
    ],
    "actionLost": false
   },
@@ -197,8 +194,8 @@
   {
    "id": "m03",
    "sentence": "Grandma kart",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -233,8 +230,8 @@
   {
    "id": "m09",
    "sentence": "ninja cat jumpin on rooftops plz",
-   "directed": "authored",
-   "directedReason": null,
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -333,7 +330,6 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
     "characters"
    ],
    "actionLost": false
@@ -377,8 +373,8 @@
   {
    "id": "o06",
    "sentence": "Jumping arcade game in the forest",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -395,8 +391,8 @@
   {
    "id": "o07",
    "sentence": "A ninja frog jumps across lily pads in a swamp",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -440,7 +436,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "characters"
+    "boss"
    ],
    "actionLost": false
   },
@@ -458,7 +454,6 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "segments",
     "characters"
    ],
    "actionLost": false

@@ -27,9 +27,11 @@ describe('compact request', () => {
   // P46E T3: řádek novinek AI verze s příkladem na každý hlavní žánr – 12 701 B; strop 12 800 B.
   // P66 T13: pět žánrů P66 (řádek žánru s větou a příkladem, buňky tabulky) – 13 970 B; strop 14 100 B.
   // P68 R7: `drawsave` (řádek žánru se dvěma větami kategorie, buňka tabulky) – 14 297 B; strop 14 400 B.
-  it('stays under the 14 400 B prompt budget, asks for a live recipe and has its own cache version', () => {
+  // P68 R9: `railfps` (řádek žánru s větou, buňka tabulky, +328 B) – 14 625 B; strop 14 700 B.
+  // P68 R12: `minigolf` (řádek žánru s větou, buňka tabulky, +385 B) – 15 010 B; strop 15 100 B.
+  it('stays under the 15 100 B prompt budget, asks for a live recipe and has its own cache version', () => {
     const request = buildCompactRequest(SENTENCE, draftGameSpecWithMeta(SENTENCE).genre);
-    expect(Buffer.byteLength(request.system + request.user, 'utf8')).toBeLessThanOrEqual(14_400);
+    expect(Buffer.byteLength(request.system + request.user, 'utf8')).toBeLessThanOrEqual(15_100);
     expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
     expect(request.system).toContain('LIVE COMBINATIONS');
     expect(request.system).toContain('unmet');

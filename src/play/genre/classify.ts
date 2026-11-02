@@ -541,10 +541,9 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * vrátil: 1. 11. FPS na `pixel7-touch` a herní brána, 2. 11. po opravě kategorie (#72) čas do hratelnosti (desktop
  * vstup nepřijatý do 120 s, `pixel7-cpu4` párově +633 ms) – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
- * T9 `minigolf` zapojil a vrátil: čas do hratelnosti na `pixel7-cpu4` (párově +429 ms, mez +0,2 s) neprošel.
- * T12 zapojil `drawsave`, T10 `railfps`.
+ * T12 zapojil `drawsave`, T10 `railfps`, R12 `minigolf` (T9 ho vrátil, P68-L T3 opravil čas do hratelnosti).
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'minigolf', 'buildshift']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'buildshift']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

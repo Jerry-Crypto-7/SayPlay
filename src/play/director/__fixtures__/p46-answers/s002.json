@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:11:08.943Z",
- "ms": 9562,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:20:06.560Z",
+ "ms": 7053,
  "answer": {
-  "plan": "Arena escape with a knight collecting keys while evading ghosts in a haunted castle",
+  "plan": "Create an arena‑escape game where a knight collects three keys in a haunted castle while avoiding ghosts.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -33,7 +33,7 @@
    "setting": "haunted castle",
    "palette": "castle",
    "params": {
-    "entryDistance": 12000,
+    "entryDistance": 8000,
     "chaseLead": 60,
     "seconds": 60,
     "items": 3,
@@ -44,7 +44,7 @@
     "enemies": 2,
     "enemyHp": 3,
     "enemySpeed": 60,
-    "playerHp": 3,
+    "playerHp": 5,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 60
@@ -55,61 +55,28 @@
    },
    "ruleRoles": [
     {
-     "id": "key1",
+     "id": "key",
      "kind": "collectible",
-     "label": "key1",
-     "count": 1
+     "label": "key",
+     "count": 3
     },
     {
-     "id": "key2",
-     "kind": "collectible",
-     "label": "key2",
-     "count": 1
-    },
-    {
-     "id": "key3",
-     "kind": "collectible",
-     "label": "key3",
-     "count": 1
-    },
-    {
-     "id": "ghost1",
+     "id": "ghost",
      "kind": "chaser",
-     "label": "ghost1",
-     "count": 1
-    },
-    {
-     "id": "ghost2",
-     "kind": "chaser",
-     "label": "ghost2",
-     "count": 1
+     "label": "ghost",
+     "count": 2
     }
    ],
    "things": [
     {
-     "role": "key1",
+     "role": "key",
      "start": "hidden",
-     "physics": true
+     "physics": null
     },
     {
-     "role": "key2",
+     "role": "ghost",
      "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "key3",
-     "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "ghost1",
-     "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "ghost2",
-     "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
@@ -123,19 +90,7 @@
      "do": [
       {
        "spawn": {
-        "role": "key1",
-        "at": "player"
-       }
-      },
-      {
-       "spawn": {
-        "role": "key2",
-        "at": "player"
-       }
-      },
-      {
-       "spawn": {
-        "role": "key3",
+        "role": "key",
         "at": "player"
        }
       }
@@ -151,120 +106,29 @@
      "do": [
       {
        "spawn": {
-        "role": "ghost1",
-        "at": "other"
-       }
-      },
-      {
-       "spawn": {
-        "role": "ghost2",
+        "role": "ghost",
         "at": "other"
        }
       }
      ]
     },
     {
-     "id": "ghost_patrol",
-     "verb": "patrol",
+     "id": "ghost_chase",
+     "verb": "chase",
      "when": {
       "contact": [
        "player",
-       "ghost1"
+       "ghost"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
-      }
-     ]
-    },
-    {
-     "id": "ghost_patrol2",
-     "verb": "patrol",
-     "when": {
-      "contact": [
-       "player",
-       "ghost2"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "damage": 1
-      }
-     ]
-    },
-    {
-     "id": "collect_key1",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "key1"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "score": 100
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "collect_key2",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "key2"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "score": 100
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "collect_key3",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "key3"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "score": 100
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "win_condition",
-     "verb": "win",
-     "when": {
-      "counter": {
-       "name": "score",
-       "atLeast": 300
-      }
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
       }
      ]
     }
@@ -286,8 +150,12 @@
     ],
     "events": null
    },
-   "boss": null,
-   "abilities": null,
+   "boss": {
+    "role": "ghost",
+    "name": "Spectral Warden",
+    "attack": "charge"
+   },
+   "abilities": [],
    "segments": null
   }
  },

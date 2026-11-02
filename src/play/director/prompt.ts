@@ -142,6 +142,9 @@ export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
   minigolf: 'one mini golf hole: the hero is always the ball, cast things are bumpers, one with patrol sweeps across the lane, sink it within par + 3 strokes; "putt past a spinning windmill on a pirate ship"',
   // P68 R7: kategorie stavba (`evals/play/p68/stavba/integration.md` → Pitch (drawsave)).
   drawsave: 'draw lines to shield a character from falling things for 10 seconds; "draw a line to save the puppy from falling rocks", "shield the frog from fifteen hailstones"',
+  // P68 R9: kategorie první osoba (`evals/play/p68/prvni-osoba/integration.md` → Popis pro režiséra a čtečku); pohled
+  // z očí říkají už narážky modulu před řádkem.
+  railfps: 'turn and shoot shoot_at foes before they reach you, a rail moves you on between waves, boss last; not roaming, sneaking or racing; "blast snow goblins from a cable car"',
 };
 
 /** Co o parametru hloubky (P36A T8) říká věta – v závorce za mezí. */

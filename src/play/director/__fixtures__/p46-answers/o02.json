@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:08:34.369Z",
- "ms": 8391,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:17:38.699Z",
+ "ms": 8046,
  "answer": {
-  "plan": "Arena fight with bulls, Amanita mushrooms dodge and shoot back.",
+  "plan": "arena fight mode with bulls as chasers and shooters, Amanita mushrooms as hero, forest trail setting",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -53,7 +53,7 @@
     "items": 10,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
-    "chasers": 2,
+    "chasers": 3,
     "chaserSpeed": 70,
     "enemies": 2,
     "enemyHp": 5,
@@ -64,7 +64,7 @@
     "timeLimit": 60
    },
    "counts": {
-    "enemy": 2,
+    "enemy": 3,
     "collectible": 1
    },
    "ruleRoles": [
@@ -72,7 +72,7 @@
      "id": "bull",
      "kind": "chaser",
      "label": "bull",
-     "count": 2
+     "count": 3
     },
     {
      "id": "acorn",
@@ -121,22 +121,25 @@
       {
        "wave": {
         "role": "bull",
-        "count": 2,
+        "count": 3,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "bull_move",
-     "verb": "move",
+     "id": "bull_chase",
+     "verb": "chase",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "bull"
+      ]
      },
      "if": null,
      "do": [
       {
-       "toggle": "bull"
+       "damage": 1
       }
      ]
     }
@@ -160,7 +163,7 @@
    },
    "boss": {
     "role": "bull",
-    "name": "Bovine Brute",
+    "name": "Rampaging Bull",
     "attack": "charge"
    },
    "abilities": [

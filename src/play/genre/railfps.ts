@@ -111,7 +111,7 @@ export const railfpsGenre: GenreModule<'railfps'> = {
     targets: { min: RAILFPS.targets.min, max: RAILFPS.targets.max },
     waves: { min: RAILFPS.waves.min, max: RAILFPS.waves.max },
   },
-  // Zapnuto v P68-I T10 („zapoj railfps“); režisér a čtečka dál za branou `DIRECTOR_PENDING` / `READER_PENDING`.
+  // Zapnuto v P68-I T10 („zapoj railfps“); režisér a čtečka ho nabízejí od R9.
   availability: () => 'ready',
   compile: (spec) => {
     const targets = spec.params?.targets ?? RAILFPS.targets.default;

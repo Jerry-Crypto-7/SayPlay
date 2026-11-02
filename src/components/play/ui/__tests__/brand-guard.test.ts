@@ -38,6 +38,8 @@ const SCENE_FILES = new Set([
   'arcade/WorldBackdrop.tsx',
   'arcade/arena/ArenaScene.tsx',
   'arcade/duel/DuelScene.tsx',
+  // Scéna minigolfu (P68-L T3): tečky stopy míření položené na trávník (`rotateX`) – `rotate` three.js, ne CSS.
+  'arcade/genres/minigolf/MinigolfScene.tsx',
   'arcade/look/Scenery.tsx',
   // Scéna skákačky (P46G): břeh v písku míchá zem s bílou jako ostatní terén (`islands.ts`, `water.ts`).
   'arcade/platform/PlatformWorld.tsx',

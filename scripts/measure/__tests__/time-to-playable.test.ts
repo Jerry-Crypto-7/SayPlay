@@ -14,7 +14,7 @@ import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { measure } from '../time-to-playable.mjs';
+import { GPU_ARGS, measure, SOFTWARE_ARGS } from '../time-to-playable.mjs';
 
 const FIXTURES = join(__dirname, 'fixtures');
 
@@ -145,5 +145,10 @@ describe('time-to-playable probe', () => {
 
     expect(result.playable).toBe(false);
     expect(result.note).toMatch(/no surface/);
+  });
+
+  // Na PC se SteamVR by hra, která umí VR, šla cestou XR a sonda by měřila něco, co telefon nikdy neuvidí.
+  it('never lets the browser see the host VR runtime, with or without the GPU', () => {
+    for (const args of [GPU_ARGS, SOFTWARE_ARGS]) expect(args).toContain('--disable-features=OpenXR');
   });
 });

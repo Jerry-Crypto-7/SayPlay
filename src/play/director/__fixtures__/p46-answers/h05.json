@@ -3,10 +3,10 @@
  "sentence": "boxing a kangaroo in the australian outback",
  "axis": "duel",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:53.609Z",
- "ms": 5750,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:53.964Z",
+ "ms": 6648,
  "answer": {
   "plan": "arena fight against a kangaroo in the Australian outback",
   "spec": {
@@ -20,14 +20,28 @@
      "verb": "box",
      "states": 2,
      "patrol": false
+    },
+    {
+     "label": "bush",
+     "does": "scenery",
+     "verb": "none",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "rock",
+     "does": "avoid",
+     "verb": "jump over",
+     "states": null,
+     "patrol": false
     }
    ],
-   "heroAction": "none",
+   "heroAction": "paint",
    "setting": "australian outback",
-   "palette": "cave",
+   "palette": "desert",
    "params": {
     "entryDistance": 12000,
-    "chaseLead": 60,
+    "chaseLead": 30,
     "seconds": 60,
     "items": 5,
     "pursuitCeiling": 120,
@@ -44,7 +58,7 @@
    },
    "counts": {
     "enemy": 1,
-    "collectible": null
+    "collectible": 5
    },
    "ruleRoles": [
     {
@@ -52,11 +66,33 @@
      "kind": "chaser",
      "label": "kangaroo",
      "count": 1
+    },
+    {
+     "id": "rock",
+     "kind": "hazard",
+     "label": "rock",
+     "count": 1
+    },
+    {
+     "id": "bush",
+     "kind": "prop",
+     "label": "bush",
+     "count": 1
     }
    ],
    "things": [
     {
      "role": "kangaroo",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "rock",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "bush",
      "start": "hidden",
      "physics": null
     }
@@ -99,7 +135,7 @@
      ]
     },
     {
-     "id": "fightPhase",
+     "id": "rockSpawn",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -108,7 +144,23 @@
      "do": [
       {
        "spawn": {
-        "role": "kangaroo",
+        "role": "rock",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "bushSpawn",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "bush",
         "at": "player"
        }
       }
@@ -137,7 +189,10 @@
     "name": "Roo Rumble",
     "attack": "charge"
    },
-   "abilities": [],
+   "abilities": [
+    "strike",
+    "dash"
+   ],
    "segments": [
     "newFoe",
     "moving",

@@ -3,12 +3,12 @@
  "sentence": "a kangaroo jumps over cars then collects coins on the highway",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:29.031Z",
- "ms": 6575,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:27.802Z",
+ "ms": 7146,
  "answer": {
-  "plan": "Create a platformer where a kangaroo hops over cars and gathers coins on a highway.",
+  "plan": "Platformer: kangaroo hops over cars, collects coins on a highway, with a simple time‑based wave of cars.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -31,17 +31,17 @@
    ],
    "heroAction": "none",
    "setting": "highway",
-   "palette": "city",
+   "palette": "desert",
    "params": {
     "lengthM": 200,
     "difficulty": 1,
-    "items": 8,
+    "items": 5,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 60
    },
    "counts": {
-    "collectible": 8
+    "collectible": 5
    },
    "ruleRoles": [
     {
@@ -54,7 +54,7 @@
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 8
+     "count": 5
     }
    ],
    "things": [
@@ -87,6 +87,64 @@
      "do": [
       {
        "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "score": 10
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "spawn_cars",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "car",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_coins",
+     "verb": "spawn",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "coin",
+        "at": "player"
+       }
       }
      ]
     }
@@ -95,7 +153,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "phase_timer"
      }
     ],
     "phases": [

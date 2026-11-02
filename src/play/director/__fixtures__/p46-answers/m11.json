@@ -3,12 +3,12 @@
  "sentence": "my dog chasing the mailman,around the backyard lol",
  "axis": "control:move_free",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:22.455Z",
- "ms": 6171,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:19:20.655Z",
+ "ms": 5622,
  "answer": {
-  "plan": "Arena escape with a dog chasing a mailman around a backyard, featuring a single chaser foe and simple dash ability.",
+  "plan": "arena escape with a dog chasing a mailman in a backyard",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -22,7 +22,7 @@
      "patrol": false
     }
    ],
-   "heroAction": "dig",
+   "heroAction": "chop",
    "setting": "backyard",
    "palette": "forest",
    "params": {
@@ -97,19 +97,6 @@
        }
       }
      ]
-    },
-    {
-     "id": "escape",
-     "verb": "wait",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
-      }
-     ]
     }
    ],
    "logic": {
@@ -131,7 +118,7 @@
    },
    "boss": {
     "role": "mailman",
-    "name": "Mailman Marauder",
+    "name": "Mailman",
     "attack": "charge"
    },
    "abilities": [

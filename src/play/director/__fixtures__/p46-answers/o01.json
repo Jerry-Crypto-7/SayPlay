@@ -3,12 +3,12 @@
  "sentence": "A rabbit steals carrots and runs from a fox",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:08:25.977Z",
- "ms": 11571,
+ "promptVersion": "41eeff3f",
+ "directorPromptVersion": "e83c5752",
+ "recordedAt": "2026-11-02T22:17:30.651Z",
+ "ms": 10638,
  "answer": {
-  "plan": "Arena escape with rabbit collecting carrots while evading a fox",
+  "plan": "arena escape",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -18,14 +18,14 @@
      "label": "carrot",
      "does": "collect",
      "verb": "steal",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "fox",
      "does": "chase_me",
      "verb": "chase",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
@@ -71,17 +71,17 @@
     {
      "role": "carrot",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
      "role": "fox",
      "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -91,13 +91,13 @@
       {
        "startTimer": {
         "timer": "escape",
-        "ticks": 60
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "escapeTimer",
+     "id": "escapePhase",
      "verb": "wait",
      "when": {
       "timer": "escape"
@@ -117,15 +117,18 @@
      ]
     },
     {
-     "id": "secondPhase",
-     "verb": "wait",
+     "id": "collectCarrots",
+     "verb": "collect",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "toggle": "carrot"
+       "score": 1
+      },
+      {
+       "respawn": true
       }
      ]
     }

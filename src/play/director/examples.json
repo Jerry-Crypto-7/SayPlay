@@ -140,5 +140,10 @@
     "id": "p68-drawsave",
     "sentence": "draw a wall to shield a little chick on a windy cliff ledge from flying leaves and twigs for ten seconds",
     "answer": { "plan": "Draw a slanted wall over the chick before the wind starts, then leaves and twigs blow down and glance off it; the chick must last 10 seconds.", "spec": { "genre": "drawsave", "mode": "default", "hero": "chick", "cast": [{ "label": "leaf", "does": "avoid" }], "setting": "windy cliff ledge", "params": { "threats": 12 } } }
+  },
+  {
+    "id": "p68-railfps",
+    "sentence": "seen through the eyes of a kid on a roller coaster, splat paint balloons at clowns popping up along the track",
+    "answer": { "plan": "Ride the coaster through the kid's eyes; between waves the car rolls on, and you turn to splat each clown with a paint balloon before it reaches the car.", "spec": { "genre": "railfps", "mode": "default", "hero": "kid", "cast": [{ "label": "clown", "does": "shoot_at" }], "setting": "roller coaster" } }
   }
 ]
