@@ -187,7 +187,8 @@ describe('director prompt', () => {
   // průběhu jen v řádku Course, sloučené věty pokynů, příklady pravidel bez null – 14 970 B, strop beze změny.
   // P66 T13: pět žánrů P66 (+1 386 B) – 16 356 B; strop 16 500 B (gpt-oss: ~350 tokenů navíc na volání).
   // P68 R7: `drawsave` (řádek žánru, buňka tabulky, příklad) – 16 768 B; strop 16 900 B (~70 tokenů navíc).
-  it('stays under 16 900 bytes for all forty golden sentences, with examples and the complete intent', () => {
+  // P68 R9: `railfps` (řádek žánru, buňka tabulky, příklad) – 17 096 B; strop 17 200 B (~80 tokenů navíc).
+  it('stays under 17 200 bytes for all forty golden sentences, with examples and the complete intent', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -197,10 +198,10 @@ describe('director prompt', () => {
         max = Math.max(max, Buffer.byteLength(request.system + request.user + fullIntent));
       }
     }
-    expect(max).toBeLessThanOrEqual(16_900);
+    expect(max).toBeLessThanOrEqual(17_200);
     // P41 adds a live recipe table and all essential triples; the historical
     // 10,082 B observation was not the 12,700 B budget. Report both channels.
-    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 16_900 }, null, 2));
+    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 17_200 }, null, 2));
     // Čtyřicet návrhů s ověřením robotem: arénu od P45C T12 ověřují i sondy nových chování (samotný test ~21 s).
   }, 90_000);
 

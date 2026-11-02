@@ -76,9 +76,9 @@ const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input'
  * režisér ho uvidí, až ho odsud odebere úloha „zapoj X“ v P68-I – nikdo jiný. T11 pustil `buildshift` jen do rychlé
  * hry (jako P66 T12): nabídka režisérovi pohne schématem odpovědi, a tím otiskem nahraných odpovědí P46E, které jde
  * znovu nahrát jen placeně přes měřicí knihu (R5 v plánu P68-I). R7 pustil `drawsave` (zapojený v T12) i režisérovi,
- * s novým nahráním P46E.
+ * s novým nahráním P46E; R9 stejně `railfps` (zapojený v T10).
  */
-export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'minigolf', 'railfps', 'buildshift']);
+export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>(['stunt', 'minigolf', 'buildshift']);
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4); žánr z `DIRECTOR_PENDING` žádný. */
 export const readyModes = (module: GenreModule): string[] => (DIRECTOR_PENDING.has(module.id) ? [] : module.modes.filter((mode) => module.availability(mode) === 'ready'));

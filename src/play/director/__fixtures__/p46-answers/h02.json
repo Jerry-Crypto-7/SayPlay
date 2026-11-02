@@ -3,48 +3,206 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:47.859Z",
- "ms": 5345,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:53:07.386Z",
+ "ms": 10301,
  "answer": {
-  "plan": "Create a simple race‑style voyage game where a shopping cart speeds through a supermarket, with a single timed phase change that triggers a wave of rival carts.",
+  "plan": "Create a supermarket‑race where the player drives a shopping cart, dodges aisles, and collects items while racing against a timer.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "shopping cart",
-   "cast": [],
+   "cast": [
+    {
+     "label": "checkout counter",
+     "does": "reach",
+     "verb": "stop",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shelf",
+     "does": "avoid",
+     "verb": "bump",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "price tag",
+     "does": "collect",
+     "verb": "grab",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "conveyor belt",
+     "does": "avoid",
+     "verb": "slide",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "cashier",
+     "does": "chase_me",
+     "verb": "block",
+     "states": 2,
+     "patrol": true
+    }
+   ],
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
-   "params": null,
-   "ruleRoles": [],
-   "things": [],
-   "rules": [],
+   "params": {
+    "hazards": 1,
+    "turbo": 1,
+    "roadWidth": 5000,
+    "roadEntryWidth": 5000,
+    "crashBudget": 3,
+    "namedLandingTarget": 0,
+    "touchdownSpeed": 30,
+    "gravityRisePct": 10,
+    "lengthM": 400,
+    "topSpeed": 250,
+    "gravity": 800,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
+   "ruleRoles": [
+    {
+     "id": "checkout",
+     "kind": "destination",
+     "label": "checkout counter",
+     "count": 1
+    },
+    {
+     "id": "shelf",
+     "kind": "hazard",
+     "label": "shelf",
+     "count": 5
+    },
+    {
+     "id": "tag",
+     "kind": "collectible",
+     "label": "price tag",
+     "count": 10
+    },
+    {
+     "id": "belt",
+     "kind": "hazard",
+     "label": "conveyor belt",
+     "count": 2
+    },
+    {
+     "id": "cashier",
+     "kind": "chaser",
+     "label": "cashier",
+     "count": 1
+    }
+   ],
+   "things": [
+    {
+     "role": "checkout",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "shelf",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "tag",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "belt",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "cashier",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "raceTimer",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "end"
+      }
+     ]
+    },
+    {
+     "id": "reachCheckout",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "checkout"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "race"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "end"
      }
     ],
     "events": null
    },
-   "boss": null,
+   "boss": {
+    "role": "cashier",
+    "name": "Cashier Chase",
+    "attack": "charge"
+   },
    "abilities": [
     "dash"
    ],
    "segments": [
-    "moving",
     "newFoe",
+    "moving",
     "faster"
    ]
   }

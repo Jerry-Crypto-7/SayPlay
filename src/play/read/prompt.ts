@@ -53,8 +53,13 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'arrows.default': 'you tap stuck pieces out the way they point',
   // P68 R7 (`stavba/integration.md` → Pitch, zkrácený na strop): kresba je znak hry, proto před chytáním (`catch`).
   'drawsave.default': 'you draw lines to shield someone from falling things',
+  // P68 R9 (`prvni-osoba/integration.md` → Popis, zkrácený na strop): pohled z očí nebo jízda je znak hry, proto před
+  // bouchnutím (`whack` – „clowns popping up along the track“), obranou i střílečkou.
+  'railfps.default': 'first person or on a rail ride, you turn to shoot foes',
   'hop.default': 'you hop forward row by row across roads, rails or rivers past traffic',
-  'catch.default': 'things fall and you move under them to catch them or bounce them back up',
+  // P68 R9: kvůli stropu 6 000 znaků (řádek `railfps` a ovládání `railfps`) pryč jen slova navíc – řádky catch, duel
+  // a flap a pokyny control, verbs, count, seconds, sure, world a title v `readerSystemPrompt`; rozdíly mezi žánry beze změny.
+  'catch.default': 'things fall and you move under them to catch or bounce them back up',
   'whack.default': 'things pop up from holes and you hit them before they hide',
   'slice.default': 'things are tossed or fly and you cut them midair',
   'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard; you hold every path',
@@ -71,8 +76,8 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'timing.precision': 'you stop a sweeping marker inside a small zone',
   'timing.bridge': 'you grow a plank long enough to span a gap',
   'rhythm.default': 'you tap notes as they reach a line, in time with music',
-  'duel.default': 'you fight one rival face to face in real time: dodge the attack, strike back',
-  'flap.default': 'you tap to flap up while flying forward through gaps',
+  'duel.default': 'you fight one rival face to face in real time: dodge, strike back',
+  'flap.default': 'you tap to flap up, flying forward through gaps',
   'voyage.race': 'you steer a vehicle, animal or board along a course or in a race',
   'voyage.land': 'you fly with thrust and touch down softly',
   'platformer.default': 'you jump ledge to ledge over gaps to a goal',
@@ -108,14 +113,14 @@ const LOOK_HINTS: Partial<Record<LookId, string>> = { meadow: 'farm/park', livin
 
 export function readerSystemPrompt(): string {
   return [
-    'Read one game idea sentence and answer one JSON object. Never add words that are not implied by the sentence.',
-    `control: the control that fits the main verb best: ${READ_CONTROLS.join('|')}.`,
-    'verbs: up to 4 verbs of the sentence, main verb first; word = the verb as written, class = one of:',
+    'Read one game idea sentence and answer one JSON object. Never add words the sentence does not imply.',
+    `control: the one that fits the main verb best: ${READ_CONTROLS.join('|')}.`,
+    'verbs: up to 4 of the sentence, main verb first; word = the verb as written, class = one of:',
     ...VERB_CLASSES.map((id) => `- ${id}: ${VERB_HINTS[id]}`),
     'hero: who the player is, 1-3 words from the sentence; null for you/I/my.',
-    `roles: up to 6 other nouns that matter in play; kind = ${ROLE_KINDS.join('|')}; count = the number the sentence gives, else null.`,
+    `roles: up to 6 other nouns that matter in play; kind = ${ROLE_KINDS.join('|')}; count = the number given, else null.`,
     'setting: where it happens in English, or null. mood: one or two words, or null.',
-    'numbers: seconds = a time limit in seconds, else null; counts = the other numbers in order.',
+    'numbers: seconds = a time limit, else null; counts = the other numbers in order.',
     'genre: the game the sentence wants, {genre, mode}. Judge by what the player keeps doing in play, not by a word in the sentence: "catch the bus" is not catching, "shoot photos" is not shooting, a "race" in a story is not racing. Take the FIRST line below that fits. How the hero gets somewhere (runs, rides, flies) does not decide; slaying or beating the foe the sentence names does, unless the sentence is a race and the fight only ends it:',
     ...READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`))
       .sort((a, b) => (MODE_ORDER.indexOf(a) + 1 || 99) - (MODE_ORDER.indexOf(b) + 1 || 99))
@@ -123,10 +128,10 @@ export function readerSystemPrompt(): string {
     'genre is null when the play is none of these: turn-based cards, board games or chess, quizzes, riddles, choosing what to say, dating or story choices, managing a shop, farm or city, math or logic puzzles, taking photos, slow fishing. A word of a line inside such a game ("battle", "race", "band", "shoot") does not make that line fit. Any other sentence that names an action a line plays (stack a tower, cook, fix, pop, deliver) takes the closest line even without its details.',
     'Examples (sentence => genre):',
     ...PROMPT_EXAMPLES.map(({ sentence, genre }) => `"${sentence}" => ${genre ?? 'null'}`),
-    'sure: false only when two genre lines fit the play about equally; a lure word alone is no reason; else true.',
+    'sure: false only when two lines fit the play about equally; a lure word alone is no reason; else true.',
     'foe: who or what the hero fights, flees or dodges, 1-3 words, or null.',
     'item: the main thing the hero collects, throws or protects, or null.',
-    `world: the look of the place, one of ${LOOK_IDS.map((id) => (LOOK_HINTS[id] === undefined ? id : `${id} (${LOOK_HINTS[id]})`)).join(', ')}; null when none fits.`,
-    'title: a short game title in the sentence\'s own words (max 32 chars), never "<hero> Run".',
+    `world: the look of the place: ${LOOK_IDS.map((id) => (LOOK_HINTS[id] === undefined ? id : `${id} (${LOOK_HINTS[id]})`)).join(', ')}; null when none fits.`,
+    'title: a short title in the sentence\'s own words (max 32 chars), never "<hero> Run".',
   ].join('\n');
 }

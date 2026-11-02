@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:08:34.369Z",
- "ms": 8391,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:50:24.007Z",
+ "ms": 10212,
  "answer": {
-  "plan": "Arena fight with bulls, Amanita mushrooms dodge and shoot back.",
+  "plan": "Arena fight with Amanita mushrooms vs bulls, featuring chase, escape, and shooting mechanics.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -18,28 +18,28 @@
      "label": "bull",
      "does": "fight",
      "verb": "fight",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "chase_me",
      "verb": "chase",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "bull",
      "does": "shoot_at",
      "verb": "shoot",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "acorn",
      "does": "collect",
      "verb": "collect",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
@@ -60,7 +60,7 @@
     "enemySpeed": 80,
     "playerHp": 5,
     "lives": 3,
-    "targetScore": 0,
+    "targetScore": 2000,
     "timeLimit": 60
    },
    "counts": {
@@ -85,58 +85,104 @@
     {
      "role": "bull",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
      "role": "acorn",
      "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "bull_spawn",
-     "verb": "spawn",
+     "id": "bull_fight",
+     "verb": "fight",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "bull"
+      ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
-       "spawn": {
-        "role": "bull",
-        "at": "player"
-       }
+       "damage": 1
+      },
+      {
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "bull_wave",
-     "verb": "wave",
+     "id": "bull_chase",
+     "verb": "chase",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "bull"
+      ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
-       "wave": {
-        "role": "bull",
-        "count": 2,
-        "at": "edge"
-       }
+       "damage": 1
+      },
+      {
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "bull_move",
-     "verb": "move",
+     "id": "bull_shoot",
+     "verb": "shoot",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "bull"
+      ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
-       "toggle": "bull"
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "acorn_collect",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "acorn"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
       }
      ]
     }
@@ -145,7 +191,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
@@ -160,7 +206,7 @@
    },
    "boss": {
     "role": "bull",
-    "name": "Bovine Brute",
+    "name": "Charging Bull",
     "attack": "charge"
    },
    "abilities": [

@@ -1,0 +1,62 @@
+{
+ "schema": "p68-director-live.v1",
+ "game": "railfps",
+ "about": "P68 live check: 2 P68 dev sentences of the game through the AI version on the eval ledger (evals/play/p61/shots.mjs serve, VERCEL_ENV=production, astra as reader and director). quick = the quick game, reading = the game after reading (only when the reading picks another genre), ai = the director's AI version.",
+ "measured": true,
+ "measuredAt": "2026-11-02T14:56:23.853Z",
+ "ledger": {
+  "prefix": "worldsmith:p68-eval",
+  "capUsd": 5
+ },
+ "sentences": [
+  "d17",
+  "d22"
+ ],
+ "rows": [
+  {
+   "id": "d17",
+   "sentence": "a first-person ride in a mine cart on rails, turning to shoot the bats that swoop at you in the dark tunnels",
+   "quickId": "6f3692c9af9d217fbf8dfda5a8817bb7",
+   "quickMs": 2920,
+   "quick": "railfps.default",
+   "readingId": "01a658339edd8966644339482cfb2930",
+   "reading": "railfps.default",
+   "readingMs": 7068,
+   "status": "draft-final",
+   "reason": "MALFORMED",
+   "aiMs": 73805,
+   "aiId": null,
+   "ai": null,
+   "note": "One director call (48 097 prompt tokens) spent all 8 000 output tokens on reasoning, so the answer was empty/cut and the AI version ended MALFORMED. The player keeps the reading game: railfps, enemy 'bat' x10, but target 'mine cart' and hero 'first-person ride' (the same hero as the quick game)."
+  },
+  {
+   "id": "d22",
+   "sentence": "sit in a tour jeep that follows the jungle road on its own and fire at the angry monkeys throwing coconuts at you",
+   "quickId": "eeafb177364d6ce80369288c24a5a515",
+   "quickMs": 199,
+   "quick": "railfps.default",
+   "readingId": "de426100ca74fc626626fa0642b42bea",
+   "reading": "railfps.default",
+   "readingMs": 5256,
+   "status": "ready",
+   "reason": null,
+   "aiMs": 29533,
+   "aiId": "fdd0e3818fe7fbf948f5d603f2f122bf",
+   "ai": "railfps.default",
+   "note": "One director call (190 reasoning tokens). The AI version stays railfps ('Angry Monkey Range'): enemy 'angry monkey' x10 and a boss of the same kind, but the target is the ride ('tour jeep') and the hero 'monkey' as in the quick game (adds: [])."
+  }
+ ],
+ "caps": "shots.mjs serve --cap-usd 0.3 --director-cap-usd 1.2 (R9 budget 1.5 USD; the ledger book is per process, R7 spent 1.81 USD of the 5 USD eval cap before).",
+ "summary": {
+  "quickInGame": 2,
+  "readingInGame": 2,
+  "aiReady": 1,
+  "aiInGame": 1,
+  "finalInGame": 2
+ },
+ "spend": {
+  "calls": 4,
+  "withoutUsage": 0,
+  "usd": 1.4716
+ }
+}

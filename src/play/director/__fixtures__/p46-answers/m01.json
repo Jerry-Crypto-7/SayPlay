@@ -3,12 +3,12 @@
  "sentence": "toaster tornado",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:56.972Z",
- "ms": 6070,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:51:59.110Z",
+ "ms": 6863,
  "answer": {
-  "plan": "Create an arena‑escape game where a toaster must avoid a chasing tornado in a meadow, using a simple two‑phase timer logic.",
+  "plan": "Create an arena‑escape game where a toaster must evade a tornado in a meadow, using a simple phase‑based timer logic.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -26,7 +26,10 @@
    "setting": "meadow",
    "palette": "meadow",
    "params": null,
-   "counts": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
    "ruleRoles": [
     {
      "id": "tornado",
@@ -53,17 +56,17 @@
      "do": [
       {
        "startTimer": {
-        "timer": "phase_timer",
+        "timer": "tornado_wave",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phase_transition",
+     "id": "wave_tornado",
      "verb": "wait",
      "when": {
-      "timer": "phase_timer"
+      "timer": "tornado_wave"
      },
      "if": null,
      "do": [
@@ -80,15 +83,15 @@
      ]
     },
     {
-     "id": "phase_second",
-     "verb": "wait",
+     "id": "tornado_chase",
+     "verb": "chase",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "toggle": "tornado"
+       "damage": 1
       }
      ]
     }
@@ -97,7 +100,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "tornado_wave"
      }
     ],
     "phases": [
@@ -110,7 +113,11 @@
     ],
     "events": null
    },
-   "boss": null,
+   "boss": {
+    "role": "tornado",
+    "name": "Whirling Tempest",
+    "attack": "charge"
+   },
    "abilities": null,
    "segments": null
   }

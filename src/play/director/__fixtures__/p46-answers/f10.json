@@ -3,12 +3,12 @@
  "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:45.346Z",
- "ms": 7411,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:51:43.673Z",
+ "ms": 8925,
  "answer": {
-  "plan": "Arena fight where a stone golem battles grave robbers in an ancient desert temple, with timed waves of robbers and a final boss.",
+  "plan": "Arena‑fight with a stone golem crushing grave robbers in a desert temple",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -17,15 +17,15 @@
     {
      "label": "grave robber",
      "does": "fight",
-     "verb": "attack",
-     "states": 2,
-     "patrol": true
+     "verb": "crush",
+     "states": null,
+     "patrol": false
     },
     {
      "label": "gem",
      "does": "collect",
      "verb": "grab",
-     "states": 2,
+     "states": null,
      "patrol": false
     }
    ],
@@ -36,94 +36,95 @@
     "entryDistance": 12000,
     "chaseLead": 60,
     "seconds": 60,
-    "items": 5,
+    "items": 3,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 2,
     "chaserSpeed": 70,
-    "enemies": 3,
+    "enemies": 2,
     "enemyHp": 5,
     "enemySpeed": 80,
-    "playerHp": 7,
+    "playerHp": 9,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 60
    },
    "counts": {
-    "enemy": 3,
-    "collectible": 5
+    "enemy": 2,
+    "collectible": 1
    },
    "ruleRoles": [
     {
      "id": "robber",
      "kind": "chaser",
      "label": "grave robber",
-     "count": 3
+     "count": 2
     },
     {
      "id": "gem",
      "kind": "collectible",
      "label": "gem",
-     "count": 5
+     "count": 1
     }
    ],
    "things": [
     {
      "role": "robber",
      "start": "hidden",
-     "physics": true
+     "physics": null
     },
     {
      "role": "gem",
      "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
     {
      "id": "spawnRobbers",
-     "verb": "wait",
+     "verb": "spawn",
      "when": {
-      "phase": "day"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "wave": {
+       "spawn": {
         "role": "robber",
-        "count": 3,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "spawnGems",
-     "verb": "wait",
+     "id": "spawnGem",
+     "verb": "spawn",
      "when": {
-      "phase": "day"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "wave": {
+       "spawn": {
         "role": "gem",
-        "count": 5,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "phaseTransition",
-     "verb": "wait",
+     "id": "robberChase",
+     "verb": "chase",
      "when": {
-      "timer": "dusk"
+      "contact": [
+       "player",
+       "robber"
+      ]
      },
      "if": null,
      "do": [
       {
-       "goPhase": "night"
+       "damage": 1
       }
      ]
     }
@@ -132,28 +133,25 @@
     "vars": null,
     "timers": [
      {
-      "id": "dusk"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "day"
+      "id": "first"
      },
      {
-      "id": "night"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "grave robber",
-    "name": "Dread Tomb Keeper",
+    "name": "Dread Tomb Raider",
     "attack": "charge"
    },
-   "abilities": [
-    "dash",
-    "shield"
-   ],
+   "abilities": [],
    "segments": [
     "newFoe",
     "moving",

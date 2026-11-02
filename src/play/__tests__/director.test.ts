@@ -126,6 +126,8 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'arrows.default': 'arrows',
   // P68 R7: Kresli a zachraň.
   'drawsave.default': 'drawsave',
+  // P68 R9: střelnice z očí na kolejích.
+  'railfps.default': 'railfps',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -162,6 +164,7 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'sort.default': 'A fox sorts acorns into baskets in a dark forest',
   'arrows.default': 'A fox taps stuck logs out of a jam in a dark forest',
   'drawsave.default': 'Draw a line to save the fox from falling wolves in a dark forest',
+  'railfps.default': 'A fox rides a mine cart on rails in a dark forest and shoots the wolves in first person',
 };
 
 /** Věta, ve které klíčová slova žádný nový žánr nečtou – žánr hry tu může dát jedině odpověď režiséra. */

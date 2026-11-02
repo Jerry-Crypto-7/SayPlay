@@ -86,3 +86,14 @@ Režisér nabízí `drawsave` (Kresli a zachraň, P68), takže verze kompaktníh
 - **`adds` 0,32 → 0,44**: boss 5 → 9, akce 0 → 3, úseky 3 → 1. Jen postavy 9 → 9.
 - **o03 („Racing car escaping and shooting enemies“) odpověděl `drawsave`** (dřív `voyage`) – jediná odpověď z 25 s novou hrou, a špatně. `direct()` ji odmítne (`VERB_UNPROVED`: závod ani střelba v kresbě nejsou) a AI verze vyjde přes roub na rychlou hru závodu s bossem a postavami. Výsledek hráče tedy drží; je to jeden vzorek modelu 20b, ne opakovaný vzor.
 - Soud logiky P45B (`director-logic.json`): `logic_proved` raw i s opravou 0 z 25 jako dřív; logiku napíše 25 místo 24.
+
+## P68 R9 (2. 11.): nové nahrávky s promptem `476d8b8c`
+
+Režisér nabízí `railfps` (střelnice z očí na kolejích, P68), takže verze kompaktního promptu přešla `76b43756` → `476d8b8c`. Všech 25 odpovědí je nahraných znovu jednou (`record.cmd`, gpt-oss-20b lokálně, 0 USD, 25 volání bez selhání, p50 8,4 s, max 13,1 s) a `after.json` přeměřený.
+
+- **`ready` 25 → 23 z 25** (92 %, cíl ≥ 80 % drží); `keptRules` / `keptLogic` 100 % beze změny. `direct()` dá hru z odpovědi u 19 z 25 (dřív 22).
+- Nevyšly o03 a o04 (`MALFORMED` → `draft-final`, hráč má rychlou hru): obě odpovědi deklarují v `logic` fáze a časovač, které žádné pravidlo nezapne (`DANGLING_REFERENCE`), a měřidlo opravné kolo nevolá. o03 odpověděl `drawsave` jako v R7, o04 `shooter` (dřív `voyage`).
+- **`adds` 0,44 → 0,30** (7 z 23): boss 9 → 7, akce 3 → 1, úseky 1 → 0. Jen postavy 9 → 7.
+- `railfps` nevolila žádná z 25 odpovědí; žánr se změnil jen u o04.
+- Soud logiky P45B (`director-logic.json`): `logic_proved` raw i s opravou 0 z 25 jako dřív; logiku napíše 24 místo 25, vstup do fáze 15 místo 17.
+- Odvozeno, neověřeno: pokles je šum jedné nahrávky modelu 20b – obě chyby jsou známá třída zapojení logiky (P46E T5, „no rule enters phase“) a prompt se změnil jen o řádek žánru a buňku tabulky (+328 znaků), ne v části o logice. Druhé nahrání se podle plánu nedělá.

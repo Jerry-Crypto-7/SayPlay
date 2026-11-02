@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:25.452Z",
- "ms": 7063,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:51:18.930Z",
+ "ms": 8417,
  "answer": {
-  "plan": "Create a spatial quest where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple two‑phase timer to trigger the storm’s arrival.",
+  "plan": "Create a quest‑style honey‑collecting bee game set in a windy meadow with a looming storm that triggers a timed phase change.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -18,14 +18,14 @@
      "label": "honey",
      "does": "collect",
      "verb": "gather",
-     "states": null,
+     "states": 2,
      "patrol": false
     },
     {
      "label": "storm",
      "does": "avoid",
      "verb": "hit",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
@@ -35,7 +35,7 @@
    "params": {
     "seconds": 60,
     "paceBudgetPct": 80,
-    "count": null,
+    "count": 5,
     "chasers": 0,
     "lives": 3,
     "targetScore": 0,
@@ -50,7 +50,7 @@
      "id": "honey",
      "kind": "collectible",
      "label": "honey",
-     "count": 1
+     "count": 5
     },
     {
      "id": "storm",
@@ -73,23 +73,23 @@
    ],
    "rules": [
     {
-     "id": "startStormTimer",
+     "id": "startTimer",
      "verb": "wait",
      "when": {
-      "phase": "first"
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
         "timer": "storm",
-        "ticks": 60
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "stormArrives",
+     "id": "stormTrigger",
      "verb": "wait",
      "when": {
       "timer": "storm"
@@ -97,13 +97,10 @@
      "if": null,
      "do": [
       {
-       "goPhase": "second"
+       "toggle": "storm"
       },
       {
-       "spawn": {
-        "role": "storm",
-        "at": "player"
-       }
+       "goPhase": "storming"
       }
      ]
     },
@@ -119,7 +116,7 @@
      "if": null,
      "do": [
       {
-       "score": 1
+       "score": 10
       },
       {
        "despawn": "other"
@@ -138,7 +135,7 @@
      "if": null,
      "do": [
       {
-       "lose": true
+       "damage": 1
       }
      ]
     }
@@ -152,19 +149,15 @@
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "storming"
      }
     ],
     "events": null
    },
-   "boss": {
-    "role": "storm",
-    "name": "Tempest",
-    "attack": "throw"
-   },
+   "boss": null,
    "abilities": [],
    "segments": null
   }

@@ -45,8 +45,10 @@ vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
 /** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift`, T8 `stunt` i T9 `minigolf` vrácené (brány hry), T12 `drawsave`, T10 `railfps`. */
 const WIRED: readonly string[] = ['drawsave', 'railfps'];
-/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`). */
-const OFFERED: readonly string[] = ['drawsave'];
+/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`, R9 `railfps`). */
+const OFFERED: readonly string[] = ['drawsave', 'railfps'];
+/** Ovládání, které čtečka smí volit (`STAGED_CONTROLS`): R9 vyjal `railfps`, R7 `drawsave` v seznamu nechal. */
+const READ_CONTROL_OFFERED: readonly string[] = ['railfps'];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');
 const sentencesOf = (set: string): string[] => {
@@ -81,11 +83,11 @@ describe('P68 activation gate: a ready module stays invisible until "wire X" rem
   it('every new game not yet wired sits in all three gates; a wired one in none', () => {
     for (const genre of PENDING) expect(ROUTE_PENDING.has(genre), `${genre} ROUTE_PENDING`).toBe(true);
     for (const genre of WIRED) expect(ROUTE_PENDING.has(genre as GenreId), `${genre} ROUTE_PENDING`).toBe(false);
-    // Režisér a čtečka dostanou hru až s placeným re-recordem P46E (R5–R7); `drawsave` od R7.
+    // Režisér a čtečka dostanou hru až s novou nahrávkou P46E (R5–R9); `drawsave` od R7, `railfps` od R9.
     for (const genre of P68) {
       expect(DIRECTOR_PENDING.has(genre), `${genre} DIRECTOR_PENDING`).toBe(!OFFERED.includes(genre));
       expect(READER_PENDING.has(genre), `${genre} READER_PENDING`).toBe(!OFFERED.includes(genre));
-      expect(READ_CONTROLS, genre).not.toContain(genre);
+      expect((READ_CONTROLS as readonly string[]).includes(genre), `${genre} READ_CONTROLS`).toBe(READ_CONTROL_OFFERED.includes(genre));
     }
   });
 

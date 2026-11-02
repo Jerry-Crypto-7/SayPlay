@@ -285,6 +285,39 @@ někdo přeměří placeně, test verdikt přepočítá a `decision.json` musí 
 - R5 (buildshift) a R6 (minigolf) se k nahrávce nepřidaly: obě hry drží registr jako `staged` po nesplněných
   branách T11 a T9, takže by je prompt nevypsal ani bez `DIRECTOR_PENDING` (`readyModes`).
 
+## R9 – čtečka a režisér nabízejí `railfps` (2. 11.)
+
+- **Nabídka:** `railfps` pryč z `DIRECTOR_PENDING`, `READER_PENDING` i `STAGED_CONTROLS` – čtečka smí volit
+  i ovládání `railfps` (`drawsave` v R7 ve `STAGED_CONTROLS` zůstal a zůstává). Řádky režiséra (`GENRE_PITCH`)
+  a čtečky (`MODE_HINTS`) vlastními slovy podle `prvni-osoba/integration.md` → Popis; pohled z očí v řádku režiséra
+  nesou už narážky modulu (`first person`, `on rails`, `rail shooter`). Řádek čtečky stojí za kresbou a před
+  bouchnutím, obranou i střílečkou („clowns popping up along the track“ nesmí vzít `whack`). Příklad režiséra
+  z dev d20; tři odpovědi `p68-railfps-*.json` (věty kategorie s04, s03, s10, ne dev) se přeloží, drží nepřítele,
+  počty z `targets` a `waves` i bosse a projdou publikační branou (`p68-railfps.test.ts`).
+- **Strop promptu čtečky (6 000 znaků):** řádek hry a ovládání v seznamu přidaly 82 znaků. Pryč jsou jen slova
+  navíc: v řádcích catch („them“), duel („the attack“) a flap („while“) a v pokynech („the control that“ → „the one
+  that“, „4 verbs“ → „4“, „the number the sentence gives“ → „the number given“, „in seconds“ u `seconds`, „genre“
+  u `sure`, „, one of“ u `world`, „game“ u `title`, úvodní věta přeformulovaná). Prompt má 5 998 znaků.
+- **Stropy režiséra:** růst promptu 3 100 → 3 450 (+328 za řádek žánru a buňku tabulky, růst 3 416), kompaktní
+  dotaz 14 400 → 14 700 B (14 625 B), 40 zlatých vět 16 900 → 17 200 B (17 096 B).
+- **Nahrávky P46E znovu** jednou, lokálně gpt-oss-20b, 0 USD (`evals/play/p46e/README.md` → P68 R9): `ready`
+  25 → 23 (o03 a o04 `MALFORMED` – logika s fázemi a časovačem, které nic nezapne), `adds` 0,44 → 0,30,
+  `keptRules` / `keptLogic` 100 %. `railfps` nevolila žádná odpověď.
+- **Nález cestou (mimo R9):** u věty kategorie s02 („look around and shoot the zombies shambling toward you …“)
+  kontrola věrnosti označí „zombie“ jako nástroj (`CAST_IS_TOOL`) a oprava vrátí počet odpovědi na rychlou hru
+  (20 → 16). Proto s02 mezi odpověďmi testu není.
+- **Živá kontrola** (`director-railfps.json`, `director-live.mjs` nad `shots.mjs serve --cap-usd 0.3
+  --director-cap-usd 1.2`, astra jako čtečka i režisér, kniha `worldsmith:p68-eval`, **1,47 USD**, 4 volání):
+  - d17 (věta říká pohled i koleje): rychlá hra i čtení `railfps`. Jediné volání režiséra (48 097 vstupních
+    tokenů) spálilo všech 8 000 výstupních tokenů na uvažování, odpověď nepřišla → AI verze `MALFORMED`. Hráč má
+    hru ze čtení: `railfps`, netopýři ×10, ale terč „mine cart“ a hrdina „first-person ride“ jako v rychlé hře.
+  - d22 (ani pohled, ani koleje – „tour jeep … on its own“): rychlá hra, čtení i AI verze `railfps` za 30 s,
+    nepřítel „angry monkey“ ×10 a boss téhož druhu; terčem je ale jízda („tour jeep“) a hrdina „monkey“ z rychlé
+    hry (`adds: []`).
+  - Poslední hra hráče je `railfps` u 2 ze 2 vět, AI verze vznikla u 1 ze 2. Opakování d17 se nedělalo (rozpočet
+    R9 1,5 USD).
+- R5 (buildshift) se k nahrávce nepřidal: registr ho drží `staged` po nesplněné bráně T11 (`511d0676`).
+
 ## T9 – zapojení `minigolf` (nesplněno 1. 11., čas do hratelnosti na telefonu)
 
 - Rychlá hra byla zapnutá (`9edc6781`, `f47cf939`): stráž žánru čistá, herní brána 18/18 na větách, které do

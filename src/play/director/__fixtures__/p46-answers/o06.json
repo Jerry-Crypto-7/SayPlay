@@ -3,12 +3,12 @@
  "sentence": "Jumping arcade game in the forest",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:10.499Z",
- "ms": 7750,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:51:00.558Z",
+ "ms": 8925,
  "answer": {
-  "plan": "Create a platformer where a fox jumps across forest platforms, collecting acorns while avoiding falling rocks and enemies, with a simple timed wave mechanic.",
+  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding obstacles, with a simple timed phase logic.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,55 +19,46 @@
      "does": "collect",
      "verb": "collect",
      "states": null,
-     "patrol": false
+     "patrol": null
     },
     {
      "label": "rock",
      "does": "avoid",
-     "verb": "fall",
+     "verb": "jump",
      "states": null,
-     "patrol": false
+     "patrol": null
     },
     {
-     "label": "forest sprite",
-     "does": "scenery",
-     "verb": "none",
-     "states": null,
-     "patrol": false
+     "label": "branch",
+     "does": "reach",
+     "verb": "jump",
+     "states": 2,
+     "patrol": null
     }
    ],
    "heroAction": "none",
    "setting": "forest",
    "palette": "forest",
-   "params": {
-    "lengthM": 200,
-    "difficulty": 1,
-    "items": 5,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": null
-   },
-   "counts": {
-    "collectible": 5
-   },
+   "params": null,
+   "counts": null,
    "ruleRoles": [
     {
      "id": "acorn",
      "kind": "collectible",
      "label": "acorn",
-     "count": 5
+     "count": null
     },
     {
      "id": "rock",
      "kind": "hazard",
      "label": "rock",
-     "count": 3
+     "count": null
     },
     {
-     "id": "enemy",
-     "kind": "chaser",
-     "label": "forest sprite",
-     "count": 2
+     "id": "branch",
+     "kind": "destination",
+     "label": "branch",
+     "count": null
     }
    ],
    "things": [
@@ -82,73 +73,58 @@
      "physics": null
     },
     {
-     "role": "enemy",
+     "role": "branch",
      "start": "hidden",
      "physics": null
     }
    ],
    "rules": [
     {
-     "id": "collect_acorn",
-     "verb": "collect",
+     "id": "startPhase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "acorn"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "grab": "other"
-      },
-      {
-       "score": 10
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "avoid_rock",
-     "verb": "avoid",
-     "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "startTimer": {
+        "timer": "phase1",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "enemy_chase",
-     "verb": "chase",
+     "id": "phase1Timer",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "enemy"
-      ]
+      "timer": "phase1"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "goPhase": "second"
       },
       {
-       "despawn": "self"
+       "wave": {
+        "role": "rock",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase2",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "branch"
       }
      ]
     }
@@ -157,7 +133,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "phase1"
      }
     ],
     "phases": [

@@ -3,12 +3,12 @@
  "sentence": "Racing car escaping and shooting enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:08:43.325Z",
- "ms": 8955,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:50:31.664Z",
+ "ms": 7656,
  "answer": {
-  "plan": "Create a driving‑shooting game where a car races, evades, and fires at enemies on an open road.",
+  "plan": "Create a driving shooter where a car races, evades, and shoots enemies on a highway.",
   "spec": {
    "genre": "drawsave",
    "mode": "default",
@@ -29,8 +29,8 @@
      "patrol": false
     },
     {
-     "label": "obstacle",
-     "does": "avoid",
+     "label": "checkpoint",
+     "does": "scenery",
      "verb": "drive",
      "states": null,
      "patrol": false
@@ -43,7 +43,7 @@
     "threats": 5,
     "lives": 3,
     "targetScore": 2000,
-    "timeLimit": 60
+    "timeLimit": 90
    },
    "counts": {
     "enemy": 5
@@ -56,10 +56,10 @@
      "count": 5
     },
     {
-     "id": "obstacle",
-     "kind": "hazard",
-     "label": "rock",
-     "count": 3
+     "id": "checkpoint",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
     }
    ],
    "things": [
@@ -69,48 +69,14 @@
      "physics": null
     },
     {
-     "role": "obstacle",
+     "role": "checkpoint",
      "start": "hidden",
      "physics": null
     }
    ],
    "rules": [
     {
-     "id": "spawn_enemies",
-     "verb": "wait",
-     "when": {
-      "phase": "start"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "enemy",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_obstacles",
-     "verb": "wait",
-     "when": {
-      "phase": "start"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "obstacle",
-        "count": 3,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "enemy_shoot",
+     "id": "shoot_enemy",
      "verb": "shoot",
      "when": {
       "contact": [
@@ -118,10 +84,33 @@
        "enemy"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "escape",
+     "verb": "escape",
+     "when": {
+      "contact": [
+       "player",
+       "checkpoint"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -141,7 +130,7 @@
       "id": "race"
      },
      {
-      "id": "end"
+      "id": "finish"
      }
     ],
     "events": null
@@ -149,11 +138,11 @@
    "boss": {
     "role": "enemy",
     "name": "Rival Racer",
-    "attack": "shoot"
+    "attack": "charge"
    },
    "abilities": [
-    "shoot",
-    "dash"
+    "dash",
+    "shoot"
    ],
    "segments": [
     "newFoe",

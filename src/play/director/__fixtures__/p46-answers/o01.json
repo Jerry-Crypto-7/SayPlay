@@ -3,12 +3,12 @@
  "sentence": "A rabbit steals carrots and runs from a fox",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:08:25.977Z",
- "ms": 11571,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:50:13.793Z",
+ "ms": 13134,
  "answer": {
-  "plan": "Arena escape with rabbit collecting carrots while evading a fox",
+  "plan": "Arena escape: rabbit collects carrots while evading a fox in a forest trail.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -81,51 +81,48 @@
    ],
    "rules": [
     {
-     "id": "startPhase",
-     "verb": "wait",
+     "id": "steal_carrot",
+     "verb": "collect",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "carrot"
+      ]
      },
-     "if": null,
-     "do": [
+     "if": [
       {
-       "startTimer": {
-        "timer": "escape",
-        "ticks": 60
-       }
+       "notHolding": true
       }
-     ]
-    },
-    {
-     "id": "escapeTimer",
-     "verb": "wait",
-     "when": {
-      "timer": "escape"
-     },
-     "if": null,
+     ],
      "do": [
       {
-       "goPhase": "second"
+       "grab": "other"
       },
       {
-       "wave": {
-        "role": "fox",
-        "count": 1,
-        "at": "edge"
+       "count": {
+        "counter": "items",
+        "amount": 1
        }
       }
      ]
     },
     {
-     "id": "secondPhase",
-     "verb": "wait",
+     "id": "fox_chase",
+     "verb": "chase",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "fox"
+      ]
      },
-     "if": null,
+     "if": [
+      {
+       "holding": "carrot"
+      }
+     ],
      "do": [
       {
-       "toggle": "carrot"
+       "damage": 1
       }
      ]
     }
@@ -134,7 +131,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape"
+      "id": "escape_timer"
      }
     ],
     "phases": [

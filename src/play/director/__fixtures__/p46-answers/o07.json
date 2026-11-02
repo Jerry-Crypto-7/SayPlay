@@ -3,12 +3,12 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:18.388Z",
- "ms": 7888,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:51:10.512Z",
+ "ms": 9953,
  "answer": {
-  "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, collecting bananas while avoiding swamp hazards, with a simple time‑based wave mechanic.",
+  "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, collecting bananas while avoiding swamp hazards.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -29,9 +29,16 @@
      "patrol": false
     },
     {
-     "label": "swamp eel",
+     "label": "frog spawn",
+     "does": "reach",
+     "verb": "jump",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "swamp water",
      "does": "avoid",
-     "verb": "dodge",
+     "verb": "jump",
      "states": 2,
      "patrol": false
     }
@@ -44,19 +51,13 @@
     "difficulty": 1,
     "items": 5,
     "lives": 3,
-    "targetScore": 500,
-    "timeLimit": 60
+    "targetScore": 0,
+    "timeLimit": 0
    },
    "counts": {
     "collectible": 5
    },
    "ruleRoles": [
-    {
-     "id": "lily",
-     "kind": "destination",
-     "label": "lily pad",
-     "count": null
-    },
     {
      "id": "banana",
      "kind": "collectible",
@@ -64,51 +65,38 @@
      "count": 5
     },
     {
-     "id": "eel",
+     "id": "lilyPad",
+     "kind": "destination",
+     "label": "lily pad",
+     "count": 5
+    },
+    {
+     "id": "water",
      "kind": "hazard",
-     "label": "swamp eel",
-     "count": null
+     "label": "swamp water",
+     "count": 1
     }
    ],
    "things": [
     {
-     "role": "lily",
-     "start": "hidden",
-     "physics": null
-    },
-    {
      "role": "banana",
      "start": "hidden",
-     "physics": null
+     "physics": false
     },
     {
-     "role": "eel",
+     "role": "lilyPad",
      "start": "hidden",
-     "physics": null
+     "physics": false
+    },
+    {
+     "role": "water",
+     "start": "hidden",
+     "physics": false
     }
    ],
    "rules": [
     {
-     "id": "jump_to_lily",
-     "verb": "jump",
-     "when": {
-      "contact": [
-       "player",
-       "lily"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "score": 100
-      },
-      {
-       "checkpoint": "self"
-      }
-     ]
-    },
-    {
-     "id": "collect_banana",
+     "id": "collectBanana",
      "verb": "grab",
      "when": {
       "contact": [
@@ -116,23 +104,46 @@
        "banana"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
-       "score": 50
+       "grab": "other"
       },
       {
-       "grab": "other"
+       "score": 10
+      },
+      {
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "avoid_eel",
-     "verb": "dodge",
+     "id": "reachLilyPad",
+     "verb": "jump",
      "when": {
       "contact": [
        "player",
-       "eel"
+       "lilyPad"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "checkpoint": "self"
+      }
+     ]
+    },
+    {
+     "id": "avoidWater",
+     "verb": "jump",
+     "when": {
+      "contact": [
+       "player",
+       "water"
       ]
      },
      "if": null,
@@ -150,7 +161,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave"
+      "id": "phase1"
      }
     ],
     "phases": [
@@ -164,7 +175,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": [],
+   "abilities": null,
    "segments": null
   }
  },

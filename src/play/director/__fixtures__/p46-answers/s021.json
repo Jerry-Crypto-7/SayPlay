@@ -3,12 +3,12 @@
  "sentence": "obby game with lava and spinning bars",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:11:17.388Z",
- "ms": 8444,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:53:35.816Z",
+ "ms": 7737,
  "answer": {
-  "plan": "Create a simple platformer where the hero must jump over lava and spinning bars, with a timed phase that spawns a wave of lava hazards.",
+  "plan": "Create a platformer where the hero must jump over lava and avoid rotating bars.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -22,9 +22,16 @@
      "patrol": false
     },
     {
-     "label": "bar",
+     "label": "spinning bar",
      "does": "avoid",
-     "verb": "spin",
+     "verb": "hazard",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "gem",
+     "does": "collect",
+     "verb": "collect",
      "states": null,
      "patrol": false
     }
@@ -35,13 +42,13 @@
    "params": {
     "lengthM": 200,
     "difficulty": 1,
-    "items": 1,
+    "items": 3,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 0
    },
    "counts": {
-    "collectible": null
+    "collectible": 3
    },
    "ruleRoles": [
     {
@@ -53,8 +60,14 @@
     {
      "id": "bar",
      "kind": "hazard",
-     "label": "bar",
+     "label": "spinning bar",
      "count": 1
+    },
+    {
+     "id": "gem",
+     "kind": "collectible",
+     "label": "gem",
+     "count": 3
     }
    ],
    "things": [
@@ -67,55 +80,68 @@
      "role": "bar",
      "start": "hidden",
      "physics": null
+    },
+    {
+     "role": "gem",
+     "start": "hidden",
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "startTimer",
-     "verb": "wait",
+     "id": "lava_damage",
+     "verb": "hazard",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "lava"
+      ]
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "phase1",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phaseSwitch",
-     "verb": "wait",
-     "when": {
-      "timer": "phase1"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
+       "damage": 1
       },
       {
-       "wave": {
-        "role": "lava",
-        "count": 3,
-        "at": "edge"
-       }
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "phase2Action",
-     "verb": "wait",
+     "id": "bar_damage",
+     "verb": "hazard",
      "when": {
-      "phase": "second"
+      "contact": [
+       "player",
+       "bar"
+      ]
      },
      "if": null,
      "do": [
       {
-       "toggle": "bar"
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "gem_collect",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "gem"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
       }
      ]
     }
@@ -138,7 +164,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": [],
+   "abilities": null,
    "segments": null
   }
  },

@@ -3,12 +3,12 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:35.883Z",
- "ms": 6851,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:52:49.684Z",
+ "ms": 10344,
  "answer": {
-  "plan": "Create a rolling‑hill platformer where the hedgehog rolls downhill while dodging foxes.",
+  "plan": "Create a rolling‑hill platformer where a hedgehog rolls down a mushroom hill while avoiding foxes.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -41,6 +41,12 @@
      "id": "fox",
      "kind": "hazard",
      "label": "fox",
+     "count": 3
+    },
+    {
+     "id": "hillEnd",
+     "kind": "destination",
+     "label": "hill bottom",
      "count": 1
     }
    ],
@@ -48,41 +54,17 @@
     {
      "role": "fox",
      "start": "hidden",
-     "physics": null
+     "physics": true
+    },
+    {
+     "role": "hillEnd",
+     "start": "hidden",
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "foxSpawn",
-     "verb": "spawn",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "fox",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "foxMove",
-     "verb": "move",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "toggle": "fox"
-      }
-     ]
-    },
-    {
-     "id": "foxAvoid",
+     "id": "avoidFox",
      "verb": "avoid",
      "when": {
       "contact": [
@@ -94,23 +76,38 @@
      "do": [
       {
        "damage": 1
+      },
+      {
+       "lose": true
+      }
+     ]
+    },
+    {
+     "id": "reachBottom",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "hillEnd"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
    ],
    "logic": {
     "vars": null,
-    "timers": [
-     {
-      "id": "phase1"
-     }
-    ],
+    "timers": null,
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "play"
      }
     ],
     "events": null

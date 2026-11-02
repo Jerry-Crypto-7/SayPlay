@@ -3,12 +3,12 @@
  "sentence": "boxing a kangaroo in the australian outback",
  "axis": "duel",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:53.609Z",
- "ms": 5750,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:53:14.514Z",
+ "ms": 7128,
  "answer": {
-  "plan": "arena fight against a kangaroo in the Australian outback",
+  "plan": "Arena fight where a boxer duels a kangaroo in the outback",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -24,12 +24,12 @@
    ],
    "heroAction": "none",
    "setting": "australian outback",
-   "palette": "cave",
+   "palette": "desert",
    "params": {
     "entryDistance": 12000,
     "chaseLead": 60,
     "seconds": 60,
-    "items": 5,
+    "items": 1,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 1,
@@ -99,7 +99,7 @@
      ]
     },
     {
-     "id": "fightPhase",
+     "id": "kangarooAttack",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -137,7 +137,9 @@
     "name": "Roo Rumble",
     "attack": "charge"
    },
-   "abilities": [],
+   "abilities": [
+    "dash"
+   ],
    "segments": [
     "newFoe",
     "moving",

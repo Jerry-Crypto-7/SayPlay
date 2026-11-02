@@ -3,10 +3,10 @@
  "sentence": "a kangaroo jumps over cars then collects coins on the highway",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:29.031Z",
- "ms": 6575,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:52:39.339Z",
+ "ms": 9227,
  "answer": {
   "plan": "Create a platformer where a kangaroo hops over cars and gathers coins on a highway.",
   "spec": {
@@ -37,8 +37,8 @@
     "difficulty": 1,
     "items": 8,
     "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 0
+    "targetScore": 2000,
+    "timeLimit": 60
    },
    "counts": {
     "collectible": 8
@@ -87,6 +87,32 @@
      "do": [
       {
        "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
       }
      ]
     }

@@ -3,10 +3,10 @@
  "sentence": "a pengiun tht slides down a mountin",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:10:11.166Z",
- "ms": 8112,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:52:15.730Z",
+ "ms": 10408,
  "answer": {
   "plan": "runner",
   "spec": {
@@ -38,40 +38,40 @@
     "density": 1,
     "fullRowPct": 50,
     "ride": 1,
-    "items": 10,
-    "obstacles": 5,
+    "items": 5,
+    "obstacles": 3,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 60
+    "timeLimit": 0
    },
    "counts": {
-    "enemy": 5,
-    "collectible": 10
+    "enemy": 3,
+    "collectible": 5
    },
    "ruleRoles": [
     {
      "id": "rock",
      "kind": "hazard",
      "label": "rock",
-     "count": 5
+     "count": 3
     },
     {
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 10
+     "count": 5
     }
    ],
    "things": [
     {
      "role": "rock",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
      "role": "coin",
      "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
@@ -126,7 +126,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "tick"
+      "id": "phase1"
      }
     ],
     "phases": [
@@ -139,11 +139,7 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "none",
-    "name": "none",
-    "attack": "charge"
-   },
+   "boss": null,
    "abilities": [],
    "segments": null
   }

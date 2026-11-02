@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "76b43756",
- "directorPromptVersion": "e520cf73",
- "recordedAt": "2026-11-02T08:09:37.934Z",
- "ms": 6058,
+ "promptVersion": "476d8b8c",
+ "directorPromptVersion": "869f1b91",
+ "recordedAt": "2026-11-02T14:51:34.747Z",
+ "ms": 7713,
  "answer": {
-  "plan": "Create a shooter where an elf archer fires at goblins that spawn from trees, with a simple wave‑based timer system.",
+  "plan": "Create a shooter where an elf archer fires at goblins that spawn in waves, with a simple timer‑driven phase system.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -27,7 +27,7 @@
    "palette": "forest",
    "params": {
     "targetWidthPct": 50,
-    "movingTargets": 1,
+    "movingTargets": 0,
     "waves": 5,
     "enemies": 3,
     "targets": 3,
@@ -89,7 +89,7 @@
      ]
     },
     {
-     "id": "next_phase",
+     "id": "reset_wave",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -97,7 +97,7 @@
      "if": null,
      "do": [
       {
-       "goPhase": "third"
+       "goPhase": "first"
       }
      ]
     }
@@ -115,9 +115,6 @@
      },
      {
       "id": "second"
-     },
-     {
-      "id": "third"
      }
     ],
     "events": null
