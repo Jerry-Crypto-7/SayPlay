@@ -78,7 +78,7 @@ const rank = (tier: QualityTier): number => QUALITY_TIERS.indexOf(tier);
 /**
  * Telefon (dotyk) a hustý displej startují na `medium`, desktop na `high` (P56B T8: start na `low` dával telefonu
  * levný první snímek bez bloomu a AO). Kdo `medium` neudrží, za `DOWN_MS` spadne na `low`; volný čas snímku vrací výš.
- * `lightStart` (P68R T3, stavba obchodu): telefon začne na `low` – sestup za `DOWN_MS` přišel až po prvních ťucích,
+ * `lightStart` (P68R T3 stavba obchodu, T4 stunt): telefon začne na `low` – sestup za `DOWN_MS` přišel až po prvních ťucích,
  * které celé padly na `medium` (AO kreslí scénu ještě jednou); telefon, který snímky stíhá, se za `UP_MS` vrátí výš.
  */
 export function startQuality(devicePixelRatio: number, coarsePointer = false, lightStart = false): QualityState {
