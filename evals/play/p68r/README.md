@@ -33,3 +33,27 @@ směrování, věty neviděl. Existující sadu nepřepíše.
   `holdout-opened.json`; druhé otevření odmítne.
 - Test pečeti `__tests__/seal.test.ts`: kde sada je, hlídá oba otisky (i v tomto README), složení, štítek pro každou
   větu a žádnou shodu se známými sadami; všude hlídá, že známé sady obsahují otevřený holdout a dev sadu P68.
+
+## T6 – výsledek na sadě (3. 11.)
+
+Sada je od T6 **otevřená** (`holdout-opened.json`) a leží i v repu (`holdout.json`, `holdout-labels.json`, otisky
+sedí s pečetí). Další plán, který na ní bude ladit, ji musí přidat mezi známé sady své pečeti. Výsledek je
+v `result.md`, surová čísla v `result.json`, přepočet v `__tests__/result.test.ts`.
+
+Postup (stejný jako P68 T15, aby šel přeměřit):
+
+- **Strany:** `main` = `188d44e9` (rodič commitu pečeti `58f09a6e`, stav před P68R, port 3181,
+  `D:/caches/p68r/main-4a5d859c`), větev = `origin/main` `dded82df` po T5 (port 3180). Prahy z `p68/gates.json`.
+- **G1:** `node evals/play/p68/genre-route.mjs [--root <main>] --labels evals/play/p68r/holdout-labels.json --out
+  route-holdout-{main,branch}.json`; obecné věty a sada 200 přes štítky P68 T2 (`route-{main,branch}.json`). „Svou
+  hru“ = žánr skladatele (`draftGameSpecWithMeta(věta, 1)`), tedy hra, kterou hráč dostane.
+- **G2:** `scripts/measure/gameplay-gate.mjs` nad specem rychlé hry každé nové věty (seed 1); věta poslaná do jiné
+  hry je ve jmenovateli jako selhání (`failed: "routed to …"`). Zpráva `gameplay-holdout.json`.
+- **G3:** `@p68-fps` (`e2e/play-perf.spec.ts`, ruční spec každé hry, kontrola `p66-arrows`) proti sestavě větve,
+  `pixel7-touch` hradí, `iphone-touch` jen zapisuje. Soubor `fps-holdout.json`.
+- **G4:** jen `buildshift` (zapojený v T5): první 3 nové věty podle id, které rychlá hra větve pošle do hry, × 3 běhy,
+  desktop + `pixel7-cpu4`. `minigolf`, `railfps` a `drawsave` se od T15 nezměnily, jejich běhy test bere
+  z `p68/result.json`. `stunt` nezapojený, bez běhů.
+- **G5:** `p66-hash`, `p66-hooks-existing`, `p68-hash`, `p68-roundtrip` – počty v `result.json`.
+- **G6, G7 se neměří:** G6 je druhotná a hru, která neprojde G1–G5, nezachrání; G7 by stála peníze (plán P68R je bez
+  útraty) a v T15 poskytovatel režiséra vracel 429.

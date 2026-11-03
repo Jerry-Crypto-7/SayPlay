@@ -1,0 +1,740 @@
+{
+ "about": "P68R sealed holdout, written 2026-11-03 (T1) by claude -p from game descriptions only, before any P68R routing change; opened once in T6.",
+ "sentences": [
+  {
+   "id": "p68r-001",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "Make a stunt race game with a monster truck jumping ramps"
+  },
+  {
+   "id": "p68r-002",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "I want to ride a dirt bike off huge jumps and smash crates before the timer ends"
+  },
+  {
+   "id": "p68r-003",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "A grandma in a pink scooter launches off ramps and plows through hay bales to beat the clock"
+  },
+  {
+   "id": "p68r-004",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "stunt driving game in the desert please"
+  },
+  {
+   "id": "p68r-005",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "Make a game where a pizza delivery van flies over ramps and crashes through boxes to deliver on time"
+  },
+  {
+   "id": "p68r-006",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "An ice cream truck races down a mountain road, jumping cliffs and smashing snowmen made of barrels"
+  },
+  {
+   "id": "p68r-007",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "I want a quad bike stunt race through a jungle with log ramps and fruit crates to break"
+  },
+  {
+   "id": "p68r-008",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "a racing game with big jumps and stuff to crash into"
+  },
+  {
+   "id": "p68r-009",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "A robot drives a rusty tow truck across a junkyard, flying off car ramps and bursting through tire piles before time runs out"
+  },
+  {
+   "id": "p68r-010",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "Can you make a moped jump game on rooftops in a rainy city"
+  },
+  {
+   "id": "p68r-011",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "Make a stunt course game where a firefighter drives the fire engine over ramps and through stacks of oil drums"
+  },
+  {
+   "id": "p68r-012",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "A kid on a go-kart zooms down a candy track, leaping off gummy ramps and smashing cookie stacks"
+  },
+  {
+   "id": "p68r-013",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "I want a timed motorbike race on a frozen lake with ice ramps and snow piles to plow through"
+  },
+  {
+   "id": "p68r-014",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "Penguin in a tiny race car jumping over glaciers"
+  },
+  {
+   "id": "p68r-015",
+   "half": "new",
+   "genre": "stunt",
+   "game": "stunt",
+   "text": "Make a game where you drive a school bus off giant ramps and brake hard for tight corners"
+  },
+  {
+   "id": "p68r-016",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Make a mini golf game on a frosty glacier with penguins sliding back and forth across the lane."
+  },
+  {
+   "id": "p68r-017",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "I want to putt a ball through a haunted graveyard with tombstones to bounce off."
+  },
+  {
+   "id": "p68r-018",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Mini golf inside a candy factory please."
+  },
+  {
+   "id": "p68r-019",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Make a game where I tap to aim and drag back for power to roll a marble past cactus bumpers into a hole in the desert sand."
+  },
+  {
+   "id": "p68r-020",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Crazy golf on the moon with a little rover driving across the course."
+  },
+  {
+   "id": "p68r-021",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Can you make a putt putt hole in a dinosaur jungle where a baby triceratops wanders across the path?"
+  },
+  {
+   "id": "p68r-022",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Roll a tiny bowling ball around the shelves of a messy library and drop it in the cup in as few hits as you can."
+  },
+  {
+   "id": "p68r-023",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Mini golf in a sushi restaurant where a conveyor belt plate keeps sliding through."
+  },
+  {
+   "id": "p68r-024",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Flick a gumball down a twisty kitchen counter, bank it off the toaster and sink it in the sink drain before running out of shots."
+  },
+  {
+   "id": "p68r-025",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "I want a short golf putting hole on a rooftop garden with a robot lawnmower going side to side."
+  },
+  {
+   "id": "p68r-026",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Underwater mini golf with coral walls and a crab scuttling across."
+  },
+  {
+   "id": "p68r-027",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "A ball bouncing off giant mushrooms in a fairy forest while a snail creeps across, trying to get it in the hole under par."
+  },
+  {
+   "id": "p68r-028",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Make me a putting game in a castle courtyard where a knight on patrol blocks the green."
+  },
+  {
+   "id": "p68r-029",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Mini golf around a volcano with lava rocks as bumpers."
+  },
+  {
+   "id": "p68r-030",
+   "half": "new",
+   "genre": "minigolf",
+   "game": "minigolf",
+   "text": "Aim carefully and pick how hard to hit so the soccer ball curves around the locker room benches into the drain, with the janitor's mop sweeping by."
+  },
+  {
+   "id": "p68r-031",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Make a game where I ride a mine cart and shoot bats coming at me from both sides"
+  },
+  {
+   "id": "p68r-032",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "I want a first person rail shooter on a haunted ghost train"
+  },
+  {
+   "id": "p68r-033",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Zombies lurch out of the cornfield while my tractor trailer rolls down the farm road and I have to turn and blast them"
+  },
+  {
+   "id": "p68r-034",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Rail shooter in a submarine shooting robot sharks"
+  },
+  {
+   "id": "p68r-035",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Make me a game where a grandma on a mobility scooter fires a water pistol at angry garden gnomes"
+  },
+  {
+   "id": "p68r-036",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "I'm on a jungle river boat and crocodile men leap from the banks so I spin around and shoot them before they bite"
+  },
+  {
+   "id": "p68r-037",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "on-rails shooter with a pirate ship cannon blasting sea monsters"
+  },
+  {
+   "id": "p68r-038",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Make a first person shooting game riding a monorail through a neon city full of rogue drones, with a giant mech boss at the end"
+  },
+  {
+   "id": "p68r-039",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "A knight on a moving siege tower shoots crossbow bolts at goblins climbing the walls"
+  },
+  {
+   "id": "p68r-040",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "I want to ride a roller coaster and shoot clowns popping up around the track"
+  },
+  {
+   "id": "p68r-041",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Shoot the alien bugs from the back of a desert jeep as it speeds along"
+  },
+  {
+   "id": "p68r-042",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Make a game where I'm a kid on a school bus throwing water balloons at vampire teachers who jump out of the hallways"
+  },
+  {
+   "id": "p68r-043",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "Gun turret on a hover train, aim left and right at space pirates"
+  },
+  {
+   "id": "p68r-044",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "My hot air balloon drifts over the canyon and harpies swoop at me from every side so I have to turn and shoot them down"
+  },
+  {
+   "id": "p68r-045",
+   "half": "new",
+   "genre": "railfps",
+   "game": "railfps",
+   "text": "First person game riding a log flume and zapping evil beavers"
+  },
+  {
+   "id": "p68r-046",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "make a game where I run a little taco truck and place grills and coolers before the lunch rush"
+  },
+  {
+   "id": "p68r-047",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "I want to set up a bakery on a grid and serve bread to grumpy grandmas before they walk out"
+  },
+  {
+   "id": "p68r-048",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "penguins waddle in wanting fish smoothies and I have to buy blenders fast enough"
+  },
+  {
+   "id": "p68r-049",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "shop management game with a space station noodle bar"
+  },
+  {
+   "id": "p68r-050",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "Build a tiny flower stall, earn coins, add more vases, keep the bees happy"
+  },
+  {
+   "id": "p68r-051",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "make me a game where I place ice cream machines on a beach boardwalk and serve sweaty tourists until sunset"
+  },
+  {
+   "id": "p68r-052",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "dinosaurs queue up at my coffee kiosk and leave angry if the espresso machine is too far away"
+  },
+  {
+   "id": "p68r-053",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "I want a one shift game running a pet grooming salon where I buy tubs and dryers with tips"
+  },
+  {
+   "id": "p68r-054",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "ghosts want hot soup at my haunted cafe tonight"
+  },
+  {
+   "id": "p68r-055",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "Let me lay out counters in a ramen shop and feed hungry samurai before closing time"
+  },
+  {
+   "id": "p68r-056",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "a game where I run a gas station for aliens and have to buy more pumps as saucers line up"
+  },
+  {
+   "id": "p68r-057",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "fairies flutter into my candy shop and I keep adding sugar spinners so nobody leaves empty handed"
+  },
+  {
+   "id": "p68r-058",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "make a burger joint tycoon thing but just one busy night"
+  },
+  {
+   "id": "p68r-059",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "I place juice presses in a jungle hut and monkeys grab mangoes before they get bored"
+  },
+  {
+   "id": "p68r-060",
+   "half": "new",
+   "genre": "buildshift",
+   "game": "buildshift",
+   "text": "serve 20 knights their pancakes"
+  },
+  {
+   "id": "p68r-061",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Make a game where I draw walls to keep a sleeping baby owl safe from falling acorns"
+  },
+  {
+   "id": "p68r-062",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Draw lines to protect the snowman from melting sunbeams"
+  },
+  {
+   "id": "p68r-063",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "I want to sketch barriers so a little turtle survives a meteor shower for ten seconds"
+  },
+  {
+   "id": "p68r-064",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "A hamster sits in the middle of the kitchen while eggs drop from the shelf and I have to draw something to stop them"
+  },
+  {
+   "id": "p68r-065",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Shield the birthday cake from falling paint cans"
+  },
+  {
+   "id": "p68r-066",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Can you make a drawing game where my lines block arrows shot at a knight"
+  },
+  {
+   "id": "p68r-067",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Protect the sandcastle from crashing waves by drawing walls"
+  },
+  {
+   "id": "p68r-068",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Bowling balls roll down a hill toward a tiny gnome and my lines have to stop them"
+  },
+  {
+   "id": "p68r-069",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Let me draw shields over a sleeping cat while pinecones rain down"
+  },
+  {
+   "id": "p68r-070",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Make a game where I trace lines with my finger to save a robot from falling bolts and screws"
+  },
+  {
+   "id": "p68r-071",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Coconuts fall from palm trees onto a crab on the beach unless I draw a roof"
+  },
+  {
+   "id": "p68r-072",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "draw to save the grandma from the falling pianos"
+  },
+  {
+   "id": "p68r-073",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "I want a game where angry bees swarm a teddy bear and I draw walls around it to keep them off for ten seconds"
+  },
+  {
+   "id": "p68r-074",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "Protect the fish bowl from falling bowling pins"
+  },
+  {
+   "id": "p68r-075",
+   "half": "new",
+   "genre": "drawsave",
+   "game": "drawsave",
+   "text": "A penguin waits on the ice while icicles crack and drop from above"
+  },
+  {
+   "id": "p68r-076",
+   "half": "general",
+   "genre": "voyage",
+   "game": "voyage",
+   "text": "make a game where I fly a little seaplane through a canyon without hitting the rock walls"
+  },
+  {
+   "id": "p68r-077",
+   "half": "general",
+   "genre": "voyage",
+   "game": "voyage",
+   "text": "A witch zooms on her broom between church towers to deliver potions before midnight"
+  },
+  {
+   "id": "p68r-078",
+   "half": "general",
+   "genre": "voyage",
+   "game": "voyage",
+   "text": "I want to land a lunar module gently on the moon without crashing it"
+  },
+  {
+   "id": "p68r-079",
+   "half": "general",
+   "genre": "platformer",
+   "game": "platformer",
+   "text": "platformer with a frog jumping across lily pads and tree branches to the top of the swamp"
+  },
+  {
+   "id": "p68r-080",
+   "half": "general",
+   "genre": "platformer",
+   "game": "platformer",
+   "text": "I want a knight who leaps over lava gaps and climbs a crumbling castle tower"
+  },
+  {
+   "id": "p68r-081",
+   "half": "general",
+   "genre": "runner",
+   "game": "runner",
+   "text": "endless runner where a penguin slides down an icy slope dodging snowmen and grabbing fish"
+  },
+  {
+   "id": "p68r-082",
+   "half": "general",
+   "genre": "runner",
+   "game": "runner",
+   "text": "A skateboarder rolls down a busy boardwalk, switching lanes to avoid bikes and jumping benches while collecting coins"
+  },
+  {
+   "id": "p68r-083",
+   "half": "general",
+   "genre": "shooter",
+   "game": "shooter",
+   "text": "shoot down alien saucers as they swoop toward my planet"
+  },
+  {
+   "id": "p68r-084",
+   "half": "general",
+   "genre": "shooter",
+   "game": "shooter",
+   "text": "make a carnival shooting gallery with tin ducks and balloons"
+  },
+  {
+   "id": "p68r-085",
+   "half": "general",
+   "genre": "throw",
+   "game": "throw",
+   "text": "basketball game where you flick the ball into the hoop from different spots"
+  },
+  {
+   "id": "p68r-086",
+   "half": "general",
+   "genre": "throw",
+   "game": "throw",
+   "text": "I want to launch snowballs with a slingshot to knock over a fort of ice blocks"
+  },
+  {
+   "id": "p68r-087",
+   "half": "general",
+   "genre": "quest",
+   "game": "quest",
+   "text": "a firefighter runs around a burning apartment putting out every fire before the building collapses"
+  },
+  {
+   "id": "p68r-088",
+   "half": "general",
+   "genre": "quest",
+   "game": "quest",
+   "text": "I want to flip burgers on a grill and serve customers before the orders pile up"
+  },
+  {
+   "id": "p68r-089",
+   "half": "general",
+   "genre": "defense",
+   "game": "defense",
+   "text": "tower defense where goblins march down three lanes toward my castle gate and I shoot arrows at them"
+  },
+  {
+   "id": "p68r-090",
+   "half": "general",
+   "genre": "defense",
+   "game": "defense",
+   "text": "Robot soldiers walk down the lanes toward the bunker and the turret has to stop them before they get through"
+  },
+  {
+   "id": "p68r-091",
+   "half": "general",
+   "genre": "arena",
+   "game": "arena",
+   "text": "top down game where a puppy runs around the park collecting lost tennis balls"
+  },
+  {
+   "id": "p68r-092",
+   "half": "general",
+   "genre": "timing",
+   "game": "timing",
+   "text": "stack swinging pizza boxes into a tall tower with one tap each"
+  },
+  {
+   "id": "p68r-093",
+   "half": "general",
+   "genre": "rhythm",
+   "game": "rhythm",
+   "text": "rhythm game where you hit the drums when the notes reach the line"
+  },
+  {
+   "id": "p68r-094",
+   "half": "general",
+   "genre": "duel",
+   "game": "duel",
+   "text": "cowboy showdown at high noon where you dodge and shoot back when the outlaw misses"
+  },
+  {
+   "id": "p68r-095",
+   "half": "general",
+   "genre": "flap",
+   "game": "flap",
+   "text": "tap to make a bumblebee flap through gaps between flower stems"
+  },
+  {
+   "id": "p68r-096",
+   "half": "general",
+   "genre": "catch",
+   "game": "catch",
+   "text": "catch falling apples in a basket but let the rotten ones drop"
+  },
+  {
+   "id": "p68r-097",
+   "half": "general",
+   "genre": "whack",
+   "game": "whack",
+   "text": "whack a mole but with gophers popping out of a golf course"
+  },
+  {
+   "id": "p68r-098",
+   "half": "general",
+   "genre": "slice",
+   "game": "slice",
+   "text": "slicing game where vegetables fly up and you chop them but avoid the bombs"
+  },
+  {
+   "id": "p68r-099",
+   "half": "general",
+   "genre": "hop",
+   "game": "hop",
+   "text": "help a duck cross a busy highway and a river full of logs"
+  },
+  {
+   "id": "p68r-100",
+   "half": "general",
+   "genre": "crowd",
+   "game": "crowd",
+   "text": "crowd runner game where my army of tiny vikings grows through gates and attacks a giant troll at the end"
+  },
+  {
+   "id": "p68r-101",
+   "half": "general",
+   "genre": "merge",
+   "game": "merge",
+   "text": "merge game where you drop planets into a jar and two same ones become a bigger planet"
+  },
+  {
+   "id": "p68r-102",
+   "half": "general",
+   "genre": "push",
+   "game": "push",
+   "text": "sumo game where you push other wrestlers out of the ring"
+  },
+  {
+   "id": "p68r-103",
+   "half": "general",
+   "genre": "survivor",
+   "game": "survivor",
+   "text": "survivor game where a wizard auto casts spells while bats swarm in and I pick upgrades between waves"
+  },
+  {
+   "id": "p68r-104",
+   "half": "general",
+   "genre": "hole",
+   "game": "hole",
+   "text": "hole game where a black hole eats everything in a city and gets bigger"
+  },
+  {
+   "id": "p68r-105",
+   "half": "general",
+   "genre": "steal",
+   "game": "steal",
+   "text": "sneak into the dragon's cave, grab the golden egg and run back to my camp before the guards catch me"
+  }
+ ]
+}
