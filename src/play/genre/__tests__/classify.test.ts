@@ -391,6 +391,7 @@ describe('classifyGenre', () => {
     const sets = { p30Dev: 'p30/dev.json', p54cDev: 'p54c/dev.json', p55HoldoutOpened: 'p55/holdout.json' };
     // P68 T11: hry P68 výchozí čísla P56A taky znát nemohla – vyjmou se stejně jako žánry P66.
     const P66 = new Set(['survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
+    const P68R_REORDERED = new Set(['p55HoldoutOpened h70']);
     const firsts: string[] = [];
     for (const [name, path] of Object.entries(sets)) {
       const was = new Map(baseline.sets[name]!.rows.map((row) => [row.id, row.ranked]));
@@ -399,10 +400,13 @@ describe('classifyGenre', () => {
       for (const { id, text } of sentences) {
         const ranked = classifyGenre(text, null, GENRE_MODULES).ranked;
         if (P66.has(ranked[0]!.genre)) firsts.push(`${name} ${id} ${ranked[0]!.genre}`);
+        // P68R T2: „Golf on the moon, hit the ball into the crater in as few strokes as possible“ hraje minigolf – znak
+        // je hlavní sloveso, „hit“ tak dá Úkolu +1 místo +4 a starý pořádek pod minigolfem se prohodí (hod před Úkol).
+        if (P68R_REORDERED.has(`${name} ${id}`)) continue;
         expect(ranked.filter((choice) => !P66.has(choice.genre)).map((choice) => `${choice.genre}.${choice.mode}`).join(' '), `${name} ${id}`).toBe(was.get(id));
       }
     }
-    expect(firsts).toEqual(['p30Dev s111 hole']);
+    expect(firsts).toEqual(['p30Dev s111 hole', 'p55HoldoutOpened h70 minigolf']);
   });
 
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {

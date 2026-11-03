@@ -1,0 +1,2056 @@
+{
+ "maxTicks": 5400,
+ "games": {
+  "minigolf": {
+   "n": 15,
+   "failed": 0,
+   "win": 15,
+   "lose": 15,
+   "actions": 15,
+   "pass": 15
+  },
+  "railfps": {
+   "n": 15,
+   "failed": 0,
+   "win": 15,
+   "lose": 15,
+   "actions": 15,
+   "pass": 15
+  },
+  "drawsave": {
+   "n": 15,
+   "failed": 0,
+   "win": 15,
+   "lose": 15,
+   "actions": 15,
+   "pass": 15
+  }
+ },
+ "results": [
+  {
+   "game": "minigolf",
+   "sentence": "p68-016: a mouse putts a pea across the dinner table, around the salt shaker and gravy boat, into a teacup",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-017: a minigolf hole set inside a volcano with lava rivers to putt around",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-018: sink the ball on a jungle course where snakes slide across the green and block your shot",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-019: drag back to aim, release to putt, and get the ball into the cup on a course full of bouncy bumpers",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-020: a robot plays crazy golf in a factory, rolling the ball over conveyor belts and through pipes into the hole",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-021: a short putting round on a snowy rooftop with chimneys in the way, finish under par",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-022: a grandpa plays a round of mini golf at the seaside, putting past a lighthouse and a moving crab",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 277 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 490 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 277: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-023: get the marble into the hole in two strokes on a wooden board full of nails and little ramps",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-024: a dinosaur putting course where the ball must roll between giant eggs and under a sleeping t-rex's tail",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-025: a fairy taps a dewdrop with a twig across a lily pad course into a flower cup in as few taps as possible",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-026: tiny golf in a bathroom: putt the ball around the soap, across the tiles and into the drain",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-027: a castle mini golf course with a drawbridge that opens and closes, putt through it at the right moment",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-028: a golfing ghost putts across a graveyard green, bouncing the ball off tombstones toward the hole",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-029: aim carefully and choose the power to roll the ball over a narrow bridge and into the cup",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p68-030: a putting challenge on a spaceship deck where the ball curves around magnets before dropping into the hole",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-031: ride a cable car up a snowy mountain and shoot the yetis climbing toward your cabin",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-032: through the eyes of a sailor on a gondola gliding down a canal, fire at the sea monsters leaping out of the water",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-033: stand on the last wagon of a moving train, look around and shoot the ninjas leaping from the trees before they land on you",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-034: a first-person submarine ride along a fixed route under the sea, torpedoing sharks before they bite the hull",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-035: in a theme park dark ride, turn your cart's blaster on the cardboard aliens popping out of the walls",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-036: ride a zip line through a jungle canopy and fire at the parrots dive-bombing you on the way down",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-037: a safari truck follows a set trail through the savanna while you shoot the charging rhinos with sleep darts",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-038: a rail shooter in a toy store: ride the toy train and pop the evil teddy bears with a cork gun",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-039: a gondola lift ride over a haunted forest, aiming a crossbow at the bats that dive toward you",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-040: first person on a speeding monorail through a neon city, shooting down hacker drones before they crash into the window",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-041: ride a raft down a fixed river path and hit the hungry piranhas leaping at you with a slingshot",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-042: you are a passenger on an old steam train crossing a prairie, turn your head and shoot the vultures swooping at the carriage",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-043: a canal barge drifts through a medieval town and you shoot arrows at the goblins on the rooftops before they drop on you",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-044: on rails through a candy factory, splatter the gummy monsters with a jelly blaster as they jump toward you",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p68-045: a sleigh pulled along a fixed trail through a frozen forest while you fire snowballs at the ice wolves chasing you",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-061: draw a shelter over the little bird so the falling acorns cannot hit it until the clock reaches zero",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-062: sketch a line to save the tiny astronaut from meteors raining down for fifteen seconds",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-063: a cupcake sits on a table and pigeons dive at it, draw walls to keep it safe until time is up",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-064: draw a barrier to keep the sleepy sheep safe from the swarm of wasps",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-065: with your finger, draw lines that stop the egg from rolling off the edge of the cliff",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-066: protect the snail from the falling hailstones by drawing a roof before the storm passes",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-067: a stickman stands under a crumbling ceiling, draw a line so the bricks bounce off until the countdown is over",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-068: draw a wall that keeps the lava flow away from the village of mice for twenty seconds",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-069: a puzzle where you draw one stroke to shelter a kitten from bouncing tennis balls",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-070: draw a protective shape around the turtle egg on the beach so the crabs and gulls cannot get to it until it hatches",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-071: scribble a dome over the ice cream cone so the dripping rain and the hungry ants stay away until the timer stops",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-072: seen from the side, a toy car rolls toward a gap in the shelf, draw a path under it before it tips over the edge",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-073: draw lines to keep the treasure chest from sliding off the pirate ship deck while cannonballs fly in",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-074: draw a fence to keep the lamb safe from the fox until the farmer arrives",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p68-075: a melting snowman needs a drawn shield against the fireballs a dragon spits for half a minute",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  }
+ ]
+}
