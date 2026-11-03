@@ -90,6 +90,8 @@ export function Warm({ children }: { readonly children: ReactNode }) {
     void compileForComposer(three, root).then(() => {
       known.warming = false;
       root.visible = true;
+      // Scéna před prvním vstupem kreslí na požádání (P68R T3): bez snímku by díl zůstal skrytý do ťuku.
+      three.invalidate();
     });
   });
   return <group ref={group}>{children}</group>;

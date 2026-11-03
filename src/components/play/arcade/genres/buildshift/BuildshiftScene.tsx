@@ -419,8 +419,11 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
       for (let pass = 0; live; pass += 1) {
         const before = get().gl.info.programs?.length ?? 0;
         await compileForComposer(get());
+        // Do prvního vstupu se kreslí na požádání (`DRAWS_WHEN_STARTED`): dotažený model se ukáže až vyžádaným snímkem.
+        get().invalidate();
         if (pass > 0 && loadsPending() === 0 && (get().gl.info.programs?.length ?? 0) === before) return;
         await loadsSettled();
+        get().invalidate();
         await new Promise((resolve) => setTimeout(resolve, 30));
       }
     })();

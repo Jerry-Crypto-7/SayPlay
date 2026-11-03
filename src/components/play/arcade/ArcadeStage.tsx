@@ -64,6 +64,7 @@ import { HudBoosts, boostKeepers } from './PowerupBadge';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { loadRigged, RiggedModel } from './RiggedModel';
 import { RunnerWorld } from './runner/RunnerWorld';
+import type { ReadyGate } from './ready-gate';
 import type { ArcadeSession } from './session';
 import { useGlideInput } from './glide/GlideScene';
 import { useWalkerInput } from './walker/WalkerScene';
@@ -900,6 +901,17 @@ function usePlayRect(surface: React.RefObject<HTMLDivElement | null>): React.Ref
 /** Jak dlouho po konci běhu plátno ještě kreslí naplno: klip pádu či oslavy a pauza výsledku (600 ms). */
 const END_CLIP_MS = 1500;
 
+/**
+ * Ovládání, jehož scéna se před prvním vstupem nehýbe, a proto do něj kreslí na požádání (P68R T3) – snímek vyžádá
+ * změna relace (`RedrawOnChange`, první vstup ji ohlásí) a scéna sama po dotažení modelů. Hra, která před startem
+ * něco ukazuje v pohybu (dech, průlet bez konce), sem nepatří.
+ */
+const DRAWS_WHEN_STARTED: ReadonlySet<string> = new Set(['buildshift']);
+
+/** Hodiny stojí do prvního doteku (`holdUntilTouch`); ukázka robota a náhled ve feedu běží i tak. */
+const waitsForTouch = (session: ArcadeSession): boolean =>
+  'waiting' in session && (session as ArcadeSession & ReadyGate).waiting() && session.demo() === null;
+
 const JUMP_KEYS = new Set([' ', 'arrowup', 'w']);
 
 /** Běžec: mezerník/šipka nahoru = skok, šipky/A-D = pruh, šipka dolů = skluz; dotyk a myš: `runnerGesture`. */
@@ -1382,7 +1394,13 @@ export default function ArcadeStage({
   const GenreTouch = input === 'genre' ? GENRE_TOUCH[control] : undefined;
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
   // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.
-  const ticking = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
+  // Hra z `DRAWS_WHEN_STARTED` kreslí na požádání i do prvního vstupu (P68R T3): deska stojí, a plné snímky stály na
+  // Pixelu 7 (CPU ×4) celé hlavní vlákno právě ve chvíli, kdy hráč (i sonda času do hratelnosti) poprvé ťuká.
+  const ticking = useSyncExternalStore(
+    session.subscribe,
+    () => session.snapshot().runState === 'running' && !session.paused() && !(DRAWS_WHEN_STARTED.has(control) && waitsForTouch(session)),
+    () => true,
+  );
   const ended = useSyncExternalStore(session.subscribe, () => session.snapshot().runState !== 'running', () => false);
   const [settling, setSettling] = useState(false);
   useEffect(() => {
