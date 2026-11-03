@@ -1,0 +1,2814 @@
+{
+ "schema": "p68-holdout-labels.v1",
+ "about": "T15 G1: blind text judge labels for the 105 sentences of the opened P68 holdout, same judge, question and 29 plain-word types as genre-labels.json (T2); own seed. aimed = the game or genre the sentence was written for when sealed.",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode --tools \"\" in an empty mkdtemp; sees only numbered sentences and the 29 type descriptions under keys G01-G29)",
+ "seed": 68015,
+ "batchSize": 20,
+ "keys": {
+  "G01": "steal",
+  "G02": "whack",
+  "G03": "buildshift",
+  "G04": "drawsave",
+  "G05": "minigolf",
+  "G06": "duel",
+  "G07": "stunt",
+  "G08": "crowd",
+  "G09": "quest",
+  "G10": "arrows",
+  "G11": "voyage",
+  "G12": "hop",
+  "G13": "rhythm",
+  "G14": "defense",
+  "G15": "runner",
+  "G16": "arena",
+  "G17": "survivor",
+  "G18": "hole",
+  "G19": "sort",
+  "G20": "shooter",
+  "G21": "throw",
+  "G22": "timing",
+  "G23": "merge",
+  "G24": "platformer",
+  "G25": "slice",
+  "G26": "push",
+  "G27": "catch",
+  "G28": "flap",
+  "G29": "railfps"
+ },
+ "batches": 6,
+ "batchesDone": 6,
+ "calls": {
+  "total": 6,
+  "failed": 0,
+  "seconds": 40.3
+ },
+ "batchResults": {
+  "0": [
+   {
+    "key": "sink the ball on a jungle course where snakes slide across the green and block your shot",
+    "batch": 0,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf"
+    ]
+   },
+   {
+    "key": "a melting snowman needs a drawn shield against the fireballs a dragon spits for half a minute",
+    "batch": 0,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a chef catches falling dumplings in a bamboo steamer",
+    "batch": 0,
+    "best": "catch",
+    "acceptable": [
+     "catch"
+    ]
+   },
+   {
+    "key": "draw lines to keep the treasure chest from sliding off the pirate ship deck while cannonballs fly in",
+    "batch": 0,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a cheetah sprints along a savanna trail leaping over logs and ducking under branches",
+    "batch": 0,
+    "best": "runner",
+    "acceptable": [
+     "runner"
+    ]
+   },
+   {
+    "key": "drop round fruits into a basket so matching ones combine into bigger fruit",
+    "batch": 0,
+    "best": "merge",
+    "acceptable": [
+     "merge"
+    ]
+   },
+   {
+    "key": "a single ant grows into a huge colony by marching through bonus gates on a picnic blanket",
+    "batch": 0,
+    "best": "crowd",
+    "acceptable": [
+     "crowd"
+    ]
+   },
+   {
+    "key": "a bat flaps through a cave between dripping stalactites",
+    "batch": 0,
+    "best": "flap",
+    "acceptable": [
+     "flap",
+     "voyage"
+    ]
+   },
+   {
+    "key": "build a tiny tailor shop counter by counter and finish every customers suit before the working day is over",
+    "batch": 0,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "an ambulance races through a construction site leaping off dirt ramps and bursting through orange cones to cross the finish line",
+    "batch": 0,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "run a taco truck plaza put grills and drink stands on the tiles with the cash you earn and feed the lunch line before two oclock",
+    "batch": 0,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "a castle mini golf course with a drawbridge that opens and closes putt through it at the right moment",
+    "batch": 0,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "timing"
+    ]
+   },
+   {
+    "key": "scribble a dome over the ice cream cone so the dripping rain and the hungry ants stay away until the timer stops",
+    "batch": 0,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "aim carefully and choose the power to roll the ball over a narrow bridge and into the cup",
+    "batch": 0,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "a fox sneaks into the henhouse grabs eggs and carries them back to its den before the farmer wakes",
+    "batch": 0,
+    "best": "steal",
+    "acceptable": [
+     "steal",
+     "arena"
+    ]
+   },
+   {
+    "key": "draw a protective shape around the turtle egg on the beach so the crabs and gulls cannot get to it until it hatches",
+    "batch": 0,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a gokart driven by a frog bounces over ramps in a mushroom forest and knocks down wooden signs on its way to the goal",
+    "batch": 0,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a monkey throws coconuts at a stack of tin buckets on the beach",
+    "batch": 0,
+    "best": "throw",
+    "acceptable": [
+     "throw"
+    ]
+   },
+   {
+    "key": "a short putting round on a snowy rooftop with chimneys in the way finish under par",
+    "batch": 0,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf"
+    ]
+   },
+   {
+    "key": "a stickman stands under a crumbling ceiling draw a line so the bricks bounce off until the countdown is over",
+    "batch": 0,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   }
+  ],
+  "1": [
+   {
+    "key": "draw a fence to keep the lamb safe from the fox until the farmer arrives",
+    "batch": 1,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a lighthouse keeper holds back waves of pirate boats sailing toward the harbour",
+    "batch": 1,
+    "best": "defense",
+    "acceptable": [
+     "defense",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a canal barge drifts through a medieval town and you shoot arrows at the goblins on the rooftops before they drop on you",
+    "batch": 1,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a lawn mower stunt run through the backyard jump the sprinkler ramp smash the garden gnomes reach the shed",
+    "batch": 1,
+    "best": "stunt",
+    "acceptable": [
+     "stunt"
+    ]
+   },
+   {
+    "key": "a little crab crosses a busy beach promenade full of bicycles to reach the sea",
+    "batch": 1,
+    "best": "hop",
+    "acceptable": [
+     "hop"
+    ]
+   },
+   {
+    "key": "draw a barrier to keep the sleepy sheep safe from the swarm of wasps",
+    "batch": 1,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "draw a shelter over the little bird so the falling acorns cannot hit it until the clock reaches zero",
+    "batch": 1,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a paper boat sails down a rainy gutter to reach the big lake",
+    "batch": 1,
+    "best": "voyage",
+    "acceptable": [
+     "voyage",
+     "runner"
+    ]
+   },
+   {
+    "key": "ride a cable car up a snowy mountain and shoot the yetis climbing toward your cabin",
+    "batch": 1,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter",
+     "defense"
+    ]
+   },
+   {
+    "key": "an octopus opens a seaside lemonade bar adds juicers and stools to the grid and serves thirsty swimmers until sunset",
+    "batch": 1,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ]
+   },
+   {
+    "key": "an archer shoots balloons drifting over the castle walls",
+    "batch": 1,
+    "best": "shooter",
+    "acceptable": [
+     "shooter",
+     "throw"
+    ]
+   },
+   {
+    "key": "with your finger draw lines that stop the egg from rolling off the edge of the cliff",
+    "batch": 1,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "chop the flying carrots and onions a cook throws in the air",
+    "batch": 1,
+    "best": "slice",
+    "acceptable": [
+     "slice"
+    ]
+   },
+   {
+    "key": "a hole in the zoo grows bigger as it eats benches ice cream carts and finally an elephant",
+    "batch": 1,
+    "best": "hole",
+    "acceptable": [
+     "hole"
+    ]
+   },
+   {
+    "key": "build a hot dog stand by the stadium tile by tile and sell to the fans until the match starts",
+    "batch": 1,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ]
+   },
+   {
+    "key": "drag back to aim release to putt and get the ball into the cup on a course full of bouncy bumpers",
+    "batch": 1,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "a dinosaur putting course where the ball must roll between giant eggs and under a sleeping trexs tail",
+    "batch": 1,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf"
+    ]
+   },
+   {
+    "key": "a lonely astronaut fends off endless waves of space jellyfish on a frozen comet",
+    "batch": 1,
+    "best": "survivor",
+    "acceptable": [
+     "survivor",
+     "shooter",
+     "defense"
+    ]
+   },
+   {
+    "key": "a mail carrier delivers letters to every house in a snowy village",
+    "batch": 1,
+    "best": "quest",
+    "acceptable": [
+     "quest",
+     "arena"
+    ]
+   },
+   {
+    "key": "a jet ski stunt course on a lake with floating ramps and buoys to smash through on the way to the finish",
+    "batch": 1,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   }
+  ],
+  "2": [
+   {
+    "key": "two samurai cross swords on a cherry blossom hill",
+    "batch": 2,
+    "best": "duel",
+    "acceptable": [
+     "duel"
+    ]
+   },
+   {
+    "key": "drive a fire truck down a mountain road full of ramps and loose logs the camera chasing behind you",
+    "batch": 2,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "through the eyes of a sailor on a gondola gliding down a canal fire at the sea monsters leaping out of the water",
+    "batch": 2,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "two hippos bump each other out of a muddy pool",
+    "batch": 2,
+    "best": "push",
+    "acceptable": [
+     "push"
+    ]
+   },
+   {
+    "key": "a squirrel leaps between floating clouds to reach the castle in the sky",
+    "batch": 2,
+    "best": "platformer",
+    "acceptable": [
+     "platformer"
+    ]
+   },
+   {
+    "key": "a robot climbs ledges and jumps across moving platforms inside a giant clock tower",
+    "batch": 2,
+    "best": "platformer",
+    "acceptable": [
+     "platformer"
+    ]
+   },
+   {
+    "key": "a dancing robot taps along to disco music under flashing lights",
+    "batch": 2,
+    "best": "rhythm",
+    "acceptable": [
+     "rhythm"
+    ]
+   },
+   {
+    "key": "ride a zip line through a jungle canopy and fire at the parrots divebombing you on the way down",
+    "batch": 2,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a tractor in a crazy farm race launches off haystacks and plows through fences to cross the line first",
+    "batch": 2,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a sushi counter on a small grid spend your yen on rice cookers and fish tables and serve every guest before midnight",
+    "batch": 2,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "you are a passenger on an old steam train crossing a prairie turn your head and shoot the vultures swooping at the carriage",
+    "batch": 2,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a hungry pig gobbles truffles in a muddy field while dodging the farmers dogs",
+    "batch": 2,
+    "best": "arena",
+    "acceptable": [
+     "arena"
+    ]
+   },
+   {
+    "key": "on rails through a candy factory splatter the gummy monsters with a jelly blaster as they jump toward you",
+    "batch": 2,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "sketch a line to save the tiny astronaut from meteors raining down for fifteen seconds",
+    "batch": 2,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "tap the boats in a crowded harbour so each one sails out the way its bow points",
+    "batch": 2,
+    "best": "arrows",
+    "acceptable": [
+     "arrows"
+    ]
+   },
+   {
+    "key": "race a bathtub on wheels down a steep street hitting jumps and scattering boxes of apples",
+    "batch": 2,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a golfing ghost putts across a graveyard green bouncing the ball off tombstones toward the hole",
+    "batch": 2,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "make a stunt driving game with a school bus doing big jumps over rivers",
+    "batch": 2,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a minigolf hole set inside a volcano with lava rivers to putt around",
+    "batch": 2,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "protect the snail from the falling hailstones by drawing a roof before the storm passes",
+    "batch": 2,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   }
+  ],
+  "3": [
+   {
+    "key": "a rally car tears along a desert canyon track flying off sand dunes and smashing through cactus piles to the finish",
+    "batch": 3,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a dune buggy trick race across a beach jumping over sandcastles and through heaps of driftwood",
+    "batch": 3,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "seen from the side a toy car rolls toward a gap in the shelf draw a path under it before it tips over the edge",
+    "batch": 3,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a smoothie shop shift where you arrange blenders and fruit crates on a grid and spend tips on new machines",
+    "batch": 3,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ]
+   },
+   {
+    "key": "a mouse putts a pea across the dinner table around the salt shaker and gravy boat into a teacup",
+    "batch": 3,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "a boy on roller skates dashes down an endless boardwalk dodging joggers and seagulls",
+    "batch": 3,
+    "best": "runner",
+    "acceptable": [
+     "runner"
+    ]
+   },
+   {
+    "key": "a police car stunt course on a pier with ramps barrels to smash and a finish banner at the end",
+    "batch": 3,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a fairy taps a dewdrop with a twig across a lily pad course into a flower cup in as few taps as possible",
+    "batch": 3,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "a puzzle where you draw one stroke to shelter a kitten from bouncing tennis balls",
+    "batch": 3,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "a safari truck follows a set trail through the savanna while you shoot the charging rhinos with sleep darts",
+    "batch": 3,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a librarian puts red green and blue books back on the matching shelves",
+    "batch": 3,
+    "best": "sort",
+    "acceptable": [
+     "sort"
+    ]
+   },
+   {
+    "key": "design a noodle bar from the top drop cooking stations on the grid and keep the hungry office workers fed until closing",
+    "batch": 3,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "in a theme park dark ride turn your carts blaster on the cardboard aliens popping out of the walls",
+    "batch": 3,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter",
+     "whack"
+    ]
+   },
+   {
+    "key": "a goose guards its nest by the pond against waves of hungry foxes coming down the lanes",
+    "batch": 3,
+    "best": "defense",
+    "acceptable": [
+     "defense",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a firstperson submarine ride along a fixed route under the sea torpedoing sharks before they bite the hull",
+    "batch": 3,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a topdown shift at a hospital for toys place repair beds and stitching tables then fix each broken toy before the shift ends",
+    "batch": 3,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "a hovercraft speeds over a lava track with huge jumps smashing rock pillars before the checkered flag",
+    "batch": 3,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a spaceship lands softly on a rocky moon after a long trip",
+    "batch": 3,
+    "best": "voyage",
+    "acceptable": [
+     "voyage"
+    ]
+   },
+   {
+    "key": "a putting challenge on a spaceship deck where the ball curves around magnets before dropping into the hole",
+    "batch": 3,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "run a dragons potion shop set up cauldrons on the floor plan pay with gold and fill every knights order before the moon rises",
+    "batch": 3,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   }
+  ],
+  "4": [
+   {
+    "key": "a flower shop simulator where you place watering benches and wrapping desks then serve customers before the shop closes",
+    "batch": 4,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "a cupcake sits on a table and pigeons dive at it draw walls to keep it safe until time is up",
+    "batch": 4,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "manage a car wash from above buying soap stations and dryers and cleaning the queue of cars before evening",
+    "batch": 4,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "a kid tosses snowballs at a row of snowmen in the schoolyard",
+    "batch": 4,
+    "best": "throw",
+    "acceptable": [
+     "throw",
+     "shooter"
+    ]
+   },
+   {
+    "key": "stunt racing with a quad bike on a muddy farm course full of hay bale jumps",
+    "batch": 4,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a skateboarding raccoon rolls down a city hill kicking off ramps and crashing through trash cans to reach the bottom flag",
+    "batch": 4,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "runner"
+    ]
+   },
+   {
+    "key": "bop the sneaky crabs popping out of the sand at the beach",
+    "batch": 4,
+    "best": "whack",
+    "acceptable": [
+     "whack"
+    ]
+   },
+   {
+    "key": "draw a wall that keeps the lava flow away from the village of mice for twenty seconds",
+    "batch": 4,
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ]
+   },
+   {
+    "key": "first person on a speeding monorail through a neon city shooting down hacker drones before they crash into the window",
+    "batch": 4,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a sleigh pulled along a fixed trail through a frozen forest while you fire snowballs at the ice wolves chasing you",
+    "batch": 4,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a robot plays crazy golf in a factory rolling the ball over conveyor belts and through pipes into the hole",
+    "batch": 4,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "a grandpa plays a round of mini golf at the seaside putting past a lighthouse and a moving crab",
+    "batch": 4,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "stand on the last wagon of a moving train look around and shoot the ninjas leaping from the trees before they land on you",
+    "batch": 4,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "get the marble into the hole in two strokes on a wooden board full of nails and little ramps",
+    "batch": 4,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "tiny golf in a bathroom putt the ball around the soap across the tiles and into the drain",
+    "batch": 4,
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ]
+   },
+   {
+    "key": "a wizard gathers five lost spell books scattered around his tower",
+    "batch": 4,
+    "best": "arena",
+    "acceptable": [
+     "arena"
+    ]
+   },
+   {
+    "key": "a motorbike jumps between the decks of a cargo ship and crashes through fishing nets and oil drums to reach the bow",
+    "batch": 4,
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ]
+   },
+   {
+    "key": "a squirrel runs an acorn cafe for one day placing roasting stations with the nuts it earns and serving every forest animal",
+    "batch": 4,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "stack sandwiches as high as you can in a busy deli without letting the pile fall",
+    "batch": 4,
+    "best": "timing",
+    "acceptable": [
+     "timing"
+    ]
+   },
+   {
+    "key": "a rail shooter in a toy store ride the toy train and pop the evil teddy bears with a cork gun",
+    "batch": 4,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   }
+  ],
+  "5": [
+   {
+    "key": "a pet grooming salon seen from above buy bathtubs and drying tables wash every dog before the shift ends",
+    "batch": 5,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "one busy shift in a bookstore cafe placing shelves and espresso machines and serving readers before the doors lock",
+    "batch": 5,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ]
+   },
+   {
+    "key": "a pizza kitchen viewed from overhead place ovens and prep tables then rush to serve all the tables before the shift closes",
+    "batch": 5,
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ]
+   },
+   {
+    "key": "ride a raft down a fixed river path and hit the hungry piranhas leaping at you with a slingshot",
+    "batch": 5,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   },
+   {
+    "key": "a gondola lift ride over a haunted forest aiming a crossbow at the bats that dive toward you",
+    "batch": 5,
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ]
+   }
+  ]
+ },
+ "sentences": [
+  {
+   "text": "a rally car tears along a desert canyon track, flying off sand dunes and smashing through cactus piles to the finish",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-001"
+    }
+   ],
+   "id": "p68-001",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "make a stunt driving game with a school bus doing big jumps over rivers",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-002"
+    }
+   ],
+   "id": "p68-002",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a skateboarding raccoon rolls down a city hill, kicking off ramps and crashing through trash cans to reach the bottom flag",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-003"
+    }
+   ],
+   "id": "p68-003",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "runner"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "an ambulance races through a construction site, leaping off dirt ramps and bursting through orange cones to cross the finish line",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-004"
+    }
+   ],
+   "id": "p68-004",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "stunt racing with a quad bike on a muddy farm course full of hay bale jumps",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-005"
+    }
+   ],
+   "id": "p68-005",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a go-kart driven by a frog bounces over ramps in a mushroom forest and knocks down wooden signs on its way to the goal",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-006"
+    }
+   ],
+   "id": "p68-006",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a hovercraft speeds over a lava track with huge jumps, smashing rock pillars before the checkered flag",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-007"
+    }
+   ],
+   "id": "p68-007",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "drive a fire truck down a mountain road full of ramps and loose logs, the camera chasing behind you",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-008"
+    }
+   ],
+   "id": "p68-008",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a motorbike jumps between the decks of a cargo ship and crashes through fishing nets and oil drums to reach the bow",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-009"
+    }
+   ],
+   "id": "p68-009",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a tractor in a crazy farm race launches off haystacks and plows through fences to cross the line first",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-010"
+    }
+   ],
+   "id": "p68-010",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "race a bathtub on wheels down a steep street, hitting jumps and scattering boxes of apples",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-011"
+    }
+   ],
+   "id": "p68-011",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a police car stunt course on a pier with ramps, barrels to smash and a finish banner at the end",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-012"
+    }
+   ],
+   "id": "p68-012",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a jet ski stunt course on a lake with floating ramps and buoys to smash through on the way to the finish",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-013"
+    }
+   ],
+   "id": "p68-013",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a dune buggy trick race across a beach, jumping over sandcastles and through heaps of driftwood",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-014"
+    }
+   ],
+   "id": "p68-014",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a lawn mower stunt run through the backyard: jump the sprinkler ramp, smash the garden gnomes, reach the shed",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-015"
+    }
+   ],
+   "id": "p68-015",
+   "half": "new",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a mouse putts a pea across the dinner table, around the salt shaker and gravy boat, into a teacup",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-016"
+    }
+   ],
+   "id": "p68-016",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a minigolf hole set inside a volcano with lava rivers to putt around",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-017"
+    }
+   ],
+   "id": "p68-017",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "sink the ball on a jungle course where snakes slide across the green and block your shot",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-018"
+    }
+   ],
+   "id": "p68-018",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "drag back to aim, release to putt, and get the ball into the cup on a course full of bouncy bumpers",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-019"
+    }
+   ],
+   "id": "p68-019",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a robot plays crazy golf in a factory, rolling the ball over conveyor belts and through pipes into the hole",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-020"
+    }
+   ],
+   "id": "p68-020",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a short putting round on a snowy rooftop with chimneys in the way, finish under par",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-021"
+    }
+   ],
+   "id": "p68-021",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a grandpa plays a round of mini golf at the seaside, putting past a lighthouse and a moving crab",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-022"
+    }
+   ],
+   "id": "p68-022",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "get the marble into the hole in two strokes on a wooden board full of nails and little ramps",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-023"
+    }
+   ],
+   "id": "p68-023",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a dinosaur putting course where the ball must roll between giant eggs and under a sleeping t-rex's tail",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-024"
+    }
+   ],
+   "id": "p68-024",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a fairy taps a dewdrop with a twig across a lily pad course into a flower cup in as few taps as possible",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-025"
+    }
+   ],
+   "id": "p68-025",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "tiny golf in a bathroom: putt the ball around the soap, across the tiles and into the drain",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-026"
+    }
+   ],
+   "id": "p68-026",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a castle mini golf course with a drawbridge that opens and closes, putt through it at the right moment",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-027"
+    }
+   ],
+   "id": "p68-027",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "timing"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a golfing ghost putts across a graveyard green, bouncing the ball off tombstones toward the hole",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-028"
+    }
+   ],
+   "id": "p68-028",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "aim carefully and choose the power to roll the ball over a narrow bridge and into the cup",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-029"
+    }
+   ],
+   "id": "p68-029",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a putting challenge on a spaceship deck where the ball curves around magnets before dropping into the hole",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-030"
+    }
+   ],
+   "id": "p68-030",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "ride a cable car up a snowy mountain and shoot the yetis climbing toward your cabin",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-031"
+    }
+   ],
+   "id": "p68-031",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter",
+    "defense"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "through the eyes of a sailor on a gondola gliding down a canal, fire at the sea monsters leaping out of the water",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-032"
+    }
+   ],
+   "id": "p68-032",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "stand on the last wagon of a moving train, look around and shoot the ninjas leaping from the trees before they land on you",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-033"
+    }
+   ],
+   "id": "p68-033",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a first-person submarine ride along a fixed route under the sea, torpedoing sharks before they bite the hull",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-034"
+    }
+   ],
+   "id": "p68-034",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "in a theme park dark ride, turn your cart's blaster on the cardboard aliens popping out of the walls",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-035"
+    }
+   ],
+   "id": "p68-035",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter",
+    "whack"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "ride a zip line through a jungle canopy and fire at the parrots dive-bombing you on the way down",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-036"
+    }
+   ],
+   "id": "p68-036",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a safari truck follows a set trail through the savanna while you shoot the charging rhinos with sleep darts",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-037"
+    }
+   ],
+   "id": "p68-037",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a rail shooter in a toy store: ride the toy train and pop the evil teddy bears with a cork gun",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-038"
+    }
+   ],
+   "id": "p68-038",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a gondola lift ride over a haunted forest, aiming a crossbow at the bats that dive toward you",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-039"
+    }
+   ],
+   "id": "p68-039",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 5
+  },
+  {
+   "text": "first person on a speeding monorail through a neon city, shooting down hacker drones before they crash into the window",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-040"
+    }
+   ],
+   "id": "p68-040",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "ride a raft down a fixed river path and hit the hungry piranhas leaping at you with a slingshot",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-041"
+    }
+   ],
+   "id": "p68-041",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 5
+  },
+  {
+   "text": "you are a passenger on an old steam train crossing a prairie, turn your head and shoot the vultures swooping at the carriage",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-042"
+    }
+   ],
+   "id": "p68-042",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a canal barge drifts through a medieval town and you shoot arrows at the goblins on the rooftops before they drop on you",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-043"
+    }
+   ],
+   "id": "p68-043",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "on rails through a candy factory, splatter the gummy monsters with a jelly blaster as they jump toward you",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-044"
+    }
+   ],
+   "id": "p68-044",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a sleigh pulled along a fixed trail through a frozen forest while you fire snowballs at the ice wolves chasing you",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-045"
+    }
+   ],
+   "id": "p68-045",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "design a noodle bar from the top: drop cooking stations on the grid and keep the hungry office workers fed until closing",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-046"
+    }
+   ],
+   "id": "p68-046",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a squirrel runs an acorn cafe for one day, placing roasting stations with the nuts it earns and serving every forest animal",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-047"
+    }
+   ],
+   "id": "p68-047",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a pet grooming salon seen from above: buy bathtubs and drying tables, wash every dog before the shift ends",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-048"
+    }
+   ],
+   "id": "p68-048",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 5
+  },
+  {
+   "text": "build a hot dog stand by the stadium tile by tile and sell to the fans until the match starts",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-049"
+    }
+   ],
+   "id": "p68-049",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a smoothie shop shift where you arrange blenders and fruit crates on a grid and spend tips on new machines",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-050"
+    }
+   ],
+   "id": "p68-050",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "run a dragon's potion shop: set up cauldrons on the floor plan, pay with gold and fill every knight's order before the moon rises",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-051"
+    }
+   ],
+   "id": "p68-051",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a pizza kitchen viewed from overhead, place ovens and prep tables, then rush to serve all the tables before the shift closes",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-052"
+    }
+   ],
+   "id": "p68-052",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 5
+  },
+  {
+   "text": "manage a car wash from above, buying soap stations and dryers and cleaning the queue of cars before evening",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-053"
+    }
+   ],
+   "id": "p68-053",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a sushi counter on a small grid: spend your yen on rice cookers and fish tables and serve every guest before midnight",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-054"
+    }
+   ],
+   "id": "p68-054",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a flower shop simulator where you place watering benches and wrapping desks, then serve customers before the shop closes",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-055"
+    }
+   ],
+   "id": "p68-055",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "an octopus opens a seaside lemonade bar, adds juicers and stools to the grid and serves thirsty swimmers until sunset",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-056"
+    }
+   ],
+   "id": "p68-056",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "build a tiny tailor shop counter by counter and finish every customer's suit before the working day is over",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-057"
+    }
+   ],
+   "id": "p68-057",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a top-down shift at a hospital for toys: place repair beds and stitching tables, then fix each broken toy before the shift ends",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-058"
+    }
+   ],
+   "id": "p68-058",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "run a taco truck plaza: put grills and drink stands on the tiles with the cash you earn and feed the lunch line before two o'clock",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-059"
+    }
+   ],
+   "id": "p68-059",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "one busy shift in a bookstore cafe, placing shelves and espresso machines and serving readers before the doors lock",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-060"
+    }
+   ],
+   "id": "p68-060",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 5
+  },
+  {
+   "text": "draw a shelter over the little bird so the falling acorns cannot hit it until the clock reaches zero",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-061"
+    }
+   ],
+   "id": "p68-061",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "sketch a line to save the tiny astronaut from meteors raining down for fifteen seconds",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-062"
+    }
+   ],
+   "id": "p68-062",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a cupcake sits on a table and pigeons dive at it, draw walls to keep it safe until time is up",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-063"
+    }
+   ],
+   "id": "p68-063",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "draw a barrier to keep the sleepy sheep safe from the swarm of wasps",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-064"
+    }
+   ],
+   "id": "p68-064",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "with your finger, draw lines that stop the egg from rolling off the edge of the cliff",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-065"
+    }
+   ],
+   "id": "p68-065",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "protect the snail from the falling hailstones by drawing a roof before the storm passes",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-066"
+    }
+   ],
+   "id": "p68-066",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a stickman stands under a crumbling ceiling, draw a line so the bricks bounce off until the countdown is over",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-067"
+    }
+   ],
+   "id": "p68-067",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "draw a wall that keeps the lava flow away from the village of mice for twenty seconds",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-068"
+    }
+   ],
+   "id": "p68-068",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a puzzle where you draw one stroke to shelter a kitten from bouncing tennis balls",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-069"
+    }
+   ],
+   "id": "p68-069",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "draw a protective shape around the turtle egg on the beach so the crabs and gulls cannot get to it until it hatches",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-070"
+    }
+   ],
+   "id": "p68-070",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "scribble a dome over the ice cream cone so the dripping rain and the hungry ants stay away until the timer stops",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-071"
+    }
+   ],
+   "id": "p68-071",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "seen from the side, a toy car rolls toward a gap in the shelf, draw a path under it before it tips over the edge",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-072"
+    }
+   ],
+   "id": "p68-072",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "draw lines to keep the treasure chest from sliding off the pirate ship deck while cannonballs fly in",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-073"
+    }
+   ],
+   "id": "p68-073",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "draw a fence to keep the lamb safe from the fox until the farmer arrives",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-074"
+    }
+   ],
+   "id": "p68-074",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a melting snowman needs a drawn shield against the fireballs a dragon spits for half a minute",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-075"
+    }
+   ],
+   "id": "p68-075",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a cheetah sprints along a savanna trail, leaping over logs and ducking under branches",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-076"
+    }
+   ],
+   "id": "p68-076",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a boy on roller skates dashes down an endless boardwalk dodging joggers and seagulls",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-077"
+    }
+   ],
+   "id": "p68-077",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a squirrel leaps between floating clouds to reach the castle in the sky",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-078"
+    }
+   ],
+   "id": "p68-078",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a robot climbs ledges and jumps across moving platforms inside a giant clock tower",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-079"
+    }
+   ],
+   "id": "p68-079",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a hungry pig gobbles truffles in a muddy field while dodging the farmer's dogs",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-080"
+    }
+   ],
+   "id": "p68-080",
+   "half": "general",
+   "aimed": "arena",
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a paper boat sails down a rainy gutter to reach the big lake",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-081"
+    }
+   ],
+   "id": "p68-081",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a spaceship lands softly on a rocky moon after a long trip",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-082"
+    }
+   ],
+   "id": "p68-082",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a mail carrier delivers letters to every house in a snowy village",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-083"
+    }
+   ],
+   "id": "p68-083",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a wizard gathers five lost spell books scattered around his tower",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-084"
+    }
+   ],
+   "id": "p68-084",
+   "half": "general",
+   "aimed": "quest",
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "an archer shoots balloons drifting over the castle walls",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-085"
+    }
+   ],
+   "id": "p68-085",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a monkey throws coconuts at a stack of tin buckets on the beach",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-086"
+    }
+   ],
+   "id": "p68-086",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a kid tosses snowballs at a row of snowmen in the schoolyard",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-087"
+    }
+   ],
+   "id": "p68-087",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "stack sandwiches as high as you can in a busy deli without letting the pile fall",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-088"
+    }
+   ],
+   "id": "p68-088",
+   "half": "general",
+   "aimed": "timing",
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a dancing robot taps along to disco music under flashing lights",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-089"
+    }
+   ],
+   "id": "p68-089",
+   "half": "general",
+   "aimed": "rhythm",
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "two samurai cross swords on a cherry blossom hill",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-090"
+    }
+   ],
+   "id": "p68-090",
+   "half": "general",
+   "aimed": "duel",
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a bat flaps through a cave between dripping stalactites",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-091"
+    }
+   ],
+   "id": "p68-091",
+   "half": "general",
+   "aimed": "flap",
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a chef catches falling dumplings in a bamboo steamer",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-092"
+    }
+   ],
+   "id": "p68-092",
+   "half": "general",
+   "aimed": "catch",
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "bop the sneaky crabs popping out of the sand at the beach",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-093"
+    }
+   ],
+   "id": "p68-093",
+   "half": "general",
+   "aimed": "whack",
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a goose guards its nest by the pond against waves of hungry foxes coming down the lanes",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-094"
+    }
+   ],
+   "id": "p68-094",
+   "half": "general",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a lighthouse keeper holds back waves of pirate boats sailing toward the harbour",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-095"
+    }
+   ],
+   "id": "p68-095",
+   "half": "general",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "chop the flying carrots and onions a cook throws in the air",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-096"
+    }
+   ],
+   "id": "p68-096",
+   "half": "general",
+   "aimed": "slice",
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a little crab crosses a busy beach promenade full of bicycles to reach the sea",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-097"
+    }
+   ],
+   "id": "p68-097",
+   "half": "general",
+   "aimed": "hop",
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a single ant grows into a huge colony by marching through bonus gates on a picnic blanket",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-098"
+    }
+   ],
+   "id": "p68-098",
+   "half": "general",
+   "aimed": "crowd",
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "drop round fruits into a basket so matching ones combine into bigger fruit",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-099"
+    }
+   ],
+   "id": "p68-099",
+   "half": "general",
+   "aimed": "merge",
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "two hippos bump each other out of a muddy pool",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-100"
+    }
+   ],
+   "id": "p68-100",
+   "half": "general",
+   "aimed": "push",
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a lonely astronaut fends off endless waves of space jellyfish on a frozen comet",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-101"
+    }
+   ],
+   "id": "p68-101",
+   "half": "general",
+   "aimed": "survivor",
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "shooter",
+    "defense"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a hole in the zoo grows bigger as it eats benches, ice cream carts and finally an elephant",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-102"
+    }
+   ],
+   "id": "p68-102",
+   "half": "general",
+   "aimed": "hole",
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a fox sneaks into the henhouse, grabs eggs and carries them back to its den before the farmer wakes",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-103"
+    }
+   ],
+   "id": "p68-103",
+   "half": "general",
+   "aimed": "steal",
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a librarian puts red, green and blue books back on the matching shelves",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-104"
+    }
+   ],
+   "id": "p68-104",
+   "half": "general",
+   "aimed": "sort",
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "tap the boats in a crowded harbour so each one sails out the way its bow points",
+   "sets": [
+    {
+     "set": "p68/holdout.json",
+     "id": "p68-105"
+    }
+   ],
+   "id": "p68-105",
+   "half": "general",
+   "aimed": "arrows",
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "batch": 2
+  }
+ ]
+}

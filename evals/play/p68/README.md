@@ -389,3 +389,31 @@ někdo přeměří placeně, test verdikt přepočítá a `decision.json` musí 
 - **Co by bránu mohlo zavřít** (inference, pro T15 a kategorii): jedno ověření místo tří (výsledek skladatele sdílený
   s publikací) a stahování Rapieru souběžně s tvorbou. Mez +200 ms proti hře bez fyziky je pro závod s Rapierem
   těsná i potom; T15 rozhodne, jestli platí i pro hry s fyzikou (týká se i `minigolf`, T9).
+
+## T15 – výsledek na holdoutu (3. 11.)
+
+Výsledek je v `result.md`, surová čísla v `result.json`, přepočet v `__tests__/result.test.ts`. Holdout otevřený
+jednou 3. 11. v 10:11 UTC (`holdout-opened.json`, otisk sedí). Mez času +200 ms platí podle majitele i pro hry
+s fyzikou; `stunt` a `buildshift` ji ani po P68-M nesplnily (R13, R14), zůstávají za branou a jsou nesplněné.
+
+Rozhodnutí a odchylky (výchozí postup, zapsaný, aby šel přeměřit):
+
+- **G1 „v rychlé hře svou hru“** = žánr z `draftGameSpecWithMeta(věta, 1)`, tedy hra, kterou hráč opravdu dostane.
+  Obecné věty: `wrongRate` klasifikátoru podle definice T2 na 30 obecných větách holdoutu i na sadě 200, přesuny mezi
+  starými žánry na holdoutu i na štítcích T2 (`route-branch.json` proti `route-main.json`). Štítky 105 vět
+  holdoutu: `holdout-labels.json` (stejný soudce textu, otázka a 29 typů jako T2, vlastní seed 68015).
+- **G2:** věta, kterou rychlá hra pošle do jiné hry, nedostane spec dané hry a počítá se do jmenovatele jako
+  selhání. Herní brána překládá spec offline (`arcadeWorldOf`), publikace se nespouští; selhání publikace by
+  ukázal G4 (0 selhání ze 108 běhů).
+- **G3:** `iphone-touch` jen zapisuje (rozhodnutí T3 – WebKit hostitele, kontrolní `p66-arrows` 23,8 FPS).
+- **G4:** u každé zapojené hry první 3 věty holdoutu (podle id), které rychlá hra větve pošle do té hry; výběr podle
+  G1, ne podle času. `stunt` a `buildshift` se neměřily – jejich věty do hry nedojdou. Měřicí proces zmizel po 66
+  ze 108 běhů bez chyby v logu (tentýž den zmizely bez chyby i procesy focení); chybějící 3. kolo a 2. kolo
+  telefonu u `drawsave` doměřily dvě další dávky (`fp-t15b`, `fp-t15c`). Páry se číslují v každé dávce zvlášť.
+- **G6:** soudce `claude -p` místo Codexu – 105 listů je víc než denní limit Codexu 50 volání sdílený napříč
+  projekty, takže podle pravidla plánu soudí celou sadu `--judge claude`.
+- **G7:** měřicí kniha nemá trvalé úložiště (`WORLDSMITH_SPEND_STORE_URL` není nastavené), takže strop procesu byl
+  zbytek knihy (7 − 4,55 = 2,45 USD, po restartu 1,73), jako v R12. Od volání režiséra pro `p68-061` odpovídal
+  poskytovatel modelu 429 („rate limited or out of credit“) a další volání nic nestála; zbytek vzorku je
+  neměřený.
+- `director-live.mjs` umí `--set` (jiná sada vět) a `--out` (jiný výstup), aby G7 nepřepsal soubory R7–R12.

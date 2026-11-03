@@ -1,0 +1,8560 @@
+{
+ "schema": "p68-genre-route.v1",
+ "commit": "9caa446c",
+ "root": "D:/claude/Hackaton/.claude/worktrees/P68I-integrace-2026-10-31",
+ "measuredAt": "2026-11-03T10:18:07.530Z",
+ "labels": "evals/play/p68/genre-labels.json",
+ "about": "genre = classifyGenre(sentence, null).ranked[0] (quick game, no model); draft = draftGameSpecWithMeta(sentence, 1).genre (composer; grid = archetype fallback). wrong = best != none and genre not in acceptable; none is not counted. Labels: 29 types (P68).",
+ "seconds": 155,
+ "wrongRate": {
+  "test200": {
+   "sentences": 200,
+   "none": 25,
+   "counted": 175,
+   "wrong": 64,
+   "wrongRate": 0.366
+  },
+  "open": {
+   "sentences": 406,
+   "none": 6,
+   "counted": 400,
+   "wrong": 120,
+   "wrongRate": 0.3
+  }
+ },
+ "wrongRateDraft": {
+  "test200": {
+   "sentences": 200,
+   "none": 25,
+   "counted": 175,
+   "wrong": 62,
+   "wrongRate": 0.354
+  },
+  "open": {
+   "sentences": 406,
+   "none": 6,
+   "counted": 400,
+   "wrong": 112,
+   "wrongRate": 0.28
+  }
+ },
+ "reach": {
+  "stunt": {
+   "test200": {
+    "best": 1,
+    "acceptable": 4,
+    "share": 0.02,
+    "from": {
+     "voyage": 2,
+     "arena": 2
+    }
+   },
+   "open": {
+    "best": 8,
+    "acceptable": 13,
+    "share": 0.032,
+    "from": {
+     "voyage": 10,
+     "quest": 2,
+     "platformer": 1
+    }
+   }
+  },
+  "minigolf": {
+   "test200": {
+    "best": 0,
+    "acceptable": 0,
+    "share": 0,
+    "from": {}
+   },
+   "open": {
+    "best": 8,
+    "acceptable": 9,
+    "share": 0.022,
+    "from": {
+     "minigolf": 7,
+     "throw": 1,
+     "arena": 1
+    }
+   }
+  },
+  "railfps": {
+   "test200": {
+    "best": 0,
+    "acceptable": 2,
+    "share": 0.01,
+    "from": {
+     "voyage": 2
+    }
+   },
+   "open": {
+    "best": 8,
+    "acceptable": 11,
+    "share": 0.027,
+    "from": {
+     "railfps": 8,
+     "shooter": 2,
+     "arena": 1
+    }
+   }
+  },
+  "buildshift": {
+   "test200": {
+    "best": 0,
+    "acceptable": 4,
+    "share": 0.02,
+    "from": {
+     "arena": 2,
+     "quest": 1,
+     "rhythm": 1
+    }
+   },
+   "open": {
+    "best": 9,
+    "acceptable": 14,
+    "share": 0.034,
+    "from": {
+     "quest": 8,
+     "arena": 4,
+     "throw": 1,
+     "shooter": 1
+    }
+   }
+  },
+  "drawsave": {
+   "test200": {
+    "best": 3,
+    "acceptable": 4,
+    "share": 0.02,
+    "from": {
+     "quest": 2,
+     "arena": 1,
+     "rhythm": 1
+    }
+   },
+   "open": {
+    "best": 9,
+    "acceptable": 11,
+    "share": 0.027,
+    "from": {
+     "drawsave": 7,
+     "arena": 2,
+     "quest": 1,
+     "voyage": 1
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "text": "Explain how volcanoes erupt to a ten year old",
+   "sets": [
+    "p30/test-200.json#t001"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "help me write a birthday poem for my mom",
+   "sets": [
+    "p30/test-200.json#t002"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "my morning commute on a crowded train",
+   "sets": [
+    "p30/test-200.json#t003"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "voyage"
+  },
+  {
+   "text": "a tax audit at a boring accounting office",
+   "sets": [
+    "p30/test-200.json#t004"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Summarize the french revolution",
+   "sets": [
+    "p30/test-200.json#t005"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "doing laundry on a sunday afternoon",
+   "sets": [
+    "p30/test-200.json#t006"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "walking to the dentist in the rain",
+   "sets": [
+    "p30/test-200.json#t007"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "hop",
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "quest"
+  },
+  {
+   "text": "my cat knocking a glass off the kitchen table",
+   "sets": [
+    "p30/test-200.json#t008"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "throw"
+   ],
+   "genre": "push",
+   "mode": "default",
+   "draft": "push"
+  },
+  {
+   "text": "Write me a cover letter for a barista job",
+   "sets": [
+    "p30/test-200.json#t009"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "teach me the history of the roman empire in five minutes",
+   "sets": [
+    "p30/test-200.json#t010"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "meditate on a quiet mountaintop at sunrise",
+   "sets": [
+    "p30/test-200.json#t011"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a job interview at a tech company",
+   "sets": [
+    "p30/test-200.json#t012"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "paint my living room walls blue",
+   "sets": [
+    "p30/test-200.json#t013"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "I need to study for my chemistry exam tomorrow",
+   "sets": [
+    "p30/test-200.json#t014"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "traders panic as the stock market crashes on a monday",
+   "sets": [
+    "p30/test-200.json#t015"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "whack",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "cooking spaghetti for twenty hungry guests",
+   "sets": [
+    "p30/test-200.json#t016"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "give a lecture about black holes at the planetarium",
+   "sets": [
+    "p30/test-200.json#t017"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "renewing my passport at city hall",
+   "sets": [
+    "p30/test-200.json#t018"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "a yoga class on the beach at sunset",
+   "sets": [
+    "p30/test-200.json#t019"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "fix a leaking pipe under the sink",
+   "sets": [
+    "p30/test-200.json#t020"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "my dog is afraid of the vacuum cleaner",
+   "sets": [
+    "p30/test-200.json#t021"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "grocery shopping list for a vegan week",
+   "sets": [
+    "p30/test-200.json#t022"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "how does wifi get from the router to my phone",
+   "sets": [
+    "p30/test-200.json#t023"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "breaking up with my boyfriend over text",
+   "sets": [
+    "p30/test-200.json#t024"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "the water cycle for my science homework",
+   "sets": [
+    "p30/test-200.json#t025"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "calm my nerves before a big presentation",
+   "sets": [
+    "p30/test-200.json#t026"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "organize my messy closet",
+   "sets": [
+    "p30/test-200.json#t027"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "negotiating a raise with my boss",
+   "sets": [
+    "p30/test-200.json#t028"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "planting tomatoes on my balcony",
+   "sets": [
+    "p30/test-200.json#t029"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "learning to ride a bike without training wheels",
+   "sets": [
+    "p30/test-200.json#t030"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "Write a haiku about autumn leaves",
+   "sets": [
+    "p30/test-200.json#t031"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "waiting in line at the post office",
+   "sets": [
+    "p30/test-200.json#t032"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "a first date at a bowling alley",
+   "sets": [
+    "p30/test-200.json#t033"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "the solar system explained for kids",
+   "sets": [
+    "p30/test-200.json#t034"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "my neighbor mowing the lawn at 7am",
+   "sets": [
+    "p30/test-200.json#t035"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "recycling plastic bottles at school",
+   "sets": [
+    "p30/test-200.json#t036"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "grandpa telling war stories by the fireplace",
+   "sets": [
+    "p30/test-200.json#t037"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "duel",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "riding a red double decker bus through rainy london",
+   "sets": [
+    "p30/test-200.json#t038"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "choosing a name for my new puppy at the animal shelter",
+   "sets": [
+    "p30/test-200.json#t039"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "fill out a mortgage application for our first house",
+   "sets": [
+    "p30/test-200.json#t040"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "the life cycle of a butterfly",
+   "sets": [
+    "p30/test-200.json#t041"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "an office party where nobody talks to each other",
+   "sets": [
+    "p30/test-200.json#t042"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "remember where I parked my car at the airport",
+   "sets": [
+    "p30/test-200.json#t043"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "wedding speech for my best friend",
+   "sets": [
+    "p30/test-200.json#t044"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "lightning strikes a scarecrow in a wheat field during a thunderstorm",
+   "sets": [
+    "p30/test-200.json#t045"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave",
+    "shooter",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "my toddler refuses to eat broccoli",
+   "sets": [
+    "p30/test-200.json#t046"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "catch",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "a sunday picnic by the lake with sandwiches and lemonade",
+   "sets": [
+    "p30/test-200.json#t047"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "caring for grandma in a hospital room",
+   "sets": [
+    "p30/test-200.json#t048"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a shepherd dog herds sheep into a pen before the storm",
+   "sets": [
+    "p30/test-200.json#t049"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "juggle flaming torches on a circus stage",
+   "sets": [
+    "p30/test-200.json#t050"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "timing",
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "a raccoon rummages through trash cans for pizza crusts",
+   "sets": [
+    "p30/test-200.json#t051"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "polish every window of a skyscraper before sunset",
+   "sets": [
+    "p30/test-200.json#t052"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a lifeguard rescues swimmers caught in a riptide",
+   "sets": [
+    "p30/test-200.json#t053"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "voyage"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a mailman delivers packages while angry dogs chase him",
+   "sets": [
+    "p30/test-200.json#t054"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "runner"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "runner"
+  },
+  {
+   "text": "sweep the leaves off a temple courtyard before the monks wake",
+   "sets": [
+    "p30/test-200.json#t055"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "carve a pumpkin on a halloween porch",
+   "sets": [
+    "p30/test-200.json#t056"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "slice"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "sort recycling on a fast conveyor belt at the dump",
+   "sets": [
+    "p30/test-200.json#t057"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort",
+    "quest"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "a bee pollinates flowers across a sunny meadow",
+   "sets": [
+    "p30/test-200.json#t058"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "untie knots in a giant ball of yarn for a kitten",
+   "sets": [
+    "p30/test-200.json#t059"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows",
+    "sort"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a baker decorates cupcakes as orders pile up",
+   "sets": [
+    "p30/test-200.json#t060"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "wrap presents at the north pole before christmas eve",
+   "sets": [
+    "p30/test-200.json#t061"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "a farmer milks cows before the sun comes up",
+   "sets": [
+    "p30/test-200.json#t062"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a spider weaves a web between two lamp posts",
+   "sets": [
+    "p30/test-200.json#t063"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave",
+    "timing"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "tame a wild horse on a dusty ranch",
+   "sets": [
+    "p30/test-200.json#t064"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "arena",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a janitor mops the floor of a haunted school at midnight",
+   "sets": [
+    "p30/test-200.json#t065"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a firefighter hoses down flames in a burning bakery",
+   "sets": [
+    "p30/test-200.json#t066"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "inflate the biggest bubblegum bubble without popping it at a candy store",
+   "sets": [
+    "p30/test-200.json#t067"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a crab pinches the toes of sunbathers on a crowded beach",
+   "sets": [
+    "p30/test-200.json#t068"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "whack",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a gardener prunes hedges into animal shapes",
+   "sets": [
+    "p30/test-200.json#t069"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "knit a scarf for a snowman",
+   "sets": [
+    "p30/test-200.json#t070"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "timing"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "shovel snow off the driveway before school",
+   "sets": [
+    "p30/test-200.json#t071"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a beaver builds a dam across a rushing river",
+   "sets": [
+    "p30/test-200.json#t072"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave",
+    "timing",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "guide ducklings safely across a village pond to their mother",
+   "sets": [
+    "p30/test-200.json#t073"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a squid inks sharks that get too close",
+   "sets": [
+    "p30/test-200.json#t074"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense",
+    "survivor"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a monk rings a huge temple bell to wake the valley",
+   "sets": [
+    "p30/test-200.json#t075"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "rhythm"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a chameleon blends into jungle leaves so the eagle cannot see it",
+   "sets": [
+    "p30/test-200.json#t076"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a woodpecker drills holes in a giant oak tree",
+   "sets": [
+    "p30/test-200.json#t077"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "whack",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a barber shaves a sleeping giant",
+   "sets": [
+    "p30/test-200.json#t078"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a mole digs tunnels under a vegetable garden",
+   "sets": [
+    "p30/test-200.json#t079"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a clockmaker winds a hundred clocks before midnight strikes",
+   "sets": [
+    "p30/test-200.json#t080"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "scoop ice cream for a line of impatient penguins",
+   "sets": [
+    "p30/test-200.json#t081"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a hermit crab trades shells with his neighbors",
+   "sets": [
+    "p30/test-200.json#t082"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest",
+    "sort"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a magpie snatches shiny spoons from a café terrace",
+   "sets": [
+    "p30/test-200.json#t083"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a sailor ties knots as a storm hits the ship",
+   "sets": [
+    "p30/test-200.json#t084"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a kid pulls a kite out of a tall pine tree",
+   "sets": [
+    "p30/test-200.json#t085"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "quest"
+  },
+  {
+   "text": "an octopus opens jars in an aquarium to free trapped crabs",
+   "sets": [
+    "p30/test-200.json#t086"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a waiter balances ten plates across a crowded restaurant",
+   "sets": [
+    "p30/test-200.json#t087"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner",
+    "hop"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a lumberjack chops logs faster than his rival",
+   "sets": [
+    "p30/test-200.json#t088"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "quest",
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a hen hatches eggs while foxes prowl the farm",
+   "sets": [
+    "p30/test-200.json#t089"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a pharmacist mixes potions for a line of sick goblins",
+   "sets": [
+    "p30/test-200.json#t090"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a dentist pulls teeth from a grumpy crocodile",
+   "sets": [
+    "p30/test-200.json#t091"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "quest"
+  },
+  {
+   "text": "a painter restores a faded mural in a subway station",
+   "sets": [
+    "p30/test-200.json#t092"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a hamster spins its wheel to power a tiny city",
+   "sets": [
+    "p30/test-200.json#t093"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a lighthouse keeper guides ships through a foggy night",
+   "sets": [
+    "p30/test-200.json#t094"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a scientist freezes lava flows with an ice ray",
+   "sets": [
+    "p30/test-200.json#t095"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "defense",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a zookeeper feeds lions without getting eaten",
+   "sets": [
+    "p30/test-200.json#t096"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a sushi chef slices fish tossed into the air",
+   "sets": [
+    "p30/test-200.json#t097"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "slice",
+   "mode": "default",
+   "draft": "slice"
+  },
+  {
+   "text": "an astronaut repairs solar panels on a spinning space station",
+   "sets": [
+    "p30/test-200.json#t098"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a dragon hatchling learns to breathe fire",
+   "sets": [
+    "p30/test-200.json#t099"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "quest",
+    "flap"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a wizard duels a necromancer on a floating island",
+   "sets": [
+    "p30/test-200.json#t100"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "shooter"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "a unicorn gallops across rainbow clouds collecting stars",
+   "sets": [
+    "p30/test-200.json#t101"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer",
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "an elf archer defends the forest gate from orcs",
+   "sets": [
+    "p30/test-200.json#t102"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "a vampire sneaks through a village without waking anyone",
+   "sets": [
+    "p30/test-200.json#t103"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "steal"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "quest"
+  },
+  {
+   "text": "a troll guards a bridge and asks riddles",
+   "sets": [
+    "p30/test-200.json#t104"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "a mermaid races dolphins to a sunken treasure",
+   "sets": [
+    "p30/test-200.json#t105"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a phoenix rises from the ashes and flies over a burning desert",
+   "sets": [
+    "p30/test-200.json#t106"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage",
+    "runner"
+   ],
+   "genre": "flap",
+   "mode": "default",
+   "draft": "voyage"
+  },
+  {
+   "text": "a goblin king throws gold coins at knights storming his cave",
+   "sets": [
+    "p30/test-200.json#t107"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "throw",
+    "shooter"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "a fairy lights lanterns in a dark enchanted forest",
+   "sets": [
+    "p30/test-200.json#t108"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a werewolf howls at the moon to summon its pack",
+   "sets": [
+    "p30/test-200.json#t109"
+   ],
+   "best": "crowd",
+   "acceptable": [
+    "crowd",
+    "rhythm"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a sorceress freezes a lake so her army can cross it",
+   "sets": [
+    "p30/test-200.json#t110"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "drawsave",
+    "voyage"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a knight and a dragon play chess in a tower",
+   "sets": [
+    "p30/test-200.json#t111"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "a ghost ship sails through a storm full of sea serpents",
+   "sets": [
+    "p30/test-200.json#t112"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "shooter"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a young witch delivers potions by broomstick over a rainy town",
+   "sets": [
+    "p30/test-200.json#t113"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "a centaur hunts wild boars in an ancient forest",
+   "sets": [
+    "p30/test-200.json#t114"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "a giant stomps through a medieval city flattening towers",
+   "sets": [
+    "p30/test-200.json#t115"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole",
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "a stone golem protects a sleeping village from bandits",
+   "sets": [
+    "p30/test-200.json#t116"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "duel",
+    "shooter"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "a little dragon collects gems in a crystal cave",
+   "sets": [
+    "p30/test-200.json#t117"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "flap",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a ranger tames a griffin on a snowy mountain",
+   "sets": [
+    "p30/test-200.json#t118"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "timing",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a necromancer raises skeletons to battle a paladin",
+   "sets": [
+    "p30/test-200.json#t119"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "crowd",
+    "defense"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "duel"
+  },
+  {
+   "text": "a genie grants three wishes to a street thief",
+   "sets": [
+    "p30/test-200.json#t120"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a hobbit sneaks past a sleeping dragon to take a golden cup",
+   "sets": [
+    "p30/test-200.json#t121"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "quest"
+  },
+  {
+   "text": "a wizard's apprentice mops a flooded tower with enchanted brooms",
+   "sets": [
+    "p30/test-200.json#t122"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a knight on horseback jousts against a robot",
+   "sets": [
+    "p30/test-200.json#t123"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a dwarf mines gold deep under a snowy mountain",
+   "sets": [
+    "p30/test-200.json#t124"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a fairy godmother turns pumpkins into carriages",
+   "sets": [
+    "p30/test-200.json#t125"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a cyclops bowls boulders at tiny heroes",
+   "sets": [
+    "p30/test-200.json#t126"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "a witch's cat rides a broom through a haunted night sky",
+   "sets": [
+    "p30/test-200.json#t127"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a kraken drags pirate ships under the waves",
+   "sets": [
+    "p30/test-200.json#t128"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "whack",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "an ice queen builds a castle out of snow",
+   "sets": [
+    "p30/test-200.json#t129"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a dragon rider races through canyon arches",
+   "sets": [
+    "p30/test-200.json#t130"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "an enchanted sword chooses its hero in a stone circle",
+   "sets": [
+    "p30/test-200.json#t131"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "timing",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "a leprechaun buries pots of gold at the end of rainbows",
+   "sets": [
+    "p30/test-200.json#t132"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a baby dragon learns to fly over a volcanic island",
+   "sets": [
+    "p30/test-200.json#t133"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "orcs and elves play football in a muddy swamp",
+   "sets": [
+    "p30/test-200.json#t134"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "push",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "throw"
+  },
+  {
+   "text": "a mage bounces fireballs off castle walls to hit goblins",
+   "sets": [
+    "p30/test-200.json#t135"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "platformer"
+  },
+  {
+   "text": "a pixie paints dewdrops on spider webs at dawn",
+   "sets": [
+    "p30/test-200.json#t136"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a ninja frog leaps between swinging ropes over a waterfall",
+   "sets": [
+    "p30/test-200.json#t137"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "timing"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "zombie chickens attack a farm at night and you shoot them with corn",
+   "sets": [
+    "p30/test-200.json#t138"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "duel"
+  },
+  {
+   "text": "an endless run through a candy factory avoiding gummy bears",
+   "sets": [
+    "p30/test-200.json#t139"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "a paper airplane glides through an office without hitting the ceiling fans",
+   "sets": [
+    "p30/test-200.json#t140"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "voyage"
+  },
+  {
+   "text": "race lawnmowers around a suburban backyard",
+   "sets": [
+    "p30/test-200.json#t141"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a cowboy lassos runaway cattle in a dusty canyon",
+   "sets": [
+    "p30/test-200.json#t142"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "throw",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "shoot hoops with a gorilla at the zoo",
+   "sets": [
+    "p30/test-200.json#t143"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "a turtle dodges falling coconuts on a tropical beach",
+   "sets": [
+    "p30/test-200.json#t144"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "arena",
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "a boxer fights a robot in an underground ring",
+   "sets": [
+    "p30/test-200.json#t145"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "duel"
+  },
+  {
+   "text": "tap on the beat to make jellyfish glow at a deep sea concert",
+   "sets": [
+    "p30/test-200.json#t146"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "stack sandwiches as tall as the fridge",
+   "sets": [
+    "p30/test-200.json#t147"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "flappy dragon through ice pillars",
+   "sets": [
+    "p30/test-200.json#t148"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "genre": "flap",
+   "mode": "default",
+   "draft": "flap"
+  },
+  {
+   "text": "a monster truck crushes cars in a mud arena",
+   "sets": [
+    "p30/test-200.json#t149"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "push",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "voyage"
+  },
+  {
+   "text": "a panda slides down a bamboo slope collecting dumplings",
+   "sets": [
+    "p30/test-200.json#t150"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "sniper mission on a snowy mountain to hit a spy",
+   "sets": [
+    "p30/test-200.json#t151"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "shooter"
+  },
+  {
+   "text": "a goat climbs a cliff dodging falling rocks",
+   "sets": [
+    "p30/test-200.json#t152"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "runner"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "a piano duel between two cats in a jazz bar",
+   "sets": [
+    "p30/test-200.json#t153"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm",
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "drift a rusty van through a rainy harbor",
+   "sets": [
+    "p30/test-200.json#t154"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a fish grows by eating plastic junk in a polluted river",
+   "sets": [
+    "p30/test-200.json#t155"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "aliens invade new york and you pilot a fighter jet",
+   "sets": [
+    "p30/test-200.json#t156"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "voyage",
+    "railfps"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a sumo cat pushes dogs off a rooftop",
+   "sets": [
+    "p30/test-200.json#t157"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "genre": "push",
+   "mode": "default",
+   "draft": "push"
+  },
+  {
+   "text": "catch falling apples in a basket before they hit the ground",
+   "sets": [
+    "p30/test-200.json#t158"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "a skier zigzags down a slalom course between flags",
+   "sets": [
+    "p30/test-200.json#t159"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "escape a giant rolling boulder in an ancient temple",
+   "sets": [
+    "p30/test-200.json#t160"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "a firefly lights the way through a dark swamp maze",
+   "sets": [
+    "p30/test-200.json#t161"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest",
+    "flap"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a samurai slices arrows out of the air",
+   "sets": [
+    "p30/test-200.json#t162"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "hit the brakes on a roller coaster at a seaside fair",
+   "sets": [
+    "p30/test-200.json#t163"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "voyage"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a hot dog runs away from a hungry crowd at a baseball game",
+   "sets": [
+    "p30/test-200.json#t164"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "dodgeball against robots in a school gym",
+   "sets": [
+    "p30/test-200.json#t165"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "duel",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a hamster ball rolls through a maze of pipes",
+   "sets": [
+    "p30/test-200.json#t166"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "a sheriff and an outlaw face off in a ghost town",
+   "sets": [
+    "p30/test-200.json#t167"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "fly a helicopter through a canyon full of wind turbines",
+   "sets": [
+    "p30/test-200.json#t168"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a jellyfish drifts upward avoiding fishing nets",
+   "sets": [
+    "p30/test-200.json#t169"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a basketball robot shoots three pointers on a rooftop court",
+   "sets": [
+    "p30/test-200.json#t170"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "a DJ keeps a crowd jumping by hitting beats in time",
+   "sets": [
+    "p30/test-200.json#t171"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "platformer"
+  },
+  {
+   "text": "karate chop wooden boards in a dojo",
+   "sets": [
+    "p30/test-200.json#t172"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "bumper boats in a lagoon full of hippos",
+   "sets": [
+    "p30/test-200.json#t173"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push",
+    "voyage",
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a cheese wheel rolls down a hill chased by villagers",
+   "sets": [
+    "p30/test-200.json#t174"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "throw"
+  },
+  {
+   "text": "whack moles in a vegetable patch before they eat the carrots",
+   "sets": [
+    "p30/test-200.json#t175"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "genre": "whack",
+   "mode": "default",
+   "draft": "whack"
+  },
+  {
+   "text": "a pelican dives from the sky to catch fish",
+   "sets": [
+    "p30/test-200.json#t176"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "catch",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "voyage"
+  },
+  {
+   "text": "snowboard down an avalanche while grabbing coins",
+   "sets": [
+    "p30/test-200.json#t177"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "a hacker races through a neon cyberspace tunnel",
+   "sets": [
+    "p30/test-200.json#t178"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a knight on a pogo stick bounces over spikes",
+   "sets": [
+    "p30/test-200.json#t179"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "runner"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "a crow drops stones into a pitcher to raise the water",
+   "sets": [
+    "p30/test-200.json#t180"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "tennis against a giraffe on a grass court",
+   "sets": [
+    "p30/test-200.json#t181"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "throw"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "throw"
+  },
+  {
+   "text": "a submarine torpedoes giant squids in the deep",
+   "sets": [
+    "p30/test-200.json#t182"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "railfps",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a courier bike dodges taxis in rush hour manhattan",
+   "sets": [
+    "p30/test-200.json#t183"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "voyage",
+    "hop"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "launch fireworks over a lake so they burst at the right height",
+   "sets": [
+    "p30/test-200.json#t184"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "a goalkeeper saves penalty kicks from a team of octopuses",
+   "sets": [
+    "p30/test-200.json#t185"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "catch"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "throw"
+  },
+  {
+   "text": "a bat navigates a pitch black cave using echoes",
+   "sets": [
+    "p30/test-200.json#t186"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a hamster bartender slides drinks down a long counter",
+   "sets": [
+    "p30/test-200.json#t187"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "quest",
+    "timing"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "a ghost haunts a museum and scares the night guard",
+   "sets": [
+    "p30/test-200.json#t188"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "outrun a tornado on a tractor across the prairie",
+   "sets": [
+    "p30/test-200.json#t189"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner",
+    "stunt"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "voyage"
+  },
+  {
+   "text": "a trampoline park where you bounce to grab balloons",
+   "sets": [
+    "p30/test-200.json#t190"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "flap",
+    "arena"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "an ant carries crumbs back to the anthill avoiding a boot",
+   "sets": [
+    "p30/test-200.json#t191"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "steal"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "time your swings on a trapeze to catch your partner",
+   "sets": [
+    "p30/test-200.json#t192"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "precision",
+   "draft": "timing"
+  },
+  {
+   "text": "a gecko sticks to walls and climbs a lighthouse",
+   "sets": [
+    "p30/test-200.json#t193"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "runner"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "pinball inside a giant slot machine",
+   "sets": [
+    "p30/test-200.json#t194"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a rhino charges through a savanna knocking over jeeps",
+   "sets": [
+    "p30/test-200.json#t195"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a synchronized swimming team moves to the music in an olympic pool",
+   "sets": [
+    "p30/test-200.json#t196"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "voyage"
+  },
+  {
+   "text": "hide from a T-rex in a jungle ranger station",
+   "sets": [
+    "p30/test-200.json#t197"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "quest"
+  },
+  {
+   "text": "a bowler knocks down pins made of ice",
+   "sets": [
+    "p30/test-200.json#t198"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a llama spits at tourists who try to take selfies",
+   "sets": [
+    "p30/test-200.json#t199"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "whack",
+    "throw"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a snail must cross a highway at rush hour",
+   "sets": [
+    "p30/test-200.json#t200"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "hop",
+   "mode": "default",
+   "draft": "hop"
+  },
+  {
+   "text": "zombie shooter in a mall",
+   "sets": [
+    "p30/dev.json#s039",
+    "p63/read-set.json#s039",
+    "p63/reread-set.json#s039"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "railfps",
+    "survivor"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "A space marine shoots alien bugs in a mining colony",
+   "sets": [
+    "p30/dev.json#s037",
+    "p63/read-set.json#s037",
+    "p63/reread-set.json#s037"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "survivor",
+    "defense"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "sets": [
+    "p30/dev.json#s002",
+    "p63/read-set.json#s002",
+    "p63/reread-set.json#s002"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "sets": [
+    "p30/dev.json#s003",
+    "p63/read-set.json#s003",
+    "p63/reread-set.json#s003"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "sets": [
+    "p30/dev.json#s006",
+    "p63/read-set.json#s006",
+    "p63/reread-set.json#s006"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "temple run but you're a banana running from a monkey",
+   "sets": [
+    "p30/dev.json#s008",
+    "p63/read-set.json#s008",
+    "p63/reread-set.json#s008"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "sets": [
+    "p30/dev.json#s022",
+    "p63/read-set.json#s022",
+    "p63/reread-set.json#s022"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "obby game with lava and spinning bars",
+   "sets": [
+    "p30/dev.json#s021",
+    "p63/read-set.json#s021",
+    "p63/reread-set.json#s021"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "runner"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "like flappy bird but underwater",
+   "sets": [
+    "p30/dev.json#s035",
+    "p63/read-set.json#s035",
+    "p63/reread-set.json#s035"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "genre": "flap",
+   "mode": "default",
+   "draft": "flap"
+  },
+  {
+   "text": "throwing snowballs at kids behind a snow fort",
+   "sets": [
+    "p30/dev.json#s050",
+    "p63/read-set.json#s050",
+    "p63/reread-set.json#s050"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "angry birds but with cats and cardboard boxes",
+   "sets": [
+    "p30/dev.json#s088",
+    "p63/read-set.json#s088",
+    "p63/reread-set.json#s088"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "candy crush but with gems in a cave",
+   "sets": [
+    "p30/dev.json#s069",
+    "p63/read-set.json#s069",
+    "p63/reread-set.json#s069"
+   ],
+   "best": "merge",
+   "acceptable": [
+    "merge",
+    "sort"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "sets": [
+    "p30/dev.json#s056"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner",
+    "stunt"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "voyage"
+  },
+  {
+   "text": "boat race through a jungle river full of crocodiles",
+   "sets": [
+    "p30/dev.json#s058"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a black hole that swallows a city, it gets bigger the more it eats",
+   "sets": [
+    "p30/dev.json#s111"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "knife throwing at a spinning log",
+   "sets": [
+    "p30/dev.json#s095"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A grandma karate fights a gang of pigeons in the park",
+   "sets": [
+    "p30/dev.json#s188"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "duel",
+    "survivor"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "sets": [
+    "p30/dev.json#s144"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "defend the castle from waves of goblins",
+   "sets": [
+    "p30/dev.json#s155"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "build the tallest pancake tower before it falls over",
+   "sets": [
+    "p30/dev.json#s099"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "a cat stealing fish from a market while dodging the fishmonger",
+   "sets": [
+    "p30/dev.json#h01"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "shopping cart race in a supermarket",
+   "sets": [
+    "p30/dev.json#h02"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "defend a castle from dragons by throwing snowballs",
+   "sets": [
+    "p30/dev.json#h03"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter",
+    "throw"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "a robot collects batteries on Mars",
+   "sets": [
+    "p30/dev.json#h04"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "boxing a kangaroo in the australian outback",
+   "sets": [
+    "p30/dev.json#h05"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "duel"
+  },
+  {
+   "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+   "sets": [
+    "p30/dev.json#h06"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest",
+    "platformer"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "arena"
+  },
+  {
+   "text": "purple elephants doing taxes on a volcano",
+   "sets": [
+    "p30/dev.json#h07"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a romantic dinner date on the moon",
+   "sets": [
+    "p30/dev.json#h08"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "escape from a haunted hospital with a flashlight",
+   "sets": [
+    "p30/dev.json#h09"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+   "sets": [
+    "p30/dev.json#h10"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "Explain quantum physics to my grandma.",
+   "sets": [
+    "p30/dev.json#j01"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a sleepy cat naps in a cozy rainy café",
+   "sets": [
+    "p30/dev.json#j02"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "flap",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "my startup pitch to investors in a glass skyscraper",
+   "sets": [
+    "p30/dev.json#j03"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "walk my dog along the beach while eating an ice cream",
+   "sets": [
+    "p30/dev.json#j04"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "quest"
+  },
+  {
+   "text": "pop ten balloons at a birthday party",
+   "sets": [
+    "p30/dev.json#j05"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "whack",
+    "slice"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a chef flips pancakes in a busy kitchen",
+   "sets": [
+    "p30/dev.json#j06"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a squirrel hoards acorns before winter comes",
+   "sets": [
+    "p30/dev.json#j07"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a wizard defends a crystal tower from flying skeletons",
+   "sets": [
+    "p30/dev.json#j08"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "a dragon burns down villages and dodges arrows from knights",
+   "sets": [
+    "p30/dev.json#j09"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "shooter"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "an elf princess escapes a goblin castle through a dark forest",
+   "sets": [
+    "p30/dev.json#j10"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+   "sets": [
+    "p30/dev.json#d01"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "voyage"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "teach my little brother the multiplication table",
+   "sets": [
+    "p30/dev.json#d02"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a witch brews potions in a crooked tower during a thunderstorm",
+   "sets": [
+    "p30/dev.json#d03"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "merge"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "shoot down paper planes over a school playground",
+   "sets": [
+    "p30/dev.json#d04"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "a sloth tries to cross a busy jungle highway",
+   "sets": [
+    "p30/dev.json#d05"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "hop",
+   "mode": "default",
+   "draft": "hop"
+  },
+  {
+   "text": "race hot air balloons over a desert canyon",
+   "sets": [
+    "p30/dev.json#d06"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "my grandpa fixing his old car in the garage",
+   "sets": [
+    "p30/dev.json#d07"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a mermaid collects pearls while avoiding jellyfish",
+   "sets": [
+    "p30/dev.json#d08"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "stack cheese wheels into a wobbly tower at a farm market",
+   "sets": [
+    "p30/dev.json#d09"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "a pirate duels a skeleton captain on a sinking ship",
+   "sets": [
+    "p30/dev.json#d10"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "tap along to the drums at a jungle festival",
+   "sets": [
+    "p30/dev.json#d11"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "a goldfish swims through a sunken city dodging sharks",
+   "sets": [
+    "p30/dev.json#d12"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "write a thank-you letter to my teacher",
+   "sets": [
+    "p30/dev.json#d13"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "a bear sneaks into a campsite to steal honey",
+   "sets": [
+    "p30/dev.json#d14"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "quest"
+  },
+  {
+   "text": "throw frisbees to a dog on a sunny beach",
+   "sets": [
+    "p30/dev.json#d15"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "an owl delivers letters across a snowy mountain village",
+   "sets": [
+    "p30/dev.json#d16"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "arena",
+    "flap"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "a robot vacuum cleans the house before the family comes home",
+   "sets": [
+    "p30/dev.json#d17"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a sumo wrestler pushes rivals out of a bouncy ring",
+   "sets": [
+    "p30/dev.json#d18"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "genre": "push",
+   "mode": "default",
+   "draft": "push"
+  },
+  {
+   "text": "plan a budget for my family vacation",
+   "sets": [
+    "p30/dev.json#d19"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a knight rides a unicorn to rescue a prince from a cloud castle",
+   "sets": [
+    "p30/dev.json#d20"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "platformer",
+    "duel"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "voyage"
+  },
+  {
+   "text": "a penguin mail carrier slides down icy hills dodging snowballs, then tosses letters into chimneys",
+   "sets": [
+    "p56c/chain-sentences.json#d01",
+    "p56c/dev.json#d01"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "ok so ur a raccoon, sneak past the guard dog, grab the pizza and climb the fence before the lights come on",
+   "sets": [
+    "p56c/chain-sentences.json#d02",
+    "p56c/dev.json#d02"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "quest"
+  },
+  {
+   "text": "can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds",
+   "sets": [
+    "p56c/chain-sentences.json#d04",
+    "p56c/dev.json#d04"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "shooter"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "three rounds: catch falling apples, juggle them, then bake a pie without burning it",
+   "sets": [
+    "p56c/chain-sentences.json#d05",
+    "p56c/dev.json#d05"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "quest",
+    "timing"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "Grandma Rosa on her scooter weaving through traffic, honking at pidgeons and catching the groceries that fly out of her basket",
+   "sets": [
+    "p56c/chain-sentences.json#d06",
+    "p56c/dev.json#d06"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "catch",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "fish for glowing eels on a frozen lake, then race your sled home before the ice cracks",
+   "sets": [
+    "p56c/chain-sentences.json#d07",
+    "p56c/dev.json#d07"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner",
+    "quest"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "runner"
+  },
+  {
+   "text": "ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way",
+   "sets": [
+    "p56c/chain-sentences.json#d08",
+    "p56c/dev.json#d08"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "runner"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "i want a whole party night with like four minigames: balloon popping, a dance-off, sack race and pie throwing",
+   "sets": [
+    "p56c/chain-sentences.json#d09",
+    "p56c/dev.json#d09"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm",
+    "throw",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "runner"
+  },
+  {
+   "text": "steer a paper boat down the gutter, hop it over drains and blow the leaves out of the way",
+   "sets": [
+    "p56c/chain-sentences.json#d10",
+    "p56c/dev.json#d10"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "the wizard Pip mixes potions from the right colors and then flings them at sneaky slime blobs in the cellar",
+   "sets": [
+    "p56c/chain-sentences.json#d11",
+    "p56c/dev.json#d11"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter",
+    "sort"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "quest"
+  },
+  {
+   "text": "Build a sandcastle wall, then keep the crabs away from it by flicking pebbles at them.",
+   "sets": [
+    "p56c/dev.json#d03"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "drawsave",
+    "shooter"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "dodge pies then throw pies",
+   "sets": [
+    "p56c/dev.json#d12"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "throw",
+    "shooter"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "pile sleeping cats on the sofa as tall as you can without waking a single one",
+   "sets": [
+    "p56c/dev.json#d13"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "bang on the pots and pans exactly when the chef taps the beat",
+   "sets": [
+    "p56c/dev.json#d14"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "Slice flying watermelons in half with a samurai spoon!",
+   "sets": [
+    "p56c/dev.json#d15"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "slice",
+   "mode": "default",
+   "draft": "slice"
+  },
+  {
+   "text": "bonk the gophers popping out of grandpa's lawn with a rubber chicken",
+   "sets": [
+    "p56c/dev.json#d16"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "genre": "whack",
+   "mode": "default",
+   "draft": "whack"
+  },
+  {
+   "text": "fling a grumpy hedgehog from a slingshot to knock down towers of teacups",
+   "sets": [
+    "p56c/dev.json#d17"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "steer a hot air balloon through the gaps between storm clouds",
+   "sets": [
+    "p56c/dev.json#d18"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "catch snowflakes on ur tongue",
+   "sets": [
+    "p56c/dev.json#d19"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "just pop as many bubbles as u can in 30 seconds",
+   "sets": [
+    "p56c/dev.json#d20"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "herd the runaway sheep back into the pen with one very small dog",
+   "sets": [
+    "p56c/dev.json#d21"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "keep the beach ball in the air by bouncing it off your head, don't let it touch the sand",
+   "sets": [
+    "p56c/dev.json#d22"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "flap",
+    "timing"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "a sleepy dragon in fuzy pink slippers",
+   "sets": [
+    "p56c/dev.json#d23"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "flap",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Captain Biscuit, a very serious corgi astronaut.",
+   "sets": [
+    "p56c/dev.json#d24"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "platformer",
+    "flap"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "two old witch ladies, best friends, kinda dramatic",
+   "sets": [
+    "p56c/dev.json#d25"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a lonely robot with a flower pot for a head, very melancholy vibes",
+   "sets": [
+    "p56c/dev.json#d26"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "something cozy and spooky, pumpkins and candles and fog",
+   "sets": [
+    "p56c/dev.json#d27"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a tiny knight who is scared of literally everything",
+   "sets": [
+    "p56c/dev.json#d28"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "duel",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "chill lofi frog energy",
+   "sets": [
+    "p56c/dev.json#d29"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm",
+    "platformer",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "the moth king and his enormous velvet cape",
+   "sets": [
+    "p56c/dev.json#d30"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a goth teenage ghost with a skateboard and a bad attitude",
+   "sets": [
+    "p56c/dev.json#d31"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "my little brother but as a giant potato",
+   "sets": [
+    "p56c/dev.json#d32"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "an underwater city built from old bathtubs and coral",
+   "sets": [
+    "p56c/dev.json#d33"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a floating market in the clouds at sunset",
+   "sets": [
+    "p56c/dev.json#d34"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "buildshift",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "inside a giant clock, all gears and brass and ticking",
+   "sets": [
+    "p56c/dev.json#d35"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "rainy neon alley in a future city, puddles everywhere",
+   "sets": [
+    "p56c/dev.json#d36"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a desert of pink sand under three moons",
+   "sets": [
+    "p56c/dev.json#d37"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a haunted library with shelves so tall they vanish into the dark",
+   "sets": [
+    "p56c/dev.json#d38"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "arena",
+    "sort"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "mushroom village deep in a misty swamp",
+   "sets": [
+    "p56c/dev.json#d39"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "the inside of a snow globe sitting on a kitchen windowsill",
+   "sets": [
+    "p56c/dev.json#d40"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a squirrel pilot flies a leaf plane, drops acorns on targets and lands on a wobbly branch",
+   "sets": [
+    "p56c/holdout.json#h01"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "throw"
+   ],
+   "genre": "voyage",
+   "mode": "land",
+   "draft": "voyage"
+  },
+  {
+   "text": "u play a pizza guy on a skateboard, ollie over trash cans and toss pizzas onto balconies",
+   "sets": [
+    "p56c/holdout.json#h02"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "collect firewood, light the campfire, then scare off the raccoons stealing your marshmallows",
+   "sets": [
+    "p56c/holdout.json#h03"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "A ghost who has to spook the kids at a sleepover but hide every time the flashlight swings his way.",
+   "sets": [
+    "p56c/holdout.json#h04"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "whack",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "quest"
+  },
+  {
+   "text": "Luna the astronaut collects stars, dodges comets and fixes her rocket with tiny wrenches",
+   "sets": [
+    "p56c/holdout.json#h05"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "voyage",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "voyage"
+  },
+  {
+   "text": "make me a week of challenges at a magic school, broom racing, potion mixing and a spell duel",
+   "sets": [
+    "p56c/holdout.json#h06"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "roll a snowball down the mountain till its huge then smash the yeti's igloo with it",
+   "sets": [
+    "p56c/holdout.json#h07"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "crowd",
+    "hole"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "dodge lasers in a museum, crack the safe code, then zipline out the window",
+   "sets": [
+    "p56c/holdout.json#h08"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena",
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "gardening but also fighting off bugs with the hose",
+   "sets": [
+    "p56c/holdout.json#h09"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "shooter",
+    "defense"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "jump between lily pads and snap flies w your tongue",
+   "sets": [
+    "p56c/holdout.json#h10"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "hop",
+    "arena"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "skate around the frozen pond drawing shapes in the ice and dodging hockey kids",
+   "sets": [
+    "p56c/holdout.json#h11"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A chef octopus who flips burgers with four arms and throws fries at hungry seagulls with the other four.",
+   "sets": [
+    "p56c/holdout.json#h12"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "throw",
+    "shooter"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "balance a wobbly pile of books on the butler's head while he walks across the ballroom",
+   "sets": [
+    "p56c/holdout.json#h13"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "catch"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "quest"
+  },
+  {
+   "text": "tap along to the frogs croaking in the pond, timing has to be perfect",
+   "sets": [
+    "p56c/holdout.json#h14"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm",
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "chop logs before winter",
+   "sets": [
+    "p56c/holdout.json#h15"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "slice",
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "throw paper planes through the hoop hanging from the classroom ceiling",
+   "sets": [
+    "p56c/holdout.json#h16"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "pour lemonade into every glass right up to the top without spilling a drop",
+   "sets": [
+    "p56c/holdout.json#h17"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "fly a little bee between the flower stems without touching any",
+   "sets": [
+    "p56c/holdout.json#h18"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "Catch the falling eggs in a basket before they go splat.",
+   "sets": [
+    "p56c/holdout.json#h19"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "pack the suitcase so everything fits and the zipper actually closes",
+   "sets": [
+    "p56c/holdout.json#h20"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort",
+    "arrows"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "flick the ants off the picnic blanket before they reach the cake",
+   "sets": [
+    "p56c/holdout.json#h21"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "paint every plank of the fence before sundown",
+   "sets": [
+    "p56c/holdout.json#h22"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "a pirate grandma and her parrot who only talks in rhymes",
+   "sets": [
+    "p56c/holdout.json#h23"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "an extremely tired vampire accountant",
+   "sets": [
+    "p56c/holdout.json#h24"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Professor Wobble, a jelly scientist with tiny round glasses",
+   "sets": [
+    "p56c/holdout.json#h25"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "cozy rainy day vibes, a cat and hot cocoa",
+   "sets": [
+    "p56c/holdout.json#h26"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "catch",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a very shy cloud",
+   "sets": [
+    "p56c/holdout.json#h27"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "arena",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "sad clown vibes but make it pretty",
+   "sets": [
+    "p56c/holdout.json#h28"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "arena",
+    "throw"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a retired superhero hamster in a cardigan",
+   "sets": [
+    "p56c/holdout.json#h29"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "arena",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "twin baby yetis, one grumpy and one pure sunshine",
+   "sets": [
+    "p56c/holdout.json#h30"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "an old tortoise wizard with a beard full of moss and fireflies",
+   "sets": [
+    "p56c/holdout.json#h31"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "me and my bff as two tiny mushrooms lol",
+   "sets": [
+    "p56c/holdout.json#h32"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "an old train station floating in outer space",
+   "sets": [
+    "p56c/holdout.json#h33"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "voyage"
+  },
+  {
+   "text": "a jungle growing out of an abandoned shopping mall",
+   "sets": [
+    "p56c/holdout.json#h34"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "volcano island with rivers of hot chocolate",
+   "sets": [
+    "p56c/holdout.json#h35"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "arena",
+    "hop"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a tiny planet covered in grass and windmills",
+   "sets": [
+    "p56c/holdout.json#h36"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "the attic of an old house, dusty and full of forgotten toys",
+   "sets": [
+    "p56c/holdout.json#h37"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "ice caves glowing blue, super quiet",
+   "sets": [
+    "p56c/holdout.json#h38"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a quiet bamboo forest with paper lanterns hanging everywhere",
+   "sets": [
+    "p56c/holdout.json#h39"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a sunflower field in the middle of a thunderstorm",
+   "sets": [
+    "p56c/holdout.json#h40"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave",
+    "catch",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A ferret barrels down three city tram lanes automatically while I swipe around barriers, duck under signs, and scoop up coins.",
+   "sets": [
+    "p58b/holdout.json#s01"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "Make a toaster zoom through factory conveyor lanes on its own, with quick sideways swipes past presses and jumps for golden bolts.",
+   "sets": [
+    "p58b/holdout.json#s02"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "This courier never stops charging down a desert route; I pick between three trails and leap over cacti to snag dates.",
+   "sets": [
+    "p58b/holdout.json#s03"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "i get swept forward along three underwater channels and can only switch channels or duck beneath coral arches while grabbing pearls.",
+   "sets": [
+    "p58b/holdout.json#s04"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Let me steer a frog left and right across forest branches, choosing jumps between mushroom shelves without dropping into the ravine.",
+   "sets": [
+    "p58b/holdout.json#s05"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A miner needs careful sideways movement and little jumps between cave ledges, with deep pits underneath every badly judged landing.",
+   "sets": [
+    "p58b/holdout.json#s06"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "voyage",
+   "mode": "land",
+   "draft": "platformer"
+  },
+  {
+   "text": "Can a teapot climb across living room furniture if I control every step and jump, using floating cushions above the floor?",
+   "sets": [
+    "p58b/holdout.json#s07"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "I want to move sideways through a ruined castle and jump between crumbling balconies, where missing a foothold sends me into the moat.",
+   "sets": [
+    "p58b/holdout.json#s08"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "Guide a snail anywhere around a wide meadow while a salt golem pursues it, weaving around rocks until the rescue bell rings.",
+   "sets": [
+    "p58b/holdout.json#s09"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "runner"
+  },
+  {
+   "text": "Let me wander freely around an abandoned factory yard gathering scattered screws, trying to clear the whole floor before lunch.",
+   "sets": [
+    "p58b/holdout.json#s10"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "quest"
+  },
+  {
+   "text": "A duck is trapped in a jungle clearing with a crocodile chasing it; I steer in any direction and survive until sunrise.",
+   "sets": [
+    "p58b/holdout.json#s11"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "Move a blacksmith freely around a graveyard and smack surrounding skeletons with a hammer until none are left standing.",
+   "sets": [
+    "p58b/holdout.json#s12"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "survivor"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Put a crab behind the wheel of a sand buggy and let me steer around beach flags to finish ahead of rival carts.",
+   "sets": [
+    "p58b/holdout.json#s13"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "i steer my motorbike through a closed city circuit, braking for sharp corners and trying to beat the clock over three laps.",
+   "sets": [
+    "p58b/holdout.json#s14"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "An astronaut has a tiny pod above a moon base; I pulse its thrusters against gravity and settle gently onto the marked pad.",
+   "sets": [
+    "p58b/holdout.json#s15"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Send an electrician around a dark supermarket, visiting each broken fuse box and fixing its wiring until every aisle lights up.",
+   "sets": [
+    "p58b/holdout.json#s16"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "I walk between thirsty saplings in a forest nursery and water each one, finishing only when every planting bed has been tended.",
+   "sets": [
+    "p58b/holdout.json#s17"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "An octopus runs a floating soup kiosk on the ocean, staying behind the counter to assemble each customer's bowl in order.",
+   "sets": [
+    "p58b/holdout.json#s18"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A scarecrow guards a meadow by aiming a water cannon at incoming crows, spraying them before they reach the scarecrow's hat.",
+   "sets": [
+    "p58b/holdout.json#s19"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "shooter"
+  },
+  {
+   "text": "Give me a foam blaster in a closed mall so I can track rolling mannequins and keep firing until they topple.",
+   "sets": [
+    "p58b/holdout.json#s20"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "railfps"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "shooter"
+  },
+  {
+   "text": "A submarine mechanic aims a harpoon gun around an underwater workshop, firing at robot eels as they swim in from every side.",
+   "sets": [
+    "p58b/holdout.json#s21"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "voyage"
+  },
+  {
+   "text": "A raccoon gets one paper ball per attempt; I choose its angle and strength to arc it into a distant living room wastebasket.",
+   "sets": [
+    "p58b/holdout.json#s22"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "I want one careful toss at a time, setting the angle and power to lob horseshoes around a stake beside a desert campsite.",
+   "sets": [
+    "p58b/holdout.json#s23"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "Have a baker launch a single dough ball across a supermarket bakery, adjusting the arc and force to land inside a mixing bowl.",
+   "sets": [
+    "p58b/holdout.json#s24"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A giraffe builds a lookout in the jungle; tap when each swinging crate is centered above the pile to release it onto the top.",
+   "sets": [
+    "p58b/holdout.json#s25"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A locksmith opens a cave vault when I tap to halt a swinging gauge needle inside its tiny green patch, with faster sweeps each round.",
+   "sets": [
+    "p58b/holdout.json#s26"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "quest"
+  },
+  {
+   "text": "Help a beetle cross meadow posts by holding to extend a reed and releasing when it's long enough to fall across the next gap.",
+   "sets": [
+    "p58b/holdout.json#s27"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "quest"
+  },
+  {
+   "text": "A drummer robot performs in a factory, and I tap glowing pads as notes reach them in time with the clanking soundtrack.",
+   "sets": [
+    "p58b/holdout.json#s28"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "Let me tap arriving shell symbols right on the music's pulse during a beach concert, with longer streaks making the crowd cheer.",
+   "sets": [
+    "p58b/holdout.json#s29"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "A jellyfish lights up an ocean disco whenever I press the correct bubbles as musical cues arrive, keeping every tap synced to the bass.",
+   "sets": [
+    "p58b/holdout.json#s30"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "A knight faces one ogre in a snowy courtyard; I watch its shoulder movements, block each axe swing, and counter during openings.",
+   "sets": [
+    "p58b/holdout.json#s31"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "I arm wrestle a pirate at a seaside tavern, reading their grip changes and choosing when to resist or push back.",
+   "sets": [
+    "p58b/holdout.json#s32"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "duel"
+  },
+  {
+   "text": "Let a mantis fence against a single wasp on a forest stump, reacting to feints with parries and well timed lunges.",
+   "sets": [
+    "p58b/holdout.json#s33"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Keep a bat airborne through a cave tunnel with little upward boosts per tap, letting it sink between stalactites as it flies forward automatically.",
+   "sets": [
+    "p58b/holdout.json#s34"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "i drift forward through a space station automatically, tapping for tiny lifts against gravity to squeeze between paired cargo shutters.",
+   "sets": [
+    "p58b/holdout.json#s35"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A flying sock sails forward across a living room by itself; every tap lifts it briefly before gravity pulls it toward the furniture gaps.",
+   "sets": [
+    "p58b/holdout.json#s36"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "Slide a shopping basket sideways beneath a broken supermarket chute, collecting falling oranges while letting rotten eggs hit the floor.",
+   "sets": [
+    "p58b/holdout.json#s37"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "I move left and right beneath jungle trees to gather falling mangoes in my hands, staying clear of the dropping scorpions.",
+   "sets": [
+    "p58b/holdout.json#s38"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "A seal slides across a snowy dock beneath falling fish, and I steer sideways to collect dinner while avoiding heavy anchors.",
+   "sets": [
+    "p58b/holdout.json#s39"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A gardener taps mischievous moles with a rubber mallet whenever they briefly poke out of meadow burrows, before they disappear again.",
+   "sets": [
+    "p58b/holdout.json#s40"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "genre": "whack",
+   "mode": "default",
+   "draft": "whack"
+  },
+  {
+   "text": "Let me bonk tiny ghosts that peek out of graveyard urns for a second, with points only if I get them before they retreat.",
+   "sets": [
+    "p58b/holdout.json#s41"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "genre": "whack",
+   "mode": "default",
+   "draft": "whack"
+  },
+  {
+   "text": "A bellhop patrols one screen of hotel windows, tapping gremlins the instant they lean out and before they slam the shutters.",
+   "sets": [
+    "p58b/holdout.json#s42"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A beekeeper protects a meadow hive by placing thorn barricades and guard beetles along paths before successive groups of hungry hornets arrive.",
+   "sets": [
+    "p58b/holdout.json#s43"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "I protect a desert well by setting cactus sentries around its approaches, rearranging them between waves of thirsty sand worms.",
+   "sets": [
+    "p58b/holdout.json#s44"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A mermaid keeps an underwater hatchery safe by placing anemone guards along the routes used by repeated swarms of hungry piranhas.",
+   "sets": [
+    "p58b/holdout.json#s45"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A chef swipes a blade through airborne cabbages tossed across a castle kitchen, building combos while leaving the flying iron kettles untouched.",
+   "sets": [
+    "p58b/holdout.json#s46"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "voyage"
+  },
+  {
+   "text": "i swipe through floating soap bubbles launched above a mall fountain, cutting several together but keeping my finger away from spiky mines.",
+   "sets": [
+    "p58b/holdout.json#s47"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "slice",
+   "mode": "default",
+   "draft": "slice"
+  },
+  {
+   "text": "A swordfish cuts airborne kelp bundles with my swipes over an ocean lagoon, avoiding explosive barrels mixed into every volley.",
+   "sets": [
+    "p58b/holdout.json#s48"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "A tortoise crosses a city boulevard one row per tap, waiting for openings between buses before taking the next little step.",
+   "sets": [
+    "p58b/holdout.json#s49"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "I cross a factory shipping floor one strip at a time, choosing when to step between passing forklifts and rolling cable reels.",
+   "sets": [
+    "p58b/holdout.json#s50"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "Guide a llama across snowy resort lanes with single forward steps, waiting out speeding sleds before entering each new row.",
+   "sets": [
+    "p58b/holdout.json#s51"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "Lead a marching pencil army through numbered gates that add or subtract pencils, then crash the surviving squad into hostile erasers on a classroom desk.",
+   "sets": [
+    "p58b/holdout.json#s52"
+   ],
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "genre": "crowd",
+   "mode": "default",
+   "draft": "crowd"
+  },
+  {
+   "text": "I guide my squad through +15 and divide by two gates along a space hangar, building enough bodies to overwhelm alien guards at the end.",
+   "sets": [
+    "p58b/holdout.json#s53"
+   ],
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A marshmallow leads its sugary troops through numbered multiplying or subtracting arches in a supermarket, then the whole group collides with licorice monsters.",
+   "sets": [
+    "p58b/holdout.json#s54"
+   ],
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A squirrel drops acorns onto a forest tray where identical pairs fuse into larger nuts, and I need to keep the tray from overflowing.",
+   "sets": [
+    "p58b/holdout.json#s55"
+   ],
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "genre": "merge",
+   "mode": "default",
+   "draft": "merge"
+  },
+  {
+   "text": "I slide pebbles around a cave board, combining two identical stones into one larger crystal each time before every space gets clogged.",
+   "sets": [
+    "p58b/holdout.json#s56"
+   ],
+   "best": "merge",
+   "acceptable": [
+    "merge",
+    "sort"
+   ],
+   "genre": "merge",
+   "mode": "default",
+   "draft": "merge"
+  },
+  {
+   "text": "Let an alchemist drop potions into a desert tray, where two identical bottles become one stronger brew and a full tray ends the attempt.",
+   "sets": [
+    "p58b/holdout.json#s57"
+   ],
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A walrus shoves rival sea lions off a small ice floe, and I steer each body bump while keeping away from the slippery edge.",
+   "sets": [
+    "p58b/holdout.json#s58"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "genre": "push",
+   "mode": "default",
+   "draft": "push"
+  },
+  {
+   "text": "I shoulder charging gargoyles off a narrow castle rooftop, trying to send every opponent over the edge without getting knocked down myself.",
+   "sets": [
+    "p58b/holdout.json#s59"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Control a bumper car on a floating factory deck, ramming rogue shopping carts over the sides while keeping all four wheels aboard.",
+   "sets": [
+    "p58b/holdout.json#s60"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A tortoise in running shoes builds a pile in the mall by tapping to drop each shoebox sliding overhead directly onto the last.",
+   "sets": [
+    "p58b/holdout.json#s61"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A photographer handles a mall photo shoot from one counter, cropping pictures and printing the requested sizes for a nonstop queue of customers.",
+   "sets": [
+    "p58b/holdout.json#s62"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "A chimney sweep beneath a castle tower roams the wide courtyard freely while an angry goose chases him, trying to survive until the bell rings.",
+   "sets": [
+    "p58b/holdout.json#s63"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "At beach catch practice, you swipe through airborne melons to chop them apart while leaving flying anvils untouched.",
+   "sets": [
+    "p58b/holdout.json#s64"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "voyage"
+  },
+  {
+   "text": "A penguin wearing fake wings explores a cave by moving left or right and jumping between rocky shelves, losing a life whenever it falls.",
+   "sets": [
+    "p58b/holdout.json#s65"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "quest"
+  },
+  {
+   "text": "In a castle, a baker guards a cake by tapping four buttons exactly with the drumbeat, earning points only for staying on beat.",
+   "sets": [
+    "p58b/holdout.json#s66"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A mechanic fixes a race car by repeatedly stopping a needle sweeping back and forth inside a tiny green band, with closer stops earning more points.",
+   "sets": [
+    "p58b/holdout.json#s67"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "voyage"
+  },
+  {
+   "text": "You wander anywhere across a meadow scooping up scattered golf balls, scoring one point per ball in your bag.",
+   "sets": [
+    "p58b/holdout.json#s68"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "quest"
+  },
+  {
+   "text": "A crab in boxing gloves crosses rows of beach traffic one step per tap, waiting for safe openings between passing buggies.",
+   "sets": [
+    "p58b/holdout.json#s69"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A librarian settles a book fight by sliding identical books together on a grid so they become bigger volumes before the board fills.",
+   "sets": [
+    "p58b/holdout.json#s70"
+   ],
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "runner"
+  },
+  {
+   "text": "A fox pilots a drum-shaped rocket over a volcano, feathering its upward thrust and steering sideways until its feet settle softly onto each pad.",
+   "sets": [
+    "p58b/holdout.json#s71"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "An octopus waves eight swords around an underwater courtyard; steer anywhere and slash nearby eels until every eel is down.",
+   "sets": [
+    "p58b/holdout.json#s72"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "survivor"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "An astronaut in jump boots walks between broken moon base antennas, reconnecting wires at each one until all antennas work.",
+   "sets": [
+    "p58b/holdout.json#s73"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "A sheep leads a painted cardboard army automatically along three forest lanes; switch lanes or duck to avoid hanging branches and grab acorns.",
+   "sets": [
+    "p58b/holdout.json#s74"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "crowd"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "To escape a jungle temple, you answer geography questions by choosing one of four answers, and each correct answer unlocks the next question.",
+   "sets": [
+    "p58b/holdout.json#s75"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "A beaver builds a bridge across an ocean by solving anagrams, typing one rearranged word per plank while the construction happens automatically.",
+   "sets": [
+    "p58b/holdout.json#s76"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A witch defends her castle's reputation by choosing polite or savage replies in text conversations with a nosy florist, changing their friendship score.",
+   "sets": [
+    "p58b/holdout.json#s77"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A snail enters a desert race where each turn you play a numbered card, and the lowest total after five cards wins.",
+   "sets": [
+    "p58b/holdout.json#s78"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A crocodile prepares for a laser shootout by choosing jackets, boots, and hats from a wardrobe, then submitting outfits for style scores.",
+   "sets": [
+    "p58b/holdout.json#s79"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "An owl manages a flying school by assigning instructors to weekly calendar slots, resolving schedule conflicts to earn a perfect timetable.",
+   "sets": [
+    "p58b/holdout.json#s80"
+   ],
+   "best": "none",
+   "acceptable": [],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A cowboy shoots skeleton bandits in a dusty desert town",
+   "sets": [
+    "p61/holdout.json#h01",
+    "p63/read-set.json#h01"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "railfps",
+    "duel"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "Pirates fight sea monsters on the deck of a sinking ship",
+   "sets": [
+    "p61/holdout.json#h02",
+    "p63/read-set.json#h02",
+    "p63/reread-set.json#h02"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A robot blasts space slugs inside a frozen moon base",
+   "sets": [
+    "p61/holdout.json#h03",
+    "p63/read-set.json#h03"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "survivor",
+    "arena"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "A ninja battles giant crabs on a tropical beach",
+   "sets": [
+    "p61/holdout.json#h04",
+    "p63/read-set.json#h04"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "duel",
+    "survivor"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A samurai duels shadow warriors in a bamboo forest",
+   "sets": [
+    "p61/holdout.json#h05",
+    "p63/read-set.json#h05"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "A police drone zaps runaway robots in a neon city at night",
+   "sets": [
+    "p61/holdout.json#h06",
+    "p63/read-set.json#h06"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "arena",
+    "voyage"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "voyage"
+  },
+  {
+   "text": "A squirrel gathers five acorns before winter comes",
+   "sets": [
+    "p61/holdout.json#h07",
+    "p63/read-set.json#h07"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Find seven lost puppies in a snowy village",
+   "sets": [
+    "p61/holdout.json#h08",
+    "p63/read-set.json#h08"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A diver collects four pearls from a coral reef while avoiding sharks",
+   "sets": [
+    "p61/holdout.json#h09",
+    "p63/read-set.json#h09"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "voyage"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "Grab ten gold coins in a haunted castle without waking the bats",
+   "sets": [
+    "p61/holdout.json#h10",
+    "p63/read-set.json#h10"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "steal",
+    "platformer"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "A little witch picks six glowing mushrooms in a dark swamp",
+   "sets": [
+    "p61/holdout.json#h11",
+    "p63/read-set.json#h11"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "An astronaut recovers three fuel cells scattered across Mars",
+   "sets": [
+    "p61/holdout.json#h12",
+    "p63/read-set.json#h12"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A kangaroo hops over logs, grabs berries and punches snakes",
+   "sets": [
+    "p61/holdout.json#h13",
+    "p63/read-set.json#h13"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "runner"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "platformer"
+  },
+  {
+   "text": "A skier races down the mountain, dodges pine trees and jumps over cliffs",
+   "sets": [
+    "p61/holdout.json#h14",
+    "p63/read-set.json#h14",
+    "p63/reread-set.json#h14"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "platformer"
+  },
+  {
+   "text": "A firefighter climbs the tower, sprays the flames and rescues a cat",
+   "sets": [
+    "p61/holdout.json#h15",
+    "p63/read-set.json#h15",
+    "p63/reread-set.json#h15"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "platformer"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "A penguin slides across the ice, catches fish and avoids seals",
+   "sets": [
+    "p61/holdout.json#h16",
+    "p63/read-set.json#h16"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A farmer plants carrots, waters them and scares away crows",
+   "sets": [
+    "p61/holdout.json#h17",
+    "p63/read-set.json#h17"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "A knight rides through the forest and slays a dragon",
+   "sets": [
+    "p61/holdout.json#h18",
+    "p63/read-set.json#h18",
+    "p63/reread-set.json#h18"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "voyage",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "voyage"
+  },
+  {
+   "text": "Stack pancakes as high as you can in a busy diner",
+   "sets": [
+    "p61/holdout.json#h19",
+    "p63/read-set.json#h19",
+    "p63/reread-set.json#h19"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "catch"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "A goldfish escapes from its bowl in a messy kitchen",
+   "sets": [
+    "p61/holdout.json#h20",
+    "p63/read-set.json#h20"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer",
+    "arena",
+    "runner"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "Guide a paper boat down a rainy street gutter",
+   "sets": [
+    "p61/holdout.json#h21",
+    "p63/read-set.json#h21"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A bee pollinates flowers in a sunny meadow",
+   "sets": [
+    "p61/holdout.json#h22",
+    "p63/read-set.json#h22"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "flap"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "Bounce a beach ball on a seal's nose at the circus",
+   "sets": [
+    "p61/holdout.json#h23",
+    "p63/read-set.json#h23",
+    "p63/reread-set.json#h23"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "timing",
+    "flap"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "Steer a hot air balloon between thunderclouds above the ocean",
+   "sets": [
+    "p61/holdout.json#h24",
+    "p63/read-set.json#h24",
+    "p63/reread-set.json#h24"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A security guard chases rats through an empty shopping mall at night",
+   "sets": [
+    "p62/holdout.json#p01"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "Grab ten cereal boxes off the shelves of a supermarket before it closes",
+   "sets": [
+    "p62/holdout.json#p02"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A kitten knocks the vases off every shelf in a cozy living room",
+   "sets": [
+    "p62/holdout.json#p03"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A welder dodges runaway forklifts in a car factory",
+   "sets": [
+    "p62/holdout.json#p04"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "hop"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A jester battles armored guards in the great hall of a castle",
+   "sets": [
+    "p62/holdout.json#p05"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "duel",
+    "survivor"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A gem hunter gathers glowing crystals deep in a cave while bats swoop down",
+   "sets": [
+    "p62/holdout.json#p06"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A busboy collects coffee mugs left all over a cozy cafe",
+   "sets": [
+    "p62/holdout.json#p07"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A janitor dodges runaway wheelchairs in a hospital corridor",
+   "sets": [
+    "p62/holdout.json#p08"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "hop",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A farmer chases escaped pigs back into the barn on a muddy farm",
+   "sets": [
+    "p62/holdout.json#p09"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "A sandcastle builder fends off stinging jellyfish on a sunny beach",
+   "sets": [
+    "p62/holdout.json#p10"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "drawsave",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A yak carries supplies over a windy mountain pass while boulders tumble down",
+   "sets": [
+    "p62/holdout.json#p11"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena",
+    "platformer"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "A park ranger puts out campfires left burning in a pine forest",
+   "sets": [
+    "p62/holdout.json#p12"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "quest"
+  },
+  {
+   "text": "A window cleaner collects lost kites from the rooftops of a rainy city",
+   "sets": [
+    "p62/holdout.json#p13"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A moon rover scoops up moon rocks on a crater field while meteors rain down",
+   "sets": [
+    "p62/holdout.json#p14"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A nomad collects water jugs while crossing the dunes of a desert",
+   "sets": [
+    "p62/holdout.json#p15"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A sea witch hurls fireballs at pirate ships on a stormy ocean",
+   "sets": [
+    "p62/holdout.json#p16"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense",
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A sea otter zaps electric eels that invade a rocky tide pool",
+   "sets": [
+    "p62/holdout.json#p17"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "shooter"
+  },
+  {
+   "text": "A groundskeeper guards a soccer pitch from moles digging holes before the big match",
+   "sets": [
+    "p62/holdout.json#p18"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "arena"
+   ],
+   "genre": "defense",
+   "mode": "default",
+   "draft": "defense"
+  },
+  {
+   "text": "A spelunker crawls through a flooded mine shaft while stalactites crash down",
+   "sets": [
+    "p62/holdout.json#p19"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer",
+    "catch"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A lost tourist runs through a red canyon from angry walking cacti",
+   "sets": [
+    "p62/holdout.json#p20"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A dog walker hurries through a stormy park dodging falling branches",
+   "sets": [
+    "p62/holdout.json#p21"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "catch",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A rusty tin can escapes the hydraulic presses of a scrapyard",
+   "sets": [
+    "p62/holdout.json#p22"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "runner",
+    "platformer"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "A puppy fights living cardboard boxes in a post office sorting room",
+   "sets": [
+    "p62/holdout.json#p23"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "survivor",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A shopkeeper dodges slamming metal shutters in a night market",
+   "sets": [
+    "p62/holdout.json#p24"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "arena",
+    "timing"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A librarian shushes noisy goblins hiding between the bookshelves of an old library",
+   "sets": [
+    "p62/holdout-b.json#b01"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "quest"
+  },
+  {
+   "text": "A waiter catches falling plates before they smash in a busy sushi restaurant",
+   "sets": [
+    "p62/holdout-b.json#b02"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "A night nurse switches off beeping alarm clocks in every room of a sleepy apartment",
+   "sets": [
+    "p62/holdout-b.json#b03"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A plumber stomps giant cockroaches crawling out of the drains in a school bathroom",
+   "sets": [
+    "p62/holdout-b.json#b04"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A miner rides a rail cart through a gold mine and grabs every nugget",
+   "sets": [
+    "p62/holdout-b.json#b05"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A knight battles fire-breathing dragons for a pile of gold deep in a dungeon",
+   "sets": [
+    "p62/holdout-b.json#b06"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "steal",
+    "survivor"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A ballerina twirls across the stage of an opera house while roses rain down",
+   "sets": [
+    "p62/holdout-b.json#b07"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "rhythm",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A scientist zaps escaped slime blobs inside a secret laboratory",
+   "sets": [
+    "p62/holdout-b.json#b08"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "shooter",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "runner"
+  },
+  {
+   "text": "A rodeo rider ropes wild horses that bolt across a dusty ranch",
+   "sets": [
+    "p62/holdout-b.json#b09"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "throw",
+    "timing"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A mountain goat leaps between ledges on a steep rocky cliff while eagles dive",
+   "sets": [
+    "p62/holdout-b.json#b10"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "A gardener squashes slugs before they eat the lettuce in a vegetable garden",
+   "sets": [
+    "p62/holdout-b.json#b11"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "defense",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A kid on an inflatable duck dodges water cannons at a crowded water park",
+   "sets": [
+    "p62/holdout-b.json#b12"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A pilot dodges lightning bolts while flying a biplane above the clouds",
+   "sets": [
+    "p62/holdout-b.json#b13"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A camper scares raccoons away from the tents at a lakeside campsite",
+   "sets": [
+    "p62/holdout-b.json#b14"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack",
+    "arena",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A zookeeper chases escaped monkeys around the zoo before closing time",
+   "sets": [
+    "p62/holdout-b.json#b15"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "A pirate captain sinks navy warships with cannonballs on the open sea",
+   "sets": [
+    "p62/holdout-b.json#b16"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "voyage",
+    "defense"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A fishmonger tosses slippery fish into buckets at a busy fish market",
+   "sets": [
+    "p62/holdout-b.json#b17"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "quest"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A porter catches falling suitcases on the platform of a train station",
+   "sets": [
+    "p62/holdout-b.json#b18"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "A hockey player slaps pucks past the goalie on an indoor ice rink",
+   "sets": [
+    "p62/holdout-b.json#b19"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter",
+    "duel"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "throw"
+  },
+  {
+   "text": "A golfer chips balls past sand traps and ponds on a seaside golf course",
+   "sets": [
+    "p62/holdout-b.json#b20"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "minigolf"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A bowler rolls a ball at wobbling pins in a neon bowling alley",
+   "sets": [
+    "p62/holdout-b.json#b21"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A mechanic stacks tires as high as possible in a car repair garage",
+   "sets": [
+    "p62/holdout-b.json#b22"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "A skateboarder grinds rails and dodges traffic cones in a skate park",
+   "sets": [
+    "p62/holdout-b.json#b23"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A kid grabs falling lollipops before they hit the floor of a candy store",
+   "sets": [
+    "p62/holdout-b.json#b24"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "A chef flips burgers on a sizzling grill before the customers get angry",
+   "sets": [
+    "p63/holdout.json#p01"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A clown juggles flaming torches under the big top",
+   "sets": [
+    "p63/holdout.json#p02"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "timing",
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "A lifeguard swims out to pull tired swimmers from a stormy sea",
+   "sets": [
+    "p63/holdout.json#p03"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "voyage",
+    "arena"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A goalkeeper blocks penalty kicks in a packed stadium",
+   "sets": [
+    "p63/holdout.json#p04"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch",
+    "duel",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "throw"
+  },
+  {
+   "text": "A fisherman reels in giant fish through a hole in a frozen lake",
+   "sets": [
+    "p63/holdout.json#p05"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "quest"
+  },
+  {
+   "text": "A plumber patches leaking pipes in a flooding basement",
+   "sets": [
+    "p63/holdout.json#p06"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A window cleaner scrubs pigeon mess off the windows of a skyscraper",
+   "sets": [
+    "p63/holdout.json#p07"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "whack"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A barista pours hot coffee for a line of grumpy robots",
+   "sets": [
+    "p63/holdout.json#p08"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A pirate digs up four treasure chests on a sandy island",
+   "sets": [
+    "p63/holdout.json#p09"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "Pop twelve balloons floating over a carnival",
+   "sets": [
+    "p63/holdout.json#p10"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "whack"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "voyage"
+  },
+  {
+   "text": "A mouse steals 5 cheese wedges from a sleeping cat's kitchen",
+   "sets": [
+    "p63/holdout.json#p11"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A fairy lights nine lanterns in an enchanted forest",
+   "sets": [
+    "p63/holdout.json#p12"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "A puppy digs up three buried bones in the backyard",
+   "sets": [
+    "p63/holdout.json#p13"
+   ],
+   "best": "arena",
+   "acceptable": [
+    "arena",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "A ghost scares eight campers around a spooky campfire",
+   "sets": [
+    "p63/holdout.json#p14"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "A robot repairs two broken satellites in orbit",
+   "sets": [
+    "p63/holdout.json#p15"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "voyage"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "A frog snaps up eleven flies over a misty pond",
+   "sets": [
+    "p63/holdout.json#p16"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "arena",
+    "catch"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "A hedgehog rolls through a glowing mushroom cave",
+   "sets": [
+    "p63/holdout.json#p17"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer",
+    "arena"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "A tiny submarine explores a deep ocean trench full of anglerfish",
+   "sets": [
+    "p63/holdout.json#p18"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "voyage"
+  },
+  {
+   "text": "A viking sails through icy fjords while sea serpents attack",
+   "sets": [
+    "p63/holdout.json#p19"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "shooter"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "voyage"
+  },
+  {
+   "text": "A monkey swings through jungle vines dodging falling coconuts",
+   "sets": [
+    "p63/holdout.json#p20"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "platformer",
+    "catch"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "A race car speeds around a desert track full of tumbleweeds",
+   "sets": [
+    "p63/holdout.json#p21"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "An owl delivers letters across a moonlit village",
+   "sets": [
+    "p63/holdout.json#p22"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "arena"
+  },
+  {
+   "text": "A dinosaur stomps through a city smashing parked cars",
+   "sets": [
+    "p63/holdout.json#p23"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole",
+    "arena",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "A snail slides along a garden path after the rain, racing a beetle",
+   "sets": [
+    "p63/holdout.json#p24"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner",
+    "voyage"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "a lone knight survives endless waves of skeletons in a ruined castle courtyard, picking a new power after every wave",
+   "sets": [
+    "p66/dev.json#v01"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "defense"
+   ],
+   "genre": "survivor",
+   "mode": "default",
+   "draft": "survivor"
+  },
+  {
+   "text": "a little robot auto-fires at swarms of space bugs on a moon base until the giant queen bug shows up",
+   "sets": [
+    "p66/dev.json#v02"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "shooter"
+   ],
+   "genre": "survivor",
+   "mode": "default",
+   "draft": "survivor"
+  },
+  {
+   "text": "survive the zombie horde in an abandoned shopping mall for as long as you can",
+   "sets": [
+    "p66/dev.json#v03"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "shooter",
+    "arena"
+   ],
+   "genre": "survivor",
+   "mode": "default",
+   "draft": "survivor"
+  },
+  {
+   "text": "a hamster with a pea shooter holds out against hordes of angry cats in a messy kitchen",
+   "sets": [
+    "p66/dev.json#v04"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "defense",
+    "shooter"
+   ],
+   "genre": "survivor",
+   "mode": "default",
+   "draft": "survivor"
+  },
+  {
+   "text": "a black hole swallows the cars of a busy city",
+   "sets": [
+    "p66/dev.json#v05"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "a hungry hole in the farmyard eats chickens, then tractors, then the whole barn",
+   "sets": [
+    "p66/dev.json#v06"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "a sinkhole grows under a sunny beach and gulps down umbrellas, sandcastles and surfboards",
+   "sets": [
+    "p66/dev.json#v07"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "a hole in the kitchen floor swallows plates and pots and finally the fridge",
+   "sets": [
+    "p66/dev.json#v08"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "a raccoon sneaks into the rival camp, grabs their picnic basket and runs it back to his tree before the rangers catch him",
+   "sets": [
+    "p66/dev.json#v09"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal"
+   ],
+   "genre": "steal",
+   "mode": "default",
+   "draft": "steal"
+  },
+  {
+   "text": "steal the golden egg from the dragon's cave and carry it home to the village",
+   "sets": [
+    "p66/dev.json#v10"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal"
+   ],
+   "genre": "steal",
+   "mode": "default",
+   "draft": "steal"
+  },
+  {
+   "text": "a pirate crew raids the enemy ship for treasure chests and hauls them back to their own island",
+   "sets": [
+    "p66/dev.json#v11"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal"
+   ],
+   "genre": "steal",
+   "mode": "default",
+   "draft": "steal"
+  },
+  {
+   "text": "a ninja cat steals fish from the market stalls and brings them to her alley while guard dogs chase her",
+   "sets": [
+    "p66/dev.json#v12"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "steal",
+   "mode": "default",
+   "draft": "steal"
+  },
+  {
+   "text": "sort the colourful candies into the right jars in a sweet shop",
+   "sets": [
+    "p66/dev.json#v13"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "a toy shop clerk puts teddy bears, robots and balls back on the right shelves",
+   "sets": [
+    "p66/dev.json#v14"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort",
+    "quest"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "pour the coloured potions between bottles in a wizard lab until each bottle holds one colour",
+   "sets": [
+    "p66/dev.json#v15"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "a mail sorter at the post office drops red, blue and yellow letters into the matching bags",
+   "sets": [
+    "p66/dev.json#v16"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort",
+    "catch"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "clear the jammed parking lot by tapping each car so it drives out the way it points",
+   "sets": [
+    "p66/dev.json#v17"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "a pile of arrows lies in a garden, tap them one by one so they fly off without hitting each other",
+   "sets": [
+    "p66/dev.json#v18"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "untangle the traffic jam at a busy crossroads: tap a bus and it leaves if the road ahead is clear",
+   "sets": [
+    "p66/dev.json#v19"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "slide the wooden fish out of the crowded pond, each fish only swims the way its nose points",
+   "sets": [
+    "p66/dev.json#v20"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "a space marine survives a swarm of alien beetles on a red planet while his blaster fires on its own",
+   "sets": [
+    "p66/holdout.json#p66-01"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "shooter"
+   ],
+   "genre": "survivor",
+   "mode": "default",
+   "draft": "survivor"
+  },
+  {
+   "text": "a viking fights off endless waves of trolls in a snowy forest and grows stronger after each wave",
+   "sets": [
+    "p66/holdout.json#p66-02"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "defense"
+   ],
+   "genre": "arena",
+   "mode": "fight",
+   "draft": "arena"
+  },
+  {
+   "text": "a garden gnome holds out against hordes of slugs crawling in from every side of the vegetable patch",
+   "sets": [
+    "p66/holdout.json#p66-03"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor",
+    "defense"
+   ],
+   "genre": "survivor",
+   "mode": "default",
+   "draft": "survivor"
+  },
+  {
+   "text": "a hole in the desert sand swallows cactuses, camels and tents, growing with every bite",
+   "sets": [
+    "p66/holdout.json#p66-04"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "a giant drain in a toy room sucks in blocks, dolls and in the end the whole toy box",
+   "sets": [
+    "p66/holdout.json#p66-05"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "arena"
+  },
+  {
+   "text": "an ever growing pit in a medieval town gulps carts, houses and finally the castle",
+   "sets": [
+    "p66/holdout.json#p66-06"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "genre": "hole",
+   "mode": "default",
+   "draft": "hole"
+  },
+  {
+   "text": "a mouse steals cheese wheels from the cat's kitchen and drags them back to its hole",
+   "sets": [
+    "p66/holdout.json#p66-07"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal"
+   ],
+   "genre": "steal",
+   "mode": "default",
+   "draft": "steal"
+  },
+  {
+   "text": "a bandit sneaks into the sheriff's office, grabs the bag of gold and rides it back to the hideout",
+   "sets": [
+    "p66/holdout.json#p66-08"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "quest"
+  },
+  {
+   "text": "a squirrel raids the neighbour's garden for nuts and stashes them in its tree while the dog chases it",
+   "sets": [
+    "p66/holdout.json#p66-09"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "genre": "arena",
+   "mode": "escape",
+   "draft": "runner"
+  },
+  {
+   "text": "sort the dirty laundry by colour into the right baskets",
+   "sets": [
+    "p66/holdout.json#p66-10"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "a florist arranges red, white and yellow roses into the matching vases",
+   "sets": [
+    "p66/holdout.json#p66-11"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a robot at a recycling plant drops cans, bottles and paper into the right bins",
+   "sets": [
+    "p66/holdout.json#p66-12"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort",
+    "catch"
+   ],
+   "genre": "sort",
+   "mode": "default",
+   "draft": "sort"
+  },
+  {
+   "text": "tap the boats out of the crowded harbour, each one sails off only the way its bow points",
+   "sets": [
+    "p66/holdout.json#p66-13"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "free the sheep packed in the pen, a tapped sheep runs off the way it faces if nothing blocks it",
+   "sets": [
+    "p66/holdout.json#p66-14"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "clear the jammed train yard by tapping each wagon so it rolls out along its track",
+   "sets": [
+    "p66/holdout.json#p66-15"
+   ],
+   "best": "arrows",
+   "acceptable": [
+    "arrows",
+    "sort"
+   ],
+   "genre": "arrows",
+   "mode": "default",
+   "draft": "arrows"
+  },
+  {
+   "text": "a cowboy shoots tin cans off a fence at sunset",
+   "sets": [
+    "p66/holdout.json#p66-16"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "throw",
+    "duel"
+   ],
+   "genre": "shooter",
+   "mode": "default",
+   "draft": "shooter"
+  },
+  {
+   "text": "a penguin slides down an icy mountain dodging rocks and snowmen",
+   "sets": [
+    "p66/holdout.json#p66-17"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "genre": "runner",
+   "mode": "default",
+   "draft": "runner"
+  },
+  {
+   "text": "a monkey jumps from treetop to treetop to reach the golden banana at the top of the jungle",
+   "sets": [
+    "p66/holdout.json#p66-18"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "platformer"
+  },
+  {
+   "text": "a hot air balloon flies over the mountains to reach the festival",
+   "sets": [
+    "p66/holdout.json#p66-19"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a gardener waters all the thirsty flowers in the park before noon",
+   "sets": [
+    "p66/holdout.json#p66-20"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "quest"
+  },
+  {
+   "text": "throw paper balls into the trash can from across the office",
+   "sets": [
+    "p66/holdout.json#p66-21"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "genre": "throw",
+   "mode": "default",
+   "draft": "throw"
+  },
+  {
+   "text": "build the tallest pancake tower in the diner",
+   "sets": [
+    "p66/holdout.json#p66-22"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing",
+    "quest"
+   ],
+   "genre": "timing",
+   "mode": "stack",
+   "draft": "timing"
+  },
+  {
+   "text": "a frog drums to the beat in a swamp band",
+   "sets": [
+    "p66/holdout.json#p66-23"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "genre": "rhythm",
+   "mode": "default",
+   "draft": "rhythm"
+  },
+  {
+   "text": "two knights face off in a duel on a narrow bridge",
+   "sets": [
+    "p66/holdout.json#p66-24"
+   ],
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "push"
+   ],
+   "genre": "duel",
+   "mode": "default",
+   "draft": "duel"
+  },
+  {
+   "text": "a little bird flaps between the pipes of an old factory",
+   "sets": [
+    "p66/holdout.json#p66-25"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "genre": "flap",
+   "mode": "default",
+   "draft": "flap"
+  },
+  {
+   "text": "a kangaroo catches falling coconuts on a tropical beach",
+   "sets": [
+    "p66/holdout.json#p66-26"
+   ],
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "genre": "catch",
+   "mode": "default",
+   "draft": "catch"
+  },
+  {
+   "text": "bonk the moles popping out of the golf course",
+   "sets": [
+    "p66/holdout.json#p66-27"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "genre": "whack",
+   "mode": "default",
+   "draft": "whack"
+  },
+  {
+   "text": "slice the watermelons a farmer tosses into the air",
+   "sets": [
+    "p66/holdout.json#p66-28"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "genre": "slice",
+   "mode": "default",
+   "draft": "slice"
+  },
+  {
+   "text": "a hedgehog crosses a busy highway at night",
+   "sets": [
+    "p66/holdout.json#p66-29"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "genre": "hop",
+   "mode": "default",
+   "draft": "hop"
+  },
+  {
+   "text": "two crabs shove each other off a rock at low tide",
+   "sets": [
+    "p66/holdout.json#p66-30"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a stunt race where a monster truck jumps over ramps and smashes through stacks of crates on the way to the finish line",
+   "sets": [
+    "p68/dev.json#d01"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "genre": "quest",
+   "mode": "spatial",
+   "draft": "platformer"
+  },
+  {
+   "text": "a dirt bike flies off a wooden ramp in a quarry, crashes through rusty barrels and lands next to the checkered flag",
+   "sets": [
+    "p68/dev.json#d02"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "land",
+   "draft": "voyage"
+  },
+  {
+   "text": "a stunt car race on a rooftop track full of jumps",
+   "sets": [
+    "p68/dev.json#d03"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a grandma on a mobility scooter launches off ramps in a supermarket car park, ploughing through shopping trolleys to reach the exit",
+   "sets": [
+    "p68/dev.json#d04"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a toy race car speeds along a looping track across a bedroom, bursting through block towers and jumping over the bed",
+   "sets": [
+    "p68/dev.json#d05"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "drive a jeep through a jungle stunt course, leaping river gaps and smashing wooden fences on the way to the finish",
+   "sets": [
+    "p68/dev.json#d06"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a snowmobile races down a frozen track with big jumps, crashing through snowmen until it crosses the finish",
+   "sets": [
+    "p68/dev.json#d07"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "runner",
+    "voyage"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a pizza van jumps ramps between city rooftops and plows through piles of cardboard boxes to reach the finish line",
+   "sets": [
+    "p68/dev.json#d08"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "genre": "platformer",
+   "mode": "default",
+   "draft": "voyage"
+  },
+  {
+   "text": "a game of minigolf on a pirate island course, putting the ball past cannons and treasure chests into the hole",
+   "sets": [
+    "p68/dev.json#d09"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "putt a golf ball into the hole in as few strokes as possible on a windmill course",
+   "sets": [
+    "p68/dev.json#d10"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "a hedgehog curls into a ball and gets putted through a garden course around flower pots into a little cup",
+   "sets": [
+    "p68/dev.json#d11"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "a crazy golf course in a haunted mansion where the ball has to roll past sliding coffins into the hole",
+   "sets": [
+    "p68/dev.json#d12"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "aim and tap to putt the ball across a candy land green, bouncing off lollipops to sink it in one shot",
+   "sets": [
+    "p68/dev.json#d13"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "minigolf on the moon with craters and low gravity",
+   "sets": [
+    "p68/dev.json#d14"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "a bored office worker uses a ruler to putt a rubber ball between desks and chairs into a coffee mug in as few hits as possible",
+   "sets": [
+    "p68/dev.json#d15"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "genre": "minigolf",
+   "mode": "default",
+   "draft": "minigolf"
+  },
+  {
+   "text": "a penguin taps a snowball across an icy course with a fish for a club, past igloos and over a frozen bridge into the hole",
+   "sets": [
+    "p68/dev.json#d16"
+   ],
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a first-person ride in a mine cart on rails, turning to shoot the bats that swoop at you in the dark tunnels",
+   "sets": [
+    "p68/dev.json#d17"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "ride a train through the wild west and shoot the bandits on horseback before they jump aboard",
+   "sets": [
+    "p68/dev.json#d18"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "an on-rails shooter on a river boat where you aim at crocodiles leaping out of the swamp",
+   "sets": [
+    "p68/dev.json#d19"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "seen through the eyes of a kid on a roller coaster, splat paint balloons at clowns popping up along the track",
+   "sets": [
+    "p68/dev.json#d20"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "a ghost train ride through a haunted house where you zap the ghosts flying at your cart with a flashlight",
+   "sets": [
+    "p68/dev.json#d21"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "sit in a tour jeep that follows the jungle road on its own and fire at the angry monkeys throwing coconuts at you",
+   "sets": [
+    "p68/dev.json#d22"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "a first person rail shooter on a space station monorail, blasting drones before they reach you",
+   "sets": [
+    "p68/dev.json#d23"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "ride a log flume through a pirate cove and soak the pirates with a water cannon before they fire at your log",
+   "sets": [
+    "p68/dev.json#d24"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "genre": "railfps",
+   "mode": "default",
+   "draft": "railfps"
+  },
+  {
+   "text": "run a burger shop for one shift: place grills and counters on the grid, spend coins and serve every customer before closing time",
+   "sets": [
+    "p68/dev.json#d25"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "runner"
+  },
+  {
+   "text": "a top-down bakery where you build ovens and tills on tiles and feed the morning queue before the shift ends",
+   "sets": [
+    "p68/dev.json#d26"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a cat opens a fish stall on the pier, sets up cutting tables and serves hungry seagulls until sunset",
+   "sets": [
+    "p68/dev.json#d27"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "build your own ice cream parlour from above, buying freezers and counters with the money customers pay",
+   "sets": [
+    "p68/dev.json#d28"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "a shop management game in a space diner: place stations, spend credits and serve alien customers before the shift is over",
+   "sets": [
+    "p68/dev.json#d29"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "quest"
+  },
+  {
+   "text": "an elf places workbenches in a snowy toy workshop and fills every child's order before the night shift ends",
+   "sets": [
+    "p68/dev.json#d30"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "lay out a coffee bar on a grid of tiles, spend your budget on machines and get every latte out before the rush ends",
+   "sets": [
+    "p68/dev.json#d31"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "genre": "arena",
+   "mode": "collect",
+   "draft": "arena"
+  },
+  {
+   "text": "a robot manages a repair garage from above, placing lifts and tool benches to fix every car before the day shift is over",
+   "sets": [
+    "p68/dev.json#d32"
+   ],
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "genre": "quest",
+   "mode": "station",
+   "draft": "voyage"
+  },
+  {
+   "text": "draw a line to protect the sleeping puppy from the falling rocks until the timer runs out",
+   "sets": [
+    "p68/dev.json#d33"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  },
+  {
+   "text": "draw a wall to shield a little chick on a windy cliff ledge from flying leaves and twigs for ten seconds",
+   "sets": [
+    "p68/dev.json#d34"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  },
+  {
+   "text": "scribble a shield around an egg so the angry bees cannot reach it before time is up",
+   "sets": [
+    "p68/dev.json#d35"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  },
+  {
+   "text": "draw a ramp so the rolling apple does not fall into the river",
+   "sets": [
+    "p68/dev.json#d36"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "voyage",
+   "mode": "race",
+   "draft": "voyage"
+  },
+  {
+   "text": "a drawing puzzle: sketch a barrier that keeps a snowman safe from the hot sun rays until night comes",
+   "sets": [
+    "p68/dev.json#d37"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  },
+  {
+   "text": "with one stroke of a pen, guard a sleeping baby dragon from the arrows of knights until the countdown ends",
+   "sets": [
+    "p68/dev.json#d38"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  },
+  {
+   "text": "draw a roof over the sandcastle to keep the seagulls and the waves away from it for a whole minute",
+   "sets": [
+    "p68/dev.json#d39"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  },
+  {
+   "text": "a goldfish bowl teeters on a shelf, draw lines to stop it tumbling off while the cat swats at it until time runs out",
+   "sets": [
+    "p68/dev.json#d40"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "genre": "drawsave",
+   "mode": "default",
+   "draft": "drawsave"
+  }
+ ]
+}
