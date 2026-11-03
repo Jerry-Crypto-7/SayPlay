@@ -31,6 +31,16 @@ it('a touch device that cannot hold medium drops to low after 3 s under 45 FPS',
   expect(run(phone, 30, DOWN_MS, 0).state.tier).toBe('low');
 });
 
+// P68R T3: stavba obchodu začne na telefonu na `low`; telefon, který snímky stíhá, se za `UP_MS` vrátí na `medium`.
+it('a light start puts only touch devices on low, and a fast phone climbs back', () => {
+  expect(startQuality(2.6, true, true).tier).toBe('low');
+  expect(startQuality(2.6, true, true).ceiling).toBe('high');
+  expect(startQuality(1.75, false, true).tier).toBe('high');
+  const phone = sampleQuality(startQuality(2.6, true, true), 60, 0);
+  expect(run(phone, 60, UP_MS - STEP_MS, 0).state.tier).toBe('low');
+  expect(run(phone, 60, UP_MS, 0).state.tier).toBe('medium');
+});
+
 /** Vzorky po půl sekundě s daným FPS po dobu `ms`; vrací stav a úroveň po každém vzorku. */
 function run(state: QualityState, fps: number, ms: number, from: number): { readonly state: QualityState; readonly tiers: readonly QualityTier[]; readonly at: number } {
   const tiers: QualityTier[] = [];

@@ -67,6 +67,28 @@ describe('ready gate', () => {
     expect(session.waiting()).toBe(true);
   });
 
+  // P68R T3: scéna, která do prvního doteku kreslí na požádání, se probudí jen tímhle ohlášením.
+  it('the first touch tells subscribers once, and again after Play again', () => {
+    const session = holdUntilTouch(createArcadeSession(world));
+    const heard = vi.fn(() => session.waiting());
+    const off = session.subscribe(heard);
+    wait(session, 1);
+    expect(heard).not.toHaveBeenCalled();
+    session.begin();
+    session.begin();
+    expect(heard).toHaveBeenCalledTimes(1);
+    expect(heard).toHaveLastReturnedWith(false);
+    session.restart();
+    heard.mockClear();
+    session.begin();
+    expect(heard).toHaveBeenCalledTimes(1);
+    off();
+    session.restart();
+    heard.mockClear();
+    session.begin();
+    expect(heard).not.toHaveBeenCalled();
+  });
+
   it('the robot demo plays without a touch', () => {
     const session = holdUntilTouch(createArcadeSession(world));
     session.startDemo();

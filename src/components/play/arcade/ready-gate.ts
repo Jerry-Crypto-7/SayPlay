@@ -24,15 +24,27 @@ export interface ReadyGate {
 export function holdUntilTouch(session: ArcadeSession): ArcadeSession & ReadyGate {
   let waiting = true;
   let manual = false;
+  // Konec čekání se ohlásí odběratelům relace (P68R T3): scéna, která do prvního doteku kreslí na požádání, se tím probudí.
+  const listeners = new Set<() => void>();
   return {
     ...session,
     advance: (ms) => (manual || (waiting && session.demo() === null) ? 0 : session.advance(ms)),
+    subscribe: (listener) => {
+      listeners.add(listener);
+      const off = session.subscribe(listener);
+      return () => {
+        listeners.delete(listener);
+        off();
+      };
+    },
     restart: () => {
       waiting = true;
       session.restart();
     },
     begin: () => {
+      if (!waiting) return;
       waiting = false;
+      for (const listener of [...listeners]) listener();
     },
     waiting: () => waiting,
     manualClock: (on) => {
