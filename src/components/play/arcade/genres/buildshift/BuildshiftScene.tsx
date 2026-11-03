@@ -74,6 +74,7 @@ import { toyMotionOn } from '../../toy/applyToy';
 import { FittedModel, type WorldProps } from '../../World';
 import { GRID_BOX, VIEW, cellsAttr, placeCamera, tallFallback } from './buildshift-camera';
 import { type Label, card, coin, createLabel, disposeLabel, paint, words } from './buildshift-labels';
+import { Warm } from './buildshift-warm';
 
 type BuildshiftSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -182,13 +183,26 @@ const kindOfCode = (code: number): StationKind | null => STATION_KINDS[code - 1]
 // ---------------------------------------------------------------------------
 // Díly
 
-/** Postava z popisku: riggovaná, nebo model vepsaný do kvádru. */
+/** Postava z popisku: riggovaná, nebo model vepsaný do kvádru; ukáže se až s přeloženým programem (`Warm`). */
 function Figure({ model, size, tint, moving }: { readonly model: string; readonly size: { readonly w: number; readonly h: number; readonly d: number }; readonly tint: string; readonly moving: () => boolean }) {
   const rig = riggedCharacter(model);
-  return rig !== undefined ? (
-    <RiggedModel character={rig} h={size.h} clip={() => (moving() ? 'walk' : 'idle')} fallback={tint} />
-  ) : (
-    <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={tint} character />
+  return (
+    <Warm>
+      {rig !== undefined ? (
+        <RiggedModel character={rig} h={size.h} clip={() => (moving() ? 'walk' : 'idle')} fallback={tint} />
+      ) : (
+        <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={tint} character />
+      )}
+    </Warm>
+  );
+}
+
+/** Model obchodu (stanoviště, zboží, kulisa), který se ukáže až s přeloženým programem (`Warm`). */
+function ShopModel(props: Parameters<typeof FittedModel>[0]) {
+  return (
+    <Warm>
+      <FittedModel {...props} />
+    </Warm>
   );
 }
 
@@ -802,7 +816,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
         <group ref={backdrop}>
           {[-3.4, 0, 3.4].map((x) => (
             <group key={x} position={[x, 0, BACK_Z - 1.2]}>
-              <FittedModel id={x === 0 ? 'gen3d-bread-rack' : 'cc0-kitchencabinet'} w={2.6} h={1.6} d={1.2} fallback={color['cream-deep']} />
+              <ShopModel id={x === 0 ? 'gen3d-bread-rack' : 'cc0-kitchencabinet'} w={2.6} h={1.6} d={1.2} fallback={color['cream-deep']} />
             </group>
           ))}
         </group>
@@ -822,7 +836,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
               <planeGeometry args={[TILE - 0.04, TILE - 0.04]} />
             </mesh>
             <group position={[-0.1, 0.17, -0.15]}>
-              <FittedModel id={STATION_MODEL[kind]} w={1.0} h={0.75} d={1.0} fallback={STATION_TINT[kind]} />
+              <ShopModel id={STATION_MODEL[kind]} w={1.0} h={0.75} d={1.0} fallback={STATION_TINT[kind]} />
             </group>
           </group>
         ))}
@@ -890,7 +904,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
               position={[m(cellX(cell)), 0, m(cellZ(cell))]}
               userData={{ item: 'station', station: kind }}
             >
-              <FittedModel id={STATION_MODEL[kind]} w={STATION_SIZE.w} h={STATION_SIZE.h} d={STATION_SIZE.d} fallback={STATION_TINT[kind]} />
+              <ShopModel id={STATION_MODEL[kind]} w={STATION_SIZE.w} h={STATION_SIZE.h} d={STATION_SIZE.d} fallback={STATION_TINT[kind]} />
               {GOODS_SPOTS[kind].map((x, k) => (
                 <group
                   key={k}
@@ -900,7 +914,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
                   position={[x, STATION_SIZE.h, 0]}
                   visible={false}
                 >
-                  <FittedModel id={goodsModel} w={GOODS.w} h={GOODS.h} d={GOODS.d} fallback={color.sun} />
+                  <ShopModel id={goodsModel} w={GOODS.w} h={GOODS.h} d={GOODS.d} fallback={color.sun} />
                 </group>
               ))}
               {kind === 'oven' ? (
@@ -940,7 +954,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
                 <FittedModel id={cast.player} w={SELLER.w} h={SELLER.h} d={SELLER.d} fallback={color['sky-deep']} character />
               )}
               <group ref={carried} position={[0, SELLER.h * 0.6, 0.55]} visible={false} userData={{ item: 'goods' }}>
-                <FittedModel id={goodsModel} w={GOODS.w} h={GOODS.h} d={GOODS.d} fallback={color.sun} />
+                <ShopModel id={goodsModel} w={GOODS.w} h={GOODS.h} d={GOODS.d} fallback={color.sun} />
               </group>
             </group>
           </group>
