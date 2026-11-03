@@ -68,13 +68,13 @@ import { compileForComposer } from '../../../feed/StageHost';
 import { renderHeld } from '../../effects/render-feel';
 import { FieldGround } from '../../look/FieldGround';
 import { loadsPending, loadsSettled } from '../../look/pending-loads';
+import { Warm, updateWhenShown } from '../../look/warm';
 import { type PlayRect, usePlayRectRef } from '../../portrait-frame';
 import { RiggedModel } from '../../RiggedModel';
 import { toyMotionOn } from '../../toy/applyToy';
 import { FittedModel, type WorldProps } from '../../World';
 import { GRID_BOX, VIEW, cellsAttr, placeCamera, tallFallback } from './buildshift-camera';
 import { type Label, card, coin, createLabel, disposeLabel, paint, words } from './buildshift-labels';
-import { Warm, updateWhenShown } from './buildshift-warm';
 
 type BuildshiftSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
