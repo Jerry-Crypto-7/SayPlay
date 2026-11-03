@@ -22,6 +22,9 @@ import { GAP_MS, type QualityState, type QualityTier, TIER_SETTINGS, bloomThresh
 /** FPS se měří po půlsekundách. */
 const SAMPLE_MS = 500;
 
+/** Ovládání (`data-control` plochy), jehož hra začíná na telefonu na `low` (`startQuality`, P68R T3). */
+const LIGHT_START: ReadonlySet<string> = new Set(['buildshift']);
+
 /**
  * Úroveň kvality podle `devicePixelRatio` a průběžného FPS. Měří jen, když hra
  * kreslí naplno: pauza a konec kreslí na požádání a jejich snímky nic neříkají.
@@ -29,7 +32,9 @@ const SAMPLE_MS = 500;
  */
 export function useQualityTier(surface: RefObject<HTMLDivElement | null>): QualityTier {
   const setDpr = useThree((three) => three.setDpr);
-  const [start] = useState(() => startQuality(window.devicePixelRatio, window.matchMedia('(pointer: coarse)').matches));
+  const [start] = useState(() =>
+    startQuality(window.devicePixelRatio, window.matchMedia('(pointer: coarse)').matches, LIGHT_START.has(surface.current?.dataset.control ?? '')),
+  );
   const governor = useRef<QualityState>(start);
   const [tier, setTier] = useState(start.tier);
   const meter = useRef({ from: -1, frames: 0 });
