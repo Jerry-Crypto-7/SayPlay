@@ -23,7 +23,7 @@ import { GAP_MS, type QualityState, type QualityTier, TIER_SETTINGS, bloomThresh
 const SAMPLE_MS = 500;
 
 /** Ovládání (`data-control` plochy), jehož hra začíná na telefonu na `low` (`startQuality`, P68R T3). */
-const LIGHT_START: ReadonlySet<string> = new Set(['buildshift']);
+const LIGHT_START: ReadonlySet<string> = new Set(['buildshift', 'stunt']);
 
 /**
  * Úroveň kvality podle `devicePixelRatio` a průběžného FPS. Měří jen, když hra
