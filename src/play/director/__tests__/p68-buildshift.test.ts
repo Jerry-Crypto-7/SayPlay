@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import dev from '../../../../evals/play/p68/dev.json';
 import { canonicalHash } from '../../../ir/worlddoc';
 import { arcadeWorldOf } from '../../arcade/compile';
+import { BUILDSHIFT } from '../../arcade/pieces/buildshift-world';
 import { verifyArcade } from '../../arcade/verify';
 import { readsMechanic, unreadItems } from '../../capabilities';
 import { draftGameSpecWithMeta } from '../../draft/draft';
@@ -84,7 +85,8 @@ describe.skipIf(DIRECTOR_PENDING.has(GENRE))('recorded director answers with bui
     expect(game.source).toBe('authored');
     expect([null, 'VERB_UNPROVED']).toContain(game.fallbackReason);
     expect(game.spec.genre?.id).toBe(GENRE);
-    expect(game.spec.roles.find((role) => role.id === 'customer')?.count).toBe(fixture.answer.spec.params?.customers);
+    // Věta bez počtu (bakery): prompt chce `params` jen s číslem z věty, hra pak má výchozí cíl (P68R T5).
+    expect(game.spec.roles.find((role) => role.id === 'customer')?.count).toBe(fixture.answer.spec.params?.customers ?? BUILDSHIFT.goal.default);
     const made = arcadeWorldOf(game.spec, 1);
     if (!made.ok) throw new Error(made.issues.join('; '));
     expect(verifyArcade(made.world, undefined, made.roleBindings).publishEligible).toBe(true);

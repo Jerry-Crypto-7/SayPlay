@@ -3,12 +3,12 @@
  "sentence": "shoot down paper planes over a school playground",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:19:40.698Z",
- "ms": 6382,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:47:11.429Z",
+ "ms": 6313,
  "answer": {
-  "plan": "Create a shooter where a fox shoots down paper planes that spawn over a school playground, with waves that appear every second.",
+  "plan": "Shooter game where a fox shoots down paper planes in a playground.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -20,18 +20,11 @@
      "verb": "shoot",
      "states": null,
      "patrol": false
-    },
-    {
-     "label": "school",
-     "does": "scenery",
-     "verb": "none",
-     "states": null,
-     "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "school playground",
-   "palette": "city",
+   "palette": "cave",
    "params": {
     "targetWidthPct": 50,
     "movingTargets": 1,
@@ -39,8 +32,8 @@
     "enemies": 5,
     "targets": 5,
     "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 90
+    "targetScore": 200,
+    "timeLimit": 60
    },
    "counts": {
     "enemy": 5,
@@ -52,22 +45,11 @@
      "kind": "target",
      "label": "paper plane",
      "count": 5
-    },
-    {
-     "id": "school",
-     "kind": "prop",
-     "label": "school",
-     "count": 1
     }
    ],
    "things": [
     {
      "role": "plane",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "school",
      "start": "hidden",
      "physics": null
     }
@@ -82,85 +64,16 @@
        "plane"
       ]
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
        "damage": 1
       },
       {
        "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "spawn_plane",
-     "verb": "wait",
-     "when": {
-      "timer": "spawn_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "plane",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_timer",
-     "verb": "wait",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "spawn_timer",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "next_wave",
-     "verb": "wait",
-     "when": {
-      "timer": "spawn_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
       },
       {
-       "wave": {
-        "role": "plane",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "reset_wave",
-     "verb": "wait",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "spawn_timer",
-        "ticks": 60
-       }
+       "score": 10
       }
      ]
     }
@@ -169,7 +82,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "spawn_timer"
+      "id": "wave_timer"
      }
     ],
     "phases": [
@@ -183,7 +96,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": null,
+   "abilities": [],
    "segments": null
   }
  },

@@ -139,7 +139,8 @@ describe('the director prompt describes logic within budget', () => {
     // P68 R7: +288 za `drawsave` (řádek žánru a buňka tabulky), logika beze změny – strop 2 800 → 3 100.
     // P68 R9: +328 za `railfps` (řádek žánru a buňka tabulky), logika beze změny – růst 3 416, strop 3 100 → 3 450.
     // P68 R12: +385 za `minigolf` (řádek žánru a buňka tabulky), logika beze změny – růst 3 801, strop 3 450 → 3 850.
-    expect(growth).toBeLessThanOrEqual(3_850);
+    // P68R T5: +321 za `buildshift` (řádek žánru a buňka tabulky), logika beze změny – růst 4 122, strop 3 850 → 4 150.
+    expect(growth).toBeLessThanOrEqual(4_150);
     const lines = system.split('\n');
     expect(lines.filter((line) => line.startsWith('logic – '))).toHaveLength(1);
     const example = lines.filter((line) => line.startsWith('LOGIC EXAMPLE: '));

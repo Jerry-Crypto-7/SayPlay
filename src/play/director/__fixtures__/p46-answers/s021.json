@@ -3,12 +3,12 @@
  "sentence": "obby game with lava and spinning bars",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:20:12.950Z",
- "ms": 6390,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:47:42.359Z",
+ "ms": 7129,
  "answer": {
-  "plan": "Create a platformer where the hero must jump over lava and avoid spinning bars, collecting gems for points.",
+  "plan": "Create a platformer where the hero must jump over lava and avoid spinning bars, with a simple timed phase system.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,7 +19,7 @@
      "does": "avoid",
      "verb": "hazard",
      "states": null,
-     "patrol": false
+     "patrol": null
     },
     {
      "label": "spinning bar",
@@ -31,9 +31,9 @@
     {
      "label": "gem",
      "does": "collect",
-     "verb": "collect",
+     "verb": "grab",
      "states": null,
-     "patrol": false
+     "patrol": null
     }
    ],
    "heroAction": "none",
@@ -42,13 +42,13 @@
    "params": {
     "lengthM": 200,
     "difficulty": 1,
-    "items": 5,
+    "items": 3,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": null
    },
    "counts": {
-    "collectible": 5
+    "collectible": 3
    },
    "ruleRoles": [
     {
@@ -61,13 +61,13 @@
      "id": "bar",
      "kind": "hazard",
      "label": "spinning bar",
-     "count": 3
+     "count": 1
     },
     {
      "id": "gem",
      "kind": "collectible",
      "label": "gem",
-     "count": 5
+     "count": 3
     }
    ],
    "things": [
@@ -89,22 +89,55 @@
    ],
    "rules": [
     {
-     "id": "jump_over_lava",
-     "verb": "jump",
+     "id": "startPhase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "lava"
-      ]
+      "phase": "first"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
+       "startTimer": {
+        "timer": "phase1",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase1Timer",
+     "verb": "wait",
+     "when": {
+      "timer": "phase1"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "bar",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase2",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "gem",
+        "count": 3,
+        "at": "edge"
+       }
       }
      ]
     }
@@ -118,10 +151,10 @@
     ],
     "phases": [
      {
-      "id": "phase1"
+      "id": "first"
      },
      {
-      "id": "phase2"
+      "id": "second"
      }
     ],
     "events": null

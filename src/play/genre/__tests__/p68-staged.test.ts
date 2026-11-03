@@ -43,11 +43,11 @@ vi.mock('../buildshift', async (real) => ({ buildshiftGenre: { ...(await real<ty
 vi.mock('../drawsave', async (real) => ({ drawsaveGenre: { ...(await real<typeof import('../drawsave')>()).drawsaveGenre, availability: () => 'ready', cues: FAKE_CUES.drawsave } }));
 
 const P68 = ['stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave'] as const;
-/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T11 `buildshift` a T8 `stunt` vrácené (brány hry), T12 `drawsave`, T10 `railfps`, R12 `minigolf`. */
-const WIRED: readonly string[] = ['drawsave', 'railfps', 'minigolf'];
-/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`, R9 `railfps`, R12 `minigolf`). */
-const OFFERED: readonly string[] = ['drawsave', 'railfps', 'minigolf'];
-/** Ovládání, které čtečka smí volit (`STAGED_CONTROLS`): R9 vyjal `railfps`, R12 `minigolf`, R7 `drawsave` v seznamu nechal. */
+/** Hry, které už úloha „zapoj X“ pustila – brána aktivace drží jen zbytek. T8 `stunt` vrácený (brány hry), T12 `drawsave`, T10 `railfps`, R12 `minigolf`, P68R T5 `buildshift`. */
+const WIRED: readonly string[] = ['drawsave', 'railfps', 'minigolf', 'buildshift'];
+/** Zapojené hry, které už nabízí i režisér a čtečka (R7 `drawsave`, R9 `railfps`, R12 `minigolf`, P68R T5 `buildshift`). */
+const OFFERED: readonly string[] = ['drawsave', 'railfps', 'minigolf', 'buildshift'];
+/** Ovládání, které čtečka smí volit (`STAGED_CONTROLS`): R9 vyjal `railfps`, R12 `minigolf`; R7 `drawsave` a P68R T5 `buildshift` v seznamu nechaly (strop promptu čtečky). */
 const READ_CONTROL_OFFERED: readonly string[] = ['railfps', 'minigolf'];
 const PENDING = P68.filter((genre) => !WIRED.includes(genre));
 const PLAY = join(process.cwd(), 'evals', 'play');

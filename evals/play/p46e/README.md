@@ -97,3 +97,12 @@ Režisér nabízí `railfps` (střelnice z očí na kolejích, P68), takže verz
 - `railfps` nevolila žádná z 25 odpovědí; žánr se změnil jen u o04.
 - Soud logiky P45B (`director-logic.json`): `logic_proved` raw i s opravou 0 z 25 jako dřív; logiku napíše 24 místo 25, vstup do fáze 15 místo 17.
 - Odvozeno, neověřeno: pokles je šum jedné nahrávky modelu 20b – obě chyby jsou známá třída zapojení logiky (P46E T5, „no rule enters phase“) a prompt se změnil jen o řádek žánru a buňku tabulky (+328 znaků), ne v části o logice. Druhé nahrání se podle plánu nedělá.
+
+## P68R T5 (3. 11.): nové nahrávky s promptem `cbdbf596`
+
+Režisér nabízí `buildshift` (směna se stavbou obchodu, P68), takže verze kompaktního promptu přešla `41eeff3f` → `cbdbf596` (+321 B: řádek žánru a buňka tabulky). Všech 25 odpovědí je nahraných znovu jednou (`record.cmd`, gpt-oss-20b lokálně, 0 USD, 25 volání bez selhání, p50 7,6 s, max 12,8 s) a `after.json` přeměřený. Srovnání s nahrávkou R12:
+
+- **`ready` 24 → 25 z 25** (100 %); `authored` 20 → 20, `keptRules` / `keptLogic` 100 % beze změny, žádný `MALFORMED` (dřív 1).
+- **`adds` 0,29 → 0,28** (7 z 25): boss 7 → 6, akce 1 → 3, úseky 0 → 0. Jen postavy 11 → 9.
+- `buildshift` nevolila žádná z 25 odpovědí (žádná věta sady není o obchodě).
+- Soud logiky P45B (`director-logic.json`): `logic_proved` raw i s opravou 0 z 25 jako dřív; logiku napíše 24 místo 25, vstup do fáze 11 místo 10.

@@ -3,12 +3,12 @@
  "sentence": "racing car escapes police and shoots enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:17:52.128Z",
- "ms": 7110,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:45:12.668Z",
+ "ms": 8373,
  "answer": {
-  "plan": "Create a racing‑car shooter set on an open road where police chase the player and the car can shoot enemy vehicles.",
+  "plan": "Use the voyage genre with race mode, treating the car as a vehicle that must outrun police while shooting enemies.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -41,12 +41,12 @@
     "namedLandingTarget": 0,
     "touchdownSpeed": 30,
     "gravityRisePct": 10,
-    "lengthM": 400,
+    "lengthM": 500,
     "topSpeed": 300,
     "gravity": 1200,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 90
+    "timeLimit": 60
    },
    "ruleRoles": [
     {
@@ -57,9 +57,9 @@
     },
     {
      "id": "enemy",
-     "kind": "hazard",
-     "label": "enemy car",
-     "count": 3
+     "kind": "target",
+     "label": "enemy drone",
+     "count": 5
     }
    ],
    "things": [
@@ -86,7 +86,7 @@
       {
        "startTimer": {
         "timer": "race",
-        "ticks": 90
+        "ticks": 3600
        }
       }
      ]
@@ -118,7 +118,7 @@
       {
        "wave": {
         "role": "enemy",
-        "count": 3,
+        "count": 5,
         "at": "edge"
        }
       }
@@ -126,17 +126,27 @@
     },
     {
      "id": "policeChase",
-     "verb": "chase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "police"
-      ]
+      "phase": "race"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "toggle": "police"
+      }
+     ]
+    },
+    {
+     "id": "enemyShoot",
+     "verb": "wait",
+     "when": {
+      "phase": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "enemy"
       }
      ]
     }
@@ -153,7 +163,7 @@
       "id": "start"
      },
      {
-      "id": "running"
+      "id": "race"
      }
     ],
     "events": null
@@ -164,8 +174,8 @@
     "attack": "charge"
    },
    "abilities": [
-    "shoot",
-    "dash"
+    "dash",
+    "shoot"
    ],
    "segments": [
     "newFoe",

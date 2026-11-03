@@ -3,12 +3,12 @@
  "sentence": "Jumping arcade game in the forest",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:18:08.631Z",
- "ms": 6542,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:45:29.405Z",
+ "ms": 7828,
  "answer": {
-  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling branches. The game uses a simple two‑phase timer to spawn new platforms and increase difficulty.",
+  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling branches.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -18,15 +18,15 @@
      "label": "acorn",
      "does": "collect",
      "verb": "grab",
-     "states": 2,
-     "patrol": false
+     "states": null,
+     "patrol": null
     },
     {
      "label": "branch",
      "does": "avoid",
      "verb": "jump_over",
-     "states": 2,
-     "patrol": false
+     "states": null,
+     "patrol": null
     }
    ],
    "heroAction": "none",
@@ -37,8 +37,8 @@
     "difficulty": 1,
     "items": 5,
     "lives": 3,
-    "targetScore": 500,
-    "timeLimit": 60
+    "targetScore": 0,
+    "timeLimit": 0
    },
    "counts": {
     "collectible": 5
@@ -61,71 +61,82 @@
     {
      "role": "acorn",
      "start": "hidden",
-     "physics": true
+     "physics": null
     },
     {
      "role": "branch",
      "start": "hidden",
-     "physics": true
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "spawn_platforms",
-     "verb": "wait",
+     "id": "spawn_acorns",
+     "verb": "spawn",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "spawn",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_new",
-     "verb": "wait",
-     "when": {
-      "timer": "spawn"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "second"
-      },
-      {
-       "wave": {
-        "role": "branch",
-        "count": 1,
-        "at": "edge"
-       }
-      },
-      {
-       "wave": {
+       "spawn": {
         "role": "acorn",
-        "count": 1,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "reset",
-     "verb": "wait",
+     "id": "spawn_branches",
+     "verb": "spawn",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "spawn",
-        "ticks": 60
+       "spawn": {
+        "role": "branch",
+        "at": "player"
        }
+      }
+     ]
+    },
+    {
+     "id": "acorn_collect",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "acorn"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 10
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "branch_hit",
+     "verb": "hit",
+     "when": {
+      "contact": [
+       "player",
+       "branch"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
       }
      ]
     }
@@ -134,7 +145,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "spawn"
+      "id": "phase_timer"
      }
     ],
     "phases": [

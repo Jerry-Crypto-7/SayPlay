@@ -3,12 +3,12 @@
  "sentence": "my dog chasing the mailman,around the backyard lol",
  "axis": "control:move_free",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:19:20.655Z",
- "ms": 5622,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:46:47.013Z",
+ "ms": 7661,
  "answer": {
-  "plan": "arena escape with a dog chasing a mailman in a backyard",
+  "plan": "Create an arena‑escape game where a dog chases a mailman around a backyard, using a two‑phase timer to spawn the mailman and win when the dog catches him.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -22,26 +22,10 @@
      "patrol": false
     }
    ],
-   "heroAction": "chop",
+   "heroAction": "none",
    "setting": "backyard",
    "palette": "forest",
-   "params": {
-    "entryDistance": 8000,
-    "chaseLead": 60,
-    "seconds": 30,
-    "items": 1,
-    "pursuitCeiling": 120,
-    "itemSizePct": 120,
-    "chasers": 1,
-    "chaserSpeed": 70,
-    "enemies": 1,
-    "enemyHp": 3,
-    "enemySpeed": 60,
-    "playerHp": 3,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 30
-   },
+   "params": null,
    "counts": {
     "enemy": 1,
     "collectible": null
@@ -63,7 +47,7 @@
    ],
    "rules": [
     {
-     "id": "start",
+     "id": "start_phase",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -72,23 +56,20 @@
      "do": [
       {
        "startTimer": {
-        "timer": "chase",
+        "timer": "spawn",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "chase",
+     "id": "spawn_mailman",
      "verb": "wait",
      "when": {
-      "timer": "chase"
+      "timer": "spawn"
      },
      "if": null,
      "do": [
-      {
-       "goPhase": "second"
-      },
       {
        "wave": {
         "role": "mailman",
@@ -97,13 +78,29 @@
        }
       }
      ]
+    },
+    {
+     "id": "win_catch",
+     "verb": "contact",
+     "when": {
+      "contact": [
+       "player",
+       "mailman"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
     }
    ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "chase"
+      "id": "spawn"
      }
     ],
     "phases": [
@@ -121,9 +118,7 @@
     "name": "Mailman",
     "attack": "charge"
    },
-   "abilities": [
-    "dash"
-   ],
+   "abilities": [],
    "segments": [
     "newFoe",
     "moving",

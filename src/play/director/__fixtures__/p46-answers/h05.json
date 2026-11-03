@@ -3,16 +3,16 @@
  "sentence": "boxing a kangaroo in the australian outback",
  "axis": "duel",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:19:53.964Z",
- "ms": 6648,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:47:23.106Z",
+ "ms": 5693,
  "answer": {
-  "plan": "arena fight against a kangaroo in the Australian outback",
+  "plan": "Arena‑fight boxing kangaroo in outback",
   "spec": {
    "genre": "arena",
    "mode": "fight",
-   "hero": "boxer",
+   "hero": "fox",
    "cast": [
     {
      "label": "kangaroo",
@@ -20,29 +20,15 @@
      "verb": "box",
      "states": 2,
      "patrol": false
-    },
-    {
-     "label": "bush",
-     "does": "scenery",
-     "verb": "none",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "rock",
-     "does": "avoid",
-     "verb": "jump over",
-     "states": null,
-     "patrol": false
     }
    ],
-   "heroAction": "paint",
+   "heroAction": "none",
    "setting": "australian outback",
    "palette": "desert",
    "params": {
     "entryDistance": 12000,
-    "chaseLead": 30,
-    "seconds": 60,
+    "chaseLead": 60,
+    "seconds": 30,
     "items": 5,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
@@ -54,11 +40,11 @@
     "playerHp": 5,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 60
+    "timeLimit": 30
    },
    "counts": {
     "enemy": 1,
-    "collectible": 5
+    "collectible": null
    },
    "ruleRoles": [
     {
@@ -66,33 +52,11 @@
      "kind": "chaser",
      "label": "kangaroo",
      "count": 1
-    },
-    {
-     "id": "rock",
-     "kind": "hazard",
-     "label": "rock",
-     "count": 1
-    },
-    {
-     "id": "bush",
-     "kind": "prop",
-     "label": "bush",
-     "count": 1
     }
    ],
    "things": [
     {
      "role": "kangaroo",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "rock",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "bush",
      "start": "hidden",
      "physics": null
     }
@@ -135,7 +99,7 @@
      ]
     },
     {
-     "id": "rockSpawn",
+     "id": "fightPhase",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -143,24 +107,11 @@
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "rock",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "bushSpawn",
-     "verb": "wait",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
+       "toggle": "kangaroo"
+      },
       {
        "spawn": {
-        "role": "bush",
+        "role": "kangaroo",
         "at": "player"
        }
       }
@@ -190,7 +141,6 @@
     "attack": "charge"
    },
    "abilities": [
-    "strike",
     "dash"
    ],
    "segments": [

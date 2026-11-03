@@ -3,178 +3,30 @@
  "sentence": "ninja cat jumpin on rooftops plz",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:19:15.033Z",
- "ms": 7166,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:46:39.352Z",
+ "ms": 5582,
  "answer": {
-  "plan": "Create a platformer where a ninja cat jumps across rooftops, collecting coins and avoiding obstacles, with a simple time‑based wave mechanic.",
+  "plan": "Create a simple platformer where a ninja cat jumps across rooftops, collecting nothing and facing no enemies.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
    "hero": "ninja cat",
-   "cast": [
-    {
-     "label": "coin",
-     "does": "collect",
-     "verb": "collect",
-     "states": 2,
-     "patrol": false
-    },
-    {
-     "label": "rock",
-     "does": "avoid",
-     "verb": "jump over",
-     "states": 2,
-     "patrol": false
-    }
-   ],
+   "cast": [],
    "heroAction": "none",
    "setting": "rooftops",
    "palette": "city",
-   "params": {
-    "lengthM": 200,
-    "difficulty": 1,
-    "items": 5,
-    "lives": 3,
-    "targetScore": 500,
-    "timeLimit": 60
-   },
-   "counts": {
-    "collectible": 5
-   },
-   "ruleRoles": [
-    {
-     "id": "coin",
-     "kind": "collectible",
-     "label": "coin",
-     "count": 5
-    },
-    {
-     "id": "rock",
-     "kind": "hazard",
-     "label": "rock",
-     "count": 3
-    }
-   ],
-   "things": [
-    {
-     "role": "coin",
-     "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "rock",
-     "start": "hidden",
-     "physics": true
-    }
-   ],
-   "rules": [
-    {
-     "id": "collect_coin",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "coin"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "grab": "other"
-      },
-      {
-       "score": 10
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "avoid_rock",
-     "verb": "jump",
-     "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "time_wave",
-     "verb": "wait",
-     "when": {
-      "timer": "wave_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "wave_phase"
-      },
-      {
-       "wave": {
-        "role": "rock",
-        "count": 3,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "reset_wave",
-     "verb": "wait",
-     "when": {
-      "phase": "wave_phase"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "wave_timer",
-        "ticks": 60
-       }
-      }
-     ]
-    }
-   ],
-   "logic": {
-    "vars": null,
-    "timers": [
-     {
-      "id": "wave_timer"
-     }
-    ],
-    "phases": [
-     {
-      "id": "start"
-     },
-     {
-      "id": "wave_phase"
-     }
-    ],
-    "events": null
-   },
+   "params": null,
+   "counts": null,
+   "ruleRoles": null,
+   "things": null,
+   "rules": null,
+   "logic": null,
    "boss": null,
-   "abilities": [],
+   "abilities": [
+    "dash"
+   ],
    "segments": null
   }
  },

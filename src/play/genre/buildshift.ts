@@ -8,8 +8,8 @@
  * zboží v názvu obchodu – „ice cream parlour“ – jen když jiné není), počet = cíl v mezích (`serve 3 of them` → 9); číslo u směny nebo času („for one shift“, „two hours“) počet není.
  * Majitel („a raccoon runs a donut shop“) je hrdina, obchod je místo.
  *
- * Do kostry P68-I T1 patří brána aktivace: dokud úloha „zapoj buildshift“ žánr nevyjme z `ROUTE_PENDING`
- * a `DIRECTOR_PENDING`, klasifikátor ani režisér ho nevidí – hraje jen ruční spec (`e2e/fixtures/p68-buildshift-spec.json`).
+ * Brána aktivace P68-I T1 (`ROUTE_PENDING`, `DIRECTOR_PENDING`, `READER_PENDING`) ho držela do P68R T5; od té doby ho
+ * vidí klasifikátor, čtečka i režisér. E2e hraje dál z ručního specu (`e2e/fixtures/p68-buildshift-spec.json`).
  */
 
 import { BUILDSHIFT } from '../arcade/pieces/buildshift-world';
@@ -187,9 +187,9 @@ export const buildshiftGenre: GenreModule<'buildshift'> = {
   cues: ['diner', 'serve', 'customers'],
   heroClasses: ['humanoid', 'animal', 'robot'],
   paramBounds: { customers: { min: SHIFT_GOAL_MIN, max: BUILDSHIFT.goal.max } },
-  // `ready` až zapojením v P68-I T11 („zapoj buildshift“, `evals/play/p68/stavba/integration.md` → Zapnutí); brány
-  // hry 1. 11. ani 2. 11. neprošly (`evals/play/p68/integration-log.md`), proto zatím `staged`.
-  availability: () => 'staged',
+  // Zapnuto v P68R T5 („zapoj buildshift“) po P68R T3, kde prošla brána času na telefonu; brány hry 1. 11. ani 2. 11.
+  // dřív neprošly (`evals/play/p68/integration-log.md`). Režisér a čtečka ho nabízejí od P68R T5.
+  availability: () => 'ready',
   compile: (spec) => {
     const goal = spec.params?.customers ?? BUILDSHIFT.goal.default;
     const customer = castFor(spec, 'collect', 'chase_me', 'reach', 'fight', 'shoot_at', 'avoid', 'throw_at')?.label ?? BUILDSHIFT_DEFAULTS.customer;
