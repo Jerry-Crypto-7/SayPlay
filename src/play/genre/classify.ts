@@ -180,9 +180,14 @@ const LEAVES = String.raw`(?:so|and|to make|to let|then) (?:it|they|that one|eac
 const SHOP = String.raw`(?:shops?|stores?|caf[eé]s?|diners?|bakery|bakeries|restaurants?|stands?|stalls?|trucks?|bars?|parlou?rs?|canteens?|joints?|kiosks?|tea ?rooms?)`;
 /** Vozidlo závodu s triky (P68 T8) – auto, náklaďák, motorka, traktor, sněžný skútr. */
 /** P68 T10: výstřel střelnice z očí – sloveso, kterým hráč míří nebo střílí („splat paint balloons“, „soak the pirates“). */
-const RAIL_SHOT = String.raw`(?:shoot(?:s|ing)?|fir(?:e|es|ing)|blast(?:s|ing)?|zap(?:s|ping)?|aim(?:s|ing)?|splat(?:s|ting)?|soak(?:s|ing)?)\b`;
+const RAIL_SHOT = String.raw`(?:shoot(?:s|ing)?|fir(?:e|es|ing)|blast(?:s|ing)?|zap(?:s|ping)?|aim(?:s|ing)?|splat(?:s|ting)?|splatter(?:s|ing)?|soak(?:s|ing)?|torpedo(?:es|ing)?|pelt(?:s|ing)?)\b`;
+/** P68R: zbraň v ruce cestujícího místo slovesa („aiming a crossbow“, „hit the piranhas with a slingshot“, „turn your cart's blaster on …“). */
+const RAIL_WEAPON = String.raw`(?:blasters?|crossbows?|slingshots?|harpoons?|pea ?shooters?|sleep darts|(?:water|squirt|paint|dart|ray|laser|toy|foam|bubble|snowball|pea) (?:guns?|pistols?|blasters?|cannons?|launchers?))\b`;
+const RAIL_AIM = String.raw`(?:${RAIL_SHOT}|${RAIL_WEAPON})`;
+/** P68R: co hráče veze samo, i bez slovesa jízdy – lanovka, zipline, atrakce, pramice, pevná trasa („follows a set trail“). */
+const RAIL_CARRIER = String.raw`(?:ghost train|mine ?carts?|roller ?coasters?|log flumes?|monorails?|gondolas?(?: lifts?)?|cable ?cars?|chair ?lifts?|ski ?lifts?|zip ?lines?|funiculars?|barges?|(?:dark|theme park|carnival|fairground|amusement park|haunted house|safari|jungle|river|submarine|boat|train|tram|cart|sleigh|sled|raft|jeep|truck|balloon) rides?|(?:fixed|set|preset|scripted|locked) (?:[a-z-]+ )?(?:routes?|paths?|trails?|tracks?|courses?|rails?)|passengers? (?:on|in|aboard|of) (?:a|an|the) (?:[a-z-]+ ){0,2}?(?:trains?|trams?|carriages?|coaches?|wagons?|ships?|boats?|buses|jeeps?|trucks?|balloons?|airships?)|(?:from|on|aboard|in) (?:the back of |the roof of |top of )?(?:a|an|the) (?:moving|speeding|runaway|rolling|rattling) (?:[a-z-]+ )?(?:trains?|trucks?|jeeps?|cars?|carts?|boats?|wagons?|sleighs?|trams?|buses|vans?)|windows? of (?:a|an|the) (?:moving |speeding )?(?:[a-z-]+ )?(?:trains?|trams?|buses|carriages?|cars?|jeeps?|trucks?|vans?)|(?:carr(?:y|ies|ying)|takes?|pulls?|whisks?) you (?:along|through|down|up|past|around|across|over))\b`;
 /** Jízda, která hráče veze sama (kolej, horská dráha, vláček, důlní vozík, sáně) – ne vozidlo, které řídí. */
-const RAIL_RIDE = String.raw`(?:ghost train|mine ?carts?|roller ?coasters?|log flumes?|monorails?|(?:rid(?:e|es|ing)|sit(?:s|ting)?) (?:in |on |aboard )?(?:a|an|the) (?:[a-z-]+ ){0,2}?(?:trains?|carts?|sleds?|sleighs?|jeeps?|boats?|rafts?|trams?|trolleys?|coasters?|flumes?|wagons?))\b`;
+const RAIL_RIDE = String.raw`(?:${RAIL_CARRIER}|(?:rid(?:e|es|ing)|sit(?:s|ting)?) (?:in |on |aboard )?(?:a|an|the) (?:[a-z-]+ ){0,2}?(?:trains?|carts?|sleds?|sleighs?|jeeps?|boats?|rafts?|trams?|trolleys?|coasters?|flumes?|wagons?|gondolas?|cable ?cars?|zip ?lines?|chair ?lifts?|barges?|carriages?|balloons?|airships?|elevators?))\b`;
 const VEHICLE = String.raw`(?:cars?|trucks?|vans?|bus(?:es)?|buggy|buggies|scooters?|motorbikes?|motorcycles?|dirt ?bikes?|tractors?|go-?karts?|karts?|taxis?|ambulances?|jeeps?|quads?|snowmobiles?|bulldozers?|lorr(?:y|ies)|pickups?)`;
 /** Determinant před obchodem: „a“, „my“, „your own“. */
 const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
@@ -265,18 +270,34 @@ const VERBS: readonly Verb[] = [
     String.raw`\bmini[- ]?golf\b|\bcrazy golf\b|\bputt-putt\b|\bputt(?:s|ed)?\b|\bholes? in one\b`,
     String.raw`\bgolf ball (?:rolls? )?(?:through|past|into|around|across|between|over|under)\b`,
     String.raw`\bputting (?:the |a |an )?(?:[a-z]+ )?(?:golf )?balls?\b|\bputting greens?\b`,
+    // P68R: jamka bez slova golf – míček do jamky („sink the ball“, „roll the ball … into the cup“, „get the marble into
+    // the hole“), počet ran („in two strokes“, „in as few taps as possible“), par a „putting challenge“. Hod do kelímku
+    // („toss ping pong balls into the cups“) zůstává hodem.
+    String.raw`\bsink(?:s|ing)? (?:the|a|an|my|your|his|her|its) (?:[a-z-]+ )?(?:ball|putt|shot|marble)\b|\bputting (?:challenge|course|contest|game|hole|practice)s?\b`,
+    String.raw`\bin (?:as few|the fewest|fewer|\d+|one|two|three|four|five|six) (?:[a-z]+ )?(?:strokes|putts|swings)\b|\bin as few (?:[a-z]+ )?(?:shots|taps|hits) as possible\b|\b(?:under|below|beat|within|on) par\b`,
+    // Golf s jamkou, greenem nebo ranou („play golf on the moon and sink …“, „a round of golf“); „bonk the moles popping
+    // out of the golf course“ ani „a golfer chips balls past sand traps“ jamku neřeknou a zůstávají, kde byly.
+    String.raw`\bgolf(?:ing|ers?)?\b(?=[^.;!?]*\b(?:holes?|cups?|greens?|flags?|strokes?|par)\b)|\b(?:round|hole|game) of golf\b|\bplay(?:s|ing)? golf\b`,
+    String.raw`(?<!\b(?:throw|throws|throwing|toss|tosses|tossing|dunk|dunks|dunking|drop|drops|dropping) (?:the |a |an |some |\d+ )?(?:[a-z-]+ )?)\b(?:balls?|marbles?|pucks?|pebbles?|dewdrops?|snowballs?|acorns?|peas?|beads?)\b(?=[^.;!?]*?\b(?:into|in) (?:the|a|an|its|each) (?:[a-z-]+ )?(?:hole|cup)\b)`,
   ].join('|'))),
   // P68 T12: drawsave – nakreslená čára, zeď, střecha nebo štít, který postavu chrání („draw a line to save the puppy“,
   // „sketch a barrier“, „draw to protect grandma“, „with one stroke of a pen, guard …“). Kreslení bez ochrany znak
   // není: „draw a picture of my cat“ je kreslicí program, „robots line up“ fronta obchodu (`stavba/integration.md`).
   v('drawwall', 'sign', DRAWSAVE, new RegExp([
-    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)|doodl(?:e|es|ing)) (?:a |an |the |some |a few |few )?(?:[a-z-]+ )?(?:lines?|walls?|roofs?|shields?|barriers?|shelters?|domes?|umbrellas?)\b`,
-    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)) to (?:protect|save|shield|guard|keep)\b`,
+    // P68R: i tah, cesta, plot, rampa, most („draw one stroke to shelter a kitten“, „draw a path under it“, „draw a fence
+    // to keep the lamb safe“), tvar kolem chráněného („draw a protective shape around the egg“) a „a drawn shield“.
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)|doodl(?:e|es|ing)) (?:a |an |the |some |a few |few |one |a single |your own |your |my )?(?:[a-z-]+ ){0,2}?(?:lines?|walls?|roofs?|shields?|barriers?|shelters?|domes?|umbrellas?|strokes?|paths?|fences?|ramps?|bridges?|nets?|bubbles?|cages?|tunnels?|canop(?:y|ies))\b`,
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?) (?:a |an |the |one )?(?:[a-z-]+ )?(?:shapes?|circles?|loops?|boxes?) (?:around|over|above|in front of|between)\b|\bdrawn (?:[a-z-]+ )?(?:shields?|walls?|lines?|barriers?|shelters?|fences?|roofs?)\b`,
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)) to (?:protect|save|shield|guard|keep|shelter|block|stop|cover)\b`,
+    // Kreslí se, aby se něco nestalo („draw something so the rain doesn't hit the cat“).
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing))\b[^.;!?]*?\bso (?:that )?(?:the |a |an |my |your |it |they )?(?:[a-z-]+ ){0,3}?(?:does not|doesn't|do not|don't|won't|can't|cannot|never|stays? safe|is safe|survives?)\b`,
     String.raw`\bstroke of (?:a |the |your )?(?:pen|pencil|brush|marker|crayon)\b`,
     // Bez slova o kreslení jen ochrana před věcmi, které padají shora („protect the cat from a rain of meteors“,
     // „shield the frog from fifteen hailstones“, „help the hamster survive an asteroid shower“).
     String.raw`\b(?:protect|shield|guard|save|keep)(?:s|ing)? (?:the |a |an |my |your |our |his |her |its |their |this )?(?:[a-z-]+ ){0,3}?from (?:the |a |an )?(?:[a-z]+ )?(?:(?:rain|shower|storm|hail) of |falling |tumbling |dropping )?(?:[a-z-]+ )?(?:meteors?|meteorites?|asteroids?|hailstones?|boulders?|rocks?|icicles?|bombs?|acid drops?|raindrops?|flower ?pots?)\b`,
     String.raw`\bsurviv(?:e|es|ing) (?:a |an |the )?(?:[a-z-]+ )?(?:asteroid|meteor|meteorite|hail|rock|bomb) (?:showers?|storms?|rains?)\b`,
+    // P68R: cokoli, co padá v množném čísle („keep the eggs safe from falling coconuts“).
+    String.raw`\b(?:protect|shield|guard|save|keep|shelter)(?:s|ing)? (?:the |a |an |my |your |our |his |her |its |their |this )?(?:[a-z-]+ ){0,3}?(?:safe )?from (?:the |all )?(?:falling|dropping|tumbling|raining) (?:[a-z-]+ )?[a-z-]+s\b`,
   ].join('|'))),
   // P68 T10: railfps – hráč stojí nebo ho veze kolej a otáčí se za tím, co se k němu blíží. Znak chce slovo o pohledu
   // z očí, kolejích, střelnici, otáčení na místě nebo jízdě, která veze sama, **spolu** se slovesem výstřelu: „a
@@ -288,8 +309,11 @@ const VERBS: readonly Verb[] = [
     // Střelnice jen s výstřelem ve větě: „Shooting gallery at the county fair, hit the ducks …“ (otevřený holdout P55
     // h65) by jinak pohnula pořadím starých žánrů, které drží zlatý test P56A.
     String.raw`\brail[- ]shooters?\b|\bshooting galler(?:y|ies)\b(?=[^.;!?]*\b${RAIL_SHOT})|\b${RAIL_SHOT}(?=[^.;!?]*\bshooting galler(?:y|ies)\b)`,
-    String.raw`\b(?:look(?:s|ing)? around|turn(?:s|ing)? (?:left and right|around)|turning to)\b(?=[^.;!?]*\b${RAIL_SHOT})`,
-    String.raw`\b${RAIL_RIDE}(?=[^.;!?]*\b${RAIL_SHOT})`,
+    String.raw`\b(?:look(?:s|ing)? around|turn(?:s|ing)? (?:left and right|around)|turning to|turn(?:s|ing)? (?:your|his|her|their|my|its) (?:head|seat|turret)|spin(?:s|ning)? around|swivel(?:s|ing)?|look(?:s|ing)? left and right)\b(?=[^.;!?]*\b${RAIL_SHOT})`,
+    // P68R: co veze, a pak výstřel nebo zbraň („ride a zip line … and fire at the parrots“, „a gondola lift ride …,
+    // aiming a crossbow“); výstřel a pak co veze („blast snow goblins from a cable car“). Jízda bez výstřelu zůstává plavbou.
+    String.raw`\b${RAIL_RIDE}(?=[^.;!?]*\b${RAIL_AIM})`,
+    String.raw`\b${RAIL_AIM}(?=[^.;!?]*\b${RAIL_CARRIER})`,
     String.raw`\bstand(?:s|ing)? (?:guard|watch|on|in|at|atop)\b[^.;!?]*?\band ${RAIL_SHOT}`,
     String.raw`\b(?:zap(?:s|ping)?|shoot(?:s|ing)?|blast(?:s|ing)?)\b[^.;!?]*?\b(?:hallways?|corridors?)\b`,
     // Hráč stojí a nepřátelé lezou nebo se hrnou k němu („blast the mutant rats swarming through the sewer tunnels“,
