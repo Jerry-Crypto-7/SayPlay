@@ -411,7 +411,13 @@ Rozhodnutí a odchylky (výchozí postup, zapsaný, aby šel přeměřit):
   ze 108 běhů bez chyby v logu (tentýž den zmizely bez chyby i procesy focení); chybějící 3. kolo a 2. kolo
   telefonu u `drawsave` doměřily dvě další dávky (`fp-t15b`, `fp-t15c`). Páry se číslují v každé dávce zvlášť.
 - **G6:** soudce `claude -p` místo Codexu – 105 listů je víc než denní limit Codexu 50 volání sdílený napříč
-  projekty, takže podle pravidla plánu soudí celou sadu `--judge claude`.
+  projekty, takže podle pravidla plánu soudí celou sadu `--judge claude`. Jeden běh (`--runs 1`), semínko 68016,
+  surové odpovědi `judge-holdout.json`. Práh po hrách: 15 nových vět hry („hrál bych“ ≥ `main` + 0,10, věrnost
+  ≥ `main` − 0,02) a společně 30 obecných vět (obojí ≥ `main` − 0,02); strana je hra po čtení, a když snímky
+  čtení chybí (všechny listy holdoutu), rychlá hra.
+- **Celkově:** e2e proti sestavě větve (`FALLBACK_SMOKE_URL`, port 3180). 4 červené z prvního běhu (souběžné focení)
+  zopakované v klidu jsou zelené, takže na `main` se nepouštěly. E2E `play-drawsave` při tom přepsal
+  `stavba/fps-drawsave.json`; soubor je vrácený na stav P68-S.
 - **G7:** měřicí kniha nemá trvalé úložiště (`WORLDSMITH_SPEND_STORE_URL` není nastavené), takže strop procesu byl
   zbytek knihy (7 − 4,55 = 2,45 USD, po restartu 1,73), jako v R12. Od volání režiséra pro `p68-061` odpovídal
   poskytovatel modelu 429 („rate limited or out of credit“) a další volání nic nestála; zbytek vzorku je

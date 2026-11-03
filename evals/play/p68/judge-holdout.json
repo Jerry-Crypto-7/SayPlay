@@ -1,0 +1,4256 @@
+{
+ "schema": "p61-judge.v1",
+ "judgedAt": "2026-11-03T12:37:42.068Z",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+ "view": "phone",
+ "seed": 68016,
+ "generator": "pure-rand xoroshiro128plus + uniformInt, Fisher-Yates per sentence in order",
+ "measurements": [
+  {
+   "name": "main",
+   "label": "main",
+   "commit": "688d989d",
+   "measuredAt": "2026-11-03T12:29:25.649Z",
+   "base": "http://127.0.0.1:3181"
+  },
+  {
+   "name": "p68",
+   "label": "p68",
+   "commit": "9caa446c",
+   "measuredAt": "2026-11-03T12:32:48.130Z",
+   "base": "http://127.0.0.1:3180"
+  }
+ ],
+ "plan": [
+  {
+   "id": "p68-001",
+   "sentence": "a rally car tears along a desert canyon track, flying off sand dunes and smashing through cactus piles to the finish",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-002",
+   "sentence": "make a stunt driving game with a school bus doing big jumps over rivers",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-003",
+   "sentence": "a skateboarding raccoon rolls down a city hill, kicking off ramps and crashing through trash cans to reach the bottom flag",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-004",
+   "sentence": "an ambulance races through a construction site, leaping off dirt ramps and bursting through orange cones to cross the finish line",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-005",
+   "sentence": "stunt racing with a quad bike on a muddy farm course full of hay bale jumps",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-006",
+   "sentence": "a go-kart driven by a frog bounces over ramps in a mushroom forest and knocks down wooden signs on its way to the goal",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-007",
+   "sentence": "a hovercraft speeds over a lava track with huge jumps, smashing rock pillars before the checkered flag",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-008",
+   "sentence": "drive a fire truck down a mountain road full of ramps and loose logs, the camera chasing behind you",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-009",
+   "sentence": "a motorbike jumps between the decks of a cargo ship and crashes through fishing nets and oil drums to reach the bow",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-010",
+   "sentence": "a tractor in a crazy farm race launches off haystacks and plows through fences to cross the line first",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-011",
+   "sentence": "race a bathtub on wheels down a steep street, hitting jumps and scattering boxes of apples",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-012",
+   "sentence": "a police car stunt course on a pier with ramps, barrels to smash and a finish banner at the end",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-013",
+   "sentence": "a jet ski stunt course on a lake with floating ramps and buoys to smash through on the way to the finish",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-014",
+   "sentence": "a dune buggy trick race across a beach, jumping over sandcastles and through heaps of driftwood",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-015",
+   "sentence": "a lawn mower stunt run through the backyard: jump the sprinkler ramp, smash the garden gnomes, reach the shed",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-016",
+   "sentence": "a mouse putts a pea across the dinner table, around the salt shaker and gravy boat, into a teacup",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-017",
+   "sentence": "a minigolf hole set inside a volcano with lava rivers to putt around",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-018",
+   "sentence": "sink the ball on a jungle course where snakes slide across the green and block your shot",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-019",
+   "sentence": "drag back to aim, release to putt, and get the ball into the cup on a course full of bouncy bumpers",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-020",
+   "sentence": "a robot plays crazy golf in a factory, rolling the ball over conveyor belts and through pipes into the hole",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-021",
+   "sentence": "a short putting round on a snowy rooftop with chimneys in the way, finish under par",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-022",
+   "sentence": "a grandpa plays a round of mini golf at the seaside, putting past a lighthouse and a moving crab",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-023",
+   "sentence": "get the marble into the hole in two strokes on a wooden board full of nails and little ramps",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-024",
+   "sentence": "a dinosaur putting course where the ball must roll between giant eggs and under a sleeping t-rex's tail",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-025",
+   "sentence": "a fairy taps a dewdrop with a twig across a lily pad course into a flower cup in as few taps as possible",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-026",
+   "sentence": "tiny golf in a bathroom: putt the ball around the soap, across the tiles and into the drain",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-027",
+   "sentence": "a castle mini golf course with a drawbridge that opens and closes, putt through it at the right moment",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-028",
+   "sentence": "a golfing ghost putts across a graveyard green, bouncing the ball off tombstones toward the hole",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-029",
+   "sentence": "aim carefully and choose the power to roll the ball over a narrow bridge and into the cup",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-030",
+   "sentence": "a putting challenge on a spaceship deck where the ball curves around magnets before dropping into the hole",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-031",
+   "sentence": "ride a cable car up a snowy mountain and shoot the yetis climbing toward your cabin",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-032",
+   "sentence": "through the eyes of a sailor on a gondola gliding down a canal, fire at the sea monsters leaping out of the water",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-033",
+   "sentence": "stand on the last wagon of a moving train, look around and shoot the ninjas leaping from the trees before they land on you",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-034",
+   "sentence": "a first-person submarine ride along a fixed route under the sea, torpedoing sharks before they bite the hull",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-035",
+   "sentence": "in a theme park dark ride, turn your cart's blaster on the cardboard aliens popping out of the walls",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-036",
+   "sentence": "ride a zip line through a jungle canopy and fire at the parrots dive-bombing you on the way down",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-037",
+   "sentence": "a safari truck follows a set trail through the savanna while you shoot the charging rhinos with sleep darts",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-038",
+   "sentence": "a rail shooter in a toy store: ride the toy train and pop the evil teddy bears with a cork gun",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-039",
+   "sentence": "a gondola lift ride over a haunted forest, aiming a crossbow at the bats that dive toward you",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-040",
+   "sentence": "first person on a speeding monorail through a neon city, shooting down hacker drones before they crash into the window",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-041",
+   "sentence": "ride a raft down a fixed river path and hit the hungry piranhas leaping at you with a slingshot",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-042",
+   "sentence": "you are a passenger on an old steam train crossing a prairie, turn your head and shoot the vultures swooping at the carriage",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-043",
+   "sentence": "a canal barge drifts through a medieval town and you shoot arrows at the goblins on the rooftops before they drop on you",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-044",
+   "sentence": "on rails through a candy factory, splatter the gummy monsters with a jelly blaster as they jump toward you",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-045",
+   "sentence": "a sleigh pulled along a fixed trail through a frozen forest while you fire snowballs at the ice wolves chasing you",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-046",
+   "sentence": "design a noodle bar from the top: drop cooking stations on the grid and keep the hungry office workers fed until closing",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-047",
+   "sentence": "a squirrel runs an acorn cafe for one day, placing roasting stations with the nuts it earns and serving every forest animal",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-048",
+   "sentence": "a pet grooming salon seen from above: buy bathtubs and drying tables, wash every dog before the shift ends",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-049",
+   "sentence": "build a hot dog stand by the stadium tile by tile and sell to the fans until the match starts",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-050",
+   "sentence": "a smoothie shop shift where you arrange blenders and fruit crates on a grid and spend tips on new machines",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-051",
+   "sentence": "run a dragon's potion shop: set up cauldrons on the floor plan, pay with gold and fill every knight's order before the moon rises",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-052",
+   "sentence": "a pizza kitchen viewed from overhead, place ovens and prep tables, then rush to serve all the tables before the shift closes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-053",
+   "sentence": "manage a car wash from above, buying soap stations and dryers and cleaning the queue of cars before evening",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-054",
+   "sentence": "a sushi counter on a small grid: spend your yen on rice cookers and fish tables and serve every guest before midnight",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-055",
+   "sentence": "a flower shop simulator where you place watering benches and wrapping desks, then serve customers before the shop closes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-056",
+   "sentence": "an octopus opens a seaside lemonade bar, adds juicers and stools to the grid and serves thirsty swimmers until sunset",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-057",
+   "sentence": "build a tiny tailor shop counter by counter and finish every customer's suit before the working day is over",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-058",
+   "sentence": "a top-down shift at a hospital for toys: place repair beds and stitching tables, then fix each broken toy before the shift ends",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-059",
+   "sentence": "run a taco truck plaza: put grills and drink stands on the tiles with the cash you earn and feed the lunch line before two o'clock",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-060",
+   "sentence": "one busy shift in a bookstore cafe, placing shelves and espresso machines and serving readers before the doors lock",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-061",
+   "sentence": "draw a shelter over the little bird so the falling acorns cannot hit it until the clock reaches zero",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-062",
+   "sentence": "sketch a line to save the tiny astronaut from meteors raining down for fifteen seconds",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-063",
+   "sentence": "a cupcake sits on a table and pigeons dive at it, draw walls to keep it safe until time is up",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-064",
+   "sentence": "draw a barrier to keep the sleepy sheep safe from the swarm of wasps",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-065",
+   "sentence": "with your finger, draw lines that stop the egg from rolling off the edge of the cliff",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-066",
+   "sentence": "protect the snail from the falling hailstones by drawing a roof before the storm passes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-067",
+   "sentence": "a stickman stands under a crumbling ceiling, draw a line so the bricks bounce off until the countdown is over",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-068",
+   "sentence": "draw a wall that keeps the lava flow away from the village of mice for twenty seconds",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-069",
+   "sentence": "a puzzle where you draw one stroke to shelter a kitten from bouncing tennis balls",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-070",
+   "sentence": "draw a protective shape around the turtle egg on the beach so the crabs and gulls cannot get to it until it hatches",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-071",
+   "sentence": "scribble a dome over the ice cream cone so the dripping rain and the hungry ants stay away until the timer stops",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-072",
+   "sentence": "seen from the side, a toy car rolls toward a gap in the shelf, draw a path under it before it tips over the edge",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-073",
+   "sentence": "draw lines to keep the treasure chest from sliding off the pirate ship deck while cannonballs fly in",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-074",
+   "sentence": "draw a fence to keep the lamb safe from the fox until the farmer arrives",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-075",
+   "sentence": "a melting snowman needs a drawn shield against the fireballs a dragon spits for half a minute",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-076",
+   "sentence": "a cheetah sprints along a savanna trail, leaping over logs and ducking under branches",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-077",
+   "sentence": "a boy on roller skates dashes down an endless boardwalk dodging joggers and seagulls",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-078",
+   "sentence": "a squirrel leaps between floating clouds to reach the castle in the sky",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-079",
+   "sentence": "a robot climbs ledges and jumps across moving platforms inside a giant clock tower",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-080",
+   "sentence": "a hungry pig gobbles truffles in a muddy field while dodging the farmer's dogs",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-081",
+   "sentence": "a paper boat sails down a rainy gutter to reach the big lake",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-082",
+   "sentence": "a spaceship lands softly on a rocky moon after a long trip",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-083",
+   "sentence": "a mail carrier delivers letters to every house in a snowy village",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-084",
+   "sentence": "a wizard gathers five lost spell books scattered around his tower",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-085",
+   "sentence": "an archer shoots balloons drifting over the castle walls",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-086",
+   "sentence": "a monkey throws coconuts at a stack of tin buckets on the beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-087",
+   "sentence": "a kid tosses snowballs at a row of snowmen in the schoolyard",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-088",
+   "sentence": "stack sandwiches as high as you can in a busy deli without letting the pile fall",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-089",
+   "sentence": "a dancing robot taps along to disco music under flashing lights",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-090",
+   "sentence": "two samurai cross swords on a cherry blossom hill",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-091",
+   "sentence": "a bat flaps through a cave between dripping stalactites",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-092",
+   "sentence": "a chef catches falling dumplings in a bamboo steamer",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-093",
+   "sentence": "bop the sneaky crabs popping out of the sand at the beach",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-094",
+   "sentence": "a goose guards its nest by the pond against waves of hungry foxes coming down the lanes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-095",
+   "sentence": "a lighthouse keeper holds back waves of pirate boats sailing toward the harbour",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-096",
+   "sentence": "chop the flying carrots and onions a cook throws in the air",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-097",
+   "sentence": "a little crab crosses a busy beach promenade full of bicycles to reach the sea",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-098",
+   "sentence": "a single ant grows into a huge colony by marching through bonus gates on a picnic blanket",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-099",
+   "sentence": "drop round fruits into a basket so matching ones combine into bigger fruit",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-100",
+   "sentence": "two hippos bump each other out of a muddy pool",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-101",
+   "sentence": "a lonely astronaut fends off endless waves of space jellyfish on a frozen comet",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-102",
+   "sentence": "a hole in the zoo grows bigger as it eats benches, ice cream carts and finally an elephant",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "p68-quick"
+    },
+    {
+     "side": "B",
+     "kind": "main-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-103",
+   "sentence": "a fox sneaks into the henhouse, grabs eggs and carries them back to its den before the farmer wakes",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-104",
+   "sentence": "a librarian puts red, green and blue books back on the matching shelves",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  },
+  {
+   "id": "p68-105",
+   "sentence": "tap the boats in a crowded harbour so each one sails out the way its bow points",
+   "rows": [
+    {
+     "side": "A",
+     "kind": "main-quick"
+    },
+    {
+     "side": "B",
+     "kind": "p68-quick"
+    }
+   ]
+  }
+ ],
+ "runs": [
+  {
+   "run": 1,
+   "medians": {
+    "main-after-reading": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.3,
+     "n": 105
+    },
+    "main-quick": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.3,
+     "n": 105
+    },
+    "p68-after-reading": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.28,
+     "n": 105
+    },
+    "p68-quick": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.28,
+     "n": 105
+    }
+   },
+   "sentences": [
+    {
+     "id": "p68-001",
+     "sentence": "a rally car tears along a desert canyon track, flying off sand dunes and smashing through cactus piles to the finish",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A red car sits on orange desert sand, but the game is actually whack-a-mole with holes, and there is no canyon track, no dune jumps, no cactus piles and no race to a finish."
+      },
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "This is almost the same as A: a parked car on desert sand next to mole holes in a whack-a-mole game, with none of the rally driving, jumping or cactus smashing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "A red car sits on orange desert sand, but the game is actually whack-a-mole with holes, and there is no canyon track, no dune jumps, no cactus piles and no race to a finish."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "This is almost the same as A: a parked car on desert sand next to mole holes in a whack-a-mole game, with none of the rally driving, jumping or cactus smashing."
+      }
+     }
+    },
+    {
+     "id": "p68-002",
+     "sentence": "make a stunt driving game with a school bus doing big jumps over rivers",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.35,
+       "reason": "It's a generic endless runner with a person running on a wooden pier by the water, with no school bus, no driving, and no river jumps, though it has a crowd counter and some polish."
+      },
+      "p68-quick": {
+       "fidelity": 0.07,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same pier runner with a running character instead of a bus, and the greyed-out screens make it look washed out and less engaging."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.35,
+       "reason": "It's a generic endless runner with a person running on a wooden pier by the water, with no school bus, no driving, and no river jumps, though it has a crowd counter and some polish."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.07,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same pier runner with a running character instead of a bus, and the greyed-out screens make it look washed out and less engaging."
+      }
+     }
+    },
+    {
+     "id": "p68-003",
+     "sentence": "a skateboarding raccoon rolls down a city hill, kicking off ramps and crashing through trash cans to reach the bottom flag",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A raccoon-like figure sits on a gray city street with orange ramps, but the game is a static crosshair shooter ('shoot waves of off ramps'), not skating downhill, with no visible trash cans or bottom flag."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "Almost identical to A: a stationary raccoon aims a crosshair at orange ramps on a foggy street, which drops the downhill skating, trash-can crashing and flag goal, and the gameplay looks repetitive."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A raccoon-like figure sits on a gray city street with orange ramps, but the game is a static crosshair shooter ('shoot waves of off ramps'), not skating downhill, with no visible trash cans or bottom flag."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "Almost identical to A: a stationary raccoon aims a crosshair at orange ramps on a foggy street, which drops the downhill skating, trash-can crashing and flag goal, and the gameplay looks repetitive."
+      }
+     }
+    },
+    {
+     "id": "p68-004",
+     "sentence": "an ambulance races through a construction site, leaping off dirt ramps and bursting through orange cones to cross the finish line",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "The first shot has a crane, a dusty site and a dirt bump, but the vehicle is a plain grey box rather than an ambulance, there are no orange cones, and the later shots switch to an unrelated 'grow your crowd, beat the ogre' runner in grey fog."
+      },
+      "p68-quick": {
+       "fidelity": 0.22,
+       "wouldPlay": 0.18,
+       "reason": "It is almost the same as A: a hazy site and a faint orange ring that could be a cone, but there is no recognisable ambulance, ramps or cones, it drifts into an off-theme crowd/ogre objective, and the scenes look empty and murky."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "The first shot has a crane, a dusty site and a dirt bump, but the vehicle is a plain grey box rather than an ambulance, there are no orange cones, and the later shots switch to an unrelated 'grow your crowd, beat the ogre' runner in grey fog."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.22,
+       "wouldPlay": 0.18,
+       "reason": "It is almost the same as A: a hazy site and a faint orange ring that could be a cone, but there is no recognisable ambulance, ramps or cones, it drifts into an off-theme crowd/ogre objective, and the scenes look empty and murky."
+      }
+     }
+    },
+    {
+     "id": "p68-005",
+     "sentence": "stunt racing with a quad bike on a muddy farm course full of hay bale jumps",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.35,
+       "reason": "It shows a fox runner on a dirt forest path with crowd and ogre objectives, with no quad bike, farm, mud stunts or hay bale jumps."
+      },
+      "p68-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.33,
+       "reason": "It is almost the same fox lane-runner as A, with a dirt path and a gray death-like state, and it has nothing of quad bike stunt racing or hay bales."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.35,
+       "reason": "It shows a fox runner on a dirt forest path with crowd and ogre objectives, with no quad bike, farm, mud stunts or hay bale jumps."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.33,
+       "reason": "It is almost the same fox lane-runner as A, with a dirt path and a gray death-like state, and it has nothing of quad bike stunt racing or hay bales."
+      }
+     }
+    },
+    {
+     "id": "p68-006",
+     "sentence": "a go-kart driven by a frog bounces over ramps in a mushroom forest and knocks down wooden signs on its way to the goal",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A red kart sits on a cliff in a pine forest with a flag goal in the HUD, but there is no visible frog, no mushrooms, no ramps and no wooden signs, and the kart stays in the same spot in all three screenshots while the timer runs down."
+      },
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "B looks almost the same as A: a static red kart on a pine-forest cliff with no frog driver, mushroom forest, ramps or signs to knock down, so nothing in it reads as gameplay."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "B looks almost the same as A: a static red kart on a pine-forest cliff with no frog driver, mushroom forest, ramps or signs to knock down, so nothing in it reads as gameplay."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A red kart sits on a cliff in a pine forest with a flag goal in the HUD, but there is no visible frog, no mushrooms, no ramps and no wooden signs, and the kart stays in the same spot in all three screenshots while the timer runs down."
+      }
+     }
+    },
+    {
+     "id": "p68-007",
+     "sentence": "a hovercraft speeds over a lava track with huge jumps, smashing rock pillars before the checkered flag",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.15,
+       "reason": "There's a red lava mood and a 'whack rock pillars' prompt, but no visible hovercraft, track, jumps or checkered flag, just orange rings beside a messy red shape that barely changes between shots."
+      },
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.15,
+       "reason": "It looks nearly identical to A: a ring trail and a jumbled red object on a dark red void, with no readable hovercraft racing, track, jumps or finish line."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.15,
+       "reason": "There's a red lava mood and a 'whack rock pillars' prompt, but no visible hovercraft, track, jumps or checkered flag, just orange rings beside a messy red shape that barely changes between shots."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.15,
+       "reason": "It looks nearly identical to A: a ring trail and a jumbled red object on a dark red void, with no readable hovercraft racing, track, jumps or finish line."
+      }
+     }
+    },
+    {
+     "id": "p68-008",
+     "sentence": "drive a fire truck down a mountain road full of ramps and loose logs, the camera chasing behind you",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "A red, fire-truck-like vehicle drives down a road with the camera chasing behind it, but the setting looks like a foggy city rather than a mountain, there are no visible ramps or logs, and the 'grow your crowd, beat the ogre' goal doesn't match the sentence."
+      },
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "It's almost identical to A: a red truck on a road with a chase camera, but there are no ramps, logs or mountain setting, and the crowd/ogre goal is unrelated to the sentence."
+      },
+      "main-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "A red, fire-truck-like vehicle drives down a road with the camera chasing behind it, but the setting looks like a foggy city rather than a mountain, there are no visible ramps or logs, and the 'grow your crowd, beat the ogre' goal doesn't match the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "It's almost identical to A: a red truck on a road with a chase camera, but there are no ramps, logs or mountain setting, and the crowd/ogre goal is unrelated to the sentence."
+      }
+     }
+    },
+    {
+     "id": "p68-009",
+     "sentence": "a motorbike jumps between the decks of a cargo ship and crashes through fishing nets and oil drums to reach the bow",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.35,
+       "reason": "This is a crowd-runner where you pick math gates on a path; there's no motorbike, cargo ship, fishing nets, oil drums or bow anywhere."
+      },
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.35,
+       "reason": "It's almost the same crowd-runner with math gates as A, and nothing on screen matches the motorbike-on-a-cargo-ship sentence."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.35,
+       "reason": "It's almost the same crowd-runner with math gates as A, and nothing on screen matches the motorbike-on-a-cargo-ship sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.35,
+       "reason": "This is a crowd-runner where you pick math gates on a path; there's no motorbike, cargo ship, fishing nets, oil drums or bow anywhere."
+      }
+     }
+    },
+    {
+     "id": "p68-010",
+     "sentence": "a tractor in a crazy farm race launches off haystacks and plows through fences to cross the line first",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "A dirt farm track with a windmill and rival racers counts as a farm race, but the player's vehicle doesn't clearly read as a tractor, the cyan ramps don't look like haystacks, and no fences are being plowed through."
+      },
+      "p68-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.43,
+       "reason": "This looks almost identical to A: a farm dirt track with a windmill, rival vehicles and cyan ramps, but there's no clear tractor, haystack or fence-smashing, and the player is down to one life."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "A dirt farm track with a windmill and rival racers counts as a farm race, but the player's vehicle doesn't clearly read as a tractor, the cyan ramps don't look like haystacks, and no fences are being plowed through."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.43,
+       "reason": "This looks almost identical to A: a farm dirt track with a windmill, rival vehicles and cyan ramps, but there's no clear tractor, haystack or fence-smashing, and the player is down to one life."
+      }
+     }
+    },
+    {
+     "id": "p68-011",
+     "sentence": "race a bathtub on wheels down a steep street, hitting jumps and scattering boxes of apples",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "This is a generic rooftop platformer: a character stands still on a building with a countdown timer, and there is no bathtub, street descent, jumps or apple boxes."
+      },
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "It is basically the same as A, with an idle character on a rooftop and the timer running out, and nothing from the bathtub-racing sentence appears."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "It is basically the same as A, with an idle character on a rooftop and the timer running out, and nothing from the bathtub-racing sentence appears."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "This is a generic rooftop platformer: a character stands still on a building with a countdown timer, and there is no bathtub, street descent, jumps or apple boxes."
+      }
+     }
+    },
+    {
+     "id": "p68-012",
+     "sentence": "a police car stunt course on a pier with ramps, barrels to smash and a finish banner at the end",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "It shows a blocky robot-like character walking through a grassy field toward a barrel and targets, with no police car, pier, ramps or finish banner in sight."
+      },
+      "p68-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "This is almost the same grass-field target game as A, with only a barrel to hint at the prompt and no police car, pier, ramps or finish banner."
+      },
+      "main-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "It shows a blocky robot-like character walking through a grassy field toward a barrel and targets, with no police car, pier, ramps or finish banner in sight."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "This is almost the same grass-field target game as A, with only a barrel to hint at the prompt and no police car, pier, ramps or finish banner."
+      }
+     }
+    },
+    {
+     "id": "p68-013",
+     "sentence": "a jet ski stunt course on a lake with floating ramps and buoys to smash through on the way to the finish",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.2,
+       "reason": "It's a whack-a-mole game with holes on a blue water-like surface; there's no jet ski, ramp, buoy or finish line, only a faint watery look."
+      },
+      "p68-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.2,
+       "reason": "It's almost identical to A: a whack-a-mole row of holes on a water-like background with nothing from the jet ski stunt course."
+      },
+      "main-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.2,
+       "reason": "It's a whack-a-mole game with holes on a blue water-like surface; there's no jet ski, ramp, buoy or finish line, only a faint watery look."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.2,
+       "reason": "It's almost identical to A: a whack-a-mole row of holes on a water-like background with nothing from the jet ski stunt course."
+      }
+     }
+    },
+    {
+     "id": "p68-014",
+     "sentence": "a dune buggy trick race across a beach, jumping over sandcastles and through heaps of driftwood",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "A buggy drives on a sandy, desert-like track with crates and scattered debris, but there are no visible sandcastles, driftwood heaps, sea or tricks, and the ×2/÷2 crowd gates come from a different genre."
+      },
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.37,
+       "reason": "This is almost the same as A (sandy track, green buggy, generic obstacles, crowd multiplier gates), with a slightly clearer pickup/score popup, but it still has no beach, sandcastles, driftwood or tricks."
+      },
+      "main-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "A buggy drives on a sandy, desert-like track with crates and scattered debris, but there are no visible sandcastles, driftwood heaps, sea or tricks, and the ×2/÷2 crowd gates come from a different genre."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.37,
+       "reason": "This is almost the same as A (sandy track, green buggy, generic obstacles, crowd multiplier gates), with a slightly clearer pickup/score popup, but it still has no beach, sandcastles, driftwood or tricks."
+      }
+     }
+    },
+    {
+     "id": "p68-015",
+     "sentence": "a lawn mower stunt run through the backyard: jump the sprinkler ramp, smash the garden gnomes, reach the shed",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It's a whack-a-mole game where you hit gnomes in holes on a plain green field, with no lawn mower, sprinkler ramp, shed or stunt run."
+      },
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It looks the same as A: gnomes popping out of holes on flat green grass, with no mower, ramp jump or shed to reach, so it plays like a sparse whack-a-mole."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It's a whack-a-mole game where you hit gnomes in holes on a plain green field, with no lawn mower, sprinkler ramp, shed or stunt run."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It looks the same as A: gnomes popping out of holes on flat green grass, with no mower, ramp jump or shed to reach, so it plays like a sparse whack-a-mole."
+      }
+     }
+    },
+    {
+     "id": "p68-016",
+     "sentence": "a mouse putts a pea across the dinner table, around the salt shaker and gravy boat, into a teacup",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "A red car drives down a wooden ramp over water, so there is no mouse, pea, dinner table, salt shaker, gravy boat, or teacup, and the sentence is basically gone."
+      },
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.35,
+       "reason": "Plain mini golf with a ball and par count keeps the putting idea, and the small grey objects might be shakers, but there is no mouse, pea, dinner table, or teacup, and the course looks bland."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "A red car drives down a wooden ramp over water, so there is no mouse, pea, dinner table, salt shaker, gravy boat, or teacup, and the sentence is basically gone."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.35,
+       "reason": "Plain mini golf with a ball and par count keeps the putting idea, and the small grey objects might be shakers, but there is no mouse, pea, dinner table, or teacup, and the course looks bland."
+      }
+     }
+    },
+    {
+     "id": "p68-017",
+     "sentence": "a minigolf hole set inside a volcano with lava rivers to putt around",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It shows a red, lava-tinted lane defense game (\"Hold the castle\") with small enemies coming down the lanes, and there is no minigolf ball, hole or putting at all."
+      },
+      "p68-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "It is clearly a minigolf hole with a ball, cups and a stroke/par counter in front of a red volcanic backdrop, but no lava rivers to putt around are visible, and the course is a plain green strip."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It shows a red, lava-tinted lane defense game (\"Hold the castle\") with small enemies coming down the lanes, and there is no minigolf ball, hole or putting at all."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.5,
+       "reason": "It is clearly a minigolf hole with a ball, cups and a stroke/par counter in front of a red volcanic backdrop, but no lava rivers to putt around are visible, and the course is a plain green strip."
+      }
+     }
+    },
+    {
+     "id": "p68-018",
+     "sentence": "sink the ball on a jungle course where snakes slide across the green and block your shot",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.3,
+       "reason": "It's a jungle lane-runner with an orange character and a labelled snake obstacle, but there's no ball, green or hole, so the golf goal is missing entirely."
+      },
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.35,
+       "reason": "It's the same jungle endless-runner with a green obstacle and combo pickups, which plays a bit more lively, but it has no golf ball, putting green or sinking goal."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.3,
+       "reason": "It's a jungle lane-runner with an orange character and a labelled snake obstacle, but there's no ball, green or hole, so the golf goal is missing entirely."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.35,
+       "reason": "It's the same jungle endless-runner with a green obstacle and combo pickups, which plays a bit more lively, but it has no golf ball, putting green or sinking goal."
+      }
+     }
+    },
+    {
+     "id": "p68-019",
+     "sentence": "drag back to aim, release to putt, and get the ball into the cup on a course full of bouncy bumpers",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It's a mini-golf course with a ball, a stroke/par counter and a windmill obstacle, but the shots show no aiming line, cup or bouncy bumpers, and the ball barely moves."
+      },
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a robot-shooting wave game with a character aiming a crosshair, so it has nothing to do with putting a ball into a cup past bumpers."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a robot-shooting wave game with a character aiming a crosshair, so it has nothing to do with putting a ball into a cup past bumpers."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It's a mini-golf course with a ball, a stroke/par counter and a windmill obstacle, but the shots show no aiming line, cup or bouncy bumpers, and the ball barely moves."
+      }
+     }
+    },
+    {
+     "id": "p68-020",
+     "sentence": "a robot plays crazy golf in a factory, rolling the ball over conveyor belts and through pipes into the hole",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "A mini-golf green with a ball, hole and factory crane backdrop is visible, but there's no robot, conveyor belts or pipes."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "A robot, ball and holes sit on a factory floor, but there's no golf course, conveyor belts or pipes, and the scene looks sparse and empty."
+      },
+      "main-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "A robot, ball and holes sit on a factory floor, but there's no golf course, conveyor belts or pipes, and the scene looks sparse and empty."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "A mini-golf green with a ball, hole and factory crane backdrop is visible, but there's no robot, conveyor belts or pipes."
+      }
+     }
+    },
+    {
+     "id": "p68-021",
+     "sentence": "a short putting round on a snowy rooftop with chimneys in the way, finish under par",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It's a putting green with a hole, a strokes/par counter and snow falling, but the obstacles look more like posts than chimneys and nothing clearly says rooftop."
+      },
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a catch-the-apples, dodge-the-bombs game in a snowy scene, with no golf, rooftop, chimneys or par."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a catch-the-apples, dodge-the-bombs game in a snowy scene, with no golf, rooftop, chimneys or par."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "It's a putting green with a hole, a strokes/par counter and snow falling, but the obstacles look more like posts than chimneys and nothing clearly says rooftop."
+      }
+     }
+    },
+    {
+     "id": "p68-022",
+     "sentence": "a grandpa plays a round of mini golf at the seaside, putting past a lighthouse and a moving crab",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.5,
+       "reason": "A clear 3D mini golf course with a ball, a small lighthouse and red crab-like obstacles, but there's no grandpa, the seaside isn't visible and the ball sits oversized on a tee."
+      },
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A plain grass field with a hole, an armored knight-like player, a windmill and a blocky pink figure, with no grandpa, lighthouse, crab or sea, so it reads as sparse and unfinished."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A plain grass field with a hole, an armored knight-like player, a windmill and a blocky pink figure, with no grandpa, lighthouse, crab or sea, so it reads as sparse and unfinished."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.5,
+       "reason": "A clear 3D mini golf course with a ball, a small lighthouse and red crab-like obstacles, but there's no grandpa, the seaside isn't visible and the ball sits oversized on a tee."
+      }
+     }
+    },
+    {
+     "id": "p68-023",
+     "sentence": "get the marble into the hole in two strokes on a wooden board full of nails and little ramps",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.3,
+       "reason": "It shows a red car driving down a brown track to a finish line, with no marble, hole, nails, ramps or stroke limit; the wooden-looking track is the only link to the sentence."
+      },
+      "p68-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same car-racing track as A, ending in a grey crash or fail screen, and has none of the marble, hole, nails or two-stroke goal."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.3,
+       "reason": "It shows a red car driving down a brown track to a finish line, with no marble, hole, nails, ramps or stroke limit; the wooden-looking track is the only link to the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same car-racing track as A, ending in a grey crash or fail screen, and has none of the marble, hole, nails or two-stroke goal."
+      }
+     }
+    },
+    {
+     "id": "p68-024",
+     "sentence": "a dinosaur putting course where the ball must roll between giant eggs and under a sleeping t-rex's tail",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "It's clearly a minigolf course with strokes and par, and the egg-like objects on pads could be the giant eggs, but there's no dinosaur or sleeping T-rex tail, and the 'ball' looks more like a tree."
+      },
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.3,
+       "reason": "There's a green dinosaur, but it plays as a timing and fly-through-gaps minigame with no golf ball, putting, eggs or sleeping T-rex tail, and the scenes look murky and generic."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.3,
+       "reason": "There's a green dinosaur, but it plays as a timing and fly-through-gaps minigame with no golf ball, putting, eggs or sleeping T-rex tail, and the scenes look murky and generic."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "It's clearly a minigolf course with strokes and par, and the egg-like objects on pads could be the giant eggs, but there's no dinosaur or sleeping T-rex tail, and the 'ball' looks more like a tree."
+      }
+     }
+    },
+    {
+     "id": "p68-025",
+     "sentence": "a fairy taps a dewdrop with a twig across a lily pad course into a flower cup in as few taps as possible",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "The screenshots show a whack-a-mole game with holes in a green field and a timer, not a fairy putting a dewdrop across lily pads into a flower cup with few taps."
+      },
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It's almost identical to A: a plain whack-a-mole layout with a vague green-figure character and no lily pads, flower cup or tap-counting golf."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It's almost identical to A: a plain whack-a-mole layout with a vague green-figure character and no lily pads, flower cup or tap-counting golf."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "The screenshots show a whack-a-mole game with holes in a green field and a timer, not a fairy putting a dewdrop across lily pads into a flower cup with few taps."
+      }
+     }
+    },
+    {
+     "id": "p68-026",
+     "sentence": "tiny golf in a bathroom: putt the ball around the soap, across the tiles and into the drain",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "It's a green golf field with a hole, a stone well, an odd pink figure and a robot player, but there's no bathroom, soap, tiles or real drain."
+      },
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.35,
+       "reason": "It's a cleaner generic mini-golf course with a windmill and wooden borders, but there's nothing bathroom-themed, and the screen even says the bathroom idea isn't there yet."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "It's a green golf field with a hole, a stone well, an odd pink figure and a robot player, but there's no bathroom, soap, tiles or real drain."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.35,
+       "reason": "It's a cleaner generic mini-golf course with a windmill and wooden borders, but there's nothing bathroom-themed, and the screen even says the bathroom idea isn't there yet."
+      }
+     }
+    },
+    {
+     "id": "p68-027",
+     "sentence": "a castle mini golf course with a drawbridge that opens and closes, putt through it at the right moment",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "A plain green mini golf green with a ball, hole, and stone-like walls, but there is no visible drawbridge or castle beyond faint dark shapes, and nothing seems to happen across the three frames."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "Cobblestone ground, a stone tower, and 'Kick it past the right moments' hints at castle timing, but the player character is kicking rather than putting, there's no drawbridge, and the scene looks sparse and confusing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.3,
+       "reason": "Cobblestone ground, a stone tower, and 'Kick it past the right moments' hints at castle timing, but the player character is kicking rather than putting, there's no drawbridge, and the scene looks sparse and confusing."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "A plain green mini golf green with a ball, hole, and stone-like walls, but there is no visible drawbridge or castle beyond faint dark shapes, and nothing seems to happen across the three frames."
+      }
+     }
+    },
+    {
+     "id": "p68-028",
+     "sentence": "a golfing ghost putts across a graveyard green, bouncing the ball off tombstones toward the hole",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A ghost-like figure in a dark graveyard-ish setting, but it's a platformer with run/jump controls and no golf ball, tombstones, or hole."
+      },
+      "p68-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "A clear minigolf putting game with strokes and par on a green with dark obstacles, but there's no visible ghost and the graveyard and tombstone theme is weak."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A ghost-like figure in a dark graveyard-ish setting, but it's a platformer with run/jump controls and no golf ball, tombstones, or hole."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.4,
+       "reason": "A clear minigolf putting game with strokes and par on a green with dark obstacles, but there's no visible ghost and the graveyard and tombstone theme is weak."
+      }
+     }
+    },
+    {
+     "id": "p68-029",
+     "sentence": "aim carefully and choose the power to roll the ball over a narrow bridge and into the cup",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.3,
+       "reason": "It shows a robot-shooting gallery on a grass field, with no ball, bridge, cup or power control, so the only link to the sentence is the aiming line."
+      },
+      "p68-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same robot-shooting game as A, with an aim line but no ball, narrow bridge, cup or power choice, plus an error banner."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.3,
+       "reason": "It shows a robot-shooting gallery on a grass field, with no ball, bridge, cup or power control, so the only link to the sentence is the aiming line."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same robot-shooting game as A, with an aim line but no ball, narrow bridge, cup or power choice, plus an error banner."
+      }
+     }
+    },
+    {
+     "id": "p68-030",
+     "sentence": "a putting challenge on a spaceship deck where the ball curves around magnets before dropping into the hole",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It's a car-driving game on a red, Mars-like track with rock pillars; there's no ball, putting green, magnet, hole or spaceship deck."
+      },
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same driving game as A, a red car racing toward a finish line on a desert track, with none of the golf, magnet or spaceship elements."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It's a car-driving game on a red, Mars-like track with rock pillars; there's no ball, putting green, magnet, hole or spaceship deck."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same driving game as A, a red car racing toward a finish line on a desert track, with none of the golf, magnet or spaceship elements."
+      }
+     }
+    },
+    {
+     "id": "p68-031",
+     "sentence": "ride a cable car up a snowy mountain and shoot the yetis climbing toward your cabin",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "The snowy mountain is there, but it shows a red car in a jump-to-the-flag platformer with no cable car, yetis or cabin, and the view barely changes between shots."
+      },
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "It looks the same as A: a red car on a snowy cliff with a flag goal, and no cable car, yetis, cabin defense or visible shooting."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "The snowy mountain is there, but it shows a red car in a jump-to-the-flag platformer with no cable car, yetis or cabin, and the view barely changes between shots."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "It looks the same as A: a red car on a snowy cliff with a flag goal, and no cable car, yetis, cabin defense or visible shooting."
+      }
+     }
+    },
+    {
+     "id": "p68-032",
+     "sentence": "through the eyes of a sailor on a gondola gliding down a canal, fire at the sea monsters leaping out of the water",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "It has a first-person view from a wooden boat with a crosshair and a 'stop the sea monsters' goal, but there's no visible canal, gondola feel or monsters, and nothing changes across the three frames."
+      },
+      "main-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "It's a third-person platformer with a character on a rocky cliff trying to reach a flag, with no gondola, canal, sailor viewpoint or sea monsters, so a Fire button is the only link to the sentence."
+      },
+      "main-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "It's a third-person platformer with a character on a rocky cliff trying to reach a flag, with no gondola, canal, sailor viewpoint or sea monsters, so a Fire button is the only link to the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "It has a first-person view from a wooden boat with a crosshair and a 'stop the sea monsters' goal, but there's no visible canal, gondola feel or monsters, and nothing changes across the three frames."
+      }
+     }
+    },
+    {
+     "id": "p68-033",
+     "sentence": "stand on the last wagon of a moving train, look around and shoot the ninjas leaping from the trees before they land on you",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "A shows a wooden wagon-like platform facing a big tree, with a ninja-shooting objective and a tiny ninja figure in one frame, but there is no visible train motion and the view is static and hard to read."
+      },
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.3,
+       "reason": "B shows a platformer with a broken bus/train car on a floating island and the goal 'reach the flag', with no visible ninjas leaping from trees and no moving-train last-wagon setup."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.3,
+       "reason": "B shows a platformer with a broken bus/train car on a floating island and the goal 'reach the flag', with no visible ninjas leaping from trees and no moving-train last-wagon setup."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.35,
+       "reason": "A shows a wooden wagon-like platform facing a big tree, with a ninja-shooting objective and a tiny ninja figure in one frame, but there is no visible train motion and the view is static and hard to read."
+      }
+     }
+    },
+    {
+     "id": "p68-034",
+     "sentence": "a first-person submarine ride along a fixed route under the sea, torpedoing sharks before they bite the hull",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "An underwater-tinted lane runner seen from third person, with a dark vehicle and 'grow your crowd, beat the ogre' prompts; there is no first-person submarine view, no sharks and no torpedoes."
+      },
+      "p68-quick": {
+       "fidelity": 0.17,
+       "wouldPlay": 0.2,
+       "reason": "Almost the same as A: a generic third-person runner and crowd-vs-ogre game on an undersea-coloured track, with only a red target ring hinting at aiming and no sharks or torpedo combat visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "An underwater-tinted lane runner seen from third person, with a dark vehicle and 'grow your crowd, beat the ogre' prompts; there is no first-person submarine view, no sharks and no torpedoes."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.17,
+       "wouldPlay": 0.2,
+       "reason": "Almost the same as A: a generic third-person runner and crowd-vs-ogre game on an undersea-coloured track, with only a red target ring hinting at aiming and no sharks or torpedo combat visible."
+      }
+     }
+    },
+    {
+     "id": "p68-035",
+     "sentence": "in a theme park dark ride, turn your cart's blaster on the cardboard aliens popping out of the walls",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.15,
+       "reason": "Shows a whack-a-mole game with a fox and holes on green grass, with no dark ride, cart, blaster or cardboard aliens."
+      },
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.15,
+       "reason": "Looks the same as A: a sparse mole-whacking scene with a fox, unrelated to a theme park dark ride shooting cardboard aliens."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.15,
+       "reason": "Looks the same as A: a sparse mole-whacking scene with a fox, unrelated to a theme park dark ride shooting cardboard aliens."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.15,
+       "reason": "Shows a whack-a-mole game with a fox and holes on green grass, with no dark ride, cart, blaster or cardboard aliens."
+      }
+     }
+    },
+    {
+     "id": "p68-036",
+     "sentence": "ride a zip line through a jungle canopy and fire at the parrots dive-bombing you on the way down",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "A rider over a foggy green jungle aims a crosshair at colorful parrots, but there's no visible zip line cable or sense of descent, and the parrots look static rather than dive-bombing."
+      },
+      "p68-quick": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.47,
+       "reason": "It is almost identical to A, with a jungle setting, a rider, parrots and a crosshair, plus what looks like a hit burst on a parrot, but the zip line and the downhill ride are still not clearly visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "A rider over a foggy green jungle aims a crosshair at colorful parrots, but there's no visible zip line cable or sense of descent, and the parrots look static rather than dive-bombing."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.47,
+       "reason": "It is almost identical to A, with a jungle setting, a rider, parrots and a crosshair, plus what looks like a hit burst on a parrot, but the zip line and the downhill ride are still not clearly visible."
+      }
+     }
+    },
+    {
+     "id": "p68-037",
+     "sentence": "a safari truck follows a set trail through the savanna while you shoot the charging rhinos with sleep darts",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A green vehicle drives a dirt track and you shoot tire barriers, but there are no rhinos, the foggy setting with a windmill doesn't look like a savanna, and the run ends quickly in a fail screen."
+      },
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "It's almost the same as A, but the 'Safari truck' label ties it a bit more closely to the sentence, though there are still no charging rhinos, no sleep darts and no savanna."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A green vehicle drives a dirt track and you shoot tire barriers, but there are no rhinos, the foggy setting with a windmill doesn't look like a savanna, and the run ends quickly in a fail screen."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "It's almost the same as A, but the 'Safari truck' label ties it a bit more closely to the sentence, though there are still no charging rhinos, no sleep darts and no savanna."
+      }
+     }
+    },
+    {
+     "id": "p68-038",
+     "sentence": "a rail shooter in a toy store: ride the toy train and pop the evil teddy bears with a cork gun",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "Realistic store-like interior with clear evil teddy bear enemies and a crosshair in a forward-moving rail view, though no train or cork gun is visible."
+      },
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "Rails and waves with a crosshair suggest a rail shooter, but the bland tiled room barely reads as a toy store, the only bear is the player's own orange blob, and no evil teddies or cork gun are visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "Rails and waves with a crosshair suggest a rail shooter, but the bland tiled room barely reads as a toy store, the only bear is the player's own orange blob, and no evil teddies or cork gun are visible."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.6,
+       "wouldPlay": 0.45,
+       "reason": "Realistic store-like interior with clear evil teddy bear enemies and a crosshair in a forward-moving rail view, though no train or cork gun is visible."
+      }
+     }
+    },
+    {
+     "id": "p68-039",
+     "sentence": "a gondola lift ride over a haunted forest, aiming a crossbow at the bats that dive toward you",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "The bat, the reticle and the fire button fit the sentence, but it plays as a lane runner with a vehicle on a dark road and 'grow your crowd/beat the ogre' prompts, so there's no gondola or forest."
+      },
+      "p68-quick": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.27,
+       "reason": "It's nearly the same runner template with a bat, reticle and fire button, plus a combo arc and score feedback that make it a bit livelier, but there's still no gondola ride or haunted forest."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "The bat, the reticle and the fire button fit the sentence, but it plays as a lane runner with a vehicle on a dark road and 'grow your crowd/beat the ogre' prompts, so there's no gondola or forest."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.27,
+       "reason": "It's nearly the same runner template with a bat, reticle and fire button, plus a combo arc and score feedback that make it a bit livelier, but there's still no gondola ride or haunted forest."
+      }
+     }
+    },
+    {
+     "id": "p68-040",
+     "sentence": "first person on a speeding monorail through a neon city, shooting down hacker drones before they crash into the window",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "Has hacker drones and a shooting reticle, but it's a third-person view in a grey, foggy space with no neon city or monorail, and the goal is shooting floating windows instead of protecting one."
+      },
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "The first-person track view with drones over a dusk city skyline fits the premise better, but there's no neon, no visible speed or window, and a banner says shooting isn't implemented yet."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "Has hacker drones and a shooting reticle, but it's a third-person view in a grey, foggy space with no neon city or monorail, and the goal is shooting floating windows instead of protecting one."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "The first-person track view with drones over a dusk city skyline fits the premise better, but there's no neon, no visible speed or window, and a banner says shooting isn't implemented yet."
+      }
+     }
+    },
+    {
+     "id": "p68-041",
+     "sentence": "ride a raft down a fixed river path and hit the hungry piranhas leaping at you with a slingshot",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "Shows a generic crowd-runner with +/- math gates on a gray track and a dark cart-like object, with no raft, river, piranhas or slingshot visible."
+      },
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "Essentially identical to A: a crowd-grow gate runner on a gray road with no water, raft, piranhas or slingshot shooting."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "Essentially identical to A: a crowd-grow gate runner on a gray road with no water, raft, piranhas or slingshot shooting."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "Shows a generic crowd-runner with +/- math gates on a gray track and a dark cart-like object, with no raft, river, piranhas or slingshot visible."
+      }
+     }
+    },
+    {
+     "id": "p68-042",
+     "sentence": "you are a passenger on an old steam train crossing a prairie, turn your head and shoot the vultures swooping at the carriage",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "A figure stands on an open green field shooting small robot-like figures that the game calls 'carriages', with no train, carriage or vultures visible, so the sentence is barely reflected."
+      },
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "It is nearly the same as A: a figure labelled 'Passenger' shoots blocky figures on a grassy plain, but there is no steam train and there are no swooping vultures, and the gameplay looks plain."
+      },
+      "main-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "A figure stands on an open green field shooting small robot-like figures that the game calls 'carriages', with no train, carriage or vultures visible, so the sentence is barely reflected."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "It is nearly the same as A: a figure labelled 'Passenger' shoots blocky figures on a grassy plain, but there is no steam train and there are no swooping vultures, and the gameplay looks plain."
+      }
+     }
+    },
+    {
+     "id": "p68-043",
+     "sentence": "a canal barge drifts through a medieval town and you shoot arrows at the goblins on the rooftops before they drop on you",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.3,
+       "reason": "It shows a red kart driving down a road between red rails and shooting tire barriers, with only a hint of a medieval town and no canal, barge, arrows or rooftop goblins."
+      },
+      "main-quick": {
+       "fidelity": 0.17,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same kart-and-road shooter as A, but a small green goblin-like figure stands on the road, while the canal, barge, arrows and rooftop drops are still missing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.17,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same kart-and-road shooter as A, but a small green goblin-like figure stands on the road, while the canal, barge, arrows and rooftop drops are still missing."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.3,
+       "reason": "It shows a red kart driving down a road between red rails and shooting tire barriers, with only a hint of a medieval town and no canal, barge, arrows or rooftop goblins."
+      }
+     }
+    },
+    {
+     "id": "p68-044",
+     "sentence": "on rails through a candy factory, splatter the gummy monsters with a jelly blaster as they jump toward you",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "Shows a blocky robot doing a platformer flag run on gloomy industrial rooftops, with no candy factory, gummy monsters, jelly blaster or on-rails shooting, and the frames barely change."
+      },
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "Looks almost the same as A: a robot rooftop jump-to-flag platformer with a static camera and none of the candy, gummy enemy or blaster parts of the sentence."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "Looks almost the same as A: a robot rooftop jump-to-flag platformer with a static camera and none of the candy, gummy enemy or blaster parts of the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.15,
+       "reason": "Shows a blocky robot doing a platformer flag run on gloomy industrial rooftops, with no candy factory, gummy monsters, jelly blaster or on-rails shooting, and the frames barely change."
+      }
+     }
+    },
+    {
+     "id": "p68-045",
+     "sentence": "a sleigh pulled along a fixed trail through a frozen forest while you fire snowballs at the ice wolves chasing you",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A sleigh sits on an icy snowfield, but there's no forest, no visible ice wolves and no snowball firing; the goal shown is a generic 'dodge the fire, collect coins' loop."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "It's almost identical to A: a sleigh on icy ground with a dark figure ahead and a coin-collecting objective, with no forest, no wolves chasing and no snowballs."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "It's almost identical to A: a sleigh on icy ground with a dark figure ahead and a coin-collecting objective, with no forest, no wolves chasing and no snowballs."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A sleigh sits on an icy snowfield, but there's no forest, no visible ice wolves and no snowball firing; the goal shown is a generic 'dodge the fire, collect coins' loop."
+      }
+     }
+    },
+    {
+     "id": "p68-046",
+     "sentence": "design a noodle bar from the top: drop cooking stations on the grid and keep the hungry office workers fed until closing",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "A top-down wooden room with a counter, a single character and a timer, but there's no visible grid, no cooking stations being placed, no noodles and no hungry office workers, and the banner says cooking isn't implemented."
+      },
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "Looks almost identical to A: the same sparse room with a counter and a lone character, with no station placement, no customers to feed and no noodle-bar management visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "A top-down wooden room with a counter, a single character and a timer, but there's no visible grid, no cooking stations being placed, no noodles and no hungry office workers, and the banner says cooking isn't implemented."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.15,
+       "reason": "Looks almost identical to A: the same sparse room with a counter and a lone character, with no station placement, no customers to feed and no noodle-bar management visible."
+      }
+     }
+    },
+    {
+     "id": "p68-047",
+     "sentence": "a squirrel runs an acorn cafe for one day, placing roasting stations with the nuts it earns and serving every forest animal",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a road-crossing game where an animal dodges lanes of cars; there's no cafe, acorns, roasting stations or forest customers, and the traffic is cluttered but playable."
+      },
+      "p68-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same traffic-dodging game as A, with no squirrel cafe, nut economy or animals to serve, and only generic lane-crossing gameplay."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a road-crossing game where an animal dodges lanes of cars; there's no cafe, acorns, roasting stations or forest customers, and the traffic is cluttered but playable."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's almost the same traffic-dodging game as A, with no squirrel cafe, nut economy or animals to serve, and only generic lane-crossing gameplay."
+      }
+     }
+    },
+    {
+     "id": "p68-048",
+     "sentence": "a pet grooming salon seen from above: buy bathtubs and drying tables, wash every dog before the shift ends",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "A character on an open grass field collects small dogs against a timer, but there's no salon, no bathtubs or drying tables to buy, and no washing."
+      },
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It's nearly the same as A: a generic dog-collecting game on a grass field with a timer, and nothing about grooming, buying equipment or a salon setting."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "It's nearly the same as A: a generic dog-collecting game on a grass field with a timer, and nothing about grooming, buying equipment or a salon setting."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.2,
+       "reason": "A character on an open grass field collects small dogs against a timer, but there's no salon, no bathtubs or drying tables to buy, and no washing."
+      }
+     }
+    },
+    {
+     "id": "p68-049",
+     "sentence": "build a hot dog stand by the stadium tile by tile and sell to the fans until the match starts",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "Shows hot dogs on a counter with a countdown timer over a green pitch-like field, but there's no tile-by-tile building (the banner says building isn't here), no visible fans and no stadium, and the gameplay looks static."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.27,
+       "reason": "Nearly identical to A, with a hot dog counter, a timer and a green field, but no stand building or fans; a lost life and an 'Explorer' tag hint at slightly more going on, yet it still looks sparse."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.27,
+       "reason": "Nearly identical to A, with a hot dog counter, a timer and a green field, but no stand building or fans; a lost life and an 'Explorer' tag hint at slightly more going on, yet it still looks sparse."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "Shows hot dogs on a counter with a countdown timer over a green pitch-like field, but there's no tile-by-tile building (the banner says building isn't here), no visible fans and no stadium, and the gameplay looks static."
+      }
+     }
+    },
+    {
+     "id": "p68-050",
+     "sentence": "a smoothie shop shift where you arrange blenders and fruit crates on a grid and spend tips on new machines",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It's a robot-shooting game on a grassy field, with no smoothie shop, blenders, fruit crates, grid or tips anywhere."
+      },
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It looks almost the same as A: a third-person shooter aiming at robot waves, with nothing tied to a smoothie shop shift or placing machines on a grid."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It's a robot-shooting game on a grassy field, with no smoothie shop, blenders, fruit crates, grid or tips anywhere."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It looks almost the same as A: a third-person shooter aiming at robot waves, with nothing tied to a smoothie shop shift or placing machines on a grid."
+      }
+     }
+    },
+    {
+     "id": "p68-051",
+     "sentence": "run a dragon's potion shop: set up cauldrons on the floor plan, pay with gold and fill every knight's order before the moon rises",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "This is a generic space-themed endless runner with a robot dodging asteroids, and it has no dragon, potion shop, cauldrons, gold, knights or orders; only the night sky loosely echoes the moonrise."
+      },
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "This is almost the same moon-surface lane runner as A, with rockets and obstacles, and nothing in it shows shop management, cauldron placement, knights' orders or a dragon."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "This is almost the same moon-surface lane runner as A, with rockets and obstacles, and nothing in it shows shop management, cauldron placement, knights' orders or a dragon."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "This is a generic space-themed endless runner with a robot dodging asteroids, and it has no dragon, potion shop, cauldrons, gold, knights or orders; only the night sky loosely echoes the moonrise."
+      }
+     }
+    },
+    {
+     "id": "p68-052",
+     "sentence": "a pizza kitchen viewed from overhead, place ovens and prep tables, then rush to serve all the tables before the shift closes",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "An overhead tiled kitchen with pizzas on a counter, a cook, a shift timer and a wooden counter or oven are visible, but you can't see any oven or prep-table placement or customer tables being served."
+      },
+      "p68-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "It is almost the same as A: an overhead kitchen, pizzas on a counter, a cook and a timer, plus a 'Here they come!' rush cue, but no visible building phase or dining tables."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "An overhead tiled kitchen with pizzas on a counter, a cook, a shift timer and a wooden counter or oven are visible, but you can't see any oven or prep-table placement or customer tables being served."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.35,
+       "reason": "It is almost the same as A: an overhead kitchen, pizzas on a counter, a cook and a timer, plus a 'Here they come!' rush cue, but no visible building phase or dining tables."
+      }
+     }
+    },
+    {
+     "id": "p68-053",
+     "sentence": "manage a car wash from above, buying soap stations and dryers and cleaning the queue of cars before evening",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "A top-down dark scene with a few red car-like objects, a ring and a 'make all car washes' timer hints at a car wash, but there are no visible soap stations, dryers, shop or queue of cars, and the frames barely change."
+      },
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.18,
+       "reason": "This row is almost identical to A: the same murky top-down scene with a few red cars and a timer, no visible buying of soap stations or dryers or a car queue, and little progress between frames."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "A top-down dark scene with a few red car-like objects, a ring and a 'make all car washes' timer hints at a car wash, but there are no visible soap stations, dryers, shop or queue of cars, and the frames barely change."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.18,
+       "reason": "This row is almost identical to A: the same murky top-down scene with a few red cars and a timer, no visible buying of soap stations or dryers or a car queue, and little progress between frames."
+      }
+     }
+    },
+    {
+     "id": "p68-054",
+     "sentence": "a sushi counter on a small grid: spend your yen on rice cookers and fish tables and serve every guest before midnight",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "A dark grass field with a sunflower, a gray strip, and a red spiky creature has no visible sushi counter, rice cookers, fish tables, guests, or yen economy, though a timer and coin hint are shown."
+      },
+      "p68-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.22,
+       "reason": "This looks almost the same as A, with the same grass, strip, and red creature and nothing about sushi, guests, or buying equipment, and the frames show even less change."
+      },
+      "main-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "A dark grass field with a sunflower, a gray strip, and a red spiky creature has no visible sushi counter, rice cookers, fish tables, guests, or yen economy, though a timer and coin hint are shown."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.22,
+       "reason": "This looks almost the same as A, with the same grass, strip, and red creature and nothing about sushi, guests, or buying equipment, and the frames show even less change."
+      }
+     }
+    },
+    {
+     "id": "p68-055",
+     "sentence": "a flower shop simulator where you place watering benches and wrapping desks, then serve customers before the shop closes",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "A top-down shop with a counter, a timer and an arriving customer, but the round items and the 'use all 2 cheeses' prompt point to a cheese shop: there are no flowers, watering benches or wrapping desks, and placing is disabled."
+      },
+      "p68-quick": {
+       "fidelity": 0.17,
+       "wouldPlay": 0.28,
+       "reason": "Nearly the same as A (cheese items, timer, a customer showing up) with slightly fuller wooden furniture rendered, but still no flower shop and no bench or desk placement."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.25,
+       "reason": "A top-down shop with a counter, a timer and an arriving customer, but the round items and the 'use all 2 cheeses' prompt point to a cheese shop: there are no flowers, watering benches or wrapping desks, and placing is disabled."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.17,
+       "wouldPlay": 0.28,
+       "reason": "Nearly the same as A (cheese items, timer, a customer showing up) with slightly fuller wooden furniture rendered, but still no flower shop and no bench or desk placement."
+      }
+     }
+    },
+    {
+     "id": "p68-056",
+     "sentence": "an octopus opens a seaside lemonade bar, adds juicers and stools to the grid and serves thirsty swimmers until sunset",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "The screenshots show a generic apple-catching, bomb-dodging game with a human character on a grassy field, so there is no octopus, seaside, lemonade bar, grid or swimmers, though the falling objects do create some action."
+      },
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.22,
+       "reason": "This is the same unrelated apple-catch game on grass, with nothing from the octopus lemonade-bar premise and even sparser, less engaging screens."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "The screenshots show a generic apple-catching, bomb-dodging game with a human character on a grassy field, so there is no octopus, seaside, lemonade bar, grid or swimmers, though the falling objects do create some action."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.22,
+       "reason": "This is the same unrelated apple-catch game on grass, with nothing from the octopus lemonade-bar premise and even sparser, less engaging screens."
+      }
+     }
+    },
+    {
+     "id": "p68-057",
+     "sentence": "build a tiny tailor shop counter by counter and finish every customer's suit before the working day is over",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A fallback quest ('Building isn't here yet') shows a tiled room with two blue counters, a character, and a countdown timer that hints at a working day, but there is no visible counter-building, tailoring, suits, or customers."
+      },
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "It is nearly identical to A: a generic fallback scene with blue counters and a timer, with no visible shop construction, suit-making, or customers to serve."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "It is nearly identical to A: a generic fallback scene with blue counters and a timer, with no visible shop construction, suit-making, or customers to serve."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A fallback quest ('Building isn't here yet') shows a tiled room with two blue counters, a character, and a countdown timer that hints at a working day, but there is no visible counter-building, tailoring, suits, or customers."
+      }
+     }
+    },
+    {
+     "id": "p68-058",
+     "sentence": "a top-down shift at a hospital for toys: place repair beds and stitching tables, then fix each broken toy before the shift ends",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "A top-down room with two glowing bed stations, a countdown timer and a 'Here they come!' warning hint at a timed hospital shift, but no recognizable toys, stitching tables or repair action are visible, and the banner says repairing isn't implemented yet."
+      },
+      "main-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "Nearly the same as A: a dim, blurry top-down room with bed pads and a timer, plus one small extra placed object, but no visible broken toys or fixing, so it reads as an unfinished prototype."
+      },
+      "main-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "Nearly the same as A: a dim, blurry top-down room with bed pads and a timer, plus one small extra placed object, but no visible broken toys or fixing, so it reads as an unfinished prototype."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.2,
+       "reason": "A top-down room with two glowing bed stations, a countdown timer and a 'Here they come!' warning hint at a timed hospital shift, but no recognizable toys, stitching tables or repair action are visible, and the banner says repairing isn't implemented yet."
+      }
+     }
+    },
+    {
+     "id": "p68-059",
+     "sentence": "run a taco truck plaza: put grills and drink stands on the tiles with the cash you earn and feed the lunch line before two o'clock",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.4,
+       "reason": "It's a generic lane runner through a plaza with crowd-multiplier gates and an ogre, and there are no taco trucks, grills, drink stands, cash-based placement, lunch line or two o'clock deadline."
+      },
+      "p68-quick": {
+       "fidelity": 0.06,
+       "wouldPlay": 0.3,
+       "reason": "It's the same off-theme plaza runner with no taco truck management elements, and the screens are mostly greyed out with less visible gameplay variety than A."
+      },
+      "main-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.4,
+       "reason": "It's a generic lane runner through a plaza with crowd-multiplier gates and an ogre, and there are no taco trucks, grills, drink stands, cash-based placement, lunch line or two o'clock deadline."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.06,
+       "wouldPlay": 0.3,
+       "reason": "It's the same off-theme plaza runner with no taco truck management elements, and the screens are mostly greyed out with less visible gameplay variety than A."
+      }
+     }
+    },
+    {
+     "id": "p68-060",
+     "sentence": "one busy shift in a bookstore cafe, placing shelves and espresso machines and serving readers before the doors lock",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A placeholder quest on a wooden floor with a counter, a timer and generic blocks, with a 'Here they come!' moment but no visible bookshelves, espresso machines or readers being served."
+      },
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same as A, with a sofa and a plant hinting at a cafe lounge, but the gameplay is still a generic block-placing quest with no books, coffee or customers visible."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A placeholder quest on a wooden floor with a counter, a timer and generic blocks, with a 'Here they come!' moment but no visible bookshelves, espresso machines or readers being served."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same as A, with a sofa and a plant hinting at a cafe lounge, but the gameplay is still a generic block-placing quest with no books, coffee or customers visible."
+      }
+     }
+    },
+    {
+     "id": "p68-061",
+     "sentence": "draw a shelter over the little bird so the falling acorns cannot hit it until the clock reaches zero",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.3,
+       "reason": "A 3D joystick target-hitting game in a grassy field with a countdown, but there is no little bird, no falling acorns and no shelter drawing visible."
+      },
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "It keeps the idea of protecting a small creature from acorns, but the creature is a fox, the timer counts up, and the screen is mostly a static peg grid with no visible drawn shelter or falling acorns."
+      },
+      "main-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.3,
+       "reason": "A 3D joystick target-hitting game in a grassy field with a countdown, but there is no little bird, no falling acorns and no shelter drawing visible."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.25,
+       "reason": "It keeps the idea of protecting a small creature from acorns, but the creature is a fox, the timer counts up, and the screen is mostly a static peg grid with no visible drawn shelter or falling acorns."
+      }
+     }
+    },
+    {
+     "id": "p68-062",
+     "sentence": "sketch a line to save the tiny astronaut from meteors raining down for fifteen seconds",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "A whack-a-mole game with a fox and mole holes on grass, with no astronaut, meteors, or line drawing, so it is unrelated to the sentence."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.15,
+       "reason": "There's a tiny astronaut, a timer and a 'keep the astronaut safe' goal, but it shows a dot grid in rain with no visible meteors or line drawing, and a banner says the hazards aren't implemented."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "A whack-a-mole game with a fox and mole holes on grass, with no astronaut, meteors, or line drawing, so it is unrelated to the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.15,
+       "reason": "There's a tiny astronaut, a timer and a 'keep the astronaut safe' goal, but it shows a dot grid in rain with no visible meteors or line drawing, and a banner says the hazards aren't implemented."
+      }
+     }
+    },
+    {
+     "id": "p68-063",
+     "sentence": "a cupcake sits on a table and pigeons dive at it, draw walls to keep it safe until time is up",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A tiny cupcake and a timer are there, but the screen is mostly a dot grid with no pigeons, no visible walls being drawn, and threats described as bombs rather than pigeons."
+      },
+      "main-quick": {
+       "fidelity": 0.02,
+       "wouldPlay": 0.35,
+       "reason": "This is a generic crowd-runner/flyer with multiplier gates and an ogre, with no cupcake, table, pigeons or wall drawing, though it looks somewhat more like a polished playable game."
+      },
+      "main-after-reading": {
+       "fidelity": 0.02,
+       "wouldPlay": 0.35,
+       "reason": "This is a generic crowd-runner/flyer with multiplier gates and an ogre, with no cupcake, table, pigeons or wall drawing, though it looks somewhat more like a polished playable game."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A tiny cupcake and a timer are there, but the screen is mostly a dot grid with no pigeons, no visible walls being drawn, and threats described as bombs rather than pigeons."
+      }
+     }
+    },
+    {
+     "id": "p68-064",
+     "sentence": "draw a barrier to keep the sleepy sheep safe from the swarm of wasps",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.15,
+       "reason": "A labelled sheep and a 'keep the sheep safe from the wasps' prompt show up, but you only see a peg grid with no wasps and no drawn barrier, and a message says the obstacles haven't loaded."
+      },
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.4,
+       "reason": "This is a polished lane-crossing road game where you catch apples and dodge bombs, with no sheep, wasps or barrier drawing, so it has nothing to do with the sentence."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.4,
+       "reason": "This is a polished lane-crossing road game where you catch apples and dodge bombs, with no sheep, wasps or barrier drawing, so it has nothing to do with the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.15,
+       "reason": "A labelled sheep and a 'keep the sheep safe from the wasps' prompt show up, but you only see a peg grid with no wasps and no drawn barrier, and a message says the obstacles haven't loaded."
+      }
+     }
+    },
+    {
+     "id": "p68-065",
+     "sentence": "with your finger, draw lines that stop the egg from rolling off the edge of the cliff",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A plain peg-dot grid with a small fox figure and a 'keep the fox safe' prompt shows no egg, no drawn lines and no visible cliff edge, and it looks static and sparse."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.4,
+       "reason": "Eggs roll down lanes toward a knight defending a castle, which is a reasonably polished scene, but there are no finger-drawn lines and no cliff edge, so it reads more like a lane-defense game than the requested concept."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.4,
+       "reason": "Eggs roll down lanes toward a knight defending a castle, which is a reasonably polished scene, but there are no finger-drawn lines and no cliff edge, so it reads more like a lane-defense game than the requested concept."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.2,
+       "reason": "A plain peg-dot grid with a small fox figure and a 'keep the fox safe' prompt shows no egg, no drawn lines and no visible cliff edge, and it looks static and sparse."
+      }
+     }
+    },
+    {
+     "id": "p68-066",
+     "sentence": "protect the snail from the falling hailstones by drawing a roof before the storm passes",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "Dark balls fall down a 3D lane and the screen says 'Beat the falling hailstones', but no snail is visible and there is no roof-drawing, so it plays like a generic dodge/block lane game."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A rainy scene with a dot grid suggests drawing a shelter for a tiny snail, but no hailstones or drawn roof appear in any shot and the empty grid looks static and dull."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "Dark balls fall down a 3D lane and the screen says 'Beat the falling hailstones', but no snail is visible and there is no roof-drawing, so it plays like a generic dodge/block lane game."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A rainy scene with a dot grid suggests drawing a shelter for a tiny snail, but no hailstones or drawn roof appear in any shot and the empty grid looks static and dull."
+      }
+     }
+    },
+    {
+     "id": "p68-067",
+     "sentence": "a stickman stands under a crumbling ceiling, draw a line so the bricks bounce off until the countdown is over",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A countdown timer and a tiny figure under a tall enclosure are there, but there are no visible crumbling bricks or drawn lines, just a static peg grid, and the goal is about bombs, not bricks."
+      },
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.35,
+       "reason": "There's a clear stickman and a nice 3D desert setting, but it's a reach-the-flag platformer with no ceiling, no falling bricks and no line drawing."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.35,
+       "reason": "There's a clear stickman and a nice 3D desert setting, but it's a reach-the-flag platformer with no ceiling, no falling bricks and no line drawing."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A countdown timer and a tiny figure under a tall enclosure are there, but there are no visible crumbling bricks or drawn lines, just a static peg grid, and the goal is about bombs, not bricks."
+      }
+     }
+    },
+    {
+     "id": "p68-068",
+     "sentence": "draw a wall that keeps the lava flow away from the village of mice for twenty seconds",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.4,
+       "reason": "A volcanic-themed runner and lane-crossing game with lava colors, but there is no wall drawing, no lava flow to block, and no mouse village."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "The goal text and timer match the prompt, but the screen shows only a static dot grid with a tiny platform; no lava flow, mice, or drawn wall is visible, so it looks barely playable."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.4,
+       "reason": "A volcanic-themed runner and lane-crossing game with lava colors, but there is no wall drawing, no lava flow to block, and no mouse village."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "The goal text and timer match the prompt, but the screen shows only a static dot grid with a tiny platform; no lava flow, mice, or drawn wall is visible, so it looks barely playable."
+      }
+     }
+    },
+    {
+     "id": "p68-069",
+     "sentence": "a puzzle where you draw one stroke to shelter a kitten from bouncing tennis balls",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It shows a turtle platformer on a beach where you jump to a flag, with no kitten, no tennis balls and no stroke to draw, though the 3D art looks fine."
+      },
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same turtle beach platformer as A, so it misses the kitten, the tennis balls and the drawing mechanic, and it shows even less happening."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It shows a turtle platformer on a beach where you jump to a flag, with no kitten, no tennis balls and no stroke to draw, though the 3D art looks fine."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same turtle beach platformer as A, so it misses the kitten, the tennis balls and the drawing mechanic, and it shows even less happening."
+      }
+     }
+    },
+    {
+     "id": "p68-070",
+     "sentence": "draw a protective shape around the turtle egg on the beach so the crabs and gulls cannot get to it until it hatches",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.2,
+       "reason": "It is a generic game about catching apples and dodging bombs with a basket on a sandy field, and it has no turtle egg, crabs, gulls, or shape drawing."
+      },
+      "p68-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.25,
+       "reason": "It is the same off-prompt game about catching apples and dodging bombs, with slightly more falling objects for action, and nothing about protecting a turtle egg."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.2,
+       "reason": "It is a generic game about catching apples and dodging bombs with a basket on a sandy field, and it has no turtle egg, crabs, gulls, or shape drawing."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.25,
+       "reason": "It is the same off-prompt game about catching apples and dodging bombs, with slightly more falling objects for action, and nothing about protecting a turtle egg."
+      }
+     }
+    },
+    {
+     "id": "p68-071",
+     "sentence": "scribble a dome over the ice cream cone so the dripping rain and the hungry ants stay away until the timer stops",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a generic road-crossing and catch-apples game with a dark blob for a player, and it has no ice cream cone, no dome scribbling, no rain and no ants."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "It has rain, a timer and an 'ant' standing on a stick that could be a cone, but there's no visible ice cream or dome drawing, the ant is the thing being protected instead of a threat, and the dotted grid looks empty and dull."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.3,
+       "reason": "It's a generic road-crossing and catch-apples game with a dark blob for a player, and it has no ice cream cone, no dome scribbling, no rain and no ants."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "It has rain, a timer and an 'ant' standing on a stick that could be a cone, but there's no visible ice cream or dome drawing, the ant is the thing being protected instead of a threat, and the dotted grid looks empty and dull."
+      }
+     }
+    },
+    {
+     "id": "p68-072",
+     "sentence": "seen from the side, a toy car rolls toward a gap in the shelf, draw a path under it before it tips over the edge",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.3,
+       "reason": "This is a behind-the-car driving game on a wooden track, with no side view, no gap in a shelf and no way to draw a path; only the toy car matches the sentence."
+      },
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same as A: a third-person toy car racing down a track toward a finish line, with no drawing mechanic and no edge or gap to bridge."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same as A: a third-person toy car racing down a track toward a finish line, with no drawing mechanic and no edge or gap to bridge."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.3,
+       "reason": "This is a behind-the-car driving game on a wooden track, with no side view, no gap in a shelf and no way to draw a path; only the toy car matches the sentence."
+      }
+     }
+    },
+    {
+     "id": "p68-073",
+     "sentence": "draw lines to keep the treasure chest from sliding off the pirate ship deck while cannonballs fly in",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.15,
+       "reason": "There's a treasure chest label and a goal about keeping it from sliding, but the screen is mostly a peg grid over water, with no visible pirate deck, line drawing or cannonballs."
+      },
+      "main-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.4,
+       "reason": "It's a polished 3D runner on a wooden pier with lighthouses that turns into a car-crossing game, with no chest, line drawing or cannonballs."
+      },
+      "main-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.4,
+       "reason": "It's a polished 3D runner on a wooden pier with lighthouses that turns into a car-crossing game, with no chest, line drawing or cannonballs."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.15,
+       "reason": "There's a treasure chest label and a goal about keeping it from sliding, but the screen is mostly a peg grid over water, with no visible pirate deck, line drawing or cannonballs."
+      }
+     }
+    },
+    {
+     "id": "p68-074",
+     "sentence": "draw a fence to keep the lamb safe from the fox until the farmer arrives",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "It's a platformer where you play the fox and jump to a flag; there's no lamb, no fence drawing and no farmer, and the fox doesn't move across the three shots."
+      },
+      "main-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "It looks almost the same as A: a fox platformer with a flag goal and none of the lamb, fence or farmer elements, and nothing visibly changes between shots."
+      },
+      "main-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "It looks almost the same as A: a fox platformer with a flag goal and none of the lamb, fence or farmer elements, and nothing visibly changes between shots."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.25,
+       "reason": "It's a platformer where you play the fox and jump to a flag; there's no lamb, no fence drawing and no farmer, and the fox doesn't move across the three shots."
+      }
+     }
+    },
+    {
+     "id": "p68-075",
+     "sentence": "a melting snowman needs a drawn shield against the fireballs a dragon spits for half a minute",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A snowman is shown in a snowy setting, but there's no dragon, fireballs, drawn shield or melting, and the game is about catching apples and dodging bombs."
+      },
+      "main-quick": {
+       "fidelity": 0.18,
+       "wouldPlay": 0.22,
+       "reason": "This is almost the same snowman apple-catch game with even sparser falling objects, and it has none of the dragon, fireball or shield-drawing elements."
+      },
+      "main-after-reading": {
+       "fidelity": 0.18,
+       "wouldPlay": 0.22,
+       "reason": "This is almost the same snowman apple-catch game with even sparser falling objects, and it has none of the dragon, fireball or shield-drawing elements."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.25,
+       "reason": "A snowman is shown in a snowy setting, but there's no dragon, fireballs, drawn shield or melting, and the game is about catching apples and dodging bombs."
+      }
+     }
+    },
+    {
+     "id": "p68-076",
+     "sentence": "a cheetah sprints along a savanna trail, leaping over logs and ducking under branches",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.4,
+       "reason": "A cheetah-like runner on a dirt trail with logs and overhead bars fits the prompt, but the green forest and windmill don't look like savanna, the later screens turn dull grey, and the 'cross 18 rows to the meadow' goal doesn't match a sprint."
+      },
+      "p68-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.4,
+       "reason": "Almost identical to A: a cheetah runs a trail with log and branch obstacles, but the setting isn't savanna, the visuals go grey and murky, and the goal text is inconsistent."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.4,
+       "reason": "A cheetah-like runner on a dirt trail with logs and overhead bars fits the prompt, but the green forest and windmill don't look like savanna, the later screens turn dull grey, and the 'cross 18 rows to the meadow' goal doesn't match a sprint."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.4,
+       "reason": "Almost identical to A: a cheetah runs a trail with log and branch obstacles, but the setting isn't savanna, the visuals go grey and murky, and the goal text is inconsistent."
+      }
+     }
+    },
+    {
+     "id": "p68-077",
+     "sentence": "a boy on roller skates dashes down an endless boardwalk dodging joggers and seagulls",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.35,
+       "reason": "It's a generic endless runner with a boy on a forest dirt path dodging crates, with no boardwalk, roller skates, joggers or seagulls, and the later shots are dark and murky."
+      },
+      "main-quick": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.4,
+       "reason": "It has the same forest dirt-path runner with crates plus a Crossy Road-style level where you dodge traffic, which adds variety but still has no boardwalk, skates, joggers or seagulls."
+      },
+      "main-after-reading": {
+       "fidelity": 0.15,
+       "wouldPlay": 0.4,
+       "reason": "It has the same forest dirt-path runner with crates plus a Crossy Road-style level where you dodge traffic, which adds variety but still has no boardwalk, skates, joggers or seagulls."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.35,
+       "reason": "It's a generic endless runner with a boy on a forest dirt path dodging crates, with no boardwalk, roller skates, joggers or seagulls, and the later shots are dark and murky."
+      }
+     }
+    },
+    {
+     "id": "p68-078",
+     "sentence": "a squirrel leaps between floating clouds to reach the castle in the sky",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.25,
+       "reason": "A floating sky island with a castle and an orange creature hints at the premise, but the platforms are grassy rock rather than clouds, the character doesn't clearly read as a squirrel, and it never moves across the three frames while the timer runs out."
+      },
+      "p68-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.25,
+       "reason": "It looks almost identical to A: a sky island and a distant castle, but no cloud platforms, an unclear squirrel, and no visible progress or jumping across the frames."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.25,
+       "reason": "A floating sky island with a castle and an orange creature hints at the premise, but the platforms are grassy rock rather than clouds, the character doesn't clearly read as a squirrel, and it never moves across the three frames while the timer runs out."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.25,
+       "reason": "It looks almost identical to A: a sky island and a distant castle, but no cloud platforms, an unclear squirrel, and no visible progress or jumping across the frames."
+      }
+     }
+    },
+    {
+     "id": "p68-079",
+     "sentence": "a robot climbs ledges and jumps across moving platforms inside a giant clock tower",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "A blocky robot runs across dark rooftop ledges in a hazy industrial city with smokestacks, but there is no clock tower interior, no gears and no visibly moving platforms."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "This is almost the same as A: a robot on rooftops in a smoggy factory town with a green bin, and nothing shows a clock tower or moving platforms."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "A blocky robot runs across dark rooftop ledges in a hazy industrial city with smokestacks, but there is no clock tower interior, no gears and no visibly moving platforms."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "This is almost the same as A: a robot on rooftops in a smoggy factory town with a green bin, and nothing shows a clock tower or moving platforms."
+      }
+     }
+    },
+    {
+     "id": "p68-080",
+     "sentence": "a hungry pig gobbles truffles in a muddy field while dodging the farmer's dogs",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A grey pig-like creature runs down a dirt farm lane past green barriers and a windmill in a generic endless runner, with no visible truffles, mud field, or dogs."
+      },
+      "main-quick": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.35,
+       "reason": "It's nearly the same pig lane-runner with a bit more farm scenery (windmills, fences) and a combo counter, but the truffles and the farmer's dogs still don't appear."
+      },
+      "main-after-reading": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.35,
+       "reason": "It's nearly the same pig lane-runner with a bit more farm scenery (windmills, fences) and a combo counter, but the truffles and the farmer's dogs still don't appear."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A grey pig-like creature runs down a dirt farm lane past green barriers and a windmill in a generic endless runner, with no visible truffles, mud field, or dogs."
+      }
+     }
+    },
+    {
+     "id": "p68-081",
+     "sentence": "a paper boat sails down a rainy gutter to reach the big lake",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.3,
+       "reason": "Generic microgames (catch apples, dodge bombs, crowd-runner gates against an ogre) on gray city and wooden-track scenes; there is no paper boat, rain or gutter, and only a brown boat-like object on a track hints at the prompt."
+      },
+      "p68-quick": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same off-theme microgame set as A with no paper boat, rain, gutter or lake, plus a blank first screen that suggests a rendering failure."
+      },
+      "main-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.3,
+       "reason": "Generic microgames (catch apples, dodge bombs, crowd-runner gates against an ogre) on gray city and wooden-track scenes; there is no paper boat, rain or gutter, and only a brown boat-like object on a track hints at the prompt."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.08,
+       "wouldPlay": 0.22,
+       "reason": "Nearly the same off-theme microgame set as A with no paper boat, rain, gutter or lake, plus a blank first screen that suggests a rendering failure."
+      }
+     }
+    },
+    {
+     "id": "p68-082",
+     "sentence": "a spaceship lands softly on a rocky moon after a long trip",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.55,
+       "reason": "A rocket descends toward a landing pad on a grey, cratered moon surface with a 'land softly' goal, which fits the sentence well, though the scene is sparse and nothing shows the long trip."
+      },
+      "main-quick": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "It has the same rocket, rocky moon and landing pad setup, but the last frame shows 0 lives and an apparent reset, so the soft landing never shows up, and error banners clutter the screen."
+      },
+      "main-after-reading": {
+       "fidelity": 0.7,
+       "wouldPlay": 0.5,
+       "reason": "It has the same rocket, rocky moon and landing pad setup, but the last frame shows 0 lives and an apparent reset, so the soft landing never shows up, and error banners clutter the screen."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.75,
+       "wouldPlay": 0.55,
+       "reason": "A rocket descends toward a landing pad on a grey, cratered moon surface with a 'land softly' goal, which fits the sentence well, though the scene is sparse and nothing shows the long trip."
+      }
+     }
+    },
+    {
+     "id": "p68-083",
+     "sentence": "a mail carrier delivers letters to every house in a snowy village",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A courier-like character in a red hat stands in a snowy area beside a single boxy house, but the goal shown is mostly collecting snowflakes, with no letters, multiple houses or a village visible, and the scene barely changes across the three shots."
+      },
+      "p68-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It is almost identical to A: the same snowy scene, red-hatted character, single house and snowflake-collecting objective, with little sign of delivering letters to every house in a village and very little action."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A courier-like character in a red hat stands in a snowy area beside a single boxy house, but the goal shown is mostly collecting snowflakes, with no letters, multiple houses or a village visible, and the scene barely changes across the three shots."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "It is almost identical to A: the same snowy scene, red-hatted character, single house and snowflake-collecting objective, with little sign of delivering letters to every house in a village and very little action."
+      }
+     }
+    },
+    {
+     "id": "p68-084",
+     "sentence": "a wizard gathers five lost spell books scattered around his tower",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A wizard in a hat stands on a stone tower floor with a 'grab the books' goal, but the screenshots show no books, the task is 10 books per wave over 3 waves instead of five, and nothing changes between frames."
+      },
+      "main-quick": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "This row is almost the same as A: a wizard on a stone floor and a book-collecting prompt, but the screenshots show no books, threats or progress, and the goal is 10 books per wave rather than five lost books."
+      },
+      "main-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "This row is almost the same as A: a wizard on a stone floor and a book-collecting prompt, but the screenshots show no books, threats or progress, and the goal is 10 books per wave rather than five lost books."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.45,
+       "wouldPlay": 0.3,
+       "reason": "A wizard in a hat stands on a stone tower floor with a 'grab the books' goal, but the screenshots show no books, the task is 10 books per wave over 3 waves instead of five, and nothing changes between frames."
+      }
+     }
+    },
+    {
+     "id": "p68-085",
+     "sentence": "an archer shoots balloons drifting over the castle walls",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.35,
+       "reason": "It's a kart racer that shoots tire barriers past a faint castle tower, with no archer, balloons or castle walls, and the run ends quickly at 9% progress."
+      },
+      "p68-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.35,
+       "reason": "It's essentially the same car-shooting racer with only a background castle tower, missing the archer and drifting balloons the sentence asks for."
+      },
+      "main-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.35,
+       "reason": "It's a kart racer that shoots tire barriers past a faint castle tower, with no archer, balloons or castle walls, and the run ends quickly at 9% progress."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.35,
+       "reason": "It's essentially the same car-shooting racer with only a background castle tower, missing the archer and drifting balloons the sentence asks for."
+      }
+     }
+    },
+    {
+     "id": "p68-086",
+     "sentence": "a monkey throws coconuts at a stack of tin buckets on the beach",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "An orange blob, maybe a monkey's hand, throws a ball on a sandy beach, but the targets are waves of crabs instead of a stack of tin buckets, and the visuals are flat and sparse."
+      },
+      "main-quick": {
+       "fidelity": 0.38,
+       "wouldPlay": 0.38,
+       "reason": "It has the same beach and throwing setup with crab waves, but the first screenshot shows a few scattered colored cylinders that could be buckets, though they are not stacked and do not look like tin."
+      },
+      "main-after-reading": {
+       "fidelity": 0.38,
+       "wouldPlay": 0.38,
+       "reason": "It has the same beach and throwing setup with crab waves, but the first screenshot shows a few scattered colored cylinders that could be buckets, though they are not stacked and do not look like tin."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "An orange blob, maybe a monkey's hand, throws a ball on a sandy beach, but the targets are waves of crabs instead of a stack of tin buckets, and the visuals are flat and sparse."
+      }
+     }
+    },
+    {
+     "id": "p68-087",
+     "sentence": "a kid tosses snowballs at a row of snowmen in the schoolyard",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A blocky kid throws red balls at thin posts on a green grassy field, so there is no snow, there are no snowmen and there is no schoolyard; only the throwing-at-a-row goal and the kid match the sentence."
+      },
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "This is almost the same as A: a kid throws red balls at gray posts beside a rock wall on summer grass, with no snowmen, snow or school setting, and the targets are tiny and plain."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "This is almost the same as A: a kid throws red balls at gray posts beside a rock wall on summer grass, with no snowmen, snow or school setting, and the targets are tiny and plain."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A blocky kid throws red balls at thin posts on a green grassy field, so there is no snow, there are no snowmen and there is no schoolyard; only the throwing-at-a-row goal and the kid match the sentence."
+      }
+     }
+    },
+    {
+     "id": "p68-088",
+     "sentence": "stack sandwiches as high as you can in a busy deli without letting the pile fall",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A big sandwich swings over an outdoor grassy park instead of a busy deli, the pile never grows past one sandwich, and the lives just count down, so it shows little stacking."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "It looks almost the same as A: one swinging sandwich in an outdoor field with no deli and no growing stack, while the lives drop from 3 to 1."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A big sandwich swings over an outdoor grassy park instead of a busy deli, the pile never grows past one sandwich, and the lives just count down, so it shows little stacking."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "It looks almost the same as A: one swinging sandwich in an outdoor field with no deli and no growing stack, while the lives drop from 3 to 1."
+      }
+     }
+    },
+    {
+     "id": "p68-089",
+     "sentence": "a dancing robot taps along to disco music under flashing lights",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "The tap-along lanes fit the music part of the prompt, but the foggy grey street shows no clear dancing robot, no disco look and no flashing lights, and the last shot goes dark and murky."
+      },
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "It has the same rhythm-lane gameplay in a drab street with no visible robot or disco lights, but its clear game-over screen with retry options makes the game loop look slightly more complete."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "It has the same rhythm-lane gameplay in a drab street with no visible robot or disco lights, but its clear game-over screen with retry options makes the game loop look slightly more complete."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.25,
+       "reason": "The tap-along lanes fit the music part of the prompt, but the foggy grey street shows no clear dancing robot, no disco look and no flashing lights, and the last shot goes dark and murky."
+      }
+     }
+    },
+    {
+     "id": "p68-090",
+     "sentence": "two samurai cross swords on a cherry blossom hill",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.4,
+       "reason": "A one-on-one duel with health bars and attack flashes fits 'two samurai cross swords', but the flat green field with a sunflower doesn't show a cherry blossom hill, and the figures barely look like samurai."
+      },
+      "p68-quick": {
+       "fidelity": 0.38,
+       "wouldPlay": 0.37,
+       "reason": "Nearly the same top-down duel on a plain green field with a sunflower, so there are no cherry blossoms or hill, and the screenshots show even less visible sword action than A."
+      },
+      "main-after-reading": {
+       "fidelity": 0.4,
+       "wouldPlay": 0.4,
+       "reason": "A one-on-one duel with health bars and attack flashes fits 'two samurai cross swords', but the flat green field with a sunflower doesn't show a cherry blossom hill, and the figures barely look like samurai."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.38,
+       "wouldPlay": 0.37,
+       "reason": "Nearly the same top-down duel on a plain green field with a sunflower, so there are no cherry blossoms or hill, and the screenshots show even less visible sword action than A."
+      }
+     }
+    },
+    {
+     "id": "p68-091",
+     "sentence": "a bat flaps through a cave between dripping stalactites",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.12,
+       "reason": "A very dark cave scene shows a faint creature and a few small shapes, but the bat and stalactites are hard to make out, and two of the three screenshots are a game-over screen after 0.9 seconds."
+      },
+      "p68-quick": {
+       "fidelity": 0.18,
+       "wouldPlay": 0.1,
+       "reason": "It is almost the same as A: a murky dark cave with barely visible shapes, no clear bat or dripping stalactites, and an instant game over after 0.9 seconds."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.12,
+       "reason": "A very dark cave scene shows a faint creature and a few small shapes, but the bat and stalactites are hard to make out, and two of the three screenshots are a game-over screen after 0.9 seconds."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.18,
+       "wouldPlay": 0.1,
+       "reason": "It is almost the same as A: a murky dark cave with barely visible shapes, no clear bat or dripping stalactites, and an instant game over after 0.9 seconds."
+      }
+     }
+    },
+    {
+     "id": "p68-092",
+     "sentence": "a chef catches falling dumplings in a bamboo steamer",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "A chef character with an orange ring catches small falling dumpling-like items and dodges bombs, with a bonus-run moment adding variety, but the setting is a generic grassy field rather than a kitchen, and the steamer and dumplings are tiny and hard to read."
+      },
+      "p68-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.38,
+       "reason": "This is nearly the same chef-with-ring catcher on a grassy field, but it shows fewer falling objects and less action, and the dumplings and steamer are small and not clearly identifiable."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.45,
+       "reason": "A chef character with an orange ring catches small falling dumpling-like items and dodges bombs, with a bonus-run moment adding variety, but the setting is a generic grassy field rather than a kitchen, and the steamer and dumplings are tiny and hard to read."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.38,
+       "reason": "This is nearly the same chef-with-ring catcher on a grassy field, but it shows fewer falling objects and less action, and the dumplings and steamer are small and not clearly identifiable."
+      }
+     }
+    },
+    {
+     "id": "p68-093",
+     "sentence": "bop the sneaky crabs popping out of the sand at the beach",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.2,
+       "reason": "It is a catch-apples, dodge-bombs basket game on a sandy backdrop, with no crabs and no bopping, and almost nothing happens across the three frames."
+      },
+      "main-quick": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "It is the same apple-catching basket game, with no crabs popping from the sand, though it shows a little more falling-object action than A."
+      },
+      "main-after-reading": {
+       "fidelity": 0.12,
+       "wouldPlay": 0.25,
+       "reason": "It is the same apple-catching basket game, with no crabs popping from the sand, though it shows a little more falling-object action than A."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.1,
+       "wouldPlay": 0.2,
+       "reason": "It is a catch-apples, dodge-bombs basket game on a sandy backdrop, with no crabs and no bopping, and almost nothing happens across the three frames."
+      }
+     }
+    },
+    {
+     "id": "p68-094",
+     "sentence": "a goose guards its nest by the pond against waves of hungry foxes coming down the lanes",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "A clear goose and a 'knock out waves' goal are visible, but there's no nest, pond or lanes, and the single blocky pink enemy doesn't read as a fox, so it plays as a one-on-one duel on plain grass."
+      },
+      "main-quick": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.28,
+       "reason": "Almost the same as A: a goose facing one abstract striped enemy on empty grass, with no visible nest, pond, foxes or lanes, and slightly less visual variety across its frames."
+      },
+      "main-after-reading": {
+       "fidelity": 0.28,
+       "wouldPlay": 0.28,
+       "reason": "Almost the same as A: a goose facing one abstract striped enemy on empty grass, with no visible nest, pond, foxes or lanes, and slightly less visual variety across its frames."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.3,
+       "reason": "A clear goose and a 'knock out waves' goal are visible, but there's no nest, pond or lanes, and the single blocky pink enemy doesn't read as a fox, so it plays as a one-on-one duel on plain grass."
+      }
+     }
+    },
+    {
+     "id": "p68-095",
+     "sentence": "a lighthouse keeper holds back waves of pirate boats sailing toward the harbour",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "A boat runs down a wooden pier toward a finish line while pirate-like boats and a lighthouse sit in the background, so it's a generic runner rather than a keeper defending the harbour from waves of attackers."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "It's almost identical to A: a boat runner on a pier with a lighthouse and pirate boats as scenery, and no keeper and no defence of the harbour."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "It's almost identical to A: a boat runner on a pier with a lighthouse and pirate boats as scenery, and no keeper and no defence of the harbour."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.35,
+       "reason": "A boat runs down a wooden pier toward a finish line while pirate-like boats and a lighthouse sit in the background, so it's a generic runner rather than a keeper defending the harbour from waves of attackers."
+      }
+     }
+    },
+    {
+     "id": "p68-096",
+     "sentence": "chop the flying carrots and onions a cook throws in the air",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A swordsman stands in an outdoor field with a 'slice 30 carrots' goal, but the flying items are tiny specks, no cook or onions are visible, and two of the three shots show an error banner."
+      },
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.28,
+       "reason": "It is nearly identical to A, with a blade-wielding character, carrot-slicing text and barely visible flying specks, but still no cook, onions or kitchen setting, and it shows an error banner in only one shot."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.28,
+       "reason": "It is nearly identical to A, with a blade-wielding character, carrot-slicing text and barely visible flying specks, but still no cook, onions or kitchen setting, and it shows an error banner in only one shot."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.25,
+       "reason": "A swordsman stands in an outdoor field with a 'slice 30 carrots' goal, but the flying items are tiny specks, no cook or onions are visible, and two of the three shots show an error banner."
+      }
+     }
+    },
+    {
+     "id": "p68-097",
+     "sentence": "a little crab crosses a busy beach promenade full of bicycles to reach the sea",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "A generic crowd-runner with +/- gates and an ogre on a sandy track; it shows no crab, promenade, bicycles or sea."
+      },
+      "p68-quick": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "Essentially identical to A, a crowd-runner with math gates and an ogre that has nothing to do with a crab crossing a bicycle-filled promenade to the sea."
+      },
+      "main-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "A generic crowd-runner with +/- gates and an ogre on a sandy track; it shows no crab, promenade, bicycles or sea."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.05,
+       "wouldPlay": 0.35,
+       "reason": "Essentially identical to A, a crowd-runner with math gates and an ogre that has nothing to do with a crab crossing a bicycle-filled promenade to the sea."
+      }
+     }
+    },
+    {
+     "id": "p68-098",
+     "sentence": "a single ant grows into a huge colony by marching through bonus gates on a picnic blanket",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "Shows red ants passing through +N gates while the count grows, but the ground is a plain beige lane instead of a picnic blanket, the swarm starts at 5 ants rather than one, and 'beat the ogres' doesn't fit the theme."
+      },
+      "p68-quick": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "Same ant crowd-runner with gates on a plain beige track and no visible picnic blanket, though the red -7 gate and the combo popup add a bit more risk and choice."
+      },
+      "main-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.4,
+       "reason": "Shows red ants passing through +N gates while the count grows, but the ground is a plain beige lane instead of a picnic blanket, the swarm starts at 5 ants rather than one, and 'beat the ogres' doesn't fit the theme."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.5,
+       "wouldPlay": 0.45,
+       "reason": "Same ant crowd-runner with gates on a plain beige track and no visible picnic blanket, though the red -7 gate and the combo popup add a bit more risk and choice."
+      }
+     }
+    },
+    {
+     "id": "p68-099",
+     "sentence": "drop round fruits into a basket so matching ones combine into bigger fruit",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "It's a tall wooden box where small round fruits drop down a guide line, with a merge counter, but there's barely any visible merging into bigger fruit, and a grey rock and a large idle character clutter the scene."
+      },
+      "p68-quick": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.4,
+       "reason": "It uses the same box-drop setup, and here the merge counter climbs to 2/50 and a bigger orange fruit shows up, so combining is a little clearer, but the scene still looks sparse and the box is mostly empty."
+      },
+      "main-after-reading": {
+       "fidelity": 0.55,
+       "wouldPlay": 0.35,
+       "reason": "It's a tall wooden box where small round fruits drop down a guide line, with a merge counter, but there's barely any visible merging into bigger fruit, and a grey rock and a large idle character clutter the scene."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.62,
+       "wouldPlay": 0.4,
+       "reason": "It uses the same box-drop setup, and here the merge counter climbs to 2/50 and a bigger orange fruit shows up, so combining is a little clearer, but the scene still looks sparse and the box is mostly empty."
+      }
+     }
+    },
+    {
+     "id": "p68-100",
+     "sentence": "two hippos bump each other out of a muddy pool",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It shows a knight defending a castle wall from goblins on stone lanes, with no hippos, mud pool or bumping, so it doesn't match the sentence."
+      },
+      "p68-quick": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same castle goblin-defense lane game with tiny enemies and nothing about hippos or a muddy pool, so it doesn't match the sentence."
+      },
+      "main-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.3,
+       "reason": "It shows a knight defending a castle wall from goblins on stone lanes, with no hippos, mud pool or bumping, so it doesn't match the sentence."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.03,
+       "wouldPlay": 0.28,
+       "reason": "It is almost the same castle goblin-defense lane game with tiny enemies and nothing about hippos or a muddy pool, so it doesn't match the sentence."
+      }
+     }
+    },
+    {
+     "id": "p68-101",
+     "sentence": "a lonely astronaut fends off endless waves of space jellyfish on a frozen comet",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "A small astronaut-like figure survives waves and picks upgrades, but the ground is plain brown dirt instead of an icy comet, and the jellyfish are tiny, hard-to-see blobs at the screen edges."
+      },
+      "main-quick": {
+       "fidelity": 0.33,
+       "wouldPlay": 0.33,
+       "reason": "Nearly identical to A, with the same brown non-icy ground, the same lone figure and upgrade cards, and enemies that are even harder to see, so the space jellyfish barely show up."
+      },
+      "main-after-reading": {
+       "fidelity": 0.33,
+       "wouldPlay": 0.33,
+       "reason": "Nearly identical to A, with the same brown non-icy ground, the same lone figure and upgrade cards, and enemies that are even harder to see, so the space jellyfish barely show up."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.35,
+       "wouldPlay": 0.35,
+       "reason": "A small astronaut-like figure survives waves and picks upgrades, but the ground is plain brown dirt instead of an icy comet, and the jellyfish are tiny, hard-to-see blobs at the screen edges."
+      }
+     }
+    },
+    {
+     "id": "p68-102",
+     "sentence": "a hole in the zoo grows bigger as it eats benches, ice cream carts and finally an elephant",
+     "scores": {
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "A hole sits on a plain gray floor beside a few cropped, unclear props, with no zoo, ice cream carts or elephant visible (the goal says kangaroo sign), and the 0/60 counter never moves, so the hole doesn't seem to eat or grow."
+      },
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "It's almost the same as A: a static hole on an empty gray floor with a few odd props at the edge, a kangaroo goal instead of an elephant, no zoo setting, and no sign that anything is swallowed or that the hole grows."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "It's almost the same as A: a static hole on an empty gray floor with a few odd props at the edge, a kangaroo goal instead of an elephant, no zoo setting, and no sign that anything is swallowed or that the hole grows."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.2,
+       "reason": "A hole sits on a plain gray floor beside a few cropped, unclear props, with no zoo, ice cream carts or elephant visible (the goal says kangaroo sign), and the 0/60 counter never moves, so the hole doesn't seem to eat or grow."
+      }
+     }
+    },
+    {
+     "id": "p68-103",
+     "sentence": "a fox sneaks into the henhouse, grabs eggs and carries them back to its den before the farmer wakes",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A fox moves through a generic maze toward an egg, but there's no henhouse, den or sleeping farmer, and the coins and exit goal swap out the sneaking and egg-carrying."
+      },
+      "p68-quick": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "It looks almost the same as A: a fox in a plain maze with an egg and a coin goal, with no farm setting, farmer threat or den to bring the eggs back to."
+      },
+      "main-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "A fox moves through a generic maze toward an egg, but there's no henhouse, den or sleeping farmer, and the coins and exit goal swap out the sneaking and egg-carrying."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.25,
+       "wouldPlay": 0.3,
+       "reason": "It looks almost the same as A: a fox in a plain maze with an egg and a coin goal, with no farm setting, farmer threat or den to bring the eggs back to."
+      }
+     }
+    },
+    {
+     "id": "p68-104",
+     "sentence": "a librarian puts red, green and blue books back on the matching shelves",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.3,
+       "reason": "There is a librarian character and a colour-sorting mechanic, but the player sorts teddy bears, ducks and balls into bins on a plain green field, with no books, shelves or library setting."
+      },
+      "p68-quick": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.35,
+       "reason": "It is basically the same off-theme toy-sorting game with a librarian character and no books or shelves, though the combo feedback adds a little more sense of reward."
+      },
+      "main-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.3,
+       "reason": "There is a librarian character and a colour-sorting mechanic, but the player sorts teddy bears, ducks and balls into bins on a plain green field, with no books, shelves or library setting."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.2,
+       "wouldPlay": 0.35,
+       "reason": "It is basically the same off-theme toy-sorting game with a librarian character and no books or shelves, though the combo feedback adds a little more sense of reward."
+      }
+     }
+    },
+    {
+     "id": "p68-105",
+     "sentence": "tap the boats in a crowded harbour so each one sails out the way its bow points",
+     "scores": {
+      "main-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A tap-away grid of arrow tokens sits under a strip of water, but the pieces look like generic arrow discs rather than boats, there's no crowded harbour, and the boat counter stays at 0/30 across all three shots, so nothing gets sailed out."
+      },
+      "p68-quick": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "B looks almost identical to A: a sparse grid of arrow discs on a sandy board with a large character standing in the way, a hint of sea and no visible progress, which reads as a placeholder more than a harbour puzzle."
+      },
+      "main-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "A tap-away grid of arrow tokens sits under a strip of water, but the pieces look like generic arrow discs rather than boats, there's no crowded harbour, and the boat counter stays at 0/30 across all three shots, so nothing gets sailed out."
+      },
+      "p68-after-reading": {
+       "fidelity": 0.3,
+       "wouldPlay": 0.2,
+       "reason": "B looks almost identical to A: a sparse grid of arrow discs on a sandy board with a large character standing in the way, a hint of sea and no visible progress, which reads as a placeholder more than a harbour puzzle."
+      }
+     }
+    }
+   ],
+   "skipped": []
+  }
+ ]
+}

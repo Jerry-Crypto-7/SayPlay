@@ -3470,7 +3470,1478 @@
    }
   ]
  },
- "g6": null,
+ "g6": {
+  "about": "G6 quality (secondary, cannot rescue a game that fails G1-G5). Blind judge on phone sheets, both sides on one sheet per sentence, order from the seed. Per game: its 15 new sentences, would-play median >= main + 0.10 and fidelity median >= main - 0.02; general 30: would play and fidelity >= main - 0.02 (shared by every game). Side = after-reading (the reading game when shots exist, else the quick game).",
+  "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+  "judgedAt": "2026-11-03T12:37:42.068Z",
+  "view": "phone",
+  "seed": 68016,
+  "file": "evals/play/p68/judge-holdout.json",
+  "skipped": [],
+  "all": {
+   "n": 105,
+   "main": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.18
+   },
+   "p68": {
+    "wouldPlay": 0.28,
+    "fidelity": 0.25
+   }
+  },
+  "new": {
+   "n": 75,
+   "main": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.15
+   },
+   "p68": {
+    "wouldPlay": 0.25,
+    "fidelity": 0.2
+   }
+  },
+  "general": {
+   "n": 30,
+   "main": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.3
+   },
+   "p68": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.3
+   },
+   "pass": true
+  },
+  "perGame": {
+   "stunt": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.2
+    },
+    "p68": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.2
+    },
+    "pass": false
+   },
+   "minigolf": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.3,
+     "fidelity": 0.15
+    },
+    "p68": {
+     "wouldPlay": 0.35,
+     "fidelity": 0.3
+    },
+    "pass": false
+   },
+   "railfps": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.15
+    },
+    "p68": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.25
+    },
+    "pass": false
+   },
+   "buildshift": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.15
+    },
+    "p68": {
+     "wouldPlay": 0.22,
+     "fidelity": 0.15
+    },
+    "pass": false
+   },
+   "drawsave": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.3,
+     "fidelity": 0.1
+    },
+    "p68": {
+     "wouldPlay": 0.2,
+     "fidelity": 0.25
+    },
+    "pass": false
+   }
+  },
+  "rows": [
+   {
+    "id": "p68-001",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-002",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.07,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-003",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-004",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.18
+    }
+   },
+   {
+    "id": "p68-005",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.33
+    }
+   },
+   {
+    "id": "p68-006",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-007",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-008",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-009",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-010",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.43
+    }
+   },
+   {
+    "id": "p68-011",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-012",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-013",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-014",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.37
+    }
+   },
+   {
+    "id": "p68-015",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-016",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-017",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.5
+    }
+   },
+   {
+    "id": "p68-018",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-019",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-020",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-021",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45
+    }
+   },
+   {
+    "id": "p68-022",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.5
+    }
+   },
+   {
+    "id": "p68-023",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-024",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-025",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-026",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-027",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-028",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.4
+    }
+   },
+   {
+    "id": "p68-029",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-030",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-031",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-032",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-033",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-034",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.17,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-035",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-036",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45
+    },
+    "p68": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.47
+    }
+   },
+   {
+    "id": "p68-037",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-038",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45
+    }
+   },
+   {
+    "id": "p68-039",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.27
+    }
+   },
+   {
+    "id": "p68-040",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-041",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-042",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-043",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.17,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-044",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-045",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-046",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-047",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-048",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-049",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.27
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-050",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-051",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-052",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-053",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.18
+    }
+   },
+   {
+    "id": "p68-054",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-055",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.17,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-056",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-057",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-058",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-059",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.06,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-060",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-061",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-062",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-063",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.02,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-064",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-065",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-066",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-067",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-068",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-069",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-070",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-071",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-072",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.28
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-073",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-074",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-075",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.22
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-076",
+    "half": "general",
+    "game": "runner",
+    "main": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.4
+    }
+   },
+   {
+    "id": "p68-077",
+    "half": "general",
+    "game": "runner",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-078",
+    "half": "general",
+    "game": "platformer",
+    "main": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-079",
+    "half": "general",
+    "game": "platformer",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-080",
+    "half": "general",
+    "game": "arena",
+    "main": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-081",
+    "half": "general",
+    "game": "voyage",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-082",
+    "half": "general",
+    "game": "voyage",
+    "main": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.5
+    },
+    "p68": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.55
+    }
+   },
+   {
+    "id": "p68-083",
+    "half": "general",
+    "game": "quest",
+    "main": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-084",
+    "half": "general",
+    "game": "quest",
+    "main": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-085",
+    "half": "general",
+    "game": "shooter",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-086",
+    "half": "general",
+    "game": "throw",
+    "main": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.38
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-087",
+    "half": "general",
+    "game": "throw",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-088",
+    "half": "general",
+    "game": "timing",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-089",
+    "half": "general",
+    "game": "rhythm",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-090",
+    "half": "general",
+    "game": "duel",
+    "main": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.37
+    }
+   },
+   {
+    "id": "p68-091",
+    "half": "general",
+    "game": "flap",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.12
+    },
+    "p68": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.1
+    }
+   },
+   {
+    "id": "p68-092",
+    "half": "general",
+    "game": "catch",
+    "main": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.45
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.38
+    }
+   },
+   {
+    "id": "p68-093",
+    "half": "general",
+    "game": "whack",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-094",
+    "half": "general",
+    "game": "defense",
+    "main": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.28
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-095",
+    "half": "general",
+    "game": "defense",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-096",
+    "half": "general",
+    "game": "slice",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.28
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-097",
+    "half": "general",
+    "game": "hop",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-098",
+    "half": "general",
+    "game": "crowd",
+    "main": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45
+    }
+   },
+   {
+    "id": "p68-099",
+    "half": "general",
+    "game": "merge",
+    "main": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.4
+    }
+   },
+   {
+    "id": "p68-100",
+    "half": "general",
+    "game": "push",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-101",
+    "half": "general",
+    "game": "survivor",
+    "main": {
+     "fidelity": 0.33,
+     "wouldPlay": 0.33
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-102",
+    "half": "general",
+    "game": "hole",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-103",
+    "half": "general",
+    "game": "steal",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-104",
+    "half": "general",
+    "game": "sort",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-105",
+    "half": "general",
+    "game": "arrows",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   }
+  ]
+ },
  "g7": {
   "about": "G7 AI version (recorded, no threshold): astra as reader and director on the eval ledger (worldsmith:p68-eval) through evals/play/p68/director-live.mjs --set holdout.json against shots.mjs serve, VERCEL_ENV=production. Sample = 2 sentences per game + 4 general (first by id); wired games first because the director does not offer stunt and buildshift.",
   "sample": {
@@ -3603,7 +5074,154 @@
    "ledgerTotalUsd": 5.27
   }
  },
- "overall": null,
+ "overall": {
+  "about": "Overall: e2e of the wired games (minigolf, railfps, drawsave), play-share, interface-language and the VR e2e (vr-enter, vr-diorama, vr-native, vr-hud) against the branch build (next start, port 3180, FALLBACK_SMOKE_URL). Saved games are covered by G5 (p66-hash, hash-v6 on the stored genre.v6 fixtures) and play-share. stunt and buildshift are not wired, so they have no e2e here.",
+  "side": "branch",
+  "full": {
+   "startTime": "2026-11-03T11:04:34.897Z",
+   "passed": 91,
+   "failed": 4,
+   "skipped": 1,
+   "note": "run while the shots process was taking screenshots on the same machine; the 4 red were 3x interface-language waiting for the /play/<hash> address and play-drawsave chromium FPS (p95 66.6 ms)",
+   "specs": [
+    {
+     "spec": "interface-language",
+     "project": "chromium",
+     "passed": 1,
+     "failed": 3,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "chromium",
+     "passed": 5,
+     "failed": 1,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "pixel7-touch",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "iphone-touch",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-minigolf",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-minigolf",
+     "project": "pixel7-touch",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-minigolf",
+     "project": "iphone-touch",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-railfps",
+     "project": "chromium",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 1
+    },
+    {
+     "spec": "play-railfps",
+     "project": "pixel7-touch",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-railfps",
+     "project": "iphone-touch",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-share",
+     "project": "chromium",
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-share",
+     "project": "pixel7-touch",
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-diorama",
+     "project": "chromium",
+     "passed": 12,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-enter",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-hud",
+     "project": "chromium",
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-native",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    }
+   ]
+  },
+  "rerun": {
+   "startTime": "2026-11-03T12:38:04.289Z",
+   "why": "the 4 red of the full run, re-run without the shots process",
+   "specs": [
+    {
+     "spec": "interface-language",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "chromium",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    }
+   ]
+  },
+  "red": [],
+  "redOnMainToo": [],
+  "pass": true
+ },
  "hybrid": {
   "verdict": "off",
   "reasons": [
