@@ -9,13 +9,16 @@
  * dílu vymění (náhradní kvádr → model), skupina se skryje, program se přeloží mimo hlavní vlákno
  * (`compileForComposer`, `KHR_parallel_shader_compile`) a díl se ukáže, až je hotový. Obsah, se kterým díl vznikl, se
  * kreslí hned: přeloží ho první snímek spolu s ostatními.
+ *
+ * Kulisy (P68-M T2) totéž dělají bez `@react-three/fiber` přes `warm-gate.ts`; renderer jim dává `WarmerProvider`.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode, useMemo, useRef } from 'react';
 import { type Group, type Material, type Mesh, Object3D, type WebGLRenderer } from 'three';
 
-import { compileForComposer } from '../../../feed/StageHost';
+import { compileForComposer } from '../../feed/StageHost';
+import { type Warmer, WarmerContext } from './warm-gate';
 
 /**
  * `updateMatrixWorld` slotu zákazníka: three jinak skládá matice celého podstromu každý snímek, i neviditelného – volný
@@ -59,6 +62,13 @@ export function hasColdMaterial(gl: Pick<WebGLRenderer, 'properties'>, root: Obj
     }
   });
   return cold;
+}
+
+/** Renderer plátna pro kulisy (`useWarmed` ve `warm-gate.ts`); patří dovnitř plátna jako ostatní kontexty scény. */
+export function WarmerProvider({ children }: { readonly children: ReactNode }) {
+  const get = useThree((three) => three.get);
+  const warmer = useMemo<Warmer>(() => ({ cold: (part) => hasColdMaterial(get().gl, part), warm: (part) => compileForComposer(get(), part) }), [get]);
+  return <WarmerContext.Provider value={warmer}>{children}</WarmerContext.Provider>;
 }
 
 export function Warm({ children }: { readonly children: ReactNode }) {

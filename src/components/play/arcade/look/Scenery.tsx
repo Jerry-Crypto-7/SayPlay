@@ -23,6 +23,7 @@ import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
 import { PlayEnv } from './play-env';
 import { capSnow } from './rig/snowcap';
+import { useWarmed } from './warm-gate';
 
 // Líně: stránka gridu importuje tenhle soubor staticky a Panorama táhne @react-three/fiber
 // do úvodního balíku – první snímek gridu byl o ~220 ms později (P29C T5).
@@ -250,7 +251,9 @@ export function SceneryModelProp({ id, cap, cast = true }: { readonly id: Scener
     freeze(copy);
     return copy;
   }, [model, id, cap, cast]);
-  return fitted === null ? null : <primitive object={fitted} />;
+  // Model doběhne po prvním snímku: nový program se přeloží mimo hlavní vlákno, kulisa se ukáže hotová (P68-M T2).
+  const shown = useWarmed(fitted);
+  return shown === null ? null : <primitive object={shown} />;
 }
 
 /**

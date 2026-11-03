@@ -9,8 +9,8 @@
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { shownInWorld } from '../../../RiggedModel';
-import { contentChanged, hasColdMaterial, updateWhenShown } from '../buildshift-warm';
+import { shownInWorld } from '../../RiggedModel';
+import { contentChanged, hasColdMaterial, updateWhenShown } from '../warm';
 
 const box = (): Mesh => new Mesh(new BoxGeometry(), new MeshBasicMaterial());
 

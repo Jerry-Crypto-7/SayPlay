@@ -38,6 +38,7 @@ import { introLeftOf, restCamera } from './look/intro';
 import { preloadBody } from './look/load';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
+import { WarmerProvider } from './look/warm';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { LaneStage, useLanesInput } from './genres/lanes/LaneScene';
 import { HopScene } from './genres/hop/HopScene';
@@ -1214,6 +1215,8 @@ const StageCanvas = memo(function StageCanvas({
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
       {/* Kontext uvnitř plátna, ne nad ním: s hostitelem feedu a ve VR jde scéna tunelem do cizího stromu. */}
       <PlayRectContext.Provider value={playArea}>
+      {/* Kulisy a rostliny se ukážou až s přeloženým programem (P68-M T2, `warm-gate.ts`). */}
+      <WarmerProvider>
       <Fragment key={sceneKey}>
       {sceneKey !== undefined && <FreshCamera />}
       {sceneKey !== undefined && sceneKey !== firstScene && <DrawWhenCompiled />}
@@ -1268,6 +1271,7 @@ const StageCanvas = memo(function StageCanvas({
         </>
       )}
       </Fragment>
+      </WarmerProvider>
       </PlayRectContext.Provider>
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
