@@ -173,7 +173,9 @@ class PhysicsSession {
     }
     for (let k = 0; k < PHYSICS_SUBSTEPS; k += 1) this.world.step();
     for (const [i, entry] of this.entries) {
-      if (!entry.dynamic || !entry.rigid.isEnabled()) continue;
+      // `setEnabled` se nevolá nikde (vypnuté těleso by drželo i sousedy, viz výš), takže `isEnabled()` byl jen další
+      // průchod do WASM na těleso a tik (P68-M T2). Spící tělesa číst dál: jejich přeskočení mění otisky `merge` a `push`.
+      if (!entry.dynamic) continue;
       const base = bodyBase(i);
       const t = entry.rigid.translation();
       const v = entry.rigid.linvel();
@@ -187,9 +189,7 @@ class PhysicsSession {
       state[base + BODY.vz] = Math.round((v.z * UNIT) / ARCADE_HZ);
       state[base + BODY.aux0] = aux0;
       state[base + BODY.aux1] = aux1;
-      SYNCED.forEach((slot, k) => {
-        entry.last[k] = state[base + slot] as number;
-      });
+      for (let k = 0; k < SYNCED.length; k += 1) entry.last[k] = state[base + (SYNCED[k] as number)] as number;
     }
   }
 
