@@ -10,6 +10,7 @@
  * --usage-log <file> --cap-usd 1 --director-cap-usd 2` (stejné prostředí). Bez měřicí knihy
  * (`scripts/measure/eval-ledger.mjs`) nebo s nemístním `--base` skončí kódem 2 – platí server, ne tenhle klient.
  * Zapíše `evals/play/p68/director-<game>.json`.
+ * T15 (G7): `--set evals/play/p68/holdout.json` vezme věty z jiné sady (výchozí `dev.json`), `--out <file>` jiný výstup.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -41,7 +42,8 @@ const PRICE = { in: 10, out: 50 };
 const WAIT_CAP_MS = 600_000;
 const POLL_MS = 1_000;
 const here = (name) => fileURLToPath(new URL(name, import.meta.url));
-const dev = JSON.parse(readFileSync(here('./dev.json'), 'utf8')).sentences;
+const SET = arg('set');
+const dev = JSON.parse(readFileSync(SET ?? here('./dev.json'), 'utf8')).sentences;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function json(path, init) {
@@ -126,7 +128,7 @@ function spend() {
 const rows = [];
 for (const id of IDS) {
   const row = dev.find((sentence) => sentence.id === id);
-  if (row === undefined) throw new Error(`no dev sentence ${id}`);
+  if (row === undefined) throw new Error(`no sentence ${id} in ${SET ?? 'dev.json'}`);
   const done = await measure(row);
   rows.push(done);
   console.log(JSON.stringify({ id: done.id, quick: done.quick, reading: done.reading, ai: done.ai, status: done.status, reason: done.reason, aiMs: done.aiMs }));
@@ -140,6 +142,7 @@ const report = {
   measured: true,
   measuredAt: new Date().toISOString(),
   ledger: { prefix: ledger.prefix, capUsd: ledger.capUsd },
+  set: SET ?? 'evals/play/p68/dev.json',
   sentences: IDS,
   rows,
   summary: {
@@ -152,5 +155,5 @@ const report = {
   },
   spend: spend(),
 };
-writeFileSync(here(`./director-${GAME}.json`), `${JSON.stringify(report, null, 1)}\n`);
+writeFileSync(arg('out') ?? here(`./director-${GAME}.json`),`${JSON.stringify(report, null, 1)}\n`);
 console.log(`DONE ${JSON.stringify(report.summary)} spend ${JSON.stringify(report.spend)}`);

@@ -1,0 +1,5459 @@
+{
+ "schema": "p68-result.v1",
+ "task": "T15",
+ "holdout": {
+  "file": "evals/play/p68/holdout.json",
+  "sha256": "f24fadb05ce96ae1a14816eef66d751ddd41ea3eeedc07a4f43f4139ffd43c61",
+  "openedAt": "2026-11-03T10:11:34.691Z",
+  "commit": "56af7b27",
+  "sentences": 105,
+  "halves": {
+   "new": 75,
+   "general": 30
+  }
+ },
+ "sides": {
+  "main": {
+   "commit": "688d989d",
+   "port": 3181,
+   "root": "D:/caches/p68i/main"
+  },
+  "branch": {
+   "commit": "56af7b27",
+   "port": 3180
+  }
+ },
+ "thresholds": "evals/play/p68/gates.json (frozen in T1)",
+ "wired": {
+  "stunt": false,
+  "minigolf": true,
+  "railfps": true,
+  "buildshift": false,
+  "drawsave": true
+ },
+ "g1": {
+  "quick": "draftGameSpecWithMeta(sentence, 1) = the quick game; classifier = classifyGenre ranked[0]",
+  "labels": "evals/play/p68/holdout-labels.json (claude -p text judge, as T2)",
+  "general": {
+   "holdout": {
+    "counted": 30,
+    "wrongMain": 6,
+    "wrongBranch": 6
+   },
+   "test200": {
+    "counted": 175,
+    "wrongMain": 64,
+    "wrongBranch": 64
+   },
+   "movesHoldout": [],
+   "movesT2": []
+  },
+  "generalOk": true,
+  "perGame": {
+   "stunt": {
+    "routedToOwn": 0,
+    "n": 15
+   },
+   "minigolf": {
+    "routedToOwn": 10,
+    "n": 15
+   },
+   "railfps": {
+    "routedToOwn": 4,
+    "n": 15
+   },
+   "buildshift": {
+    "routedToOwn": 0,
+    "n": 15
+   },
+   "drawsave": {
+    "routedToOwn": 10,
+    "n": 15
+   }
+  },
+  "rows": [
+   {
+    "id": "p68-001",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-002",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-003",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "runner"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-004",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-005",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-006",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "platformer",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-007",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-008",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-009",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "rhythm",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "rhythm",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-010",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-011",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-012",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-013",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-014",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-015",
+    "half": "new",
+    "aimed": "stunt",
+    "best": "stunt",
+    "acceptable": [
+     "stunt"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-016",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-017",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-018",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf"
+    ],
+    "main": {
+     "classifier": "runner",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "runner",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-019",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "shooter"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-020",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "throw",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-021",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-022",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "throw",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-023",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-024",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-025",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-026",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "throw",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-027",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "timing"
+    ],
+    "main": {
+     "classifier": "timing",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-028",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "minigolf",
+     "quick": "minigolf"
+    }
+   },
+   {
+    "id": "p68-029",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "shooter"
+    },
+    "branch": {
+     "classifier": "shooter",
+     "quick": "shooter"
+    }
+   },
+   {
+    "id": "p68-030",
+    "half": "new",
+    "aimed": "minigolf",
+    "best": "minigolf",
+    "acceptable": [
+     "minigolf",
+     "throw"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-031",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter",
+     "defense"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "platformer",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-032",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "railfps",
+     "quick": "railfps"
+    }
+   },
+   {
+    "id": "p68-033",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "railfps",
+     "quick": "railfps"
+    }
+   },
+   {
+    "id": "p68-034",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-035",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter",
+     "whack"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-036",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-037",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-038",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "railfps",
+     "quick": "railfps"
+    }
+   },
+   {
+    "id": "p68-039",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-040",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "shooter"
+    },
+    "branch": {
+     "classifier": "railfps",
+     "quick": "railfps"
+    }
+   },
+   {
+    "id": "p68-041",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-042",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "shooter"
+    },
+    "branch": {
+     "classifier": "shooter",
+     "quick": "shooter"
+    }
+   },
+   {
+    "id": "p68-043",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-044",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-045",
+    "half": "new",
+    "aimed": "railfps",
+    "best": "railfps",
+    "acceptable": [
+     "railfps",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-046",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-047",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-048",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-049",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-050",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-051",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "runner",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "runner",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-052",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-053",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-054",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-055",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-056",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-057",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-058",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-059",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift",
+     "quest"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-060",
+    "half": "new",
+    "aimed": "buildshift",
+    "best": "buildshift",
+    "acceptable": [
+     "buildshift"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-061",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-062",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-063",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-064",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-065",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-066",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "defense",
+     "quick": "defense"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-067",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-068",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-069",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-070",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-071",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-072",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-073",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "runner",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "drawsave",
+     "quick": "drawsave"
+    }
+   },
+   {
+    "id": "p68-074",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-075",
+    "half": "new",
+    "aimed": "drawsave",
+    "best": "drawsave",
+    "acceptable": [
+     "drawsave"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-076",
+    "half": "general",
+    "aimed": "runner",
+    "best": "runner",
+    "acceptable": [
+     "runner"
+    ],
+    "main": {
+     "classifier": "runner",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "runner",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-077",
+    "half": "general",
+    "aimed": "runner",
+    "best": "runner",
+    "acceptable": [
+     "runner"
+    ],
+    "main": {
+     "classifier": "runner",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "runner",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-078",
+    "half": "general",
+    "aimed": "platformer",
+    "best": "platformer",
+    "acceptable": [
+     "platformer"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-079",
+    "half": "general",
+    "aimed": "platformer",
+    "best": "platformer",
+    "acceptable": [
+     "platformer"
+    ],
+    "main": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    },
+    "branch": {
+     "classifier": "platformer",
+     "quick": "platformer"
+    }
+   },
+   {
+    "id": "p68-080",
+    "half": "general",
+    "aimed": "arena",
+    "best": "arena",
+    "acceptable": [
+     "arena"
+    ],
+    "main": {
+     "classifier": "runner",
+     "quick": "runner"
+    },
+    "branch": {
+     "classifier": "runner",
+     "quick": "runner"
+    }
+   },
+   {
+    "id": "p68-081",
+    "half": "general",
+    "aimed": "voyage",
+    "best": "voyage",
+    "acceptable": [
+     "voyage",
+     "runner"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-082",
+    "half": "general",
+    "aimed": "voyage",
+    "best": "voyage",
+    "acceptable": [
+     "voyage"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-083",
+    "half": "general",
+    "aimed": "quest",
+    "best": "quest",
+    "acceptable": [
+     "quest",
+     "arena"
+    ],
+    "main": {
+     "classifier": "quest",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "quest",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-084",
+    "half": "general",
+    "aimed": "quest",
+    "best": "arena",
+    "acceptable": [
+     "arena"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-085",
+    "half": "general",
+    "aimed": "shooter",
+    "best": "shooter",
+    "acceptable": [
+     "shooter",
+     "throw"
+    ],
+    "main": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "shooter",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-086",
+    "half": "general",
+    "aimed": "throw",
+    "best": "throw",
+    "acceptable": [
+     "throw"
+    ],
+    "main": {
+     "classifier": "throw",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "throw",
+     "quick": "throw"
+    }
+   },
+   {
+    "id": "p68-087",
+    "half": "general",
+    "aimed": "throw",
+    "best": "throw",
+    "acceptable": [
+     "throw",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "throw",
+     "quick": "throw"
+    },
+    "branch": {
+     "classifier": "throw",
+     "quick": "throw"
+    }
+   },
+   {
+    "id": "p68-088",
+    "half": "general",
+    "aimed": "timing",
+    "best": "timing",
+    "acceptable": [
+     "timing"
+    ],
+    "main": {
+     "classifier": "timing",
+     "quick": "timing"
+    },
+    "branch": {
+     "classifier": "timing",
+     "quick": "timing"
+    }
+   },
+   {
+    "id": "p68-089",
+    "half": "general",
+    "aimed": "rhythm",
+    "best": "rhythm",
+    "acceptable": [
+     "rhythm"
+    ],
+    "main": {
+     "classifier": "rhythm",
+     "quick": "rhythm"
+    },
+    "branch": {
+     "classifier": "rhythm",
+     "quick": "rhythm"
+    }
+   },
+   {
+    "id": "p68-090",
+    "half": "general",
+    "aimed": "duel",
+    "best": "duel",
+    "acceptable": [
+     "duel"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-091",
+    "half": "general",
+    "aimed": "flap",
+    "best": "flap",
+    "acceptable": [
+     "flap",
+     "voyage"
+    ],
+    "main": {
+     "classifier": "flap",
+     "quick": "flap"
+    },
+    "branch": {
+     "classifier": "flap",
+     "quick": "flap"
+    }
+   },
+   {
+    "id": "p68-092",
+    "half": "general",
+    "aimed": "catch",
+    "best": "catch",
+    "acceptable": [
+     "catch"
+    ],
+    "main": {
+     "classifier": "catch",
+     "quick": "catch"
+    },
+    "branch": {
+     "classifier": "catch",
+     "quick": "catch"
+    }
+   },
+   {
+    "id": "p68-093",
+    "half": "general",
+    "aimed": "whack",
+    "best": "whack",
+    "acceptable": [
+     "whack"
+    ],
+    "main": {
+     "classifier": "whack",
+     "quick": "whack"
+    },
+    "branch": {
+     "classifier": "whack",
+     "quick": "whack"
+    }
+   },
+   {
+    "id": "p68-094",
+    "half": "general",
+    "aimed": "defense",
+    "best": "defense",
+    "acceptable": [
+     "defense",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-095",
+    "half": "general",
+    "aimed": "defense",
+    "best": "defense",
+    "acceptable": [
+     "defense",
+     "shooter"
+    ],
+    "main": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "voyage",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-096",
+    "half": "general",
+    "aimed": "slice",
+    "best": "slice",
+    "acceptable": [
+     "slice"
+    ],
+    "main": {
+     "classifier": "slice",
+     "quick": "slice"
+    },
+    "branch": {
+     "classifier": "slice",
+     "quick": "slice"
+    }
+   },
+   {
+    "id": "p68-097",
+    "half": "general",
+    "aimed": "hop",
+    "best": "hop",
+    "acceptable": [
+     "hop"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "voyage"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "voyage"
+    }
+   },
+   {
+    "id": "p68-098",
+    "half": "general",
+    "aimed": "crowd",
+    "best": "crowd",
+    "acceptable": [
+     "crowd"
+    ],
+    "main": {
+     "classifier": "crowd",
+     "quick": "crowd"
+    },
+    "branch": {
+     "classifier": "crowd",
+     "quick": "crowd"
+    }
+   },
+   {
+    "id": "p68-099",
+    "half": "general",
+    "aimed": "merge",
+    "best": "merge",
+    "acceptable": [
+     "merge"
+    ],
+    "main": {
+     "classifier": "merge",
+     "quick": "merge"
+    },
+    "branch": {
+     "classifier": "merge",
+     "quick": "merge"
+    }
+   },
+   {
+    "id": "p68-100",
+    "half": "general",
+    "aimed": "push",
+    "best": "push",
+    "acceptable": [
+     "push"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "arena"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "arena"
+    }
+   },
+   {
+    "id": "p68-101",
+    "half": "general",
+    "aimed": "survivor",
+    "best": "survivor",
+    "acceptable": [
+     "survivor",
+     "shooter",
+     "defense"
+    ],
+    "main": {
+     "classifier": "survivor",
+     "quick": "survivor"
+    },
+    "branch": {
+     "classifier": "survivor",
+     "quick": "survivor"
+    }
+   },
+   {
+    "id": "p68-102",
+    "half": "general",
+    "aimed": "hole",
+    "best": "hole",
+    "acceptable": [
+     "hole"
+    ],
+    "main": {
+     "classifier": "hole",
+     "quick": "hole"
+    },
+    "branch": {
+     "classifier": "hole",
+     "quick": "hole"
+    }
+   },
+   {
+    "id": "p68-103",
+    "half": "general",
+    "aimed": "steal",
+    "best": "steal",
+    "acceptable": [
+     "steal",
+     "arena"
+    ],
+    "main": {
+     "classifier": "arena",
+     "quick": "quest"
+    },
+    "branch": {
+     "classifier": "arena",
+     "quick": "quest"
+    }
+   },
+   {
+    "id": "p68-104",
+    "half": "general",
+    "aimed": "sort",
+    "best": "sort",
+    "acceptable": [
+     "sort"
+    ],
+    "main": {
+     "classifier": "sort",
+     "quick": "sort"
+    },
+    "branch": {
+     "classifier": "sort",
+     "quick": "sort"
+    }
+   },
+   {
+    "id": "p68-105",
+    "half": "general",
+    "aimed": "arrows",
+    "best": "arrows",
+    "acceptable": [
+     "arrows"
+    ],
+    "main": {
+     "classifier": "arrows",
+     "quick": "arrows"
+    },
+    "branch": {
+     "classifier": "arrows",
+     "quick": "arrows"
+    }
+   }
+  ]
+ },
+ "g2": {
+  "tool": "scripts/measure/gameplay-gate.mjs on the quick-game spec of each new holdout sentence (seed 1); a sentence routed to another game has no spec and counts as failed",
+  "report": "evals/play/p68/gameplay-holdout.json",
+  "perGame": {
+   "stunt": {
+    "n": 15,
+    "pass": 0
+   },
+   "minigolf": {
+    "n": 15,
+    "pass": 10
+   },
+   "railfps": {
+    "n": 15,
+    "pass": 4
+   },
+   "buildshift": {
+    "n": 15,
+    "pass": 0
+   },
+   "drawsave": {
+    "n": 15,
+    "pass": 10
+   }
+  },
+  "routedPassing": 24,
+  "routedAll": 24
+ },
+ "g3": {
+  "spec": "e2e/play-perf.spec.ts @p68-fps on the hand fixture spec of each game, control p66-arrows",
+  "file": "evals/play/p68/fps-holdout.json",
+  "rows": [
+   {
+    "game": "p66-arrows",
+    "project": "pixel7-touch",
+    "gated": true,
+    "fpsMedian": 59.9,
+    "frameP95Ms": 33.4,
+    "frameMedianMs": 16.7
+   },
+   {
+    "game": "p68-stunt",
+    "project": "pixel7-touch",
+    "gated": true,
+    "fpsMedian": 59.9,
+    "frameP95Ms": 33.4,
+    "frameMedianMs": 16.7
+   },
+   {
+    "game": "p68-minigolf",
+    "project": "pixel7-touch",
+    "gated": true,
+    "fpsMedian": 59.9,
+    "frameP95Ms": 16.8,
+    "frameMedianMs": 16.7
+   },
+   {
+    "game": "p68-railfps",
+    "project": "pixel7-touch",
+    "gated": true,
+    "fpsMedian": 59.9,
+    "frameP95Ms": 16.8,
+    "frameMedianMs": 16.7
+   },
+   {
+    "game": "p68-buildshift",
+    "project": "pixel7-touch",
+    "gated": true,
+    "fpsMedian": 59.9,
+    "frameP95Ms": 33.4,
+    "frameMedianMs": 16.7
+   },
+   {
+    "game": "p68-drawsave",
+    "project": "pixel7-touch",
+    "gated": true,
+    "fpsMedian": 59.9,
+    "frameP95Ms": 16.8,
+    "frameMedianMs": 16.7
+   },
+   {
+    "game": "p66-arrows",
+    "project": "iphone-touch",
+    "gated": false,
+    "fpsMedian": 23.8,
+    "frameP95Ms": 60,
+    "frameMedianMs": 42
+   },
+   {
+    "game": "p68-stunt",
+    "project": "iphone-touch",
+    "gated": false,
+    "fpsMedian": 21.3,
+    "frameP95Ms": 61,
+    "frameMedianMs": 47
+   },
+   {
+    "game": "p68-minigolf",
+    "project": "iphone-touch",
+    "gated": false,
+    "fpsMedian": 62.5,
+    "frameP95Ms": 48,
+    "frameMedianMs": 16
+   },
+   {
+    "game": "p68-railfps",
+    "project": "iphone-touch",
+    "gated": false,
+    "fpsMedian": 20.4,
+    "frameP95Ms": 71,
+    "frameMedianMs": 49
+   },
+   {
+    "game": "p68-buildshift",
+    "project": "iphone-touch",
+    "gated": false,
+    "fpsMedian": 22.2,
+    "frameP95Ms": 62,
+    "frameMedianMs": 45
+   },
+   {
+    "game": "p68-drawsave",
+    "project": "iphone-touch",
+    "gated": false,
+    "fpsMedian": 23.8,
+    "frameP95Ms": 54,
+    "frameMedianMs": 42
+   }
+  ]
+ },
+ "g4": {
+  "tool": "scripts/measure/first-playable-ab.mjs",
+  "sentences": [
+   "p68-016",
+   "p68-017",
+   "p68-019",
+   "p68-032",
+   "p68-033",
+   "p68-038",
+   "p68-061",
+   "p68-062",
+   "p68-063"
+  ],
+  "pick": "per wired game the first 3 holdout sentences (by id) the branch quick game routes to that game; stunt and buildshift are not wired, their sentences never reach the game",
+  "perGame": {
+   "stunt": {
+    "measured": false
+   },
+   "minigolf": {
+    "measured": true,
+    "failed": 0,
+    "desktop": {
+     "medianA": 2816,
+     "medianB": 1837,
+     "pairedDiffMedian": -979,
+     "pairs": 9
+    },
+    "pixel7-cpu4": {
+     "medianA": 8858,
+     "medianB": 5126,
+     "pairedDiffMedian": -3707,
+     "pairs": 9
+    },
+    "pass": true
+   },
+   "railfps": {
+    "measured": true,
+    "failed": 0,
+    "desktop": {
+     "medianA": 2763,
+     "medianB": 1957,
+     "pairedDiffMedian": -738,
+     "pairs": 9
+    },
+    "pixel7-cpu4": {
+     "medianA": 7632,
+     "medianB": 5768,
+     "pairedDiffMedian": -1510,
+     "pairs": 9
+    },
+    "pass": true
+   },
+   "buildshift": {
+    "measured": false
+   },
+   "drawsave": {
+    "measured": true,
+    "failed": 0,
+    "desktop": {
+     "medianA": 3656,
+     "medianB": 1755,
+     "pairedDiffMedian": -1827,
+     "pairs": 9
+    },
+    "pixel7-cpu4": {
+     "medianA": 5891,
+     "medianB": 5063,
+     "pairedDiffMedian": -1035,
+     "pairs": 9
+    },
+    "pass": true
+   }
+  },
+  "targets": {
+   "p68-016": "minigolf",
+   "p68-017": "minigolf",
+   "p68-019": "minigolf",
+   "p68-032": "railfps",
+   "p68-033": "railfps",
+   "p68-038": "railfps",
+   "p68-061": "drawsave",
+   "p68-062": "drawsave",
+   "p68-063": "drawsave"
+  },
+  "runs": [
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-016",
+    "side": "A",
+    "run": 1,
+    "pair": "0:0",
+    "playable": true,
+    "ms": 3220,
+    "firstFrameMs": 2383,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-016",
+    "side": "B",
+    "run": 1,
+    "pair": "0:0",
+    "playable": true,
+    "ms": 2098,
+    "firstFrameMs": 1488,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-017",
+    "side": "B",
+    "run": 1,
+    "pair": "0:1",
+    "playable": true,
+    "ms": 1647,
+    "firstFrameMs": 1197,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-017",
+    "side": "A",
+    "run": 1,
+    "pair": "0:1",
+    "playable": true,
+    "ms": 7658,
+    "firstFrameMs": 1917,
+    "attempts": 9
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-019",
+    "side": "A",
+    "run": 1,
+    "pair": "0:2",
+    "playable": true,
+    "ms": 2178,
+    "firstFrameMs": 1354,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-019",
+    "side": "B",
+    "run": 1,
+    "pair": "0:2",
+    "playable": true,
+    "ms": 1868,
+    "firstFrameMs": 1240,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-032",
+    "side": "B",
+    "run": 1,
+    "pair": "0:3",
+    "playable": true,
+    "ms": 1915,
+    "firstFrameMs": 1309,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-032",
+    "side": "A",
+    "run": 1,
+    "pair": "0:3",
+    "playable": true,
+    "ms": 3954,
+    "firstFrameMs": 2651,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-033",
+    "side": "A",
+    "run": 1,
+    "pair": "0:4",
+    "playable": true,
+    "ms": 2769,
+    "firstFrameMs": 2133,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-033",
+    "side": "B",
+    "run": 1,
+    "pair": "0:4",
+    "playable": true,
+    "ms": 2078,
+    "firstFrameMs": 1403,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-038",
+    "side": "B",
+    "run": 1,
+    "pair": "0:5",
+    "playable": true,
+    "ms": 1853,
+    "firstFrameMs": 1283,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-038",
+    "side": "A",
+    "run": 1,
+    "pair": "0:5",
+    "playable": true,
+    "ms": 2591,
+    "firstFrameMs": 1940,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-061",
+    "side": "A",
+    "run": 1,
+    "pair": "0:6",
+    "playable": true,
+    "ms": 3656,
+    "firstFrameMs": 2315,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-061",
+    "side": "B",
+    "run": 1,
+    "pair": "0:6",
+    "playable": true,
+    "ms": 2841,
+    "firstFrameMs": 1306,
+    "attempts": 4
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-062",
+    "side": "B",
+    "run": 1,
+    "pair": "0:7",
+    "playable": true,
+    "ms": 1709,
+    "firstFrameMs": 1239,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-062",
+    "side": "A",
+    "run": 1,
+    "pair": "0:7",
+    "playable": true,
+    "ms": 4416,
+    "firstFrameMs": 2373,
+    "attempts": 4
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-063",
+    "side": "A",
+    "run": 1,
+    "pair": "0:8",
+    "playable": true,
+    "ms": 2206,
+    "firstFrameMs": 1889,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-063",
+    "side": "B",
+    "run": 1,
+    "pair": "0:8",
+    "playable": true,
+    "ms": 1675,
+    "firstFrameMs": 1260,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-016",
+    "side": "B",
+    "run": 1,
+    "pair": "0:9",
+    "playable": true,
+    "ms": 5151,
+    "firstFrameMs": 3437,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-016",
+    "side": "A",
+    "run": 1,
+    "pair": "0:9",
+    "playable": true,
+    "ms": 8858,
+    "firstFrameMs": 5797,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-017",
+    "side": "A",
+    "run": 1,
+    "pair": "0:10",
+    "playable": true,
+    "ms": 11272,
+    "firstFrameMs": 4230,
+    "attempts": 7
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-017",
+    "side": "B",
+    "run": 1,
+    "pair": "0:10",
+    "playable": true,
+    "ms": 5330,
+    "firstFrameMs": 3973,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-019",
+    "side": "B",
+    "run": 1,
+    "pair": "0:11",
+    "playable": true,
+    "ms": 5126,
+    "firstFrameMs": 3651,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-019",
+    "side": "A",
+    "run": 1,
+    "pair": "0:11",
+    "playable": true,
+    "ms": 9026,
+    "firstFrameMs": 6091,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-032",
+    "side": "A",
+    "run": 1,
+    "pair": "0:12",
+    "playable": true,
+    "ms": 10205,
+    "firstFrameMs": 6121,
+    "attempts": 3
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-032",
+    "side": "B",
+    "run": 1,
+    "pair": "0:12",
+    "playable": true,
+    "ms": 6736,
+    "firstFrameMs": 4522,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-033",
+    "side": "B",
+    "run": 1,
+    "pair": "0:13",
+    "playable": true,
+    "ms": 6650,
+    "firstFrameMs": 4154,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-033",
+    "side": "A",
+    "run": 1,
+    "pair": "0:13",
+    "playable": true,
+    "ms": 8104,
+    "firstFrameMs": 5854,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-038",
+    "side": "A",
+    "run": 1,
+    "pair": "0:14",
+    "playable": true,
+    "ms": 7632,
+    "firstFrameMs": 5299,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-038",
+    "side": "B",
+    "run": 1,
+    "pair": "0:14",
+    "playable": true,
+    "ms": 5615,
+    "firstFrameMs": 3624,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-061",
+    "side": "B",
+    "run": 1,
+    "pair": "0:15",
+    "playable": true,
+    "ms": 5594,
+    "firstFrameMs": 4037,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-061",
+    "side": "A",
+    "run": 1,
+    "pair": "0:15",
+    "playable": true,
+    "ms": 9213,
+    "firstFrameMs": 5953,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-062",
+    "side": "A",
+    "run": 1,
+    "pair": "0:16",
+    "playable": true,
+    "ms": 5891,
+    "firstFrameMs": 4909,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-062",
+    "side": "B",
+    "run": 1,
+    "pair": "0:16",
+    "playable": true,
+    "ms": 4856,
+    "firstFrameMs": 3404,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-063",
+    "side": "B",
+    "run": 1,
+    "pair": "0:17",
+    "playable": true,
+    "ms": 5158,
+    "firstFrameMs": 3647,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-063",
+    "side": "A",
+    "run": 1,
+    "pair": "0:17",
+    "playable": true,
+    "ms": 5722,
+    "firstFrameMs": 4340,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-016",
+    "side": "A",
+    "run": 2,
+    "pair": "0:18",
+    "playable": true,
+    "ms": 2708,
+    "firstFrameMs": 1963,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-016",
+    "side": "B",
+    "run": 2,
+    "pair": "0:18",
+    "playable": true,
+    "ms": 1938,
+    "firstFrameMs": 1290,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-017",
+    "side": "B",
+    "run": 2,
+    "pair": "0:19",
+    "playable": true,
+    "ms": 1095,
+    "firstFrameMs": 599,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-017",
+    "side": "A",
+    "run": 2,
+    "pair": "0:19",
+    "playable": true,
+    "ms": 7577,
+    "firstFrameMs": 1881,
+    "attempts": 9
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-019",
+    "side": "A",
+    "run": 2,
+    "pair": "0:20",
+    "playable": true,
+    "ms": 2364,
+    "firstFrameMs": 1439,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-019",
+    "side": "B",
+    "run": 2,
+    "pair": "0:20",
+    "playable": true,
+    "ms": 1789,
+    "firstFrameMs": 1213,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-032",
+    "side": "B",
+    "run": 2,
+    "pair": "0:21",
+    "playable": true,
+    "ms": 1907,
+    "firstFrameMs": 1278,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-032",
+    "side": "A",
+    "run": 2,
+    "pair": "0:21",
+    "playable": true,
+    "ms": 3627,
+    "firstFrameMs": 2467,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-033",
+    "side": "A",
+    "run": 2,
+    "pair": "0:22",
+    "playable": true,
+    "ms": 2763,
+    "firstFrameMs": 2113,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-033",
+    "side": "B",
+    "run": 2,
+    "pair": "0:22",
+    "playable": true,
+    "ms": 2035,
+    "firstFrameMs": 1331,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-038",
+    "side": "B",
+    "run": 2,
+    "pair": "0:23",
+    "playable": true,
+    "ms": 1957,
+    "firstFrameMs": 1331,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-038",
+    "side": "A",
+    "run": 2,
+    "pair": "0:23",
+    "playable": true,
+    "ms": 2699,
+    "firstFrameMs": 2069,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-061",
+    "side": "A",
+    "run": 2,
+    "pair": "0:24",
+    "playable": true,
+    "ms": 3847,
+    "firstFrameMs": 2412,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-061",
+    "side": "B",
+    "run": 2,
+    "pair": "0:24",
+    "playable": true,
+    "ms": 1966,
+    "firstFrameMs": 1505,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-062",
+    "side": "B",
+    "run": 2,
+    "pair": "0:25",
+    "playable": true,
+    "ms": 1741,
+    "firstFrameMs": 1280,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-062",
+    "side": "A",
+    "run": 2,
+    "pair": "0:25",
+    "playable": true,
+    "ms": 7008,
+    "firstFrameMs": 1301,
+    "attempts": 10
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-063",
+    "side": "A",
+    "run": 2,
+    "pair": "0:26",
+    "playable": true,
+    "ms": 2432,
+    "firstFrameMs": 2050,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "desktop",
+    "target": "p68-063",
+    "side": "B",
+    "run": 2,
+    "pair": "0:26",
+    "playable": true,
+    "ms": 1758,
+    "firstFrameMs": 1320,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-016",
+    "side": "B",
+    "run": 2,
+    "pair": "0:27",
+    "playable": true,
+    "ms": 5303,
+    "firstFrameMs": 3460,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-016",
+    "side": "A",
+    "run": 2,
+    "pair": "0:27",
+    "playable": true,
+    "ms": 8274,
+    "firstFrameMs": 5428,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-017",
+    "side": "A",
+    "run": 2,
+    "pair": "0:28",
+    "playable": true,
+    "ms": 11125,
+    "firstFrameMs": 5312,
+    "attempts": 6
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-017",
+    "side": "B",
+    "run": 2,
+    "pair": "0:28",
+    "playable": true,
+    "ms": 4979,
+    "firstFrameMs": 3655,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-019",
+    "side": "B",
+    "run": 2,
+    "pair": "0:29",
+    "playable": true,
+    "ms": 4713,
+    "firstFrameMs": 3359,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-019",
+    "side": "A",
+    "run": 2,
+    "pair": "0:29",
+    "playable": true,
+    "ms": 8354,
+    "firstFrameMs": 5421,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-032",
+    "side": "A",
+    "run": 2,
+    "pair": "0:30",
+    "playable": true,
+    "ms": 9742,
+    "firstFrameMs": 5294,
+    "attempts": 3
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-032",
+    "side": "B",
+    "run": 2,
+    "pair": "0:30",
+    "playable": true,
+    "ms": 6077,
+    "firstFrameMs": 3793,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-033",
+    "side": "B",
+    "run": 2,
+    "pair": "0:31",
+    "playable": true,
+    "ms": 5752,
+    "firstFrameMs": 3671,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-033",
+    "side": "A",
+    "run": 2,
+    "pair": "0:31",
+    "playable": true,
+    "ms": 7262,
+    "firstFrameMs": 5213,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-038",
+    "side": "A",
+    "run": 2,
+    "pair": "0:32",
+    "playable": true,
+    "ms": 6099,
+    "firstFrameMs": 4243,
+    "attempts": 2
+   },
+   {
+    "batch": 0,
+    "profile": "pixel7-cpu4",
+    "target": "p68-038",
+    "side": "B",
+    "run": 2,
+    "pair": "0:32",
+    "playable": true,
+    "ms": 5768,
+    "firstFrameMs": 3811,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-016",
+    "side": "A",
+    "run": 1,
+    "pair": "1:0",
+    "playable": true,
+    "ms": 2524,
+    "firstFrameMs": 1825,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-016",
+    "side": "B",
+    "run": 1,
+    "pair": "1:0",
+    "playable": true,
+    "ms": 1932,
+    "firstFrameMs": 1288,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-017",
+    "side": "B",
+    "run": 1,
+    "pair": "1:1",
+    "playable": true,
+    "ms": 1729,
+    "firstFrameMs": 1234,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-017",
+    "side": "A",
+    "run": 1,
+    "pair": "1:1",
+    "playable": true,
+    "ms": 7758,
+    "firstFrameMs": 1889,
+    "attempts": 10
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-019",
+    "side": "A",
+    "run": 1,
+    "pair": "1:2",
+    "playable": true,
+    "ms": 2816,
+    "firstFrameMs": 2004,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-019",
+    "side": "B",
+    "run": 1,
+    "pair": "1:2",
+    "playable": true,
+    "ms": 1837,
+    "firstFrameMs": 1189,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-032",
+    "side": "B",
+    "run": 1,
+    "pair": "1:3",
+    "playable": true,
+    "ms": 2013,
+    "firstFrameMs": 1364,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-032",
+    "side": "A",
+    "run": 1,
+    "pair": "1:3",
+    "playable": true,
+    "ms": 3496,
+    "firstFrameMs": 2358,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-033",
+    "side": "A",
+    "run": 1,
+    "pair": "1:4",
+    "playable": true,
+    "ms": 2239,
+    "firstFrameMs": 1545,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-033",
+    "side": "B",
+    "run": 1,
+    "pair": "1:4",
+    "playable": true,
+    "ms": 2169,
+    "firstFrameMs": 1469,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-038",
+    "side": "B",
+    "run": 1,
+    "pair": "1:5",
+    "playable": true,
+    "ms": 1953,
+    "firstFrameMs": 1338,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-038",
+    "side": "A",
+    "run": 1,
+    "pair": "1:5",
+    "playable": true,
+    "ms": 1673,
+    "firstFrameMs": 1113,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-061",
+    "side": "A",
+    "run": 1,
+    "pair": "1:6",
+    "playable": true,
+    "ms": 3620,
+    "firstFrameMs": 2333,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-061",
+    "side": "B",
+    "run": 1,
+    "pair": "1:6",
+    "playable": true,
+    "ms": 1793,
+    "firstFrameMs": 1345,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-062",
+    "side": "B",
+    "run": 1,
+    "pair": "1:7",
+    "playable": true,
+    "ms": 1646,
+    "firstFrameMs": 1209,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-062",
+    "side": "A",
+    "run": 1,
+    "pair": "1:7",
+    "playable": true,
+    "ms": 3891,
+    "firstFrameMs": 2142,
+    "attempts": 4
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-063",
+    "side": "A",
+    "run": 1,
+    "pair": "1:8",
+    "playable": true,
+    "ms": 2096,
+    "firstFrameMs": 1753,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "desktop",
+    "target": "p68-063",
+    "side": "B",
+    "run": 1,
+    "pair": "1:8",
+    "playable": true,
+    "ms": 1755,
+    "firstFrameMs": 1305,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-016",
+    "side": "B",
+    "run": 1,
+    "pair": "1:9",
+    "playable": true,
+    "ms": 4857,
+    "firstFrameMs": 3274,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-016",
+    "side": "A",
+    "run": 1,
+    "pair": "1:9",
+    "playable": true,
+    "ms": 8212,
+    "firstFrameMs": 5422,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-017",
+    "side": "A",
+    "run": 1,
+    "pair": "1:10",
+    "playable": true,
+    "ms": 10623,
+    "firstFrameMs": 4178,
+    "attempts": 8
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-017",
+    "side": "B",
+    "run": 1,
+    "pair": "1:10",
+    "playable": true,
+    "ms": 6344,
+    "firstFrameMs": 4717,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-019",
+    "side": "B",
+    "run": 1,
+    "pair": "1:11",
+    "playable": true,
+    "ms": 4493,
+    "firstFrameMs": 3220,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-019",
+    "side": "A",
+    "run": 1,
+    "pair": "1:11",
+    "playable": true,
+    "ms": 7538,
+    "firstFrameMs": 4986,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-032",
+    "side": "A",
+    "run": 1,
+    "pair": "1:12",
+    "playable": true,
+    "ms": 9423,
+    "firstFrameMs": 5446,
+    "attempts": 3
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-032",
+    "side": "B",
+    "run": 1,
+    "pair": "1:12",
+    "playable": true,
+    "ms": 5683,
+    "firstFrameMs": 3669,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-033",
+    "side": "B",
+    "run": 1,
+    "pair": "1:13",
+    "playable": true,
+    "ms": 6174,
+    "firstFrameMs": 3934,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-033",
+    "side": "A",
+    "run": 1,
+    "pair": "1:13",
+    "playable": true,
+    "ms": 7191,
+    "firstFrameMs": 5206,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-038",
+    "side": "A",
+    "run": 1,
+    "pair": "1:14",
+    "playable": true,
+    "ms": 6000,
+    "firstFrameMs": 4177,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-038",
+    "side": "B",
+    "run": 1,
+    "pair": "1:14",
+    "playable": true,
+    "ms": 5268,
+    "firstFrameMs": 3480,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-061",
+    "side": "B",
+    "run": 1,
+    "pair": "1:15",
+    "playable": true,
+    "ms": 5082,
+    "firstFrameMs": 3625,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-061",
+    "side": "A",
+    "run": 1,
+    "pair": "1:15",
+    "playable": true,
+    "ms": 8580,
+    "firstFrameMs": 5498,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-062",
+    "side": "A",
+    "run": 1,
+    "pair": "1:16",
+    "playable": true,
+    "ms": 6844,
+    "firstFrameMs": 4486,
+    "attempts": 4
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-062",
+    "side": "B",
+    "run": 1,
+    "pair": "1:16",
+    "playable": true,
+    "ms": 4711,
+    "firstFrameMs": 3323,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-063",
+    "side": "B",
+    "run": 1,
+    "pair": "1:17",
+    "playable": true,
+    "ms": 4657,
+    "firstFrameMs": 3325,
+    "attempts": 2
+   },
+   {
+    "batch": 1,
+    "profile": "pixel7-cpu4",
+    "target": "p68-063",
+    "side": "A",
+    "run": 1,
+    "pair": "1:17",
+    "playable": true,
+    "ms": 5022,
+    "firstFrameMs": 3863,
+    "attempts": 2
+   },
+   {
+    "batch": 2,
+    "profile": "pixel7-cpu4",
+    "target": "p68-061",
+    "side": "A",
+    "run": 1,
+    "pair": "2:0",
+    "playable": true,
+    "ms": 8376,
+    "firstFrameMs": 5306,
+    "attempts": 2
+   },
+   {
+    "batch": 2,
+    "profile": "pixel7-cpu4",
+    "target": "p68-061",
+    "side": "B",
+    "run": 1,
+    "pair": "2:0",
+    "playable": true,
+    "ms": 5238,
+    "firstFrameMs": 3775,
+    "attempts": 2
+   },
+   {
+    "batch": 2,
+    "profile": "pixel7-cpu4",
+    "target": "p68-062",
+    "side": "B",
+    "run": 1,
+    "pair": "2:1",
+    "playable": true,
+    "ms": 4691,
+    "firstFrameMs": 3402,
+    "attempts": 2
+   },
+   {
+    "batch": 2,
+    "profile": "pixel7-cpu4",
+    "target": "p68-062",
+    "side": "A",
+    "run": 1,
+    "pair": "2:1",
+    "playable": true,
+    "ms": 5356,
+    "firstFrameMs": 4541,
+    "attempts": 2
+   },
+   {
+    "batch": 2,
+    "profile": "pixel7-cpu4",
+    "target": "p68-063",
+    "side": "A",
+    "run": 1,
+    "pair": "2:2",
+    "playable": true,
+    "ms": 4980,
+    "firstFrameMs": 4013,
+    "attempts": 2
+   },
+   {
+    "batch": 2,
+    "profile": "pixel7-cpu4",
+    "target": "p68-063",
+    "side": "B",
+    "run": 1,
+    "pair": "2:2",
+    "playable": true,
+    "ms": 5063,
+    "firstFrameMs": 3411,
+    "attempts": 2
+   }
+  ]
+ },
+ "g5": {
+  "about": "G5 determinism: p68-hash (24 genres on genre.v6 bit for bit), p66-hash, p66-hooks-existing (hash-v6.json), p68-roundtrip (share, Dare, replay per new game, no skip)",
+  "measuredAt": "2026-11-03T11:01:05.419Z",
+  "tests": [
+   {
+    "file": "src/play/arcade/__tests__/p66-hash.test.ts",
+    "passed": 48,
+    "failed": 0,
+    "skipped": 0,
+    "skippedTitles": []
+   },
+   {
+    "file": "src/play/arcade/__tests__/p66-hooks-existing.test.ts",
+    "passed": 47,
+    "failed": 0,
+    "skipped": 0,
+    "skippedTitles": []
+   },
+   {
+    "file": "src/play/arcade/__tests__/p68-hash.test.ts",
+    "passed": 50,
+    "failed": 0,
+    "skipped": 0,
+    "skippedTitles": []
+   },
+   {
+    "file": "src/app/api/play/__tests__/p68-roundtrip.test.ts",
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "skippedTitles": []
+   }
+  ]
+ },
+ "g6": {
+  "about": "G6 quality (secondary, cannot rescue a game that fails G1-G5). Blind judge on phone sheets, both sides on one sheet per sentence, order from the seed. Per game: its 15 new sentences, would-play median >= main + 0.10 and fidelity median >= main - 0.02; general 30: would play and fidelity >= main - 0.02 (shared by every game). Side = after-reading (the reading game when shots exist, else the quick game).",
+  "judge": "claude-opus-5-5 (claude -p --safe-mode)",
+  "judgedAt": "2026-11-03T12:37:42.068Z",
+  "view": "phone",
+  "seed": 68016,
+  "file": "evals/play/p68/judge-holdout.json",
+  "skipped": [],
+  "all": {
+   "n": 105,
+   "main": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.18
+   },
+   "p68": {
+    "wouldPlay": 0.28,
+    "fidelity": 0.25
+   }
+  },
+  "new": {
+   "n": 75,
+   "main": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.15
+   },
+   "p68": {
+    "wouldPlay": 0.25,
+    "fidelity": 0.2
+   }
+  },
+  "general": {
+   "n": 30,
+   "main": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.3
+   },
+   "p68": {
+    "wouldPlay": 0.3,
+    "fidelity": 0.3
+   },
+   "pass": true
+  },
+  "perGame": {
+   "stunt": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.2
+    },
+    "p68": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.2
+    },
+    "pass": false
+   },
+   "minigolf": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.3,
+     "fidelity": 0.15
+    },
+    "p68": {
+     "wouldPlay": 0.35,
+     "fidelity": 0.3
+    },
+    "pass": false
+   },
+   "railfps": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.15
+    },
+    "p68": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.25
+    },
+    "pass": false
+   },
+   "buildshift": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.25,
+     "fidelity": 0.15
+    },
+    "p68": {
+     "wouldPlay": 0.22,
+     "fidelity": 0.15
+    },
+    "pass": false
+   },
+   "drawsave": {
+    "n": 15,
+    "main": {
+     "wouldPlay": 0.3,
+     "fidelity": 0.1
+    },
+    "p68": {
+     "wouldPlay": 0.2,
+     "fidelity": 0.25
+    },
+    "pass": false
+   }
+  },
+  "rows": [
+   {
+    "id": "p68-001",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-002",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.07,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-003",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-004",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.22,
+     "wouldPlay": 0.18
+    }
+   },
+   {
+    "id": "p68-005",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.33
+    }
+   },
+   {
+    "id": "p68-006",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-007",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-008",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-009",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-010",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.43
+    }
+   },
+   {
+    "id": "p68-011",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-012",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-013",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-014",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.37
+    }
+   },
+   {
+    "id": "p68-015",
+    "half": "new",
+    "game": "stunt",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-016",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-017",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.5
+    }
+   },
+   {
+    "id": "p68-018",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-019",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-020",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-021",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45
+    }
+   },
+   {
+    "id": "p68-022",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.5
+    }
+   },
+   {
+    "id": "p68-023",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-024",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-025",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-026",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-027",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-028",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.4
+    }
+   },
+   {
+    "id": "p68-029",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-030",
+    "half": "new",
+    "game": "minigolf",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-031",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-032",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-033",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-034",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.17,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-035",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-036",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45
+    },
+    "p68": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.47
+    }
+   },
+   {
+    "id": "p68-037",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-038",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.6,
+     "wouldPlay": 0.45
+    }
+   },
+   {
+    "id": "p68-039",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.27
+    }
+   },
+   {
+    "id": "p68-040",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-041",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-042",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-043",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.17,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-044",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-045",
+    "half": "new",
+    "game": "railfps",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-046",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.15
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-047",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-048",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-049",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.27
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-050",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-051",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-052",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-053",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.18
+    }
+   },
+   {
+    "id": "p68-054",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-055",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.17,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-056",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-057",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-058",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-059",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.06,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-060",
+    "half": "new",
+    "game": "buildshift",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-061",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-062",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-063",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.02,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-064",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-065",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-066",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-067",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-068",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-069",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-070",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-071",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-072",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.28
+    },
+    "p68": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-073",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.15
+    }
+   },
+   {
+    "id": "p68-074",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-075",
+    "half": "new",
+    "game": "drawsave",
+    "main": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.22
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-076",
+    "half": "general",
+    "game": "runner",
+    "main": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.4
+    }
+   },
+   {
+    "id": "p68-077",
+    "half": "general",
+    "game": "runner",
+    "main": {
+     "fidelity": 0.15,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-078",
+    "half": "general",
+    "game": "platformer",
+    "main": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-079",
+    "half": "general",
+    "game": "platformer",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-080",
+    "half": "general",
+    "game": "arena",
+    "main": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-081",
+    "half": "general",
+    "game": "voyage",
+    "main": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.08,
+     "wouldPlay": 0.22
+    }
+   },
+   {
+    "id": "p68-082",
+    "half": "general",
+    "game": "voyage",
+    "main": {
+     "fidelity": 0.7,
+     "wouldPlay": 0.5
+    },
+    "p68": {
+     "fidelity": 0.75,
+     "wouldPlay": 0.55
+    }
+   },
+   {
+    "id": "p68-083",
+    "half": "general",
+    "game": "quest",
+    "main": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-084",
+    "half": "general",
+    "game": "quest",
+    "main": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.45,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-085",
+    "half": "general",
+    "game": "shooter",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-086",
+    "half": "general",
+    "game": "throw",
+    "main": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.38
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-087",
+    "half": "general",
+    "game": "throw",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-088",
+    "half": "general",
+    "game": "timing",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-089",
+    "half": "general",
+    "game": "rhythm",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-090",
+    "half": "general",
+    "game": "duel",
+    "main": {
+     "fidelity": 0.4,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.38,
+     "wouldPlay": 0.37
+    }
+   },
+   {
+    "id": "p68-091",
+    "half": "general",
+    "game": "flap",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.12
+    },
+    "p68": {
+     "fidelity": 0.18,
+     "wouldPlay": 0.1
+    }
+   },
+   {
+    "id": "p68-092",
+    "half": "general",
+    "game": "catch",
+    "main": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.45
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.38
+    }
+   },
+   {
+    "id": "p68-093",
+    "half": "general",
+    "game": "whack",
+    "main": {
+     "fidelity": 0.12,
+     "wouldPlay": 0.25
+    },
+    "p68": {
+     "fidelity": 0.1,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-094",
+    "half": "general",
+    "game": "defense",
+    "main": {
+     "fidelity": 0.28,
+     "wouldPlay": 0.28
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-095",
+    "half": "general",
+    "game": "defense",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-096",
+    "half": "general",
+    "game": "slice",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.28
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.25
+    }
+   },
+   {
+    "id": "p68-097",
+    "half": "general",
+    "game": "hop",
+    "main": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.05,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-098",
+    "half": "general",
+    "game": "crowd",
+    "main": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.4
+    },
+    "p68": {
+     "fidelity": 0.5,
+     "wouldPlay": 0.45
+    }
+   },
+   {
+    "id": "p68-099",
+    "half": "general",
+    "game": "merge",
+    "main": {
+     "fidelity": 0.55,
+     "wouldPlay": 0.35
+    },
+    "p68": {
+     "fidelity": 0.62,
+     "wouldPlay": 0.4
+    }
+   },
+   {
+    "id": "p68-100",
+    "half": "general",
+    "game": "push",
+    "main": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.03,
+     "wouldPlay": 0.28
+    }
+   },
+   {
+    "id": "p68-101",
+    "half": "general",
+    "game": "survivor",
+    "main": {
+     "fidelity": 0.33,
+     "wouldPlay": 0.33
+    },
+    "p68": {
+     "fidelity": 0.35,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-102",
+    "half": "general",
+    "game": "hole",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.2
+    }
+   },
+   {
+    "id": "p68-103",
+    "half": "general",
+    "game": "steal",
+    "main": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.25,
+     "wouldPlay": 0.3
+    }
+   },
+   {
+    "id": "p68-104",
+    "half": "general",
+    "game": "sort",
+    "main": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.3
+    },
+    "p68": {
+     "fidelity": 0.2,
+     "wouldPlay": 0.35
+    }
+   },
+   {
+    "id": "p68-105",
+    "half": "general",
+    "game": "arrows",
+    "main": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    },
+    "p68": {
+     "fidelity": 0.3,
+     "wouldPlay": 0.2
+    }
+   }
+  ]
+ },
+ "g7": {
+  "about": "G7 AI version (recorded, no threshold): astra as reader and director on the eval ledger (worldsmith:p68-eval) through evals/play/p68/director-live.mjs --set holdout.json against shots.mjs serve, VERCEL_ENV=production. Sample = 2 sentences per game + 4 general (first by id); wired games first because the director does not offer stunt and buildshift.",
+  "sample": {
+   "minigolf": [
+    "p68-016",
+    "p68-017"
+   ],
+   "railfps": [
+    "p68-031",
+    "p68-032"
+   ],
+   "drawsave": [
+    "p68-061",
+    "p68-062"
+   ],
+   "stunt": [
+    "p68-001",
+    "p68-002"
+   ],
+   "buildshift": [
+    "p68-046",
+    "p68-047"
+   ],
+   "general": [
+    "p68-076",
+    "p68-077",
+    "p68-078",
+    "p68-079"
+   ]
+  },
+  "ledger": {
+   "capUsd": 7,
+   "spentBeforeUsd": 4.55,
+   "processCaps": [
+    {
+     "server": 1,
+     "capUsd": 2.45,
+     "directorCapUsd": 2.15
+    },
+    {
+     "server": 2,
+     "capUsd": 1.73,
+     "directorCapUsd": 1.43
+    }
+   ],
+   "note": "no persistent spend store is configured, so each server process got the remaining ledger money as its own cap (as in R12)"
+  },
+  "rows": [
+   {
+    "game": "minigolf",
+    "server": 1,
+    "id": "p68-016",
+    "quick": "minigolf.default",
+    "reading": null,
+    "ai": "minigolf.default",
+    "status": "ready",
+    "reason": null,
+    "aiMs": 60854
+   },
+   {
+    "game": "railfps",
+    "server": 1,
+    "id": "p68-031",
+    "quick": "platformer.default",
+    "reading": null,
+    "ai": null,
+    "status": "draft-final",
+    "reason": "CHAIN",
+    "aiMs": 3418
+   },
+   {
+    "game": "drawsave",
+    "server": 1,
+    "id": "p68-061",
+    "quick": "drawsave.default",
+    "reading": null,
+    "ai": null,
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "aiMs": 5704
+   },
+   {
+    "game": "drawsave",
+    "server": 2,
+    "id": "p68-061",
+    "quick": "drawsave.default",
+    "reading": null,
+    "ai": null,
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "aiMs": 8692
+   },
+   {
+    "game": "railfps",
+    "server": 2,
+    "id": "p68-032",
+    "quick": "railfps.default",
+    "reading": null,
+    "ai": null,
+    "status": "draft-final",
+    "reason": "MODEL_UNAVAILABLE",
+    "aiMs": 1188
+   }
+  ],
+  "summary": {
+   "attempted": 5,
+   "aiReady": 1,
+   "aiInGame": 1,
+   "finalInGame": 4,
+   "upstream429": 3,
+   "chain": 1
+  },
+  "unmeasured": [
+   "p68-017",
+   "p68-032",
+   "p68-061",
+   "p68-062",
+   "p68-001",
+   "p68-002",
+   "p68-046",
+   "p68-047",
+   "p68-076",
+   "p68-077",
+   "p68-078",
+   "p68-079"
+  ],
+  "unmeasuredWhy": "from the director call for p68-061 on, the model provider answered 429 (rate limited or out of credit) to every director call; later calls were refused before any spend. stunt and buildshift are behind the activation gate, the director does not offer them.",
+  "spend": {
+   "usd": 0.7234,
+   "ledgerTotalUsd": 5.27
+  }
+ },
+ "overall": {
+  "about": "Overall: e2e of the wired games (minigolf, railfps, drawsave), play-share, interface-language and the VR e2e (vr-enter, vr-diorama, vr-native, vr-hud) against the branch build (next start, port 3180, FALLBACK_SMOKE_URL). Saved games are covered by G5 (p66-hash, hash-v6 on the stored genre.v6 fixtures) and play-share. stunt and buildshift are not wired, so they have no e2e here.",
+  "side": "branch",
+  "full": {
+   "startTime": "2026-11-03T11:04:34.897Z",
+   "passed": 91,
+   "failed": 4,
+   "skipped": 1,
+   "note": "run while the shots process was taking screenshots on the same machine; the 4 red were 3x interface-language waiting for the /play/<hash> address and play-drawsave chromium FPS (p95 66.6 ms)",
+   "specs": [
+    {
+     "spec": "interface-language",
+     "project": "chromium",
+     "passed": 1,
+     "failed": 3,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "chromium",
+     "passed": 5,
+     "failed": 1,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "pixel7-touch",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "iphone-touch",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-minigolf",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-minigolf",
+     "project": "pixel7-touch",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-minigolf",
+     "project": "iphone-touch",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-railfps",
+     "project": "chromium",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 1
+    },
+    {
+     "spec": "play-railfps",
+     "project": "pixel7-touch",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-railfps",
+     "project": "iphone-touch",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-share",
+     "project": "chromium",
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-share",
+     "project": "pixel7-touch",
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-diorama",
+     "project": "chromium",
+     "passed": 12,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-enter",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-hud",
+     "project": "chromium",
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "vr-native",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    }
+   ]
+  },
+  "rerun": {
+   "startTime": "2026-11-03T12:38:04.289Z",
+   "why": "the 4 red of the full run, re-run without the shots process",
+   "specs": [
+    {
+     "spec": "interface-language",
+     "project": "chromium",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    {
+     "spec": "play-drawsave",
+     "project": "chromium",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    }
+   ]
+  },
+  "red": [],
+  "redOnMainToo": [],
+  "pass": true
+ },
+ "hybrid": {
+  "verdict": "off",
+  "reasons": [
+   "blind judge did not run, so \"would play\" with a script is unmeasured",
+   "p95 extension of the AI version unmeasured (astra wrote nothing)",
+   "spend on the AI version not recorded (no measuring ledger, stand-in writer)"
+  ],
+  "decidedAt": "2026-11-02",
+  "file": "evals/play/p68/hybrid/decision.json"
+ },
+ "verdict": {
+  "games": {
+   "stunt": {
+    "pass": false,
+    "unmet": [
+     "G1",
+     "G2",
+     "G4"
+    ]
+   },
+   "minigolf": {
+    "pass": false,
+    "unmet": [
+     "G1",
+     "G2"
+    ]
+   },
+   "railfps": {
+    "pass": false,
+    "unmet": [
+     "G1",
+     "G2"
+    ]
+   },
+   "buildshift": {
+    "pass": false,
+    "unmet": [
+     "G1",
+     "G2",
+     "G4"
+    ]
+   },
+   "drawsave": {
+    "pass": false,
+    "unmet": [
+     "G1",
+     "G2"
+    ]
+   }
+  },
+  "categories": {
+   "vozidla-sport": {
+    "games": [
+     "stunt",
+     "minigolf"
+    ],
+    "pass": false
+   },
+   "prvni-osoba": {
+    "games": [
+     "railfps"
+    ],
+    "pass": false
+   },
+   "stavba": {
+    "games": [
+     "buildshift",
+     "drawsave"
+    ],
+    "pass": false
+   }
+  }
+ },
+ "games": {
+  "stunt": {
+   "pass": false,
+   "unmet": [
+    "G1",
+    "G2",
+    "G4"
+   ],
+   "gate": {
+    "G1": false,
+    "G2": false,
+    "G3": true,
+    "G4": false,
+    "G5": true
+   },
+   "routedToOwn": 0,
+   "playable": {
+    "n": 15,
+    "pass": 0
+   },
+   "time": {
+    "measured": false
+   },
+   "wired": false
+  },
+  "minigolf": {
+   "pass": false,
+   "unmet": [
+    "G1",
+    "G2"
+   ],
+   "gate": {
+    "G1": false,
+    "G2": false,
+    "G3": true,
+    "G4": true,
+    "G5": true
+   },
+   "routedToOwn": 10,
+   "playable": {
+    "n": 15,
+    "pass": 10
+   },
+   "time": {
+    "measured": true,
+    "failed": 0,
+    "desktop": {
+     "medianA": 2816,
+     "medianB": 1837,
+     "pairedDiffMedian": -979,
+     "pairs": 9
+    },
+    "pixel7-cpu4": {
+     "medianA": 8858,
+     "medianB": 5126,
+     "pairedDiffMedian": -3707,
+     "pairs": 9
+    },
+    "pass": true
+   },
+   "wired": true
+  },
+  "railfps": {
+   "pass": false,
+   "unmet": [
+    "G1",
+    "G2"
+   ],
+   "gate": {
+    "G1": false,
+    "G2": false,
+    "G3": true,
+    "G4": true,
+    "G5": true
+   },
+   "routedToOwn": 4,
+   "playable": {
+    "n": 15,
+    "pass": 4
+   },
+   "time": {
+    "measured": true,
+    "failed": 0,
+    "desktop": {
+     "medianA": 2763,
+     "medianB": 1957,
+     "pairedDiffMedian": -738,
+     "pairs": 9
+    },
+    "pixel7-cpu4": {
+     "medianA": 7632,
+     "medianB": 5768,
+     "pairedDiffMedian": -1510,
+     "pairs": 9
+    },
+    "pass": true
+   },
+   "wired": true
+  },
+  "buildshift": {
+   "pass": false,
+   "unmet": [
+    "G1",
+    "G2",
+    "G4"
+   ],
+   "gate": {
+    "G1": false,
+    "G2": false,
+    "G3": true,
+    "G4": false,
+    "G5": true
+   },
+   "routedToOwn": 0,
+   "playable": {
+    "n": 15,
+    "pass": 0
+   },
+   "time": {
+    "measured": false
+   },
+   "wired": false
+  },
+  "drawsave": {
+   "pass": false,
+   "unmet": [
+    "G1",
+    "G2"
+   ],
+   "gate": {
+    "G1": false,
+    "G2": false,
+    "G3": true,
+    "G4": true,
+    "G5": true
+   },
+   "routedToOwn": 10,
+   "playable": {
+    "n": 15,
+    "pass": 10
+   },
+   "time": {
+    "measured": true,
+    "failed": 0,
+    "desktop": {
+     "medianA": 3656,
+     "medianB": 1755,
+     "pairedDiffMedian": -1827,
+     "pairs": 9
+    },
+    "pixel7-cpu4": {
+     "medianA": 5891,
+     "medianB": 5063,
+     "pairedDiffMedian": -1035,
+     "pairs": 9
+    },
+    "pass": true
+   },
+   "wired": true
+  }
+ }
+}
