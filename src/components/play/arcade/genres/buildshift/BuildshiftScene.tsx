@@ -74,7 +74,7 @@ import { toyMotionOn } from '../../toy/applyToy';
 import { FittedModel, type WorldProps } from '../../World';
 import { GRID_BOX, VIEW, cellsAttr, placeCamera, tallFallback } from './buildshift-camera';
 import { type Label, card, coin, createLabel, disposeLabel, paint, words } from './buildshift-labels';
-import { Warm } from './buildshift-warm';
+import { Warm, updateWhenShown } from './buildshift-warm';
 
 type BuildshiftSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -965,6 +965,7 @@ export function BuildshiftScene({ session, cast, surface, scene: look }: Buildsh
             key={index}
             ref={(group) => {
               customerGroups.current[index] = group;
+              if (group !== null) group.updateMatrixWorld = updateWhenShown;
             }}
             visible={false}
             userData={{ item: 'customer' }}

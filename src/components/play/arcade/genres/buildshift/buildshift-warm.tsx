@@ -13,9 +13,18 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { type ReactNode, useRef } from 'react';
-import type { Group, Material, Mesh, Object3D, WebGLRenderer } from 'three';
+import { type Group, type Material, type Mesh, Object3D, type WebGLRenderer } from 'three';
 
 import { compileForComposer } from '../../../feed/StageHost';
+
+/**
+ * `updateMatrixWorld` slotu zákazníka: three jinak skládá matice celého podstromu každý snímek, i neviditelného – volný
+ * slot je riggovaná postava s desítkami kostí a slotů je 12 (P68-M T1, cena snímku na telefonu). Slot, který se
+ * ukáže, si v tomtéž renderu matici složí a změnu předá dětem.
+ */
+export function updateWhenShown(this: Object3D, force?: boolean): void {
+  if (this.visible) Object3D.prototype.updateMatrixWorld.call(this, force);
+}
 
 /** Zapíše do `seen` děti a vnoučata skupiny a řekne, jestli se od minula změnily (výměna náhradního dílu za model). */
 export function contentChanged(root: Object3D, seen: Object3D[]): boolean {
