@@ -160,6 +160,12 @@ interface Rig {
   readonly actions: ReadonlyMap<ClipState, AnimationAction>;
 }
 
+/** Je uzel vidět i se všemi předky? */
+export function shownInWorld(node: Object3D | null): boolean {
+  for (let at = node; at !== null; at = at.parent) if (!at.visible) return false;
+  return node !== null;
+}
+
 export function RiggedModel({
   character,
   h,
@@ -232,6 +238,10 @@ export function RiggedModel({
   /** Hračková póza minulého snímku (P45D T13) a třída těla postavy podle manifestu (T5). */
   const toyPose = useRef<ToyPose | null>(null);
   const bodyClass = useMemo(() => bodyClassOf(`${RIGGED_PREFIX}${character.id}`), [character.id]);
+  const posed = useRef(false);
+  useEffect(() => {
+    posed.current = false;
+  }, [rig]);
   useFrame((_, delta) => {
     if (rig === null) return;
     const now = clip();
@@ -262,7 +272,12 @@ export function RiggedModel({
     }
     // Pauza a konec běhu kreslí na požádání (P28E T2): první snímek po nich nese celou
     // dobu stání a animace by přes ni skočila. Stání se nepřehrává.
-    rig.mixer.update(step);
+    // Skrytá postava (volný slot fronty, díl čekající na shader) stojí v poslední póze: mixer s desítkami
+    // kostí za snímek je na telefonu znát (P68-M T1). První krok proběhne vždy, ať se neukáže v klidové póze rigu.
+    if (!posed.current || shownInWorld(holder.current)) {
+      rig.mixer.update(step);
+      posed.current = true;
+    }
   });
 
   if (rig !== null) {

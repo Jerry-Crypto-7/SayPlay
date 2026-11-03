@@ -221,7 +221,9 @@ export const stuntBot: BotPiece<StuntBotParams> = {
     view[p + BODY.vx] = now.vx;
     view[p + BODY.vz] = now.vz;
     const course = aimedCourse(params.course, aimsOf(state, params));
-    const steered = steerBot.decide({ state: view, player, tick, recent: [] }, steerBot.params.parse({ topSpeed: params.topSpeed, drift: false, course }));
+    // Parametry řízení bez `parse` (P68-M T2: zod nad osou trati každý tik stál ~5 % tvorby stuntu): `topSpeed` už
+    // prošel schématem robota stuntu, osa jsou celá čísla z přečtené trati a poloh těles a `drift` je pevný.
+    const steered = steerBot.decide({ state: view, player, tick, recent: [] }, { topSpeed: params.topSpeed, drift: false, course });
     // Ve vzduchu brzda nic nedělá (ovládání ji nečte): robot ji nemačká.
     const grounded = now.y <= 0 || rampUnder(params.ramps, now.x, now.y, now.z) >= 0;
     const buttons = grounded && ((steered.buttons & BUTTON.DOWN) !== 0 || cornerAhead(params.course, now)) ? BUTTON.DOWN : 0;

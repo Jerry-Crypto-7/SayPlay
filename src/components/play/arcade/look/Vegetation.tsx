@@ -25,6 +25,7 @@ import { BEFORE_COMPOSER } from './rig/Post';
 import type { QualityTier } from './rig/quality';
 import { firstAtLeast } from './road-strip';
 import { type Layer, type Plant, type RoadAt, type Side, type VegetationProfile, placeAround, placeVegetation } from './vegetation-places';
+import { useWarmed } from './warm-gate';
 
 /** Okno kandidátů: kolik metrů za kamerou a rezerva za koncem mlhy na korunu stromu (m). */
 const BEHIND_M = 15;
@@ -211,7 +212,9 @@ function Species({ id, flora, plants, cast, simple, ground, bend, behind }: { re
     drawn.cast = cast;
     mesh.count = all;
   }, BEFORE_COMPOSER);
-  return built === null ? null : <primitive object={built.mesh} />;
+  // Rostlina doběhne po prvním snímku: program se přeloží mimo hlavní vlákno, druh se ukáže hotový (P68-M T2).
+  const shown = useWarmed(built?.mesh ?? null);
+  return shown === null ? null : <primitive object={shown} />;
 }
 
 /**
