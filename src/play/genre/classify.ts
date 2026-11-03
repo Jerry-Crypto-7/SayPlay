@@ -322,10 +322,11 @@ const VERBS: readonly Verb[] = [
   ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
-    String.raw`\b(?:build(?:s|ing)?|plac(?:e|es|ing)|lay(?:s|ing)? out|set(?:s|ting)? up|buy(?:s|ing)?|put(?:s|ting)? down)(?= (?:[a-z'-]+ ){0,3}?(?:ovens?|counters?|tills?|grills?|stations?|freezers?|workbenches?|benches|lifts?)\b)`,
+    // P68R T5: i „drop cooking stations“, „arrange blenders“, „placing shelves“ – vybavení obchodu a slovesa rozestavění.
+    String.raw`\b(?:build(?:s|ing)?|plac(?:e|es|ing)|lay(?:s|ing)? out|set(?:s|ting)? up|buy(?:s|ing)?|put(?:s|ting)? down|drop(?:s|ping)?|arrang(?:e|es|ing))(?= (?:[a-z'-]+ ){0,3}?(?:ovens?|counters?|tills?|grills?|fryers?|blenders?|shelves|stations?|freezers?|workbenches?|benches|lifts?|(?:coffee|espresso) machines?)\b)`,
     String.raw`\b(?:run(?:s|ning)?|open(?:s|ing)?|own(?:s|ing)?|lay(?:s|ing)? out|set(?:s|ting)? up|build(?:s|ing)?) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
     String.raw`\bshop (?:management|manager|sim(?:ulator)?|tycoon)\b`,
-    String.raw`\bserv(?:e|es|ing)\b(?= (?:[a-z'-]+ ){0,4}?customers?\b)`,
+    String.raw`\bserv(?:e|es|ing)\b(?= (?:[a-z'-]+ ){0,4}?(?:customers?|guests?)\b)`,
     String.raw`\b(?:lines? up|lining up|queu(?:e|es|ing)(?: up)?|com(?:e|es|ing)|drops? by|crowds?|orders?|wants?) (?:[a-z'-]+ ){0,4}?(?:(?:at|to|into|in) )?${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
     // „my taco truck has to feed 20 astronauts“, „serve tea … in a cozy tea room“, „a coffee shop where workers want …“.
     String.raw`\b${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP} (?:has to|have to|must|needs? to) (?:feed|serve|sell)\b`,
@@ -565,9 +566,10 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
  * vrátil: 1. 11. FPS na `pixel7-touch` a herní brána, 2. 11. po opravě kategorie (#72) čas do hratelnosti (desktop
  * vstup nepřijatý do 120 s, `pixel7-cpu4` párově +633 ms) – `integration-log.md`.
  * T8 `stunt` zapojil a vrátil: čas do hratelnosti proti `main` (+1,3 s desktop, +2,6 s pixel7, mez +0,2 s) neprošel.
- * T12 zapojil `drawsave`, T10 `railfps`, R12 `minigolf` (T9 ho vrátil, P68-L T3 opravil čas do hratelnosti).
+ * T12 zapojil `drawsave`, T10 `railfps`, R12 `minigolf` (T9 ho vrátil, P68-L T3 opravil čas do hratelnosti),
+ * P68R T5 `buildshift` (P68R T3 opravil čas do hratelnosti na telefonu).
  */
-export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt', 'buildshift']);
+export const ROUTE_PENDING: ReadonlySet<GenreId> = new Set<GenreId>(['stunt']);
 
 /**
  * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards

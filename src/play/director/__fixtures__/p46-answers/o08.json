@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:18:21.548Z",
- "ms": 6323,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:45:44.962Z",
+ "ms": 7992,
  "answer": {
-  "plan": "Create a quest‑style game where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple phase‑based timer to trigger the storm’s arrival.",
+  "plan": "Quest‑style spatial collection with a timed storm warning",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -35,7 +35,7 @@
    "params": {
     "seconds": 60,
     "paceBudgetPct": 80,
-    "count": 5,
+    "count": 1,
     "chasers": 0,
     "lives": 3,
     "targetScore": 0,
@@ -50,7 +50,7 @@
      "id": "honey",
      "kind": "collectible",
      "label": "honey",
-     "count": 5
+     "count": 1
     },
     {
      "id": "storm",
@@ -63,12 +63,12 @@
     {
      "role": "honey",
      "start": "hidden",
-     "physics": null
+     "physics": false
     },
     {
      "role": "storm",
      "start": "hidden",
-     "physics": null
+     "physics": false
     }
    ],
    "rules": [
@@ -82,22 +82,22 @@
      "do": [
       {
        "startTimer": {
-        "timer": "storm_timer",
+        "timer": "stormwarn",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "stormArrival",
+     "id": "stormWarn",
      "verb": "wait",
      "when": {
-      "timer": "storm_timer"
+      "timer": "stormwarn"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "storm"
+       "goPhase": "second"
       },
       {
        "spawn": {
@@ -108,10 +108,10 @@
      ]
     },
     {
-     "id": "stormHazard",
+     "id": "stormActive",
      "verb": "wait",
      "when": {
-      "phase": "storm"
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -125,7 +125,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "storm_timer"
+      "id": "stormwarn"
      }
     ],
     "phases": [
@@ -133,7 +133,7 @@
       "id": "first"
      },
      {
-      "id": "storm"
+      "id": "second"
      }
     ],
     "events": null
@@ -141,10 +141,14 @@
    "boss": {
     "role": "storm",
     "name": "Tempest",
-    "attack": "throw"
+    "attack": "stomp"
    },
    "abilities": [],
-   "segments": null
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
   }
  },
  "failure": null

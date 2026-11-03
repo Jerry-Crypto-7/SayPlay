@@ -1,0 +1,1234 @@
+{
+ "maxTicks": 5400,
+ "games": {
+  "buildshift": {
+   "n": 23,
+   "failed": 0,
+   "win": 23,
+   "lose": 23,
+   "actions": 23,
+   "pass": 23
+  }
+ },
+ "results": [
+  {
+   "game": "buildshift",
+   "sentence": "p68-046: design a noodle bar from the top: drop cooking stations on the grid and keep the hungry office workers fed until closing",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-047: a squirrel runs an acorn cafe for one day, placing roasting stations with the nuts it earns and serving every forest animal",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-048: a pet grooming salon seen from above: buy bathtubs and drying tables, wash every dog before the shift ends",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-049: build a hot dog stand by the stadium tile by tile and sell to the fans until the match starts",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-050: a smoothie shop shift where you arrange blenders and fruit crates on a grid and spend tips on new machines",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-051: run a dragon's potion shop: set up cauldrons on the floor plan, pay with gold and fill every knight's order before the moon rises",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-052: a pizza kitchen viewed from overhead, place ovens and prep tables, then rush to serve all the tables before the shift closes",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-053: manage a car wash from above, buying soap stations and dryers and cleaning the queue of cars before evening",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-054: a sushi counter on a small grid: spend your yen on rice cookers and fish tables and serve every guest before midnight",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-055: a flower shop simulator where you place watering benches and wrapping desks, then serve customers before the shop closes",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-056: an octopus opens a seaside lemonade bar, adds juicers and stools to the grid and serves thirsty swimmers until sunset",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-057: build a tiny tailor shop counter by counter and finish every customer's suit before the working day is over",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-058: a top-down shift at a hospital for toys: place repair beds and stitching tables, then fix each broken toy before the shift ends",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-059: run a taco truck plaza: put grills and drink stands on the tiles with the cash you earn and feed the lunch line before two o'clock",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2216 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2468 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 3272 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 824"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 9 >= goal 9 at tick 2216"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 3272 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "p68-060: one busy shift in a bookstore cafe, placing shelves and espresso machines and serving readers before the doors lock",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2216 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2468 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 3272 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 824"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 9 >= goal 9 at tick 2216"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 3272 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d25: run a burger shop for one shift: place grills and counters on the grid, spend coins and serve every customer before closing time",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d26: a top-down bakery where you build ovens and tills on tiles and feed the morning queue before the shift ends",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d27: a cat opens a fish stall on the pier, sets up cutting tables and serves hungry seagulls until sunset",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d28: build your own ice cream parlour from above, buying freezers and counters with the money customers pay",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d29: a shop management game in a space diner: place stations, spend credits and serve alien customers before the shift is over",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d30: an elf places workbenches in a snowy toy workshop and fills every child's order before the night shift ends",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d31: lay out a coffee bar on a grid of tiles, spend your budget on machines and get every latte out before the rush ends",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "buildshift",
+   "sentence": "d32: a robot manages a repair garage from above, placing lifts and tool benches to fix every car before the day shift is over",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2315 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 2233 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    },
+    {
+     "id": "builds",
+     "run": "bot",
+     "pass": true,
+     "evidence": "4 stations built on distinct cells (needs 2): body 7 at (0.0, 3.0) m tick 10; body 8 at (0.0, 1.0) m tick 28; body 9 at (-2.0, 3.0) m tick 46; body 10 at (2.0, 3.0) m tick 618"
+    },
+    {
+     "id": "spends",
+     "run": "bot",
+     "pass": true,
+     "evidence": "body 1.y 6 -> 4 at tick 10 after the build of body 7"
+    },
+    {
+     "id": "serves",
+     "run": "bot",
+     "pass": true,
+     "evidence": "items 12 >= goal 12 at tick 2315"
+    },
+    {
+     "id": "bad-build-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2397 (needs lost by tick 5400)"
+    }
+   ]
+  }
+ ]
+}

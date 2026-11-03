@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:18:38.399Z",
- "ms": 10894,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:46:02.226Z",
+ "ms": 8584,
  "answer": {
-  "plan": "Create a shooter game where an elf archer shoots goblins from treetops, with a simple 60‑second timer that triggers a wave of goblins and ends the level when all goblins are destroyed.",
+  "plan": "Create a shooter where the elf archer fires at goblins that appear in waves after a short timer.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -22,19 +22,10 @@
      "patrol": false
     }
    ],
-   "heroAction": "none",
-   "setting": "forest canopy",
+   "heroAction": "sweep",
+   "setting": "desert outpost",
    "palette": "forest",
-   "params": {
-    "targetWidthPct": 50,
-    "movingTargets": 0,
-    "waves": null,
-    "enemies": null,
-    "targets": null,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 60
-   },
+   "params": null,
    "counts": {
     "enemy": null,
     "target": null
@@ -56,7 +47,7 @@
    ],
    "rules": [
     {
-     "id": "start_timer",
+     "id": "start_wave",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -65,17 +56,17 @@
      "do": [
       {
        "startTimer": {
-        "timer": "wave_timer",
+        "timer": "wave",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "wave_spawn",
+     "id": "wave_start",
      "verb": "wait",
      "when": {
-      "timer": "wave_timer"
+      "timer": "wave"
      },
      "if": null,
      "do": [
@@ -85,46 +76,22 @@
       {
        "wave": {
         "role": "goblin",
-        "count": 5,
+        "count": 3,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "despawn_goblin",
-     "verb": "shoot",
-     "when": {
-      "hit": "goblin"
-     },
-     "if": null,
-     "do": [
-      {
-       "despawn": "self"
-      },
-      {
-       "score": 100
-      }
-     ]
-    },
-    {
-     "id": "win_condition",
+     "id": "wave_end",
      "verb": "wait",
      "when": {
       "phase": "second"
      },
-     "if": [
-      {
-       "counter": {
-        "name": "health",
-        "atLeast": 0,
-        "below": 1
-       }
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "win": true
+       "goPhase": "first"
       }
      ]
     }
@@ -133,7 +100,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "wave"
      }
     ],
     "phases": [
@@ -147,7 +114,9 @@
     "events": null
    },
    "boss": null,
-   "abilities": null,
+   "abilities": [
+    "shoot"
+   ],
    "segments": null
   }
  },

@@ -3,12 +3,12 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:18:02.089Z",
- "ms": 9960,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:45:21.575Z",
+ "ms": 8906,
  "answer": {
-  "plan": "Arena escape: hamster evades a supermarket Roomba while collecting coins",
+  "plan": "Arena escape with a roaming Roomba chaser in a supermarket setting",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -29,21 +29,21 @@
      "patrol": false
     }
    ],
-   "heroAction": "dig",
+   "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
    "params": {
     "entryDistance": 8000,
     "chaseLead": 60,
     "seconds": 30,
-    "items": 10,
+    "items": 5,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 1,
     "chaserSpeed": 70,
     "enemies": 1,
     "enemyHp": 3,
-    "enemySpeed": 60,
+    "enemySpeed": 50,
     "playerHp": 3,
     "lives": 3,
     "targetScore": 0,
@@ -51,7 +51,7 @@
    },
    "counts": {
     "enemy": 1,
-    "collectible": 10
+    "collectible": 5
    },
    "ruleRoles": [
     {
@@ -64,7 +64,7 @@
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 10
+     "count": 5
     }
    ],
    "things": [
@@ -109,8 +109,8 @@
       },
       {
        "wave": {
-        "role": "coin",
-        "count": 5,
+        "role": "roomba",
+        "count": 1,
         "at": "edge"
        }
       }
@@ -171,10 +171,7 @@
     "name": "Roomba Rumble",
     "attack": "charge"
    },
-   "abilities": [
-    "dash",
-    "grab"
-   ],
+   "abilities": [],
    "segments": [
     "newFoe",
     "moving",

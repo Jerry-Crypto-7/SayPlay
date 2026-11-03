@@ -3,17 +3,24 @@
  "sentence": "Racing car escaping and shooting enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:17:45.017Z",
- "ms": 6318,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:45:04.294Z",
+ "ms": 7274,
  "answer": {
-  "plan": "Create a racing‑escape shooter where a car dodges and shoots enemies while racing through an open country.",
+  "plan": "Create a racing‑car shooter set on an open country road where the car must escape police and shoot enemies while racing.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "car",
    "cast": [
+    {
+     "label": "police car",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    },
     {
      "label": "enemy",
      "does": "shoot_at",
@@ -43,13 +50,24 @@
    },
    "ruleRoles": [
     {
-     "id": "enemy",
+     "id": "police",
      "kind": "chaser",
-     "label": "enemy car",
-     "count": null
+     "label": "police car",
+     "count": 1
+    },
+    {
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "enemy",
+     "count": 3
     }
    ],
    "things": [
+    {
+     "role": "police",
+     "start": "hidden",
+     "physics": null
+    },
     {
      "role": "enemy",
      "start": "hidden",
@@ -74,29 +92,44 @@
      ]
     },
     {
-     "id": "spawnWave",
-     "verb": "wait",
+     "id": "spawnPolice",
+     "verb": "spawn",
      "when": {
       "timer": "race"
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "enemy",
-        "count": 3,
-        "at": "edge"
+       "spawn": {
+        "role": "police",
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "enemyShoot",
-     "verb": "shoot",
+     "id": "spawnEnemies",
+     "verb": "spawn",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "enemy",
+        "at": "other"
+       }
+      }
+     ]
+    },
+    {
+     "id": "policeChase",
+     "verb": "chase",
      "when": {
       "contact": [
        "player",
-       "enemy"
+       "police"
       ]
      },
      "if": null,
@@ -125,12 +158,19 @@
     "events": null
    },
    "boss": {
-    "role": "enemy",
-    "name": "Rival Racer",
+    "role": "police car",
+    "name": "Police Pursuit",
     "attack": "charge"
    },
-   "abilities": [],
-   "segments": null
+   "abilities": [
+    "dash",
+    "shoot"
+   ],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
   }
  },
  "failure": null

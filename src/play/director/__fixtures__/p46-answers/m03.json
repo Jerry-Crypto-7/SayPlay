@@ -3,12 +3,12 @@
  "sentence": "Grandma kart",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:19:00.563Z",
- "ms": 5514,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:46:25.176Z",
+ "ms": 6381,
  "answer": {
-  "plan": "Create a racing kart game where the player drives through an open country, avoiding rocks that appear as hazards.",
+  "plan": "Create a simple racing kart game where the player drives a kart around an open country track, avoiding rocks and collecting coins, with a timed lap system.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -20,13 +20,20 @@
      "verb": "avoid",
      "states": null,
      "patrol": false
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "open country",
    "palette": "desert",
    "params": {
-    "hazards": 1,
+    "hazards": 0,
     "turbo": 0,
     "roadWidth": 8000,
     "roadEntryWidth": 8000,
@@ -34,12 +41,12 @@
     "namedLandingTarget": 0,
     "touchdownSpeed": 30,
     "gravityRisePct": 10,
-    "lengthM": 500,
+    "lengthM": 400,
     "topSpeed": 250,
     "gravity": 1200,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 60
+    "timeLimit": 90
    },
    "ruleRoles": [
     {
@@ -47,11 +54,22 @@
      "kind": "hazard",
      "label": "rock",
      "count": null
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": null
     }
    ],
    "things": [
     {
      "role": "rock",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "coin",
      "start": "hidden",
      "physics": null
     }
@@ -67,17 +85,17 @@
      "do": [
       {
        "startTimer": {
-        "timer": "race",
+        "timer": "lap",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phaseTransition",
+     "id": "lapTimer",
      "verb": "wait",
      "when": {
-      "timer": "race"
+      "timer": "lap"
      },
      "if": null,
      "do": [
@@ -86,42 +104,23 @@
       },
       {
        "wave": {
-        "role": "rock",
-        "count": 1,
+        "role": "coin",
+        "count": 5,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "rockSpawn",
-     "verb": "spawn",
+     "id": "secondPhase",
+     "verb": "wait",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "rock",
-        "at": "other"
-       }
-      }
-     ]
-    },
-    {
-     "id": "avoidRock",
-     "verb": "avoid",
-     "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "damage": 1
+       "goPhase": "first"
       }
      ]
     }
@@ -130,7 +129,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "race"
+      "id": "lap"
      }
     ],
     "phases": [
@@ -144,7 +143,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": [],
+   "abilities": null,
    "segments": null
   }
  },

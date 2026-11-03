@@ -64,9 +64,9 @@ export const MODE_HINTS: Readonly<Record<string, string>> = {
   'slice.default': 'things are tossed or fly and you cut them midair',
   'defense.default': 'foes come in waves down paths or lanes at a wall, base or home you guard; you hold every path',
   'quest.spatial': 'you walk to objects one by one and act on each (light, fix, pop, free, clean, deliver), even with a chaser',
-  // P68 T11: před stanovištěm, ať „serve customers in my diner“ nevezme jedno pracoviště. V promptu je až s R5 (brána
-  // `READER_PENDING`); pak prompt přeroste strop 6 000 znaků o ~170 a věta „genre is null … managing a shop“ se změní.
-  'buildshift.default': 'you build a small shop (ovens, counters, shelves) on a grid, open it and serve customers who come for one food or drink before they walk out',
+  // P68 T11: před stanovištěm, ať „serve customers in my diner“ nevezme jedno pracoviště. V promptu od P68R T5 (R5),
+  // zkrácený kvůli stropu 6 000 znaků; řádek null posílá na `null` jen obchod přes víc dní.
+  'buildshift.default': 'you build a shop on a grid and serve customers their food or drink',
   'quest.station': 'you stay at one stove or bench and cook, brew, fix or craft, order after order',
   'shooter.default': 'you stand, aim and shoot foes or targets coming at you',
   // P68 T9: před hodem, ať „sink the ball“ u golfu nevezme koš. V promptu od R12 – zkrácený kvůli stropu 6 000 znaků.
@@ -113,25 +113,27 @@ const LOOK_HINTS: Partial<Record<LookId, string>> = { meadow: 'farm/park', livin
 
 export function readerSystemPrompt(): string {
   return [
-    'Read one game idea sentence and answer one JSON object. Never add words the sentence does not imply.',
-    `control: the one that fits the main verb best: ${READ_CONTROLS.join('|')}.`,
-    'verbs: up to 4 of the sentence, main verb first; word = the verb as written, class = one of:',
+    // P68R T5: kvůli stropu 6 000 znaků (řádek `buildshift` a obchod přes víc dní v řádku null) pryč jen slova navíc
+    // – úvod a pokyny control, verbs, roles, setting, mood, genre, sure, item a world; rozdíly mezi žánry beze změny.
+    'Read one game idea sentence, answer one JSON object. Never add words the sentence does not imply.',
+    `control: fits the main verb best: ${READ_CONTROLS.join('|')}.`,
+    'verbs: up to 4, main verb first; word = as written, class = one of:',
     ...VERB_CLASSES.map((id) => `- ${id}: ${VERB_HINTS[id]}`),
     'hero: who the player is, 1-3 words from the sentence; null for you/I/my.',
-    `roles: up to 6 other nouns that matter in play; kind = ${ROLE_KINDS.join('|')}; count = the number given, else null.`,
-    'setting: where it happens in English, or null. mood: one or two words, or null.',
+    `roles: up to 6 other nouns in play; kind = ${ROLE_KINDS.join('|')}; count = the number given, else null.`,
+    'setting: the place in English, or null. mood: 1-2 words, or null.',
     'numbers: seconds = a time limit, else null; counts = the other numbers in order.',
-    'genre: the game the sentence wants, {genre, mode}. Judge by what the player keeps doing, not by one word: "catch the bus" is not catching, "shoot photos" is not shooting, a "race" in a story is not racing. Take the FIRST line that fits. How the hero gets somewhere (runs, rides, flies) does not decide; slaying or beating the foe the sentence names does, unless the sentence is a race and the fight only ends it:',
+    'genre: {genre, mode} of the game. Judge by what the player keeps doing, not by one word: "catch the bus" is not catching, "shoot photos" is not shooting, a "race" in a story is not racing. Take the FIRST line that fits. How the hero gets somewhere (runs, rides, flies) does not decide; beating the foe the sentence names does, unless the sentence is a race and the fight only ends it:',
     ...READY_GENRE_MODES.flatMap(({ genre, modes }) => modes.map((mode) => `${genre}.${mode}`))
       .sort((a, b) => (MODE_ORDER.indexOf(a) + 1 || 99) - (MODE_ORDER.indexOf(b) + 1 || 99))
       .map((id) => `- ${id}: ${MODE_HINTS[id] ?? ''}`),
-    'genre is null when the play is none of these: turn-based cards, board games or chess, quizzes, riddles, choosing what to say, dating or story choices, managing a shop, farm or city, math or logic puzzles, taking photos, slow fishing. A word of a line inside such a game ("battle", "race", "band", "shoot") does not make it fit. Any other sentence that names an action a line plays (stack, cook, fix, pop, deliver) takes the closest line even without details.',
+    'genre is null when the play is none of these: turn-based cards, board games or chess, quizzes, riddles, choosing what to say, dating or story choices, managing a farm or a city, or a shop over many days, math or logic puzzles, taking photos, slow fishing. A word of a line inside such a game ("battle", "race", "band", "shoot") does not make it fit. Any other sentence that names an action a line plays (stack, cook, fix, pop, deliver) takes the closest line even without details.',
     'Examples (sentence => genre):',
     ...PROMPT_EXAMPLES.map(({ sentence, genre }) => `"${sentence}" => ${genre ?? 'null'}`),
-    'sure: false only when two lines fit about equally; a lure word alone is no reason; else true.',
+    'sure: false only if two lines fit about equally; a lure word alone is no reason; else true.',
     'foe: who or what the hero fights, flees or dodges, 1-3 words, or null.',
-    'item: the main thing the hero collects, throws or protects, or null.',
-    `world: the look of the place: ${LOOK_IDS.map((id) => (LOOK_HINTS[id] === undefined ? id : `${id} (${LOOK_HINTS[id]})`)).join(', ')}; null when none fits.`,
+    'item: main thing the hero collects, throws or protects, or null.',
+    `world: look of the place: ${LOOK_IDS.map((id) => (LOOK_HINTS[id] === undefined ? id : `${id} (${LOOK_HINTS[id]})`)).join(', ')}; else null.`,
     'title: short, in the sentence\'s own words (max 32 chars), never "<hero> Run".',
   ].join('\n');
 }

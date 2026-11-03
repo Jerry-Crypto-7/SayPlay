@@ -4,35 +4,35 @@
  "summary": {
   "n": 25,
   "authored": 20,
-  "ready": 24,
-  "readyShare": 0.96,
+  "ready": 25,
+  "readyShare": 1,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.292,
-  "onlyCharacters": 11,
-  "boss": 7,
-  "action": 1,
+  "adds": 0.28,
+  "onlyCharacters": 9,
+  "boss": 6,
+  "action": 3,
   "segments": 0,
   "actionLost": 0,
-  "reasons": {
-   "MALFORMED": 1
-  }
+  "reasons": {}
  },
  "rows": [
   {
    "id": "d01",
    "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
-   "directed": "draft",
-   "directedReason": "MALFORMED",
-   "status": "draft-final",
-   "reason": "MALFORMED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
    "rules": [
     0,
-    null
+    0
    ],
-   "keptRules": null,
-   "keptLogic": null,
-   "adds": [],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -48,9 +48,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -88,8 +86,8 @@
   {
    "id": "f10",
    "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -98,10 +96,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "boss",
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -125,8 +120,8 @@
   {
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -135,16 +130,14 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
    "id": "h05",
    "sentence": "boxing a kangaroo in the australian outback",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -154,8 +147,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
-    "characters"
+    "boss"
    ],
    "actionLost": false
   },
@@ -223,15 +215,16 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss"
+    "boss",
+    "action"
    ],
    "actionLost": false
   },
   {
    "id": "m09",
    "sentence": "ninja cat jumpin on rooftops plz",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": null,
    "status": "ready",
    "reason": null,
    "rules": [
@@ -241,6 +234,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
+    "action",
     "characters"
    ],
    "actionLost": false
@@ -301,8 +295,8 @@
   {
    "id": "o02",
    "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -373,8 +367,8 @@
   {
    "id": "o06",
    "sentence": "Jumping arcade game in the forest",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -425,8 +419,8 @@
   {
    "id": "s002",
    "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [

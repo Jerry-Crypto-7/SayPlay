@@ -3,12 +3,12 @@
  "sentence": "a kangaroo jumps over cars then collects coins on the highway",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "41eeff3f",
- "directorPromptVersion": "e83c5752",
- "recordedAt": "2026-11-02T22:19:27.802Z",
- "ms": 7146,
+ "promptVersion": "cbdbf596",
+ "directorPromptVersion": "5aa04d83",
+ "recordedAt": "2026-11-03T18:46:55.488Z",
+ "ms": 8475,
  "answer": {
-  "plan": "Platformer: kangaroo hops over cars, collects coins on a highway, with a simple time‑based wave of cars.",
+  "plan": "Platformer: kangaroo hops over cars, collects coins on a highway.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,7 +19,7 @@
      "does": "avoid",
      "verb": "jump_over",
      "states": 2,
-     "patrol": true
+     "patrol": false
     },
     {
      "label": "coin",
@@ -31,14 +31,14 @@
    ],
    "heroAction": "none",
    "setting": "highway",
-   "palette": "desert",
+   "palette": "city",
    "params": {
     "lengthM": 200,
     "difficulty": 1,
     "items": 5,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 60
+    "timeLimit": 0
    },
    "counts": {
     "collectible": 5
@@ -87,81 +87,19 @@
      "do": [
       {
        "damage": 1
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "collect_coin",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "coin"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "score": 10
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "spawn_cars",
-     "verb": "spawn",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "car",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_coins",
-     "verb": "spawn",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "coin",
-        "at": "player"
-       }
       }
      ]
     }
    ],
    "logic": {
     "vars": null,
-    "timers": [
-     {
-      "id": "phase_timer"
-     }
-    ],
+    "timers": [],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "play"
      }
     ],
     "events": null
