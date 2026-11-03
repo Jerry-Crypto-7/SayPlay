@@ -32,6 +32,8 @@ const HOLDOUT_GROUPS = { threat: 24, everyday: 15, fantasy: 12, 'non-game': 9 };
 const MOVED_LATER: Readonly<Record<string, string>> = {
   // P66 T12: přežít hordu je žánr survivor, ne útěk v aréně.
   e03: 'survivor',
+  // P68R T5: obsluha zákazníků v podniku („Serve drinks at a busy beach bar“) je směna obchodu buildshift, ne stanice questu.
+  s04: 'buildshift',
 };
 
 /**

@@ -31,7 +31,7 @@ export const STEPS = ['reader', 'classifier', 'compose', 'translation', 'publish
 
 /** Kde krok v kódu rozhoduje (kotva = text řádku); README k němu připíše přesnou příčinu věty. */
 const ANCHORS = {
-  reader: ['src/play/read/prompt.ts', "'genre: the game the sentence wants"],
+  reader: ['src/play/read/prompt.ts', "'genre: {genre, mode} of the game"],
   classifier: ['src/play/genre/classify.ts', 'decided = reading.sure === false'],
   compose: ['src/play/compose/compose.ts', 'const sources = ranking.flatMap'],
   translation: ['src/play/compose/compose.ts', 'const requested = assemble('],
