@@ -80,8 +80,9 @@ const DEG = Math.PI / 180;
  * před hrdinu, takže trať běží nahoru po obrazovce až k obzoru pod horní lištou HUD. Do `playRect` se vejdou všechny
  * tři pruhy (`half` m od osy: krajní pruh 2 m a půl hrdiny), od pat (`behind` m za hrdinou, kde běží
  * pronásledovatel) po `depth` m před ním a do výšky `top` m. Vzdálenost a svislý posun dává `fitChase`.
+ * P70D T3: sklon 32° (dřív 22°) – hrdina shora šikmo místo zad jako kvádr, tři řady překážek před ním v záběru.
  */
-export const RUNNER_TALL = { pitch: 22 * DEG, ahead: 10, reach: 21, half: 2.5, behind: 2, depth: 2, top: 2 } as const;
+export const RUNNER_TALL = { pitch: 32 * DEG, ahead: 10, reach: 21, half: 2.5, behind: 2, depth: 2, top: 2 } as const;
 
 const fitBox = new Box3();
 
