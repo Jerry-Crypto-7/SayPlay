@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Snímky karet feedu (P54A T3): pro každou vestavěnou hru (`builtin-games.json` a `builtin-feed-games.json`)
+ * Snímky karet feedu (P54A T3): pro každou vestavěnou hru (`builtin-games.json`, `builtin-feed-games.json` a
+ * nahrazené hry feedu P54A `builtin-feed-p54a.json`, které platí jen odkazem – R3 P70C)
  * otevře nad běžícím `next start` stránku `/play/<versionId>`, odehraje skript
  * náhledu robota (`preview`, T2) ručními hodinami do `startTick + 120` a vyfotí
  * plátno na výšku (720×1280) i na šířku (1280×720) do
@@ -9,8 +10,8 @@
  *
  *   FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p37c/feed-thumbs.mjs [--missing]
  *
- * Server musí běžet z buildu se stejnou `builtin-games.json`. Snímky her, které
- * ze sady vypadly, smaže a `disclosure.json` srovná s tím, co v adresáři leží;
+ * Server musí běžet z buildu se stejnými třemi soubory her. Snímky her, které
+ * ze sady vypadly, smaže (soubor her vynechaný ze seznamu níž = jeho snímky pryč) a `disclosure.json` srovná s tím, co v adresáři leží;
  * seznam her se snímkem zapíše do `src/components/play/feed/feed-thumbs.json`.
  * `--missing` (P70C T4) vyfotí jen hry, kterým snímek chybí – zmrazené sadě, jejíž
  * náhled se nezměnil, tak nepřepíše obrázky, které už leží v gitu.
