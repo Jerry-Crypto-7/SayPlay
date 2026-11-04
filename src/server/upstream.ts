@@ -825,8 +825,9 @@ const MAX_CODEX_OUTPUT_BYTES = 8 * 1024 * 1024;
 const CODEX_KILL_GRACE_MS = 2_000;
 
 /**
- * P70B T4: odpověď delší než strop modelu. Codex ji sám zkouší znovu (5× „Reconnecting“, pak HTTPS a „Bad Request“),
- * každý pokus znovu generuje celou odpověď – stejný strop dá stejný výsledek, proto se končí u prvního.
+ * P70B T4: odpověď ukončená „max_output_tokens“. Codex ji sám zkouší znovu (5× „Reconnecting“, pak HTTPS a „Bad Request“),
+ * a tentýž požadavek dá týž výsledek, proto se končí u prvního. Naměřeno 4. 11.: odpověď režiséra má 585–715 výstupních
+ * tokenů – takhle backend hlásil schéma nad `OPENAI_ENUM_LIMIT`, ne dlouhou odpověď (proto `openaiStrictSchema` níž).
  */
 const CODEX_OUTPUT_CAP = /Incomplete response returned, reason: max_output_tokens/;
 export const CODEX_OUTPUT_CAP_STOP = 'codex answer ran past max_output_tokens';
@@ -968,7 +969,8 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig,
       effortForCall(call, config),
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
-      call.request.outputSchema,
+      // Codex posílá schéma jako striktní `json_schema` OpenAI, tedy s týmž limitem výčtů jako API (P70B T4).
+      call.request.outputSchema === undefined ? undefined : openaiStrictSchema(call.request.outputSchema),
       signal,
     ));
   } catch (thrown) {
@@ -1025,7 +1027,8 @@ const isEnum = (node: SchemaNode): boolean => Array.isArray(node.enum);
  * Schéma pro striktní `json_schema` OpenAI API (P58B T7). Schéma režiséra nese ~2 200 hodnot výčtů – tytéž seznamy
  * (paleta, režimy…) v každém z 20 žánrů, různých je 169 – a OpenAI nad `OPENAI_ENUM_LIMIT` odmítne každé volání.
  * Nad limitem jde každý opakovaný výčet jednou do `$defs` a na jeho místa `$ref`; význam schématu se nemění.
- * Pod limitem (čtečka) odejde schéma beze změny.
+ * Pod limitem (čtečka) odejde schéma beze změny. Totéž platí pro `--output-schema` codex-cli (P70B T4): tam limit
+ * nedá 400, ale „max_output_tokens“ u každého pokusu.
  */
 export function openaiStrictSchema(schema: SchemaNode): SchemaNode {
   const seen = new Map<string, number>();

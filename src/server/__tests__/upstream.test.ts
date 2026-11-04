@@ -38,7 +38,8 @@ import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
-import { chatConfigFromEnv, killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
+import { GENRE_ANSWER_SCHEMA } from '../../play/director/answer-schema';
+import { OPENAI_ENUM_LIMIT, chatConfigFromEnv, killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 // `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test sirotka
 // jen čte, s čím se volal (`ship-pidreuse`).
@@ -1062,6 +1063,27 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     });
     expect(Date.now() - started).toBeLessThan(15_000);
   }, 30_000);
+
+  it('P70B T4: schéma režiséra dostane codex pod limitem výčtů OpenAI, se sdílenými $defs', async () => {
+    // Naměřeno 4. 11.: plné schéma (3 181 hodnot výčtů) dalo „max_output_tokens“ 4/4, se sdílenými výčty odpověď 1/1.
+    const enumValues = (node: unknown): number =>
+      Array.isArray(node) ? node.reduce((sum: number, child) => sum + enumValues(child), 0)
+      : node === null || typeof node !== 'object' ? 0
+      : Array.isArray((node as { enum?: unknown }).enum) ? ((node as { enum: unknown[] }).enum).length
+      : Object.values(node).reduce((sum: number, child) => sum + enumValues(child), 0);
+    const file = fakeCodex('schema', okStream, [
+      '  const args = process.argv.slice(2);',
+      `  require('node:fs').copyFileSync(args[args.indexOf('--output-schema') + 1], ${JSON.stringify(join(scripts, 'schema.sent.json'))});`,
+    ].join('\n'));
+    expect(enumValues(GENRE_ANSWER_SCHEMA)).toBeGreaterThan(OPENAI_ENUM_LIMIT);
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 'S', user: PROMPT, outputSchema: GENRE_ANSWER_SCHEMA } });
+      expect(outcome.ok).toBe(true);
+    });
+    const sent = JSON.parse(readFileSync(join(scripts, 'schema.sent.json'), 'utf8')) as Record<string, unknown>;
+    expect(enumValues(sent)).toBeLessThanOrEqual(OPENAI_ENUM_LIMIT);
+    expect(Object.keys(sent.$defs as object).length).toBeGreaterThan(0);
+  });
 
   it('vrátí tělo z agent_message, účtenku z turn.completed a jméno modelu i úsilí předá procesu', async () => {
     const file = fakeCodex('ok', okStream);
