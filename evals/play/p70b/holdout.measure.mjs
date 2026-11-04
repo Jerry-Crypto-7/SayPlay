@@ -11,7 +11,7 @@
  *     quick game routes right (golf → minigolf, otherwise a genre from `acceptable`) as input for
  *     `scripts/measure/gameplay-gate.mjs` (G2), with the sentence id in `sentence`.
  *   node evals/play/p70b/holdout.measure.mjs report
- *     `route-main.json` + `route-branch.json` + `gameplay-holdout.json` → `result.json` (`result.mjs`).
+ *     `route-main.json` + `route-branch.json` + `gameplay-holdout.json` + `gameplay-main.json` → `result.json` (`result.mjs`).
  *
  * Sentences are never printed, only counts.
  */
@@ -40,8 +40,8 @@ const { routedRight, verdictOf } = await import(pathToFileURL(path.join(HERE, 'r
 const readJson = (file) => JSON.parse(readFileSync(path.join(HERE, file), 'utf8'));
 
 if (command === 'report') {
-  const [main, branch, gameplay, opened] = ['route-main.json', 'route-branch.json', 'gameplay-holdout.json', 'holdout-opened.json'].map(readJson);
-  writeFileSync(path.join(HERE, 'result.json'), `${JSON.stringify({ schema: 'p70b-result.v1', opened: opened.openedAt, mainCommit: main.commit, branchCommit: branch.commit, ...verdictOf(main, branch, gameplay) }, null, 1)}\n`);
+  const [main, branch, gameplay, gameplayMain, opened] = ['route-main.json', 'route-branch.json', 'gameplay-holdout.json', 'gameplay-main.json', 'holdout-opened.json'].map(readJson);
+  writeFileSync(path.join(HERE, 'result.json'), `${JSON.stringify({ schema: 'p70b-result.v1', opened: opened.openedAt, mainCommit: main.commit, branchCommit: branch.commit, ...verdictOf(main, branch, gameplay, gameplayMain) }, null, 1)}\n`);
   console.log('result.json written');
 } else if (command === 'open') {
   await import(pathToFileURL(path.join(REPO, 'scripts/ts-paths.mjs')).href);

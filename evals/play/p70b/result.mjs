@@ -28,11 +28,29 @@ export function sideOf(rows) {
 /** Hratelná věta brány G2: přeložila se, robot vyhraje, nečinný i slabý prohraje a požadované akce proběhnou. */
 const playable = (result) => result.failed === null && result.win && result.lose && result.actions;
 
-export function verdictOf(main, branch, gameplay) {
+/** Kolik vět prošlo kterou kontrolou (`bot-wins`, `idle-loses`, `weak-loses`, akce her P68). */
+function checksOf(results) {
+  const counts = {};
+  for (const result of results) for (const assertion of result.assertions) counts[assertion.id] = (counts[assertion.id] ?? 0) + (assertion.pass ? 1 : 0);
+  return counts;
+}
+
+/**
+ * `gameplayMain`: G2 nad větami, které `main` poslal správně (`D:/caches/p70b/scratch/g2-root.mjs` – jen
+ * `assertions`, bez `win`/`lose`/`actions`), hratelná = přeložila se a prošla každou kontrolou. Jen ke srovnání.
+ */
+export function verdictOf(main, branch, gameplay, gameplayMain) {
   const before = sideOf(main.rows);
   const after = sideOf(branch.rows);
   const byId = new Map(main.rows.map((row) => [row.id, row]));
-  const g2 = { n: gameplay.results.length, pass: gameplay.results.filter(playable).length, failed: gameplay.results.filter((result) => !playable(result)).map((result) => result.sentence) };
+  const allPass = (result) => result.failed === null && result.assertions.length > 0 && result.assertions.every((assertion) => assertion.pass);
+  const g2 = {
+    n: gameplay.results.length,
+    pass: gameplay.results.filter(playable).length,
+    checks: checksOf(gameplay.results),
+    failed: gameplay.results.filter((result) => !playable(result)).map((result) => result.sentence),
+    main: { n: gameplayMain.results.length, pass: gameplayMain.results.filter(allPass).length, checks: checksOf(gameplayMain.results) },
+  };
   return {
     main: before,
     branch: after,

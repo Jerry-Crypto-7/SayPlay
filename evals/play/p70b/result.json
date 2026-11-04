@@ -1,0 +1,109 @@
+{
+ "schema": "p70b-result.v1",
+ "opened": "2026-11-04T15:58:30.881Z",
+ "mainCommit": "0d3fa930",
+ "branchCommit": "be96cde6",
+ "main": {
+  "animals": 30,
+  "heroRight": 17,
+  "golf": 20,
+  "golfMinigolf": 7,
+  "generalCounted": 20,
+  "generalWrong": 5,
+  "routedRight": 40
+ },
+ "branch": {
+  "animals": 30,
+  "heroRight": 21,
+  "golf": 20,
+  "golfMinigolf": 19,
+  "generalCounted": 20,
+  "generalWrong": 5,
+  "routedRight": 52
+ },
+ "generalMoves": [],
+ "g2": {
+  "n": 52,
+  "pass": 29,
+  "checks": {
+   "bot-wins": 52,
+   "idle-loses": 52,
+   "weak-loses": 29,
+   "stroke-makes-wall": 1,
+   "protected-survives": 1,
+   "idle-loses-protected": 1,
+   "aims": 1,
+   "hit-on-fire": 1,
+   "idle-hurt": 1,
+   "ball-in-hole": 19,
+   "strokes-counted": 19
+  },
+  "failed": [
+   "p70b-001",
+   "p70b-002",
+   "p70b-006",
+   "p70b-007",
+   "p70b-008",
+   "p70b-014",
+   "p70b-017",
+   "p70b-018",
+   "p70b-023",
+   "p70b-024",
+   "p70b-029",
+   "p70b-052",
+   "p70b-053",
+   "p70b-055",
+   "p70b-056",
+   "p70b-057",
+   "p70b-058",
+   "p70b-060",
+   "p70b-062",
+   "p70b-067",
+   "p70b-068",
+   "p70b-069",
+   "p70b-070"
+  ],
+  "main": {
+   "n": 40,
+   "pass": 17,
+   "checks": {
+    "bot-wins": 40,
+    "idle-loses": 40,
+    "weak-loses": 17,
+    "stroke-makes-wall": 1,
+    "protected-survives": 1,
+    "idle-loses-protected": 1,
+    "aims": 1,
+    "hit-on-fire": 1,
+    "idle-hurt": 1,
+    "ball-in-hole": 7,
+    "strokes-counted": 7
+   }
+  }
+ },
+ "goals": {
+  "hero": {
+   "value": 21,
+   "of": 30,
+   "main": 17,
+   "met": false
+  },
+  "golf": {
+   "value": 19,
+   "of": 20,
+   "main": 7,
+   "met": true
+  },
+  "general": {
+   "value": 5,
+   "of": 20,
+   "main": 5,
+   "met": true
+  },
+  "g2": {
+   "value": 29,
+   "of": 52,
+   "met": false
+  }
+ }
+}
