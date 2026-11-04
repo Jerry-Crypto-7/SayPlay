@@ -286,8 +286,8 @@ function ArcadeHud({
       status={
         <p className="play-sr-only">
           <span data-testid="play-progress" data-progress={snapshot.progress}>
-            {/* Aréna nemá trať, procento by stálo na nule. */}
-            {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
+            {/* Hra bez trati (aréna, míření, svět délky 0) procento nemá – stálo by na nule. */}
+            {tracked(spec, world) ? `${snapshot.progress}% · ` : ''}
             {snapshot.score} {scoreUnit(spec)}
             {lives}
             {clock === null ? '' : ` · ${clock}`}
