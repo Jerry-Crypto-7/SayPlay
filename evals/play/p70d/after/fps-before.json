@@ -1,0 +1,281 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11, OpenXR off",
+ "base": "http://127.0.0.1:3205",
+ "interleavedWith": "http://127.0.0.1:3204",
+ "repeats": 4,
+ "windowMs": 10000,
+ "measuredAt": "2026-11-04T18:58:46.257Z",
+ "rows": [
+  {
+   "id": "runner-forest",
+   "genre": "runner",
+   "fpsMedian": 42.3,
+   "samples": [
+    43.4,
+    45,
+    41.2,
+    39.6
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "low",
+    "low"
+   ],
+   "calls": 66
+  },
+  {
+   "id": "runner-snow",
+   "genre": "runner",
+   "fpsMedian": 46.9,
+   "samples": [
+    48.3,
+    45.4,
+    44.4,
+    42.2,
+    51.5,
+    56.5
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low",
+    "low",
+    "low",
+    "medium"
+   ],
+   "calls": 112,
+   "repeats": 6,
+   "measuredAt": "2026-11-04T19:22:30.367Z"
+  },
+  {
+   "id": "arena",
+   "genre": "arena",
+   "fpsMedian": 38.9,
+   "samples": [
+    39.6,
+    35.8,
+    35.3,
+    39,
+    40.1,
+    38.9
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low",
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 40,
+   "repeats": 6,
+   "measuredAt": "2026-11-04T19:15:17.677Z"
+  },
+  {
+   "id": "platformer-beach",
+   "genre": "platformer",
+   "fpsMedian": 52.9,
+   "samples": [
+    46.9,
+    53.3,
+    49.7,
+    56.1,
+    54.9,
+    52.6
+   ],
+   "quality": [
+    "low",
+    "medium",
+    "medium",
+    "medium",
+    "medium",
+    "low"
+   ],
+   "calls": 32,
+   "repeats": 6,
+   "measuredAt": "2026-11-04T19:15:17.677Z"
+  },
+  {
+   "id": "minigolf",
+   "genre": "minigolf",
+   "fpsMedian": 55.4,
+   "samples": [
+    56.2,
+    55.7,
+    42.6,
+    55.1,
+    52.6,
+    55.7
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium",
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 56,
+   "repeats": 6,
+   "measuredAt": "2026-11-04T19:15:17.677Z"
+  },
+  {
+   "id": "railfps",
+   "genre": "railfps",
+   "fpsMedian": 57.8,
+   "samples": [
+    58.8,
+    56.8,
+    58.8,
+    56.3
+   ],
+   "quality": [
+    "high",
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 42
+  },
+  {
+   "id": "catch",
+   "genre": "catch",
+   "fpsMedian": 58.3,
+   "samples": [
+    56.4,
+    59,
+    58.6,
+    58.1
+   ],
+   "quality": [
+    "medium",
+    "high",
+    "medium",
+    "medium"
+   ],
+   "calls": 44
+  },
+  {
+   "id": "defense",
+   "genre": "defense",
+   "fpsMedian": 45.7,
+   "samples": [
+    46.2,
+    45.3,
+    46.6,
+    40.5
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "low",
+    "low"
+   ],
+   "calls": 80
+  }
+ ],
+ "superseded": [
+  {
+   "id": "runner-snow",
+   "genre": "runner",
+   "fpsMedian": 43.7,
+   "samples": [
+    48.7,
+    46.8,
+    40.7,
+    32.1
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "low",
+    "low"
+   ],
+   "calls": 81,
+   "note": "první prokládaný běh: zásek ~0 FPS na obou stranách (aréna, pláž, golf) nebo rozptyl (sníh); nahrazeno 6 opakováními"
+  },
+  {
+   "id": "arena",
+   "genre": "arena",
+   "fpsMedian": 0.1,
+   "samples": [
+    17.5,
+    0,
+    0.1,
+    0
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 43,
+   "note": "první prokládaný běh: zásek ~0 FPS na obou stranách (aréna, pláž, golf) nebo rozptyl (sníh); nahrazeno 6 opakováními"
+  },
+  {
+   "id": "platformer-beach",
+   "genre": "platformer",
+   "fpsMedian": 0.1,
+   "samples": [
+    0,
+    0.1,
+    20.5,
+    0
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low",
+    "medium"
+   ],
+   "calls": 55,
+   "note": "první prokládaný běh: zásek ~0 FPS na obou stranách (aréna, pláž, golf) nebo rozptyl (sníh); nahrazeno 6 opakováními"
+  },
+  {
+   "id": "minigolf",
+   "genre": "minigolf",
+   "fpsMedian": 0.1,
+   "samples": [
+    0.1,
+    0.1,
+    0.1,
+    55.9
+   ],
+   "quality": [
+    "low",
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 56,
+   "note": "první prokládaný běh: zásek ~0 FPS na obou stranách (aréna, pláž, golf) nebo rozptyl (sníh); nahrazeno 6 opakováními"
+  },
+  {
+   "id": "runner-snow",
+   "genre": "runner",
+   "fpsMedian": 43.9,
+   "samples": [
+    39.4,
+    42.4,
+    43.7,
+    48,
+    44,
+    49.2
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low",
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 81,
+   "repeats": 6,
+   "measuredAt": "2026-11-04T19:15:17.677Z",
+   "note": "sníh −6,2 % s prachem; levnější varianta bez prachu (ambient ['birds']), pokus 1"
+  }
+ ]
+}
