@@ -459,6 +459,7 @@ test('portrait phones: the AI-version notice sits under the top HUD, off the her
 /**
  * Desktop beze změny: HUD na 1280 × 720 na tiku 0 a karta prohry pixel po pixelu proti referenci z `main`.
  * Plátno je skryté (scéna se hýbe sama), ruční hodiny stojí, animace dojedou (`toHaveScreenshot`).
+ * Referenci karty prohry obnovila P70C T2: přibyl řádek příčiny „You lost all 3 lives.“ (`play-result-lost`), nic jiného.
  */
 test('desktop 1280×720: the HUD and the result card match main pixel for pixel', async ({ page, request }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'desktop reference only');

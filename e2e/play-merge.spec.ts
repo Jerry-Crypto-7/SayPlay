@@ -210,7 +210,10 @@ test.describe('merge on a phone (P54C T11)', () => {
     expect(end.tick).toBeLessThan(MERGE.seconds * 60);
     await expect(page.getByTestId('hud-counter-collected')).toHaveAttribute('data-count', '0');
     await expect(page.getByTestId('hud-counter-lives')).toHaveAttribute('data-count', '0');
-    await expect(page.getByTestId('play-postrun')).toContainText('So close.', { timeout: 30_000 });
+    // Prohra bez jediného bodu říká „Try again!“, ne „So close.“ (P56A T9, tahle věta tu zůstala stará), a pod ním
+    // příčinu prohry (P70C T2): kopec přetekl, došly životy.
+    await expect(page.getByTestId('play-postrun')).toContainText('Try again!', { timeout: 30_000 });
+    await expect(page.getByTestId('play-result-lost')).toHaveText('You lost all 3 lives.');
     await context.close();
   });
 });

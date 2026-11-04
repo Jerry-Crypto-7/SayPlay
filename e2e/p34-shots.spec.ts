@@ -132,13 +132,15 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
     await game(page, PENDING(), 'working', EGGS);
     await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'true');
   },
-  // T5: první ťuk, dva sebrané předměty (kroky svědka ze sondy) a ~5 s hry – řádek cíle zmizel, časovač běží.
+  // T5: první ťuk a ~5 s hry – časovač běží. Od P70C T2 cíl po 4 s nezmizí, sbalí se do pilulky na jeden řádek.
+  // Věta je dnes arkáda (`move_free`), ne mřížka: `playWitness(4)` by tu dohrál celý běh svědka a hra by skončila
+  // výhrou – proto bez něj; nečinná hráčka 5 s vydrží (naměřeno 4. 11.: tik 320, běží).
   'game-5s': async (page) => {
     await publishAndOpen(page, MUSHROOMS);
     await tapStage(page);
-    await page.evaluate(() => window.__playShell!.playWitness(4));
     await page.waitForTimeout(5_000);
-    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'false');
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'true');
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-compact', 'true');
     await expect(page.getByTestId('play-outcome')).toHaveCount(0);
   },
   // T5: karta pauzy – scrim 45 %, Resume, Restart, Change one thing a řádek Sound · About · Quit.
@@ -148,17 +150,17 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
     await expect(page.getByTestId('play-paused')).toBeVisible();
     await page.waitForTimeout(400);
   },
-  // T9 (nález revize T5): řádek cíle po 5 s zmizí a pauza ho vrátí – helper `objectiveShown` sám nestačí,
-  // Hud i ArcadePlay mu musí předat skutečné `paused`.
+  // T9 (nález revize T5): řádek cíle se po 5 s sbalí (P70C T2, dřív zmizel) a pauza ho rozbalí – helper
+  // `objectiveShown` sám nestačí, Hud i ArcadePlay mu musí předat skutečné `paused`. Bez `playWitness` jako `game-5s`.
   'pause-goal': async (page) => {
     await publishAndOpen(page, MUSHROOMS);
     await tapStage(page);
-    await page.evaluate(() => window.__playShell!.playWitness(4));
     await page.waitForTimeout(5_000);
-    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'false');
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-compact', 'true');
     await page.getByTestId('play-pause').click();
     await expect(page.getByTestId('play-paused')).toBeVisible();
     await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'true');
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-compact', 'false');
   },
   // T5: arkáda – časovač odpočítává limit hry, „Change one thing“ je živá změna.
   'game-arcade': async (page) => {
