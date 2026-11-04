@@ -65,9 +65,9 @@ test.describe('/play – create', () => {
     page.on('request', (request) => {
       if (request.url().endsWith('/api/play/games') && request.method() === 'POST') posted += 1;
     });
-    await page.getByTestId('play-starter-collect_exit').click();
+    await page.getByTestId('play-starter-minigolf').click();
     const sentence = page.getByTestId('play-sentence');
-    await expect(sentence).toHaveValue('Grab five glowing mushrooms');
+    await expect(sentence).toHaveValue('Mini golf on a pirate ship deck');
     await expect(sentence).toBeFocused();
     await page.waitForTimeout(300);
     expect(posted).toBe(0);
@@ -75,7 +75,7 @@ test.describe('/play – create', () => {
 
     // Shift+Enter je nový řádek, Enter odešle.
     await sentence.press('Shift+Enter');
-    await expect(sentence).toHaveValue('Grab five glowing mushrooms\n');
+    await expect(sentence).toHaveValue('Mini golf on a pirate ship deck\n');
     await sentence.press('Enter');
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
   });

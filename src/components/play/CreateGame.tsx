@@ -22,7 +22,7 @@ import { createGame } from './create-game';
 import { moodTone } from './Feed';
 import { FirstVisitHint, isFirstVisit, markVisited } from './FirstVisitHint';
 import { appendSpoken, MicButton } from './MicButton';
-import { COUNTER_WARN, IDEAS, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
+import { COUNTER_WARN, IDEA_CARDS, IDEAS, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, TOO_VAGUE } from './starters';
 import { BuildingScreen, Button, Icon, TabBar } from './ui';
 
 type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string } | { readonly kind: 'offline' };
@@ -101,7 +101,7 @@ export function CreateGame() {
   }
 
   function surprise(): void {
-    const others = STARTERS.filter((starter) => starter.sentence !== sentence);
+    const others = IDEAS.filter((idea) => idea.sentence !== sentence);
     fill(others[Math.floor(Math.random() * others.length)]!.sentence);
   }
 
@@ -200,9 +200,9 @@ export function CreateGame() {
           Need an idea? Grab one.
         </h2>
         <ul className="play-idea-grid">
-          {IDEAS.map((idea, index) => (
-            <li key={idea.archetype}>
-              <button type="button" className={`sp-idea ${IDEA_LOOKS[index % IDEA_LOOKS.length]}`} data-testid={`play-starter-${idea.archetype}`} disabled={busy} onClick={() => fill(idea.sentence)}>
+          {IDEAS.slice(0, IDEA_CARDS).map((idea, index) => (
+            <li key={idea.genre}>
+              <button type="button" className={`sp-idea ${IDEA_LOOKS[index % IDEA_LOOKS.length]}`} data-testid={`play-starter-${idea.genre}`} disabled={busy} onClick={() => fill(idea.sentence)}>
                 {idea.sentence}
               </button>
             </li>

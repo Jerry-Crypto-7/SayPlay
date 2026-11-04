@@ -84,7 +84,7 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
   // Karta nápadu vložila větu: počítadlo a bublina s textem.
   'home-idea': async (page) => {
     await home(page);
-    await page.getByTestId('play-starter-chase_escape').click();
+    await page.getByTestId('play-starter-rhythm').click();
     await expect(page.getByTestId('play-sentence')).not.toHaveValue('');
     await page.waitForTimeout(400);
   },

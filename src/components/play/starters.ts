@@ -8,6 +8,7 @@
  * importovat: šel by do klientského bundlu i s úložištěm a zodem.
  */
 
+import type { GenreId } from '@/play/genre/contract';
 import type { ArchetypeId } from '@/play/registry';
 
 /** Nadpis domova; poslední slovo nese zvýraznění kitu (`.sp-highlight`). */
@@ -51,15 +52,25 @@ export const COUNTER_WARN = 130;
 export const TOO_VAGUE = 'Add who you are and what you\'re doing, like "a cat stealing fish".';
 
 /**
- * Karty nápadů na domově (kit `.sp-idea`): krátká věta, klepnutí ji vloží do
- * pole. Archetyp je ten, na který věta přistane v návrhu ze slov – slib karty.
+ * Karty nápadů na domově (kit `.sp-idea`) a „Surprise me“ (P70C T3): krátká
+ * věta, klepnutí ji vloží do pole. Každá v jiném žánru – `genre` je slib karty,
+ * kam ji dá návrh ze slov (`__tests__/starters.test.ts`). Domov ukáže prvních
+ * `IDEA_CARDS` (doslova v `PRODUCT_COPY.md`), „Surprise me“ losuje ze všech.
  */
 export const IDEA_LIMIT = 45;
-export const IDEAS: readonly { readonly archetype: ArchetypeId; readonly sentence: string }[] = [
-  { archetype: 'chase_escape', sentence: 'Hamster escapes a supermarket Roomba' },
-  { archetype: 'collect_exit', sentence: 'Grab five glowing mushrooms' },
-  { archetype: 'delivery', sentence: 'Carry a wobbly cake to the party' },
-  { archetype: 'survival_timer', sentence: 'The floor is lava, for 60 seconds' },
+export const IDEA_CARDS = 4;
+export const IDEAS: readonly { readonly genre: GenreId; readonly sentence: string }[] = [
+  { genre: 'rhythm', sentence: 'A frog drums to the beat on lily pads' },
+  { genre: 'minigolf', sentence: 'Mini golf on a pirate ship deck' },
+  { genre: 'buildshift', sentence: 'Run a pizza shop and serve 12 customers' },
+  { genre: 'drawsave', sentence: 'Draw walls to save a puppy from bees' },
+  { genre: 'railfps', sentence: 'Ride a mine cart and blast zombie bats' },
+  { genre: 'duel', sentence: 'A knight duels a dragon on a bridge' },
+  { genre: 'catch', sentence: 'Catch falling donuts, dodge the bombs' },
+  { genre: 'hole', sentence: 'A hole swallows a whole city' },
+  { genre: 'slice', sentence: 'A ninja slices flying watermelons' },
+  { genre: 'runner', sentence: 'A raccoon runs down a subway track' },
+  { genre: 'voyage', sentence: 'A paper plane flies between skyscrapers' },
 ];
 
 /**
@@ -80,6 +91,7 @@ export const FIRST_VISIT_TITLE = 'New here? Tap one, then Make it!';
 export const TRY_YOUR_OWN = 'Try your own';
 export const NOT_NOW = 'Not now';
 
+/** Zlaté prompty osmi archetypů mřížky – opora testů API a dvojníka; „Surprise me“ od P70C T3 bere `IDEAS`. */
 export interface Starter {
   readonly archetype: ArchetypeId;
   readonly label: string;
