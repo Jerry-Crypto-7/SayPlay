@@ -2,13 +2,18 @@
  * Vestavěná sada her (P37C T6): ověřené hry v buildu, aby feed nikdy nebyl
  * prázdný – ani na čisté instanci bez Upstash, ani s prázdným úložištěm.
  *
- * Hry staví `scripts/p37c/seed-feed.mjs --builtin` ze startovních a vývojových
- * vět stejnou cestou jako `POST /api/play/games` (návrh ze slov, robot ji
- * vyhraje, nečinný hráč prohraje) a řadí je podle hloubky. Věty napsal
- * provozovatel, ne návštěvník – proto smí do feedu i bez autorské verze.
+ * Hry staví `scripts/p37c/seed-feed.mjs --builtin` z vět feedu (od P70C T4 dvě
+ * na každý hratelný žánr) stejnou cestou jako `POST /api/play/games` (návrh ze
+ * slov, robot ji vyhraje, nečinný hráč prohraje, náhled robota se hýbe) a řadí
+ * je podle hloubky, prokládané po žánrech. Věty napsal provozovatel, ne
+ * návštěvník – proto smí do feedu i bez autorské verze.
+ *
+ * Do feedu jde jen `FEED_GAMES`: hry feedu a nejvýš čtyři staré hry „choď a
+ * sbírej“ ze zmrazené sady (`builtin-feed-old.json`). Ostatní zmrazené hry feed
+ * neukáže, ale jejich odkazy dál platí (`get`, `lineageOf`).
  *
  * Obal úložiště hry z úložiště nijak nemění; jen doplní, co úložiště nemá:
- * - `recent` – za uložené řádky přidá vestavěné, které v nich nejsou, do `limit`;
+ * - `recent` – za uložené řádky přidá vestavěné z feedu, které v nich nejsou, do `limit`;
  *   plné úložiště je tak vytlačí, prázdné ukáže jen je;
  * - `get` a `lineageOf` – odkaz na vestavěnou hru, výzva i remix fungují;
  * - `countLoop`, `put` a `feature` – vestavěnou hru (hru události, rodiče
@@ -19,23 +24,33 @@
  */
 
 import type { GameVersion } from '../contracts';
+import feedOld from './builtin-feed-old.json';
 import feedBuiltin from './builtin-feed-games.json';
 import builtin from './builtin-games.json';
 import { feedRowOf, type VersionStore } from './store';
 import type { PublishedGame } from './version';
 
+const FROZEN = builtin as unknown as readonly PublishedGame[];
+const FEED_BUILT = feedBuiltin as unknown as readonly PublishedGame[];
+
 /**
- * Zmrazená sada P37C (`builtin-games.json`, světy `arcade-v2` zamčené `legacy-replay-v2`) a hry feedu P54A
+ * Zmrazená sada P37C (`builtin-games.json`, světy `arcade-v2` zamčené `legacy-replay-v2`) a hry feedu
  * z dnešního jádra (`builtin-feed-games.json`); obě s náhledem robota (`preview`).
  */
-export const BUILTIN_GAMES = [...builtin, ...feedBuiltin] as unknown as readonly PublishedGame[];
+export const BUILTIN_GAMES: readonly PublishedGame[] = [...FROZEN, ...FEED_BUILT];
 
 /** Id vestavěných her – `put` je nepočítá do denního stropu publikací návštěvníků. */
 export const BUILTIN_IDS: ReadonlySet<string> = new Set(BUILTIN_GAMES.map((game) => game.version.versionId));
 
-export function withBuiltinGames(inner: VersionStore, games: readonly PublishedGame[] = BUILTIN_GAMES): VersionStore {
+/** Staré hry „choď a sbírej“ ze zmrazené sady, které feed ještě ukáže – vybírá je `seed-feed.mjs --builtin` (`oldWalkInFeed`). */
+const OLD_IN_FEED: ReadonlySet<string> = new Set(feedOld);
+
+/** Vestavěné hry, které feed ukáže: hry feedu (dvě na hratelný žánr) a nejvýš čtyři staré. */
+export const FEED_GAMES: readonly PublishedGame[] = [...FEED_BUILT, ...FROZEN.filter((game) => OLD_IN_FEED.has(game.version.versionId))];
+
+export function withBuiltinGames(inner: VersionStore, games: readonly PublishedGame[] = BUILTIN_GAMES, feed: readonly PublishedGame[] = FEED_GAMES): VersionStore {
   const byId = new Map(games.map((game) => [game.version.versionId, game]));
-  const rows = games.map((game) => ({ ...feedRowOf(game), curated: true as const }));
+  const rows = feed.map((game) => ({ ...feedRowOf(game), curated: true as const }));
   /**
    * Vestavěnou hru uloží, chybí-li v úložišti. Výpadek vyhodí `VersionStoreUnavailable` z `put` –
    * dítě se pak neuloží s useknutým rodokmenem (nález revize T6-2 #1). Bez paměti uložených: hra

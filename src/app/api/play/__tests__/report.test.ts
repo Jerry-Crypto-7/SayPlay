@@ -9,7 +9,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, httpVersionStore, memoryVersionStore, VersionStoreUnavailable } from '@/play/version';
-import { BUILTIN_GAMES } from '@/play/version/builtin';
+import { BUILTIN_GAMES, FEED_GAMES } from '@/play/version/builtin';
 import { REPORT_HIDE_VOTES, REPORTED_KEPT } from '@/play/version/store';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
@@ -21,7 +21,8 @@ import { POST as reportGame } from '../games/[id]/report/route';
 import { POST as remixGame } from '../games/[id]/remix/route';
 import { GET as listGames, POST as createGame } from '../games/route';
 
-const BUILTIN = BUILTIN_GAMES[0]!.version.versionId;
+/** Vestavěná hra, kterou feed ukáže (P70C T4: jen `FEED_GAMES`, ne celá zmrazená sada). */
+const BUILTIN = FEED_GAMES[0]!.version.versionId;
 
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
 /** `ip` je adresa od platformy (důvěryhodná jen s `VERCEL=1`), `written` hlavička, kterou si volající píše sám. */
@@ -31,7 +32,7 @@ const report = (id: string, ip: string, written = ip) =>
  * Ostatní vestavěné hry skryje provozovatel; `BUILTIN` zůstane, protože skrytý rodič
  * by skryl i svůj remix (nález revize /ship P54A). `feedIds()` ho proto vynechá.
  */
-const OTHER_BUILTINS = BUILTIN_GAMES.slice(1).map((game) => game.version.versionId).join(',');
+const OTHER_BUILTINS = BUILTIN_GAMES.map((game) => game.version.versionId).filter((id) => id !== BUILTIN).join(',');
 const feedIds = async (withBuiltin = false): Promise<string[]> => {
   const response = await listGames(new Request('http://play.test/api/play/games?recent=24', { headers: { 'x-forwarded-for': '192.0.2.250' } }));
   expect(response.status).toBe(200);

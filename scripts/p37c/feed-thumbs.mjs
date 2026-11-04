@@ -7,13 +7,16 @@
  * `public/feed-thumbs/<versionId>-{p,l}.webp`, každý ≤ 40 KB. Feed je ukáže na
  * kartě, kterou návštěvník ještě nenavštívil.
  *
- *   FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p37c/feed-thumbs.mjs
+ *   FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p37c/feed-thumbs.mjs [--missing]
  *
  * Server musí běžet z buildu se stejnou `builtin-games.json`. Snímky her, které
- * ze sady vypadly, smaže a `disclosure.json` srovná s tím, co v adresáři leží.
+ * ze sady vypadly, smaže a `disclosure.json` srovná s tím, co v adresáři leží;
+ * seznam her se snímkem zapíše do `src/components/play/feed/feed-thumbs.json`.
+ * `--missing` (P70C T4) vyfotí jen hry, kterým snímek chybí – zmrazené sadě, jejíž
+ * náhled se nezměnil, tak nepřepíše obrázky, které už leží v gitu.
  */
 
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 import { chromium } from '@playwright/test';
 
@@ -91,7 +94,13 @@ mkdirSync(new URL(`${DIR}/`, ROOT), { recursive: true });
 const browser = await chromium.launch({ args: browserRenderer().args });
 const encoder = await (await browser.newContext()).newPage();
 const written = new Set();
+const missingOnly = process.argv.includes('--missing');
+const thumbName = (game, suffix) => `${game.version.versionId}-${suffix}.webp`;
 for (const game of games) {
+  if (missingOnly && Object.keys(VIEWPORTS).every((suffix) => existsSync(new URL(`${DIR}/${thumbName(game, suffix)}`, ROOT)))) {
+    for (const suffix of Object.keys(VIEWPORTS)) written.add(thumbName(game, suffix));
+    continue;
+  }
   const preview = decodePreview(game.preview);
   const target = Math.min(preview.startTick + SHOT_AFTER_TICKS, preview.endTick - 1);
   for (const [suffix, viewport] of Object.entries(VIEWPORTS)) {
@@ -103,7 +112,7 @@ for (const game of games) {
     await page.addStyleTag({ content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' });
     await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
     const webp = await toWebp(encoder, await page.locator('canvas').first().screenshot({ type: 'png' }));
-    const name = `${game.version.versionId}-${suffix}.webp`;
+    const name = thumbName(game, suffix);
     writeFileSync(new URL(`${DIR}/${name}`, ROOT), webp);
     written.add(name);
     console.log(`${name} ${String(Math.round(webp.length / 1024))} KB tick ${String(target)} – ${game.version.title}`);
@@ -122,4 +131,6 @@ const at = disclosure.entries.findIndex(isThumb);
 others.splice(at === -1 ? others.length : at, 0, ...[...written].sort().map((name) => ({ name: `${DIR}/${name}`, ...DISCLOSURE })));
 disclosure.entries = others;
 writeFileSync(disclosureFile, `${JSON.stringify(disclosure, null, 2)}\n`);
-console.log(`${String(written.size)} pictures in ${DIR}, disclosure.json updated`);
+// Feed bere snímek jen hrám ze seznamu (`snapshot-cache.ts`); jiná hra by dostala 404 místo obrázku.
+writeFileSync(new URL('src/components/play/feed/feed-thumbs.json', ROOT), `${JSON.stringify(games.map((game) => game.version.versionId).sort())}\n`);
+console.log(`${String(written.size)} pictures in ${DIR}, disclosure.json and feed-thumbs.json updated`);
