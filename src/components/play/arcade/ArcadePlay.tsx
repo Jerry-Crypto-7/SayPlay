@@ -193,7 +193,7 @@ const xrCountersOf = (goal: HudGoal | null, counters: readonly HudCounter[]): Xr
 /** Hra má trať, po které se měří „of the way“: ne aréna ani míření a svět s délkou – railfps, minigolf, drawsave, survivor a přistání mají délku 0, postup by byl vždy 0 % a každá prohra „Try again!“ (review fáze 1 P70C). */
 export const tracked = (spec: GameSpecV1, world: ArcadeWorld): boolean => spec.control !== 'move_free' && !aiming(spec) && world.length > 0;
 
-function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number, bonus: number): RunFacts {
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number, bonus: number, livesAdded: number): RunFacts {
   const goal = collectGoal(world, snapshot.items);
   const hooks = hooksOf(world.rules);
   const extra: ResultStat[] = [];
@@ -207,7 +207,7 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
   return {
     won: snapshot.runState === 'won',
     progress: track ? snapshot.progress : null,
-    lost: snapshot.runState === 'won' ? null : lostLineOf(loseClausesOf(spec, world), end),
+    lost: snapshot.runState === 'won' ? null : lostLineOf(loseClausesOf(spec, world, livesAdded), end),
     tick: snapshot.tick,
     hz: ARCADE_HZ,
     survive: survives(world),
@@ -870,8 +870,10 @@ function ArcadePlayGame({
     else if (action === 'pause') pauseGame();
     else session.resume();
   });
-  // Prodloužení času živou změnou („more time“) posune i odpočet časovače.
-  const bonus = session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === 'time' ? entry.patch.amount : 0), 0);
+  // Co živá změna přidala: čas („more time“) posune odpočet časovače, životy počet ve větě po prohře (R1 P70C).
+  const added = (counter: 'time' | 'health'): number => session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === counter ? entry.patch.amount : 0), 0);
+  const bonus = added('time');
+  const livesAdded = added('health');
 
   useEffect(() => {
     let hand: BotHand | null = null;
@@ -1102,7 +1104,7 @@ function ArcadePlayGame({
         <PostRun
           versionId={versionId}
           remix={remix}
-          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart, bonus)}
+          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart, bonus, livesAdded)}
           clip={clip}
           live={live}
           dare={dare}

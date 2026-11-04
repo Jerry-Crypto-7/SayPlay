@@ -96,6 +96,13 @@ describe('the lose line', () => {
     expect(loseLineOf(fixture('survival_timer'), null)).toBe('Touch the red floor tile.');
   });
 
+  it('lives added by a live change count in the line after the loss (R1)', () => {
+    const platformer = of('platformer');
+    const end = { livesOut: true, timeOut: false };
+    expect(lostLineOf(loseClausesOf(platformer.spec, platformer.world), end)).toBe('You lost all 3 lives.');
+    expect(lostLineOf(loseClausesOf(platformer.spec, platformer.world, 2), end)).toBe('You lost all 5 lives.');
+  });
+
   it('a game nobody can lose has no line instead of a made-up one', () => {
     expect(loseLineOf(fixture('collect_exit'), null)).toBeNull();
   });

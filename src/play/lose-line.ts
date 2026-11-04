@@ -118,9 +118,10 @@ function specRuleClauses(spec: GameSpecV1): LoseClause[] {
 /**
  * Všechny příčiny prohry, životy první, každá jednou (dvoje hodiny jsou jedno „run out of time“). Svět arkády je
  * pravda – časový limit plošinovky nebo přetečení specu nejsou vidět; bez světa (mřížka) mechaniky specu.
+ * `livesAdded` = životy přidané živou změnou během běhu (R1 P70C): po prohře „You lost all 5 lives.“, ne 3.
  */
-export function loseClausesOf(spec: GameSpecV1, world: ArcadeWorld | null): readonly LoseClause[] {
-  const lives = world?.initial[HEADER.counters + COUNTER.health] ?? 0;
+export function loseClausesOf(spec: GameSpecV1, world: ArcadeWorld | null, livesAdded = 0): readonly LoseClause[] {
+  const lives = (world?.initial[HEADER.counters + COUNTER.health] ?? 0) + livesAdded;
   const found =
     world === null
       ? mechanicClauses(spec)
