@@ -11,7 +11,7 @@
  */
 
 import { DUEL } from '../arcade/pieces/duel';
-import { plural, singular } from '../draft/lexicon';
+import { counted } from '../draft/lexicon';
 
 import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -32,19 +32,19 @@ export const duelGenre: GenreModule<'duel'> = {
   compile: (spec) => {
     const { rounds = DUEL_GENRE.rounds } = spec.params ?? {};
     const rival = castFor(spec, 'fight', 'chase_me', 'shoot_at', 'avoid', 'throw_at')?.label ?? 'rival';
-    const rivals = plural(singular(rival), 2);
+    const rivals = counted(rounds, rival);
     return legacySpec(spec, {
       control: 'duel',
       controlParams: { difficulty: 'normal', rounds, ...(spec.params?.roundRise === undefined ? {} : { roundRise: spec.params.roundRise }) },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Duel`,
-      objective: { kind: 'reach', description: `Beat ${String(rounds)} ${rivals} in a row. Each one attacks faster.`, role: 'finish' },
+      objective: { kind: 'reach', description: `Beat ${rivals} in a row. Each one attacks faster.`, role: 'finish' },
       mechanics: [livesMechanic()],
       roles: [
         { id: 'rival', kind: 'hazard', label: rival },
         { id: 'finish', kind: 'exit', label: 'knockout' },
       ],
-      tutorial: { goalLine: `Dodge the wind-up, strike in the opening. Beat ${String(rounds)} ${rivals}.`, controlsHint: 'Tap right or Space to strike, tap left or Down to dodge.' },
+      tutorial: { goalLine: `Dodge the wind-up, strike in the opening. Beat ${rivals}.`, controlsHint: 'Tap right or Space to strike, tap left or Down to dodge.' },
       mood: 'tense',
     });
   },

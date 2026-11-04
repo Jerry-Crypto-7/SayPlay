@@ -108,7 +108,9 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice('angry mech', 'runner', 'runner')).toMatchObject({ model: 'rigged:blocky-robot', level: 'class' });
     // Závod bez žánru bere jen vozidlo, loď nebo letadlo – i z manifestu, nejen dřívější seznam aut.
     expect(heroChoice('sailboat', undefined, 'steer')).toMatchObject({ model: 'gen3d-sailboat', level: 'identity' });
-    expect(heroChoice('dog', undefined, 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
+    // P70B T3: zvíře s klipy, které nic neveze, závodí samo („the rabbit races the turtle“); věc bez jízdy dál dostane auto.
+    expect(heroChoice('dog', undefined, 'steer')).toMatchObject({ model: 'rigged:pet-dog', level: 'identity' });
+    expect(heroChoice('stapler', undefined, 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
     // V závodě tag katalogu před manifestem: tělo jádra `race-car` je na telefonu pod 4 % výšky.
     expect(heroChoice('race car', undefined, 'steer')).toMatchObject({ model: 'gen3d-race-car', level: 'identity' });
   });

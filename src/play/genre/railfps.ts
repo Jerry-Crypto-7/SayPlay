@@ -17,7 +17,7 @@
  */
 
 import { RAILFPS, railfpsWaveSizes } from '../arcade/pieces/railfps';
-import { nounPhrase, plural, singular, withoutPossessor } from '../draft/lexicon';
+import { counted, nounPhrase, plural, singular, withoutPossessor } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -127,7 +127,7 @@ export const railfpsGenre: GenreModule<'railfps'> = {
       ...(targets === RAILFPS.targets.default ? {} : { targets }),
       ...(waves === RAILFPS.waves.default ? {} : { waves }),
     };
-    const wavesText = `${String(waves)} waves`;
+    const wavesText = `${counted(waves, 'wave')}`;
     return legacySpec(spec, {
       control: 'railfps',
       controlParams: { generator: 'railfps_rail', ...(Object.keys(tuning).length === 0 ? {} : { tuning }) },
