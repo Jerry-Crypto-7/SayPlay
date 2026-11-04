@@ -11,7 +11,7 @@ import { GET as listGames, POST as createGame } from '@/app/api/play/games/route
 import { GET as readGame } from '@/app/api/play/games/[id]/route';
 import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, type FeedPage, hiddenFromEnv, type LoopHeat, RECENT_CAP, type RecentGame, versionStoreFromEnv } from '@/play/version';
 import { BUILTIN_GAMES } from '@/play/version/builtin';
-import { FEED_BLOCK, MAX_PER_ARCHETYPE } from '@/play/version/diversify';
+import { FEED_BLOCK, MAX_PER_GENRE } from '@/play/version/diversify';
 import { encodeCursor, FRESH_EVERY } from '@/play/version/feed';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -247,14 +247,14 @@ describe('feed ranked by the loop (P36B T9)', () => {
     expect(order.slice(0, 2)).toEqual([rows[1].versionId, rows[4].versionId]);
   });
 
-  it('replays and shares keep the fresh slot and the three-per-archetype cap', () => {
+  it('replays and shares keep the fresh slot and the two-per-kind cap', () => {
     const others = ['collect_exit', 'hazard_crossing', 'switch_puzzle'];
     const rows = Array.from({ length: 16 }, (_, n) => row(n + 1, { archetype: n < 8 ? 'chase_escape' : others[n % 3] }));
     const newest = rows[15];
     const hot = new Map(rows.slice(0, 8).map((r) => [r.versionId, heat({ finishes: 5, retries: 3, shares: 3 })]));
     const order = feedPage(rows, 16, null, NONE, hot).games;
     expect(order.findIndex((game) => game.versionId === newest.versionId)).toBeLessThan(FRESH_EVERY);
-    expect(order.slice(0, FEED_BLOCK).filter((game) => game.archetype === 'chase_escape').length).toBeLessThanOrEqual(MAX_PER_ARCHETYPE);
+    expect(order.slice(0, FEED_BLOCK).filter((game) => game.archetype === 'chase_escape').length).toBeLessThanOrEqual(MAX_PER_GENRE);
   });
 });
 
