@@ -18,7 +18,7 @@ import { draftForControl, draftGameSpecWithMeta } from '@/play/draft';
 import { memoryVersionStore } from '@/play/version';
 
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
-import { ADD_NUDGE, directUpgrade } from '../_upgrade';
+import { ADD_NUDGE, AI_VERSION_TARGET_MS, directUpgrade } from '../_upgrade';
 
 const fixture = (id: string): LogicAnswerFixture =>
   JSON.parse(readFileSync(join(process.cwd(), 'src/play/director/__fixtures__/logic-answers', `${id}.json`), 'utf8')) as LogicAnswerFixture;
@@ -30,7 +30,7 @@ const withExtras = (answer: unknown, extras: Record<string, unknown>): unknown =
 };
 
 /** Upgrade nad rychlou verzí věty: první volání režiséra dostane `answers[0]`, druhé (s pokynem) `answers[1]`. */
-async function upgrade(sentence: string, answers: readonly unknown[], quickSpec = draftGameSpecWithMeta(sentence, 1).spec) {
+async function upgrade(sentence: string, answers: readonly unknown[], quickSpec = draftGameSpecWithMeta(sentence, 1).spec, startedAt = Date.now()) {
   const store = memoryVersionStore();
   const quick = await publishReadSpec(store, quickSpec,derivedSeeds(seedFrom(sentence)), null, { origin: { sentence, seed: null } });
   if (!quick.ok) throw new Error(`quick version did not publish: ${JSON.stringify(quick.issues)}`);
@@ -38,7 +38,7 @@ async function upgrade(sentence: string, answers: readonly unknown[], quickSpec 
   const nudges: (string | undefined)[] = [];
   const prompts: string[] = [];
   const results: DirectedGame[] = [];
-  const outcome = await directUpgrade(store, draft, { sentence, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'upgrade-adds-test' }, (_startedAt, _caller, check, nudge) => async (said) => {
+  const outcome = await directUpgrade(store, draft, { sentence, seed: null, ackMs: null, draftReadyMs: null, startedAt, caller: 'upgrade-adds-test' }, (_startedAt, _caller, check, nudge) => async (said) => {
     const answer = answers[nudges.length];
     nudges.push(nudge);
     const branch = fakeBranch(answer === undefined ? [] : [answered(answer)]);
@@ -86,6 +86,15 @@ describe('the AI version adds what the quick version lacks (P46E T4)', () => {
     expect(prompts).toHaveLength(2);
     expect(prompts[0]).not.toContain(ADD_NUDGE);
     expect(prompts[1]).toContain(ADD_NUDGE);
+  }, 180_000);
+
+  it('skips the nudge when a second run would end past the 120 s target and publishes the first with adds: [] (P70B T4a)', async () => {
+    const late = await upgrade(f22.sentence, [f22.answer, f22.answer], undefined, Date.now() - AI_VERSION_TARGET_MS);
+    expect(late.outcome).toMatchObject({ status: 'ready', adds: [] });
+    expect(late.nudges).toEqual([undefined]);
+    // Těsně pod cílem se pokyn pořád zkusí – brána měří zbývající čas, nevypíná pokus.
+    const early = await upgrade(f22.sentence, [f22.answer, f22.answer], undefined, Date.now() - 1_000);
+    expect(early.nudges).toEqual([undefined, ADD_NUDGE]);
   }, 180_000);
 
   it('publishes the nudged answer when it adds a boss the first one lacked', async () => {
