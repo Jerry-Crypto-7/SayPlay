@@ -11,14 +11,11 @@ import { describe, expect, it } from 'vitest';
 import { loadRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft/draft';
 
-// „golf mini putt on a pirate ship“ ze sondy hraje od P68 T9 minigolf (znak „putt“); míč drží táž věta bez putování.
+// Golfové věty sondy hrají od P70B T2 minigolf (`genre/__tests__/p70b-golf.test.ts`); míč drží zbylé tři.
 const SENTENCES = [
-  'golf on a pirate ship',
   'basketball free throws',
   'a hedgehog rolls down a mushroom hill',
-  'golf mini game',
   'play football and score goals',
-  'golf on the moon with craters as obstacles',
 ];
 
 describe('ball sentences on the draft path', () => {
@@ -27,7 +24,7 @@ describe('ball sentences on the draft path', () => {
     expect(() => draftGameSpecWithMeta(SENTENCES[0]!, 1)).toThrow(/No playable assembly/);
   });
 
-  it('with Rapier loaded, as every server path does, all six sentences draft a ball game', async () => {
+  it('with Rapier loaded, as every server path does, every sentence drafts a ball game', async () => {
     await loadRapier();
     for (const sentence of SENTENCES) expect(draftGameSpecWithMeta(sentence, 1).spec.control, sentence).toBe('ball');
   });
