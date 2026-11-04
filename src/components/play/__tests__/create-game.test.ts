@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createGame } from '../create-game';
 import { CreateGame } from '../CreateGame';
-import { BUILD_FAILED, BUILD_STEPS, IDEAS, NOT_SENT } from '../starters';
+import { BUILD_FAILED, BUILD_STEPS, IDEA_CARDS, IDEAS, NOT_SENT } from '../starters';
 import { BuildSteps } from '../ui';
 
 /**
@@ -53,7 +53,7 @@ describe('CreateGame', () => {
   it('shows four idea cards in kit colour order with alternating tilt and no icon', () => {
     const cards = [...markup.matchAll(/class="sp-idea ([^"]+)"[^>]*>([^<]*)</g)].map(([, look, text]) => [look, text]);
     expect(cards.map(([look]) => look)).toEqual(['sp-idea--mint sp-tilt-l', 'sp-idea--sun sp-tilt-r', 'sp-idea--sky sp-tilt-r', 'sp-idea--gum sp-tilt-l']);
-    expect(cards.map(([, text]) => text)).toEqual(IDEAS.map((idea) => idea.sentence));
+    expect(cards.map(([, text]) => text)).toEqual(IDEAS.slice(0, IDEA_CARDS).map((idea) => idea.sentence));
   });
 
   // P54A T12: vedle lišty telefonu nese tytéž dvě položky navigace levého sloupce od `lg`, tam je hlavní obsah feed.

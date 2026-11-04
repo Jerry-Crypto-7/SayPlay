@@ -978,7 +978,8 @@ function ArcadePlayGame({
           <>
             <Weather session={session} theme={spec.theme} />
             {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
-            {running && active && demo === null && snapshot.tick === 0 && (
+            {/* Za pauzy a otevřeného listu karta ustoupí (P70C): jinak prosvítá přes „About this game“. */}
+            {running && active && demo === null && snapshot.tick === 0 && !holdsPause && !aboutOpen && (
               <FirstPrompt
                 controlsHint={spec.tutorial.controlsHint}
                 touch={zoneHint}

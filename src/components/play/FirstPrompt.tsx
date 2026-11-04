@@ -6,7 +6,7 @@
 import { useSyncExternalStore } from 'react';
 
 /** Klávesy, které nápověda nabízí vedle dotyku („Tap or Space …“). */
-const KEY_WORD = 'space|arrows|a\\/d|w\\/s|down|up|enter|keys';
+const KEY_WORD = 'space|arrows|wasd|a\\/d|w\\/s|down|up|enter|keys';
 
 const COARSE_POINTER = '(pointer: coarse)';
 
@@ -47,10 +47,18 @@ export function callToAction(controlsHint: string): string {
   return clause;
 }
 
-/** Klávesa za „nebo“ („Tap or Space“, „Drag or use A/D“); „drag up or down“ je směr tahu, ne klávesa. */
-const KEY_AFTER = new RegExp(`(?<!\\bup)\\s+or\\s+(?:use\\s+)?(?:${KEY_WORD})\\b`, 'gi');
-/** Písmeno klávesy za „nebo“ („Attack or J“) – jen velké, malé „a“ je člen. */
-const LETTER_AFTER = /\s+or\s+[A-Z](?![\w/])/g;
+/** Klávesy za „nebo“ („Tap or Space“, „Drag or use A/D“, „, or use arrows or WASD“); „drag up or down“ je směr tahu, ne klávesa. */
+const KEY_AFTER = new RegExp(`(?<!\\bup),?\\s+or\\s+(?:use\\s+)?(?:${KEY_WORD})(?:\\s+or\\s+(?:${KEY_WORD}))*\\b`, 'gi');
+/** Písmena kláves za „nebo“ („Attack or J“, „Tap the lane, or D F J K, on the beat“) – jen velká, malé „a“ je člen. */
+const LETTER_AFTER = /,\s+or\s+[A-Z](?:\s+[A-Z])*(?![\w/]),|\s+or\s+[A-Z](?:\s+[A-Z])*(?![\w/])/g;
+/** Věta jen pro klávesnici („Keys: arrows aim, hold Space.“) – „hold“ v ní je klávesa, ne prst. */
+const KEYS_SENTENCE = /(?:^|\s+)Keys?:[^.!?]*[.!?]?/g;
+/** Klávesy na začátku věty před dotykem („Move with arrows or WASD, or drag to chase.“ → „drag to chase.“). */
+const KEYS_LEAD = new RegExp(`(?<=^|[.!?]\\s+)\\w+\\s+with\\s+(?:${KEY_WORD})(?:\\s+or\\s+(?:${KEY_WORD}))*,?\\s+or\\s+`, 'gi');
+/** Písmeno klávesy před náhradou („F or Fire to shoot“ → „Fire to shoot“). */
+const LETTER_LEAD = /(?<=^|[.!?,;]\s+)[A-Z]\s+or\s+/g;
+/** Souvětí, které začíná písmenem klávesy („M toggles sound.“); „A“ a „I“ jsou slova. */
+const LETTER_FIRST = /^[B-HJ-Z]\s/;
 /** Klávesy na začátku výčtu před dotykem („Arrows or drag“, „Up, Space or a second finger“). */
 const KEY_BEFORE = new RegExp(`(?<=^|[.,;]\\s*)(?:${KEY_WORD})(?:,\\s*|\\s+or\\s+)`, 'gi');
 /** Souvětí jen o klávesách („Arrows to move“) – prst ho neudělá. */
@@ -63,10 +71,16 @@ const TOUCH_WORD = /\b(?:tap|swipe|drag|hold|finger|touch)\b/i;
  * brakes“. Souvětí, které nabízí jen klávesy, vypadne („Arrows or A/D to move“).
  */
 export function touchHint(controlsHint: string): string {
-  const stripped = controlsHint.replace(KEY_AFTER, '').replace(LETTER_AFTER, '').replace(KEY_BEFORE, '');
+  const stripped = controlsHint
+    .replace(KEYS_SENTENCE, '')
+    .replace(KEYS_LEAD, '')
+    .replace(LETTER_LEAD, '')
+    .replace(KEY_AFTER, '')
+    .replace(LETTER_AFTER, '')
+    .replace(KEY_BEFORE, '');
   const kept: string[] = [];
   for (const clause of stripped.trim().split(/(?<=[,.;])\s+/)) {
-    if (KEYS_ONLY.test(clause) && !TOUCH_WORD.test(clause)) {
+    if ((KEYS_ONLY.test(clause) && !TOUCH_WORD.test(clause)) || LETTER_FIRST.test(clause)) {
       // Vypadlo poslední souvětí věty: věta končí tečkou u předchozího.
       const last = kept.length - 1;
       if (/[.!?]$/.test(clause) && last >= 0) kept[last] = kept[last]!.replace(/[,;]$/, '.');
@@ -82,7 +96,7 @@ export function touchHint(controlsHint: string): string {
 export function desktopKeys(controlsHint: string): string | null {
   const key = new RegExp(`\\sor\\s+(${KEY_WORD})\\b`, 'i').exec(firstClause(controlsHint))?.[1];
   if (key === undefined) return null;
-  return key.toLowerCase() === 'arrows' ? 'or use the arrow keys' : `or press ${key.length === 1 ? key : key[0]!.toUpperCase() + key.slice(1)}`;
+  return key.toLowerCase() === 'arrows' ? 'or use the arrow keys' : `or press ${key === key.toUpperCase() ? key : key[0]!.toUpperCase() + key.slice(1)}`;
 }
 
 /** Náhradní vstup za „nebo“ v dalších povelech („F or Fire“ → „F“); „drag up or down“ je směr tahu, ne náhrada. */

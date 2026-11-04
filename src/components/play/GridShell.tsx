@@ -508,7 +508,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
         />
         {running && <RemixReadyChip job={remix} />}
       </Hud>
-      {running && waiting && (
+      {running && waiting && !paused && !aboutOpen && (
         <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" goal={spec.tutorial.goalLine} lose={loseLineOf(spec, null)} />
       )}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
