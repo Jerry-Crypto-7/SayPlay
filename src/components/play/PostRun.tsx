@@ -168,7 +168,9 @@ export function runResult(facts: RunFacts, record: BestOutcome | null = null, ch
         : `You lasted ${time}.`;
   const lead: ResultStat[] = goal === null ? [] : [{ value: `${goal.count}/${goal.need}`, label: goal.label }];
   // Prohra bez bodu (body, jinak cílové předměty) není „So close.“ (P56A T9); přežití bez bodů nulu nemá.
-  const nothing = !facts.won && ((facts.score != null ? facts.score.value === 0 : goal !== null && goal.count === 0) || (facts.progress != null && facts.progress < HALF_WAY));
+  // Ani prohra před polovinou cesty (P70C T2) – cestou je cíl („6 of 10 served“), jinak trať.
+  const way = goal !== null && goal.need > 0 ? (goal.count * 100) / goal.need : facts.progress;
+  const nothing = !facts.won && ((facts.score != null ? facts.score.value === 0 : goal !== null && goal.count === 0) || (way != null && way < HALF_WAY));
   return {
     headline: dare !== null ? (dare.beat ? YOU_BEAT_IT : SO_CLOSE) : facts.won ? YOU_DID_IT : nothing ? TRY_AGAIN : SO_CLOSE,
     time,
