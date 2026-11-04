@@ -39,10 +39,9 @@ export function chainBotInputs(chain: ChainWorld, runs: readonly { readonly inpu
   return out;
 }
 
-/** Délka řetězu v sekundách: tiky kola v jeho tempu (promile) a karta mezi koly v reálném čase. */
-export function chainLengthSec(chain: Pick<ChainWorld, 'cardTicks'> & { readonly rounds: readonly { readonly rate: number }[] }, roundTicks: readonly number[]): number {
-  const play = roundTicks.reduce((sum, ticks, index) => sum + ticks / (ARCADE_HZ * (chain.rounds[index]!.rate / 1000)), 0);
-  return play + ((chain.rounds.length - 1) * chain.cardTicks) / ARCADE_HZ;
+/** Délka řetězu v sekundách: tiky kol (všechna hrají 60 Hz, P70A T3) a karta mezi koly. */
+export function chainLengthSec(chain: Pick<ChainWorld, 'cardTicks'>, roundTicks: readonly number[]): number {
+  return (roundTicks.reduce((sum, ticks) => sum + ticks, 0) + (roundTicks.length - 1) * chain.cardTicks) / ARCADE_HZ;
 }
 
 export function verifyChain(chain: ChainWorld, library: ArcadeLibrary = ARCADE_LIBRARY): ChainVerdict {

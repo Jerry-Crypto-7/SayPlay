@@ -89,8 +89,11 @@ describe('P47B T5: a shield sentence keeps its action when the game has somethin
   });
 });
 
-/** Otisk světa: `JSON.stringify` přes SHA-256, prvních 16 znaků. */
-const fingerprint = (world: ArcadeWorld): string => createHash('sha256').update(JSON.stringify(world)).digest('hex').slice(0, 16);
+/**
+ * Otisk světa: `JSON.stringify` přes SHA-256, prvních 16 znaků. Bez férového startu (`fairStart`, P70A T3 `genre.v8`):
+ * test hlídá, že štít svět nezmění, a férový start nese každá nová hra.
+ */
+const fingerprint = ({ fairStart: _fair, ...world }: ArcadeWorld): string => createHash('sha256').update(JSON.stringify(world)).digest('hex').slice(0, 16);
 
 // Změřeno s `abilities/index.ts` před T5 (158b8262), návrh i svět na semínku 1. Sběr mušlí po sloučení
 // s P47A (`genre.v4`, nápor v aréně) přeměřen na samotné P47A: týž otisk jako sloučená větev.

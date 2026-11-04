@@ -165,7 +165,7 @@ describe('P51 T7: runner games get the field heartbeat', () => {
     for (const cell of RUNNERS) {
       const spec = cellSpec(cell.id);
       // Nová hra je od P66 T2 `genre.v6`; tep pole P51 drží `genreAtLeast(…, 'genre.v5')`.
-      expect(spec.genre?.compilerVersion, cell.id).toBe('genre.v7');
+      expect(spec.genre?.compilerVersion, cell.id).toBe('genre.v8');
       expect(pulseOf(worldOf(spec))?.beat, cell.id).toBe(PACING.heartbeat);
       expect(pulseOf(worldOf(storedV4Of(spec))), cell.id).toBeUndefined();
     }
@@ -279,7 +279,7 @@ describe('P51 T7: shooter waves march no sparser than the floor', () => {
     it(`${id}: longest gap median ≤ 4 s and none over 6 s, runs 30–90 s; idle never wins, replay equal, intermediate ≥ 0.8 with a finale, novice ≥ 0.3`, () => {
       const spec = draftGameSpecWithMeta(text, 1).spec;
       expect(generatorOf(spec), id).toBe('shooter_range');
-      expect(spec.genre?.compilerVersion, id).toBe('genre.v7');
+      expect(spec.genre?.compilerVersion, id).toBe('genre.v8');
       expectBusy(id, spec, false);
     });
   }

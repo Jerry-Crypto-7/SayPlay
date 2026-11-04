@@ -213,16 +213,19 @@ export const timeLimit: RulePiece<z.infer<typeof timeLimitParams>> = {
 const fallOutParams = z
   .object({
     belowY: z.int(),
-    effect: z.enum(['lose', 'respawn']),
+    /** `damage` (P70A T3, poletování s férovým startem): dotek země ubere život s milostí `grace`, hra jede dál. */
+    effect: z.enum(['lose', 'respawn', 'damage']),
     /**
      * Odpuštění (P37A T7, poletování s `feel: 2`): pád platí, až když ovládání
      * napočítá v `aux0` hráče aspoň tolik tiků na zemi. Bez něj hned jako dřív.
      */
     afterTicks: z.int().min(1).max(ARCADE_HZ).optional(),
+    /** Milost po ztrátě života pádem (jen s `damage`): tolik tiků další dotek nic nebere. */
+    grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks).optional(),
   })
   .strict();
 
-/** Pád pod úroveň (spodní stěna hráče pod `belowY`) → prohra, nebo návrat na checkpoint. */
+/** Pád pod úroveň (spodní stěna hráče pod `belowY`) → prohra, návrat na checkpoint, nebo ztráta života. */
 export const fallOut: RulePiece<z.infer<typeof fallOutParams>> = {
   id: 'fall_out',
   params: fallOutParams,
@@ -232,7 +235,9 @@ export const fallOut: RulePiece<z.infer<typeof fallOutParams>> = {
   fire: ({ state, player }, params) => {
     const base = bodyBase(player);
     if ((state[base + BODY.y] as number) >= params.belowY) return [];
-    return params.afterTicks === undefined || (state[base + BODY.aux0] as number) >= params.afterTicks ? [{ kind: params.effect }] : [];
+    if (params.afterTicks !== undefined && (state[base + BODY.aux0] as number) < params.afterTicks) return [];
+    if (params.effect !== 'damage') return [{ kind: params.effect }];
+    return [params.grace === undefined ? { kind: 'damage', amount: 1 } : { kind: 'damage', amount: 1, grace: params.grace }];
   },
 };
 

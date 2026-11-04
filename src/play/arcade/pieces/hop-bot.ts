@@ -16,7 +16,8 @@
 import { z } from 'zod';
 
 import { type ArcadeInput, type ArcadeObservation, BODY, BUTTON, type BotPiece, NO_INPUT, bodyBase, graceOf } from '../contract';
-import { DIR, HOP, HOP_BOT_MARGIN, HOP_BOT_REACTION, HOP_HALF, HOP_LOG_INSET, HOP_MID, HOP_STEP, ROW, type Hopper, hopperOf, rowOf, stepHopper, touchesFrom, touchesInto } from './hop';
+import { worldRests, worldTicks } from '../kernel';
+import { DIR, HOP, HOP_BOT_MARGIN, HOP_BOT_REACTION, HOP_HALF, HOP_LOG_INSET, HOP_MID, HOP_STEP, ROW, type Hopper, hopperOf, restHopper, rowOf, stepHopper, touchesFrom, touchesInto } from './hop';
 
 const botParams = z
   .object({
@@ -26,6 +27,11 @@ const botParams = z
       .max(HOP.carsPerRow * HOP.rows.max),
     /** Cílová řada. */
     goal: z.int().min(1).max(HOP.rows.max),
+    /**
+     * Férový start (P70A T3): robot plánuje v hodinách světa (`worldTicks`) – provoz i skok jedou jen v tiku pohybu,
+     * takže ve hodinách světa je to tatáž hra jako bez něj. Bez hodnoty tik = hodiny světa.
+     */
+    fair: z.literal(1).optional(),
   })
   .strict();
 export type HopBotParams = z.infer<typeof botParams>;
@@ -107,6 +113,9 @@ const WAIT = -1;
 
 const at = (mover: Mover, tick: number): number => mover.p0 + mover.v * (tick - mover.t0);
 
+/** Hodiny světa v tiku `real`: s férovým startem tiky pohybu (`worldTicks`), jinak tik. */
+const clockOf = (params: HopBotParams, real: number): number => (params.fair === 1 ? worldTicks(real) : real);
+
 const lanesOf = new WeakMap<HopBotParams, Map<number, BotLaneRef>>();
 function laneMap(params: HopBotParams): Map<number, BotLaneRef> {
   let found = lanesOf.get(params);
@@ -120,8 +129,10 @@ const memos = new WeakMap<HopBotParams, Memo>();
  * Řady kolem viděného hrdiny: vozidla a klády z rytmu provozu (perioda a fáze pruhu), jak je hráč vidí jezdit –
  * i ta, která na plátno teprve vjedou. `seen` = vozidlo už bylo ve viděném stavu.
  */
-function windowOf({ state, player, tick: seenAt, recent }: ArcadeObservation, params: HopBotParams): Window {
-  const now = seenAt + recent.length;
+function windowOf({ state, player, tick: seenReal, recent }: ArcadeObservation, params: HopBotParams): Window {
+  const nowReal = seenReal + recent.length;
+  const now = clockOf(params, nowReal);
+  const seenAt = clockOf(params, seenReal);
   const lanes = laneMap(params);
   const seenRow = rowOf(state[bodyBase(player) + BODY.z] as number);
   const from = Math.max(0, seenRow - 3);
@@ -132,7 +143,7 @@ function windowOf({ state, player, tick: seenAt, recent }: ArcadeObservation, pa
   // Slepé místo: co vyjelo po viděném stavu, ale dřív než `HOP_BOT_REACTION` tiků před teď, robot ještě nezaregistroval
   // (u robota světa prázdné; začátečník s delší reakcí tak přehlédne auto, které právě vjelo).
   const blindFrom = seenAt;
-  const blindTo = now - REACTION;
+  const blindTo = clockOf(params, nowReal - REACTION);
   for (const [row, kind, dir, speed, w, d, period, entry, phase] of params.lanes) {
     if (row < from || row > to) continue;
     const view = views[row - from] as RowView;
@@ -150,10 +161,16 @@ function windowOf({ state, player, tick: seenAt, recent }: ArcadeObservation, pa
 const mod = (a: number, b: number): number => ((a % b) + b) % b;
 
 /** Vlastní hrdina v tiku `now`: viděný stav a vlastní vstupy od té doby (klády jedou dál, náraz nepředvídá). */
-function predictHopper({ state, player, tick: seenAt, recent }: ArcadeObservation, window: Window): Hopper {
+function predictHopper({ state, player, tick: seenAt, recent }: ArcadeObservation, window: Window, params: HopBotParams): Hopper {
   const h = hopperOf(state, player);
   recent.forEach((input, index) => {
-    const tick = seenAt + index;
+    const real = seenAt + index;
+    // Tik odpočinku férového startu: hrdina jen zaregistruje skok, svět stojí (`restHopper`, týž kód jako ovládání).
+    if (params.fair === 1 && worldRests(real)) {
+      restHopper(h, input);
+      return;
+    }
+    const tick = clockOf(params, real);
     let carry = 0;
     if (h.rem === 0 && h.z % CELL === 0) {
       for (const log of window.views[h.z / CELL - window.from]?.logs ?? []) {
@@ -163,7 +180,7 @@ function predictHopper({ state, player, tick: seenAt, recent }: ArcadeObservatio
         }
       }
     }
-    stepHopper(h, input, carry);
+    stepHopper(h, input, carry, params.fair === 1 && real > 0 && worldRests(real - 1));
     h.x += h.vx;
     h.z += h.vz;
   });
@@ -301,10 +318,10 @@ export interface HopPlan {
 
 /** Plánovač: z pozorování vstup do tohoto tiku. `margin` = rezerva kolem vozidel v ticích. */
 export function planHop(observation: ArcadeObservation, params: HopBotParams, margin: number = HOP_BOT_MARGIN): HopPlan {
-  const now = observation.tick + observation.recent.length;
+  const now = clockOf(params, observation.tick + observation.recent.length);
   const lanes = laneMap(params);
   const window = windowOf(observation, params);
-  const h = predictHopper(observation, window);
+  const h = predictHopper(observation, window, params);
   if (h.rem > 0 || h.z % CELL !== 0) return { input: NO_INPUT, found: false };
   const root = h.z / CELL;
   const top = window.from + window.views.length - 1;
@@ -317,7 +334,7 @@ export function planHop(observation: ArcadeObservation, params: HopBotParams, ma
   const restless = h.idle >= EAGLE - EAGLE_GUARD;
   const out = { row: 0, x: 0 };
   // Milost po zásahu (jádro ji odečte na začátku kroku a chrání, dokud zbývá aspoň tik): vozidlo do té doby nic nevezme.
-  const shielded = observation.tick + graceOf(observation.state, observation.player) - 2;
+  const shielded = clockOf(params, observation.tick + graceOf(observation.state, observation.player) - 2);
 
   const memo = memos.get(params);
   if (memo !== undefined && !restless) {
@@ -404,9 +421,9 @@ export function planHop(observation: ArcadeObservation, params: HopBotParams, ma
  * pod viděné vozidlo (bez rezervy), skočí – náraz pak dokáže, že vozidlo opravdu bere život.
  */
 export function hopProbeInput(observation: ArcadeObservation, params: HopBotParams, normal: ArcadeInput): ArcadeInput {
-  const now = observation.tick + observation.recent.length;
+  const now = clockOf(params, observation.tick + observation.recent.length);
   const window = windowOf(observation, params);
-  const h = predictHopper(observation, window);
+  const h = predictHopper(observation, window, params);
   if (h.rem > 0 || h.z % CELL !== 0) return normal;
   const next = window.views[h.z / CELL + 1 - window.from];
   if (next === undefined || next.kind === RIVER) return normal;

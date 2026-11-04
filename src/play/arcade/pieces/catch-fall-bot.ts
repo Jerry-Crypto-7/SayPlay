@@ -10,10 +10,12 @@
 import { z } from 'zod';
 
 import { type ArcadeInput, BODY, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
+import { worldTicks } from '../kernel';
 import { CATCH, CATCH_BOT_REACTION, landingTick } from './catch-fall';
 import { axisOfLane, laneOfX } from './lanes';
 
-const botParams = z.object({}).strict();
+/** `fair` (P70A T3): věci v pomalém začátku padají podle hodin světa (`worldTicks`) – dopad počítá v nich. */
+const botParams = z.object({ fair: z.literal(1).optional() }).strict();
 
 /** Ovoce v obraze s nejbližším dopadem od tiku `now`, nebo −1. */
 export function nextFruit(state: Int32Array, player: number, seenAt: number, now: number): number {
@@ -41,8 +43,9 @@ export const catchBot: BotPiece<z.infer<typeof botParams>> = {
   roles: ['player', 'collectible', 'hazard'],
   reactionTicks: CATCH_BOT_REACTION,
   cost: () => ({ bodies: 0, rules: 0 }),
-  decide: ({ state, player, tick, recent }): ArcadeInput => {
-    const target = nextFruit(state, player, tick, tick + recent.length);
+  decide: ({ state, player, tick, recent }, params): ArcadeInput => {
+    const clock = (real: number): number => (params.fair === 1 ? worldTicks(real) : real);
+    const target = nextFruit(state, player, clock(tick), clock(tick + recent.length));
     if (target < 0) return NO_INPUT;
     return { buttons: 0, axis: axisOfLane(laneOfX(state[bodyBase(target) + BODY.x] as number)) };
   },

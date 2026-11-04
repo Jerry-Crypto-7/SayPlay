@@ -12,8 +12,9 @@ import { SLICE, heightAt } from './pieces/slice';
 import { type HopBotParams, hopProbeInput } from './pieces/hop-bot';
 import { crowdProbeInput } from './pieces/crowd-bot';
 import { nearestRival } from './pieces/push-ring';
-import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
+import { type ArcadeLibrary, type ArcadeOutcome, startProtected } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
+import { PURSUER_SIGHT } from './pieces/assembly-parts';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
 import { walkerVisible, walkerCell, walkerWaypoint, walkerVelocity, type WalkerMap } from './pieces/walker';
 import { ballLaunchEvidence, ballScoreEvidence, ballPinImpact, keeperBlockEvidence, opponentBallEvidence, type BallLaunchEvidence } from './ball-evidence';
@@ -93,9 +94,17 @@ export function matchesWitness(triple: IntentTriple, witness: ActionWitness): bo
   return triple.verb === witness.verb && namesActor(triple, witness.actor) && (triple.object === null || (witness.object !== null && names(triple.object, witness.object)));
 }
 
+/** Díl sestavy, který jde k hráči nebo do cíle sám: pronásledovatel a soupeř v závodě. */
+const homingPart = (world: ArcadeWorld, body: number): boolean =>
+  world.rules.some((ref) => ref.id === 'assembly_part' && (ref.params.part as { body: number }).body === body && ['chaser', 'rival'].includes((ref.params.part as { kind: string }).kind));
+
 /** Sonda mění jen vstup hráče; svět, rychlosti i pravidla zůstávají stejné. */
 export function threatProbeInput(world: ArcadeWorld, target: number, observation: ArcadeObservation, normal: ArcadeInput): ArcadeInput {
   world = { ...world, rules: world.rules.map(underlyingRule) };
+  // Ochrana férového startu (P70A T3): náraz v ní nic nebere, takže by nic nedokázal – sonda počká, hraje se normálně.
+  // Díl sestavy, který k hráči nebo do cíle dojde sám (pronásledovatel, soupeř v závodě), sonda čeká po svém: hraním
+  // by hráč závod dojel dřív, než ochrana skončí.
+  if (world.fairStart !== undefined && startProtected(observation.tick + observation.recent.length) && !homingPart(world, target)) return normal;
   const { state, player } = observation;
   const baseControl = baseControlOf(world.control);
   const control = baseControl.id;
@@ -141,7 +150,10 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
       }
     }
     if (control === 'ball') return { axis: 0, buttons: (Math.abs(dx) > 200 ? dx > 0 ? BUTTON.RIGHT : BUTTON.LEFT : 0) | (Math.abs(dz) > 200 ? dz > 0 ? BUTTON.UP : BUTTON.DOWN : 0) };
-    if (Math.abs(dz) > 6500) return normal;
+    // Pronásledovateli jde sonda naproti z `PURSUER_SIGHT`, odkud mu robot uhýbá: tenhle úsek je u férového startu bez
+    // překážky (`assemblyParts`), dřív by sonda nehrála normálně a narazila (P70A T3).
+    const reach = attached.kind === 'chaser' ? PURSUER_SIGHT : 6500;
+    if (Math.abs(dz) > reach) return normal;
     if (control === 'platform') {
       // Keep the native jumps across earlier gaps. Only walk into the threat
       // once both bodies are over the same supporting slab; stopping jumps
@@ -169,7 +181,8 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
         axis: Math.round(Math.max(-AXIS_MAX, Math.min(AXIS_MAX, dx * 2 - state[p + BODY.vx]! * 4))) };
     }
     if (control === 'flap') {
-      if (Math.abs(dz) > 1800) return normal;
+      // Pronásledovateli by normální robot mezi `reach` a 1,8 m uhnul a vlétl do trubky; milost po nárazu by setkání schovala.
+      if (Math.abs(dz) > (attached.kind === 'chaser' ? reach : 1800)) return normal;
       const desired = state[t + BODY.y]! + state[t + BODY.h]! / 2 - state[p + BODY.h]! / 2;
       return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
     }

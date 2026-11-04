@@ -73,8 +73,9 @@ describe('verifyChain', () => {
     expect(codes(chainOf([GOOD[0]!, BOT_LOSES, GOOD[2]!, GOOD[3]!]))).toContain('chain_bot_wins');
   });
 
-  it('chainLengthSec divides round ticks by the rate and adds a card between rounds', () => {
-    expect(chainLengthSec(good, [600, 600, 600, 600])).toBeCloseTo(10 + 10 / 1.075 + 10 / 1.15 + 10 / 1.225 + 3, 6);
+  // P70A T3: kola už nezrychlují, takže 600 tiků je v každém kole 10 s.
+  it('chainLengthSec counts round ticks at 60 Hz and adds a card between rounds', () => {
+    expect(chainLengthSec(good, [600, 600, 600, 600])).toBeCloseTo(4 * 10 + 3, 6);
   });
 });
 

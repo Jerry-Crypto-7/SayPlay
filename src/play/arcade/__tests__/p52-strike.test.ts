@@ -222,6 +222,8 @@ describe('P52 T5: arena collect with strike and a guard', () => {
     };
     const specs = [arenaSpec(text, ['strike']), arenaSpec(text, ['dash']), v4(['dash', 'strike']), v4(['strike'])];
     // Nová hra (`genre.v6`) přeotisknuta v P66 T10 a T10a: pravidlo háčků (létající skóre) bez počítadla; `genre.v4` beze změny.
-    expect(specs.map((spec) => canonicalHash(worldOf(spec, 1)))).toEqual(['c369830f', '09b77a69', '6d1e1888', '250a2f1b']);
+    // Férový start (P70A T3, `genre.v8`) nese každá nová hra; otisk je bez něj, test hlídá úder a stráž.
+    const plain = ({ fairStart: _fair, ...world }: ArcadeWorld): ArcadeWorld => world;
+    expect(specs.map((spec) => canonicalHash(plain(worldOf(spec, 1))))).toEqual(['c369830f', '09b77a69', '6d1e1888', '250a2f1b']);
   });
 });

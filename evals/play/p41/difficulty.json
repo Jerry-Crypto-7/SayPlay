@@ -147,7 +147,7 @@
           "chaser"
         ]
       },
-      "specHash": "3a9b84acca97959d354928203fc609df00c2c59308d10f1f207bece87c3a2a8e",
+      "specHash": "e584bd568698087eaa070d7f906060109bb5705db101a919679a954faa84b678",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -175,7 +175,7 @@
           "chaser"
         ]
       },
-      "specHash": "6c8fbf8db431b68eb131cce03891e779e43bf20759aacf2f61d281958f461454",
+      "specHash": "f98ad560d74c1e6014e7ca6bc818c60ef7c27d67ea3111bddfbc3ff153fbb679",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -203,7 +203,7 @@
         "objective": "collect",
         "threats": []
       },
-      "specHash": "7067dbfd22e719e9118c034d0e237a6f377d42373c9c0720ecd5450118b905e6",
+      "specHash": "5597c988d8395be46baf3c2b6fd6dc60edec502f04789c910a9f7faf448430ac",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -456,7 +456,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "9cac06287ccef30ddb93ee38611ca93ff6acd9e2578cdf44ab791ea2a118b6d0",
+      "specHash": "66d57be1a832bfec35b950ec3080fc959e25c237fca7b6ebd324d0cd0e9e4720",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -482,7 +482,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "43bcf17a3893f9f43f6586a30fa79e745d63cd76c339f31d212f8297b56aaa7e",
+      "specHash": "6e27bf1df98ee9af78ca718af8ea8e7762ffa1a64166cd23516d652ca0324867",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -508,7 +508,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "75861c3a41fd88f856a3d4324f0fa728416040ad6a898d32e0f118c1ccf87e3c",
+      "specHash": "b638393a56e33ee92a0da3897b11362602be8eb993f40a47ac9f8b4222c5d24b",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -536,7 +536,7 @@
         "objective": "defeat",
         "threats": []
       },
-      "specHash": "5b592778b85fd52cad3bdd8f5dd0aa3a74ac42581e576899a19184d510fa8d31",
+      "specHash": "715c18c31f320e3691ec90ee080e188c8fb5e2fc076d20ddeebefbaacfdc747e",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -564,7 +564,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "55436570ac569cfed80f28db6c19b4021da8eba607e7b9cbfe47650ab3045eaa",
+      "specHash": "a352bca5b15b5b6e15f77fb4fb545f898559b21dc2ce4cd229310c30460e89c2",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -592,7 +592,7 @@
         "objective": "build",
         "threats": []
       },
-      "specHash": "fceabdf208dcb87f0599d59b086a2fcb9de0f43a1aeb4fe1a9e960bac67124d6",
+      "specHash": "ba55c4842dc50877e2e5bab66f7216bf1473b6ba7561556f1b8a451d69a867f1",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -620,7 +620,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "e1a1b835729658a5dc830df3da2af9bd1aab5b6f042e4d953202e97f7aaa47cb",
+      "specHash": "9ea1446e4d945c9643b3d68aa4348be020146d5db00ecc849198997b6cf769e4",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -648,7 +648,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "8212282f029e37ec6189c7313ff86b5629c625fad803513ba0a058f361b1baff",
+      "specHash": "dd7e6900f20bc0861c35449732d31adbdc8faeb2152a2c0ea18bd90698878822",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -676,7 +676,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "394b6e6effd25f71e60f4b93a422c5d15175b8d2d6a95acfb53a0fd7da1cb3f1",
+      "specHash": "fa94585aac1cd370da9e5e37b00988662b14f97998b84998909aa75a060a3b3e",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -704,12 +704,12 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "7c80b696b964acbfc6f7d100e7944a42520d0ef86b4cb6745e1e074d5cdb95c5",
+      "specHash": "1ddc366975df2899ba396218981d15225feda4a32be07d9d85564faad0a99c5e",
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 10,
-          "winRate": 0.5,
+          "wins": 9,
+          "winRate": 0.45,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -732,7 +732,7 @@
           "chaser"
         ]
       },
-      "specHash": "289682d31aef4a8e9ffd0b4397e12570b45ad9fd0d0f2753a5d1fbd04d1a458f",
+      "specHash": "dbdc8e1970a51634af6675883b33339a244420c82882c9140030a0912b683f90",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -760,7 +760,7 @@
         "objective": "collect",
         "threats": []
       },
-      "specHash": "dc33ba9a428a7b47357fa63bef3a9526c0843bc6942baab50f0f2952db1415f3",
+      "specHash": "d368f2efbf13422f0bdd68bedb35cbffbbdf41766177c19cd1589b64c2f8ccd0",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -788,7 +788,7 @@
         "objective": "defeat",
         "threats": []
       },
-      "specHash": "9a4990bc532a6b2593a9c21db1d6561d74418baed203e0561eab5fa9774db852",
+      "specHash": "6fcc816384b263f1b76bc5422884656ef3baa51e80d58db598f01f3161c4b99e",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -814,7 +814,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "9d2d1400932aed3eb96b91ee3430f58024a492f5de116943c91476854c090da0",
+      "specHash": "4467396c078fea942d2d73fc33290237020b61a5696e507fdd52ef26180940c8",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -840,7 +840,7 @@
         "objective": "land",
         "threats": []
       },
-      "specHash": "64c3924966662392f35a3155a5538157dbf2dc047e57b6a5d923d6f936b2a6c6",
+      "specHash": "673f04cddad9dc9cf3af0d3ef0b1c16d827cb38f48ac5f5f2071ba38f48e8a89",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -870,7 +870,7 @@
           "chaser"
         ]
       },
-      "specHash": "83952ef060880deae5048f6b62d1e355e8be9859b380d8de4316736a6313d387",
+      "specHash": "7fd0f214f1a0b8b82f8e872010c8b66c05bc13f909342834854eec3ec80e9edf",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -898,7 +898,7 @@
         "objective": "interact",
         "threats": []
       },
-      "specHash": "47f337288adae8784174d62fe38e48d1cfe8cfbcb2ddf022ae14faafcdada092",
+      "specHash": "798f00b9ce466a1ed4561a36a8ff9d4697f4ab4fde0a85f92c5a1bd4eec93212",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -928,12 +928,12 @@
           "hazard"
         ]
       },
-      "specHash": "830d49b60b8902042c52a5d0ef515b80c02bb1057752d67a0f9d7f84ce40aed1",
+      "specHash": "636e5a32d7bf53a41cb1c7a1c4f755e375fa6e903c4e601a33a174444db78603",
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 14,
-          "winRate": 0.7,
+          "wins": 12,
+          "winRate": 0.6,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -956,7 +956,7 @@
         "objective": "defeat",
         "threats": []
       },
-      "specHash": "78d84f18b76d5eecb8ef24621146370ce160d129f6b78f4da3fe9814771e143e",
+      "specHash": "bb527966ab155cdb9a605389fc53f3da83e5801060b351fcca07a7daffcae23b",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -986,7 +986,7 @@
           "chaser"
         ]
       },
-      "specHash": "413fdf6f28f1e27766effcb50d0601b494e30a852235e14d3eb4a39bd14b6a2a",
+      "specHash": "60f4b68793e23244781d4efed4ceec497edec6e4b2178387d81caf7c14c02b05",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1016,7 +1016,7 @@
           "hazard"
         ]
       },
-      "specHash": "ffdd3854dca7f2ff4d4547e40b61bdcc19eb3f6ce115e67d024c48bd7911aefd",
+      "specHash": "1b73dd1105dee6666dc91d18d1f0c20d921c0c0743bf45d2b7e1a1eeb9a366d1",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1044,7 +1044,7 @@
           "obstacle"
         ]
       },
-      "specHash": "706dc326887383f4b7994181a6dcc69190ded0a405f2b424046c87cb96589b54",
+      "specHash": "df6131a3f5b3847f13c6c13f3fa6c728bb656bc7b3f51b2673ae005e34b108ad",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1072,7 +1072,7 @@
           "obstacle"
         ]
       },
-      "specHash": "d1cdc286d2dc9d0e2fd6ea9f2dd730ec0e2de71c0a1d522fb03994fcb1be01e0",
+      "specHash": "2ed0f237c3c3efbc787f53e9bc04725d0e87695f878752d26bcf23b418a04164",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1100,7 +1100,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "6b05f513ed1de18c3805e3b1b8e00a8508b8eb4ae532cb57eb364e29ae30dbaf",
+      "specHash": "2088ebe1f67d409add13d4e06197302340c55497a6d4cca7f3e09eda046c9c97",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1130,7 +1130,7 @@
           "rival"
         ]
       },
-      "specHash": "22579a9e6c97d69038cb0eb3876df690e9c3a1e25c1f6c5ebad926ebbedd255a",
+      "specHash": "1e57584b0e305ee7c2930dcaa65329a20a849f295f82c90d574ba1ad5e7a6cc3",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1160,7 +1160,7 @@
           "chaser"
         ]
       },
-      "specHash": "860738fd6e438383f12e94b8cbb99b4f97e4c453eba0537826184d368f7f900b",
+      "specHash": "cca4c96c702f8add1efd486d2852b6e10c74100845af9bcbdda13f42f03e22fd",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1188,7 +1188,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "3cd96bebb91ff7e1f3f0e95272f071439d6c1cc7f395295ebb2bf4fb91eae0b4",
+      "specHash": "22e5b91380b4a92fc273885b7e95f1660e5d4054fe2804e23c40ef06ec0878b2",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1218,12 +1218,12 @@
           "guard"
         ]
       },
-      "specHash": "31ae2b1bba1623e8fffae7cf98d96fce37bc16bdfb30791967b83532c54a07eb",
+      "specHash": "0803eb6d8f42fe014e05d17130db3bf95586c9637c298ac717572e9028bcd5d1",
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 4,
-          "winRate": 0.2,
+          "wins": 5,
+          "winRate": 0.25,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -1246,7 +1246,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "9162d6f27aa0e9ad9663edb50f498a58f45bd778d9abd57c43fc0df36e3b5bd1",
+      "specHash": "dfc49f59e43fe677a9d8197452e4282904825749d596476d131905aa0f8be16b",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1274,7 +1274,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "47ff477318965aa6d9fce60e973e5d14887b69cfa2fd3b105e3a22734f5dedb5",
+      "specHash": "e6b7c8e9995920136f5afbb77daa89cc6bd0b728e970c0c709a61f4261481b9a",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1302,7 +1302,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "4ee2c841d780bb5a798c9654d425f3cf188989faa3169a756c3471656543263e",
+      "specHash": "ad73dc541c384d9079e73c8188d12bc23dfd5724809b8a86253e04b2293dbf2f",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1332,7 +1332,7 @@
           "obstacle"
         ]
       },
-      "specHash": "c7158e78d84996b1e275c61893b6ea92edf9c9c40972b09e0f1c5edb37da6d9c",
+      "specHash": "339ffc305d6065e6183bcaa613b12d045333e0c2439df94ad1a7fb4c860934c3",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1360,7 +1360,7 @@
         "objective": "score",
         "threats": []
       },
-      "specHash": "7800e5de10b04cfabe739ac4e36d60bbedc02020c4a49cb723cdea267995a876",
+      "specHash": "a9964c6a0f592952fd9dc435743f1228ed9ee0ca4dc323e99b209f78439c0a5c",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1390,7 +1390,7 @@
           "hazard"
         ]
       },
-      "specHash": "8860ad83a77174ef02ec10a5c6e6e72e7b5394f8a5eced5fb3b90416f451788d",
+      "specHash": "b80a3a52a6d6227723ceb16be0d775646e90501220f01b5ad5462804340755e5",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1420,7 +1420,7 @@
           "chaser"
         ]
       },
-      "specHash": "46cb2c26ac5f0ee272240ab1e2118504af86e53cacf9780cc62c8e2ab38d11ee",
+      "specHash": "577b90d78dd5b6b0d3cacd6238739cff3bde5dcca3d9e449c002ec56a6f95d8e",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1448,7 +1448,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "d85b2d759f0713493d30919a5d532e1c13cc792c7ee0b31c5ce90e634b5ed7ef",
+      "specHash": "0b77bb6705e46ec24efa8e613789074cedf4b5d9e13ecbb37c87de2efd5cffe3",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1476,7 +1476,7 @@
           "chaser"
         ]
       },
-      "specHash": "1c2a72d2a4c6e7b6a29fc7f7fd341dfc757ed0875c1339d5b65b26e62d870a90",
+      "specHash": "c7c2d12230cc96d49a51a9a987ad521d7dc7e62ca68b8884169702f1501b4b39",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1506,7 +1506,7 @@
           "chaser"
         ]
       },
-      "specHash": "282b5d8b301e0011edbf300c9af3fb88f04ad5566cdf7fab0ced938ff94c8a85",
+      "specHash": "15843f53fb7e302b230f1b88d9ebfc0e2add8065fa6dd7b08d18de400525d540",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1534,7 +1534,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "38070cbc4da8b85ede7981de1cab3954c2861c53f60f40d3c1c21e92f10e0720",
+      "specHash": "e5ab6eeca7b6602d36fada939ff4cfcabec2d626928da18f39076dc8ce977961",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1562,7 +1562,7 @@
           "chaser"
         ]
       },
-      "specHash": "82a2306589d1c40297caa4ff3268b0ec366e57df295e5babbbbb5c7559c9f8f6",
+      "specHash": "e2ff02dffcb248e142d3efe46749190931dec50dd4dab2dbcd80e34a03449b0b",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1592,7 +1592,7 @@
           "chaser"
         ]
       },
-      "specHash": "d2aa8fee57113bbe0e389033d29d00ca861588f5a9c00809de78c3f56685888a",
+      "specHash": "29a1d07690816f7695c93bc57890b12d39186a3f614b1e39775889d77102eed7",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1622,7 +1622,7 @@
           "chaser"
         ]
       },
-      "specHash": "1b5672e09c70b034a0bc73890db951d06a592f8a856efbffd039e291bda1f28c",
+      "specHash": "e9c3b09855b0b48288d5aac5b7395681b47018bc764994a003e4c104f5bf7e3b",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -11394,9 +11394,9 @@
       "seed": 1,
       "profile": "novice",
       "won": false,
-      "outcome": "running",
-      "tick": 5400,
-      "hash": "b516ded2",
+      "outcome": "lost",
+      "tick": 4904,
+      "hash": "28ce247f",
       "replayEqual": true,
       "error": null
     },
@@ -11406,8 +11406,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2923,
-      "hash": "a95cd87f",
+      "tick": 3157,
+      "hash": "4f56b758",
       "replayEqual": true,
       "error": null
     },
@@ -11417,8 +11417,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3596,
-      "hash": "07e21718",
+      "tick": 3887,
+      "hash": "f9ac36c6",
       "replayEqual": true,
       "error": null
     },
@@ -11428,8 +11428,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3201,
-      "hash": "9c305f5f",
+      "tick": 3436,
+      "hash": "9b470bfd",
       "replayEqual": true,
       "error": null
     },
@@ -11439,8 +11439,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3562,
-      "hash": "a295767b",
+      "tick": 3794,
+      "hash": "2a9cfa2f",
       "replayEqual": true,
       "error": null
     },
@@ -11450,8 +11450,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3138,
-      "hash": "34e2c0ac",
+      "tick": 3371,
+      "hash": "828a054a",
       "replayEqual": true,
       "error": null
     },
@@ -11462,7 +11462,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "a73a0d6d",
+      "hash": "2c7f1b99",
       "replayEqual": true,
       "error": null
     },
@@ -11472,8 +11472,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3133,
-      "hash": "3048b2d0",
+      "tick": 3367,
+      "hash": "c164d181",
       "replayEqual": true,
       "error": null
     },
@@ -11483,8 +11483,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3797,
-      "hash": "6eec953e",
+      "tick": 4025,
+      "hash": "a65cabc5",
       "replayEqual": true,
       "error": null
     },
@@ -11494,8 +11494,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3089,
-      "hash": "69c73993",
+      "tick": 3323,
+      "hash": "92ea7369",
       "replayEqual": true,
       "error": null
     },
@@ -11505,8 +11505,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 4324,
-      "hash": "79b54514",
+      "tick": 5091,
+      "hash": "8e93efc6",
       "replayEqual": true,
       "error": null
     },
@@ -11516,8 +11516,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3125,
-      "hash": "c92b29b8",
+      "tick": 3358,
+      "hash": "99e7c1d1",
       "replayEqual": true,
       "error": null
     },
@@ -11527,8 +11527,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3748,
-      "hash": "5ef6b2d8",
+      "tick": 3996,
+      "hash": "65a5048b",
       "replayEqual": true,
       "error": null
     },
@@ -11538,8 +11538,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3059,
-      "hash": "58ef66e0",
+      "tick": 3292,
+      "hash": "f5b2ef16",
       "replayEqual": true,
       "error": null
     },
@@ -11550,7 +11550,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "437201e5",
+      "hash": "486238fd",
       "replayEqual": true,
       "error": null
     },
@@ -11560,8 +11560,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2986,
-      "hash": "a47d1df9",
+      "tick": 3218,
+      "hash": "3fcced64",
       "replayEqual": true,
       "error": null
     },
@@ -11572,7 +11572,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "ef02b637",
+      "hash": "47515d7f",
       "replayEqual": true,
       "error": null
     },
@@ -11582,8 +11582,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3077,
-      "hash": "42d32975",
+      "tick": 3310,
+      "hash": "e907b5be",
       "replayEqual": true,
       "error": null
     },
@@ -11593,8 +11593,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3995,
-      "hash": "046e2b66",
+      "tick": 4234,
+      "hash": "9320772a",
       "replayEqual": true,
       "error": null
     },
@@ -11604,8 +11604,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3155,
-      "hash": "f5b18360",
+      "tick": 3389,
+      "hash": "2855def1",
       "replayEqual": true,
       "error": null
     },
@@ -11615,8 +11615,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3778,
-      "hash": "e8ab778d",
+      "tick": 3752,
+      "hash": "ad882f7d",
       "replayEqual": true,
       "error": null
     },
@@ -11626,8 +11626,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3081,
-      "hash": "02e6d779",
+      "tick": 3315,
+      "hash": "31592833",
       "replayEqual": true,
       "error": null
     },
@@ -11636,9 +11636,9 @@
       "seed": 12,
       "profile": "novice",
       "won": false,
-      "outcome": "running",
-      "tick": 5400,
-      "hash": "888031ef",
+      "outcome": "lost",
+      "tick": 2978,
+      "hash": "ac34eb55",
       "replayEqual": true,
       "error": null
     },
@@ -11648,8 +11648,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3033,
-      "hash": "1c13a430",
+      "tick": 3266,
+      "hash": "7737b076",
       "replayEqual": true,
       "error": null
     },
@@ -11660,7 +11660,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "aefd1452",
+      "hash": "ad34d29b",
       "replayEqual": true,
       "error": null
     },
@@ -11670,8 +11670,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2912,
-      "hash": "c7462390",
+      "tick": 3145,
+      "hash": "fc85ce20",
       "replayEqual": true,
       "error": null
     },
@@ -11682,7 +11682,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "c032c218",
+      "hash": "b444f692",
       "replayEqual": true,
       "error": null
     },
@@ -11692,8 +11692,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3116,
-      "hash": "a249dbb1",
+      "tick": 3348,
+      "hash": "9665b1c6",
       "replayEqual": true,
       "error": null
     },
@@ -11704,7 +11704,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "870e69bd",
+      "hash": "76859e6c",
       "replayEqual": true,
       "error": null
     },
@@ -11714,8 +11714,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3142,
-      "hash": "6072aa1b",
+      "tick": 3376,
+      "hash": "3d5ff8c6",
       "replayEqual": true,
       "error": null
     },
@@ -11726,7 +11726,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "6017bb10",
+      "hash": "bd4333d7",
       "replayEqual": true,
       "error": null
     },
@@ -11736,8 +11736,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3121,
-      "hash": "59b25b33",
+      "tick": 3353,
+      "hash": "2a19e678",
       "replayEqual": true,
       "error": null
     },
@@ -11748,7 +11748,7 @@
       "won": false,
       "outcome": "running",
       "tick": 5400,
-      "hash": "9a1abe87",
+      "hash": "8f49395f",
       "replayEqual": true,
       "error": null
     },
@@ -11758,8 +11758,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3067,
-      "hash": "b0b8e559",
+      "tick": 3301,
+      "hash": "92eafde5",
       "replayEqual": true,
       "error": null
     },
@@ -11769,8 +11769,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 3786,
-      "hash": "7b1117fb",
+      "tick": 4590,
+      "hash": "8f546a72",
       "replayEqual": true,
       "error": null
     },
@@ -11780,8 +11780,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3149,
-      "hash": "4b547d32",
+      "tick": 3382,
+      "hash": "94d6204e",
       "replayEqual": true,
       "error": null
     },
@@ -11789,10 +11789,10 @@
       "cell": "duel.default",
       "seed": 19,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 4161,
-      "hash": "71e3c877",
+      "won": false,
+      "outcome": "lost",
+      "tick": 3097,
+      "hash": "a3b21285",
       "replayEqual": true,
       "error": null
     },
@@ -11802,8 +11802,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2972,
-      "hash": "de1e0b26",
+      "tick": 3205,
+      "hash": "8973bec6",
       "replayEqual": true,
       "error": null
     },
@@ -11813,8 +11813,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 4276,
-      "hash": "f3f8f855",
+      "tick": 4507,
+      "hash": "45a2221b",
       "replayEqual": true,
       "error": null
     },
@@ -11824,8 +11824,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 3092,
-      "hash": "337d532b",
+      "tick": 3328,
+      "hash": "b3a165d8",
       "replayEqual": true,
       "error": null
     },
@@ -14913,10 +14913,10 @@
       "cell": "catch.default",
       "seed": 1,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2231,
-      "hash": "3e506146",
+      "won": true,
+      "outcome": "won",
+      "tick": 2388,
+      "hash": "dc43b16f",
       "replayEqual": true,
       "error": null
     },
@@ -14926,8 +14926,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2098,
-      "hash": "266b7e39",
+      "tick": 2297,
+      "hash": "d27a37e4",
       "replayEqual": true,
       "error": null
     },
@@ -14935,10 +14935,10 @@
       "cell": "catch.default",
       "seed": 2,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 2178,
-      "hash": "dadb1442",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2420,
+      "hash": "7ec87ed1",
       "replayEqual": true,
       "error": null
     },
@@ -14948,8 +14948,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2045,
-      "hash": "f18415f9",
+      "tick": 2244,
+      "hash": "b30ad48f",
       "replayEqual": true,
       "error": null
     },
@@ -14957,10 +14957,10 @@
       "cell": "catch.default",
       "seed": 3,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 2225,
-      "hash": "6cb67902",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2259,
+      "hash": "369a8d72",
       "replayEqual": true,
       "error": null
     },
@@ -14970,8 +14970,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2045,
-      "hash": "99409a0c",
+      "tick": 2244,
+      "hash": "6d6d0e7b",
       "replayEqual": true,
       "error": null
     },
@@ -14981,8 +14981,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2052,
-      "hash": "9fc22d2a",
+      "tick": 2251,
+      "hash": "d3b22e97",
       "replayEqual": true,
       "error": null
     },
@@ -14992,8 +14992,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2007,
-      "hash": "3e28e4d4",
+      "tick": 2206,
+      "hash": "2ee7cbf7",
       "replayEqual": true,
       "error": null
     },
@@ -15003,8 +15003,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2203,
-      "hash": "3fd4e3d7",
+      "tick": 2402,
+      "hash": "5a368687",
       "replayEqual": true,
       "error": null
     },
@@ -15014,8 +15014,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2070,
-      "hash": "2c52d811",
+      "tick": 2269,
+      "hash": "f49f4163",
       "replayEqual": true,
       "error": null
     },
@@ -15025,8 +15025,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2116,
-      "hash": "46f2984a",
+      "tick": 2360,
+      "hash": "9d5ddeb7",
       "replayEqual": true,
       "error": null
     },
@@ -15036,8 +15036,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2015,
-      "hash": "613fb074",
+      "tick": 2214,
+      "hash": "8065b107",
       "replayEqual": true,
       "error": null
     },
@@ -15047,8 +15047,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2063,
-      "hash": "6d544a77",
+      "tick": 2262,
+      "hash": "cf211081",
       "replayEqual": true,
       "error": null
     },
@@ -15058,8 +15058,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2013,
-      "hash": "aadd9067",
+      "tick": 2212,
+      "hash": "7192e759",
       "replayEqual": true,
       "error": null
     },
@@ -15069,8 +15069,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1970,
-      "hash": "40ec757e",
+      "tick": 2394,
+      "hash": "6fbd1491",
       "replayEqual": true,
       "error": null
     },
@@ -15080,8 +15080,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2010,
-      "hash": "88f68ba1",
+      "tick": 2209,
+      "hash": "b8780f17",
       "replayEqual": true,
       "error": null
     },
@@ -15091,8 +15091,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2133,
-      "hash": "784f754d",
+      "tick": 2242,
+      "hash": "d410b9bb",
       "replayEqual": true,
       "error": null
     },
@@ -15102,8 +15102,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2043,
-      "hash": "6b3f83bb",
+      "tick": 2242,
+      "hash": "d410b9bb",
       "replayEqual": true,
       "error": null
     },
@@ -15113,8 +15113,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2170,
-      "hash": "92db6cbc",
+      "tick": 2369,
+      "hash": "fdb8e12d",
       "replayEqual": true,
       "error": null
     },
@@ -15124,8 +15124,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2029,
-      "hash": "d40226dd",
+      "tick": 2228,
+      "hash": "c18c24f1",
       "replayEqual": true,
       "error": null
     },
@@ -15133,10 +15133,10 @@
       "cell": "catch.default",
       "seed": 11,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 2157,
-      "hash": "2d7e8478",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2262,
+      "hash": "4b8d7188",
       "replayEqual": true,
       "error": null
     },
@@ -15146,8 +15146,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 1978,
-      "hash": "da891ccf",
+      "tick": 2177,
+      "hash": "da28ea69",
       "replayEqual": true,
       "error": null
     },
@@ -15157,8 +15157,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2079,
-      "hash": "d7ef1d3e",
+      "tick": 2226,
+      "hash": "353bd440",
       "replayEqual": true,
       "error": null
     },
@@ -15168,8 +15168,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 1986,
-      "hash": "b60fed50",
+      "tick": 2185,
+      "hash": "8b6acf47",
       "replayEqual": true,
       "error": null
     },
@@ -15179,8 +15179,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2153,
-      "hash": "7c9c5380",
+      "tick": 2398,
+      "hash": "79a97d0b",
       "replayEqual": true,
       "error": null
     },
@@ -15190,8 +15190,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2076,
-      "hash": "809275fc",
+      "tick": 2275,
+      "hash": "6543421a",
       "replayEqual": true,
       "error": null
     },
@@ -15201,8 +15201,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2097,
-      "hash": "307036d6",
+      "tick": 2296,
+      "hash": "2b60fc16",
       "replayEqual": true,
       "error": null
     },
@@ -15212,8 +15212,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2045,
-      "hash": "33dea138",
+      "tick": 2244,
+      "hash": "e4deddb1",
       "replayEqual": true,
       "error": null
     },
@@ -15223,8 +15223,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2077,
-      "hash": "9defab46",
+      "tick": 2276,
+      "hash": "9e299e88",
       "replayEqual": true,
       "error": null
     },
@@ -15234,8 +15234,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2077,
-      "hash": "9defab46",
+      "tick": 2276,
+      "hash": "9e299e88",
       "replayEqual": true,
       "error": null
     },
@@ -15245,8 +15245,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2086,
-      "hash": "f5ca9c31",
+      "tick": 2375,
+      "hash": "19086215",
       "replayEqual": true,
       "error": null
     },
@@ -15256,8 +15256,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2036,
-      "hash": "4eed8f52",
+      "tick": 2235,
+      "hash": "e4663438",
       "replayEqual": true,
       "error": null
     },
@@ -15267,8 +15267,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2198,
-      "hash": "0359aa7c",
+      "tick": 2345,
+      "hash": "8185b52a",
       "replayEqual": true,
       "error": null
     },
@@ -15278,8 +15278,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2059,
-      "hash": "abc59349",
+      "tick": 2258,
+      "hash": "d9291159",
       "replayEqual": true,
       "error": null
     },
@@ -15289,8 +15289,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2110,
-      "hash": "2a2d0a5b",
+      "tick": 2309,
+      "hash": "cc19b2da",
       "replayEqual": true,
       "error": null
     },
@@ -15300,8 +15300,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2023,
-      "hash": "e964f065",
+      "tick": 2222,
+      "hash": "309157d3",
       "replayEqual": true,
       "error": null
     },
@@ -15311,8 +15311,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2089,
-      "hash": "9b4537b6",
+      "tick": 2288,
+      "hash": "f417952e",
       "replayEqual": true,
       "error": null
     },
@@ -15322,8 +15322,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2046,
-      "hash": "40885600",
+      "tick": 2245,
+      "hash": "b83cc6eb",
       "replayEqual": true,
       "error": null
     },
@@ -15333,8 +15333,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2071,
-      "hash": "ea588a37",
+      "tick": 2270,
+      "hash": "bd4284c1",
       "replayEqual": true,
       "error": null
     },
@@ -15344,8 +15344,8 @@
       "profile": "intermediate",
       "won": true,
       "outcome": "won",
-      "tick": 2071,
-      "hash": "180d06f3",
+      "tick": 2270,
+      "hash": "c07ff57b",
       "replayEqual": true,
       "error": null
     },
@@ -19381,8 +19381,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 3368,
-      "hash": "40492c00",
+      "tick": 3626,
+      "hash": "1ec6f4ba",
       "replayEqual": true,
       "error": null
     },
@@ -19599,10 +19599,10 @@
       "cell": "steal.default",
       "seed": 14,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2847,
-      "hash": "3bf890ae",
+      "won": true,
+      "outcome": "won",
+      "tick": 3355,
+      "hash": "f91d31f5",
       "replayEqual": true,
       "error": null
     },
@@ -21946,6 +21946,886 @@
       "outcome": "won",
       "tick": 442,
       "hash": "51f8ecbb",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "0e3a78ac",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "0e3a78ac",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "8af677a3",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "8af677a3",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "81e200c2",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "81e200c2",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "649f513d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "649f513d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "44d0eb9b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "44d0eb9b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "42c635c4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "42c635c4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 7,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "357a55f1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "357a55f1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "14ec90e4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "14ec90e4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 9,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "33995ff9",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "33995ff9",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 10,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "bceff079",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "bceff079",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 11,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "9459093e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "9459093e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 12,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "a0e3574e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "a0e3574e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 13,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "550dc36d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "550dc36d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 14,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "38c37a0b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "38c37a0b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 15,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "f680c6e0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "f680c6e0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 16,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "cce2df3b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "cce2df3b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "f08803e1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "f08803e1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 18,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "4b24991d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "4b24991d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 19,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "e0c4b3d7",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "e0c4b3d7",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "1452ab02",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "drawsave.default",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 960,
+      "hash": "1452ab02",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 1,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1830,
+      "hash": "b4616950",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2451,
+      "hash": "c6623113",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 2,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1799,
+      "hash": "02403949",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2485,
+      "hash": "b24dd8f6",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 3,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1878,
+      "hash": "500e3873",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2512,
+      "hash": "ad2bc300",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 4,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1865,
+      "hash": "6941ee54",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2451,
+      "hash": "1589cfe4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 5,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1885,
+      "hash": "2acdd597",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2537,
+      "hash": "134c0364",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 6,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1854,
+      "hash": "1bfcf753",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2553,
+      "hash": "34464c7c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 7,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1980,
+      "hash": "af5d2244",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2653,
+      "hash": "9ad77fd4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 8,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2022,
+      "hash": "4b72b850",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2650,
+      "hash": "50ff893b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 9,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2013,
+      "hash": "4e59ea74",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2634,
+      "hash": "e9ba2e4e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1657,
+      "hash": "56a8102a",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2305,
+      "hash": "65af6d4c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1903,
+      "hash": "1115e7eb",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2495,
+      "hash": "d9f32c1c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 12,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1802,
+      "hash": "b96b1f39",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2354,
+      "hash": "5f425531",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 13,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2065,
+      "hash": "ec8a04d2",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2668,
+      "hash": "7a366066",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1940,
+      "hash": "5c645137",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2500,
+      "hash": "2d2ef016",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 15,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1828,
+      "hash": "8441ae77",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2517,
+      "hash": "67b95d8d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 16,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1804,
+      "hash": "113b2bad",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2373,
+      "hash": "11170d0d",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 17,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1846,
+      "hash": "9a175773",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2438,
+      "hash": "2b2ac9b3",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 18,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1856,
+      "hash": "a680d32f",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2501,
+      "hash": "f3d94579",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1708,
+      "hash": "906a1a5e",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2297,
+      "hash": "3f5d4502",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 20,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1997,
+      "hash": "3f35dc54",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "railfps.default",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2568,
+      "hash": "267c1b8e",
       "replayEqual": true,
       "error": null
     },
@@ -32946,886 +33826,6 @@
       "outcome": "won",
       "tick": 1868,
       "hash": "86423078",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 1,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "0e3a78ac",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 1,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "0e3a78ac",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 2,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "8af677a3",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 2,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "8af677a3",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 3,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "81e200c2",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 3,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "81e200c2",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 4,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "649f513d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 4,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "649f513d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 5,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "44d0eb9b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 5,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "44d0eb9b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 6,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "42c635c4",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 6,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "42c635c4",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 7,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "357a55f1",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 7,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "357a55f1",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 8,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "14ec90e4",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 8,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "14ec90e4",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 9,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "33995ff9",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 9,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "33995ff9",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 10,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "bceff079",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 10,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "bceff079",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 11,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "9459093e",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 11,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "9459093e",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 12,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "a0e3574e",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 12,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "a0e3574e",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 13,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "550dc36d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 13,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "550dc36d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 14,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "38c37a0b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 14,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "38c37a0b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 15,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "f680c6e0",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 15,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "f680c6e0",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 16,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "cce2df3b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 16,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "cce2df3b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 17,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "f08803e1",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 17,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "f08803e1",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 18,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "4b24991d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 18,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "4b24991d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 19,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "e0c4b3d7",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 19,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "e0c4b3d7",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 20,
-      "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "1452ab02",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "drawsave.default",
-      "seed": 20,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 960,
-      "hash": "1452ab02",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 1,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1830,
-      "hash": "b4616950",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 1,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2451,
-      "hash": "c6623113",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 2,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1799,
-      "hash": "02403949",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 2,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2485,
-      "hash": "b24dd8f6",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 3,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1878,
-      "hash": "500e3873",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 3,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2512,
-      "hash": "ad2bc300",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 4,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1865,
-      "hash": "6941ee54",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 4,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2451,
-      "hash": "1589cfe4",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 5,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1885,
-      "hash": "2acdd597",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 5,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2537,
-      "hash": "134c0364",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 6,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1854,
-      "hash": "1bfcf753",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 6,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2553,
-      "hash": "34464c7c",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 7,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1980,
-      "hash": "af5d2244",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 7,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2653,
-      "hash": "9ad77fd4",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 8,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2022,
-      "hash": "4b72b850",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 8,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2650,
-      "hash": "50ff893b",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 9,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2013,
-      "hash": "4e59ea74",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 9,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2634,
-      "hash": "e9ba2e4e",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 10,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1657,
-      "hash": "56a8102a",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 10,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2305,
-      "hash": "65af6d4c",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 11,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1903,
-      "hash": "1115e7eb",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 11,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2495,
-      "hash": "d9f32c1c",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 12,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1802,
-      "hash": "b96b1f39",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 12,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2354,
-      "hash": "5f425531",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 13,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2065,
-      "hash": "ec8a04d2",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 13,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2668,
-      "hash": "7a366066",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 14,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1940,
-      "hash": "5c645137",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 14,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2500,
-      "hash": "2d2ef016",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 15,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1828,
-      "hash": "8441ae77",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 15,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2517,
-      "hash": "67b95d8d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 16,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1804,
-      "hash": "113b2bad",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 16,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2373,
-      "hash": "11170d0d",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 17,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1846,
-      "hash": "9a175773",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 17,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2438,
-      "hash": "2b2ac9b3",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 18,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1856,
-      "hash": "a680d32f",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 18,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2501,
-      "hash": "f3d94579",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 19,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1708,
-      "hash": "906a1a5e",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 19,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2297,
-      "hash": "3f5d4502",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 20,
-      "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1997,
-      "hash": "3f35dc54",
-      "replayEqual": true,
-      "error": null
-    },
-    {
-      "cell": "railfps.default",
-      "seed": 20,
-      "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2568,
-      "hash": "267c1b8e",
       "replayEqual": true,
       "error": null
     }

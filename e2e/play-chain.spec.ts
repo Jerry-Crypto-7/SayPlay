@@ -6,7 +6,8 @@ import { expect, test, type APIRequestContext, type Page, type TestInfo } from '
 /**
  * Řetěz mikroher v prohlížeči (P56C T13), nad `next build` + `next start`: věta, která žádá o kola, dá
  * řetěz, jehož kolo 1 poslouchá do 1,5 s od navigace, mezi koly ukáže kartu se slovesem, index kola
- * roste, prohrané kolo vezme srdce, výhra skončí hvězdami a Dare, jehož odkaz otevře ducha kamaráda.
+ * roste, prohrané kolo řetěz zastaví a „Try again“ ho hraje znovu (P70A T3), výhra skončí hvězdami a Dare,
+ * jehož odkaz otevře ducha kamaráda.
  * Kola hraje sonda `__playShell.playRound` (stisky robota kola tik po tiku cestou klávesnice), takže
  * záznam je hráčův a výzvu z něj přehraje server (`replayChain`). Běží v `chromium` i `pixel7-touch`.
  */
@@ -92,7 +93,7 @@ test.describe('/play/[id] – a microgame chain (P56C T13)', () => {
 
     // Kolo 1 vyhraje robot kola; karta ukáže sloveso kola 2 (a jeho mutátor) a zmizí.
     let end = await playRound(page, 'bot');
-    expect(end).toMatchObject({ runState: 'won', round: 1, lives: 3, outcome: 'running' });
+    expect(end).toMatchObject({ runState: 'won', round: 1, lives: 2, outcome: 'running' });
     const card = page.getByTestId('play-chain-card');
     await expect(card).toHaveAttribute('data-round', '2');
     await expect(card).toContainText(stored.chain.rounds[1]!.card);
@@ -102,14 +103,16 @@ test.describe('/play/[id] – a microgame chain (P56C T13)', () => {
     await expect(card).toHaveCount(0);
     await expect(page.getByTestId('hud-counter-round')).toContainText(`2/${String(rounds)}`);
 
-    // Kolo 2 bez stisku: prohra stojí srdce a řetěz jede dál.
+    // Kolo 2 bez stisku (P70A T3): prohrané kolo řetěz zastaví a „Try again“ hraje kolo 2 znovu se dvěma srdci, ne kolo 1.
     end = await playRound(page, 'idle');
-    expect(end).toMatchObject({ runState: 'lost', round: 2, lives: 2, outcome: 'running' });
+    expect(end).toMatchObject({ runState: 'lost', round: 2, outcome: 'lost' });
+    await page.getByTestId('play-replay').click();
+    await roundOpen(page, 2);
     await expect(page.getByTestId('hud-counter-lives')).toContainText('2');
 
-    // Zbytek řetězu robot; výhra pošle záznam s globálními tiky jako výzvu.
+    // Zbytek řetězu robot, od kola 2; výhra pošle záznam s globálními tiky jako výzvu.
     const posted = page.waitForResponse((response) => response.url().endsWith(`/api/play/games/${id}/dare`) && response.request().method() === 'POST');
-    for (let round = 3; round <= rounds; round += 1) {
+    for (let round = 2; round <= rounds; round += 1) {
       await roundOpen(page, round);
       end = await playRound(page, 'bot');
       expect(end.runState, `round ${String(round)}`).toBe('won');

@@ -102,7 +102,7 @@ describe('survivor world (P66 T5)', () => {
     expect(fixture).toEqual(JSON.parse(JSON.stringify({ ...SPEC, genre: { ...SPEC.genre, compilerVersion: 'genre.v6' } })));
     const read = readGameSpec(fixture);
     expect(read.ok, read.ok ? '' : read.issues.join('; ')).toBe(true);
-    expect(SPEC.genre).toEqual({ id: 'survivor', mode: 'default', compilerVersion: 'genre.v7' });
+    expect(SPEC.genre).toEqual({ id: 'survivor', mode: 'default', compilerVersion: 'genre.v8' });
     expect(SPEC.control).toBe('survivor');
     // P66 T12: živý pro výběr – narážky v modulu, buňka receptu v `PRESETS` (`p66-staged.test.ts`).
     expect(module.availability('default' as never)).toBe('ready');

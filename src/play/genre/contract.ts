@@ -32,10 +32,12 @@ import type { ControlId, GameRole, GameSpecV1 } from '../spec';
  * žánrů; uložené `genre.v5` hrají jako dřív (otisk `evals/play/p66/hash-baseline.json`).
  * `genre.v7` (P68 T1): pět dalších žánrů (`P68_GENRE_VERSION`, `p68-contract.ts`) a osa natočení `railfps`; uložené `genre.v6`
  * hrají jako dřív (otisk `evals/play/p68/hash-baseline.json`). Staré žánry pod `genre.v7` chování nemění.
+ * `genre.v8` (P70A T3): férový start – ochrana po prvním dotyku a pomalý začátek (`FAIR_START_GENRE_VERSION` v
+ * `arcade/contract.ts`), poletování bere za zem život; uložené `genre.v7` hrají jako dřív.
  * Kontroly verze jsou „tahle a novější“ (`genreAtLeast`), nikdy rovnost s jednou verzí. Typ je `string`, ne doslovná
  * hodnota: stráž „jen před P66“ (`GENRE_COMPILER_VERSION !== 'genre.v5'` v `p66-hash.test.ts`) se tak po zvednutí verze přeloží.
  */
-export const GENRE_COMPILER_VERSION: string = 'genre.v7';
+export const GENRE_COMPILER_VERSION: string = 'genre.v8';
 
 /** Od této verze platí žánry P68 a sémantika osy natočení `railfps` (kontrola přes `genreAtLeast`). */
 export const P68_GENRE_VERSION = 'genre.v7';

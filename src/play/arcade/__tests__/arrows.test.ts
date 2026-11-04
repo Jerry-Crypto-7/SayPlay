@@ -99,7 +99,7 @@ describe('arrows genre is playable (P66 T9)', () => {
     const spec = specOf();
     expect(readGameSpec(spec).ok).toBe(true);
     expect(spec.control).toBe('arrows');
-    expect(spec.genre).toEqual({ id: 'arrows', mode: 'default', compilerVersion: 'genre.v7' });
+    expect(spec.genre).toEqual({ id: 'arrows', mode: 'default', compilerVersion: 'genre.v8' });
     expect(spec.roles.find((role) => role.id === 'piece')).toMatchObject({ kind: 'target', label: 'car', count: totalPieces(ARROWS.rounds.default) });
     expect(spec.tutorial.goalLine.length).toBeLessThanOrEqual(50);
     expect(readGenreSpec({ genre: 'arrows', mode: 'default', hero: 'fox', setting: 'pen', params: { rounds: 6 } }).ok).toBe(false);
@@ -156,7 +156,8 @@ describe('arrows genre is playable (P66 T9)', () => {
   });
 
   it('a tap on a free piece sends exactly that piece away and scores; a tap on a blocked one costs a heart and keeps it', () => {
-    const game = player(worldOf(4));
+    // Pravidlo bez férového startu (P70A T3): v jeho 3 s ochrany by chybný ťuk srdce nevzal (`fair-start.test.ts`).
+    const game = player({ ...worldOf(4), fairStart: undefined });
     game.tick();
     const { free, blocked } = game.choices();
     expect(free.length).toBeGreaterThan(0);

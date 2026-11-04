@@ -61,10 +61,13 @@ describe('railfps genre module (P68-F T4)', () => {
   it('the e2e fixture is exactly what the module compiles, and a GameSpec reads it', () => {
     const fixture = JSON.parse(readFileSync(join(process.cwd(), FIXTURE), 'utf8')) as unknown;
     const spec = specOf(CONTENT);
-    expect(fixture).toEqual(JSON.parse(JSON.stringify(spec)));
+    // Fixtura je uložená hra `genre.v7`; P70A T3 zvedl jen verzi nových her (férový start).
+    expect(fixture).toEqual(JSON.parse(JSON.stringify({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v7' } })));
     const read = readGameSpec(fixture);
     expect(read.ok, JSON.stringify(read)).toBe(true);
-    expect(spec.genre).toEqual({ id: 'railfps', mode: 'default', compilerVersion: P68_GENRE_VERSION });
+    // Nová hra je `genre.v8` (P70A T3); sémantika railfps platí od `P68_GENRE_VERSION` dál.
+    expect(spec.genre).toEqual({ id: 'railfps', mode: 'default', compilerVersion: 'genre.v8' });
+    expect(P68_GENRE_VERSION).toBe('genre.v7');
     expect(spec.controlParams).toEqual({ generator: 'railfps_rail' });
     expect(spec.targetDurationSec).toBeGreaterThanOrEqual(60);
     expect(spec.targetDurationSec).toBeLessThanOrEqual(75);

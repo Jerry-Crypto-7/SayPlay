@@ -4,7 +4,8 @@
  *
  * Kolo je obyčejný `GameSpecV1` – jádro, kompilátor ani generátory se nemění. Mikro cíl žije ve specu:
  * parametry žánru zkrátí úroveň (mimo `readGenreSpec`, jehož meze hlídají celou hru 30–90 s), `withDepth`
- * dá jeden život a cíl skóre, hodiny kola nese buď vestavěné `time_limit` (`achieve`), nebo pravidlo
+ * dá jeden život (řetěz kolu přidá do `CHAIN_LIVES`, `roundWorld` – robot i kalibrace zůstanou na jednom) a cíl skóre,
+ * hodiny kola nese buď vestavěné `time_limit` (`achieve`), nebo pravidlo
  * `every` s výhrou (`survive`). Svět kola je tak čistá funkce `(spec, seed)`.
  *
  * Prohrávací hodiny `time_limit` kompilátor zaokrouhlí na nejméně 10 s (`limitSeconds` v `arcade/compile.ts`):
@@ -12,6 +13,7 @@
  * limitem a pravidlo `every` s prohrou neprojde důkazem sloves (robot, který vyhraje, ho nikdy nespustí).
  */
 
+import type { ArcadeWorldOptions } from '../arcade/compile';
 import { ARCADE_HZ } from '../arcade/contract';
 import { withDepth } from '../compose/compile';
 import { compileGenre } from '../genre';
@@ -70,13 +72,23 @@ export const genreModeOf = (entry: MicroEntry): { readonly genre: GenreId; reado
   return { genre, mode };
 };
 
-/** Hodiny kola `round` (od 0): přežití se po kolech zkracuje o 1 s až na `fastest`, `achieve` drží své. */
+/**
+ * Hodiny kola `round` (od 0): přežití se po kolech zkracuje o 1 s až na `fastest`, `achieve` drží své.
+ * Kratší přežití dělá pozdní kolo lehčí, ne těžší, takže to zrychlení mezi koly není (P70A T3 zrušila jen tempo kol).
+ */
 export const roundSeconds = (entry: MicroEntry, round: number): number => Math.max(entry.fastest ?? entry.seconds, entry.seconds - round);
 
 /**
  * Kolo z návrhu žánru: parametry záznamu přebijí návrh i počty z věty (`counts` by úroveň zase natáhly),
  * jeden život, cíl skóre a hodiny kola.
  */
+/**
+ * Překlad světa kola (`arcadeWorldOf(spec, seed, undefined, ROUND_WORLD)`): bez férového startu nové hry (P70A T3).
+ * Řetěz má férovost svou – kolo čeká na první dotyk a má `CHAIN_LIVES` – a mikrohra na 3–8 s by s ochranou 3 s
+ * a pomalým začátkem nevyšla (souboj by první útok odložil, chytání by robot nestihl do 8 s).
+ */
+export const ROUND_WORLD: ArcadeWorldOptions = { fairStart: false };
+
 export function microSpec(draft: GenreSpec, entry: MicroEntry, round: number): GameSpecV1 {
   const { counts: _counts, ...rest } = draft;
   const spec = compileGenre((entry.params === undefined ? rest : { ...rest, params: { ...rest.params, ...entry.params } }) as GenreSpec);

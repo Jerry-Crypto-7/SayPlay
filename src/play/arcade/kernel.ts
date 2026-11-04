@@ -15,6 +15,7 @@ import { hashHex } from '@/sim/hash';
 
 import {
   ABILITY_SLOTS,
+  ARCADE_HZ,
   ARCADE_LIMITS,
   ARCADE_RUNTIME_V2,
   ARCADE_RUNTIME_VERSION,
@@ -34,6 +35,7 @@ import {
   type ArcadeWorld,
   BODY,
   BODY_STRIDE,
+  type FairStartMode,
   BOUNCE_MAX,
   type BotPiece,
   COUNTER,
@@ -76,6 +78,50 @@ import { releasePhysics, stepPhysics } from './physics/step';
 /** Gravitace v jednotkách za tik² (8 → ~28,8 m/s², arkádově rychlý dopad). */
 export const GRAVITY = 8;
 
+/**
+ * Férový start (P70A T3) světa s `ArcadeWorld.fairStart`: začátečník se na začátku nenechá hned zabít.
+ * Tik 0 je první dotyk – klient do něj hodiny drží (`holdUntilTouch`) a stisky z čekání padnou do tiku 0 –,
+ * takže obojí plyne jen z `HEADER.tick` a stav nepotřebuje slot navíc:
+ * - `protectTicks` (3 s) ochrana: efekt `damage` ani `lose` nic neudělá;
+ * - `slowTicks` (8 s) se svět hýbe na `slowPct` %, pak za `rampTicks` (6 s) lineárně naběhne na 100 %. V tiku
+ *   „odpočinku“ (`worldRests`) jádro neintegruje těla kromě hráče, hráče na plošině neveze a projektily nekrokuje –
+ *   dráhy světa zůstanou tytéž, jen pomalejší; hráč, Rapier, ovládání a pravidla tikají dál (ovládání zůstane
+ *   svižné, časové limity se nezkrátí). Kus s vlastními hodinami (nápřah souboje, provoz přeskákání) jde podle
+ *   `openingPace` / `worldTicks`.
+ * Celá čísla: tempo v procentech, součet tempa od tiku 0 v uzavřeném tvaru.
+ */
+export const FAIR_START = { protectTicks: 3 * ARCADE_HZ, slowTicks: 8 * ARCADE_HZ, slowPct: 70, rampTicks: 6 * ARCADE_HZ } as const;
+
+const FAIR_END = FAIR_START.slowTicks + FAIR_START.rampTicks;
+/** Tiků náběhu na jedno procento tempa (360 / 30 = 12). */
+const RAMP_UNIT = FAIR_START.rampTicks / (100 - FAIR_START.slowPct);
+
+/** Tempo světa v tiku `tick` v procentech: `slowPct`, náběh, 100. */
+export function openingPace(tick: number): number {
+  if (tick < FAIR_START.slowTicks) return FAIR_START.slowPct;
+  if (tick >= FAIR_END) return 100;
+  return FAIR_START.slowPct + Math.floor((tick - FAIR_START.slowTicks) / RAMP_UNIT);
+}
+
+/** Součet `openingPace` přes tiky 0..`tick` − 1 (setiny tiku pohybu). */
+function paceSum(tick: number): number {
+  const slow = FAIR_START.slowPct * Math.min(tick, FAIR_START.slowTicks);
+  if (tick <= FAIR_START.slowTicks) return slow;
+  const n = Math.min(tick, FAIR_END) - FAIR_START.slowTicks;
+  const q = Math.floor(n / RAMP_UNIT);
+  const ramp = FAIR_START.slowPct * n + (RAMP_UNIT * q * (q - 1)) / 2 + (n % RAMP_UNIT) * q;
+  return slow + ramp + 100 * Math.max(0, tick - FAIR_END);
+}
+
+/** Tiky pohybu světa před tikem `tick`, zaokrouhlené nahoru – tik 0 (první dotyk) se hýbe. */
+export const worldTicks = (tick: number): number => Math.floor((paceSum(tick) + 99) / 100);
+
+/** Odpočinek: v tiku `tick` se svět s férovým startem nehýbe. Po náběhu nikdy. */
+export const worldRests = (tick: number): boolean => tick < FAIR_END && worldTicks(tick + 1) === worldTicks(tick);
+
+/** Ochrana po prvním dotyku: v tiku `tick` hráč o život nepřijde ani neprohraje. */
+export const startProtected = (tick: number): boolean => tick < FAIR_START.protectTicks;
+
 export interface ArcadeLibrary {
   readonly controls: Readonly<Record<string, ControlPiece>>;
   readonly rules: Readonly<Record<string, RulePiece>>;
@@ -100,6 +146,10 @@ export interface ArcadeProgram {
   readonly logic: { readonly base: number } | null;
   /** Háčky (P66 T3, pravidlo `hooks`): kola, vylepšení, vzácnost, zprávy; `null` = svět bez háčků tikne jako dřív. */
   readonly hooks: HookParams | null;
+  /** Férový start (P70A T3, `FAIR_START`): ochrana po prvním dotyku; `false` = svět bez něj tikne jako dřív. */
+  readonly fairStart: boolean;
+  /** Pomalý začátek férového startu (`fairStart: 'slow'`): tiky odpočinku světa. */
+  readonly slowStart: boolean;
 }
 
 export type ArcadeOutcome = 'running' | 'won' | 'lost';
@@ -120,6 +170,8 @@ export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeP
     bonus: (world.rules.map(underlyingRule).find((ref) => ref.id === 'score_bonus')?.params as ScoreBonusParams | undefined) ?? null,
     logic: world.logic === undefined ? null : { base: bodyBase(world.logic.bodies[0] as number) },
     hooks: hooksOf(world.rules),
+    fairStart: world.fairStart !== undefined,
+    slowStart: world.fairStart === 'slow',
   };
 }
 
@@ -143,6 +195,8 @@ export interface BuildWorldInput {
   readonly health?: number;
   /** Stav logiky (P45B); bez něj svět nemá logická těla a nese `arcade-v2`. */
   readonly logic?: LogicInit;
+  /** Férový start (P70A T3): svět ponese `fairStart`. */
+  readonly fairStart?: FairStartMode;
 }
 
 /** Počátek logiky: hodnoty proměnných (≤ 8) a počet fází (> 0 = hra v tiku 0 vstoupí do fáze 0). */
@@ -255,6 +309,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     world: {
       runtimeVersion: input.logic === undefined ? ARCADE_RUNTIME_V2 : ARCADE_RUNTIME_VERSION,
       ...(input.logic === undefined ? {} : { logic: { bodies: Array.from({ length: LOGIC_BODIES }, (_, i) => bodies.length + i) } }),
+      ...(input.fairStart === undefined ? {} : { fairStart: input.fairStart }),
       seed: input.seed,
       control: input.control,
       rules: input.rules,
@@ -330,8 +385,10 @@ const brake = (v: number): number => (v > 0 ? Math.max(0, v - VERB_MOTION.fricti
 /** Index neseného těla, nebo −1. */
 const heldIndex = (state: ArcadeState): number => (state[HD.held] as number) - 1;
 
-function integrate(state: ArcadeState, count: number): void {
+/** `only` ≥ 0: integruje jen to tělo (tik odpočinku férového startu hýbe jen hráčem). */
+function integrate(state: ArcadeState, count: number, only = -1): void {
   for (let i = 0; i < count; i += 1) {
+    if (only >= 0 && i !== only) continue;
     const base = baseOf(i);
     if (!alive(state, base)) continue;
     const flags = state[base + S.flags] as number;
@@ -428,9 +485,10 @@ function carry(state: ArcadeState, count: number, player: number): void {
  * Kolize hráče s pevnými tělesy podle toho, odkud přišel (poloha před
  * integrací, u těla jeho poloha minus rychlost): shora = stojí na horní hraně
  * (není kontakt), zdola = strop, z boku = zastaví se na hraně a `vx`/`vz` = 0.
- * Strop i bok hlásí kontakt dál, nepevná tělesa jsou jen kontakt.
+ * Strop i bok hlásí kontakt dál, nepevná tělesa jsou jen kontakt. `rests` = tik odpočinku: těla stála, jejich
+ * minulá poloha je ta dnešní (rychlost se do ní nepočítá).
  */
-function collide(state: ArcadeState, count: number, player: number, prevX: number, prevY: number, prevZ: number): number[] {
+function collide(state: ArcadeState, count: number, player: number, prevX: number, prevY: number, prevZ: number, rests: boolean): number[] {
   const p = baseOf(player);
   const contacts: number[] = [];
   // Nesené tělo sedí hráči na hlavě: nezastaví ho ani se ho nedotkne.
@@ -447,7 +505,7 @@ function collide(state: ArcadeState, count: number, player: number, prevX: numbe
     const bx = state[base + S.x] as number;
     const by = state[base + S.y] as number;
     const bz = state[base + S.z] as number;
-    const bvy = state[base + S.vy] as number;
+    const bvy = rests ? 0 : (state[base + S.vy] as number);
     const top = by + (state[base + S.h] as number);
     if (prevY >= top - bvy && (state[p + S.vy] as number) <= bvy) {
       state[p + S.y] = top;
@@ -462,8 +520,8 @@ function collide(state: ArcadeState, count: number, player: number, prevX: numbe
     } else {
       const halfW = Math.ceil(((state[p + S.w] as number) + (state[base + S.w] as number)) / 2);
       const halfD = Math.ceil(((state[p + S.d] as number) + (state[base + S.d] as number)) / 2);
-      const dx = prevX - (bx - (state[base + S.vx] as number));
-      const dz = prevZ - (bz - (state[base + S.vz] as number));
+      const dx = prevX - (rests ? bx : bx - (state[base + S.vx] as number));
+      const dz = prevZ - (rests ? bz : bz - (state[base + S.vz] as number));
       const fromX = Math.abs(dx) >= halfW;
       const fromZ = Math.abs(dz) >= halfD;
       // Přišel šikmo přes roh: rozhodne menší průnik.
@@ -761,13 +819,14 @@ function logicPasses(state: ArcadeState, effects: ArcadeEffect[], owners: number
     setTimerLeft(state, base, t, left - 1);
     if (left === 1) expired |= 1 << t;
   }
+  const shielded = program.fairStart && startProtected(state[HD.tick] as number);
   const pass = (trigger: LogicTrigger, fired: number): void => {
     state[base + L.fired] = fired;
     if (fired === 0 || state[HD.runState] !== RUN_STATE.running) return;
     const from = effects.length;
     const end: TickEnd = { won: false, lost: false };
     fireRules(effects, owners, program, trigger, ctx);
-    apply(state, effects, from, end, owners, trace);
+    apply(state, effects, from, end, shielded, owners, trace);
     settleRun(state, end);
   };
   pass('timer', expired << FIRED.timer);
@@ -783,8 +842,9 @@ function logicPasses(state: ArcadeState, effects: ArcadeEffect[], owners: number
 /**
  * Použije efekty od `from`. Se stopou ohlásí pravidlo (`owners[i]`) jen za efekt,
  * který stav opravdu změnil – hod s prázdnou rukou ani přepnutí bez cíle sloveso nedokáže.
+ * `shielded` = ochrana férového startu (`startProtected`): `damage` ani `lose` nic neudělají.
  */
-function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: TickEnd, owners?: number[], trace?: RuleTrace): void {
+function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: TickEnd, shielded: boolean, owners?: number[], trace?: RuleTrace): void {
   for (let i = from; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
     let changed = true;
@@ -792,13 +852,16 @@ function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: T
     else if (effect.kind === 'damage') {
       const player = state[HD.player] as number;
       // Milost (P36A T2): zásah v ní nic nebere; jinak ubere a milost nabije – i proti druhému zásahu téhož tiku.
-      if (effect.grace !== undefined && graceOf(state, player) > 0) changed = false;
+      if (shielded || (effect.grace !== undefined && graceOf(state, player) > 0)) changed = false;
       else {
         state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
         if (effect.grace !== undefined) setGrace(state, player, effect.grace);
       }
     } else if (effect.kind === 'count') state[HD.counters + CT[effect.counter]] = (state[HD.counters + CT[effect.counter]] as number) + effect.amount;
-    else if (effect.kind === 'lose') end.lost = true;
+    else if (effect.kind === 'lose') {
+      if (shielded) changed = false;
+      else end.lost = true;
+    }
     else if (effect.kind === 'win') end.won = true;
     else if (effect.kind === 'spawn') changed = spawn(state, effect);
     else if (effect.kind === 'respawn') {
@@ -937,7 +1000,12 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const combo = hooks === null ? 1 : comboBefore(state, hooks);
   const count = state[HD.bodyCount] as number;
   const player = state[HD.player] as number;
-  const none = { state, player, other: -1, source: -1, input };
+  // Férový start (P70A T3): v tiku odpočinku se svět nehýbe, v ochraně hráč nepřijde o život.
+  const tick = state[HD.tick] as number;
+  const rests = program.slowStart && worldRests(tick);
+  const shielded = program.fairStart && startProtected(tick);
+  // Svět bez férového startu nese kontext jako dřív (bez `rests`).
+  const none: RuleContext = rests ? { state, player, other: -1, source: -1, input, rests } : { state, player, other: -1, source: -1, input };
   // Milost po zásahu ubývá o tik; svět, který ji nikdy nenabil, má 0 a nepohne se (P36A T2).
   const grace = graceOf(state, player);
   if (grace > 0) setGrace(state, player, grace - 1);
@@ -947,26 +1015,27 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const owners = trace === undefined ? undefined : [];
   const end: TickEnd = { won: false, lost: false };
   fireRules(effects, owners, program, 'press', none);
-  apply(state, effects, 0, end, owners, trace);
+  apply(state, effects, 0, end, shielded, owners, trace);
   const pressed = effects.length;
-  carry(state, count, player);
+  if (!rests) carry(state, count, player);
   const p = baseOf(player);
   const prevX = state[p + S.x] as number;
   const prevY = state[p + S.y] as number;
   const prevZ = state[p + S.z] as number;
-  integrate(state, count);
-  settle(state, count, player);
+  // V tiku odpočinku stojí svět, ne hráč: ten se hýbe dál (ovládání zůstane svižné) a Rapier krokuje jako vždy.
+  integrate(state, count, rests ? player : -1);
+  if (!rests) settle(state, count, player);
   if (program.physics) stepPhysics(state, GRAVITY);
-  const contacts = collide(state, count, player, prevX, prevY, prevZ);
+  const contacts = collide(state, count, player, prevX, prevY, prevZ, rests);
   follow(state, player);
-  const ended = projectiles(state, count, player);
+  const ended = rests ? [] : projectiles(state, count, player);
 
-  for (const other of contacts) fireRules(effects, owners, program, 'contact', { state, player, other, source: -1, input });
+  for (const other of contacts) fireRules(effects, owners, program, 'contact', { ...none, other });
   for (let k = 0; k < ended.length; k += 2) {
-    fireRules(effects, owners, program, 'hit', { state, player, other: ended[k + 1] as number, source: ended[k] as number, input });
+    fireRules(effects, owners, program, 'hit', { ...none, other: ended[k + 1] as number, source: ended[k] as number });
   }
   fireRules(effects, owners, program, 'tick', none);
-  apply(state, effects, pressed, end, owners, trace);
+  apply(state, effects, pressed, end, shielded, owners, trace);
   // Stisk a hlavní průchod jsou jeden `apply` jako před P29A: prohra má přednost,
   // výhra stiskem a smrtelný náraz v témže tiku není výhra.
   settleRun(state, end);
@@ -974,7 +1043,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const countersFrom = effects.length;
   const counted: TickEnd = { won: false, lost: false };
   fireRules(effects, owners, program, 'counter', none);
-  apply(state, effects, countersFrom, counted, owners, trace);
+  apply(state, effects, countersFrom, counted, shielded, owners, trace);
   settleRun(state, counted);
   // Logika (P45B) jen ve světě, který ji má: svět bez ní tikne bajt po bajtu jako dřív.
   if (program.logic !== null) logicPasses(state, effects, owners, program, none, trace);

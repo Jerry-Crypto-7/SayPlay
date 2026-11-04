@@ -44,8 +44,14 @@ import { type ChainSession, createChainSession } from './chain-session';
 // Scéna (three.js) jen v prohlížeči, jako v `ArcadePlay`.
 const ArcadeStage = memo(dynamic(() => import('../ArcadeStage'), { ssr: false, loading: () => <BuildingScreen /> }));
 
-/** Ovládání, u kterých kolo 1 čeká v relaci na první stisk – táž sada jako `TAP_TO_START` v `ArcadePlay`. */
+/** Ovládání, u kterých kolo čeká v relaci na první stisk – táž sada jako `TAP_TO_START` v `ArcadePlay`. */
 const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
+
+/** Volby relace kola jako u jedné hry: hra na čas první stisk spolkne, poletování ho vezme jako mávnutí. */
+function startOf(world: ArcadeWorld): { readonly waitForInput: boolean; readonly swallowFirst: boolean } {
+  const control = baseControlOf(world.control).id;
+  return { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' };
+}
 
 /** Výsledek až po doběhnutí klipu konce kola. */
 const RESULT_PAUSE_MS = 900;
@@ -121,11 +127,9 @@ function ChainRun({
   readonly inFeed?: boolean;
   readonly host?: StageTunnel;
 }) {
-  const [session] = useState(() => {
-    const control = baseControlOf(chain.rounds[0]!.world.control).id;
-    return createChainSession(chain, { gate: true, first: { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' } });
-  });
-  // Restart řetězu dá kolu 1 novou relaci; scéna se musí postavit znovu i se stejným indexem kola.
+  // Každé kolo čeká na první dotek (P70A T3): po kartě svět stojí, dokud se hráč nedotkne – nikdo neprohraje dřív.
+  const [session] = useState(() => createChainSession(chain, { gate: true, startOf }));
+  // Nový pokus (Try again = prohrané kolo, Play again = kolo 1) dá kolu novou relaci; scéna se musí postavit znovu i se stejným indexem kola.
   const [attempt, setAttempt] = useState(0);
   const view = useSyncExternalStore(session.subscribe, () => `${shownRound(session)}|${session.card()}|${session.outcome()}|${session.lives()}`, () => '0|0|running|0');
   const at = shownRound(session);
@@ -140,10 +144,11 @@ function ChainRun({
   const remix = useRemixJob(versionId, false);
 
   // Terén kol běžce staví worker hned po montáži řetězu: na hlavním vlákně by přechod do kola zasekl telefon o ~0,5 s (T18).
+  // Pro světy relace (`session.worlds`), ne uložené – kolo se hraje s životy řetězu a terén se hledá podle objektu světa.
   useEffect(() => {
     if (!active) return;
-    for (const { spec: next, world } of chain.rounds) prebuildRunnerTerrain(world, sceneLook(next.theme));
-  }, [active, chain]);
+    chain.rounds.forEach(({ spec: next }, index) => prebuildRunnerTerrain(session.worlds[index]!, sceneLook(next.theme)));
+  }, [active, chain, session]);
 
   // Karta mezi koly: hodiny karty jdou snímky prohlížeče, kolo pak pohání jeho scéna.
   const carding = card > 0;
@@ -158,7 +163,7 @@ function ChainRun({
     return () => cancelAnimationFrame(frame);
   }, [carding, session]);
 
-  // První dotek pustí kolo 1 v zachytávací fázi, takže tentýž stisk padne do tiku 0 (jako `ArcadePlay`).
+  // První dotek pustí kolo (každé, i po kartě) v zachytávací fázi, takže tentýž stisk padne do tiku 0 (jako `ArcadePlay`).
   useEffect(() => {
     if (!active) return;
     const start = () => {
@@ -256,7 +261,7 @@ function ChainRun({
         const live = session.current();
         const inputs = how === 'bot' ? live.botInputs() : [];
         live.restart();
-        if (session.round() === 0) session.begin();
+        session.begin();
         let next = 0;
         while (live.snapshot().runState === 'running' && live.snapshot().tick < ARCADE_LIMITS.maxTicks) {
           const tick = live.snapshot().tick;
@@ -362,9 +367,10 @@ function ChainRun({
           // Remix řetězu server odmítá (422, debata T9).
           remixable={false}
           onReplay={(via) => {
+            // Po prohře znovu prohrané kolo, vyhraná kola zůstanou (P70A T3); po výhře řetěz od kola 1.
             session.restart();
             setAttempt((value) => value + 1);
-            // Klávesa nového pokusu je zároveň první dotek: nový řetěz jede hned.
+            // Klávesa nového pokusu je zároveň první dotek: kolo jede hned.
             if (via === 'key') session.begin();
           }}
         />

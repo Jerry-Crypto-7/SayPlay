@@ -174,7 +174,8 @@ describe('steal rules (P66 T7)', () => {
   });
 
   it('a guard who touches the thief takes the loot back to its spot, costs a life and sends the hero home', () => {
-    const world = worldOf(1);
+    // Pravidlo bez férového startu (P70A T3): v jeho 3 s ochrany by dotek hlídky život nevzal (`fair-start.test.ts`).
+    const world = { ...worldOf(1), fairStart: undefined };
     const program = loadProgram(world, ARCADE_LIBRARY);
     const params = paramsOf(world);
     const state = instantiate(world);
@@ -307,7 +308,7 @@ describe('steal genre module (P66 T7)', () => {
     if (!read.ok) throw new Error(read.issues.join('; '));
     const spec = compileWith(stealGenre as GenreModule, read.value);
     expect(spec.control).toBe('steal');
-    expect(spec.genre).toEqual({ id: 'steal', mode: 'default', compilerVersion: 'genre.v7' });
+    expect(spec.genre).toEqual({ id: 'steal', mode: 'default', compilerVersion: 'genre.v8' });
     expect(arcadeWorldOf(spec, 1).ok).toBe(true);
     expect(readGenreSpec({ genre: 'steal', mode: 'default', hero: 'fox', setting: 'forest', params: { rounds: 5 } }).ok).toBe(false);
     // Ruční spec e2e je přesně překlad žánru – fixture se od modulu tiše neodchýlí. Je to uložená hra `genre.v6`

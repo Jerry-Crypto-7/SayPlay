@@ -15,7 +15,7 @@ import { runBot } from '@/play/arcade/verify';
 import { draftGenreFor } from '@/play/draft/draft';
 
 import compat from '../mutator-compat.json';
-import { MICRO, genreModeOf, microSpec } from '../micro';
+import { MICRO, ROUND_WORLD, genreModeOf, microSpec } from '../micro';
 import { COMPAT_SEEDS, COMPAT_SENTENCE, MUTATORS, MUTATOR_COMPAT, MUTATOR_IDS, mutateWorld, mutatorPairIssue } from '../mutators';
 
 const entryOf = (key: string) => {
@@ -57,7 +57,7 @@ describe('spotlight', () => {
   it('leaves the world as it is', () => {
     const entry = entryOf('catch.default');
     const { genre, mode } = genreModeOf(entry);
-    const made = arcadeWorldOf(microSpec(draftGenreFor(COMPAT_SENTENCE, genre, mode)!, entry, 1), 1);
+    const made = arcadeWorldOf(microSpec(draftGenreFor(COMPAT_SENTENCE, genre, mode)!, entry, 1), 1, undefined, ROUND_WORLD);
     if (!made.ok) throw new Error(made.issues.join('; '));
     expect(mutateWorld(made.world, 'spotlight')).toBe(made.world);
     const bot = runBot(made.world);

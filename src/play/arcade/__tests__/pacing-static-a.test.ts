@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { finaleOf, pressureRun, risingOf } from '../../../../evals/play/p45c/pacing';
 import { arcadeWorldOf, generatorOf } from '../compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, BODY_STRIDE, FLAG, HEADER, NO_INPUT, type PieceRef, ROLE, UNIT, bodyBase, bodyHp, underlyingRule } from '../contract';
-import { instantiate, loadProgram, step } from '../kernel';
+import { FAIR_START, instantiate, loadProgram, step } from '../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import { type BehaviourRef, TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf } from '../pieces/behaviours';
 import { telegraphCheck, play } from '../pieces/behaviours/__tests__/harness';
@@ -305,7 +305,8 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
       const player = state[HEADER.player] as number;
       const foe = bodyBase(DUEL_FOE);
       state[bodyBase(player) + BODY.z] = hits * UNIT;
-      state[HEADER.tick] = DUEL.lead;
+      // Férový start (P70A T3, `fair`): první útok až po ochraně a v pomalém začátku delší – rozzuření se měří po náběhu.
+      state[HEADER.tick] = params.fair === 1 ? FAIR_START.slowTicks + FAIR_START.rampTicks : DUEL.lead;
       duelControl.step(state, player, NO_INPUT, own);
       const windup = state[foe + BODY.aux1] as number;
       state[foe + BODY.aux1] = 1;

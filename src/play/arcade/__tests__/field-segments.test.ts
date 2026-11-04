@@ -123,7 +123,8 @@ describe('field worlds follow the script (genre.v4)', () => {
   }
 });
 
-const hashOf = (world: ArcadeWorld): string => createHash('sha256').update(JSON.stringify(world)).digest('hex').slice(0, 12);
+/** Otisk bez férového startu (`fairStart`, P70A T3 `genre.v8`): ten nese každá nová hra, scénář úseků ho nemění. */
+const hashOf = ({ fairStart: _fair, ...world }: ArcadeWorld): string => createHash('sha256').update(JSON.stringify(world)).digest('hex').slice(0, 12);
 
 describe('stored games and track segment scripts build the same world', () => {
   // Otisky světů na `f04010df` (před T8), semínka 1–3: uložené hry pole (`genre.v3`), úseky P46B (běžec, řízení,

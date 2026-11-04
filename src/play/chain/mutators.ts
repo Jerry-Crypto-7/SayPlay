@@ -19,7 +19,7 @@ import { COUNT_PARAMS, type CountRole } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
 import type { GameSpecV1 } from '../spec';
 import compat from './mutator-compat.json';
-import { type MicroEntry, type MicroKey, genreModeOf, microSpec } from './micro';
+import { type MicroEntry, type MicroKey, ROUND_WORLD, genreModeOf, microSpec } from './micro';
 import { roundSeeds } from './run';
 
 /**
@@ -144,7 +144,7 @@ export function mutateWorld(world: ArcadeWorld, id: MutatorId): ArcadeWorld | nu
 export function mutatedWorld(draft: Parameters<typeof microSpec>[0], entry: MicroEntry, round: number, id: MutatorId, seed: number): ArcadeWorld | null {
   const spec = mutatedSpec(draft, entry, round, id);
   if (spec === null) return null;
-  const made = arcadeWorldOf(spec, seed);
+  const made = arcadeWorldOf(spec, seed, undefined, ROUND_WORLD);
   if (!made.ok) return null;
   return mutateWorld(made.world, id);
 }
@@ -171,7 +171,7 @@ export function mutatorPairIssue(sentence: string, entry: MicroEntry, id: Mutato
       if (bot.tick < 3 * ARCADE_HZ || bot.tick > most) return `${at}: bot wins at tick ${String(bot.tick)}`;
       if (replay(world, [], ARCADE_LIBRARY).outcome !== 'lost') return `${at}: idle does not lose`;
       if (replay(world, bot.inputs, ARCADE_LIBRARY).hash !== bot.hash) return `${at}: replay differs`;
-      const plain = arcadeWorldOf(microSpec(draft, entry, round), seed);
+      const plain = arcadeWorldOf(microSpec(draft, entry, round), seed, undefined, ROUND_WORLD);
       if (!plain.ok) return `${at}: ${plain.issues.join('; ')}`;
       const before = runBot(plain.world);
       const changed = replay(world, before.inputs, ARCADE_LIBRARY).hash !== before.hash;

@@ -133,7 +133,10 @@ const fingerprint = (world: ArcadeWorld): string => createHash('sha256').update(
 describe('P47B T6: an arena fight without abilities builds the world it had before', () => {
   // Semínko 1, změřeno nad 1c76cb71 (před T6): otisk světa, tik a hash robota, hash nečinného hráče.
   it.each(SENTENCES)('"%s"', (text) => {
-    const built = worldOf(withAbilities(draftGameSpecWithMeta(text, 1).spec, []), 1);
+    // Férový start (P70A T3, `genre.v8`) nese každá nová hra; test hlídá, že souboj bez schopností svět nezmění –
+    // otisk, robot i nečinný hráč se měří na světě bez něj.
+    const { fairStart, ...built } = worldOf(withAbilities(draftGameSpecWithMeta(text, 1).spec, []), 1);
+    expect(fairStart).toBe('protect');
     // Otisk, hash robota i nečinného hráče přeotisknuty po P51 (`genre.v5` dává nové hře finále a tep);
     // uložená `genre.v4` staví dál ef1c82ae… (c2d58dad, cb032be4).
     // P66 T10 (`genre.v6`): přeotisknuto – souboj má kola s výběrem vylepšení mezi vlnami; robot bere kartu 9 tiků

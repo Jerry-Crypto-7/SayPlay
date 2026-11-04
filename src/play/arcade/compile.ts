@@ -13,7 +13,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseBotOf, baseControlOf, mapUnderlying, underlyingRule } from './addons';
 import { applyAbilities } from './abilities';
 import { HARMFUL_PARTS } from './abilities/state';
 import { placePowerups, wantsPowerups } from './powerups/placement';
@@ -28,6 +28,8 @@ import {
   type BodyInit,
   COUNTED_ROLES,
   COUNTER,
+  FAIR_START_GENRE_VERSION,
+  type FairStartMode,
   HEADER,
   HIT_GRACE,
   type InputEvent,
@@ -44,7 +46,7 @@ import { progressionParts } from './pieces/progression-parts';
 import { FINALE5_GENRE_VERSION, breakGoal, genreAtLeast, genreHookOffer, generatorParams, pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
-import { hopScriptedParts } from './pieces/hop';
+import { fairHopParts, hopScriptedParts } from './pieces/hop';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
@@ -98,6 +100,50 @@ function countParams(spec: GameSpecV1): Record<string, number> {
   return out;
 }
 
+/**
+ * Volby překladu světa. `fairStart: false` = bez férového startu i u nové hry: kolo řetězu (`chain/build.ts`) má
+ * vlastní férovost – čeká na první dotyk a má dva životy – a mikrohra na 3–8 s by s ochranou 3 s a pomalým
+ * začátkem nevyšla (P70A T3).
+ */
+export interface ArcadeWorldOptions {
+  readonly fairStart?: boolean;
+}
+
+/** Férový start (P70A T3, `FAIR_START` v jádře): nová hra žánru od `FAIR_START_GENRE_VERSION`, pokud ho volby nevypnou. */
+export const fairStartOf = (spec: GameSpecV1, options: ArcadeWorldOptions = {}): boolean =>
+  options.fairStart !== false && genreAtLeast(spec, FAIR_START_GENRE_VERSION);
+
+/**
+ * Roboti žánrů, jejichž svět má jen ochranu (`fairStart: 'protect'`), ne pomalý začátek: vlny a výstřely v nich jdou
+ * podle hodin kusu, ne světa, a odpočinek jádra hru zhoršil (sonda P70A T3, seedy 1–2: obrana začátečník 5/10 → 0/10,
+ * přežití robot 10/10 → 5/10, minigolf robot 10/10 → 9/10), nebo nepomohl a shodil bránu žánru (aréna: profily
+ * pod pásmem `pacing-template.test.ts`, bouchání: hustota událostí `whack.test.ts`, běžec: sonda pronásledovatele
+ * `witness.test.ts` – překážky běžce stojí, pomalý začátek mu nic nedal; krádež: předpověď hlídek robota v ticích,
+ * `steal.test.ts`). Ostatní mají pomalý začátek (`slow`).
+ */
+// Pásmo profilů P41 (`evals/play/p41/difficulty.json`, 20 seedů) s pomalým začátkem všude: načasování začátečník
+// 0,35 → 0,1 a pokročilý 1 → 0,7, rytmus 0,4 → 0,05 / 1 → 0,85, úkol 0,6 → 0,35, střelnice začátečník 0,7 → 1
+// (nad pásmem), přeskákání 0,45 → 0,75 (nad pásmem) – roboti těch žánrů předpovídají pohyb v ticích. Pomalý začátek
+// proto jen tam, kde pásmo drží: chytání 0,7 → 0,6. Krájení (0,5 → 0,6) ne: robot světa na seedu 10 přesekl bombu
+// (`slice.test.ts` G2). Plošinovka (0,6 → 0,7) ne: robot krátké úrovně zpomalí víc než dlouhé a rozdíl délek
+// (`sections.test.ts`, > 5 s) spadl na 4,8 s – začátečníkovi pomalý začátek nedal nic (přežití 51,5 → 51,8 s).
+const SLOW_START_BOTS: ReadonlySet<string> = new Set<string>(['catch_bot']);
+
+/** Režim férového startu světa (`fair` = `fairStartOf`) podle robota dílů (pruhy sdílí ovládání, robota ne); `undefined` = bez něj. */
+function fairModeOf(fair: boolean, bot: PieceRef): FairStartMode | undefined {
+  if (!fair) return undefined;
+  return SLOW_START_BOTS.has(baseBotOf(bot).id) ? 'slow' : 'protect';
+}
+
+/**
+ * Kusy s vlastními hodinami nebo předpovědí v ticích dostanou `fair`, ať jdou podle hodin světa jádra (`worldTicks`):
+ * přeskákání silnice (ovládání, provoz, robot) a robot chytání (dopad věcí). Ostatní díly beze změny.
+ */
+function fairStartParts<T extends { readonly control: PieceRef; readonly bot: PieceRef; readonly rules: readonly PieceRef[] }>(parts: T): T {
+  const hop = fairHopParts(parts);
+  return hop.bot.id === 'catch_bot' ? { ...hop, bot: { ...hop.bot, params: { ...hop.bot.params, fair: 1 } } } : hop;
+}
+
 /** Hodiny, které jádro opravdu hlídá: časovač specu oříznutý na 10 s až horizont ověření. */
 const limitSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, seconds));
 
@@ -115,14 +161,15 @@ const runnerWalls = (spec: GameSpecV1): { readonly walls?: 1 } =>
     ? { walls: 1 }
     : {};
 
-function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
+/** `fair` = férový start (`fairStartOf`): souboj začne útočit po ochraně, zem poletování stojí život. */
+function partsOf(spec: GameSpecV1, seed: number, health: number | undefined, fair: boolean): ArcadeParts {
   const counts = countParams(spec);
   if (spec.control === 'ball') return ballPitch.parts(seed, ballPitch.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'walker') return walkerLabyrinth.parts(seed, walkerLabyrinth.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'glide') return glideCourse.parts(seed, glideCourse.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
-  if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health);
+  if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health, fair);
   if (spec.control === 'platform') {
     const params = platformLevel.params.parse({ ...spec.controlParams, ...counts });
     const level = platformLevel.generate(seed, params);
@@ -154,7 +201,14 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const ramp = rampMarks(level.length);
     // Odpuštění pozdního vzletu (P37A T7) jen s `feel` ze specu – uložený spec bez něj staví tentýž svět.
     const feel = params.feel === undefined ? {} : { feel: params.feel };
-    return { control: { id: 'flap', params: { ramp, ...feel } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true, params.feel === 2, params.collectAll === true) };
+    // Férový start (P70A T3): se životy zem stojí život a ptáček se odrazí; uložená hra prohraje dotekem jako dřív.
+    const ground = fair && health !== undefined;
+    return {
+      control: { id: 'flap', params: { ramp, ...feel, ...(ground ? { bounce: 1 } : {}) } },
+      bot: { id: 'flap_bot', params: { ramp } },
+      level,
+      rules: flapRules(health, params.rise === true, params.feel === 2, params.collectAll === true, ground),
+    };
   }
   if (spec.control === 'shooter') {
     const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });
@@ -219,8 +273,12 @@ const ownParams = (spec: GameSpecV1): Record<string, unknown> | undefined => (sp
 /** Klíče `tuning`, jak je spec napsal (háčky je čtou dřív, než je `ownParams` zahodí). */
 const tuningOf = (spec: GameSpecV1): Readonly<Record<string, unknown>> | undefined => (spec.controlParams as { readonly tuning?: Readonly<Record<string, unknown>> } | undefined)?.tuning;
 
-/** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. `target` přebije cílové skóre specu (ořez na dosažitelné). */
-export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): ArcadeWorldResult {
+/**
+ * Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. `target` přebije cílové skóre specu (ořez na
+ * dosažitelné), `options` viz `ArcadeWorldOptions`.
+ */
+export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number, options: ArcadeWorldOptions = {}): ArcadeWorldResult {
+  const fairStart = fairStartOf(spec, options);
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const generator = generatorOf(spec);
@@ -244,7 +302,9 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   if (scripted !== undefined && (generator !== 'hop_rows' || (params?.data as { readonly rows?: number } | undefined)?.rows !== scripted.rows)) {
     return { ok: false, issues: [`/scriptLevel: a ${scripted.game} level with ${scripted.rows} rows does not fit the ${generator} generator of this spec`] };
   }
-  const generated = scripted !== undefined ? hopScriptedParts(seed, scripted, health) : mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
+  const made = scripted !== undefined ? hopScriptedParts(seed, scripted, health) : mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health, fairStart);
+  const fair = fairModeOf(fairStart, made.bot);
+  const generated = fair === 'slow' ? fairStartParts(made) : made;
   const own = pacingParts(progressionParts(generated, spec), spec, seed, generator);
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
@@ -254,7 +314,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const armed = applyAbilities(applyAddons(own, addonContext), addonContext);
   // Power-upy (P46C) po akcích: štít sdílí jejich počítadlo. Jen nová hra žánru, uložené hrají jako dřív.
   const powered = wantsPowerups(spec) ? placePowerups(armed, spec, seed) : armed;
-  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(powered, spec, ARCADE_LIBRARY.rules);
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(powered, spec, ARCADE_LIBRARY.rules, fairStart);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
   // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
@@ -307,8 +367,18 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
 
   // Logika (P45B) jen ze specu s blokem `logic`: jen takový svět dostane logická těla a `arcade-v3`.
+  // Férový start (P70A T3) jen nová hra žánru; uložená hraje bajt po bajtu jako dřív.
   const built = buildWorld(
-    { seed, control: hooked.control, rules: finalRules, bot: hooked.bot, level: hooked.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
+    {
+      seed,
+      control: hooked.control,
+      rules: finalRules,
+      bot: hooked.bot,
+      level: hooked.level,
+      ...(lives === undefined ? {} : { health: lives }),
+      ...(ruled.logic === undefined ? {} : { logic: ruled.logic }),
+      ...(fair === undefined ? {} : { fairStart: fair }),
+    },
     ARCADE_LIBRARY,
   );
   if (!built.ok) return built;

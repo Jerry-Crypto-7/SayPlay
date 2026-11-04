@@ -67,7 +67,8 @@ describe('P68 skeletons (T1)', () => {
       expect(GENRE_MODES[genre as GenreId]).toEqual(['default']);
       expect(GENRE_MODULES[genre as GenreId].id).toBe(genre);
     }
-    expect(GENRE_COMPILER_VERSION).toBe('genre.v7');
+    // P70A T3 zvedl překlad na `genre.v8` (férový start); žánry P68 platí od `genre.v7` dál.
+    expect(GENRE_COMPILER_VERSION).toBe('genre.v8');
   });
 
   it('the stand-in modules are ready with cues, so the gate below is what keeps them hidden, not `staged`', () => {

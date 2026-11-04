@@ -67,7 +67,8 @@ describe('buildshift genre (P68-S T4)', () => {
   it('the hand spec of the e2e fixture is the module translation', () => {
     const spec = specOf(CONTENT);
     if (process.env.BUILDSHIFT_WRITE_FIXTURE === '1' || !existsSync(FIXTURE_PATH)) writeFileSync(FIXTURE_PATH, `${JSON.stringify(spec, null, 2)}\n`);
-    expect(spec).toEqual(JSON.parse(readFileSync(FIXTURE_PATH, 'utf8')));
+    // Fixtura je uložená hra `genre.v7`; P70A T3 zvedl jen verzi nových her (férový start).
+    expect({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v7' } }).toEqual(JSON.parse(readFileSync(FIXTURE_PATH, 'utf8')));
     expect(spec.objective.count).toBe(10);
     expect(spec.roles.find((role) => role.id === 'customer')?.label).toBe('robot');
     const made = arcadeWorldOf(spec, 1);

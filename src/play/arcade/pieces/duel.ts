@@ -27,6 +27,7 @@ import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, type PieceRef, RUN_STATE, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
+import { FAIR_START, openingPace } from '../kernel';
 import { judgeRules } from './timing';
 
 export const DUEL_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -127,6 +128,12 @@ const controlParams = z
     dodges: z.literal(true).optional(),
     /** Hozená věc (P51 T6, `DUEL_HURL`): index předlohy jejího těla, každý kolikátý útok a tiky letu. Bez hodnoty jen údery. */
     hurl: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1), every: z.int().min(2).max(8), flight: z.int().min(DUEL.dodge + 1).max(ARCADE_HZ) }).strict().optional(),
+    /**
+     * Férový start (P70A T3, `FAIR_START` jádra): první nápřah až po ochraně (3 s místo `DUEL.lead`) a nápřah i mezera
+     * začaté v pomalém začátku delší o tempo světa (`openingPace`) – zbylé tiky fáze dál ubývají po jednom, takže
+     * robot počítá jako dřív. Bez hodnoty jako dřív.
+     */
+    fair: z.literal(1).optional(),
   })
   .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
@@ -214,6 +221,13 @@ export function pacedAttack(move: DuelAttack, pace: number): DuelAttack {
 export const enragedAttack = (move: DuelAttack, enrage: { readonly warn: number; readonly faster: number }): DuelAttack =>
   ({ windup: move.windup + enrage.warn, recover: Math.max(Math.min(move.recover, DUEL.minRecover), move.recover - enrage.faster) });
 
+/** Útok začatý v tiku `tick` férového startu: nápřah i mezera × 100 / `openingPace` (zaokrouhleno nahoru), po náběhu beze změny. */
+export function openingAttack(move: DuelAttack, tick: number): DuelAttack {
+  const pace = openingPace(tick);
+  const slowed = (ticks: number): number => Math.floor((ticks * 100 + pace - 1) / pace);
+  return { windup: slowed(move.windup), recover: slowed(move.recover) };
+}
+
 /** Rozzuřený je poslední soupeř, kterému po `hits` zásazích zbývá méně než polovina HP. */
 export function enragedAfter(hits: number, params: DuelControlParams): boolean {
   if (params.enrage === undefined) return false;
@@ -255,12 +269,14 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     // Soupeř, se kterým se teď bojuje (od 0): každý další útočí rychleji.
     const round = Math.floor(hits / params.foeHealth);
     const enraged = enragedAfter(hits, params);
+    const tick = state[HEADER.tick] as number;
     const moveAt = (index: number): DuelAttack => {
       const move = duelAttackAt(params.pattern[index] as DuelAttack, round, params.rise ?? 0);
       const paced = params.pace === undefined ? move : pacedAttack(move, params.pace);
-      return enraged && params.enrage !== undefined ? enragedAttack(paced, params.enrage) : paced;
+      const angry = enraged && params.enrage !== undefined ? enragedAttack(paced, params.enrage) : paced;
+      return params.fair === 1 ? openingAttack(angry, tick) : angry;
     };
-    if ((state[HEADER.tick] as number) >= DUEL.lead) {
+    if (tick >= (params.fair === 1 ? FAIR_START.protectTicks : DUEL.lead)) {
       if (left > 0) left -= 1;
       const { hurl } = params;
       if (phase === DUEL_PHASE.hurl && hurl !== undefined) flyHurl(state, hurl.body, hurl.flight, left);
@@ -365,8 +381,8 @@ export function checkDuelPattern(base: readonly DuelAttack[], last = 0, rise = 0
   return issues;
 }
 
-/** Díly světa pro kompilátor. Souboj bez životů nejde: bez mechaniky `health` má hráč tři. */
-export function duelParts(seed: number, raw: Readonly<Record<string, unknown>>, health: number | undefined) {
+/** Díly světa pro kompilátor. Souboj bez životů nejde: bez mechaniky `health` má hráč tři. `fair` = férový start (P70A T3). */
+export function duelParts(seed: number, raw: Readonly<Record<string, unknown>>, health: number | undefined, fair = false) {
   const params = duelArena.params.parse(raw);
   const level: ArcadeLevel = duelArena.generate(seed, params);
   const pattern = duelPattern(seed, params);
@@ -375,7 +391,7 @@ export function duelParts(seed: number, raw: Readonly<Record<string, unknown>>, 
   const rounds = params.rounds ?? 1;
   const ramp = params.rounds === undefined ? {} : { rounds, rise: params.roundRise ?? DUEL.rise };
   return {
-    control: { id: 'duel', params: { pattern, foeHealth, ...ramp } },
+    control: { id: 'duel', params: { pattern, foeHealth, ...ramp, ...(fair ? { fair: 1 } : {}) } },
     bot: { id: 'duel_bot', params: {} },
     level,
     rules: judgeRules(foeHealth * rounds, lives),

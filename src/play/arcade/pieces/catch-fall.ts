@@ -345,7 +345,9 @@ export const catchFallRule: RulePiece<z.infer<typeof fallParams>> = {
   roles: ['player', 'collectible', 'hazard'],
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, player }, params) => {
+  fire: ({ state, player, rests }, params) => {
+    // Tik odpočinku férového startu (P70A T3): nic nespadlo, průchod čárou z `y − vy` by se započetl podruhé.
+    if (rests === true) return [];
     const effects: ArcadeEffect[] = [];
     const count = state[HEADER.bodyCount] as number;
     let missed = -1;
