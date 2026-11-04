@@ -1064,7 +1064,7 @@ function settingOf(text: string): string | null {
   if (traversedPlace !== null) return headOf(traversedPlace);
   // Explicit locative noun phrases preserve named places rather than reducing
   // them to a visual category. Bare nouns still use the established lexicon.
-  for (const match of text.matchAll(/\b(?:in|inside|outside|through|across|along|around|above|below|on|over|down|up|at)\s+((?:a|an|the)\s+[a-z][a-z -]*)/g)) {
+  for (const match of text.matchAll(/\b(?:in|inside(?:\s+of)?|outside|through|across|along|around|above|below|on|over|down|up|at)\s+((?:a|an|the)\s+[a-z][a-z -]*)/g)) {
     const phrase = phraseIn(match[1]);
     if (!phrase) continue;
     const words = phrase.split(' ');
