@@ -26,8 +26,10 @@ import { POST as remix } from '../games/[id]/remix/route';
 import { GET as upgrade } from '../games/[id]/upgrade/route';
 import { freshCaller, params, post } from './dare-fixtures';
 
-/** Dev P56C d04 (`multi_verb`): skákání a střelba. */
-const MULTI = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
+/** Dev P56C d04 (`multi_verb`): skákání a střelba. Od P70A T2 jedna hra – řetěz jen na výslovné přání. */
+const TWO_VERBS = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
+/** Táž věta, která o kola výslovně žádá (`CHAIN_CUES`): řetěz se slovesy věty. */
+const MULTI = `${TWO_VERBS}, make it three rounds`;
 /** Dev P56C d14 (`single_verb`): bubnování do rytmu. */
 const SINGLE = 'bang on the pots and pans exactly when the chef taps the beat';
 
@@ -49,9 +51,17 @@ afterEach(() => {
 });
 
 describe('POST /api/play/games publishes a chain of microgames (P56C T10)', () => {
-  it('the multi-verb sentence is routed to a chain', () => {
-    expect(chainReasons(MULTI, readForChain(MULTI, null), classifyGenre(MULTI, null))).toContain('multi_verb');
+  it('the sentence asking for rounds is routed to a chain', () => {
+    expect(chainReasons(MULTI, readForChain(MULTI, null), classifyGenre(MULTI, null))).toEqual(expect.arrayContaining(['multi_verb', 'cue']));
     expect(chainReasons(SINGLE, readForChain(SINGLE, null), classifyGenre(SINGLE, null))).toEqual([]);
+  });
+
+  // P70A T2 (majitel 4. 11.): „dám jednu hru a zobrazí se 5 her“ – dvě slovesa bez přání kol hrají jednu hru.
+  it.each([TWO_VERBS, 'A cat jumps over boxes and eats fish', 'A penguin slides down an icy hill collecting fish'])('%s publishes one game, not a chain', async (sentence) => {
+    const { status, game } = await publish(sentence);
+    expect(status).toBe(201);
+    expect(game).not.toHaveProperty('chain');
+    expect(game.arcade).toBeDefined();
   });
 
   it('a multi-verb sentence gets a verified chain of 3–5 rounds with different controls and no AI version', async () => {
