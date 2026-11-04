@@ -1,0 +1,967 @@
+{
+ "schema": "p70b-holdout-route.v1",
+ "commit": "0d3fa930",
+ "root": "D:\\caches\\p70b\\main-0d3fa930",
+ "measuredAt": "2026-11-04T15:59:09.721Z",
+ "seconds": 30,
+ "about": "game = draftGameSpecWithMeta(sentence, 1).genre.genre (grid = no genre); hero = heroModel(spec)",
+ "rows": [
+  {
+   "id": "p70b-001",
+   "half": "animal",
+   "aimed": "hop",
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "game": "hop",
+   "hero": "rigged:pet-bunny"
+  },
+  {
+   "id": "p70b-002",
+   "half": "animal",
+   "aimed": "hole",
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "game": "hole",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-003",
+   "half": "animal",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense"
+   ],
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "game": "defense",
+   "hero": "rigged:knight"
+  },
+  {
+   "id": "p70b-004",
+   "half": "animal",
+   "aimed": "steal",
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "game": "quest",
+   "hero": "rigged:pet-bunny"
+  },
+  {
+   "id": "p70b-005",
+   "half": "animal",
+   "aimed": "slice",
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "heroModels": [
+    "rigged:pet-cat",
+    "rigged:q-blob-cat"
+   ],
+   "game": "voyage",
+   "hero": "race-car"
+  },
+  {
+   "id": "p70b-006",
+   "half": "animal",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "heroModels": [
+    "rigged:pet-cat",
+    "rigged:q-blob-cat"
+   ],
+   "game": "platformer",
+   "hero": "rigged:pet-cat"
+  },
+  {
+   "id": "p70b-007",
+   "half": "animal",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "heroModels": [
+    "rigged:pet-dog",
+    "rigged:q-husky",
+    "rigged:q-shiba",
+    "rigged:q-blob-dog"
+   ],
+   "game": "runner",
+   "hero": "rigged:pet-dog"
+  },
+  {
+   "id": "p70b-008",
+   "half": "animal",
+   "aimed": "sort",
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "heroModels": [
+    "rigged:pet-dog",
+    "rigged:q-husky",
+    "rigged:q-shiba",
+    "rigged:q-blob-dog"
+   ],
+   "game": "sort",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-009",
+   "half": "animal",
+   "aimed": "merge",
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "heroModels": [
+    "rigged:pet-penguin",
+    "rigged:q-cute-penguin"
+   ],
+   "game": "arena",
+   "hero": "cc0-goldfish"
+  },
+  {
+   "id": "p70b-010",
+   "half": "animal",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "heroModels": [
+    "rigged:pet-penguin",
+    "rigged:q-cute-penguin"
+   ],
+   "game": "voyage",
+   "hero": "rocket"
+  },
+  {
+   "id": "p70b-011",
+   "half": "animal",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "heroModels": [
+    "rigged:pet-polar-bear"
+   ],
+   "game": "drawsave",
+   "hero": "rigged:pet-polar-bear"
+  },
+  {
+   "id": "p70b-012",
+   "half": "animal",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt"
+   ],
+   "heroModels": [
+    "rigged:pet-polar-bear"
+   ],
+   "game": "runner",
+   "hero": "gen3d-bear"
+  },
+  {
+   "id": "p70b-013",
+   "half": "animal",
+   "aimed": "survivor",
+   "best": "survivor",
+   "acceptable": [
+    "survivor"
+   ],
+   "heroModels": [
+    "rigged:q-fox"
+   ],
+   "game": "arena",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-014",
+   "half": "animal",
+   "aimed": "whack",
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "heroModels": [
+    "rigged:q-fox"
+   ],
+   "game": "whack",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-015",
+   "half": "animal",
+   "aimed": "crowd",
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "heroModels": [
+    "rigged:q-wolf"
+   ],
+   "game": "throw",
+   "hero": "rigged:q-wolf"
+  },
+  {
+   "id": "p70b-016",
+   "half": "animal",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter",
+    "runner"
+   ],
+   "heroModels": [
+    "rigged:q-wolf"
+   ],
+   "game": "railfps",
+   "hero": "rigged:q-wolf"
+  },
+  {
+   "id": "p70b-017",
+   "half": "animal",
+   "aimed": "timing",
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "heroModels": [
+    "rigged:q-horse",
+    "rigged:q-white-horse"
+   ],
+   "game": "timing",
+   "hero": "rigged:q-horse"
+  },
+  {
+   "id": "p70b-018",
+   "half": "animal",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "heroModels": [
+    "rigged:q-horse",
+    "rigged:q-white-horse"
+   ],
+   "game": "throw",
+   "hero": "rigged:q-horse"
+  },
+  {
+   "id": "p70b-019",
+   "half": "animal",
+   "aimed": "flap",
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "heroModels": [
+    "rigged:q-cow"
+   ],
+   "game": "voyage",
+   "hero": "race-car"
+  },
+  {
+   "id": "p70b-020",
+   "half": "animal",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "heroModels": [
+    "rigged:q-cow"
+   ],
+   "game": "runner",
+   "hero": "rigged:q-cow"
+  },
+  {
+   "id": "p70b-021",
+   "half": "animal",
+   "aimed": "hop",
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "heroModels": [
+    "rigged:q-deer",
+    "rigged:q-cute-fawn",
+    "rigged:q-stag"
+   ],
+   "game": "platformer",
+   "hero": "rigged:rogue"
+  },
+  {
+   "id": "p70b-022",
+   "half": "animal",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "heroModels": [
+    "rigged:q-deer",
+    "rigged:q-cute-fawn",
+    "rigged:q-stag"
+   ],
+   "game": "platformer",
+   "hero": "rigged:q-deer"
+  },
+  {
+   "id": "p70b-023",
+   "half": "animal",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "heroModels": [
+    "rigged:q-cute-panda"
+   ],
+   "game": "quest",
+   "hero": "rigged:q-cute-panda"
+  },
+  {
+   "id": "p70b-024",
+   "half": "animal",
+   "aimed": "rhythm",
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "heroModels": [
+    "rigged:q-cute-panda"
+   ],
+   "game": "rhythm",
+   "hero": "rigged:q-cute-panda"
+  },
+  {
+   "id": "p70b-025",
+   "half": "animal",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "throw"
+   ],
+   "heroModels": [
+    "rigged:q-cute-chicken",
+    "rigged:q-blob-chicken"
+   ],
+   "game": "defense",
+   "hero": "rigged:knight"
+  },
+  {
+   "id": "p70b-026",
+   "half": "animal",
+   "aimed": "flap",
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "heroModels": [
+    "rigged:q-cute-chicken",
+    "rigged:q-blob-chicken"
+   ],
+   "game": "voyage",
+   "hero": "race-car"
+  },
+  {
+   "id": "p70b-027",
+   "half": "animal",
+   "aimed": "whack",
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "heroModels": [
+    "rigged:q-cute-crab"
+   ],
+   "game": "quest",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-028",
+   "half": "animal",
+   "aimed": "push",
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "heroModels": [
+    "rigged:q-cute-crab"
+   ],
+   "game": "arena",
+   "hero": "rigged:q-cute-crab"
+  },
+  {
+   "id": "p70b-029",
+   "half": "animal",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "throw"
+   ],
+   "heroModels": [
+    "rigged:q-alpaca"
+   ],
+   "game": "shooter",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-030",
+   "half": "animal",
+   "aimed": "stunt",
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "heroModels": [
+    "rigged:q-donkey"
+   ],
+   "game": "quest",
+   "hero": "rigged:q-donkey"
+  },
+  {
+   "id": "p70b-031",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-032",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-033",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-034",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-035",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-036",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "ball"
+  },
+  {
+   "id": "p70b-037",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "rigged:knight"
+  },
+  {
+   "id": "p70b-038",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-039",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-040",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-041",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-042",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-043",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-044",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-045",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "rigged:blocky-robot"
+  },
+  {
+   "id": "p70b-046",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-047",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-048",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-049",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-050",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "knight"
+  },
+  {
+   "id": "p70b-051",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "heroModels": null,
+   "game": "voyage",
+   "hero": "gen3d-balloon"
+  },
+  {
+   "id": "p70b-052",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "heroModels": null,
+   "game": "voyage",
+   "hero": "race-car"
+  },
+  {
+   "id": "p70b-053",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "heroModels": null,
+   "game": "platformer",
+   "hero": "raccoon"
+  },
+  {
+   "id": "p70b-054",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "heroModels": null,
+   "game": "platformer",
+   "hero": "astronaut"
+  },
+  {
+   "id": "p70b-055",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "heroModels": null,
+   "game": "runner",
+   "hero": "gen3d-mailman"
+  },
+  {
+   "id": "p70b-056",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "heroModels": null,
+   "game": "runner",
+   "hero": "rigged:pet-penguin"
+  },
+  {
+   "id": "p70b-057",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter"
+   ],
+   "heroModels": null,
+   "game": "shooter",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-058",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter"
+   ],
+   "heroModels": null,
+   "game": "shooter",
+   "hero": "rigged:q-fox"
+  },
+  {
+   "id": "p70b-059",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter",
+    "whack"
+   ],
+   "heroModels": null,
+   "game": "quest",
+   "hero": "rigged:pet-penguin"
+  },
+  {
+   "id": "p70b-060",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "heroModels": null,
+   "game": "throw",
+   "hero": "hamster"
+  },
+  {
+   "id": "p70b-061",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "heroModels": null,
+   "game": "runner",
+   "hero": "rigged:pet-cat"
+  },
+  {
+   "id": "p70b-062",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "heroModels": null,
+   "game": "quest",
+   "hero": "hamster"
+  },
+  {
+   "id": "p70b-063",
+   "half": "general",
+   "aimed": "arena",
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "heroModels": null,
+   "game": "runner",
+   "hero": "rigged:pet-dog"
+  },
+  {
+   "id": "p70b-064",
+   "half": "general",
+   "aimed": "catch",
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "heroModels": null,
+   "game": "catch",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-065",
+   "half": "general",
+   "aimed": "whack",
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "heroModels": null,
+   "game": "minigolf",
+   "hero": "gen3d-golf-ball"
+  },
+  {
+   "id": "p70b-066",
+   "half": "general",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "heroModels": null,
+   "game": "quest",
+   "hero": "rigged:boy-a"
+  },
+  {
+   "id": "p70b-067",
+   "half": "general",
+   "aimed": "flap",
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "heroModels": null,
+   "game": "flap",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-068",
+   "half": "general",
+   "aimed": "duel",
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "shooter"
+   ],
+   "heroModels": null,
+   "game": "duel",
+   "hero": "rigged:q-cowboy"
+  },
+  {
+   "id": "p70b-069",
+   "half": "general",
+   "aimed": "rhythm",
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "heroModels": null,
+   "game": "rhythm",
+   "hero": "rigged:q-cowboy-hair"
+  },
+  {
+   "id": "p70b-070",
+   "half": "general",
+   "aimed": "hop",
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "heroModels": null,
+   "game": "hop",
+   "hero": "rubber-duck"
+  }
+ ]
+}

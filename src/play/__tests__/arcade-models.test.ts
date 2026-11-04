@@ -137,7 +137,8 @@ describe('arcade model choice from role labels', () => {
   // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
   it.each([
     ['a runner dodging traffic cones and collecting gems', (spec: GameSpecV1) => propModels(spec).coin, 'crystal'],
-    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'rigged:pet-cat|dog'],
+    // P70B T3: zvíře v hlavě popisku věci je jeho animovaný model (jako vlci v bodcích výš), ne socha z katalogu.
+    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'rigged:pet-cat|rigged:pet-dog'],
   ])('sentence %s reaches the scene', (sentence, read, expected) => {
     expect(read(draftGameSpec(sentence))).toBe(expected);
   });

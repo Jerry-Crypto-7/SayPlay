@@ -1,0 +1,1931 @@
+{
+ "maxTicks": 5400,
+ "games": {
+  "hop": {
+   "n": 2,
+   "failed": 0,
+   "win": 2,
+   "lose": 0,
+   "actions": 2,
+   "pass": 0
+  },
+  "hole": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 0,
+   "actions": 1,
+   "pass": 0
+  },
+  "defense": {
+   "n": 2,
+   "failed": 0,
+   "win": 2,
+   "lose": 2,
+   "actions": 2,
+   "pass": 2
+  },
+  "platformer": {
+   "n": 4,
+   "failed": 0,
+   "win": 4,
+   "lose": 2,
+   "actions": 4,
+   "pass": 2
+  },
+  "runner": {
+   "n": 3,
+   "failed": 0,
+   "win": 3,
+   "lose": 0,
+   "actions": 3,
+   "pass": 0
+  },
+  "sort": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 0,
+   "actions": 1,
+   "pass": 0
+  },
+  "voyage": {
+   "n": 4,
+   "failed": 0,
+   "win": 4,
+   "lose": 3,
+   "actions": 4,
+   "pass": 3
+  },
+  "drawsave": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 1,
+   "actions": 1,
+   "pass": 1
+  },
+  "whack": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 0,
+   "actions": 1,
+   "pass": 0
+  },
+  "railfps": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 1,
+   "actions": 1,
+   "pass": 1
+  },
+  "timing": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 0,
+   "actions": 1,
+   "pass": 0
+  },
+  "throw": {
+   "n": 2,
+   "failed": 0,
+   "win": 2,
+   "lose": 0,
+   "actions": 2,
+   "pass": 0
+  },
+  "quest": {
+   "n": 2,
+   "failed": 0,
+   "win": 2,
+   "lose": 0,
+   "actions": 2,
+   "pass": 0
+  },
+  "rhythm": {
+   "n": 2,
+   "failed": 0,
+   "win": 2,
+   "lose": 0,
+   "actions": 2,
+   "pass": 0
+  },
+  "shooter": {
+   "n": 3,
+   "failed": 0,
+   "win": 3,
+   "lose": 0,
+   "actions": 3,
+   "pass": 0
+  },
+  "minigolf": {
+   "n": 19,
+   "failed": 0,
+   "win": 19,
+   "lose": 19,
+   "actions": 19,
+   "pass": 19
+  },
+  "catch": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 1,
+   "actions": 1,
+   "pass": 1
+  },
+  "flap": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 0,
+   "actions": 1,
+   "pass": 0
+  },
+  "duel": {
+   "n": 1,
+   "failed": 0,
+   "win": 1,
+   "lose": 0,
+   "actions": 1,
+   "pass": 0
+  }
+ },
+ "results": [
+  {
+   "game": "hop",
+   "sentence": "p70b-001",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2443 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 360 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2443 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "hole",
+   "sentence": "p70b-002",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1730 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 1741 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 1964 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "defense",
+   "sentence": "p70b-003",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2888 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 511 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2626 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "platformer",
+   "sentence": "p70b-006",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3062 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5281 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3396 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "runner",
+   "sentence": "p70b-007",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3756 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 651 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3756 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "sort",
+   "sentence": "p70b-008",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3018 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 1044 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3578 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "voyage",
+   "sentence": "p70b-010",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 897 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 316 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 904 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "drawsave",
+   "sentence": "p70b-011",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 960 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 445 (needs lost by tick 5400)"
+    },
+    {
+     "id": "stroke-makes-wall",
+     "run": "bot",
+     "pass": true,
+     "evidence": "stroke from tick 1 drew wall body 3 at tick 2"
+    },
+    {
+     "id": "protected-survives",
+     "run": "bot",
+     "pass": true,
+     "evidence": "protected body (player) alive at tick 960, hp -, health -; run won at tick 960"
+    },
+    {
+     "id": "idle-loses-protected",
+     "run": "idle",
+     "pass": true,
+     "evidence": "protected body (player) hit by enemy body 16 when the run was lost at tick 445"
+    }
+   ]
+  },
+  {
+   "game": "whack",
+   "sentence": "p70b-014",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2083 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 504 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2135 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "railfps",
+   "sentence": "p70b-016",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2439 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 962 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 1830 (needs lost by tick 5400)"
+    },
+    {
+     "id": "aims",
+     "run": "bot",
+     "pass": true,
+     "evidence": "yawStep took 33 distinct values [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] (needs 3)"
+    },
+    {
+     "id": "hit-on-fire",
+     "run": "bot",
+     "pass": true,
+     "evidence": "FIRE at tick 647, yawStep -5 at tick 654, target body 7 (step -4) gone at tick 655"
+    },
+    {
+     "id": "idle-hurt",
+     "run": "idle",
+     "pass": true,
+     "evidence": "health 3 -> 2 at tick 428"
+    }
+   ]
+  },
+  {
+   "game": "timing",
+   "sentence": "p70b-017",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1801 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 903 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 1861 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "throw",
+   "sentence": "p70b-018",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1636 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 1981 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 1644 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "voyage",
+   "sentence": "p70b-019",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1684 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 129 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 134 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "platformer",
+   "sentence": "p70b-022",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2839 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5281 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 3115 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "quest",
+   "sentence": "p70b-023",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1897 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 960 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2065 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "rhythm",
+   "sentence": "p70b-024",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2146 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 466 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2146 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "defense",
+   "sentence": "p70b-025",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2888 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 511 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2626 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "shooter",
+   "sentence": "p70b-029",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3391 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 1425 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3269 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-031",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-032",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-033",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-034",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-035",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-036",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-037",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-038",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-039",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-040",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-041",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-042",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-043",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-044",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-045",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-046",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-048",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-049",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 277 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 490 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 277: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "minigolf",
+   "sentence": "p70b-050",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 263 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5400 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 441 (needs lost by tick 5400)"
+    },
+    {
+     "id": "ball-in-hole",
+     "run": "bot",
+     "pass": true,
+     "evidence": "ball body 0 drops into the hole zone at tick 263: speed 50 <= drop speed 83 per tick"
+    },
+    {
+     "id": "strokes-counted",
+     "run": "bot",
+     "pass": true,
+     "evidence": "strokes 2 (counter ammo rises), shot inputs 2, course limit 6"
+    }
+   ]
+  },
+  {
+   "game": "voyage",
+   "sentence": "p70b-051",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1684 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 129 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 134 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "voyage",
+   "sentence": "p70b-052",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2050 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 398 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2050 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "platformer",
+   "sentence": "p70b-053",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3062 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5281 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3396 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "platformer",
+   "sentence": "p70b-054",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2603 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5281 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 3172 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "runner",
+   "sentence": "p70b-055",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3611 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 651 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3611 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "runner",
+   "sentence": "p70b-056",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3611 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 651 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3611 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "shooter",
+   "sentence": "p70b-057",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3391 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 1425 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3269 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "shooter",
+   "sentence": "p70b-058",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 3391 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 1425 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 3269 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "throw",
+   "sentence": "p70b-060",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2020 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 5221 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2406 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "quest",
+   "sentence": "p70b-062",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 1743 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 925 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2292 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "catch",
+   "sentence": "p70b-064",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": true,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2098 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 576 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": true,
+     "evidence": "weak-bot: run lost at tick 2231 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "flap",
+   "sentence": "p70b-067",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2375 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 38 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2375 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "duel",
+   "sentence": "p70b-068",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2919 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 261 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run running at tick 5400 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "rhythm",
+   "sentence": "p70b-069",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2146 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 466 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2146 (needs lost by tick 5400)"
+    }
+   ]
+  },
+  {
+   "game": "hop",
+   "sentence": "p70b-070",
+   "seed": 1,
+   "failed": null,
+   "win": true,
+   "lose": false,
+   "actions": true,
+   "assertions": [
+    {
+     "id": "bot-wins",
+     "run": "bot",
+     "pass": true,
+     "evidence": "bot: run won at tick 2443 (needs won by tick 5400)"
+    },
+    {
+     "id": "idle-loses",
+     "run": "idle",
+     "pass": true,
+     "evidence": "idle: run lost at tick 360 (needs lost by tick 5400)"
+    },
+    {
+     "id": "weak-loses",
+     "run": "weak-bot",
+     "pass": false,
+     "evidence": "weak-bot: run won at tick 2443 (needs lost by tick 5400)"
+    }
+   ]
+  }
+ ]
+}

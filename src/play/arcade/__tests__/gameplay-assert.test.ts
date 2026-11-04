@@ -168,6 +168,14 @@ describe('lose: an idle player that wins breaks it', () => {
     expect(idle.pass).toBe(true);
     expect(result('bot-wins', 'minigolf', world({ rules: [['win_on_tap'], ['lose_at', 300]] })).pass).toBe(true);
   });
+
+  it('an old genre without its own list runs only the shared checks, and they still judge (P70B T5)', () => {
+    const wonIdle = assertGame('runner', world({ rules: [['win_at', 30]] }), library);
+    expect(wonIdle.map((entry) => entry.id)).toEqual(P68_ASSERTIONS.every.map((requirement) => requirement.id));
+    expect(wonIdle.find((entry) => entry.id === 'idle-loses')?.pass).toBe(false);
+    const fair = assertGame('runner', world({ rules: [['win_on_tap'], ['lose_at', 300]] }), library);
+    expect(fair.find((entry) => entry.id === 'idle-loses')?.pass).toBe(true);
+  });
 });
 
 describe('railfps: the shot resolves when the turn arrives', () => {

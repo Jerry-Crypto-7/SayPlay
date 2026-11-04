@@ -3,57 +3,52 @@
 /**
  * „How to play“ (P23-C T8, od P33 T7 oddíl listu „About this game“).
  *
- * Mechaniky jednou větou z registru s parametry, zpráva o kvalitě lidsky,
- * zkrácené id verze a rodokmen. Žádný výpis JSON – kdo chce surová data,
- * má `GET /api/play/games/:id`. Věty skládá server (`lab.ts`). Ve shellu se
- * obsah zapíše do listu (`useInfoPart`); bez něj zůstane sbalený panel.
+ * Od P70C T3 jen pro hráče: jak vyhrát, jak prohrát, ovládání (na dotyku bez
+ * kláves, stejně jako karta před startem) a 2–3 věty, jak hra běží. Tiky,
+ * replay, id verze ani parametry mechanik sem nepatří. Věty skládá server
+ * (`lab.ts`). Ve shellu se obsah zapíše do listu (`useInfoPart`); bez něj
+ * zůstane sbalený panel.
  */
 
 import { useMemo } from 'react';
 
-import type { GameVersion } from '@/play/contracts';
-
+import { touchControls, useCoarsePointer } from './FirstPrompt';
 import type { LabFacts } from './lab';
 import { useInfoPart } from './ui/InfoContext';
 
-interface HowProps {
-  readonly facts: LabFacts;
-  readonly versionId: string;
-  readonly lineage: readonly GameVersion[];
-}
-
-function HowToPlay({ facts, versionId, lineage }: HowProps) {
+/** `touch` = nápověda zón dotyku, kterou dostává i karta před startem (`ZONE_HINTS`). */
+function HowToPlay({ facts, touch }: { readonly facts: LabFacts; readonly touch?: string }) {
+  const coarse = useCoarsePointer();
+  const rows: readonly (readonly [string, string])[] = [
+    ['Win', facts.goal],
+    ...(facts.lose === null ? [] : [['Lose', facts.lose] as const]),
+    ['Controls', coarse ? touchControls(facts.controls, touch) : facts.controls],
+  ];
   return (
     <>
+      <dl className="play-read-rows play-lab-rows">
+        {rows.map(([name, value]) => (
+          <div key={name}>
+            <dt>{name}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
       <ul className="play-lab-mechanics">
-        {facts.mechanics.map((mechanic) => (
-          <li key={mechanic.id}>
-            <strong>{mechanic.name}</strong> – {mechanic.explanation}
-            {mechanic.params.length > 0 && (
-              <span className="play-lab-params">
-                {mechanic.params.map(([key, value]) => `${key}: ${value}`).join(' · ')}
-              </span>
-            )}
-          </li>
+        {facts.how.map((line) => (
+          <li key={line}>{line}</li>
         ))}
       </ul>
-      <p className="play-lab-quality">
-        {facts.rulesChecked} · {facts.winnable} · {facts.replay}
-      </p>
-      <p className="play-lab-version">
-        Version {versionId.slice(0, 12)}
-        {lineage.length > 1 && ` · ${lineage.length - 1} ${lineage.length === 2 ? 'ancestor' : 'ancestors'}: ${lineage.slice(0, -1).map((entry) => entry.title).join(' → ')}`}
-      </p>
     </>
   );
 }
 
-export function HowItWorks({ facts, versionId, lineage }: HowProps) {
-  const part = useMemo(() => <HowToPlay facts={facts} versionId={versionId} lineage={lineage} />, [facts, versionId, lineage]);
+export function HowItWorks({ facts, touch }: { readonly facts: LabFacts; readonly touch?: string }) {
+  const part = useMemo(() => <HowToPlay facts={facts} touch={touch} />, [facts, touch]);
   if (useInfoPart('how', part)) return null;
   return (
     <details className="play-lab" data-testid="play-lab">
-      <summary data-testid="play-lab-toggle">How this game works</summary>
+      <summary data-testid="play-lab-toggle">How to play</summary>
       {part}
     </details>
   );

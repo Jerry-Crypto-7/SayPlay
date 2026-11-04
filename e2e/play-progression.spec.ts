@@ -24,7 +24,8 @@ for (const id of ['drive.reach', 'glide.reach', 'walk.reach', 'runner.default'])
       const probe = window.__playShell as unknown as { start(): void; tickByHand(): void };
       probe.start(); probe.tickByHand();
     });
-    await expect(page.getByText('Tap to start', { exact: true })).toBeHidden();
+    // Karta startu je pryč; podle `testid`, text výzvy je od P70C T2 na desktopu „Click …“.
+    await expect(page.getByTestId('play-first-prompt')).toBeHidden();
     await expect(stage).toHaveAttribute('data-drawn', /thing/);
     await page.screenshot({ path: info.outputPath(`${id}-progression.png`) });
     const end = await page.evaluate(() => (window.__playShell as unknown as { handPlay(until: 'end'): { runState: string } }).handPlay('end'));

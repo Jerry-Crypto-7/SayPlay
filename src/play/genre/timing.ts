@@ -11,7 +11,7 @@
  */
 
 import { TIMING } from '../arcade/pieces/timing';
-import { plural, singular } from '../draft/lexicon';
+import { counted, plural, singular } from '../draft/lexicon';
 
 import { type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -33,7 +33,7 @@ const TEXT: Readonly<Record<TimingMode, { readonly title: string; readonly piece
     title: 'Timing',
     piece: 'marker',
     finish: 'last round',
-    goal: (count) => `Stop the marker in the zone ${String(count)} times. It speeds up.`,
+    goal: (count) => `Stop the marker in the zone ${counted(count, 'time')}. It speeds up.`,
     hint: 'Tap or Space to stop the marker.',
   },
   bridge: {

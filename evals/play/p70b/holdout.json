@@ -1,0 +1,567 @@
+{
+ "about": "P70B sealed holdout, written 2026-11-04 (T1) by claude -p from animal names and game descriptions only, before any P70B routing or model-choice change; opened once in T5.",
+ "sentences": [
+  {
+   "id": "p70b-001",
+   "half": "animal",
+   "genre": "hop",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "text": "help the bunny hop across the busy highway and the train tracks to reach the carrot field"
+  },
+  {
+   "id": "p70b-002",
+   "half": "animal",
+   "genre": "hole",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "text": "Make a game where a rabbit hole moves around the farm and swallows lettuce, buckets, then tractors as it grows."
+  },
+  {
+   "id": "p70b-003",
+   "half": "animal",
+   "genre": "defense",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "text": "baby rabbits protect their burrow from weasels marching down three lanes"
+  },
+  {
+   "id": "p70b-004",
+   "half": "animal",
+   "genre": "steal",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "text": "Play as a rabbit sneaking into the farmer's garden to grab the giant golden carrot and run it back home before the guard dogs catch you, then buy faster paws for the next round."
+  },
+  {
+   "id": "p70b-005",
+   "half": "animal",
+   "genre": "slice",
+   "hero": "cat",
+   "heroModels": [
+    "rigged:pet-cat",
+    "rigged:q-blob-cat"
+   ],
+   "text": "can you do a game where my kitten swipes flying fish in half and leaves the pufferfish bombs alone"
+  },
+  {
+   "id": "p70b-006",
+   "half": "animal",
+   "genre": "platformer",
+   "hero": "cat",
+   "heroModels": [
+    "rigged:pet-cat",
+    "rigged:q-blob-cat"
+   ],
+   "text": "Cat jumping from rooftop to rooftop over the night city to get to the moon."
+  },
+  {
+   "id": "p70b-007",
+   "half": "animal",
+   "genre": "runner",
+   "hero": "dog",
+   "heroModels": [
+    "rigged:pet-dog",
+    "rigged:q-husky",
+    "rigged:q-shiba",
+    "rigged:q-blob-dog"
+   ],
+   "text": "Puppy on a skateboard rolling down the street, dodging trash cans and picking up bones."
+  },
+  {
+   "id": "p70b-008",
+   "half": "animal",
+   "genre": "sort",
+   "hero": "dog",
+   "heroModels": [
+    "rigged:pet-dog",
+    "rigged:q-husky",
+    "rigged:q-shiba",
+    "rigged:q-blob-dog"
+   ],
+   "text": "help the dog sort colorful tennis balls into baskets so every basket has only one color"
+  },
+  {
+   "id": "p70b-009",
+   "half": "animal",
+   "genre": "merge",
+   "hero": "penguin",
+   "heroModels": [
+    "rigged:pet-penguin",
+    "rigged:q-cute-penguin"
+   ],
+   "text": "penguin drops fish into a bucket and two same fish become a bigger fish, dont let it overflow"
+  },
+  {
+   "id": "p70b-010",
+   "half": "animal",
+   "genre": "voyage",
+   "hero": "penguin",
+   "heroModels": [
+    "rigged:pet-penguin",
+    "rigged:q-cute-penguin"
+   ],
+   "text": "Guide the penguin's little rocket down for a soft landing on a wobbly iceberg."
+  },
+  {
+   "id": "p70b-011",
+   "half": "animal",
+   "genre": "drawsave",
+   "hero": "polar bear",
+   "heroModels": [
+    "rigged:pet-polar-bear"
+   ],
+   "text": "Draw lines to protect the baby polar bear from icicles falling off the cave roof."
+  },
+  {
+   "id": "p70b-012",
+   "half": "animal",
+   "genre": "stunt",
+   "hero": "polar bear",
+   "heroModels": [
+    "rigged:pet-polar-bear"
+   ],
+   "text": "polar bear racing a snowmobile over huge ramps and smashing through stacks of ice crates before time is up"
+  },
+  {
+   "id": "p70b-013",
+   "half": "animal",
+   "genre": "survivor",
+   "hero": "fox",
+   "heroModels": [
+    "rigged:q-fox"
+   ],
+   "text": "A fox alone in the dark forest auto-attacks bigger and bigger swarms of beetles, I pick one of three upgrades each wave and fight a giant bear at the end."
+  },
+  {
+   "id": "p70b-014",
+   "half": "animal",
+   "genre": "whack",
+   "hero": "fox",
+   "heroModels": [
+    "rigged:q-fox"
+   ],
+   "text": "fox bonks the moles when they pop out of the holes"
+  },
+  {
+   "id": "p70b-015",
+   "half": "animal",
+   "genre": "crowd",
+   "hero": "wolf",
+   "heroModels": [
+    "rigged:q-wolf"
+   ],
+   "text": "Wolf leads the pack through gates that double it, avoid the traps, then throw the whole pack at the giant troll."
+  },
+  {
+   "id": "p70b-016",
+   "half": "animal",
+   "genre": "railfps",
+   "hero": "wolf",
+   "heroModels": [
+    "rigged:q-wolf"
+   ],
+   "text": "riding a sled through the snowy woods as a wolf and shooting at goblins that jump out on both sides"
+  },
+  {
+   "id": "p70b-017",
+   "half": "animal",
+   "genre": "timing",
+   "hero": "horse",
+   "heroModels": [
+    "rigged:q-horse",
+    "rigged:q-white-horse"
+   ],
+   "text": "pony stacks hay bales into a tall tower, tap to drop each one at the right time"
+  },
+  {
+   "id": "p70b-018",
+   "half": "animal",
+   "genre": "throw",
+   "hero": "horse",
+   "heroModels": [
+    "rigged:q-horse",
+    "rigged:q-white-horse"
+   ],
+   "text": "Can you make a game where a horse kicks a soccer ball into the goal?"
+  },
+  {
+   "id": "p70b-019",
+   "half": "animal",
+   "genre": "flap",
+   "hero": "cow",
+   "heroModels": [
+    "rigged:q-cow"
+   ],
+   "text": "flying cow with a jetpack, tap to go up between the windmills"
+  },
+  {
+   "id": "p70b-020",
+   "half": "animal",
+   "genre": "quest",
+   "hero": "cow",
+   "heroModels": [
+    "rigged:q-cow"
+   ],
+   "text": "The cow waters every dry plant in the garden while hungry crows chase her around."
+  },
+  {
+   "id": "p70b-021",
+   "half": "animal",
+   "genre": "hop",
+   "hero": "deer",
+   "heroModels": [
+    "rigged:q-deer",
+    "rigged:q-cute-fawn",
+    "rigged:q-stag"
+   ],
+   "text": "Save the fawn by hopping over the river on floating logs and across the road."
+  },
+  {
+   "id": "p70b-022",
+   "half": "animal",
+   "genre": "platformer",
+   "hero": "deer",
+   "heroModels": [
+    "rigged:q-deer",
+    "rigged:q-cute-fawn",
+    "rigged:q-stag"
+   ],
+   "text": "deer climb up the mountain jumping from cliff to cliff to find his family"
+  },
+  {
+   "id": "p70b-023",
+   "half": "animal",
+   "genre": "quest",
+   "hero": "panda",
+   "heroModels": [
+    "rigged:q-cute-panda"
+   ],
+   "text": "panda cooking dumplings at a little stove before the orders pile up"
+  },
+  {
+   "id": "p70b-024",
+   "half": "animal",
+   "genre": "rhythm",
+   "hero": "panda",
+   "heroModels": [
+    "rigged:q-cute-panda"
+   ],
+   "text": "Make a rhythm game with a panda playing taiko drums to the music."
+  },
+  {
+   "id": "p70b-025",
+   "half": "animal",
+   "genre": "defense",
+   "hero": "chicken",
+   "heroModels": [
+    "rigged:q-cute-chicken",
+    "rigged:q-blob-chicken"
+   ],
+   "text": "Hen defends her coop from foxes coming down the lanes by throwing corn at them."
+  },
+  {
+   "id": "p70b-026",
+   "half": "animal",
+   "genre": "flap",
+   "hero": "chicken",
+   "heroModels": [
+    "rigged:q-cute-chicken",
+    "rigged:q-blob-chicken"
+   ],
+   "text": "chicken that cant really fly flapping through gaps in the barn fence"
+  },
+  {
+   "id": "p70b-027",
+   "half": "animal",
+   "genre": "whack",
+   "hero": "crab",
+   "heroModels": [
+    "rigged:q-cute-crab"
+   ],
+   "text": "crab pinches the seagulls popping out from behind the rocks"
+  },
+  {
+   "id": "p70b-028",
+   "half": "animal",
+   "genre": "push",
+   "hero": "crab",
+   "heroModels": [
+    "rigged:q-cute-crab"
+   ],
+   "text": "Crabs pushing each other off a tiny rock in the tide pool."
+  },
+  {
+   "id": "p70b-029",
+   "half": "animal",
+   "genre": "shooter",
+   "hero": "alpaca",
+   "heroModels": [
+    "rigged:q-alpaca"
+   ],
+   "text": "alpaca spitting at cardboard targets in a fair shooting gallery"
+  },
+  {
+   "id": "p70b-030",
+   "half": "animal",
+   "genre": "stunt",
+   "hero": "donkey",
+   "heroModels": [
+    "rigged:q-donkey"
+   ],
+   "text": "donkey pulls a cart down a mountain track full of ramps and barrels to smash"
+  },
+  {
+   "id": "p70b-031",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "lets play golf"
+  },
+  {
+   "id": "p70b-032",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "i want golfing"
+  },
+  {
+   "id": "p70b-033",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "golfing pls"
+  },
+  {
+   "id": "p70b-034",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "can we golf"
+  },
+  {
+   "id": "p70b-035",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "golf game now"
+  },
+  {
+   "id": "p70b-036",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "make a golf game on the moon where the ball floats a little after every shot"
+  },
+  {
+   "id": "p70b-037",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "golfing inside a haunted castle with creaky stairs and candles"
+  },
+  {
+   "id": "p70b-038",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "i want to play golf on a frozen lake in the middle of winter"
+  },
+  {
+   "id": "p70b-039",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "golf course on top of a skyscraper roof with wind blowing"
+  },
+  {
+   "id": "p70b-040",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "can you do golf in a jungle temple full of old stone ruins"
+  },
+  {
+   "id": "p70b-041",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "a desert golf round where the holes are hidden between sand dunes"
+  },
+  {
+   "id": "p70b-042",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "golf inside a giant candy factory pls"
+  },
+  {
+   "id": "p70b-043",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "a penguin playing golf and trying not to slip"
+  },
+  {
+   "id": "p70b-044",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "make a game where my cat knocks a golf ball into the hole with his paw"
+  },
+  {
+   "id": "p70b-045",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "a little robot golfing in a junkyard"
+  },
+  {
+   "id": "p70b-046",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "grandpa pirate plays crazy golf on his ship deck"
+  },
+  {
+   "id": "p70b-047",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "i want a frog that golfs on lily pads"
+  },
+  {
+   "id": "p70b-048",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "dinosaur golfing game where the t rex has tiny arms and still trys to putt"
+  },
+  {
+   "id": "p70b-049",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "golf with windmills and moving bridges in the way"
+  },
+  {
+   "id": "p70b-050",
+   "half": "golf",
+   "genre": "minigolf",
+   "text": "make golf with lots of water traps and sand bunkers please"
+  },
+  {
+   "id": "p70b-051",
+   "half": "general",
+   "genre": "voyage",
+   "text": "make a game where i pilot a hot air balloon between mountain peaks to reach a village on the other side"
+  },
+  {
+   "id": "p70b-052",
+   "half": "general",
+   "genre": "voyage",
+   "text": "Can you do one where a grandma rides her mobility scooter through a crowded flea market to the bus stop?"
+  },
+  {
+   "id": "p70b-053",
+   "half": "general",
+   "genre": "platformer",
+   "text": "a raccoon jumping across rooftop ledges to get to the top of the old clock tower"
+  },
+  {
+   "id": "p70b-054",
+   "half": "general",
+   "genre": "platformer",
+   "text": "make a platformer where a lost astronaut hops between floating moon rocks"
+  },
+  {
+   "id": "p70b-055",
+   "half": "general",
+   "genre": "runner",
+   "text": "endless runner with a mailman sprinting down a suburb street dodging sprinklers and dogs"
+  },
+  {
+   "id": "p70b-056",
+   "half": "general",
+   "genre": "runner",
+   "text": "penguin sliding down an icy hill switching lanes, jumping over seals and grabbing fish"
+  },
+  {
+   "id": "p70b-057",
+   "half": "general",
+   "genre": "shooter",
+   "text": "shoot down the paper airplanes that the teacher keeps throwing at me"
+  },
+  {
+   "id": "p70b-058",
+   "half": "general",
+   "genre": "shooter",
+   "text": "make a shooting gallery at a country fair with tin ducks and bottles"
+  },
+  {
+   "id": "p70b-059",
+   "half": "general",
+   "genre": "throw",
+   "text": "throw snowballs at the neighbor kids hiding behind a snow fort"
+  },
+  {
+   "id": "p70b-060",
+   "half": "general",
+   "genre": "throw",
+   "text": "Can you do a game where I toss pizza dough into the delivery boxes across the kitchen?"
+  },
+  {
+   "id": "p70b-061",
+   "half": "general",
+   "genre": "quest",
+   "text": "a firefighter cat runs around the apartment block putting out little fires in each window"
+  },
+  {
+   "id": "p70b-062",
+   "half": "general",
+   "genre": "quest",
+   "text": "make a game where i flip pancakes at a busy diner griddle before the orders pile up"
+  },
+  {
+   "id": "p70b-063",
+   "half": "general",
+   "genre": "arena",
+   "text": "a puppy running around the backyard collecting all the hidden bones seen from above"
+  },
+  {
+   "id": "p70b-064",
+   "half": "general",
+   "genre": "catch",
+   "text": "catch the falling cupcakes in a basket but let the rotten eggs drop"
+  },
+  {
+   "id": "p70b-065",
+   "half": "general",
+   "genre": "whack",
+   "text": "whack the gophers popping out of the golf course holes"
+  },
+  {
+   "id": "p70b-066",
+   "half": "general",
+   "genre": "defense",
+   "text": "zombie farm animals walk down three lanes toward my barn and I have to shoot them before they get in"
+  },
+  {
+   "id": "p70b-067",
+   "half": "general",
+   "genre": "flap",
+   "text": "tap to flap a tiny dragon through the gaps in the stone pillars"
+  },
+  {
+   "id": "p70b-068",
+   "half": "general",
+   "genre": "duel",
+   "text": "cowboy showdown at noon, dodge when the bandit draws and shoot back"
+  },
+  {
+   "id": "p70b-069",
+   "half": "general",
+   "genre": "rhythm",
+   "text": "rhythm game where i drum on pots and pans in time with the song"
+  },
+  {
+   "id": "p70b-070",
+   "half": "general",
+   "genre": "hop",
+   "text": "help a duck family cross the busy highway one hop at a time"
+  }
+ ]
+}

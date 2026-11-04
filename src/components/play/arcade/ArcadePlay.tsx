@@ -13,8 +13,9 @@ import dynamic from 'next/dynamic';
 import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { foundOf, hooksOf } from '@/play/arcade/hooks';
+import { loseClausesOf, loseLineOf, lostLineOf } from '@/play/lose-line';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
@@ -151,6 +152,18 @@ export function collectGoal(world: ArcadeWorld, count: number): HudGoal | null {
   return typeof noun === 'string' ? { label: noun, count, need, said: true } : { label: 'collected', count, need };
 }
 
+/**
+ * Postup před větou cíle (P70C T2), vidět celou hru: trať „42 m / 220 m“, úkoly načasování, rytmu a souboje
+ * („3 notes“). Sbírání má vejce v pilulce, střelba a hod zbývající rány, aréna časovač – tam `null`.
+ */
+export function goalProgressOf(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot): string | null {
+  if (spec.control === 'move_free' || aiming(spec) || collectNeed(world) !== null) return null;
+  const unit = COUNT_UNIT[spec.control ?? ''];
+  if (unit !== undefined) return `${snapshot.distanceM} ${unit}`;
+  const total = Math.floor(world.length / UNIT);
+  return total > 0 ? `${snapshot.distanceM} m / ${total} m` : null;
+}
+
 const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true || spec.control === 'steer' && typeof spec.controlParams?.crashBudget === 'number';
 
 /** Počítadla pilulky postupu mimo cíl sbírání: zbývající rány, náboje, životy a cíl k překonání – DOM HUD i panel VR (P65 T5). */
@@ -177,15 +190,24 @@ const xrCountersOf = (goal: HudGoal | null, counters: readonly HudCounter[]): Xr
  * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
  * Nálezy podle vzácnosti (P66 T4) jen u hry, jejíž háčky vzácnost losují.
  */
-function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number): RunFacts {
+/** Hra má trať, po které se měří „of the way“: ne aréna ani míření a svět s délkou – railfps, minigolf, drawsave, survivor a přistání mají délku 0, postup by byl vždy 0 % a každá prohra „Try again!“ (review fáze 1 P70C). */
+export const tracked = (spec: GameSpecV1, world: ArcadeWorld): boolean => spec.control !== 'move_free' && !aiming(spec) && world.length > 0;
+
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number, bonus: number, livesAdded: number): RunFacts {
   const goal = collectGoal(world, snapshot.items);
   const hooks = hooksOf(world.rules);
   const extra: ResultStat[] = [];
+  const track = tracked(spec, world);
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
-  if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
+  if (track) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
   const scoring = snapshot.score !== 0 || (par !== null && par.score > 0);
+  const limit = limitOf(world);
+  // Čím prohra skončila (P70C T2): došlé životy, došlý čas (i prodloužený živou změnou), jinak jediná příčina pravidel.
+  const end = { livesOut: hasLives(spec) && snapshot.health <= 0, timeOut: limit !== null && snapshot.tick >= (limit + bonus) * ARCADE_HZ };
   return {
     won: snapshot.runState === 'won',
+    progress: track ? snapshot.progress : null,
+    lost: snapshot.runState === 'won' ? null : lostLineOf(loseClausesOf(spec, world, livesAdded), end),
     tick: snapshot.tick,
     hz: ARCADE_HZ,
     survive: survives(world),
@@ -257,13 +279,15 @@ function ArcadeHud({
       counters={counters}
       clock={limit === null ? { seconds: elapsed, countdown: false } : { seconds: limit + bonus - elapsed, countdown: true }}
       objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, ARCADE_HZ, paused)}
+      keepGoal={snapshot.runState === 'running'}
+      goalProgress={goalProgressOf(spec, world, snapshot)}
       caught={caught}
       onPause={onPause}
       status={
         <p className="play-sr-only">
           <span data-testid="play-progress" data-progress={snapshot.progress}>
-            {/* Aréna nemá trať, procento by stálo na nule. */}
-            {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
+            {/* Hra bez trati (aréna, míření, svět délky 0) procento nemá – stálo by na nule. */}
+            {tracked(spec, world) ? `${snapshot.progress}% · ` : ''}
             {snapshot.score} {scoreUnit(spec)}
             {lives}
             {clock === null ? '' : ` · ${clock}`}
@@ -440,6 +464,8 @@ function ArcadePlayGame({
   const inputCount = useSyncExternalStore(session.subscribe, () => session.inputs().length, () => 0);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
+  // Řádek „jak prohraješ“ karty před startem (P70C T2) – z pravidel světa, ne ze žánru.
+  const loseLine = loseLineOf(spec, arcade);
   const cast = useMemo(() => {
     const props = propModels(spec);
     if (spec.controlParams?.generator === 'quest_spatial' || spec.controlParams?.generator === 'quest_station') {
@@ -844,8 +870,10 @@ function ArcadePlayGame({
     else if (action === 'pause') pauseGame();
     else session.resume();
   });
-  // Prodloužení času živou změnou („more time“) posune i odpočet časovače.
-  const bonus = session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === 'time' ? entry.patch.amount : 0), 0);
+  // Co živá změna přidala: čas („more time“) posune odpočet časovače, životy počet ve větě po prohře (R1 P70C).
+  const added = (counter: 'time' | 'health'): number => session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === counter ? entry.patch.amount : 0), 0);
+  const bonus = added('time');
+  const livesAdded = added('health');
 
   useEffect(() => {
     let hand: BotHand | null = null;
@@ -955,10 +983,13 @@ function ArcadePlayGame({
           <>
             <Weather session={session} theme={spec.theme} />
             {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
-            {running && active && demo === null && snapshot.tick === 0 && (
+            {/* Za pauzy a otevřeného listu karta ustoupí (P70C): jinak prosvítá přes „About this game“. */}
+            {running && active && demo === null && snapshot.tick === 0 && !holdsPause && !aboutOpen && (
               <FirstPrompt
                 controlsHint={spec.tutorial.controlsHint}
                 touch={zoneHint}
+                goal={spec.tutorial.goalLine}
+                lose={loseLine}
                 dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
               />
             )}
@@ -1028,7 +1059,7 @@ function ArcadePlayGame({
       </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       {read !== undefined && <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />}
-      {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
+      {lab !== undefined && <HowItWorks facts={lab} touch={zoneHint} />}
       {cardShown && (
         <PauseCard
           onResume={session.resume}
@@ -1073,7 +1104,7 @@ function ArcadePlayGame({
         <PostRun
           versionId={versionId}
           remix={remix}
-          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart)}
+          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart, bonus, livesAdded)}
           clip={clip}
           live={live}
           dare={dare}

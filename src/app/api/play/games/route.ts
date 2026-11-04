@@ -56,8 +56,8 @@ const MAX_FEED = 48;
  * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes, beat,
  * goal, mood }], next }` podle smyčky (`beat` = „N% beat this“ nebo `null`, P37C T5) – dohrání, výzvy a remixy výš, každá třetí
  * pozice nejnovější hra (P36B T9; bez čítačů od nejnovější); `goal`/`mood`
- * z řádku seznamu, starší řádky `null`; v každé osmici nejvýš tři hry téhož
- * archetypu (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do
+ * z řádku seznamu, starší řádky `null`; v každé osmici nejvýš dvě hry téhož
+ * žánru (`diversify`, P70C T4); `next` je kurzor další stránky nebo `null`. Kdo do
  * feedu smí, říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva
  * příkazy úložiště (seznam a čítače s počty dětí), vlastní páku `feed` a strop jako každé čtení;
  * hrana ho smí 15 s držet, a proto dotaz nesmí nést nic jiného než `recent`

@@ -11,7 +11,7 @@
  */
 
 import { STEAL } from '../arcade/pieces/steal';
-import { plural, singular } from '../draft/lexicon';
+import { counted, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -58,9 +58,9 @@ export const stealGenre: GenreModule<'steal'> = {
         kind: 'deliver',
         description: fit(
           120,
-          `Grab ${String(loot)} ${things} from the rival base and carry them home in ${String(rounds)} rounds. Dodge the ${guardsWord}.`,
-          `Grab ${String(loot)} ${things} and carry them home in ${String(rounds)} rounds.`,
-          `Carry the loot home in ${String(rounds)} rounds.`,
+          `Grab ${String(loot)} ${things} from the rival base and carry them home in ${counted(rounds, 'round')}. Dodge the ${guardsWord}.`,
+          `Grab ${String(loot)} ${things} and carry them home in ${counted(rounds, 'round')}.`,
+          `Carry the loot home in ${counted(rounds, 'round')}.`,
         ),
         role: 'loot',
       },

@@ -3,7 +3,7 @@ Hero: **What do you want to play?**
 Subhead: Say one sentence and play it in seconds. Then change one thing.
 Label: Say it in one sentence
 Placeholder: A fox steals eggs while the farmer's dog chases it…
-Ideas: Hamster escapes a supermarket Roomba / Grab five glowing mushrooms / Carry a wobbly cake to the party / The floor is lava, for 60 seconds.
+Ideas: A frog drums to the beat on lily pads / Mini golf on a pirate ship deck / Run a pizza shop and serve 12 customers / Draw walls to save a puppy from bees.
 States: Reading your idea -> Building the world -> Setting the rules -> Painting it in.
 Errors: Couldn't build that. Try fewer rules. / You're offline. Your idea is saved – we'll build it when you're back. / Couldn't send your idea. Try again.
 Result: You did it! / So close.

@@ -69,7 +69,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     // marches or flies); the intent's verbs name another game's roles there – its `catch` is a chase prey, a bear
     // catching jars would turn into a hazard.
     const palette = draft.palette ?? (lookFor(setting) === null ? (sentenceLook(intent.sentence) ?? undefined) : undefined);
-    return { ...draft, setting, ...(palette === undefined ? {} : { palette }), cast: cast.slice(0, 8) };
+    // P70B T3: hrdina, kterého věta neřekla (výchozí rytíř obrany), ustoupí hrdinovi věty – „rabbit defends its burrow“.
+    const named = namedHero(intent, reading);
+    const unsaid = !words.includes(singular(draft.hero.toLowerCase().split(' ').at(-1) ?? ''));
+    return { ...draft, ...(named !== null && unsaid ? { hero: named } : {}), setting, ...(palette === undefined ? {} : { palette }), cast: cast.slice(0, 8) };
   }
   const spoken: string[] = [];
   const sentenceHeads = (intent.sentence.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map(singular);

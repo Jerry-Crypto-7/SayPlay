@@ -18,7 +18,7 @@
 import { BOSS_ATTACKS } from '../arcade/contract';
 import { SURVIVOR, type SurvivorAttack, wavedEnemies } from '../arcade/pieces/survivor';
 import { namedProjectiles } from '../compose/projectiles';
-import { nounPhrase, plural, singular, withoutPossessor } from '../draft/lexicon';
+import { counted, nounPhrase, plural, singular, withoutPossessor } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -75,7 +75,7 @@ export const survivorGenre: GenreModule<'survivor'> = {
       ...(rounds === SURVIVOR.rounds.default ? {} : { rounds }),
       ...(attack === undefined || attack === 'charge' ? {} : { attack }),
     };
-    const wavesText = waves === 1 ? 'a wave' : `${String(waves)} waves`;
+    const wavesText = waves === 1 ? 'a wave' : `${counted(waves, 'wave')}`;
     return legacySpec(spec, {
       control: 'survivor',
       controlParams: { generator: 'survivor_waves', ...(Object.keys(tuning).length === 0 ? {} : { tuning }) },

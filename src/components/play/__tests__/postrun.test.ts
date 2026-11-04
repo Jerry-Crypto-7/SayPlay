@@ -54,11 +54,29 @@ describe('PostRun', () => {
     const lost = facts(false);
     expect(runResult({ ...lost, goal: { ...lost.goal!, count: 0 } }).headline).toBe('Try again!');
     expect(runResult({ ...lost, score: { value: 0, unit: 'pts' } }).headline).toBe('Try again!');
-    // Body rozhodují před cílovými předměty; přežití bez bodů a předmětů nulu nemá.
-    expect(runResult({ ...lost, goal: { ...lost.goal!, count: 0 }, score: { value: 40, unit: 'pts' } }).headline).toBe('So close.');
+    // Body rozhodují před cílovými předměty; přežití bez bodů a předmětů nulu nemá. Cíl pod polovinou je ale
+    // „Try again!“ i s body (P70C T2) – nad polovinou rozhodnou body.
+    expect(runResult({ ...lost, goal: { ...lost.goal!, count: 0 }, score: { value: 40, unit: 'pts' } }).headline).toBe('Try again!');
+    expect(runResult({ ...lost, score: { value: 0, unit: 'pts' } }).headline).toBe('Try again!');
     expect(runResult({ ...lost, score: { value: 40, unit: 'pts' } }).headline).toBe('So close.');
     expect(runResult({ ...lost, goal: null, survive: true }).headline).toBe('So close.');
     expect(runResult({ ...facts(true), goal: { count: 0, need: 0, label: 'collected' } }).headline).toBe('You did it!');
+  });
+
+  it('a loss before half the way says Try again! and why the run ended (P70C T2)', () => {
+    const lost = facts(false);
+    const track = { ...lost, goal: null };
+    expect(runResult({ ...track, progress: 49 }).headline).toBe('Try again!');
+    expect(runResult({ ...track, progress: 50 }).headline).toBe('So close.');
+    expect(runResult({ ...track, progress: null }).headline).toBe('So close.');
+    // Hra s cílem měří cestu cílem, ne tratí: 6 z 10 je přes polovinu i na 20 % trati (buildshift).
+    expect(runResult({ ...lost, goal: { count: 6, need: 10, label: 'served' }, progress: 20 }).headline).toBe('So close.');
+    expect(runResult({ ...lost, goal: { count: 4, need: 10, label: 'served' }, progress: 90 }).headline).toBe('Try again!');
+    expect(runResult({ ...facts(true), progress: 10 }).headline).toBe('You did it!');
+    const markup = (run: RunFacts) => renderToStaticMarkup(createElement(PostRun, { versionId: 'v1', remix: job, facts: run, onReplay: () => undefined }));
+    expect(markup({ ...lost, lost: 'You lost all 3 lives.' })).toMatch(/data-testid="play-result-lost"[^>]*>You lost all 3 lives\.</);
+    expect(markup({ ...facts(true), lost: 'You lost all 3 lives.' })).not.toContain('play-result-lost');
+    expect(markup({ ...lost, lost: null })).not.toContain('play-result-lost');
   });
 
   it('keeps the change field behind Remix it until the player asks for it', () => {

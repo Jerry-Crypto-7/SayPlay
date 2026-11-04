@@ -6,7 +6,7 @@
 import { useSyncExternalStore } from 'react';
 
 /** Klávesy, které nápověda nabízí vedle dotyku („Tap or Space …“). */
-const KEY_WORD = 'space|arrows|a\\/d|w\\/s|down|up|enter|keys';
+const KEY_WORD = 'space|arrows|wasd|a\\/d|w\\/s|down|up|enter|keys';
 
 const COARSE_POINTER = '(pointer: coarse)';
 
@@ -47,10 +47,18 @@ export function callToAction(controlsHint: string): string {
   return clause;
 }
 
-/** Klávesa za „nebo“ („Tap or Space“, „Drag or use A/D“); „drag up or down“ je směr tahu, ne klávesa. */
-const KEY_AFTER = new RegExp(`(?<!\\bup)\\s+or\\s+(?:use\\s+)?(?:${KEY_WORD})\\b`, 'gi');
-/** Písmeno klávesy za „nebo“ („Attack or J“) – jen velké, malé „a“ je člen. */
-const LETTER_AFTER = /\s+or\s+[A-Z](?![\w/])/g;
+/** Klávesy za „nebo“ („Tap or Space“, „Drag or use A/D“, „, or use arrows or WASD“); „drag up or down“ je směr tahu, ne klávesa. */
+const KEY_AFTER = new RegExp(`(?<!\\bup),?\\s+or\\s+(?:use\\s+)?(?:${KEY_WORD})(?:\\s+or\\s+(?:${KEY_WORD}))*\\b`, 'gi');
+/** Písmena kláves za „nebo“ („Attack or J“, „Tap the lane, or D F J K, on the beat“) – jen velká, malé „a“ je člen. */
+const LETTER_AFTER = /,\s+or\s+[A-Z](?:\s+[A-Z])*(?![\w/]),|\s+or\s+[A-Z](?:\s+[A-Z])*(?![\w/])/g;
+/** Věta jen pro klávesnici („Keys: arrows aim, hold Space.“) – „hold“ v ní je klávesa, ne prst. */
+const KEYS_SENTENCE = /(?:^|\s+)Keys?:[^.!?]*[.!?]?/g;
+/** Klávesy na začátku věty před dotykem („Move with arrows or WASD, or drag to chase.“ → „drag to chase.“). */
+const KEYS_LEAD = new RegExp(`(?<=^|[.!?]\\s+)\\w+\\s+with\\s+(?:${KEY_WORD})(?:\\s+or\\s+(?:${KEY_WORD}))*,?\\s+or\\s+`, 'gi');
+/** Písmeno klávesy před náhradou („F or Fire to shoot“ → „Fire to shoot“). */
+const LETTER_LEAD = /(?<=^|[.!?,;]\s+)[A-Z]\s+or\s+/g;
+/** Souvětí, které začíná písmenem klávesy („M toggles sound.“); „A“ a „I“ jsou slova. */
+const LETTER_FIRST = /^[B-HJ-Z]\s/;
 /** Klávesy na začátku výčtu před dotykem („Arrows or drag“, „Up, Space or a second finger“). */
 const KEY_BEFORE = new RegExp(`(?<=^|[.,;]\\s*)(?:${KEY_WORD})(?:,\\s*|\\s+or\\s+)`, 'gi');
 /** Souvětí jen o klávesách („Arrows to move“) – prst ho neudělá. */
@@ -63,10 +71,16 @@ const TOUCH_WORD = /\b(?:tap|swipe|drag|hold|finger|touch)\b/i;
  * brakes“. Souvětí, které nabízí jen klávesy, vypadne („Arrows or A/D to move“).
  */
 export function touchHint(controlsHint: string): string {
-  const stripped = controlsHint.replace(KEY_AFTER, '').replace(LETTER_AFTER, '').replace(KEY_BEFORE, '');
+  const stripped = controlsHint
+    .replace(KEYS_SENTENCE, '')
+    .replace(KEYS_LEAD, '')
+    .replace(LETTER_LEAD, '')
+    .replace(KEY_AFTER, '')
+    .replace(LETTER_AFTER, '')
+    .replace(KEY_BEFORE, '');
   const kept: string[] = [];
   for (const clause of stripped.trim().split(/(?<=[,.;])\s+/)) {
-    if (KEYS_ONLY.test(clause) && !TOUCH_WORD.test(clause)) {
+    if ((KEYS_ONLY.test(clause) && !TOUCH_WORD.test(clause)) || LETTER_FIRST.test(clause)) {
       // Vypadlo poslední souvětí věty: věta končí tečkou u předchozího.
       const last = kept.length - 1;
       if (/[.!?]$/.test(clause) && last >= 0) kept[last] = kept[last]!.replace(/[,;]$/, '.');
@@ -82,7 +96,7 @@ export function touchHint(controlsHint: string): string {
 export function desktopKeys(controlsHint: string): string | null {
   const key = new RegExp(`\\sor\\s+(${KEY_WORD})\\b`, 'i').exec(firstClause(controlsHint))?.[1];
   if (key === undefined) return null;
-  return key.toLowerCase() === 'arrows' ? 'or use the arrow keys' : `or press ${key.length === 1 ? key : key[0]!.toUpperCase() + key.slice(1)}`;
+  return key.toLowerCase() === 'arrows' ? 'or use the arrow keys' : `or press ${key === key.toUpperCase() ? key : key[0]!.toUpperCase() + key.slice(1)}`;
 }
 
 /** Náhradní vstup za „nebo“ v dalších povelech („F or Fire“ → „F“); „drag up or down“ je směr tahu, ne náhrada. */
@@ -124,29 +138,46 @@ export function controlLines(primary: string, extra?: string): string[] {
   return [...lines, ...more];
 }
 
+/** Klávesa první nápovědy, kterou karta řekne rovnou ve výzvě startu („Click or press Space“). */
+const SPACE_KEY = 'or press Space';
+
+/** Výzva startu (P70C T2): prst klepe, desktop kliká – Space jen tam, kde ho hra opravdu bere jako první povel. */
+/** Ovládání na dotyku: nápověda zón (`ZONE_HINTS`, plošinovka „Hold left to run, tap right to jump.“), jinak nápověda hry bez kláves – stejná na kartě i v listu About (R2 P70C). */
+export const touchControls = (controlsHint: string, touch?: string): string => touch ?? touchHint(controlsHint);
+
+export const startLine = (coarse: boolean, keyLine: string | null): string => (coarse ? 'Tap to start' : keyLine === SPACE_KEY ? 'Click or press Space' : 'Click to start');
+
 /**
- * Velká výzva uprostřed, dokud hra čeká na první dotek: „Tap to start“,
- * jeden povel a na desktopu klávesa. Na dotyku povel z nápovědy bez kláves
- * (`touch` ji dodá, kde ji text hry neřekne – zóny plošinovky) a bez řádku
- * klávesy. Klepnutí jde skrz na plátno – ten dotek hru pustí. Mřížka posílá
- * vlastní řádek klávesy (`keys`), protože karty cílů mají čísla. Výzva kamaráda
- * (P36B T7) přidá nahoru, co porazit; hrál-li kamarád se živými změnami, řekne to.
+ * Karta uprostřed, dokud hra čeká na první dotek (P70C T2): jak vyhrát
+ * (`goal`), jak prohrát (`lose`, `loseLineOf`), ovládání a výzva startu – na
+ * dotyku „Tap to start“, na desktopu „Click or press Space“. Na dotyku povel
+ * z nápovědy bez kláves (`touch` ji dodá, kde ji text hry neřekne – zóny
+ * plošinovky) a bez řádku klávesy. Klepnutí jde skrz na plátno – ten dotek hru
+ * pustí. Mřížka posílá vlastní řádek klávesy (`keys`), protože karty cílů mají
+ * čísla. Výzva kamaráda (P36B T7) přidá nahoru, co porazit; hrál-li kamarád se
+ * živými změnami, řekne to. Kolo řetězce mikroher kartu zapojí stejně.
  */
 export function FirstPrompt({
   controlsHint,
   touch,
   keys,
+  goal,
+  lose = null,
   dare = null,
 }: {
   readonly controlsHint: string;
   readonly touch?: string;
   readonly keys?: string;
+  /** Cíl hry (`tutorial.goalLine`). */
+  readonly goal?: string;
+  /** Jak se prohrává (`loseLineOf`); `null` = hra prohrát nejde. */
+  readonly lose?: string | null;
   readonly dare?: { readonly goal: string; readonly changed: boolean } | null;
 }) {
   const coarse = useCoarsePointer();
-  const action = callToAction(coarse ? (touch ?? touchHint(controlsHint)) : controlsHint);
+  const action = callToAction(coarse ? touchControls(controlsHint, touch) : controlsHint);
   const keyLine = coarse ? null : (keys ?? desktopKeys(controlsHint));
-  const more = coarse ? controlLines(touch ?? touchHint(controlsHint), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
+  const more = coarse ? controlLines(touchControls(controlsHint, touch), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
   return (
     <div className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
       {dare !== null && (
@@ -155,14 +186,26 @@ export function FirstPrompt({
           {dare.changed && <span className="play-first-prompt-note">Your friend changed the game while playing.</span>}
         </p>
       )}
-      <p className="play-first-prompt-start">Tap to start</p>
+      {goal !== undefined && goal !== '' && (
+        <p className="play-first-prompt-goal" data-testid="play-first-prompt-goal">
+          {goal}
+        </p>
+      )}
+      {lose !== null && (
+        <p className="play-first-prompt-lose" data-testid="play-first-prompt-lose">
+          {lose}
+        </p>
+      )}
       {action !== '' && <p className="play-first-prompt-action" data-testid="play-first-prompt-action">{action}</p>}
-      {keyLine !== null && <p className="play-first-prompt-keys">{keyLine}</p>}
+      {keyLine !== null && keyLine !== SPACE_KEY && <p className="play-first-prompt-keys">{keyLine}</p>}
       {more.map((line) => (
         <p key={line} className="play-first-prompt-more" data-testid="play-first-prompt-more">
           {line}
         </p>
       ))}
+      <p className="play-first-prompt-start" data-testid="play-first-prompt-start">
+        {startLine(coarse, keyLine)}
+      </p>
     </div>
   );
 }

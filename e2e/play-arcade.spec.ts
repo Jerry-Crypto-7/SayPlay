@@ -160,10 +160,11 @@ test.describe('/play/[id] – arcade runner', () => {
   });
 
   // P33 T11: výzva visí, dokud hra čeká na první dotek – hodiny stojí na tiku 0 a první stisk padne do něj.
-  test('the game waits on tick 0 under "Tap to start" and the first input starts it (P28C T5, P33 T11)', async ({ page }) => {
+  // P70C T2: desktop kliká – běžec skáče mezerníkem, takže výzva řekne i Space („Tap to start“ jen na dotyku).
+  test('the game waits on tick 0 under "Click or press Space" and the first input starts it (P28C T5, P33 T11, P70C T2)', async ({ page }) => {
     await page.goto(url);
     const prompt = page.getByTestId('play-first-prompt');
-    await expect(prompt).toContainText('Tap to start', { timeout: 60_000 });
+    await expect(page.getByTestId('play-first-prompt-start')).toHaveText('Click or press Space', { timeout: 60_000 });
     await expect(page.getByTestId('play-first-prompt-action')).toHaveText('Tap to jump');
     await page.waitForTimeout(1_500);
     expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);

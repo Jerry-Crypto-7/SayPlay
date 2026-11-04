@@ -10,8 +10,23 @@
  */
 
 import { lookFor } from '../arcade/look';
+import { BASE_ENTRIES } from '../assets/entries/base';
+import { CATALOG_ENTRIES } from '../assets/entries/catalog';
+import { RIGGED_P32_ENTRIES } from '../assets/entries/rigged-p32';
+import { RIGGED_P54_ENTRIES } from '../assets/entries/rigged-p54';
 import type { CastRole } from '../genre/contract';
 import type { ArchetypeId } from '../registry';
+
+/**
+ * Zvířata, která scéna kreslí jako postavu s klipy (P70B T3): jednoslovná identita záznamu
+ * manifestu třídy `animal` s aspoň jedním klipem mimo `procedural` (`animated` v `arcade/models`).
+ * Jen ta smí být hrdinou bez členu („rabbit defends its burrow“) a za „help/feed the …“.
+ */
+export const RIGGED_ANIMALS: ReadonlySet<string> = new Set(
+  [...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...CATALOG_ENTRIES, ...RIGGED_P54_ENTRIES]
+    .filter((entry) => entry.class === 'animal' && Object.values(entry.clips).some((clip) => clip !== 'procedural'))
+    .flatMap((entry) => entry.identity.filter((word) => /^[a-z]+$/.test(word))),
+);
 
 /** Věta o plížení: stráže s výhledem místo slepých hlídek. */
 export const STEALTH =
@@ -490,7 +505,11 @@ const aCharacter = (phrase: string | null): string | null =>
  */
 function subjectOf(text: string): string | null {
   const match = /^(?:a|an|the|my|one) ([a-z0-9][a-z0-9' -]*)/.exec(text);
-  if (match === null) return null;
+  if (match === null) {
+    // P70B T3: bez členu jen zvíře s klipy před slovesem na -s („rabbit defends its burrow“).
+    const bare = /^([a-z]+) [a-z]+s\b/.exec(text)?.[1];
+    return bare !== undefined && RIGGED_ANIMALS.has(singular(bare)) ? bare : null;
+  }
   // „A gold mine where I hire…“, „a match 3 game“ – místo nebo žánr, ne postava.
   if (match[1].split(' ').slice(0, 4).some((word) => word === 'where' || word === 'game' || word === 'games')) return null;
   const phrase = nounPhrase(match[1], 3);
@@ -683,6 +702,9 @@ export function plural(phrase: string, count: number): string {
   const many = PLURAL_OF[last] ?? (/[^aeiou]y$/.test(last) ? `${last.slice(0, -1)}ies` : /(?:s|x|ch|sh)$/.test(last) ? `${last}es` : `${last}s`);
   return [...words.slice(0, -1), many].join(' ');
 }
+
+/** Počet a jméno v textu cíle (P70B T3): „Beat 1 box“, „Beat 3 boxes“ – jediné místo, kde se číslo potkává se slovem. */
+export const counted = (count: number, phrase: string): string => `${String(count)} ${plural(singular(phrase), count)}`;
 
 /**
  * Slovo počítadla cíle v HUD (P61 T5, `keys 0/3`): poslední slovo popisku věci v množném čísle,

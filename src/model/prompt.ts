@@ -93,6 +93,8 @@ export interface UpstreamRequest {
   readonly user: string;
   /** JSON Schema odpovědi v přísném režimu; větev `codex-cli` ji vynutí (`--output-schema`), ostatní ji nečtou. */
   readonly outputSchema?: Readonly<Record<string, unknown>>;
+  /** Užší schéma jen pro `codex-cli` (P70B T4a): tam stojí každý token schématu čas. Odpověď pod ním musí projít i `outputSchema`. */
+  readonly codexOutputSchema?: Readonly<Record<string, unknown>>;
 }
 
 /**

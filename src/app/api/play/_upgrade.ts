@@ -488,8 +488,10 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   let source: DirectorSource = rejected === null ? directed.source : 'authored';
   // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
   // nevyjde – publikuje se první; `adds: []` ho ukáže. Bez volného slotu (P53 T3a) se pokus přeskočí:
-  // režie svůj slot už pustila a druhé čekání by hotovou verzi zdrželo za cizími větami.
-  if (quick !== null && adds?.length === 0 && directorSlotFree()) {
+  // režie svůj slot už pustila a druhé čekání by hotovou verzi zdrželo za cizími větami. Pokus se přeskočí i tehdy,
+  // když by trval jako první běh a skončil po `AI_VERSION_TARGET_MS` od věty (P70B T4a).
+  const firstRunMs = performance.now() - directorStarted;
+  if (quick !== null && adds?.length === 0 && directorSlotFree() && Date.now() - request.startedAt + firstRunMs <= AI_VERSION_TARGET_MS) {
     // `false`: slot se mezi kontrolou výš a voláním (čtení vypínače a cache po síti) mohl obsadit – pak se nečeká.
     const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false)(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(base, nudged.spec, seeds, intent, before);
@@ -513,6 +515,12 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   if (published.value.game.relation === 'reading') return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the reading draft', raw: upgraded });
   return { status: 'ready', versionId: published.value.game.version.versionId, ...(adds === undefined ? {} : { adds }) };
 }
+
+/**
+ * Do kdy od věty má AI verze dorazit (P70B T4a, cíl dema 120 s). Druhý běh s pokynem, který by ho podle délky prvního
+ * přešvihl, se nespustí – hráč dostane AI verzi bez novinky dřív, než by čekal na novinku.
+ */
+export const AI_VERSION_TARGET_MS = 120_000;
 
 /** Pokyn druhého pokusu upgradu, který nic nepřidal (P46E T4). */
 export const ADD_NUDGE = 'YOUR VERSION ADDS NOTHING THE QUICK VERSION LACKS: add a boss or an ability – a boss the run ends with, or 1–2 hero abilities the sentence implies.';

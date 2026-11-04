@@ -1,0 +1,27 @@
+{
+  "base": "http://127.0.0.1:3202",
+  "measuredAt": "2026-11-04T15:21:00.210Z",
+  "limitMs": 120000,
+  "arrived": 1,
+  "of": 1,
+  "chains": 0,
+  "rows": [
+    {
+      "sentence": "a race car speeds around the track dodging oil spills",
+      "quick": "http://127.0.0.1:3202/play/3ffa49012d36d5774a42ec2e181f756a",
+      "kind": "ready",
+      "readyMs": 115175,
+      "full": "http://127.0.0.1:3202/play/8fb03911b3ec2b59bda36622534ec42d",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "8fb03911b3ec2b59bda36622534ec42d",
+        "adds": [
+          "boss",
+          "segments"
+        ]
+      }
+    }
+  ]
+}

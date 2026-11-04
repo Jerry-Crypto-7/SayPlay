@@ -1,0 +1,65 @@
+{
+  "base": "http://127.0.0.1:3202",
+  "measuredAt": "2026-11-04T17:03:41.314Z",
+  "limitMs": 120000,
+  "arrived": 4,
+  "of": 4,
+  "chains": 0,
+  "rows": [
+    {
+      "sentence": "a golfer putts the ball into the hole on a windy course",
+      "quick": "http://127.0.0.1:3202/play/fd21ba5200eb235852ca7edfb73f4c32",
+      "kind": "ready",
+      "readyMs": 20465,
+      "full": "http://127.0.0.1:3202/play/ef22698d59c6a6692447f571f5fc3e02",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "ef22698d59c6a6692447f571f5fc3e02"
+      }
+    },
+    {
+      "sentence": "a race car speeds around the track dodging oil spills",
+      "quick": "http://127.0.0.1:3202/play/3ffa49012d36d5774a42ec2e181f756a",
+      "kind": "ready",
+      "readyMs": 27027,
+      "full": "http://127.0.0.1:3202/play/8fb03911b3ec2b59bda36622534ec42d",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "8fb03911b3ec2b59bda36622534ec42d"
+      }
+    },
+    {
+      "sentence": "a ninja slices fruit flying across the screen",
+      "quick": "http://127.0.0.1:3202/play/faf39b8e405c3ee429b75457d668a0ab",
+      "kind": "ready",
+      "readyMs": 17340,
+      "full": "http://127.0.0.1:3202/play/7382d609f12e2632e7d1c0f424b28d55",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "7382d609f12e2632e7d1c0f424b28d55"
+      }
+    },
+    {
+      "sentence": "a cowboy shoots bottles off the fence",
+      "quick": "http://127.0.0.1:3202/play/457f45bea6f20c32a19cd6b937cb2c94",
+      "kind": "ready",
+      "readyMs": 102779,
+      "full": "http://127.0.0.1:3202/play/12564bc2f1d90a79e051c8d0a65d84ec",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "12564bc2f1d90a79e051c8d0a65d84ec",
+        "adds": [
+          "boss"
+        ]
+      }
+    }
+  ]
+}

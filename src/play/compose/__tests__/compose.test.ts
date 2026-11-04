@@ -18,9 +18,10 @@ describe('compose a live recipe from the full intent', () => {
   for (const row of tuning) it(`${row.id}: proves or admits every essential triple`, () => {
     const intent = extractIntent(row.sentence);
     const made = compose(intent);
-    if (['si-025', 'si-026'].includes(row.id)) {
+    // „golf mini game“ (si-026) hraje od P70B T2 minigolf, ne míč (`genre/__tests__/p70b-golf.test.ts`).
+    if (row.id === 'si-025') {
       expect(made.recipe.move).toBe('ball');
-      expect(made.witnesses.some(witness => witness.verb === (row.id === 'si-025' ? 'throw' : 'ball'))).toBe(true);
+      expect(made.witnesses.some(witness => witness.verb === 'throw')).toBe(true);
     }
     for (const triple of essentialTriples(intent)) {
       const proved = made.witnesses.some(w => matchesWitness(triple, w));

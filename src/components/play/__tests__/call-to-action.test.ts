@@ -7,7 +7,17 @@
 import { describe, expect, it } from 'vitest';
 
 import { DUEL_ZONES, PLATFORM_ZONES, ZONE_HINTS, zoneAt } from '../arcade/touch-zones';
-import { callToAction, touchHint } from '../FirstPrompt';
+import { callToAction, desktopKeys, startLine, touchHint } from '../FirstPrompt';
+
+describe('startLine (P70C T2)', () => {
+  it('says tap on touch, click or Space on desktop only where Space is the first command', () => {
+    expect(startLine(true, null)).toBe('Tap to start');
+    expect(startLine(false, desktopKeys('Tap or Space to jump.'))).toBe('Click or press Space');
+    // Klouzání Space nebere: karta ho neslíbí.
+    expect(startLine(false, desktopKeys('Arrows or drag to steer.'))).toBe('Click to start');
+    expect(startLine(false, 'or press the number on a card')).toBe('Click to start');
+  });
+});
 
 describe('callToAction', () => {
   it.each([
@@ -56,6 +66,12 @@ describe('touchHint', () => {
     ['Tap right or Space to strike, tap left or Down to dodge.', 'Tap right to strike, tap left to dodge.'],
     ['Drag or arrows to move, hold Use when it is ready.', 'Drag to move, hold Use when it is ready.'],
     ['Hold to power up, drag up or down to aim, let go to throw.', 'Hold to power up, drag up or down to aim, let go to throw.'],
+    // P70C: věty registru, kde na telefonu zůstávaly klávesy (minigolf, rytmus, honička, chůze).
+    ['Drag back from the ball and let go. Keys: arrows aim, hold Space.', 'Drag back from the ball and let go.'],
+    ['Tap the lane, or D F J K, on the beat. M toggles sound.', 'Tap the lane on the beat.'],
+    ['Move with arrows or WASD, or drag to chase.', 'Drag to chase.'],
+    ['Drag in any direction, or use arrows or WASD to walk.', 'Drag in any direction to walk.'],
+    ['Arrows or A/D to move, Space or tap to jump. F or Fire to shoot.', 'Tap to jump. Fire to shoot.'],
   ])('%s → %s', (hint, touch) => {
     expect(touchHint(hint)).toBe(touch);
   });
