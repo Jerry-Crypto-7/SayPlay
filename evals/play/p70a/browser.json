@@ -1,0 +1,103 @@
+{
+ "schema": "p70a-browser.v1",
+ "measuredAt": "2026-11-04T20:21:53.895Z",
+ "viewport": "430x900 touch",
+ "lagMs": 400,
+ "surviveS": 20,
+ "horizonS": 90,
+ "rows": [
+  {
+   "id": "rabbit-jump",
+   "text": "help the rabbit jump",
+   "genre": "platformer",
+   "chain": false,
+   "outcome": "lost",
+   "endS": 88.02,
+   "firstLifeLostS": 88.02,
+   "lostOn": "clock-or-goal",
+   "survived20": true,
+   "shots": [
+    "rabbit-jump-card.jpg",
+    "rabbit-jump-20s.jpg",
+    "rabbit-jump-end.jpg"
+   ]
+  },
+  {
+   "id": "rabbit-feed",
+   "text": "feed the rabbits",
+   "genre": "quest",
+   "chain": false,
+   "outcome": "lost",
+   "endS": 18.42,
+   "firstLifeLostS": 10.42,
+   "lostOn": "lives",
+   "survived20": false,
+   "shots": [
+    "rabbit-feed-card.jpg",
+    "rabbit-feed-end.jpg"
+   ]
+  },
+  {
+   "id": "cat-boxes",
+   "text": "a cat jumps over boxes and eats fish",
+   "genre": "platformer",
+   "chain": false,
+   "outcome": "lost",
+   "endS": 88.02,
+   "firstLifeLostS": 88.02,
+   "lostOn": "clock-or-goal",
+   "survived20": true,
+   "shots": [
+    "cat-boxes-card.jpg",
+    "cat-boxes-20s.jpg",
+    "cat-boxes-end.jpg"
+   ]
+  },
+  {
+   "id": "flap",
+   "text": "a little bird flaps between the pipes",
+   "genre": "flap",
+   "chain": false,
+   "outcome": "lost",
+   "endS": 5.73,
+   "firstLifeLostS": 3.23,
+   "lostOn": "lives",
+   "survived20": false,
+   "shots": [
+    "flap-card.jpg",
+    "flap-end.jpg"
+   ]
+  },
+  {
+   "id": "rhythm",
+   "text": "a cat drums to the beat of the song",
+   "genre": "rhythm",
+   "chain": false,
+   "outcome": "lost",
+   "endS": 6.27,
+   "firstLifeLostS": 4.63,
+   "lostOn": "lives",
+   "survived20": false,
+   "shots": [
+    "rhythm-card.jpg",
+    "rhythm-end.jpg"
+   ]
+  },
+  {
+   "id": "runner",
+   "text": "a fox runs through the forest and jumps over logs",
+   "genre": "runner",
+   "chain": false,
+   "outcome": "lost",
+   "endS": 37.15,
+   "firstLifeLostS": 26.88,
+   "lostOn": "lives",
+   "survived20": true,
+   "shots": [
+    "runner-card.jpg",
+    "runner-20s.jpg",
+    "runner-end.jpg"
+   ]
+  }
+ ]
+}
