@@ -69,6 +69,8 @@ export interface FitOptions {
    * vejde jen `keep`, svisle celá krabice i `keep`. Bez něj se vejde celá krabice.
    */
   readonly keep?: Box3;
+  /** Rámovat i na šířku (`aspect ≥ 1`); bez něj tam kamera žánru zůstane (P70D T3: přehled minigolfu). */
+  readonly anyAspect?: boolean;
 }
 
 export interface TallFit {
@@ -104,7 +106,7 @@ export function fitTall(camera: PerspectiveCamera, box: Box3, rect: PlayRect, op
   const forward = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
   const distance = box.getCenter(new Vector3()).sub(camera.position).dot(forward);
   const same: TallFit = { position: camera.position.clone(), distance, shift: 0 };
-  if (!(camera.aspect < 1)) return same;
+  if (!(camera.aspect < 1) && opts.anyAspect !== true) return same;
 
   const margin = opts.margin ?? FIT_MARGIN_PX;
   const top = rect.ndc.top - (2 * margin) / rect.canvas.height;
