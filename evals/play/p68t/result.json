@@ -1,0 +1,71 @@
+{
+ "schema": "p68t-result.v1",
+ "task": "P68T T3",
+ "holdout": {
+  "file": "evals/play/p68t/holdout.json",
+  "sha256": "a3875ef969fb76eee7edf1625e1f5996fe7b1d716ef678fff02d38093e5c6935",
+  "labelsSha256": "a469a4e7b4e125c3fccc4dd5cf202a3f27826c2fb4e72a603177f9573c101186",
+  "openedAt": "2026-11-04T08:17:42.407Z",
+  "commit": "17c85b15",
+  "sentences": 90,
+  "halves": { "new": 60, "general": 30 }
+ },
+ "sides": {
+  "main": { "commit": "0d432d79", "about": "origin/main before P68T (parent of the T1 seal commit 7fe5c421)", "root": "D:/caches/p68t/main-0d432d79" },
+  "branch": { "commit": "17c85b15", "about": "origin/main after P68T T2 (#87)" }
+ },
+ "thresholds": "evals/play/p68/gates.json (frozen in P68 T1, unchanged)",
+ "measured": ["G1", "G2"],
+ "notMeasured": "G3-G7 are outside P68T: T2 changed only routing (classify.ts and tests), no game, scene or build path; FPS, time to playable and determinism of the four games stand as P68R T6 recorded them (evals/play/p68r/result.json)",
+ "g1": {
+  "quick": "draftGameSpecWithMeta(sentence, 1) = the quick game; classifier = classifyGenre ranked[0]",
+  "labels": "evals/play/p68t/holdout-labels.json (blind claude -p text judge at sealing, seed 68201)",
+  "reports": {
+   "holdoutMain": "evals/play/p68t/route-holdout-main.json",
+   "holdoutBranch": "evals/play/p68t/route-holdout-branch.json",
+   "t2Main": "evals/play/p68t/route-main.json",
+   "t2Branch": "evals/play/p68t/route-branch.json"
+  },
+  "general": {
+   "holdout": { "counted": 30, "wrongMain": 6, "wrongBranch": 6 },
+   "test200": { "counted": 175, "wrongMain": 64, "wrongBranch": 64 },
+   "movesHoldout": [],
+   "movesT2": [],
+   "oldToNewHoldout": ["p68t-073 quest -> buildshift (acceptable)"]
+  },
+  "generalOk": true,
+  "perGame": {
+   "minigolf": { "n": 15, "routedToOwn": 12, "routedToOwnMain": 12, "p68r": 13 },
+   "railfps": { "n": 15, "routedToOwn": 8, "routedToOwnMain": 4, "p68r": 8 },
+   "buildshift": { "n": 15, "routedToOwn": 9, "routedToOwnMain": 8, "p68r": 10 },
+   "drawsave": { "n": 15, "routedToOwn": 14, "routedToOwnMain": 14, "p68r": 11 }
+  },
+  "misses": {
+   "minigolf": ["p68t-051 throw", "p68t-053 arena", "p68t-059 hole"],
+   "railfps": ["p68t-002 platformer", "p68t-003 voyage", "p68t-007 voyage", "p68t-009 voyage", "p68t-010 voyage", "p68t-011 voyage", "p68t-014 voyage"],
+   "buildshift": ["p68t-021 quest", "p68t-022 voyage", "p68t-023 quest", "p68t-025 arena", "p68t-026 arena", "p68t-030 throw"],
+   "drawsave": ["p68t-034 arena"]
+  }
+ },
+ "g2": {
+  "tool": "scripts/measure/gameplay-gate.mjs on the quick-game spec (seed 1) of each new sealed sentence; a sentence the quick game routes to another game has no spec of its game and counts as failed",
+  "report": "evals/play/p68t/gameplay-holdout.json",
+  "perGame": {
+   "minigolf": { "n": 15, "pass": 12 },
+   "railfps": { "n": 15, "pass": 8 },
+   "buildshift": { "n": 15, "pass": 9 },
+   "drawsave": { "n": 15, "pass": 14 }
+  },
+  "routedPassing": 43,
+  "routedAll": 43
+ },
+ "verdict": {
+  "scope": "G1 and G2 only (routing and playability of the quick game)",
+  "games": {
+   "minigolf": { "pass": true, "unmet": [] },
+   "railfps": { "pass": false, "unmet": ["G1", "G2"] },
+   "buildshift": { "pass": false, "unmet": ["G1", "G2"] },
+   "drawsave": { "pass": true, "unmet": [] }
+  }
+ }
+}
