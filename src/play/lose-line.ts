@@ -149,3 +149,27 @@ export function loseLineOf(spec: GameSpecV1, world: ArcadeWorld | null): string 
   const both = second === undefined ? null : sentence(joined(first, second));
   return both !== null && both.length <= MAX_LINE ? both : sentence(first.text);
 }
+
+/** Minulý čas prvního slova příčiny („lose all 3 lives“ → „lost all 3 lives“); slovesa pravidel mimo seznam nejsou. */
+const PAST: Readonly<Record<string, string>> = { run: 'ran', get: 'got', let: 'let', fall: 'fell', hit: 'hit', touch: 'touched', lose: 'lost', stand: 'stood', miss: 'missed', crash: 'crashed' };
+
+/** Čím běh skončil: došly životy, došel čas. */
+export interface RunEnd {
+  readonly livesOut: boolean;
+  readonly timeOut: boolean;
+}
+
+/**
+ * Věta po prohře (P70C T2, „You lost all 3 lives.“): příčina, která běh opravdu ukončila – došlé životy, došlý
+ * čas, jinak jediná zbývající příčina pravidel. Víc možných příčin nebo sloveso mimo `PAST` → `null`: věta, která
+ * by hádala, je horší než žádná.
+ */
+export function lostLineOf(clauses: readonly LoseClause[], end: RunEnd): string | null {
+  const known = clauses.find((entry) => (entry.cause === 'lives' && end.livesOut) || (entry.cause === 'time' && end.timeOut));
+  const rest = clauses.filter((entry) => entry.cause !== 'lives' && entry.cause !== 'time');
+  const cause = known ?? (rest.length === 1 ? rest[0] : undefined);
+  if (cause === undefined) return null;
+  const [verb = '', ...words] = cause.text.split(' ');
+  const past = PAST[verb];
+  return past === undefined ? null : `You ${[past, ...words].join(' ')}.`;
+}

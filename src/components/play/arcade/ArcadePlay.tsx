@@ -13,8 +13,9 @@ import dynamic from 'next/dynamic';
 import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { foundOf, hooksOf } from '@/play/arcade/hooks';
+import { loseClausesOf, loseLineOf, lostLineOf } from '@/play/lose-line';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import obstacleKits from '@/play/arcade/look/obstacle-kits.json';
@@ -151,6 +152,18 @@ export function collectGoal(world: ArcadeWorld, count: number): HudGoal | null {
   return typeof noun === 'string' ? { label: noun, count, need, said: true } : { label: 'collected', count, need };
 }
 
+/**
+ * Postup před větou cíle (P70C T2), vidět celou hru: trať „42 m / 220 m“, úkoly načasování, rytmu a souboje
+ * („3 notes“). Sbírání má vejce v pilulce, střelba a hod zbývající rány, aréna časovač – tam `null`.
+ */
+export function goalProgressOf(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot): string | null {
+  if (spec.control === 'move_free' || aiming(spec) || collectNeed(world) !== null) return null;
+  const unit = COUNT_UNIT[spec.control ?? ''];
+  if (unit !== undefined) return `${snapshot.distanceM} ${unit}`;
+  const total = Math.floor(world.length / UNIT);
+  return total > 0 ? `${snapshot.distanceM} m / ${total} m` : null;
+}
+
 const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true || spec.control === 'steer' && typeof spec.controlParams?.crashBudget === 'number';
 
 /** Počítadla pilulky postupu mimo cíl sbírání: zbývající rány, náboje, životy a cíl k překonání – DOM HUD i panel VR (P65 T5). */
@@ -177,15 +190,21 @@ const xrCountersOf = (goal: HudGoal | null, counters: readonly HudCounter[]): Xr
  * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
  * Nálezy podle vzácnosti (P66 T4) jen u hry, jejíž háčky vzácnost losují.
  */
-function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number): RunFacts {
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number, bonus: number): RunFacts {
   const goal = collectGoal(world, snapshot.items);
   const hooks = hooksOf(world.rules);
   const extra: ResultStat[] = [];
+  const track = spec.control !== 'move_free' && !aiming(spec);
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
-  if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
+  if (track) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
   const scoring = snapshot.score !== 0 || (par !== null && par.score > 0);
+  const limit = limitOf(world);
+  // Čím prohra skončila (P70C T2): došlé životy, došlý čas (i prodloužený živou změnou), jinak jediná příčina pravidel.
+  const end = { livesOut: hasLives(spec) && snapshot.health <= 0, timeOut: limit !== null && snapshot.tick >= (limit + bonus) * ARCADE_HZ };
   return {
     won: snapshot.runState === 'won',
+    progress: track ? snapshot.progress : null,
+    lost: snapshot.runState === 'won' ? null : lostLineOf(loseClausesOf(spec, world), end),
     tick: snapshot.tick,
     hz: ARCADE_HZ,
     survive: survives(world),
@@ -257,6 +276,8 @@ function ArcadeHud({
       counters={counters}
       clock={limit === null ? { seconds: elapsed, countdown: false } : { seconds: limit + bonus - elapsed, countdown: true }}
       objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, ARCADE_HZ, paused)}
+      keepGoal={snapshot.runState === 'running'}
+      goalProgress={goalProgressOf(spec, world, snapshot)}
       caught={caught}
       onPause={onPause}
       status={
@@ -440,6 +461,8 @@ function ArcadePlayGame({
   const inputCount = useSyncExternalStore(session.subscribe, () => session.inputs().length, () => 0);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
+  // Řádek „jak prohraješ“ karty před startem (P70C T2) – z pravidel světa, ne ze žánru.
+  const loseLine = loseLineOf(spec, arcade);
   const cast = useMemo(() => {
     const props = propModels(spec);
     if (spec.controlParams?.generator === 'quest_spatial' || spec.controlParams?.generator === 'quest_station') {
@@ -959,6 +982,8 @@ function ArcadePlayGame({
               <FirstPrompt
                 controlsHint={spec.tutorial.controlsHint}
                 touch={zoneHint}
+                goal={spec.tutorial.goalLine}
+                lose={loseLine}
                 dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
               />
             )}
@@ -1073,7 +1098,7 @@ function ArcadePlayGame({
         <PostRun
           versionId={versionId}
           remix={remix}
-          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart)}
+          facts={arcadeFacts(spec, arcade, snapshot, session.state(), par, livesStart, bonus)}
           clip={clip}
           live={live}
           dare={dare}

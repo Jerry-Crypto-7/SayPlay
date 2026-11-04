@@ -7,7 +7,17 @@
 import { describe, expect, it } from 'vitest';
 
 import { DUEL_ZONES, PLATFORM_ZONES, ZONE_HINTS, zoneAt } from '../arcade/touch-zones';
-import { callToAction, touchHint } from '../FirstPrompt';
+import { callToAction, desktopKeys, startLine, touchHint } from '../FirstPrompt';
+
+describe('startLine (P70C T2)', () => {
+  it('says tap on touch, click or Space on desktop only where Space is the first command', () => {
+    expect(startLine(true, null)).toBe('Tap to start');
+    expect(startLine(false, desktopKeys('Tap or Space to jump.'))).toBe('Click or press Space');
+    // Klouzání Space nebere: karta ho neslíbí.
+    expect(startLine(false, desktopKeys('Arrows or drag to steer.'))).toBe('Click to start');
+    expect(startLine(false, 'or press the number on a card')).toBe('Click to start');
+  });
+});
 
 describe('callToAction', () => {
   it.each([

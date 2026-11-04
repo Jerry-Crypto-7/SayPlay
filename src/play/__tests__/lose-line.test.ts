@@ -15,7 +15,7 @@ import { type ArcadeWorld, COUNTER, HEADER, nativeRule } from '@/play/arcade/con
 import { loadRapier } from '@/play/arcade/physics/world';
 import { GENRES, type GenreModule } from '@/play/genre/contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '@/play/genre/index';
-import { loseClausesOf, loseLineOf } from '@/play/lose-line';
+import { loseClausesOf, loseLineOf, lostLineOf } from '@/play/lose-line';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 /** Každý režim, který registr pouští – nový žánr se sem dostane sám. */
@@ -98,5 +98,30 @@ describe('the lose line', () => {
 
   it('a game nobody can lose has no line instead of a made-up one', () => {
     expect(loseLineOf(fixture('collect_exit'), null)).toBeNull();
+  });
+});
+
+describe('lostLineOf (P70C T2)', () => {
+  const LIVES = { cause: 'lives', text: 'lose all 3 lives' } as const;
+  const TIME = { cause: 'time', text: 'run out of time' } as const;
+  const FALL = { cause: 'fall', text: 'fall' } as const;
+  const CAUGHT = { cause: 'caught', text: 'get caught by the wolf' } as const;
+  const none = { livesOut: false, timeOut: false };
+
+  it('names the cause that really ended the run, in the past tense', () => {
+    expect(lostLineOf([LIVES, TIME], { livesOut: true, timeOut: false })).toBe('You lost all 3 lives.');
+    expect(lostLineOf([LIVES, TIME], { livesOut: false, timeOut: true })).toBe('You ran out of time.');
+    expect(lostLineOf([LIVES, FALL], none)).toBe('You fell.');
+    expect(lostLineOf([CAUGHT], none)).toBe('You got caught by the wolf.');
+  });
+
+  it('says nothing rather than guess', () => {
+    // Dvě možné příčiny pravidel, životy i čas zbývají.
+    expect(lostLineOf([FALL, CAUGHT], none)).toBeNull();
+    // Životy došly, ale hra životy nemá – příčina se neví.
+    expect(lostLineOf([FALL, CAUGHT], { livesOut: true, timeOut: false })).toBeNull();
+    // Sloveso pravidla mimo seznam minulých časů.
+    expect(lostLineOf([{ cause: 'rule', text: 'squish the bug' }], none)).toBeNull();
+    expect(lostLineOf([], none)).toBeNull();
   });
 });

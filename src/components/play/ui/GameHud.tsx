@@ -47,12 +47,13 @@ export const clockText = (seconds: number): string => `${Math.max(0, seconds).to
 /** Odpočet pod 5 s zrajčatí (kit: survive games turn tomato under 5s). */
 export const clockLow = (clock: HudClock): boolean => clock.countdown && clock.seconds < 5;
 
-/** Řádek cíle je vidět prvních tolik sekund hry. */
+/** Celá věta cíle stojí prvních tolik sekund hry, pak se sbalí do pilulky na jeden řádek (P70C T2). */
 export const OBJECTIVE_SECONDS = 4;
 
 /**
- * Je řádek cíle vidět? Prvních `OBJECTIVE_SECONDS` hry – hodiny stojí, dokud
- * se hráč nedotkne, takže cíl čte i ten, kdo váhá – a znovu při pauze.
+ * Je celá věta cíle rozbalená? Prvních `OBJECTIVE_SECONDS` hry – hodiny stojí,
+ * dokud se hráč nedotkne, takže cíl čte i ten, kdo váhá – a znovu při pauze.
+ * Mimo to cíl zůstává jako pilulka s postupem (`GameHud` `keepGoal`).
  */
 export function objectiveShown(tick: number, hz: number, paused: boolean): boolean {
   return paused || tick < OBJECTIVE_SECONDS * hz;
@@ -94,6 +95,8 @@ export function GameHud({
   counters = [],
   clock,
   objective,
+  keepGoal = false,
+  goalProgress = null,
   caught = false,
   onPause,
   status,
@@ -108,8 +111,12 @@ export function GameHud({
   readonly goal?: HudGoal | null;
   readonly counters?: readonly HudCounter[];
   readonly clock: HudClock;
-  /** Řádek cíle je vidět (`objectiveShown`). */
+  /** Celá věta cíle je rozbalená (`objectiveShown`). */
   readonly objective: boolean;
+  /** Hra běží: cíl zůstane i po `OBJECTIVE_SECONDS` jako pilulka na jeden řádek (P70C T2). */
+  readonly keepGoal?: boolean;
+  /** Postup k cíli před větou („42 m / 220 m“, „3 notes“); `null` = postup nese pilulka počítadel nebo časovač. */
+  readonly goalProgress?: string | null;
   /** Hráče právě chytili: okraj pilulky postupu (bez ní časovače) na chvíli zrajčatí. */
   readonly caught?: boolean;
   /** Kulaté tlačítko pauzy; bez něj (ukázka robota, konec hry) tlačítko není. */
@@ -152,7 +159,12 @@ export function GameHud({
         )}
         {status}
       </div>
-      <p className="sp-objective play-hud-goal" data-testid="play-goal" data-shown={objective}>
+      <p className="sp-objective play-hud-goal" data-testid="play-goal" data-shown={objective || keepGoal} data-compact={!objective && keepGoal}>
+        {goalProgress !== null && (
+          <span className="play-hud-goal-progress" data-testid="play-goal-progress">
+            {goalProgress}
+          </span>
+        )}
         {goalLine}
       </p>
       {phase}

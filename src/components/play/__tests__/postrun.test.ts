@@ -61,6 +61,18 @@ describe('PostRun', () => {
     expect(runResult({ ...facts(true), goal: { count: 0, need: 0, label: 'collected' } }).headline).toBe('You did it!');
   });
 
+  it('a loss before half the way says Try again! and why the run ended (P70C T2)', () => {
+    const lost = facts(false);
+    expect(runResult({ ...lost, progress: 49 }).headline).toBe('Try again!');
+    expect(runResult({ ...lost, progress: 50 }).headline).toBe('So close.');
+    expect(runResult({ ...lost, progress: null }).headline).toBe('So close.');
+    expect(runResult({ ...facts(true), progress: 10 }).headline).toBe('You did it!');
+    const markup = (run: RunFacts) => renderToStaticMarkup(createElement(PostRun, { versionId: 'v1', remix: job, facts: run, onReplay: () => undefined }));
+    expect(markup({ ...lost, lost: 'You lost all 3 lives.' })).toMatch(/data-testid="play-result-lost"[^>]*>You lost all 3 lives\.</);
+    expect(markup({ ...facts(true), lost: 'You lost all 3 lives.' })).not.toContain('play-result-lost');
+    expect(markup({ ...lost, lost: null })).not.toContain('play-result-lost');
+  });
+
   it('keeps the change field behind Remix it until the player asks for it', () => {
     const markup = card(true);
     expect(markup).toContain('>Remix it<');

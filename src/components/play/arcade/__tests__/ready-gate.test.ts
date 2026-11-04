@@ -121,11 +121,21 @@ describe('ready gate', () => {
 });
 
 describe('ready prompt', () => {
-  it('says tap to start, the one command and the desktop key', () => {
-    const html = renderToStaticMarkup(createElement(FirstPrompt, { controlsHint: 'Tap or Space to jump, swipe or arrows to change lane.' }));
-    expect(html).toContain('Tap to start');
+  // P70C T2: desktop (server nezná dotyk) kliká nebo mačká Space; karta nese cíl, prohru a ovládání v tomto pořadí.
+  it('says how to win, how to lose, the one command and click or Space to start', () => {
+    const html = renderToStaticMarkup(
+      createElement(FirstPrompt, { controlsHint: 'Tap or Space to jump, swipe or arrows to change lane.', goal: 'Reach the flag.', lose: 'Lose all 3 lives.' }),
+    );
+    expect(html).toContain('Click or press Space');
+    expect(html).not.toContain('Tap to start');
+    expect(html).not.toContain('play-first-prompt-keys');
+    const order = ['play-first-prompt-goal', 'play-first-prompt-lose', 'play-first-prompt-action', 'play-first-prompt-start'].map((id) => html.indexOf(`data-testid="${id}"`));
+    expect(order.every((at, index) => at >= 0 && (index === 0 || at > order[index - 1]!))).toBe(true);
+    expect(html).toContain('>Reach the flag.<');
+    expect(html).toContain('>Lose all 3 lives.<');
     expect(html).toContain('Tap to jump');
-    expect(html).toContain('Space');
+    // Hra, která prohrát nejde, řádek prohry nemá.
+    expect(renderToStaticMarkup(createElement(FirstPrompt, { controlsHint: 'Tap to jump.', lose: null }))).not.toContain('play-first-prompt-lose');
   });
 
   // P39 T10: plošinovka se střelbou ukáže skok i střelbu, ne jen „Arrows to move“.

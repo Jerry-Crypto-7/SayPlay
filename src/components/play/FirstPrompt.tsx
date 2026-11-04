@@ -124,23 +124,37 @@ export function controlLines(primary: string, extra?: string): string[] {
   return [...lines, ...more];
 }
 
+/** Klávesa první nápovědy, kterou karta řekne rovnou ve výzvě startu („Click or press Space“). */
+const SPACE_KEY = 'or press Space';
+
+/** Výzva startu (P70C T2): prst klepe, desktop kliká – Space jen tam, kde ho hra opravdu bere jako první povel. */
+export const startLine = (coarse: boolean, keyLine: string | null): string => (coarse ? 'Tap to start' : keyLine === SPACE_KEY ? 'Click or press Space' : 'Click to start');
+
 /**
- * Velká výzva uprostřed, dokud hra čeká na první dotek: „Tap to start“,
- * jeden povel a na desktopu klávesa. Na dotyku povel z nápovědy bez kláves
- * (`touch` ji dodá, kde ji text hry neřekne – zóny plošinovky) a bez řádku
- * klávesy. Klepnutí jde skrz na plátno – ten dotek hru pustí. Mřížka posílá
- * vlastní řádek klávesy (`keys`), protože karty cílů mají čísla. Výzva kamaráda
- * (P36B T7) přidá nahoru, co porazit; hrál-li kamarád se živými změnami, řekne to.
+ * Karta uprostřed, dokud hra čeká na první dotek (P70C T2): jak vyhrát
+ * (`goal`), jak prohrát (`lose`, `loseLineOf`), ovládání a výzva startu – na
+ * dotyku „Tap to start“, na desktopu „Click or press Space“. Na dotyku povel
+ * z nápovědy bez kláves (`touch` ji dodá, kde ji text hry neřekne – zóny
+ * plošinovky) a bez řádku klávesy. Klepnutí jde skrz na plátno – ten dotek hru
+ * pustí. Mřížka posílá vlastní řádek klávesy (`keys`), protože karty cílů mají
+ * čísla. Výzva kamaráda (P36B T7) přidá nahoru, co porazit; hrál-li kamarád se
+ * živými změnami, řekne to. Kolo řetězce mikroher kartu zapojí stejně.
  */
 export function FirstPrompt({
   controlsHint,
   touch,
   keys,
+  goal,
+  lose = null,
   dare = null,
 }: {
   readonly controlsHint: string;
   readonly touch?: string;
   readonly keys?: string;
+  /** Cíl hry (`tutorial.goalLine`). */
+  readonly goal?: string;
+  /** Jak se prohrává (`loseLineOf`); `null` = hra prohrát nejde. */
+  readonly lose?: string | null;
   readonly dare?: { readonly goal: string; readonly changed: boolean } | null;
 }) {
   const coarse = useCoarsePointer();
@@ -155,14 +169,26 @@ export function FirstPrompt({
           {dare.changed && <span className="play-first-prompt-note">Your friend changed the game while playing.</span>}
         </p>
       )}
-      <p className="play-first-prompt-start">Tap to start</p>
+      {goal !== undefined && goal !== '' && (
+        <p className="play-first-prompt-goal" data-testid="play-first-prompt-goal">
+          {goal}
+        </p>
+      )}
+      {lose !== null && (
+        <p className="play-first-prompt-lose" data-testid="play-first-prompt-lose">
+          {lose}
+        </p>
+      )}
       {action !== '' && <p className="play-first-prompt-action" data-testid="play-first-prompt-action">{action}</p>}
-      {keyLine !== null && <p className="play-first-prompt-keys">{keyLine}</p>}
+      {keyLine !== null && keyLine !== SPACE_KEY && <p className="play-first-prompt-keys">{keyLine}</p>}
       {more.map((line) => (
         <p key={line} className="play-first-prompt-more" data-testid="play-first-prompt-more">
           {line}
         </p>
       ))}
+      <p className="play-first-prompt-start" data-testid="play-first-prompt-start">
+        {startLine(coarse, keyLine)}
+      </p>
     </div>
   );
 }

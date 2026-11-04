@@ -19,6 +19,7 @@ import dynamic from 'next/dynamic';
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { lookOf, sceneLook } from '@/play/arcade/look';
+import { loseLineOf } from '@/play/lose-line';
 import { createMeshClient } from '@/shape/mesh-client';
 import { createCachedMeshClient } from '@/shape/mesh-cache';
 import { buildProxyWorldFrom, type ProxyWorld } from '@/worldstream/proxy';
@@ -507,7 +508,9 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
         />
         {running && <RemixReadyChip job={remix} />}
       </Hud>
-      {running && waiting && <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" />}
+      {running && waiting && (
+        <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" goal={spec.tutorial.goalLine} lose={loseLineOf(spec, null)} />
+      )}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />

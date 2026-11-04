@@ -83,7 +83,14 @@ export interface RunFacts {
   readonly stars?: StarCount | null;
   /** Nálezy podle vzácnosti ze stavu háčků (P66 T4); chybí = hra bez vzácnosti. */
   readonly found?: Readonly<Record<Rarity, number>> | null;
+  /** Uběhlá část cesty v % (P70C T2); chybí = hra bez trati (aréna, střelba, mřížka). */
+  readonly progress?: number | null;
+  /** Čím běh skončil prohrou („You lost all 3 lives.“, `lostLineOf`); chybí = příčina se neví. */
+  readonly lost?: string | null;
 }
+
+/** Prohra před polovinou cesty není „So close.“ (P70C T2), ale „Try again“. */
+const HALF_WAY = 50;
 
 export interface RunResult {
   readonly headline: string;
@@ -161,7 +168,7 @@ export function runResult(facts: RunFacts, record: BestOutcome | null = null, ch
         : `You lasted ${time}.`;
   const lead: ResultStat[] = goal === null ? [] : [{ value: `${goal.count}/${goal.need}`, label: goal.label }];
   // Prohra bez bodu (body, jinak cílové předměty) není „So close.“ (P56A T9); přežití bez bodů nulu nemá.
-  const nothing = !facts.won && (facts.score != null ? facts.score.value === 0 : goal !== null && goal.count === 0);
+  const nothing = !facts.won && ((facts.score != null ? facts.score.value === 0 : goal !== null && goal.count === 0) || (facts.progress != null && facts.progress < HALF_WAY));
   return {
     headline: dare !== null ? (dare.beat ? YOU_BEAT_IT : SO_CLOSE) : facts.won ? YOU_DID_IT : nothing ? TRY_AGAIN : SO_CLOSE,
     time,
@@ -433,6 +440,11 @@ export function PostRun({
         <p className="play-result-summary play-outcome-detail" data-tick={facts.tick}>
           {result.summary}
         </p>
+        {!facts.won && facts.lost != null && (
+          <p className="play-result-summary play-result-lost" data-testid="play-result-lost">
+            {facts.lost}
+          </p>
+        )}
         {tip !== null && (
           <p className="play-result-best play-result-tip" data-testid="play-result-tip">
             {tip}
