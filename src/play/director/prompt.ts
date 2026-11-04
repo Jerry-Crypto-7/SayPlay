@@ -26,7 +26,7 @@ import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
 import { ROLE_KINDS } from '../spec';
 
-import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, RECIPE_ANSWER_SCHEMA, readyModes } from './answer-schema';
 
 /** Úvod plného promptu; kompaktní má vlastní kratší. */
 export const GENRE_RULES =
@@ -276,5 +276,6 @@ export function buildDirectorRequest(sentence: string, draft: GenreSpec | null):
     system: directorSystemPrompt(),
     user: directorUser(sentence, draft),
     outputSchema: GENRE_ANSWER_SCHEMA,
+    codexOutputSchema: RECIPE_ANSWER_SCHEMA,
   };
 }

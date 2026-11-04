@@ -961,6 +961,11 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
   });
 }
 
+const codexSchemaOf = (request: GenerationCall['request']): SchemaNode | undefined => {
+  const schema = request.codexOutputSchema ?? request.outputSchema;
+  return schema === undefined ? undefined : openaiStrictSchema(schema);
+};
+
 async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig, signal?: AbortSignal): Promise<GenerationOutcome> {
   let output: string;
   try {
@@ -969,8 +974,9 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig,
       effortForCall(call, config),
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
-      // Codex posílá schéma jako striktní `json_schema` OpenAI, tedy s týmž limitem výčtů jako API (P70B T4).
-      call.request.outputSchema === undefined ? undefined : openaiStrictSchema(call.request.outputSchema),
+      // Codex posílá schéma jako striktní `json_schema` OpenAI, tedy s týmž limitem výčtů jako API (P70B T4);
+      // užší `codexOutputSchema` má přednost – každý token schématu tu stojí čas prvního volání (P70B T4a).
+      codexSchemaOf(call.request),
       signal,
     ));
   } catch (thrown) {

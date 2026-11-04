@@ -38,7 +38,7 @@ import { frozenGrammar } from '../../model/client';
 import type { Grammar } from '../../model/prompt';
 import { runPipeline } from '../pipeline';
 import { SpendCap } from '../spend-cap';
-import { GENRE_ANSWER_SCHEMA } from '../../play/director/answer-schema';
+import { GENRE_ANSWER_SCHEMA, RECIPE_ANSWER_SCHEMA } from '../../play/director/answer-schema';
 import { OPENAI_ENUM_LIMIT, chatConfigFromEnv, killCodexTree, parseAnswerText, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 // `execFile` se obaluje, ne nahrazuje: `taskkill` doopravdy běží a test sirotka
@@ -1083,6 +1083,21 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     const sent = JSON.parse(readFileSync(join(scripts, 'schema.sent.json'), 'utf8')) as Record<string, unknown>;
     expect(enumValues(sent)).toBeLessThanOrEqual(OPENAI_ENUM_LIMIT);
     expect(Object.keys(sent.$defs as object).length).toBeGreaterThan(0);
+  });
+
+  it('P70B T4a: užší codexOutputSchema má u codexu přednost před plným schématem', async () => {
+    // Naměřeno 4. 11.: jen recept 22 tis. vstupních tokenů a 24,8 s, plné schéma 66 tis. a 40,1 s.
+    const file = fakeCodex('schema-slim', okStream, [
+      '  const args = process.argv.slice(2);',
+      `  require('node:fs').copyFileSync(args[args.indexOf('--output-schema') + 1], ${JSON.stringify(join(scripts, 'schema-slim.sent.json'))});`,
+    ].join('\n'));
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 'S', user: PROMPT, outputSchema: GENRE_ANSWER_SCHEMA, codexOutputSchema: RECIPE_ANSWER_SCHEMA } });
+      expect(outcome.ok).toBe(true);
+    });
+    const sent = readFileSync(join(scripts, 'schema-slim.sent.json'), 'utf8');
+    expect(sent.length).toBeLessThan(JSON.stringify(GENRE_ANSWER_SCHEMA).length / 5);
+    expect((JSON.parse(sent) as { properties: { spec: { anyOf?: unknown } } }).properties.spec.anyOf).toBeUndefined();
   });
 
   it('vrátí tělo z agent_message, účtenku z turn.completed a jméno modelu i úsilí předá procesu', async () => {
