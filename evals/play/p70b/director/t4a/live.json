@@ -1,0 +1,56 @@
+{
+  "base": "http://127.0.0.1:3202",
+  "measuredAt": "2026-11-04T17:10:32.692Z",
+  "limitMs": 120000,
+  "arrived": 2,
+  "of": 3,
+  "chains": 0,
+  "rows": [
+    {
+      "sentence": "a penguin slides down an icy hill",
+      "quick": "http://127.0.0.1:3202/play/135bb0db1c7a281aea712b8f60916996",
+      "kind": "working",
+      "readyMs": null,
+      "full": null,
+      "fullKind": null,
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "b06cc06ff0d636b029279a1ce206f1c8",
+        "adds": [
+          "boss",
+          "action",
+          "segments"
+        ]
+      }
+    },
+    {
+      "sentence": "a chef catches falling pizzas in the kitchen",
+      "quick": "http://127.0.0.1:3202/play/e27a7ae0a95a564bcbe7c89d5073fb58",
+      "kind": "ready",
+      "readyMs": 63275,
+      "full": "http://127.0.0.1:3202/play/406f0493c99ade888b091f5b5302439a",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "406f0493c99ade888b091f5b5302439a",
+        "adds": []
+      }
+    },
+    {
+      "sentence": "a frog hops across a busy road",
+      "quick": "http://127.0.0.1:3202/play/f6beeecbb2441b27a648fa8f796689e2",
+      "kind": "ready",
+      "readyMs": 98606,
+      "full": "http://127.0.0.1:3202/play/fe830dbcb4d0a55602b975ca5c3859dd",
+      "fullKind": "full",
+      "error": null,
+      "upgrade": {
+        "status": "ready",
+        "versionId": "fe830dbcb4d0a55602b975ca5c3859dd",
+        "adds": []
+      }
+    }
+  ]
+}

@@ -17,7 +17,7 @@
  */
 
 import { SORT, binsPerRound } from '../arcade/pieces/sort-level';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { counted, nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
 
@@ -89,8 +89,8 @@ export const sortGenre: GenreModule<'sort'> = {
         kind: 'collect',
         description: fit(
           120,
-          `Send ${list}${by} to bins of their kind: fill ${String(bins)} bins in ${String(rounds)} rounds, keep the shelf free.`,
-          `Fill ${String(bins)} bins in ${String(rounds)} rounds and keep the shelf free.`,
+          `Send ${list}${by} to bins of their kind: fill ${counted(bins, 'bin')} in ${counted(rounds, 'round')}, keep the shelf free.`,
+          `Fill ${counted(bins, 'bin')} in ${counted(rounds, 'round')} and keep the shelf free.`,
         ),
         count: bins,
         role: 'sort0',
@@ -98,7 +98,7 @@ export const sortGenre: GenreModule<'sort'> = {
       mechanics: [],
       roles: SORT_ROLE_IDS.map((id, kind) => ({ id, kind: 'collectible' as const, label: labels[kind % labels.length] as string })),
       tutorial: {
-        goalLine: fit(50, `Sort the ${list}${by}!`, `Sort ${String(total)} things into bins!`),
+        goalLine: fit(50, `Sort the ${list}${by}!`, `Sort ${counted(total, 'thing')} into bins!`),
         controlsHint: 'Tap a line to send its front item. Arrows and Space work too.',
       },
       mood: 'playful',

@@ -20,7 +20,7 @@
 
 import { familyOf } from '../genre/families';
 import { vocabVerb } from '../vocab';
-import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
+import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
 import { type ActionId, HERO, type Intent, type IntentAction, type IntentAxis, type MoveId, type ObjectiveId, type ThreatId } from './contract';
 
@@ -168,7 +168,7 @@ const ROWS: readonly Row[] = [
   row(/\beat(?:s|ing)? (?:the )?(?:smaller|tiny|little|weaker)\b|\bgrow(?:s|ing)? (?:bigger|larger|huge)\b|\bagar(?:\.io)?\b|\bslither(?:\.io)?\b|\b[a-z]+\.io\b|\bsnake game\b|\bpac-?man\b|\broam(?:s|ing)?\b|\bmov(?:e|es|ing) freely\b|\bopen world\b|\bwaddl(?:e|es|ing)\b/, [move('roam')]),
   // Míč: pohyb s míčem a výhra gólem; kdo hraje proti, je soupeř („football against a walrus“).
   row(
-    /\b(?:football|soccer|basketball|golf|mini ?golf|hockey|table tennis|tennis|volleyball|baseball|rugby|handball|ping ?pong|penalt(?:y|ies))\b/,
+    /\b(?:football|soccer|basketball|golf(?:ing)?|mini ?golf|hockey|table tennis|tennis|volleyball|baseball|rugby|handball|ping ?pong|penalt(?:y|ies))\b/,
     [move('ball'), goal('score', 'bare'), threat('rival', 'versus')],
   ),
   // Scoring with an aimed ball does not implement a racket rally.
@@ -372,7 +372,8 @@ const ACTOR_FRAME = /^(?:(?:make|create|build|give me|i want) (?:a|an|the) (?:ga
 
 function actorIn(segment: string): string | null {
   // „with zombies chasing u“: honí zombie; „with swords cutting fruit to music“ ale meče k hudbě netančí.
-  const trimmed = segment.trim().replace(ACTOR_FRAME, '');
+  // P70B T3: „ninja cat wall-jumps“ – slovo spojené se slovesem pomlčkou patří slovesu, hrdina je kočka, ne „wall-“.
+  const trimmed = segment.trim().replace(ACTOR_FRAME, '').replace(/\s*\b[a-z]+-$/, '');
   if (/^with\s/.test(trimmed) && /\b[a-z]{2,}ing\b/.test(trimmed)) return null;
   const bare = trimmed.replace(/^with\s+/, '').replace(/^(?:(?:a|an|the|my|your|our|this|that|some|one)(?:\s+|$))+/, '');
   const first = bare.split(' ')[0];
@@ -737,7 +738,8 @@ export function extractIntent(sentence: string): Intent {
   // A nominal relation has participants even without an ordinary subject/verb:
   // "an argument between a cat and a dog", "wizard vs wizard argument".
   const between = /\bargument between (.+?) and (.+?)(?:[,.]|$)/.exec(text);
-  const pluralArgument = /\bargument between (?:two|2) (.+?)(?:[,.]|$)/.exec(text);
+  // P70B T3: i souboj a závod dvou stejných („a piano duel between two cats“).
+  const pluralArgument = /\b(?:argument|duel|battle|contest|race) between (?:two|2) (.+?)(?:[,.]|$)/.exec(text);
   const versusArgument = /^(.+?) (?:vs|versus) (.+?) argument\b/.exec(text);
   const marriage = /^(.+?) and (.+?) (?:get |gets |are )?married\b/.exec(text);
   const coordinatedDuel = /^(.+?) and (.+?) (duel(?:s|ing|ling)?|argu(?:e|es|ing))\b/.exec(text);
@@ -760,7 +762,9 @@ export function extractIntent(sentence: string): Intent {
   const described = /^(?:a|an|the) (?:dancing|singing|karate|boxing) ([a-z]+)\b/.exec(text)?.[1] ?? null;
   const chased = readings.find(reading => reading.hit.row.emits.some(emit => emit.id === 'catch') && reading.thing !== null);
   const fleeingObject = chased !== undefined && /\b(?:swim|run|fly) away\b.*\bescape\b/.test(text) ? chased.thing?.head ?? null : null;
-  const hero = (named !== HERO ? named : null) ?? relationActor ?? pluralActor ?? (caused === HERO ? null : caused) ?? described ?? fleeingObject ?? (first !== undefined && first.actor !== HERO ? first.actor : null) ?? gameHero ?? ridden;
+  // P70B T3: „help the rabbit jump“, „feed the hungry rabbits“ – komu věta pomáhá, je hrdina, když jiného nemá a scéna ho kreslí s klipy.
+  const aided = /^(?:help|guide|save|feed|rescue) (?:the |a |an |my |all (?:the )?)?([a-z]+(?: [a-z]+){0,2})/.exec(text)?.[1].split(' ').map(singular).find(word => RIGGED_ANIMALS.has(word)) ?? null;
+  const hero = (named !== HERO ? named : null) ?? relationActor ?? pluralActor ?? (caused === HERO ? null : caused) ?? described ?? fleeingObject ?? (first !== undefined && first.actor !== HERO ? first.actor : null) ?? gameHero ?? ridden ?? aided;
   const heroName = hero ?? HERO;
 
   const drafts: Draft[] = [];

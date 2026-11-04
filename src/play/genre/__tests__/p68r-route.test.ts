@@ -46,7 +46,8 @@ describe('P68R routing of the wired new games', () => {
     ['voyage.race', 'a safari jeep drives through the savanna while you photograph the lions'],
     ['shooter.default', 'a cowboy rides a horse across the desert and shoots the bandits'],
     ['platformer.default', 'jump on moving platforms and shoot the robots'],
-    ['throw.default', 'a golfer chips balls past sand traps and ponds on a seaside golf course'],
+    // P70B T2: golf je vždy minigolf (majitel 4. 11.); slepý štítek věty přijímá `throw` i `minigolf`.
+    ['minigolf.default', 'a golfer chips balls past sand traps and ponds on a seaside golf course'],
     ['throw.default', 'toss ping pong balls into the cups at the fair'],
     ['whack.default', 'bonk the moles popping out of the golf course'],
     ['arena.fight', 'draw your sword and fight the dragon'],

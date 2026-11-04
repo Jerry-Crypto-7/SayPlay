@@ -1,0 +1,23 @@
+{
+  "base": "http://127.0.0.1:3202",
+  "measuredAt": "2026-11-04T15:23:45.544Z",
+  "limitMs": 120000,
+  "arrived": 0,
+  "of": 1,
+  "chains": 0,
+  "rows": [
+    {
+      "sentence": "a ninja slices fruit flying across the screen",
+      "quick": "http://127.0.0.1:3202/play/faf39b8e405c3ee429b75457d668a0ab",
+      "kind": "working",
+      "readyMs": null,
+      "full": null,
+      "fullKind": null,
+      "error": null,
+      "upgrade": {
+        "status": "pending",
+        "deadlineAt": "2026-11-04T15:26:30.403Z"
+      }
+    }
+  ]
+}

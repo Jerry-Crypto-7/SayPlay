@@ -824,6 +824,14 @@ const MAX_CODEX_OUTPUT_BYTES = 8 * 1024 * 1024;
 /** Jak dlouho se po zabití čeká na `close`, než se skončí bez něj. */
 const CODEX_KILL_GRACE_MS = 2_000;
 
+/**
+ * P70B T4: odpověď ukončená „max_output_tokens“. Codex ji sám zkouší znovu (5× „Reconnecting“, pak HTTPS a „Bad Request“),
+ * a tentýž požadavek dá týž výsledek, proto se končí u prvního. Naměřeno 4. 11.: odpověď režiséra má 585–715 výstupních
+ * tokenů – takhle backend hlásil schéma nad `OPENAI_ENUM_LIMIT`, ne dlouhou odpověď (proto `openaiStrictSchema` níž).
+ */
+const CODEX_OUTPUT_CAP = /Incomplete response returned, reason: max_output_tokens/;
+export const CODEX_OUTPUT_CAP_STOP = 'codex answer ran past max_output_tokens';
+
 /** Soubor se schématem odpovědi leží v prázdném pracovním adresáři volání. */
 export const CODEX_SCHEMA_FILE = 'answer-schema.json';
 
@@ -892,6 +900,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
     let stderrBytes = 0;
     let outputBytes = 0;
     let cut: string | null = null;
+    let tail = '';
     let done = false;
     let grace: ReturnType<typeof setTimeout> | undefined;
     const stop = (why: string) => {
@@ -917,6 +926,9 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       outputBytes += chunk.length;
       if (outputBytes > MAX_CODEX_OUTPUT_BYTES) stop('codex exec wrote more than 8 MiB');
       else chunks.push(chunk);
+      // Konec předchozího kusu zůstává, ať hláška rozdělená mezi dvě čtení roury neproklouzne.
+      tail = (tail + chunk.toString('latin1')).slice(-512);
+      if (CODEX_OUTPUT_CAP.test(tail)) stop(CODEX_OUTPUT_CAP_STOP);
     });
     child.stderr.on('data', (chunk: Buffer) => {
       if (stderrBytes >= 1200) return;
@@ -949,6 +961,11 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
   });
 }
 
+const codexSchemaOf = (request: GenerationCall['request']): SchemaNode | undefined => {
+  const schema = request.codexOutputSchema ?? request.outputSchema;
+  return schema === undefined ? undefined : openaiStrictSchema(schema);
+};
+
 async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig, signal?: AbortSignal): Promise<GenerationOutcome> {
   let output: string;
   try {
@@ -957,11 +974,16 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig,
       effortForCall(call, config),
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
-      call.request.outputSchema,
+      // Codex posílá schéma jako striktní `json_schema` OpenAI, tedy s týmž limitem výčtů jako API (P70B T4);
+      // užší `codexOutputSchema` má přednost – každý token schématu tu stojí čas prvního volání (P70B T4a).
+      codexSchemaOf(call.request),
       signal,
     ));
   } catch (thrown) {
-    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${(thrown as Error).message}`, usage: null };
+    const message = (thrown as Error).message;
+    // Odpověď vznikla a je nepoužitelná (`MALFORMED_RESPONSE`), ne výpadek: volající ji nemá zkoušet znovu stejně.
+    if (message.startsWith(CODEX_OUTPUT_CAP_STOP)) return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the codex answer was cut: ${message}`, usage: null };
+    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${message}`, usage: null };
   }
 
   let events: Record<string, any>[];
@@ -1011,7 +1033,8 @@ const isEnum = (node: SchemaNode): boolean => Array.isArray(node.enum);
  * Schéma pro striktní `json_schema` OpenAI API (P58B T7). Schéma režiséra nese ~2 200 hodnot výčtů – tytéž seznamy
  * (paleta, režimy…) v každém z 20 žánrů, různých je 169 – a OpenAI nad `OPENAI_ENUM_LIMIT` odmítne každé volání.
  * Nad limitem jde každý opakovaný výčet jednou do `$defs` a na jeho místa `$ref`; význam schématu se nemění.
- * Pod limitem (čtečka) odejde schéma beze změny.
+ * Pod limitem (čtečka) odejde schéma beze změny. Totéž platí pro `--output-schema` codex-cli (P70B T4): tam limit
+ * nedá 400, ale „max_output_tokens“ u každého pokusu.
  */
 export function openaiStrictSchema(schema: SchemaNode): SchemaNode {
   const seen = new Map<string, number>();

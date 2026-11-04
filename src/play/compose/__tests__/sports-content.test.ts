@@ -14,8 +14,8 @@ it.skipIf(ROUTE_PENDING.has('minigolf'))('mini golf with windmills and loops put
   expect(game.spec.roles.find(role => role.id === 'hole')?.label).toBe('hole');
 });
 
+// „golf on a pirate ship“ hraje od P70B T2 minigolf golfovým míčkem do jamky (`genre/__tests__/p70b-golf.test.ts`).
 it.each([
-  ['golf on a pirate ship', 'hole', 'golf ball'],
   ['basketball free throws', 'hoop', 'basketball'],
 ] as const)('%s uses the actual sports equipment', (sentence, goal, ball) => {
   const game = draftGameSpecWithMeta(sentence);

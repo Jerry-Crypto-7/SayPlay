@@ -4,8 +4,9 @@ import type { Recipe } from '../../compose/recipe';
 import type { GenreSpec } from '../../genre/contract';
 import { describe, expect, it } from 'vitest';
 import { ALLOWED, liveCells } from '../../compose/allowed';
-import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, recipeAnswerSchema } from '../answer-schema';
-import { GENRE_RULES, genrePromptLines } from '../prompt';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, RECIPE_ANSWER_SCHEMA, recipeAnswerSchema } from '../answer-schema';
+import { buildCompactRequest } from '../compact';
+import { GENRE_RULES, buildDirectorRequest, genrePromptLines } from '../prompt';
 import { readGenreAnswer, readRecipeAnswer, readRecipeContent, readModelSpec } from '../read';
 
 const answer = () => ({ recipe: liveCells()[0]!.recipe, hero: 'fox', setting: 'forest', cast: [{ label: 'coins', does: 'collect' }], unmet: [{ actor: 'fox', verb: 'sing', object: null }] });
@@ -103,5 +104,26 @@ describe('native recipe parameter boundaries', () => {
     expect(readRecipeContent(cell, { counts: { target: 6 } }).ok).toBe(false);
     expect(readRecipeContent(cell, { counts: { enemy: 3 } }).ok).toBe(false);
     expect(readRecipeContent(cell, { params: { targets: 2 }, counts: { target: 3 } }).ok).toBe(false);
+  });
+});
+
+describe('P70B T4a: codex gets the recipe-only schema', () => {
+  it('reaches every genre a legacy variant offers, so dropping the variants loses no game', () => {
+    const variants = ((GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: Record<string, unknown>[] }>).spec.anyOf);
+    expect((RECIPE_ANSWER_SCHEMA.properties as Record<string, unknown>).spec).toEqual(variants[0]);
+    const legacy = variants.slice(1).flatMap((variant) => {
+      const genre = (variant.properties as Record<string, { const?: string; enum?: string[] }>).genre;
+      return genre.enum ?? [genre.const as string];
+    });
+    const recipeGenres = new Set<string>(liveCells().filter((cell) => !DIRECTOR_PENDING.has(cell.preset.genre)).map((cell) => cell.preset.genre));
+    expect(legacy.length).toBeGreaterThan(20);
+    expect(legacy.filter((genre) => !recipeGenres.has(genre))).toEqual([]);
+  });
+
+  it('rides on both director requests while the other providers keep the full schema', () => {
+    for (const request of [buildCompactRequest('a race car speeds around the track', null), buildDirectorRequest('a race car speeds around the track', null)]) {
+      expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
+      expect(request.codexOutputSchema).toBe(RECIPE_ANSWER_SCHEMA);
+    }
   });
 });

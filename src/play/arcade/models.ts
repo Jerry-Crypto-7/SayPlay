@@ -290,6 +290,9 @@ function nearestModel(label: string, loose = false): string | undefined {
   for (let index = words.length - 1; index >= 0; index -= 1) {
     const word = words[index] as string;
     const before = words[index - 1];
+    // P70B T3: zvíře s klipy v hlavě fráze je samo sebou – vektory dávaly králíkovi želvu a vlkovi vlkodlaka.
+    const own = index === words.length - 1 ? riggedAnimalOf(word) : undefined;
+    if (own !== undefined) return own;
     const found = (before === undefined ? undefined : lookup(word, (form) => NEAREST.get(`${before} ${form}`))) ?? lookup(word, (form) => NEAREST.get(form));
     if (found === undefined && loose) return undefined;
     if (found === undefined) continue;
@@ -308,6 +311,10 @@ function nearestModel(label: string, loose = false): string | undefined {
  * Čtou ho rekvizity a řetěz věrnosti; návrh dál čte `modelOf`, ať se žánr a role věty nemění.
  */
 export function sceneModelOf(label: string, character: boolean): string | undefined {
+  // P70B T3: postava s klipy, kterou popisek jmenuje, jde před tagy katalogu jako v `heroChoice` – „baby bunny“ je králík,
+  // ne mimino; u věci jen zvíře v hlavě fráze, ať přívlastek („fox mask“) věc nepřejmenuje.
+  const rigged = character ? riggedModelOf(label) : riggedAnimalOf(wordsOf(label).at(-1) ?? '');
+  if (rigged !== undefined) return rigged;
   if (!character) return tagModel(label, true) ?? nearestModel(label);
   const found = tagModel(label, true) ?? nearestModel(label) ?? kinModel(label) ?? categoryModel(label) ?? riggedModelOf(label);
   return found === undefined ? undefined : rigAlias(found);
@@ -737,7 +744,10 @@ export function heroChoice(label: string, genre: GenreId | undefined, control: s
   const steer = control === 'steer';
   const bounds: Bounds = steer ? { identity: classes === undefined ? rides : allowed, rest: classes === undefined ? rides : allowed } : { identity: () => true, rest: allowed };
   const fallback = steer ? 'race-car' : control === 'flap' ? 'bird' : 'explorer';
-  return choose(label, bounds, { withClass: true, ride: steer, fallback }) as ModelChoice;
+  const chosen = choose(label, bounds, { withClass: true, ride: steer, fallback }) as ModelChoice;
+  // P70B T3: zvíře z věty, které nic neveze („the rabbit races the turtle“), závodí samo – ne auto z nouze.
+  const animal = steer && chosen.level === 'fallback' ? riggedAnimalOf(label) : undefined;
+  return animal === undefined ? chosen : { model: animal, level: 'identity', entry: ENTRY_OF_MODEL.get(animal) };
 }
 
 export interface RiggedCharacter {
@@ -769,6 +779,12 @@ const RIGGED: ReadonlyMap<string, RiggedCharacter> = new Map(
 export function riggedModelOf(label: string): string | undefined {
   const named = identityEntry(label, ANY.identity);
   return named !== undefined && animated(named) ? sceneId(named) : undefined;
+}
+
+/** Zvíře s klipy, které popisek jmenuje (P70B T3) – pro věci a pro závod, kde jinak jede auto z nouze. */
+function riggedAnimalOf(label: string): string | undefined {
+  const named = identityEntry(label, ANY.identity);
+  return named !== undefined && named.class === 'animal' && animated(named) ? sceneId(named) : undefined;
 }
 
 /** Riggovaná postava za id modelu, nebo `undefined` pro model katalogu. */

@@ -11,7 +11,7 @@
  */
 
 import { SHOOTER_WAVE_SIZE_MAX } from '../arcade/pieces/shooter';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { counted, nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -58,7 +58,7 @@ export const shooterGenre: GenreModule<'shooter'> = {
       controlParams: { waves, rise: SHOOTER_GENRE.rise, ...(spec.params?.targetWidthPct === undefined ? {} : { targetWidthPct: spec.params.targetWidthPct }), ...(spec.params?.movingTargets === undefined ? {} : { moving: spec.params.movingTargets === 1 }), ...(enemies === undefined ? {} : { waveSize: enemies }) },
       archetype: 'combat_lite',
       title: `${titleCase(spec.hero)} Shootout`,
-      objective: { kind: 'defeat_targets', description: `Stop ${String(waves)} waves of ${foes} before they reach you.`, count: waves, role: 'enemy' },
+      objective: { kind: 'defeat_targets', description: `Stop ${counted(waves, 'wave')} of ${foes} before they reach you.`, count: waves, role: 'enemy' },
       // Nepřítel u hrdiny ubere život a chvíli další nebere (P36A T2).
       mechanics: [livesMechanic()],
       // Počet terčů čte generátor (`COUNTED_ROLES`); nepřítel počet nenese – celkový počet by přebil vlny.
@@ -66,7 +66,7 @@ export const shooterGenre: GenreModule<'shooter'> = {
         { id: 'target', kind: 'target', label: target, ...(targets === undefined ? {} : { count: targets }) },
         { id: 'enemy', kind: 'hazard', label: enemy },
       ],
-      tutorial: { goalLine: `Stop ${String(waves)} waves of ${foes}. Each wave is faster.`, controlsHint: 'Tap where you aim to shoot. Arrows aim, Space fires.' },
+      tutorial: { goalLine: `Stop ${counted(waves, 'wave')} of ${foes}. Each wave is faster.`, controlsHint: 'Tap where you aim to shoot. Arrows aim, Space fires.' },
       mood: 'tense',
     });
   },

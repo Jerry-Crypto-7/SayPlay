@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "53351a03dcb64073137980095401905730da210ce6ea53a2b35c05e766ace371",
+ "openedAt": "2026-11-04T15:58:30.881Z",
+ "commit": "be96cde6",
+ "by": "P70B T5",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}
