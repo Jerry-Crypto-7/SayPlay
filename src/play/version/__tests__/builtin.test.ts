@@ -13,12 +13,15 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import { runBot } from '@/play/arcade/verify';
 
 import { BUILTIN_GAMES, FEED_GAMES, withBuiltinGames } from '../builtin';
+import feedP54a from '../builtin-feed-p54a.json';
 import { __resetProcessVersionStore, memoryVersionStore, type VersionStore, VersionStoreUnavailable } from '../store';
 import type { PublishedGame } from '../version';
 
 const [first, second] = BUILTIN_GAMES as [PublishedGame, PublishedGame, ...PublishedGame[]];
 /** Feed ukáže jen `FEED_GAMES` (P70C T4): `first` v něm není (odkaz na ni platí dál), `second` ano. */
 const feedIds = FEED_GAMES.map((game) => game.version.versionId);
+/** Id deseti her feedu P54A, které T4 P70C nahradila – odkazy na ně kolují (R3). */
+const P54A_IDS = (feedP54a as unknown as readonly PublishedGame[]).map((game) => game.version.versionId);
 
 /** Uložená autorská verze – jediná hra, kterou `put` zařadí do feedu. */
 function authored(versionId: string, createdAt: string): PublishedGame {
@@ -66,6 +69,16 @@ describe('úložiště s vestavěnou sadou', () => {
     expect(await store.lineageOf(first.version.versionId)).toEqual([first.version]);
     expect(await store.get('f'.repeat(32))).toBeNull();
     expect(await store.lineageOf('f'.repeat(32))).toEqual([]);
+  });
+
+  it('nahrazené hry feedu P54A dál otevře odkaz, ve feedu nejsou (R3 P70C)', async () => {
+    const store = withBuiltinGames(memoryVersionStore());
+    expect(P54A_IDS).toHaveLength(10);
+    for (const id of P54A_IDS) {
+      expect((await store.get(id))?.version.versionId, id).toBe(id);
+      expect(await store.lineageOf(id), id).toHaveLength(1);
+      expect(feedIds, id).not.toContain(id);
+    }
   });
 
   it('uložené hry jdou první, vestavěná sada je doplní do limitu bez opakování', async () => {

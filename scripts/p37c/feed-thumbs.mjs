@@ -88,7 +88,7 @@ async function toWebp(encoder, png) {
   return Buffer.from(data, 'base64');
 }
 
-const games = ['builtin-games.json', 'builtin-feed-games.json'].flatMap((file) => JSON.parse(readFileSync(new URL(`src/play/version/${file}`, ROOT), 'utf8')));
+const games = ['builtin-games.json', 'builtin-feed-games.json', 'builtin-feed-p54a.json'].flatMap((file) => JSON.parse(readFileSync(new URL(`src/play/version/${file}`, ROOT), 'utf8')));
 mkdirSync(new URL(`${DIR}/`, ROOT), { recursive: true });
 // Tytéž přepínače vykreslování jako e2e (`playwright.config.ts`): místně skutečné GPU.
 const browser = await chromium.launch({ args: browserRenderer().args });

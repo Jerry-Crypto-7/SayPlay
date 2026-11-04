@@ -3166,7 +3166,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output. P58B T3 also sends the dev sentences to gpt-6-astra here to compare sentence readers (evals/play/p58b/compare.measure.ts, --cap-usd spend cap); measurement only. Since P58B T4 gpt-6-astra here is also the sentence reader of the AI version: called only when the deployment sets PLAY_READER=on, PLAY_READER_PATH=ai and PLAY_READER_ENDPOINT=openai:https://api.openai.com with the owner's key, under the reader's own spend cap (PLAY_READER_SPEND_CAP_USD, PLAY_READER_CALL_CAP) and a daily count per caller, by the background director; the answer cache keeps a reading for 7 days and a paid reading that failed (timeout, invalid or cut-off answer) for 10 minutes, so a repeat of the sentence does not pay again within that time, but two reads of the same sentence that overlap in time may each pay, and a reading that failed is paid again after 10 minutes; the fast draft never waits for it and plays from the words. The reading it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (4865)
+## Vlastní, ne třetí strana (4885)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -7828,8 +7828,12 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/156fb2dfc31ebf203046cc1e93d6f0a1-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/16539a66444bd4689883c78cb05f58b1-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/16539a66444bd4689883c78cb05f58b1-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/16de482fbd29e705934c6c6d23925e86-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/16de482fbd29e705934c6c6d23925e86-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/16ef692bec97d50662f0270289dcd344-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/16ef692bec97d50662f0270289dcd344-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/1847eb7950b22ab340992f33cc0ae251-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/1847eb7950b22ab340992f33cc0ae251-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/216bcce8e02bbf979018d986cbf7b2c7-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/216bcce8e02bbf979018d986cbf7b2c7-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/2507d0817998e1f30726bc58149b85ac-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
@@ -7866,8 +7870,12 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/53b507b012e5d9cc0f0846f5e58f1fe4-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/578757bb9e5b397e04c25c14636d53b9-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/578757bb9e5b397e04c25c14636d53b9-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/57900449058b2879bf4ac828eda4f969-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/57900449058b2879bf4ac828eda4f969-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/579229b1962483b082bde03edc5321e0-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/579229b1962483b082bde03edc5321e0-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/59b99fa35bf5c01b4c25631b82569244-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/59b99fa35bf5c01b4c25631b82569244-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/5d9e1d7cd4c53dbf512653af8d64dfde-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/5d9e1d7cd4c53dbf512653af8d64dfde-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/5f9ef81de675aee3bf3ffa9a95c72d79-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
@@ -7878,6 +7886,8 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/628806162b5dc894f363f60f2568b17d-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/6291a68bc4243cd21e1800a17a02dd39-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/6291a68bc4243cd21e1800a17a02dd39-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/639540e375d2315e41e6a26fdd22a615-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/639540e375d2315e41e6a26fdd22a615-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/65b24682840bf419fad9a90206a86a26-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/65b24682840bf419fad9a90206a86a26-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/66a115facdb6bac026fd864a1d00fb39-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
@@ -7908,6 +7918,8 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/8d463cf94f2cab3bbf1be32b4e90d4c3-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/8ecdbe4262cb8dcc785b46798d9cb683-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/8ecdbe4262cb8dcc785b46798d9cb683-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/8f9fe29b93093dfd22f03caf371c816a-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/8f9fe29b93093dfd22f03caf371c816a-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/8fb6f910e6832836fcc589238c541b07-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/8fb6f910e6832836fcc589238c541b07-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/925e37e1dc3d570f12e80acb9e5fcbd8-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
@@ -7924,6 +7936,8 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/a51c957fe6171f8a13165a56f523bf9a-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/a8bcd9836aebfaa79cebfd5b850c93b7-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/a8bcd9836aebfaa79cebfd5b850c93b7-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/affdb86644b05b370b9a4357577585be-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/affdb86644b05b370b9a4357577585be-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/b0e5c2b7d4f7292cffb3306913c29ed7-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/b0e5c2b7d4f7292cffb3306913c29ed7-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/b22beb3945bb24021b9b664bcb75d6e1-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
@@ -7942,10 +7956,14 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/c301e7c0da2bc56bdfaa9fe1c8b98dac-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/c3861a4c4f1c318bc571319c9a74b173-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/c3861a4c4f1c318bc571319c9a74b173-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/c5b3064f53c35810d28a5d0880eba16c-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/c5b3064f53c35810d28a5d0880eba16c-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/c8091ce61c83f0cdc0ddce35cd4a540d-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/c8091ce61c83f0cdc0ddce35cd4a540d-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/c9d22556aebd81e64a9044905e7107ad-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/c9d22556aebd81e64a9044905e7107ad-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/ce7553fb54b38b4e20199520963b81ce-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/ce7553fb54b38b4e20199520963b81ce-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d0f9a99591c8822605e8538bb7d23c6f-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d0f9a99591c8822605e8538bb7d23c6f-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d224649927587b026f9bf179b5fb5031-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
@@ -7958,6 +7976,8 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/feed-thumbs/d5211bea2bd2ddb99ee0f3f095796ec5-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d54ed47dee9d2a34dd9ae978d46fa736-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d54ed47dee9d2a34dd9ae978d46fa736-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/d5c2f2c0c9add620bf761622b671b7cc-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
+- **public/feed-thumbs/d5c2f2c0c9add620bf761622b671b7cc-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d8db536a81227f208fb37d3c54031ffe-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/d8db536a81227f208fb37d3c54031ffe-p.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.
 - **public/feed-thumbs/e47f4c22f8e6524ab0c8a468e70c2151-l.webp** (asset): Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.

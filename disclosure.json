@@ -92713,6 +92713,36 @@
       "scope": "prod"
     },
     {
+      "name": "public/feed-thumbs/16de482fbd29e705934c6c6d23925e86-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/16de482fbd29e705934c6c6d23925e86-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/feed-thumbs/16ef692bec97d50662f0270289dcd344-l.webp",
       "kind": "asset",
       "firstParty": true,
@@ -92729,6 +92759,36 @@
     },
     {
       "name": "public/feed-thumbs/16ef692bec97d50662f0270289dcd344-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/1847eb7950b22ab340992f33cc0ae251-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/1847eb7950b22ab340992f33cc0ae251-p.webp",
       "kind": "asset",
       "firstParty": true,
       "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
@@ -93283,6 +93343,36 @@
       "scope": "prod"
     },
     {
+      "name": "public/feed-thumbs/57900449058b2879bf4ac828eda4f969-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/57900449058b2879bf4ac828eda4f969-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/feed-thumbs/579229b1962483b082bde03edc5321e0-l.webp",
       "kind": "asset",
       "firstParty": true,
@@ -93299,6 +93389,36 @@
     },
     {
       "name": "public/feed-thumbs/579229b1962483b082bde03edc5321e0-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/59b99fa35bf5c01b4c25631b82569244-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/59b99fa35bf5c01b4c25631b82569244-p.webp",
       "kind": "asset",
       "firstParty": true,
       "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
@@ -93449,6 +93569,36 @@
     },
     {
       "name": "public/feed-thumbs/6291a68bc4243cd21e1800a17a02dd39-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/639540e375d2315e41e6a26fdd22a615-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/639540e375d2315e41e6a26fdd22a615-p.webp",
       "kind": "asset",
       "firstParty": true,
       "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
@@ -93913,6 +94063,36 @@
       "scope": "prod"
     },
     {
+      "name": "public/feed-thumbs/8f9fe29b93093dfd22f03caf371c816a-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/8f9fe29b93093dfd22f03caf371c816a-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/feed-thumbs/8fb6f910e6832836fcc589238c541b07-l.webp",
       "kind": "asset",
       "firstParty": true,
@@ -94139,6 +94319,36 @@
     },
     {
       "name": "public/feed-thumbs/a8bcd9836aebfaa79cebfd5b850c93b7-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/affdb86644b05b370b9a4357577585be-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/affdb86644b05b370b9a4357577585be-p.webp",
       "kind": "asset",
       "firstParty": true,
       "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
@@ -94423,6 +94633,36 @@
       "scope": "prod"
     },
     {
+      "name": "public/feed-thumbs/c5b3064f53c35810d28a5d0880eba16c-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/c5b3064f53c35810d28a5d0880eba16c-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
       "name": "public/feed-thumbs/c8091ce61c83f0cdc0ddce35cd4a540d-l.webp",
       "kind": "asset",
       "firstParty": true,
@@ -94469,6 +94709,36 @@
     },
     {
       "name": "public/feed-thumbs/c9d22556aebd81e64a9044905e7107ad-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/ce7553fb54b38b4e20199520963b81ce-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/ce7553fb54b38b4e20199520963b81ce-p.webp",
       "kind": "asset",
       "firstParty": true,
       "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
@@ -94649,6 +94919,36 @@
     },
     {
       "name": "public/feed-thumbs/d54ed47dee9d2a34dd9ae978d46fa736-p.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/d5c2f2c0c9add620bf761622b671b7cc-l.webp",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",
+      "source": "scripts/p37c/feed-thumbs.mjs",
+      "authorOrProvider": "Worldsmith project – rendered by scripts/p37c/feed-thumbs.mjs",
+      "license": "LicenseRef-Worldsmith-Original",
+      "requiredNotices": [
+        "No third-party asset notice; a screenshot of the project's own game scene. Models and backdrops in it are registered under their own entries."
+      ],
+      "attribution": "Sayplay feed thumbnails, rendered 2026-10-21.",
+      "reviewNote": "First-party render of the game engine; every model and texture in the frame is already listed in disclosure.json. No new license grant is asserted.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/feed-thumbs/d5c2f2c0c9add620bf761622b671b7cc-p.webp",
       "kind": "asset",
       "firstParty": true,
       "reason": "Still picture of a built-in Sayplay game, rendered by the project's own engine from its stored bot preview; no third-party image.",

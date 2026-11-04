@@ -26,18 +26,24 @@
 import type { GameVersion } from '../contracts';
 import feedOld from './builtin-feed-old.json';
 import feedBuiltin from './builtin-feed-games.json';
+import feedP54a from './builtin-feed-p54a.json';
 import builtin from './builtin-games.json';
 import { feedRowOf, type VersionStore } from './store';
 import type { PublishedGame } from './version';
 
 const FROZEN = builtin as unknown as readonly PublishedGame[];
 const FEED_BUILT = feedBuiltin as unknown as readonly PublishedGame[];
+/** Deset her feedu P54A, které T4 P70C ve feedu nahradila – jen odkazem, aby `/play/<id>`, výzvy a remixy dál platily (R3). */
+const P54A = feedP54a as unknown as readonly PublishedGame[];
 
 /**
- * Zmrazená sada P37C (`builtin-games.json`, světy `arcade-v2` zamčené `legacy-replay-v2`) a hry feedu
- * z dnešního jádra (`builtin-feed-games.json`); obě s náhledem robota (`preview`).
+ * Zmrazená sada P37C (`builtin-games.json`, světy `arcade-v2` zamčené `legacy-replay-v2`), hry feedu
+ * z dnešního jádra (`builtin-feed-games.json`) a nahrazené hry feedu P54A; všechny s náhledem robota
+ * (`preview`). Stejné id dvakrát nevznikne – první výskyt vyhrává.
  */
-export const BUILTIN_GAMES: readonly PublishedGame[] = [...FROZEN, ...FEED_BUILT];
+export const BUILTIN_GAMES: readonly PublishedGame[] = [...FROZEN, ...FEED_BUILT, ...P54A].filter(
+  (game, index, all) => all.findIndex((other) => other.version.versionId === game.version.versionId) === index,
+);
 
 /** Id vestavěných her – `put` je nepočítá do denního stropu publikací návštěvníků. */
 export const BUILTIN_IDS: ReadonlySet<string> = new Set(BUILTIN_GAMES.map((game) => game.version.versionId));
