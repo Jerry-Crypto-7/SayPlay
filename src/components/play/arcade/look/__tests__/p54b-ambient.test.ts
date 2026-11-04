@@ -47,7 +47,8 @@ const EXPECTED: Readonly<Record<LookId, readonly AmbientKind[]>> = {
   beach: ['birds', 'dust'],
   ocean: ['jumping-fish', 'birds'],
   underwater: ['fish', 'dust'],
-  snow: ['birds', 'dust'],
+  // P70D T5: prach na sněhu nebyl vidět a stál 6 % FPS telefonu (43,9 → 41,2) – zůstali ptáci.
+  snow: ['birds'],
   volcano: ['sparks', 'dust'],
   cave: ['bats', 'dust'],
   space: ['meteors', 'dust'],
