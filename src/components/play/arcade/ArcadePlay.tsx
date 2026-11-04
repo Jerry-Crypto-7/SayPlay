@@ -190,11 +190,14 @@ const xrCountersOf = (goal: HudGoal | null, counters: readonly HudCounter[]): Xr
  * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
  * Nálezy podle vzácnosti (P66 T4) jen u hry, jejíž háčky vzácnost losují.
  */
+/** Hra má trať, po které se měří „of the way“: ne aréna ani míření a svět s délkou – railfps, minigolf, drawsave, survivor a přistání mají délku 0, postup by byl vždy 0 % a každá prohra „Try again!“ (review fáze 1 P70C). */
+export const tracked = (spec: GameSpecV1, world: ArcadeWorld): boolean => spec.control !== 'move_free' && !aiming(spec) && world.length > 0;
+
 function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, state: Int32Array, par: Par | null, livesStart: number, bonus: number): RunFacts {
   const goal = collectGoal(world, snapshot.items);
   const hooks = hooksOf(world.rules);
   const extra: ResultStat[] = [];
-  const track = spec.control !== 'move_free' && !aiming(spec);
+  const track = tracked(spec, world);
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
   if (track) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
   const scoring = snapshot.score !== 0 || (par !== null && par.score > 0);
