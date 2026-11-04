@@ -118,7 +118,8 @@ describe('scéna po křivce', () => {
         const bent = heroOnScreen(path, lane, z);
         const straight = heroOnScreen(undefined, lane, z);
         expect(Math.abs(bent.x - straight.x), `x ${seed}/${lane}`).toBeLessThan(0.06);
-        expect(Math.abs(bent.y - straight.y), `y ${seed}/${lane}`).toBeLessThan(0.06);
+        // P70D T3: strmější kamera běžce (32° místo 22°) posune hrdinu na nejostřejším stoupání svisle až o ~0,073.
+        expect(Math.abs(bent.y - straight.y), `y ${seed}/${lane}`).toBeLessThan(0.08);
       }
     }
   });
