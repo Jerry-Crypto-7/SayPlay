@@ -1,0 +1,260 @@
+{
+ "viewport": "430x900",
+ "renderer": "swiftshader",
+ "seconds": [
+  3,
+  10
+ ],
+ "hz": 60,
+ "takenAt": "2026-11-04T11:55:34.489Z",
+ "shots": [
+  {
+   "id": "runner-forest",
+   "genre": "runner",
+   "stage": "runner",
+   "seed": 70401,
+   "text": "A fox runs through a forest away from a bear",
+   "versionId": "c1bab8bdd89a0e098c18ce5f23716279",
+   "chain": false,
+   "control": "runner",
+   "setting": "forest",
+   "wantStage": "runner",
+   "frames": [
+    {
+     "second": 3,
+     "file": "runner-forest-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 51,
+     "calls": 54
+    },
+    {
+     "second": 10,
+     "file": "runner-forest-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 75,
+     "calls": 67
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "runner-snow",
+   "genre": "runner",
+   "stage": "runner",
+   "seed": 70402,
+   "text": "A penguin runs across the snow away from a polar bear",
+   "versionId": "114c27a2c5e393d79d4cf15c580863cb",
+   "chain": false,
+   "control": "runner",
+   "setting": "snow",
+   "wantStage": "runner",
+   "frames": [
+    {
+     "second": 3,
+     "file": "runner-snow-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 51,
+     "calls": 83
+    },
+    {
+     "second": 10,
+     "file": "runner-snow-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 93,
+     "calls": 111
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "arena",
+   "genre": "arena",
+   "stage": "move_free",
+   "seed": 70403,
+   "text": "Collect ten acorns in a forest while avoiding a fox",
+   "versionId": "dfa2a1521675beac0d33ab6289a55438",
+   "chain": false,
+   "control": "move_free",
+   "setting": "forest",
+   "wantStage": "move_free",
+   "frames": [
+    {
+     "second": 3,
+     "file": "arena-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 63,
+     "calls": 74
+    },
+    {
+     "second": 10,
+     "file": "arena-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 64,
+     "calls": 35
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "platformer-beach",
+   "genre": "platformer",
+   "stage": "platform",
+   "seed": 70404,
+   "text": "A crab jumps over rocks on a sunny beach",
+   "versionId": "4f28884c6f1bb8861b6d72e48e58d63c",
+   "chain": false,
+   "control": "platform",
+   "setting": "sunny beach",
+   "wantStage": "platform",
+   "frames": [
+    {
+     "second": 3,
+     "file": "platformer-beach-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 113,
+     "calls": 54
+    },
+    {
+     "second": 10,
+     "file": "platformer-beach-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 117,
+     "calls": 63
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "minigolf",
+   "genre": "minigolf",
+   "stage": "minigolf",
+   "seed": 70405,
+   "text": "short golf course on a farm, ball has to roll under the tractor and past bouncy hay bales to the hole",
+   "versionId": "3963d2f0a6b0f4f23ff52ec151177483",
+   "chain": false,
+   "control": "minigolf",
+   "setting": "farm",
+   "wantStage": null,
+   "frames": [
+    {
+     "second": 3,
+     "file": "minigolf-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 27,
+     "calls": 43
+    },
+    {
+     "second": 10,
+     "file": "minigolf-10s.png",
+     "tick": 402,
+     "runState": "won",
+     "meshes": 26,
+     "calls": 48
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "railfps",
+   "genre": "railfps",
+   "stage": "railfps",
+   "seed": 70406,
+   "text": "make a game where i ride a mine cart through a crystal cave and shoot bats coming at me from both sides",
+   "versionId": "6adadbae50b9f00d5080be18691c863e",
+   "chain": false,
+   "control": "railfps",
+   "setting": "crystal cave",
+   "wantStage": null,
+   "frames": [
+    {
+     "second": 3,
+     "file": "railfps-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 38,
+     "calls": 16
+    },
+    {
+     "second": 10,
+     "file": "railfps-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 38,
+     "calls": 16
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "catch",
+   "genre": "catch",
+   "stage": "lanes",
+   "seed": 70407,
+   "text": "a raccoon catches falling apples in a bucket",
+   "versionId": "128020f6973747e57d0e80fbd56f3848",
+   "chain": false,
+   "control": "lanes",
+   "setting": "bucket",
+   "wantStage": "lanes",
+   "frames": [
+    {
+     "second": 3,
+     "file": "catch-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 14,
+     "calls": 43
+    },
+    {
+     "second": 10,
+     "file": "catch-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 18,
+     "calls": 48
+    }
+   ],
+   "errors": []
+  },
+  {
+   "id": "defense",
+   "genre": "defense",
+   "stage": "lanes",
+   "seed": 70408,
+   "text": "a knight defends the castle gate from skeleton armies",
+   "versionId": "c8d0ea4a361a983ac9e50d686dd247e7",
+   "chain": false,
+   "control": "lanes",
+   "setting": "castle",
+   "wantStage": "lanes",
+   "frames": [
+    {
+     "second": 3,
+     "file": "defense-03s.png",
+     "tick": 180,
+     "runState": "running",
+     "meshes": 49,
+     "calls": 114
+    },
+    {
+     "second": 10,
+     "file": "defense-10s.png",
+     "tick": 600,
+     "runState": "running",
+     "meshes": 52,
+     "calls": 81
+    }
+   ],
+   "errors": []
+  }
+ ]
+}

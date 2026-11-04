@@ -476,9 +476,18 @@ const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.col
 const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
   view.role === ROLE.player ? 'hero' : (FRAME_TARGET_ROLES.has(view.role) || view.kind.startsWith('thing:part_')) && view.kind !== 'tire-barrier' ? 'target' : undefined;
 
-/** Obrys těla (P36C T6): hrdina inkoustem, nepřítel a pronásledovatel rajčatovou, ostatní bez obrysu. */
+/**
+ * Překážky v cestě s obrysem (P70D T2): stavby běžce (most, tunel), dělicí pás a mantinel závodu jsou krajina,
+ * ne věc k přeskočení; střela nástrahy letí a obal by stál volání za každou.
+ */
+const PLAIN_OBSTACLES: ReadonlySet<string> = new Set([...STRUCTURE_KINDS, 'divider', 'tire-barrier', 'shot']);
+
+/** Obrys těla (P36C T6): hrdina inkoustem, nepřítel a pronásledovatel rajčatovou, překážka v cestě inkoustem (P70D T2). */
 const inkOf = (view: BodyView): Ink | undefined =>
-  view.role === ROLE.player ? 'hero' : view.role === ROLE.enemy || view.role === ROLE.chaser || PACING_KINDS.has(view.kind) ? 'foe' : undefined;
+  view.role === ROLE.player ? 'hero'
+  : view.role === ROLE.enemy || view.role === ROLE.chaser || PACING_KINDS.has(view.kind) ? 'foe'
+  : (view.role === ROLE.obstacle || view.role === ROLE.hazard) && !PLAIN_OBSTACLES.has(view.kind) ? 'obstacle'
+  : undefined;
 
 /**
  * Tělo kreslí nepřítele věty (P62 T5, `userData.foe`: měřítko čitelnosti nepřítele a sonda záběru): nepřítel,

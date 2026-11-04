@@ -25,12 +25,13 @@ import { type ToyUniforms, withToyDeform } from '../toy-deform';
 
 import { flagShadow } from './StyleRig';
 
-export type Ink = 'hero' | 'foe';
+/** `obstacle` (P70D T2): překážka a nástraha v cestě inkoustem – v mlze a proti zemi splývaly. */
+export type Ink = 'hero' | 'foe' | 'obstacle';
 
 /** Tloušťka obrysu v CSS pixelech (kit: inkoustové obrysy 2,5 px). */
 export const INK_PX = 2.5;
 
-export const INK_COLOR: Readonly<Record<Ink, number>> = { hero: colorHex.ink, foe: colorHex['tomato-deep'] };
+export const INK_COLOR: Readonly<Record<Ink, number>> = { hero: colorHex.ink, foe: colorHex['tomato-deep'], obstacle: colorHex.ink };
 
 const VERTEX = /* glsl */ `
 #include <common>
