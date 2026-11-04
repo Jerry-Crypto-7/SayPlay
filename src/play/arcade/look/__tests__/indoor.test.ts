@@ -280,7 +280,7 @@ const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: s
   beach: { look: '706b0f47', surface: '251f7da', styled: 'bcac681d', agar: '8bf9e7a7' },
   ocean: { look: '1bf0d212', surface: '1ed3c138', styled: 'f7771623', agar: 'dbbcc4b6' },
   underwater: { look: '326dac41', surface: '251f7da', styled: 'a533db18', agar: '62d66877' },
-  snow: { look: 'ccee3c51', surface: '3486e152', styled: '5cde5d37', agar: '30849ad9' },
+  snow: { look: 'a6bc4857', surface: '3486e152', styled: '5cde5d37', agar: '30849ad9' },
   volcano: { look: 'b825ecbe', surface: 'a6f00295', styled: 'd5516082', agar: 'baf81103' },
   space: { look: '30f31d23', surface: 'a6f00295', styled: '5c98c7ab', agar: '63f2d812' },
   graveyard: { look: '5632e88f', surface: 'a6f00295', styled: '77ceebd6', agar: 'af20e51a' },

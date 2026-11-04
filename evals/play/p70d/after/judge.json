@@ -1,0 +1,97 @@
+{
+  "salt": "p70d-t5",
+  "shot": "03s",
+  "judge": "codex exec -i (P37D ask)",
+  "groups": [
+    {
+      "scenes": [
+        "runner-forest",
+        "runner-snow",
+        "arena",
+        "platformer-beach"
+      ],
+      "afterSides": [
+        "A",
+        "A",
+        "B",
+        "A"
+      ],
+      "answer": {
+        "rows": [
+          {
+            "row": 1,
+            "pick": "A",
+            "why": "Crisper contrast makes the path, obstacles, and surrounding landmarks easier to read."
+          },
+          {
+            "row": 2,
+            "pick": "A",
+            "why": "Less haze and stronger color separation make distant obstacles and scenery clearer."
+          },
+          {
+            "row": 3,
+            "pick": "B",
+            "why": "The hero and yellow pickups stand out more clearly, and the forest looks richer without the pale haze."
+          },
+          {
+            "row": 4,
+            "pick": "A",
+            "why": "Visible movement and jump controls make play clearer, while the hero and platform gaps remain easy to see."
+          }
+        ]
+      },
+      "code": 0,
+      "seconds": 13.5
+    },
+    {
+      "scenes": [
+        "minigolf",
+        "railfps",
+        "catch",
+        "defense"
+      ],
+      "afterSides": [
+        "B",
+        "B",
+        "B",
+        "A"
+      ],
+      "answer": {
+        "rows": [
+          {
+            "row": 1,
+            "pick": "B",
+            "why": "The overhead view clearly shows the ball, hole, course boundaries, and obstacles."
+          },
+          {
+            "row": 2,
+            "pick": "A",
+            "why": "The central marker and yellow platform are easier to see, with less obstruction from the foreground crystal."
+          },
+          {
+            "row": 3,
+            "pick": "B",
+            "why": "Stronger contrast separates the ground, pickup, and basket, while the overhead foliage sits clear of the HUD."
+          },
+          {
+            "row": 4,
+            "pick": "B",
+            "why": "The centered approach and clearer spacing of the foreground hazards make the hero and enemy line slightly easier to read."
+          }
+        ]
+      },
+      "code": 0,
+      "seconds": 12.6
+    }
+  ],
+  "verdicts": {
+    "runner-forest": "after",
+    "runner-snow": "after",
+    "arena": "after",
+    "platformer-beach": "after",
+    "minigolf": "after",
+    "railfps": "before",
+    "catch": "after",
+    "defense": "before"
+  }
+}

@@ -14,6 +14,8 @@ const event = (kind: VisualEvent['kind'], role: number, body = 1): VisualEvent =
 
 /** Obchody a pokoj jsou uvnitř: ptáci ani motýli tam nepatří, stačí prach ve světle. */
 const INDOOR = new Set(['mall', 'supermarket', 'living_room']);
+/** P70D T5 FPS brána: sníh s prachem −6 až −10 % FPS telefonu, prach na bílém nebyl vidět – venku jen ptáci. */
+const FPS_TRIMMED = new Set(['snow']);
 
 describe('juice from bus events (P70D T4)', () => {
   it('lights the red edge only when the player is hit, not an enemy', () => {
@@ -40,7 +42,7 @@ describe('juice from bus events (P70D T4)', () => {
     for (const id of LOOK_IDS) {
       const kinds = LOOKS[id].ambient;
       expect(new Set(kinds).size, id).toBe(kinds.length);
-      if (INDOOR.has(id)) expect(kinds.length, id).toBeGreaterThanOrEqual(1);
+      if (INDOOR.has(id) || FPS_TRIMMED.has(id)) expect(kinds.length, id).toBeGreaterThanOrEqual(1);
       else {
         expect(kinds.length, id).toBeGreaterThanOrEqual(2);
         expect(kinds.length, id).toBeLessThanOrEqual(4);
