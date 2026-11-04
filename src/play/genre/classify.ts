@@ -178,6 +178,15 @@ const RIGHT_BIN = String.raw`(?:back )?(?:into|in|on|onto|to) (?:the |their |its
 const LEAVES = String.raw`(?:so|and|to make|to let|then) (?:it|they|that one|each one) (?:only )?(?:drives? (?:out|off|away)|leaves?|fl(?:y|ies) (?:off|away|out)|slides? (?:out|off|away)|zooms? (?:off|out|away)|exits?|escapes?|gets? out|moves? out|rolls? (?:out|away)|pulls? out|sails? (?:out|off|away)|swims? (?:out|off|away))\b`;
 /** Obchod, do kterého chodí zákazníci (P68 T11) – ne město, farma ani dílna bez pultu. */
 const SHOP = String.raw`(?:shops?|stores?|caf[eé]s?|diners?|bakery|bakeries|restaurants?|stands?|stalls?|trucks?|bars?|parlou?rs?|canteens?|joints?|kiosks?|tea ?rooms?)`;
+/**
+ * P68T: podnik jménem i bez slova „shop“ („a gas station for aliens“, „a burger joint“, „my juice bar“). Holé „truck“,
+ * „bar“ a „stand“ ne – „drive my truck“, „a candy bar“ obchod nejsou.
+ */
+const SHOP_NAMED = String.raw`(?:shops?|stores?|caf[eé]s?|diners?|bakery|bakeries|restaurants?|parlou?rs?|canteens?|joints?|kiosks?|tea ?rooms?|pizzerias?|bistros?|delis?|pubs?|taverns?|inns?|boutiques?|hotels?|motels?|(?:gas|petrol|filling|service|charging) stations?|car washe?s?|(?:food|taco|ice cream|coffee|burger|hot dog|noodle|pizza|snack) (?:trucks?|vans?|carts?)|(?:lemonade|juice|snack|smoothie|taco|hot dog|fruit|market|noodle|coffee) (?:stands?|stalls?|bars?|carts?|huts?))`;
+/** P68T: vybavení podniku, které se kupuje a staví (množné číslo; „build a time machine“ ani jeden stroj obchod není). */
+const SHOP_GEAR = String.raw`(?:(?:[a-z-]+ )?machines|presses|makers|dispensers|mixers|juicers|pumps|(?:cash )?registers|booths|stoves|griddles|fridges|coolers|taps|kettles|cookers|toasters|tables|ovens|counters|grills|fryers|blenders|shelves|stations|freezers)`;
+/** P68T: zákazník, který odejde, když se nedočká („before they get bored“, „nobody leaves empty handed“). */
+const PATRONS = String.raw`(?:customers?|guests?|tourists?|visitors?|shoppers?|diners?|patrons?|clients?|travell?ers?|passengers?|regulars|campers|holidaymakers|beachgoers)`;
 /** Vozidlo závodu s triky (P68 T8) – auto, náklaďák, motorka, traktor, sněžný skútr. */
 /** P68 T10: výstřel střelnice z očí – sloveso, kterým hráč míří nebo střílí („splat paint balloons“, „soak the pirates“). */
 const RAIL_SHOT = String.raw`(?:shoot(?:s|ing)?|fir(?:e|es|ing)|blast(?:s|ing)?|zap(?:s|ping)?|aim(?:s|ing)?|splat(?:s|ting)?|splatter(?:s|ing)?|soak(?:s|ing)?|torpedo(?:es|ing)?|pelt(?:s|ing)?)\b`;
@@ -188,6 +197,16 @@ const RAIL_AIM = String.raw`(?:${RAIL_SHOT}|${RAIL_WEAPON})`;
 const RAIL_CARRIER = String.raw`(?:ghost train|mine ?carts?|roller ?coasters?|log flumes?|monorails?|gondolas?(?: lifts?)?|cable ?cars?|chair ?lifts?|ski ?lifts?|zip ?lines?|funiculars?|barges?|(?:dark|theme park|carnival|fairground|amusement park|haunted house|safari|jungle|river|submarine|boat|train|tram|cart|sleigh|sled|raft|jeep|truck|balloon) rides?|(?:fixed|set|preset|scripted|locked) (?:[a-z-]+ )?(?:routes?|paths?|trails?|tracks?|courses?|rails?)|passengers? (?:on|in|aboard|of) (?:a|an|the) (?:[a-z-]+ ){0,2}?(?:trains?|trams?|carriages?|coaches?|wagons?|ships?|boats?|buses|jeeps?|trucks?|balloons?|airships?)|(?:from|on|aboard|in) (?:the back of |the roof of |top of )?(?:a|an|the) (?:moving|speeding|runaway|rolling|rattling) (?:[a-z-]+ )?(?:trains?|trucks?|jeeps?|cars?|carts?|boats?|wagons?|sleighs?|trams?|buses|vans?)|windows? of (?:a|an|the) (?:moving |speeding )?(?:[a-z-]+ )?(?:trains?|trams?|buses|carriages?|cars?|jeeps?|trucks?|vans?)|(?:carr(?:y|ies|ying)|takes?|pulls?|whisks?) you (?:along|through|down|up|past|around|across|over))\b`;
 /** Jízda, která hráče veze sama (kolej, horská dráha, vláček, důlní vozík, sáně) – ne vozidlo, které řídí. */
 const RAIL_RIDE = String.raw`(?:${RAIL_CARRIER}|(?:rid(?:e|es|ing)|sit(?:s|ting)?) (?:in |on |aboard )?(?:a|an|the) (?:[a-z-]+ ){0,2}?(?:trains?|carts?|sleds?|sleighs?|jeeps?|boats?|rafts?|trams?|trolleys?|coasters?|flumes?|wagons?|gondolas?|cable ?cars?|zip ?lines?|chair ?lifts?|barges?|carriages?|balloons?|airships?|elevators?))\b`;
+/**
+ * P68T: vozidlo, které hráče veze, zatímco střílí nebo hází („from the back of a desert jeep“, „gun turret on a hover
+ * train“, „a kid on a school bus throwing …“, „on a moving siege tower“). Auto, loď, letadlo ani kolo ne – ty hráč řídí.
+ */
+const RAIL_VEHICLE = String.raw`(?:trains?|trams?|trolleys?|jeeps?|trucks?|bus|buses|wagons?|carriages?|coaches?|hot[- ]air balloons?|airships?|blimps?|zeppelins?|gondolas?|sleighs?|carts?|trailers?|tractors?|scooters?|floats?|hovercrafts?|ferr(?:y|ies)|rafts?|sidecars?|siege towers?)`;
+const RAIL_ABOARD = String.raw`(?:on|aboard|atop|from|on top of|(?:from|on|in) the (?:back|roof|top|deck|bed) of) (?:a|an|the|my|our|his|her|their|your|this) (?:[a-z-]+ ){0,2}?${RAIL_VEHICLE}\b`;
+/** P68T: výstřel nebo hod na cíl z vozidla („throwing water balloons at vampire teachers“). */
+const RAIL_HIT = String.raw`(?:${RAIL_AIM}|(?:throw(?:s|ing)?|toss(?:es|ing)?|hurl(?:s|ing)?|lob(?:s|bing)?|chuck(?:s|ing)?) (?:[a-z'-]+ ){0,3}?at\b)`;
+/** P68T: vozidlo jede samo („my tractor trailer rolls down the farm road“, „as it speeds along“, „while the train chugs on“). */
+const RAIL_MOVING = String.raw`(?:\b${RAIL_VEHICLE} (?:speeds?|rolls?|rumbles?|chugs?|rattles?|drifts?|floats?|glides?|cruises?|trundles?|sways?|moves?|travels?|bounces?|races?|zooms?|creeps?|lurches?|climbs?|sails?)\b|\b(?:as|while) (?:it|we|the [a-z-]+|my [a-z-]+|our [a-z-]+)(?: [a-z-]+)? (?:speeds?|rolls?|rumbles?|chugs?|rattles?|drifts?|glides?|cruises?|trundles?|sways?|moves? (?:along|on|forward)|travels?|carries (?:me|us|you)|takes (?:me|us|you))\b)`;
 const VEHICLE = String.raw`(?:cars?|trucks?|vans?|bus(?:es)?|buggy|buggies|scooters?|motorbikes?|motorcycles?|dirt ?bikes?|tractors?|go-?karts?|karts?|taxis?|ambulances?|jeeps?|quads?|snowmobiles?|bulldozers?|lorr(?:y|ies)|pickups?)`;
 /** Determinant před obchodem: „a“, „my“, „your own“. */
 const OWNER = String.raw`(?:a|an|my|your|the|his|her|their|our)(?: own)?`;
@@ -278,7 +297,11 @@ const VERBS: readonly Verb[] = [
     // Golf s jamkou, greenem nebo ranou („play golf on the moon and sink …“, „a round of golf“); „bonk the moles popping
     // out of the golf course“ ani „a golfer chips balls past sand traps“ jamku neřeknou a zůstávají, kde byly.
     String.raw`\bgolf(?:ing|ers?)?\b(?=[^.;!?]*\b(?:holes?|cups?|greens?|flags?|strokes?|par)\b)|\b(?:round|hole|game) of golf\b|\bplay(?:s|ing)? golf\b`,
-    String.raw`(?<!\b(?:throw|throws|throwing|toss|tosses|tossing|dunk|dunks|dunking|drop|drops|dropping) (?:the |a |an |some |\d+ )?(?:[a-z-]+ )?)\b(?:balls?|marbles?|pucks?|pebbles?|dewdrops?|snowballs?|acorns?|peas?|beads?)\b(?=[^.;!?]*?\b(?:into|in) (?:the|a|an|its|each) (?:[a-z-]+ )?(?:hole|cup)\b)`,
+    // P68T: i odtok jako jamka a míček složeným slovem („the soccer ball curves … into the drain“, „a gumball“).
+    String.raw`(?<!\b(?:throw|throws|throwing|toss|tosses|tossing|dunk|dunks|dunking|drop|drops|dropping) (?:the |a |an |some |\d+ )?(?:[a-z-]+ )?)\b(?:[a-z]*balls?|marbles?|pucks?|pebbles?|dewdrops?|acorns?|peas?|beads?)\b(?=[^.;!?]*?\b(?:into|in) (?:the|a|an|its|each) (?:[a-z-]+ )?(?:hole|cup|drain)\b)`,
+    // P68T: síla rány míčku („pick how hard to hit so the soccer ball curves …“), „sink it in the drain“ a došlé rány.
+    String.raw`\bhow (?:hard|strong|strongly|softly) to (?:hit|putt|tap|strike|knock|flick|push)\b(?=[^.;!?]*\b[a-z]*(?:balls?|marbles?|pucks?)\b)|\b[a-z]*(?:balls?|marbles?|pucks?)\b(?=[^.;!?]*\bhow (?:hard|strong|strongly|softly) to (?:hit|putt|tap|strike|knock|flick|push)\b)`,
+    String.raw`\bsink(?:s|ing)? (?:it|them)\b(?=[^.;!?]*\b(?:holes?|cups?|drains?)\b)|\bout of (?:strokes|putts|swings)\b`,
   ].join('|'))),
   // P68 T12: drawsave – nakreslená čára, zeď, střecha nebo štít, který postavu chrání („draw a line to save the puppy“,
   // „sketch a barrier“, „draw to protect grandma“, „with one stroke of a pen, guard …“). Kreslení bez ochrany znak
@@ -298,6 +321,14 @@ const VERBS: readonly Verb[] = [
     String.raw`\bsurviv(?:e|es|ing) (?:a |an |the )?(?:[a-z-]+ )?(?:asteroid|meteor|meteorite|hail|rock|bomb) (?:showers?|storms?|rains?)\b`,
     // P68R: cokoli, co padá v množném čísle („keep the eggs safe from falling coconuts“).
     String.raw`\b(?:protect|shield|guard|save|keep|shelter)(?:s|ing)? (?:the |a |an |my |your |our |his |her |its |their |this )?(?:[a-z-]+ ){0,3}?(?:safe )?from (?:the |all )?(?:falling|dropping|tumbling|raining) (?:[a-z-]+ )?[a-z-]+s\b`,
+    // P68T: čáry hráče jako ochrana („my lines block arrows“, „my lines have to stop them“), kreslení s ochranným cílem
+    // o pár slov dál („draw something to stop them“); tah kartou, mečem nebo zbraní („draw your sword“) kreslení není.
+    String.raw`\b(?:my|your|the|his|her|their|our|drawn|ink|chalk|pencil|crayon) (?:[a-z-]+ )?lines? (?:have to |has to |must |need to |needs to |can |will |should )?(?:block|stop|protect|shield|save|guard|catch|deflect|bounce|redirect)\b`,
+    String.raw`\b(?:draw(?:s|ing)?|sketch(?:es|ing)?|scribbl(?:e|es|ing)|doodl(?:e|es|ing))\b(?! (?:a |an |the |your |my |his |her |their )?(?:cards?|swords?|guns?|pistols?|weapons?|blades?|bows?|water|blood|straws?|breath|near|closer|crowds?|attention)\b)(?=(?: [a-z'-]+){0,5}? to (?:stop|block|protect|save|shield|guard|shelter|catch|deflect|cover)\b)`,
+    // Postava jen čeká a shora na ni padá („a penguin waits on the ice while icicles drop from above“) – věta bez slovesa
+    // hráče; kdo chytá, uhýbá nebo běží, hraje dál svůj žánr. Pád odněkud nebo na někoho: „a cat sits on the fence while
+    // autumn leaves fall“ nic neohrožuje.
+    String.raw`^(?![^.;!?]*\b(?:catch|collect|grab|gather|dodg|avoid|eat|jump|hop|run|mov|slid|swing|shoot|tap|swip|steer|driv|throw|toss)\w*)[^.;!?]*?\b(?:waits?|waiting|sits?|sitting|stands?|standing|sleeps?|sleeping|naps?|napping|rests?|resting|lies|lying|snoozes?|snoozing|is stuck|is trapped|cowers?|cowering)\b[^.;!?]*?\b(?:while|as|when)\b[^.;!?]*?\b(?:drop(?:s|ping)?|fall(?:s|ing)?|rain(?:s|ing)?|tumbl(?:e|es|ing)|plummet(?:s|ing)?|crash(?:es|ing)?|hurtl(?:e|es|ing))(?: down)? (?:from|onto|on (?:it|him|her|them|the)|toward|towards|out of)\b`,
   ].join('|'))),
   // P68 T10: railfps – hráč stojí nebo ho veze kolej a otáčí se za tím, co se k němu blíží. Znak chce slovo o pohledu
   // z očí, kolejích, střelnici, otáčení na místě nebo jízdě, která veze sama, **spolu** se slovesem výstřelu: „a
@@ -319,6 +350,19 @@ const VERBS: readonly Verb[] = [
     // Hráč stojí a nepřátelé lezou nebo se hrnou k němu („blast the mutant rats swarming through the sewer tunnels“,
     // „aim at the giant spiders crawling down the walls“, „shoot the killer sharks before they bite through the hull“).
     String.raw`^(?:inside [^,]+, )?${RAIL_SHOT} (?:at )?(?:the |all |every )?(?:[a-z-]+ ){0,2}?[a-z-]+s (?:swarming|crawling|creeping|shambling|charging|rushing|marching|swooping|climbing|before they bite)\b`,
+    // P68T: střílí nebo hází, zatímco ho veze jakékoli vozidlo, na kterém nebo ze kterého střílí („shoot the alien bugs
+    // from the back of a desert jeep“, „a knight on a moving siege tower shoots“), nebo které jede samo („my balloon
+    // drifts over the canyon … shoot them down“). Vozidlo, které hráč řídí („drive a car and shoot“), znak není.
+    String.raw`\b${RAIL_ABOARD}(?=[^.;!?]*\b${RAIL_HIT})`,
+    String.raw`\b${RAIL_HIT}(?=[^.;!?]*\b${RAIL_ABOARD})`,
+    String.raw`${RAIL_MOVING}(?=[^.;!?]*\b${RAIL_SHOT})`,
+    String.raw`\b${RAIL_SHOT}(?=[^.;!?]*${RAIL_MOVING})`,
+    // Otáčí se za tím, co se blíží („turn and blast them“, „aim left and right“), a střelec u zbraně na vozidle („door
+    // gunner“, „riding shotgun“). Samotné „from every side“ znak není: „a mechanic … firing at robot eels as they swim in
+    // from every side“ (p58b s21) je střelba v místnosti. Ani „turret gunner“: věž stojí, „a turret gunner raises a force
+    // field and shoots down the incoming drones“ (p52 d22) je střelec.
+    String.raw`\bturn(?:s|ing)? (?:around |back )?(?:and|to) ${RAIL_SHOT}|\baim(?:s|ing)? (?:left and right|all around|in every direction)\b`,
+    String.raw`\b(?:door|tail|rear|waist) gunners?\b|\bgunners? (?:on|in|aboard)\b|\briding shotgun\b|\bman(?:s|ning)? (?:the|a) (?:[a-z-]+ )?(?:guns?|turrets?)\b`,
   ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
@@ -332,6 +376,23 @@ const VERBS: readonly Verb[] = [
     String.raw`\b${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP} (?:has to|have to|must|needs? to) (?:feed|serve|sell)\b`,
     String.raw`\b(?:serv(?:e|es|ing)|sell(?:s|ing)?)\b[^.;!?]*?\b(?:in|at) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
     String.raw`\b${SHOP} where (?:[a-z0-9'-]+ ){0,4}?(?:wants?|com(?:e|es)|lines? up|queu(?:e|es)|orders?)\b`,
+    // P68T: obchod hráče jinými slovy – vede podnik jménem („run a gas station for aliens“, „open a pizzeria“), hra na
+    // podnik („a burger joint tycoon“), příchozí do jeho podniku („fairies flutter into my candy shop“). Holé „manage“
+    // ne: „Manage a busy bakery and keep every oven from burning“ (p47a s03) je kuchyně stanovišť.
+    String.raw`\b(?:run(?:s|ning)?|open(?:s|ing)?|own(?:s|ing)?|start(?:s|ing)?) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP_NAMED}\b`,
+    String.raw`\b(?:${SHOP_NAMED}|business|restaurant|food) (?:tycoon|sim(?:ulator)?|manager|management|empire)\b|\btycoon\b(?=[^.;!?]*\b${SHOP_NAMED}\b)`,
+    // Jen „into“: „rising prices at my local grocery store“ (p37a n29) žádnou hru nechce.
+    String.raw`\binto (?:my|our|your)(?: own)? (?:[a-z'-]+ ){0,3}?${SHOP_NAMED}\b`,
+    // Kupuje a staví vybavení („buy more pumps“, „place ice cream machines“, „keep adding juice presses“).
+    String.raw`\b(?:build(?:s|ing)?|plac(?:e|es|ing)|set(?:s|ting)? up|buy(?:s|ing)?|add(?:s|ing)?|install(?:s|ing)?|put(?:s|ting)? down)(?= (?:more |extra |new |another |some |a few |the |\d+ |two |three |four |five )*(?:[a-z'-]+ ){0,2}?${SHOP_GEAR}\b)`,
+    // Zákazník se nedočká („before they get bored“, „until sunset“ u obsluhy), fronta na zboží („line up for pizza“),
+    // obsluha lidí, kteří přišli („serve sweaty tourists“).
+    String.raw`\bbefore (?:they|the (?:[a-z-]+ )?[a-z-]+s|${PATRONS}|people|anyone|everyone) (?:get (?:bored|grumpy|angry|mad|impatient|fed up|upset|annoyed|tired of waiting)|lose (?:their )?patience|give up|walk out|storm (?:out|off)|stomp (?:out|off)|leave (?:empty[- ]handed|hungry|angry|unhappy|the (?:line|queue|shop|store)))\b`,
+    String.raw`\b(?:nobody|no one|no customer|no guest) (?:ever )?(?:leaves|goes home|walks out) (?:empty[- ]handed|hungry|angry|unhappy|thirsty)\b|\bkeep (?:the |all |every |your )?${PATRONS} (?:happy|satisfied|coming)\b`,
+    String.raw`\b(?:lines? up|lining up|queu(?:e|es|ing)(?: up)?|wait(?:s|ing)? in line) for\b(?! (?:battle|war|a race|the race|the start|a fight)\b)`,
+    // „serve 20 knights their pancakes“ (řádek modulu „serve 12 cats their milk“) – zboží patří mnoha příchozím.
+    String.raw`\bserv(?:e|es|ing) (?:\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|all (?:the )?|every|the) (?:[a-z'-]+ ){0,2}?[a-z'-]*[a-rt-z]s their\b`,
+    String.raw`\bserv(?:e|es|ing)\b(?= (?:[a-z'-]+ ){0,4}?${PATRONS}\b)|\bserv(?:e|es|ing)\b[^.;!?]*?\b(?:until|till|before) (?:sunset|sundown|closing(?: time)?|close|dark|midnight|the (?:end of the )?(?:day|night)|the (?:lunch|dinner|breakfast|morning|evening) rush (?:ends|is over))\b`,
   ].join('|'))),
   // Úkol v prostoru: předměty rozeseté po scéně.
   v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
