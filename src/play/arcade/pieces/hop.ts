@@ -17,8 +17,9 @@
 
 import { z } from 'zod';
 
-import { ARCADE_LIMITS, AXIS_MAX, type ArcadeEffect, type ArcadeInput, BODY, BUTTON, COUNTER, type ControlPiece, FLAG, HEADER, HIT_GRACE, type ModeGeneratorPiece, type ModeParts, ROLE, type RulePiece, START_LIVES, bodyBase } from '../contract';
+import { ARCADE_LIMITS, AXIS_MAX, type ArcadeEffect, type ArcadeInput, BODY, BUTTON, COUNTER, type ControlPiece, FLAG, HEADER, HIT_GRACE, type ModeGeneratorPiece, type ModeParts, type PieceRef, ROLE, type RulePiece, START_LIVES, bodyBase } from '../contract';
 import { DIR, HOP, HOP_BODIES, HOP_HALF, HOP_STEP, type HopLane, type HopLayout, type HopParams, type HopScriptLevel, ROW, checkHopLevel, colOf, colX, grassRows, hopLayout, hopLevel, hopParams, hopScriptBands, hopScriptedLayout, laneX, rowOf } from './hop-course';
+import { worldRests, worldTicks } from '../kernel';
 import { nextMultiplier } from './rules';
 
 export * from './hop-course';
@@ -63,9 +64,10 @@ export function hopWanted(input: ArcadeInput): number {
  * Jeden krok ovládání bez integrace: rychlost a stav skoku. `carry` = rychlost klády pod hrdinou (0 mimo kládu).
  * Sdílí ho ovládání i robot (předpověď vlastní polohy), takže obojí počítá týmiž celými čísly.
  */
-export function stepHopper(h: Hopper, input: ArcadeInput, carry: number): void {
-  // Návrat na místo návratu (`respawn`) uprostřed skoku vynuluje rychlost – skok tím končí.
-  if (h.rem > 0 && h.vx === 0 && h.vz === 0) h.rem = 0;
+export function stepHopper(h: Hopper, input: ArcadeInput, carry: number, afterRest = false): void {
+  // Návrat na místo návratu (`respawn`) uprostřed skoku vynuluje rychlost – skok tím končí. Po tiku odpočinku
+  // (`restHopper`) je nulová rychlost zastavení, ne návrat.
+  if (!afterRest && h.rem > 0 && h.vx === 0 && h.vz === 0) h.rem = 0;
   if (h.rem === 0) {
     const wanted = hopWanted(input);
     const here = colOf(h.x);
@@ -85,6 +87,26 @@ export function stepHopper(h: Hopper, input: ArcadeInput, carry: number): void {
     h.vx = carry;
     h.vz = 0;
   }
+}
+
+/**
+ * Krok ovládání v tiku odpočinku férového startu (P70A T3, `worldRests`): provoz i klády stojí, a hrdina s nimi –
+ * rychlost 0, skok ani orel nepokročí, takže hra je v hodinách světa (`worldTicks`) tatáž. Vstup se ale neztratí:
+ * stojící hrdina skok zaregistruje a v příštím tiku pohybu skočí celý (`stepHopper` s `afterRest`). Sdílí ho
+ * ovládání i robot.
+ */
+export function restHopper(h: Hopper, input: ArcadeInput): void {
+  h.vx = 0;
+  h.vz = 0;
+  if (h.rem > 0) return;
+  const wanted = hopWanted(input);
+  const here = colOf(h.x);
+  const col = wanted === DIR.left ? here - 1 : wanted === DIR.right ? here + 1 : here;
+  if (wanted < 0 || col < 0 || col >= HOP.cols || (wanted === DIR.back && h.z <= 0)) return;
+  h.rem = HOP.hopTicks;
+  h.dir = wanted;
+  h.col = col;
+  h.idle = 0;
 }
 
 export function hopperOf(state: Int32Array, player: number): Hopper {
@@ -121,17 +143,20 @@ export function logUnder(state: Int32Array, x: number, z: number): number {
   return -1;
 }
 
-const hopControlParams = z.object({}).strict();
+/** `fair` (P70A T3): svět s férovým startem – v tiku odpočinku jen `restHopper`. Bez něj jako dřív. */
+const hopControlParams = z.object({ fair: z.literal(1).optional() }).strict();
 
 export const hopControl: ControlPiece<z.infer<typeof hopControlParams>> = {
   id: 'hop',
   params: hopControlParams,
   roles: ['player'],
   cost: () => ({ bodies: 0, rules: 0 }),
-  step: (state, player, input) => {
+  step: (state, player, input, params) => {
     const h = hopperOf(state, player);
     const log = h.rem === 0 ? logUnder(state, h.x, h.z) : -1;
-    stepHopper(h, input, log < 0 ? 0 : (state[bodyBase(log) + BODY.vx] as number));
+    const tick = state[HEADER.tick] as number;
+    if (params.fair === 1 && worldRests(tick)) restHopper(h, input);
+    else stepHopper(h, input, log < 0 ? 0 : (state[bodyBase(log) + BODY.vx] as number), params.fair === 1 && tick > 0 && worldRests(tick - 1));
     const base = bodyBase(player);
     state[base + BODY.vx] = h.vx;
     state[base + BODY.vz] = h.vz;
@@ -197,6 +222,16 @@ export function hopWorldOf(layout: HopLayout, lives: number): Omit<ModeParts, 'i
   };
 }
 
+/**
+ * Díly světa s férovým startem (P70A T3): ovládání (`restHopper`), provoz (hodiny světa) a robot (plán v hodinách
+ * světa) vědí o tiku odpočinku, takže hra je v hodinách světa tatáž, jen v pomalém začátku pomalejší.
+ */
+export function fairHopParts<T extends { readonly control: PieceRef; readonly bot: PieceRef; readonly rules: readonly PieceRef[] }>(parts: T): T {
+  if (parts.control.id !== 'hop') return parts;
+  const fair = (ref: PieceRef): PieceRef => ({ ...ref, params: { ...ref.params, fair: 1 } });
+  return { ...parts, control: fair(parts.control), bot: fair(parts.bot), rules: parts.rules.map((ref) => (ref.id === 'hop_traffic' ? fair(ref) : ref)) };
+}
+
 export const hopRows: ModeGeneratorPiece<HopParams> = {
   id: 'hop_rows',
   params: hopParams,
@@ -219,6 +254,8 @@ const trafficParams = z
       .array(z.tuple([rowIndex, index, z.union([z.literal(1), z.literal(-1)]), z.int().min(1).max(1000), z.int().min(1).max(ARCADE_LIMITS.maxTicks), z.int().min(0).max(ARCADE_LIMITS.maxTicks), z.int().min(0).max(60), far, far]))
       // Řada silnice je kolona: pod-pruh na auto.
       .max(HOP.carsPerRow * HOP.rows.max),
+    /** Férový start (P70A T3): rytmus provozu jde podle hodin světa (`worldTicks`), v tiku odpočinku nic nevyjede. */
+    fair: z.literal(1).optional(),
   })
   .strict();
 type TrafficParams = z.infer<typeof trafficParams>;
@@ -242,11 +279,13 @@ export const hopTrafficRule: RulePiece<TrafficParams> = {
   roles: ['obstacle', 'platform'],
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state }, params) => {
+  fire: ({ state, rests }, params) => {
     const effects: ArcadeEffect[] = [];
-    const tick = state[HEADER.tick] as number;
+    const real = state[HEADER.tick] as number;
+    // Hodiny světa: s férovým startem tik pohybu, takže provoz v pomalém začátku jede i vyjíždí pomaleji.
+    const tick = params.fair === 1 ? worldTicks(real) : real;
     for (const [row, template, dir, speed, period, phase, warm, entry, exit] of params.lanes) {
-      if (tick < warm) continue;
+      if (tick < warm || rests === true) continue;
       const lane = { dir, entry, speed };
       const z = row * HOP.cell;
       if (tick === warm) {

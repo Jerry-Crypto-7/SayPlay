@@ -12,7 +12,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { runBot } from '@/play/arcade/verify';
 import { draftGenreFor } from '@/play/draft/draft';
 
-import { MICRO, type MicroEntry, genreModeOf, microSpec } from '../micro';
+import { MICRO, type MicroEntry, ROUND_WORLD, genreModeOf, microSpec } from '../micro';
 import { roundSeeds } from '../run';
 
 /**
@@ -61,8 +61,10 @@ describe.each(MICRO.map((entry) => [entry.key, entry] as const))('%s', (_key, en
   const rounds = entry.kind === 'survive' ? [0, LAST_ROUND] : [0];
 
   it.each(rounds.flatMap((round) => SEEDS.map((seed) => [round, seed] as const)))('round %i seed %i: bot wins in 3–8 s, idle loses, replay is equal', (round, seed) => {
-    const made = arcadeWorldOf(specOf(entry, round), seed);
+    // Kolo se překládá jako v řetězu: bez férového startu (`ROUND_WORLD`, P70A T3).
+    const made = arcadeWorldOf(specOf(entry, round), seed, undefined, ROUND_WORLD);
     if (!made.ok) throw new Error(made.issues.join('; '));
+    expect(made.world.fairStart).toBeUndefined();
     const bot = runBot(made.world);
     expect(bot.outcome).toBe('won');
     expect(bot.tick).toBeGreaterThanOrEqual(3 * ARCADE_HZ);

@@ -18,7 +18,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import flapFixture from '../__fixtures__/flap.json';
 import { baseControlOf } from '../addons';
 import { arcadeWorldOf } from '../compile';
-import { type ArcadeInput, type ArcadeWorld, BODY, BUTTON, NO_INPUT, bodyBase } from '../contract';
+import { type ArcadeInput, type ArcadeWorld, BODY, BUTTON, HIT_GRACE, NO_INPUT, bodyBase } from '../contract';
 import { hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { PLATFORM_FEEL } from '../pieces/platform';
@@ -228,7 +228,14 @@ describe('who gets feel: 2', () => {
     expect(spec.controlParams).toMatchObject({ feel: 2 });
     const world = worldOf(spec);
     expect(baseControlOf(world.control).params).toMatchObject({ feel: 2 });
-    if (name === 'flap') expect(world.rules).toContainEqual({ id: 'fall_out', params: { belowY: 1, effect: 'lose', afterTicks: PLATFORM_FEEL.coyoteTicks } });
+    if (name === 'flap') {
+      // Férový start (P70A T3, `genre.v8`): zem stojí život s milostí a ptáček se odrazí – kojotí tiky prohry odpadly.
+      expect(world.rules).toContainEqual({ id: 'fall_out', params: { belowY: 1, effect: 'damage', grace: HIT_GRACE } });
+      // Uložená `genre.v7` s `feel: 2` dál prohraje dotekem země až po kojotích ticích.
+      const stored = worldOf({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v7' } });
+      expect(baseControlOf(stored.control).params).toMatchObject({ feel: 2 });
+      expect(stored.rules).toContainEqual({ id: 'fall_out', params: { belowY: 1, effect: 'lose', afterTicks: PLATFORM_FEEL.coyoteTicks } });
+    }
   });
 
   it.each(Object.keys(GENRES))('%s: the robot wins at the same tick and an idle player still loses', (name) => {

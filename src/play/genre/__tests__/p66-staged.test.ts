@@ -120,8 +120,8 @@ describe('P66 genres go live (T2 staged them, T12 routes sentences to them)', ()
 });
 
 describe('genre.v6 and the hooks contract (P66 T2)', () => {
-  it('new games are genre.v7 (P68 T1 moved on from genre.v6, which brought the hooks)', () => {
-    expect(GENRE_COMPILER_VERSION).toBe('genre.v7');
+  it('new games are genre.v8 (P68 T1 and P70A T3 moved on from genre.v6, which brought the hooks)', () => {
+    expect(GENRE_COMPILER_VERSION).toBe('genre.v8');
   });
 
   it('the hook streams come after every stream that existed, so saved games draw what they drew before', () => {

@@ -25,6 +25,8 @@ export const FLAP = {
   /** Let vpřed (5,4 m/s). */
   speed: 90,
   flapVy: 110,
+  /** Odraz od země (P70A T3, ovládání s `bounce`): vyšší než vzlet, ať se ptáček vrátí k mezerám (~1,5 m). */
+  bounceVy: 160,
   size: 800,
   /** Strop letu: spodní stěna stropu. */
   ceiling: 10_000,
@@ -57,8 +59,9 @@ export const flapRampParams = z.object({ ramp: z.tuple([z.int(), z.int()]).optio
  * Ovládání: rampa a s `feel: 2` (P37A T7) odpuštění pozdního vzletu – dotek
  * země prohraje až po `PLATFORM_FEEL.coyoteTicks` (100 ms) bez ťuku, ťuk do té
  * doby ze země vzlétne. Bez něj prohrává hned první dotek, uložený svět beze změny.
+ * S `bounce` (P70A T3, férový start) se ptáček od země odrazí (`FLAP.bounceVy`) a zem stojí život (`flapRules`).
  */
-const flapControlParams = flapRampParams.extend({ feel: z.literal(2).optional() }).strict();
+const flapControlParams = flapRampParams.extend({ feel: z.literal(2).optional(), bounce: z.literal(1).optional() }).strict();
 
 /** Ovládání: let vpřed (za značkami rampy rychlejší), ťuk/nahoru = vzlet. S `feel: 2` je `aux0` hráče počet tiků na zemi. */
 export const flapControl: ControlPiece<z.infer<typeof flapControlParams>> = {
@@ -70,8 +73,11 @@ export const flapControl: ControlPiece<z.infer<typeof flapControlParams>> = {
     const base = bodyBase(player);
     state[base + BODY.vz] = rampedSpeed(params.speed ?? FLAP.speed, state[base + BODY.z] as number, params.ramp);
     state[base + BODY.vx] = 0;
-    if (params.feel === 2) state[base + BODY.aux0] = ((state[base + BODY.flags] as number) & FLAG.grounded) === 0 ? 0 : (state[base + BODY.aux0] as number) + 1;
+    const grounded = ((state[base + BODY.flags] as number) & FLAG.grounded) !== 0;
+    if (params.feel === 2) state[base + BODY.aux0] = grounded ? (state[base + BODY.aux0] as number) + 1 : 0;
     if ((input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) state[base + BODY.vy] = FLAP.flapVy;
+    // Na startu nese hráč příznak země i ve výšce – odraz jen od skutečné země.
+    if (params.bounce === 1 && grounded && (state[base + BODY.y] as number) <= 0) state[base + BODY.vy] = FLAP.bounceVy;
   },
 };
 
@@ -176,15 +182,21 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
  * s `rise`, P36A T11): náraz ubere jeden život a vteřinu další nebere – trubkou
  * se proletí za ~13 tiků, bez milosti by v ní padly všechny životy. `feel`
  * (P37A T7): dotek země prohraje až po tikách odpuštění, které počítá ovládání.
+ * `ground` (P70A T3, férový start, ovládání s `bounce`): se životy dotek země ubere jeden život s milostí a ptáček
+ * se odrazí – konec hry až po posledním životě.
  */
-export function flapRules(health?: number, grace = false, feel = false, collectAll = false): PieceRef[] {
+export function flapRules(health?: number, grace = false, feel = false, collectAll = false, ground = false): PieceRef[] {
   const damage = grace ? { effect: 'damage', grace: HIT_GRACE } : { effect: 'damage' };
+  // Země drží hráče na y = 0: dotek země = spodní stěna pod 1.
+  const fall =
+    ground && health !== undefined
+      ? { belowY: 1, effect: 'damage', grace: HIT_GRACE }
+      : { belowY: 1, effect: 'lose', ...(feel ? { afterTicks: PLATFORM_FEEL.coyoteTicks } : {}) };
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'obstacle', ...(health === undefined ? { effect: 'lose' } : damage) } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: collectAll ? { allItems: true } : {} },
-    // Země drží hráče na y = 0: dotek země = spodní stěna pod 1.
-    { id: 'fall_out', params: { belowY: 1, effect: 'lose', ...(feel ? { afterTicks: PLATFORM_FEEL.coyoteTicks } : {}) } },
+    { id: 'fall_out', params: fall },
   ];
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
   return rules;

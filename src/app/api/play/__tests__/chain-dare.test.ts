@@ -18,8 +18,8 @@ import { POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
 import { freshCaller, params, player, post, SECRET, send } from './dare-fixtures';
 
-/** Dev P56C d04 (`multi_verb`). */
-const MULTI = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
+/** Dev P56C d04 (`multi_verb`) s výslovnou žádostí o kola – od P70A T2 jdou řetězem jen věty, které o víc her žádají. */
+const MULTI = 'can u make 5 rounds where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
 
 async function publishedChain(): Promise<{ id: string; chain: ChainWorld }> {
   const created = await createGame(post('/api/play/games', { sentence: MULTI }, freshCaller()));

@@ -63,7 +63,8 @@ beforeAll(() => {
   const built = buildChain(MULTI, readForChain(MULTI, null), 1);
   if (!built.ok) throw new Error(built.issues.join('; '));
   chain = built.chain;
-  session = play(new Set([1]));
+  // P70A T3: prohrané kolo řetěz zastaví, takže duch projde všemi koly jen vyhraný (Dare vzniká jen z výhry).
+  session = play();
   record = session.inputs();
 });
 

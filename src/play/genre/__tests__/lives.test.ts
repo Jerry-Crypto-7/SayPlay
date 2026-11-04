@@ -68,11 +68,16 @@ function specOf(genre: GenreSpec): GameSpecV1 {
   return read.value;
 }
 
-/** Svět z prvního semínka, na kterém se postaví (generátor smí semínko odmítnout). */
+const withoutFairStart = ({ fairStart: _opening, ...world }: ArcadeWorld): ArcadeWorld => world;
+
+/**
+ * Svět z prvního semínka, na kterém se postaví (generátor smí semínko odmítnout). Bez férového startu (P70A T3):
+ * test měří mechaniku životů, ne 3 s ochrany po prvním dotyku (ta má `arcade/__tests__/fair-start.test.ts`).
+ */
 function worldOf(spec: GameSpecV1): ArcadeWorld {
   for (let seed = 1; seed <= 20; seed += 1) {
     const made = arcadeWorldOf(spec, seed);
-    if (made.ok) return made.world;
+    if (made.ok) return withoutFairStart(made.world);
   }
   throw new Error(`no seed builds ${spec.title}`);
 }

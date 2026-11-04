@@ -685,6 +685,11 @@ export interface RuleContext {
   readonly source: number;
   /** Vstup tohoto tiku (P29A, spouštěč `press`). */
   readonly input: ArcadeInput;
+  /**
+   * Tik odpočinku férového startu (P70A T3, `worldRests`): jádro v něm těla nehýbe. Pravidlo, které průchod čárou
+   * pozná z rychlosti (`y − vy`), v něm nic neohlásí – jinak by týž průchod započetlo dvakrát. Chybí = hýbe se.
+   */
+  readonly rests?: boolean;
 }
 
 /** Pravidlo: spouštěč → efekty. Stav nemění samo, efekty aplikuje jádro. */
@@ -832,6 +837,12 @@ export interface ArcadeWorld {
    * ze specu (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal; svět postavený bez specu je nemá.
    */
   readonly logic?: { readonly bodies: readonly number[]; readonly names?: LogicNames };
+  /**
+   * Férový start (P70A T3, `FAIR_START` v `kernel.ts`): `protect` = ochrana po prvním dotyku, `slow` = navíc pomalý
+   * začátek světa (tik odpočinku). Jen svět nové hry (`FAIR_START_GENRE_VERSION`); uložený svět bez pole hraje bajt
+   * po bajtu jako dřív.
+   */
+  readonly fairStart?: FairStartMode;
   readonly seed: number;
   readonly control: PieceRef;
   readonly rules: readonly PieceRef[];
@@ -841,6 +852,10 @@ export interface ArcadeWorld {
   readonly length: number;
   readonly initial: readonly number[];
 }
+
+/** Verze překladu žánru, od které svět nese férový start (`ArcadeWorld.fairStart`, P70A T3); uložené starší hrají jako dřív. */
+export const FAIR_START_GENRE_VERSION = 'genre.v8';
+export type FairStartMode = 'slow' | 'protect';
 
 /**
  * Mřížka zamčeného cíle chování (`aux1`, P45C): `x` po 16, `z` po 64 jednotkách. Chování, které podle cíle

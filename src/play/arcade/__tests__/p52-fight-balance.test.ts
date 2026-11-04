@@ -49,7 +49,7 @@ describe('P52 T9: an arena fight with dash and shield', () => {
   it('is a genre fight of today (genre.v7 since P68 T1; the tests below stamp genre.v5 themselves)', () => {
     expect(base.control).toBe('move_free');
     expect((base.controlParams as { generator?: string }).generator).toBe('fight');
-    expect(base.genre?.compilerVersion).toBe('genre.v7');
+    expect(base.genre?.compilerVersion).toBe('genre.v8');
   });
 
   // Obě pořadí tlačítek: robot bere ochranu v jejich pořadí, štít na A drží blok déle.

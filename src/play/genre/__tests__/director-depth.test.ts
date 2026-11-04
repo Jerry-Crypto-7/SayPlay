@@ -36,6 +36,9 @@ function game(input: unknown): GameSpecV1 {
   return spec.value;
 }
 
+/** Svět bez férového startu (P70A T3): test měří mechaniku zásahu, ne 3 s ochrany po prvním dotyku (`fair-start.test.ts`). */
+const withoutFairStart = ({ fairStart: _opening, ...arcade }: ArcadeWorld): ArcadeWorld => arcade;
+
 /** Svět prvního semínka, které robot vyhraje (jako dveře publikace, které zkusí další). */
 function world(spec: GameSpecV1): ArcadeWorld {
   const issues: string[] = [];
@@ -216,7 +219,7 @@ describe('a lose rule is proved by a robot that walks into it (P36A T8)', () => 
 
   // F1 (z T8): `damage` z pravidla specu dřív bral život každý tik – tři životy padly za tři tiky v lávě.
   it('a damage rule takes one life per hit: 30 ticks in lava cost exactly one life', () => {
-    const arcade = world(game({ ...lava, rules: [{ id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] }] }));
+    const arcade = withoutFairStart(world(game({ ...lava, rules: [{ id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] }] })));
     const lavaRole = (arcade.rules.find((ref) => ref.id === 'rule_contact')!.params as { when: { contact: readonly [number, number] } }).when.contact[1];
     const state = instantiate(arcade);
     const bodies = (state.length - HEADER_SIZE) / BODY_STRIDE;
@@ -239,7 +242,7 @@ describe('a lose rule is proved by a robot that walks into it (P36A T8)', () => 
   });
 
   it('a damage rule in a game without lives sets no grace, so the old state does not move', () => {
-    const arcade = world(game({ ...lava, rules: [{ id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] }] }));
+    const arcade = withoutFairStart(world(game({ ...lava, rules: [{ id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] }] })));
     const noLives = { ...arcade, initial: arcade.initial.map((value, i) => (i === HEADER.counters + COUNTER.health ? 0 : value)) };
     const lavaRole = (arcade.rules.find((ref) => ref.id === 'rule_contact')!.params as { when: { contact: readonly [number, number] } }).when.contact[1];
     const state = instantiate(noLives);

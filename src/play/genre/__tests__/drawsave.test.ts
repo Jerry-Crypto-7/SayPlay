@@ -91,7 +91,8 @@ describe('drawsave genre (P68-S T13)', () => {
   it('the hand spec of the e2e fixture is the module translation and passes the spec gate', () => {
     const spec = specOf(CONTENT);
     const fixture = JSON.parse(readFileSync(FIXTURE_PATH, 'utf8')) as unknown;
-    expect(spec).toEqual(fixture);
+    // Fixtura je uložená hra `genre.v7`; P70A T3 zvedl jen verzi nových her (férový start).
+    expect({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v7' } }).toEqual(fixture);
     expect(readGameSpec(fixture).ok).toBe(true);
     expect(spec.roles.find((role) => role.id === 'player')?.label).toBe('puppy');
     expect(spec.roles.find((role) => role.id === 'threat')).toMatchObject({ kind: 'hazard', label: 'rock', count: DRAWSAVE.threats.default });

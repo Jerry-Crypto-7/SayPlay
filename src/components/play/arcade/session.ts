@@ -124,13 +124,10 @@ export const PREVIEW_GAP_MS = 600;
  * `swallowFirst` (načasování, rytmus, souboj – P25H, střelnice): první stisk jen pustí
  * hodiny a do záznamu nejde – ťuk v tiku 0 by u načasování byl minutím.
  * Držená osa a tlačítka hodiny nepustí, jen se nastaví.
- *
- * `rate` (P56C T11): tempo hodin v promile – 1300 odtiká tik za 1/78 s místo 1/60 s. Mění jen převod ms → tiky;
- * stav, záznam ani hash tempo nevidí.
  */
 export function createArcadeSession(
   world: ArcadeWorld,
-  { waitForInput = false, swallowFirst = false, rate = 1000 }: { readonly waitForInput?: boolean; readonly swallowFirst?: boolean; readonly rate?: number } = {},
+  { waitForInput = false, swallowFirst = false }: { readonly waitForInput?: boolean; readonly swallowFirst?: boolean } = {},
 ): ArcadeSession {
   // Program mění jen živé prodloužení času (P29D T7); restart vrací původní.
   let program = loadProgram(world, ARCADE_LIBRARY);
@@ -248,7 +245,7 @@ export function createArcadeSession(
     if (!started) return 0;
     // Pauza drží rozběhnutý podíl, ať stojící snímek necukne o tik zpět.
     if (halted) return Math.min(1, accumulator / TICK_MS);
-    accumulator += (Math.min(Math.max(ms, 0), MAX_FRAME_MS) * rate) / 1000;
+    accumulator += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
     let stepped = false;
     // Epsilon: 30 × (1000/60) v plovoucí čárce je o chlup pod 500 a tik by se ztratil.
     while (accumulator >= TICK_MS - 1e-6 && outcomeOf(state) === 'running' && (preview === null || (state[HEADER.tick] as number) < preview.endTick)) {

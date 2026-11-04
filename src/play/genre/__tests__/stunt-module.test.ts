@@ -109,7 +109,7 @@ describe('stunt compile (T3)', () => {
     const spec = specOf();
     expect(readGameSpec(JSON.parse(JSON.stringify(spec))).ok).toBe(true);
     expect(spec.control).toBe('stunt');
-    expect(spec.genre).toEqual({ id: 'stunt', mode: 'default', compilerVersion: 'genre.v7' });
+    expect(spec.genre).toEqual({ id: 'stunt', mode: 'default', compilerVersion: 'genre.v8' });
     expect(spec.controlParams).toEqual({ generator: 'stunt_track', tuning: { vehicle: 'gen3d-monster-truck' } });
     expect(spec.roles.map((role) => [role.id, role.kind, role.label])).toEqual([['player', 'player', 'monster truck'], ['pile', 'target', 'crate'], ['finish', 'exit', 'finish line']]);
     expect(spec.theme.look).toBe('desert');
@@ -155,7 +155,8 @@ describe('stunt publication gate on 10 seeds (T3)', () => {
 
   it('the e2e fixture sample in stunt-evidence.json is exactly what the module compiles and passes the gate on its seed', () => {
     const { fixture } = JSON.parse(readFileSync(join(LANE, 'stunt-evidence.json'), 'utf8')) as { fixture: { seed: number; spec: unknown } };
-    expect(fixture.spec).toEqual(JSON.parse(JSON.stringify(SPEC)));
+    // Fixtura je uložená hra `genre.v7`; P70A T3 zvedl jen verzi nových her (férový start).
+    expect(fixture.spec).toEqual(JSON.parse(JSON.stringify({ ...SPEC, genre: { ...SPEC.genre, compilerVersion: 'genre.v7' } })));
     const read = readGameSpec(fixture.spec);
     expect(read.ok).toBe(true);
     const compiled = compileArcade(SPEC, fixture.seed);

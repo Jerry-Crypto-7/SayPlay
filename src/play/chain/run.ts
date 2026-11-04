@@ -1,10 +1,12 @@
 /**
  * Přehrávač řetězu (P56C T5): globální tiky přes všechna kola, karta `cardTicks` mezi koly (vstupy se
- * zahodí), životy a skóre v hlavičce řetězu. Kolo r začne v tiku, kdy skončila karta po kole r − 1; první
+ * zahodí), skóre v hlavičce řetězu. Kolo r začne v tiku, kdy skončila karta po kole r − 1; první
  * kolo v tiku 0, bez karty. Kolo končí výhrou, prohrou, nebo `ARCADE_LIMITS.maxTicks` (= prohra).
+ * Od P70A T3 má každé kolo své životy (`roundWorld`) a prohrané kolo řetěz zastaví. Klient ho pak hraje znovu
+ * a záznam skládá jen z vyhraných kol a nového pokusu, takže přehrávač opakování kola nezná.
  *
  * Hash `chain-v1` = FNV-1a (`hashHex`) nad jedním polem: konečné stavy odehraných kol za sebou, rozehrané
- * kolo a hlavička `[lives, score, round, tick]`. Tempo (`rate`) je jen rychlost přehrávání v klientovi.
+ * kolo a hlavička `[score, round, tick]`.
  */
 
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeState, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, underlyingRule } from '../arcade/contract';
@@ -12,16 +14,13 @@ import { type ArcadeLibrary, type ArcadeOutcome, type ArcadeProgram, hashArcade,
 import { ARCADE_LIBRARY } from '../arcade/library';
 import { hashHex } from '../../sim/hash';
 import { createStreams, nextInt } from '../../sim/rng';
-import { type ChainWorld, RATE_STEPS } from './contract';
+import type { ChainWorld } from './contract';
 
 /** Semínka kol ze streamu `chain` – jediný los řetězu. */
 export function roundSeeds(seed: number, count: number): number[] {
   const stream = createStreams(seed).chain;
   return Array.from({ length: count }, () => nextInt(stream, 1, 0x7fffffff));
 }
-
-/** Tempo kola `index` (od 0) v promile. */
-export const roundRate = (index: number): number => RATE_STEPS[Math.min(index, RATE_STEPS.length - 1)]!;
 
 /** Stav běžícího řetězu; `stepChain` ho mění na místě jako jádro svůj stav. */
 export interface ChainState {
@@ -33,7 +32,6 @@ export interface ChainState {
   card: number;
   state: ArcadeState;
   program: ArcadeProgram;
-  lives: number;
   score: number;
   /** Globální tik řetězu. */
   tick: number;
@@ -43,25 +41,26 @@ export interface ChainState {
 }
 
 /**
- * Svět kola, jak ho otevře přehrávač: boss dostane jako životy těla zbývající životy řetězu (má-li hra životy).
- * Sdílí ho `openRound` i relace řetězu v prohlížeči (T11), ať boss u obou začne týmž stavem.
+ * Svět kola, jak ho otevře přehrávač (P70A T3): každé kolo, boss taky, dostane `lives` životů (má-li hra životy) –
+ * kolo se staví a ověřuje s jedním (`microSpec`), zbytek přidá řetěz a štít mutátoru zůstane navíc. Robotův záznam
+ * z jednoho života vyhraje i tady ve stejném tiku (`verifyChain` to přehráním hlídá). Sdílí ho `openRound`, relace
+ * řetězu v prohlížeči (T11) i stavba (`buildChain`: nečinný musí prohrát i s nimi).
  */
-export function roundWorld(chain: ChainWorld, index: number, lives: number): ArcadeWorld {
-  const round = chain.rounds[index]!;
-  if (!round.boss) return round.world;
-  const initial = instantiate(round.world);
-  if ((initial[HEADER.counters + COUNTER.health] as number) <= 0) return round.world;
-  initial[HEADER.counters + COUNTER.health] = lives;
-  return { ...round.world, initial: Array.from(initial) };
+export function roundWorld(world: ArcadeWorld, lives: number): ArcadeWorld {
+  const initial = instantiate(world);
+  const health = initial[HEADER.counters + COUNTER.health] as number;
+  if (health <= 0) return world;
+  initial[HEADER.counters + COUNTER.health] = health + lives - 1;
+  return { ...world, initial: Array.from(initial) };
 }
 
-function openRound(chain: ChainWorld, index: number, lives: number, library: ArcadeLibrary): { readonly state: ArcadeState; readonly program: ArcadeProgram } {
-  const world = roundWorld(chain, index, lives);
+function openRound(chain: ChainWorld, index: number, library: ArcadeLibrary): { readonly state: ArcadeState; readonly program: ArcadeProgram } {
+  const world = roundWorld(chain.rounds[index]!.world, chain.lives);
   return { state: instantiate(world), program: loadProgram(world, library) };
 }
 
 export function startChain(chain: ChainWorld, library: ArcadeLibrary = ARCADE_LIBRARY): ChainState {
-  return { chain, library, round: 0, card: 0, ...openRound(chain, 0, chain.lives, library), lives: chain.lives, score: 0, tick: 0, outcome: 'running', finals: [], results: [] };
+  return { chain, library, round: 0, card: 0, ...openRound(chain, 0, library), score: 0, tick: 0, outcome: 'running', finals: [], results: [] };
 }
 
 /** Jeden globální tik. Během karty se vstup zahodí; po konci řetězu nedělá nic. */
@@ -70,7 +69,7 @@ export function stepChain(run: ChainState, input: ArcadeInput): void {
   run.tick += 1;
   if (run.card > 0) {
     run.card -= 1;
-    if (run.card === 0) Object.assign(run, openRound(run.chain, run.round, run.lives, run.library));
+    if (run.card === 0) Object.assign(run, openRound(run.chain, run.round, run.library));
     return;
   }
   step(run.state, input, run.program);
@@ -80,9 +79,9 @@ export function stepChain(run: ChainState, input: ArcadeInput): void {
   run.results.push(won ? 'won' : 'lost');
   run.finals.push(run.state);
   run.score += run.state[HEADER.counters + COUNTER.score] as number;
-  if (!won) run.lives -= 1;
   const last = run.round === run.chain.rounds.length - 1;
-  if (run.lives <= 0 || (last && !won)) run.outcome = 'lost';
+  // Prohrané kolo (i boss) řetěz zastaví; „Try again“ v klientovi ho hraje znovu (`createChainSession().restart`).
+  if (!won) run.outcome = 'lost';
   else if (last) run.outcome = 'won';
   else {
     run.round += 1;
@@ -91,18 +90,18 @@ export function stepChain(run: ChainState, input: ArcadeInput): void {
 }
 
 /** Co hash čte; relace v prohlížeči (T11) ho skládá ze svých kol, ne z `ChainState`. */
-export type ChainHashInput = Pick<ChainState, 'outcome' | 'card' | 'finals' | 'state' | 'lives' | 'score' | 'round' | 'tick'>;
+export type ChainHashInput = Pick<ChainState, 'outcome' | 'card' | 'finals' | 'state' | 'score' | 'round' | 'tick'>;
 
 export function hashChain(run: ChainHashInput): string {
   const playing = run.outcome === 'running' && run.card === 0;
   const states = playing ? [...run.finals, run.state] : run.finals;
-  const words = new Int32Array(states.reduce((sum, state) => sum + state.length, 0) + 4);
+  const words = new Int32Array(states.reduce((sum, state) => sum + state.length, 0) + 3);
   let at = 0;
   for (const state of states) {
     words.set(state, at);
     at += state.length;
   }
-  words.set([run.lives, run.score, run.round, run.tick], at);
+  words.set([run.score, run.round, run.tick], at);
   return hashHex(new Uint32Array(words.buffer));
 }
 
@@ -110,7 +109,6 @@ export interface ChainReplay {
   readonly hash: string;
   readonly outcome: ArcadeOutcome;
   readonly tick: number;
-  readonly lives: number;
   readonly score: number;
   readonly results: readonly ('won' | 'lost')[];
   /** `hashArcade` konečného stavu každého odehraného kola. */
@@ -151,5 +149,5 @@ export function replayChain(chain: ChainWorld, inputs: readonly InputEvent[], li
     const event = inputs[next];
     stepChain(run, event !== undefined && event.tick === run.tick ? event : NO_INPUT);
   }
-  return { hash: hashChain(run), outcome: run.outcome, tick: run.tick, lives: run.lives, score: run.score, results: [...run.results], roundHashes: run.finals.map(hashArcade) };
+  return { hash: hashChain(run), outcome: run.outcome, tick: run.tick, score: run.score, results: [...run.results], roundHashes: run.finals.map(hashArcade) };
 }

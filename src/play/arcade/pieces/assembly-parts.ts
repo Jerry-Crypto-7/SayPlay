@@ -7,9 +7,12 @@ import { guardParts } from '../abilities';
 import { abilityButton, abilityIdsOf, guardParams, guardedHit } from '../abilities/state';
 import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, graceOf, targetStateOf,
   type ArcadeEffect, type ArcadeInput, type BodyInit, type BotPiece, type ControlPiece, type PieceRef, type RulePiece, type RuleTrigger } from '../contract';
+import { FAIR_START } from '../kernel';
+import { FLAP } from './flap';
+import { PLATFORM } from './platform';
 import { ARENA, DIRECTIONS, ESCAPE, arenaAxis, directionOfAxis } from './arena';
 import { FINALE5_GENRE_VERSION, genreAtLeast } from './pacing-parts';
-import { RUNNER, RUNNER_STRUCTURE_D } from './runner';
+import { RUNNER, RUNNER_STRUCTURE_D, type RunnerSpeed, SPEED } from './runner';
 import { centerAt, courseSchema } from './steer';
 import { GLIDE } from './glide';
 import { WALKER_CELL, walkerCell, walkerMapSchema, walkerPath, walkerVelocity, walkerWaypoint } from './walker';
@@ -43,6 +46,8 @@ const close = (state: Int32Array, a: number, b: number, extra = 0): boolean => {
  * v každém enginu, `Math.hypot` ne (tvar jako `length` v `arena.ts`, bez `floor`, ať se rychlosti nepohnou).
  */
 const distance = (dx: number, dz: number, dy = 0): number => Math.sqrt(dx * dx + dy * dy + dz * dz);
+/** Na tuhle vzdálenost robot sestavy pronásledovateli uhýbá a sonda mu jde naproti (`threatProbeInput`). */
+export const PURSUER_SIGHT = 4500;
 const moved = (state: Int32Array, part: Part) => {
   const b = bodyBase(part.body);
   return distance(state[b + BODY.x]! - part.startX, state[b + BODY.z]! - part.startZ, state[b + BODY.y]! - part.startY) >= UNIT;
@@ -242,7 +247,7 @@ export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPi
         ballPosition.z += ((recent.buttons & BUTTON.UP ? 1 : 0) - (recent.buttons & BUTTON.DOWN ? 1 : 0)) * 150;
       }
       const pursuer = params.parts.find(part => part.kind === 'chaser' && alive(state, part.body) && phaseReady(state, part, params.parts)
-        && distance(state[bodyBase(part.body) + BODY.x]! - state[p + BODY.x]!, state[bodyBase(part.body) + BODY.z]! - state[p + BODY.z]!) < 4500);
+        && distance(state[bodyBase(part.body) + BODY.x]! - state[p + BODY.x]!, state[bodyBase(part.body) + BODY.z]! - state[p + BODY.z]!) < PURSUER_SIGHT);
       if (pursuer) {
         const q = bodyBase(pursuer.body), dx = state[q + BODY.x]! - state[p + BODY.x]!, dz = state[q + BODY.z]! - state[p + BODY.z]!;
         if (params.control === 'ball') return { ...input, buttons: input.buttons | (dx > 0 ? BUTTON.LEFT : BUTTON.RIGHT) };
@@ -316,8 +321,23 @@ function runnerGapZ(bodies: readonly BodyInit[], z: number, length: number): num
   return Math.round((from + length) / 2);
 }
 
+/**
+ * Místo setkání s pronásledovatelem, který jde hráči naproti: první `z` od `from` dál, před kterým je `room` trati bez
+ * překážky (hráč vidí, jak přichází, a úhyb nevede do trubky) a za kterým je ještě 1 m volno.
+ */
+function openMeetZ(bodies: readonly BodyInit[], from: number, room: number): number {
+  let meet = from;
+  for (const body of bodies.filter(b => b.role === 'obstacle').sort((a, b) => a.z - a.d / 2 - (b.z - b.d / 2))) {
+    const near = body.z - body.d / 2, far = body.z + body.d / 2;
+    if (far <= meet - room) continue;
+    if (near >= meet + UNIT) return meet;
+    meet = Math.max(meet, far + room);
+  }
+  return meet;
+}
+
 /** Compilation is deterministic and leaves games without parts byte-for-byte alone. */
-export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary: Readonly<Record<string, RulePiece>>): ArcadeParts {
+export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary: Readonly<Record<string, RulePiece>>, fairStart = false): ArcadeParts {
   if (!spec.assemblyParts?.length) return parts;
   const base = baseControlOf(parts.control), player = parts.level.bodies[0]!;
   const length = parts.level.length;
@@ -341,9 +361,19 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
   // Jen nová trať běžce: uložené hry bez `patterns` staví tentýž svět.
   const patterned = control === 'runner' && (spec.controlParams as { patterns?: number } | undefined)?.patterns === 1;
   const speed = control === 'runner' ? 60 : control === 'platform' ? 45 : control === 'flap' ? 35 : control === 'glide' ? 65 : control === 'steer' ? 100 : 45;
+  // Férový start (P70A T3): pronásledovatel běžce, ptáčka a skákačky jde hráči naproti. Potkají se až po ochraně
+  // (`FAIR_START.protectTicks`) – dřív by jím hráč neškodně proběhl a zezadu by ho už nedohnal – a na volné trati:
+  // úsek, kde ho hráč vidí přicházet (`PURSUER_SIGHT` ze sbližování připadne na hráče), je bez překážky, jinak by úhyb
+  // vedl do trubky. `forward` je nejvyšší rychlost hráče vpřed; pomalejší hráč se s ním potká ještě později.
+  // Svět bez férového startu (`fairStart`, `fairStartOf` v `compile.ts`) staví tentýž svět jako dřív (8 m před hráčem).
+  const forward = control === 'runner' ? SPEED[(base.params.speed as RunnerSpeed | undefined) ?? 'normal'] : control === 'flap' ? Number(base.params.speed ?? FLAP.speed) : PLATFORM.maxRun;
+  const oncoming = ['runner', 'flap', 'platform'].includes(control);
+  const room = Math.round((PURSUER_SIGHT * forward) / (forward + speed)) + UNIT / 2;
+  const meet = oncoming && fairStart ? openMeetZ(parts.level.bodies, player.z + FAIR_START.protectTicks * forward, room) - player.z : 0;
+  const chaserAhead = !oncoming ? -4000 : meet > 0 ? meet + Math.round((meet * speed) / forward) : 8000;
   const bodies: BodyInit[] = [...parts.level.bodies];
   const runtime: Part[] = spec.assemblyParts.map((part, i) => {
-    let z = part.kind === 'rival' ? player.z : part.kind === 'chaser' ? player.z + (['runner', 'flap', 'platform'].includes(control) ? 8000 : -4000) : Math.max(player.z + 2400, Math.round(length * (0.12 + 0.035 * i + part.phase * 0.35)));
+    let z = part.kind === 'rival' ? player.z : part.kind === 'chaser' ? player.z + chaserAhead : Math.max(player.z + 2400, Math.round(length * (0.12 + 0.035 * i + part.phase * 0.35)));
     if (control === 'glide' && part.kind === 'hazard') z = Math.round((player.z + path[0]!.z) / 2);
     // Aréna nemá délku trati (P63 T7): nebezpečí by dopadlo 2,8 m od startu a hráč, kterého kamera k hrozbě stočí, do něj
     // vejde prvním krokem (s002: tři životy za 4 s). Startuje od hrdiny jako pronásledovatel arény, jen před ním, kde je vidět.

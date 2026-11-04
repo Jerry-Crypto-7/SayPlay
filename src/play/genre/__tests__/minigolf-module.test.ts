@@ -32,7 +32,8 @@ const SAMPLE = {
   schema: 'gamespec.v1',
   control: 'minigolf',
   controlParams: { generator: 'minigolf_course', tuning: { shape: 'L', obstacles: 3, moving: true, bumper: 'cc0-pumpkin', mover: 'gen3d-coffin' } },
-  genre: { id: 'minigolf', mode: 'default', compilerVersion: 'genre.v7' },
+  // P70A T3: nová hra je `genre.v8` (férový start); fixtura e2e zůstává uloženou hrou `genre.v7`.
+  genre: { id: 'minigolf', mode: 'default', compilerVersion: 'genre.v8' },
   title: 'Haunted House Mini Golf',
   archetype: 'hazard_crossing',
   targetDurationSec: 30,
