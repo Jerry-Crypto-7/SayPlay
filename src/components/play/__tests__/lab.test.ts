@@ -1,17 +1,18 @@
 /**
- * Fakta panelu „How this game works“: věty čtené člověkem, ne JSON. Panel
- * vypadá hotově i s „Winnable“ u hry, kterou nikdo nedohrál – tohle drží,
- * že nedoložená výhra je „Not proven“ a zpráva dvojníka se hlásí jako stub.
+ * Fakta listu „About this game“: věty čtené člověkem, ne JSON ani zpráva
+ * kvality (P70C T3) – a kdo hru navrhl, bez vydávání návrhu za AI.
  */
 
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import type { QualityReport } from '@/play/contracts';
+import { GENRE_MODES, GENRES } from '@/play/genre/contract';
+import { loseLineOf } from '@/play/lose-line';
+import { MECHANICS, type MechanicId } from '@/play/registry';
 import { readGameSpec } from '@/play/spec';
 
-import { authorshipOf, labFacts, readFacts } from '../lab';
+import { authorshipOf, howLinesOf, labFacts, readFacts } from '../lab';
 
 const spec = (() => {
   const read = readGameSpec(JSON.parse(readFileSync('src/play/__fixtures__/collect_exit.json', 'utf8')));
@@ -19,37 +20,31 @@ const spec = (() => {
   return read.value;
 })();
 
-const REPORT: QualityReport = {
-  specHash: 'a',
-  worldHash: 'b',
-  keypoints: [
-    { assertionId: 'k1', mechanicId: 'collectible', passed: true, hashBefore: '', hashAfter: '', ticks: 3, failures: [] },
-    { assertionId: 'k2', mechanicId: 'zone_trigger', passed: false, hashBefore: '', hashAfter: '', ticks: 3, failures: ['x'] },
-  ],
-  witness: { certified: true, winsAtTick: 42 },
-  replayEqual: true,
-  budgets: { entities: 3, rules: 2, triangles: null },
-  publishEligible: true,
-};
+// P70C T3: list „About this game“ je pro hráče – cíl, prohra, ovládání a věty, jak hra běží. Tiky výhry,
+// replay a parametry mechanik by vypadaly hotově a hráči neřekly nic.
+const DEV_JARGON = /tick|replay|rules checked|winnable|not proven|[{}[\]"_]/i;
 
 describe('labFacts', () => {
-  it('every mechanic of the spec with its registry sentence and readable params', () => {
-    const facts = labFacts(spec, REPORT);
-    expect(facts.mechanics.map((mechanic) => mechanic.id)).toEqual(spec.mechanics.map((mechanic) => mechanic.id));
-    for (const mechanic of facts.mechanics) {
-      expect(mechanic.explanation.length).toBeGreaterThan(10);
-      for (const [, value] of mechanic.params) expect(value).not.toMatch(/[{}[\]"]/);
+  it('says how to win, how to lose and the controls from the spec, with no developer facts', () => {
+    const facts = labFacts(spec, null);
+    expect(facts).toMatchObject({ goal: spec.tutorial.goalLine, lose: loseLineOf(spec, null), controls: spec.tutorial.controlsHint });
+    expect(JSON.stringify(Object.values(facts).flat())).not.toMatch(/tick|replay|rules checked|winnable|not proven/i);
+  });
+
+  it('a game without a genre explains its rules in the registry sentences, three at most', () => {
+    expect(howLinesOf(spec)).toEqual(spec.mechanics.slice(0, 3).map((mechanic) => MECHANICS[mechanic.id as MechanicId].explanation));
+  });
+
+  it('every genre has two plain sentences, and an older spec finds its genre by its controls', () => {
+    for (const id of GENRES) {
+      const lines = howLinesOf({ ...spec, genre: { id, mode: GENRE_MODES[id][0], compilerVersion: 'genre.v7' } });
+      expect(lines, id).toHaveLength(2);
+      for (const line of lines) {
+        expect(line, id).toMatch(/^[A-Z].{8,88}\.$/);
+        expect(line, id).not.toMatch(DEV_JARGON);
+      }
     }
-  });
-
-  it('counts passed keypoints, names the winning tick, reports replay', () => {
-    expect(labFacts(spec, REPORT)).toMatchObject({ rulesChecked: 'Rules checked: 1/2', winnable: 'Winnable at tick 42', replay: 'Replay: identical' });
-  });
-
-  it('an uncertified witness is Not proven and a stub report says stub', () => {
-    const facts = labFacts(spec, { ...REPORT, witness: { certified: false, winsAtTick: 42 }, stub: true } as QualityReport & { stub: true });
-    expect(facts.winnable).toBe('Not proven');
-    expect(facts.replay).toBe('Replay: stub');
+    expect(howLinesOf({ ...spec, control: 'duel' })[0]).toMatch(/rival/);
   });
 });
 
@@ -72,9 +67,6 @@ describe('authorshipOf and readFacts', () => {
     if (!arcade.ok) throw new Error(arcade.reason);
     const read = readFacts(arcade.value, 'ai', 'boxing match');
     expect(read).toMatchObject({ authorship: 'ai', sentence: 'boxing match', game: 'Duel', world: 'a rooftop at night · tense', you: 'fighter', against: ['ninja'] });
-    expect(read.goal).toBe(arcade.value.objective.description);
-    // P26 T5: souboj čte jen `health`, ostatní mechaniky ze šablony zmizely.
-    expect(read.rules).toEqual(['health']);
     // Mřížková hra nemá ovládání – jméno hry je její archetyp.
     expect(readFacts(spec, 'draft', null)).toMatchObject({ game: 'Collect exit', you: 'fox', against: [], sentence: null });
   });

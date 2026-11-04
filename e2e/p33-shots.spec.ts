@@ -103,7 +103,8 @@ for (const size of SIZES) {
       // P34 T6: prohra se jmenuje „So close.“ (dřív „You lost“) – jinak by kontrola prošla naprázdno.
       await expect(page.getByText('So close.')).toHaveCount(0);
       expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
-      await expect(page.getByTestId('play-first-prompt')).toContainText('Tap to start');
+      // P70C T2: desktopový ukazatel (i na šířce telefonu) kliká; „Tap to start“ jen na dotyku.
+      await expect(page.getByTestId('play-first-prompt-start')).toHaveText(/^Click (?:or press Space|to start)$/);
 
       // Konec hry dohraje běh ověřovače – sama hra bez hráče neskončí.
       const outcome = page.getByTestId('play-outcome');

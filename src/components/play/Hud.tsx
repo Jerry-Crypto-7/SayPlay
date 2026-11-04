@@ -149,6 +149,7 @@ export function Hud({
       goal={gridGoal(spec, snapshot)}
       clock={gridClock(spec, snapshot.tick)}
       objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, TICKS_PER_SECOND, paused)}
+      keepGoal={snapshot.runState === 'running'}
       onPause={onPause}
       status={
         <p className="play-sr-only">

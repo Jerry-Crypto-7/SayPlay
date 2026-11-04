@@ -2,8 +2,8 @@
 
 /**
  * „About this game“ (P33 T7): jediný info prvek hry, od P34 T5 tlačítko na
- * kartě pauzy. Otevře list se třemi oddíly – co z věty vzniklo a kdo to
- * navrhl, jak se hraje (`HowItWorks`) a odkud hra pochází (`Lineage`); ty dva
+ * kartě pauzy. Otevře list se třemi oddíly – jak se hraje (`HowItWorks`), co
+ * z věty vzniklo a kdo to navrhl, a odkud hra pochází (`Lineage`); ty dva
  * zapíšou svůj obsah přes `InfoContext`. Návrh ze slov se hlásí jako rychlá
  * verze, nikdy jako AI (`authorshipOf`). Fakta skládá server (`lab.ts`).
  */
@@ -29,8 +29,6 @@ export function ReadSection({ read }: { readonly read: ReadFacts }) {
     ['Setting', read.world],
     ...(read.you === null ? [] : [['You are', read.you] as const]),
     ...(read.against.length === 0 ? [] : [['Against', read.against.join(', ')] as const]),
-    ['Goal', read.goal],
-    ['Rules', read.rules.join(', ')],
   ];
   return (
     <section className="play-info-part play-read" data-testid="play-read" data-authorship={read.authorship} data-read-by={read.readBy}>
@@ -69,13 +67,14 @@ export function SentenceRead({ read, open, onClose }: { readonly read: ReadFacts
   const parts = useInfoParts();
   return (
     <Sheet open={open} title="About this game" onClose={onClose} className="play-info-sheet">
-      <ReadSection read={read} />
+      {/* Jak se hraje první (P70C T3): kdo list otevře z pauzy, chce vědět, jak vyhrát. */}
       {parts.how !== undefined && (
         <section className="play-info-part" data-testid="play-lab">
           <h3 className="play-info-heading">How to play</h3>
           {parts.how}
         </section>
       )}
+      <ReadSection read={read} />
       {parts.lineage}
       {parts.board}
     </Sheet>

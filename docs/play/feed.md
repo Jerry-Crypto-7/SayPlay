@@ -49,9 +49,11 @@ GET /api/play/games?recent=N[&cursor=C]
   repeating events or rotating `session`; a repeat the instance already saw costs no store command.
   Only a game that exists in the store is counted, so a made-up id creates no key. Remixes are the
   version's children.
-- In every block of eight at most three games of one archetype (`diversify`), taken in the ranked
-  order. Once no other archetype is left to mix in, the remaining games follow in that order without
-  the rule – they are never dropped.
+- In every block of eight at most two games of one kind (`diversify`, P70C T4), taken in the ranked
+  order. The kind is the game's genre (`spec.genre.id`), or its control for a game without one (the
+  native glide, drive and maze-walker assemblies, games older than P32); a list row written before
+  P70C carries no kind and counts by its archetype. Once no other kind is left to mix in, the
+  remaining games follow in that order without the rule – they are never dropped.
 - `next` is the cursor of the following page, `null` on the last one. An empty store is
   `{ "games": [], "next": null }`.
 - `?recent=N` without a cursor returns the first page in the same shape as before, plus `next`.

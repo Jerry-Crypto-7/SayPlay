@@ -12,11 +12,16 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { runBot } from '@/play/arcade/verify';
 
-import { BUILTIN_GAMES, withBuiltinGames } from '../builtin';
+import { BUILTIN_GAMES, FEED_GAMES, withBuiltinGames } from '../builtin';
+import feedP54a from '../builtin-feed-p54a.json';
 import { __resetProcessVersionStore, memoryVersionStore, type VersionStore, VersionStoreUnavailable } from '../store';
 import type { PublishedGame } from '../version';
 
 const [first, second] = BUILTIN_GAMES as [PublishedGame, PublishedGame, ...PublishedGame[]];
+/** Feed ukáže jen `FEED_GAMES` (P70C T4): `first` v něm není (odkaz na ni platí dál), `second` ano. */
+const feedIds = FEED_GAMES.map((game) => game.version.versionId);
+/** Id deseti her feedu P54A, které T4 P70C nahradila – odkazy na ně kolují (R3). */
+const P54A_IDS = (feedP54a as unknown as readonly PublishedGame[]).map((game) => game.version.versionId);
 
 /** Uložená autorská verze – jediná hra, kterou `put` zařadí do feedu. */
 function authored(versionId: string, createdAt: string): PublishedGame {
@@ -55,25 +60,38 @@ describe('úložiště s vestavěnou sadou', () => {
   it('prázdné úložiště ukáže vestavěnou sadu a hru z ní otevře', async () => {
     const store = withBuiltinGames(memoryVersionStore());
     const rows = await store.recent(200);
-    expect(rows.map((row) => row.versionId)).toEqual(BUILTIN_GAMES.map((game) => game.version.versionId));
-    expect(rows[0]).toMatchObject({ title: first.version.title, archetype: first.spec.archetype, goal: first.spec.tutorial.goalLine, mood: first.spec.theme.mood, curated: true });
+    expect(rows.map((row) => row.versionId)).toEqual(feedIds);
+    const top = FEED_GAMES[0] as PublishedGame;
+    expect(rows[0]).toMatchObject({ title: top.version.title, archetype: top.spec.archetype, genre: top.spec.genre?.id ?? top.spec.control, goal: top.spec.tutorial.goalLine, mood: top.spec.theme.mood, curated: true });
     expect(rows[0]).not.toHaveProperty('relation');
+    expect(feedIds).not.toContain(first.version.versionId);
     expect(await store.get(first.version.versionId)).toEqual(first);
     expect(await store.lineageOf(first.version.versionId)).toEqual([first.version]);
     expect(await store.get('f'.repeat(32))).toBeNull();
     expect(await store.lineageOf('f'.repeat(32))).toEqual([]);
   });
 
+  it('nahrazené hry feedu P54A dál otevře odkaz, ve feedu nejsou (R3 P70C)', async () => {
+    const store = withBuiltinGames(memoryVersionStore());
+    expect(P54A_IDS).toHaveLength(10);
+    for (const id of P54A_IDS) {
+      expect((await store.get(id))?.version.versionId, id).toBe(id);
+      expect(await store.lineageOf(id), id).toHaveLength(1);
+      expect(feedIds, id).not.toContain(id);
+    }
+  });
+
   it('uložené hry jdou první, vestavěná sada je doplní do limitu bez opakování', async () => {
     const store = withBuiltinGames(memoryVersionStore());
     expect(await store.put(authored('a'.repeat(32), '2026-10-04T10:00:00.000Z'))).toBe('stored');
     const ids = (await store.recent(5)).map((row) => row.versionId);
-    expect(ids).toEqual(['a'.repeat(32), ...BUILTIN_GAMES.slice(0, 4).map((game) => game.version.versionId)]);
+    expect(ids).toEqual(['a'.repeat(32), ...feedIds.slice(0, 4)]);
     // Vestavěná hra, která se dostala do úložiště, se neukáže dvakrát.
+    expect(feedIds).toContain(second.version.versionId);
     expect(await store.feature(second)).toBe('stored');
     const again = (await store.recent(200)).map((row) => row.versionId);
     expect(again.filter((id) => id === second.version.versionId)).toHaveLength(1);
-    expect(again).toHaveLength(BUILTIN_GAMES.length + 1);
+    expect(again).toHaveLength(FEED_GAMES.length + 1);
   });
 
   it('remixy jdou až za vestavěnou sadou: do limitu ji nevytlačí (nález revize T10-1 #2)', async () => {
@@ -82,8 +100,8 @@ describe('úložiště s vestavěnou sadou', () => {
     expect(await store.put(remix)).toBe('stored');
     expect(await store.put(authored('a'.repeat(32), '2026-10-04T10:00:00.000Z'))).toBe('stored');
     const ids = (await store.recent(200)).map((row) => row.versionId);
-    expect(ids).toEqual(['a'.repeat(32), ...BUILTIN_GAMES.map((game) => game.version.versionId), 'b'.repeat(32)]);
-    expect((await store.recent(BUILTIN_GAMES.length + 1)).map((row) => row.versionId)).not.toContain('b'.repeat(32));
+    expect(ids).toEqual(['a'.repeat(32), ...feedIds, 'b'.repeat(32)]);
+    expect((await store.recent(FEED_GAMES.length + 1)).map((row) => row.versionId)).not.toContain('b'.repeat(32));
   });
 
   // Nález revize T6-1 #1: `put` skládá rodokmen z rodokmenu rodiče v úložišti.

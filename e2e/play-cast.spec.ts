@@ -171,11 +171,11 @@ async function shotBodies(page: Page): Promise<ShotBodies> {
   });
 }
 
-/** Karta „Tap to start“ jmenuje skok i střelbu (P39 T10). */
+/** Karta startu jmenuje skok i střelbu (P39 T10); na desktopu se kliká, „Tap to start“ je jen na dotyku (P70C T2). */
 async function expectJumpAndShoot(page: Page): Promise<void> {
   const card = page.getByTestId('play-first-prompt');
   await expect(card).toBeVisible({ timeout: 60_000 });
-  await expect(card).toContainText('Tap to start');
+  await expect(card.getByTestId('play-first-prompt-start')).toHaveText(/^Click (?:or press Space|to start)$/);
   await expect(page.getByTestId('play-first-prompt-more')).toContainText([/\bjump\b/i, /\bshoot\b/i]);
 }
 

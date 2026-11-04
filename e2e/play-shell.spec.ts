@@ -89,12 +89,13 @@ test.describe('/play/[id] – play shell', () => {
     expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
   });
 
-  // P33 T11: mřížka stojí na tiku 0 pod „Tap to start“, dokud se hráč nedotkne.
-  test('the grid waits on tick 0 under "Tap to start" and the first tap starts it (P28C T5, P33 T11)', async ({ page }) => {
+  // P33 T11: mřížka stojí na tiku 0 pod výzvou startu, dokud se hráč nedotkne. Desktop kliká (P70C T2); mezerník
+  // mřížka jako první povel nebere, takže výzva Space neslibuje.
+  test('the grid waits on tick 0 under "Click to start" and the first tap starts it (P28C T5, P33 T11, P70C T2)', async ({ page }) => {
     await page.goto(url);
     const prompt = page.getByTestId('play-first-prompt');
     await expect(prompt).toBeVisible({ timeout: 60_000 });
-    await expect(prompt).toContainText('Tap to start');
+    await expect(page.getByTestId('play-first-prompt-start')).toHaveText('Click to start');
     await expect(page.getByTestId('play-first-prompt-action')).toHaveText(/^Tap (a|an|the) /);
     await page.waitForTimeout(1_500);
     expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
