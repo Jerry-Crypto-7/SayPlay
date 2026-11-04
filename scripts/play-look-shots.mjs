@@ -262,14 +262,14 @@ async function sampleFps(page, ms) {
   });
 }
 
-const median = (values) => {
+export const median = (values) => {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
 /** Jedno měření scény: FPS za 10 s ukázky v emulaci Pixel 7 (CPU 4×) a kreslicí volání na konci. */
-async function measureOnce(browser, base, versionId) {
+export async function measureOnce(browser, base, versionId) {
   const context = await browser.newContext(pixel7());
   const page = await context.newPage();
   await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: 4 });

@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { type DraftFinalReason, isTransient } from '@/app/api/play/_upgrade';
 
-import { chainSwitchOf, COMMITTED_MS, committedNow, FINAL_REASON_TEXT, followUpgrade, noticeOf, POLL_MS, readingMove, type UpgradeView } from '../UpgradeBanner';
+import { chainSwitchOf, committedNow, FINAL_REASON_TEXT, followUpgrade, noticeOf, POLL_MS, readingMove, type UpgradeView } from '../UpgradeBanner';
 
 const REASONS = Object.keys(FINAL_REASON_TEXT) as DraftFinalReason[];
 
@@ -18,14 +18,15 @@ describe('readingMove', () => {
   const reading = 'r'.repeat(32);
   const working = (more: Partial<Extract<UpgradeView, { kind: 'working' }>> = {}): UpgradeView => ({ kind: 'working', since: 0, deadlineAt: 285_000, ...more });
 
-  it('auto přechod před vstupem i v prvních sekundách hraní', () => {
+  it('auto přechod jen do prvního dotyku (hodiny hry stojí na nule)', () => {
     expect(readingMove(working({ reading }), quick, committedNow(0, false), new Set())).toEqual({ kind: 'switch', versionId: reading });
-    expect(readingMove(working({ reading }), quick, committedNow((COMMITTED_MS - 1) / 1000, false), new Set())).toEqual({ kind: 'switch', versionId: reading });
   });
 
-  it('nabídka po 6 s hraní, po výhře i po prohře', () => {
-    expect(readingMove(working({ reading }), quick, committedNow(COMMITTED_MS / 1000, false), new Set())).toEqual({ kind: 'offer', versionId: reading });
-    expect(readingMove(working({ reading }), quick, committedNow(2, true), new Set())).toEqual({ kind: 'offer', versionId: reading });
+  // P70A T2: dřív přepnulo i v prvních 6 s hraní – hráči se hra vyměnila pod rukama.
+  it('nabídka hned po prvním dotyku, po výhře i po prohře', () => {
+    expect(readingMove(working({ reading }), quick, committedNow(1 / 60, false), new Set())).toEqual({ kind: 'offer', versionId: reading });
+    expect(readingMove(working({ reading }), quick, committedNow(5.9, false), new Set())).toEqual({ kind: 'offer', versionId: reading });
+    expect(readingMove(working({ reading }), quick, committedNow(0, true), new Set())).toEqual({ kind: 'offer', versionId: reading });
   });
 
   it('hráč, který se z hry ze čtení vrátil na rychlou, už jen dostane nabídku', () => {

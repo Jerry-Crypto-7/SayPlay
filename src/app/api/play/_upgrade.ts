@@ -357,6 +357,9 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   }
   if (!readerForAiVersion() || chain.origin?.readBy === 'model') return CHAIN_FINAL;
   const { sentence } = request;
+  // P58F (majitel 26. 10.): řetězem zůstane jen věta, která o víc her výslovně žádá – její čtení nic nezmění, tak se
+  // neplatí. Od P70A T2 je to každý nový řetěz; čtení dostanou jen řetězy uložené dřív (dvě slovesa, neslyšená věta).
+  if (CHAIN_CUES.test(sentence.toLowerCase())) return CHAIN_FINAL;
   let called = false;
   const onCalled = (): void => {
     called = true;
@@ -367,9 +370,8 @@ async function runChainReading(versions: VersionStore, chain: PublishedGame, req
   if (reading === null) return called ? CHAIN_FINAL : CHAIN_REFUSED;
   // Čtení, ze kterého vyjde míč, se bez fyziky nepřeloží (P56C T17e); návrh jedné hry ji potřebuje tak jako tak.
   await loadRapier();
-  // P58F (majitel 26. 10.): hra ze čtení nahradí řetěz vždy – na sadě P58B dalo čtení správný žánr i u 14 řetězů, které
-  // `chainOrSingle` se čtením potvrdil. Řetězem zůstane jen věta, která o víc her výslovně žádá.
-  if (CHAIN_CUES.test(sentence.toLowerCase())) return CHAIN_FINAL;
+  // P58F: hra ze čtení nahradí řetěz vždy – na sadě P58B dalo čtení správný žánr i u 14 řetězů, které
+  // `chainOrSingle` se čtením potvrdil.
   const spec = draftGameSpecWithMeta(sentence, 1, { reading }).spec;
   // P63 T3: ne hra, která z rolí čtení ukáže méně než kola řetězu – rytíř s drakem (h18) jako jízda bez draka.
   if (!namesNoLess(chain.chain!.rounds.map((round) => round.spec), spec, reading)) return CHAIN_FINAL;

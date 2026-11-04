@@ -18,14 +18,44 @@ const reasons = (sentence: string) => chainReasons(sentence, readForChain(senten
 const decide = (sentence: string) => chainOrSingle(sentence, readForChain(sentence, null), classifyGenre(sentence, null));
 
 describe('chainOrSingle', () => {
-  it('a) two verbs that play different controls make a chain', () => {
-    expect(reasons('dodge asteroids and shoot aliens')).toEqual(['multi_verb']);
-    expect(reasons('ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way')).toEqual(['multi_verb']);
+  // P70A T2 (majitel 4. 11.): „dám jednu hru a zobrazí se 5 her“. Řetěz jen na výslovné přání; dvě slovesa a neslyšená
+  // věta zůstanou důvodem jen v měření (`chainReasons`), hraje se jedna hra.
+  describe('one game per sentence, a chain only when asked for (P70A T2)', () => {
+    it.each([
+      'A cat jumps over boxes and eats fish',
+      'A penguin slides down an icy hill collecting fish',
+      'dodge asteroids and shoot aliens',
+      'a desert of pink sand under three moons',
+      'a party for my cat',
+      'a minigame where a frog catches flies',
+      'a witch mixes potions in her tower',
+    ])('%s → one game', (sentence) => {
+      expect(decide(sentence)).toBe('single');
+    });
+
+    it.each([
+      '5 levels of a cat jumping',
+      'three rounds: catch falling apples',
+      'a dragon adventure in four stages',
+      'a mix of games about a pirate',
+      'mini-games with a penguin',
+      'microgames about my dog',
+      'make 3 quick games with a robot',
+    ])('%s → a chain', (sentence) => {
+      expect(decide(sentence)).toBe('chain');
+      expect(reasons(sentence)).toContain('cue');
+    });
   });
 
-  it('b) a sentence the classifier hears nothing in makes a chain', () => {
+  it('a) two verbs that play different controls are a measured reason, not a chain', () => {
+    expect(reasons('dodge asteroids and shoot aliens')).toEqual(['multi_verb']);
+    expect(reasons('ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way')).toEqual(['multi_verb']);
+    expect(decide('ninja cat wall-jumps up a skyscraper swatting drones and grabbing sushi on the way')).toBe('single');
+  });
+
+  it('b) a sentence the classifier hears nothing in is a measured reason, not a chain', () => {
     expect(reasons('a sleepy dragon in fuzy pink slippers')).toEqual(['generic']);
-    expect(decide('a desert of pink sand under three moons')).toBe('chain');
+    expect(decide('a desert of pink sand under three moons')).toBe('single');
   });
 
   // P61 T4: slyšená obecná buňka hraje jednu hru (dřív `generic` s náskokem pod 3), počítaný cíl i se dvěma slovesy.
@@ -49,7 +79,7 @@ describe('chainOrSingle', () => {
       expect(reasons('A knight with two swords collects keys in a haunted castle while dodging ghosts.')).toEqual(['multi_verb']);
     });
 
-    it('two verbs without a counted goal, an unheard sentence and asking for rounds still make a chain', () => {
+    it('two verbs without a counted goal and an unheard sentence keep their reasons; asking for levels makes a chain', () => {
       expect(reasons('A corgi runs through a park grabbing sausages and jumping over sprinklers')).toEqual(['multi_verb']);
       expect(reasons('Captain Biscuit, a very serious corgi astronaut.')).toEqual(['generic']);
       expect(decide(`${KNIGHT} Make it five levels.`)).toBe('chain');
@@ -57,10 +87,9 @@ describe('chainOrSingle', () => {
     });
   });
 
-  it('c) asking for rounds, levels, minigames, challenges or a party makes a chain', () => {
+  it('c) asking for rounds makes a chain; a party or a party table does not (P70A T2)', () => {
     expect(reasons('three rounds: catch falling apples')).toEqual(['cue']);
-    expect(decide('a party for my cat')).toBe('chain');
-    // „party“ jako přívlastek věci o víc her nežádá – startovní věta zůstane jednou hrou (T10).
+    expect(reasons('a party for my cat')).not.toContain('cue');
     expect(reasons('Carry a fragile cake across a kitchen to a party table.')).toEqual([]);
   });
 
@@ -132,8 +161,9 @@ describe('chainOrSingle', () => {
       });
     }
 
-    it('a vehicle with another second verb, or asking for rounds, still makes a chain', () => {
+    it('a vehicle with another second verb keeps the measured reason; asking for levels makes a chain', () => {
       expect(reasons('drive a car and throw pies at the clowns')).toEqual(['multi_verb']);
+      expect(decide('a car race where you shoot five zombies, make it five levels')).toBe('chain');
       expect(reasons('a car race where you shoot five zombies, make it five levels')).toEqual(['cue']);
     });
   });

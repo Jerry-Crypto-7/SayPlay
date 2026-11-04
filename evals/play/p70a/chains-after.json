@@ -1,0 +1,2328 @@
+{
+ "schema": "p70a-chains.v1",
+ "commit": null,
+ "measuredAt": "2026-11-04T11:57:03.955Z",
+ "about": "chainOrSingle(sentence, readForChain(sentence, null), classifyGenre(sentence, null)) per sentence, as the quick path of POST /api/play/games; cue = CHAIN_CUES (asks for several games).",
+ "shares": {
+  "test200": {
+   "sentences": 200,
+   "chains": 0,
+   "share": 0,
+   "withoutCue": 0
+  },
+  "p68r": {
+   "sentences": 30,
+   "chains": 0,
+   "share": 0,
+   "withoutCue": 0
+  },
+  "p68t": {
+   "sentences": 30,
+   "chains": 0,
+   "share": 0,
+   "withoutCue": 0
+  }
+ },
+ "all": {
+  "sentences": 260,
+  "chains": 0,
+  "share": 0,
+  "withoutCue": 0
+ },
+ "rows": [
+  {
+   "set": "test200",
+   "id": "t001",
+   "text": "Explain how volcanoes erupt to a ten year old",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t002",
+   "text": "help me write a birthday poem for my mom",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t003",
+   "text": "my morning commute on a crowded train",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t004",
+   "text": "a tax audit at a boring accounting office",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t005",
+   "text": "Summarize the french revolution",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t006",
+   "text": "doing laundry on a sunday afternoon",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t007",
+   "text": "walking to the dentist in the rain",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t008",
+   "text": "my cat knocking a glass off the kitchen table",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t009",
+   "text": "Write me a cover letter for a barista job",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t010",
+   "text": "teach me the history of the roman empire in five minutes",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t011",
+   "text": "meditate on a quiet mountaintop at sunrise",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t012",
+   "text": "a job interview at a tech company",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t013",
+   "text": "paint my living room walls blue",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t014",
+   "text": "I need to study for my chemistry exam tomorrow",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t015",
+   "text": "traders panic as the stock market crashes on a monday",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t016",
+   "text": "cooking spaghetti for twenty hungry guests",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t017",
+   "text": "give a lecture about black holes at the planetarium",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t018",
+   "text": "renewing my passport at city hall",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t019",
+   "text": "a yoga class on the beach at sunset",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t020",
+   "text": "fix a leaking pipe under the sink",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t021",
+   "text": "my dog is afraid of the vacuum cleaner",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t022",
+   "text": "grocery shopping list for a vegan week",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t023",
+   "text": "how does wifi get from the router to my phone",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t024",
+   "text": "breaking up with my boyfriend over text",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t025",
+   "text": "the water cycle for my science homework",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t026",
+   "text": "calm my nerves before a big presentation",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t027",
+   "text": "organize my messy closet",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t028",
+   "text": "negotiating a raise with my boss",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t029",
+   "text": "planting tomatoes on my balcony",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t030",
+   "text": "learning to ride a bike without training wheels",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t031",
+   "text": "Write a haiku about autumn leaves",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t032",
+   "text": "waiting in line at the post office",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t033",
+   "text": "a first date at a bowling alley",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t034",
+   "text": "the solar system explained for kids",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t035",
+   "text": "my neighbor mowing the lawn at 7am",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t036",
+   "text": "recycling plastic bottles at school",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t037",
+   "text": "grandpa telling war stories by the fireplace",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t038",
+   "text": "riding a red double decker bus through rainy london",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t039",
+   "text": "choosing a name for my new puppy at the animal shelter",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t040",
+   "text": "fill out a mortgage application for our first house",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t041",
+   "text": "the life cycle of a butterfly",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t042",
+   "text": "an office party where nobody talks to each other",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t043",
+   "text": "remember where I parked my car at the airport",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t044",
+   "text": "wedding speech for my best friend",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t045",
+   "text": "lightning strikes a scarecrow in a wheat field during a thunderstorm",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t046",
+   "text": "my toddler refuses to eat broccoli",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t047",
+   "text": "a sunday picnic by the lake with sandwiches and lemonade",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t048",
+   "text": "caring for grandma in a hospital room",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t049",
+   "text": "a shepherd dog herds sheep into a pen before the storm",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t050",
+   "text": "juggle flaming torches on a circus stage",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t051",
+   "text": "a raccoon rummages through trash cans for pizza crusts",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t052",
+   "text": "polish every window of a skyscraper before sunset",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t053",
+   "text": "a lifeguard rescues swimmers caught in a riptide",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t054",
+   "text": "a mailman delivers packages while angry dogs chase him",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t055",
+   "text": "sweep the leaves off a temple courtyard before the monks wake",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t056",
+   "text": "carve a pumpkin on a halloween porch",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t057",
+   "text": "sort recycling on a fast conveyor belt at the dump",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t058",
+   "text": "a bee pollinates flowers across a sunny meadow",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t059",
+   "text": "untie knots in a giant ball of yarn for a kitten",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t060",
+   "text": "a baker decorates cupcakes as orders pile up",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t061",
+   "text": "wrap presents at the north pole before christmas eve",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t062",
+   "text": "a farmer milks cows before the sun comes up",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t063",
+   "text": "a spider weaves a web between two lamp posts",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t064",
+   "text": "tame a wild horse on a dusty ranch",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t065",
+   "text": "a janitor mops the floor of a haunted school at midnight",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t066",
+   "text": "a firefighter hoses down flames in a burning bakery",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t067",
+   "text": "inflate the biggest bubblegum bubble without popping it at a candy store",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t068",
+   "text": "a crab pinches the toes of sunbathers on a crowded beach",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t069",
+   "text": "a gardener prunes hedges into animal shapes",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t070",
+   "text": "knit a scarf for a snowman",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t071",
+   "text": "shovel snow off the driveway before school",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t072",
+   "text": "a beaver builds a dam across a rushing river",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t073",
+   "text": "guide ducklings safely across a village pond to their mother",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t074",
+   "text": "a squid inks sharks that get too close",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t075",
+   "text": "a monk rings a huge temple bell to wake the valley",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t076",
+   "text": "a chameleon blends into jungle leaves so the eagle cannot see it",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t077",
+   "text": "a woodpecker drills holes in a giant oak tree",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t078",
+   "text": "a barber shaves a sleeping giant",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t079",
+   "text": "a mole digs tunnels under a vegetable garden",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t080",
+   "text": "a clockmaker winds a hundred clocks before midnight strikes",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t081",
+   "text": "scoop ice cream for a line of impatient penguins",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t082",
+   "text": "a hermit crab trades shells with his neighbors",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t083",
+   "text": "a magpie snatches shiny spoons from a café terrace",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t084",
+   "text": "a sailor ties knots as a storm hits the ship",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t085",
+   "text": "a kid pulls a kite out of a tall pine tree",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t086",
+   "text": "an octopus opens jars in an aquarium to free trapped crabs",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t087",
+   "text": "a waiter balances ten plates across a crowded restaurant",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t088",
+   "text": "a lumberjack chops logs faster than his rival",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t089",
+   "text": "a hen hatches eggs while foxes prowl the farm",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t090",
+   "text": "a pharmacist mixes potions for a line of sick goblins",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t091",
+   "text": "a dentist pulls teeth from a grumpy crocodile",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t092",
+   "text": "a painter restores a faded mural in a subway station",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t093",
+   "text": "a hamster spins its wheel to power a tiny city",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t094",
+   "text": "a lighthouse keeper guides ships through a foggy night",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t095",
+   "text": "a scientist freezes lava flows with an ice ray",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t096",
+   "text": "a zookeeper feeds lions without getting eaten",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t097",
+   "text": "a sushi chef slices fish tossed into the air",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t098",
+   "text": "an astronaut repairs solar panels on a spinning space station",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t099",
+   "text": "a dragon hatchling learns to breathe fire",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t100",
+   "text": "a wizard duels a necromancer on a floating island",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t101",
+   "text": "a unicorn gallops across rainbow clouds collecting stars",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t102",
+   "text": "an elf archer defends the forest gate from orcs",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t103",
+   "text": "a vampire sneaks through a village without waking anyone",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t104",
+   "text": "a troll guards a bridge and asks riddles",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t105",
+   "text": "a mermaid races dolphins to a sunken treasure",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t106",
+   "text": "a phoenix rises from the ashes and flies over a burning desert",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t107",
+   "text": "a goblin king throws gold coins at knights storming his cave",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t108",
+   "text": "a fairy lights lanterns in a dark enchanted forest",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t109",
+   "text": "a werewolf howls at the moon to summon its pack",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t110",
+   "text": "a sorceress freezes a lake so her army can cross it",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t111",
+   "text": "a knight and a dragon play chess in a tower",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t112",
+   "text": "a ghost ship sails through a storm full of sea serpents",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t113",
+   "text": "a young witch delivers potions by broomstick over a rainy town",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t114",
+   "text": "a centaur hunts wild boars in an ancient forest",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t115",
+   "text": "a giant stomps through a medieval city flattening towers",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t116",
+   "text": "a stone golem protects a sleeping village from bandits",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t117",
+   "text": "a little dragon collects gems in a crystal cave",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t118",
+   "text": "a ranger tames a griffin on a snowy mountain",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t119",
+   "text": "a necromancer raises skeletons to battle a paladin",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t120",
+   "text": "a genie grants three wishes to a street thief",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t121",
+   "text": "a hobbit sneaks past a sleeping dragon to take a golden cup",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t122",
+   "text": "a wizard's apprentice mops a flooded tower with enchanted brooms",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t123",
+   "text": "a knight on horseback jousts against a robot",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t124",
+   "text": "a dwarf mines gold deep under a snowy mountain",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t125",
+   "text": "a fairy godmother turns pumpkins into carriages",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t126",
+   "text": "a cyclops bowls boulders at tiny heroes",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t127",
+   "text": "a witch's cat rides a broom through a haunted night sky",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t128",
+   "text": "a kraken drags pirate ships under the waves",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t129",
+   "text": "an ice queen builds a castle out of snow",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t130",
+   "text": "a dragon rider races through canyon arches",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t131",
+   "text": "an enchanted sword chooses its hero in a stone circle",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t132",
+   "text": "a leprechaun buries pots of gold at the end of rainbows",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t133",
+   "text": "a baby dragon learns to fly over a volcanic island",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t134",
+   "text": "orcs and elves play football in a muddy swamp",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t135",
+   "text": "a mage bounces fireballs off castle walls to hit goblins",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t136",
+   "text": "a pixie paints dewdrops on spider webs at dawn",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t137",
+   "text": "a ninja frog leaps between swinging ropes over a waterfall",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t138",
+   "text": "zombie chickens attack a farm at night and you shoot them with corn",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t139",
+   "text": "an endless run through a candy factory avoiding gummy bears",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t140",
+   "text": "a paper airplane glides through an office without hitting the ceiling fans",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t141",
+   "text": "race lawnmowers around a suburban backyard",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t142",
+   "text": "a cowboy lassos runaway cattle in a dusty canyon",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t143",
+   "text": "shoot hoops with a gorilla at the zoo",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t144",
+   "text": "a turtle dodges falling coconuts on a tropical beach",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t145",
+   "text": "a boxer fights a robot in an underground ring",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t146",
+   "text": "tap on the beat to make jellyfish glow at a deep sea concert",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t147",
+   "text": "stack sandwiches as tall as the fridge",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t148",
+   "text": "flappy dragon through ice pillars",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t149",
+   "text": "a monster truck crushes cars in a mud arena",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t150",
+   "text": "a panda slides down a bamboo slope collecting dumplings",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t151",
+   "text": "sniper mission on a snowy mountain to hit a spy",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t152",
+   "text": "a goat climbs a cliff dodging falling rocks",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t153",
+   "text": "a piano duel between two cats in a jazz bar",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t154",
+   "text": "drift a rusty van through a rainy harbor",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t155",
+   "text": "a fish grows by eating plastic junk in a polluted river",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t156",
+   "text": "aliens invade new york and you pilot a fighter jet",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t157",
+   "text": "a sumo cat pushes dogs off a rooftop",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t158",
+   "text": "catch falling apples in a basket before they hit the ground",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t159",
+   "text": "a skier zigzags down a slalom course between flags",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t160",
+   "text": "escape a giant rolling boulder in an ancient temple",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t161",
+   "text": "a firefly lights the way through a dark swamp maze",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t162",
+   "text": "a samurai slices arrows out of the air",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t163",
+   "text": "hit the brakes on a roller coaster at a seaside fair",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t164",
+   "text": "a hot dog runs away from a hungry crowd at a baseball game",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t165",
+   "text": "dodgeball against robots in a school gym",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t166",
+   "text": "a hamster ball rolls through a maze of pipes",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t167",
+   "text": "a sheriff and an outlaw face off in a ghost town",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t168",
+   "text": "fly a helicopter through a canyon full of wind turbines",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t169",
+   "text": "a jellyfish drifts upward avoiding fishing nets",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t170",
+   "text": "a basketball robot shoots three pointers on a rooftop court",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t171",
+   "text": "a DJ keeps a crowd jumping by hitting beats in time",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t172",
+   "text": "karate chop wooden boards in a dojo",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t173",
+   "text": "bumper boats in a lagoon full of hippos",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t174",
+   "text": "a cheese wheel rolls down a hill chased by villagers",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t175",
+   "text": "whack moles in a vegetable patch before they eat the carrots",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t176",
+   "text": "a pelican dives from the sky to catch fish",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t177",
+   "text": "snowboard down an avalanche while grabbing coins",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t178",
+   "text": "a hacker races through a neon cyberspace tunnel",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t179",
+   "text": "a knight on a pogo stick bounces over spikes",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t180",
+   "text": "a crow drops stones into a pitcher to raise the water",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t181",
+   "text": "tennis against a giraffe on a grass court",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t182",
+   "text": "a submarine torpedoes giant squids in the deep",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t183",
+   "text": "a courier bike dodges taxis in rush hour manhattan",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t184",
+   "text": "launch fireworks over a lake so they burst at the right height",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t185",
+   "text": "a goalkeeper saves penalty kicks from a team of octopuses",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t186",
+   "text": "a bat navigates a pitch black cave using echoes",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t187",
+   "text": "a hamster bartender slides drinks down a long counter",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t188",
+   "text": "a ghost haunts a museum and scares the night guard",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t189",
+   "text": "outrun a tornado on a tractor across the prairie",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t190",
+   "text": "a trampoline park where you bounce to grab balloons",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t191",
+   "text": "an ant carries crumbs back to the anthill avoiding a boot",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t192",
+   "text": "time your swings on a trapeze to catch your partner",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t193",
+   "text": "a gecko sticks to walls and climbs a lighthouse",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t194",
+   "text": "pinball inside a giant slot machine",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t195",
+   "text": "a rhino charges through a savanna knocking over jeeps",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t196",
+   "text": "a synchronized swimming team moves to the music in an olympic pool",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t197",
+   "text": "hide from a T-rex in a jungle ranger station",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "test200",
+   "id": "t198",
+   "text": "a bowler knocks down pins made of ice",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t199",
+   "text": "a llama spits at tourists who try to take selfies",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "generic"
+   ]
+  },
+  {
+   "set": "test200",
+   "id": "t200",
+   "text": "a snail must cross a highway at rush hour",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-076",
+   "text": "make a game where I fly a little seaplane through a canyon without hitting the rock walls",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-077",
+   "text": "A witch zooms on her broom between church towers to deliver potions before midnight",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-078",
+   "text": "I want to land a lunar module gently on the moon without crashing it",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-079",
+   "text": "platformer with a frog jumping across lily pads and tree branches to the top of the swamp",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-080",
+   "text": "I want a knight who leaps over lava gaps and climbs a crumbling castle tower",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-081",
+   "text": "endless runner where a penguin slides down an icy slope dodging snowmen and grabbing fish",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-082",
+   "text": "A skateboarder rolls down a busy boardwalk, switching lanes to avoid bikes and jumping benches while collecting coins",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-083",
+   "text": "shoot down alien saucers as they swoop toward my planet",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-084",
+   "text": "make a carnival shooting gallery with tin ducks and balloons",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-085",
+   "text": "basketball game where you flick the ball into the hoop from different spots",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-086",
+   "text": "I want to launch snowballs with a slingshot to knock over a fort of ice blocks",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-087",
+   "text": "a firefighter runs around a burning apartment putting out every fire before the building collapses",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-088",
+   "text": "I want to flip burgers on a grill and serve customers before the orders pile up",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-089",
+   "text": "tower defense where goblins march down three lanes toward my castle gate and I shoot arrows at them",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-090",
+   "text": "Robot soldiers walk down the lanes toward the bunker and the turret has to stop them before they get through",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-091",
+   "text": "top down game where a puppy runs around the park collecting lost tennis balls",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-092",
+   "text": "stack swinging pizza boxes into a tall tower with one tap each",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-093",
+   "text": "rhythm game where you hit the drums when the notes reach the line",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-094",
+   "text": "cowboy showdown at high noon where you dodge and shoot back when the outlaw misses",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-095",
+   "text": "tap to make a bumblebee flap through gaps between flower stems",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-096",
+   "text": "catch falling apples in a basket but let the rotten ones drop",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-097",
+   "text": "whack a mole but with gophers popping out of a golf course",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-098",
+   "text": "slicing game where vegetables fly up and you chop them but avoid the bombs",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-099",
+   "text": "help a duck cross a busy highway and a river full of logs",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-100",
+   "text": "crowd runner game where my army of tiny vikings grows through gates and attacks a giant troll at the end",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-101",
+   "text": "merge game where you drop planets into a jar and two same ones become a bigger planet",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-102",
+   "text": "sumo game where you push other wrestlers out of the ring",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-103",
+   "text": "survivor game where a wizard auto casts spells while bats swarm in and I pick upgrades between waves",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-104",
+   "text": "hole game where a black hole eats everything in a city and gets bigger",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68r",
+   "id": "p68r-105",
+   "text": "sneak into the dragon's cave, grab the golden egg and run back to my camp before the guards catch me",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-061",
+   "text": "make a game where i pilot a hot air balloon over the alps and dodge church towers and cable cars to land in a village square",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-062",
+   "text": "a mail truck driver racing down twisty mountain roads past falling rocks to deliver letters before sunset",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-063",
+   "text": "can you do one where you steer a gondola thru narrow canals in venice without bumping the other boats",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-064",
+   "text": "make a side view game where a little firefighter jumps up burning balconies to reach the roof",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-065",
+   "text": "a snail with tiny boots hopping across mushroom ledges and climbing up a giant beanstalk to the clouds",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-066",
+   "text": "endless runner where a pizza delivery granny skates down rainy streets dodging puddles and grabbing coins",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-067",
+   "text": "a penguin sledding down an icy glacier switching lanes to avoid seals and collecting fish",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-068",
+   "text": "shoot down the robot pigeons that swoop at the farm before they steal all the corn",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-069",
+   "text": "can you make a carnival shooting booth with rubber ducks and tin cans popping up to aim at",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-070",
+   "text": "throwing pancakes into a frying pan across the kitchen from far away",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-071",
+   "text": "make a catapult game where a medieval kid launches cabbages at the castle tower",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-072",
+   "text": "a lighthouse keeper running up and down the coast lighting every lamp before the ships crash in the storm",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-073",
+   "text": "make a game where i'm a dumpling cook at a busy street stall and must steam orders before customers get angry",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-074",
+   "text": "zombie chickens are marching down five fence rows to my barn and I shoot them with egg cannons",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-075",
+   "text": "lane defense where vikings row up the rivers to my village wall and my archers have to stop them",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-076",
+   "text": "top down game where a raccoon roams a campsite at night collecting lost snacks",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-077",
+   "text": "stacking sushi pieces that slide back and forth and you tap to drop each one on the tower",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-078",
+   "text": "rhythm game where you tap the bongo drums in time with the beach music",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-079",
+   "text": "a cowboy showdown at noon where you dodge when the outlaw reaches for his gun and then shoot back",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-080",
+   "text": "tap tap to keep a little bee flying between flower stems without touching them",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-081",
+   "text": "slide the basket left and right to catch falling apples but avoid the rotten ones",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-082",
+   "text": "whack the gophers popping out of the golf course holes before they hide again",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-083",
+   "text": "slicing game with vegetables flying up at a farmers market but dont cut the bombs",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-084",
+   "text": "help a turtle cross the highway, the river and the train tracks step by step",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-085",
+   "text": "run through gates that multiply my army of snowmen and throw them all at the giant fire monster at the end",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-086",
+   "text": "drop planets into a jar and two same planets merge into a bigger one, dont let it overflow",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-087",
+   "text": "sumo game where you push the other wrestlers out of the ring",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-088",
+   "text": "survivor game where a monk walks around with a stick control and attacks automatic, waves of bats get bigger and you pick upgrades, boss at the end",
+   "chain": false,
+   "cue": false,
+   "reasons": [
+    "multi_verb"
+   ]
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-089",
+   "text": "hole in the ground that eats everything in the city and grows bigger",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  },
+  {
+   "set": "p68t",
+   "id": "p68t-090",
+   "text": "sneak into the rival team's base, grab their flag and run back while the guards chase you, and buy upgrades after each round",
+   "chain": false,
+   "cue": false,
+   "reasons": []
+  }
+ ]
+}

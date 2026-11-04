@@ -25,6 +25,7 @@ import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
 import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
+import { airOf, liftLight, SHADOW_RADIUS } from './fog-light';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
@@ -137,11 +138,15 @@ export function skyMaterial(): ShaderMaterial {
   });
 }
 
-/** Barvy sady do uniforem oblohy; hala (`Look.ceiling`) zapne strop, mlha sady ho v dálce rozpustí. */
+/**
+ * Barvy sady do uniforem oblohy; hala (`Look.ceiling`) zapne strop, mlha sady ho v dálce rozpustí.
+ * Obzor má barvu mlhy (`airOf`, P70D T2): terén v dálce mizí do téže barvy, kterou má obloha za ním.
+ */
 export function paintSky(material: ShaderMaterial, look: Look, control: string): void {
   const { uniforms } = material;
+  const air = airOf(look);
   (uniforms.top!.value as Color).set(look.skyTop);
-  (uniforms.horizon!.value as Color).set(look.horizon);
+  (uniforms.horizon!.value as Color).set(air.color);
   (uniforms.sunColor!.value as Color).set(look.sunColor);
   (uniforms.sunDir!.value as Vector3).copy(glowDirOf(look.sunDir, control));
   uniforms.glow!.value = look.glow;
@@ -150,7 +155,7 @@ export function paintSky(material: ShaderMaterial, look: Look, control: string):
     (uniforms.ceiling!.value as Color).set(look.ceiling.color);
     (uniforms.lamp!.value as Color).set(look.ceiling.lamp);
   }
-  (uniforms.haze!.value as Vector2).set(look.fog[0], look.fog[1]);
+  (uniforms.haze!.value as Vector2).set(air.near, air.far);
 }
 
 function Sky({ look, control }: { readonly look: Look; readonly control: string }) {
@@ -253,7 +258,7 @@ function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: 
     sun.position.copy(at).add(toSun);
   });
 
-  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={4} />;
+  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={SHADOW_RADIUS} />;
 }
 
 /**
@@ -338,6 +343,9 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
   const lit = useMemo(() => ({ ...look, ...lightFloor(look) }), [look]);
+  // Expozice se počítá ze světla sady (noc zvedá dál stejně), zvednutí jen přisvítí scénu (P70D T2).
+  const shine = useMemo(() => liftLight(lit), [lit]);
+  const air = useMemo(() => airOf(look), [look]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
   useEffect(() => {
@@ -346,13 +354,13 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   }, [look]);
   return (
     <>
-      <color attach="background" args={[look.horizon]} />
-      <fog attach="fog" args={[look.horizon, ...look.fog]} />
-      <FarAtFog far={look.fog[1]} />
+      <color attach="background" args={[air.color]} />
+      <fog attach="fog" args={[air.color, air.near, air.far]} />
+      <FarAtFog far={air.far} />
       <Exposure exposure={exposureOf(lit)} />
       <Sky look={look} control={control} />
-      <hemisphereLight args={[...lit.light]} />
-      <Sun look={look} sun={lit.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
+      <hemisphereLight args={[...shine.light]} />
+      <Sun look={look} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}
