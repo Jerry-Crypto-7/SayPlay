@@ -251,6 +251,12 @@ export const tutorialSchema = z
     /** Do 80 znaků, anglicky, zobrazí se před první akcí. */
     goalLine: text.max(80),
     controlsHint: text.max(80),
+    /**
+     * Jak se prohrává (P70C T1), do 80 znaků: „Lose all 3 lives or run out of time.“ Bez výchozí hodnoty
+     * a kompilátory ho nepíší – `gameSpecHash` i otisky her zůstanou; chybí-li (každá dnešní hra), odvodí
+     * ho z pravidel prohry `loseLineOf` (`lose-line.ts`) při načtení.
+     */
+    loseLine: text.max(80).optional(),
   })
   .strict();
 
