@@ -406,9 +406,7 @@ describe('classifyGenre', () => {
         expect(ranked.filter((choice) => !P66.has(choice.genre)).map((choice) => `${choice.genre}.${choice.mode}`).join(' '), `${name} ${id}`).toBe(was.get(id));
       }
     }
-    // P68T T2: „Manage a pizza shop and sell slices to a crowd of hungry customers before closing time“ vede obchod –
-    // znak `serve` slyší „manage a pizza shop“; pořadí starých žánrů pod ním se nehnulo.
-    expect(firsts).toEqual(['p30Dev s111 hole', 'p55HoldoutOpened h67 buildshift', 'p55HoldoutOpened h70 minigolf']);
+    expect(firsts).toEqual(['p30Dev s111 hole', 'p55HoldoutOpened h70 minigolf']);
   });
 
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {

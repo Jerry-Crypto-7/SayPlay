@@ -359,9 +359,10 @@ const VERBS: readonly Verb[] = [
     String.raw`\b${RAIL_SHOT}(?=[^.;!?]*${RAIL_MOVING})`,
     // Otáčí se za tím, co se blíží („turn and blast them“, „aim left and right“), a střelec u zbraně na vozidle („door
     // gunner“, „riding shotgun“). Samotné „from every side“ znak není: „a mechanic … firing at robot eels as they swim in
-    // from every side“ (p58b s21) je střelba v místnosti.
+    // from every side“ (p58b s21) je střelba v místnosti. Ani „turret gunner“: věž stojí, „a turret gunner raises a force
+    // field and shoots down the incoming drones“ (p52 d22) je střelec.
     String.raw`\bturn(?:s|ing)? (?:around |back )?(?:and|to) ${RAIL_SHOT}|\baim(?:s|ing)? (?:left and right|all around|in every direction)\b`,
-    String.raw`\b(?:door|tail|turret|rear|waist) gunners?\b|\bgunners? (?:on|in|aboard)\b|\briding shotgun\b|\bman(?:s|ning)? (?:the|a) (?:[a-z-]+ )?(?:guns?|turrets?)\b`,
+    String.raw`\b(?:door|tail|rear|waist) gunners?\b|\bgunners? (?:on|in|aboard)\b|\briding shotgun\b|\bman(?:s|ning)? (?:the|a) (?:[a-z-]+ )?(?:guns?|turrets?)\b`,
   ].join('|'))),
   v('serve', 'sign', BUILDSHIFT, new RegExp([
     String.raw`\b(?:before|until|till|by) (?:the |your |their |his |her |its )?(?:[a-z]+ )?shift (?:ends|is over|closes)\b|\b(?:one|a single) shift\b`,
@@ -375,9 +376,10 @@ const VERBS: readonly Verb[] = [
     String.raw`\b${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP} (?:has to|have to|must|needs? to) (?:feed|serve|sell)\b`,
     String.raw`\b(?:serv(?:e|es|ing)|sell(?:s|ing)?)\b[^.;!?]*?\b(?:in|at) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP}\b`,
     String.raw`\b${SHOP} where (?:[a-z0-9'-]+ ){0,4}?(?:wants?|com(?:e|es)|lines? up|queu(?:e|es)|orders?)\b`,
-    // P68T: obchod hráče jinými slovy – vede podnik jménem („run a gas station for aliens“, „manage a pizzeria“), hra na
-    // podnik („a burger joint tycoon“), příchozí do jeho podniku („fairies flutter into my candy shop“).
-    String.raw`\b(?:run(?:s|ning)?|open(?:s|ing)?|own(?:s|ing)?|manag(?:e|es|ing)|start(?:s|ing)?) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP_NAMED}\b`,
+    // P68T: obchod hráče jinými slovy – vede podnik jménem („run a gas station for aliens“, „open a pizzeria“), hra na
+    // podnik („a burger joint tycoon“), příchozí do jeho podniku („fairies flutter into my candy shop“). Holé „manage“
+    // ne: „Manage a busy bakery and keep every oven from burning“ (p47a s03) je kuchyně stanovišť.
+    String.raw`\b(?:run(?:s|ning)?|open(?:s|ing)?|own(?:s|ing)?|start(?:s|ing)?) ${OWNER} (?:[a-z'-]+ ){0,3}?${SHOP_NAMED}\b`,
     String.raw`\b(?:${SHOP_NAMED}|business|restaurant|food) (?:tycoon|sim(?:ulator)?|manager|management|empire)\b|\btycoon\b(?=[^.;!?]*\b${SHOP_NAMED}\b)`,
     // Jen „into“: „rising prices at my local grocery store“ (p37a n29) žádnou hru nechce.
     String.raw`\binto (?:my|our|your)(?: own)? (?:[a-z'-]+ ){0,3}?${SHOP_NAMED}\b`,

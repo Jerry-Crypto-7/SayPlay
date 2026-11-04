@@ -39,8 +39,6 @@ describe('P68T routing of railfps, buildshift, drawsave and minigolf', () => {
     ['drawsave.default', 'A penguin waits on the ice while icicles crack and drop from above'], // arena
     ['minigolf.default', 'Flick a gumball down a twisty kitchen counter, bank it off the toaster and sink it in the sink drain before running out of shots.'], // runner
     ['minigolf.default', "Aim carefully and pick how hard to hit so the soccer ball curves around the locker room benches into the drain, with the janitor's mop sweeping by."], // throw
-    // p55 h67 (otevřený holdout P55): dřív stanoviště úkolu.
-    ['buildshift.default', 'Manage a pizza shop and sell slices to a crowd of hungry customers before closing time'],
   ])('plays %s: %s', (mode, sentence) => {
     expect(top(sentence)).toBe(mode);
   });
@@ -57,6 +55,10 @@ describe('P68T routing of railfps, buildshift, drawsave and minigolf', () => {
     ['arena.fight', 'the soldiers line up for battle'],
     ['arena.fight', 'draw your sword and fight the dragon'],
     ['catch.default', 'a boy stands under the apple tree while apples fall and catches them in a basket'],
+    // Holé „manage“ podnik není (p47a s03, p55 h67), věž u střelce taky ne (p52 d22).
+    ['quest.station', 'Manage a busy bakery and keep every oven from burning'],
+    ['quest.station', 'Manage a pizza shop and sell slices to a crowd of hungry customers before closing time'],
+    ['shooter.default', 'A turret gunner raises a force field and shoots down the incoming drones.'],
   ])('keeps %s: %s', (mode, sentence) => {
     expect(top(sentence)).toBe(mode);
   });

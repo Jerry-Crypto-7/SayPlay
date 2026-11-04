@@ -11,6 +11,7 @@
  */
 
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -33,6 +34,13 @@ const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];
 const BAND_SEEDS = Array.from({ length: 20 }, (_, k) => k + 1);
 const cellSpec = (): GameSpecV1 => compileRecipe(assemblyOfCell(liveCells().find((cell) => cell.id === 'quest.station')!));
 const draft = (text: string): GameSpecV1 => draftGameSpecWithMeta(text, 1).spec;
+/**
+ * „Serve drinks at a busy beach bar“ (s04) je od P68R T5 nová hra obchod `buildshift` (p47a sets, MOVED_LATER); uložená
+ * hra je ale stanoviště. Její specifikace je zmrazená z rychlého návrhu nad `188d44e9` (před T5, piny tam zelené).
+ */
+const S04_TEXT = 'Serve drinks at a busy beach bar';
+const S04_STORED = JSON.parse(readFileSync(new URL('./__fixtures__/stored-station-s04.json', import.meta.url), 'utf8')) as GameSpecV1;
+const stationDraft = (text: string): GameSpecV1 => (text === S04_TEXT ? structuredClone(S04_STORED) : draft(text));
 const withVersion = (spec: GameSpecV1, version: string): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: version } });
 const worldOf = (spec: GameSpecV1, seed = 1): ArcadeWorld => {
   const made = arcadeWorldOf(spec, seed);
@@ -67,7 +75,7 @@ const STATION_GAMES: readonly [string, () => GameSpecV1][] = [
   ['s01 burgers', () => draft('Cook burgers for hungry customers at a diner')],
   ['s02 pizza', () => draft('Work the counter of a pizza place and serve orders fast')],
   ['s03 bakery', () => draft('Manage a busy bakery and keep every oven from burning')],
-  ['s04 beach bar', () => draft('Serve drinks at a busy beach bar')],
+  ['s04 beach bar', () => stationDraft('Serve drinks at a busy beach bar')],
 ];
 
 /** Uložené `genre.v3` hry nad `9b4577fd` (= `abe38f04` pro stanoviště): sha256 světa a hash robota intermediate. */
@@ -192,7 +200,7 @@ describe('station quest ends with a rush round (P47A T5, genre.v4)', () => {
   for (const [version, pins] of [['genre.v3', STORED_PINS], ['genre.v4', STORED_V4_PINS]] as const) {
     it(`a stored ${version} station game builds the same world and the bot plays the same hash`, () => {
       for (const pin of pins) {
-        const spec = withVersion(pin.text === null ? cellSpec() : draft(pin.text), version);
+        const spec = withVersion(pin.text === null ? cellSpec() : stationDraft(pin.text), version);
         const world = worldOf(spec, pin.seed);
         expect(createHash('sha256').update(JSON.stringify(world)).digest('hex'), `${pin.game} seed ${pin.seed}`).toBe(pin.world);
         expect(runBot(world, undefined, { profile: 'intermediate' }).hash, `${pin.game} seed ${pin.seed}`).toBe(pin.bot);

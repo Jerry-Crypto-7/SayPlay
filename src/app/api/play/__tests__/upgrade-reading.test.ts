@@ -275,7 +275,7 @@ describe('the reading game (P58D T1)', () => {
  * P68 R8, živá kontrola `evals/play/p68/director-drawsave.json` (d36): rychlá hra je sestavená jízda (závod lodí), čtení
  * najde `drawsave` a hru ze čtení publikuje, režisér odpoví kresbou („Save the Apple“, hrozba řeka). AI verze se dřív
  * měřila svědky akcí závodu a skončila roubem na závod lodí. Čtení i odpověď jsou přepsané z té kontroly (surové
- * odpovědi kniha neukládá): žánr, hrdina a hrozba, jak je běh zapsal.
+ * odpovědi kniha neukládá): žánr, hrdina a hrozba, jak je běh zapsal. Od P68R kreslí už rychlá hra (test níž).
  */
 const D36 = {
   text: 'draw a ramp so the rolling apple does not fall into the river',
@@ -288,14 +288,15 @@ const D36 = {
 };
 
 describe('the AI version builds on the reading game (P68 R8)', () => {
-  it('d36: the quick game races boats, the reading draws to save – the AI version draws to save', async () => {
+  // P68R: „draw a ramp“ je znak kreslení, rychlá hra už kreslí sama – hra ze čtení by byla tatáž, a tak žádná nevznikne
+  // (cestu přes hru ze čtení drží s002 výše). AI verze dál kreslí a visí pod rychlou hrou.
+  it('d36: the quick game already draws to save – the AI version draws to save without a reading game', async () => {
     reader(D36.reading);
     const store = memoryVersionStore();
     const quick = await quickGame(store, D36.text);
-    expect(quick.spec.control).not.toBe('drawsave');
+    expect(quick.spec.control).toBe('drawsave');
     const outcome = await directUpgrade(store, quick, request(D36.text), director(D36.answer).make);
-    const [reading] = (await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading');
-    expect(reading?.spec.genre?.id).toBe('drawsave');
+    expect((await childrenOf(store, quick.version.versionId)).filter((child) => child.relation === 'reading')).toEqual([]);
     expect(outcome.status).toBe('ready');
     const ai = await store.get(outcome.status === 'ready' ? outcome.versionId : '');
     expect(ai?.spec.genre?.id).toBe('drawsave');

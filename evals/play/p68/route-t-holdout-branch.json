@@ -1,11 +1,11 @@
 {
  "schema": "p68-genre-route.v1",
- "commit": "7fe5c421",
+ "commit": "ff22a1ec",
  "root": "D:/claude/Hackaton/.claude/worktrees/P68T-smerovani-2-2026-11-04",
- "measuredAt": "2026-11-04T06:20:18.738Z",
+ "measuredAt": "2026-11-04T07:04:02.126Z",
  "labels": "evals/play/p68/holdout-labels.json",
  "about": "genre = classifyGenre(sentence, null).ranked[0] (quick game, no model); draft = draftGameSpecWithMeta(sentence, 1).genre (composer; grid = archetype fallback). wrong = best != none and genre not in acceptable; none is not counted. Labels: 29 types (P68).",
- "seconds": 20,
+ "seconds": 15,
  "wrongRate": {
   "test200": {
    "sentences": 0,
