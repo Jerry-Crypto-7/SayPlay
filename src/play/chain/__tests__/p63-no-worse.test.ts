@@ -16,6 +16,7 @@ import { draftGameSpecWithMeta } from '../../draft';
 import { coverage, namesNoLess } from '../../read/coverage';
 import type { Reading } from '../../read/schema';
 import type { GameSpecV1 } from '../../spec';
+import { chainReasons } from '../decide';
 
 type Rows = { readonly rows: readonly { readonly id: string; readonly models: Record<string, { readonly reading: Reading | null }> }[] };
 
@@ -62,8 +63,11 @@ describe('coverage: the roles of the reading a game shows (P63 T3)', () => {
 
 let deps: unknown;
 // Návrh, řetěz i fyzika se načítají poprvé; pod zátěží celé sady to trvá déle než výchozích 10 s.
+// P70A T2: nová věta hraje řetěz jen na výslovné přání; přepnutí na hru ze čtení platí pro řetězy uložené dřív, tak
+// rychlou hru staví pravidlo před P70A (každý důvod `chainReasons`), jako diagnóza P63 (`diagnosis.json`).
 beforeAll(async () => {
-  deps = await loadDeps();
+  const loaded = (await loadDeps()) as object;
+  deps = { ...loaded, chainOrSingle: (...args: Parameters<typeof chainReasons>) => (chainReasons(...args).length > 0 ? 'chain' : 'single') };
 }, 60_000);
 
 describe('P63 T3: never switch to a reading game that names less of the sentence', () => {

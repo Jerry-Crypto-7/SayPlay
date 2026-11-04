@@ -170,15 +170,16 @@ export function useUpgrade(url: string | null): { readonly view: UpgradeView; re
   return { view: url !== null && state.url === url ? state.view : IDLE, retry: () => setAttempt((count) => count + 1) };
 }
 
-/** Hraje-li hráč aspoň tolik, hra ze čtení ho už nepřepne sama, jen se nabídne (P58D T3). */
-export const COMMITTED_MS = 6_000;
 export const MATCHED_LABEL = 'Matched';
 export const MATCHED_NOTE = 'Matched your idea';
 const MATCHED_OFFER = 'A game that matches your idea is ready';
 
-/** Hráč se do hry pustil: hraje aspoň `COMMITTED_MS`, nebo běh skončil (výhra i prohra). */
+/**
+ * Hráč se do hry pustil: první dotyk (hodiny hry se pohnuly – do něj stojí na tiku 0), nebo běh skončil. Pak hra ze
+ * čtení nepřepne sama, jen se nabídne (P58D T3). P70A T2: dřív až po 6 s hraní a hráči se hra vyměnila pod rukama.
+ */
 export function committedNow(seconds: number, ended: boolean): boolean {
-  return ended || seconds * 1000 >= COMMITTED_MS;
+  return ended || seconds > 0;
 }
 
 /** `committedNow`, který drží: hra spuštěná znovu po prohře hráče zase „nerozehraje“. */

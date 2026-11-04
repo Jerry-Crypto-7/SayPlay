@@ -4,7 +4,8 @@
  * Scéna minigolfu (P68 T8, kategorie `vozidla-sport`): jedna jamka z dlaždic s mantinely v místě z věty. Dráha je
  * trávník kitu, mantinely, jamka (procedurální kalíšek – katalog jamku nemá) s vlajkou `finish-flag`, odrazníky
  * a pohyblivá překážka jako věci z věty (`modelIdOf` – model druhu těla, popisek role `barrier` / `obstacle`),
- * kolem povrch, kulisy a horizont sady (`look`). Míček je hráč (`gen3d-golf-ball`), kutálí se po stavu jádra.
+ * kolem povrch, kulisy a horizont sady (`look`). Míček je hráč, kutálí se po stavu jádra – kreslí ho scéna jako
+ * kouli: model `gen3d-golf-ball` má odlitý týček s trávníkem a kutálel se s ním.
  *
  * **Kamera** přes rameno za míčkem ve směru míření ze stavu (`minigolf-camera.ts`), tlumený přechod mezi klidem
  * a sledováním; na výšku přes `usePlayRectRef` + `fitTall`. **Natažení** dělá DOM vrstva `MinigolfTouch` – registr
@@ -76,7 +77,6 @@ interface Piece {
 
 interface Course {
   readonly view: MinigolfCourseView;
-  readonly ball: string;
   readonly hole: Piece;
   readonly floor: readonly Piece[];
   readonly rails: readonly Piece[];
@@ -98,10 +98,8 @@ function courseOf(world: MinigolfSceneProps['session']['world'], cast: MinigolfS
   };
   const range = ([first, count]: readonly [number, number]): Piece[] => Array.from({ length: count }, (_, k) => piece(first + k));
   const floor = range(layout.floor);
-  const player = initial[HEADER.player] as number;
   return {
     view: minigolfCourseView(initial, layout),
-    ball: world.kinds[initial[bodyBase(player) + BODY.kind] as number] ?? 'ball',
     hole: piece(layout.hole),
     floor,
     rails: range(layout.rails),
@@ -341,12 +339,13 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
       )}
 
       {/* Míček (hráč). */}
-      {/* Model stojí spodkem na nule: točí se kolem středu (`spin` ve výšce poloměru), ne kolem spodku. */}
+      {/* Koule s plochými stěnami, ať je valení vidět; točí se kolem středu (`spin` ve výšce poloměru). */}
       <group ref={ball} userData={{ frame: 'hero' }}>
         <group ref={spin} position={[0, BALL_M / 2, 0]}>
-          <group position={[0, -BALL_M / 2, 0]}>
-            <FittedModel id={course.ball} w={BALL_M} h={BALL_M} d={BALL_M} fallback={color.paper} />
-          </group>
+          <mesh castShadow>
+            <icosahedronGeometry args={[BALL_M / 2, 1]} />
+            <meshStandardMaterial color={colorHex.paper} roughness={0.5} flatShading />
+          </mesh>
         </group>
       </group>
 
