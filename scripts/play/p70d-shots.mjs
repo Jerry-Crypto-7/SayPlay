@@ -4,7 +4,7 @@
  * na 430×900 (telefon, celá obrazovka i s HUD) a FPS telefonu (Pixel 7, CPU 4×, d3d11) – T1 baseline,
  * T5 stejné věty, semínka a časy nad `main` po T2–T4.
  *
- *   node scripts/play/p70d-shots.mjs shots --base http://127.0.0.1:3204 --out evals/play/p70d/baseline [--only runner-forest,minigolf]
+ *   node scripts/play/p70d-shots.mjs shots --base http://127.0.0.1:3204 --out evals/play/p70d/baseline [--only runner-forest,minigolf] [--viewport 375x667]
  *   node scripts/play/p70d-shots.mjs fps --base <url> --out evals/play/p70d/baseline/fps.json [--repeats 3]
  *   node scripts/play/p70d-shots.mjs fps --base <před> --out before.json --vs <po> --out-vs after.json   (A/B prokládaně, T5)
  *
@@ -89,10 +89,13 @@ async function shots(options) {
   mkdirSync(out, { recursive: true });
   const chromium = await browser(options.gpu === true);
   const { viewport: _viewport, deviceScaleFactor: _scale, ...phone } = pixel7();
-  const manifest = { viewport: `${VIEWPORT.width}x${VIEWPORT.height}`, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', seconds: SECONDS, hz: ARCADE_HZ, takenAt: new Date().toISOString(), shots: [] };
+  // `--viewport 375x667` (P70D T3: přepínač verzí proti počítadlům na malém telefonu); výchozí `VIEWPORT`.
+  const [width, height] = typeof options.viewport === 'string' ? options.viewport.split('x').map(Number) : [VIEWPORT.width, VIEWPORT.height];
+  const viewport = { width, height };
+  const manifest = { viewport: `${width}x${height}`, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', seconds: SECONDS, hz: ARCADE_HZ, takenAt: new Date().toISOString(), shots: [] };
   try {
     for (const scene of chosen(options)) {
-      const context = await chromium.newContext({ ...phone, viewport: VIEWPORT, deviceScaleFactor: 1 });
+      const context = await chromium.newContext({ ...phone, viewport, deviceScaleFactor: 1 });
       const page = await context.newPage();
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message.slice(0, 200)));
