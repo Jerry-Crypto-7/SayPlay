@@ -663,12 +663,10 @@ export const P68_ASSERTIONS = assertionsJson as unknown as AssertionsDoc;
 
 /**
  * Vyhodnotí požadavky hry `id` (`every` + `games[id]`) nad stopami; každý hráč (`run`) jede jednou. Požadavek bez
- * `check` neprojde – próza sama stroj nic nedokáže.
+ * `check` neprojde – próza sama stroj nic nedokáže. Hra bez vlastního seznamu (starý žánr) jede jen `every`.
  */
 export function assertGame(id: string, world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, doc: AssertionsDoc = P68_ASSERTIONS): AssertionResult[] {
-  const own = doc.games[id];
-  if (own === undefined) throw new Error(`gameplay-assert: no assertions for game ${id}`);
-  const requirements = [...doc.every, ...own];
+  const requirements = [...doc.every, ...(doc.games[id] ?? [])];
   const results = new Map<string, AssertionResult>();
   for (const driver of TRACE_DRIVERS) {
     const mine = requirements.filter((requirement) => requirement.run === driver);
