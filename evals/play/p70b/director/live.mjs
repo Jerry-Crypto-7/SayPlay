@@ -6,10 +6,12 @@
  * game with the switch on `full`. Writes `live.json` and `<slug>-quick.png` (or `-at-120s.png`) / `<slug>-full.png` next to this file.
  *
  * Run against `next start` with the subscription profile of `.claude/start-demo.cmd` (WORLDSMITH_MODEL_ENDPOINT=codex-cli):
- * `node evals/play/p70b/director/live.mjs [--base http://127.0.0.1:3202]`.
+ * `node evals/play/p70b/director/live.mjs [--base http://127.0.0.1:3202] [--out <dir>] [--sentence "…"]…`
+ * (`--out` místo složky skriptu, `--sentence` místo výchozího seznamu – P70B T4a).
  */
 
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { chromium } from '@playwright/test';
@@ -22,7 +24,8 @@ const LIMIT_MS = 120_000;
 const wantedAt = process.argv.indexOf('--wanted');
 const WANTED = wantedAt === -1 ? 4 : Number(process.argv[wantedAt + 1]);
 // Golf a včela jely v prvním běhu (golf: AI verze za ~207 s, snímky `golf-*.png`; včela: řetěz).
-const SENTENCES = [
+const given = process.argv.flatMap((arg, index) => (process.argv[index - 1] === '--sentence' ? [arg] : []));
+const SENTENCES = given.length > 0 ? given : [
   'a race car speeds around the track dodging oil spills',
   'a ninja slices fruit flying across the screen',
   'a frog hops across a busy road',
@@ -31,7 +34,10 @@ const SENTENCES = [
   'a chef catches falling pizzas in the kitchen',
 ];
 const upgradeOf = async (url) => (await fetch(`${BASE}/api/play/games/${url.split('/').at(-1)}/upgrade`)).json();
-const here = (name) => fileURLToPath(new URL(name, import.meta.url));
+const outAt = process.argv.indexOf('--out');
+const OUT = outAt === -1 ? path.dirname(fileURLToPath(import.meta.url)) : path.resolve(process.argv[outAt + 1]);
+mkdirSync(OUT, { recursive: true });
+const here = (name) => path.join(OUT, name);
 
 // SteamVR na tomhle PC hlásí Chromiu brýle (paměť `chromium-vr-via-steamvr`).
 const browser = await chromium.launch({ args: ['--disable-features=OpenXR'] });
