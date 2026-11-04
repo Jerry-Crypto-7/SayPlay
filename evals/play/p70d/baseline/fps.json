@@ -1,0 +1,137 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11, OpenXR off",
+ "base": "http://127.0.0.1:3204",
+ "repeats": 3,
+ "windowMs": 10000,
+ "measuredAt": "2026-11-04T12:11:17.059Z",
+ "rows": [
+  {
+   "id": "runner-forest",
+   "genre": "runner",
+   "fpsMedian": 16.2,
+   "samples": [
+    16.6,
+    16.2,
+    0
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 47
+  },
+  {
+   "id": "runner-snow",
+   "genre": "runner",
+   "fpsMedian": 24.3,
+   "samples": [
+    29.7,
+    24.3,
+    0.1
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 57
+  },
+  {
+   "id": "arena",
+   "genre": "arena",
+   "fpsMedian": 27.2,
+   "samples": [
+    27.2,
+    26.6,
+    28.8
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 37
+  },
+  {
+   "id": "platformer-beach",
+   "genre": "platformer",
+   "fpsMedian": 35.9,
+   "samples": [
+    35,
+    36.1,
+    35.9
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 32
+  },
+  {
+   "id": "minigolf",
+   "genre": "minigolf",
+   "fpsMedian": 37.2,
+   "samples": [
+    44.4,
+    36,
+    37.2
+   ],
+   "quality": [
+    "medium",
+    "medium",
+    "medium"
+   ],
+   "calls": 50
+  },
+  {
+   "id": "railfps",
+   "genre": "railfps",
+   "fpsMedian": 41.6,
+   "samples": [
+    39.3,
+    41.6,
+    49.2
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 18
+  },
+  {
+   "id": "catch",
+   "genre": "catch",
+   "fpsMedian": 43.4,
+   "samples": [
+    44.3,
+    42.6,
+    43.4
+   ],
+   "quality": [
+    "low",
+    "low",
+    "low"
+   ],
+   "calls": 18
+  },
+  {
+   "id": "defense",
+   "genre": "defense",
+   "fpsMedian": 22.3,
+   "samples": [
+    22.3,
+    1.5,
+    29.9
+   ],
+   "quality": [
+    "low",
+    "medium",
+    "low"
+   ],
+   "calls": 80
+  }
+ ]
+}
