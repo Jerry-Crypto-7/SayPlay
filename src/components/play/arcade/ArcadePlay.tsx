@@ -1059,7 +1059,7 @@ function ArcadePlayGame({
       </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       {read !== undefined && <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />}
-      {lab !== undefined && <HowItWorks facts={lab} />}
+      {lab !== undefined && <HowItWorks facts={lab} touch={zoneHint} />}
       {cardShown && (
         <PauseCard
           onResume={session.resume}

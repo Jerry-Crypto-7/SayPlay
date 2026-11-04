@@ -142,7 +142,10 @@ export function controlLines(primary: string, extra?: string): string[] {
 const SPACE_KEY = 'or press Space';
 
 /** Výzva startu (P70C T2): prst klepe, desktop kliká – Space jen tam, kde ho hra opravdu bere jako první povel. */
-export const startLine = (coarse: boolean, keyLine: string | null): string => (coarse ? 'Tap to start' : keyLine === SPACE_KEY ? 'Click or press Space' : 'Click to start');
+/** Ovládání na dotyku: nápověda zón (`ZONE_HINTS`, plošinovka „Hold left to run, tap right to jump.“), jinak nápověda hry bez kláves – stejná na kartě i v listu About (R2 P70C). */
+export const touchControls = (controlsHint: string, touch?: string): string => touch ?? touchHint(controlsHint);
+
+export const startLine =(coarse: boolean, keyLine: string | null): string => (coarse ? 'Tap to start' : keyLine === SPACE_KEY ? 'Click or press Space' : 'Click to start');
 
 /**
  * Karta uprostřed, dokud hra čeká na první dotek (P70C T2): jak vyhrát
@@ -172,9 +175,9 @@ export function FirstPrompt({
   readonly dare?: { readonly goal: string; readonly changed: boolean } | null;
 }) {
   const coarse = useCoarsePointer();
-  const action = callToAction(coarse ? (touch ?? touchHint(controlsHint)) : controlsHint);
+  const action = callToAction(coarse ? touchControls(controlsHint, touch) : controlsHint);
   const keyLine = coarse ? null : (keys ?? desktopKeys(controlsHint));
-  const more = coarse ? controlLines(touch ?? touchHint(controlsHint), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
+  const more = coarse ? controlLines(touchControls(controlsHint, touch), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
   return (
     <div className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
       {dare !== null && (

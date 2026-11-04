@@ -12,16 +12,17 @@
 
 import { useMemo } from 'react';
 
-import { touchHint, useCoarsePointer } from './FirstPrompt';
+import { touchControls, useCoarsePointer } from './FirstPrompt';
 import type { LabFacts } from './lab';
 import { useInfoPart } from './ui/InfoContext';
 
-function HowToPlay({ facts }: { readonly facts: LabFacts }) {
+/** `touch` = nápověda zón dotyku, kterou dostává i karta před startem (`ZONE_HINTS`). */
+function HowToPlay({ facts, touch }: { readonly facts: LabFacts; readonly touch?: string }) {
   const coarse = useCoarsePointer();
   const rows: readonly (readonly [string, string])[] = [
     ['Win', facts.goal],
     ...(facts.lose === null ? [] : [['Lose', facts.lose] as const]),
-    ['Controls', coarse ? touchHint(facts.controls) : facts.controls],
+    ['Controls', coarse ? touchControls(facts.controls, touch) : facts.controls],
   ];
   return (
     <>
@@ -42,8 +43,8 @@ function HowToPlay({ facts }: { readonly facts: LabFacts }) {
   );
 }
 
-export function HowItWorks({ facts }: { readonly facts: LabFacts }) {
-  const part = useMemo(() => <HowToPlay facts={facts} />, [facts]);
+export function HowItWorks({ facts, touch }: { readonly facts: LabFacts; readonly touch?: string }) {
+  const part = useMemo(() => <HowToPlay facts={facts} touch={touch} />, [facts, touch]);
   if (useInfoPart('how', part)) return null;
   return (
     <details className="play-lab" data-testid="play-lab">
