@@ -1,0 +1,1619 @@
+{
+ "schema": "p68t-holdout-labels.v1",
+ "about": "Blind text judge labels for the 90 sentences of the sealed P68T holdout, written at sealing time (T1) before any routing change; same judge, question and 29 plain-word types as p68/genre-labels.json, own seed. aimed = the game or genre the sentence was written for.",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode --tools \"\" in an empty mkdtemp; sees only numbered sentences and the 29 type descriptions under keys G01-G29)",
+ "seed": 68201,
+ "batchSize": 20,
+ "keys": {
+  "G01": "hole",
+  "G02": "railfps",
+  "G03": "arena",
+  "G04": "drawsave",
+  "G05": "rhythm",
+  "G06": "shooter",
+  "G07": "steal",
+  "G08": "timing",
+  "G09": "merge",
+  "G10": "arrows",
+  "G11": "runner",
+  "G12": "crowd",
+  "G13": "duel",
+  "G14": "sort",
+  "G15": "minigolf",
+  "G16": "quest",
+  "G17": "catch",
+  "G18": "buildshift",
+  "G19": "push",
+  "G20": "hop",
+  "G21": "throw",
+  "G22": "flap",
+  "G23": "defense",
+  "G24": "stunt",
+  "G25": "platformer",
+  "G26": "voyage",
+  "G27": "survivor",
+  "G28": "whack",
+  "G29": "slice"
+ },
+ "batches": 5,
+ "sentences": [
+  {
+   "text": "make a game where i ride a mine cart through a crystal cave and shoot bats coming at me from both sides",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-001"
+    }
+   ],
+   "id": "p68t-001",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a mail carrier on a speeding parcel train fends off robot dogs leaping onto the wagons",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-002"
+    }
+   ],
+   "id": "p68t-002",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "can you do one where grandma rides a garden tractor along the path and blasts giant slugs before they reach her",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-003"
+    }
+   ],
+   "id": "p68t-003",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "defense",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "riding a gondola through venice at night, turning to zap masked ghosts popping out of windows",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-004"
+    }
+   ],
+   "id": "p68t-004",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "whack",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "i want to feel like a hero on a hot air balloon shooting down angry crows, then a huge storm eagle at the end",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-005"
+    }
+   ],
+   "id": "p68t-005",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "railfps"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "make me a game on a school bus route where i splat homework monsters with a paint gun",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-006"
+    }
+   ],
+   "id": "p68t-006",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "Space elevator going up, alien jellyfish float in from left and right, shoot them all before they sting",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-007"
+    }
+   ],
+   "id": "p68t-007",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "pirate on a log flume ride shooting crabs that climb up the sides",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-008"
+    }
+   ],
+   "id": "p68t-008",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "can u make a game where santa rides the sleigh on a set path and snowballs evil gingerbread men coming at him",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-009"
+    }
+   ],
+   "id": "p68t-009",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "A firefighter rides the ladder truck through a burning city and hoses down fire imps before they jump on.",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-010"
+    }
+   ],
+   "id": "p68t-010",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "please a game where I am in the jeep on safari track and must shoot the zombie hyenas, at last a big lion king boss",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-011"
+    }
+   ],
+   "id": "p68t-011",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "shoot the pumpkin heads while the hay wagon rolls through the haunted farm",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-012"
+    }
+   ],
+   "id": "p68t-012",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "Make a first person shooter on a roller coaster where clowns pop up and you have to blast them before they grab you.",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-013"
+    }
+   ],
+   "id": "p68t-013",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter",
+    "whack"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "my son wants a game where a dinosaur keeper rides a monorail and tranquilizes raptors escaping the pens",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-014"
+    }
+   ],
+   "id": "p68t-014",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "ancient roman chariot on a track, archers ambush from both sides, turn and fire arrows back",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-015"
+    }
+   ],
+   "id": "p68t-015",
+   "half": "new",
+   "aimed": "railfps",
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "make a game where i run a ramen stand in a snowstorm and have to place noodle pots before the hungry skiers leave",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-016"
+    }
+   ],
+   "id": "p68t-016",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "penguins waddle into my ice cream truck and i gotta set up freezers fast",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-017"
+    }
+   ],
+   "id": "p68t-017",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "can you do a bakery shift game where I buy ovens with my tip money and serve grumpy dwarves bread before they storm out",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-018"
+    }
+   ],
+   "id": "p68t-018",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a medieval blacksmith shop where knights line up for swords and I place anvils on the floor",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-019"
+    }
+   ],
+   "id": "p68t-019",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "i want to feel super busy running a tiny flower shop on valentines day",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-020"
+    }
+   ],
+   "id": "p68t-020",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "build a game, I am owner of tea house in old Japan, samurai come and I must put tea stations before they angry",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-021"
+    }
+   ],
+   "id": "p68t-021",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "aliens keep landing outside my space gas station and i need more pumps",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-022"
+    }
+   ],
+   "id": "p68t-022",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "game where you design a school cafeteria and feed 30 hungry kids before the lunch bell rings",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-023"
+    }
+   ],
+   "id": "p68t-023",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "my grandma's pie stall at the county fair, place tables and serve everyone before closing",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-024"
+    }
+   ],
+   "id": "p68t-024",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "dinosaurs waiting at a smoothie bar",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-025"
+    }
+   ],
+   "id": "p68t-025",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "make me a pet groomer shop game where dogs and bunnies arrive and i buy washing tubs with what i earn",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-026"
+    }
+   ],
+   "id": "p68t-026",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "Can you make a shop game where I set up a potion counter for wizards and if I build it wrong the whole shift fails?",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-027"
+    }
+   ],
+   "id": "p68t-027",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "ghosts want hot cocoa on halloween night and i have only a few minutes to set up my little cafe",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-028"
+    }
+   ],
+   "id": "p68t-028",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "run a bike repair shop for one afternoon, place work stands, fix cyclists flats before they walk away",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-029"
+    }
+   ],
+   "id": "p68t-029",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "hockey fans rushing my hot dog stand between periods lol",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-030"
+    }
+   ],
+   "id": "p68t-030",
+   "half": "new",
+   "aimed": "buildshift",
+   "best": "buildshift",
+   "acceptable": [
+    "buildshift",
+    "quest"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make a game where i draw walls to keep a sleeping lighthouse keeper safe from falling seagull eggs",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-031"
+    }
+   ],
+   "id": "p68t-031",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "draw lines so the snowballs miss the mailman",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-032"
+    }
+   ],
+   "id": "p68t-032",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "can you do one where a beekeeper is getting swarmed and i draw barriers to block the bees for ten seconds",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-033"
+    }
+   ],
+   "id": "p68t-033",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a tiny astronaut floats on the moon and meteors rain down, my finger lines are the only thing between them",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-034"
+    }
+   ],
+   "id": "p68t-034",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "pls make game i draw shield for the grandma knitting while yarn balls roll down the hill at her",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-035"
+    }
+   ],
+   "id": "p68t-035",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "protect the wedding cake from falling confetti cannons by drawing walls around it",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-036"
+    }
+   ],
+   "id": "p68t-036",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "i want to feel like a hero drawing walls that save a baby penguin from sliding icicles",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-037"
+    }
+   ],
+   "id": "p68t-037",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "game where you sketch lines to guard the pharaoh's mummy from tumbling pyramid stones",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-038"
+    }
+   ],
+   "id": "p68t-038",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "draw to protect the pizza delivery scooter from falling pepperoni meteors",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-039"
+    }
+   ],
+   "id": "p68t-039",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "the samurai meditates under a cherry tree and arrows fly in, i draw lines that turn into walls to stop them",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-040"
+    }
+   ],
+   "id": "p68t-040",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make me a game drawing walls so the christmas elf dont get hit by falling presents",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-041"
+    }
+   ],
+   "id": "p68t-041",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "goalkeeper is knocked out and twenty footballs are flying at him, draw lines to save him",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-042"
+    }
+   ],
+   "id": "p68t-042",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "my son wants a game where he draws barriers to protect a hamster from rolling marbles",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-043"
+    }
+   ],
+   "id": "p68t-043",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "draw a line and keep the science teacher safe from exploding test tube bubbles",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-044"
+    }
+   ],
+   "id": "p68t-044",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "a hedgehog is crossing a desert road and tumbleweeds bounce toward it while i draw fences to stop them",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-045"
+    }
+   ],
+   "id": "p68t-045",
+   "half": "new",
+   "aimed": "drawsave",
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "make a mini golf hole where you're a gumball rolling through a candy factory past chocolate bumpers",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-046"
+    }
+   ],
+   "id": "p68t-046",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "can you do putt putt inside a dentist office with giant teeth as obstacles",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-047"
+    }
+   ],
+   "id": "p68t-047",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "i want to tap the ball into the cup around a snowman that slides back and forth",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-048"
+    }
+   ],
+   "id": "p68t-048",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a lighthouse keeper's marble rolls along the rocky pier, bouncing off crab bumpers, into a hole by the lamp",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-049"
+    }
+   ],
+   "id": "p68t-049",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "mini golf on the moon where a little rover keeps driving across the green",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-050"
+    }
+   ],
+   "id": "p68t-050",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make me golf game in a bakery, the ball is a meatball and need to go in pot",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-051"
+    }
+   ],
+   "id": "p68t-051",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "putting course through a roman colosseum with a gladiator walking in the way",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-052"
+    }
+   ],
+   "id": "p68t-052",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "pull back and flick a pearl through a coral reef so it drops into an open clam",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-053"
+    }
+   ],
+   "id": "p68t-053",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "my daughter wants mini golf with unicorns that bounce the ball away",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-054"
+    }
+   ],
+   "id": "p68t-054",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "crazy golf in a haunted library where books slide across the lane",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-055"
+    }
+   ],
+   "id": "p68t-055",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "short golf course on a farm, ball has to roll under the tractor and past bouncy hay bales to the hole",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-056"
+    }
+   ],
+   "id": "p68t-056",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "aim the shot and pick how hard so the ball goes around the pumpkin patch into the hole before the scarecrow blocks it",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-057"
+    }
+   ],
+   "id": "p68t-057",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "hole in one challenge on a christmas table with a toy train going round",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-058"
+    }
+   ],
+   "id": "p68t-058",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "you are a tiny planet rolling past asteroid bumpers trying to fall into a black hole in few strokes",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-059"
+    }
+   ],
+   "id": "p68t-059",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "putt putt in a school hallway dodging the janitor's mop bucket",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-060"
+    }
+   ],
+   "id": "p68t-060",
+   "half": "new",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "make a game where i pilot a hot air balloon over the alps and dodge church towers and cable cars to land in a village square",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-061"
+    }
+   ],
+   "id": "p68t-061",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a mail truck driver racing down twisty mountain roads past falling rocks to deliver letters before sunset",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-062"
+    }
+   ],
+   "id": "p68t-062",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "stunt",
+    "runner"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "can you do one where you steer a gondola thru narrow canals in venice without bumping the other boats",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-063"
+    }
+   ],
+   "id": "p68t-063",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make a side view game where a little firefighter jumps up burning balconies to reach the roof",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-064"
+    }
+   ],
+   "id": "p68t-064",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a snail with tiny boots hopping across mushroom ledges and climbing up a giant beanstalk to the clouds",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-065"
+    }
+   ],
+   "id": "p68t-065",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "endless runner where a pizza delivery granny skates down rainy streets dodging puddles and grabbing coins",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-066"
+    }
+   ],
+   "id": "p68t-066",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a penguin sledding down an icy glacier switching lanes to avoid seals and collecting fish",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-067"
+    }
+   ],
+   "id": "p68t-067",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "shoot down the robot pigeons that swoop at the farm before they steal all the corn",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-068"
+    }
+   ],
+   "id": "p68t-068",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "defense"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "can you make a carnival shooting booth with rubber ducks and tin cans popping up to aim at",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-069"
+    }
+   ],
+   "id": "p68t-069",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "whack"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "throwing pancakes into a frying pan across the kitchen from far away",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-070"
+    }
+   ],
+   "id": "p68t-070",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "make a catapult game where a medieval kid launches cabbages at the castle tower",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-071"
+    }
+   ],
+   "id": "p68t-071",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a lighthouse keeper running up and down the coast lighting every lamp before the ships crash in the storm",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-072"
+    }
+   ],
+   "id": "p68t-072",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "make a game where i'm a dumpling cook at a busy street stall and must steam orders before customers get angry",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-073"
+    }
+   ],
+   "id": "p68t-073",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "buildshift"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "zombie chickens are marching down five fence rows to my barn and I shoot them with egg cannons",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-074"
+    }
+   ],
+   "id": "p68t-074",
+   "half": "general",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "lane defense where vikings row up the rivers to my village wall and my archers have to stop them",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-075"
+    }
+   ],
+   "id": "p68t-075",
+   "half": "general",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "top down game where a raccoon roams a campsite at night collecting lost snacks",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-076"
+    }
+   ],
+   "id": "p68t-076",
+   "half": "general",
+   "aimed": "arena",
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "stacking sushi pieces that slide back and forth and you tap to drop each one on the tower",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-077"
+    }
+   ],
+   "id": "p68t-077",
+   "half": "general",
+   "aimed": "timing",
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "rhythm game where you tap the bongo drums in time with the beach music",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-078"
+    }
+   ],
+   "id": "p68t-078",
+   "half": "general",
+   "aimed": "rhythm",
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "a cowboy showdown at noon where you dodge when the outlaw reaches for his gun and then shoot back",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-079"
+    }
+   ],
+   "id": "p68t-079",
+   "half": "general",
+   "aimed": "duel",
+   "best": "duel",
+   "acceptable": [
+    "duel"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "tap tap to keep a little bee flying between flower stems without touching them",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-080"
+    }
+   ],
+   "id": "p68t-080",
+   "half": "general",
+   "aimed": "flap",
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "slide the basket left and right to catch falling apples but avoid the rotten ones",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-081"
+    }
+   ],
+   "id": "p68t-081",
+   "half": "general",
+   "aimed": "catch",
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "whack the gophers popping out of the golf course holes before they hide again",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-082"
+    }
+   ],
+   "id": "p68t-082",
+   "half": "general",
+   "aimed": "whack",
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "slicing game with vegetables flying up at a farmers market but dont cut the bombs",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-083"
+    }
+   ],
+   "id": "p68t-083",
+   "half": "general",
+   "aimed": "slice",
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "help a turtle cross the highway, the river and the train tracks step by step",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-084"
+    }
+   ],
+   "id": "p68t-084",
+   "half": "general",
+   "aimed": "hop",
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "run through gates that multiply my army of snowmen and throw them all at the giant fire monster at the end",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-085"
+    }
+   ],
+   "id": "p68t-085",
+   "half": "general",
+   "aimed": "crowd",
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "batch": 4
+  },
+  {
+   "text": "drop planets into a jar and two same planets merge into a bigger one, dont let it overflow",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-086"
+    }
+   ],
+   "id": "p68t-086",
+   "half": "general",
+   "aimed": "merge",
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "sumo game where you push the other wrestlers out of the ring",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-087"
+    }
+   ],
+   "id": "p68t-087",
+   "half": "general",
+   "aimed": "push",
+   "best": "push",
+   "acceptable": [
+    "push",
+    "duel"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "survivor game where a monk walks around with a stick control and attacks automatic, waves of bats get bigger and you pick upgrades, boss at the end",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-088"
+    }
+   ],
+   "id": "p68t-088",
+   "half": "general",
+   "aimed": "survivor",
+   "best": "survivor",
+   "acceptable": [
+    "survivor"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "hole in the ground that eats everything in the city and grows bigger",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-089"
+    }
+   ],
+   "id": "p68t-089",
+   "half": "general",
+   "aimed": "hole",
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "sneak into the rival team's base, grab their flag and run back while the guards chase you, and buy upgrades after each round",
+   "sets": [
+    {
+     "set": "p68t/holdout.json",
+     "id": "p68t-090"
+    }
+   ],
+   "id": "p68t-090",
+   "half": "general",
+   "aimed": "steal",
+   "best": "steal",
+   "acceptable": [
+    "steal"
+   ],
+   "batch": 2
+  }
+ ]
+}

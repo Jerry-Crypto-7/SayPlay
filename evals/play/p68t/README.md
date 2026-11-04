@@ -36,3 +36,19 @@ sadu nepřepíše.
   `holdout-opened.json`; druhé otevření odmítne.
 - Test pečeti `__tests__/seal.test.ts`: kde sada je, hlídá oba otisky (i v tomto README), složení, štítek pro každou
   větu a žádnou shodu se známými sadami; všude hlídá, že známé sady obsahují otevřenou sadu P68R, holdout a dev P68.
+
+## T3 – výsledek na sadě (4. 11.)
+
+Sada je od T3 **otevřená** (`holdout-opened.json`) a leží i v repu (`holdout.json`, `holdout-labels.json`, otisky
+sedí s pečetí). Další plán, který na ní bude ladit, ji musí přidat mezi známé sady své pečeti. Výsledek je
+v `result.md`, surová čísla v `result.json`, přepočet v `__tests__/result.test.ts`.
+
+Postup (jako P68R T6, jen G1 a G2):
+
+- **Strany:** `main` = `0d432d79` (rodič commitu pečeti `7fe5c421`, stav před P68T, `D:/caches/p68t/main-0d432d79`),
+  větev = `origin/main` `17c85b15` po T2 (#87). Prahy z `p68/gates.json`.
+- **G1:** `node evals/play/p68/genre-route.mjs [--root <main>] --labels evals/play/p68t/holdout-labels.json --out
+  route-holdout-{main,branch}.json`; obecné věty a sada 200 přes štítky P68 T2 (`route-{main,branch}.json`). „Svou
+  hru“ = žánr skladatele (`draftGameSpecWithMeta(věta, 1)`).
+- **G2:** `scripts/measure/gameplay-gate.mjs` nad specem rychlé hry každé nové věty (seed 1); věta poslaná do jiné
+  hry je ve jmenovateli jako selhání. Zpráva `gameplay-holdout.json`.
