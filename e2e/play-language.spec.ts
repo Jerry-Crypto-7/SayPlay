@@ -47,7 +47,9 @@ test('every PLAY screen speaks English: create, game, after the run, lab', async
   // Od P33 T7 je „How to play“ oddíl listu „About this game“; list se před dohráním zavře.
   // Od P34 T5 se list otevírá z karty pauzy – zavřít list i kartu, ať hra zase běží.
   await openAbout(page);
-  await expect(page.getByTestId('play-lab')).toContainText('Rules checked');
+  // P70C T3: pro hráče cíl, prohra a ovládání; tiky a replay sem nepatří.
+  await expect(page.getByTestId('play-lab')).toContainText('Controls');
+  await expect(page.getByTestId('play-lab')).not.toContainText(/tick|Replay|Rules checked/);
   await expectEnglish(page, 'Lab');
   await closeAbout(page);
 

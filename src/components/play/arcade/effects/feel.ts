@@ -89,6 +89,22 @@ export const reducedMotion = (): boolean => {
   return motionQuery.list.matches;
 };
 
+/** Červený okraj obrazovky po ztrátě života (P70D T4, `data-hurt` v `play.css`), ms. */
+export const HURT_EDGE_MS = 450;
+/** Nejvýš tolik „+1“ nad sebranými věcmi naráz (P70D T4). */
+export const POP_CAP = 4;
+
+/**
+ * Šťáva z dávky událostí sběrnice (P70D T4): zásah hráče (ubraný život) rozsvítí červený okraj, sebrané věci
+ * vyskočí „+1“ (nejvýš `POP_CAP`). Otřes, částice, konfety a zvuk dávají sběrnice a `Effects` už samy.
+ */
+export function juiceOf(events: readonly VisualEvent[]): { readonly hurt: boolean; readonly pops: readonly VisualEvent[] } {
+  return { hurt: events.some((event) => event.kind === 'hit' && event.role === ROLE.player), pops: events.filter((event) => event.kind === 'pickup').slice(0, POP_CAP) };
+}
+
+/** Strop částic: s „méně pohybu“ polovina (P70D T4). */
+export const particleCap = (cap: number, reduced: boolean): number => (reduced ? Math.floor(cap / 2) : cap);
+
 /**
  * Visual-only impact clock; accepts the bus's validated hit, never score/spawn.
  * Hit-stop po zásahu (i akcí), zpomalení po pádu bosse a s `finale` i po výhře –

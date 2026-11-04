@@ -703,6 +703,19 @@
   grid-column: 1 / 3;
 }
 
+/* Po prvních 4 s zůstane cíl jako pilulka na jeden řádek s postupem (P70C T2, „42 m / 220 m“); pauza ho rozbalí. */
+.play-hud-goal[data-compact='true'] {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+/* Postup stojí před větou cíle, ať ho výpustka jednoho řádku neusekne. */
+.play-hud-goal-progress {
+  margin-right: var(--sp-space-2);
+  font-variant-numeric: tabular-nums;
+  color: var(--sp-text-secondary);
+}
+
 .play-hud-goal[data-shown='false'] {
   opacity: 0;
   visibility: hidden;
@@ -1799,6 +1812,29 @@ button.play-version-switch__item:not(:disabled) {
   line-height: 1.3;
 }
 
+/* Karta před startem (P70C T2): nahoře jak vyhrát, pod tím jak prohrát, oddělené od ovládání; výzva startu dole. */
+.play-first-prompt-goal,
+.play-first-prompt-lose {
+  max-width: 30ch;
+  line-height: 1.3;
+}
+
+.play-first-prompt-goal {
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 700;
+}
+
+.play-first-prompt-lose {
+  padding-bottom: var(--sp-space-2);
+  border-bottom: var(--sp-border-base) solid var(--sp-outline);
+  font-size: var(--sp-text-body-l-size);
+  color: var(--sp-text-secondary);
+}
+
+.play-first-prompt .play-first-prompt-start {
+  margin-top: var(--sp-space-2);
+}
+
 /* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
 @media (max-width: 480px) {
   .play-first-prompt {
@@ -2096,6 +2132,49 @@ button.play-version-switch__item:not(:disabled) {
 
 .play-stage[data-fx='lose'] canvas {
   filter: grayscale(0.85) brightness(0.65);
+}
+
+/* Ztráta života (P70D T4, `effects/feel.ts` HURT_EDGE_MS): červený okraj plochy na 450 ms. */
+.play-stage[data-hurt]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 64px 18px var(--sp-color-tomato);
+  animation: play-hurt 450ms ease-out forwards;
+}
+
+@keyframes play-hurt {
+  from { opacity: 0.95; }
+  to { opacity: 0; }
+}
+
+/* Sebraná věc (P70D T4, `Effects.tsx`): „+1“ vyskočí nad ní a zmizí; s „méně pohybu“ jen zmizí. */
+.play-pop {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 800;
+  color: var(--sp-color-sun);
+  -webkit-text-stroke: 2px var(--sp-color-ink);
+  paint-order: stroke fill;
+  animation: play-pop 700ms ease-out forwards;
+}
+
+@keyframes play-pop {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
+  30% { opacity: 1; transform: translate(-50%, -90%) scale(1.15); }
+  to { opacity: 0; transform: translate(-50%, -170%) scale(1); }
+}
+
+@keyframes play-pop-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-pop { animation-name: play-pop-fade; }
 }
 
 /* Chycení hráče (P34 T5, kit `08-game-hud.md`): celá obrazovka se otřese nejvýš o 6 px
@@ -2652,22 +2731,6 @@ a.play-button {
   gap: var(--sp-space-2);
 }
 
-.play-lab-mechanics strong {
-  color: var(--sp-text);
-  text-transform: capitalize;
-}
-
-.play-lab-params {
-  display: block;
-  color: var(--sp-text);
-  font-size: var(--sp-text-label-size);
-}
-
-.play-lab-quality,
-.play-lab-version {
-  margin: var(--sp-space-1) 0 0;
-  font-variant-numeric: tabular-nums;
-}
 
 /* List „About this game“ (P33 T7; tlačítko je od T12 kolo v bočním sloupci). */
 .play-info-heading {

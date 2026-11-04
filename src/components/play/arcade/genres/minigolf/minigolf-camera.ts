@@ -1,32 +1,33 @@
 /**
- * Kamera minigolfu (P68 T8): přes rameno nízko za míčkem, dívá se po ose míření ze stavu (`aux0` míčku, ne z prstu).
- * Míček v pohybu sleduje z vyšší a vzdálenější pózy, po zastavení se vrátí nízko za něj (přechod tlumí scéna podle
- * `minigolfFollow`, na tiku 0 bez tlumení).
+ * Kamera minigolfu (P68 T8, P70D T3): vždy se dívá po ose míření ze stavu (`aux0` míčku, ne z prstu) – tah prstu
+ * (`minigolf-touch.ts`) čte úhel proti směru kamery, takže její natočení musí zůstat rovnoběžné s osou.
  *
- * - **Na výšku** (`aspect < 1`) jede póza přes `fitTall` (`portrait-frame.ts`), aby míček i cíl ležely v hracím
- *   obdélníku mezi horním pásem HUD a dolní řadou. Cíl = jamka, nebo nejvzdálenější bod trasy, na který je z míčku
- *   vidět po dráze (`minigolfFocus`) – když je jamka za rohem, rámuje se roh.
- * - **Na šířku** vlastní póza, `rect` ji nemění.
+ * - **V klidu** přehled 3/4: sklon `rest.pitch`° dolů, kamera posunutá na střed krabice z míčku a zbytku trasy od
+ *   cíle (`minigolfFocus`) po jamku včetně vlajky; odstup a výška z `fitTall`, takže čím dál jamka, tím výš a dál.
+ *   Na výšku do hracího obdélníku (`rect`, nezměřený = celé plátno), na šířku vždy do celého plátna.
+ * - **Míček v pohybu** sleduje z pózy `roll` za ním (přechod tlumí scéna podle `minigolfFollow`, na tiku 0 bez
+ *   tlumení); na výšku přes `fitTall`, aby míček i cíl ležely v hracím obdélníku. Cíl = jamka, nebo nejvzdálenější
+ *   bod trasy, na který je z míčku vidět po dráze – když je jamka za rohem, rámuje se roh.
  *
  * Čistá funkce bez `window` a bez stavu kresby; scéna x jádra zrcadlí (x scény = −x jádra, jako aréna), takže
  * kladná osa míří na obrazovce doprava. Mimo stav i hash.
  */
 
-import { Box3, PerspectiveCamera, Vector3 } from 'three';
+import { Box3, MathUtils, PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { MinigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { minigolfAim } from '@/play/arcade/pieces/minigolf-roll';
 
-import { type PlayRect, fitTall } from '../../portrait-frame';
+import { type PlayRect, fitTall, playRect } from '../../portrait-frame';
 
 type Point = readonly [number, number];
 
 export const MINIGOLF_CAMERA = {
   /** Zorný úhel plátna (`STAGE_CANVAS` feedu i vlastní plátno). */
   fov: 60,
-  /** Klid: kamera `back` m za míčkem, `up` m nad zemí, dívá se na bod `ahead` m před míčkem. */
-  rest: { back: 2.6, up: 1.1, ahead: 2.2 },
+  /** Klid: sklon pohledu pod vodorovnou (°) a okraj krabice kolem míčku (m, půl dlaždice – vidět i odpaliště). */
+  rest: { pitch: 50, around: 2 },
   /** Míček v pohybu: výš a dál, pohled blíž k míčku. */
   roll: { back: 3.6, up: 2.2, ahead: 1.2 },
   /** Krabice na výšku: okraj kolem míčku a cíle (m), výška vlajky nad jamkou (m). */
@@ -108,23 +109,42 @@ export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rec
   const [ax, az] = minigolfAim(state[p + BODY.aux0] as number);
   const ball = new Vector3(-x / UNIT, 0, z / UNIT);
   const ahead = new Vector3(-ax, 0, az).normalize();
-  const view = rolling ? MINIGOLF_CAMERA.roll : MINIGOLF_CAMERA.rest;
+  const focus = minigolfFocus(course, x, z);
+  const { camera, box, corner } = scratch;
+  const pad = MINIGOLF_CAMERA.pad;
+  /** Do krabice čtverec ±`r` m kolem bodu scény (`sx`, `sz`) od země do výšky `h` m. */
+  const take = (sx: number, sz: number, r: number, h: number): void => {
+    box.expandByPoint(corner.set(sx - r, 0, sz - r)).expandByPoint(corner.set(sx + r, h, sz + r));
+  };
+  /** Kamera z `position` na `look`, fitem posunutá tak, aby krabice ležela v `frame`; orientace drží. */
+  const fit = (position: Vector3, look: Vector3, frame: PlayRect): { position: Vector3; look: Vector3 } => {
+    camera.fov = fov;
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+    camera.position.copy(position);
+    camera.lookAt(look);
+    camera.updateMatrixWorld();
+    const fitted = fitTall(camera, box, frame, { anyAspect: true }).position;
+    return { position: fitted, look: look.add(fitted.clone().sub(position)) };
+  };
+  box.makeEmpty();
+
+  if (!rolling) {
+    take(ball.x, ball.z, MINIGOLF_CAMERA.rest.around, pad);
+    const from = Math.max(0, course.route.findIndex(([rx, rz]) => rx === focus[0] && rz === focus[1]));
+    for (const [rx, rz] of [...course.route.slice(from), course.hole]) take(-rx / UNIT, rz / UNIT, pad, MINIGOLF_CAMERA.flag);
+    const pitch = MathUtils.degToRad(MINIGOLF_CAMERA.rest.pitch);
+    const look = box.getCenter(new Vector3());
+    const position = look.clone().addScaledVector(ahead, -Math.cos(pitch)).setY(look.y + Math.sin(pitch));
+    const frame = aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000);
+    return { ...fit(position, look, frame), focus, rolling };
+  }
+
+  const view = MINIGOLF_CAMERA.roll;
   const position = ball.clone().addScaledVector(ahead, -view.back).setY(view.up);
   const look = ball.clone().addScaledVector(ahead, view.ahead);
-  const focus = minigolfFocus(course, x, z);
   if (!(aspect < 1) || rect === null) return { position, look, focus, rolling };
-
-  const { camera, box, corner } = scratch;
-  camera.fov = fov;
-  camera.aspect = aspect;
-  camera.updateProjectionMatrix();
-  camera.position.copy(position);
-  camera.lookAt(look);
-  camera.updateMatrixWorld();
-  const pad = MINIGOLF_CAMERA.pad;
-  box.makeEmpty();
-  box.expandByPoint(corner.set(ball.x - pad, 0, ball.z - pad)).expandByPoint(corner.set(ball.x + pad, MINIGOLF_CAMERA.pad, ball.z + pad));
-  box.expandByPoint(corner.set(-focus[0] / UNIT - pad, 0, focus[1] / UNIT - pad)).expandByPoint(corner.set(-focus[0] / UNIT + pad, MINIGOLF_CAMERA.flag, focus[1] / UNIT + pad));
-  const fitted = fitTall(camera, box, rect).position;
-  return { position: fitted, look: look.add(fitted.clone().sub(position)), focus, rolling };
+  take(ball.x, ball.z, pad, pad);
+  take(-focus[0] / UNIT, focus[1] / UNIT, pad, MINIGOLF_CAMERA.flag);
+  return { ...fit(position, look, rect), focus, rolling };
 }

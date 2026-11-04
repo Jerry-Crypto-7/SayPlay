@@ -27,7 +27,7 @@ import { STARTERS } from '@/components/play/starters';
 import { draftGameSpec } from '@/play/draft';
 import { legacyDraft } from '@/play/__tests__/legacy-draft';
 import { __resetProcessVersionStore, RECENT_CAP, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
-import { BUILTIN_GAMES } from '@/play/version/builtin';
+import { BUILTIN_GAMES, FEED_GAMES } from '@/play/version/builtin';
 import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -435,14 +435,23 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
 
   // P37C T6: prázdné úložiště ukáže vestavěnou sadu ověřených her, nikdy prázdný feed.
   it('prázdné úložiště vrací vestavěnou sadu a každá hra z ní jde otevřít', async () => {
-    const builtin = new Set(BUILTIN_GAMES.map((game) => game.version.versionId));
+    // Feed ukáže jen hry feedu vestavěné sady (P70C T4); zbytek zmrazené sady jde otevřít odkazem.
+    const builtin = new Set(FEED_GAMES.map((game) => game.version.versionId));
     const first = await feed('?recent=24');
     expect(first.status).toBe(200);
     expect(first.body.games).toHaveLength(24);
     expect(first.body.games.every((game: { versionId: string }) => builtin.has(game.versionId))).toBe(true);
-    const rest = await feed(`?recent=24&cursor=${first.body.next as string}`);
-    expect(new Set([...first.body.games, ...rest.body.games].map((game: { versionId: string }) => game.versionId))).toEqual(builtin);
-    expect(rest.body.next).toBeNull();
+    const seen = first.body.games.map((game: { versionId: string }) => game.versionId);
+    let next = first.body.next as string | null;
+    while (next !== null) {
+      const page = await feed(`?recent=24&cursor=${next}`);
+      seen.push(...page.body.games.map((game: { versionId: string }) => game.versionId));
+      next = page.body.next as string | null;
+    }
+    expect(new Set(seen)).toEqual(builtin);
+    expect(seen).toHaveLength(builtin.size);
+    const outside = BUILTIN_GAMES.find((game) => !builtin.has(game.version.versionId));
+    if (outside !== undefined) expect((await read(outside.version.versionId)).status).toBe(200);
     const opened = await read(first.body.games[0].versionId);
     expect(opened.status).toBe(200);
     expect(opened.body.lineage).toHaveLength(1);

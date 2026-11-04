@@ -54,6 +54,7 @@ import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
 import type { GameVersion } from '../contracts';
 import { BUILTIN_IDS, withBuiltinGames } from './builtin';
+import { feedKindOf } from './diversify';
 import { feedEligible } from './feed';
 import { emptyMemoryState, loadMemoryState, type MemoryState, reloadMemoryKey, saveMemoryKey, writableDir } from './file-store';
 import type { PublishedGame } from './version';
@@ -322,6 +323,8 @@ export interface LoopHeat {
 /** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
+  /** Druh pro rozmanitost feedu (`feedKindOf`, P70C T4); řádky zapsané dřív ho nemají. */
+  readonly genre?: string;
   /** Chybí jen u hry ze seedu feedu a z vestavěné sady (P37C T6), ta má místo toho `curated`. */
   readonly relation?: PublishedGame['relation'];
   /** Věta provozovatele, hra ověřená robotem (P37C T6, `feature` a vestavěná sada). */
@@ -340,11 +343,12 @@ export const RECENT_CAP = 200;
  */
 export const REMIX_CAP = 40;
 
-/** Řádek feedu z hry: verze, archetyp, cíl a nálada pro kartu. */
+/** Řádek feedu z hry: verze, archetyp, druh pro rozmanitost, cíl a nálada pro kartu. */
 export function feedRowOf(game: PublishedGame): RecentGame {
   return {
     ...game.version,
     archetype: game.spec.archetype,
+    genre: feedKindOf(game.spec),
     ...(game.relation === undefined ? {} : { relation: game.relation }),
     goal: game.spec.tutorial.goalLine,
     mood: game.spec.theme.mood,

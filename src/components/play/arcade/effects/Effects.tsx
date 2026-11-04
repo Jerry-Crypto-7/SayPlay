@@ -50,7 +50,7 @@ import { type EffectsBus, type VisualEvent, type VisualEventKind, createEffectsB
 import { installRenderFeel, renderHeld, renderTimeScale } from './render-feel';
 import { FeelCues } from './FeelCues';
 import { PacingFx } from './PacingFx';
-import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
+import { HURT_EDGE_MS, POP_CAP, juiceOf, particleCap, reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
 import { busEventOf, busPresets } from './sound';
 
@@ -115,6 +115,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
   const xr = useThree((three) => three.gl.xr);
+  const three = useThree((state) => state.get);
   const bus = useRef<EffectsBus | null>(null);
   /** Hodiny kresby (ms) a chvíle výhry na nich (P36C T7); −∞ = bez výhry. */
   const clock = useRef(0);
@@ -178,6 +179,38 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     const heard: Partial<Record<VisualEventKind, number>> = {};
     const probe = (): Partial<Record<VisualEventKind, number>> => ({ ...heard });
     window.__playFx = probe;
+    // Ztráta života (P70D T4): červený okraj plochy; nový zásah animaci spustí znovu.
+    let hurtTimer = 0;
+    const hurtEdge = (host: HTMLDivElement): void => {
+      delete host.dataset.hurt;
+      void host.offsetWidth;
+      host.dataset.hurt = '';
+      window.clearTimeout(hurtTimer);
+      hurtTimer = window.setTimeout(() => {
+        delete host.dataset.hurt;
+      }, HURT_EDGE_MS);
+    };
+    // Sebraná věc (P70D T4): „+1“ metr nad ní, promítnuté kamerou do plochy; zmizí koncem animace (`play.css`).
+    const point = new Vector3();
+    const popAt = (host: HTMLDivElement, event: VisualEvent): void => {
+      if (host.querySelectorAll('.play-pop').length >= POP_CAP) return;
+      point.set(-event.x, event.y + 1, event.z).project(three().camera);
+      if (point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1) return;
+      const pop = document.createElement('span');
+      pop.className = 'play-pop';
+      pop.textContent = '+1';
+      pop.setAttribute('aria-hidden', 'true');
+      pop.style.left = `${((point.x + 1) / 2) * 100}%`;
+      pop.style.top = `${((1 - point.y) / 2) * 100}%`;
+      pop.addEventListener('animationend', () => pop.remove(), { once: true });
+      host.appendChild(pop);
+    };
+    const clearJuice = (): void => {
+      window.clearTimeout(hurtTimer);
+      if (surface.current === null) return;
+      delete surface.current.dataset.hurt;
+      for (const pop of surface.current.querySelectorAll('.play-pop')) pop.remove();
+    };
     const offBursts = created.subscribe((events) => {
       for (const event of events) heard[event.kind] = (heard[event.kind] ?? 0) + 1;
       // Každá událost sběrnice zní (P37B T5, `sound.ts`); co zní i z efektů jádra, `playSfx` nezdvojí. Ve VR z místa události (P67 T8).
@@ -195,7 +228,13 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
         return at === undefined ? event : { ...event, x: event.x - at.x, y: event.y + at.y };
       };
       // Ve VR strop profilu Questu 2 (P65 T6, `xr/quality.ts`): úroveň kvality tam měří FPS relace, ne telefonu.
-      director.emit(events.flatMap((event) => burstsOf(bent(event), colors)), now, xr.isPresenting ? XR_QUALITY.particles : PARTICLE_CAP[tierOf()]);
+      // Okraj a „+1“ jsou DOM nad plátnem – ve VR je brýle neukážou.
+      const juice = juiceOf(events);
+      if (surface.current !== null && !xr.isPresenting) {
+        if (juice.hurt) hurtEdge(surface.current);
+        for (const event of juice.pops) popAt(surface.current, bent(event));
+      }
+      director.emit(events.flatMap((event) => burstsOf(bent(event), colors)), now, xr.isPresenting ? XR_QUALITY.particles : particleCap(PARTICLE_CAP[tierOf()], reducedMotion()));
     });
     // Restart (tik zpět) zahodí i částice, které ještě letí.
     let seen = session.state()[HEADER.tick] as number;
@@ -204,6 +243,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
       if (tick < seen) {
         director.reset();
         wonAt.current = -Infinity;
+        clearJuice();
         if (surface.current !== null) delete surface.current.dataset.fx;
       }
       seen = tick;
@@ -218,9 +258,10 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
       director.reset();
       bus.current = null;
       wonAt.current = -Infinity;
+      clearJuice();
       if (surface.current !== null) delete surface.current.dataset.fx;
     };
-  }, [session, look, scene, xr, batch, materials, surface]);
+  }, [session, look, scene, xr, three, batch, materials, surface]);
 
   useFrame(() => {
     camera.position.sub(offset);

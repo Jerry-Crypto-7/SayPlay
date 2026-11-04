@@ -13,6 +13,7 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft/draft';
 
 import { backdropLayers } from '../backdrop-shapes';
+import { airOf } from '../rig/fog-light';
 import { paintSky, skyMaterial } from '../rig/StyleRig';
 import { buildValley } from '../rig/terrain/valley';
 
@@ -45,7 +46,8 @@ describe('hala pod střechou (P61 T7)', () => {
     paintSky(material, scene, spec.control ?? '');
     expect(material.uniforms.indoor!.value).toBe(1);
     expect(material.fragmentShader).toContain('indoor > 0.5');
-    expect(material.uniforms.haze!.value.toArray()).toEqual([...scene.fog]);
+    // Strop mizí do mlhy, jak ji rig kreslí (P70D T2: začátek mlhy odsunutý na dálku).
+    expect(material.uniforms.haze!.value.toArray()).toEqual([airOf(scene).near, airOf(scene).far]);
 
     const layers = backdropLayers(scene, OPTIONS.seed, OPTIONS.clear);
     expect(layers.map((layer) => layer.kind)).toEqual(['walls', 'walls']);

@@ -24,11 +24,9 @@ const READ: ReadFacts = {
   world: 'a farm',
   you: 'fox',
   against: ['dog'],
-  goal: 'Collect 5 eggs',
-  rules: ['Collect'],
 };
 
-const LAB: LabFacts = { mechanics: [], rulesChecked: 'Rules checked', winnable: 'Winnable', replay: 'Replay: ok' };
+const LAB: LabFacts = { goal: 'Collect 5 eggs', lose: 'Get caught by the dog.', controls: 'Arrows to move', how: ['Picking up an egg adds one.'] };
 
 function shell(read: ReadFacts = READ): string {
   return renderToStaticMarkup(
@@ -37,7 +35,7 @@ function shell(read: ReadFacts = READ): string {
       null,
       createElement(Lineage, { lineage: [], remixes: 2 }),
       createElement(SentenceRead, { read, open: false, onClose: () => {} }),
-      createElement(HowItWorks, { facts: LAB, versionId: 'abc', lineage: [] }),
+      createElement(HowItWorks, { facts: LAB }),
     ),
   );
 }
@@ -55,6 +53,15 @@ describe('the about-this-game sheet', () => {
     expect(html.match(/data-testid="play-info"/g)).toHaveLength(1);
     expect(html).toContain('About this game');
     expect(html).toContain('aria-haspopup="dialog"');
+  });
+
+  // P70C T3: „How to play“ říká hráči cíl, prohru, ovládání a jak hra běží – žádný tik ani id verze.
+  it('how to play shows win, lose, controls and the plain sentences', () => {
+    const html = renderToStaticMarkup(createElement(HowItWorks, { facts: LAB }));
+    for (const text of ['<dt>Win</dt><dd>Collect 5 eggs</dd>', '<dt>Lose</dt><dd>Get caught by the dog.</dd>', '<dt>Controls</dt><dd>Arrows to move</dd>', '<li>Picking up an egg adds one.</li>']) {
+      expect(html).toContain(text);
+    }
+    expect(renderToStaticMarkup(createElement(HowItWorks, { facts: { ...LAB, lose: null } }))).not.toContain('Lose');
   });
 
   it('outside a shell (the feed) the lineage still draws itself', () => {

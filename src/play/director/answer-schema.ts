@@ -183,12 +183,14 @@ export const recipeAnswerSchema = contentShape.extend({
 }).strict();
 export type RecipeAnswer = z.infer<typeof recipeAnswerSchema>;
 
-export const GENRE_ANSWER_SCHEMA: Json = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['plan', 'spec'],
-  properties: {
-    plan: { type: 'string' },
-    spec: { anyOf: [strictSchema(toJson(recipeAnswerSchema.extend(MODEL_EXTRAS))), ...(Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? [])] },
-  },
-};
+const recipeVariant = strictSchema(toJson(recipeAnswerSchema.extend(MODEL_EXTRAS)));
+const answerOf = (spec: Json): Json => ({ type: 'object', additionalProperties: false, required: ['plan', 'spec'], properties: { plan: { type: 'string' }, spec } });
+
+export const GENRE_ANSWER_SCHEMA: Json = answerOf({ anyOf: [recipeVariant, ...(Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? [])] });
+
+/**
+ * Jen recept, bez legacy variant (P70B T4a): recept pokryje každý živý žánr, legacy varianty jsou ~44 tis. ze 66 tis.
+ * vstupních tokenů volání. Naměřeno 4. 11. na codex-cli (gpt-6-astra, medium, auto na trati): 24,8 s proti 40,1 s.
+ * Odpověď pod ním je platná i pod `GENRE_ANSWER_SCHEMA`, verze promptu i cache se proto nemění.
+ */
+export const RECIPE_ANSWER_SCHEMA: Json = answerOf(recipeVariant);

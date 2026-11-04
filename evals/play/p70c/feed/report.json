@@ -1,0 +1,163 @@
+{
+  "at": "2026-11-04T16:41:02.730Z",
+  "base": "http://127.0.0.1:3203",
+  "viewport": "430x900 touch (Pixel 7 UA)",
+  "cards": [
+    {
+      "n": 1,
+      "versionId": "2f4599bfdebe21dab4f0cca6afcc0096",
+      "title": "Frog Drums Beat Lily",
+      "control": "rhythm",
+      "mode": "preview",
+      "mean": 101,
+      "stdev": 87,
+      "changed": 0.0356,
+      "blank": false,
+      "screenshot": "01-frog-drums-beat-lily.png"
+    },
+    {
+      "n": 2,
+      "versionId": "269115f5704c4d98185c34e16fda6298",
+      "title": "Mini Golf Pirate Ship",
+      "control": "minigolf",
+      "mode": "preview",
+      "mean": 121,
+      "stdev": 84,
+      "changed": 0.3874,
+      "blank": false,
+      "screenshot": "02-mini-golf-pirate-ship.png"
+    },
+    {
+      "n": 3,
+      "versionId": "71e1da6a31933d22d31466fb74e5559d",
+      "title": "Kitten Fights Gang Pigeons",
+      "control": "fight",
+      "mode": "preview",
+      "mean": 84,
+      "stdev": 59,
+      "changed": 0.2242,
+      "blank": false,
+      "screenshot": "03-kitten-fights-gang-pigeons.png"
+    },
+    {
+      "n": 4,
+      "versionId": "e684987eb4b3f359608ef5f04f476741",
+      "title": "Ride Mine Cart Blast",
+      "control": "railfps",
+      "mode": "preview",
+      "mean": 135,
+      "stdev": 60,
+      "changed": 0.0004,
+      "blank": false,
+      "screenshot": "04-ride-mine-cart-blast.png"
+    },
+    {
+      "n": 5,
+      "versionId": "53b507b012e5d9cc0f0846f5e58f1fe4",
+      "title": "Catch Falling Donuts Dodge",
+      "control": "lanes",
+      "mode": "preview",
+      "mean": 153,
+      "stdev": 82,
+      "changed": 0.0125,
+      "blank": false,
+      "screenshot": "05-catch-falling-donuts-dodge.png"
+    },
+    {
+      "n": 6,
+      "versionId": "16ef692bec97d50662f0270289dcd344",
+      "title": "Run Pizza Shop Serve",
+      "control": "buildshift",
+      "mode": "preview",
+      "mean": 112,
+      "stdev": 90,
+      "changed": 0.0068,
+      "blank": false,
+      "screenshot": "06-run-pizza-shop-serve.png"
+    },
+    {
+      "n": 7,
+      "versionId": "fffd21bda202d5becc3cde3db59ee9b3",
+      "title": "Raccoon Runs Down Subway",
+      "control": "runner",
+      "mode": "preview",
+      "mean": 120,
+      "stdev": 79,
+      "changed": 0.313,
+      "blank": false,
+      "screenshot": "07-raccoon-runs-down-subway.png"
+    },
+    {
+      "n": 8,
+      "versionId": "30f95aa414e35601faa650fc241c81e2",
+      "title": "Draw Walls Save Puppy",
+      "control": "drawsave",
+      "mode": "preview",
+      "mean": 165,
+      "stdev": 77,
+      "changed": 0.0095,
+      "blank": false,
+      "screenshot": "08-draw-walls-save-puppy.png"
+    },
+    {
+      "n": 9,
+      "versionId": "a8bcd9836aebfaa79cebfd5b850c93b7",
+      "title": "Hole Swallows Whole City",
+      "control": "hole",
+      "mode": "preview",
+      "mean": 93,
+      "stdev": 68,
+      "changed": 0.048,
+      "blank": false,
+      "screenshot": "09-hole-swallows-whole-city.png"
+    },
+    {
+      "n": 10,
+      "versionId": "ecc56e4ec69240ea6b78b6bec6ab8393",
+      "title": "Knight Duels Dragon Bridge",
+      "control": "duel",
+      "mode": "preview",
+      "mean": 94,
+      "stdev": 79,
+      "changed": 0.1154,
+      "blank": false,
+      "screenshot": "10-knight-duels-dragon-bridge.png"
+    },
+    {
+      "n": 11,
+      "versionId": "a51c957fe6171f8a13165a56f523bf9a",
+      "title": "Ninja Slices Flying Watermelons",
+      "control": "lanes",
+      "mode": "preview",
+      "mean": 161,
+      "stdev": 77,
+      "changed": 0.0091,
+      "blank": false,
+      "screenshot": "11-ninja-slices-flying-watermelons.png"
+    },
+    {
+      "n": 12,
+      "versionId": "615b289dbdb689a3ae014c83a5460d18",
+      "title": "Paper Plane Flies",
+      "control": "glide",
+      "mode": "preview",
+      "mean": 159,
+      "stdev": 63,
+      "changed": 0.075,
+      "blank": false,
+      "screenshot": "12-paper-plane-flies.png"
+    }
+  ],
+  "blank": [],
+  "pause": {
+    "versionId": "269115f5704c4d98185c34e16fda6298",
+    "title": "Mini Golf Pirate Ship",
+    "pauseControls": "Drag back from the ball and let go.",
+    "promptOverPause": false,
+    "hasAbout": true,
+    "sheetControls": "Drag back from the ball and let go.",
+    "promptOverSheet": false,
+    "keyNames": []
+  },
+  "errors": []
+}

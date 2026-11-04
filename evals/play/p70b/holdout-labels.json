@@ -1,0 +1,1408 @@
+{
+ "schema": "p70b-holdout-labels.v1",
+ "about": "Blind text judge labels for the 70 sentences of the sealed P70B holdout, written at sealing time (T1) before any change; same judge, question and 29 plain-word types as p68/genre-labels.json, own seed. aimed = the game type the sentence was written for (minigolf for golf). hero/heroModels = the animal the sentence was written for and the rigged models that count as that animal.",
+ "judge": "claude-opus-5-5 (claude -p --safe-mode --tools \"\" in an empty mkdtemp; sees only numbered sentences and the 29 type descriptions under keys G01-G29)",
+ "seed": 70201,
+ "batchSize": 20,
+ "keys": {
+  "G01": "voyage",
+  "G02": "duel",
+  "G03": "quest",
+  "G04": "buildshift",
+  "G05": "hole",
+  "G06": "platformer",
+  "G07": "slice",
+  "G08": "rhythm",
+  "G09": "arena",
+  "G10": "stunt",
+  "G11": "runner",
+  "G12": "merge",
+  "G13": "timing",
+  "G14": "throw",
+  "G15": "sort",
+  "G16": "whack",
+  "G17": "steal",
+  "G18": "catch",
+  "G19": "survivor",
+  "G20": "defense",
+  "G21": "railfps",
+  "G22": "drawsave",
+  "G23": "shooter",
+  "G24": "arrows",
+  "G25": "minigolf",
+  "G26": "flap",
+  "G27": "push",
+  "G28": "crowd",
+  "G29": "hop"
+ },
+ "batches": 4,
+ "sentences": [
+  {
+   "text": "help the bunny hop across the busy highway and the train tracks to reach the carrot field",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-001"
+    }
+   ],
+   "id": "p70b-001",
+   "half": "animal",
+   "aimed": "hop",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "Make a game where a rabbit hole moves around the farm and swallows lettuce, buckets, then tractors as it grows.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-002"
+    }
+   ],
+   "id": "p70b-002",
+   "half": "animal",
+   "aimed": "hole",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "best": "hole",
+   "acceptable": [
+    "hole"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "baby rabbits protect their burrow from weasels marching down three lanes",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-003"
+    }
+   ],
+   "id": "p70b-003",
+   "half": "animal",
+   "aimed": "defense",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "Play as a rabbit sneaking into the farmer's garden to grab the giant golden carrot and run it back home before the guard dogs catch you, then buy faster paws for the next round.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-004"
+    }
+   ],
+   "id": "p70b-004",
+   "half": "animal",
+   "aimed": "steal",
+   "hero": "rabbit",
+   "heroModels": [
+    "rigged:pet-bunny",
+    "rigged:q-big-bunny"
+   ],
+   "best": "steal",
+   "acceptable": [
+    "steal",
+    "arena"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "can you do a game where my kitten swipes flying fish in half and leaves the pufferfish bombs alone",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-005"
+    }
+   ],
+   "id": "p70b-005",
+   "half": "animal",
+   "aimed": "slice",
+   "hero": "cat",
+   "heroModels": [
+    "rigged:pet-cat",
+    "rigged:q-blob-cat"
+   ],
+   "best": "slice",
+   "acceptable": [
+    "slice"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "Cat jumping from rooftop to rooftop over the night city to get to the moon.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-006"
+    }
+   ],
+   "id": "p70b-006",
+   "half": "animal",
+   "aimed": "platformer",
+   "hero": "cat",
+   "heroModels": [
+    "rigged:pet-cat",
+    "rigged:q-blob-cat"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "Puppy on a skateboard rolling down the street, dodging trash cans and picking up bones.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-007"
+    }
+   ],
+   "id": "p70b-007",
+   "half": "animal",
+   "aimed": "runner",
+   "hero": "dog",
+   "heroModels": [
+    "rigged:pet-dog",
+    "rigged:q-husky",
+    "rigged:q-shiba",
+    "rigged:q-blob-dog"
+   ],
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "help the dog sort colorful tennis balls into baskets so every basket has only one color",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-008"
+    }
+   ],
+   "id": "p70b-008",
+   "half": "animal",
+   "aimed": "sort",
+   "hero": "dog",
+   "heroModels": [
+    "rigged:pet-dog",
+    "rigged:q-husky",
+    "rigged:q-shiba",
+    "rigged:q-blob-dog"
+   ],
+   "best": "sort",
+   "acceptable": [
+    "sort"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "penguin drops fish into a bucket and two same fish become a bigger fish, dont let it overflow",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-009"
+    }
+   ],
+   "id": "p70b-009",
+   "half": "animal",
+   "aimed": "merge",
+   "hero": "penguin",
+   "heroModels": [
+    "rigged:pet-penguin",
+    "rigged:q-cute-penguin"
+   ],
+   "best": "merge",
+   "acceptable": [
+    "merge"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "Guide the penguin's little rocket down for a soft landing on a wobbly iceberg.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-010"
+    }
+   ],
+   "id": "p70b-010",
+   "half": "animal",
+   "aimed": "voyage",
+   "hero": "penguin",
+   "heroModels": [
+    "rigged:pet-penguin",
+    "rigged:q-cute-penguin"
+   ],
+   "best": "voyage",
+   "acceptable": [
+    "voyage"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "Draw lines to protect the baby polar bear from icicles falling off the cave roof.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-011"
+    }
+   ],
+   "id": "p70b-011",
+   "half": "animal",
+   "aimed": "drawsave",
+   "hero": "polar bear",
+   "heroModels": [
+    "rigged:pet-polar-bear"
+   ],
+   "best": "drawsave",
+   "acceptable": [
+    "drawsave"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "polar bear racing a snowmobile over huge ramps and smashing through stacks of ice crates before time is up",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-012"
+    }
+   ],
+   "id": "p70b-012",
+   "half": "animal",
+   "aimed": "stunt",
+   "hero": "polar bear",
+   "heroModels": [
+    "rigged:pet-polar-bear"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "A fox alone in the dark forest auto-attacks bigger and bigger swarms of beetles, I pick one of three upgrades each wave and fight a giant bear at the end.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-013"
+    }
+   ],
+   "id": "p70b-013",
+   "half": "animal",
+   "aimed": "survivor",
+   "hero": "fox",
+   "heroModels": [
+    "rigged:q-fox"
+   ],
+   "best": "survivor",
+   "acceptable": [
+    "survivor"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "fox bonks the moles when they pop out of the holes",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-014"
+    }
+   ],
+   "id": "p70b-014",
+   "half": "animal",
+   "aimed": "whack",
+   "hero": "fox",
+   "heroModels": [
+    "rigged:q-fox"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "Wolf leads the pack through gates that double it, avoid the traps, then throw the whole pack at the giant troll.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-015"
+    }
+   ],
+   "id": "p70b-015",
+   "half": "animal",
+   "aimed": "crowd",
+   "hero": "wolf",
+   "heroModels": [
+    "rigged:q-wolf"
+   ],
+   "best": "crowd",
+   "acceptable": [
+    "crowd"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "riding a sled through the snowy woods as a wolf and shooting at goblins that jump out on both sides",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-016"
+    }
+   ],
+   "id": "p70b-016",
+   "half": "animal",
+   "aimed": "railfps",
+   "hero": "wolf",
+   "heroModels": [
+    "rigged:q-wolf"
+   ],
+   "best": "railfps",
+   "acceptable": [
+    "railfps",
+    "shooter",
+    "runner"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "pony stacks hay bales into a tall tower, tap to drop each one at the right time",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-017"
+    }
+   ],
+   "id": "p70b-017",
+   "half": "animal",
+   "aimed": "timing",
+   "hero": "horse",
+   "heroModels": [
+    "rigged:q-horse",
+    "rigged:q-white-horse"
+   ],
+   "best": "timing",
+   "acceptable": [
+    "timing"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "Can you make a game where a horse kicks a soccer ball into the goal?",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-018"
+    }
+   ],
+   "id": "p70b-018",
+   "half": "animal",
+   "aimed": "throw",
+   "hero": "horse",
+   "heroModels": [
+    "rigged:q-horse",
+    "rigged:q-white-horse"
+   ],
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "flying cow with a jetpack, tap to go up between the windmills",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-019"
+    }
+   ],
+   "id": "p70b-019",
+   "half": "animal",
+   "aimed": "flap",
+   "hero": "cow",
+   "heroModels": [
+    "rigged:q-cow"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap",
+    "voyage"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "The cow waters every dry plant in the garden while hungry crows chase her around.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-020"
+    }
+   ],
+   "id": "p70b-020",
+   "half": "animal",
+   "aimed": "quest",
+   "hero": "cow",
+   "heroModels": [
+    "rigged:q-cow"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "Save the fawn by hopping over the river on floating logs and across the road.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-021"
+    }
+   ],
+   "id": "p70b-021",
+   "half": "animal",
+   "aimed": "hop",
+   "hero": "deer",
+   "heroModels": [
+    "rigged:q-deer",
+    "rigged:q-cute-fawn",
+    "rigged:q-stag"
+   ],
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "deer climb up the mountain jumping from cliff to cliff to find his family",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-022"
+    }
+   ],
+   "id": "p70b-022",
+   "half": "animal",
+   "aimed": "platformer",
+   "hero": "deer",
+   "heroModels": [
+    "rigged:q-deer",
+    "rigged:q-cute-fawn",
+    "rigged:q-stag"
+   ],
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "panda cooking dumplings at a little stove before the orders pile up",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-023"
+    }
+   ],
+   "id": "p70b-023",
+   "half": "animal",
+   "aimed": "quest",
+   "hero": "panda",
+   "heroModels": [
+    "rigged:q-cute-panda"
+   ],
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "Make a rhythm game with a panda playing taiko drums to the music.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-024"
+    }
+   ],
+   "id": "p70b-024",
+   "half": "animal",
+   "aimed": "rhythm",
+   "hero": "panda",
+   "heroModels": [
+    "rigged:q-cute-panda"
+   ],
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "Hen defends her coop from foxes coming down the lanes by throwing corn at them.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-025"
+    }
+   ],
+   "id": "p70b-025",
+   "half": "animal",
+   "aimed": "defense",
+   "hero": "chicken",
+   "heroModels": [
+    "rigged:q-cute-chicken",
+    "rigged:q-blob-chicken"
+   ],
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "chicken that cant really fly flapping through gaps in the barn fence",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-026"
+    }
+   ],
+   "id": "p70b-026",
+   "half": "animal",
+   "aimed": "flap",
+   "hero": "chicken",
+   "heroModels": [
+    "rigged:q-cute-chicken",
+    "rigged:q-blob-chicken"
+   ],
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "crab pinches the seagulls popping out from behind the rocks",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-027"
+    }
+   ],
+   "id": "p70b-027",
+   "half": "animal",
+   "aimed": "whack",
+   "hero": "crab",
+   "heroModels": [
+    "rigged:q-cute-crab"
+   ],
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "Crabs pushing each other off a tiny rock in the tide pool.",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-028"
+    }
+   ],
+   "id": "p70b-028",
+   "half": "animal",
+   "aimed": "push",
+   "hero": "crab",
+   "heroModels": [
+    "rigged:q-cute-crab"
+   ],
+   "best": "push",
+   "acceptable": [
+    "push"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "alpaca spitting at cardboard targets in a fair shooting gallery",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-029"
+    }
+   ],
+   "id": "p70b-029",
+   "half": "animal",
+   "aimed": "shooter",
+   "hero": "alpaca",
+   "heroModels": [
+    "rigged:q-alpaca"
+   ],
+   "best": "shooter",
+   "acceptable": [
+    "shooter",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "donkey pulls a cart down a mountain track full of ramps and barrels to smash",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-030"
+    }
+   ],
+   "id": "p70b-030",
+   "half": "animal",
+   "aimed": "stunt",
+   "hero": "donkey",
+   "heroModels": [
+    "rigged:q-donkey"
+   ],
+   "best": "stunt",
+   "acceptable": [
+    "stunt",
+    "voyage"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "lets play golf",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-031"
+    }
+   ],
+   "id": "p70b-031",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "i want golfing",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-032"
+    }
+   ],
+   "id": "p70b-032",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "golfing pls",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-033"
+    }
+   ],
+   "id": "p70b-033",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "can we golf",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-034"
+    }
+   ],
+   "id": "p70b-034",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "golf game now",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-035"
+    }
+   ],
+   "id": "p70b-035",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "make a golf game on the moon where the ball floats a little after every shot",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-036"
+    }
+   ],
+   "id": "p70b-036",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "golfing inside a haunted castle with creaky stairs and candles",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-037"
+    }
+   ],
+   "id": "p70b-037",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "i want to play golf on a frozen lake in the middle of winter",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-038"
+    }
+   ],
+   "id": "p70b-038",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "golf course on top of a skyscraper roof with wind blowing",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-039"
+    }
+   ],
+   "id": "p70b-039",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "can you do golf in a jungle temple full of old stone ruins",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-040"
+    }
+   ],
+   "id": "p70b-040",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a desert golf round where the holes are hidden between sand dunes",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-041"
+    }
+   ],
+   "id": "p70b-041",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "golf inside a giant candy factory pls",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-042"
+    }
+   ],
+   "id": "p70b-042",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a penguin playing golf and trying not to slip",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-043"
+    }
+   ],
+   "id": "p70b-043",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make a game where my cat knocks a golf ball into the hole with his paw",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-044"
+    }
+   ],
+   "id": "p70b-044",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a little robot golfing in a junkyard",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-045"
+    }
+   ],
+   "id": "p70b-045",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "grandpa pirate plays crazy golf on his ship deck",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-046"
+    }
+   ],
+   "id": "p70b-046",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "i want a frog that golfs on lily pads",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-047"
+    }
+   ],
+   "id": "p70b-047",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "dinosaur golfing game where the t rex has tiny arms and still trys to putt",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-048"
+    }
+   ],
+   "id": "p70b-048",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "golf with windmills and moving bridges in the way",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-049"
+    }
+   ],
+   "id": "p70b-049",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make golf with lots of water traps and sand bunkers please",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-050"
+    }
+   ],
+   "id": "p70b-050",
+   "half": "golf",
+   "aimed": "minigolf",
+   "best": "minigolf",
+   "acceptable": [
+    "minigolf",
+    "throw"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "make a game where i pilot a hot air balloon between mountain peaks to reach a village on the other side",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-051"
+    }
+   ],
+   "id": "p70b-051",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "flap"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "Can you do one where a grandma rides her mobility scooter through a crowded flea market to the bus stop?",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-052"
+    }
+   ],
+   "id": "p70b-052",
+   "half": "general",
+   "aimed": "voyage",
+   "best": "voyage",
+   "acceptable": [
+    "voyage",
+    "runner"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "a raccoon jumping across rooftop ledges to get to the top of the old clock tower",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-053"
+    }
+   ],
+   "id": "p70b-053",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "make a platformer where a lost astronaut hops between floating moon rocks",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-054"
+    }
+   ],
+   "id": "p70b-054",
+   "half": "general",
+   "aimed": "platformer",
+   "best": "platformer",
+   "acceptable": [
+    "platformer"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "endless runner with a mailman sprinting down a suburb street dodging sprinklers and dogs",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-055"
+    }
+   ],
+   "id": "p70b-055",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "penguin sliding down an icy hill switching lanes, jumping over seals and grabbing fish",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-056"
+    }
+   ],
+   "id": "p70b-056",
+   "half": "general",
+   "aimed": "runner",
+   "best": "runner",
+   "acceptable": [
+    "runner"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "shoot down the paper airplanes that the teacher keeps throwing at me",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-057"
+    }
+   ],
+   "id": "p70b-057",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "make a shooting gallery at a country fair with tin ducks and bottles",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-058"
+    }
+   ],
+   "id": "p70b-058",
+   "half": "general",
+   "aimed": "shooter",
+   "best": "shooter",
+   "acceptable": [
+    "shooter"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "throw snowballs at the neighbor kids hiding behind a snow fort",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-059"
+    }
+   ],
+   "id": "p70b-059",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw",
+    "shooter",
+    "whack"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "Can you do a game where I toss pizza dough into the delivery boxes across the kitchen?",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-060"
+    }
+   ],
+   "id": "p70b-060",
+   "half": "general",
+   "aimed": "throw",
+   "best": "throw",
+   "acceptable": [
+    "throw"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "a firefighter cat runs around the apartment block putting out little fires in each window",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-061"
+    }
+   ],
+   "id": "p70b-061",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest",
+    "arena"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "make a game where i flip pancakes at a busy diner griddle before the orders pile up",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-062"
+    }
+   ],
+   "id": "p70b-062",
+   "half": "general",
+   "aimed": "quest",
+   "best": "quest",
+   "acceptable": [
+    "quest"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "a puppy running around the backyard collecting all the hidden bones seen from above",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-063"
+    }
+   ],
+   "id": "p70b-063",
+   "half": "general",
+   "aimed": "arena",
+   "best": "arena",
+   "acceptable": [
+    "arena"
+   ],
+   "batch": 1
+  },
+  {
+   "text": "catch the falling cupcakes in a basket but let the rotten eggs drop",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-064"
+    }
+   ],
+   "id": "p70b-064",
+   "half": "general",
+   "aimed": "catch",
+   "best": "catch",
+   "acceptable": [
+    "catch"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "whack the gophers popping out of the golf course holes",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-065"
+    }
+   ],
+   "id": "p70b-065",
+   "half": "general",
+   "aimed": "whack",
+   "best": "whack",
+   "acceptable": [
+    "whack"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "zombie farm animals walk down three lanes toward my barn and I have to shoot them before they get in",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-066"
+    }
+   ],
+   "id": "p70b-066",
+   "half": "general",
+   "aimed": "defense",
+   "best": "defense",
+   "acceptable": [
+    "defense",
+    "shooter"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "tap to flap a tiny dragon through the gaps in the stone pillars",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-067"
+    }
+   ],
+   "id": "p70b-067",
+   "half": "general",
+   "aimed": "flap",
+   "best": "flap",
+   "acceptable": [
+    "flap"
+   ],
+   "batch": 3
+  },
+  {
+   "text": "cowboy showdown at noon, dodge when the bandit draws and shoot back",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-068"
+    }
+   ],
+   "id": "p70b-068",
+   "half": "general",
+   "aimed": "duel",
+   "best": "duel",
+   "acceptable": [
+    "duel",
+    "shooter"
+   ],
+   "batch": 0
+  },
+  {
+   "text": "rhythm game where i drum on pots and pans in time with the song",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-069"
+    }
+   ],
+   "id": "p70b-069",
+   "half": "general",
+   "aimed": "rhythm",
+   "best": "rhythm",
+   "acceptable": [
+    "rhythm"
+   ],
+   "batch": 2
+  },
+  {
+   "text": "help a duck family cross the busy highway one hop at a time",
+   "sets": [
+    {
+     "set": "p70b/holdout.json",
+     "id": "p70b-070"
+    }
+   ],
+   "id": "p70b-070",
+   "half": "general",
+   "aimed": "hop",
+   "best": "hop",
+   "acceptable": [
+    "hop"
+   ],
+   "batch": 1
+  }
+ ]
+}

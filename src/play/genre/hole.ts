@@ -16,7 +16,7 @@
 
 import { HOLE, HOLE_KINDS, type HoleKind, kindRefOf, needOf } from '../arcade/pieces/hole';
 import { type KitModel, kitFor, modelHeight } from '../arcade/look';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { counted, nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, type GenreSpecOf, draftRoles, legacySpec, titleCase } from './contract';
 
@@ -123,7 +123,7 @@ export const holeGenre: GenreModule<'hole'> = {
     };
     const need = needOf(items, rounds);
     const lead = said[0] as string;
-    const roundsLine = rounds === 1 ? `in ${String(seconds)} s` : `in each of ${String(rounds)} rounds of ${String(seconds)} s`;
+    const roundsLine = rounds === 1 ? `in ${String(seconds)} s` : `in each of ${counted(rounds, 'round')} of ${String(seconds)} s`;
     return legacySpec(spec, {
       control: 'hole',
       controlParams: { generator: 'hole_swallow', tuning },
@@ -133,8 +133,8 @@ export const holeGenre: GenreModule<'hole'> = {
         kind: 'collect',
         description: fit(
           120,
-          `Swallow things smaller than the hole to grow: ${String(need)} points ${roundsLine}, then the ${finaleLabel}.`,
-          `Swallow ${String(need)} points ${roundsLine}, then the ${finaleLabel}.`,
+          `Swallow things smaller than the hole to grow: ${counted(need, 'point')} ${roundsLine}, then the ${finaleLabel}.`,
+          `Swallow ${counted(need, 'point')} ${roundsLine}, then the ${finaleLabel}.`,
           'Swallow smaller things to grow, then swallow the biggest one.',
         ),
         // Počet cíle = kola: cíl kola je v bodech (60 a víc) a schéma unese nejvýš 50 kusů. Body kola nese

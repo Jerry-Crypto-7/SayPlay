@@ -20,6 +20,7 @@ import { loadRapier } from '../arcade/physics/world';
 import { witnessRuns } from '../arcade/verify';
 import { bindRoles, matchesWitness, namesActor, type RoleBinding } from '../arcade/witness';
 import type { ArcadeWorld } from '../arcade/contract';
+import { SIGN_CELLS, classifyGenre } from '../genre/classify';
 import { essentialTriples, type IntentTriple } from '../intent/contract';
 import { extractIntent } from '../intent/extract';
 import { vocabVerb, vocabVersion } from '../vocab';
@@ -204,7 +205,26 @@ export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: n
 
 const honesties = new Map<string, Honesty | null>();
 
-const LABELS: Readonly<Record<string, string>> = { drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
+/**
+ * Hraje se žánr, který věta sama chce (P70B T2)? Klasifikátor ho slyšel jako znak celé hry („golf on the moon“ →
+ * minigolf), nebo jen ze jména hry a narážek bez slovesa („golf course with water hazards“). Kusy záměru takové věty
+ * („ball“, „score“ ze slova golf, „hit the ball“) jsou ta hra sama – svědka v jamce nemají a hláška by si vymýšlela
+ * („Balling isn't here yet – here's a mini golf game“, audit 4. 11.).
+ */
+const OWN_GAME_GENRES: ReadonlySet<string> = new Set(['minigolf']);
+
+function playsOwnGenre(sentence: string, spec: GameSpecV1): boolean {
+  if (spec.genre === undefined) return false;
+  const classified = classifyGenre(sentence, null);
+  const heard = classified.ranked[0];
+  if (heard === undefined || heard.score <= 0 || heard.genre !== spec.genre.id || heard.mode !== spec.genre.mode) return false;
+  // Jen žánr celé hry (má znak): útěk v Aréně ze slova „dodges“ (`verb-mapping`) své hrozby dál přiznává.
+  // simplified: jen minigolf (případ auditu) – railfps „a truck races and fires“ střelbu svědkem `shoot` nedokládá
+  // a přiznat ji musí (`p42-admissions`); rozšířit, až jiný žánr celé hry ukáže falešný pruh.
+  return OWN_GAME_GENRES.has(heard.genre) && SIGN_CELLS.has(`${heard.genre}.${heard.mode}`) && (classified.verb === null || classified.pick?.genre === heard.genre);
+}
+
+const LABELS: Readonly<Record<string, string>> = { ball: ARCADE_CLOSEST.ball, drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
 /** Hrozby se jmenují v množném čísle – sloveso hlášky se s nimi shoduje („The obstacles aren't here yet“). */
 const PLURAL_LABELS: ReadonlySet<string> = new Set(['guard', 'hazard', 'obstacle', 'rival'].map(verb => LABELS[verb]!));
 /** Co hra hraje místo slovesa z věty („Stab plays as a fight.“, „Flip plays as a tap.“); jinak popisek kusu. */
@@ -216,6 +236,8 @@ const listed = (words: readonly string[]) => (words.length === 1 ? words[0]! : `
 const gerund = (lemma: string) => (/[^e]e$/.test(lemma) ? `${lemma.slice(0, -1)}ing` : /^[^aeiou]*[aeiou][^aeiouwxy]$/.test(lemma) ? `${lemma}${lemma.at(-1)}ing` : `${lemma}ing`);
 
 async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
+  // Hra je žánr věty: pruh se neukáže (zůstává jen třída, kterou neumíme vůbec – otevřený svět, idle …).
+  if (playsOwnGenre(sentence, spec)) return unsupportedGame(sentence, spec);
   const intent = extractIntent(sentence);
   const triples = essentialTriples(intent);
   await preloadPhysics(spec, loadRapier);

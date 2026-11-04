@@ -14,7 +14,8 @@ async function startScene(page: import('@playwright/test').Page) {
     const probe = window.__playShell as unknown as { start(): void; tickByHand(): void };
     probe.start(); probe.tickByHand();
   });
-  await expect(page.getByText('Tap to start', { exact: true })).toBeHidden();
+  // Karta startu je pryč; podle `testid`, text výzvy je od P70C T2 na desktopu „Click …“.
+  await expect(page.getByTestId('play-first-prompt')).toBeHidden();
 }
 
 for (const id of ['run.escape', 'jump.escape', 'flap.collect']) test(`P41 ${id} renders and wins with exact browser replay`, async ({ page, request }, info) => {

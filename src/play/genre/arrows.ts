@@ -12,7 +12,7 @@
  */
 
 import { ARROWS, arrowsSeconds, totalPieces } from '../arcade/pieces/arrows-level';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { counted, nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -66,7 +66,7 @@ export const arrowsGenre: GenreModule<'arrows'> = {
       mechanics: [livesMechanic()],
       roles: [{ id: 'piece', kind: 'target', label: piece, count: total }],
       tutorial: {
-        goalLine: fit(50, `Clear every ${piece} in ${String(rounds)} rounds!`, `Clear them all in ${String(rounds)} rounds!`),
+        goalLine: fit(50, `Clear every ${piece} in ${counted(rounds, 'round')}!`, `Clear them all in ${counted(rounds, 'round')}!`),
         controlsHint: 'Tap one with a clear way out. Arrows and Space work too.',
       },
       mood: 'playful',

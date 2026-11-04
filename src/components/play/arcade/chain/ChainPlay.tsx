@@ -351,6 +351,7 @@ function ChainRun({
         ]}
         clock={clock === null ? { seconds: snapshot.tick / ARCADE_HZ, countdown: false } : { seconds: (clock - snapshot.tick) / ARCADE_HZ, countdown: true }}
         objective={!over && objectiveShown(snapshot.tick, ARCADE_HZ, false)}
+        keepGoal={!over}
         bottom={vrOffered && <EnterVrButton />}
       >
         {!inFeed && <UpgradeBanner request={upgrade} sentence={sentence} versionId={versionId} committed={committed} chain />}

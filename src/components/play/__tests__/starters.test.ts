@@ -22,6 +22,7 @@ import {
   DARE_SHORT,
   FULL_READY,
   HERO,
+  IDEA_CARDS,
   IDEA_LIMIT,
   IDEAS,
   JUDGE_PICKS,
@@ -100,18 +101,28 @@ describe('startovní karty', () => {
   });
 });
 
-describe('karty nápadů (P34 T3)', () => {
-  it('jsou čtyři, každá nejvýš 45 znaků a doslova z balíčku', () => {
-    expect(IDEAS).toHaveLength(4);
+describe('karty nápadů a Surprise me (P34 T3, P70C T3)', () => {
+  it('domov ukáže čtyři doslova z balíčku, každá nejvýš 45 znaků', () => {
+    expect(IDEA_CARDS).toBe(4);
     for (const idea of IDEAS) expect(idea.sentence.length, idea.sentence).toBeLessThanOrEqual(IDEA_LIMIT);
     expect(IDEA_LIMIT).toBe(45);
-    expect(IDEAS.map((idea) => idea.sentence)).toEqual(copyLine('Ideas').replace(/\.$/, '').split(' / '));
+    expect(IDEAS.slice(0, IDEA_CARDS).map((idea) => idea.sentence)).toEqual(copyLine('Ideas').replace(/\.$/, '').split(' / '));
   });
 
-  it('věta karty přistane v návrhu ze slov na archetypu, který karta slibuje', () => {
-    expect(new Set(IDEAS.map((idea) => idea.archetype)).size).toBe(IDEAS.length);
+  // Majitel 4. 11.: „feed tam je jen jeden druh her“ – nápady musí vést do různých žánrů, včetně nových.
+  it('pokrývají aspoň osm žánrů včetně minigolfu, railfps, drawsave, buildshift a rytmu, každý jednou', () => {
+    const genres = IDEAS.map((idea) => idea.genre);
+    expect(new Set(genres).size).toBe(IDEAS.length);
+    expect(genres.length).toBeGreaterThanOrEqual(8);
+    expect(genres).toEqual(expect.arrayContaining(['minigolf', 'railfps', 'drawsave', 'buildshift', 'rhythm']));
+  });
+
+  it('věta karty přistane v návrhu ze slov v žánru, který karta slibuje', () => {
     for (const idea of IDEAS) {
       const meta = draftGameSpecWithMeta(idea.sentence);
+      expect(meta.fellBack, idea.sentence).toBe(false);
+      // Volba rychlé cesty; spec plavby žánr nezapisuje (ovládání `steer`), proto ne `spec.genre`.
+      expect(meta.genre?.genre, idea.sentence).toBe(idea.genre);
       expect(meta.composition, idea.sentence).toBeDefined();
       // The card's archetype is a UI key; live composition now chooses a recipe.
       // Every actual clause must be played or explicitly admitted, never lost.

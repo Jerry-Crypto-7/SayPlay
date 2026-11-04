@@ -15,7 +15,7 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import type { GenreSpec } from '../genre/contract';
 
-import { GENRE_ANSWER_SCHEMA } from './answer-schema';
+import { GENRE_ANSWER_SCHEMA, RECIPE_ANSWER_SCHEMA } from './answer-schema';
 import { COURSE_LINE, directorUser, genrePromptLines, rulesPromptLines } from './prompt';
 import { examplesBlock, nearestExamples } from './retrieval';
 
@@ -35,5 +35,6 @@ export function buildCompactRequest(sentence: string, draft: GenreSpec | null, e
     system: compactSystemPrompt(),
     user: examples ? `${user}\n\n${examplesBlock(nearestExamples(sentence, draft?.genre ?? null))}` : user,
     outputSchema: GENRE_ANSWER_SCHEMA,
+    codexOutputSchema: RECIPE_ANSWER_SCHEMA,
   };
 }
