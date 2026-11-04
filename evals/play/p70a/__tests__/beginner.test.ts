@@ -15,7 +15,7 @@ const read = (name: string): string => readFileSync(join(DIR, name), 'utf8').rep
 
 interface Doc { readonly seeds: number; readonly picks: readonly Pick[]; readonly summary: readonly GenreSummary[]; readonly rows: readonly Row[] }
 
-describe.each(['before'])('p70a %s.json', (name) => {
+describe.each(['before', 'after'])('p70a %s.json', (name) => {
   const doc = JSON.parse(read(`${name}.json`)) as Doc;
 
   // Flap: existující sady mají jen 4 věty, které rychlá hra do flap opravdu pošle (štítky P68 + P68R/P68T/P54C/P66).
