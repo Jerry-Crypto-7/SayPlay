@@ -2688,22 +2688,6 @@ a.play-button {
   gap: var(--sp-space-2);
 }
 
-.play-lab-mechanics strong {
-  color: var(--sp-text);
-  text-transform: capitalize;
-}
-
-.play-lab-params {
-  display: block;
-  color: var(--sp-text);
-  font-size: var(--sp-text-label-size);
-}
-
-.play-lab-quality,
-.play-lab-version {
-  margin: var(--sp-space-1) 0 0;
-  font-variant-numeric: tabular-nums;
-}
 
 /* List „About this game“ (P33 T7; tlačítko je od T12 kolo v bočním sloupci). */
 .play-info-heading {

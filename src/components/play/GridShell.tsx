@@ -513,7 +513,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
       )}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />
-      <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
+      <HowItWorks facts={lab} />
       {!built && fault === null && (
         <div className="play-building" data-testid="play-building">
           <BuildingScreen />
