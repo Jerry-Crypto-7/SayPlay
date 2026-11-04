@@ -168,7 +168,7 @@ const ROWS: readonly Row[] = [
   row(/\beat(?:s|ing)? (?:the )?(?:smaller|tiny|little|weaker)\b|\bgrow(?:s|ing)? (?:bigger|larger|huge)\b|\bagar(?:\.io)?\b|\bslither(?:\.io)?\b|\b[a-z]+\.io\b|\bsnake game\b|\bpac-?man\b|\broam(?:s|ing)?\b|\bmov(?:e|es|ing) freely\b|\bopen world\b|\bwaddl(?:e|es|ing)\b/, [move('roam')]),
   // Míč: pohyb s míčem a výhra gólem; kdo hraje proti, je soupeř („football against a walrus“).
   row(
-    /\b(?:football|soccer|basketball|golf|mini ?golf|hockey|table tennis|tennis|volleyball|baseball|rugby|handball|ping ?pong|penalt(?:y|ies))\b/,
+    /\b(?:football|soccer|basketball|golf(?:ing)?|mini ?golf|hockey|table tennis|tennis|volleyball|baseball|rugby|handball|ping ?pong|penalt(?:y|ies))\b/,
     [move('ball'), goal('score', 'bare'), threat('rival', 'versus')],
   ),
   // Scoring with an aimed ball does not implement a racket rally.

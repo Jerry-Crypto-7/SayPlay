@@ -297,6 +297,10 @@ const VERBS: readonly Verb[] = [
     // Golf s jamkou, greenem nebo ranou („play golf on the moon and sink …“, „a round of golf“); „bonk the moles popping
     // out of the golf course“ ani „a golfer chips balls past sand traps“ jamku neřeknou a zůstávají, kde byly.
     String.raw`\bgolf(?:ing|ers?)?\b(?=[^.;!?]*\b(?:holes?|cups?|greens?|flags?|strokes?|par)\b)|\b(?:round|hole|game) of golf\b|\bplay(?:s|ing)? golf\b`,
+    // P70B T2: golf je minigolf – holé „golf“, „golfing“, „golf game“, „golf on the moon“ (audit 4. 11.: 7 z 20 golfových
+    // vět hrálo hod). Golf jako místo nebo věc jiné hry („bonk the moles popping out of the golf course“, „scooping up
+    // scattered golf balls“, „a golf cart“) znak není; slovo pak dá jen jméno hry (`NAMES`, +2), které sloveso přebije.
+    String.raw`\bgolf(?:ing)?\b(?! (?:courses?|carts?|clubs?|balls?|bags?|resorts?|shops?|stores?|hotels?|links|umbrellas?|shirts?|caps?|gloves?|tees?)\b)`,
     // P68T: i odtok jako jamka a míček složeným slovem („the soccer ball curves … into the drain“, „a gumball“).
     String.raw`(?<!\b(?:throw|throws|throwing|toss|tosses|tossing|dunk|dunks|dunking|drop|drops|dropping) (?:the |a |an |some |\d+ )?(?:[a-z-]+ )?)\b(?:[a-z]*balls?|marbles?|pucks?|pebbles?|dewdrops?|acorns?|peas?|beads?)\b(?=[^.;!?]*?\b(?:into|in) (?:the|a|an|its|each) (?:[a-z-]+ )?(?:hole|cup|drain)\b)`,
     // P68T: síla rány míčku („pick how hard to hit so the soccer ball curves …“), „sink it in the drain“ a došlé rány.
@@ -585,7 +589,9 @@ const NAMES: readonly (readonly [Pair, RegExp])[] = [
   [COLLECT, /\bsnake game\b|\bslither\b|\b[a-z]+[ .]io\b|\bagar\b|\bpac-?man\b/],
   [ESCAPE, /\bhorror\b|\bscary\b|\bcreepy\b|\bfive nights\b|\bfreddy'?s?\b|\bhide and seek\b|\bstealth\b|\bsneak(?:s|ing|y)?\b|\bfloor is lava\b/],
   [SHOOTER, /\bshooter\b|\bshooting (?:range|gallery|game)\b|\barchery\b|\bguns?\b|\bkrunker\b|\bsniper\b|\bfps\b/],
-  [THROW, /\bgolf\b|\bbowling\b|\bbilliards\b|\bbasketball\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bcatapult\b|\bragdoll\b|\bknock(?:s|ing)? (?:down|over) (?:the |a |an )?(?:[a-z]+ )?towers?\b/],
+  // P70B T2: golf jmenuje minigolf, ne hod (holé „golf course with water hazards“ hrálo rytíře házejícího na jamku).
+  [MINIGOLF, /\bgolf(?:ing|ers?)?\b/],
+  [THROW, /\bbowling\b|\bbilliards\b|\bbasketball\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bcatapult\b|\bragdoll\b|\bknock(?:s|ing)? (?:down|over) (?:the |a |an )?(?:[a-z]+ )?towers?\b/],
   [SPATIAL, /\bsoccer\b|\bfootball\b|\btennis\b/],
   [STATION, /\bmatch[ -]?3\b|\bcandy crush\b|\btetris\b|\bmahjong\b|\bjenga\b|\bpuzzle\b|\bidle\b|\bclicker\b|\btycoon\b|\bovercooked\b|\bfarm game\b|\bsalon\b|\bmakeover\b|\bfashion\b|\bclinic\b|\bmatching game\b|\bword game\b|\bfishing\b|\bfactory\b|\bempire\b/],
 ];
