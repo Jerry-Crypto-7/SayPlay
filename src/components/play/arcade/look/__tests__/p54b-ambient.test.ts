@@ -33,26 +33,26 @@ const ALL_Z = { z0: -Infinity, z1: Infinity } as const;
 /** Kruh hrdiny (`HERO_KEEP_M` v `landmark-places.ts`). */
 const HERO_KEEP_M = 2;
 
-/** Zadání úkolu: kdo kde žije. */
+/** Zadání úkolu: kdo kde žije. P70D T4: venku 2–3 druhy (z existujících), obchody a pokoj jen prach. */
 const EXPECTED: Readonly<Record<LookId, readonly AmbientKind[]>> = {
   meadow: ['birds', 'butterflies'],
-  city: [],
+  city: ['birds', 'dust'],
   mall: ['dust'],
   supermarket: ['dust'],
   living_room: ['dust'],
-  factory: ['dust'],
-  forest: ['birds'],
-  jungle: ['butterflies'],
-  desert: [],
-  beach: ['birds'],
-  ocean: ['jumping-fish'],
-  underwater: ['fish'],
-  snow: [],
-  volcano: ['sparks'],
-  cave: ['bats'],
-  space: ['meteors'],
-  castle: ['birds'],
-  graveyard: ['bats'],
+  factory: ['dust', 'sparks'],
+  forest: ['birds', 'butterflies', 'dust'],
+  jungle: ['butterflies', 'birds'],
+  desert: ['birds', 'dust'],
+  beach: ['birds', 'dust'],
+  ocean: ['jumping-fish', 'birds'],
+  underwater: ['fish', 'dust'],
+  snow: ['birds', 'dust'],
+  volcano: ['sparks', 'dust'],
+  cave: ['bats', 'dust'],
+  space: ['meteors', 'dust'],
+  castle: ['birds', 'butterflies'],
+  graveyard: ['bats', 'dust'],
 };
 
 interface Genre {
