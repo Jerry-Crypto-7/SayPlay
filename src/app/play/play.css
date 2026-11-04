@@ -2098,6 +2098,49 @@ button.play-version-switch__item:not(:disabled) {
   filter: grayscale(0.85) brightness(0.65);
 }
 
+/* Ztráta života (P70D T4, `effects/feel.ts` HURT_EDGE_MS): červený okraj plochy na 450 ms. */
+.play-stage[data-hurt]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 64px 18px var(--sp-color-tomato);
+  animation: play-hurt 450ms ease-out forwards;
+}
+
+@keyframes play-hurt {
+  from { opacity: 0.95; }
+  to { opacity: 0; }
+}
+
+/* Sebraná věc (P70D T4, `Effects.tsx`): „+1“ vyskočí nad ní a zmizí; s „méně pohybu“ jen zmizí. */
+.play-pop {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 800;
+  color: var(--sp-color-sun);
+  -webkit-text-stroke: 2px var(--sp-color-ink);
+  paint-order: stroke fill;
+  animation: play-pop 700ms ease-out forwards;
+}
+
+@keyframes play-pop {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
+  30% { opacity: 1; transform: translate(-50%, -90%) scale(1.15); }
+  to { opacity: 0; transform: translate(-50%, -170%) scale(1); }
+}
+
+@keyframes play-pop-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-pop { animation-name: play-pop-fade; }
+}
+
 /* Chycení hráče (P34 T5, kit `08-game-hud.md`): celá obrazovka se otřese nejvýš o 6 px
  * na 200 ms (`ArcadePlay`). Třídu `.play-stage-shake`, kterou scéna dává po zásahu jen
  * plátnu (7 px, 150 ms), tenhle otřes nahrazuje – proto už nemá pravidlo. */
