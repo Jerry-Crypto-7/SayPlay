@@ -189,11 +189,11 @@ test('the reading game arrives: a player who has not pressed anything moves to i
   await expect(page.locator('h1').first()).not.toHaveText(quickTitle ?? '');
 });
 
-test('the reading game arrives after six seconds of play: the switch offers it and the game is not swapped', async ({ page, request }) => {
+// P70A T2: rozehraná hra = první dotyk, ne 6 s hraní – hráč, který začal, svou hru pod rukama nevymění.
+test('the reading game arrives after the first touch: the switch offers it and the game is not swapped', async ({ page, request }) => {
   const { draft, reading, arrive } = await readingGame(page, request);
   await page.goto(draft.url);
   await running(page);
-  await page.waitForTimeout(6_500);
   arrive();
   const offer = page.getByTestId('reading-action');
   await expect(offer).toBeVisible({ timeout: 10_000 });

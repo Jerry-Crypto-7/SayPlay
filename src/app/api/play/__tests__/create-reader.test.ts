@@ -26,8 +26,8 @@ import { resetProcessSpendCap } from '@/server/spend-cap';
 import { upstreamBranch } from '@/server/upstream';
 
 const SENTENCE = 'a knight collects keys in a castle';
-/** Dev P56C d04 (`multi_verb`): věta řetězu mikroher. */
-const CHAIN = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds';
+/** Dev P56C d04 (`multi_verb`) s přáním kol: věta řetězu mikroher (od P70A T2 řetěz jen na výslovné přání). */
+const CHAIN = 'can u make one where a robot hops over lava cracks and shoots bubbles at grumpy clouds, make it three rounds';
 const READING: Reading = {
   control: 'shooter',
   verbs: [{ word: 'collect', class: 'aim_shoot' }],
