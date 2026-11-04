@@ -64,6 +64,13 @@ const PAID = {
 
 const reader = vi.hoisted(() => ({ reading: null as Reading | null, delayMs: 0, silent: false, calls: [] as string[] }));
 
+// P70A T2: nová věta hraje řetěz jen na výslovné přání. Čtení dostávají řetězy uložené dřív – dvě slovesa, neslyšená
+// věta –, tak je route publikuje pravidlem před P70A (každý důvod `chainReasons`), jako by je uložila tehdy.
+vi.mock('@/play/chain/decide', async (original) => {
+  const actual = await original<typeof import('@/play/chain/decide')>();
+  return { ...actual, chainOrSingle: (...args: Parameters<typeof actual.chainReasons>) => (actual.chainReasons(...args).length > 0 ? 'chain' : 'single') };
+});
+
 function answer(): Promise<Response> {
   const body = JSON.stringify({ choices: [{ message: { content: JSON.stringify(reader.reading) }, finish_reason: 'stop' }], usage: { prompt_tokens: 2400, completion_tokens: 170 } });
   return new Promise((resolve) => setTimeout(() => resolve(new Response(body)), reader.delayMs));
@@ -169,13 +176,14 @@ describe('a chain sentence gets the reading (P58E T1)', () => {
     expect(reader.calls).toHaveLength(1);
   });
 
-  it('publishes nothing when the sentence asks for several games', async () => {
+  // P70A T2: čtení by nic nezměnilo (řetězem zůstane), tak se ani neplatí.
+  it('publishes nothing and pays nothing when the sentence asks for several games', async () => {
     reader.reading = CUE.reading;
     const { body } = await create(CUE.text);
     expect((await versionStoreFromEnv(process.env).get(body.versionId))?.chain).toBeDefined();
     await settled(body.versionId);
     expect(await children(versionStoreFromEnv(process.env), body.versionId)).toEqual([]);
-    expect(reader.calls).toHaveLength(1);
+    expect(reader.calls).toEqual([]);
   });
 
   // Čtení `null` – řetěz zůstane, nic se nepublikuje a nic dalšího se nevolá.

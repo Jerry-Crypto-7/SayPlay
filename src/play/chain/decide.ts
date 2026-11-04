@@ -2,6 +2,7 @@
  * Řetěz, nebo jedna hra (P56C T8). Řetěz míří na díru „obecná hra“ a na víceslovesné věty, kde dnes sloveso
  * zmizí; věta s jedním jasným slovesem chce hloubku té jedné hry. Pravidlo a důvod: plán P56C, oddíl „Rozhodnutí“;
  * P61 T4 zúžil `generic` na neslyšenou větu (`evals/play/p56c/decide.md`, `evals/play/p61/README.md`).
+ * P70A T2: řetěz hraje jen věta, která o víc her výslovně žádá (`CHAIN_CUES`); ostatní důvody zůstaly jen měřením.
  */
 
 import { saidMove } from '../compose/assemble';
@@ -16,8 +17,12 @@ import type { SentenceRead } from './read';
 /** Buňky, ve kterých klasifikátor končí, když z věty neslyší nic určitého. */
 export const GENERIC_CELLS: ReadonlySet<string> = new Set(['arena.collect', 'arena.escape', 'runner.default', 'voyage.race']);
 
-/** Věta, která o víc her výslovně žádá. „party“ jako přívlastek věci („to a party table“, startovní věta) ne. */
-export const CHAIN_CUES = /\b(?:levels|rounds|mini-?games|challenges|party(?!\s+(?:tables?|hats?|food|guests?|dress)\b))\b/;
+/**
+ * Věta, která o víc her výslovně žádá (P70A T2, rozhodnutí majitele 4. 11.): „levels“, „rounds“, „stages“, „a mix
+ * (of games)“, „mini-games“, „microgames“, „N games“. Jednotné „a minigame“ chce jednu hru; „mix the potions“ ani
+ * „a party“ či „challenges“ o víc her nežádají.
+ */
+export const CHAIN_CUES = /\b(?:levels|rounds|stages|mini-?games|micro-?games|mix\s+of|(?:a|the)\s+mix\b|(?:\d+|two|three|four|five|six|seven|eight|nine|ten|several|a\s+few)\s+(?:\w+\s+)?games)\b/;
 
 export type ChainReason = 'multi_verb' | 'generic' | 'cue';
 
@@ -68,6 +73,11 @@ export function chainReasons(sentence: string, read: SentenceRead, ranking: Genr
   return reasons;
 }
 
+/**
+ * P70A T2: řetěz jen na výslovné přání (`cue`). Dvě slovesa (`multi_verb`) ani neslyšená věta (`generic`) už řetěz
+ * nespouští – hráč napsal jednu hru a dostával pět kol; hraje jednu hru z rychlé cesty. `chainReasons` je dál počítá
+ * pro měření (`evals/play/p70a/chains.ts`).
+ */
 export function chainOrSingle(sentence: string, read: SentenceRead, ranking: GenreRanking): 'chain' | 'single' {
-  return chainReasons(sentence, read, ranking).length > 0 ? 'chain' : 'single';
+  return chainReasons(sentence, read, ranking).includes('cue') ? 'chain' : 'single';
 }

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test';
 
 /**
- * Řetěz mikroher v prohlížeči (P56C T13), nad `next build` + `next start`: věta se dvěma slovesy dá
+ * Řetěz mikroher v prohlížeči (P56C T13), nad `next build` + `next start`: věta, která žádá o kola, dá
  * řetěz, jehož kolo 1 poslouchá do 1,5 s od navigace, mezi koly ukáže kartu se slovesem, index kola
  * roste, prohrané kolo vezme srdce, výhra skončí hvězdami a Dare, jehož odkaz otevře ducha kamaráda.
  * Kola hraje sonda `__playShell.playRound` (stisky robota kola tik po tiku cestou klávesnice), takže
@@ -21,8 +21,8 @@ interface ChainProbe {
   readonly playRound: (how: 'bot' | 'idle') => { readonly runState: string; readonly round: number; readonly lives: number; readonly outcome: string; readonly tick: number };
 }
 
-/** Dev `d01` (`multi_verb`): `chainOrSingle` ji pošle do řetězu (T8). */
-const SENTENCE = 'a penguin mail carrier slides down icy hills dodging snowballs, then tosses letters into chimneys';
+/** Dev `d01` (`multi_verb`) s přáním kol: od P70A T2 řetěz jen na výslovné přání (`CHAIN_CUES`). */
+const SENTENCE = 'a penguin mail carrier slides down icy hills dodging snowballs, then tosses letters into chimneys, in three rounds';
 
 /** První kolo musí poslouchat do 1,5 s od navigace (cíl plánu); telefon jen zapíše. */
 const FIRST_PLAYABLE_MS = 1500;
@@ -148,8 +148,8 @@ test.describe('/play/[id] – a chain moves to the reading game (P58E T3)', () =
   const READING_AFTER_MS = 3_000;
   /** Toast konce bez AI verze trvá 3 s (`TOAST_MS`); po něm i po dalším dotazu musí být řetěz pořád bez ničeho. */
   const TOAST_AND_MARGIN_MS = 3_000 + 2_500;
-  /** 6,5 s hraní při 60 Hz – nad `COMMITTED_MS` (6 s), kdy hra ze čtení už jen nabízí. */
-  const COMMITTED_TICKS = 6.5 * 60;
+  /** P70A T2: rozehraný řetěz = první dotyk (hodiny se pohnuly), pak hra ze čtení už jen nabízí. */
+  const COMMITTED_TICKS = 1;
 
   /** Snímek do složky testu (oracle úlohy – člověk je prohlédne), přiložený i k výsledku. */
   async function snap(page: Page, info: TestInfo, name: string): Promise<void> {
@@ -208,7 +208,7 @@ test.describe('/play/[id] – a chain moves to the reading game (P58E T3)', () =
     await snap(page, info, 'chain-kept');
   });
 
-  test('after six seconds of play the chain offers the reading game and is not swapped', async ({ page, request }, info) => {
+  test('after the first touch the chain offers the reading game and is not swapped', async ({ page, request }, info) => {
     const { url, reading, arrive } = await chainAndReading(page, request, 'game');
     await page.goto(url);
     await probeReady(page);
