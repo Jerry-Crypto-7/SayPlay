@@ -824,6 +824,13 @@ const MAX_CODEX_OUTPUT_BYTES = 8 * 1024 * 1024;
 /** Jak dlouho se po zabití čeká na `close`, než se skončí bez něj. */
 const CODEX_KILL_GRACE_MS = 2_000;
 
+/**
+ * P70B T4: odpověď delší než strop modelu. Codex ji sám zkouší znovu (5× „Reconnecting“, pak HTTPS a „Bad Request“),
+ * každý pokus znovu generuje celou odpověď – stejný strop dá stejný výsledek, proto se končí u prvního.
+ */
+const CODEX_OUTPUT_CAP = /Incomplete response returned, reason: max_output_tokens/;
+export const CODEX_OUTPUT_CAP_STOP = 'codex answer ran past max_output_tokens';
+
 /** Soubor se schématem odpovědi leží v prázdném pracovním adresáři volání. */
 export const CODEX_SCHEMA_FILE = 'answer-schema.json';
 
@@ -892,6 +899,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
     let stderrBytes = 0;
     let outputBytes = 0;
     let cut: string | null = null;
+    let tail = '';
     let done = false;
     let grace: ReturnType<typeof setTimeout> | undefined;
     const stop = (why: string) => {
@@ -917,6 +925,9 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       outputBytes += chunk.length;
       if (outputBytes > MAX_CODEX_OUTPUT_BYTES) stop('codex exec wrote more than 8 MiB');
       else chunks.push(chunk);
+      // Konec předchozího kusu zůstává, ať hláška rozdělená mezi dvě čtení roury neproklouzne.
+      tail = (tail + chunk.toString('latin1')).slice(-512);
+      if (CODEX_OUTPUT_CAP.test(tail)) stop(CODEX_OUTPUT_CAP_STOP);
     });
     child.stderr.on('data', (chunk: Buffer) => {
       if (stderrBytes >= 1200) return;
@@ -961,7 +972,10 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig,
       signal,
     ));
   } catch (thrown) {
-    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${(thrown as Error).message}`, usage: null };
+    const message = (thrown as Error).message;
+    // Odpověď vznikla a je nepoužitelná (`MALFORMED_RESPONSE`), ne výpadek: volající ji nemá zkoušet znovu stejně.
+    if (message.startsWith(CODEX_OUTPUT_CAP_STOP)) return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the codex answer was cut: ${message}`, usage: null };
+    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${message}`, usage: null };
   }
 
   let events: Record<string, any>[];

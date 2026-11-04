@@ -1045,6 +1045,24 @@ describe('7. transport codex-cli spustí proces a přečte proud událostí', ()
     });
   }
 
+  it('P70B T4: odpověď přes max_output_tokens skončí u prvního pokusu jako nepoužitelná, ne výpadek', async () => {
+    // Skutečný codex po hlášce čeká a zkouší znovu (5×, pak HTTPS); skript tu visí 20 s – konec dřív = zastavil první pokus.
+    const file = fakeCodex('cap', [
+      { type: 'thread.started', thread_id: 't' },
+      { type: 'turn.started' },
+      { type: 'error', message: 'Reconnecting... 2/5 (stream disconnected before completion: Incomplete response returned, reason: max_output_tokens)' },
+    ], "  setTimeout(() => process.stdout.write(JSON.stringify({ type: 'error', message: 'second attempt' }) + String.fromCharCode(10)), 20000);");
+    const started = Date.now();
+    await withScript(file, async () => {
+      const outcome = await upstreamBranch(liveConfig(CLI_ENV)).generate({ prompt: PROMPT, request: { model: 'gpt-6-astra', system: 'S', user: PROMPT } });
+      expect(outcome.ok).toBe(false);
+      if (outcome.ok) return;
+      expect(outcome.reason).toBe('MALFORMED_RESPONSE');
+      expect(outcome.detail).toContain('max_output_tokens');
+    });
+    expect(Date.now() - started).toBeLessThan(15_000);
+  }, 30_000);
+
   it('vrátí tělo z agent_message, účtenku z turn.completed a jméno modelu i úsilí předá procesu', async () => {
     const file = fakeCodex('ok', okStream);
     // Klíč aplikace v prostředí serveru: codex ho vidět nesmí (`ship-codexcli`).
