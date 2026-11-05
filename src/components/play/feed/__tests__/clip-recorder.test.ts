@@ -5,7 +5,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CLIP_FPS, CLIP_MAX_BYTES, CLIP_MS, clipsAllowed, clipType, recordClip, type Recorder } from '../clip-recorder';
+import { CLIP_FPS, CLIP_MAX_BYTES, CLIP_MS, clipsAllowed, clipType, frameMeter, markClipsSlow, recordClip, type Recorder, SLOW_KEY, SMOOTH_FPS, SMOOTH_WINDOW_MS } from '../clip-recorder';
 
 const MP4 = 'video/mp4;codecs=avc1.42E01E';
 const VP9 = 'video/webm;codecs=vp9';
@@ -94,6 +94,88 @@ describe('clipsAllowed', () => {
     expect(clipsAllowed(env({ recorder: fakeRecorder([]).Recorder }))).toBe(false);
     expect(clipsAllowed(env({ reduce: true }))).toBe(false);
     expect(clipsAllowed(env({ visibility: 'hidden' }))).toBe(false);
+  });
+
+  it('a device where recording broke the frame rate never records again; blocked storage does not stop clips', () => {
+    const store = new Map<string, string>();
+    const storage = { getItem: (key: string) => store.get(key) ?? null, setItem: (key: string, value: string) => void store.set(key, value) };
+    expect(clipsAllowed({ ...env(), localStorage: storage })).toBe(true);
+    markClipsSlow(storage);
+    expect(store.get(SLOW_KEY)).toBe('1');
+    expect(clipsAllowed({ ...env(), localStorage: storage })).toBe(false);
+    const blocked = {
+      getItem: () => {
+        throw new DOMException('denied', 'SecurityError');
+      },
+      setItem: () => {
+        throw new DOMException('denied', 'SecurityError');
+      },
+    };
+    expect(() => markClipsSlow(blocked)).not.toThrow();
+    expect(clipsAllowed({ ...env(), localStorage: blocked })).toBe(true);
+  });
+});
+
+describe('frameMeter', () => {
+  /** Ruční `requestAnimationFrame`: `frame(t)` pustí čekající tik s časem `t`. */
+  const manualRaf = () => {
+    let pending: FrameRequestCallback | null = null;
+    let cancelled = false;
+    return {
+      raf: (tick: FrameRequestCallback) => {
+        pending = tick;
+        return 1;
+      },
+      cancel: () => void (cancelled = true),
+      frame: (at: number) => {
+        const tick = pending;
+        pending = null;
+        if (!cancelled) tick?.(at);
+      },
+    };
+  };
+  const run = (meter: ReturnType<typeof manualRaf>, from: number, to: number, step: number) => {
+    for (let at = from; at <= to; at += step) meter.frame(at);
+  };
+
+  it('is smooth at 60 fps once half a window has run, not before', () => {
+    const clock = manualRaf();
+    const meter = frameMeter(clock.raf, clock.cancel);
+    expect(meter.smooth(0)).toBe(false);
+    run(clock, 0, 200, 1000 / 60);
+    expect(meter.smooth(200)).toBe(false);
+    run(clock, 1000 / 60 + 200, 1000, 1000 / 60);
+    expect(meter.smooth(1000)).toBe(true);
+  });
+
+  it('is not smooth below SMOOTH_FPS, and one long hitch among good frames is tolerated', () => {
+    const clock = manualRaf();
+    const meter = frameMeter(clock.raf, clock.cancel);
+    run(clock, 0, 1000, 1000 / 45);
+    expect(meter.smooth(1000)).toBe(false);
+    const other = manualRaf();
+    const hitched = frameMeter(other.raf, other.cancel);
+    run(other, 0, 800, 1000 / 60);
+    run(other, 1000, 1200, 1000 / 60);
+    expect(hitched.smooth(1200)).toBe(true);
+    expect(1000 / SMOOTH_FPS).toBeLessThan(1000 / 45);
+  });
+
+  it('a page that stopped producing frames for half a window is not smooth', () => {
+    const clock = manualRaf();
+    const meter = frameMeter(clock.raf, clock.cancel);
+    run(clock, 0, 1000, 1000 / 60);
+    expect(meter.smooth(1000)).toBe(true);
+    expect(meter.smooth(1000 + SMOOTH_WINDOW_MS / 2 - 50)).toBe(true);
+    expect(meter.smooth(1000 + SMOOTH_WINDOW_MS / 2 + 20)).toBe(false);
+  });
+
+  it('stop cancels the frame loop', () => {
+    const clock = manualRaf();
+    const meter = frameMeter(clock.raf, clock.cancel);
+    meter.stop();
+    run(clock, 0, 1000, 1000 / 60);
+    expect(meter.smooth(1000)).toBe(false);
   });
 });
 

@@ -5,6 +5,10 @@
  * Formát podle `MediaRecorder.isTypeSupported`: MP4/H.264 (telefon ho většinou kóduje hardwarem), jinak WebM/VP9,
  * jinak výchozí WebM prohlížeče. Klip nad 1,5 MB se zahodí. Nenahrává se při méně pohybu, na pozadí ani bez
  * `MediaRecorder` (Safari < 14.1 – karta pak ukáže plakát); nahrávání, které přestane platit (`keepGoing`), se zahodí.
+ *
+ * Plynulost (`frameMeter`): nahrává se jen při náhledu nad `SMOOTH_FPS`. Shodí-li nahrávání plynulost, klip se zahodí
+ * a zařízení už nenahrává (`markClipsSlow`). Měření 5. 11. (`evals/play/p71/feed/clip-fps.json`): bez zpomalení CPU
+ * nahrávání nestojí nic (59,9 → 59,9 FPS), s emulovaným zpomalením ×2 i ×4 srazí náhled na 3–7 FPS.
  */
 
 export const CLIP_MS = 3000;
@@ -30,17 +34,68 @@ export function clipType(recorder: Pick<Recorder, 'isTypeSupported'>): string | 
   return TYPES.find((type) => recorder.isTypeSupported(type)) ?? null;
 }
 
+/** Náhled pod touto plynulostí se nenahrává; nahrávání, které ho pod ni shodí, se zahodí. */
+export const SMOOTH_FPS = 55;
+/** Okno, ze kterého `frameMeter` bere medián snímku; plynulost platí, až je okno aspoň z poloviny plné. */
+export const SMOOTH_WINDOW_MS = 500;
+/** Značka v `localStorage`: nahrávání tady shodilo plynulost, zařízení už nenahrává. */
+export const SLOW_KEY = 'sayplay-clips-slow';
+
 interface ClipEnv {
   readonly MediaRecorder?: Recorder;
   matchMedia(query: string): { readonly matches: boolean };
   readonly document: { readonly visibilityState: DocumentVisibilityState };
+  readonly localStorage?: Pick<Storage, 'getItem'>;
 }
 
-/** Smí se nahrávat: prohlížeč má `MediaRecorder` s některým z formátů, neprosí o méně pohybu a stránka je vidět. */
+/** Smí se nahrávat: prohlížeč má `MediaRecorder` s některým z formátů, neprosí o méně pohybu, stránka je vidět a nahrávání tu dřív neshodilo plynulost. */
 export function clipsAllowed(env: ClipEnv = window as unknown as ClipEnv): boolean {
   const recorder = env.MediaRecorder;
   if (recorder === undefined || typeof recorder.isTypeSupported !== 'function' || clipType(recorder) === null) return false;
-  return !env.matchMedia('(prefers-reduced-motion: reduce)').matches && env.document.visibilityState === 'visible';
+  if (env.matchMedia('(prefers-reduced-motion: reduce)').matches || env.document.visibilityState !== 'visible') return false;
+  try {
+    return env.localStorage?.getItem(SLOW_KEY) !== '1';
+  } catch {
+    // Úložiště zakázané (soukromý režim): značka se nedá přečíst ani zapsat, plynulost hlídá `frameMeter` při každém klipu.
+    return true;
+  }
+}
+
+/** Nahrávání shodilo plynulost: zařízení už klipy nenahrává (karty ukazují offline klip nebo plakát). */
+export function markClipsSlow(storage: Pick<Storage, 'setItem'> = localStorage): void {
+  try {
+    storage.setItem(SLOW_KEY, '1');
+  } catch {
+    // Úložiště zakázané: na této stránce hlídá `frameMeter`, příští návštěva to zkusí znovu.
+  }
+}
+
+export interface FrameMeter {
+  /** Medián snímku za posledních `SMOOTH_WINDOW_MS` (včetně snímku, který ještě nepřišel) odpovídá aspoň `SMOOTH_FPS`. */
+  smooth(now?: number): boolean;
+  stop(): void;
+}
+
+/** Měří snímky stránky přes `requestAnimationFrame`. */
+export function frameMeter(raf: (tick: FrameRequestCallback) => number = requestAnimationFrame, cancel: (handle: number) => void = cancelAnimationFrame): FrameMeter {
+  const frames: number[] = [];
+  const tick = (now: number) => {
+    frames.push(now);
+    while (frames.length > 0 && now - frames[0] > SMOOTH_WINDOW_MS) frames.shift();
+    handle = raf(tick);
+  };
+  let handle = raf(tick);
+  return {
+    smooth(now = performance.now()) {
+      const recent = frames.filter((at) => now - at <= SMOOTH_WINDOW_MS);
+      if (recent.length < 2 || now - recent[0] < SMOOTH_WINDOW_MS / 2) return false;
+      // Zaseknutá stránka nové snímky nehlásí: půl okna bez snímku = neplynulá.
+      if (now - recent[recent.length - 1] > SMOOTH_WINDOW_MS / 2) return false;
+      const gaps = recent.slice(1).map((at, n) => at - recent[n]).sort((a, b) => a - b);
+      return gaps[Math.floor(gaps.length / 2)] <= 1000 / SMOOTH_FPS;
+    },
+    stop: () => cancel(handle),
+  };
 }
 
 export interface ClipJob {

@@ -15,7 +15,7 @@ import { type Camera, type Object3D, type PerspectiveCamera, type Scene, type We
 
 import { loadsPending, loadsSettled } from '../arcade/look/pending-loads';
 import { useXrHost } from '../xr/xr-context';
-import { CLIP_DELAY_MS, type ClipJob, clipsAllowed, recordClip } from './clip-recorder';
+import { CLIP_DELAY_MS, type ClipJob, clipsAllowed, frameMeter, markClipsSlow, recordClip } from './clip-recorder';
 import { captureFrame } from './snapshot-cache';
 import { createStageTunnel, type Frameloop, type StageTunnel } from './stage-tunnel';
 
@@ -249,7 +249,7 @@ export interface ClipRequest {
 const CLIP_POLL_MS = 250;
 
 /**
- * Klip z plátna hostitele (P71B T2): když náhled na kartě běží aspoň `CLIP_DELAY_MS`, nahraje `CLIP_MS`. Žádost pro
+ * Klip z plátna hostitele (P71B T2): když náhled na kartě běží plynule (`frameMeter`) aspoň `CLIP_DELAY_MS`, nahraje `CLIP_MS`. Žádost pro
  * jinou hru, odchod plátna, první vstup hráče (převzal hru) nebo stránka na pozadí nahrávání zruší a klip zahodí.
  */
 function useClip(element: HTMLElement | null, clip: ClipRequest | null) {
@@ -267,24 +267,33 @@ function useClip(element: HTMLElement | null, clip: ClipRequest | null) {
     window.addEventListener('pointerdown', touch, true);
     window.addEventListener('keydown', touch, true);
     const keepGoing = () => !touched && latest.current?.versionId === versionId && clipsAllowed();
+    const meter = frameMeter();
+    // Nahrávání, které shodí plynulost náhledu, se zahodí a zařízení už nenahrává.
+    const stillSmooth = () => {
+      if (meter.smooth()) return true;
+      markClipsSlow();
+      return false;
+    };
     let job: ClipJob | null = null;
     let since: number | null = null;
     const poll = window.setInterval(() => {
       const canvas = element.querySelector('canvas');
-      if (canvas === null || !keepGoing() || latest.current?.previewing() !== true) {
+      if (canvas === null || !keepGoing() || latest.current?.previewing() !== true || !meter.smooth()) {
         since = null;
         return;
       }
       since ??= performance.now();
       if (performance.now() - since < CLIP_DELAY_MS) return;
       window.clearInterval(poll);
-      job = recordClip(canvas, keepGoing);
+      job = recordClip(canvas, () => keepGoing() && stillSmooth());
       void job.done.then((blob) => {
+        meter.stop();
         if (blob !== null) latest.current?.done(versionId, blob);
       });
     }, CLIP_POLL_MS);
     return () => {
       window.clearInterval(poll);
+      meter.stop();
       job?.cancel();
       window.removeEventListener('pointerdown', touch, true);
       window.removeEventListener('keydown', touch, true);
