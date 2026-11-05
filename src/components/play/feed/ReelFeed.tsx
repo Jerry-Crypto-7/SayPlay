@@ -39,6 +39,7 @@ import { FeedNext, FeedPrev, feedSteps } from './feed-next';
 import { countCanvases, feedMode, previewFor, untaken } from './preview';
 import { ReelActions } from './ReelActions';
 import { type GameDetail, ReelCard } from './ReelCard';
+import { offlineClip } from './CardClip';
 import { cardImage, createSnapshotCache, indexedClips, SNAPSHOTS } from './snapshot-cache';
 import { type ClipRequest, StageHost } from './StageHost';
 import { warmGame } from './warm';
@@ -215,6 +216,9 @@ export function ReelFeed() {
       live = false;
     };
   }, [snapshots, clips]);
+
+  /** Klip karty, která nehraje (P71B T4): nahraný v tomto prohlížeči, jinak offline ze sady. */
+  const clipFor = (versionId: string) => clips.get(versionId) ?? offlineClip(versionId);
 
   // Klip náhledu aktivní karty (P71B T2): jednou za hru, dokud ho cache klipů nemá, jen když je feed vidět.
   const clipOf = current !== undefined && onScreen && clips.get(current.versionId) === undefined ? current.versionId : null;
@@ -570,6 +574,7 @@ export function ReelFeed() {
                   host={host}
                   preview={previews.get(game.versionId)}
                   shot={snapshots.get(game.versionId)}
+                  clip={clipFor(game.versionId)}
                 />
               ) : (
                 <div key={game.versionId} className="play-reel-gap" aria-hidden="true" />
@@ -582,7 +587,7 @@ export function ReelFeed() {
           </FeedNext.Provider>
         )}
       </StageHost>
-      <Feed games={games} index={index} known={known} shot={(versionId) => snapshots.get(versionId)} onPick={pick} />
+      <Feed games={games} index={index} known={known} shot={(versionId) => snapshots.get(versionId)} clip={clipFor} onPick={pick} />
       {thanks && (
         <p className="sp-toast" data-testid="feed-reported" role="status">
           Thanks. We&apos;ll take a look.

@@ -11,7 +11,7 @@
  */
 
 import Link from 'next/link';
-import { type RefObject, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { ChainWorld } from '@/play/chain/contract';
@@ -26,6 +26,8 @@ import { WithPlayEnv } from '../arcade/look/play-env';
 import { beatText, type FeedGame, moodTone } from '../Feed';
 import { Lineage } from '../Lineage';
 import { Icon } from '../ui';
+// Méně pohybu (T13): karta nepřehrává robota, hra stojí na tiku 0 a čeká na ťuk; klip karty nehraje.
+import { CardClip, useReducedMotion } from './CardClip';
 import { feedMode } from './preview';
 import { cardImage } from './snapshot-cache';
 import type { StageTunnel } from './stage-tunnel';
@@ -64,21 +66,6 @@ export function TapHint({ goal, beat = null }: { readonly goal: string; readonly
         Tap to play
       </span>
     </div>
-  );
-}
-
-const REDUCE = '(prefers-reduced-motion: reduce)';
-
-/** Méně pohybu (T13): karta nepřehrává robota, hra stojí na tiku 0 a čeká na ťuk. */
-function useReducedMotion(): boolean {
-  return useSyncExternalStore(
-    (change) => {
-      const query = window.matchMedia(REDUCE);
-      query.addEventListener('change', change);
-      return () => query.removeEventListener('change', change);
-    },
-    () => window.matchMedia(REDUCE).matches,
-    () => false,
   );
 }
 
@@ -231,11 +218,16 @@ function CardImage({ versionId, shot }: { readonly versionId: string; readonly s
   );
 }
 
-/** Plakát karty, která nehraje: obrázek, titul a cíl, když už je detail stažený. */
-function Poster({ game, spec, shot }: { readonly game: FeedGame; readonly spec: GameSpecV1 | null; readonly shot: string | undefined }) {
+/**
+ * Plakát karty, která nehraje: obrázek, titul a cíl, když už je detail stažený. S klipem (P71B T4) hraje přes
+ * obrázek video; při méně pohybu jen obrázek (`<picture>` vybere i snímek na šířku).
+ */
+function Poster({ game, spec, shot, clip }: { readonly game: FeedGame; readonly spec: GameSpecV1 | null; readonly shot: string | undefined; readonly clip?: string }) {
+  const reduced = useReducedMotion();
   return (
     <div className="play-poster play-reel-poster" data-testid="feed-poster" data-tone={moodTone(spec?.theme.mood ?? '')} aria-hidden="true">
       <CardImage versionId={game.versionId} shot={shot} />
+      {clip !== undefined && !reduced && <CardClip src={clip} poster={shot ?? cardImage(game.versionId).portrait} className="play-reel-shot" />}
       <span className="play-poster-title">{spec?.title ?? game.title}</span>
       {spec !== null && <span className="play-poster-goal">{spec.tutorial.goalLine}</span>}
     </div>
@@ -251,6 +243,7 @@ export function ReelCard({
   host,
   preview,
   shot,
+  clip,
 }: {
   readonly game: FeedGame;
   readonly index: number;
@@ -263,6 +256,8 @@ export function ReelCard({
   readonly preview: FeedPreview | null | undefined;
   /** Snímek scény z posledního odchodu z karty (`snapshot-cache.ts`). */
   readonly shot: string | undefined;
+  /** Klip, který karta přehrává, když nehraje (`CardClip`); aktivní karta hraje živě. */
+  readonly clip?: string;
 }) {
   const spec = detail !== undefined && detail !== 'error' ? detail.spec : null;
   const slide = useRef<HTMLDivElement | null>(null);
@@ -277,7 +272,7 @@ export function ReelCard({
           <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} round={round} shot={shot} />
         </div>
       ) : (
-        <Poster game={game} spec={spec} shot={shot} />
+        <Poster game={game} spec={spec} shot={shot} clip={clip} />
       )}
     </article>
   );

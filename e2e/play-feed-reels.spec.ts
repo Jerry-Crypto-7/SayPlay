@@ -516,3 +516,32 @@ test.describe('/play – bot preview in the feed', () => {
     });
   });
 });
+
+test.describe('/play – every card moves with a clip (P71B T4)', () => {
+  test('desktop: reel neighbours and Up next play their clips, the active card plays live', async ({ page, request }) => {
+    test.setTimeout(90_000);
+    // Hry s offline klipem (`feed-clips.json`) v pořadí feedu; publikované hry jiných testů klip nemají.
+    const offline = new Set(JSON.parse(readFileSync(join(process.cwd(), 'src/components/play/feed/feed-clips.json'), 'utf8')) as string[]);
+    const listed = (await (await request.get('/api/play/games?recent=40')).json()) as { games: { versionId: string }[] };
+    const rows = listed.games.filter((game) => offline.has(game.versionId)).slice(0, 6);
+    expect(rows.length).toBe(6);
+    await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows, next: null }) }));
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+
+    const times = () => page.$$eval('[data-testid="card-clip"]', (videos) => videos.map((video) => (video as HTMLVideoElement).currentTime));
+    await expect
+      .poll(
+        async () => {
+          const before = await times();
+          await page.waitForTimeout(500);
+          const after = await times();
+          return after.filter((time, at) => time > (before[at] ?? Number.POSITIVE_INFINITY)).length;
+        },
+        { timeout: 30_000 },
+      )
+      .toBeGreaterThanOrEqual(3);
+    await expect(page.locator('[data-testid="feed-current"] [data-testid="card-clip"]')).toHaveCount(0);
+  });
+});
