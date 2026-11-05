@@ -65,6 +65,15 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice(label, undefined, 'move_free', 'enemy')).toMatchObject({ level: 'identity', model });
   });
 
+  // P71E T2a: „shark“ byla kulatá hlava s ploutvičkami (3,8 × 3,8 × 5,3 m) – z kamery tmavá koule, ne žralok.
+  it('a shark is a long fish, not a round head', () => {
+    for (const choice of [heroChoice('shark', undefined, 'move_free'), heroChoice('shark', undefined, 'move_free', 'enemy')]) {
+      const [width, height, length] = choice.entry?.dims ?? [0, 0, 0];
+      expect(choice.model).toBe('cc0-shark');
+      expect(length / Math.max(width, height), 'length over the larger of width and height').toBeGreaterThan(2);
+    }
+  });
+
   it('records which heroes and foes still move only procedurally', () => {
     const heroes = sentences.sentences.map((sentence) => heroChoice(sentence.hero, genreOf(sentence.genre), CONTROL[sentence.genre] as string));
     const foes = FOES.map((label) => heroChoice(label, undefined, 'move_free', 'enemy'));

@@ -2155,22 +2155,19 @@
     {
       "assetId": "cc0-shark",
       "tags": [
-        "shark",
-        "seen:gas mask",
-        "seen:helmet",
-        "seen:diving mask"
+        "shark"
       ],
       "path": "/assets/worldstream/cc0/cc0-shark-lod1.glb",
       "bounds": {
         "min": [
-          -1.88656,
+          -1.14959,
           0,
-          -2.63674
+          -2.81693
         ],
         "max": [
-          1.88656,
-          3.77284,
-          2.63674
+          1.14959,
+          2.01287,
+          2.81693
         ]
       }
     },

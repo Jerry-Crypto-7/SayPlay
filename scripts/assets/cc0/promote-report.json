@@ -29,7 +29,7 @@
     {
       "assetId": "cc0-shark",
       "category": "animal",
-      "bytes": 147256
+      "bytes": 129696
     },
     {
       "assetId": "cc0-water",
@@ -1045,6 +1045,11 @@
       "assetId": "cc0-ship-ghost",
       "category": "monster",
       "bytes": 148132
+    },
+    {
+      "assetId": "cc0-ship-large",
+      "category": "vehicle",
+      "bytes": 161676
     },
     {
       "assetId": "cc0-skeleton",

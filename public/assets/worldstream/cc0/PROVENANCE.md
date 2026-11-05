@@ -11,7 +11,7 @@ CC0 1.0 needs no attribution; the credit below is voluntary.
 | `cc0-dragon` | dragon | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Dragon.gltf` | CC0-1.0 |
 | `cc0-flashlight` | flashlight | Quaternius (quaternius.com) | [quaternius-ultimate-gun](https://quaternius.com/packs/ultimategun.html) | `OBJ/Accessories/Flashlight.glb` | CC0-1.0 |
 | `cc0-knife` | knife | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/knife.gltf` | CC0-1.0 |
-| `cc0-shark` | shark | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Shark.glb` | CC0-1.0 |
+| `cc0-shark` | shark | Quaternius (quaternius.com) | [quaternius-poly-pizza](https://poly.pizza/m/YYsK3gRCBZ) | `https://static.poly.pizza/840dac4f-e6b5-4015-88d7-ceb940a4b90e.glb` (teeth dropped) | CC0-1.0 |
 | `cc0-water` | water | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/WaterTower.gltf` | CC0-1.0 |
 | `cc0-alien` | alien | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/alien.glb` | CC0-1.0 |
 | `cc0-asteroid` | asteroid | Kenney (www.kenney.nl) | [kenney-survival-kit](https://kenney.nl/assets/survival-kit) | `Models/GLB format/rock-a.glb` | CC0-1.0 |
@@ -379,6 +379,7 @@ CC0 1.0 needs no attribution; the credit below is voluntary.
 - `quaternius-ultimate-gun` – [licenses/quaternius-ultimate-gun.txt](licenses/quaternius-ultimate-gun.txt), https://creativecommons.org/publicdomain/zero/1.0/
 - `kaykit-restaurant-bits` – [licenses/kaykit-restaurant-bits.txt](licenses/kaykit-restaurant-bits.txt), https://creativecommons.org/publicdomain/zero/1.0/
 - `quaternius-cute-fish` – [licenses/quaternius-cute-fish.txt](licenses/quaternius-cute-fish.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-poly-pizza` – [licenses/quaternius-poly-pizza.txt](licenses/quaternius-poly-pizza.txt), https://creativecommons.org/publicdomain/zero/1.0/
 - `quaternius-zombie-apocalypse-kit` – [licenses/quaternius-zombie-apocalypse-kit.txt](licenses/quaternius-zombie-apocalypse-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
 - `kenney-space-kit` – [licenses/kenney-space-kit.txt](licenses/kenney-space-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
 - `kenney-survival-kit` – [licenses/kenney-survival-kit.txt](licenses/kenney-survival-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/

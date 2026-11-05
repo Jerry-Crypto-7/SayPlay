@@ -10723,14 +10723,11 @@
     },
     {
       "assetId": "cc0-shark",
-      "version": 1,
-      "hash": "0a3adae601eaa62bdf9d2e58bed9409ff9e3df0917a709cdb827d3df3f6fc09f",
+      "version": 2,
+      "hash": "2c30f4719cdc56122aaa517833d5834f82f5836f75a22fdf435bce4acb54e8dd",
       "label": "Shark (CC0, Quaternius)",
       "tags": [
-        "shark",
-        "seen:gas mask",
-        "seen:helmet",
-        "seen:diving mask"
+        "shark"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-shark.png",
@@ -10738,9 +10735,9 @@
         "source": "scripts/assets/cc0/normalize.mjs",
         "author": "Quaternius (quaternius.com)",
         "license": "CC0-1.0",
-        "licenseEvidence": "public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt",
-        "importedAt": "2026-09-24",
-        "sourceHash": "cd12a063dbae1848f2ba0956951d3f7c37a654f3912490331b3602c0767603c2"
+        "licenseEvidence": "public/assets/worldstream/cc0/licenses/quaternius-poly-pizza.txt",
+        "importedAt": "2026-11-05",
+        "sourceHash": "cce356775bae00fcba2342563ded5bf55aca0d54cde7013af49f1bf44ed3efd9"
       },
       "units": "meters",
       "up": "+Y",
@@ -10752,14 +10749,14 @@
       ],
       "bounds": {
         "min": [
-          -1.88656,
+          -1.14959,
           0,
-          -2.63674
+          -2.81693
         ],
         "max": [
-          1.88656,
-          3.77284,
-          2.63674
+          1.14959,
+          2.01287,
+          2.81693
         ]
       },
       "stretchableAxes": [],
@@ -10767,20 +10764,20 @@
         {
           "level": 0,
           "path": "/assets/worldstream/cc0/cc0-shark-lod0.glb",
-          "hash": "0a3adae601eaa62bdf9d2e58bed9409ff9e3df0917a709cdb827d3df3f6fc09f",
-          "bytes": 79040,
-          "triangles": 1310,
-          "decodedGeometryBytes": 77700,
+          "hash": "2c30f4719cdc56122aaa517833d5834f82f5836f75a22fdf435bce4acb54e8dd",
+          "bytes": 90600,
+          "triangles": 1708,
+          "decodedGeometryBytes": 82564,
           "decodedTextureBytes": 0,
           "minScreenPixels": 160
         },
         {
           "level": 1,
           "path": "/assets/worldstream/cc0/cc0-shark-lod1.glb",
-          "hash": "3f761feaab817951315883de581eea9de5f4e029292dbd7f55cd0520ed51b838",
-          "bytes": 68216,
-          "triangles": 868,
-          "decodedGeometryBytes": 66876,
+          "hash": "d8cc5761f898928860b0863fc7442280b5a029235bceb65bdb687b0c52b0a08c",
+          "bytes": 39096,
+          "triangles": 854,
+          "decodedGeometryBytes": 37740,
           "decodedTextureBytes": 0,
           "minScreenPixels": 0
         }
@@ -10798,14 +10795,14 @@
           "kind": "box",
           "bounds": {
             "min": [
-              -1.8865540027618408,
+              -1.1495851874351501,
               0,
-              -2.63673198223114
+              -2.816925883293152
             ],
             "max": [
-              1.8865540027618408,
-              3.7728359699249268,
-              2.63673198223114
+              1.1495851874351501,
+              2.012865722179413,
+              2.816925883293152
             ]
           }
         }
@@ -10814,12 +10811,12 @@
       "supportSurfaces": [],
       "parts": [
         {
-          "id": "part-0",
-          "node": "part_0",
+          "id": "part-13",
+          "node": "part_13",
           "pivot": [
-            0.10267400741577148,
-            1.2977659702301025,
-            0.35001909732818604
+            5.960464477539063e-8,
+            0.7243946194648743,
+            0.0029681921005249023
           ],
           "sockets": []
         }
