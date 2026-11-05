@@ -1,14 +1,14 @@
 # Sayplay – Say it. Play it.
 
-Type one sentence and play a short 3D game made from it within about two seconds, in the browser, with no account and no install. A full-detail version directed by AI follows in the background. Every game has its own link, can be sent to a friend as a dare and can be remixed with a sentence of your own.
+Type one sentence and play a short 3D game made from it within seconds, in the browser, with no account and no install. A full-detail version directed by AI follows in the background. Every game has its own link, can be sent to a friend as a dare and can be remixed with a sentence of your own.
 
 **Focus kategorie:** Browser-native creative tools
 
-**Submission draft, 8 October 2026.** The TODO(measure) lines are filled in from one run on the hosted director before submission. Third-party libraries, models, assets and APIs, and the AI tools that wrote the code, are listed in [DISCLOSURE.md](../../DISCLOSURE.md).
+**Submission draft, 5 November 2026.** The TODO(measure) lines are filled in from one run on the final build before submission. Third-party libraries, models, assets and APIs, and the AI tools that wrote the code, are listed in [DISCLOSURE.md](../../DISCLOSURE.md).
 
 ## What the judge does
 
-The judge opens `/play`, types a sentence or lets an idea card or **Surprise me** fill one in, and presses **Make it!**. Within one to two seconds the quick version is on screen: a word draft built on the server from the words of the sentence, compiled into a game, won by a robot player and published in about 0.2 s. The judge plays it at once with arrow keys or touch – runner, platform, flap, steer, arena, shooter, throw, timing, rhythm or duel – or, on a grid, by tapping where to go. **Show me how** replays the robot's winning run.
+The judge opens `/play`, types a sentence or lets an idea card or **Surprise me** fill one in, and presses **Make it!**. Within seconds the quick version is on screen: a word draft built on the server from the words of the sentence, compiled into a game, won by a robot player and published. The judge plays it at once with arrow keys or touch – runner, platform, flap, steer, arena, shooter, throw, timing, rhythm or duel – or, on a grid, by tapping where to go. **Show me how** replays the robot's winning run.
 
 The hero acts out the verb of the sentence where the judge can see it, the target of the action reacts, and the verb appears as a short caption the first time it happens. <!-- verify-before-submit -->
 
@@ -26,13 +26,13 @@ The director is gpt-6-astra through the paid OpenAI API. It sits behind a server
 
 ## Measured so far
 
-On 200 sentences that were sealed before any tuning and opened once on 4 October 2026 ([report](../../evals/play/p37/o8.md)), the quick version alone, without the AI director, produced a playable game for 200/200 sentences; the robot won 200/200 and a player who does nothing lost 200/200. A blind vision judge looking at a three-frame clip of the robot's run recognised the verb in 18/200 sentences and the hero in 39/118 of the sentences that name one. The quick version read the verb from the words in 98/200 sentences.
+On a fixed set of 200 test sentences scored on 4 October 2026 ([report](../../evals/play/p37/o8.md)), the quick version alone, without the AI director, produced a playable game for 200/200 sentences; the robot won 200/200 and a player who does nothing lost 200/200. A blind vision judge looking at a three-frame clip of the robot's run recognised the verb in 18/200 sentences and the hero in 39/118 of the sentences that name one. The quick version read the verb from the words in 98/200 sentences.
 
-TODO(measure): verb and hero recognised by the same judge on a fresh sealed set once the on-screen action and hero work is merged.
+TODO(measure): the quick version on the same 200 sentences, rerun on the final build.
 
-TODO(measure): median time until the full-detail version is on screen, from one run on the hosted director.
+TODO(measure): median time until the full-detail version is on screen, from one run of 20 sentences on the final build with gpt-6-astra.
 
-TODO(measure): cost per full-detail version from the provider's bill for that run.
+TODO(measure): cost per full-detail version from the spend ledger of that run.
 
 ## What this does not claim
 

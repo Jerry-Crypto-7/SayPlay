@@ -1,14 +1,14 @@
 # Sayplay – Say it. Play it.
 
-Write one sentence and get a short 3D game you can play in the browser within about two seconds. An AI-directed version of the same idea follows in the background. Games have their own links, appear in a vertical feed, and can be remixed with a sentence of your own – no account, no install.
+Write one sentence and get a short 3D game you can play in the browser within seconds. An AI-directed version of the same idea follows in the background. Games have their own links, appear in a vertical feed, and can be remixed with a sentence of your own – no account, no install.
 
-**Status on 29 September 2026:** working prototype, not yet submitted. The measurements below date from 24–25 September and will be replaced by one run after the AI director moves to hosted infrastructure. The known gaps are listed under [Known issues](#known-issues); nothing below claims more than was measured.
+**Status on 5 November 2026:** working prototype, not yet submitted. The AI director is gpt-6-astra through the paid OpenAI API. The measurements below date from 24–25 September and will be replaced by one run on the final build. The known gaps are listed under [Known issues](#known-issues); nothing below claims more than was measured.
 
 ## What you can do
 
 1. **Open `/play`** (the root `/` redirects there). Type a sentence, or let an idea card or **Surprise me** fill one in.
-2. **Play the instant version.** A deterministic draft built from the words of the sentence is compiled, checked by a robot player and published in 0.2 s on the server; the page shows the game in 1–2 s.
-3. **Get the AI version.** In the background a model picks the control, add-ons, look, setting, roles and goal (`PLAY_DIRECTOR_MODE=compact`, the default). The same compiler and robot check run on it before it is published as a child of the draft.
+2. **Play the instant version.** A deterministic draft built from the words of the sentence is compiled, checked by a robot player and published on the server; on a local production build the page showed the game in 1.2–2.0 s (see [Verified behaviour](#verified-behaviour)).
+3. **Get the AI version.** In the background the AI director (gpt-6-astra through the paid OpenAI API) picks the control, add-ons, look, setting, roles and goal (`PLAY_DIRECTOR_MODE=compact`, the default). The same compiler and robot check run on it before it is published as a child of the draft.
 4. **Win or lose, then change one thing.** Replay, a one-tap remix chip ("Make it harder", "Swap the enemy", …) or a remix sentence of your own; every remix is a new game with a link back to its parent.
 5. **Share or scroll.** Each game has a link (`/play/<id>`) with a preview image; the feed shows AI-directed games one per screen.
 
@@ -45,7 +45,7 @@ More detail: [docs/play/director.md](docs/play/director.md), [docs/play/ARCADE.m
 
 ## Known issues
 
-- **The live model is not yet permanently hosted.** The hosted demo reaches the model through a temporary connection; when it is down every game stays the instant draft.
+- **The AI version is capped.** The director runs under a server-side spend cap and a daily count per visitor; once either is reached, games stay the instant draft.
 - **Drafts ignore unknown verbs.** Without the AI version, sentences whose verb the draft does not know become a collect game with default items.
 - **The setting is rarely visible** in the first frame (see the vision judge row above).
 - **Spawned projectiles are not drawn** (found in code review).
