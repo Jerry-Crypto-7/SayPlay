@@ -2,7 +2,7 @@
  "viewport": "390x844",
  "second": 3,
  "renderer": "d3d11",
- "takenAt": "2026-11-05T18:27:13.191Z",
+ "takenAt": "2026-11-05T19:58:51.875Z",
  "rows": [
   {
    "id": "flap",
@@ -17,7 +17,7 @@
    "file": "flap.png",
    "tick": 180,
    "runState": "running",
-   "calls": 79,
+   "calls": 92,
    "glb": [
     "/assets/worldstream/game/coin-lod1.glb",
     "/assets/worldstream/game/finish-flag-lod1.glb",
@@ -29,9 +29,7 @@
     "/assets/worldstream/gen3d/gen3d-windmill-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 21.62366845047294,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "voyage",
@@ -46,10 +44,11 @@
    "file": "voyage.png",
    "tick": 180,
    "runState": "running",
-   "calls": 46,
+   "calls": 92,
    "glb": [
     "/assets/worldstream/cc0/cc0-boat-row-lod1.glb",
     "/assets/worldstream/cc0/cc0-shark-lod1.glb",
+    "/assets/worldstream/cc0/cc0-ship-large-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-barnacle-rock-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-basalt-column-rock-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-finish-banner-lod1.glb",
@@ -61,14 +60,11 @@
     "/assets/worldstream/gen3d-p37d/gen3d-sea-rock-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-seaweed-lod1.glb",
     "/assets/worldstream/gen3d/gen3d-lighthouse-lod1.glb",
-    "/assets/worldstream/gen3d/gen3d-pirate-ship-lod1.glb",
     "/assets/worldstream/gen3d/gen3d-sailboat-lod1.glb",
     "/assets/worldstream/rigged/blocky-robot.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 0.2886002886002886,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "defense",
@@ -83,16 +79,14 @@
    "file": "defense.png",
    "tick": 180,
    "runState": "running",
-   "calls": 80,
+   "calls": 118,
    "glb": [
-    "/assets/worldstream/gen3d-p37d/gen3d-castle-ruin-wall-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-wyvern-lod1.glb",
-    "/assets/worldstream/rigged/knight.glb"
+    "/assets/worldstream/rigged/knight.glb",
+    "/assets/worldstream/stone-wall-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 26.97483675782955,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "hop",
@@ -107,7 +101,7 @@
    "file": "hop.png",
    "tick": 180,
    "runState": "running",
-   "calls": 27,
+   "calls": 51,
    "glb": [
     "/assets/worldstream/cc0/cc0-chicken-lod1.glb",
     "/assets/worldstream/cc0/cc0-pine-lod1.glb",
@@ -118,9 +112,7 @@
     "/assets/worldstream/gen3d/gen3d-bald-eagle-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 33.04481515852769,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "quest",
@@ -135,7 +127,7 @@
    "file": "quest.png",
    "tick": 180,
    "runState": "running",
-   "calls": 26,
+   "calls": 63,
    "glb": [
     "/assets/worldstream/cc0/cc0-bush-lod1.glb",
     "/assets/worldstream/cc0/cc0-grass-lod1.glb",
@@ -143,7 +135,6 @@
     "/assets/worldstream/gen3d-p37d/gen3d-armor-rack-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-beech-tree-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-castle-banner-lod1.glb",
-    "/assets/worldstream/gen3d-p37d/gen3d-castle-ruin-wall-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-castle-tower-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-gargoyle-lod1.glb",
     "/assets/worldstream/gen3d-p37d/gen3d-mossy-boulder-lod1.glb",
@@ -164,9 +155,7 @@
     "/assets/worldstream/stone-wall-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 0.15533739281662365,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "shark",
@@ -181,7 +170,7 @@
    "file": "shark.png",
    "tick": 180,
    "runState": "running",
-   "calls": 24,
+   "calls": 50,
    "glb": [
     "/assets/worldstream/cc0/cc0-boat-row-lod1.glb",
     "/assets/worldstream/cc0/cc0-goldfish-lod1.glb",
@@ -199,9 +188,7 @@
     "/assets/worldstream/gen3d/gen3d-sailboat-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 40.42521335529271,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "golf-ball",
@@ -216,7 +203,7 @@
    "file": "golf-ball.png",
    "tick": 180,
    "runState": "running",
-   "calls": 53,
+   "calls": 57,
    "glb": [
     "/assets/worldstream/game/finish-flag-lod1.glb",
     "/assets/worldstream/game/tire-barrier-lod1.glb",
@@ -226,9 +213,7 @@
     "/assets/worldstream/gen3d-p37d/gen3d-wooden-stile-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 39.18792254097223,
-   "quality": "medium"
+   "errors": []
   },
   {
    "id": "cat",
@@ -243,7 +228,7 @@
    "file": "cat.png",
    "tick": 180,
    "runState": "running",
-   "calls": 96,
+   "calls": 127,
    "glb": [
     "/assets/worldstream/cc0/cc0-bus-lod1.glb",
     "/assets/worldstream/cc0/cc0-bush-lod1.glb",
@@ -291,9 +276,7 @@
     "/assets/worldstream/townhouse-lod1.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 18.82151428578726,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "dog",
@@ -308,7 +291,7 @@
    "file": "dog.png",
    "tick": 180,
    "runState": "running",
-   "calls": 52,
+   "calls": 77,
    "glb": [
     "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
     "/assets/worldstream/cc0/cc0-bush-lod1.glb",
@@ -341,9 +324,7 @@
     "/assets/worldstream/rigged/pet-dog.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 29.41147147115232,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "frog",
@@ -358,7 +339,7 @@
    "file": "frog.png",
    "tick": 180,
    "runState": "running",
-   "calls": 39,
+   "calls": 66,
    "glb": [
     "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
     "/assets/worldstream/cc0/cc0-bush-lod1.glb",
@@ -388,9 +369,7 @@
     "/assets/worldstream/rigged/blocky-robot.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 30.458576336472873,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "penguin",
@@ -405,7 +384,7 @@
    "file": "penguin.png",
    "tick": 180,
    "runState": "running",
-   "calls": 72,
+   "calls": 99,
    "glb": [
     "/assets/worldstream/cc0/cc0-sled-lod1.glb",
     "/assets/worldstream/game/crystal-lod1.glb",
@@ -428,9 +407,7 @@
     "/assets/worldstream/rigged/pet-penguin.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 23.456137024212115,
-   "quality": "low"
+   "errors": []
   },
   {
    "id": "horse",
@@ -445,7 +422,7 @@
    "file": "horse.png",
    "tick": 180,
    "runState": "running",
-   "calls": 43,
+   "calls": 86,
    "glb": [
     "/assets/worldstream/cc0/cc0-bee-lod1.glb",
     "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
@@ -475,9 +452,7 @@
     "/assets/worldstream/rigged/q-horse.glb"
    ],
    "failed": [],
-   "errors": [],
-   "fps": 28.14464157902062,
-   "quality": "low"
+   "errors": []
   }
  ]
 }
