@@ -564,4 +564,35 @@ test.describe('/play – every card moves with a clip (P71B T4)', () => {
     expect(visiblePlaying).toBeLessThanOrEqual(1);
     await expect(page.locator('[data-testid="feed-current"] [data-testid="card-clip"]')).toHaveCount(0);
   });
+
+  test('a preview window that ends in a win stays a preview: the reel never locks (R1, minigolf)', async ({ page }) => {
+    test.setTimeout(90_000);
+    // Vestavěná hra „Mini Golf Pirate Ship“: robot v okně náhledu míček potopí, pak 600 ms pauza a znovu.
+    await page.goto('/play?g=269115f5704c4d98185c34e16fda6298');
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => window.__playFeed?.().mode === 'preview', undefined, { timeout: 60_000 });
+    const seen = await page.evaluate(
+      () =>
+        new Promise<{ modes: string[]; locked: number; pullTouch: string[] }>((resolve) => {
+          const modes = new Set<string>();
+          const pullTouch = new Set<string>();
+          let locked = 0;
+          const started = performance.now();
+          const tick = () => {
+            modes.add(window.__playFeed!().mode);
+            const reel = document.querySelector('[data-testid="feed-reel"]');
+            if (reel !== null && getComputedStyle(reel).overflowY === 'hidden') locked += 1;
+            const pull = document.querySelector('[data-testid="feed-current"] [data-testid="minigolf-pull"]');
+            if (pull !== null) pullTouch.add(getComputedStyle(pull).touchAction);
+            if (performance.now() - started < 6000) setTimeout(tick, 50);
+            else resolve({ modes: [...modes], locked, pullTouch: [...pullTouch] });
+          };
+          tick();
+        }),
+    );
+    expect(seen.modes, 'feed mode over two preview windows').toEqual(['preview']);
+    expect(seen.locked, 'samples with the reel locked (overflow hidden)').toBe(0);
+    // Vrstva natažení minigolfu má `touch-action: none`; v náhledu musí svislý tah projít feedu.
+    expect(seen.pullTouch).toEqual(['pan-y']);
+  });
 });

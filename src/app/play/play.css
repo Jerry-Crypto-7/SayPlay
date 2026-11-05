@@ -3042,9 +3042,10 @@ button.play-feed-card {
 
 /* Gesta (T9): v náhledu robota tah po scéně posouvá feed (ťuk hru převezme), při
  * hraní patří tah hře a feed stojí – ven vede okraj karty, Esc, výsledek a Back. */
-/* Scéna má `touch-action: none` přímo v `style` (`ArcadeStage`, P54B) – náhled ho musí přebít. */
+/* Scéna má `touch-action: none` přímo v `style` (`ArcadeStage`, P54B) – náhled ho musí přebít, i u vrstev
+ * hry uvnitř (natažení minigolfu `minigolf-pull`, P71B R1): `none` na potomkovi tah feedu zastaví. */
 /* Méně pohybu (T13, `data-still`): hra stojí na tiku 0 s `play-first-prompt` – pro feed jako náhled. */
-.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) .play-stage {
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) :is(.play-stage, .play-stage *) {
   touch-action: pan-y !important;
 }
 
