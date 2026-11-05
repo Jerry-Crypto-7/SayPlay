@@ -243,6 +243,7 @@ export function TimingScene({
   const placed = useRef<(Object3D | null)[]>([]);
   // Hračková póza (P45D T11): vnitřní skupiny jezdce a položených dílů, póza minulého snímku a kolo vrchního dílu.
   const sliderPose = useRef<Group | null>(null);
+  const riderScale = useRef<Group | null>(null);
   const placedPoses = useRef<(Group | null)[]>([]);
   const heroPose = useRef<Group | null>(null);
   const toyPose = useRef<ToyPose | null>(null);
@@ -276,6 +277,8 @@ export function TimingScene({
       // Kamera kouká po +z, takže +x jádra jde na obrazovce vlevo – zrcadlí se jako u běžce.
       group.position.set(-lerp(prev[s + BODY.x] as number, state[s + BODY.x] as number, alpha) / UNIT, (state[s + BODY.y] as number) / UNIT, 0);
       group.scale.x = (state[s + BODY.w] as number) / UNIT / Math.max(0.001, sliderInit.w);
+      // Věc na ručičce vrací jen změnu šířky z jádra (P71C T3) – `1 / sliderInit.w` ji roztáhl pětkrát do pruhu.
+      if (riderScale.current !== null) riderScale.current.scale.x = 1 / Math.max(0.001, group.scale.x);
       group.visible = (state[s + BODY.vx] as number) !== 0;
     }
     placed.current.forEach((mesh, round) => {
@@ -377,7 +380,7 @@ export function TimingScene({
           )}
           {rider === undefined ? null : (
             // Ručičku mění jádro v šířce (`scale.x`); věc nad ní tu změnu vrací, ať se nezplacatí.
-            <group position={[0, blockH, 0]} scale={[1 / Math.max(0.001, sliderInit.w), 1, 1]} userData={{ item: 'block' }}>
+            <group ref={riderScale} position={[0, blockH, 0]} userData={{ item: 'block' }}>
               {rider(blockH, blockH, depth)}
             </group>
           )}
