@@ -1,18 +1,18 @@
 {
  "about": "P45B T11: first answers of the compact director on local gpt-oss-20b for evals/play/p45b/director-sentences.json, judged offline by judgeLogicAnswer (src/play/director/__fixtures__/logic-answers.ts) – raw without and repaired with the phase-entry repair of the read path (withPhaseEntries). Target: >= 20/25 repaired write logic and pass with logic_proved. See evals/play/p45b/README.md.",
  "recordedAt": "2026-10-09T11:42:16.491Z",
- "judgedAt": "2026-10-15T10:30:00.000Z",
- "commit": "41159424",
+ "judgedAt": "2026-11-05T07:45:07.780Z",
+ "commit": "72d0b0ba",
  "model": "gpt-oss-20b",
  "endpoint": "http://127.0.0.1:8792",
  "promptVersion": "3cf3f465",
  "directorPromptVersion": "dff25958",
  "raw": {
-  "hit": 1,
+  "hit": 2,
   "of": 25
  },
  "repaired": {
-  "hit": 2,
+  "hit": 3,
   "of": 25
  },
  "before": {
@@ -54,7 +54,7 @@
     "night"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:day, phase:day, phase:night): bot_wins: the bot lost at tick 4321, -5 m into the track",
+   "why": "the game does not keep the answer's logic (timer:day, phase:day, phase:night): bot_wins: the bot lost at tick 1681, -5 m into the track",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "collect",
    "ms": 10157
@@ -141,7 +141,7 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): bot_wins: the bot lost at tick 1480, 4 m into the track",
+   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): bot_wins: the bot lost at tick 1921, -2 m into the track",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "defend",
    "ms": 8872
@@ -178,7 +178,7 @@
    "rawPassed": false,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:battle, phase:first, phase:second): bot_wins: the bot lost at tick 998, 0 m into the track",
+   "why": "the game does not keep the answer's logic (timer:battle, phase:first, phase:second): bot_wins: the bot lost at tick 1016, 0 m into the track",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "defeat",
    "ms": 9611
@@ -241,18 +241,18 @@
     "second"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:escape_timer, phase:first, phase:second): bot_wins: the bot lost at tick 122, -8 m into the track",
+   "why": "the game does not keep the answer's logic (timer:escape_timer, phase:first, phase:second): idle_loses: a player who does nothing wins at tick 240 – the game plays itself",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "escape",
    "ms": 14535
   },
   {
    "id": "s008",
-   "passed": false,
-   "rawPassed": false,
+   "passed": true,
+   "rawPassed": true,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:escape, phase:first, phase:second): bot_wins: the bot lost at tick 3326, 557 m into the track",
+   "why": null,
    "fallbackReason": null,
    "axis": "escape",
    "ms": 15067
@@ -278,7 +278,7 @@
     "running"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave, phase:start, phase:running): bot_wins: the bot lost at tick 186, 36 m into the track",
+   "why": "the game does not keep the answer's logic (timer:wave, phase:start, phase:running): bot_wins: the bot lost at tick 306, 63 m into the track",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "race",
    "ms": 13657
@@ -291,7 +291,7 @@
     "active"
    ],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave, phase:start, phase:active): bot_wins: the bot lost at tick 3027, 0 m into the track",
+   "why": "the game does not keep the answer's logic (timer:wave, phase:start, phase:active): bot_wins: the bot lost at tick 3063, 0 m into the track",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "defend",
    "ms": 10571
@@ -328,7 +328,7 @@
    "rawPassed": false,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): bot_wins: the bot lost at tick 4423, 2 m into the track",
+   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): bot_wins: the bot lost at tick 4999, 2 m into the track",
    "fallbackReason": "VERB_UNPROVED",
    "axis": "defeat",
    "ms": 16174

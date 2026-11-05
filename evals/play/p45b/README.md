@@ -185,8 +185,11 @@ Stejný příkaz a soud jako T11. `director-logic.json` nese nový soud (`raw`, 
 | 4 | nový `LOGIC EXAMPLE` + věta pravidla v systémovém promptu | 25/25 | 1/25 (ma-048) | 1/25 |
 | 5 | + řádek `Course:` popisuje celé zapojení a zakazuje výhru/prohru na časovači a fázi | 24/25 | **1/25** (s008) | **1/25** |
 | 5, přesouzeno 15. 10. | stejné odpovědi nad P46 (tratě P46D, obtížnost P46H) | 24/25 | 1/25 | 2/25 |
+| 5, přesouzeno 5. 11. | stejné odpovědi nad férovým startem P70A T3 (`genre.v8`) | 24/25 | 2/25 | 3/25 |
 
 **15. 10.:** po demu 12. 10. bylo 2/3; s008 teď prohraje (robot v 557. metru delší a těžší trati P46D/H), takže 1/2. Majitel rozhodl přijmout a obtížnost neměnit.
+
+**5. 11.:** férový start (3 s ochrana, pronásledovatel až po ní) vrátil s008 výhru → 2/3. Odpovědi jsou tytéž (záznam 5), jen přesouzené (`P45B_JUDGE_ONLY=1`).
 
 **Nový příklad** (`prompt.ts`): fáze `day` vstoupí v tiku 0 → `sunset` spustí časovač `dusk` jednou →
 `fall` na doběhnutí přepne do `night` → `swarm` na vstup do noci pustí jednoho netopýra od okraje.
