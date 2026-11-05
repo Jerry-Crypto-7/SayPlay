@@ -6,7 +6,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type ClipVideo, clipInSight, offlineClip } from '../CardClip';
+import { type ClipTurns, type ClipVideo, clipInSight, createClipTurns, joinClipTurns, offlineClip } from '../CardClip';
 import offline from '../feed-clips.json';
 import { ReelCard } from '../ReelCard';
 import { createStageTunnel } from '../stage-tunnel';
@@ -58,6 +58,66 @@ describe('clipInSight', () => {
   });
 });
 
+describe('clip turns (P71B T5: two visible playing clips cost the live card 30 FPS)', () => {
+  const playing = (video: ReturnType<typeof fakeVideo>) => {
+    const plays = video.play.mock.invocationCallOrder.at(-1) ?? 0;
+    const pauses = video.pause.mock.invocationCallOrder.at(-1) ?? 0;
+    return plays > pauses;
+  };
+  const visibleClip = (turns: ClipTurns, src: string) => {
+    const video = fakeVideo();
+    const clip = joinClipTurns(video, src, turns);
+    clip.reach(true);
+    clip.view(true);
+    return { video, clip };
+  };
+
+  it('of two visible clips only one plays, the other stands with its clip loaded', () => {
+    const turns = createClipTurns();
+    const a = visibleClip(turns, '/a.mp4');
+    const b = visibleClip(turns, '/b.mp4');
+    expect(playing(a.video)).toBe(true);
+    expect(playing(b.video)).toBe(false);
+    expect(b.video.getAttribute('src')).toBe('/b.mp4');
+  });
+
+  it('the end of a loop passes the turn to the next visible clip and round again; a lone clip replays', () => {
+    const turns = createClipTurns();
+    const a = visibleClip(turns, '/a.mp4');
+    const b = visibleClip(turns, '/b.mp4');
+    a.clip.ended();
+    expect([playing(a.video), playing(b.video)]).toEqual([false, true]);
+    // Konec smyčky klipu, který není na tahu, tah nebere.
+    a.clip.ended();
+    expect([playing(a.video), playing(b.video)]).toEqual([false, true]);
+    b.clip.ended();
+    expect([playing(a.video), playing(b.video)]).toEqual([true, false]);
+
+    const lone = visibleClip(createClipTurns(), '/c.mp4');
+    const before = lone.video.play.mock.calls.length;
+    lone.clip.ended();
+    expect(lone.video.play.mock.calls.length).toBeGreaterThan(before);
+    expect(playing(lone.video)).toBe(true);
+  });
+
+  it('a clip leaving the view passes the turn on and loops freely while still in reach', () => {
+    const turns = createClipTurns();
+    const a = visibleClip(turns, '/a.mp4');
+    const b = visibleClip(turns, '/b.mp4');
+    a.clip.view(false);
+    expect([playing(a.video), playing(b.video)]).toEqual([true, true]);
+    // Mimo obraz hraje dokola, tah nechá být.
+    a.clip.ended();
+    expect([playing(a.video), playing(b.video)]).toEqual([true, true]);
+    // Unmount klipu na tahu předá tah dál.
+    const c = visibleClip(turns, '/c.mp4');
+    expect(playing(c.video)).toBe(false);
+    b.clip.leave();
+    expect(b.video.hasAttribute('src')).toBe(false);
+    expect(playing(c.video)).toBe(true);
+  });
+});
+
 describe('offlineClip', () => {
   it('only games in feed-clips.json have an offline clip', () => {
     expect(offline.length).toBeGreaterThan(0);
@@ -71,14 +131,15 @@ describe('ReelCard with a clip', () => {
   const card = (active: boolean, clip: string | undefined) =>
     renderToStaticMarkup(<ReelCard game={game} index={1} active={active} detail={undefined} live host={createStageTunnel(null)} preview={undefined} shot={undefined} clip={clip} />);
 
-  it('an inactive card plays the clip over its poster: muted, inline, looping, nothing loaded up front', () => {
+  it('an inactive card plays the clip over its poster: muted, inline, looped by its turn, nothing loaded up front', () => {
     const html = card(false, '/play/feed-clips/a.mp4');
     // Atributy HTML nerozlišují velikost písmen (React píše `playsInline`).
     const video = (/<video[^>]*>/.exec(html)?.[0] ?? '').toLowerCase();
     expect(video).toContain('data-testid="card-clip"');
     expect(video).toMatch(/\smuted[\s=>]/);
     expect(video).toMatch(/\splaysinline[\s=>]/);
-    expect(video).toMatch(/\sloop[\s=>]/);
+    // Smyčku dělá `ended` (tah mezi viditelnými klipy), `loop` by konec klipu nikdy neohlásil.
+    expect(video).not.toMatch(/\sloop[\s=>]/);
     expect(video).toContain('preload="none"');
     expect(video).toMatch(/poster="[^"]+"/);
     // `src` dostane až video v dosahu (`clipInSight`).

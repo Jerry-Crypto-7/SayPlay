@@ -530,18 +530,38 @@ test.describe('/play – every card moves with a clip (P71B T4)', () => {
     await page.goto(`/play?g=${rows[0].versionId}`);
     await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
 
-    const times = () => page.$$eval('[data-testid="card-clip"]', (videos) => videos.map((video) => (video as HTMLVideoElement).currentTime));
-    await expect
-      .poll(
-        async () => {
-          const before = await times();
-          await page.waitForTimeout(500);
-          const after = await times();
-          return after.filter((time, at) => time > (before[at] ?? Number.POSITIVE_INFINITY)).length;
-        },
-        { timeout: 30_000 },
-      )
-      .toBeGreaterThanOrEqual(3);
+    // Klipy v obraze se střídají (P71B T5: dvě naráz viditelná hrající videa srazí živou kartu na 30 FPS),
+    // soused v reelu mimo obraz hraje dokola.
+    const sample = () =>
+      page.$$eval('[data-testid="card-clip"]', (videos) => {
+        const reel = document.querySelector('[data-testid="feed-reel"]')?.getBoundingClientRect();
+        const window_ = { top: 0, left: 0, bottom: innerHeight, right: innerWidth };
+        const meets = (rect: DOMRect, box: { top: number; left: number; bottom: number; right: number }) =>
+          rect.bottom > box.top && rect.top < box.bottom && rect.right > box.left && rect.left < box.right;
+        return videos.map((element) => {
+          const video = element as HTMLVideoElement;
+          const rect = video.getBoundingClientRect();
+          const inReel = video.closest('[data-testid="feed-reel"]') !== null;
+          return { time: video.currentTime, playing: !video.paused && !video.ended, inView: meets(rect, window_) && (!inReel || reel === undefined || meets(rect, reel)) };
+        });
+      });
+    await expect.poll(async () => (await sample()).some((clip) => clip.playing && clip.time > 0), { timeout: 30_000 }).toBe(true);
+    const played = new Map<number, number>();
+    let last = await sample();
+    let visiblePlaying = 0;
+    for (let tick = 0; tick < 48; tick += 1) {
+      await page.waitForTimeout(250);
+      const now = await sample();
+      now.forEach((clip, at) => {
+        const before = last[at]?.time ?? clip.time;
+        // Dohraný klip začne znovu od nuly.
+        played.set(at, (played.get(at) ?? 0) + (clip.time >= before ? clip.time - before : clip.time));
+      });
+      visiblePlaying = Math.max(visiblePlaying, now.filter((clip) => clip.playing && clip.inView).length);
+      last = now;
+    }
+    expect([...played.values()].filter((seconds) => seconds >= 0.5).length).toBeGreaterThanOrEqual(3);
+    expect(visiblePlaying).toBeLessThanOrEqual(1);
     await expect(page.locator('[data-testid="feed-current"] [data-testid="card-clip"]')).toHaveCount(0);
   });
 });
