@@ -21,7 +21,7 @@
  */
 
 import { useSearchParams } from 'next/navigation';
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameSpecV1 } from '@/play/spec';
@@ -39,8 +39,8 @@ import { FeedNext, FeedPrev, feedSteps } from './feed-next';
 import { countCanvases, feedMode, previewFor, untaken } from './preview';
 import { ReelActions } from './ReelActions';
 import { type GameDetail, ReelCard } from './ReelCard';
-import { cardImage, createSnapshotCache } from './snapshot-cache';
-import { StageHost } from './StageHost';
+import { cardImage, createSnapshotCache, indexedClips, SNAPSHOTS } from './snapshot-cache';
+import { type ClipRequest, StageHost } from './StageHost';
 import { warmGame } from './warm';
 
 const PAGE = 12;
@@ -97,7 +97,9 @@ export function ReelFeed() {
   const reel = useRef<HTMLDivElement | null>(null);
   const [onScreen, setOnScreen] = useState(true);
   const [snapshots] = useState(() => createSnapshotCache());
-  /** Nový snímek v `snapshots` – karty se překreslí. */
+  /** Klipy náhledů z aktivní karty (P71B T2), přes reload v IndexedDB. */
+  const [clips] = useState(() => createSnapshotCache(SNAPSHOTS, undefined, indexedClips()));
+  /** Nový snímek v `snapshots` nebo klip v `clips` – karty se překreslí. */
   const [, setShots] = useState(0);
   /** Příští posun k aktivní kartě je skok tlačítkem nebo klávesou – plynule. */
   const glide = useRef(false);
@@ -201,16 +203,35 @@ export function ReelFeed() {
     }
   }, [games, index, details, snapshots]);
 
-  // Snímky her z dřívějších návštěv (P56B T12): hraná nebo vytvořená hra nedostane `/og`.
+  // Snímky a klipy her z dřívějších návštěv (P56B T12, P71B T2): hraná nebo vytvořená hra nedostane `/og`.
   useEffect(() => {
     let live = true;
-    void snapshots.restore().then((count) => {
-      if (live && count > 0) setShots((shots) => shots + 1);
-    });
+    for (const cache of [snapshots, clips]) {
+      void cache.restore().then((count) => {
+        if (live && count > 0) setShots((shots) => shots + 1);
+      });
+    }
     return () => {
       live = false;
     };
-  }, [snapshots]);
+  }, [snapshots, clips]);
+
+  // Klip náhledu aktivní karty (P71B T2): jednou za hru, dokud ho cache klipů nemá, jen když je feed vidět.
+  const clipOf = current !== undefined && onScreen && clips.get(current.versionId) === undefined ? current.versionId : null;
+  const clip = useMemo<ClipRequest | null>(
+    () =>
+      clipOf === null
+        ? null
+        : {
+            versionId: clipOf,
+            previewing: () => document.querySelector(`[data-testid="feed-current"][data-version-id="${clipOf}"] [data-testid="play-demo"]`) !== null,
+            done: (versionId, blob) => {
+              clips.put(versionId, blob);
+              setShots((count) => count + 1);
+            },
+          },
+    [clipOf, clips],
+  );
 
   // Snímek scény, ze které hráč odchází (T8). `shown` drží hru, jejíž scéna je v plátně –
   // `StageHost` volá `onLeave` uprostřed commitu další karty, dřív než se `shown` přepíše.
@@ -530,7 +551,7 @@ export function ReelFeed() {
   );
   return (
     <section ref={root} className="play-pager" aria-label="Game feed" data-testid="feed-pager">
-      <StageHost onLeave={onLeave}>
+      <StageHost onLeave={onLeave} clip={clip}>
         {(host) => (
           <FeedNext.Provider value={next}>
           <FeedPrev.Provider value={prev}>

@@ -13,6 +13,8 @@
  * Hra ho uloží po prvních snímcích (`KeepFrame`, i na své stránce mimo feed),
  * odchod z karty ho přepíše; feed je po načtení obnoví (`restore`) do IndexedDB
  * nejvýš 20 nejnovějších. Úložiště, které selže, karta nepozná – zůstane `/og`.
+ *
+ * P71B T2: klipy aktivních karet (`clip-recorder.ts`) drží táž cache nad vlastní databází (`indexedClips`).
  */
 
 import { type RootState, useFrame } from '@react-three/fiber';
@@ -35,12 +37,20 @@ interface StoredFrame {
   readonly at: number;
 }
 
-const DB = { name: 'sayplay-frames', store: 'frames', version: 1 } as const;
+interface Shelf {
+  readonly name: string;
+  readonly store: string;
+  readonly version: number;
+}
 
-function openFrames(): Promise<IDBDatabase> {
+const FRAMES: Shelf = { name: 'sayplay-frames', store: 'frames', version: 1 };
+/** Klipy aktivních karet (P71B T2, `clip-recorder.ts`): vlastní databáze, ať snímky nemusí měnit verzi své. */
+const CLIPS: Shelf = { name: 'sayplay-clips', store: 'clips', version: 1 };
+
+function openShelf(shelf: Shelf): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB.name, DB.version);
-    request.onupgradeneeded = () => request.result.createObjectStore(DB.store);
+    const request = indexedDB.open(shelf.name, shelf.version);
+    request.onupgradeneeded = () => request.result.createObjectStore(shelf.store);
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
@@ -54,14 +64,14 @@ const finished = (tx: IDBTransaction): Promise<void> =>
   });
 
 /** Snímky v IndexedDB prohlížeče; drží `limit` nejnovějších. Bez IndexedDB (server, zakázané úložiště) nic neuloží. */
-export function indexedFrames(limit = SNAPSHOTS): FrameStore {
+export function indexedFrames(limit = SNAPSHOTS, shelf: Shelf = FRAMES): FrameStore {
   return {
     async save(versionId, blob) {
       try {
-        const db = await openFrames();
+        const db = await openShelf(shelf);
         try {
-          const tx = db.transaction(DB.store, 'readwrite');
-          const store = tx.objectStore(DB.store);
+          const tx = db.transaction(shelf.store, 'readwrite');
+          const store = tx.objectStore(shelf.store);
           store.put({ versionId, blob, at: Date.now() } satisfies StoredFrame, versionId);
           const all = store.getAll();
           all.onsuccess = () => {
@@ -78,10 +88,10 @@ export function indexedFrames(limit = SNAPSHOTS): FrameStore {
     },
     async load() {
       try {
-        const db = await openFrames();
+        const db = await openShelf(shelf);
         try {
-          const tx = db.transaction(DB.store, 'readonly');
-          const all = tx.objectStore(DB.store).getAll();
+          const tx = db.transaction(shelf.store, 'readonly');
+          const all = tx.objectStore(shelf.store).getAll();
           await finished(tx);
           return (all.result as StoredFrame[]).sort((a, b) => a.at - b.at).map((frame) => [frame.versionId, frame.blob] as const);
         } finally {
@@ -93,6 +103,9 @@ export function indexedFrames(limit = SNAPSHOTS): FrameStore {
     },
   };
 }
+
+/** Klipy aktivních karet v IndexedDB – týž strop `limit` nejnovějších jako snímky. */
+export const indexedClips = (limit = SNAPSHOTS): FrameStore => indexedFrames(limit, CLIPS);
 
 /** Uloží snímek hry přes reload; selhání úložiště spolkne. */
 export async function keepFrame(versionId: string, blob: Blob, store: FrameStore = indexedFrames()): Promise<void> {
