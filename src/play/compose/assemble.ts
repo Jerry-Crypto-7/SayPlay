@@ -18,14 +18,19 @@ export interface AssemblySource {
  * Movement the sentence itself decides, before any reading: the said one, a machine as the hero, or (P65 T6b) a race
  * with shooting and nobody named – „a racing game with guns“ drives and shoots, it does not run.
  */
+/**
+ * P71D T2: let, který domýšlí jen jméno letadla („a spaceship shoots asteroids“), nepřebije střelbu na věc věty –
+ * hraje střílečka. Kroužky s „Drag… to swim“ střelbu schovaly (QA 5. 11.). Pohyb řečený slovesem platí dál.
+ * Hláška `draft/unsupported.ts` takový let nepřizná (T6): hra ho nehraje záměrně, ne proto, že by chyběl.
+ */
+export function impliedFlight(intent: Intent, item: Intent['items'][number]): boolean {
+  if (item.verb !== 'glide' || intent.hero === null || item.actor !== intent.hero || heroClass(intent.hero) !== 'aircraft' || !item.said.toLowerCase().startsWith(intent.hero)) return false;
+  return !intent.negated.includes('shoot') && intent.items.some(other => other.essential && other.axis === 'action' && other.verb === 'shoot' && other.object !== null && (other.actor === intent.hero || other.actor === 'hero'));
+}
+
 export function saidMove(intent: Intent): Recipe['move'] | undefined {
   const items = intent.items.filter(item => item.essential);
-  // P71D T2: let, který domýšlí jen jméno letadla („a spaceship shoots asteroids“), nepřebije střelbu na věc věty –
-  // hraje střílečka. Kroužky s „Drag… to swim“ střelbu schovaly (QA 5. 11.). Pohyb řečený slovesem platí dál.
-  const aims = !intent.negated.includes('shoot') && items.some(item => item.axis === 'action' && item.verb === 'shoot' && item.object !== null && (item.actor === intent.hero || item.actor === 'hero'));
-  const craftOnly = (item: Intent['items'][number]): boolean =>
-    aims && item.verb === 'glide' && intent.hero !== null && item.actor === intent.hero && heroClass(intent.hero) === 'aircraft' && item.said.toLowerCase().startsWith(intent.hero);
-  const explicit = items.find(item => item.axis === 'move' && !craftOnly(item))?.verb as Recipe['move'] | undefined;
+  const explicit = items.find(item => item.axis === 'move' && !impliedFlight(intent, item))?.verb as Recipe['move'] | undefined;
   if (explicit !== undefined) return explicit;
   if (intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '')) return 'drive';
   const shoots = items.some(item => item.verb === 'shoot') && !intent.negated.includes('shoot');

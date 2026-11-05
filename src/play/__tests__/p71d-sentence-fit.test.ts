@@ -15,6 +15,7 @@ import { heroModel } from '@/play/arcade/models';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { singular } from '@/play/draft/lexicon';
+import { honestyForSpec } from '@/play/draft/unsupported';
 
 interface Case {
   readonly sentence: string;
@@ -133,5 +134,20 @@ describe('finding one thing is a quest, collecting many stays the arena (P71D T4
   it.each(['collect 10 crowns', 'find 5 keys', 'find all the coins in the forest'])('%s stays the arena collect', (sentence) => {
     const meta = draftGameSpecWithMeta(sentence, 1);
     expect(`${String(meta.genre?.genre)}.${String(meta.genre?.mode)}`).toBe('arena.collect');
+  }, 120_000);
+});
+
+// T6 v prohlížeči: správná hra a nad ní „Gliding isn't here yet“ / „Collecting isn't here yet“ – hláška počítala
+// let domyšlený ze jména lodi a „find“ přečtené jako sběr.
+describe('a sentence playing its own game shows no "isn\'t here yet" banner (P71D T6)', () => {
+  it.each(['a spaceship shoots asteroids in outer space', 'a rocket blasts meteors', 'a wizard explores a dungeon to find the lost crown', "search for the king's crown", 'a knight looks for the lost sword in the castle'])('%s', async (sentence) => {
+    expect(await honestyForSpec(sentence, draftGameSpecWithMeta(sentence, 1).spec, 1)).toBeNull();
+  }, 120_000);
+
+  it.each([
+    ['a spaceship shoots asteroids and knits a scarf', "Knitting isn't here yet – here's a shooting game."],
+    ['find the lost crown in the castle and knit a scarf', "Knitting isn't here yet – here's a quest."],
+  ])('%s still admits only what the game lacks', async (sentence, reason) => {
+    expect((await honestyForSpec(sentence, draftGameSpecWithMeta(sentence, 1).spec, 1))?.reason).toBe(reason);
   }, 120_000);
 });
