@@ -34,6 +34,8 @@ const MOVED_LATER: Readonly<Record<string, string>> = {
   e03: 'survivor',
   // P68R T5: obsluha zákazníků v podniku („Serve drinks at a busy beach bar“) je směna obchodu buildshift, ne stanice questu.
   s04: 'buildshift',
+  // P71D T4: najít jednu věc („Find the lost key in a haunted mansion“) je úkol s jedním cílem, ne sběr v aréně.
+  c09: 'quest.spatial',
 };
 
 /**
