@@ -2140,7 +2140,7 @@ button.play-version-switch__item:not(:disabled) {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  box-shadow: inset 0 0 64px 18px var(--sp-color-tomato);
+  box-shadow: inset 0 0 0 var(--sp-space-3) var(--sp-color-tomato);
   animation: play-hurt 450ms ease-out forwards;
 }
 

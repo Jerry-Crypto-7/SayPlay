@@ -369,9 +369,11 @@ function mountOverlay(host: HTMLElement): Overlay {
   const beam = make('railfps-beam', `${LAYER}left:50%;width:var(--sp-space-3);margin-left:calc(var(--sp-space-3) / -2);background:var(--sp-color-sun);clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);`);
   // Značka zásahu: čtyři šikmé čárky kolem prstence zaměřovače, barva v `--_tick`.
   const marker = make('railfps-hit-marker', `${LAYER}left:50%;width:var(--sp-space-16);height:var(--sp-space-16);margin:calc(var(--sp-space-16) / -2) 0 0 calc(var(--sp-space-16) / -2);`);
-  for (const deg of [45, 135, 225, 315]) {
+  // Šikmá čárka je pruh přechodu ve čtverci posunutém po úhlopříčce – kit nepovoluje `rotate` (brand-guard).
+  for (const [x, y] of [[1, 1], [-1, 1], [-1, -1], [1, -1]] as const) {
+    const angle = x === y ? 45 : 135;
     part(
-      `position:absolute;left:50%;top:50%;width:var(--sp-space-4);height:var(--sp-space-1);margin:calc(var(--sp-space-1) / -2) 0 0 calc(var(--sp-space-4) / -2);background:var(--_tick);box-shadow:0 0 0 var(--sp-border-thin) var(--sp-color-ink);transform:rotate(${String(deg)}deg) translateX(calc(var(--sp-space-5) + var(--sp-space-0_5)));`,
+      `position:absolute;left:50%;top:50%;width:var(--sp-space-4);height:var(--sp-space-4);margin:calc(var(--sp-space-4) / -2) 0 0 calc(var(--sp-space-4) / -2);background:linear-gradient(${String(angle)}deg,transparent 30%,var(--sp-color-ink) 30% 41%,var(--_tick) 41% 59%,var(--sp-color-ink) 59% 70%,transparent 70%);transform:translate(calc((var(--sp-space-5) + var(--sp-space-0_5)) * ${String(0.7071 * x)}),calc((var(--sp-space-5) + var(--sp-space-0_5)) * ${String(0.7071 * y)}));`,
       marker,
     );
   }
