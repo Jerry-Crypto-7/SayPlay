@@ -61,6 +61,9 @@ describe('rigged characters for heroes and enemies (P54B T4)', () => {
     expect(heroChoice('dragon', undefined, 'runner').model).toBe('gen3d-wyvern');
     expect(heroChoice('a dragon', undefined, 'shooter', 'enemy').model).toBe('gen3d-wyvern');
     expect(sceneModelOf('dragon', true)).toBe('gen3d-wyvern');
+    // Kuře je bílé kuře Quaternius, ne olivová riggovaná koule.
+    expect(heroChoice('a chicken', undefined, 'hop').model).toBe('cc0-chicken');
+    expect(heroChoice('hen', undefined, 'runner').model).toBe('cc0-chicken');
   });
 
   it('every kin and alias target is a character with clips', () => {

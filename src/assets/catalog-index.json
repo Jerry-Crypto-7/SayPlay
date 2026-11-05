@@ -2299,7 +2299,8 @@
     {
       "assetId": "cc0-chicken",
       "tags": [
-        "chicken"
+        "chicken",
+        "hen"
       ],
       "path": "/assets/worldstream/cc0/cc0-chicken-lod1.glb",
       "bounds": {
