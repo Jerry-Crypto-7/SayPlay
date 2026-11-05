@@ -1931,6 +1931,16 @@ button.play-version-switch__item:not(:disabled) {
   left: calc((100% + var(--_hero-right)) / 2);
 }
 
+/* Minigolf (P71C T2): dráha vede od míčku nahoru k jamce a karta nad míčkem ji zakryla. Karta sedí pod horní
+ * lištou HUD (`--_prompt-top` píše `MinigolfScene`), kamera rámuje hřiště do plochy pod ní. */
+.play-stage[data-prompt-dock='top'] .play-first-prompt {
+  top: var(--_prompt-top, var(--sp-space-16));
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: top center;
+}
+
 @keyframes play-first-prompt {
   to {
     transform: scale(1.06);

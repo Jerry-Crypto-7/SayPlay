@@ -4,12 +4,15 @@
  *
  * - **V klidu** přehled 3/4: sklon `rest.pitch`° dolů, kamera posunutá na střed krabice z míčku a zbytku trasy od
  *   cíle (`minigolfFocus`) po jamku včetně vlajky; odstup a výška z `fitTall`, takže čím dál jamka, tím výš a dál.
- *   Na výšku do hracího obdélníku (`rect`, nezměřený = celé plátno), na šířku vždy do celého plátna.
- * - **Míček v pohybu** sleduje z pózy `roll` za ním (přechod tlumí scéna podle `minigolfFollow`, na tiku 0 bez
- *   tlumení); na výšku přes `fitTall`, aby míček i cíl ležely v hracím obdélníku. Cíl = jamka, nebo nejvzdálenější
- *   bod trasy, na který je z míčku vidět po dráze – když je jamka za rohem, rámuje se roh.
+ *   Na výšku do hracího obdélníku (`rect`, nezměřený = celé plátno), na šířku vždy do celého plátna; před prvním
+ *   vstupem (`start`) do plochy pod úvodní kartou.
+ * - **Míček v pohybu** sleduje z pózy `roll` za ním; na výšku přes `fitTall`, aby míček i cíl ležely v hracím
+ *   obdélníku. Cíl = jamka, nebo nejvzdálenější bod trasy, na který je po dráze vidět z místa rány – vybere se jednou
+ *   při odpalu, během valení se nemění; když je jamka za rohem, rámuje se roh.
+ * - **Přechody** mezi pózami vede `minigolfCameraStep` (P71C T2): jeden plynulý přechod `settle` s, žádné tlumení
+ *   honící se za cílem.
  *
- * Čistá funkce bez `window` a bez stavu kresby; scéna x jádra zrcadlí (x scény = −x jádra, jako aréna), takže
+ * Póza je čistá funkce bez `window` a bez stavu kresby; scéna x jádra zrcadlí (x scény = −x jádra, jako aréna), takže
  * kladná osa míří na obrazovce doprava. Mimo stav i hash.
  */
 
@@ -35,19 +38,59 @@ export const MINIGOLF_CAMERA = {
   flag: 1.6,
   /** Krok vzorků přímky (jednotky) při hledání bodu trasy, na který je z míčku vidět. */
   sample: 250,
-  /** Tlumení přechodu mezi pózami (1/s); `delta` snímku nad `maxDelta` s se počítá jako `maxDelta`. */
-  follow: 5,
+  /** Délka přechodu mezi pózami (s); `delta` snímku nad `maxDelta` s se počítá jako `maxDelta`. */
+  settle: 0.8,
   maxDelta: 0.1,
+  /** Klidová póza se pohnula o víc (m) než tohle = nový přechod (přeměřený hrací obdélník, zmizelá karta startu). */
+  still: 0.05,
 } as const;
 
 /**
- * Kolik zbytku cesty k nové póze kamera ujede za snímek (P68-L T3): první snímek a celý tik 0 – před prvním vstupem
- * i po restartu – celou cestu, jinak tlumeně. Na tiku 0 se póza mění, jen když se přeměří hrací obdélník (HUD se
- * během načítání skládá); tlumený přechod z toho dělal ~1 s pohybu plochy bez vstupu (Pixel 7 na výšku: 58 % pixelů)
- * a hra kreslila každý snímek jiný obraz. Skok je jeden snímek, pak plocha stojí.
+ * Kamera scény mezi snímky (P71C T2) – jen obraz, mimo stav i hash. `eye` / `look` = kde kamera je; přechod jede
+ * z `fromEye` / `fromLook` k živé póze, `t` = sekundy přechodu (≥ `settle` = kamera sedí na póze).
  */
-export function minigolfFollow(delta: number, tick: number, framed: boolean): number {
-  return framed && tick > 0 ? 1 - Math.exp(-MINIGOLF_CAMERA.follow * Math.min(delta, MINIGOLF_CAMERA.maxDelta)) : 1;
+export interface MinigolfCameraRig {
+  readonly eye: Vector3;
+  readonly look: Vector3;
+  readonly fromEye: Vector3;
+  readonly fromLook: Vector3;
+  /** Póza minulého snímku: v klidu pozná, že se póza pohnula. */
+  readonly lastEye: Vector3;
+  t: number;
+  /** Fáze minulého snímku (`null` = ještě nic nevykresleno) a jeho tik (restart = tik klesl). */
+  rolling: boolean | null;
+  tick: number;
+}
+
+export function minigolfCameraRig(): MinigolfCameraRig {
+  return { eye: new Vector3(), look: new Vector3(), fromEye: new Vector3(), fromLook: new Vector3(), lastEye: new Vector3(), t: MINIGOLF_CAMERA.settle, rolling: null, tick: 0 };
+}
+
+/**
+ * Jeden snímek kamery k póze `pose`. Odpal, zastavení míčku a restart (tik klesl – i první dotek ve feedu, který
+ * hru restartuje na tik 0) i klidová póza, která se pohnula, spustí jeden přechod z místa, kde kamera je, k živé
+ * póze: `settle` s po křivce smootherstep – první snímky skoro stojí, žádný skok, dojezd bez zákmitu. Mimo přechod
+ * kamera sedí na póze (valení: jede s míčkem). Výjimky skáčou v jednom snímku: první snímek a klidová póza, která se
+ * pohnula, dokud se čeká na první vstup (`hold`: HUD se při načítání přeskládá – tlumení by ~1 s hýbalo plochou bez
+ * vstupu, P68-L T3).
+ */
+export function minigolfCameraStep(rig: MinigolfCameraRig, pose: MinigolfCameraPose, tick: number, delta: number, hold: boolean): void {
+  const { settle, maxDelta, still } = MINIGOLF_CAMERA;
+  const first = rig.rolling === null;
+  const turn = !first && (tick < rig.tick || pose.rolling !== rig.rolling);
+  const moved = !first && !turn && !pose.rolling && rig.t >= settle && pose.position.distanceTo(rig.lastEye) > still;
+  rig.rolling = pose.rolling;
+  rig.tick = tick;
+  rig.lastEye.copy(pose.position);
+  if (first || (moved && hold)) rig.t = settle;
+  else if (turn || moved) {
+    rig.fromEye.copy(rig.eye);
+    rig.fromLook.copy(rig.look);
+    rig.t = 0;
+  } else rig.t = Math.min(settle, rig.t + Math.min(delta, maxDelta));
+  const s = MathUtils.smootherstep(rig.t, 0, settle);
+  rig.eye.lerpVectors(rig.fromEye, pose.position, s);
+  rig.look.lerpVectors(rig.fromLook, pose.look, s);
 }
 
 /** Statická část jamky pro kameru (jednotky jádra): jamka, trasa (rohy, pak jamka) a dlaždice dráhy. */
@@ -98,10 +141,14 @@ function ballOf(state: ArrayLike<number>): { readonly x: number; readonly z: num
  * rány, takže se osa během valení nemění. Míření (`aux0`) ji nehýbe – tah prstu se měří proti ní (`MinigolfTouch`).
  */
 export function minigolfCameraAxis(state: ArrayLike<number>, course: MinigolfCourseView): number {
-  const ball = ballOf(state);
-  const [x, z] = ball.rolling ? [ball.fromX, ball.fromZ] : [ball.x, ball.z];
-  const [fx, fz] = minigolfFocus(course, x, z);
-  return minigolfAxisToward(fx - x, fz - z);
+  const { origin, focus } = aimedOf(ballOf(state), course);
+  return minigolfAxisToward(focus[0] - origin[0], focus[1] - origin[1]);
+}
+
+/** Odkud kamera míří (míček, při valení místo rány) a cíl trasy odtud – při valení vybraný jednou, při odpalu. */
+function aimedOf(ball: ReturnType<typeof ballOf>, course: MinigolfCourseView): { readonly origin: Point; readonly focus: Point } {
+  const origin: Point = ball.rolling ? [ball.fromX, ball.fromZ] : [ball.x, ball.z];
+  return { origin, focus: minigolfFocus(course, origin[0], origin[1]) };
 }
 
 export interface MinigolfCameraPose {
@@ -117,14 +164,16 @@ const scratch = { camera: new PerspectiveCamera(MINIGOLF_CAMERA.fov, 1, 0.1, 500
 
 /**
  * Póza kamery ze stavu: míček (hráč) a osa kamery (`minigolfCameraAxis`), pohyb podle `vx/vz`. `rect` = hrací obdélník
- * plátna (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna.
+ * plátna (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna. `start` = plocha
+ * pod úvodní kartou (P71C T2), dokud se čeká na první vstup: klidový přehled se rámuje do ní na výšku i na šířku.
  */
-export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rect: PlayRect | null, course: MinigolfCourseView, fov: number = MINIGOLF_CAMERA.fov): MinigolfCameraPose {
-  const { x, z, rolling } = ballOf(state);
+export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rect: PlayRect | null, course: MinigolfCourseView, fov: number = MINIGOLF_CAMERA.fov, start: PlayRect | null = null): MinigolfCameraPose {
+  const at = ballOf(state);
+  const { x, z, rolling } = at;
   const [ax, az] = minigolfAim(minigolfCameraAxis(state, course));
   const ball = new Vector3(-x / UNIT, 0, z / UNIT);
   const ahead = new Vector3(-ax, 0, az).normalize();
-  const focus = minigolfFocus(course, x, z);
+  const { focus } = aimedOf(at, course);
   const { camera, box, corner } = scratch;
   const pad = MINIGOLF_CAMERA.pad;
   /** Do krabice čtverec ±`r` m kolem bodu scény (`sx`, `sz`) od země do výšky `h` m. */
@@ -151,7 +200,7 @@ export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rec
     const pitch = MathUtils.degToRad(MINIGOLF_CAMERA.rest.pitch);
     const look = box.getCenter(new Vector3());
     const position = look.clone().addScaledVector(ahead, -Math.cos(pitch)).setY(look.y + Math.sin(pitch));
-    const frame = aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000);
+    const frame = start ?? (aspect < 1 && rect !== null ? rect : playRect({ width: aspect * 1000, height: 1000 }, 0, 1000));
     return { ...fit(position, look, frame), focus, rolling };
   }
 

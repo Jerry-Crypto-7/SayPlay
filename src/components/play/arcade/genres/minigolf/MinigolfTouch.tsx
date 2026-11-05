@@ -99,8 +99,11 @@ export function MinigolfTouch({ session }: GenreTouchProps) {
         }
       }
       element.dataset.pulling = String(aiming);
-      // Osa, proti které se měří příští tah (prst e2e ji čte jako `base` pro `pullFor`).
+      // Osa, proti které se měří příští tah (prst e2e ji čte jako `base` pro `pullFor`), a jestli se míček valí
+      // (záznam kamery e2e po snímcích).
       element.dataset.axis = String(minigolfCameraAxis(state, course));
+      const p = bodyBase(state[HEADER.player] as number);
+      element.dataset.rolling = String((state[p + BODY.vx] as number) !== 0 || (state[p + BODY.vz] as number) !== 0);
       const box = meter.current;
       if (box !== null) {
         box.style.visibility = aiming ? 'visible' : 'hidden';

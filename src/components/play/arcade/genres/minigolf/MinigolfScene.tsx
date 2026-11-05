@@ -17,7 +17,8 @@
  *
  * **Volání kreslení** (P68-L T3): trávník, mantinely, sokly odrazníků a stopa míření jsou každé jedna síť – po kusech
  * stála scéna na Pixelu 7 (CPU ×4) 85 volání kreslení snímku (barva i stín) proti 44 her, které `main` pro tytéž věty
- * hraje. Rovné kusy dráhy (trávník, kalíšek s okrajem) stín jen přijímají. Na tiku 0 kamera netlumí (`minigolfFollow`).
+ * hraje. Rovné kusy dráhy (trávník, kalíšek s okrajem) stín jen přijímají. Před prvním vstupem kamera přeměřený hrací
+ * obdélník přeskočí jedním snímkem (`minigolfCameraStep`, `hold`).
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -29,6 +30,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { color, colorHex } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { BODY, HEADER, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { strokesOf } from '@/play/arcade/pieces/minigolf';
 import { minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { MINIGOLF, minigolfAim, minigolfDistance } from '@/play/arcade/pieces/minigolf-roll';
 
@@ -38,9 +40,9 @@ import { GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
 import { Scenery } from '../../look/Scenery';
-import { usePlayRectRef } from '../../portrait-frame';
+import { type PlayRect, playRect as playRectOf, usePlayRectRef } from '../../portrait-frame';
 import { FittedModel, type WorldProps, modelIdOf } from '../../World';
-import { type MinigolfCourseView, minigolfCameraPose, minigolfCourseView, minigolfFollow } from './minigolf-camera';
+import { type MinigolfCourseView, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView } from './minigolf-camera';
 import { MinigolfTouch } from './MinigolfTouch';
 
 const m = (units: number): number => units / UNIT;
@@ -60,6 +62,35 @@ const GREEN_H = 0.1;
 const PLINTH_H = 0.06;
 /** Kolik povrchu a kulis kolem dráhy (m). */
 const AROUND = 30;
+/** Mezera mezi úvodní kartou a lištou HUD i hřištěm (px, `--sp-space-4` jako `PROMPT_GAP_PX` plátna). */
+const CARD_GAP_PX = 16;
+
+/**
+ * Úvodní karta přisazená nahoru (P71C T2): kartu plátno staví nad míček nebo pod něj, jenže dráha vede od míčku
+ * nahoru k cíli a karta nad míčkem ji zakryla. Dokud karta visí (tik 0, čeká se na první vstup), sedí pod horní lištou
+ * HUD (`data-prompt-dock`, `--_prompt-top` v `play.css`) a vrátí plochu pod sebou, do které kamera rámuje hřiště.
+ */
+function startArea(host: HTMLElement | null, rect: PlayRect | null): PlayRect | null {
+  const card = host?.querySelector<HTMLElement>('.play-first-prompt') ?? null;
+  if (host === null || card === null || rect === null) return null;
+  const top = rect.px.top + CARD_GAP_PX;
+  const value = `${String(Math.round(top))}px`;
+  if (host.style.getPropertyValue('--_prompt-top') !== value) host.style.setProperty('--_prompt-top', value);
+  return playRectOf(rect.canvas, top + card.offsetHeight + CARD_GAP_PX, rect.px.bottom);
+}
+
+/** Přisazení karty nahoru platí, dokud je scéna minigolfu na plátně. */
+function useDockedCard(surface: React.RefObject<HTMLDivElement | null>): void {
+  useEffect(() => {
+    const host = surface.current;
+    if (host === null) return;
+    host.dataset.promptDock = 'top';
+    return () => {
+      delete host.dataset.promptDock;
+      host.style.removeProperty('--_prompt-top');
+    };
+  }, [surface]);
+}
 
 type MinigolfSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
 
@@ -187,13 +218,19 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
   const course = useMemo(() => courseOf(world, cast), [world, cast]);
   const playRect = usePlayRectRef();
   useTouchLayer(surface, session, enabled);
+  useDockedCard(surface);
 
   const ball = useRef<Group | null>(null);
   const spin = useRef<Group | null>(null);
   const mover = useRef<Group | null>(null);
   const trailMesh = useRef<Mesh | null>(null);
   /** `trail` = poslední zapsaná stopa (x, z míčku, směr, dosah) – vrcholy se přepíšou, jen když se změní. */
-  const memory = useRef<{ eye: Vector3; look: Vector3; at: Vector3 | null; framed: boolean; trail: number[] }>({ eye: new Vector3(), look: new Vector3(), at: null, framed: false, trail: [] });
+  const memory = useRef<{ at: Vector3 | null; trail: number[] }>({ at: null, trail: [] });
+  const rig = useMemo(minigolfCameraRig, []);
+  /** Stav pro kameru s míčkem tam, kde je nakreslený (interpolace mezi tiky) – jinak by kamera jela po tikách. */
+  const drawn = useRef<Int32Array>(new Int32Array(0));
+  /** Plocha pod úvodní kartou (`startArea`), do které se rámuje přehled až do první rány. */
+  const startFrame = useRef<PlayRect | null>(null);
   const scratch = useMemo(() => ({ axis: new Vector3(), step: new Vector3() }), []);
   const boxes = useMemo(
     () => ({
@@ -269,15 +306,22 @@ export function MinigolfScene({ session, cast, surface, scene: look, enabled, gh
       }
     }
 
-    // Kamera přes rameno: póza ze stavu, tlumený přechod (první snímek a tik 0 bez tlumení).
+    // Kamera: póza ze stavu s míčkem, kde je nakreslený; přechody vede `minigolfCameraStep` (P71C T2).
     if (camera.view !== null) camera.clearViewOffset();
-    const pose = minigolfCameraPose(state, camera.aspect, playRect.current, course.view, camera.fov);
-    const ease = minigolfFollow(delta, state[HEADER.tick] as number, memory.current.framed);
-    memory.current.framed = true;
-    memory.current.eye.lerp(pose.position, ease);
-    memory.current.look.lerp(pose.look, ease);
-    camera.position.copy(memory.current.eye);
-    camera.lookAt(memory.current.look);
+    if (drawn.current.length !== state.length) drawn.current = new Int32Array(state.length);
+    const view = drawn.current;
+    view.set(state);
+    view[p + BODY.x] = Math.round(-at.x * UNIT);
+    view[p + BODY.z] = Math.round(at.z * UNIT);
+    const tick = state[HEADER.tick] as number;
+    const card = tick === 0 ? startArea(surface.current, playRect.current) : null;
+    // Plocha pod kartou drží až do první rány: karta zmizí s prvním tikem, tedy uprostřed prvního míření.
+    if (strokesOf(state) > 0) startFrame.current = null;
+    else if (card !== null) startFrame.current = card;
+    const pose = minigolfCameraPose(view, camera.aspect, playRect.current, course.view, camera.fov, startFrame.current);
+    minigolfCameraStep(rig, pose, tick, delta, card !== null);
+    camera.position.copy(rig.eye);
+    camera.lookAt(rig.look);
     camera.updateMatrixWorld();
   });
 
