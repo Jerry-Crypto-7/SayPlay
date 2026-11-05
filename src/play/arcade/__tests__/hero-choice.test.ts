@@ -33,7 +33,8 @@ const EXPECTED: Readonly<Record<string, { readonly model: string; readonly clips
   penguin: { model: 'rigged:pet-penguin', clips: true },
   'firefighter robot': { model: 'rigged:blocky-robot', clips: true },
   wizard: { model: 'rigged:mage', clips: true },
-  'pirate ship': { model: 'gen3d-pirate-ship', clips: false },
+  // P71E T2c: generovaná loď byla z kamery voyage černá skvrna (tmavý trup, obrys lan); Kenney s bílými plachtami.
+  'pirate ship': { model: 'cc0-ship-large', clips: false },
   cat: { model: 'rigged:pet-cat', clips: true },
   // P54B T4: kuchař je riggovaný kuchař Quaternius, ne číšník.
   chef: { model: 'rigged:q-chef', clips: true },
@@ -80,7 +81,7 @@ describe('hero choice by identity, then class (P32C T2)', () => {
         expect(choice.model, `${label} / ${genre}`).not.toBe('race-car');
       }
     }
-    expect(heroChoice('pirate', undefined, 'steer')).toMatchObject({ model: 'gen3d-pirate-ship', level: 'near' });
+    expect(heroChoice('pirate', undefined, 'steer')).toMatchObject({ model: 'cc0-ship-large', level: 'near' });
     expect(heroChoice('pirate', 'voyage', 'steer')).toMatchObject({ model: 'rigged:rogue', level: 'identity' });
   });
 

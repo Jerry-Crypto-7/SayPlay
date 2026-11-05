@@ -32067,6 +32067,108 @@
       ]
     },
     {
+      "assetId": "cc0-ship-large",
+      "version": 1,
+      "hash": "a782b687727f73e12d182005791c50063cc4772f3ae6fd0de4b32a4d96cbac00",
+      "label": "pirate ship",
+      "tags": [
+        "pirate ship",
+        "galleon"
+      ],
+      "style": "CC0 low-poly, texture at most 512 px",
+      "thumbnail": "/assets/worldstream/cc0/cc0-ship-large.png",
+      "provenance": {
+        "source": "scripts/assets/cc0/normalize.mjs",
+        "author": "Kenney (www.kenney.nl)",
+        "license": "CC0-1.0",
+        "licenseEvidence": "public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt",
+        "importedAt": "2026-11-05",
+        "sourceHash": "b1d5a87157260313df6869cc22a07b8d22b287d2b8d55f2716eba144798f0f74"
+      },
+      "units": "meters",
+      "up": "+Y",
+      "front": "+Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds": {
+        "min": [
+          -2.40001,
+          0,
+          -6.55001
+        ],
+        "max": [
+          2.40001,
+          9.96353,
+          6.55001
+        ]
+      },
+      "stretchableAxes": [],
+      "lods": [
+        {
+          "level": 0,
+          "path": "/assets/worldstream/cc0/cc0-ship-large-lod0.glb",
+          "hash": "a782b687727f73e12d182005791c50063cc4772f3ae6fd0de4b32a4d96cbac00",
+          "bytes": 99348,
+          "triangles": 1849,
+          "decodedGeometryBytes": 84406,
+          "decodedTextureBytes": 1398102,
+          "minScreenPixels": 160
+        },
+        {
+          "level": 1,
+          "path": "/assets/worldstream/cc0/cc0-ship-large-lod1.glb",
+          "hash": "13bc908975f28fe90caf8cc5c9dff2103b4675d70a9058692e3cddbdc79a1fa6",
+          "bytes": 62328,
+          "triangles": 923,
+          "decodedGeometryBytes": 47394,
+          "decodedTextureBytes": 1398102,
+          "minScreenPixels": 0
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-0",
+          "name": "material_0",
+          "alphaMode": "OPAQUE",
+          "doubleSided": true
+        }
+      ],
+      "collision": [
+        {
+          "kind": "box",
+          "bounds": {
+            "min": [
+              -2.4000000953674316,
+              0,
+              -6.550000190734863
+            ],
+            "max": [
+              2.4000000953674316,
+              9.963520050048828,
+              6.550000190734863
+            ]
+          }
+        }
+      ],
+      "sockets": [],
+      "supportSurfaces": [],
+      "parts": [
+        {
+          "id": "part-0",
+          "node": "part_0",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "sockets": []
+        }
+      ]
+    },
+    {
       "assetId": "cc0-skeleton",
       "version": 1,
       "hash": "24126b91eb2859cb307076a995df821122220df6e095ae1c9a2d4e940278cc5b",
@@ -61348,8 +61450,7 @@
       "hash": "49d8aebe1ab8bc2dce9c6800cf0c51d786363435a6f124205697ee274adee75f",
       "label": "pirate ship (generated)",
       "tags": [
-        "pirate ship",
-        "galleon"
+        "dark pirate ship"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-pirate-ship.png",

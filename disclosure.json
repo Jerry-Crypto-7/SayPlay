@@ -18478,6 +18478,51 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/cc0/cc0-ship-large-lod0.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "CC0 model \"ship large\" from kenney-pirate-kit, normalized by scripts/assets/cc0/normalize.mjs; tagged \"pirate ship\" by P71E T2c.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "ship large (Models/GLB format/ship-large.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/cc0-ship-large-lod1.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "CC0 model \"ship large\" from kenney-pirate-kit, normalized by scripts/assets/cc0/normalize.mjs; tagged \"pirate ship\" by P71E T2c.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "ship large (Models/GLB format/ship-large.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/cc0-ship-large.png",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "CC0 model \"ship large\" from kenney-pirate-kit, normalized by scripts/assets/cc0/normalize.mjs; tagged \"pirate ship\" by P71E T2c; this file is a preview render of it.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "ship large (Models/GLB format/ship-large.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/cc0/cc0-shotgun-lod0.glb",
       "kind": "asset",
       "firstParty": false,

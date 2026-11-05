@@ -6388,6 +6388,26 @@
       }
     },
     {
+      "assetId": "cc0-ship-large",
+      "tags": [
+        "pirate ship",
+        "galleon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ship-large-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.40001,
+          0,
+          -6.55001
+        ],
+        "max": [
+          2.40001,
+          9.96353,
+          6.55001
+        ]
+      }
+    },
+    {
       "assetId": "cc0-skeleton",
       "tags": [
         "skeleton"
@@ -12244,8 +12264,7 @@
     {
       "assetId": "gen3d-pirate-ship",
       "tags": [
-        "pirate ship",
-        "galleon"
+        "dark pirate ship"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-pirate-ship-lod1.glb",
       "bounds": {

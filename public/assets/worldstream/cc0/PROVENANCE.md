@@ -215,6 +215,7 @@ CC0 1.0 needs no attribution; the credit below is voluntary.
 | `cc0-mushnub` | mushnub | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Mushnub.gltf` | CC0-1.0 |
 | `cc0-mushnub-evolved` | mushnub evolved | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Mushnub_Evolved.gltf` | CC0-1.0 |
 | `cc0-ship-ghost` | ship ghost | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/ship-ghost.glb` | CC0-1.0 |
+| `cc0-ship-large` | ship large | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/ship-large.glb` | CC0-1.0 |
 | `cc0-skeleton` | skeleton | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/character-skeleton.glb` | CC0-1.0 |
 | `cc0-spiky-blob` | spiky blob | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/GreenSpikyBlob.gltf` | CC0-1.0 |
 | `cc0-tree-blob` | tree blob | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Environment/GLTF/Tree_Blob_1.gltf` | CC0-1.0 |
