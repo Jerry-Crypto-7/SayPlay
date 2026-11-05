@@ -6,18 +6,18 @@
   },
   "mentions": {
     "mentions": 160,
-    "before": 110,
+    "before": 112,
     "now": 143
   },
   "nouns": {
     "distinct": 114,
-    "before": 75,
+    "before": 76,
     "now": 102
   },
   "byRole": {
     "hero": {
       "mentions": 54,
-      "before": 45,
+      "before": 46,
       "now": 52
     },
     "enemy": {
@@ -42,7 +42,7 @@
     },
     "checklist": {
       "mentions": 39,
-      "before": 22,
+      "before": 23,
       "now": 36
     }
   },
@@ -70,11 +70,6 @@
     {
       "noun": "corgi",
       "model": "cc0-corgi",
-      "mentions": 2
-    },
-    {
-      "noun": "dragon",
-      "model": "cc0-dragon",
       "mentions": 2
     },
     {
@@ -268,7 +263,7 @@
       }
     },
     "now": {
-      "models": 1786,
+      "models": 1787,
       "nouns": {
         "distinct": 114,
         "now": 102
