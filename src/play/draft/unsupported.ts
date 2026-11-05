@@ -212,7 +212,9 @@ const honesties = new Map<string, Honesty | null>();
  * („ball“, „score“ ze slova golf, „hit the ball“) jsou ta hra sama – svědka v jamce nemají a hláška by si vymýšlela
  * („Balling isn't here yet – here's a mini golf game“, audit 4. 11.).
  */
-const OWN_GAME_GENRES: ReadonlySet<string> = new Set(['minigolf']);
+// P71D T6: obchod („run a pizza shop and serve 12 customers“) – „run“ je tu provozovat a „serve“ je ta hra sama,
+// pruh hlásil „Running and delivery aren't here yet – here's a shop building game.“
+const OWN_GAME_GENRES: ReadonlySet<string> = new Set(['minigolf', 'buildshift']);
 
 function playsOwnGenre(sentence: string, spec: GameSpecV1): boolean {
   if (spec.genre === undefined) return false;
@@ -220,7 +222,7 @@ function playsOwnGenre(sentence: string, spec: GameSpecV1): boolean {
   const heard = classified.ranked[0];
   if (heard === undefined || heard.score <= 0 || heard.genre !== spec.genre.id || heard.mode !== spec.genre.mode) return false;
   // Jen žánr celé hry (má znak): útěk v Aréně ze slova „dodges“ (`verb-mapping`) své hrozby dál přiznává.
-  // simplified: jen minigolf (případ auditu) – railfps „a truck races and fires“ střelbu svědkem `shoot` nedokládá
+  // simplified: jen minigolf a obchod (případy auditů) – railfps „a truck races and fires“ střelbu svědkem `shoot` nedokládá
   // a přiznat ji musí (`p42-admissions`); rozšířit, až jiný žánr celé hry ukáže falešný pruh.
   return OWN_GAME_GENRES.has(heard.genre) && SIGN_CELLS.has(`${heard.genre}.${heard.mode}`) && (classified.verb === null || classified.pick?.genre === heard.genre);
 }

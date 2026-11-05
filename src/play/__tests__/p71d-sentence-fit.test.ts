@@ -140,7 +140,7 @@ describe('finding one thing is a quest, collecting many stays the arena (P71D T4
 // T6 v prohlížeči: správná hra a nad ní „Gliding isn't here yet“ / „Collecting isn't here yet“ – hláška počítala
 // let domyšlený ze jména lodi a „find“ přečtené jako sběr.
 describe('a sentence playing its own game shows no "isn\'t here yet" banner (P71D T6)', () => {
-  it.each(['a spaceship shoots asteroids in outer space', 'a rocket blasts meteors', 'a wizard explores a dungeon to find the lost crown', "search for the king's crown", 'a knight looks for the lost sword in the castle'])('%s', async (sentence) => {
+  it.each(['a spaceship shoots asteroids in outer space', 'a rocket blasts meteors', 'a wizard explores a dungeon to find the lost crown', "search for the king's crown", 'a knight looks for the lost sword in the castle', 'run a pizza shop and serve 12 customers', 'a chef runs a pizza shop'])('%s', async (sentence) => {
     expect(await honestyForSpec(sentence, draftGameSpecWithMeta(sentence, 1).spec, 1)).toBeNull();
   }, 120_000);
 
