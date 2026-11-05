@@ -203,6 +203,14 @@ describe('[4] písemný popis', () => {
     expect(detailOf(results, 4)).toContain(String(DESCRIPTION_MIN_CHARS));
   });
 
+  it('selže, když produkční vzor proměnných neuvádí režiséra (P71A)', async () => {
+    const dir = repo();
+    rmSync(join(dir, 'scripts/cloud/env.production.example'));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([4]);
+    expect(detailOf(results, 4)).toContain('WORLDSMITH_MODEL');
+  });
+
   it('selže bez sémantického omezení i s úplnou legacy garancí', async () => {
     const dir = repo();
     rewriteDescription(dir, description().replace('A robot win does not prove that the game matches the sentence.', GUARANTEE));
@@ -568,12 +576,36 @@ describe('[7] backend a průběžné hlídání', () => {
     expect(detailOf(results, 7)).toContain('intervalSeconds');
   });
 
-  it('selže, když hlídání končí před 25. 11.', async () => {
+  it.each(['2026-11-12', '2026-12-30'])('selže, když hlídání končí %s, před slíbeným 31. 12.', async (until) => {
     const dir = repo();
-    patchMonitoring(dir, { coverageUntil: '2026-11-12' });
+    patchMonitoring(dir, { coverageUntil: until });
     const results = await check(dir);
     expect(failed(results)).toEqual([7]);
     expect(detailOf(results, 7)).toContain(COVERAGE_UNTIL);
+  });
+
+  // P71A: UptimeRobot měří mimo repo a heartbeat nezapíše; jeho záznam v uptime.json heartbeat nahrazuje.
+  const EXTERNAL = { service: 'UptimeRobot', intervalMin: 5, targets: [DEMO_URL, BACKEND_URL] };
+
+  it('projde s externím hlídačem i bez lokálního heartbeatu', async () => {
+    const dir = repo();
+    patchMonitoring(dir, { external: EXTERNAL });
+    rmSync(join(dir, 'ops/monitoring/heartbeat.jsonl'));
+    expect(failed(await check(dir))).toEqual([]);
+  });
+
+  it.each([
+    ['bez služby', { ...EXTERNAL, service: '' }, 'external.service'],
+    ['s intervalem nad strop', { ...EXTERNAL, intervalMin: MONITOR_MAX_INTERVAL_SECONDS / 60 + 1 }, 'external.intervalMin'],
+    ['bez adresy backendu', { ...EXTERNAL, targets: [DEMO_URL] }, 'backendUrl'],
+    ['bez adresy dema', { ...EXTERNAL, targets: [BACKEND_URL] }, 'demoUrl'],
+  ])('selže s externím hlídačem %s', async (_what, external, needle) => {
+    const dir = repo();
+    patchMonitoring(dir, { external });
+    rmSync(join(dir, 'ops/monitoring/heartbeat.jsonl'));
+    const results = await check(dir);
+    expect(failed(results)).toEqual([7]);
+    expect(detailOf(results, 7)).toContain(needle);
   });
 
   it('selže, když alert nemá adresáta', async () => {

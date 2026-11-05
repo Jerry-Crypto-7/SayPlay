@@ -22,7 +22,7 @@ A deterministic runtime steps every game: arcade games at a fixed 60 Hz, the gri
 
 The scene draws from a library of 783 catalogue models – 363 CC0 models, 56 built by code in Blender, 32 built by code in three.js and 332 generated offline from text through an image and mesh pipeline recorded per model – plus 15 rigged CC0 characters. Every game plays generated music and sound effects chosen by its look.
 
-The director is gpt-oss-20b, an open-weight model, on a hosted inference provider, with a larger model through the OpenAI API as a backup. Both paths sit behind a server-side spend cap kept in shared storage, so the cap holds across serverless instances. <!-- verify-before-submit --> The demo and its backend stay online until at least 31 December 2026.
+The director is gpt-6-astra through the paid OpenAI API. It sits behind a server-side spend cap kept in shared storage, so the cap holds across serverless instances. <!-- verify-before-submit --> The demo and its backend stay online until at least 31 December 2026.
 
 ## Measured so far
 

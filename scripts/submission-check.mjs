@@ -65,6 +65,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import ts from 'typescript';
 
+import { parseEnvFile } from './cloud/check-env.mjs';
 import { modelIdsIn, registeredModelNames } from './license-gate.mjs';
 
 /** Strom, který se kontroluje. Přepisuje ho `buildContext({ repo })` v testech. */
@@ -120,10 +121,14 @@ export const COLLECTION_ITEMS_LIMIT = 200;
 export const MONITOR_MAX_INTERVAL_SECONDS = 900;
 
 /**
- * `RULES.md` §2 chce backend živý do **25. 11.**, tedy dva týdny po odevzdání.
+ * `RULES.md` §2 chce backend živý do **25. 11.**, tedy dva týdny po odevzdání; popis
+ * a manifest slibují provoz do **31. 12. 2026** (P71A), a hlídání musí pokrýt slib.
  * Hlídání, které skončí dřív, tenhle deliverable nepokrývá.
  */
-export const COVERAGE_UNTIL = '2026-11-25';
+export const COVERAGE_UNTIL = '2026-12-31';
+
+/** Produkční vzor proměnných; jméno režiséra v popisu se bere z něj, ne napevno (P71A). */
+export const PRODUCTION_ENV_FILE = 'scripts/cloud/env.production.example';
 
 /**
  * Kolik násobků deklarovaného intervalu smí být poslední záznam hlídače starý,
@@ -346,15 +351,31 @@ const DESCRIPTION_DISCLOSURES = [
   // vyhrát a přitom nemusí vypadat jako věta. P30B to naměřila jako 9 z 18.
   ['recognisability', /\bvision (?:model|judge)\b[^.!?]{0,80}\brecogni[sz]ed\b/i],
   ['semantic-limit', /\b(?:do not|does not|cannot) (?:certify|guarantee|prove)\b[^.!?]{0,80}\b(?:matches|means)\b[^.!?]{0,40}\bsentence\b/i],
-  ['hosted-cost', /\bgpt-oss\b/i, /\bspend cap\b/i],
   ['independent-review', /\bno human playtest\b|\b(?:human|usability)\b[^.!?]{0,100}\b(?:playtest|study|evidence)\b/i,
     /\bautomated\b/i],
 ];
 
-export function descriptionContractProblems(text) {
+/**
+ * Režisér, který v produkci doopravdy běží: `WORLDSMITH_MODEL` z `PRODUCTION_ENV_FILE` v `repo`, nebo `null`,
+ * když vzor chybí či model neuvádí. Do P71A chtěl popis napevno „gpt-oss“, a po přechodu na astru by
+ * brána zezelenala nad popisem modelu, který neběží.
+ */
+export function productionDirector(repo) {
+  const path = join(repo, PRODUCTION_ENV_FILE);
+  if (!existsSync(path)) return null;
+  const model = parseEnvFile(readFileSync(path, 'utf8')).WORLDSMITH_MODEL?.trim() ?? '';
+  return model === '' ? null : model;
+}
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export function descriptionContractProblems(text, director = productionDirector(dirname(SCRIPT_DIR))) {
   // Comments/code are not disclosures visible in the written submission.
   const prose = proseOf(text.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ''));
-  return DESCRIPTION_DISCLOSURES.filter(([, ...patterns]) => !patterns.every(pattern => pattern.test(prose)))
+  // Bez známého režiséra nejde hosted-cost splnit: vzor, který nic nenajde.
+  const named = director === null ? /(?!)/ : new RegExp(`(?<![\\w-])${escapeRegExp(director)}(?![\\w-])`, 'i');
+  return [...DESCRIPTION_DISCLOSURES, ['hosted-cost', named, /\bspend cap\b/i]]
+    .filter(([, ...patterns]) => !patterns.every(pattern => pattern.test(prose)))
     .map(([id]) => `chybí aktuální disclosure ${id} (PLAY)`);
 }
 
@@ -602,7 +623,9 @@ export function checkDescription({ repo, manifest }) {
     problems.push(`${path} má ${prose.length} znaků prózy, práh je ${DESCRIPTION_MIN_CHARS}`);
   }
 
-  problems.push(...descriptionContractProblems(text).map(problem => `${path}: ${problem}`));
+  const director = productionDirector(repo);
+  if (director === null) problems.push(`${PRODUCTION_ENV_FILE} neuvádí WORLDSMITH_MODEL – nejde ověřit, jestli popis jmenuje skutečného režiséra`);
+  problems.push(...descriptionContractProblems(text, director).map(problem => `${path}: ${problem}`));
 
   // Aspoň jedno naměřené číslo. Popis bez čísel je marketing; číslo, které
   // v žádném reportu není, je odhad vydávaný za měření.
@@ -728,6 +751,24 @@ check(6, 'disclosure je úplná napříč pěti třídami', false, ({ repo, mani
   return summarize(problems);
 });
 
+/**
+ * Externí hlídač `{ service, intervalMin, targets: [demo, health] }` (P71A): služba jménem, interval
+ * do `MONITOR_MAX_INTERVAL_SECONDS` a obě adresy, které porota otevře. Účet a e-mail do repa nepatří.
+ */
+export function externalMonitorProblems(external, manifest) {
+  const problems = [];
+  if (isPlaceholder(external?.service)) problems.push('external.service není vyplněná služba');
+  const minutes = Number(external?.intervalMin);
+  if (!Number.isFinite(minutes) || minutes <= 0 || minutes * 60 > MONITOR_MAX_INTERVAL_SECONDS) {
+    problems.push(`external.intervalMin "${external?.intervalMin}" není interval do ${MONITOR_MAX_INTERVAL_SECONDS / 60} min`);
+  }
+  const targets = Array.isArray(external?.targets) ? external.targets.map(String) : [];
+  for (const [label, url] of [['demoUrl', manifest.demoUrl], ['backendUrl', manifest.backendUrl]]) {
+    if (!targets.includes(String(url))) problems.push(`externí hlídač nesleduje ${label} (${url})`);
+  }
+  return problems;
+}
+
 check(7, 'backend odpovídá a dostupnost se průběžně hlídá s alertem', true, async ({ repo, manifest, fetchImpl, now }) => {
   const failure = await reachable(fetchImpl, 'backendUrl', manifest.backendUrl);
   if (failure) return failure;
@@ -766,6 +807,13 @@ check(7, 'backend odpovídá a dostupnost se průběžně hlídá s alertem', tr
   // souboru, na který se nikdo nepodívá — a to je totéž jako nehlídat.
   if (isPlaceholder(monitor.alert?.channel) || isPlaceholder(monitor.alert?.destination)) {
     problems.push('alert nemá vyplněný kanál a adresáta');
+  }
+
+  // P71A: externí hlídač (UptimeRobot) měří mimo repo a heartbeat soubor nezapíše; jeho záznam
+  // `external` v uptime.json nahrazuje lokální heartbeat. Bez `external` platí heartbeat jako dřív.
+  if (monitor.external !== undefined) {
+    problems.push(...externalMonitorProblems(monitor.external, manifest));
+    return summarize(problems);
   }
 
   // Poslední záznam dokazuje, že hlídač skutečně běží. Konfigurace bez záznamu
