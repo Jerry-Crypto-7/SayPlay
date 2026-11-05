@@ -1,6 +1,6 @@
 // P71C T5: publish the oracle sentences on the running server (games live only in its memory) and write
-// `games.json` (sentence → /play/<id>, genre, control). Usage: node evals/play/p71/golf/make-games.mjs [baseUrl]
-import { writeFileSync } from 'node:fs';
+// `games.json` (sentence → /play/<id>, genre, control). Usage: node evals/play/p71/golf/make-games.mjs [baseUrl] [keyPrefix]
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,8 +18,11 @@ const SENTENCES = {
   drawsave: 'draw walls to save a puppy from bees',
 };
 
-const games = {};
+// Optional 2nd argument: publish only the keys starting with it and keep the other entries of `games.json`.
+const ONLY = process.argv[3];
+const games = ONLY !== undefined && existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')).games : {};
 for (const [key, sentence] of Object.entries(SENTENCES)) {
+  if (ONLY !== undefined && !key.startsWith(ONLY)) continue;
   const posted = await fetch(`${BASE}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence }) });
   if (posted.status >= 300) throw new Error(`${key}: ${String(posted.status)} ${await posted.text()}`);
   const { url } = await posted.json();

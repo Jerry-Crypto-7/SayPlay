@@ -1,6 +1,6 @@
 # P71C T5 – oracle v prohlížeči (golfová kamera, scény, karty)
 
-5. 11. 2026, commit `a64b9f24` (build `next build` 19:01), `next start` na portu 3012, Chromium přes ANGLE/D3D11 s `--disable-features=OpenXR`. AI verze lokálně není („Couldn't make the full-detail version“), testovaná je rychlá verze.
+5. 11. 2026, commit `a64b9f24` (build `next build` 19:01; timing přefocený na `3717ea34`), `next start` na portu 3012, Chromium přes ANGLE/D3D11 s `--disable-features=OpenXR`. AI verze lokálně není („Couldn't make the full-detail version“), testovaná je rychlá verze.
 
 - Golf: `e2e/play-minigolf.spec.ts`, test `minigolf camera: …` (beze změny), projekty `chromium` (1280×720) a `pixel7-touch` (412×839, dotyk). Jeden odpal na hru: ručně vyrobená hra testu (`fixture`) a tři věty z QA. Záznam kamery po snímcích je v `golf-<hra>-camera-<desk|phone>.json`, snímky jsou `golf-<hra>-<start|before|during|after>-<desk|phone>.png` (test je ukládá jako `<hra>-<projekt>-<start|aim|during|after>.png`, tady jsou přejmenované).
 - Timing, rhythm, drawsave a karty: `scene-oracle.mjs` → `scene-oracle.json` a PNG. Hry vyrábí `make-games.mjs` (`games.json`) na běžícím serveru. Rámečky postav jsou obrysy skutečných vrcholů sítí (žába `toyHero`, lano `rope`, příšera `goal`) promítnuté živou kamerou, v CSS px.
@@ -22,8 +22,8 @@ U všech 8 golfových řádků platí: míření 0,000 m za snímek i celkem, ho
 | golf kamera | `play mini golf` | phone 412×839 | pass | 0,018 m / 0,11°; vrchol 0,99 m, špička 1,17; 1 obrat o 1 cm v okamžiku zastavení (sledování dopředu → stoupání do klidu), houpnutí 0; 23,5 → 3,1 → 9,6 m; 1,38 s |
 | golf kamera | `a golf ball rolls into the hole` | phone 412×839 | pass | 0,014 m / 0,08°; vrchol 1,06 m, špička 1,12, 0 obratů; 24,7 → 2,1 → 14,4 m; 1,42 s |
 | golf kamera | fixture testu | phone 412×839 | pass | 0,012 m / 0,08°; vrchol 1,04 m, špička 1,72 (0,25 / 0,45 / 0,26 m, 8. snímek sestupu), 0 obratů; 22,1 → 2,6 → 14,6 m; 1,38 s |
-| timing: lano a příšera | `cut the rope at the right moment to feed the monster` | phone 390×844 | pass | lano 12×161 px (x 32–43, y 190–351), příšera 46×66 px (x 172–218, y 351–418) – obojí v okně; spodních 9 px příšery pod start kartou (karta od y 409); bonbon na laně při startu přečuhuje 50 px za levý okraj (x −50…123); `handPlay` won 30,0 s, `idleRun` lost 15,1 s |
-| timing: lano a příšera | totéž | desk 1280×800 | pass | lano 24×256 px (x 384–408, y 51–308), příšera 64×92 px (x 608–672, y 322–414), spodních 32 px pod start kartou (karta od y 382); bonbon celý v okně (x 243–536); won 30,0 s, lost 15,1 s |
+| timing: lano, bonbon, příšera | `cut the rope at the right moment to feed the monster` | phone 390×844 | pass | po opravě `3717ea34`: bonbon 51×40 px (x 15–66, y 347–387) visí na konci lana a je celý v okně; lano 12×161 px (x 32–43, y 190–351); příšera 46×66 px (x 172–218, y 351–418), spodních 9 px pod start kartou (karta od y 409); `handPlay` won 30,0 s, `idleRun` lost 15,1 s |
+| timing: lano, bonbon, příšera | totéž | desk 1280×800 | pass | po opravě `3717ea34`: bonbon 107×51 px (x 346–453, y 308–359) na konci lana, celý v okně; lano 24×256 px (x 384–408, y 51–308); příšera 64×92 px (x 608–672, y 322–414), spodních 32 px pod start kartou (karta od y 382); won 30,0 s, lost 15,1 s |
 | timing | `tap at the right time to stop the moving platform` | desk 1280×800 | pass | won 30,0 s, lost 15,1 s |
 | timing | `stack pancakes as high as you can` | desk 1280×800 | pass | won 30,0 s, lost 15,1 s |
 | rhythm: žába v záběru | `A drummer frog plays on lily pads and the pond lights up with the beat` | phone 390×844 | pass, s výhradou | při hraní celá v okně: 18 vzorků za 3,5 s hry, nejmenší okraj vpravo 7 px (1 vzorek pod cílem 8 px, ostatní 8–12 px); snímek `input` x 289–378, y 455–533; 4 vzorky vynechané, žába po minutí bliká. Při startu x 289–382, y 401–482, ale skoro celá pod start kartou (karta x 16–374, y 378–594). Po `handPlay` je kamera jinde a žába je 25 px za pravým okrajem, kryje ji ale karta výsledku. Po „Play again“ x 278–360, opět pod start kartou. `handPlay` won 35,8 s, `idleRun` lost 7,1 s |
@@ -35,7 +35,7 @@ U všech 8 golfových řádků platí: míření 0,000 m za snímek i celkem, ho
 
 - Golf: kamera se po odpalu pořád spouští z přehledu (22–79 m) na 2–3 m za míček a po zastavení zase stoupá (5–25 m). Teď je to jeden plynulý přechod tam a jeden zpět, bez houpání a bez skoku. (Úsudek: vzorec „spuštění a návrat“, který popsala QA, zůstal, jen je hladký.)
 - Golf na telefonu: při startu banner „Couldn't make the full-detail version…“ překrývá počítadlo „0 strokes · par 4“ (`golf-golf-start-phone.png`).
-- Timing rope: bonbon je dlouhý červený kvádr přes šířku lišty (~290×50 px na desktopu), ne tvar bonbonu.
+- Timing rope před opravou `3717ea34`: bonbon byl pětkrát širší, dlouhý červený kvádr (~290×50 px na desktopu, na telefonu 50 px za levým okrajem). Snímky a řádky timing jsou přefocené po opravě, stejně jako `timing-platform-*` a `timing-pancakes-*`.
 - Rhythm na telefonu: velký šedý pás přes spodní třetinu pruhů (`rhythm-phone-input.png`, y ≈ 678–750 CSS px).
 - Golfový test dělá snímek „during“ 150 ms po puštění a ten zdrží vykreslení až o 200 ms. Pohyby jsou proto přepočtené na snímek 60 Hz; syrové skoky 5–9 m za snímek v JSON jsou tyhle mezery.
 

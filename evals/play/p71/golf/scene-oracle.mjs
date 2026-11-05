@@ -136,6 +136,8 @@ const boxes = (page) =>
       rope: boxOf(findIn(scene, (node) => node.userData?.rope === true)),
       goal: boxOf(findIn(scene, (node) => node.userData?.goal === true)),
       slider: boxOf(findIn(scene, (node) => node.userData?.frame === 'hero')),
+      // The thing on the needle (candy under the rope): the rider group tagged `item: 'block'`.
+      candy: boxOf(findIn(scene, (node) => node.userData?.item === 'block')),
       items: Object.fromEntries(Object.entries(window.__playFrame().items).map(([key, value]) => [key, value.count])),
     };
   });
@@ -240,6 +242,7 @@ for (const [profileName, profile] of [['phone', PHONE], ['desk', DESK]]) {
       rope: fit(at.rope, at.viewport, at.card),
       monster: fit(at.goal, at.viewport, at.card),
       slider: fit(at.slider, at.viewport, at.card),
+      candy: fit(at.candy, at.viewport, at.card),
       card: at.card,
       items: at.items,
       error: at.error,

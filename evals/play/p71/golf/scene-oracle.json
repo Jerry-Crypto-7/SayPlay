@@ -1,6 +1,6 @@
 {
  "base": "http://127.0.0.1:3012",
- "ran": "2026-11-05T18:16:58.772Z",
+ "ran": "2026-11-05T18:30:37.749Z",
  "checks": {
   "timing-rope-phone": {
    "sentence": "cut the rope at the right moment to feed the monster",
@@ -52,21 +52,42 @@
    },
    "slider": {
     "box": {
-     "left": -50,
-     "right": 123,
+     "left": 15,
+     "right": 66,
      "top": 190,
      "bottom": 387,
-     "width": 173,
+     "width": 51,
      "height": 197,
      "meshes": 2,
      "vertices": 1215,
      "behind": false
     },
-    "inside": false,
+    "inside": true,
     "margins": {
-     "left": -50,
+     "left": 15,
      "top": 190,
-     "right": 267,
+     "right": 324,
+     "bottom": 457
+    },
+    "underCard": false
+   },
+   "candy": {
+    "box": {
+     "left": 15,
+     "right": 66,
+     "top": 347,
+     "bottom": 387,
+     "width": 51,
+     "height": 40,
+     "meshes": 1,
+     "vertices": 1175,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 15,
+     "top": 347,
+     "right": 324,
      "bottom": 457
     },
     "underCard": false
@@ -146,11 +167,11 @@
    },
    "slider": {
     "box": {
-     "left": 243,
-     "right": 536,
+     "left": 346,
+     "right": 453,
      "top": 51,
      "bottom": 359,
-     "width": 293,
+     "width": 107,
      "height": 308,
      "meshes": 2,
      "vertices": 1215,
@@ -158,9 +179,30 @@
     },
     "inside": true,
     "margins": {
-     "left": 243,
+     "left": 346,
      "top": 51,
-     "right": 744,
+     "right": 827,
+     "bottom": 441
+    },
+    "underCard": false
+   },
+   "candy": {
+    "box": {
+     "left": 346,
+     "right": 453,
+     "top": 308,
+     "bottom": 359,
+     "width": 107,
+     "height": 51,
+     "meshes": 1,
+     "vertices": 1175,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 346,
+     "top": 308,
+     "right": 827,
      "bottom": 441
     },
     "underCard": false
