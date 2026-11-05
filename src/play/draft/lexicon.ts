@@ -506,8 +506,9 @@ const aCharacter = (phrase: string | null): string | null =>
 function subjectOf(text: string): string | null {
   const match = /^(?:a|an|the|my|one) ([a-z0-9][a-z0-9' -]*)/.exec(text);
   if (match === null) {
-    // P70B T3: bez členu jen zvíře s klipy před slovesem na -s („rabbit defends its burrow“).
-    const bare = /^([a-z]+) [a-z]+s\b/.exec(text)?.[1];
+    // P70B T3: bez členu jen zvíře s klipy před slovesem na -s („rabbit defends its burrow“), nebo samo
+    // („rabbit“, „bunnies“ – P70E: holé slovo dávalo lišku z nouze).
+    const bare = /^([a-z]+)(?: [a-z]+s\b|$)/.exec(text)?.[1];
     return bare !== undefined && RIGGED_ANIMALS.has(singular(bare)) ? bare : null;
   }
   // „A gold mine where I hire…“, „a match 3 game“ – místo nebo žánr, ne postava.

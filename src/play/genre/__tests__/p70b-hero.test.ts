@@ -50,6 +50,10 @@ describe('the named animal stays the hero (P70B T3)', () => {
 
   it('a whole-game genre takes the sentence hero over its default; a hyphenated verb is no hero', () => {
     expect(draftGameSpecWithMeta('rabbit defends its burrow from snakes', 1).genre?.hero).toBe('rabbit');
+    // P70E: holé slovo majitele („rabbit“) hrálo liška z nouze; bez zvířete s klipy zůstane nouze.
+    expect(heroModel(draftGameSpecWithMeta('rabbit', 1).spec)).toBe(BUNNY);
+    expect(heroModel(draftGameSpecWithMeta('bunnies', 1).spec)).toBe(BUNNY);
+    expect(draftGameSpecWithMeta('golf', 1).spec.control).toBe('minigolf');
     expect(extractIntent('ninja cat wall-jumps up a skyscraper').hero).toBe('cat');
     expect(extractIntent('a piano duel between two cats in a jazz bar').hero).toBe('cat');
   }, 60_000);

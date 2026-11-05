@@ -215,7 +215,11 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
   // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
   const palette = draft.palette ?? (lookFor(setting) === null ? (sentenceLook(intent.sentence) ?? undefined) : undefined);
-  const content: GenreSpec = { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
+  // P70E: věta jen ze jména („a dragon“) jmenuje hrdinu, ne zároveň jeho pronásledovatele. Jen ona – „a panda
+  // rolling“ kutálí pandu z obsazení a „two knights duel“ má rytíře dva.
+  const nameOnly = words.every(word => /^(?:a|an|the|my|one|some)$/.test(word) || word === head(hero));
+  const others = nameOnly ? allowedCast.filter(item => head(item.label) !== head(hero)) : allowedCast;
+  const content: GenreSpec = { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: others.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
   // P63 T4: věc, kterou přidala slova věty, si nese i počet věty („picks six glowing mushrooms“ = 6, ne 10 ve vlně).
   const counts = composedCounts(intent.sentence, reading, draft, content);
   return counts === undefined ? content : { ...content, counts };

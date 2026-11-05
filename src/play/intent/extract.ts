@@ -19,6 +19,7 @@
  */
 
 import { familyOf } from '../genre/families';
+import { heroClass } from '../genre/hero-class';
 import { vocabVerb } from '../vocab';
 import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
@@ -764,7 +765,14 @@ export function extractIntent(sentence: string): Intent {
   const fleeingObject = chased !== undefined && /\b(?:swim|run|fly) away\b.*\bescape\b/.test(text) ? chased.thing?.head ?? null : null;
   // P70B T3: „help the rabbit jump“, „feed the hungry rabbits“ – komu věta pomáhá, je hrdina, když jiného nemá a scéna ho kreslí s klipy.
   const aided = /^(?:help|guide|save|feed|rescue) (?:the |a |an |my |all (?:the )?)?([a-z]+(?: [a-z]+){0,2})/.exec(text)?.[1].split(' ').map(singular).find(word => RIGGED_ANIMALS.has(word)) ?? null;
-  const hero = (named !== HERO ? named : null) ?? relationActor ?? pluralActor ?? (caused === HERO ? null : caused) ?? described ?? fleeingObject ?? (first !== undefined && first.actor !== HERO ? first.actor : null) ?? gameHero ?? ridden ?? aided;
+  // P70E: věta jen ze jména („rabbit“, „a dragon“, „zombies“) jmenuje, koho hráč hraje – i příšeru; bez toho
+  // nastoupil náhradník (liška, dítě) a jméno skončilo jako pronásledovatel nebo místo.
+  const lone = verbHits.length === 0 ? /^(?:(?:a|an|the|my|one|some) )?([a-z]+(?: [a-z]+)?)$/.exec(text)?.[1] : undefined;
+  const loneHead = lone === undefined ? null : singular(headOf(lone));
+  // Jen jméno, které slova tříd modelů znají jako postavu nebo stroj – „tetris“ ani „zombie apocalypse“ hrdinu nejmenují.
+  const loneClass = loneHead === null ? null : heroClass(loneHead);
+  const alone = loneClass !== null && loneClass !== 'prop' && !isPlace(loneHead!) ? loneHead : null;
+  const hero = (named !== HERO ? named : null) ?? relationActor ?? pluralActor ?? (caused === HERO ? null : caused) ?? described ?? fleeingObject ?? (first !== undefined && first.actor !== HERO ? first.actor : null) ?? gameHero ?? ridden ?? aided ?? alone;
   const heroName = hero ?? HERO;
 
   const drafts: Draft[] = [];
