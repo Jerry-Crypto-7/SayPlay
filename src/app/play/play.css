@@ -1035,6 +1035,8 @@ button.play-version-switch__item:not(:disabled) {
   display: flex;
   flex-direction: column;
   pointer-events: none;
+  /* Tažení přes kartu konce hru hraje, text neoznačuje (P71C T4). */
+  user-select: none;
   --_after: var(--sp-duration-base);
 }
 
@@ -1764,6 +1766,7 @@ button.play-version-switch__item:not(:disabled) {
   text-align: center;
   color: var(--sp-text);
   pointer-events: none;
+  user-select: none;
 }
 
 .play-first-prompt p {
