@@ -1,0 +1,223 @@
+{
+ "base": "http://127.0.0.1:3012",
+ "created": "2026-11-05T18:02:28.902Z",
+ "games": {
+  "golf-golf": {
+   "sentence": "golf",
+   "url": "/play/14668d53b00ee8f389bf77846168bb8c",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "minigolf",
+    "mode": "default"
+   },
+   "control": "minigolf",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "golf-mini": {
+   "sentence": "play mini golf",
+   "url": "/play/cae71e694f53438e0388b55f14c67b04",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "minigolf",
+    "mode": "default"
+   },
+   "control": "minigolf",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "golf-ball": {
+   "sentence": "a golf ball rolls into the hole",
+   "url": "/play/f53279271c9d7dbb2d65be00086757b3",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "minigolf",
+    "mode": "default"
+   },
+   "control": "minigolf",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "timing-rope": {
+   "sentence": "cut the rope at the right moment to feed the monster",
+   "url": "/play/8fc082f4012eebb3055208899cbd54a7",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "timing",
+    "mode": "precision"
+   },
+   "control": "timing",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "timing-platform": {
+   "sentence": "tap at the right time to stop the moving platform",
+   "url": "/play/d243351e8e722a4efd29adfb8d2cc932",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "timing",
+    "mode": "precision"
+   },
+   "control": "timing",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "timing-pancakes": {
+   "sentence": "stack pancakes as high as you can",
+   "url": "/play/daddb1bf9c599954455796f30b9e01a8",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "timing",
+    "mode": "stack"
+   },
+   "control": "timing",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "heroAction",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "rhythm": {
+   "sentence": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "url": "/play/ab34a9c5939f9f4cecb922d68cc62d3d",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "rhythm",
+    "mode": "default"
+   },
+   "control": "rhythm",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  },
+  "drawsave": {
+   "sentence": "draw walls to save a puppy from bees",
+   "url": "/play/544f5ce860aefb6703fdec9b645e6ed6",
+   "genre": {
+    "compilerVersion": "genre.v8",
+    "id": "drawsave",
+    "mode": "default"
+   },
+   "control": "drawsave",
+   "specKeys": [
+    "archetype",
+    "budgets",
+    "control",
+    "controlParams",
+    "genre",
+    "mechanics",
+    "objective",
+    "roles",
+    "schema",
+    "scoring",
+    "targetDurationSec",
+    "theme",
+    "title",
+    "tutorial",
+    "verification"
+   ]
+  }
+ }
+}
