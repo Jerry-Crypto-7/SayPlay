@@ -114,7 +114,7 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   const behind = (body: number): boolean => state[bodyBase(body) + BODY.z]! + state[bodyBase(body) + BODY.d]! / 2 < state[p + BODY.z]! - state[p + BODY.d]! / 2;
   // Férový start: překážku, kterou hráč minul během ochrany, sonda nahradí stejnou překážkou před ním – jinak by
   // náraz nic nedokázal (P70A T3, ma-024 „jump over logs“). Starší světy beze změny.
-  const passed = world.fairStart !== undefined && live(state, target) && [ROLE.obstacle, ROLE.hazard].includes(roleAt(state, target))
+  const passed = world.fairStart !== undefined && live(state, target) && (roleAt(state, target) === ROLE.obstacle || roleAt(state, target) === ROLE.hazard)
     && !homingPart(world, target) && behind(target);
   if (!live(state, target) || passed) {
     const code = roleAt(world.initial, target);
