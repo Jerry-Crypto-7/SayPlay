@@ -1,0 +1,231 @@
+{
+  "measuredAt": "2026-11-05T17:51:36.935Z",
+  "base": "http://127.0.0.1:3021",
+  "device": "Pixel 7 emulation 412x915, CPU x2 (CDP), native GPU, OpenXR off",
+  "method": "A/B interleaved per game, fresh context per visit; A = no MediaRecorder, B = real MediaRecorder (window.__clip marks start/stop; the app records only while the preview is smooth); FPS = 2 s of rAF during the running bot preview (B while recording when it recorded).",
+  "summary": {
+    "cpuRate": 2,
+    "games": 6,
+    "recorded": 6,
+    "markedSlow": 6,
+    "fpsP50": {
+      "A": 59.9,
+      "B": 59.9
+    },
+    "meanFps": {
+      "A": 59.8,
+      "B": 49.6
+    },
+    "fpsP5": {
+      "A": 59.9,
+      "B": 20
+    },
+    "clipsStored": 0,
+    "clipBytesMax": 31837,
+    "clipTypes": [],
+    "failed": 0,
+    "errors": 0,
+    "gate55": true,
+    "gateNoDrop": true
+  },
+  "visits": [
+    {
+      "versionId": "2f4599bfdebe21dab4f0cca6afcc0096",
+      "variant": "A",
+      "recorded": false,
+      "slow": false,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.9,
+        "meanFps": 60.1
+      },
+      "clip": null,
+      "errors": []
+    },
+    {
+      "versionId": "2f4599bfdebe21dab4f0cca6afcc0096",
+      "variant": "B",
+      "recorded": true,
+      "slow": true,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 20,
+        "meanFps": 49.6
+      },
+      "clip": {
+        "stored": false,
+        "state": "stopped",
+        "startedAt": 5994.600000143051,
+        "mimeType": "video/mp4;codecs=avc1.42E01E",
+        "bytes": 31837,
+        "stoppedAt": 6690.600000143051
+      },
+      "errors": []
+    },
+    {
+      "versionId": "269115f5704c4d98185c34e16fda6298",
+      "variant": "B",
+      "recorded": true,
+      "slow": true,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 20,
+        "meanFps": 51.8
+      },
+      "clip": {
+        "stored": false,
+        "state": "stopped",
+        "startedAt": 5205.799999952316,
+        "mimeType": "video/mp4;codecs=avc1.42E01E",
+        "bytes": 11555,
+        "stoppedAt": 5715.600000143051
+      },
+      "errors": []
+    },
+    {
+      "versionId": "269115f5704c4d98185c34e16fda6298",
+      "variant": "A",
+      "recorded": false,
+      "slow": false,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.9,
+        "meanFps": 59.9
+      },
+      "clip": null,
+      "errors": []
+    },
+    {
+      "versionId": "71e1da6a31933d22d31466fb74e5559d",
+      "variant": "A",
+      "recorded": false,
+      "slow": false,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.5,
+        "meanFps": 59
+      },
+      "clip": null,
+      "errors": []
+    },
+    {
+      "versionId": "71e1da6a31933d22d31466fb74e5559d",
+      "variant": "B",
+      "recorded": true,
+      "slow": true,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 20,
+        "meanFps": 48.3
+      },
+      "clip": {
+        "stored": false,
+        "state": "stopped",
+        "startedAt": 5539.5,
+        "mimeType": "video/mp4;codecs=avc1.42E01E",
+        "bytes": 20430,
+        "stoppedAt": 6122.900000095367
+      },
+      "errors": []
+    },
+    {
+      "versionId": "e684987eb4b3f359608ef5f04f476741",
+      "variant": "B",
+      "recorded": true,
+      "slow": true,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 20,
+        "meanFps": 48.4
+      },
+      "clip": {
+        "stored": false,
+        "state": "stopped",
+        "startedAt": 5434.900000095367,
+        "mimeType": "video/mp4;codecs=avc1.42E01E",
+        "bytes": 13224,
+        "stoppedAt": 5987
+      },
+      "errors": []
+    },
+    {
+      "versionId": "e684987eb4b3f359608ef5f04f476741",
+      "variant": "A",
+      "recorded": false,
+      "slow": false,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.5,
+        "meanFps": 59.6
+      },
+      "clip": null,
+      "errors": []
+    },
+    {
+      "versionId": "53b507b012e5d9cc0f0846f5e58f1fe4",
+      "variant": "A",
+      "recorded": false,
+      "slow": false,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.9,
+        "meanFps": 59.8
+      },
+      "clip": null,
+      "errors": []
+    },
+    {
+      "versionId": "53b507b012e5d9cc0f0846f5e58f1fe4",
+      "variant": "B",
+      "recorded": true,
+      "slow": true,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.5,
+        "meanFps": 48.7
+      },
+      "clip": {
+        "stored": false,
+        "state": "stopped",
+        "startedAt": 4681.099999904633,
+        "mimeType": "video/mp4;codecs=avc1.42E01E",
+        "bytes": 0,
+        "stoppedAt": 5186.799999952316
+      },
+      "errors": []
+    },
+    {
+      "versionId": "16ef692bec97d50662f0270289dcd344",
+      "variant": "B",
+      "recorded": true,
+      "slow": true,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 30,
+        "meanFps": 54.6
+      },
+      "clip": {
+        "stored": false,
+        "state": "stopped",
+        "startedAt": 5206.299999952316,
+        "mimeType": "video/mp4;codecs=avc1.42E01E",
+        "bytes": 26396,
+        "stoppedAt": 5708
+      },
+      "errors": []
+    },
+    {
+      "versionId": "16ef692bec97d50662f0270289dcd344",
+      "variant": "A",
+      "recorded": false,
+      "slow": false,
+      "fps": {
+        "fpsP50": 59.9,
+        "fpsP5": 59.9,
+        "meanFps": 59.8
+      },
+      "clip": null,
+      "errors": []
+    }
+  ]
+}
