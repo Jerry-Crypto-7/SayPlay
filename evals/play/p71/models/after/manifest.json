@@ -1,0 +1,34 @@
+{
+ "viewport": "390x844",
+ "second": 3,
+ "renderer": "d3d11",
+ "takenAt": "2026-11-05T17:44:57.766Z",
+ "rows": [
+  {
+   "id": "hop",
+   "seed": 71504,
+   "model": "chicken",
+   "text": "a chicken crosses the busy road",
+   "versionId": "11b80daa9712197160e30232e5ff83d8",
+   "chain": false,
+   "genre": "hop",
+   "control": "hop",
+   "setting": "road",
+   "file": "hop.png",
+   "tick": 180,
+   "runState": "running",
+   "calls": 51,
+   "glb": [
+    "/assets/worldstream/cc0/cc0-chicken-lod1.glb",
+    "/assets/worldstream/cc0/cc0-pine-lod1.glb",
+    "/assets/worldstream/cc0/cc0-train-lod1.glb",
+    "/assets/worldstream/cc0/cc0-wood-log-lod1.glb",
+    "/assets/worldstream/game/finish-flag-lod1.glb",
+    "/assets/worldstream/game/race-car-lod1.glb",
+    "/assets/worldstream/gen3d/gen3d-bald-eagle-lod1.glb"
+   ],
+   "failed": [],
+   "errors": []
+  }
+ ]
+}
