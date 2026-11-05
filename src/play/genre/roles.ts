@@ -132,9 +132,10 @@ const FILLER_HEROES: ReadonlySet<string> = new Set(['fox', UNKNOWN_PLACE.hero]);
 export function defaultHero(setting: string, genre: GenreId, sentence: string, read = false): string {
   const place = placeRoles(setting) ?? UNKNOWN_PLACE;
   if (genre === 'voyage') return craftOf(sentence) ?? place.craft;
-  const worker = WORK_GENRES[genre];
+  const text = sentence.toLowerCase();
+  // Hledání jedné věci (P71D T4, úkol) hraje dítě – hledač pokladu, ne liška ani průzkumník z nouze.
+  const worker = WORK_GENRES[genre] ?? (genre === 'quest' && /\b(?:find(?:s|ing)?|search(?:es|ing)? for|look(?:s|ing)? for)\b/.test(text) ? 'kid' : undefined);
   if (worker !== undefined) {
-    const text = sentence.toLowerCase();
     return WORK_HEROES.find(([words]) => words.test(text))?.[1] ?? (FILLER_HEROES.has(place.hero) ? worker : place.hero);
   }
   return read && place.hero === 'fox' ? UNKNOWN_PLACE.hero : place.hero;

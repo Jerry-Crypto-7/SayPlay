@@ -1,5 +1,6 @@
 import type { GenreSpec } from '../genre/contract';
 import { GENRE_ACTIONS, GENRE_MOVES, type Intent } from '../intent/contract';
+import { FIND_ONE } from '../genre/classify';
 import { heroClass } from '../genre/roles';
 import { PRESETS, type RecipeAssembly } from './presets';
 import type { Recipe } from './recipe';
@@ -56,7 +57,10 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   // a catch is a whole game, so the read genre's own action (collecting) was never asked for.
   const unsaid = objective === 'defeat' && move === 'roam' ? ['fight' as const] : move === base.move && objective !== 'catch' ? base.actions : [];
   const asked = action.length ? action : unsaid;
-  const plays = (recipe: Recipe) => asked.every(verb => recipe.actions.includes(verb));
+  // P71D T4: a quest for one found thing ("find the lost crown") plays the collect its "find" reads as.
+  // Only one singular thing is a quest target ("looking for lost carrots" stays the arena), as in the classifier.
+  const finds = selected.genre === 'quest' && selected.mode === 'spatial' && FIND_ONE.test(intent.sentence.toLowerCase().replace(/\s+/g, ' ').trim());
+  const plays = (recipe: Recipe) => asked.every(verb => recipe.actions.includes(verb) || verb === 'collect' && finds);
   const threats = items.filter(item => item.axis === 'threat').map(item => item.verb) as Recipe['threats'];
   const defaults: Partial<Record<Recipe['move'], Pick<GenreSpec, 'genre' | 'mode'>>> = {
     run: { genre: 'runner', mode: 'default' }, jump: { genre: 'platformer', mode: 'default' },

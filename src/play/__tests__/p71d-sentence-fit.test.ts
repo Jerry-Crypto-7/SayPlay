@@ -121,3 +121,17 @@ describe('a craft that shoots at a thing plays the shooter (P71D T2)', () => {
     for (const sentence of ['a fish swims through the reef', 'a submarine shoots torpedoes at sharks']) expect(hint(sentence)).toMatch(/\bto swim\b/);
   }, 120_000);
 });
+
+describe('finding one thing is a quest, collecting many stays the arena (P71D T4)', () => {
+  it('a found thing is one quest target in one round', () => {
+    const { spec } = draftGameSpecWithMeta('find the lost crown', 1);
+    expect(spec.genre?.id).toBe('quest');
+    expect(spec.roles.find((role) => role.kind === 'target')?.count).toBe(1);
+    expect(spec.tutorial.goalLine).not.toMatch(/\brounds?\b/);
+  }, 120_000);
+
+  it.each(['collect 10 crowns', 'find 5 keys', 'find all the coins in the forest'])('%s stays the arena collect', (sentence) => {
+    const meta = draftGameSpecWithMeta(sentence, 1);
+    expect(`${String(meta.genre?.genre)}.${String(meta.genre?.mode)}`).toBe('arena.collect');
+  }, 120_000);
+});
