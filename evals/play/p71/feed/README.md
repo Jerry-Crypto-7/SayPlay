@@ -31,6 +31,8 @@ Chyba konzole `avc1` z prvního běhu po fd48c892 (`avc3`) zmizela.
 
 **e2e proti 3021 (chromium):** `play-feed-perf.spec.ts` zelený, `play-feed-reels.spec.ts` 16/16 (i nový test: ≥ 3 klipy přehrály ≥ 0,5 s za 12 s, nikdy dva viditelné naráz). `play-feed-phone.spec.ts` 2 červené – **stejně červený i na čistém `main` c7037ab8** (vlastní build, prázdný `PLAY_STORE_DIR`, port 3022): telefon „card 3 (swipe): no running preview of null within 45000 ms“, desktop „expected preview, received play“ po pohybu kolečkem. Obě po 2. kartě vestavěného poolu „Mini Golf Pirate Ship“; pool přeuspořádal P70C 4. 11., test počítá s arénou na 3. místě (naposledy upravený 30. 10.). Předexistující, ne P71B.
 
+**R1 (a832b034) – příčina a oprava:** robot v náhledu minigolf míček potopí uvnitř okna; v pauze 600 ms na konci okna přestal běh `running`, zmizela značka `play-demo`, feed četl „play“ a CSS reel zamklo (`overflow: hidden`) – swipe neprošel, karta po kolečku hlásila „play“ (sonda: `preview` → `play` na tiku 432 → `preview`, 0 vstupů). Značka teď drží celý náhled; přebití `touch-action: pan-y` v náhledu platí i pro vrstvy uvnitř scény (`minigolf-pull` má vlastní `none`). Po opravě `play-feed-phone.spec.ts` 2/2 zelený (prázdný `PLAY_STORE_DIR`), perf + reels 18/18; nový test „never locks“ byl před opravou červený.
+
 ### První běh (před střídáním)
 
 | | kontrol | hýbe se | FPS aktivní karty | chyby konzole |
