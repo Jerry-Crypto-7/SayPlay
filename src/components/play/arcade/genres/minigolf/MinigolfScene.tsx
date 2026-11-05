@@ -7,7 +7,7 @@
  * kolem povrch, kulisy a horizont sady (`look`). Míček je hráč, kutálí se po stavu jádra – kreslí ho scéna jako
  * kouli: model `gen3d-golf-ball` má odlitý týček s trávníkem a kutálel se s ním.
  *
- * **Kamera** přes rameno za míčkem ve směru míření ze stavu (`minigolf-camera.ts`), tlumený přechod mezi klidem
+ * **Kamera** za míčkem po ose z míčku na cíl trasy (`minigolf-camera.ts`, míření ji nehýbe), tlumený přechod mezi klidem
  * a sledováním; na výšku přes `usePlayRectRef` + `fitTall`. **Natažení** dělá DOM vrstva `MinigolfTouch` – registr
  * `GENRE_TOUCH` montuje jen vstup `genre`, minigolf má `throw-rig`, pro který `ArcadeStage` na plátně nic nemá, takže
  * ji scéna sama připojí do kontejneru plátna (`surface`) vlastním kořenem Reactu.

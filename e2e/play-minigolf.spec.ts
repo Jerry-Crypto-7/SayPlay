@@ -13,7 +13,7 @@ import { HUD_COUNTER_LABELS } from './hud-labels';
  * ve strašidelném domě, tři dýně jako odrazníky, pohyblivá rakev; seed v JSON) přes `POST /api/play/games` –
  * publikační brána s robotem projde. Pak:
  * - telefon (`pixel7-touch`, `iphone-touch`): celou jamku dohraje prst – stisk v herní ploše pod horním pásem HUD,
- *   natažení zpět o `pullFor(míření při stisku, osa, nabití)` (roste tik po tiku, dokud robot ověřovače drží `HOLD`),
+ *   natažení zpět o `pullFor(osa kamery při stisku, osa, nabití)` (roste tik po tiku, dokud robot ověřovače drží `HOLD`),
  *   puštění = rána, když robot chce `TAP`; vede ho `botWants` sondy `__playShell`; počítadlo `Strokes` v DOM vyroste
  *   aspoň na 1, konec kartou výhry; míček i jamka jsou v záběru na výšku;
  * - desktop (`chromium`): šipky otočí míření a držený mezerník nabije a pustí ránu (vstup v záznamu, `Strokes` = 1),
@@ -307,7 +307,7 @@ test.describe('minigolf (P68V T9)', () => {
         return shell.botWants();
       });
       let last: Now = { runState: 'running', tick: 0, score: 0 };
-      /** Míření ve stavu při stisku: 0 na tiku 0, pak osa poslední rány (pin v `minigolf-replay.test.ts`). */
+      /** Osa kamery při stisku (`data-axis` vrstvy, `minigolfCameraAxis`): z míčku na cíl trasy, míření ji nehýbe. */
       let base = 0;
       let axis = 0;
       let charge = 0;
@@ -323,7 +323,6 @@ test.describe('minigolf (P68V T9)', () => {
         if (tap && fingers.has(FINGER)) {
           // Robot pouští: prst se zvedne, rána letí s nabitím, které tah držel.
           await fingers.lift(FINGER);
-          base = axis;
           putts += 1;
           if (rollShotAt < 0) rollShotAt = last.tick + 1 + ROLL_SHOT_DELAY;
           await frames(page);
@@ -333,6 +332,7 @@ test.describe('minigolf (P68V T9)', () => {
             const at = await startAt();
             if (at.blockedBy !== null) blocked.push({ putt: putts + 1, by: at.blockedBy });
             [cx, cy] = [at.x, at.y];
+            base = Number(await page.getByTestId('minigolf-pull').getAttribute('data-axis'));
             await fingers.press(FINGER, cx, cy);
             charge = 0;
           }

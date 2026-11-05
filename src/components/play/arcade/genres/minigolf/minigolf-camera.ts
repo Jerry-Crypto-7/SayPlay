@@ -1,6 +1,6 @@
 /**
- * Kamera minigolfu (P68 T8, P70D T3): vždy se dívá po ose míření ze stavu (`aux0` míčku, ne z prstu) – tah prstu
- * (`minigolf-touch.ts`) čte úhel proti směru kamery, takže její natočení musí zůstat rovnoběžné s osou.
+ * Kamera minigolfu (P68 T8, P70D T3, P71C T1): dívá se po ose kamery `minigolfCameraAxis` – z míčku na cíl trasy, ne
+ * po míření (`aux0`), takže míření kamerou nehne. Tah prstu (`minigolf-touch.ts`) se měří proti téže ose.
  *
  * - **V klidu** přehled 3/4: sklon `rest.pitch`° dolů, kamera posunutá na střed krabice z míčku a zbytku trasy od
  *   cíle (`minigolfFocus`) po jamku včetně vlajky; odstup a výška z `fitTall`, takže čím dál jamka, tím výš a dál.
@@ -17,7 +17,7 @@ import { Box3, MathUtils, PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { MinigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
-import { minigolfAim } from '@/play/arcade/pieces/minigolf-roll';
+import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
 import { type PlayRect, fitTall, playRect } from '../../portrait-frame';
 
@@ -86,6 +86,24 @@ export function minigolfFocus(course: MinigolfCourseView, x: number, z: number):
   return course.route[0] as Point;
 }
 
+/** Míček ze stavu (jednotky jádra): poloha, místo poslední rány (`respawnX/Z`) a jestli se valí. */
+function ballOf(state: ArrayLike<number>): { readonly x: number; readonly z: number; readonly fromX: number; readonly fromZ: number; readonly rolling: boolean } {
+  const p = bodyBase(state[HEADER.player] as number);
+  const rolling = (state[p + BODY.vx] as number) !== 0 || (state[p + BODY.vz] as number) !== 0;
+  return { x: state[p + BODY.x] as number, z: state[p + BODY.z] as number, fromX: state[HEADER.respawnX] as number, fromZ: state[HEADER.respawnZ] as number, rolling };
+}
+
+/**
+ * Osa kamery (P71C T1) v tvaru osy míření jádra: směr z míčku na cíl trasy (`minigolfFocus`); míček v pohybu z místa
+ * rány, takže se osa během valení nemění. Míření (`aux0`) ji nehýbe – tah prstu se měří proti ní (`MinigolfTouch`).
+ */
+export function minigolfCameraAxis(state: ArrayLike<number>, course: MinigolfCourseView): number {
+  const ball = ballOf(state);
+  const [x, z] = ball.rolling ? [ball.fromX, ball.fromZ] : [ball.x, ball.z];
+  const [fx, fz] = minigolfFocus(course, x, z);
+  return minigolfAxisToward(fx - x, fz - z);
+}
+
 export interface MinigolfCameraPose {
   /** Poloha kamery a bod, na který se dívá (scéna, m). Na výšku posunuté fitem o týž vektor – orientace drží. */
   readonly position: Vector3;
@@ -98,15 +116,12 @@ export interface MinigolfCameraPose {
 const scratch = { camera: new PerspectiveCamera(MINIGOLF_CAMERA.fov, 1, 0.1, 500), box: new Box3(), corner: new Vector3() };
 
 /**
- * Póza kamery ze stavu: míček (hráč) a jeho míření (`aux0`), pohyb podle `vx/vz`. `rect` = hrací obdélník plátna
- * (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna.
+ * Póza kamery ze stavu: míček (hráč) a osa kamery (`minigolfCameraAxis`), pohyb podle `vx/vz`. `rect` = hrací obdélník
+ * plátna (`usePlayRectRef`), `null` = nezměřený – pak póza bez fitu. `fov` = zorný úhel kamery plátna.
  */
 export function minigolfCameraPose(state: ArrayLike<number>, aspect: number, rect: PlayRect | null, course: MinigolfCourseView, fov: number = MINIGOLF_CAMERA.fov): MinigolfCameraPose {
-  const p = bodyBase(state[HEADER.player] as number);
-  const x = state[p + BODY.x] as number;
-  const z = state[p + BODY.z] as number;
-  const rolling = (state[p + BODY.vx] as number) !== 0 || (state[p + BODY.vz] as number) !== 0;
-  const [ax, az] = minigolfAim(state[p + BODY.aux0] as number);
+  const { x, z, rolling } = ballOf(state);
+  const [ax, az] = minigolfAim(minigolfCameraAxis(state, course));
   const ball = new Vector3(-x / UNIT, 0, z / UNIT);
   const ahead = new Vector3(-ax, 0, az).normalize();
   const focus = minigolfFocus(course, x, z);
