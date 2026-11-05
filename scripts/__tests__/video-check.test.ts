@@ -20,8 +20,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
   LIMIT_SECONDS,
+  MAX_VIDEO_BYTES,
   REQUIRED_BEATS,
   contiguityError,
+  ffprobeDuration,
   main,
   missingBeats,
   parseSegments,
@@ -89,9 +91,52 @@ describe('exit kód: dva vzorky, obě větve', () => {
     expect(run('nad-limitem', fullScript('3:20'))).toBe(1);
   });
 
-  it('přesně na limitu ještě projde, o sekundu dál už ne', () => {
-    expect(run('na-limitu', fullScript('3:00'))).toBe(0);
-    expect(run('sekundu-pres', fullScript('3:01'))).toBe(1);
+  // P71A: limit je ostře pod 3:00 – scénář na přesně 3:00 už neprojde.
+  it('sekundu pod limitem projde, přesně na limitu už ne', () => {
+    expect(run('sekundu-pod', fullScript('2:59'))).toBe(0);
+    expect(run('na-limitu', fullScript('3:00'))).toBe(1);
+  });
+});
+
+describe('hotové MP4 (P71A)', () => {
+  /** Exit kód nad `.mp4` s podvrženou délkou a velikostí; výpis vrací pro kontrolu důvodu. */
+  function video(probe: () => { seconds: number } | { error: string }, bytes = 40_000_000): { code: number; out: string } {
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((line: string) => { lines.push(line); });
+    try {
+      return { code: main([join(dir, 'final.mp4')], { probe, sizeOf: () => bytes }), out: lines.join('\n') };
+    } finally {
+      spy.mockRestore();
+    }
+  }
+
+  it('179,9 s projde, 180,0 s už ne', () => {
+    expect(video(() => ({ seconds: 179.9 })).code).toBe(0);
+    expect(video(() => ({ seconds: 180 })).code).toBe(1);
+  });
+
+  it('soubor nad 100 MB neprojde ani s krátkou délkou', () => {
+    expect(video(() => ({ seconds: 60 }), MAX_VIDEO_BYTES).code).toBe(0);
+    const { code, out } = video(() => ({ seconds: 60 }), MAX_VIDEO_BYTES + 1);
+    expect(code).toBe(1);
+    expect(out).toContain('MB');
+  });
+
+  it('chybějící ffprobe je čitelná chyba a exit 1, ne tichý průchod', () => {
+    const missing = ffprobeDuration(join(dir, 'final.mp4'), join(dir, 'no-such-ffprobe'));
+    expect(missing).toEqual({ error: expect.stringContaining('ffprobe nenalezen') });
+    const { code, out } = video(() => missing);
+    expect(code).toBe(1);
+    expect(out).toContain('ffprobe nenalezen');
+  });
+
+  it('nečitelný soubor videa skončí nenulově', () => {
+    const silent = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      expect(main([join(dir, 'neni-tam.mp4')], { probe: () => ({ seconds: 10 }) })).toBe(1);
+    } finally {
+      silent.mockRestore();
+    }
   });
 });
 
@@ -181,10 +226,11 @@ describe('missingBeats', () => {
 });
 
 describe('argument a nečitelný soubor', () => {
-  it('bez argumentu skončí nenulově', () => {
+  it('bez argumentu vypíše použití a skončí dvojkou', () => {
     const silent = vi.spyOn(console, 'log').mockImplementation(() => {});
     try {
-      expect(main([])).toBe(1);
+      expect(main([])).toBe(2);
+      expect(silent).toHaveBeenCalledWith(expect.stringContaining('použití'));
     } finally {
       silent.mockRestore();
     }

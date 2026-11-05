@@ -32,5 +32,12 @@ export declare function missingBeats(segments: Segment[]): string[];
 /** `m:ss` ze sekund. */
 export declare function formatTime(seconds: number): string;
 
-/** `0` když scénář projde, `1` když ne. */
-export declare function main(argv: string[]): number;
+export declare const MAX_VIDEO_BYTES: number;
+
+export type Probe = { seconds: number; error?: undefined } | { seconds?: undefined; error: string };
+
+/** Délka videa z `ffprobe`, nebo čitelný důvod, proč ji nejde zjistit. */
+export declare function ffprobeDuration(file: string, bin?: string): Probe;
+
+/** `0` když scénář nebo video projde, `1` když ne, `2` bez argumentu. */
+export declare function main(argv: string[], deps?: { probe?: (file: string) => Probe; sizeOf?: (file: string) => number }): number;
