@@ -25,7 +25,7 @@ describe('a sentence that is only a name plays that name', () => {
   it('a monster named alone is not also its own chaser', () => {
     for (const sentence of ['a dragon', 'zombies', 'ghost', 'shark']) {
       const hero = player(sentence)!;
-      expect(roles(sentence).filter((role) => role.kind !== 'player' && role.kind !== 'rival').map((role) => role.label)).not.toContain(hero);
+      expect(roles(sentence).filter((role) => role.kind !== 'player' && role.id !== 'rival').map((role) => role.label)).not.toContain(hero);
     }
   }, 120_000);
 
