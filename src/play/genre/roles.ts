@@ -182,5 +182,7 @@ export function semanticRoleDefaults(sentence: string): readonly string[] {
   if (/\b(?:basketball|free throws?)\b/.test(text)) return ['basketball', 'hoop'];
   if (/\b(?:mini[ -]?)?golf\b/.test(text)) return ['golf ball', 'hole'];
   if (/\b(?:soccer|football|penalty kicks?)\b/.test(text)) return ['football', 'goal'];
+  // „cut the rope“ (P71C T3): na laně visí bonbon a dole čeká, kdo ho sní – i když věta jmenuje jen jednoho.
+  if (/\bcut (?:the |a )?ropes?\b/.test(text)) return ['candy', 'monster'];
   return [];
 }

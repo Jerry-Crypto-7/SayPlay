@@ -263,7 +263,9 @@ export function createArcadeSession(
     prev: () => prev,
     press: (buttons, axis = 0) => {
       if (halted) return;
-      if (!started && swallowFirst && buttons !== 0) {
+      // Spolkne se jen spouštěcí ťuk před prvním tikem (P71C T3): sonda, která tiky odtiká
+      // sama (`handPlay`), by jinak spolkla první ťuk robota a načasování by prohrála.
+      if (!started && swallowFirst && buttons !== 0 && (state[HEADER.tick] as number) === 0) {
         started = true;
         return;
       }

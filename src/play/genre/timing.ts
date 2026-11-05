@@ -49,6 +49,13 @@ const TEXT: Readonly<Record<TimingMode, { readonly title: string; readonly piece
 const STACKED = /\bstack(?:s|ing)? (?:the |a |an |some |\d+ )?([a-z]+)\b|\b([a-z]+) (?:tower|stack)\b/;
 const NOT_A_PIECE = /^(?:as|up|on|them|it|high|tallest|highest|helix|the|a|an)$/;
 
+/**
+ * „cut the rope … feed the monster“ (P71C T3): věc visí na laně nad tím, koho krmí, a ťuk lano přestřihne.
+ * Krmí se příšera, kterou věta jmenuje (`feed the frog`), jinak příšera; visí, co se krmí (`feed the candy to`), jinak bonbon.
+ */
+const ROPE = /\bcut (?:the |a )?ropes?\b/;
+const FED = /\bfeed (?:the |a |an |my )?([a-z]+)(?: to (?:the |a |an |my )?([a-z]+))?/;
+
 export const timingGenre: GenreModule<'timing'> = {
   id: 'timing',
   modes: ['stack', 'precision', 'bridge'],
@@ -63,7 +70,10 @@ export const timingGenre: GenreModule<'timing'> = {
     const text = TEXT[spec.mode];
     // P58A T6: věc z věty nese i ručička lišty („flipping pancakes“) – scéna ji kreslí na ručičce; můstek má prkno.
     const piece = spec.mode === 'bridge' ? text.piece : (castFor(spec, 'collect')?.label ?? text.piece);
-    const goal = text.goal(rounds, piece);
+    // P71C T3: věc z věty (`collect`) a komu ji lišta dopraví (`reach`) – scéna ho kreslí nad cílem a věc mu visí na laně.
+    // Jen cíl bez věci („build a bridge at the right time“) lano nemá.
+    const fed = spec.mode === 'precision' && castFor(spec, 'collect') !== undefined ? castFor(spec, 'reach')?.label : undefined;
+    const goal = fed === undefined ? text.goal(rounds, piece) : `Cut the rope when the ${piece} is over the ${fed} – ${counted(rounds, 'time')}. It speeds up.`;
     return legacySpec(spec, {
       control: 'timing',
       // Brzký a pozdní ťuk odpuštěný jako skok skákačky (P37A T7).
@@ -75,15 +85,29 @@ export const timingGenre: GenreModule<'timing'> = {
       roles: [
         { id: 'block', kind: 'collectible', label: piece, count: Math.min(50, rounds) },
         { id: 'miss', kind: 'hazard', label: 'missed drop' },
-        { id: 'finish', kind: 'exit', label: text.finish },
+        { id: 'finish', kind: 'exit', label: fed ?? text.finish },
       ],
-      tutorial: { goalLine: goal, controlsHint: text.hint },
+      tutorial: { goalLine: goal, controlsHint: fed === undefined ? text.hint : 'Tap or Space to cut the rope.' },
       mood: 'playful',
     });
   },
   draftFill: (sentence, reading) => {
     const { hero, setting } = draftRoles(sentence, reading);
-    const match = STACKED.exec(sentence.toLowerCase());
+    const text = sentence.toLowerCase();
+    if (ROPE.test(text)) {
+      const fed = FED.exec(text);
+      const [hanging, eater] = fed?.[2] === undefined ? ['candy', fed?.[1] ?? 'monster'] : [fed[1] ?? 'candy', fed[2]];
+      return {
+        genre: 'timing',
+        ...(hero === undefined ? {} : { hero }),
+        ...(setting === undefined ? {} : { setting }),
+        cast: [
+          { label: singular(hanging), does: 'collect' as const },
+          { label: singular(eater), does: 'reach' as const },
+        ],
+      };
+    }
+    const match = STACKED.exec(text);
     const stacked = match === null ? undefined : (match[1] ?? match[2]);
     const piece = stacked === undefined || NOT_A_PIECE.test(stacked) ? undefined : singular(stacked);
     return {
