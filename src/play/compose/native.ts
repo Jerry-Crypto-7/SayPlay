@@ -1,4 +1,5 @@
 import type { CastRole, GenreSpec } from '../genre/contract';
+import { heroClass } from '../genre/hero-class';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { UNIT } from '../arcade/contract';
 import { GLIDE_FINALE, glideFinaleMinM, glideRingZs } from '../arcade/pieces/glide';
@@ -36,6 +37,9 @@ export function nativeSpec(recipe: Recipe, content: GenreSpec, paced = true): Ga
       recipe.threats.some(threat => !['rival', 'chaser', 'obstacle'].includes(threat)) ||
       recipe.threats.includes('rival') && recipe.objective !== 'race' || recipe.threats.includes('chaser') && recipe.objective !== 'escape') return unsupported();
     const shoot = recipe.actions.includes('shoot');
+    // P71D T2: raketa ani orel neplavou – plave ryba, ponorka a tučňák.
+    const kind = heroClass(content.hero);
+    const glides = kind === 'aircraft' || (kind === 'bird' && !/\bpenguins?\b/i.test(content.hero)) ? 'fly' : 'swim';
     const topSpeed = bounded(params.topSpeed, 180, 120, 240);
     // Nová hra: kratší trať (i z odpovědi režiséra) by neměla konec, který telemetrie uzná (`glideFinaleMinM`, T5b).
     const lengthM = Math.max(paced ? glideFinaleMinM(topSpeed) : 0, bounded(params.lengthM, paced ? GLIDE_FINALE.lengthM : 160, 80, 400));
@@ -47,7 +51,7 @@ export function nativeSpec(recipe: Recipe, content: GenreSpec, paced = true): Ga
     if (shoot) roles.push(role('enemy', 'hazard', label('shoot_at', 'target')));
     const goal = recipe.objective === 'race' ? 'Pass every ring and finish before your rival.' : recipe.objective === 'escape' ? 'Pass every ring and reach the finish without being caught.' : 'Pass every ring and reach the finish.';
     return base('glide', { generator: 'glide_course', mode: recipe.objective as 'reach' | 'collect' | 'race' | 'escape', ...(params.clearancePermille === undefined ? {} : { clearancePermille: params.clearancePermille }), ...(params.clearanceRisePermille === undefined ? {} : { clearanceRisePermille: params.clearanceRisePermille }), difficulty: 'normal', lengthM, topSpeed, ...(paced ? { segments: true } : {}) }, goal,
-      shoot ? 'Drag in two directions to swim. Second finger or Space fires. Shift brakes.' : 'Drag in two directions, or use arrows to swim. Shift or a second finger brakes.',
+      shoot ? `Drag in two directions to ${glides}. Second finger or Space fires. Shift brakes.` : `Drag in two directions, or use arrows to ${glides}. Shift or a second finger brakes.`,
       recipe.objective === 'collect' ? { kind: 'collect', description: goal, role: 'glide_ring', count: rings } : { kind: 'reach', description: goal, role: 'finish' }, shoot ? ['shoot'] : []);
   }
 

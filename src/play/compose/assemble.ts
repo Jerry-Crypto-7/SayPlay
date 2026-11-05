@@ -19,7 +19,12 @@ export interface AssemblySource {
  */
 export function saidMove(intent: Intent): Recipe['move'] | undefined {
   const items = intent.items.filter(item => item.essential);
-  const explicit = items.find(item => item.axis === 'move')?.verb as Recipe['move'] | undefined;
+  // P71D T2: let, který domýšlí jen jméno letadla („a spaceship shoots asteroids“), nepřebije střelbu na věc věty –
+  // hraje střílečka. Kroužky s „Drag… to swim“ střelbu schovaly (QA 5. 11.). Pohyb řečený slovesem platí dál.
+  const aims = !intent.negated.includes('shoot') && items.some(item => item.axis === 'action' && item.verb === 'shoot' && item.object !== null && (item.actor === intent.hero || item.actor === 'hero'));
+  const craftOnly = (item: Intent['items'][number]): boolean =>
+    aims && item.verb === 'glide' && intent.hero !== null && item.actor === intent.hero && heroClass(intent.hero) === 'aircraft' && item.said.toLowerCase().startsWith(intent.hero);
+  const explicit = items.find(item => item.axis === 'move' && !craftOnly(item))?.verb as Recipe['move'] | undefined;
   if (explicit !== undefined) return explicit;
   if (intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '')) return 'drive';
   const shoots = items.some(item => item.verb === 'shoot') && !intent.negated.includes('shoot');

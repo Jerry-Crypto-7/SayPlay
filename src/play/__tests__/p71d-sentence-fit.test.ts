@@ -7,6 +7,10 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { ARCADE_HZ } from '@/play/arcade/contract';
+import { replay } from '@/play/arcade/kernel';
+import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { heroModel } from '@/play/arcade/models';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft';
@@ -97,5 +101,23 @@ describe('a sentence plays the game its verb and hero name (P71D)', () => {
 
   it.each(CASES)('$sentence gets the expected genre, hero and thing', (test) => {
     expect(miss(test)).toBeNull();
+  }, 120_000);
+});
+
+describe('a craft that shoots at a thing plays the shooter (P71D T2)', () => {
+  it('an idle player of a shoot sentence loses no sooner than 5 s in', () => {
+    const early = CASES.filter((test) => test.genres === SHOOT).flatMap((test) => {
+      const made = arcadeWorldOf(draftGameSpecWithMeta(test.sentence, 1).spec, 1);
+      if (!made.ok) return [`${test.sentence}: ${made.issues.join('; ')}`];
+      const idle = replay(made.world, [], ARCADE_LIBRARY);
+      return idle.outcome === 'lost' && idle.tick >= 5 * ARCADE_HZ ? [] : [`${test.sentence}: ${idle.outcome} at ${String(idle.tick)}`];
+    });
+    expect(early).toEqual([]);
+  }, 120_000);
+
+  it('a flying craft or bird in a glide course flies; a fish, a penguin and a submarine swim', () => {
+    const hint = (sentence: string): string => draftGameSpecWithMeta(sentence, 1).spec.tutorial.controlsHint;
+    for (const sentence of ['a plane flies through the clouds', 'an eagle glides over the mountains']) expect(hint(sentence)).toMatch(/\bto fly\b/);
+    for (const sentence of ['a fish swims through the reef', 'a submarine shoots torpedoes at sharks']) expect(hint(sentence)).toMatch(/\bto swim\b/);
   }, 120_000);
 });
