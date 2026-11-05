@@ -175,8 +175,15 @@ export function ReelFeed() {
     if (current === undefined || currentDetail === undefined || currentDetail === 'error' || currentDetail.arcade === undefined) return;
     const versionId = current.versionId;
     let live = true;
+    // Náhled, který minule nevyšel (`null`), se při další návštěvě karty počítá znovu (P71B T1); do té doby karta ukazuje plakát.
+    setPreviews((prev) => {
+      if (prev.get(versionId) !== null) return prev;
+      const next = new Map(prev);
+      next.delete(versionId);
+      return next;
+    });
     void previewFor(versionId, currentDetail.preview, currentDetail.arcade).then((preview) => {
-      if (live) setPreviews((prev) => (prev.has(versionId) ? prev : new Map(prev).set(versionId, preview)));
+      if (live) setPreviews((prev) => (prev.get(versionId) === preview ? prev : new Map(prev).set(versionId, preview)));
     });
     return () => {
       live = false;

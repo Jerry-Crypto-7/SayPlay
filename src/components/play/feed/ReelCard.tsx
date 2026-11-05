@@ -127,6 +127,7 @@ function ActiveSlide({
   host,
   preview,
   round,
+  shot,
 }: {
   /** Návrat z výsledku do náhledu – nový klíč hry (`useResultIdle`). */
   readonly round: number;
@@ -136,13 +137,18 @@ function ActiveSlide({
   readonly host: StageTunnel;
   /** `undefined` = náhled se ještě počítá, `null` = hra hraje bez něj. */
   readonly preview: FeedPreview | null | undefined;
+  readonly shot: string | undefined;
 }) {
   const still = useReducedMotion();
   if (detail === undefined || (detail !== 'error' && detail.arcade !== undefined && preview === undefined && !still)) {
+    // Načítání (P71B T1): plakát karty jako u neaktivní karty, ne holý text.
     return (
-      <p className="play-pager-note" role="status">
-        Loading {game.title}…
-      </p>
+      <>
+        <Poster game={game} spec={detail?.spec ?? null} shot={shot} />
+        <p className="play-sr-only" role="status">
+          Loading {game.title}…
+        </p>
+      </>
     );
   }
   if (detail === 'error') {
@@ -153,11 +159,20 @@ function ActiveSlide({
     );
   }
   if (detail.chain !== undefined) {
-    // Řetěz mikroher (P56C T11, debata T9): kolo 1 stojí jako obraz, dokud se ho hráč nedotkne – náhled robota nemá.
+    // Řetěz mikroher (P56C T11, debata T9): kolo 1 hraje náhled robota z publikace (P71B T1), starší řetěz bez něj stojí do doteku.
     return (
       <>
-        <WithPlayEnv key={`${game.versionId}-${String(round)}`} theme={detail.spec.theme} versionId={game.versionId}>
-          <ChainPlay versionId={game.versionId} spec={detail.spec} chain={detail.chain} par={detail.report?.par ?? null} active={live} inFeed host={host} />
+        <WithPlayEnv key={`${game.versionId}-${String(round)}-${String(still)}`} theme={detail.spec.theme} versionId={game.versionId}>
+          <ChainPlay
+            versionId={game.versionId}
+            spec={detail.spec}
+            chain={detail.chain}
+            par={detail.report?.par ?? null}
+            active={live}
+            inFeed
+            host={host}
+            preview={still ? undefined : detail.preview}
+          />
         </WithPlayEnv>
         <TapHint goal={detail.spec.tutorial.goalLine} beat={game.beat ?? null} />
       </>
@@ -216,6 +231,17 @@ function CardImage({ versionId, shot }: { readonly versionId: string; readonly s
   );
 }
 
+/** Plakát karty, která nehraje: obrázek, titul a cíl, když už je detail stažený. */
+function Poster({ game, spec, shot }: { readonly game: FeedGame; readonly spec: GameSpecV1 | null; readonly shot: string | undefined }) {
+  return (
+    <div className="play-poster play-reel-poster" data-testid="feed-poster" data-tone={moodTone(spec?.theme.mood ?? '')} aria-hidden="true">
+      <CardImage versionId={game.versionId} shot={shot} />
+      <span className="play-poster-title">{spec?.title ?? game.title}</span>
+      {spec !== null && <span className="play-poster-goal">{spec.tutorial.goalLine}</span>}
+    </div>
+  );
+}
+
 export function ReelCard({
   game,
   index,
@@ -248,14 +274,10 @@ export function ReelCard({
     <article tabIndex={-1} className="play-reel-card" data-testid="feed-card" data-index={index} data-version-id={game.versionId} data-active={active} aria-label={game.title}>
       {active ? (
         <div ref={slide} className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId} data-still={still}>
-          <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} round={round} />
+          <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} round={round} shot={shot} />
         </div>
       ) : (
-        <div className="play-poster play-reel-poster" data-tone={moodTone(spec?.theme.mood ?? '')} aria-hidden="true">
-          <CardImage versionId={game.versionId} shot={shot} />
-          <span className="play-poster-title">{spec?.title ?? game.title}</span>
-          {spec !== null && <span className="play-poster-goal">{spec.tutorial.goalLine}</span>}
-        </div>
+        <Poster game={game} spec={spec} shot={shot} />
       )}
     </article>
   );
