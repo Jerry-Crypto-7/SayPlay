@@ -245,9 +245,12 @@ export interface ClipRequest {
   done(versionId: string, clip: Blob): void;
 }
 
+/** Jak často se před nahráváním ptá, jestli už náhled běží (detail, modely a dopočet trvají po přechodu různě dlouho). */
+const CLIP_POLL_MS = 250;
+
 /**
- * Klip z plátna hostitele (P71B T2): `CLIP_DELAY_MS` po žádosti, když náhled běží, nahraje `CLIP_MS`. Žádost pro jinou
- * hru, odchod plátna, první vstup hráče (převzal hru) nebo stránka na pozadí nahrávání zruší a klip zahodí.
+ * Klip z plátna hostitele (P71B T2): když náhled na kartě běží aspoň `CLIP_DELAY_MS`, nahraje `CLIP_MS`. Žádost pro
+ * jinou hru, odchod plátna, první vstup hráče (převzal hru) nebo stránka na pozadí nahrávání zruší a klip zahodí.
  */
 function useClip(element: HTMLElement | null, clip: ClipRequest | null) {
   const latest = useRef(clip);
@@ -265,16 +268,23 @@ function useClip(element: HTMLElement | null, clip: ClipRequest | null) {
     window.addEventListener('keydown', touch, true);
     const keepGoing = () => !touched && latest.current?.versionId === versionId && clipsAllowed();
     let job: ClipJob | null = null;
-    const timer = window.setTimeout(() => {
+    let since: number | null = null;
+    const poll = window.setInterval(() => {
       const canvas = element.querySelector('canvas');
-      if (canvas === null || !keepGoing() || latest.current?.previewing() !== true) return;
+      if (canvas === null || !keepGoing() || latest.current?.previewing() !== true) {
+        since = null;
+        return;
+      }
+      since ??= performance.now();
+      if (performance.now() - since < CLIP_DELAY_MS) return;
+      window.clearInterval(poll);
       job = recordClip(canvas, keepGoing);
       void job.done.then((blob) => {
         if (blob !== null) latest.current?.done(versionId, blob);
       });
-    }, CLIP_DELAY_MS);
+    }, CLIP_POLL_MS);
     return () => {
-      window.clearTimeout(timer);
+      window.clearInterval(poll);
       job?.cancel();
       window.removeEventListener('pointerdown', touch, true);
       window.removeEventListener('keydown', touch, true);
