@@ -19,7 +19,7 @@
  */
 
 import { familyOf } from '../genre/families';
-import { heroClass } from '../genre/roles';
+import { heroClass } from '../genre/hero-class';
 import { vocabVerb } from '../vocab';
 import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, RIGGED_ANIMALS, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
