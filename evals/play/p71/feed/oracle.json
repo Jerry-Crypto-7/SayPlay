@@ -1,0 +1,810 @@
+{
+  "measuredAt": "2026-11-05T18:51:43.260Z",
+  "base": "http://127.0.0.1:3021",
+  "method": "Card by card via feed-next; every card and Up next thumb in the viewport compared over two screenshots 500 ms apart, also mid-swipe (reel scrolled 40 % of a card, snap off for the shots); active-card FPS = median rAF interval over 2 s; console and page errors collected.",
+  "phone": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "cards": 12,
+    "checked": 34,
+    "stillCards": [
+      {
+        "kind": "active",
+        "id": "e684987eb4b3f359608ef5f04f476741",
+        "moved": false
+      }
+    ],
+    "fpsP50Median": 59.9,
+    "fpsP50Min": 59.9,
+    "errors": [
+      "When using \"avc1\" for mp4 encoding, the codec description is not supposed to change during the entire recording. Normally, a change in the encoding resolution may lead to this situation. Consider switching to \"avc3\" instead to resolve this problem"
+    ],
+    "steps": [
+      {
+        "n": 0,
+        "versionId": "d48eca23dfb8083af11f7724e2331840",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "d48eca23dfb8083af11f7724e2331840",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "d48eca23dfb8083af11f7724e2331840",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "578757bb9e5b397e04c25c14636d53b9",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 1,
+        "versionId": "578757bb9e5b397e04c25c14636d53b9",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "578757bb9e5b397e04c25c14636d53b9",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "578757bb9e5b397e04c25c14636d53b9",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "2f4599bfdebe21dab4f0cca6afcc0096",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "versionId": "2f4599bfdebe21dab4f0cca6afcc0096",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "2f4599bfdebe21dab4f0cca6afcc0096",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "2f4599bfdebe21dab4f0cca6afcc0096",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "e47f4c22f8e6524ab0c8a468e70c2151",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "versionId": "e47f4c22f8e6524ab0c8a468e70c2151",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "e47f4c22f8e6524ab0c8a468e70c2151",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "e47f4c22f8e6524ab0c8a468e70c2151",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "269115f5704c4d98185c34e16fda6298",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "versionId": "269115f5704c4d98185c34e16fda6298",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "269115f5704c4d98185c34e16fda6298",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "269115f5704c4d98185c34e16fda6298",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "71e1da6a31933d22d31466fb74e5559d",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 5,
+        "versionId": "71e1da6a31933d22d31466fb74e5559d",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "71e1da6a31933d22d31466fb74e5559d",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "71e1da6a31933d22d31466fb74e5559d",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "e684987eb4b3f359608ef5f04f476741",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 6,
+        "versionId": "e684987eb4b3f359608ef5f04f476741",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "e684987eb4b3f359608ef5f04f476741",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "e684987eb4b3f359608ef5f04f476741",
+            "moved": false
+          },
+          {
+            "kind": "card",
+            "id": "53b507b012e5d9cc0f0846f5e58f1fe4",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 7,
+        "versionId": "53b507b012e5d9cc0f0846f5e58f1fe4",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "53b507b012e5d9cc0f0846f5e58f1fe4",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "53b507b012e5d9cc0f0846f5e58f1fe4",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "16ef692bec97d50662f0270289dcd344",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 8,
+        "versionId": "16ef692bec97d50662f0270289dcd344",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "16ef692bec97d50662f0270289dcd344",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "16ef692bec97d50662f0270289dcd344",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "fffd21bda202d5becc3cde3db59ee9b3",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 9,
+        "versionId": "fffd21bda202d5becc3cde3db59ee9b3",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "fffd21bda202d5becc3cde3db59ee9b3",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "fffd21bda202d5becc3cde3db59ee9b3",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "30f95aa414e35601faa650fc241c81e2",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 10,
+        "versionId": "30f95aa414e35601faa650fc241c81e2",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "30f95aa414e35601faa650fc241c81e2",
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "30f95aa414e35601faa650fc241c81e2",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "a8bcd9836aebfaa79cebfd5b850c93b7",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 11,
+        "versionId": "a8bcd9836aebfaa79cebfd5b850c93b7",
+        "mode": "preview",
+        "fpsP50": 59.9,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "a8bcd9836aebfaa79cebfd5b850c93b7",
+            "moved": true
+          }
+        ],
+        "swipe": []
+      }
+    ]
+  },
+  "desktop": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "cards": 12,
+    "checked": 70,
+    "stillCards": [
+      {
+        "kind": "up-next",
+        "id": null,
+        "moved": false
+      },
+      {
+        "kind": "active",
+        "id": "e684987eb4b3f359608ef5f04f476741",
+        "moved": false
+      }
+    ],
+    "fpsP50Median": 30,
+    "fpsP50Min": 30,
+    "errors": [],
+    "steps": [
+      {
+        "n": 0,
+        "versionId": "d48eca23dfb8083af11f7724e2331840",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "d48eca23dfb8083af11f7724e2331840",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "d48eca23dfb8083af11f7724e2331840",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "578757bb9e5b397e04c25c14636d53b9",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 1,
+        "versionId": "578757bb9e5b397e04c25c14636d53b9",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "578757bb9e5b397e04c25c14636d53b9",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "578757bb9e5b397e04c25c14636d53b9",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "2f4599bfdebe21dab4f0cca6afcc0096",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "versionId": "2f4599bfdebe21dab4f0cca6afcc0096",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "2f4599bfdebe21dab4f0cca6afcc0096",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "2f4599bfdebe21dab4f0cca6afcc0096",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "e47f4c22f8e6524ab0c8a468e70c2151",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "versionId": "e47f4c22f8e6524ab0c8a468e70c2151",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "e47f4c22f8e6524ab0c8a468e70c2151",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": false
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "e47f4c22f8e6524ab0c8a468e70c2151",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "269115f5704c4d98185c34e16fda6298",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "versionId": "269115f5704c4d98185c34e16fda6298",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "269115f5704c4d98185c34e16fda6298",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "269115f5704c4d98185c34e16fda6298",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "71e1da6a31933d22d31466fb74e5559d",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 5,
+        "versionId": "71e1da6a31933d22d31466fb74e5559d",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "71e1da6a31933d22d31466fb74e5559d",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "71e1da6a31933d22d31466fb74e5559d",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "e684987eb4b3f359608ef5f04f476741",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 6,
+        "versionId": "e684987eb4b3f359608ef5f04f476741",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "e684987eb4b3f359608ef5f04f476741",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "e684987eb4b3f359608ef5f04f476741",
+            "moved": false
+          },
+          {
+            "kind": "card",
+            "id": "53b507b012e5d9cc0f0846f5e58f1fe4",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 7,
+        "versionId": "53b507b012e5d9cc0f0846f5e58f1fe4",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "53b507b012e5d9cc0f0846f5e58f1fe4",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "53b507b012e5d9cc0f0846f5e58f1fe4",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "16ef692bec97d50662f0270289dcd344",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 8,
+        "versionId": "16ef692bec97d50662f0270289dcd344",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "16ef692bec97d50662f0270289dcd344",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "16ef692bec97d50662f0270289dcd344",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "fffd21bda202d5becc3cde3db59ee9b3",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 9,
+        "versionId": "fffd21bda202d5becc3cde3db59ee9b3",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "fffd21bda202d5becc3cde3db59ee9b3",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "fffd21bda202d5becc3cde3db59ee9b3",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "30f95aa414e35601faa650fc241c81e2",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 10,
+        "versionId": "30f95aa414e35601faa650fc241c81e2",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "30f95aa414e35601faa650fc241c81e2",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": [
+          {
+            "kind": "active",
+            "id": "30f95aa414e35601faa650fc241c81e2",
+            "moved": true
+          },
+          {
+            "kind": "card",
+            "id": "a8bcd9836aebfaa79cebfd5b850c93b7",
+            "moved": true
+          }
+        ]
+      },
+      {
+        "n": 11,
+        "versionId": "a8bcd9836aebfaa79cebfd5b850c93b7",
+        "mode": "preview",
+        "fpsP50": 30,
+        "cards": [
+          {
+            "kind": "active",
+            "id": "a8bcd9836aebfaa79cebfd5b850c93b7",
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          },
+          {
+            "kind": "up-next",
+            "id": null,
+            "moved": true
+          }
+        ],
+        "swipe": []
+      }
+    ]
+  }
+}
