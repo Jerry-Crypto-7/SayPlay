@@ -196,6 +196,15 @@ describe('getDirector – kvóty a cache (R8)', () => {
     expect(game.callerLimited).toBe(false);
   });
 
+  it('volající nad denní mezí neubírá počet volání knihy ostatním (P71A revize T1, nález 2)', async () => {
+    stubEnv({ ...LIVE, WORLDSMITH_CALL_CAP: '2', PLAY_DIRECTOR_CALLS_PER_CALLER: '1' });
+    await getDirector(Date.now(), 'caller-a')(SENTENCE);
+    expect(fetchCalls).toBe(1);
+    for (let again = 0; again < 3; again += 1) expect((await getDirector(Date.now(), 'caller-a')(SENTENCE)).callerLimited).toBe(true);
+    await getDirector(Date.now(), 'caller-b')(SENTENCE);
+    expect(fetchCalls, 'odmítnuté věty volajícího A vyjedly počet volání knihy').toBe(2);
+  });
+
   it('vyčerpaný počet je v režii vidět jako callerLimited', async () => {
     stubEnv({ ...LIVE, PLAY_DIRECTOR_CALLS_PER_CALLER: '1' });
     await getDirector(Date.now(), 'caller-a')(SENTENCE);

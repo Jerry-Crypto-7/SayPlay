@@ -12,9 +12,9 @@ Nasazené demo nesmí volat nic, co běží na autorově počítači: žádný c
 ## Postup
 
 1. **Účty a klíče** (ručně, platební údaje): Together nebo Fireworks, OpenAI API se stropem, DeepInfra. Klíče jen do Vercelu, nikdy do repa.
-2. **Proměnné** podle `env.production.example` do Vercelu (Production). Sdílené úložiště dodá integrace Upstash jako `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
+2. **Proměnné** podle `env.production.example` do Vercelu, **jen Production** – Vercel předškrtává i Preview a Development; preview s týmž klíčem by dostalo vlastní knihu (`<předpona>:preview`) s plnými stropy navíc a součet 70 USD by neplatil. Sdílené úložiště dodá integrace Upstash jako `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
 
-   **Stropy jsou součtové za celou dobu knihy, ne měsíční.** Kniha (`WORLDSMITH_SPEND_STORE_PREFIX`, v produkci `sayplay`) sčítá útratu od prvního volání a sama se nevynuluje: režisér 60, čtečka 10, celkem `PLAY_TOTAL_SPEND_CAP_USD=70`, z režiséra 40 USD drží rezerva poroty do `PLAY_JUDGING_FROM`. Další měsíc = vyšší strop a redeploy, nová kniha = nová předpona. Záloha režiséra je vypnutá tím, že jsou všechny `WORLDSMITH_FALLBACK_*` prázdné; vyplněná jen část kontrolu shodí.
+   **Stropy jsou součtové za celou dobu knihy, ne měsíční.** Kniha (`WORLDSMITH_SPEND_STORE_PREFIX`, v produkci `sayplay`) sčítá útratu od prvního volání a sama se nevynuluje: režisér 60, čtečka 10, celkem `PLAY_TOTAL_SPEND_CAP_USD=70`, z režiséra 40 USD drží rezerva poroty do `PLAY_JUDGING_FROM`. Další měsíc = vyšší strop a redeploy. Předponu v provozu neměň: klíčuje i publikované hry, feed a cache, takže nová předpona rozbije každý dřívější odkaz `/play/<id>`. Záloha režiséra je vypnutá tím, že jsou všechny `WORLDSMITH_FALLBACK_*` prázdné; vyplněná jen část kontrolu shodí.
 3. **Kontrola:** `vercel env pull .env.production --environment=production`, pak
 
    ```
