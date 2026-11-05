@@ -77,11 +77,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     out = mkdtempSync(join(tmpdir(), 'sayplay-export-'));
   }
 
-  // tar s relativní cestou a cwd: GNU tar z Git Bash bere `C:` v cestě jako vzdálený stroj.
+  // Na Windows bsdtar ze System32: holé `tar` z Node na tomhle stroji padá na EPERM a GNU tar
+  // z Git Bash bere `C:` v cestě jako vzdálený stroj. Relativní cesta s cwd platí pro oba.
+  const tar = process.platform === 'win32' ? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe') : 'tar';
   const archive = 'export.tar';
   if (git(['archive', '--format=tar', '-o', join(out, archive), sha]) === null) fail('git archive selhal');
-  const untar = spawnSync('tar', ['-xf', archive], { cwd: out, encoding: 'utf-8' });
-  if (untar.status !== 0) fail(`tar selhal: ${untar.stderr}`);
+  const untar = spawnSync(tar, ['-xf', archive], { cwd: out, encoding: 'utf-8' });
+  if (untar.status !== 0) fail(`tar selhal: ${untar.error?.message ?? untar.stderr}`);
   rmSync(join(out, archive));
   mkdirSync(join(out, '.vercel'), { recursive: true });
   copyFileSync(project, join(out, '.vercel', 'project.json'));
