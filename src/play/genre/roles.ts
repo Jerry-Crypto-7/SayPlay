@@ -16,7 +16,7 @@ import { GENRE_MODULES } from './index';
  */
 const CLASS_WORDS: Readonly<Record<ModelClass, readonly string[]>> = {
   bird: ['bird', 'penguin', 'eagle', 'parrot', 'duck', 'owl', 'chicken', 'hen', 'crow', 'pigeon', 'seagull', 'hawk', 'flamingo', 'swan', 'goose'],
-  animal: ['animal', 'cat', 'kitten', 'dog', 'puppy', 'fox', 'bear', 'rabbit', 'bunny', 'pig', 'cow', 'horse', 'mouse', 'monkey', 'lion', 'tiger', 'wolf', 'deer', 'frog', 'fish', 'turtle', 'snake', 'hamster'],
+  animal: ['animal', 'cat', 'kitten', 'dog', 'puppy', 'fox', 'bear', 'rabbit', 'bunny', 'pig', 'cow', 'horse', 'mouse', 'monkey', 'lion', 'tiger', 'wolf', 'deer', 'frog', 'fish', 'turtle', 'snake', 'hamster', 'shark'],
   robot: ['robot', 'android', 'droid', 'mech', 'cyborg', 'bot'],
   vehicle: ['car', 'truck', 'bus', 'bike', 'bicycle', 'motorcycle', 'kart', 'tank', 'train', 'tractor', 'taxi', 'van'],
   boat: ['boat', 'ship', 'sailboat', 'yacht', 'submarine', 'canoe', 'raft', 'ferry'],
