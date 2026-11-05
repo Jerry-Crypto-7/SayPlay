@@ -7,6 +7,7 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { chainReasons } from '../../chain/decide';
 import diagnosis from '../../../../evals/play/p63/diagnosis.json';
 import { admissible, EXPECT, gamesOf, loadDeps, namesCast } from '../../../../evals/play/p63/diagnose.mjs';
 import readSet from '../../../../evals/play/p63/read-set.json';
@@ -48,8 +49,10 @@ const textOf = (id: string): string => readSet.sentences.find((row) => row.id ==
 
 let deps: unknown;
 // Návrh i fyzika se načítají poprvé; pod zátěží celé sady to trvá déle než výchozích 10 s.
+// P70A T2: řetěz jen na výslovné přání; diagnóza P63 (`diagnosis.json`) staví rychlou hru pravidlem před P70A.
 beforeAll(async () => {
-  deps = await loadDeps();
+  const loaded = (await loadDeps()) as object;
+  deps = { ...loaded, chainOrSingle: (...args: Parameters<typeof chainReasons>) => (chainReasons(...args).length > 0 ? 'chain' : 'single') };
 }, 60_000);
 
 describe('P63 T2: the reading game plays the verb and roles of the sentence', () => {
