@@ -16,14 +16,27 @@ Před pojistkou (`clip-fps-x4-no-guard.json`) B spadlo na 4 FPS. Nahrává se je
 
 ## T5 – oracle na telefonu a desktopu (`oracle.mjs` → `oracle.json`, `oracle-*.png`)
 
-12 karet feedu kartu po kartě. Každá karta a náhled „Up next“ v okně: dva snímky po 500 ms. Totéž uprostřed swipe (reel o 40 % karty). FPS aktivní karty = medián rAF za 2 s.
+12 karet feedu kartu po kartě. Každá karta reelu v okně: dva snímky po 500 ms. Náhled „Up next“ (klipy v obraze se střídají): snímky každých 500 ms až 10 s, hýbe se = některý se liší od prvního. Totéž uprostřed swipe (reel o 40 % karty). FPS aktivní karty = medián rAF za 2 s.
+
+**Výsledek (5. 11., se střídáním klipů):**
 
 | | kontrol | hýbe se | FPS aktivní karty | chyby konzole |
 |---|---|---|---|---|
-| telefon 390×844 | 34 | 33 | 59,9 (všech 12 karet) | 1 (`avc1` u nahrávače – opraveno ve fd48c892, zatím neověřeno novým během) |
-| desktop 1280×800 | 70 | 68 | **30** (všech 12 karet) | 0 |
+| telefon 390×844 | 34 | 33 | 59,9 (všech 12 karet) | 0 |
+| desktop 1280×800 | 70 | 70 | 59,9 (všech 12 karet) | 0 |
 
-Nehybné: hra `e684987e` uprostřed swipe (vidět jen spodních 60 % karty, mimo swipe se hýbe) a jeden náhled „Up next“ na 4. kartě.
+Nehybná jediná kontrola: živá karta hry `e684987e` uprostřed swipe, kdy je vidět jen spodních 60 % karty. Sonda na téže kartě (6 snímků po 500 ms): celá karta se liší 5/5, spodních 60 % 1/5 – hýbe se horní část (časovač, netopýři), dole stojí scéna. Vlastnost hry, ne klipů.
+
+Chyba konzole `avc1` z prvního běhu po fd48c892 (`avc3`) zmizela.
+
+**e2e proti 3021 (chromium):** `play-feed-perf.spec.ts` zelený, `play-feed-reels.spec.ts` 16/16 (i nový test: ≥ 3 klipy přehrály ≥ 0,5 s za 12 s, nikdy dva viditelné naráz). `play-feed-phone.spec.ts` 2 červené – **stejně červený i na čistém `main` c7037ab8** (vlastní build, prázdný `PLAY_STORE_DIR`, port 3022): telefon „card 3 (swipe): no running preview of null within 45000 ms“, desktop „expected preview, received play“ po pohybu kolečkem. Obě po 2. kartě vestavěného poolu „Mini Golf Pirate Ship“; pool přeuspořádal P70C 4. 11., test počítá s arénou na 3. místě (naposledy upravený 30. 10.). Předexistující, ne P71B.
+
+### První běh (před střídáním)
+
+| | kontrol | hýbe se | FPS aktivní karty | chyby konzole |
+|---|---|---|---|---|
+| telefon 390×844 | 34 | 33 | 59,9 | 1 (`avc1` u nahrávače) |
+| desktop 1280×800 | 70 | 68 | **30** | 0 |
 
 **Desktop 30 FPS = klipy** (A/B, `ORACLE_NO_CLIPS=1`, 3 karty, 2 páry): s klipy 30, bez klipů 59,9. Rozpad (jedna stránka, videa pouštěná ručně):
 
@@ -40,7 +53,4 @@ Rohy bez zaoblení, `object-fit: fill` ani synchronní start videí na tom nic n
 
 **Inference:** stačí dvě současně viditelná hrající videa vedle živého WebGL plátna. Zda je to jen headless Chromium bez překryvných vrstev pro video, se odsud změřit nedá.
 
-## Zbývá (T5)
-
-- Viditelné klipy se střídají, hraje vždy jen jeden. Videa mimo obraz v dosahu (soused v reelu) hrají dál, nic nestojí. Pak znovu `oracle.mjs`: desktop ≥ 55 FPS a ověření, že chyba `avc1` zmizela.
-- `e2e/play-feed-perf.spec.ts` a `e2e/play-feed-phone.spec.ts` zatím neběžely.
+**Oprava (`CardClip.tsx`, `createClipTurns`):** z klipů v obraze hraje vždy jen jeden a po jedné smyčce předá tah dalšímu; soused v reelu mimo obraz hraje dokola. Strop: jeden viditelný klip naráz – zvednout po měření na skutečném desktopu s překryvnými vrstvami.

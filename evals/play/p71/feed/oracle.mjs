@@ -3,7 +3,8 @@
  * P71B T5 – oracle klipů ve feedu na telefonu (390×844, dotyk) a desktopu (1280×800).
  *
  * Feed lokálního serveru (≥ 12 her) kartu po kartě (`feed-next`). Na každé kartě:
- *   - každá karta a náhled „Up next“ v okně prohlížeče: dva snímky jejího výřezu po 500 ms – liší se = hýbe se;
+ *   - každá karta v okně prohlížeče: dva snímky jejího výřezu po 500 ms – liší se = hýbe se; náhled „Up next“
+ *     se střídá s ostatními, takže se hýbe, když se jeho snímek do 10 s liší od prvního;
  *   - uprostřed swipe (reel posunutý o 40 % karty, přichycení na chvíli vypnuté): totéž pro přijíždějící kartu;
  *   - FPS aktivní karty: 2 s `requestAnimationFrame`, medián;
  *   - chyby konzole a stránky.
@@ -59,11 +60,21 @@ async function visibleCards(page) {
   });
 }
 
+/** Náhledy „Up next“ se střídají (`createClipTurns` v `CardClip.tsx`): hýbe se, když se pohnul do 10 s. */
+const UP_NEXT_WINDOW_MS = 10_000;
+
 async function moving(page, cards) {
-  const first = await Promise.all(cards.map((card) => page.screenshot({ clip: card.clip })));
-  await page.waitForTimeout(500);
-  const second = await Promise.all(cards.map((card) => page.screenshot({ clip: card.clip })));
-  return cards.map((card, at) => ({ kind: card.kind, id: card.id, moved: !first[at].equals(second[at]) }));
+  const shots = () => Promise.all(cards.map((card) => page.screenshot({ clip: card.clip })));
+  const first = await shots();
+  const moved = cards.map(() => false);
+  const deadline = Date.now() + UP_NEXT_WINDOW_MS;
+  for (let round = 0; round === 0 || (Date.now() < deadline && cards.some((card, at) => card.kind === 'up-next' && !moved[at])); round += 1) {
+    await page.waitForTimeout(500);
+    const next = await shots();
+    // Karty reelu soudí jen první dvojice snímků po 500 ms.
+    for (const [at, card] of cards.entries()) if (round === 0 || card.kind === 'up-next') moved[at] ||= !first[at].equals(next[at]);
+  }
+  return cards.map((card, at) => ({ kind: card.kind, id: card.id, moved: moved[at] }));
 }
 
 async function fps(page) {
@@ -108,7 +119,7 @@ async function run(browser, name, options) {
       reel.scrollBy({ top: reel.clientHeight * 0.4, behavior: 'instant' });
     });
     await page.waitForTimeout(800);
-    const swipe = n < CARDS - 1 ? (await moving(page, await visibleCards(page))).filter((card) => card.kind !== 'up-next') : [];
+    const swipe = n < CARDS - 1 ? await moving(page, (await visibleCards(page)).filter((card) => card.kind !== 'up-next')) : [];
     await page.evaluate(() => {
       const reel = document.querySelector('[data-testid="feed-reel"]');
       reel.scrollBy({ top: -reel.clientHeight * 0.4, behavior: 'instant' });
@@ -138,7 +149,7 @@ async function run(browser, name, options) {
 }
 
 const browser = await chromium.launch({ args: [...browserRenderer().args, '--disable-features=OpenXR'] });
-const result = { measuredAt: new Date().toISOString(), base: BASE, method: 'Card by card via feed-next; every card and Up next thumb in the viewport compared over two screenshots 500 ms apart, also mid-swipe (reel scrolled 40 % of a card, snap off for the shots); active-card FPS = median rAF interval over 2 s; console and page errors collected.' };
+const result = { measuredAt: new Date().toISOString(), base: BASE, method: 'Card by card via feed-next; every reel card in the viewport compared over two screenshots 500 ms apart, every Up next thumb (clips take turns) against screenshots every 500 ms for up to 10 s, also mid-swipe (reel scrolled 40 % of a card, snap off for the shots); active-card FPS = median rAF interval over 2 s; console and page errors collected.' };
 try {
   for (const [name, options] of Object.entries(DEVICES)) if (ONLY === undefined || ONLY === name) result[name] = await run(browser, name, options);
 } finally {
