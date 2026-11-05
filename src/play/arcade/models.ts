@@ -311,9 +311,10 @@ function nearestModel(label: string, loose = false): string | undefined {
  * Čtou ho rekvizity a řetěz věrnosti; návrh dál čte `modelOf`, ať se žánr a role věty nemění.
  */
 export function sceneModelOf(label: string, character: boolean): string | undefined {
-  // P70B T3: postava s klipy, kterou popisek jmenuje, jde před tagy katalogu jako v `heroChoice` – „baby bunny“ je králík,
-  // ne mimino; u věci jen zvíře v hlavě fráze, ať přívlastek („fox mask“) věc nepřejmenuje.
-  const rigged = character ? riggedModelOf(label) : riggedAnimalOf(wordsOf(label).at(-1) ?? '');
+  // P70B T3: zvíře s klipy, které popisek jmenuje, jde před tagy katalogu jako v `heroChoice` – „baby bunny“ je králík,
+  // ne mimino; u věci jen zvíře v hlavě fráze, ať přívlastek („fox mask“) věc nepřejmenuje. Jen zvíře: přesný tag
+  // katalogu (CC0 zombie, kostlivec, sliz) vyhrává nad riggovanou postavou (`rigged-p54.ts`).
+  const rigged = riggedAnimalOf(character ? label : (wordsOf(label).at(-1) ?? ''));
   if (rigged !== undefined) return rigged;
   if (!character) return tagModel(label, true) ?? nearestModel(label);
   const found = tagModel(label, true) ?? nearestModel(label) ?? kinModel(label) ?? categoryModel(label) ?? riggedModelOf(label);

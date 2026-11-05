@@ -23,7 +23,7 @@ const CAR = 'Racing car escaping and shooting enemies';
 
 /**
  * Nahraná odpověď gpt-oss-20b na banána (`logic-answers/s008.json`) s obsazením křečka: běžec,
- * jehož pravidla fází robot neprokáže, takže je `direct()` z AI verze vyřadí.
+ * jehož pravidla fází test označí za neprokázaná (`answerUnproved`), takže je `direct()` z AI verze vyřadí.
  */
 function hamsterAnswer(): unknown {
   const { spec } = (JSON.parse(readFileSync('src/play/director/__fixtures__/logic-answers/s008.json', 'utf8')) as { answer: { spec: Record<string, unknown> } }).answer;
@@ -46,12 +46,16 @@ async function upgraded(sentence: string, director: (check: DirectorDeps['check'
 
 const ids = (spec: GameSpecV1) => (spec.rules ?? []).map((rule) => rule.id);
 
+/** Pravidla fází z odpovědi; od férového startu (P70A T3) je robot prokáže, tak je test neprokáže sám. */
+const ANSWER_RULES = ['startTimer', 'phaseSwitch', 'phaseSecond'];
+const answerUnproved = (spec: GameSpecV1) => ((spec.rules ?? []).some((rule) => ANSWER_RULES.includes(rule.id)) ? [{ code: 'VERB_UNPROVED', path: '/rules', evidence: 'phase rules never fired', repairHint: 'drop them' }] : []);
+
 beforeAll(() => loadRapier());
 
 describe('the AI version keeps the rules and logic of the quick version', () => {
   it('hamster (runner): the director drops the answer rules and takes the quick rules, things and logic instead', async () => {
     let tick = 0;
-    const directed = await direct(HAMSTER, { branch: fakeBranch([answered(hamsterAnswer())]), now: () => (tick += 1), compact: true, maxRepairRounds: 0 });
+    const directed = await direct(HAMSTER, { branch: fakeBranch([answered(hamsterAnswer())]), now: () => (tick += 1), check: answerUnproved, compact: true, maxRepairRounds: 0 });
     const quick = draftGameSpecWithMeta(HAMSTER, 1).spec;
     expect(ids(quick).length).toBeGreaterThan(0);
     expect(directed.source).toBe('authored');
@@ -62,7 +66,7 @@ describe('the AI version keeps the rules and logic of the quick version', () => 
   }, 120_000);
 
   it('hamster (runner): the published AI version has every quick rule and the quick logic', async () => {
-    const { quick, ai } = await upgraded(HAMSTER, (check) => direct(HAMSTER, { branch: fakeBranch([answered(hamsterAnswer())]), now: Date.now, check, compact: true, maxRepairRounds: 0 }));
+    const { quick, ai } = await upgraded(HAMSTER, (check) => direct(HAMSTER, { branch: fakeBranch([answered(hamsterAnswer())]), now: Date.now, check: (spec) => [...(check?.(spec) ?? []), ...answerUnproved(spec)], compact: true, maxRepairRounds: 0 }));
     expect(ids(ai)).toEqual(expect.arrayContaining(ids(quick)));
     expect(ai.logic).toEqual(quick.logic);
   }, 180_000);

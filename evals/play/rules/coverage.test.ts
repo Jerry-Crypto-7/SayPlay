@@ -20,7 +20,7 @@ describe('verb coverage on the demand set', () => {
   let measured: VerbCoverage;
   beforeAll(async () => {
     measured = await measureVerbCoverage();
-  }, 120_000); // 200 deterministic drafts, including native physics simulation.
+  }, 600_000); // 200 deterministic drafts with the robot witness: 167–218 s measured on 5. 11.
 
   it('classifies every sentence once and the classes add up to the corpus', () => {
     expect(measured.total).toBe(corpus.length);

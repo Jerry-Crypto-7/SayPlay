@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { BODY, FLAG, HEADER, ROLE, NO_INPUT, bodyBase } from '@/play/arcade/contract';
-import { instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
+import { FAIR_START, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { verifyArcade } from '@/play/arcade/verify';
 import { flapRules, flapTrack } from '@/play/arcade/pieces/flap';
@@ -43,7 +43,10 @@ describe('T23 additional real track objectives',()=>{
   const target=Array.from({length:state[HEADER.bodyCount]!},(_,i)=>i).find(i=>state[bodyBase(i)+BODY.role]===ROLE.chaser);expect(target).toBeDefined();
   const p=bodyBase(state[HEADER.player]!),b=bodyBase(target!);
   state[b+BODY.x]=state[p+BODY.x]!;state[b+BODY.y]=state[p+BODY.y]!;state[b+BODY.z]=state[p+BODY.z]!;
-  step(state,NO_INPUT,program);expect(outcomeOf(state)).toBe('lost');
+  // Férový start (P70A T3): v ochraně dopadení neprohraje, po ní ano.
+  const late=state.slice();late[HEADER.tick]=FAIR_START.protectTicks;
+  step(state,NO_INPUT,program);expect(outcomeOf(state)).toBe('running');
+  step(late,NO_INPUT,program);expect(outcomeOf(late)).toBe('lost');
  });
  it('flap collect physically requires every visible gap collectible before finish',()=>{
   const made=make('flap.collect'),initial=made.world.initial.slice();

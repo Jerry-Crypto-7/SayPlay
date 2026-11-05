@@ -1616,7 +1616,7 @@
   {
    "id": "s162",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "buildshift",
    "cover": "none",
    "template": null,
    "verbs": [
