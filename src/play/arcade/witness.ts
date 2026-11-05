@@ -111,13 +111,18 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   // Nestoupnout na spící předlohu: sonda má změřit pohyb i chycení hlídkou po probuzení.
   if (baseControl.params.chase !== undefined && graceLeft(state) > 0) return normal;
   const p = bodyBase(player);
-  if (!live(state, target)) {
+  const behind = (body: number): boolean => state[bodyBase(body) + BODY.z]! + state[bodyBase(body) + BODY.d]! / 2 < state[p + BODY.z]! - state[p + BODY.d]! / 2;
+  // Férový start: překážku, kterou hráč minul během ochrany, sonda nahradí stejnou překážkou před ním – jinak by
+  // náraz nic nedokázal (P70A T3, ma-024 „jump over logs“). Starší světy beze změny.
+  const passed = world.fairStart !== undefined && live(state, target) && [ROLE.obstacle, ROLE.hazard].includes(roleAt(state, target))
+    && !homingPart(world, target) && behind(target);
+  if (!live(state, target) || passed) {
     const code = roleAt(world.initial, target);
     const kind = kindAt(world, world.initial, target);
     let nearest = -1;
     let distance = Number.POSITIVE_INFINITY;
     for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
-      if (!live(state, body) || roleAt(state, body) !== code || kindAt(world, state, body) !== kind) continue;
+      if (!live(state, body) || roleAt(state, body) !== code || kindAt(world, state, body) !== kind || passed && behind(body)) continue;
       const base = bodyBase(body);
       const squared = (state[base + BODY.x]! - state[p + BODY.x]!) ** 2 + (state[base + BODY.z]! - state[p + BODY.z]!) ** 2;
       if (squared < distance) { nearest = body; distance = squared; }
