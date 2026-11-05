@@ -21,7 +21,9 @@ const CLIP_BITS_PER_SECOND = 2_000_000;
 /** Jak často se během nahrávání ptá, jestli náhled pořád běží. */
 const CHECK_MS = 200;
 
-const TYPES = ['video/mp4;codecs=avc1.42E01E', 'video/webm;codecs=vp9', 'video/webm'] as const;
+// `avc3` nese parametry kodéru v proudu: Chromium s `avc1` hlásí chybu konzole, když se plátno během nahrávání
+// zvětší (oracle P71B T5); prohlížeč bez `avc3` vezme `avc1`.
+const TYPES = ['video/mp4;codecs=avc3.42E01E', 'video/mp4;codecs=avc1.42E01E', 'video/webm;codecs=vp9', 'video/webm'] as const;
 
 /** Část `MediaRecorder`, kterou klip používá – test ho nahradí. */
 export interface Recorder {

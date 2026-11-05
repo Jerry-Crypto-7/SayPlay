@@ -73,7 +73,9 @@ afterEach(() => {
 });
 
 describe('clipType', () => {
-  it('prefers MP4/H.264, then WebM/VP9, then plain WebM; nothing usable is null', () => {
+  it('prefers MP4/H.264 with in-band parameters (avc3), then avc1, then WebM/VP9, then plain WebM; nothing usable is null', () => {
+    const AVC3 = 'video/mp4;codecs=avc3.42E01E';
+    expect(clipType({ isTypeSupported: (type) => [AVC3, MP4, VP9, 'video/webm'].includes(type) })).toBe(AVC3);
     expect(clipType({ isTypeSupported: (type) => [MP4, VP9, 'video/webm'].includes(type) })).toBe(MP4);
     expect(clipType({ isTypeSupported: (type) => [VP9, 'video/webm'].includes(type) })).toBe(VP9);
     expect(clipType({ isTypeSupported: (type) => type === 'video/webm' })).toBe('video/webm');
