@@ -27,8 +27,9 @@ import { assetEntrySchema } from '../manifest';
  * 7. 10.: +1 z P43 T12 (`gen3d-caveman`; ostatních 16 nových jmen třídu nemá).
  * 23. 10.: +4 z P58A T7 (lizard, trout, blacksmith, hostage; bun, rail a dumpling třídu nemají).
  * 27. 10.: +2 z P62 T2 (cheetah, termite; snowplow, firecracker, pinecone a stalactite třídu nemají).
+ * 5. 11.: +1 z P71E T2 (`gen3d-wyvern` s tagem `dragon` – drak místo netopýřího létajícího draka).
  */
-const COUNT = 267;
+const COUNT = 268;
 
 const LICENSES = new Map(disclosure.entries.map((entry) => [entry.name, entry.license]));
 const TAGS = new Map(catalog.assets.map((asset) => [asset.path, asset.tags]));

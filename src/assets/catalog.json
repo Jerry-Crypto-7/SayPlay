@@ -10421,7 +10421,7 @@
       "hash": "34ba4d996e1752894dd6cc25ac56d5a9f5b2d8019e4cceb7f640a0e84873aa3e",
       "label": "Dragon (CC0, Quaternius)",
       "tags": [
-        "dragon"
+        "baby dragon"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-dragon.png",
@@ -125759,6 +125759,7 @@
       "hash": "9b1d944b0be5021bad1fe280604c657cd658cc91de4c632f4f43f914e15c1d8e",
       "label": "wyvern (generated)",
       "tags": [
+        "dragon",
         "wyvern"
       ],
       "style": "generated low-poly vertex colour",

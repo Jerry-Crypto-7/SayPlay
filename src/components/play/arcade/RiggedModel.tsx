@@ -23,7 +23,7 @@ import type { ClipState } from '@/play/arcade/motion';
 import { type ToyPose, type ToyView, toyPoseOf } from '@/play/arcade/toy-motion';
 
 import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
-import { dropRestTracks, mergeRig, rimLit } from './look/load';
+import { dropRestTracks, litUnlit, mergeRig, rimLit, windAlongNormals } from './look/load';
 import { trackBody } from './look/pending-loads';
 import { applyToy, toyMotionOn } from './toy/applyToy';
 import { bodyClassOf } from './toy/body-class';
@@ -141,7 +141,7 @@ export function loadRigged(path: string): Promise<GLTF | null> {
       new GLTFLoader()
         .loadAsync(path)
         .then((gltf) => {
-          mergeRig(gltf.scene);
+          mergeRig(windAlongNormals(litUnlit(gltf.scene)));
           dropRestTracks(gltf.animations, gltf.scene);
           rimLit(gltf.scene);
           return gltf;

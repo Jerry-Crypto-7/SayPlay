@@ -2095,7 +2095,7 @@
     {
       "assetId": "cc0-dragon",
       "tags": [
-        "dragon"
+        "baby dragon"
       ],
       "path": "/assets/worldstream/cc0/cc0-dragon-lod1.glb",
       "bounds": {
@@ -24616,6 +24616,7 @@
     {
       "assetId": "gen3d-wyvern",
       "tags": [
+        "dragon",
         "wyvern"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-wyvern-lod1.glb",

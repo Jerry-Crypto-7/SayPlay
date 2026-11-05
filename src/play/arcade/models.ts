@@ -622,9 +622,9 @@ const rigAlias = (model: string): string => {
 /**
  * Slova, která postavě T3 nepatří, i když je má v tagu: statický model je přesnější identita.
  * Vědec není doktor, zdravotní sestra není doktorka, lama není alpaka, „dino“ je dinosaurus
- * (ne růžová příšera) a zlobr není ork.
+ * (ne růžová příšera), zlobr není ork a drak ani wyverna nejsou létající drak s netopýří hlavou (P71E T2).
  */
-const KEEP_STATIC: ReadonlySet<string> = new Set(['scientist', 'nurse', 'llama', 'dino', 'ogre']);
+const KEEP_STATIC: ReadonlySet<string> = new Set(['scientist', 'nurse', 'llama', 'dino', 'ogre', 'dragon', 'wyvern']);
 
 /** Plné tagy postav T3 (`rigged-p54.json`): `rigged-p54.ts` z nich dává identitě jen volná slova, výběr čte všechna. */
 const P54_TAGS: ReadonlyMap<string, readonly string[]> = new Map(riggedP54.characters.map((character) => [character.id, character.tags.filter((tag) => !KEEP_STATIC.has(tag))]));
