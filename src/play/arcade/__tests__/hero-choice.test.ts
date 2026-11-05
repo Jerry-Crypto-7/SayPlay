@@ -98,7 +98,7 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice('wild badger', 'voyage', 'steer')).toMatchObject({ model: 'rigged:q-fox', level: 'class' });
     expect(heroChoice('angry forklift', 'voyage', 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
     expect(heroChoice('stapler', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-cowboy-hair', level: 'fallback' });
-    expect(heroChoice('stapler', undefined, 'flap')).toMatchObject({ model: 'bird', level: 'fallback' });
+    expect(heroChoice('stapler', undefined, 'flap')).toMatchObject({ model: 'gen3d-small-songbird', level: 'fallback' });
     expect(heroChoice('stapler', undefined, 'move_free', 'enemy')).toMatchObject({ model: 'rigged:blocky-robot', level: 'fallback' });
   });
 

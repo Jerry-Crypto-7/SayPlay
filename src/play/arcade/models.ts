@@ -84,10 +84,13 @@ export function tagIndex(assets: ReadonlyArray<{ readonly assetId: string; reado
 
 const BY_TAG = tagIndex(catalog.assets);
 
-/** Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava (primitiv `bird`), ne hnízdo. */
+/** Pták z věty a výchozí hrdina flap; do P71E primitiv `bird` bez souboru – 404 a žlutá koule. */
+const BIRD = 'gen3d-small-songbird';
+
+/** Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava, ne hnízdo. */
 const WORD_SENSE: Readonly<Record<string, string>> = {
-  bird: 'bird',
-  birds: 'bird',
+  bird: BIRD,
+  birds: BIRD,
   // P35: tag `fish` nese i akvárium (sklo, voda, písek) – „glowing fish“ v O10 kreslil akvária.
   fish: 'cc0-goldfish',
   // P35: `gen3d-tortoise` má hlavu odtrženou od těla; vlastní želva z `game_models.py`.
@@ -195,7 +198,7 @@ function lookup<T>(word: string, index: (form: string) => T | undefined): T | un
 const wordsOf = (label: string): string[] => label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
 
 /**
- * Model katalogu (nebo primitiv `bird`), který popisek jmenuje tagem; s `near` i náhrada
+ * Model katalogu, který popisek jmenuje tagem; s `near` i náhrada
  * z `WORD_MODEL`. Dvojslovný tag vyhrává nad hlavou fráze (P30B T4): „lily pads“ je leknín,
  * ne květ lilie, „tire barrier“ mantinel z pneumatik, ne kamenná zeď.
  */
@@ -322,7 +325,7 @@ export function sceneModelOf(label: string, character: boolean): string | undefi
 }
 
 /**
- * Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav.
+ * Model katalogu, který popisek jmenuje; kategorie jen u postav.
  * Postava, kterou katalog nemá, ale manifest ano (králík, P35 T1), dá id scény
  * riggované postavy – mřížka ho v katalogu nenajde a nakreslí kus, draft ví, že ji scéna umí.
  */
@@ -534,12 +537,12 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
     if (role === undefined || !readsLabel(control, role)) continue;
     // Nástraha i terč střelnice z věty bývá zvíře („animals“) – smí i třídu postav.
     const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, namesThing(control, id));
-    if (found !== undefined && found !== 'bird') out[id] = found;
+    if (found !== undefined) out[id] = found;
   }
   // B-R9: žánr arény (spec s generátorem) sbírá roli druhu `collectible` (`item`) – scéna ji kreslí jako `coin`.
   const item = typeof spec.controlParams?.generator === 'string' && out.coin === undefined ? spec.roles.find((role) => role.kind === 'collectible') : undefined;
   const itemModel = item === undefined ? undefined : sceneModelOf(item.label, false);
-  if (itemModel !== undefined && itemModel !== 'bird') out.coin = itemModel;
+  if (itemModel !== undefined) out.coin = itemModel;
   return out;
 }
 
@@ -580,7 +583,7 @@ export interface ModelChoice {
   /** Id modelu scény: `rigged:` + postava s klipy, jinak id katalogu nebo primitiv. */
   readonly model: string;
   readonly level: ChoiceLevel;
-  /** Záznam manifestu; věc mimo manifest (ponožka) a primitiv `bird` ho nemají. */
+  /** Záznam manifestu; věc mimo manifest (ponožka) ho nemá. */
   readonly entry: AssetEntry | undefined;
 }
 
@@ -652,8 +655,8 @@ const BY_IDENTITY: ReadonlyMap<string, readonly AssetEntry[]> = (() => {
   return index;
 })();
 
-/** Třída modelu scény; věc mimo manifest je rekvizita, primitiv `bird` pták. */
-const classOfModel = (model: string): ModelClass => ENTRY_OF_MODEL.get(model)?.class ?? (model === 'bird' ? 'bird' : 'prop');
+/** Třída modelu scény; věc mimo manifest je rekvizita. */
+const classOfModel = (model: string): ModelClass => ENTRY_OF_MODEL.get(model)?.class ?? 'prop';
 
 /** Co závod unese bez žánru: hráč jede, tělo jádra je vozidlo. */
 const RIDE: ReadonlySet<ModelClass> = new Set(['vehicle', 'boat', 'aircraft']);
@@ -744,7 +747,7 @@ export function heroChoice(label: string, genre: GenreId | undefined, control: s
   const allowed = (kind: ModelClass): boolean => classes === undefined || classes.has(kind);
   const steer = control === 'steer';
   const bounds: Bounds = steer ? { identity: classes === undefined ? rides : allowed, rest: classes === undefined ? rides : allowed } : { identity: () => true, rest: allowed };
-  const fallback = steer ? 'race-car' : control === 'flap' ? 'bird' : 'explorer';
+  const fallback = steer ? 'race-car' : control === 'flap' ? BIRD : 'explorer';
   const chosen = choose(label, bounds, { withClass: true, ride: steer, fallback }) as ModelChoice;
   // P70B T3: zvíře z věty, které nic neveze („the rabbit races the turtle“), závodí samo – ne auto z nouze.
   const animal = steer && chosen.level === 'fallback' ? riggedAnimalOf(label) : undefined;
