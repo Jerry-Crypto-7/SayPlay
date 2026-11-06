@@ -55,7 +55,8 @@ const PLACE_ROLES: Readonly<Record<LookId, PlaceRoles>> = {
   ocean: { hero: 'pirate', craft: 'boat', enemy: 'shark', collectible: 'pearl' },
   underwater: { hero: 'fish', craft: 'submarine', enemy: 'shark', collectible: 'pearl' },
   snow: { hero: 'penguin', craft: 'sled', enemy: 'polar bear', collectible: 'snowflake' },
-  volcano: { hero: 'robot', craft: 'car', enemy: 'fireball', collectible: 'gem' },
+  // P73A T4: „escape a volcano“ bez postavy hraje průzkumník, ne hranatý robot.
+  volcano: { hero: 'explorer', craft: 'car', enemy: 'fireball', collectible: 'gem' },
   cave: { hero: 'kid', craft: 'car', enemy: 'bat', collectible: 'crystal' },
   space: { hero: 'astronaut', craft: 'rocket', enemy: 'asteroid', collectible: 'star' },
   castle: { hero: 'knight', craft: 'broom', enemy: 'ghost', collectible: 'gem' },
