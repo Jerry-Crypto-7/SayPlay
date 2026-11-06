@@ -6,9 +6,13 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { replay } from '@/play/arcade/kernel';
+import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { lookOf } from '@/play/arcade/look';
 import { heroModel, propModels } from '@/play/arcade/models';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { plural, singular } from '@/play/draft/lexicon';
 
@@ -96,5 +100,21 @@ describe('a sentence keeps the roles it names (P73A)', () => {
 
   it.each(CASES)('$sentence', (test) => {
     expect(rolesMiss(test)).toEqual([]);
+  }, 120_000);
+});
+
+describe('a race of named creatures stays a race (P73A T2)', () => {
+  it.each(CASES.filter((test) => test.rival !== undefined).map((test) => test.sentence))('%s: the bot wins, an idle player does not', (sentence) => {
+    const made = arcadeWorldOf(draftGameSpecWithMeta(sentence, 1).spec, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    expect(runBot(made.world).outcome).toBe('won');
+    expect(replay(made.world, [], ARCADE_LIBRARY).outcome).not.toBe('won');
+  }, 120_000);
+
+  it('a race between two of the same races that creature, and "other cars" stay plural', () => {
+    const two = draftGameSpecWithMeta('a race between two cats', 1).spec;
+    expect(two.roles.find((role) => role.id === 'rival')?.label).toBe('cat');
+    expect(draftGameSpecWithMeta('race against the other cars', 1).spec.tutorial.goalLine).toBe('Beat the other cars to the finish.');
+    expect(draftGameSpecWithMeta('a car races', 1).spec.tutorial.goalLine).toBe('Beat the rival vehicles to the finish.');
   }, 120_000);
 });
