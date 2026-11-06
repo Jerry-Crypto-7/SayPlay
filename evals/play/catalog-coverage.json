@@ -5,19 +5,19 @@
     "fidelity": 30
   },
   "mentions": {
-    "mentions": 160,
-    "before": 110,
+    "mentions": 161,
+    "before": 112,
     "now": 143
   },
   "nouns": {
-    "distinct": 114,
-    "before": 75,
+    "distinct": 115,
+    "before": 76,
     "now": 102
   },
   "byRole": {
     "hero": {
       "mentions": 54,
-      "before": 45,
+      "before": 46,
       "now": 52
     },
     "enemy": {
@@ -26,7 +26,7 @@
       "now": 15
     },
     "collectible": {
-      "mentions": 17,
+      "mentions": 18,
       "before": 12,
       "now": 13
     },
@@ -42,15 +42,15 @@
     },
     "checklist": {
       "mentions": 39,
-      "before": 22,
+      "before": 23,
       "now": 36
     }
   },
   "bySet": {
     "demand": {
-      "mentions": 92,
+      "mentions": 93,
       "now": 82,
-      "nouns": 80,
+      "nouns": 81,
       "nounsNow": 72
     },
     "fidelity": {
@@ -70,11 +70,6 @@
     {
       "noun": "corgi",
       "model": "cc0-corgi",
-      "mentions": 2
-    },
-    {
-      "noun": "dragon",
-      "model": "cc0-dragon",
       "mentions": 2
     },
     {
@@ -208,18 +203,18 @@
     "before-CC0 (7c411db)": {
       "models": 86,
       "nouns": {
-        "distinct": 114,
+        "distinct": 115,
         "now": 43
       },
       "mentions": {
-        "mentions": 160,
+        "mentions": 161,
         "now": 67
       },
       "bySet": {
         "demand": {
-          "mentions": 92,
+          "mentions": 93,
           "now": 40,
-          "nouns": 80,
+          "nouns": 81,
           "nounsNow": 31
         },
         "fidelity": {
@@ -239,18 +234,18 @@
     "after-T7 (e0aa52c)": {
       "models": 102,
       "nouns": {
-        "distinct": 114,
+        "distinct": 115,
         "now": 59
       },
       "mentions": {
-        "mentions": 160,
+        "mentions": 161,
         "now": 85
       },
       "bySet": {
         "demand": {
-          "mentions": 92,
+          "mentions": 93,
           "now": 49,
-          "nouns": 80,
+          "nouns": 81,
           "nounsNow": 40
         },
         "fidelity": {
@@ -268,20 +263,20 @@
       }
     },
     "now": {
-      "models": 1786,
+      "models": 1787,
       "nouns": {
-        "distinct": 114,
+        "distinct": 115,
         "now": 102
       },
       "mentions": {
-        "mentions": 160,
+        "mentions": 161,
         "now": 143
       },
       "bySet": {
         "demand": {
-          "mentions": 92,
+          "mentions": 93,
           "now": 82,
-          "nouns": 80,
+          "nouns": 81,
           "nounsNow": 72
         },
         "fidelity": {

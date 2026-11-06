@@ -1,0 +1,546 @@
+{
+ "base": "http://127.0.0.1:3012",
+ "ran": "2026-11-05T18:30:37.749Z",
+ "checks": {
+  "timing-rope-phone": {
+   "sentence": "cut the rope at the right moment to feed the monster",
+   "viewport": {
+    "width": 390,
+    "height": 844
+   },
+   "rope": {
+    "box": {
+     "left": 32,
+     "right": 43,
+     "top": 190,
+     "bottom": 351,
+     "width": 12,
+     "height": 161,
+     "meshes": 1,
+     "vertices": 40,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 32,
+     "top": 190,
+     "right": 347,
+     "bottom": 493
+    },
+    "underCard": false
+   },
+   "monster": {
+    "box": {
+     "left": 172,
+     "right": 218,
+     "top": 351,
+     "bottom": 418,
+     "width": 46,
+     "height": 66,
+     "meshes": 1,
+     "vertices": 1332,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 172,
+     "top": 351,
+     "right": 172,
+     "bottom": 426
+    },
+    "underCard": true
+   },
+   "slider": {
+    "box": {
+     "left": 15,
+     "right": 66,
+     "top": 190,
+     "bottom": 387,
+     "width": 51,
+     "height": 197,
+     "meshes": 2,
+     "vertices": 1215,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 15,
+     "top": 190,
+     "right": 324,
+     "bottom": 457
+    },
+    "underCard": false
+   },
+   "candy": {
+    "box": {
+     "left": 15,
+     "right": 66,
+     "top": 347,
+     "bottom": 387,
+     "width": 51,
+     "height": 40,
+     "meshes": 1,
+     "vertices": 1175,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 15,
+     "top": 347,
+     "right": 324,
+     "bottom": 457
+    },
+    "underCard": false
+   },
+   "card": {
+    "left": 16,
+    "right": 374,
+    "top": 409,
+    "bottom": 625
+   },
+   "items": {
+    "block": 1
+   },
+   "handPlay": {
+    "runState": "won",
+    "tick": 1801,
+    "seconds": 30
+   },
+   "idleRun": {
+    "runState": "lost",
+    "tick": 903,
+    "seconds": 15.1
+   },
+   "shots": [
+    "timing-rope-phone-start.png",
+    "timing-rope-phone-end.png"
+   ],
+   "errors": []
+  },
+  "timing-rope-desk": {
+   "sentence": "cut the rope at the right moment to feed the monster",
+   "viewport": {
+    "width": 1280,
+    "height": 800
+   },
+   "rope": {
+    "box": {
+     "left": 384,
+     "right": 408,
+     "top": 51,
+     "bottom": 308,
+     "width": 24,
+     "height": 256,
+     "meshes": 1,
+     "vertices": 40,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 384,
+     "top": 51,
+     "right": 872,
+     "bottom": 492
+    },
+    "underCard": false
+   },
+   "monster": {
+    "box": {
+     "left": 608,
+     "right": 672,
+     "top": 322,
+     "bottom": 414,
+     "width": 64,
+     "height": 92,
+     "meshes": 1,
+     "vertices": 1332,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 608,
+     "top": 322,
+     "right": 608,
+     "bottom": 386
+    },
+    "underCard": true
+   },
+   "slider": {
+    "box": {
+     "left": 346,
+     "right": 453,
+     "top": 51,
+     "bottom": 359,
+     "width": 107,
+     "height": 308,
+     "meshes": 2,
+     "vertices": 1215,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 346,
+     "top": 51,
+     "right": 827,
+     "bottom": 441
+    },
+    "underCard": false
+   },
+   "candy": {
+    "box": {
+     "left": 346,
+     "right": 453,
+     "top": 308,
+     "bottom": 359,
+     "width": 107,
+     "height": 51,
+     "meshes": 1,
+     "vertices": 1175,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 346,
+     "top": 308,
+     "right": 827,
+     "bottom": 441
+    },
+    "underCard": false
+   },
+   "card": {
+    "left": 465,
+    "right": 815,
+    "top": 382,
+    "bottom": 586
+   },
+   "items": {
+    "block": 1
+   },
+   "startCardSelection": {
+    "selector": "[data-testid=\"play-first-prompt\"]",
+    "userSelect": "none",
+    "selectedLength": 0,
+    "selected": "",
+    "cardVisibleAfter": false,
+    "controlLength": 244,
+    "rect": {
+     "x": 465,
+     "y": 382,
+     "width": 351,
+     "height": 203
+    }
+   },
+   "handPlay": {
+    "runState": "won",
+    "tick": 1801,
+    "seconds": 30
+   },
+   "idleRun": {
+    "runState": "lost",
+    "tick": 903,
+    "seconds": 15.1
+   },
+   "lostCardSelection": {
+    "selector": "[data-testid=\"play-postrun\"]",
+    "userSelect": "none",
+    "selectedLength": 0,
+    "selected": "",
+    "cardVisibleAfter": true,
+    "controlLength": 244,
+    "rect": {
+     "x": 378,
+     "y": 143,
+     "width": 520,
+     "height": 594
+    }
+   },
+   "shots": [
+    "timing-rope-desk-start.png",
+    "timing-rope-desk-end.png",
+    "timing-rope-desk-lost.png"
+   ],
+   "errors": []
+  },
+  "timing-platform-desk": {
+   "sentence": "tap at the right time to stop the moving platform",
+   "viewport": {
+    "width": 1280,
+    "height": 800
+   },
+   "handPlay": {
+    "runState": "won",
+    "tick": 1801,
+    "seconds": 30
+   },
+   "idleRun": {
+    "runState": "lost",
+    "tick": 903,
+    "seconds": 15.1
+   },
+   "shots": [
+    "timing-platform-desk-start.png",
+    "timing-platform-desk-end.png"
+   ],
+   "errors": []
+  },
+  "timing-pancakes-desk": {
+   "sentence": "stack pancakes as high as you can",
+   "viewport": {
+    "width": 1280,
+    "height": 800
+   },
+   "handPlay": {
+    "runState": "won",
+    "tick": 1801,
+    "seconds": 30
+   },
+   "idleRun": {
+    "runState": "lost",
+    "tick": 903,
+    "seconds": 15.1
+   },
+   "shots": [
+    "timing-pancakes-desk-start.png",
+    "timing-pancakes-desk-end.png"
+   ],
+   "errors": []
+  },
+  "rhythm-phone": {
+   "sentence": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "viewport": {
+    "width": 390,
+    "height": 844
+   },
+   "start": {
+    "box": {
+     "left": 289,
+     "right": 382,
+     "top": 401,
+     "bottom": 482,
+     "width": 93,
+     "height": 81,
+     "meshes": 1,
+     "vertices": 293,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 289,
+     "top": 401,
+     "right": 8,
+     "bottom": 362
+    },
+    "underCard": true,
+    "card": {
+     "left": 16,
+     "right": 374,
+     "top": 378,
+     "bottom": 594
+    },
+    "camera": [
+     0,
+     5.87,
+     -6.67
+    ]
+   },
+   "tickAfterTaps": 139,
+   "input": {
+    "box": {
+     "left": 289,
+     "right": 378,
+     "top": 455,
+     "bottom": 533,
+     "width": 90,
+     "height": 78,
+     "meshes": 1,
+     "vertices": 293,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 289,
+     "top": 455,
+     "right": 12,
+     "bottom": 311
+    },
+    "underCard": false,
+    "card": null,
+    "camera": [
+     0,
+     6.97,
+     -6.64
+    ]
+   },
+   "playSamples": {
+    "count": 18,
+    "outside8px": 1,
+    "minMargin": {
+     "left": 272,
+     "top": 389,
+     "right": 7,
+     "bottom": 283
+    },
+    "underCard": 0
+   },
+   "tickAfterSampling": 212,
+   "handPlay": {
+    "runState": "won",
+    "tick": 2146,
+    "seconds": 35.8
+   },
+   "end": {
+    "box": {
+     "left": 306,
+     "right": 415,
+     "top": 469,
+     "bottom": 564,
+     "width": 109,
+     "height": 95,
+     "meshes": 1,
+     "vertices": 293,
+     "behind": false
+    },
+    "inside": false,
+    "margins": {
+     "left": 306,
+     "top": 469,
+     "right": -25,
+     "bottom": 280
+    },
+    "underCard": false,
+    "card": null,
+    "camera": [
+     0,
+     6.95,
+     -6.19
+    ]
+   },
+   "playAgain": {
+    "box": {
+     "left": 278,
+     "right": 360,
+     "top": 484,
+     "bottom": 555,
+     "width": 82,
+     "height": 71,
+     "meshes": 1,
+     "vertices": 293,
+     "behind": false
+    },
+    "inside": true,
+    "margins": {
+     "left": 278,
+     "top": 484,
+     "right": 30,
+     "bottom": 289
+    },
+    "underCard": true,
+    "card": {
+     "left": 16,
+     "right": 374,
+     "top": 457,
+     "bottom": 672
+    },
+    "camera": [
+     0,
+     8.05,
+     -7.59
+    ]
+   },
+   "idleRun": {
+    "runState": "lost",
+    "tick": 428,
+    "seconds": 7.1
+   },
+   "shots": [
+    "rhythm-phone-start.png",
+    "rhythm-phone-input.png",
+    "rhythm-phone-end.png",
+    "rhythm-phone-again.png"
+   ],
+   "errors": []
+  },
+  "drawsave-desk": {
+   "sentence": "draw walls to save a puppy from bees",
+   "viewport": {
+    "width": 1280,
+    "height": 800
+   },
+   "gridStart": {
+    "cols": 8,
+    "rows": 12,
+    "px": {
+     "left": 462,
+     "right": 818,
+     "top": 98,
+     "bottom": 632
+    },
+    "heightPx": 534,
+    "stageHeightPx": 720,
+    "shareOfStage": 0.742,
+    "cellPx": 44.4
+   },
+   "startCardSelection": {
+    "selector": "[data-testid=\"play-first-prompt\"]",
+    "userSelect": "none",
+    "selectedLength": 0,
+    "selected": "",
+    "cardVisibleAfter": false,
+    "controlLength": 244,
+    "rect": {
+     "x": 455,
+     "y": 318,
+     "width": 370,
+     "height": 205
+    }
+   },
+   "tickAfterDraw": 122,
+   "drawInputs": 62,
+   "gridInput": {
+    "cols": 8,
+    "rows": 12,
+    "px": {
+     "left": 466,
+     "right": 814,
+     "top": 97,
+     "bottom": 620
+    },
+    "heightPx": 523,
+    "stageHeightPx": 720,
+    "shareOfStage": 0.726,
+    "cellPx": 43.4
+   },
+   "handPlay": {
+    "runState": "won",
+    "tick": 960,
+    "seconds": 16
+   },
+   "idleRun": {
+    "runState": "lost",
+    "tick": 448,
+    "seconds": 7.5
+   },
+   "lostCardSelection": {
+    "selector": "[data-testid=\"play-postrun\"]",
+    "userSelect": "none",
+    "selectedLength": 0,
+    "selected": "",
+    "cardVisibleAfter": true,
+    "controlLength": 244,
+    "rect": {
+     "x": 380,
+     "y": 228,
+     "width": 520,
+     "height": 531
+    }
+   },
+   "shots": [
+    "drawsave-desk-start.png",
+    "drawsave-desk-input.png",
+    "drawsave-desk-end.png",
+    "drawsave-desk-lost.png"
+   ],
+   "errors": []
+  }
+ }
+}

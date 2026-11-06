@@ -1,0 +1,30 @@
+{
+ "viewport": "390x844",
+ "second": 3,
+ "renderer": "d3d11",
+ "takenAt": "2026-11-05T18:48:28.264Z",
+ "rows": [
+  {
+   "id": "defense",
+   "seed": 71503,
+   "model": "dragon",
+   "text": "a dragon defends its castle from knights",
+   "versionId": "8b5fb4a621741fc9af80425e7bd4dfb3",
+   "chain": false,
+   "genre": "defense",
+   "control": "lanes",
+   "setting": "castle",
+   "file": "defense.png",
+   "tick": 180,
+   "runState": "running",
+   "calls": 118,
+   "glb": [
+    "/assets/worldstream/gen3d-p37d/gen3d-wyvern-lod1.glb",
+    "/assets/worldstream/rigged/knight.glb",
+    "/assets/worldstream/stone-wall-lod1.glb"
+   ],
+   "failed": [],
+   "errors": []
+  }
+ ]
+}

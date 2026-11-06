@@ -49,7 +49,7 @@ export interface ChainSession {
   /** Řídký záznam s globálními tiky – ten, který přehraje `replayChain`. */
   inputs(): readonly InputEvent[];
   hash(): string;
-  /** Kolo čeká na první dotek (`gate`); tohle ho pustí. */
+  /** Kolo čeká na první dotek (`gate`); tohle ho pustí. Běží-li v kole náhled robota, kolo začne od tiku 0. */
   begin(): void;
   waiting(): boolean;
   subscribe(listener: () => void): () => void;
@@ -87,7 +87,8 @@ export function createChainSession(chain: ChainWorld, { gate = false, startOf = 
 
   /** Konec kola podle `stepChain`: skóre, prohrané kolo zastaví řetěz, poslední vyhrané ho vyhraje, jinak karta. */
   const settle = (round: number): void => {
-    if (finals.length > round) return;
+    // Náhled robota kola 1 ve feedu (P71B T1) není běh řetězu: okno skončené výhrou robota kolo nezapíše.
+    if (finals.length > round || sessions[round]!.demo()?.preview === true) return;
     const state = sessions[round]!.state();
     const ended = outcomeOf(state);
     if (ended === 'running') return;
@@ -175,7 +176,11 @@ export function createChainSession(chain: ChainWorld, { gate = false, startOf = 
     },
     inputs: () => sessions.flatMap((session, round) => session.inputs().map((event) => ({ tick: starts[round]! + event.tick, buttons: event.buttons, axis: event.axis }))),
     hash: () => hashChain({ outcome, card, finals, state: current().state(), score, round: index, tick: tick() }),
-    begin: () => opening?.begin(),
+    // Dotek během náhledu kola (P71B T1) vrátí kolo hráči na tik 0 a hned ho pustí, jako převzetí v `ArcadePlay`.
+    begin: () => {
+      if (opening?.waiting() === true && opening.demo()?.preview === true) opening.restart();
+      opening?.begin();
+    },
     // Během karty je `opening` relace skončeného kola, a ta už nečeká.
     waiting: () => opening?.waiting() === true,
     subscribe: (listener) => {

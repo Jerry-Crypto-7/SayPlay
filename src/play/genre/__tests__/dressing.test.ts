@@ -50,7 +50,7 @@ const ROWS: readonly Row[] = [
   { genre: 'slice', sentence: 'a ninja slices flying pumpkins in a haunted forest', place: 'haunted forest', slots: { coin: 'pumpkin' } },
   { genre: 'hop', sentence: 'a chicken crosses a busy city road dodging taxis', place: 'city', slots: { obstacle: 'taxi' } },
   // Dav ve městě: „a horde of zombies“ dřív dala hřbitov – tvor věty nepřebije místo, které věta řekne.
-  { genre: 'crowd', sentence: 'a horde of zombies grows through gates in a city and attacks a dragon', place: 'city', slots: { 'thing.boss': 'dragon' } },
+  { genre: 'crowd', sentence: 'a horde of zombies grows through gates in a city and attacks a dragon', place: 'city', slots: { 'thing.boss': 'wyvern' } }, // drak je wyverna (P71E T2)
   { genre: 'merge', sentence: 'merge fruits in a jar in a kitchen', place: 'kitchen', slots: { coin: 'fruit' } },
   { genre: 'push', sentence: 'a polar bear shoves penguins off an ice floe in the arctic', place: 'arctic', slots: { rival: 'penguin' } },
   // P66 T12: pět nových žánrů – nepřítel vln, věc, kterou díra polyká, kořist a strážce, druhy k třídění, kus v zácpě.
@@ -109,8 +109,8 @@ describe('P61 T3: the quick game wears the sentence’s setting and foe', () => 
 
   // „against“ jmenuje soupeře, „against the clock“ ne – soupeř zůstane ten, koho věta porazí.
   it.each([
-    ['a horde of zombies grows through gates in a city and marches against a dragon', 'dragon'],
-    ['a horde of zombies grows through gates in a city against the clock and attacks a dragon', 'dragon'],
+    ['a horde of zombies grows through gates in a city and marches against a dragon', 'wyvern'],
+    ['a horde of zombies grows through gates in a city against the clock and attacks a dragon', 'wyvern'],
   ])('crowd boss from "%s" is %s', (sentence, boss) => {
     const meta = draftGameSpecWithMeta(sentence, 1);
     expect(meta.genre?.genre).toBe('crowd');

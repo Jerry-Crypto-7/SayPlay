@@ -346,10 +346,12 @@ describe('classifyGenre', () => {
     // Žánry MVP, které klasifikátor zná od T13, a žánry fáze 3 od T13b (přeskákání, dav, slučování, vytlačování).
     const routed = new Set(['catch.default', 'whack.default', 'defense.default', 'slice.default', 'hop.default', 'crowd.default', 'merge.default', 'push.default']);
     const sentences = json('dev.json').sentences;
+    // P71D T4: „…to find the temple“ – hledání jedné věci je úkol, past teď hraje svůj očekávaný žánr.
+    const P71D_FOUND = new Set(['x12']);
     for (const row of sentences) {
       const first = classifyGenre(row.text, null, GENRE_MODULES).ranked[0];
       const now = `${first.genre}.${first.mode}`;
-      if (row.family === 'trap') expect(now, row.id).toBe(baseline.get(row.id));
+      if (row.family === 'trap') expect(now, row.id).toBe(P71D_FOUND.has(row.id) ? row.expect : baseline.get(row.id));
       else if (routed.has(row.expect)) expect(now, row.id).toBe(row.expect);
       else expect(routed.has(now), row.id).toBe(false);
     }
@@ -391,7 +393,9 @@ describe('classifyGenre', () => {
     const sets = { p30Dev: 'p30/dev.json', p54cDev: 'p54c/dev.json', p55HoldoutOpened: 'p55/holdout.json' };
     // P68 T11: hry P68 výchozí čísla P56A taky znát nemohla – vyjmou se stejně jako žánry P66.
     const P66 = new Set(['survivor', 'hole', 'steal', 'sort', 'arrows', 'stunt', 'minigolf', 'railfps', 'buildshift', 'drawsave']);
-    const P68R_REORDERED = new Set(['p55HoldoutOpened h70']);
+    // P71D T4: x12 („slice through the jungle with a machete to find the temple“) hledá jednu věc – Úkol před sběrem;
+    // h71 („… and find the treasure“) má první žánr dál quest.station, Úkol v prostoru jen poskočí za sběr.
+    const P68R_REORDERED = new Set(['p55HoldoutOpened h70', 'p54cDev x12', 'p55HoldoutOpened h71']);
     const firsts: string[] = [];
     for (const [name, path] of Object.entries(sets)) {
       const was = new Map(baseline.sets[name]!.rows.map((row) => [row.id, row.ranked]));

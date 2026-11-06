@@ -2095,7 +2095,7 @@
     {
       "assetId": "cc0-dragon",
       "tags": [
-        "dragon"
+        "baby dragon"
       ],
       "path": "/assets/worldstream/cc0/cc0-dragon-lod1.glb",
       "bounds": {
@@ -2155,22 +2155,19 @@
     {
       "assetId": "cc0-shark",
       "tags": [
-        "shark",
-        "seen:gas mask",
-        "seen:helmet",
-        "seen:diving mask"
+        "shark"
       ],
       "path": "/assets/worldstream/cc0/cc0-shark-lod1.glb",
       "bounds": {
         "min": [
-          -1.88656,
+          -1.14959,
           0,
-          -2.63674
+          -2.81693
         ],
         "max": [
-          1.88656,
-          3.77284,
-          2.63674
+          1.14959,
+          2.01287,
+          2.81693
         ]
       }
     },
@@ -2299,7 +2296,8 @@
     {
       "assetId": "cc0-chicken",
       "tags": [
-        "chicken"
+        "chicken",
+        "hen"
       ],
       "path": "/assets/worldstream/cc0/cc0-chicken-lod1.glb",
       "bounds": {
@@ -6383,6 +6381,26 @@
           2.40001,
           9.96353,
           5.30001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ship-large",
+      "tags": [
+        "pirate ship",
+        "galleon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ship-large-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.40001,
+          0,
+          -6.55001
+        ],
+        "max": [
+          2.40001,
+          9.96353,
+          6.55001
         ]
       }
     },
@@ -12243,8 +12261,7 @@
     {
       "assetId": "gen3d-pirate-ship",
       "tags": [
-        "pirate ship",
-        "galleon"
+        "dark pirate ship"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-pirate-ship-lod1.glb",
       "bounds": {
@@ -24616,6 +24633,7 @@
     {
       "assetId": "gen3d-wyvern",
       "tags": [
+        "dragon",
         "wyvern"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-wyvern-lod1.glb",

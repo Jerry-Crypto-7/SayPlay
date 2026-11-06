@@ -86,7 +86,13 @@ function verbPattern(cue: string): RegExp {
   return new RegExp(`\\b(?:${forms.join('|')})${rest.map((word) => ` ${word}`).join('')}\\b`, 'i');
 }
 
-const CUE_PATTERNS = CUES.map((cue) => [cue, verbPattern(cue)] as const);
+/**
+ * Hledání jedné věci (P71D T4): předmět za slovesem čte `verbIn`, ale narážkou žánru není – „find 5 keys“ je sběr.
+ * Klasifikátor nese sloveso jako `find` (řádek `find` v `classify.ts`), i když věta říká „search for“.
+ */
+const FIND_CUES = ['find', 'search for', 'look for'];
+
+const CUE_PATTERNS = [...CUES, ...FIND_CUES].map((cue) => [cue, verbPattern(cue)] as const);
 
 /** Sloveso úkolu, které ve větě stojí nejdřív, a text za ním. */
 function verbIn(sentence: string): { readonly verb: string; readonly after: string } | null {
@@ -154,7 +160,8 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   // Věta s počtem (P61 T5): „light five candles“ = právě tolik cílů celkem, HUD je počítá slovem věty (`counted`, `noun`).
   // Od T5-R1 po kolech na čas (`countedWaves`, `countedTicks`), poslední nese boss – hra drží 30–90 s. Hodiny z věty,
   // do kterých se rozvrh nevejde, hrají jedno kolo jako dřív.
-  const counted = !station && spec.counts?.target !== undefined;
+  // Hledaná věc (P71D T4) je jedna a hraje jedno kolo jako věta s počtem – „Find the crown“, ne „in each of 4 rounds“.
+  const counted = !station && (spec.counts?.target !== undefined || FIND_CUES.includes(verb.trim().toLowerCase()));
   const noun = counted ? goalNoun(label) : null;
   const scheduled = counted && count > 1 && (clock === undefined || countedClock(count) <= clock);
   const spatialRound = (k: number): number => spatialRoundSeconds(count, states, wavesChasers(chasers, k));
@@ -235,7 +242,7 @@ export const questGenre: GenreModule<'quest'> = {
     const read = reading?.roles.find((role) => role.kind === 'target');
     const target = read === undefined ? (found === null ? null : targetOf(found.after)) : { label: read.noun, count: read.count };
     const chase = station ? null : chaseOf(sentence);
-    const count = target?.count ?? null;
+    const count = target?.count ?? (found !== null && FIND_CUES.includes(found.verb) ? 1 : null);
     const params = {
       ...(count === null ? {} : { count: clamp(count, 1, station ? STATION_MAX : 8) }),
       // Počet honičů říká jen ten, kdo „chytí“; jinak jeden výchozí (P36A T3) – nese popisek nepřítele ze slovníku, když ho věta má.

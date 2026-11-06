@@ -115,6 +115,10 @@ export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
  * dlouhé zvíře (ještěrka, tuleň) vyrůst do výšky. Kyv jezdce (±3 m, blok věže ±4,2 m) ho míjí za zády.
  */
 const HERO_M = { w: 1.2, h: 1.8, d: 1.6 };
+/** Lano nad visící věcí a ten, kdo ji za cílem čeká (P71C T3): hlava nad lištou, věc o kus výš. */
+const ROPE_LENGTH = 3;
+const ROPE_COLOR = '#a16207';
+const GOAL_M = { w: 1.4, h: 1.5, d: 1.2 };
 const HERO_AT: readonly [number, number, number] = [-(TIMING.amplitude / UNIT + 1), 0, -2.2];
 const HERO_TURN = (3 * Math.PI) / 4;
 /**
@@ -213,12 +217,15 @@ export function TimingScene({
   session,
   look: scene,
   blockModel,
+  goalModel,
   heroModel,
   ghost,
 }: {
   readonly session: ArcadeSession;
   readonly look: Look;
   readonly blockModel?: BodyModel;
+  /** Komu lišta věc dopraví (P71C T3, „feed the monster“): stojí za cílem a věc nad ním visí na laně. */
+  readonly goalModel?: BodyModel;
   readonly heroModel?: BodyModel;
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
@@ -236,6 +243,7 @@ export function TimingScene({
   const placed = useRef<(Object3D | null)[]>([]);
   // Hračková póza (P45D T11): vnitřní skupiny jezdce a položených dílů, póza minulého snímku a kolo vrchního dílu.
   const sliderPose = useRef<Group | null>(null);
+  const riderScale = useRef<Group | null>(null);
   const placedPoses = useRef<(Group | null)[]>([]);
   const heroPose = useRef<Group | null>(null);
   const toyPose = useRef<ToyPose | null>(null);
@@ -244,6 +252,8 @@ export function TimingScene({
   const blocks = sliderKind === 'block' ? blockModel : undefined;
   // P58A T6: věc z věty na liště („pancakes“) jede na ručičce jako čtverec o výšce dílu; ručička zůstává.
   const rider = sliderKind === 'needle' ? blockModel : undefined;
+  // „cut the rope“ (P71C T3): věc z věty visí na laně místo ručičky a pod cílem čeká, kdo ji sní.
+  const hang = rider !== undefined && goalModel !== undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   // Poměr stran kamery: R3F ho po změně velikosti plátna přepíše dřív, než se ptá selektorů scén.
   const aspect = useThree((three) => (three.camera as PerspectiveCamera).aspect);
@@ -267,6 +277,8 @@ export function TimingScene({
       // Kamera kouká po +z, takže +x jádra jde na obrazovce vlevo – zrcadlí se jako u běžce.
       group.position.set(-lerp(prev[s + BODY.x] as number, state[s + BODY.x] as number, alpha) / UNIT, (state[s + BODY.y] as number) / UNIT, 0);
       group.scale.x = (state[s + BODY.w] as number) / UNIT / Math.max(0.001, sliderInit.w);
+      // Věc na ručičce vrací jen změnu šířky z jádra (P71C T3) – `1 / sliderInit.w` ji roztáhl pětkrát do pruhu.
+      if (riderScale.current !== null) riderScale.current.scale.x = 1 / Math.max(0.001, group.scale.x);
       group.visible = (state[s + BODY.vx] as number) !== 0;
     }
     placed.current.forEach((mesh, round) => {
@@ -353,7 +365,12 @@ export function TimingScene({
       {/* Kyv jede po vnější skupině, hračková póza (P45D T11) po vnitřní. */}
       <group ref={slider} userData={{ frame: 'hero', item: sliderKind === 'block' ? 'block' : undefined }}>
         <group ref={sliderPose}>
-          {blocks !== undefined ? (
+          {hang ? (
+            <mesh position={[0, 2 * blockH + ROPE_LENGTH / 2, 0]} userData={{ rope: true }}>
+              <cylinderGeometry args={[0.035, 0.035, ROPE_LENGTH, 6]} />
+              <meshStandardMaterial color={ROPE_COLOR} roughness={0.9} />
+            </mesh>
+          ) : blocks !== undefined ? (
             blocks(sliderInit.w, blockH, depth)
           ) : (
             <mesh position={[0, blockH / 2, 0]}>
@@ -363,12 +380,18 @@ export function TimingScene({
           )}
           {rider === undefined ? null : (
             // Ručičku mění jádro v šířce (`scale.x`); věc nad ní tu změnu vrací, ať se nezplacatí.
-            <group position={[0, blockH, 0]} scale={[1 / Math.max(0.001, sliderInit.w), 1, 1]} userData={{ item: 'block' }}>
+            <group ref={riderScale} position={[0, blockH, 0]} userData={{ item: 'block' }}>
               {rider(blockH, blockH, depth)}
             </group>
           )}
         </group>
       </group>
+      {hang && (
+        // Za cílem, čelem ke kameře: nad lištou vykukuje hlava, nad ní jede věc na laně.
+        <group position={[-target.x, 0, depth / 2 + GOAL_M.d / 2 + 0.2]} rotation={[0, Math.PI, 0]} userData={{ goal: true }}>
+          {goalModel(GOAL_M.w, GOAL_M.h, GOAL_M.d)}
+        </group>
+      )}
       {heroModel !== undefined && (
         <group position={heroAt} rotation={[0, HERO_TURN, 0]}>
           {/* Hrdinou sondy zůstává jezdec; hračkovou pózu postavy čte `heroToy` sondy (P45D T14), popisek jména jde nad ni. */}

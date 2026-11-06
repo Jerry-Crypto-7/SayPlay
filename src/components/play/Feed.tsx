@@ -4,13 +4,14 @@
  * „Up next“ pod plochou feedu od `lg` (P54A T12; dřív celý seznam vedle hry,
  * P23-D T4, P27B T4): tři další karty jako náhledy – snímek scény z posledního
  * odchodu, jinak obrázek karty (`cardImage`) na podkladu v tónu nálady – s titulem,
- * „N% beat this“ (od deseti pokusů, P37C T5) a počtem remixů (jen když nějaký je);
+ * „N% beat this“ (od deseti pokusů, P37C T5) a počtem remixů (jen když nějaký je); s klipem (P71B T4) se náhled hýbe;
  * klepnutí přepne hru ve feedu. Pod `lg` ho CSS schová – listuje se tahem a okrajem.
  *
  * Náladu nese detail hry, který feed stahuje pro aktuální hru a sousedy
  * (`known`); ostatní náhledy mají neutrální podklad.
  */
 
+import { CardClip } from './feed/CardClip';
 import { cardImage } from './feed/snapshot-cache';
 
 /** Kolik dalších karet „Up next“ ukáže. */
@@ -54,6 +55,7 @@ export function Feed({
   index,
   known,
   shot,
+  clip,
   onPick,
 }: {
   readonly games: readonly FeedGame[];
@@ -62,6 +64,8 @@ export function Feed({
   readonly known: ReadonlyMap<string, KnownGame>;
   /** Snímek scény z posledního odchodu z karty (`snapshot-cache.ts`). */
   readonly shot: (versionId: string) => string | undefined;
+  /** Klip karty (P71B T4, `CardClip`); bez něj náhled ukáže obrázek. */
+  readonly clip?: (versionId: string) => string | undefined;
   readonly onPick: (versionId: string) => void;
 }) {
   const next = games.slice(index + 1, index + 1 + UP_NEXT);
@@ -72,6 +76,8 @@ export function Feed({
       <ul className="play-feed-list">
         {next.map((game) => {
           const facts = known.get(game.versionId);
+          const picture = shot(game.versionId) ?? cardImage(game.versionId).landscape;
+          const moving = clip?.(game.versionId);
           return (
             <li key={game.versionId}>
               <button
@@ -81,7 +87,11 @@ export function Feed({
                 data-tone={facts === undefined ? undefined : moodTone(facts.mood)}
                 onClick={() => onPick(game.versionId)}
               >
-                <img className="play-feed-thumb" src={shot(game.versionId) ?? cardImage(game.versionId).landscape} alt="" loading="lazy" decoding="async" />
+                {moving === undefined ? (
+                  <img className="play-feed-thumb" src={picture} alt="" loading="lazy" decoding="async" />
+                ) : (
+                  <CardClip src={moving} poster={picture} className="play-feed-thumb" />
+                )}
                 <span className="play-feed-title">{game.title}</span>
                 {typeof game.beat === 'number' && (
                   <span className="sp-label sp-muted play-feed-beat" data-testid="play-feed-beat">

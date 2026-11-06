@@ -108,13 +108,36 @@ const placeRoles = (setting: string): PlaceRoles | null => {
 };
 
 /**
- * Hrdina, když ho věta neříká: Plavba jede na plavidle z věty, jinak na tom, co k místu patří. Liška je hrdina jen
- * nouzově (P56A T6): věta, kterou přečetla čtečka (`read`) a hrdinu nejmenuje, dostane na louce, v lese i na poušti
- * průzkumníka – lišku jen ta, která ji jmenuje.
+ * Hrdina činnosti (P71D T3): hod, bouchání, chytání, slučování a obchod hraje člověk, k jehož práci věc patří –
+ * jen postavy, které katalog má (`q-chef`, `q-chef-hat`, `gen3d-farmer`, `boy-a`). QA 5. 11.: basketbal a krtky
+ * hrála liška z louky, koblihy, ovoce a pizzerii generický průzkumník.
+ */
+const WORK_HEROES: readonly (readonly [RegExp, string])[] = [
+  [/\b(?:pizzas?|pizzerias?|burgers?|hamburgers?|restaurants?|diners?|kitchens?|sushi|tacos?|noodles?|soups?|pancakes?|sandwich(?:es)?|chefs?)\b/, 'chef'],
+  [/\b(?:bak(?:e|es|ing|er|ers|ery|eries)|donuts?|doughnuts?|cookies?|cupcakes?|cakes?|muffins?|croissants?|breads?|pies?|pastr(?:y|ies))\b/, 'baker'],
+  [/\b(?:moles?|gardens?|farms?|fruits?|apples?|pears?|oranges?|carrots?|vegetables?|veggies?|pumpkins?|tomato(?:es)?|berr(?:y|ies)|strawberr(?:y|ies)|watermelons?|melons?|corn)\b/, 'farmer'],
+];
+
+/** Hrdina žánru činnosti, když věta nemá ani věc práce: krtky bouchá farmář, jinak dítě. */
+const WORK_GENRES: Partial<Record<GenreId, string>> = { throw: 'kid', whack: 'farmer', catch: 'kid', merge: 'kid', buildshift: 'kid' };
+
+/** Výchozí postavy, které místo dává jen z nouze – u žánru činnosti je nahradí člověk činnosti. */
+const FILLER_HEROES: ReadonlySet<string> = new Set(['fox', UNKNOWN_PLACE.hero]);
+
+/**
+ * Hrdina, když ho věta neříká: Plavba jede na plavidle z věty, žánr činnosti hraje člověk své práce (P71D T3), jinak
+ * hraje to, co k místu patří. Liška je hrdina jen nouzově (P56A T6): věta, kterou přečetla čtečka (`read`) a hrdinu
+ * nejmenuje, dostane na louce, v lese i na poušti průzkumníka – lišku jen ta, která ji jmenuje.
  */
 export function defaultHero(setting: string, genre: GenreId, sentence: string, read = false): string {
   const place = placeRoles(setting) ?? UNKNOWN_PLACE;
   if (genre === 'voyage') return craftOf(sentence) ?? place.craft;
+  const text = sentence.toLowerCase();
+  // Hledání jedné věci (P71D T4, úkol) hraje dítě – hledač pokladu, ne liška ani průzkumník z nouze.
+  const worker = WORK_GENRES[genre] ?? (genre === 'quest' && /\b(?:find(?:s|ing)?|search(?:es|ing)? for|look(?:s|ing)? for)\b/.test(text) ? 'kid' : undefined);
+  if (worker !== undefined) {
+    return WORK_HEROES.find(([words]) => words.test(text))?.[1] ?? (FILLER_HEROES.has(place.hero) ? worker : place.hero);
+  }
   return read && place.hero === 'fox' ? UNKNOWN_PLACE.hero : place.hero;
 }
 
@@ -161,8 +184,11 @@ export function defaultTarget(verb: string): string {
   return TARGET_DEFAULT[verb] ?? 'star';
 }
 
-/** Hrdina míčové hry, kterou věta nikomu nedává (P42): hráč, ne zvíře z prostředí. */
-export const BALL_PLAYER = 'player';
+/**
+ * Hrdina míčové hry, kterou věta nikomu nedává (P42): člověk, ne zvíře z prostředí. P71D T3: dítě – popisek „player“
+ * katalog kreslil jako rytíře.
+ */
+export const BALL_PLAYER = 'kid';
 
 /** Každý popisek, který smlouva rolí dává místo věty – pin „žádná role mimo větu a výchozí“. */
 export const DEFAULT_LABELS: ReadonlySet<string> = new Set([
@@ -171,6 +197,8 @@ export const DEFAULT_LABELS: ReadonlySet<string> = new Set([
   ...Object.values(TARGET_DEFAULT),
   'star',
   BALL_PLAYER,
+  ...WORK_HEROES.map(([, hero]) => hero),
+  ...Object.values(WORK_GENRES),
 ]);
 
 /** Equipment implied by a named sport, not a global permission to invent cast. */
@@ -182,5 +210,7 @@ export function semanticRoleDefaults(sentence: string): readonly string[] {
   if (/\b(?:basketball|free throws?)\b/.test(text)) return ['basketball', 'hoop'];
   if (/\b(?:mini[ -]?)?golf\b/.test(text)) return ['golf ball', 'hole'];
   if (/\b(?:soccer|football|penalty kicks?)\b/.test(text)) return ['football', 'goal'];
+  // „cut the rope“ (P71C T3): na laně visí bonbon a dole čeká, kdo ho sní – i když věta jmenuje jen jednoho.
+  if (/\bcut (?:the |a )?ropes?\b/.test(text)) return ['candy', 'monster'];
   return [];
 }

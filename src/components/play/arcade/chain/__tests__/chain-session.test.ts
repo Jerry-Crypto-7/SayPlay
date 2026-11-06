@@ -14,8 +14,9 @@ import { buildChain } from '@/play/chain/build';
 import type { ChainWorld } from '@/play/chain/contract';
 import { readForChain } from '@/play/chain/read';
 import { replayChain } from '@/play/chain/run';
+import { encodeInputs } from '@/play/version/preview';
 
-import { createArcadeSession, TICK_MS } from '../../session';
+import { createArcadeSession, PREVIEW_GAP_MS, TICK_MS } from '../../session';
 import { type ChainSession, createChainSession } from '../chain-session';
 
 /** Dev P56C d04 (`multi_verb`): skákání a střelba. */
@@ -271,5 +272,60 @@ describe('tempo between rounds (P56C T11 → P70A T3)', () => {
     // Milisekundy na tik v každém kole jako v kole 1: krok 4 ms dá odchylku nejvýš o zlomek tiku na kolo.
     // Staré tempo 1075 by dalo 15,5 ms, 1300 jen 12,8 ms na tik.
     for (const msPerTick of perRound) expect(Math.abs(msPerTick - TICK_MS)).toBeLessThan(0.5);
+  });
+});
+
+describe('bot preview of round 1 in the feed (P71B T1)', () => {
+  it('loops a window that ends with the bot winning without settling the round; the first touch hands round 1 to the player at tick 0', () => {
+    const session = createChainSession(chain, { gate: true });
+    const live = session.current();
+    // Okno jako `previewOf` u krátkého kola: poslední 2 s robota až do jeho výhry.
+    const run = runBot(live.world);
+    expect(run.outcome).toBe('won');
+    const startTick = Math.max(0, run.tick - 120);
+    live.startPreview({ startTick, endTick: run.tick, inputs: encodeInputs(run.inputs.filter((input) => input.tick < run.tick)), hash: run.hash });
+    expect(session.waiting()).toBe(true);
+    expect(live.state()[HEADER.tick]).toBe(startTick);
+
+    // Dvě opakování okna: kolo dojde k výhře robota a vrátí se na začátek okna, řetěz ho nezapíše.
+    let loops = 0;
+    let last = startTick;
+    let won = false;
+    const windowMs = (run.tick - startTick) * TICK_MS + PREVIEW_GAP_MS;
+    for (let ms = 0; ms < 2.5 * windowMs; ms += STEP_MS) {
+      live.advance(STEP_MS);
+      const tick = live.state()[HEADER.tick] as number;
+      won ||= live.snapshot().runState === 'won';
+      if (tick < last) {
+        expect([last, tick]).toEqual([run.tick, startTick]);
+        loops += 1;
+      }
+      last = tick;
+      expect(session.results()).toEqual([]);
+      expect(session.card()).toBe(0);
+      expect(session.outcome()).toBe('running');
+    }
+    expect(won).toBe(true);
+    expect(loops).toBe(2);
+
+    session.begin();
+    expect(session.waiting()).toBe(false);
+    expect(live.demo()).toBeNull();
+    expect(live.state()[HEADER.tick]).toBe(0);
+    expect(session.inputs()).toEqual([]);
+    // Kolo 1 teď hraje hráč: robotovy stisky dohrají řetěz (každé další kolo pustí dotek) a záznam přehraje server na týž hash.
+    for (let round = 0; session.outcome() === 'running'; round += 1) {
+      session.begin();
+      const playing = session.current();
+      const events = new Map(bot(round, playing.world).map((event) => [event.tick, event]));
+      while (session.card() === 0 && session.outcome() === 'running') {
+        const event = events.get(playing.state()[HEADER.tick] as number);
+        if (event !== undefined) session.press(event.buttons, event.axis);
+        playing.advance(STEP_MS);
+      }
+      while (session.card() > 0) session.advance(STEP_MS);
+    }
+    expect(session.outcome()).toBe('won');
+    expectSameAsServer(session);
   });
 });
