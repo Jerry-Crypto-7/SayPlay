@@ -290,9 +290,10 @@ describe('readBeforeDraft on a hosted reader', () => {
   });
 
   it.each([
-    ['a 500', () => replying(JSON.stringify(READING), 500), 'unknown'],
-    ['a 429', () => replying(JSON.stringify(READING), 429), 'unknown'],
-    ['a 400', () => replying(JSON.stringify(READING), 400), 'unknown'],
+    // Chybový HTTP stav = odmítnuto dřív, než model běžel: nula (P71A T1-R2).
+    ['a 500', () => replying(JSON.stringify(READING), 500), 'zero'],
+    ['a 429', () => replying(JSON.stringify(READING), 429), 'zero'],
+    ['a 400', () => replying(JSON.stringify(READING), 400), 'zero'],
     ['a dropped connection', () => vi.fn(async (..._args: FetchArgs): Promise<Response> => { throw new TypeError('fetch failed'); }), 'unknown'],
     ['a body that is not JSON', () => vi.fn(async (..._args: FetchArgs) => new Response('<html>', { status: 200 })), 'unknown'],
     ['content that is not JSON', () => replying('{"control": "runner", "verbs": ['), 'receipt'],
@@ -302,6 +303,7 @@ describe('readBeforeDraft on a hosted reader', () => {
     await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl: make(), cap, store: null, caller: VISITOR })).resolves.toBeNull();
     expect(settled).toHaveLength(1);
     if (charge === 'unknown') expect(settled[0]).toBe('unknown');
+    else if (charge === 'zero') expect(settled[0]).toBe(0);
     else expect(settled[0]).toBeGreaterThan(0);
   });
 });

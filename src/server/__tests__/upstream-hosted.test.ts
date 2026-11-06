@@ -251,7 +251,8 @@ describe('openai: generate', () => {
       res.end('{"error":{"message":"nope"}}');
     });
     const outcome = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${root}` })).generate(CALL);
-    expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE', usage: null });
+    // Odmítnuto dřív, než model běžel: účtenka nula, ne neznámá (P71A T1-R2).
+    expect(outcome).toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE', usage: { inputTokens: 0, outputTokens: 0 } });
     expect(!outcome.ok && outcome.detail).toContain(String(status));
     expect(!outcome.ok && outcome.detail).toContain(reason);
   });
@@ -319,7 +320,8 @@ describe('the reservation counts the answer schema the call sends (P71A T1-R1)',
       const branch = upstreamBranch(config, fake);
       await branch.generate(call);
       expect(sent.length).toBeGreaterThan(100_000);
-      expect(branch.worstCaseUsd(call)).toBeCloseTo(textOnlyUsd(call, config) + (sent.length * config.pricing.usdPerMTokIn) / 1_000_000, 12);
+      // Čtyři znaky schématu na token (`SCHEMA_CHARS_PER_TOKEN`).
+      expect(branch.worstCaseUsd(call)).toBeCloseTo(textOnlyUsd(call, config) + (Math.ceil(sent.length / 4) * config.pricing.usdPerMTokIn) / 1_000_000, 12);
     }
   });
 
@@ -330,10 +332,11 @@ describe('the reservation counts the answer schema the call sends (P71A T1-R1)',
   });
 
   it('books the whole honest receipt of a long astra director answer, nothing cut', async () => {
-    // Produkční ceník astry a skutečný požadavek režiséra. Účtenka ve tvaru P58B:
-    // ~32 tis. tokenů samotného schématu, k tomu text po tokenu na znak a celý
-    // strop výstupu (useknutá odpověď). Bez schématu v rezervaci ~0,55 USD proti
-    // účtence ~0,87 USD – ořez by zapsal o třetinu méně, než přijde na faktuře.
+    // Produkční ceník astry a skutečný požadavek režiséra. Účtenka v poměru, který
+    // naměřilo P58B (260 994 znaků striktního schématu za ~32 tis. tokenů), nad
+    // dnešním schématem; k tomu text po tokenu na znak a celý strop výstupu
+    // (useknutá odpověď). Bez schématu v rezervaci ~0,55 USD proti účtence
+    // ~0,99 USD – ořez by zapsal skoro o polovinu méně, než přijde na faktuře.
     const config = configOf({
       WORLDSMITH_MODEL_ENDPOINT: 'openai:https://api.openai.com',
       WORLDSMITH_MODEL: 'gpt-6-astra',
@@ -341,7 +344,9 @@ describe('the reservation counts the answer schema the call sends (P71A T1-R1)',
       WORLDSMITH_USD_PER_MTOK_OUT: '50',
     });
     const call: GenerationCall = { prompt: SENTENCE, request: buildDirectorRequest(SENTENCE, null) };
-    const receipt = { inputTokens: 32_000 + call.request.system.length + call.request.user.length, outputTokens: config.maxOutputTokens };
+    const schemaChars = JSON.stringify(openaiStrictSchema(call.request.outputSchema!)).length;
+    const schemaTokens = Math.ceil((schemaChars * 32_000) / 260_994);
+    const receipt = { inputTokens: schemaTokens + call.request.system.length + call.request.user.length, outputTokens: config.maxOutputTokens };
     const cap = new SpendCap({ enabled: true, capUsd: 60, callCap: 1200 });
     const reservation = await cap.reserve(upstreamBranch(config).worstCaseUsd(call));
     if (!reservation.ok) throw new Error(`rezervace měla projít: ${reservation.reason}`);
@@ -407,7 +412,7 @@ describe('the director pays a hosted call through the process spend cap', () => 
     expect(game.authoredBy).toBe('gpt-6-astra');
     // Záloha startuje po selhání primáru; hlavní strop už je v tu chvíli vyrovnaný.
     expect(held).toEqual([expect.any(Number), 0]);
-    // Primár bez účtenky strhne celou rezervaci z hlavního stropu; záloha svou
+    // Primár odmítnutý stavem 503 nestojí nic (P71A T1-R2); záloha svou
     // skutečnou cenu podle vlastního ceníku ze svého.
     expect(processSpendCap().snapshot()).toMatchObject({ reservedUsd: 0, callsMade: 1 });
     const backup = processFallbackSpendCap().snapshot();

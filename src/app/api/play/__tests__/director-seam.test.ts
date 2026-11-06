@@ -21,10 +21,10 @@ import { vocabVersion } from '@/play/vocab';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
 import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
-import { resetProcessSpendCap } from '@/server/spend-cap';
+import { processSpendCap, resetProcessSpendCap } from '@/server/spend-cap';
 
 import { acquireSlot, resetConcurrency } from '@/server/paid-slots';
-import { DIRECTOR_BUDGET_MS, directorQueueState, getDirector, MIN_CALL_MS, resetDirectorQueue } from '../_director';
+import { DIRECTOR_BUDGET_MS, directorQueueState, getDirector, mayPayChainRead, MIN_CALL_MS, resetDirectorQueue } from '../_director';
 import { POST as createGame } from '../games/route';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { directorCallerOf, UNTRUSTED_DIRECTOR_CALLER } from '../_publish';
@@ -326,5 +326,67 @@ describe('getDirector – souběh a pořadí bran (nálezy revize T1)', () => {
     expect(refused.status).toBe(503);
     expect((await refused.json()).error.code).toBe('STORE_UNAVAILABLE');
     expect(fetchCalls).toBe(0);
+  });
+});
+
+/** Režisér jako v produkci: astra přes OpenAI API, ceník astry, strop 60 USD. */
+const ASTRA = {
+  WORLDSMITH_BRANCH: 'live',
+  WORLDSMITH_MODEL_ENDPOINT: 'openai:https://api.openai.com',
+  WORLDSMITH_MODEL: 'gpt-6-astra',
+  WORLDSMITH_MODEL_KEY: 'sk-test',
+  WORLDSMITH_USD_PER_MTOK_IN: '10',
+  WORLDSMITH_USD_PER_MTOK_OUT: '50',
+  WORLDSMITH_SPEND_CAP_USD: '60',
+};
+
+describe('getDirector – co strhne volání astry bez účtenky (P71A T1-R2)', () => {
+  /** `fetch`, který zapíše, co strop držel v okamžiku volání. */
+  function stubAstra(answer: () => Promise<Response>): number[] {
+    const held: number[] = [];
+    vi.stubGlobal('fetch', () => {
+      fetchCalls += 1;
+      held.push(processSpendCap().snapshot().reservedUsd);
+      return answer();
+    });
+    return held;
+  }
+
+  it.each([401, 429, 500, 503])('odpověď %i vyrovná nulou: model neběžel a poskytovatel nic neúčtuje', async (status) => {
+    stubEnv(ASTRA);
+    const held = stubAstra(() => Promise.resolve(new Response('{"error":{"message":"nope"}}', { status })));
+    const game = await getDirector(Date.now(), 'refused-caller')(SENTENCE);
+    expect(game.source).toBe('draft');
+    expect(held).toHaveLength(1);
+    expect(held[0]).toBeGreaterThan(0.5);
+    expect(processSpendCap().snapshot()).toMatchObject({ reservedUsd: 0, spentUsd: 0, callsMade: 1 });
+  });
+
+  it('vypršené volání dál strhne celou rezervaci: model mohl běžet až do konce', async () => {
+    stubEnv(ASTRA);
+    const held = stubAstra(() => Promise.reject(Object.assign(new Error('The operation was aborted due to timeout'), { name: 'TimeoutError' })));
+    await getDirector(Date.now(), 'timeout-caller')(SENTENCE);
+    expect(held).toHaveLength(1);
+    expect(held[0]).toBeGreaterThan(0.5);
+    expect(processSpendCap().snapshot().spentUsd).toBeCloseTo(held[0]!, 9);
+  });
+});
+
+describe('kontrola před placeným čtením počítá celou cenu režiséra (P71A T1-R1-1, nález 2)', () => {
+  it('kniha blíž stropu než nejhorší cena režiséra: čtení se nezaplatí', async () => {
+    stubEnv(ASTRA);
+    const worst = upstreamBranch(upstreamConfigFromEnv(process.env)!).worstCaseUsd({ prompt: '', request: buildCompactRequest('', null) });
+    // Zbývá víc než výstupní část (8000 × 50 USD/Mtok = 0,40 USD), méně než celá cena.
+    expect(worst).toBeGreaterThan(0.8);
+    const spend = 60 - (0.4 + worst) / 2;
+    const booked = await processSpendCap().reserve(spend);
+    if (!booked.ok) throw new Error(`rezervace měla projít: ${booked.reason}`);
+    await booked.settle(spend);
+    expect(await mayPayChainRead('test-caller')).toBe(false);
+  });
+
+  it('s volnou celou cenou se čtení zaplatí', async () => {
+    stubEnv(ASTRA);
+    expect(await mayPayChainRead('test-caller')).toBe(true);
   });
 });

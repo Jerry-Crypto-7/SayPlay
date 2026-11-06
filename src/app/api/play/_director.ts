@@ -20,6 +20,8 @@
  */
 
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
+import { buildCompactRequest } from '@/play/director/compact';
+import { buildDirectorRequest } from '@/play/director/prompt';
 import { readerConfigFromEnv, readerForAiVersion } from '@/play/read/client';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
@@ -208,10 +210,12 @@ async function callerHasCall(caller: string, env: Record<string, string | undefi
 /** Peněžní část `directorWouldCall`: strop utrácení nevyčerpaný a volající má volání režiséra – jen čtené. */
 async function directorWouldPay(env: Record<string, string | undefined>, config: UpstreamConfig, caller: string): Promise<boolean> {
   const hasCall = callerHasCall(caller, env);
-  // simplified: jen výstupní část nejhorší ceny – vstup zná až sestavený požadavek; kniha o méně než jeho cenu pod stropem
-  // ještě zaplatí čtení naprázdno. Kdyby to bylo vidět v útratě, sestavit požadavek před čtením a předat celý `worstCaseUsd`.
-  const worstOutputUsd = (config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
-  const [exhausted, callerMayCall] = await Promise.all([processSpendCap().exhausted(worstOutputUsd), hasCall]);
+  // Nejhorší cena požadavku režiséra bez věty: systémový prompt a schéma odpovědi jsou známé před čtením a schéma je
+  // většina vstupu (revize P71A T1-R1-1, nález 2). simplified: chybí jen věta a příklady; kniha o jejich cenu (setiny
+  // dolaru) pod stropem ještě zaplatí čtení naprázdno. Zavřít úplně = sestavit celý požadavek před čtením.
+  const request = env.PLAY_DIRECTOR_MODE === 'full' ? buildDirectorRequest('', null) : buildCompactRequest('', null);
+  const worstUsd = upstreamBranch(config).worstCaseUsd({ prompt: '', request });
+  const [exhausted, callerMayCall] = await Promise.all([processSpendCap().exhausted(worstUsd), hasCall]);
   return !exhausted && callerMayCall;
 }
 

@@ -92,7 +92,8 @@ describe('the reader for the AI version (P58B T4)', () => {
     await expect(readBeforeDraft('a corgi runs', ASTRA, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toBeNull();
     expect(fetchImpl).toHaveBeenCalledOnce();
     expect(String(fetchImpl.mock.calls[0]![0])).toBe('https://api.openai.com/v1/chat/completions');
-    expect(settled).toEqual(['unknown']);
+    // 503 = odmítnuto dřív, než model běžel: nula (P71A T1-R2).
+    expect(settled).toEqual([0]);
   });
 
   it('waits for astra up to 15 s, then the dictionary, and the cut call is charged in full', async () => {
