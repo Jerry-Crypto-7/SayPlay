@@ -15,12 +15,15 @@
 
 import { useEffect, useRef } from 'react';
 
+import { baseControlOf } from '@/play/arcade/addons';
 import { type ArcadeInput, BODY, BUTTON, HEADER, bodyBase } from '@/play/arcade/contract';
 import { BALL } from '@/play/arcade/pieces/ball';
 import { parOf, strokesOf } from '@/play/arcade/pieces/minigolf';
+import { minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 
 import { isTyping } from '../../input';
 import type { GenreTouchProps } from '../touch-registry';
+import { minigolfCameraAxis, minigolfCourseView } from './minigolf-camera';
 import { MINIGOLF_PULL, type Putt, keyPutt, pullBack, puttInput, turnAxis } from './minigolf-touch';
 
 const LEFT_KEYS: ReadonlySet<string> = new Set(['arrowleft', 'a']);
@@ -36,7 +39,7 @@ interface Drag {
   readonly y0: number;
   x: number;
   y: number;
-  /** Osa míření ve stavu při stisku: tah se měří vůči ní, i když se kamera za mířením otočí. */
+  /** Osa kamery při stisku (`minigolfCameraAxis`): tah se měří vůči ní, ne vůči míření. */
   readonly base: number;
   released: boolean;
 }
@@ -64,6 +67,7 @@ export function MinigolfTouch({ session }: GenreTouchProps) {
     let drag: Drag | null = null;
     let keys: Keys | null = null;
     let lastTick = 0;
+    const course = minigolfCourseView(session.world.initial, minigolfLayout.parse(baseControlOf(session.world.control).params.layout));
 
     const read = () => {
       const state = session.state();
@@ -95,6 +99,11 @@ export function MinigolfTouch({ session }: GenreTouchProps) {
         }
       }
       element.dataset.pulling = String(aiming);
+      // Osa, proti které se měří příští tah (prst e2e ji čte jako `base` pro `pullFor`), a jestli se míček valí
+      // (záznam kamery e2e po snímcích).
+      element.dataset.axis = String(minigolfCameraAxis(state, course));
+      const p = bodyBase(state[HEADER.player] as number);
+      element.dataset.rolling = String((state[p + BODY.vx] as number) !== 0 || (state[p + BODY.vz] as number) !== 0);
       const box = meter.current;
       if (box !== null) {
         box.style.visibility = aiming ? 'visible' : 'hidden';
@@ -171,7 +180,7 @@ export function MinigolfTouch({ session }: GenreTouchProps) {
       if (drag !== null || keys !== null || !event.isPrimary) return;
       element.setPointerCapture(event.pointerId);
       const { x, y } = local(event);
-      drag = { id: event.pointerId, x0: x, y0: y, x, y, base: read().aim, released: false };
+      drag = { id: event.pointerId, x0: x, y0: y, x, y, base: minigolfCameraAxis(read().state, course), released: false };
       sync();
     };
     const onMove = (event: PointerEvent): void => {

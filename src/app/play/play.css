@@ -1035,6 +1035,8 @@ button.play-version-switch__item:not(:disabled) {
   display: flex;
   flex-direction: column;
   pointer-events: none;
+  /* Tažení přes kartu konce hru hraje, text neoznačuje (P71C T4). */
+  user-select: none;
   --_after: var(--sp-duration-base);
 }
 
@@ -1764,6 +1766,7 @@ button.play-version-switch__item:not(:disabled) {
   text-align: center;
   color: var(--sp-text);
   pointer-events: none;
+  user-select: none;
 }
 
 .play-first-prompt p {
@@ -1929,6 +1932,16 @@ button.play-version-switch__item:not(:disabled) {
 
 .play-stage[data-prompt-at='right'] .play-first-prompt {
   left: calc((100% + var(--_hero-right)) / 2);
+}
+
+/* Minigolf (P71C T2): dráha vede od míčku nahoru k jamce a karta nad míčkem ji zakryla. Karta sedí pod horní
+ * lištou HUD (`--_prompt-top` píše `MinigolfScene`), kamera rámuje hřiště do plochy pod ní. */
+.play-stage[data-prompt-dock='top'] .play-first-prompt {
+  top: var(--_prompt-top, var(--sp-space-16));
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: top center;
 }
 
 @keyframes play-first-prompt {

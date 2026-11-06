@@ -2,18 +2,19 @@
  * Kamera minigolfu (P68 T8): přes rameno nízko za míčkem ve směru míření ze stavu; na telefonu na výšku leží míček
  * i cíl (jamka, nebo další bod trasy za rohem) v hracím obdélníku mezi HUD a ovládáním, na šířku vlastní póza.
  */
-import { PerspectiveCamera, Vector3 } from 'three';
+import { MathUtils, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { type ArcadeState, BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
-import { buildWorld, instantiate } from '@/play/arcade/kernel';
+import { type ArcadeInput, type ArcadeState, type ArcadeWorld, BODY, HEADER, NO_INPUT, UNIT, bodyBase } from '@/play/arcade/contract';
+import { buildWorld, instantiate, loadProgram, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { minigolfParts } from '@/play/arcade/pieces/minigolf';
 import { type MinigolfShape, minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
 import { type PlayRect, playRect } from '../../../portrait-frame';
-import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraPose, minigolfCourseView, minigolfFocus, minigolfFollow } from '../minigolf-camera';
+import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraAxis, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView, minigolfFocus } from '../minigolf-camera';
+import { type Putt, pullBack, puttInput } from '../minigolf-touch';
 
 /** Pixel 7 na výšku v CSS px: horní pás HUD (pilulky a řádek cíle) a dolní řada tlačítek. */
 const PHONE = { width: 412, height: 839 } as const;
@@ -22,6 +23,7 @@ const TALL = PHONE.width / PHONE.height;
 const WIDE = 16 / 9;
 
 interface Hole {
+  readonly world: ArcadeWorld;
   readonly state: ArcadeState;
   readonly course: MinigolfCourseView;
 }
@@ -30,7 +32,7 @@ function holeOf(seed: number, shape: MinigolfShape): Hole {
   const parts = minigolfParts(seed, { shape });
   const built = buildWorld({ seed, control: parts.control, rules: parts.rules, bot: parts.bot, level: parts.level }, ARCADE_LIBRARY);
   if (!built.ok) throw new Error(built.issues.join('; '));
-  return { state: instantiate(built.world), course: minigolfCourseView(built.world.initial, minigolfLayout.parse(parts.control.params.layout)) };
+  return { world: built.world, state: instantiate(built.world), course: minigolfCourseView(built.world.initial, minigolfLayout.parse(parts.control.params.layout)) };
 }
 
 /** Míček (hráč) na `x/z` s mířením `aim` a rychlostí `vx/vz`. */
@@ -119,27 +121,74 @@ describe('minigolf camera (P68 T8)', () => {
           expectFramed(put(state, tx, tz, minigolfAxisToward(corner[0] - tx, corner[1] - tz)), course, aspect);
           expectFramed(put(state, corner[0], corner[1], minigolfAxisToward(next[0] - corner[0], next[1] - corner[1])), course, aspect);
         }
-        // Z rohu už je vidět dál po trase; míček v pohybu u rohu rámuje další bod.
+        // Z rohu už je vidět dál po trase. Míček v pohybu drží cíl vybraný při odpalu (P71C T2): z odpaliště roh,
+        // i když se valí přes něj; rána z rohu rámuje další bod.
         expect(minigolfFocus(course, corner[0], corner[1])).toEqual(next);
-        expectFramed(put(state, corner[0], corner[1], 0, 60, 60), course);
+        const fromTee = put(state, corner[0], corner[1], 0, 60, 60);
+        expect(minigolfCameraPose(fromTee, TALL, RECT, course).focus).toEqual(corner);
+        expectFramed(fromTee, course);
+        const fromCorner = Int32Array.from(fromTee);
+        fromCorner[HEADER.respawnX] = corner[0];
+        fromCorner[HEADER.respawnZ] = corner[1];
+        expect(minigolfCameraPose(fromCorner, TALL, RECT, course).focus).toEqual(next);
+        expectFramed(fromCorner, course);
       }
     }
   });
 
-  it('looks the way the axis aims at rest and rolling, from above at rest, on a phone and on a wide screen', () => {
-    const { state, course } = holeOf(2, 'straight');
-    const [tx, tz] = ballOf(state);
-    for (const aim of [0, 180, 500, -650, 1000, -333]) {
+  it('looks from the ball to the route target whatever the aim, at rest and rolling, from above at rest (P71C T1)', () => {
+    for (const shape of ['straight', 'L'] as const) {
+      const { state, course } = holeOf(2, shape);
+      const [tx, tz] = ballOf(state);
+      const [fx, fz] = minigolfFocus(course, tx, tz);
+      const axis = minigolfAxisToward(fx - tx, fz - tz);
+      expect(minigolfCameraAxis(put(state, tx, tz, 777), course)).toBe(axis);
       for (const [aspect, rect] of [[WIDE, null], [TALL, RECT], [TALL, null]] as const) {
-        for (const speed of [0, 90]) {
-          const pose = minigolfCameraPose(put(state, tx, tz, aim, 0, speed), aspect, rect, course);
-          const { view, aim: dir } = headings(pose, aim);
-          expect(view.dot(dir), `aim ${String(aim)} aspect ${aspect.toFixed(2)} speed ${String(speed)}`).toBeGreaterThan(0.999);
+        const still = minigolfCameraPose(put(state, tx, tz, 0), aspect, rect, course);
+        for (const aim of [0, 180, 500, -650, 1000, -333]) {
+          const label = `${shape} aim ${String(aim)} aspect ${aspect.toFixed(2)}`;
+          // Klid: míření pózou nehne – poloha, pohled i zoom stejné jako s mířením 0, osa míček → cíl.
+          const rest = minigolfCameraPose(put(state, tx, tz, aim), aspect, rect, course);
+          expect(rest.position.toArray(), label).toEqual(still.position.toArray());
+          expect(rest.look.toArray(), label).toEqual(still.look.toArray());
+          const { view, aim: dir } = headings(rest, axis);
+          expect(view.dot(dir), label).toBeGreaterThan(0.999);
+          // Valení: osa z místa rány (odpaliště), ne z míření ani z rychlosti.
+          const rolling = minigolfCameraPose(put(state, tx, tz + 1500, aim, 70, 90), aspect, rect, course);
+          const rolled = headings(rolling, axis);
+          expect(rolled.view.dot(rolled.aim), label).toBeGreaterThan(0.999);
         }
         // Klid: přehled shora šikmo, sklon `rest.pitch` pod vodorovnou.
-        const rest = minigolfCameraPose(put(state, tx, tz, aim), aspect, rect, course);
-        const down = rest.look.clone().sub(rest.position).normalize();
+        const down = still.look.clone().sub(still.position).normalize();
         expect(Math.asin(-down.y) * (180 / Math.PI)).toBeCloseTo(MINIGOLF_CAMERA.rest.pitch, 6);
+      }
+    }
+  });
+
+  it('aim drag does not move the camera: a finger sweeping the aim round leaves the pose still (P71C T1)', () => {
+    for (const shape of ['straight', 'L', 'S'] as const) {
+      const { world, state, course } = holeOf(3, shape);
+      const program = loadProgram(world, ARCADE_LIBRARY);
+      const base = minigolfCameraAxis(state, course);
+      for (const [aspect, rect] of [[TALL, RECT], [WIDE, FULL_WIDE]] as const) {
+        const live = Int32Array.from(state);
+        const first = minigolfCameraPose(live, aspect, rect, course).position.clone();
+        let last = first.clone();
+        let most = 0;
+        const aims = new Set<number>();
+        // Prst táhne dozadu a krouží kolem startu (půl otáčky za 60 tiků), nabíjí, ale nepustí.
+        for (let tick = 0; tick < 90; tick += 1) {
+          const turn = (tick / 60) * Math.PI;
+          const putt: Putt = { aim: pullBack(base, 120 * Math.sin(turn), 120 * Math.cos(turn)), released: false };
+          step(live, puttInput(putt, Math.max(0, live[bodyBase(live[HEADER.player] as number) + BODY.aux1] as number)).input, program);
+          aims.add(live[bodyBase(live[HEADER.player] as number) + BODY.aux0] as number);
+          const now = minigolfCameraPose(live, aspect, rect, course).position;
+          most = Math.max(most, now.distanceTo(last));
+          last = now.clone();
+          expect(now.distanceTo(first), `${shape} tick ${String(tick)} total`).toBeLessThanOrEqual(0.3);
+        }
+        expect(aims.size, 'the drag really turned the aim in the state').toBeGreaterThan(20);
+        expect(most, `${shape} aspect ${aspect.toFixed(2)} per frame`).toBeLessThanOrEqual(0.05);
       }
     }
   });
@@ -164,34 +213,164 @@ describe('minigolf camera (P68 T8)', () => {
     // Kamera jede s míčkem: o 3 m dál po dráze je o 3 m dál i ona.
     const further = minigolfCameraPose(put(state, tx, tz + 5000, 0, 0, 90), WIDE, null, course);
     expect(further.position.z - rolling.position.z).toBeCloseTo(3, 6);
-    // Míření ze stavu, ne z rychlosti: míček jede bokem, kamera dál kouká po ose.
-    const sideways = minigolfCameraPose(put(state, tx, tz + 2000, 0, 80, 0), WIDE, null, course);
-    expect(headings(sideways, 0).view.z).toBeCloseTo(1, 6);
+    // Osa z místa rány na cíl, ne z rychlosti: míček jede bokem, kamera dál kouká po ose.
+    const aside = put(state, tx, tz + 2000, 0, 80, 0);
+    const sideways = headings(minigolfCameraPose(aside, WIDE, null, course), minigolfCameraAxis(aside, course));
+    expect(sideways.view.dot(sideways.aim)).toBeGreaterThan(0.999);
   });
 
-  it('stands still before the first input: at tick 0 a re-measured play rect moves the camera in one frame, after the start it eases (P68-L T3)', () => {
+  it('stands still before the first input: while it waits a re-measured play rect moves the camera in one frame, after the start it eases (P68-L T3)', () => {
     const { state, course } = holeOf(4, 'straight');
     // Na tiku 0 se HUD během načítání přeskládá: hrací obdélník je jiný, póza na výšku taky.
     const first = minigolfCameraPose(state, TALL, RECT, course);
     const remeasured = minigolfCameraPose(state, TALL, playRect(PHONE, 300, 600), course);
     expect(remeasured.position.distanceTo(first.position)).toBeGreaterThan(0.1);
-    // Smyčka scény (`MinigolfScene`): oko jede k póze o `minigolfFollow` cesty za snímek.
-    const run = (tick: number): number[] => {
-      const eye = first.position.clone();
+    // Smyčka scény (`MinigolfScene`): první snímek na první póze, pak 30 snímků přeměřené.
+    const run = (tick: number, hold: boolean): number[] => {
+      const rig = minigolfCameraRig();
+      minigolfCameraStep(rig, first, tick, 1 / 60, hold);
+      expect(rig.eye.distanceTo(first.position), 'the first frame sits on the pose').toBeLessThan(1e-9);
       return Array.from({ length: 30 }, () => {
-        const before = eye.clone();
-        eye.lerp(remeasured.position, minigolfFollow(1 / 60, tick, true));
-        return eye.distanceTo(before);
+        const before = rig.eye.clone();
+        minigolfCameraStep(rig, remeasured, tick, 1 / 60, hold);
+        return rig.eye.distanceTo(before);
       });
     };
-    const idle = run(0);
+    const idle = run(0, true);
     expect(idle[0]).toBeGreaterThan(0.1);
     expect(Math.max(...idle.slice(1)), 'no frame after the jump moves the camera').toBeLessThan(1e-9);
-    // Po prvním vstupu tlumeně: za snímek jen kus cesty a pohyb trvá přes víc snímků.
-    const playing = run(1);
-    expect(playing[0]).toBeLessThan(0.2 * idle[0]!);
+    // Po prvním vstupu přechodem: první snímek stojí, pohyb trvá přes víc snímků.
+    const playing = run(1, false);
+    expect(playing[0]).toBeLessThan(1e-9);
     expect(playing.filter((moved) => moved > 1e-3).length).toBeGreaterThan(10);
-    // První snímek scény i po startu bez tlumení.
-    expect(minigolfFollow(1 / 60, 5, false)).toBe(1);
+  });
+
+  it('frames the course below the start card: ball, route target and hole inside the free area (P71C T2)', () => {
+    for (const shape of ['straight', 'L'] as const) {
+      const { state, course } = holeOf(5, shape);
+      for (const [aspect, rect] of [[TALL, RECT], [WIDE, playRect({ width: WIDE * 800, height: 800 }, 90, 760)]] as const) {
+        // Karta přisazená nahoru zabere 250 px pod lištou HUD.
+        const free = playRect(rect.canvas, rect.px.top + 16 + 250 + 16, rect.px.bottom);
+        const pose = minigolfCameraPose(state, aspect, rect, course, MINIGOLF_CAMERA.fov, free);
+        const [bx, bz] = ballOf(state);
+        const [hx, hz] = course.hole;
+        const label = `${shape} aspect ${aspect.toFixed(2)}`;
+        expect(inside(seen(pose, aspect, bx, 0.2, bz), free), `ball ${label}`).toBe(true);
+        expect(inside(seen(pose, aspect, pose.focus[0], 0, pose.focus[1]), free), `focus ${label}`).toBe(true);
+        expect(inside(seen(pose, aspect, hx, MINIGOLF_CAMERA.flag, hz), free), `flag ${label}`).toBe(true);
+      }
+    }
+  });
+
+  it('after the stroke: no jump, one smooth follow from the overview, fixed target, back to rest with no swing (P71C T2)', () => {
+    for (const shape of ['straight', 'L'] as const) {
+      for (const [aspect, rect] of [[TALL, RECT], [WIDE, null]] as const) {
+        const label = `${shape} aspect ${aspect.toFixed(2)}`;
+        const reel = film(holeOf(1, shape), aspect, rect, 36);
+        const release = reel.findIndex((frame) => frame.pose.rolling);
+        const stop = reel.findIndex((frame, k) => k > release && !frame.pose.rolling);
+        expect(release, label).toBeGreaterThan(0);
+        expect(stop - release, `${label}: the roll outlasts the follow transition`).toBeGreaterThan(60);
+        // Míření: kamera stojí. Po puštění žádný skok: první 3 snímky nejvýš 0,1 m a 1°.
+        for (let k = 1; k < release; k += 1) expect(moved(reel, k), `${label} aim frame ${String(k)}`).toBeLessThan(1e-9);
+        for (let k = release; k < release + 3; k += 1) {
+          expect(moved(reel, k), `${label} frame ${String(k - release)} after release`).toBeLessThanOrEqual(0.1);
+          expect(turned(reel, k), `${label} frame ${String(k - release)} after release (deg)`).toBeLessThanOrEqual(1);
+        }
+        // Jeden přechod do sledování, aspoň 0,6 s: do té doby kamera na pózu sledování nedosedla.
+        expect(reel[release + 35]!.eye.distanceTo(reel[release + 35]!.pose.position), `${label} still easing at 0.6 s`).toBeGreaterThan(0.05);
+        expect(reel[release + 60]!.eye.distanceTo(reel[release + 60]!.pose.position), `${label} on the follow pose after the transition`).toBeLessThan(1e-6);
+        // Cíl rámování se během valení nemění.
+        expect(new Set(reel.slice(release, stop).map((frame) => frame.pose.focus.join(','))).size, label).toBe(1);
+        // Po zastavení zpět do klidu: vzdálenost ke klidové póze jen klesá (žádné houpání) a skončí na ní.
+        const rest = reel.at(-1)!.pose;
+        expect(rest.rolling).toBe(false);
+        const gaps = reel.slice(stop).map((frame) => frame.eye.distanceTo(rest.position));
+        for (let k = 1; k < gaps.length; k += 1) expect(gaps[k]!, `${label} return frame ${String(k)}`).toBeLessThanOrEqual(gaps[k - 1]! + 1e-9);
+        expect(gaps.at(-1)!, label).toBeLessThan(1);
+        // Klidová osa po ráně je zase míček → cíl.
+        const last = reel.at(-1)!;
+        const { view, aim } = headings({ ...rest, position: last.eye, look: last.look }, minigolfCameraAxis(last.state, last.course));
+        expect(view.dot(aim), label).toBeGreaterThan(0.999);
+      }
+    }
+  });
+
+  it('a restart mid-roll (the first touch in the feed) eases back to the tee instead of jumping (P71C T2)', () => {
+    const hole = holeOf(2, 'straight');
+    const reel = film(hole, TALL, RECT, 36);
+    const mid = reel.findIndex((frame) => frame.pose.rolling) + 20;
+    const rig = reel[mid]!.rig;
+    const tee = minigolfCameraPose(hole.state, TALL, RECT, hole.course);
+    const steps = Array.from({ length: 70 }, () => {
+      const before = rig.eye.clone();
+      minigolfCameraStep(rig, tee, 0, 1 / 60, true);
+      return rig.eye.distanceTo(before);
+    });
+    expect(Math.max(...steps.slice(0, 3)), 'first frames after the restart').toBeLessThanOrEqual(0.1);
+    expect(rig.eye.distanceTo(tee.position)).toBeLessThan(1e-6);
   });
 });
+
+/** Jeden snímek smyčky scény: stav po tiku, póza z něj a kamera po `minigolfCameraStep` (kopie). */
+interface Frame {
+  readonly state: ArcadeState;
+  readonly course: MinigolfCourseView;
+  readonly pose: MinigolfCameraPose;
+  readonly eye: Vector3;
+  readonly look: Vector3;
+  readonly rig: ReturnType<typeof minigolfCameraRig>;
+}
+
+/**
+ * Smyčka scény po snímcích 1/60 s, jeden tik na snímek: 20 tiků míření (prst táhne a krouží), pak nabití `charge`
+ * tiků po ose kamery a rána; pak valení do zastavení a 90 snímků klidu.
+ */
+function film(hole: Hole, aspect: number, rect: PlayRect | null, charge: number): Frame[] {
+  const { world, course } = hole;
+  const program = loadProgram(world, ARCADE_LIBRARY);
+  const state = Int32Array.from(hole.state);
+  const rig = minigolfCameraRig();
+  const reel: Frame[] = [];
+  const axis = minigolfCameraAxis(state, course);
+  let done = false;
+  let calm = 0;
+  for (let tick = 0; tick < 1200 && calm < 90; tick += 1) {
+    let input: ArcadeInput = NO_INPUT;
+    if (!done) {
+      const charged = Math.max(0, state[bodyBase(state[HEADER.player] as number) + BODY.aux1] as number);
+      const putt: Putt = tick < 20 ? { aim: pullBack(axis, 80 * Math.sin(tick / 5), 80), released: false } : { aim: { axis, charge }, released: charged >= charge };
+      const next = puttInput(putt, charged);
+      input = next.input;
+      done = next.done;
+    }
+    step(state, input, program);
+    const pose = minigolfCameraPose(state, aspect, rect, course);
+    minigolfCameraStep(rig, pose, state[HEADER.tick] as number, 1 / 60, false);
+    reel.push({ state: Int32Array.from(state), course, pose, eye: rig.eye.clone(), look: rig.look.clone(), rig: cloneRig(rig) });
+    if (done && !pose.rolling) calm += 1;
+  }
+  return reel;
+}
+
+function cloneRig(rig: ReturnType<typeof minigolfCameraRig>): ReturnType<typeof minigolfCameraRig> {
+  const copy = minigolfCameraRig();
+  copy.eye.copy(rig.eye);
+  copy.look.copy(rig.look);
+  copy.fromEye.copy(rig.fromEye);
+  copy.fromLook.copy(rig.fromLook);
+  copy.lastEye.copy(rig.lastEye);
+  copy.t = rig.t;
+  copy.rolling = rig.rolling;
+  copy.tick = rig.tick;
+  return copy;
+}
+
+/** O kolik metrů se kamera pohnula ze snímku `k − 1` na `k`. */
+const moved = (reel: readonly Frame[], k: number): number => reel[k]!.eye.distanceTo(reel[k - 1]!.eye);
+
+/** O kolik stupňů se směr pohledu otočil ze snímku `k − 1` na `k`. */
+function turned(reel: readonly Frame[], k: number): number {
+  const dir = (frame: Frame): Vector3 => frame.look.clone().sub(frame.eye).normalize();
+  return MathUtils.radToDeg(dir(reel[k]!).angleTo(dir(reel[k - 1]!)));
+}
