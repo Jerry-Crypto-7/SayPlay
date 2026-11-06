@@ -561,8 +561,10 @@ export function upstreamBranch(
 
 function worstCaseUsd(call: GenerationCall, config: UpstreamConfig): number {
   // Jeden token na znak. Viz hlavička souboru: je to strop, o který se opírá
-  // ořez v `SpendCap.release()`, ne odhad průměru.
-  const inputTokens = call.request.system.length + call.request.user.length;
+  // ořez v `SpendCap.release()`, ne odhad průměru. Schéma odpovědi poskytovatel
+  // účtuje jako vstup, proto se počítá taky (`sentSchemaOf`).
+  const schema = sentSchemaOf(call, config);
+  const inputTokens = call.request.system.length + call.request.user.length + (schema === undefined ? 0 : JSON.stringify(schema).length);
   return (
     (inputTokens * config.pricing.usdPerMTokIn + config.maxOutputTokens * config.pricing.usdPerMTokOut) /
     1_000_000
@@ -1101,12 +1103,40 @@ const CHAT_EFFORT: Readonly<Record<Effort, 'low' | 'medium' | 'high'>> = { low: 
  * a u OpenAI API `max_completion_tokens`. `reasoning_effort` jde oběma – bez něj
  * lokální gpt-oss přemýšlí výchozí úrovní a sní celé `max_tokens` (P36A F4).
  */
-async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
+function chatTarget(config: UpstreamConfig): { hosted: boolean; root: string; openaiApi: boolean } {
   const hosted = config.endpoint.startsWith(OPENAI_PREFIX);
-  const name = hosted ? 'hosted' : 'llama.cpp';
   const root = config.endpoint.slice(hosted ? OPENAI_PREFIX.length : LLAMACPP_PREFIX.length).replace(/\/+$/, '');
-  const openaiApi = hosted && new URL(root).hostname === 'api.openai.com';
-  const schema = call.request.outputSchema === undefined || !openaiApi ? call.request.outputSchema : openaiStrictSchema(call.request.outputSchema);
+  return { hosted, root, openaiApi: hosted && new URL(root).hostname === 'api.openai.com' };
+}
+
+/**
+ * **Schéma odpovědi tak, jak odchází poskytovateli**, `undefined`, když žádné
+ * neodchází (Messages API). Jeden zdroj pro odeslání i rezervaci, aby rezervace
+ * počítala přesně to, co se posílá.
+ *
+ * OpenAI účtuje `response_format` jako vstup: u režiséra naměřeno ~32 tis.
+ * tokenů a ~0,32 USD u astry na prvním volání (P58B, `director.json`). Bez něj
+ * rezervace vyšla ~0,55 USD, poctivá účtenka dlouhé odpovědi ~0,75 USD, a ořez
+ * v `settle()` by ten rozdíl tiše zahodil (revize P71A T1-1, nález 3).
+ *
+ * ⚠ **Strop, ne odhad, a drahý.** Jeden token na znak jako u textu: schéma žánrů
+ * má 6. 11. 2026 ~375 tis. znaků, rezervace režiséra u astry tak vyjde ~4,3 USD
+ * místo ~0,55 USD, asi desetkrát víc tokenů, než P58B naměřilo. Vrací se při
+ * vyrovnání; stojí jen místo těsně pod stropem a souběh dvou volání.
+ * simplified: počet znaků místo tokenizéru, zpřesnit až z `prompt_tokens`
+ * prvního volání ze živého běhu se současným schématem.
+ */
+function sentSchemaOf(call: GenerationCall, config: UpstreamConfig): SchemaNode | undefined {
+  const { outputSchema } = call.request;
+  if (config.endpoint === CODEX_CLI_ENDPOINT) return codexSchemaOf(call.request);
+  if (!config.endpoint.startsWith(LLAMACPP_PREFIX) && !config.endpoint.startsWith(OPENAI_PREFIX)) return undefined;
+  return outputSchema === undefined || !chatTarget(config).openaiApi ? outputSchema : openaiStrictSchema(outputSchema);
+}
+
+async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
+  const { hosted, root, openaiApi } = chatTarget(config);
+  const name = hosted ? 'hosted' : 'llama.cpp';
+  const schema = sentSchemaOf(call, config);
   const format = schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } };
   const messages = [
     { role: 'system', content: call.request.system },

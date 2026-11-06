@@ -256,7 +256,8 @@ describe('readBeforeDraft on a hosted reader', () => {
     expect((init?.headers as Record<string, string>).authorization).toBe('Bearer gsk-test');
     expect(reserved).toHaveLength(1);
     expect(reserved[0]).toBeGreaterThan(0);
-    expect(reserved[0]).toBeLessThan(0.001);
+    // Od P71A T1-R1 i schéma čtení (~7 tis. znaků), které odchází s voláním.
+    expect(reserved[0]).toBeLessThan(0.002);
     expect(settled).toEqual([(900 * 0.075 + 300 * 0.3) / 1_000_000]);
   });
 

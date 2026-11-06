@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { genreAnswer } from '@/play/director/__fixtures__';
 import { GENRE_ANSWER_SCHEMA } from '@/play/director/answer-schema';
+import { buildDirectorRequest } from '@/play/director/prompt';
 import { READING_JSON_SCHEMA } from '@/play/read/schema';
 import { __resetProcessVersionStore } from '@/play/version';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
@@ -31,7 +32,7 @@ import { getDirector } from '../../app/api/play/_director';
 import { resetConcurrency } from '../paid-slots';
 import type { GenerationCall } from '../pipeline';
 import { resetRateWindows } from '../rate-limit';
-import { costUsd, processFallbackSpendCap, processSpendCap, resetProcessSpendCap } from '../spend-cap';
+import { costUsd, processFallbackSpendCap, processSpendCap, resetProcessSpendCap, SpendCap } from '../spend-cap';
 import { OPENAI_ENUM_LIMIT, openaiStrictSchema, upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 const HOSTED = {
@@ -295,6 +296,57 @@ describe('openai: generate', () => {
     await expect(branch.generate(CALL)).resolves.toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: expect.stringContaining('429') });
     status = 200;
     await expect(branch.generate(CALL)).resolves.toMatchObject({ ok: true, body: { plan: 'run' }, provenance: { model: 'gpt-6-astra' } });
+  });
+});
+
+/**
+ * **Rezervace počítá schéma odpovědi, které odchází (P71A T1-R1).** OpenAI účtuje
+ * `response_format` jako vstup a `settle()` ořízne účtenku na rezervaci, takže
+ * rezervace bez schématu by kniha zapsala méně, než přijde na faktuře.
+ */
+describe('the reservation counts the answer schema the call sends (P71A T1-R1)', () => {
+  const textOnlyUsd = (call: GenerationCall, config: UpstreamConfig) =>
+    ((call.request.system.length + call.request.user.length) * config.pricing.usdPerMTokIn + config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
+
+  it('adds exactly the schema that goes out, strict on the OpenAI API and raw elsewhere', async () => {
+    for (const config of [backupOf(), configOf({})]) {
+      let sent = '';
+      const fake = ((_url: string, init: RequestInit) => {
+        sent = JSON.stringify((JSON.parse(String(init.body)) as { response_format: { json_schema: { schema: unknown } } }).response_format.json_schema.schema);
+        return Promise.resolve(new Response(chat('{"plan":"run"}')));
+      }) as unknown as typeof fetch;
+      const call = { ...CALL, request: { ...CALL.request, outputSchema: GENRE_ANSWER_SCHEMA } };
+      const branch = upstreamBranch(config, fake);
+      await branch.generate(call);
+      expect(sent.length).toBeGreaterThan(100_000);
+      expect(branch.worstCaseUsd(call)).toBeCloseTo(textOnlyUsd(call, config) + (sent.length * config.pricing.usdPerMTokIn) / 1_000_000, 12);
+    }
+  });
+
+  it('adds nothing on the Messages API, which sends no schema', () => {
+    const config = configOf({ WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages' });
+    const call = { ...CALL, request: { ...CALL.request, outputSchema: GENRE_ANSWER_SCHEMA } };
+    expect(upstreamBranch(config).worstCaseUsd(call)).toBeCloseTo(textOnlyUsd(call, config), 12);
+  });
+
+  it('books the whole honest receipt of a long astra director answer, nothing cut', async () => {
+    // Produkční ceník astry a skutečný požadavek režiséra. Účtenka ve tvaru P58B:
+    // ~32 tis. tokenů samotného schématu, k tomu text po tokenu na znak a celý
+    // strop výstupu (useknutá odpověď). Bez schématu v rezervaci ~0,55 USD proti
+    // účtence ~0,87 USD – ořez by zapsal o třetinu méně, než přijde na faktuře.
+    const config = configOf({
+      WORLDSMITH_MODEL_ENDPOINT: 'openai:https://api.openai.com',
+      WORLDSMITH_MODEL: 'gpt-6-astra',
+      WORLDSMITH_USD_PER_MTOK_IN: '10',
+      WORLDSMITH_USD_PER_MTOK_OUT: '50',
+    });
+    const call: GenerationCall = { prompt: SENTENCE, request: buildDirectorRequest(SENTENCE, null) };
+    const receipt = { inputTokens: 32_000 + call.request.system.length + call.request.user.length, outputTokens: config.maxOutputTokens };
+    const cap = new SpendCap({ enabled: true, capUsd: 60, callCap: 1200 });
+    const reservation = await cap.reserve(upstreamBranch(config).worstCaseUsd(call));
+    if (!reservation.ok) throw new Error(`rezervace měla projít: ${reservation.reason}`);
+    await reservation.settle(costUsd(receipt, config.pricing));
+    expect(cap.snapshot().spentUsd).toBeCloseTo(costUsd(receipt, config.pricing), 9);
   });
 });
 
