@@ -228,12 +228,21 @@ export interface Surface {
   readonly wall: readonly [base: string, band: string];
   /** Drobky na pásu (P73D T6): mušle a korály v písku, hroudy v hlíně – holý pás jedné barvy byl deska. */
   readonly flecks?: string;
+  /**
+   * Vlastní svit trati závodu (`emissive`): tyrkysové světlo pod vodou nemá skoro žádnou červenou
+   * (~0,21 proti ~0,6 zelené), takže písek z barvy ≤ 1 vyšel zelený a korály šedé. Svit vrátí červenou,
+   * kterou světlo nedodá; stín slunce dál tmaví zelenou a modrou.
+   */
+  readonly glow?: string;
 }
 
 export const SURFACES = {
   asphalt: { color: '#5a5f66', edge: '#e8e6df', marks: { kind: 'dashes', color: '#e8e6df' }, wall: ['#ece8df', '#d9473a'] },
   dirt: { color: '#94754f', edge: '#75593b', wall: ['#8a6a44', '#5e4630'], flecks: '#6f5536' },
   sand: { color: '#dcc193', edge: '#c3a476', wall: ['#b88a62', '#e07a5f'], flecks: '#e58f75' },
+  // Písek mořského dna (podmoří): pás jako `sand` (jiné hry ho kreslí bez svitu), svit trati závodu. Svit sjednotí
+  // červenou všeho na trati, odstín pak nese zelená: světlý pískovec proti korálu, sytější korálové drobky.
+  seabed: { color: '#dcc193', edge: '#c3a476', wall: ['#ecd6ac', '#e07a5f'], flecks: '#ff7f6e', glow: '#ac3600' },
   snow: { color: '#e6edf4', edge: '#bccbd9', wall: ['#eef4fa', '#7fb3d9'] },
   planks: { color: '#a07a4e', edge: '#6e5034', marks: { kind: 'seams', color: '#6e5034' }, wall: ['#8b6440', '#5c4128'] },
   paving: { color: '#a29d93', edge: '#7d786f', wall: ['#c9c4ba', '#6b7280'] },
@@ -496,6 +505,26 @@ export const MARKS = ['tanks', 'cone', 'arches', 'mills', 'turrets', 'lollipops'
 export type Mark = (typeof MARKS)[number];
 
 /**
+ * Znak místa i na zemi (P73D, minigolf): cukrová země z věty (`PLACE_MARKS`) má ve vegetaci lízátka – malá
+ * mezi květinami, obří mezi stromy. Model katalogu bez fialové; jeden druh = jedno kreslicí volání (louka s ním
+ * nese právě `FLORA_SPECIES` druhů). Opakovaný záznam = větší podíl, jako dvojí tráva louky.
+ */
+const MARK_FLORA: Partial<Record<Mark, Pick<Flora, 'near' | 'mid'>>> = {
+  lollipops: {
+    near: [{ id: 'gen3d-lollipop', height: 1 }, { id: 'gen3d-lollipop', height: 0.8 }],
+    mid: [{ id: 'gen3d-lollipop', height: 3.2 }, { id: 'gen3d-lollipop', height: 3.2 }],
+  },
+};
+
+/** Vegetace sady se znakem místa na zemi (`MARK_FLORA`); sada bez vegetace nebo bez takového znaku ji má beze změny. */
+export function markedFlora(look: Pick<Look, 'flora' | 'skyline'>): Flora | undefined {
+  const mark = look.skyline?.marks;
+  const extra = mark === undefined ? undefined : MARK_FLORA[mark];
+  if (look.flora === undefined || extra === undefined) return look.flora;
+  return { ...look.flora, near: [...look.flora.near, ...extra.near], mid: [...look.flora.mid, ...extra.mid] };
+}
+
+/**
  * Život v pozadí sady (P54B T10, `look/Ambient.tsx`): hejno ptáků, motýli, ryby pod hladinou,
  * ryby vyskakující z moře, netopýři, jiskry nad sopkou, prach ve světle interiéru, padající hvězdy.
  */
@@ -626,7 +655,7 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
   beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'gen3d-beach-chair', 'cc0-boat-row', 'gen3d-sandcastle', 'gen3d-surf-rack', 'gen3d-lighthouse'], tint: ['#16a34a', '#a8a29e'], skyTop: '#1f8fe0', horizon: '#cdeefd', sunColor: '#fff0d0', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', surface: 'sand', flora: BEACH_FLORA, skyline: { layers: ['hills', 'coast'], tone: '#9fae8c' }, landmark: ['gen3d-lighthouse', 'gen3d-sailboat'], ambient: ['birds', 'dust'] },
   ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'gen3d-navigation-buoy', 'gen3d-floating-dock', 'gen3d-sailboat', 'gen3d-lighthouse'], tint: ['#ef4444', '#64748b'], skyTop: '#1f7fd0', horizon: '#c2e6fb', sunColor: '#fff1d6', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', land: '#e9d29a', surface: 'planks', flora: OCEAN_FILL, skyline: { layers: ['coast', 'coast'], tone: '#8aa0a8' }, landmark: ['gen3d-lighthouse', 'gen3d-sailboat'], ambient: ['jumping-fish', 'birds'] },
   // Pod vodou je nahoře světlejší hladina, ne tmavší zenit.
-  underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['gen3d-staghorn-coral', 'cc0-clownfish', 'gen3d-kelp', 'cc0-tang', 'gen3d-barnacle-rock', 'gen3d-jellyfish', 'gen3d-seahorse', 'gen3d-octopus'], tint: ['#fb7185', '#22c55e'], skyTop: '#3fb6cf', horizon: '#0e7490', sunColor: '#bff4ff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'sand', surface: 'sand', flora: UNDERWATER_FILL, skyline: { layers: ['hills', 'crowns'], tone: '#2f6f73', marks: 'arches' }, landmark: ['gen3d-ruin', 'gen3d-staghorn-coral', 'gen3d-octopus'], ambient: ['fish', 'dust'] },
+  underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['gen3d-staghorn-coral', 'cc0-clownfish', 'gen3d-kelp', 'cc0-tang', 'gen3d-barnacle-rock', 'gen3d-jellyfish', 'gen3d-seahorse', 'gen3d-octopus'], tint: ['#fb7185', '#22c55e'], skyTop: '#3fb6cf', horizon: '#0e7490', sunColor: '#bff4ff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'sand', surface: 'seabed', flora: UNDERWATER_FILL, skyline: { layers: ['hills', 'crowns'], tone: '#2f6f73', marks: 'arches' }, landmark: ['gen3d-ruin', 'gen3d-staghorn-coral', 'gen3d-octopus'], ambient: ['fish', 'dust'] },
   // Ukázka B (`D:/caches/p32-style/page.html`, `renderVariant('B')`): obloha, polokoule, slunce 2,2 a expozice 0,9.
   snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#bcd6ff', '#7d8ea8', 0.9], sun: 2.2, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'gen3d-snowy-bench', 'cc0-sled', 'gen3d-ice-igloo', 'gen3d-snowman-with-hat', 'gen3d-ice-arch'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'], skyTop: '#3d7bd9', horizon: '#e4eef8', sunColor: '#ffe9cc', sunDir: BEHIND_LEFT, exposure: 0.9, glow: 1, terrain: { lane: '#a7cde4', shade: '#c7d5e6', rock: '#66727f', cap: '#f4f8fc' }, cover: 'snow', surface: 'snow', flora: SNOW_FLORA, skyline: { layers: ['peaks', 'peaks', 'pines'], tone: '#9fb4cc' }, landmark: ['gen3d-iceberg', 'gen3d-ice-arch', 'gen3d-ice-igloo'], ambient: ['birds'] },
   cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'cc0-torch-lit', 'gen3d-glowing-mushroom', 'gen3d-crystal-cluster', 'gen3d-mine-cart'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'], skyTop: '#0c0a09', horizon: '#292524', sunColor: '#ffd9a8', sunDir: OVERHEAD, exposure: 1.05, glow: 0, cover: 'rock', surface: 'dirt', flora: CAVE_FILL, skyline: { layers: ['peaks', 'peaks'], tone: '#6b625a' }, landmark: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'gen3d-crystal-cluster'], ambient: ['bats', 'dust'], interior: { floor: 'slate', walls: ['gen3d-stalagmite', 'gen3d-rock-pillar', 'gen3d-glowing-mushroom', 'cc0-torch-lit', 'gen3d-crystal-geode', 'gen3d-mine-cart'] } },

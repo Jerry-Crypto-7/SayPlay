@@ -325,6 +325,8 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
     for (const window of [...(road?.windows ?? []), ground.window]) window(from, to);
   }, BEFORE_COMPOSER);
   const afloat = look.afloat === true;
+  // Černá je výchozí `emissive` materiálu: povrch bez svitu se kreslí jako dřív.
+  const glow = surface.glow ?? '#000000';
   return (
     <>
       <mesh geometry={ground.geometry} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
@@ -335,10 +337,11 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
           {/* Pás, okraje a značení leží na zemi: stín jen přijímají, rig by je jinak kreslil i do stínové mapy (P54B T15d). */}
           <mesh geometry={road.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
             {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po povrchu sady. */}
-            <meshStandardMaterial color={afloat ? look.water : surface.color} roughness={afloat ? 0.3 : 0.9} />
+            {/* Svit povrchu (`Surface.glow`, písek pod vodou) jen na pevné trati, hladina ho nemá. */}
+            <meshStandardMaterial color={afloat ? look.water : surface.color} emissive={afloat ? '#000000' : glow} roughness={afloat ? 0.3 : 0.9} />
           </mesh>
           <mesh geometry={road.edges} receiveShadow userData={{ rigShadow: 'receive' }}>
-            <meshStandardMaterial color={surface.edge} roughness={0.9} />
+            <meshStandardMaterial color={surface.edge} emissive={glow} roughness={0.9} />
           </mesh>
           {road.marks !== null && !afloat && surface.marks !== undefined && (
             <mesh geometry={road.marks} receiveShadow userData={{ rigShadow: 'receive' }}>
@@ -347,18 +350,18 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
           )}
           {road.flecks !== null && !afloat && (
             <mesh geometry={road.flecks} receiveShadow userData={{ rigShadow: 'receive' }}>
-              <meshStandardMaterial color={surface.flecks} roughness={0.9} />
+              <meshStandardMaterial color={surface.flecks} emissive={glow} roughness={0.9} />
             </mesh>
           )}
           {/* Mantinel po kusech dvou barev povrchu (P73D T6): obrubník, plot, pískovec s korály – ne jednobarevná stěna. */}
           {road.barriers !== null && (
             <mesh geometry={road.barriers} castShadow receiveShadow>
-              <meshStandardMaterial color={surface.wall[0]} roughness={0.8} />
+              <meshStandardMaterial color={surface.wall[0]} emissive={glow} roughness={0.8} />
             </mesh>
           )}
           {road.bands !== null && (
             <mesh geometry={road.bands} castShadow receiveShadow>
-              <meshStandardMaterial color={surface.wall[1]} roughness={0.8} />
+              <meshStandardMaterial color={surface.wall[1]} emissive={glow} roughness={0.8} />
             </mesh>
           )}
         </>

@@ -8,13 +8,16 @@ import { describe, expect, it } from 'vitest';
 import { type ArcadeInput, type ArcadeState, type ArcadeWorld, BODY, HEADER, NO_INPUT, UNIT, bodyBase } from '@/play/arcade/contract';
 import { buildWorld, instantiate, loadProgram, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
+import { FLORA_SPECIES, floraIds, LOOKS, sceneLook } from '@/play/arcade/look';
 import { minigolfParts } from '@/play/arcade/pieces/minigolf';
-import { type MinigolfShape, minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
+import { MINIGOLF_SHAPES, type MinigolfShape, minigolfLayout } from '@/play/arcade/pieces/minigolf-hole';
 import { minigolfAim, minigolfAxisToward } from '@/play/arcade/pieces/minigolf-roll';
 
+import { type Plant, placeAround } from '../../../look/vegetation-places';
 import { type PlayRect, playRect } from '../../../portrait-frame';
 import { MINIGOLF_CAMERA, type MinigolfCameraPose, type MinigolfCourseView, minigolfCameraAxis, minigolfCameraPose, minigolfCameraRig, minigolfCameraStep, minigolfCourseView, minigolfFocus } from '../minigolf-camera';
 import { type Putt, pullBack, puttInput } from '../minigolf-touch';
+import { minigolfDressing } from '../MinigolfScene';
 
 /** Pixel 7 na výšku v CSS px: horní pás HUD (pilulky a řádek cíle) a dolní řada tlačítek. */
 const PHONE = { width: 412, height: 839 } as const;
@@ -374,3 +377,65 @@ function turned(reel: readonly Frame[], k: number): number {
   const dir = (frame: Frame): Vector3 => frame.look.clone().sub(frame.eye).normalize();
   return MathUtils.radToDeg(dir(reel[k]!).angleTo(dir(reel[k - 1]!)));
 }
+
+/**
+ * Svět kolem jamky (P73D): na snímku by vypadal dobře i strom, který visí za hranou podstavce, keř na dráze, kam
+ * míček dopadne, nebo koruna mezi kamerou a míčkem – pinuje se to tady skutečnými pózami kamery.
+ */
+describe('golf diorama dressing (P73D)', () => {
+  const candy = sceneLook({ setting: 'a candy land', mood: '', look: 'meadow' });
+  /** Rostlina (válec půdorysu do své výšky) protne úsečku z oka kamery na bod scény. */
+  const blocks = (plant: Plant, eye: Vector3, target: Vector3): boolean => {
+    for (let k = 0; k <= 200; k += 1) {
+      const q = eye.clone().lerp(target, k / 200);
+      if (Math.hypot(q.x - plant.x, q.z - plant.z) < plant.reach && q.y < plant.height) return true;
+    }
+    return false;
+  };
+
+  it('stands on the podium outside the course, off every camera line to the ball, the target and the flag; candy land adds lollipops', () => {
+    for (const shape of MINIGOLF_SHAPES) {
+      for (const seed of [1, 2, 3, 4]) {
+        const { state, course } = holeOf(seed, shape);
+        const dressing = minigolfDressing(course, candy);
+        const { box, clear, land } = dressing;
+        const plants = placeAround({ ...dressing, flora: dressing.flora!, seed, profile: 'desktop' });
+        const label = (plant: Plant): string => `${shape} ${String(seed)} ${plant.id} ${plant.layer} (${plant.x.toFixed(1)}, ${plant.z.toFixed(1)})`;
+        expect(plants.length, `${shape} ${String(seed)}`).toBeGreaterThan(40);
+        expect(plants.some((plant) => plant.layer === 'mid'), `${shape} ${String(seed)} trees`).toBe(true);
+        expect(plants.filter((plant) => plant.id === 'gen3d-lollipop').length, `${shape} ${String(seed)} lollipops`).toBeGreaterThanOrEqual(3);
+        for (const plant of plants) {
+          const gap = Math.hypot(Math.max(box.x0 - plant.x, 0, plant.x - box.x1), Math.max(box.z0 - plant.z, 0, plant.z - box.z1)) - plant.reach;
+          expect(gap, label(plant)).toBeGreaterThanOrEqual(clear - 1e-6);
+          expect(plant.x - plant.reach >= land.x0 && plant.x + plant.reach <= land.x1 && plant.z - plant.reach >= land.z0 && plant.z + plant.reach <= land.z1, label(plant)).toBe(true);
+        }
+        // Kde míček stojí (odpaliště, rohy) a valí se k dalšímu bodu trasy, na šířku i na výšku.
+        const [tx, tz] = ballOf(state);
+        const stops: (readonly [number, number])[] = [[tx, tz], ...course.route.slice(0, -1)];
+        const states = stops.flatMap(([sx, sz], k) => {
+          const [nx, nz] = course.route[k] as readonly [number, number];
+          const rolling = put(state, (sx + nx) >> 1, (sz + nz) >> 1, 0, 60, 60);
+          rolling[HEADER.respawnX] = sx;
+          rolling[HEADER.respawnZ] = sz;
+          return [put(state, sx, sz, 0), rolling];
+        });
+        const [hx, hz] = course.hole;
+        for (const shot of states) {
+          for (const aspect of [TALL, WIDE]) {
+            const pose = minigolfCameraPose(shot, aspect, aspect < 1 ? RECT : FULL_WIDE, course);
+            const [bx, bz] = ballOf(shot);
+            const targets = [new Vector3(-bx / UNIT, 0.2, bz / UNIT), new Vector3(-pose.focus[0] / UNIT, 0, pose.focus[1] / UNIT), new Vector3(-hx / UNIT, MINIGOLF_CAMERA.flag, hz / UNIT)];
+            for (const plant of plants) for (const target of targets) expect(blocks(plant, pose.position, target), `${label(plant)} aspect ${aspect.toFixed(2)} rolling ${String(pose.rolling)}`).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('meadow without candy keeps its flora; candy land stays within the species cap', () => {
+    const { course } = holeOf(1, 'straight');
+    expect(minigolfDressing(course, LOOKS.meadow).flora).toBe(LOOKS.meadow.flora);
+    expect(floraIds(minigolfDressing(course, candy).flora!).size).toBeLessThanOrEqual(FLORA_SPECIES);
+    expect(floraIds(LOOKS.meadow.flora!).has('gen3d-lollipop')).toBe(false);
+  });
+});

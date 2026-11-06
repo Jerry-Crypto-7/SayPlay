@@ -69,11 +69,14 @@ export const LANDMARK_STEP = 24;
 /**
  * Kde rekvizity stojí: krok 7 m, odsazení a velikost se střídají podle pořadí. `cap` zmenší vysoké kulisy jedné řady.
  * `sparse` (vedle vegetace) = krok `LANDMARK_STEP` a strany se střídají, jedna kulisa na krok.
+ * `clear` (m) = řada nechá |z| < `clear` prázdné (P73D: osa pohledu za věží stohování); ostatní kusy zůstanou, kde byly.
  */
-export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number, cap?: SceneryCap, sparse = false): SceneryPlace[] {
+export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number, cap?: SceneryCap, sparse = false, clear = 0): SceneryPlace[] {
   const places: SceneryPlace[] = [];
   if (props.length === 0) return places;
   for (let index = 0, z = from; z <= to; index += 1, z += sparse ? LANDMARK_STEP : 7) {
+    const at = z + ((index * 13) % 3);
+    if (Math.abs(at) < clear) continue;
     for (const side of layout === 'behind' ? [1] : sparse ? [index % 2 === 0 ? -1 : 1] : [-1, 1]) {
       const n = index * 7 + (side + 1) * 3;
       const kind = props[n % props.length] as SceneryKind;
@@ -82,7 +85,7 @@ export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayo
       places.push({
         kind,
         x: side * (inner + ((((index * 37 + side * 11) % 5) + 5) % 5) * 1.3),
-        z: z + ((index * 13) % 3),
+        z: at,
         scale: cap?.side === side ? Math.min(scale, cap.height / sceneryHeight(kind)) : scale,
         turn: (index % 4) * (Math.PI / 2),
       });
@@ -339,14 +342,14 @@ const FOOT = 0.7;
  * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`), `bend` = posun po
  * zakřivené trati běžce (P46D T3, `runner/path.ts`): kulisa stojí vedle zatáčky, ne v ní.
  * `vegetation` = scéna kreslí vegetaci sady (`Vegetation.tsx`): řada nese jen stavby a věci, vedle přírody řídce
- * a střídavě; vedle výplně (P54B T7, `sparseLandmarks`) zůstane hustá.
+ * a střídavě; vedle výplně (P54B T7, `sparseLandmarks`) zůstane hustá. `clear` = prázdný úsek řady kolem z = 0 (`sceneryPlaces`).
  */
-export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest, bend, vegetation = false }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap; readonly bend?: (z: number) => { readonly x: number; readonly y: number }; readonly vegetation?: boolean }) {
+export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest, bend, vegetation = false, clear = 0 }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap; readonly bend?: (z: number) => { readonly x: number; readonly y: number }; readonly vegetation?: boolean; readonly clear?: number }) {
   const side = tallest?.side;
   const height = tallest === undefined ? undefined : tallest.height / size;
   const props = useMemo(() => (vegetation ? landmarks(look) : look.props), [look, vegetation]);
   const sparse = vegetation && sparseLandmarks(look);
-  const places = useMemo(() => sceneryPlaces(props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }, sparse), [props, layout, inner, from, to, side, height, sparse]);
+  const places = useMemo(() => sceneryPlaces(props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }, sparse, clear), [props, layout, inner, from, to, side, height, sparse, clear]);
   const plants = useMemo(() => (look.flora === undefined ? new Set<string>() : floraIds(look.flora)), [look.flora]);
   const heights = useMemo(
     () =>

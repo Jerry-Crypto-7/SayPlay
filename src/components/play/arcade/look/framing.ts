@@ -41,7 +41,8 @@ export interface Framing {
  * kvality, ne cíl úprav; proto nejsou v tabulce (`FRAMING_KEEP`).
  */
 export const DIORAMA_FRAMING = {
-  // Na hrdinu kamera kouká z 25° + `dropOf` = 38°; s hrozbou za zády se zvedne míň (`raiseArena`), sklon pak až 38°.
+  // Na hrdinu kamera kouká z 25° + `dropOf` = 38° a osa se pak vždy zvedne na 25°; hrozbu za zády v obraze drží
+  // posun kamery po ose dolů, ne menší zdvih (`raiseArena`).
   move_free: { pitch: 25, hero: -0.4, reach: 0 },
   // `hero` = bod na zemi pod hrdinou; střed těla (0,7 m nad ním) pak leží kolem NDC −0,4.
   runner: { pitch: 22, hero: -0.55, reach: 7.8 },

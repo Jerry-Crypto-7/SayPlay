@@ -6,6 +6,10 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
+import { UNIT } from '@/play/arcade/contract';
+import { LEGIBLE_CAP } from '@/play/arcade/models';
+import { TIMING } from '@/play/arcade/pieces/timing';
+
 import { STYLED_TILT, raiseArena } from '../../arena/arena-camera';
 import { CATCH_PITCH, placeCatchWide, tiltCatch } from '../../genres/catch/CatchScene';
 import { LANE_CAMERA } from '../../genres/lanes/LaneScene';
@@ -117,6 +121,20 @@ describe('genre cameras stay inside the table (P73D T2)', () => {
       camera.updateProjectionMatrix();
       expect(Math.abs(new Vector3(0, 2, 0).project(camera).y)).toBeLessThan(1e-6);
     }
+  });
+
+  it('stacking on desktop: the slab at the legibility cap stays under 30 % of the frame width (s4: ~33 % at TIMING_BACK 1.25)', () => {
+    const camera = cameraAt(DESKTOP);
+    const y = TIMING.baseH / UNIT;
+    placeTiming(camera, new Vector3(), y, timingDistance(CANVAS_FOV, DESKTOP, TIMING.blockW / UNIT));
+    camera.updateMatrixWorld();
+    camera.updateProjectionMatrix();
+    // Jezdec zvětšený čitelností kolem paty (`LegibleBodies`): přední stěna je ke kameře nejblíž, tedy nejširší.
+    const half = (TIMING.blockW / UNIT) * LEGIBLE_CAP / 2;
+    const front = -(TIMING.depth / UNIT) * LEGIBLE_CAP / 2;
+    const left = new Vector3(half, y, front).project(camera).x;
+    const right = new Vector3(-half, y, front).project(camera).x;
+    expect(Math.abs(left - right) / 2).toBeLessThan(0.3);
   });
 
   it('mini golf: the rest overview pitch is inside the table', () => {

@@ -4,13 +4,14 @@
  * jako dřív a písek s hlínou mají drobky uvnitř pásu.
  */
 import { describe, expect, it } from 'vitest';
-import { Box3, type BufferGeometry } from 'three';
+import { Box3, type BufferGeometry, Color, SRGBColorSpace } from 'three';
 
 import { ROLE } from '@/play/arcade/contract';
-import { SURFACES, type Surface, type SurfaceKind } from '@/play/arcade/look';
+import { LOOKS, SURFACES, type Surface, type SurfaceKind } from '@/play/arcade/look';
 import kits from '@/play/arcade/look/obstacle-kits.json';
 
 import { type Cast, modelIdOf } from '../../World';
+import { HEMI_LIFT, SUN_LIFT } from '../rig/fog-light';
 import { WALL_BAND, boostPadGeometry, fleckGeometry, roadGeometry } from '../road-strip';
 
 const KINDS = ['hurdle', 'cone', 'crate', 'slide-bar'] as const;
@@ -94,5 +95,25 @@ describe('track flecks', () => {
   it('are the same for the same track', () => {
     const [a, b] = [fleckGeometry(STRAIGHT, SURFACES.sand)!, fleckGeometry(STRAIGHT, SURFACES.sand)!];
     expect(Array.from(a.getAttribute('position').array)).toEqual(Array.from(b.getAttribute('position').array));
+  });
+});
+
+describe('seabed track under the underwater light', () => {
+  // Rozptyl na rovné trati jako v rigu: obloha polokoule a slunce sady po zvednutí, / π, plus svit povrchu.
+  const look = LOOKS.underwater;
+  const [sky, sun] = [new Color(look.light[0]), new Color(look.sunColor)];
+  const hueOf = (hex: string, glow = '#000000'): number => {
+    const [own, self] = [new Color(hex), new Color(glow)];
+    const lit = (['r', 'g', 'b'] as const).map((c) => (own[c] * (sky[c] * look.light[2] * HEMI_LIFT + sun[c] * look.sun * SUN_LIFT)) / Math.PI + self[c]) as [number, number, number];
+    return new Color().setRGB(...lit).getHSL({ h: 0, s: 0, l: 0 }, SRGBColorSpace).h * 360;
+  };
+
+  it('reads as sand with coral flecks, where plain sand turned green', () => {
+    expect(look.surface).toBe('seabed');
+    const seabed: Surface = SURFACES.seabed;
+    expect(hueOf(SURFACES.sand.color)).toBeGreaterThan(90);
+    expect(hueOf(seabed.color, seabed.glow)).toBeGreaterThan(20);
+    expect(hueOf(seabed.color, seabed.glow)).toBeLessThan(50);
+    expect(hueOf(seabed.flecks!, seabed.glow)).toBeLessThan(20);
   });
 });

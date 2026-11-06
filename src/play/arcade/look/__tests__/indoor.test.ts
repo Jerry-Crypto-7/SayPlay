@@ -275,6 +275,7 @@ function describeTree(node: ReactNode): unknown[] {
  * podlaha arény dostala podstavec, hrubý šum dlažby a smetí na 30 % – změna je záměr, ne únik interiéru.
  * `look` louky, města, podmoří a sopky přepsán v P73D T5: znak místa na obzoru (`skyline.marks`), sopka i kaňon.
  * `surface` přepsán v P73D T6: povrch dostal dvě barvy mantinelu (`wall`) a písek s hlínou drobky (`flecks`).
+ * `look` a `surface` podmoří přepsány v P73D: trať jede po `seabed` (písek se svitem), pod tyrkysovým světlem byl zelený.
  */
 const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: string; readonly styled: string; readonly agar: string }>> = {
   meadow: { look: 'feaba37e', surface: '9b5032c0', styled: '922f522c', agar: 'af20e51a' },
@@ -284,7 +285,7 @@ const MAIN: Readonly<Record<string, { readonly look: string; readonly surface: s
   desert: { look: '8322600b', surface: '353a5c9e', styled: '81172b7a', agar: 'fce62cb4' },
   beach: { look: '706b0f47', surface: '353a5c9e', styled: 'cdab1d1e', agar: '8bf9e7a7' },
   ocean: { look: '1bf0d212', surface: 'fe1e5ae9', styled: '743053c4', agar: 'dbbcc4b6' },
-  underwater: { look: 'ec2f7da1', surface: '353a5c9e', styled: '47dbd648', agar: '62d66877' },
+  underwater: { look: 'f0c7e9e9', surface: 'bfa38346', styled: '47dbd648', agar: '62d66877' },
   snow: { look: 'a6bc4857', surface: '2ee56f00', styled: 'c3ab0313', agar: '30849ad9' },
   volcano: { look: '23df3af8', surface: '9b5032c0', styled: '23ea7aeb', agar: 'baf81103' },
   space: { look: '30f31d23', surface: '9b5032c0', styled: 'a1c003e6', agar: '63f2d812' },
