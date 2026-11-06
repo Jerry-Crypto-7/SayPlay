@@ -15,7 +15,7 @@ import { renderHeld } from '../effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group, Object3D, PerspectiveCamera } from 'three';
-import { Box3, Vector3 } from 'three';
+import { Box3, MathUtils, Vector3 } from 'three';
 
 import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -28,6 +28,7 @@ import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import { DIORAMA_FRAMING } from '../look/framing';
 import type { Box } from '../look/ground';
 import type { Volume } from '../look/landmark-places';
 import { Landmark } from '../look/Landmark';
@@ -145,6 +146,21 @@ export function timingDistance(fov: number, aspect: number, sliderW: number): nu
   const tan = Math.tan((fov * Math.PI) / 360);
   const swing = 2 * (TIMING.amplitude / UNIT + sliderW / 2 + SWING_PAD);
   return Math.max(swing / (2 * tan * aspect) + TIMING.depth / UNIT / 2, 7 / (2 * tan), 8);
+}
+
+/** O kolik dál než `timingDistance` stojí kamera (P73D T2: výš a dál, ať je za věží vidět svět a obzor). */
+export const TIMING_BACK = 1.25;
+
+/**
+ * Kamera stohování (P73D T2): jezdec nad věží uprostřed záběru, sklon `DIORAMA_FRAMING.timing` – dřív 10° od země,
+ * kvádr přes půl obrazu a za ním dlažba. Na výšku pak `fitTall` do hracího obdélníku (orientace i obzor drží).
+ */
+export function placeTiming(camera: PerspectiveCamera, look: Vector3, followY: number, distance: number): void {
+  const pitch = MathUtils.degToRad(DIORAMA_FRAMING.timing.pitch);
+  const reach = distance * TIMING_BACK;
+  look.set(0, followY, 0);
+  camera.position.set(0, followY + reach * Math.sin(pitch), -reach * Math.cos(pitch));
+  camera.lookAt(look);
 }
 
 /** Kolik stohu pod jezdcem drží kvádr na výšku (m) a jak vysoký kvádr nanejvýš je – na Pixelu 7 se vejde na `timingDistance`. */
@@ -307,11 +323,7 @@ export function TimingScene({
     followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 3));
     // Vidět celý kyv i na výšku: vzdálenost z poměru stran (`timingDistance`).
     const dist = timingDistance(camera.fov, camera.aspect, sliderInit.w);
-    // Na výšku je kamera daleko a díl by měl pod 4 % výšky obrazu: víc shora je vidět i jeho
-    // vršek, takže je na snímku vyšší a pozná se (P30B T5).
-    camera.position.set(0, followY.current + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
-    look.set(0, followY.current, 0);
-    camera.lookAt(look);
+    placeTiming(camera, look, followY.current, dist);
     const rect = playArea.current;
     if (camera.aspect < 1 && rect !== null) {
       // Na výšku (P64 T4, T8-R3): kyv jezdce a okno věže kolem něj v `playRect` pod HUD – šířku dál drží `timingDistance`.

@@ -23,7 +23,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpec } from '@/play/draft/draft';
 
-import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal, bandLift, shownBox } from '../arena/arena-camera';
+import { ARENA_FRAMING, type ArenaFraming, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Spot, arenaDistance, arenaGoal, bandLift, raiseArena, shownBox } from '../arena/arena-camera';
 import { drawnOf, partOf } from '../arena/ArenaScene';
 import { bodiesOf } from '../bodies';
 
@@ -109,8 +109,11 @@ function framesOf(world: ArcadeWorld, aspect: number, framing: ArenaFraming): Fr
     distance = frames.length === 0 ? wanted : distance + (wanted - distance) * k;
     camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
     camera.lookAt(aim.x, 0, aim.z);
+    // P73D T2: osa pohledu zvednutá k obzoru jako ve scéně – hrdina a hrozba se měří v nové kompozici.
+    hero.setY(hero.y + heroSize.h / 2);
+    raiseArena(camera, tilt === FIGHT_TILT, hero, threatCentre);
     camera.updateMatrixWorld();
-    frames.push({ distance, hero: seen(camera, hero.setY(hero.y + heroSize.h / 2)), threat: nearest < NEAR_M ? seen(camera, threatCentre!) : null });
+    frames.push({ distance, hero: seen(camera, hero), threat: nearest < NEAR_M ? seen(camera, threatCentre!) : null });
   }
   return frames;
 }

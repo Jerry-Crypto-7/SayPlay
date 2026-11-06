@@ -14,7 +14,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Box3, type Group, IcosahedronGeometry, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Group, IcosahedronGeometry, MathUtils, type PerspectiveCamera, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
@@ -30,6 +30,7 @@ import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
+import { DIORAMA_FRAMING } from '../../look/framing';
 import { hash } from '../../look/ground';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
@@ -88,6 +89,29 @@ function tallBoxes(stretch: number): { readonly box: Box3; readonly keep: Box3 }
   };
 }
 
+/** Sklon kamery chytání (P73D T2): dřív kolmo zepředu (0°) a obzor v mlze, teď 3/4 shora s obzorem nad korunami. */
+export const CATCH_PITCH = MathUtils.degToRad(DIORAMA_FRAMING.lanes.pitch);
+
+/** Kamera `distance` m od bodu (0, `y`, 0) ve sklonu `CATCH_PITCH`, kouká na něj. */
+export function tiltCatch(camera: PerspectiveCamera, y: number, distance: number): void {
+  camera.position.set(0, y + distance * Math.sin(CATCH_PITCH), -distance * Math.cos(CATCH_PITCH));
+  camera.lookAt(0, y, 0);
+}
+
+/** Kamera chytání na šířku: rozhoduje šíře pruhů nebo výška pádu; volná výška jde z větší části pod zem (pole před hrdinou). */
+export function placeCatchWide(camera: PerspectiveCamera): void {
+  const tan = Math.tan((camera.fov * Math.PI) / 360);
+  const needed = (VIEW.top - VIEW.bottom) / 2;
+  const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
+  const spare = distance * tan - needed;
+  tiltCatch(camera, (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE, distance);
+}
+
+/** Bod pohledu kamery chytání posunuté fitem: táž orientace, kterou postavil `tiltCatch`. */
+function catchLook(position: Vector3, out: Vector3): Vector3 {
+  return out.set(position.x, position.y - Math.sin(CATCH_PITCH), position.z + Math.cos(CATCH_PITCH));
+}
+
 /**
  * Kamera chytání na výšku: zepředu jako na šířku a přes `fitTall` do `playRect`, pád natažený tak, aby ho svisle
  * nevázalo nic víc než šíře pruhů. Největší natažení hledá půlením: dokud se pád vejde kamerou, kterou drží
@@ -98,8 +122,7 @@ function placeTall(camera: PerspectiveCamera, rect: PlayRect): { readonly positi
   const fit = (stretch: number) => {
     const { box, keep } = tallBoxes(stretch);
     const y = (box.min.y + box.max.y) / 2;
-    camera.position.set(0, y, -10);
-    camera.lookAt(0, y, 0);
+    tiltCatch(camera, y, 10);
     return fitTall(camera, box, rect, { keep });
   };
   const lanes = fit(1);
@@ -256,17 +279,8 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
     canopy.current?.position.set(0, lifted(CANOPY.bottom, stretch) - CANOPY.bottom, 0);
     if (tall !== null) {
       camera.position.copy(tall.position);
-      camera.lookAt(look3.set(tall.position.x, tall.position.y, 0));
-    } else {
-      // Na výšku rozhoduje šíře pruhů, na šířku výška pádu; volná výška jde z větší části pod zem (pole před hrdinou).
-      const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const needed = (VIEW.top - VIEW.bottom) / 2;
-      const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
-      const spare = distance * tan - needed;
-      const y = (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE;
-      camera.position.set(0, y, -distance);
-      camera.lookAt(look3.set(0, y, 0));
-    }
+      camera.lookAt(catchLook(tall.position, look3));
+    } else placeCatchWide(camera);
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();

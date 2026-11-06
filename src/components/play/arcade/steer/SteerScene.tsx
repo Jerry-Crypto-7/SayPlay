@@ -45,6 +45,7 @@ import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
 import { BARRIER_W, roadShapeOf } from './road-shape';
 import { type DriveInputMode, driveInput } from './drive-input';
+import { DIORAMA_FRAMING, dioramaRig } from '../look/framing';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
@@ -80,8 +81,10 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
     track.max.set(road + view.half, view.top, z + view.depth);
     fitChase(camera, look, track, rect);
   } else {
-    camera.position.set(road + (x - road) * 0.8, 4.2, z - 8.5);
-    look.set(road + (x - road) * 0.6, 0.8, z + 12);
+    // P73D T2: 3/4 s obzorem (`DIORAMA_FRAMING.steer`) – dřív 9° nad dráhou a holá deska do mlhy.
+    const { back, up, ahead } = dioramaRig(DIORAMA_FRAMING.steer, DIORAMA_FRAMING.steer.reach, camera.fov);
+    camera.position.set(road + (x - road) * 0.8, up, z - back);
+    look.set(road + (x - road) * 0.6, 0, z + ahead);
   }
   camera.lookAt(look);
   // Small visual roll follows the car across the road, never the hashed world.
@@ -99,8 +102,9 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
 const VOYAGE_CAM = {
   // Na výšku víc do strany nejde: trať v zatáčce by vyjela z úzkého obrazu (−2,6 m = 1,9 s před psem).
   // P64 T5: výš, blíž a dál dopředu (dřív 4, 7, −1,6, 6) – trať běží nahoru po obrazovce, loď stojí dole v `playRect`.
-  phone: { up: 5, back: 5, side: -1, ahead: 8 },
-  desktop: { up: 3.6, back: 7.5, side: -3, ahead: 10 },
+  // P73D T2: výš (`up` 5 → 6, 3,6 → 7,5) – sklon 19° a 10° → 23° a 22°, trať i obzor v 3/4 záběru.
+  phone: { up: 6, back: 5, side: -1, ahead: 8 },
+  desktop: { up: 7.5, back: 7.5, side: -3, ahead: 10 },
 } as const;
 
 /**
@@ -109,7 +113,8 @@ const VOYAGE_CAM = {
  * a soupeř či turbo u kraje), od `behind` m za autem po `depth` m před ním, do výšky `top`. Vzdálenost a posun dává
  * `fitChase`.
  */
-const STEER_TALL = { up: 18, back: 18, ahead: 10, follow: 0.5, followLook: 0.4, half: 5, behind: 2, depth: 14, top: 1.5 } as const;
+// P73D T2: `up` 18 → 13 (sklon 33° → 25°): obzor zpátky v obraze (NDC 1,11 → 0,81).
+const STEER_TALL = { up: 13, back: 18, ahead: 10, follow: 0.5, followLook: 0.4, half: 5, behind: 2, depth: 14, top: 1.5 } as const;
 
 /**
  * Plavba na výšku (P64 T5): do `playRect` se vejde loď (`hero` m kolem ní, do výšky `top` se stěžněm); trať před ní

@@ -4,8 +4,9 @@
  * bez plátna. Jen kresba: stav, hash ani robot se nemění.
  */
 
-import { Box3, type Matrix4, type Mesh, type Object3D, Vector3 } from 'three';
+import { Box3, MathUtils, type Matrix4, type Mesh, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
 
+import { DIORAMA_FRAMING, dropOf } from '../look/framing';
 import { isInk } from '../look/rig/InkOutline';
 
 /** Sklon kamery nad vodorovnou (sin, cos). */
@@ -17,8 +18,35 @@ const tiltOf = (degrees: number): Tilt => ({ sin: Math.sin((degrees * Math.PI) /
 /**
  * Kamera 3/4 shora. P35 T2: 50° → 40°. Při 50° byla kočka shora zezadu jen hřbet
  * a uši a astra ji naslepo nepoznala (O10); při 40° je vidět hlava a bok.
+ * P73D T2: na cíl kouká pořád zhruba takhle (26° + `dropOf` ≈ 39°), ale osa pohledu se pak zvedne na 26°
+ * (`raiseArena`): obzor a kulisy za hranou arény v horní třetině, hrdina v dolní – dřív 70 % obrazu dlažba.
  */
-export const STYLED_TILT = tiltOf(40);
+export const STYLED_TILT = tiltOf(DIORAMA_FRAMING.move_free.pitch + MathUtils.radToDeg(dropOf(DIORAMA_FRAMING.move_free)));
+
+const lowered = new Vector3();
+
+/**
+ * Po `lookAt` na cíl zvedne osu pohledu až na sklon `DIORAMA_FRAMING.move_free` – cíl klesne do dolní třetiny,
+ * obzor do horní. Jen tolik, kolik dovolí hrdina (`hero`, střed těla) a nejbližší hrozba (`threat`): zdvih je posouvá
+ * k dolní hraně a hrozba za zády hrdiny by z obrazu vypadla (08-gems: v 51 % tiků místo ≥ 85 %). Souboj zůstává
+ * strmý (`FIGHT_TILT`): soupeř jde na hrdinu podél osy kamery.
+ */
+export function raiseArena(camera: PerspectiveCamera, fight: boolean, hero?: Vector3, threat?: Vector3 | null): void {
+  if (fight) return;
+  const full = dropOf(DIORAMA_FRAMING.move_free, camera.fov);
+  const tan = Math.tan(MathUtils.degToRad(camera.fov) / 2);
+  camera.updateMatrixWorld();
+  let room = full;
+  for (const [point, edge] of [[hero, HERO_EDGE], [threat, THREAT_EDGE]] as const) {
+    if (point === undefined || point === null) continue;
+    // Bod v úhlu `atan(y·tan)` pod osou smí klesnout nejvýš na `edge` (NDC) nad dolní hranou.
+    // Co už je mimo obraz (hrozba, kterou záběr neutáhl, ukáže šipka na okraji), zdvih nebrzdí.
+    const at = lowered.copy(point).project(camera);
+    if (at.z > 1 || Math.abs(at.x) > 1 || Math.abs(at.y) > 1) continue;
+    room = Math.min(room, Math.atan(at.y * tan) + Math.atan(edge * tan));
+  }
+  if (room > 0) camera.rotateX(room);
+}
 /**
  * Souboj strměji (P32E T6): soupeř jde na hrdinu podél osy kamery a při 50°
  * ho hrdina i jeho lišta HP zakryly, zásah i pád se ztratily za zády.

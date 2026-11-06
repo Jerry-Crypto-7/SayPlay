@@ -8,7 +8,10 @@ import { fitChase } from '../track-camera';
  * se vejde let od kluzáku po `depth` m před ním, `half` m do stran a `rise` m nad i pod ním – další kruh i mince.
  * Vzdálenost a posun dává `fitChase`.
  */
-export const GLIDE_TALL = { up: 4, back: 12, ahead: 9, half: 3, rise: 2, behind: 1, depth: 10 } as const;
+export const GLIDE_TALL = { up: 9, back: 12, ahead: 9, half: 3, rise: 2, behind: 1, depth: 10 } as const;
+
+/** Na šířku (P73D T2): sklon 22° (`DIORAMA_FRAMING`), dřív 6° – město pod letem a obzor místo mlhy před nosem. */
+export const GLIDE_WIDE = { up: 7.5, back: 10, ahead: 7 } as const;
 
 const flight = new Box3();
 
@@ -24,7 +27,7 @@ export function placeGlide(camera: PerspectiveCamera, look: Vector3, x: number, 
     fitChase(camera, look, flight, rect);
     return;
   }
-  camera.position.set(x * 0.8, y + 3, z - 10);
-  look.set(x * 0.9, y + 0.5, z + 12);
+  camera.position.set(x * 0.8, y + GLIDE_WIDE.up, z - GLIDE_WIDE.back);
+  look.set(x * 0.9, y + 0.5, z + GLIDE_WIDE.ahead);
   camera.lookAt(look);
 }
