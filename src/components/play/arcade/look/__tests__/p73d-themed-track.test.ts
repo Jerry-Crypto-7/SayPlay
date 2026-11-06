@@ -3,8 +3,8 @@
  * turbo jsou šipky v půdorysu těla, mantinel má dvě barvy povrchu ve stejném objemu
  * jako dřív a písek s hlínou mají drobky uvnitř pásu.
  */
-import { describe, expect, it } from 'vitest';
-import { Box3, type BufferGeometry, Color, SRGBColorSpace } from 'three';
+import { describe, expect, it, vi } from 'vitest';
+import { Box3, BufferGeometry, Color, SRGBColorSpace } from 'three';
 
 import { ROLE } from '@/play/arcade/contract';
 import { LOOKS, SURFACES, type Surface, type SurfaceKind } from '@/play/arcade/look';
@@ -70,6 +70,28 @@ describe('race barriers', () => {
     const pieces = (geometry: BufferGeometry): number => new Set(Array.from({ length: geometry.getAttribute('position').count }, (_, i) => Math.floor(geometry.getAttribute('position').getZ(i) / WALL_BAND.on - 1e-6))).size;
     expect(pieces(road.walls!)).toBeGreaterThanOrEqual(10);
     expect(pieces(road.bands!)).toBeGreaterThanOrEqual(10);
+  });
+
+  it('keep every triangle inside its own piece on a curve, built from six strips (T8b)', () => {
+    const curve = [{ near: 0, far: 20, center: 0, width: 8 }, { near: 20, far: 61, center: 6, width: 10 }];
+    const built = roadGeometry(curve, surface, { height: 1, thickness: 0.5 })!;
+    for (const [geometry, odd] of [[built.walls!, 0], [built.bands!, 1]] as const) {
+      const index = geometry.getIndex()!.array;
+      const z = geometry.getAttribute('position');
+      for (let t = 0; t < index.length; t += 3) {
+        const mid = (z.getZ(index[t]!) + z.getZ(index[t + 1]!) + z.getZ(index[t + 2]!)) / 3;
+        expect(Math.floor(mid / WALL_BAND.on) % 2).toBe(odd);
+      }
+    }
+    // Stavba po kusech volala výpočet normál šestkrát na každých 1,5 m – na telefonu ~100 ms prvního snímku.
+    const normals = vi.spyOn(BufferGeometry.prototype, 'computeVertexNormals');
+    const calls = (walls: { height: number; thickness: number } | null): number => {
+      normals.mockClear();
+      roadGeometry(curve, surface, walls);
+      return normals.mock.calls.length;
+    };
+    expect(calls({ height: 1, thickness: 0.5 }) - calls(null)).toBe(6);
+    normals.mockRestore();
   });
 
   it('have two different colours on every surface', () => {

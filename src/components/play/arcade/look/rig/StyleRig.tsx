@@ -16,7 +16,7 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { type RefObject, useEffect, useMemo, useRef } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector2, Vector3 } from 'three';
 
 import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
@@ -348,6 +348,10 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
   const lit = useMemo(() => ({ ...golden, ...lightFloor(golden) }), [golden]);
   // Protisvětlo zpoza hrdiny ze strany záře slunce na obloze: obrys proti zemi, bez stínu (žádný průchod navíc).
   const back = useMemo(() => ({ dir: glowDirOf(golden.sunDir, control).multiplyScalar(SUN_DISTANCE), color: `#${new Color(golden.sunColor).lerp(new Color(golden.horizon), BACK_SKY).getHexString()}` }), [golden, control]);
+  // Jen když scéna startuje na `high` (desktop), a pak napořád (P73D T8b): světlo navíc prodlouží překlad
+  // každého osvětleného shaderu (~5 % prvního snímku telefonu na CPU 4×) a přidat ho až při změně kvality
+  // by přeložilo všechny materiály znovu uprostřed hry.
+  const [backLit] = useState(() => tier === 'high');
   // Expozice se počítá ze světla sady (noc zvedá dál stejně), zvednutí jen přisvítí scénu (P70D T2).
   const shine = useMemo(() => liftLight(lit), [lit]);
   const air = useMemo(() => airOf(look), [look]);
@@ -366,7 +370,7 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <Sky look={golden} control={control} />
       <hemisphereLight args={[...shine.light]} />
       <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
-      <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} />
+      {backLit ? <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} /> : <></>}
       <ShadowFlags />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}

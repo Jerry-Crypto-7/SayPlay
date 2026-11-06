@@ -264,13 +264,60 @@ export function roadGeometry(segments: readonly StripSegment[], surface: Surface
           ];
     });
     // Kusy po `WALL_BAND.on` m střídavě do podkladu a pruhu (P73D T6): obrubník, plot, pískovec s korály.
-    const base: BufferGeometry[] = [];
-    const band: BufferGeometry[] = [];
-    for (let z = from, i = 0; z < to; z += WALL_BAND.on, i += 1) (i % 2 === 0 ? base : band).push(...faces(slice(samples, z, Math.min(to, z + WALL_BAND.on), at)));
-    wallGeometry = mergeGeometries(base);
-    bands = band.length === 0 ? null : mergeGeometries(band);
+    // Šest pásů přes celou trať s hranicemi kusů mezi vzorky, pak čtyřúhelníky do dvou sítí (T8b): stavba
+    // po kusech dělala šest geometrií a výpočet normál na každých 1,5 m (~100 ms prvního snímku telefonu).
+    const parts = cutAt(samples, from, to, WALL_BAND.on, at);
+    const parity = parts.slice(1).map((next, i) => Math.floor(((parts[i]!.z + next.z) / 2 - from) / WALL_BAND.on) % 2);
+    const [base, band] = splitQuads(faces(parts), parity);
+    wallGeometry = base;
+    bands = band;
   }
   return { surface: road, edges, marks, walls: wallGeometry, bands };
+}
+
+/** Vzorky doplněné o body po `step` m od `from` (z křivky), ať každý čtyřúhelník leží celý v jednom kusu. */
+function cutAt(samples: readonly StripSample[], from: number, to: number, step: number, at: (z: number) => { readonly center: number; readonly width: number }): StripSample[] {
+  const out: StripSample[] = [];
+  let next = from + step;
+  for (const sample of samples) {
+    for (; next < to && next <= sample.z; next += step) if (Math.abs(next - sample.z) > 1e-6) out.push({ z: next, ...at(next) });
+    out.push(sample);
+  }
+  return out;
+}
+
+/**
+ * Čtyřúhelníky pásů z `ribbon` (stejné vzorky) do dvou sítí podle `parity[i]` čtyřúhelníku i; vrcholy se sdílí
+ * jen uvnitř kusu, normály zůstávají z celého pásu. `null` = síť bez jediného čtyřúhelníku.
+ */
+function splitQuads(ribbons: readonly BufferGeometry[], parity: readonly number[]): [BufferGeometry | null, BufferGeometry | null] {
+  const out = [0, 1].map(() => ({ position: [] as number[], normal: [] as number[], index: [] as number[] }));
+  for (const strip of ribbons) {
+    const position = strip.getAttribute('position').array;
+    const normal = strip.getAttribute('normal').array;
+    const push = (part: (typeof out)[number], sample: number): void => {
+      for (let j = sample * 6; j < sample * 6 + 6; j += 1) {
+        part.position.push(position[j]!);
+        part.normal.push(normal[j]!);
+      }
+    };
+    parity.forEach((p, i) => {
+      const part = out[p]!;
+      if (i === 0 || parity[i - 1] !== p) push(part, i);
+      push(part, i + 1);
+      const k = part.position.length / 3 - 4;
+      part.index.push(k, k + 2, k + 1, k + 1, k + 2, k + 3);
+    });
+    strip.dispose();
+  }
+  return out.map(({ position, normal, index }) => {
+    if (index.length === 0) return null;
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new Float32BufferAttribute(position, 3));
+    geometry.setAttribute('normal', new Float32BufferAttribute(normal, 3));
+    geometry.setIndex(index);
+    return geometry;
+  }) as [BufferGeometry | null, BufferGeometry | null];
 }
 
 /** Kus mantinelu jedné barvy (m): obrubník asfaltu a sloupky plotu na pohled z jízdy. */
