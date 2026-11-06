@@ -9,7 +9,7 @@
  * náhrada, komponenty se volají jako funkce a čte se jejich strom elementů.
  */
 
-import { EffectComposer, N8AO, SMAA, ToneMapping } from '@react-three/postprocessing';
+import { EffectComposer, N8AO, SMAA, TiltShift2, ToneMapping } from '@react-three/postprocessing';
 // @ts-expect-error -- n8ao typy nemá; test sahá jen na `configuration` a `detectTransparency`.
 import { N8AOPostPass } from 'n8ao';
 import { ToneMappingMode } from 'postprocessing';
@@ -58,7 +58,7 @@ beforeEach(() => {
 
 describe('colour grade wiring', () => {
   it.each(tiers)('the %s composer grades with the look’s family', (tier) => {
-    const grading = findAll(Post({ look, family: 'cold', tier }), Grading);
+    const grading = findAll(Post({ look, family: 'cold', tier, control: 'runner' }), Grading);
     expect(grading).toHaveLength(1);
     expect(grading[0]!.props.family).toBe('cold');
   });
@@ -67,7 +67,7 @@ describe('colour grade wiring', () => {
   // shadery celé scény (telefon 1–2 s pod 10 FPS). Každá úroveň proto kreslí
   // přes jeden skládač s ACES; liší se jen efekty a hranování.
   it.each(tiers)('the %s tier draws through one composer that tones with ACES', (tier) => {
-    const tree = Post({ look, family: 'cold', tier });
+    const tree = Post({ look, family: 'cold', tier, control: 'runner' });
     const composers = findAll(tree, EffectComposer);
     expect(composers).toHaveLength(1);
     const toning = findAll(tree, ToneMapping);
@@ -78,9 +78,15 @@ describe('colour grade wiring', () => {
     expect(composers[0]!.props.multisampling, 'bez SMAA hranuje MSAA cíle skládače').toBe(smaa ? 0 : 4);
   });
 
+  // P73D T4: tilt-shift diorama jen na `high` a jen tam, kde rámování diorama platí (ne plošinovka).
+  it.each(tiers)('the %s tier tilt-shifts only on high, never the side-view platformer', (tier) => {
+    expect(findAll(Post({ look, family: 'cold', tier, control: 'runner' }), TiltShift2)).toHaveLength(tier === 'high' ? 1 : 0);
+    expect(findAll(Post({ look, family: 'cold', tier, control: 'platform' }), TiltShift2)).toHaveLength(0);
+  });
+
   // P37B T7: N8AO s průhlednou sítí ve scéně kreslil scénu každý snímek ještě dvakrát.
   it.each(tiers.filter((tier) => TIER_SETTINGS[tier].ao !== false))('the %s AO pass ignores transparent meshes', (tier) => {
-    const ao = findAll(Post({ look, family: 'cold', tier }), N8AO);
+    const ao = findAll(Post({ look, family: 'cold', tier, control: 'runner' }), N8AO);
     expect(ao).toHaveLength(1);
     expect(ao[0]!.props.ref).toBe(opaqueAo);
   });

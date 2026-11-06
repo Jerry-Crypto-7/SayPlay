@@ -63,6 +63,18 @@ export const FRAMING_KEEP: Readonly<Record<string, string>> = {
 /** Ovládání, kde střed záběru není hrdina věty (`timing`: jezdec nad věží). */
 export const CENTRED_SUBJECT: ReadonlySet<string> = new Set(['timing']);
 
+/** Ostrý pás tilt-shiftu leží kousek nad bodem pod hrdinou (výška obrazu 0–1), ať je ostrý celý hrdina. */
+const TILT_LIFT = 0.05;
+
+/**
+ * Kde má tilt-shift (P73D T4) ostrý pás – výška obrazu 0 (dole) až 1 (nahoře) přes hrdinu podle rámování.
+ * Ovládání mimo `DIORAMA_FRAMING` (plošinovka, střelnice, poletování: boční pohled a kokpit) ho nemá: `null`.
+ */
+export function tiltFocus(control: string): number | null {
+  if (!(control in DIORAMA_FRAMING)) return null;
+  return (DIORAMA_FRAMING[control as FramedControl].hero + 1) / 2 + TILT_LIFT;
+}
+
 const halfTan = (fov: number): number => Math.tan(MathUtils.degToRad(fov) / 2);
 
 /** Obzor (bod v nekonečnu ve výšce kamery) v obraze jako NDC y – při sklonu `pitch`° a svislém poli `fov`°. */

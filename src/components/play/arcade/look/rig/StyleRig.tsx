@@ -25,7 +25,7 @@ import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
 import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
-import { airOf, liftLight, SHADOW_RADIUS } from './fog-light';
+import { airOf, BACK_LIGHT, BACK_SKY, goldenHour, liftLight, SHADOW_RADIUS } from './fog-light';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
@@ -342,7 +342,12 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
-  const lit = useMemo(() => ({ ...look, ...lightFloor(look) }), [look]);
+  const family = LOOK_FAMILY[lookId];
+  // Zlatá hodina rodiny (P73D T4): slunce níž a tepleji; obloha, slunce i expozice čtou tutéž sadu.
+  const golden = useMemo(() => goldenHour(look, family), [look, family]);
+  const lit = useMemo(() => ({ ...golden, ...lightFloor(golden) }), [golden]);
+  // Protisvětlo zpoza hrdiny ze strany záře slunce na obloze: obrys proti zemi, bez stínu (žádný průchod navíc).
+  const back = useMemo(() => ({ dir: glowDirOf(golden.sunDir, control).multiplyScalar(SUN_DISTANCE), color: `#${new Color(golden.sunColor).lerp(new Color(golden.horizon), BACK_SKY).getHexString()}` }), [golden, control]);
   // Expozice se počítá ze světla sady (noc zvedá dál stejně), zvednutí jen přisvítí scénu (P70D T2).
   const shine = useMemo(() => liftLight(lit), [lit]);
   const air = useMemo(() => airOf(look), [look]);
@@ -358,15 +363,16 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <fog attach="fog" args={[air.color, air.near, air.far]} />
       <FarAtFog far={air.far} />
       <Exposure exposure={exposureOf(lit)} />
-      <Sky look={look} control={control} />
+      <Sky look={golden} control={control} />
       <hemisphereLight args={[...shine.light]} />
-      <Sun look={look} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
+      <Sun look={golden} sun={shine.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
+      <directionalLight position={back.dir} color={back.color} intensity={shine.sun * BACK_LIGHT} />
       <ShadowFlags />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}
       <Ambient look={look} tier={tier} />
       <Wind look={look} lookId={lookId} tier={tier} />
-      <Post look={look} family={LOOK_FAMILY[lookId]} tier={tier} />
+      <Post look={look} family={family} tier={tier} control={control} />
     </>
   );
 }
