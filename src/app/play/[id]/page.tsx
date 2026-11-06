@@ -153,7 +153,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
         aiVersion={game.relation === 'upgrade'}
         readingVersion={game.relation === 'reading'}
         lab={labFacts(game.spec, game.arcade ?? null)}
-        read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
+        read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords', game.provenance)}
         honesty={honesty}
         upgrade={upgradeUrlOf(game)}
         par={game.report.par ?? null}
