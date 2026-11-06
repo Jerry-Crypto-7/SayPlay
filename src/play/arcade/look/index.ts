@@ -221,22 +221,29 @@ export interface Surface {
   /** Okrajová čára asfaltu, jinde tmavší lem pásu. */
   readonly edge: string;
   readonly marks?: { readonly kind: 'dashes' | 'seams'; readonly color: string };
+  /**
+   * Mantinel závodu (P73D T6): podklad a pruh, které se střídají po trati – obrubník asfaltu, plot hlíny,
+   * pískovec s korály. Jednobarevná stěna přes celou trať byla holý kvádr.
+   */
+  readonly wall: readonly [base: string, band: string];
+  /** Drobky na pásu (P73D T6): mušle a korály v písku, hroudy v hlíně – holý pás jedné barvy byl deska. */
+  readonly flecks?: string;
 }
 
 export const SURFACES = {
-  asphalt: { color: '#5a5f66', edge: '#e8e6df', marks: { kind: 'dashes', color: '#e8e6df' } },
-  dirt: { color: '#94754f', edge: '#75593b' },
-  sand: { color: '#dcc193', edge: '#c3a476' },
-  snow: { color: '#e6edf4', edge: '#bccbd9' },
-  planks: { color: '#a07a4e', edge: '#6e5034', marks: { kind: 'seams', color: '#6e5034' } },
-  paving: { color: '#a29d93', edge: '#7d786f' },
+  asphalt: { color: '#5a5f66', edge: '#e8e6df', marks: { kind: 'dashes', color: '#e8e6df' }, wall: ['#ece8df', '#d9473a'] },
+  dirt: { color: '#94754f', edge: '#75593b', wall: ['#8a6a44', '#5e4630'], flecks: '#6f5536' },
+  sand: { color: '#dcc193', edge: '#c3a476', wall: ['#b88a62', '#e07a5f'], flecks: '#e58f75' },
+  snow: { color: '#e6edf4', edge: '#bccbd9', wall: ['#eef4fa', '#7fb3d9'] },
+  planks: { color: '#a07a4e', edge: '#6e5034', marks: { kind: 'seams', color: '#6e5034' }, wall: ['#8b6440', '#5c4128'] },
+  paving: { color: '#a29d93', edge: '#7d786f', wall: ['#c9c4ba', '#6b7280'] },
   // Podlahy interiéru v aréně (P62 T3, `Look.interior`): `edge` je spára. Dlažba obchodu, šachovnice supermarketu
   // (druhá barva je mezi dílcem a spárou), kámen hradu, břidlice jeskyně, plechy továrny; obývák má prkna.
-  tiles: { color: '#eadfcb', edge: '#b8a68a' },
-  checker: { color: '#f1f5f9', edge: '#94a3b8' },
-  stone: { color: '#a8a29e', edge: '#57534e' },
-  slate: { color: '#5f5a55', edge: '#2b2724' },
-  metal: { color: '#8a9096', edge: '#4b5157' },
+  tiles: { color: '#eadfcb', edge: '#b8a68a', wall: ['#eadfcb', '#b8a68a'] },
+  checker: { color: '#f1f5f9', edge: '#94a3b8', wall: ['#f1f5f9', '#94a3b8'] },
+  stone: { color: '#a8a29e', edge: '#57534e', wall: ['#a8a29e', '#57534e'] },
+  slate: { color: '#5f5a55', edge: '#2b2724', wall: ['#5f5a55', '#2b2724'] },
+  metal: { color: '#8a9096', edge: '#4b5157', wall: ['#8a9096', '#f59e0b'] },
 } as const satisfies Record<string, Surface>;
 export type SurfaceKind = keyof typeof SURFACES;
 
