@@ -60,3 +60,29 @@ Fakta:
 - Úleva z plánu se na telefon nevztahuje: hloubka ostrosti běží jen na `high`, P73D přidal stíny jen jako příjem (`receiveShadow`, žádné kreslení navíc do mapy stínů) a jeden vrhající pás mantinelu závodu.
 
 Inference: cenu nese společná režie, ne jedna scéna – nejvíc závod (+0,41 s do prvního snímku: písek s drobky, dvoubarevné mantinely), honička a sopka (podstavec, kaňon). Kde přesně, ukáže až profil procesoru prvního načtení na telefonu (paměť `perf-drop-without-calls-is-cpu`). Zapsáno do plánu jako směrovaný úkol T8b před T10.
+
+## T8b – oprava prvního načtení na telefonu
+
+**Profil** (CDP `Profiler`, vzorek 200 µs, Pixel 7 CPU 4×, od navigace po první snímek, závod pod vodou a plošinovka, 3× prokládaně A/B, skript mimo repo): hlavní vlákno je do prvního snímku skoro pořád vytížené (nečinnost ~60 ms z ~5 s), zpoždění dělá procesor, ne síť.
+
+| co | A `main` | B před T8b | B po T8b |
+|---|---|---|---|
+| závod: `computeVertexNormals` | 5 ms | 102 ms | 15 ms |
+| závod: čekání na překlad shaderů (`getProgramInfoLog`) | 735–759 ms | 760 ms | 730 ms |
+| plošinovka: čekání na překlad shaderů | 1 133–1 170 ms | 1 201 ms | 1 110 ms |
+
+Příčiny a opravy (`b309af17`):
+- **Mantinely závodu** se od T6 stavěly po kusech 1,5 m: šest pásů a výpočet normál na každý kus, stovky malých geometrií. Teď šest pásů přes celou trať s hranicemi kusů mezi vzorky a rozdělení čtyřúhelníků do dvou barev. Test hlídá, že každý trojúhelník leží ve svém kusu i v zatáčce a že mantinely počítají normály jen šestkrát.
+- **Protisvětlo z T4** bylo světlo navíc na všech kvalitách – každý osvětlený shader se překládá déle (~5 % prvního snímku telefonu). Teď jen když scéna startuje na `high` (desktop), a pak napořád: přidat ho až při zvýšení kvality by uprostřed hry přeložilo všechny materiály znovu. Telefon (start `medium`) je bez obrysového protisvětla.
+- Zbytek u závodu (stavba trati +~96 ms na CPU 4× proti `main`) je samotná funkce T6 – druhá síť mantinelu, její řazení pro okno a drobky na písku –, ne chyba.
+
+**Věta → hra, jen telefon** (`first-playable-t8b.config.json`, data `perf-first-playable-t8b.json`, stejných 8 vět, 3 běhy, 48/48 hratelných):
+
+| metrika | A medián | B medián | B − A párově | mez |
+|---|---|---|---|---|
+| hratelná | 7 379 ms | 7 591 ms | **+106 ms** (v T8 +336,5) | ≤ 200 – drží |
+| první snímek | 4 475 ms | 4 568 ms | **+55 ms** (v T8 +170,5) | – |
+
+První snímek po hrách (medián B − medián A): závod pod vodou −206 ms (v T8 +414), plošinovka −243, sopka +34, stohování +86, chytání +135, quest +142, golf +207, honička +317. Rozptyl jednoho běhu na tomto stroji je ±300 ms, tři běhy na hru jednotlivé hry nerozliší; brána je párový medián přes všech 24 dvojic.
+
+**FPS telefonu po T8b** (`p73d-perf.mjs`, data `perf-fps-t8b.json`, 4× prokládaně): medián B ≥ 40 u všech 8 her – honička 44,1 (A 46,0), quest 45,3 (45,1), závod 52,1 (52,9), stohování 58,6 (59,1), golf 51,3 (49,7), běh 55,1 (56,8), plošinovka 48,7 (47,0), let 59,0 (59,2). Nejvíc ztrácí honička −1,9 FPS (v T8 nejvýš ±1,1); T8b snímek nezdražuje (o světlo méně na telefonu, stejný počet trojúhelníků mantinelu), takže to čtu jako šum stroje – inference. p95 33,4 ms (dva takty 60 Hz) u stejných her jako na `main`, skript to dál hlásí jako FAIL.
