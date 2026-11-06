@@ -44,6 +44,7 @@ import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled, readerForAiVersion } from '../read/client';
 import { type GameSpecV1, readGameSpec } from '../spec';
+import type { AiProvenance } from '../version';
 import { vocabVersion } from '../vocab';
 
 import type { DirectorCache } from './cache';
@@ -88,6 +89,15 @@ export type DirectedGame = DirectorResult & {
    */
   readonly rulesFrom?: 'draft' | 'none';
 };
+
+/**
+ * Původ AI verze pro řádek „Made by …“ (P73C T4, pole z P73B T1): model, jak ho vrátil poskytovatel (`authoredBy`,
+ * přežije cache), čas režie, cache a opravná kola kritika. Bez známého modelu nic – řádek by jinak tvrdil autora, kterého neznáme.
+ */
+export function aiProvenance(game: DirectedGame, ms: number): AiProvenance | null {
+  if (game.authoredBy === undefined) return null;
+  return { model: game.authoredBy, ms: Math.round(ms), cached: game.source === 'cached', revised: game.repairRounds };
+}
 
 export interface DirectorDeps {
   readonly branch: GenerationBranch;
