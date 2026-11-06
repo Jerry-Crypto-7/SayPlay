@@ -15,6 +15,9 @@
  * odstup je půlka těla z `bodies.ts`, rezerva `KEEP_M` na model větší než tělo a půdorys kusu.
  * A kus nikdy není vyšší než nejnižší paprsek herní kamery, který nad ním jde k něčemu z toho:
  * hrdinu ani nepřítele nezakryje. Polovina kusů stojí kousek od cesty robota, ať jsou v záběru.
+ *
+ * Aréna, kde hrdina chodí volně (kamera `follow`, P71E T3), smí jen kusy pod koleno: hráč nejde cestou
+ * robota a vysokým kusem bez těla projde (QA 5. 11.: čaroděj kamennou zdí). Dnes tam nestojí žádný.
  */
 
 import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
@@ -23,6 +26,7 @@ import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import { isSceneryModel, landmarks, type Look, modelHeight, type SceneryModel } from '@/play/arcade/look';
 
 import { landmarkPicks } from './landmark-places';
+import { DECOR_TALLEST } from './rig/terrain/arenaDecor';
 import { reachOf } from './vegetation-places';
 
 /** Nejméně a nejvýš kusů v hrací ploše; počet dává její plocha (`M2_PER_PIECE`). */
@@ -202,6 +206,8 @@ export function fieldDressing({ look, seed, area, view, start, path, bodies }: F
   const wanted = Math.min(FIELD_MOST, Math.max(FIELD_LEAST, Math.round(areaM2(area) / M2_PER_PIECE)));
   const spots = [...path, ...bodies];
   const gap = Math.min(PIECE_GAP_M, (area.x1 - area.x0) / 8);
+  // Volná aréna: strop výzdoby podlahy (`DECOR_TALLEST` 0,45 m) je pod `FIELD_LOWEST_M`, takže kus neprojde – plocha zůstane bez kulis.
+  const tallest = 'follow' in view ? DECOR_TALLEST : FIELD_TALLEST_M;
   const pieces: FieldPiece[] = [];
   for (let tries = 0; pieces.length < wanted && tries < wanted * TRIES; tries += 1) {
     // Každý pokus odebere stejně hodnot, ať jeden zamítnutý neposune ostatní.
@@ -219,7 +225,7 @@ export function fieldDressing({ look, seed, area, view, start, path, bodies }: F
       z = area.z0 + b * (area.z1 - area.z0);
     }
     const species = pool[Math.floor(pick * pool.length)]!;
-    let height = Math.min(species.height * (0.85 + 0.3 * size), FIELD_TALLEST_M, FIELD_REACH_M / species.ratio);
+    let height = Math.min(species.height * (0.85 + 0.3 * size), tallest, FIELD_REACH_M / species.ratio);
     const reach = species.ratio * height;
     if (!inside(area, x, z, reach) || Math.hypot(x - start.x, z - start.z) < START_CLEAR_M + reach) continue;
     if (pieces.some((piece) => Math.hypot(piece.x - x, piece.z - z) < piece.reach + reach + gap)) continue;

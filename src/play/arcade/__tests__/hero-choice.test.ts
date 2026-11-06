@@ -33,7 +33,8 @@ const EXPECTED: Readonly<Record<string, { readonly model: string; readonly clips
   penguin: { model: 'rigged:pet-penguin', clips: true },
   'firefighter robot': { model: 'rigged:blocky-robot', clips: true },
   wizard: { model: 'rigged:mage', clips: true },
-  'pirate ship': { model: 'gen3d-pirate-ship', clips: false },
+  // P71E T2c: generovaná loď byla z kamery voyage černá skvrna (tmavý trup, obrys lan); Kenney s bílými plachtami.
+  'pirate ship': { model: 'cc0-ship-large', clips: false },
   cat: { model: 'rigged:pet-cat', clips: true },
   // P54B T4: kuchař je riggovaný kuchař Quaternius, ne číšník.
   chef: { model: 'rigged:q-chef', clips: true },
@@ -64,6 +65,15 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice(label, undefined, 'move_free', 'enemy')).toMatchObject({ level: 'identity', model });
   });
 
+  // P71E T2a: „shark“ byla kulatá hlava s ploutvičkami (3,8 × 3,8 × 5,3 m) – z kamery tmavá koule, ne žralok.
+  it('a shark is a long fish, not a round head', () => {
+    for (const choice of [heroChoice('shark', undefined, 'move_free'), heroChoice('shark', undefined, 'move_free', 'enemy')]) {
+      const [width, height, length] = choice.entry?.dims ?? [0, 0, 0];
+      expect(choice.model).toBe('cc0-shark');
+      expect(length / Math.max(width, height), 'length over the larger of width and height').toBeGreaterThan(2);
+    }
+  });
+
   it('records which heroes and foes still move only procedurally', () => {
     const heroes = sentences.sentences.map((sentence) => heroChoice(sentence.hero, genreOf(sentence.genre), CONTROL[sentence.genre] as string));
     const foes = FOES.map((label) => heroChoice(label, undefined, 'move_free', 'enemy'));
@@ -80,7 +90,7 @@ describe('hero choice by identity, then class (P32C T2)', () => {
         expect(choice.model, `${label} / ${genre}`).not.toBe('race-car');
       }
     }
-    expect(heroChoice('pirate', undefined, 'steer')).toMatchObject({ model: 'gen3d-pirate-ship', level: 'near' });
+    expect(heroChoice('pirate', undefined, 'steer')).toMatchObject({ model: 'cc0-ship-large', level: 'near' });
     expect(heroChoice('pirate', 'voyage', 'steer')).toMatchObject({ model: 'rigged:rogue', level: 'identity' });
   });
 
@@ -98,7 +108,7 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice('wild badger', 'voyage', 'steer')).toMatchObject({ model: 'rigged:q-fox', level: 'class' });
     expect(heroChoice('angry forklift', 'voyage', 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
     expect(heroChoice('stapler', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-cowboy-hair', level: 'fallback' });
-    expect(heroChoice('stapler', undefined, 'flap')).toMatchObject({ model: 'bird', level: 'fallback' });
+    expect(heroChoice('stapler', undefined, 'flap')).toMatchObject({ model: 'gen3d-small-songbird', level: 'fallback' });
     expect(heroChoice('stapler', undefined, 'move_free', 'enemy')).toMatchObject({ model: 'rigged:blocky-robot', level: 'fallback' });
   });
 

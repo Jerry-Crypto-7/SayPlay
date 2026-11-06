@@ -1,0 +1,261 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11, 10 s",
+ "a": "http://127.0.0.1:3014",
+ "b": "http://127.0.0.1:3016",
+ "repeats": 3,
+ "measuredAt": "2026-11-05T20:25:58.520Z",
+ "rows": [
+  {
+   "id": "flap",
+   "genre": "flap",
+   "a": {
+    "median": 38.1,
+    "samples": [
+     34.4,
+     39.1,
+     38.1
+    ]
+   },
+   "b": {
+    "median": 37.3,
+    "samples": [
+     38.4,
+     36.9,
+     37.3
+    ]
+   },
+   "ratio": 1.02
+  },
+  {
+   "id": "voyage",
+   "genre": null,
+   "a": {
+    "median": 27.1,
+    "samples": [
+     28.2,
+     27.1,
+     24.9
+    ]
+   },
+   "b": {
+    "median": 24.6,
+    "samples": [
+     24.6,
+     24.5,
+     26.8
+    ]
+   },
+   "ratio": 1.1
+  },
+  {
+   "id": "defense",
+   "genre": "defense",
+   "a": {
+    "median": 46.6,
+    "samples": [
+     33,
+     47.8,
+     46.6
+    ]
+   },
+   "b": {
+    "median": 37.6,
+    "samples": [
+     28.9,
+     37.6,
+     47.5
+    ]
+   },
+   "ratio": 1.24
+  },
+  {
+   "id": "hop",
+   "genre": "hop",
+   "a": {
+    "median": 58.8,
+    "samples": [
+     58.8,
+     58.9,
+     58.1
+    ]
+   },
+   "b": {
+    "median": 57.4,
+    "samples": [
+     56.4,
+     57.4,
+     58.1
+    ]
+   },
+   "ratio": 1.02
+  },
+  {
+   "id": "quest",
+   "genre": "arena",
+   "a": {
+    "median": 45.8,
+    "samples": [
+     45.8,
+     45.1,
+     45.9
+    ]
+   },
+   "b": {
+    "median": 46.9,
+    "samples": [
+     46.9,
+     43.7,
+     47.4
+    ]
+   },
+   "ratio": 0.98
+  },
+  {
+   "id": "shark",
+   "genre": null,
+   "a": {
+    "median": 54.8,
+    "samples": [
+     51.7,
+     54.8,
+     55.5
+    ]
+   },
+   "b": {
+    "median": 54.1,
+    "samples": [
+     54.1,
+     57.4,
+     49.5
+    ]
+   },
+   "ratio": 1.01
+  },
+  {
+   "id": "golf-ball",
+   "genre": "minigolf",
+   "a": {
+    "median": 55.6,
+    "samples": [
+     55.6,
+     54.1,
+     58
+    ]
+   },
+   "b": {
+    "median": 57.2,
+    "samples": [
+     57.2,
+     54.3,
+     58.4
+    ]
+   },
+   "ratio": 0.97
+  },
+  {
+   "id": "cat",
+   "genre": "runner",
+   "a": {
+    "median": 43.2,
+    "samples": [
+     42.8,
+     44.1,
+     43.2
+    ]
+   },
+   "b": {
+    "median": 40,
+    "samples": [
+     40,
+     39.9,
+     41.2
+    ]
+   },
+   "ratio": 1.08
+  },
+  {
+   "id": "dog",
+   "genre": "platformer",
+   "a": {
+    "median": 35.1,
+    "samples": [
+     35.1,
+     35.8,
+     32.3
+    ]
+   },
+   "b": {
+    "median": 33.3,
+    "samples": [
+     32.5,
+     34.5,
+     33.3
+    ]
+   },
+   "ratio": 1.05
+  },
+  {
+   "id": "frog",
+   "genre": "platformer",
+   "a": {
+    "median": 41,
+    "samples": [
+     37.2,
+     46.1,
+     41
+    ]
+   },
+   "b": {
+    "median": 40.9,
+    "samples": [
+     43.3,
+     40.9,
+     39.4
+    ]
+   },
+   "ratio": 1
+  },
+  {
+   "id": "penguin",
+   "genre": "runner",
+   "a": {
+    "median": 36.4,
+    "samples": [
+     38.1,
+     36.4,
+     33.9
+    ]
+   },
+   "b": {
+    "median": 37.4,
+    "samples": [
+     38.9,
+     37.4,
+     31.8
+    ]
+   },
+   "ratio": 0.97
+  },
+  {
+   "id": "horse",
+   "genre": null,
+   "a": {
+    "median": 36.8,
+    "samples": [
+     36.8,
+     39.9,
+     36.2
+    ]
+   },
+   "b": {
+    "median": 36.7,
+    "samples": [
+     36.6,
+     36.7,
+     38.1
+    ]
+   },
+   "ratio": 1
+  }
+ ]
+}

@@ -39,7 +39,7 @@ describe('arcade model choice from role labels', () => {
     ['zombies', 'cc0-zombie'], // přesný model CC0 přebije náhradu
     ['ogres', 'gen3d-ogre'], // od 28. 9. vlastní model z gen3d
     ['demons', 'goblin'], // bez modelu náhradní příšera
-    ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
+    ['a small bird', 'gen3d-small-songbird'], // tag `bird` nese hnízdo, věta myslí ptáka (od P71E model, ne primitiv)
     ['space bunny', 'rigged:pet-bunny'], // od P35 T1 králík z Cube Pets, ne křeček
     ['grizzly bear', 'gen3d-bear'], // od 28. 9. vlastní model z gen3d
     ['wild badger', 'fox'], // kategorie zvíře (ještěrka má od P58A T7 vlastní model)
@@ -89,7 +89,7 @@ describe('arcade model choice from role labels', () => {
   });
 
   it('a flappy bird is the bird, not the nest', () => {
-    expect(modelOf('little bird', true)).toBe('bird');
+    expect(modelOf('little bird', true)).toBe('gen3d-small-songbird');
   });
 
   it('props take only a direct catalog match, never a category or the core kind', () => {

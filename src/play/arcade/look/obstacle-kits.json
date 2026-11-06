@@ -17,7 +17,7 @@
     "volcano": { "hurdle": "gen3d-charred-log", "slide-bar": "gen3d-basalt-column-rock", "crate": "gen3d-volcanic-rock", "cone": "gen3d-magma-crystal", "block": "gen3d-magma-rock" },
     "cave": { "hurdle": "gen3d-scree-rock-pile", "slide-bar": "cc0-wood-log", "crate": "gen3d-mine-cart", "cone": "gen3d-crystal-spire", "block": "gen3d-large-boulder" },
     "space": { "hurdle": "gen3d-crater-rock", "slide-bar": "gen3d-laser-gate", "crate": "gen3d-moon-rock", "cone": "gen3d-energy-crystal", "block": "gen3d-meteorite" },
-    "castle": { "hurdle": "gen3d-battlement-wall", "slide-bar": "gen3d-portcullis", "crate": "gen3d-wine-barrel", "cone": "gen3d-stone-column", "block": "gen3d-castle-ruin-wall" },
+    "castle": { "hurdle": "gen3d-battlement-wall", "slide-bar": "gen3d-portcullis", "crate": "gen3d-wine-barrel", "cone": "gen3d-stone-column", "block": "stone-wall" },
     "graveyard": { "hurdle": "gen3d-broken-gravestone", "slide-bar": "gen3d-iron-fence", "crate": "gen3d-gravestone", "cone": "gen3d-grave-lantern", "block": "gen3d-iron-fence" }
   }
 }

@@ -18166,45 +18166,45 @@
       "name": "public/assets/worldstream/cc0/cc0-shark-lod0.glb",
       "kind": "asset",
       "firstParty": false,
-      "reason": "CC0 model \"shark\" from quaternius-cute-fish, normalized and recoloured by scripts/assets/cc0/normalize.mjs.",
-      "source": "https://quaternius.com/packs/cutefish.html",
+      "reason": "CC0 model \"shark\" by Quaternius from Poly Pizza, teeth mesh dropped and normalized by scripts/assets/cc0/normalize.mjs (colours baked into vertices); replaced the round quaternius-cute-fish shark under the same id by P71E T2a.",
+      "source": "https://poly.pizza/m/YYsK3gRCBZ",
       "authorOrProvider": "Quaternius (quaternius.com)",
       "license": "CC0-1.0",
       "requiredNotices": [
         "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
       ],
-      "attribution": "shark (OBJ/Shark.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0",
-      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "attribution": "shark (https://static.poly.pizza/840dac4f-e6b5-4015-88d7-ceb940a4b90e.glb) by Quaternius (quaternius.com), published on Poly Pizza, CC0-1.0",
+      "reviewNote": "The Poly Pizza model page states \"Public Domain (CC0)\"; that statement is stored at public/assets/worldstream/cc0/licenses/quaternius-poly-pizza.txt, which promote.mjs --check checks against the declared licence.",
       "scope": "prod"
     },
     {
       "name": "public/assets/worldstream/cc0/cc0-shark-lod1.glb",
       "kind": "asset",
       "firstParty": false,
-      "reason": "CC0 model \"shark\" from quaternius-cute-fish, normalized and recoloured by scripts/assets/cc0/normalize.mjs.",
-      "source": "https://quaternius.com/packs/cutefish.html",
+      "reason": "CC0 model \"shark\" by Quaternius from Poly Pizza, teeth mesh dropped and normalized by scripts/assets/cc0/normalize.mjs (colours baked into vertices); replaced the round quaternius-cute-fish shark under the same id by P71E T2a.",
+      "source": "https://poly.pizza/m/YYsK3gRCBZ",
       "authorOrProvider": "Quaternius (quaternius.com)",
       "license": "CC0-1.0",
       "requiredNotices": [
         "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
       ],
-      "attribution": "shark (OBJ/Shark.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0",
-      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "attribution": "shark (https://static.poly.pizza/840dac4f-e6b5-4015-88d7-ceb940a4b90e.glb) by Quaternius (quaternius.com), published on Poly Pizza, CC0-1.0",
+      "reviewNote": "The Poly Pizza model page states \"Public Domain (CC0)\"; that statement is stored at public/assets/worldstream/cc0/licenses/quaternius-poly-pizza.txt, which promote.mjs --check checks against the declared licence.",
       "scope": "prod"
     },
     {
       "name": "public/assets/worldstream/cc0/cc0-shark.png",
       "kind": "asset",
       "firstParty": false,
-      "reason": "CC0 model \"shark\" from quaternius-cute-fish, normalized and recoloured by scripts/assets/cc0/normalize.mjs; this file is a preview render of it.",
-      "source": "https://quaternius.com/packs/cutefish.html",
+      "reason": "CC0 model \"shark\" by Quaternius from Poly Pizza, teeth mesh dropped and normalized by scripts/assets/cc0/normalize.mjs (colours baked into vertices); replaced the round quaternius-cute-fish shark under the same id by P71E T2a; this file is a preview render of it.",
+      "source": "https://poly.pizza/m/YYsK3gRCBZ",
       "authorOrProvider": "Quaternius (quaternius.com)",
       "license": "CC0-1.0",
       "requiredNotices": [
         "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
       ],
-      "attribution": "shark (OBJ/Shark.glb) from quaternius-cute-fish by Quaternius (quaternius.com), CC0-1.0",
-      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-fish.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "attribution": "shark (https://static.poly.pizza/840dac4f-e6b5-4015-88d7-ceb940a4b90e.glb) by Quaternius (quaternius.com), published on Poly Pizza, CC0-1.0",
+      "reviewNote": "The Poly Pizza model page states \"Public Domain (CC0)\"; that statement is stored at public/assets/worldstream/cc0/licenses/quaternius-poly-pizza.txt, which promote.mjs --check checks against the declared licence.",
       "scope": "prod"
     },
     {
@@ -18474,6 +18474,51 @@
         "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
       ],
       "attribution": "ship ghost (Models/GLB format/ship-ghost.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/cc0-ship-large-lod0.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "CC0 model \"ship large\" from kenney-pirate-kit, normalized by scripts/assets/cc0/normalize.mjs; tagged \"pirate ship\" by P71E T2c.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "ship large (Models/GLB format/ship-large.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/cc0-ship-large-lod1.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "CC0 model \"ship large\" from kenney-pirate-kit, normalized by scripts/assets/cc0/normalize.mjs; tagged \"pirate ship\" by P71E T2c.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "ship large (Models/GLB format/ship-large.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/cc0-ship-large.png",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "CC0 model \"ship large\" from kenney-pirate-kit, normalized by scripts/assets/cc0/normalize.mjs; tagged \"pirate ship\" by P71E T2c; this file is a preview render of it.",
+      "source": "https://kenney.nl/assets/pirate-kit",
+      "authorOrProvider": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "ship large (Models/GLB format/ship-large.glb) from kenney-pirate-kit by Kenney (www.kenney.nl), CC0-1.0",
       "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/kenney-pirate-kit.txt and checked against the declared licence by scripts/assets/cc0/fetch.mjs; promote.mjs --check re-checks it.",
       "scope": "prod"
     },
@@ -22794,6 +22839,21 @@
         "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
       ],
       "attribution": "quaternius-medieval-weapons by Quaternius (quaternius.com), CC0 1.0",
+      "reviewNote": "Covers only CC0 1.0 material; every model it lists has its own disclosure record.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/licenses/quaternius-poly-pizza.txt",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Licence statement of the Quaternius models taken from Poly Pizza, kept as evidence for their CC0 models.",
+      "source": "https://poly.pizza/u/Quaternius",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in public/assets/worldstream/cc0/PROVENANCE.md"
+      ],
+      "attribution": "Quaternius models on Poly Pizza by Quaternius (quaternius.com), CC0 1.0",
       "reviewNote": "Covers only CC0 1.0 material; every model it lists has its own disclosure record.",
       "scope": "prod"
     },
