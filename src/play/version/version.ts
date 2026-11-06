@@ -72,6 +72,20 @@ export interface PublishedGame {
   readonly timings?: PlayTimings;
   /** Okno robotova běhu pro náhled ve feedu (P54A T2); hra publikovaná dřív ho nemá. */
   readonly preview?: FeedPreview;
+  /** Kdo a jak AI verzi napsal (P73B T1, plní P73C); hra bez pole řádek „Made by …“ nemá. */
+  readonly provenance?: AiProvenance;
+}
+
+/** Původ AI verze pro řádek v „About this game“ (P73B T1). */
+export interface AiProvenance {
+  /** Jméno modelu, jak ho uvidí hráč. */
+  readonly model: string;
+  /** Jak dlouho model psal, milisekundy. */
+  readonly ms: number;
+  /** `true` = verze vzatá z cache, ne napsaná teď. */
+  readonly cached: boolean;
+  /** Kolikrát se verze přepisovala po odmítnutí kontrolou; 0 = napoprvé. */
+  readonly revised: number;
 }
 
 /**
