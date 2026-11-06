@@ -24,7 +24,8 @@ import { Button, Icon } from './ui';
 export type UpgradeView =
   | { readonly kind: 'idle' }
   // `reading` (P58D T3): id hry ze čtení – jiný žánr než rychlá hra, hraje se, než dorazí AI verze.
-  | { readonly kind: 'working'; readonly since: number; readonly deadlineAt: number; readonly queued?: number; readonly reading?: string }
+  // `steps` (P73C T2): kroky režie od serveru v pořadí („Reading your idea…“, „Hero: turtle“, „Checking it can be won…“).
+  | { readonly kind: 'working'; readonly since: number; readonly deadlineAt: number; readonly queued?: number; readonly reading?: string; readonly steps?: readonly string[] }
   | { readonly kind: 'ready'; readonly versionId: string }
   // `reading` (P58E T3): řetěz skončí `CHAIN` hned po čtení, hra ze čtení přijde až s koncem.
   | { readonly kind: 'final'; readonly reason: DraftFinalReason; readonly reading?: string }
@@ -56,7 +57,7 @@ const REASONS: ReadonlySet<string> = new Set<DraftFinalReason>([
 ]);
 
 type Answer =
-  | { readonly status: 'pending'; readonly deadlineAt: number | null; readonly queued: number | null; readonly reading: string | null }
+  | { readonly status: 'pending'; readonly deadlineAt: number | null; readonly queued: number | null; readonly reading: string | null; readonly steps: readonly string[] }
   | { readonly status: 'ready'; readonly versionId: string }
   | { readonly status: 'final'; readonly reason: DraftFinalReason; readonly reading: string | null };
 
@@ -77,15 +78,25 @@ export function placeInLine(queued: number): string {
   return queued === 1 ? 'next' : `#${String(queued)}`;
 }
 
+/** Nejvýš tolik kroků a znaků kroku vezme klient (`MAX_STEPS` a délky textů v `progress.ts`); zbytek odpovědi zahodí. */
+const MAX_STEPS = 24;
+const MAX_STEP_CHARS = 60;
+
+/** `pending.steps` (P73C T2): texty kroků v pořadí; cokoli jiného, než krátký text, vypadne. */
+export function stepsOf(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((step): step is string => typeof step === 'string' && step.length > 0 && step.length <= MAX_STEP_CHARS).slice(0, MAX_STEPS);
+}
+
 /** Odpověď serveru, nebo `null`, když se jí nedá rozumět (počítá se jako chyba). */
 function answerOf(body: unknown): Answer | null {
   if (typeof body !== 'object' || body === null) return null;
-  const { status, versionId, reason, deadlineAt, queued, reading } = body as Record<string, unknown>;
+  const { status, versionId, reason, deadlineAt, queued, reading, steps } = body as Record<string, unknown>;
   if (status === 'ready' && typeof versionId === 'string') return { status, versionId };
   if (status === 'draft-final') return { status: 'final', reason: typeof reason === 'string' && REASONS.has(reason) ? (reason as DraftFinalReason) : 'FAILED', reading: readingOf(reading) };
   if (status === 'pending') {
     const deadline = typeof deadlineAt === 'string' ? Date.parse(deadlineAt) : Number.NaN;
-    return { status, deadlineAt: Number.isFinite(deadline) ? deadline : null, queued: queuedOf(queued), reading: readingOf(reading) };
+    return { status, deadlineAt: Number.isFinite(deadline) ? deadline : null, queued: queuedOf(queued), reading: readingOf(reading), steps: stepsOf(steps) };
   }
   return null;
 }
@@ -100,6 +111,7 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
   let deadlineAt = since + PROVISIONAL_DEADLINE_MS;
   let queued: number | null = null;
   let reading: string | null = null;
+  let steps: readonly string[] = [];
   let failures = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -135,11 +147,14 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
     if (answer.status === 'final') return onView({ kind: 'final', reason: answer.reason, ...(answer.reading === null ? {} : { reading: answer.reading }) });
     // Hra ze čtení jednou známá se nezapomene – pozdější `pending` bez ní je jiná instance, ne zrušení.
     const known = answer.reading ?? reading;
-    if ((answer.deadlineAt !== null && answer.deadlineAt !== deadlineAt) || answer.queued !== queued || known !== reading || recovered) {
+    // Kroky jen přibývají (`recordStep`); odpověď z instance, která o práci neví, je nemá a známé nezapomene.
+    const grown = answer.steps.length > steps.length;
+    if ((answer.deadlineAt !== null && answer.deadlineAt !== deadlineAt) || answer.queued !== queued || known !== reading || grown || recovered) {
       deadlineAt = answer.deadlineAt ?? deadlineAt;
       queued = answer.queued;
       reading = known;
-      onView({ kind: 'working', since, deadlineAt, ...(queued === null ? {} : { queued }), ...(reading === null ? {} : { reading }) });
+      if (grown) steps = answer.steps;
+      onView({ kind: 'working', since, deadlineAt, ...(queued === null ? {} : { queued }), ...(reading === null ? {} : { reading }), ...(steps.length === 0 ? {} : { steps }) });
     }
     later(POLL_MS);
   };
@@ -273,6 +288,26 @@ export function noticeOf(view: UpgradeView, title: string | null = null): Upgrad
   }
 }
 
+/**
+ * Jak dlouho zůstane krok režie vidět, než ho vystřídá další, který už přišel (P73C T2). Volby režiséra (hrdina,
+ * soupeř, místo, ovládání) přijdou naráz s odpovědí modelu; bez prodlevy by hráč viděl jen poslední.
+ */
+export const STEP_DWELL_MS = 1_500;
+
+/** Krok, který je teď vidět: kroky jdou po jednom v pořadí, každý nejméně `STEP_DWELL_MS`; `null` = žádný. */
+export function useShownStep(steps: readonly string[] | undefined): string | null {
+  const total = steps?.length ?? 0;
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (shown > total) return setShown(total);
+    if (shown === total) return;
+    const timer = setTimeout(() => setShown((count) => count + 1), shown === 0 ? 0 : STEP_DWELL_MS);
+    return () => clearTimeout(timer);
+  }, [shown, total]);
+  const index = Math.min(shown, total) - 1;
+  return index < 0 ? null : steps![index]!;
+}
+
 /** Toast konce bez AI verze (P56B T5): 3 s jako `.sp-toast` kitu, pak jen tečka a akce v přepínači verze. */
 export const TOAST_MS = 3_000;
 
@@ -379,6 +414,7 @@ export function UpgradeBanner({
       live = false;
     };
   }, [readyId]);
+  const step = useShownStep(view.kind === 'working' ? view.steps : undefined);
 
   if (quick !== null) {
     return (
@@ -452,10 +488,15 @@ export function UpgradeBanner({
         </button>
         {matched ? (
           matchedNote
+        ) : notice.note !== undefined ? (
+          <span className="play-version-switch__note" data-testid="upgrade-queued" aria-hidden="true">
+            {notice.note}
+          </span>
         ) : (
-          notice.note !== undefined && (
-            <span className="play-version-switch__note" data-testid="upgrade-queued" aria-hidden="true">
-              {notice.note}
+          !ready &&
+          step !== null && (
+            <span className="play-version-switch__note" data-testid="upgrade-step" aria-hidden="true">
+              {step}
             </span>
           )
         )}

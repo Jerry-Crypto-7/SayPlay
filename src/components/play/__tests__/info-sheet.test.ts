@@ -22,6 +22,7 @@ const READ: ReadFacts = {
   sentence: 'A fox steals eggs',
   game: 'Collect',
   world: 'a farm',
+  place: 'a farm',
   you: 'fox',
   against: ['dog'],
 };

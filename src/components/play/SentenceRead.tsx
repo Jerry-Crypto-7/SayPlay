@@ -8,9 +8,17 @@
  * verze, nikdy jako AI (`authorshipOf`). Fakta skládá server (`lab.ts`).
  */
 
+import type { AiProvenance } from '@/play/version';
+
 import type { Authorship, ReadFacts } from './lab';
 import { Button, Icon, Sheet } from './ui';
 import { useInfoParts } from './ui/InfoContext';
+
+/** Řádek „Made by …“ (P73B T1): model, čas v sekundách, čerstvá / z cache a kolikrát se přepisovala. */
+export function aiLineOf(ai: AiProvenance): string {
+  const revised = ai.revised === 0 ? '' : ai.revised === 1 ? ' · revised once' : ` · revised ${ai.revised} times`;
+  return `Made by ${ai.model} in ${(ai.ms / 1000).toFixed(1)} s · ${ai.cached ? 'from cache' : 'fresh'}${revised}`;
+}
 
 const BY: Readonly<Record<Authorship, string>> = {
   ai: 'Full-detail version of your idea',
@@ -37,6 +45,11 @@ export function ReadSection({ read }: { readonly read: ReadFacts }) {
         <span className={`play-read-by-${read.authorship}`}>{by}</span>
         {read.sentence !== null && <span className="play-read-sentence"> “{read.sentence}”</span>}
       </p>
+      {read.ai !== undefined && (
+        <p className="play-read-ai" data-testid="play-read-ai">
+          {aiLineOf(read.ai)}
+        </p>
+      )}
       <dl className="play-read-rows">
         {rows.map(([name, value]) => (
           <div key={name}>

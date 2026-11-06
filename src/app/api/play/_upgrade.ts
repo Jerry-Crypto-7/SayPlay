@@ -41,7 +41,7 @@ import { loadRapier } from '@/play/arcade/physics/world';
 import type { ActionWitness } from '@/play/arcade/witness';
 import { CHAIN_CUES } from '@/play/chain/decide';
 import type { DirectorSource } from '@/play/contracts';
-import { type DirectorDeps, type DirectorFailure, withDraftRules } from '@/play/director';
+import { type DirectorDeps, type DirectorFailure, aiProvenance, withDraftRules } from '@/play/director';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { singular } from '@/play/draft/lexicon';
 import { DEFAULT_LABELS } from '@/play/genre/roles';
@@ -486,6 +486,8 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
   let preservingSeeds = picked.seeds;
   let adds = quick === null ? undefined : upgradeAddsOf(quick, picked.played);
   let source: DirectorSource = rejected === null ? directed.source : 'authored';
+  // Odpověď režiséra, ze které je publikovaná AI verze – jejímu modelu a opravám patří „Made by …“ (P73C T4).
+  let used = directed;
   // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
   // nevyjde – publikuje se první; `adds: []` ho ukáže. Bez volného slotu (P53 T3a) se pokus přeskočí:
   // režie svůj slot už pustila a druhé čekání by hotovou verzi zdrželo za cizími větami. Pokus se přeskočí i tehdy,
@@ -496,15 +498,17 @@ async function directorUpgrade(versions: VersionStore, draft: PublishedGame, req
     const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false)(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(base, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
-    if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source] = [again.spec, again.seeds, added, nudged.source];
+    if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source, used] = [again.spec, again.seeds, added, nudged.source, nudged];
   }
   // P68 T13: úroveň ze skriptu jen za `PLAY_SCRIPTS=on`; vypnutý přepínač (výchozí) nesahá na nic.
   if (scriptsEnabled()) [upgraded, preservingSeeds] = await withLevelScript(draftId, upgraded, preservingSeeds, request, scriptWriter ?? paidScriptWriter());
   const directorMs = performance.now() - directorStarted;
+  const provenance = aiProvenance(used, directorMs);
 
   const published = await publishReadSpec(versions, upgraded, preservingSeeds, draftId, {
     relation: 'upgrade',
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source },
+    ...(provenance === null ? {} : { provenance }),
   });
   if (!published.ok) {
     const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');

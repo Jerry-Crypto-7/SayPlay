@@ -22,6 +22,7 @@
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
 import { buildCompactRequest } from '@/play/director/compact';
 import { buildDirectorRequest } from '@/play/director/prompt';
+import { type DirectorStep, recordStep } from '@/play/director/progress';
 import { readerConfigFromEnv, readerForAiVersion } from '@/play/read/client';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
@@ -31,6 +32,8 @@ import { AdmissionQueue } from '@/server/admission';
 import { costUsd, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
 import { acquireSlot, DOOR_CEILING, releaseSlot } from '@/server/paid-slots';
 import { upstreamBranch, type UpstreamConfig, upstreamConfigFromEnv } from '@/server/upstream';
+
+import { blockedText } from './_errors';
 
 /**
  * `callerLimited`: model se nezavolal, protože volající vyčerpal svůj denní
@@ -511,6 +514,15 @@ export function directorCalls(startedAt: number, caller: string, queueId?: strin
 }
 
 /**
+ * Krok režie pro čekajícího hráče (P73C T2) pod id fronty práce. Volba nese text, který napsal model, a hráč ji
+ * uvidí dřív, než AI verzi zkontroluje publikace – volba, kterou by dveře u věty odmítly, se proto nezapíše.
+ */
+export function recordDirectorStep(queueId: string, step: DirectorStep): void {
+  if ('value' in step && blockedText(step.value) !== null) return;
+  recordStep(queueId, step);
+}
+
+/**
  * Placená větev drží jeden slot **vlastních dveří `play`** od prvního volání
  * modelu do konce režie – pod týmž celkovým stropem souběžných placených volání
  * jako `/api/generate` a relace WORLDSTREAM, ale s vlastním čítačem, aby visící
@@ -534,7 +546,10 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     const branch = await cappedBranch(process.env, deadline, caller, () => {
       callerLimited = true;
     });
-    const drafted = onDraft === undefined ? {} : { onDraft };
+    const onStep = (step: DirectorStep): void => {
+      if (queueId !== undefined) recordDirectorStep(queueId, step);
+    };
+    const drafted = { onStep, ...(onDraft === undefined ? {} : { onDraft }) };
     if (branch === null || config === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now, ...drafted })), callerLimited };
     let seat: { readonly release: () => void } | null = null;
     /** Slot dveří `play` pro tuto režii; `null` = drží ho, text = proč ho nedostala. */

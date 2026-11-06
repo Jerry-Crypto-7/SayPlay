@@ -1,0 +1,1806 @@
+{
+  "date": "2026-11-06T14:26:19.725Z",
+  "provider": "codex-cli (ChatGPT subscription)",
+  "groq": {
+    "reached": false,
+    "reason": "GROQ_API_KEY not in the environment"
+  },
+  "model": "gpt-6-astra",
+  "effort": "medium",
+  "results": [
+    {
+      "sentence": "a hedgehog rolls downhill collecting acorns before the first snow",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 32723,
+        "turnStartedMs": 846,
+        "firstOutputMs": 846,
+        "firstItemDoneMs": 846,
+        "messageMs": 32357,
+        "usage": {
+          "input_tokens": 21878,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 664,
+          "reasoning_output_tokens": 259
+        },
+        "trace": [
+          "thread.started@826",
+          "item.completed:error@846",
+          "turn.started@846",
+          "item.completed:agent_message@32357",
+          "turn.completed@32363"
+        ],
+        "inputChars": 15502,
+        "schemaChars": 21066,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 33991,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /logic/events/0: no rule listens to event snow_started – add a rule with {\"when\":{\"event\":\"snow_started\"}}; rules as written: [{\"id\":\"await_snow\",\"verb\":\"wait\",\"when\":{\"phase\":\"autumn\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"first_snow\",\"ticks\":1200}}]},{\"id\":\"snow_arrives\",\"verb\":\"sn"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a hedgehog rolls downhill collecting acorns before the first snow",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 47314,
+        "turnStartedMs": 875,
+        "firstOutputMs": 875,
+        "firstItemDoneMs": 875,
+        "messageMs": 46959,
+        "usage": {
+          "input_tokens": 22064,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 800,
+          "reasoning_output_tokens": 373
+        },
+        "trace": [
+          "thread.started@856",
+          "item.completed:error@875",
+          "turn.started@875",
+          "item.completed:agent_message@46959",
+          "turn.completed@46971"
+        ],
+        "inputChars": 15502,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 49749,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a lighthouse keeper guides lost fishing boats through a thunderstorm",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 49496,
+        "turnStartedMs": 735,
+        "firstOutputMs": 735,
+        "firstItemDoneMs": 735,
+        "messageMs": 49090,
+        "usage": {
+          "input_tokens": 21888,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 923,
+          "reasoning_output_tokens": 447
+        },
+        "trace": [
+          "thread.started@721",
+          "item.completed:error@735",
+          "turn.started@735",
+          "item.completed:agent_message@49090",
+          "turn.completed@49097"
+        ],
+        "inputChars": 15595,
+        "schemaChars": 21068,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 53926,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: keeper guide lost has no action witness; ACTION_LOST: thunderstorm hazard keeper has no action witness; rule verbs dropped: wait, worsen, reveal, hazard, reach"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a lighthouse keeper guides lost fishing boats through a thunderstorm",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 43681,
+        "turnStartedMs": 951,
+        "firstOutputMs": 951,
+        "firstItemDoneMs": 951,
+        "messageMs": 43187,
+        "usage": {
+          "input_tokens": 22074,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 831,
+          "reasoning_output_tokens": 323
+        },
+        "trace": [
+          "thread.started@933",
+          "item.completed:error@951",
+          "turn.started@951",
+          "item.completed:agent_message@43187",
+          "turn.completed@43255"
+        ],
+        "inputChars": 15595,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 44736,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: keeper guide lost has no action witness; ACTION_LOST: thunderstorm hazard keeper has no action witness; RULE_INVALID: /logic/events/0: no rule listens to event storm_active – add a rule with {\"when\":{\"event\":\"storm_active\"}}; rules as written: [{\"id\":\"storm_builds\",\"verb\":\"intensify\",\"w"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a raccoon steals donuts from a crowded night market",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 29536,
+        "turnStartedMs": 845,
+        "firstOutputMs": 845,
+        "firstItemDoneMs": 845,
+        "messageMs": 29088,
+        "usage": {
+          "input_tokens": 22061,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 567,
+          "reasoning_output_tokens": 158
+        },
+        "trace": [
+          "thread.started@828",
+          "item.completed:error@845",
+          "turn.started@845",
+          "item.completed:agent_message@29088",
+          "turn.completed@29096"
+        ],
+        "inputChars": 15480,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 30472,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: raccoon collect donut has no action witness; RULE_INVALID: /logic/events/0: no rule listens to event market_alert – add a rule with {\"when\":{\"event\":\"market_alert\"}}; rules as written: [{\"id\":\"start_patrol_clock\",\"verb\":\"wait\",\"when\":{\"phase\":\"bustling\"},\"if\":null,\"do\":[{\"startTimer\":{\""
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a raccoon steals donuts from a crowded night market",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 38857,
+        "turnStartedMs": 880,
+        "firstOutputMs": 880,
+        "firstItemDoneMs": 880,
+        "messageMs": 38533,
+        "usage": {
+          "input_tokens": 21876,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 713,
+          "reasoning_output_tokens": 371
+        },
+        "trace": [
+          "thread.started@863",
+          "item.completed:error@880",
+          "turn.started@880",
+          "item.completed:agent_message@38533",
+          "turn.completed@38573"
+        ],
+        "inputChars": 15480,
+        "schemaChars": 21089,
+        "enumBefore": 151,
+        "enumAfter": 78,
+        "parsed": true
+      },
+      "directMs": 39044,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a firefighter robot sprays out flames in a burning library",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 55636,
+        "turnStartedMs": 1012,
+        "firstOutputMs": 1012,
+        "firstItemDoneMs": 1012,
+        "messageMs": 55229,
+        "usage": {
+          "input_tokens": 21921,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 949,
+          "reasoning_output_tokens": 516
+        },
+        "trace": [
+          "thread.started@997",
+          "item.completed:error@1012",
+          "turn.started@1012",
+          "item.completed:agent_message@55229",
+          "turn.completed@55239"
+        ],
+        "inputChars": 15668,
+        "schemaChars": 21089,
+        "enumBefore": 151,
+        "enumAfter": 78,
+        "parsed": true
+      },
+      "directMs": 64792,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: robot spray flame has no action witness; ACTION_LOST: flame hazard robot has no action witness; RULE_INVALID: /rules/0/when/interact: interact wins once its targets are done – make it the winning rule (do {\"win\":true}), on free movement only; rules as written: [{\"id\":\"extinguish_flames\""
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a firefighter robot sprays out flames in a burning library",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 52929,
+        "turnStartedMs": 591,
+        "firstOutputMs": 591,
+        "firstItemDoneMs": 591,
+        "messageMs": 52927,
+        "usage": {
+          "input_tokens": 22102,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1127,
+          "reasoning_output_tokens": 338
+        },
+        "trace": [
+          "thread.started@572",
+          "item.completed:error@591",
+          "turn.started@591",
+          "item.completed:agent_message@52927",
+          "turn.completed@52927"
+        ],
+        "inputChars": 15668,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 53265,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: robot spray flame has no action witness; ACTION_LOST: flame hazard robot has no action witness; VERB_UNPROVED: the robot did not win with the \"shoot\" ability"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a garden snail races a beetle along a mossy brick wall",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 35606,
+        "turnStartedMs": 2211,
+        "firstOutputMs": 2211,
+        "firstItemDoneMs": 2211,
+        "messageMs": 35059,
+        "usage": {
+          "input_tokens": 21886,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 577,
+          "reasoning_output_tokens": 215
+        },
+        "trace": [
+          "thread.started@2190",
+          "item.completed:error@2211",
+          "turn.started@2211",
+          "item.completed:agent_message@35059",
+          "turn.completed@35110"
+        ],
+        "inputChars": 15525,
+        "schemaChars": 21067,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 37733,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: snail race beetle has no action witness; ACTION_LOST: beetle rival snail has no action witness; VERB_UNPROVED: the robot did not win with the \"dash\" ability; RULE_INVALID: /rules/0/when/phase: phase opening used, but the game declares no logic block; rules as written: [{\"id\":\"start_cour"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a garden snail races a beetle along a mossy brick wall",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 46113,
+        "turnStartedMs": 2238,
+        "firstOutputMs": 2238,
+        "firstItemDoneMs": 2238,
+        "messageMs": 45757,
+        "usage": {
+          "input_tokens": 22077,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 893,
+          "reasoning_output_tokens": 310
+        },
+        "trace": [
+          "thread.started@2140",
+          "item.completed:error@2238",
+          "turn.started@2238",
+          "item.completed:agent_message@45757",
+          "turn.completed@45770"
+        ],
+        "inputChars": 15525,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 49739,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "VERB_UNPROVED: the robot did not win with the \"dash\" ability; RULE_INVALID: /rules/0/when/phase: phase open_wall used, but the game declares no logic block; rules as written: [{\"id\":\"start_course\",\"verb\":\"race\",\"when\":{\"phase\":\"open_wall\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"course_change\",\"tick"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a knight riding a goat jumps over rivers of lava",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 35953,
+        "turnStartedMs": 1325,
+        "firstOutputMs": 1325,
+        "firstItemDoneMs": 1325,
+        "messageMs": 35478,
+        "usage": {
+          "input_tokens": 22075,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 655,
+          "reasoning_output_tokens": 261
+        },
+        "trace": [
+          "thread.started@1292",
+          "item.completed:error@1325",
+          "turn.started@1325",
+          "item.completed:agent_message@35478",
+          "turn.completed@35491"
+        ],
+        "inputChars": 15507,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 38044,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a knight riding a goat jumps over rivers of lava",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 48721,
+        "turnStartedMs": 1950,
+        "firstOutputMs": 1950,
+        "firstItemDoneMs": 1950,
+        "messageMs": 48719,
+        "usage": {
+          "input_tokens": 21882,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 839,
+          "reasoning_output_tokens": 453
+        },
+        "trace": [
+          "thread.started@1920",
+          "item.completed:error@1950",
+          "turn.started@1950",
+          "item.completed:agent_message@48719",
+          "turn.completed@48719"
+        ],
+        "inputChars": 15507,
+        "schemaChars": 21067,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 50404,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a paper plane glides between glass towers at sunset",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 29408,
+        "turnStartedMs": 1515,
+        "firstOutputMs": 1515,
+        "firstItemDoneMs": 1515,
+        "messageMs": 28853,
+        "usage": {
+          "input_tokens": 21848,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 556,
+          "reasoning_output_tokens": 218
+        },
+        "trace": [
+          "thread.started@1495",
+          "item.completed:error@1515",
+          "turn.started@1515",
+          "item.completed:agent_message@28853",
+          "turn.completed@28869"
+        ],
+        "inputChars": 15410,
+        "schemaChars": 21060,
+        "enumBefore": 151,
+        "enumAfter": 75,
+        "parsed": true
+      },
+      "directMs": 29713,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /rules/0/when/phase: phase open_skyline used, but the game declares no logic block; rules as written: [{\"id\":\"begin_glide\",\"verb\":\"glide\",\"when\":{\"phase\":\"open_skyline\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"approach\",\"ticks\":600}}]},{\"id\":\"enter_passage\",\"verb\":\"glide\",\"when\":{\"time"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a paper plane glides between glass towers at sunset",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 39785,
+        "turnStartedMs": 1996,
+        "firstOutputMs": 1996,
+        "firstItemDoneMs": 1996,
+        "messageMs": 39160,
+        "usage": {
+          "input_tokens": 22040,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 688,
+          "reasoning_output_tokens": 324
+        },
+        "trace": [
+          "thread.started@1970",
+          "item.completed:error@1996",
+          "turn.started@1996",
+          "item.completed:agent_message@39160",
+          "turn.completed@39177"
+        ],
+        "inputChars": 15410,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 40755,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /rules/0/when/phase: phase approach used, but the game declares no logic block; rules as written: [{\"id\":\"begin_approach\",\"verb\":\"glide\",\"when\":{\"phase\":\"approach\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"narrowing\",\"ticks\":600}}]},{\"id\":\"enter_towers\",\"verb\":\"glide\",\"when\":{\"timer\":\"n"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "an octopus goalkeeper blocks penalty kicks in a stadium",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 30931,
+        "turnStartedMs": 830,
+        "firstOutputMs": 830,
+        "firstItemDoneMs": 830,
+        "messageMs": 30389,
+        "usage": {
+          "input_tokens": 21916,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 638,
+          "reasoning_output_tokens": 241
+        },
+        "trace": [
+          "thread.started@809",
+          "item.completed:error@830",
+          "turn.started@830",
+          "item.completed:agent_message@30389",
+          "turn.completed@30406"
+        ],
+        "inputChars": 15697,
+        "schemaChars": 21074,
+        "enumBefore": 151,
+        "enumAfter": 77,
+        "parsed": true
+      },
+      "directMs": 33436,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /rules/0/when/phase: phase opening used, but the game declares no logic block; rules as written: [{\"id\":\"start_opening\",\"verb\":\"begin\",\"when\":{\"phase\":\"opening\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"pressure\",\"ticks\":600}}]},{\"id\":\"increase_pressure\",\"verb\":\"change\",\"when\":{\"timer\":"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "an octopus goalkeeper blocks penalty kicks in a stadium",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 35028,
+        "turnStartedMs": 1354,
+        "firstOutputMs": 1354,
+        "firstItemDoneMs": 1354,
+        "messageMs": 34386,
+        "usage": {
+          "input_tokens": 22109,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 609,
+          "reasoning_output_tokens": 189
+        },
+        "trace": [
+          "thread.started@1336",
+          "item.completed:error@1354",
+          "turn.started@1354",
+          "item.completed:agent_message@34386",
+          "turn.completed@34421"
+        ],
+        "inputChars": 15697,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 35942,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /rules/1/when/phase: phase opening used, but the game declares no logic block; rules as written: [{\"id\":\"block_ball\",\"verb\":\"block\",\"when\":{\"contact\":[\"player\",\"football\"]},\"if\":null,\"do\":[{\"push\":\"other\"},{\"score\":1}]},{\"id\":\"start_round\",\"verb\":\"begin\",\"when\":{\"phase\":\"opening\"},\"if\""
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a farmer on a red tractor herds runaway sheep into a barn",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 51240,
+        "turnStartedMs": 1235,
+        "firstOutputMs": 1235,
+        "firstItemDoneMs": 1235,
+        "messageMs": 50806,
+        "usage": {
+          "input_tokens": 22079,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1055,
+          "reasoning_output_tokens": 478
+        },
+        "trace": [
+          "thread.started@1220",
+          "item.completed:error@1235",
+          "turn.started@1235",
+          "item.completed:agent_message@50806",
+          "turn.completed@50807"
+        ],
+        "inputChars": 15546,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 52850,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "VERB_UNPROVED: the robot did not win with the \"dash\" ability; RULE_INVALID: /rules/5/when/phase: phase roundup used, but the game declares no logic block; rules as written: [{\"id\":\"herd_sheep\",\"verb\":\"herd\",\"when\":{\"contact\":[\"player\",\"sheep\"]},\"if\":null,\"do\":[{\"push\":\"other\"}]},{\"id\":\"pen_sheep\",\"v"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a farmer on a red tractor herds runaway sheep into a barn",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 65553,
+        "turnStartedMs": 2005,
+        "firstOutputMs": 2005,
+        "firstItemDoneMs": 2005,
+        "messageMs": 65205,
+        "usage": {
+          "input_tokens": 21890,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1126,
+          "reasoning_output_tokens": 707
+        },
+        "trace": [
+          "thread.started@1983",
+          "item.completed:error@2005",
+          "turn.started@2005",
+          "item.completed:agent_message@65205",
+          "turn.completed@65219"
+        ],
+        "inputChars": 15546,
+        "schemaChars": 21076,
+        "enumBefore": 151,
+        "enumAfter": 77,
+        "parsed": true
+      },
+      "directMs": 66239,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: tractor drive has no action witness; RULE_INVALID: /rules/0/when/phase: phase departure used, but the game declares no logic block; rules as written: [{\"id\":\"start_departure\",\"verb\":\"wait\",\"when\":{\"phase\":\"departure\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"sheep_arrival\",\"ticks\":120}}]"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a ghost hunter vacuums up spirits in an abandoned hotel",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 30770,
+        "turnStartedMs": 1188,
+        "firstOutputMs": 1188,
+        "firstItemDoneMs": 1188,
+        "messageMs": 30394,
+        "usage": {
+          "input_tokens": 21884,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 567,
+          "reasoning_output_tokens": 205
+        },
+        "trace": [
+          "thread.started@1141",
+          "item.completed:error@1188",
+          "turn.started@1188",
+          "item.completed:agent_message@30394",
+          "turn.completed@30410"
+        ],
+        "inputChars": 15540,
+        "schemaChars": 21067,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 33236,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: hunter vacuum spirit has no action witness; RULE_INVALID: /logic/events/0: no rule listens to event second_haunting – add a rule with {\"when\":{\"event\":\"second_haunting\"}}; rules as written: [{\"id\":\"haunting_begins\",\"verb\":\"wait\",\"when\":{\"phase\":\"quiet_halls\"},\"if\":null,\"do\":[{\"startTime"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a yellow submarine dodges sea mines to reach a sunken chest",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 31723,
+        "turnStartedMs": 1149,
+        "firstOutputMs": 1149,
+        "firstItemDoneMs": 1149,
+        "messageMs": 31185,
+        "usage": {
+          "input_tokens": 22089,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 617,
+          "reasoning_output_tokens": 218
+        },
+        "trace": [
+          "thread.started@1126",
+          "item.completed:error@1149",
+          "turn.started@1149",
+          "item.completed:agent_message@31185",
+          "turn.completed@31200"
+        ],
+        "inputChars": 15609,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 32395,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /rules/0/when/phase: phase approach used, but the game declares no logic block; rules as written: [{\"id\":\"start_approach\",\"verb\":\"glide\",\"when\":{\"phase\":\"approach\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"minefield_change\",\"ticks\":600}}]},{\"id\":\"reveal_mines\",\"verb\":\"appear\",\"when\":{\"t"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a ghost hunter vacuums up spirits in an abandoned hotel",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 40685,
+        "turnStartedMs": 1059,
+        "firstOutputMs": 1059,
+        "firstItemDoneMs": 1059,
+        "messageMs": 39270,
+        "usage": {
+          "input_tokens": 22075,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 732,
+          "reasoning_output_tokens": 367
+        },
+        "trace": [
+          "thread.started@1040",
+          "item.completed:error@1059",
+          "turn.started@1059",
+          "item.completed:agent_message@39270",
+          "turn.completed@39276"
+        ],
+        "inputChars": 15540,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 40978,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a yellow submarine dodges sea mines to reach a sunken chest",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 20684,
+        "turnStartedMs": 1447,
+        "firstOutputMs": 1447,
+        "firstItemDoneMs": 1447,
+        "messageMs": 20328,
+        "usage": {
+          "input_tokens": 21902,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 504,
+          "reasoning_output_tokens": 106
+        },
+        "trace": [
+          "thread.started@1428",
+          "item.completed:error@1447",
+          "turn.started@1447",
+          "item.completed:agent_message@20328",
+          "turn.completed@20338"
+        ],
+        "inputChars": 15609,
+        "schemaChars": 21068,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 21133,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "RULE_INVALID: /rules/0/when/phase: phase approach used, but the game declares no logic block; rules as written: [{\"id\":\"begin_approach\",\"verb\":\"glide\",\"when\":{\"phase\":\"approach\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"mine_shift\",\"ticks\":600}}]},{\"id\":\"expand_minefield\",\"verb\":\"appear\",\"when\":{\"tim"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a hamster chef flips burgers for a line of hungry bears",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 37001,
+        "turnStartedMs": 1754,
+        "firstOutputMs": 1754,
+        "firstItemDoneMs": 1754,
+        "messageMs": 36580,
+        "usage": {
+          "input_tokens": 21920,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 749,
+          "reasoning_output_tokens": 312
+        },
+        "trace": [
+          "thread.started@1679",
+          "item.completed:error@1754",
+          "turn.started@1754",
+          "item.completed:agent_message@36580",
+          "turn.completed@36602"
+        ],
+        "inputChars": 15632,
+        "schemaChars": 21094,
+        "enumBefore": 151,
+        "enumAfter": 78,
+        "parsed": true
+      },
+      "directMs": 37294,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "VERB_UNPROVED: the robot did not win with the \"grab\" ability"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a hamster chef flips burgers for a line of hungry bears",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 44380,
+        "turnStartedMs": 1069,
+        "firstOutputMs": 1069,
+        "firstItemDoneMs": 1069,
+        "messageMs": 43943,
+        "usage": {
+          "input_tokens": 22105,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 845,
+          "reasoning_output_tokens": 412
+        },
+        "trace": [
+          "thread.started@1052",
+          "item.completed:error@1069",
+          "turn.started@1069",
+          "item.completed:agent_message@43943",
+          "turn.completed@43943"
+        ],
+        "inputChars": 15632,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 44428,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: chef interact burger has no action witness; rule verbs dropped: wait, arrive, order, flip"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a polar bear fishes through holes in the ice before the storm",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 54819,
+        "turnStartedMs": 1318,
+        "firstOutputMs": 1318,
+        "firstItemDoneMs": 1318,
+        "messageMs": 54224,
+        "usage": {
+          "input_tokens": 22063,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 953,
+          "reasoning_output_tokens": 494
+        },
+        "trace": [
+          "thread.started@1294",
+          "item.completed:error@1318",
+          "turn.started@1318",
+          "item.completed:agent_message@54224",
+          "turn.completed@54225"
+        ],
+        "inputChars": 15524,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 55533,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: bear fish has no action witness; ACTION_LOST: storm hazard bear has no action witness; rule verbs dropped: fish, gather, arrive, hazard"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a polar bear fishes through holes in the ice before the storm",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 46362,
+        "turnStartedMs": 1296,
+        "firstOutputMs": 1296,
+        "firstItemDoneMs": 1296,
+        "messageMs": 45780,
+        "usage": {
+          "input_tokens": 21871,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 782,
+          "reasoning_output_tokens": 318
+        },
+        "trace": [
+          "thread.started@1268",
+          "item.completed:error@1296",
+          "turn.started@1296",
+          "item.completed:agent_message@45780",
+          "turn.completed@45822"
+        ],
+        "inputChars": 15524,
+        "schemaChars": 21059,
+        "enumBefore": 151,
+        "enumAfter": 75,
+        "parsed": true
+      },
+      "directMs": 47627,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: bear fish has no action witness; ACTION_LOST: storm hazard bear has no action witness; RULE_INVALID: /logic/events/0: no rule listens to event storm_active – add a rule with {\"when\":{\"event\":\"storm_active\"}}; rules as written: [{\"id\":\"fish_holes\",\"verb\":\"fish\",\"when\":{\"interact\":{\"role\""
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a grandma on a skateboard escapes a flock of angry pigeons",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 36823,
+        "turnStartedMs": 934,
+        "firstOutputMs": 933,
+        "firstItemDoneMs": 933,
+        "messageMs": 36340,
+        "usage": {
+          "input_tokens": 21915,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 992,
+          "reasoning_output_tokens": 283
+        },
+        "trace": [
+          "thread.started@910",
+          "item.completed:error@933",
+          "turn.started@934",
+          "item.completed:agent_message@36340",
+          "turn.completed@36344"
+        ],
+        "inputChars": 15652,
+        "schemaChars": 21061,
+        "enumBefore": 151,
+        "enumAfter": 75,
+        "parsed": true
+      },
+      "directMs": 44739,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: grandma escape pigeon has no action witness; ACTION_LOST: pigeon chaser grandma has no action witness"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a grandma on a skateboard escapes a flock of angry pigeons",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 32115,
+        "turnStartedMs": 1063,
+        "firstOutputMs": 1063,
+        "firstItemDoneMs": 1063,
+        "messageMs": 31597,
+        "usage": {
+          "input_tokens": 22108,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 907,
+          "reasoning_output_tokens": 178
+        },
+        "trace": [
+          "thread.started@1046",
+          "item.completed:error@1063",
+          "turn.started@1063",
+          "item.completed:agent_message@31597",
+          "turn.completed@31601"
+        ],
+        "inputChars": 15652,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 37107,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: grandma escape pigeon has no action witness"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a wizard duels a red dragon on a floating rock island",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 41146,
+        "turnStartedMs": 1519,
+        "firstOutputMs": 1519,
+        "firstItemDoneMs": 1519,
+        "messageMs": 40719,
+        "usage": {
+          "input_tokens": 22050,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 671,
+          "reasoning_output_tokens": 302
+        },
+        "trace": [
+          "thread.started@1499",
+          "item.completed:error@1519",
+          "turn.started@1519",
+          "item.completed:agent_message@40719",
+          "turn.completed@40722"
+        ],
+        "inputChars": 15450,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 41335,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "an ant carries bread crumbs home past a hungry spider",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 71590,
+        "turnStartedMs": 933,
+        "firstOutputMs": 933,
+        "firstItemDoneMs": 933,
+        "messageMs": 71323,
+        "usage": {
+          "input_tokens": 21869,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 985,
+          "reasoning_output_tokens": 448
+        },
+        "trace": [
+          "thread.started@915",
+          "item.completed:error@933",
+          "turn.started@933",
+          "item.completed:agent_message@71323",
+          "turn.completed@71330"
+        ],
+        "inputChars": 15504,
+        "schemaChars": 21069,
+        "enumBefore": 151,
+        "enumAfter": 76,
+        "parsed": true
+      },
+      "directMs": 72055,
+      "source": "draft",
+      "fallbackReason": "UNREPAIRED",
+      "failure": {
+        "stage": "read",
+        "reason": "RECIPE_NOT_LIVE",
+        "detail": "recipe is not a live combination: roam/deliver/collect/chaser; live with move roam: -/catch/-, -/survive/chaser, collect/collect/-, fight/defeat/-, interact/interact/chaser, push/defeat/rival, autofire/defeat/chaser, swallow/score/-, steal/score/guard, collect/collect/chaser; live with objective col"
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "an ant carries bread crumbs home past a hungry spider",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 52255,
+        "turnStartedMs": 997,
+        "firstOutputMs": 997,
+        "firstItemDoneMs": 997,
+        "messageMs": 51666,
+        "usage": {
+          "input_tokens": 22059,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1221,
+          "reasoning_output_tokens": 417
+        },
+        "trace": [
+          "thread.started@978",
+          "item.completed:error@997",
+          "turn.started@997",
+          "item.completed:agent_message@51666",
+          "turn.completed@51681"
+        ],
+        "inputChars": 15504,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 52830,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "VERB_UNPROVED: the robot did not win with the \"grab\" ability"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a cowgirl lassos wild horses in a dusty canyon",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 34628,
+        "turnStartedMs": 1146,
+        "firstOutputMs": 1146,
+        "firstItemDoneMs": 1146,
+        "messageMs": 34245,
+        "usage": {
+          "input_tokens": 22073,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 643,
+          "reasoning_output_tokens": 260
+        },
+        "trace": [
+          "thread.started@1125",
+          "item.completed:error@1146",
+          "turn.started@1146",
+          "item.completed:agent_message@34245",
+          "turn.completed@34254"
+        ],
+        "inputChars": 15516,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 35286,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a cowgirl lassos wild horses in a dusty canyon",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 25297,
+        "turnStartedMs": 1096,
+        "firstOutputMs": 1096,
+        "firstItemDoneMs": 1096,
+        "messageMs": 24780,
+        "usage": {
+          "input_tokens": 21885,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 530,
+          "reasoning_output_tokens": 163
+        },
+        "trace": [
+          "thread.started@1075",
+          "item.completed:error@1096",
+          "turn.started@1096",
+          "item.completed:agent_message@24780",
+          "turn.completed@24787"
+        ],
+        "inputChars": 15516,
+        "schemaChars": 21075,
+        "enumBefore": 151,
+        "enumAfter": 77,
+        "parsed": true
+      },
+      "directMs": 25597,
+      "source": "authored",
+      "fallbackReason": null,
+      "failure": null,
+      "validated": true,
+      "criticPassed": true
+    },
+    {
+      "sentence": "a monkey throws coconuts at passing pirate ships",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 19075,
+        "turnStartedMs": 1730,
+        "firstOutputMs": 1730,
+        "firstItemDoneMs": 1730,
+        "messageMs": 18537,
+        "usage": {
+          "input_tokens": 21912,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 466,
+          "reasoning_output_tokens": 112
+        },
+        "trace": [
+          "thread.started@1659",
+          "item.completed:error@1730",
+          "turn.started@1730",
+          "item.completed:agent_message@18537",
+          "turn.completed@18551"
+        ],
+        "inputChars": 15638,
+        "schemaChars": 21089,
+        "enumBefore": 151,
+        "enumAfter": 78,
+        "parsed": true
+      },
+      "directMs": 19633,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: monkey throw ship has no action witness; RULE_INVALID: /logic/events/0: no rule listens to event ship_arrived – add a rule with {\"when\":{\"event\":\"ship_arrived\"}}; rules as written: [{\"id\":\"start_arrival\",\"verb\":\"pass\",\"when\":{\"phase\":\"first_pass\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a wizard duels a red dragon on a floating rock island",
+      "variant": "narrow",
+      "call": {
+        "exit": 1,
+        "totalMs": 240704,
+        "turnStartedMs": 768,
+        "firstOutputMs": 768,
+        "firstItemDoneMs": 768,
+        "messageMs": null,
+        "usage": null,
+        "trace": [
+          "thread.started@757",
+          "item.completed:error@768",
+          "turn.started@768"
+        ],
+        "inputChars": 15450,
+        "schemaChars": 21080,
+        "enumBefore": 151,
+        "enumAfter": 77,
+        "stderr": ""
+      },
+      "directMs": 240727,
+      "source": "draft",
+      "fallbackReason": "MODEL_UNAVAILABLE",
+      "failure": {
+        "stage": "model",
+        "reason": "UPSTREAM_UNAVAILABLE",
+        "detail": "no message, exit 1"
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a monkey throws coconuts at passing pirate ships",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 31408,
+        "turnStartedMs": 1152,
+        "firstOutputMs": 1152,
+        "firstItemDoneMs": 1152,
+        "messageMs": 30874,
+        "usage": {
+          "input_tokens": 22098,
+          "cached_input_tokens": 16128,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 635,
+          "reasoning_output_tokens": 261
+        },
+        "trace": [
+          "thread.started@1133",
+          "item.completed:error@1152",
+          "turn.started@1152",
+          "item.completed:agent_message@30874",
+          "turn.completed@30896"
+        ],
+        "inputChars": 15638,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 31553,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "VERB_UNPROVED",
+        "detail": "rule verbs dropped: pass"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a delivery drone drops parcels on rooftops in the rain",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 46548,
+        "turnStartedMs": 1231,
+        "firstOutputMs": 1231,
+        "firstItemDoneMs": 1231,
+        "messageMs": 46055,
+        "usage": {
+          "input_tokens": 22083,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1149,
+          "reasoning_output_tokens": 329
+        },
+        "trace": [
+          "thread.started@1209",
+          "item.completed:error@1231",
+          "turn.started@1231",
+          "item.completed:agent_message@46055",
+          "turn.completed@46110"
+        ],
+        "inputChars": 15575,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 47586,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: hero deliver parcel has no action witness; RULE_INVALID: /rules/4/when/phase: phase rain used, but the game declares no logic block; rules as written: [{\"id\":\"load_parcel\",\"verb\":\"carry\",\"when\":{\"contact\":[\"player\",\"parcel\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"other\"}]},{\"id\":\"dr"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a delivery drone drops parcels on rooftops in the rain",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 51319,
+        "turnStartedMs": 1077,
+        "firstOutputMs": 1077,
+        "firstItemDoneMs": 1077,
+        "messageMs": 50842,
+        "usage": {
+          "input_tokens": 21897,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1169,
+          "reasoning_output_tokens": 363
+        },
+        "trace": [
+          "thread.started@1057",
+          "item.completed:error@1077",
+          "turn.started@1077",
+          "item.completed:agent_message@50842",
+          "turn.completed@50863"
+        ],
+        "inputChars": 15575,
+        "schemaChars": 21083,
+        "enumBefore": 151,
+        "enumAfter": 78,
+        "parsed": true
+      },
+      "directMs": 63509,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: hero deliver parcel has no action witness; ACTION_LOST: drone hazard hero has no action witness; RULE_INVALID: /logic/events/0: no rule listens to event traffic_active – add a rule with {\"when\":{\"event\":\"traffic_active\"}}; rules as written: [{\"id\":\"deliver_parcel\",\"verb\":\"deliver\",\"when"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a mole digs tunnels to steal carrots from a sleeping farmer",
+      "variant": "narrow",
+      "call": {
+        "exit": 0,
+        "totalMs": 52862,
+        "turnStartedMs": 1089,
+        "firstOutputMs": 1089,
+        "firstItemDoneMs": 1089,
+        "messageMs": 52471,
+        "usage": {
+          "input_tokens": 21894,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 956,
+          "reasoning_output_tokens": 516
+        },
+        "trace": [
+          "thread.started@1072",
+          "item.completed:error@1089",
+          "turn.started@1089",
+          "item.completed:agent_message@52471",
+          "turn.completed@52513"
+        ],
+        "inputChars": 15555,
+        "schemaChars": 21073,
+        "enumBefore": 151,
+        "enumAfter": 77,
+        "parsed": true
+      },
+      "directMs": 54372,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: mole dig tunnel has no action witness; rule verbs dropped: sleep, wake, reveal"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a mole digs tunnels to steal carrots from a sleeping farmer",
+      "variant": "full",
+      "call": {
+        "exit": 0,
+        "totalMs": 55489,
+        "turnStartedMs": 1469,
+        "firstOutputMs": 1469,
+        "firstItemDoneMs": 1469,
+        "messageMs": 55060,
+        "usage": {
+          "input_tokens": 22083,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 960,
+          "reasoning_output_tokens": 480
+        },
+        "trace": [
+          "thread.started@1451",
+          "item.completed:error@1469",
+          "turn.started@1469",
+          "item.completed:agent_message@55060",
+          "turn.completed@55070"
+        ],
+        "inputChars": 15555,
+        "schemaChars": 21712,
+        "parsed": true
+      },
+      "directMs": 55878,
+      "source": "authored",
+      "fallbackReason": "VERB_UNPROVED",
+      "failure": {
+        "stage": "critic",
+        "reason": "ACTION_LOST",
+        "detail": "ACTION_LOST: mole dig tunnel has no action witness"
+      },
+      "validated": true,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a hedgehog rolls downhill collecting acorns before the first snow",
+      "variant": "none",
+      "call": {
+        "exit": 0,
+        "totalMs": 53199,
+        "turnStartedMs": 990,
+        "firstOutputMs": 990,
+        "firstItemDoneMs": 990,
+        "messageMs": 52685,
+        "usage": {
+          "input_tokens": 18924,
+          "cached_input_tokens": 13056,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 899,
+          "reasoning_output_tokens": 472
+        },
+        "trace": [
+          "thread.started@953",
+          "item.completed:error@990",
+          "turn.started@990",
+          "item.completed:agent_message@52685",
+          "turn.completed@52733"
+        ],
+        "inputChars": 15502,
+        "schemaChars": 0,
+        "parsed": true
+      },
+      "directMs": 53633,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "failure": {
+        "stage": "read",
+        "reason": "MALFORMED_SPEC",
+        "detail": "/genre: Invalid discriminator value. Expected 'runner' | 'platformer' | 'arena' | 'voyage' | 'quest' | 'shooter' | 'throw' | 'timing' | 'rhythm' | 'duel' | 'flap' | 'catch' | 'whack' | 'defense' | 'slice' | 'hop' | 'crowd' | 'merge' | 'push' | 'survivor' | 'hole' | 'steal' | 'sort' | 'arrows' | 'stu"
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a raccoon steals donuts from a crowded night market",
+      "variant": "none",
+      "call": {
+        "exit": 0,
+        "totalMs": 30947,
+        "turnStartedMs": 905,
+        "firstOutputMs": 905,
+        "firstItemDoneMs": 905,
+        "messageMs": 30550,
+        "usage": {
+          "input_tokens": 18921,
+          "cached_input_tokens": 13056,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 598,
+          "reasoning_output_tokens": 249
+        },
+        "trace": [
+          "thread.started@883",
+          "item.completed:error@905",
+          "turn.started@905",
+          "item.completed:agent_message@30550",
+          "turn.completed@30568"
+        ],
+        "inputChars": 15480,
+        "schemaChars": 0,
+        "parsed": true
+      },
+      "directMs": 30958,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "failure": {
+        "stage": "read",
+        "reason": "MALFORMED_SPEC",
+        "detail": "/genre: Invalid discriminator value. Expected 'runner' | 'platformer' | 'arena' | 'voyage' | 'quest' | 'shooter' | 'throw' | 'timing' | 'rhythm' | 'duel' | 'flap' | 'catch' | 'whack' | 'defense' | 'slice' | 'hop' | 'crowd' | 'merge' | 'push' | 'survivor' | 'hole' | 'steal' | 'sort' | 'arrows' | 'stu"
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a lighthouse keeper guides lost fishing boats through a thunderstorm",
+      "variant": "none",
+      "call": {
+        "exit": 0,
+        "totalMs": 86009,
+        "turnStartedMs": 848,
+        "firstOutputMs": 848,
+        "firstItemDoneMs": 848,
+        "messageMs": 85744,
+        "usage": {
+          "input_tokens": 18936,
+          "cached_input_tokens": 13056,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 736,
+          "reasoning_output_tokens": 326
+        },
+        "trace": [
+          "thread.started@831",
+          "item.completed:error@848",
+          "turn.started@848",
+          "item.completed:agent_message@85744",
+          "turn.completed@85744"
+        ],
+        "inputChars": 15595,
+        "schemaChars": 0,
+        "parsed": true
+      },
+      "directMs": 86025,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "failure": {
+        "stage": "read",
+        "reason": "MALFORMED_SPEC",
+        "detail": "/genre: Invalid discriminator value. Expected 'runner' | 'platformer' | 'arena' | 'voyage' | 'quest' | 'shooter' | 'throw' | 'timing' | 'rhythm' | 'duel' | 'flap' | 'catch' | 'whack' | 'defense' | 'slice' | 'hop' | 'crowd' | 'merge' | 'push' | 'survivor' | 'hole' | 'steal' | 'sort' | 'arrows' | 'stu"
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a firefighter robot sprays out flames in a burning library",
+      "variant": "none",
+      "call": {
+        "exit": 0,
+        "totalMs": 44511,
+        "turnStartedMs": 866,
+        "firstOutputMs": 866,
+        "firstItemDoneMs": 866,
+        "messageMs": 44127,
+        "usage": {
+          "input_tokens": 18960,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 787,
+          "reasoning_output_tokens": 370
+        },
+        "trace": [
+          "thread.started@848",
+          "item.completed:error@866",
+          "turn.started@866",
+          "item.completed:agent_message@44127",
+          "turn.completed@44171"
+        ],
+        "inputChars": 15668,
+        "schemaChars": 0,
+        "parsed": true
+      },
+      "directMs": 44523,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "failure": {
+        "stage": "read",
+        "reason": "MALFORMED_SPEC",
+        "detail": "/: Unrecognized key: \"unmet\""
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a knight riding a goat jumps over rivers of lava",
+      "variant": "none",
+      "call": {
+        "exit": 0,
+        "totalMs": 35991,
+        "turnStartedMs": 1017,
+        "firstOutputMs": 1017,
+        "firstItemDoneMs": 1017,
+        "messageMs": 35673,
+        "usage": {
+          "input_tokens": 18931,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 820,
+          "reasoning_output_tokens": 315
+        },
+        "trace": [
+          "thread.started@998",
+          "item.completed:error@1017",
+          "turn.started@1017",
+          "item.completed:agent_message@35673",
+          "turn.completed@35675"
+        ],
+        "inputChars": 15507,
+        "schemaChars": 0,
+        "parsed": true
+      },
+      "directMs": 36003,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "failure": {
+        "stage": "read",
+        "reason": "MALFORMED_SPEC",
+        "detail": "/genre: Invalid discriminator value. Expected 'runner' | 'platformer' | 'arena' | 'voyage' | 'quest' | 'shooter' | 'throw' | 'timing' | 'rhythm' | 'duel' | 'flap' | 'catch' | 'whack' | 'defense' | 'slice' | 'hop' | 'crowd' | 'merge' | 'push' | 'survivor' | 'hole' | 'steal' | 'sort' | 'arrows' | 'stu"
+      },
+      "validated": false,
+      "criticPassed": false
+    },
+    {
+      "sentence": "a garden snail races a beetle along a mossy brick wall",
+      "variant": "none",
+      "call": {
+        "exit": 0,
+        "totalMs": 40804,
+        "turnStartedMs": 881,
+        "firstOutputMs": 881,
+        "firstItemDoneMs": 881,
+        "messageMs": 40402,
+        "usage": {
+          "input_tokens": 18939,
+          "cached_input_tokens": 13056,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 625,
+          "reasoning_output_tokens": 312
+        },
+        "trace": [
+          "thread.started@863",
+          "item.completed:error@881",
+          "turn.started@881",
+          "item.completed:agent_message@40402",
+          "turn.completed@40402"
+        ],
+        "inputChars": 15525,
+        "schemaChars": 0,
+        "parsed": true
+      },
+      "directMs": 40816,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "failure": {
+        "stage": "read",
+        "reason": "MALFORMED_SPEC",
+        "detail": "/genre: Invalid discriminator value. Expected 'runner' | 'platformer' | 'arena' | 'voyage' | 'quest' | 'shooter' | 'throw' | 'timing' | 'rhythm' | 'duel' | 'flap' | 'catch' | 'whack' | 'defense' | 'slice' | 'hop' | 'crowd' | 'merge' | 'push' | 'survivor' | 'hole' | 'steal' | 'sort' | 'arrows' | 'stu"
+      },
+      "validated": false,
+      "criticPassed": false
+    }
+  ]
+}

@@ -226,6 +226,30 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect((await game(draftId)).children).toEqual([ready.versionId]);
   });
 
+  it('AI verze nese původ (model z odpovědi, čas, cache, opravy), rychlá ne (P73C T4)', async () => {
+    const named = answered(faithful({ hero: 'golden hamster' }));
+    director.script = [named.ok ? { ...named, provenance: { branch: 'fake', model: 'gpt-oss-test' } } : named];
+    const created = await publish({ sentence: SENTENCE });
+    const draftId: string = created.body.versionId;
+    await upgrade(draftId);
+    const ready = await settled(draftId);
+    expect(ready.status).toBe('ready');
+    const child = await game(ready.versionId);
+    expect(child.provenance).toEqual({ model: 'gpt-oss-test', ms: expect.any(Number), cached: false, revised: 0 });
+    expect(Number.isInteger(child.provenance.ms)).toBe(true);
+    expect(child.provenance.ms).toBeGreaterThanOrEqual(Math.floor(child.timings.directorMs));
+    expect((await game(draftId)).provenance).toBeUndefined();
+  });
+
+  it('bez jména modelu v odpovědi AI verze původ nemá – nic vymyšleného', async () => {
+    director.script = [answered(faithful({ hero: 'golden hamster' }))];
+    const created = await publish({ sentence: SENTENCE });
+    await upgrade(created.body.versionId);
+    const ready = await settled(created.body.versionId);
+    expect(ready.status).toBe('ready');
+    expect((await game(ready.versionId)).provenance).toBeUndefined();
+  });
+
   it('autorské dítě se do denního stropu publikací nepočítá (R11)', async () => {
     vi.stubEnv('PLAY_PUBLISH_DAILY_CAP', '1');
     __resetProcessVersionStore();
