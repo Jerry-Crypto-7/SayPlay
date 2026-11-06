@@ -310,7 +310,8 @@ describe('the reservation counts the answer schema the call sends (P71A T1-R1)',
     ((call.request.system.length + call.request.user.length) * config.pricing.usdPerMTokIn + config.maxOutputTokens * config.pricing.usdPerMTokOut) / 1_000_000;
 
   it('adds exactly the schema that goes out, strict on the OpenAI API and raw elsewhere', async () => {
-    for (const config of [backupOf(), configOf({})]) {
+    // Čtyři znaky na token jen na OpenAI API, kde se poměr měřil; jinde jeden na znak.
+    for (const [config, charsPerToken] of [[backupOf(), 4], [configOf({}), 1]] as const) {
       let sent = '';
       const fake = ((_url: string, init: RequestInit) => {
         sent = JSON.stringify((JSON.parse(String(init.body)) as { response_format: { json_schema: { schema: unknown } } }).response_format.json_schema.schema);
@@ -320,8 +321,7 @@ describe('the reservation counts the answer schema the call sends (P71A T1-R1)',
       const branch = upstreamBranch(config, fake);
       await branch.generate(call);
       expect(sent.length).toBeGreaterThan(100_000);
-      // Čtyři znaky schématu na token (`SCHEMA_CHARS_PER_TOKEN`).
-      expect(branch.worstCaseUsd(call)).toBeCloseTo(textOnlyUsd(call, config) + (Math.ceil(sent.length / 4) * config.pricing.usdPerMTokIn) / 1_000_000, 12);
+      expect(branch.worstCaseUsd(call)).toBeCloseTo(textOnlyUsd(call, config) + (Math.ceil(sent.length / charsPerToken) * config.pricing.usdPerMTokIn) / 1_000_000, 12);
     }
   });
 
