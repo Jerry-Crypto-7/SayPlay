@@ -26,4 +26,10 @@ Snímky v `oracle/`: `<věta>-hero.png` (proužek „Hero: …“), `<věta>-che
 - **Hráč čeká zhruba 30 s se slovy, ne s tečkou:** volby režiséra se objeví ve 29–37 s, pak 30–45 s běží kontrola robotem a opravná kola. Opravy tedy trvají skoro tolik, co samotný režisér – další zrychlení hledat v počtu opravných kol (2 ze 3 vět šly dvakrát), ne ve schématu (T1).
 - **„Rival: goal“ byla chyba:** u ježka se střílí do branek a uhýbá šiškám; jako soupeř se ukázala branka. Opraveno v `7a7745d6` – soupeř je kdo honí, pak čemu se uhýbá, nikdy cíl.
 - **Scéna AI verze strážce majáku** ukazuje déšť nad plochou olivovou zemí, molo ani moře vidět nejsou – spadá do P73D (scény), tady se neřeší.
-- Řádek „Made by …“ v „About“ nevyfocen: T4 čeká na pole `provenance` z P73B T1, které v `origin/main` ještě není.
+## Po T4: řádek „Made by …“
+
+Čtvrtá nová věta po T4 (`d5701b7c`, nový build): *a mole digs tunnels under a carrot farm while dodging a hungry badger*.
+- AI verze za **92,8 s**, 3 volání; kroky už ukazují „Rival: hungry badger“ (oprava `7a7745d6` vidět).
+- Uložená verze nese `provenance` `{ model: "gpt-6-astra", ms: 92876, cached: false, revised: 2 }` – `ms` = režie 92 507 + kompilace 189 + kontrola 179.
+- List „About this game“ (z karty pauzy) ukazuje **„Made by gpt-6-astra in 92.9 s · fresh · revised 2 times“** – snímek `oracle/mole-about.png`.
+- Jméno modelu u codex-cli je to z nastavení (CLI žádné nevrací); u Groq a jiných hostovaných se vezme to, které poskytovatel vrátí.

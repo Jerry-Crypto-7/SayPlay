@@ -1,6 +1,6 @@
 {
  "base": "http://127.0.0.1:3203",
- "measuredAt": "2026-11-06T14:53:29.342Z",
+ "measuredAt": "2026-11-06T16:03:06.545Z",
  "rows": [
   {
    "id": "hedgehog",
@@ -194,6 +194,69 @@
     "ai": {
      "file": "keeper-ai.png",
      "ms": 82303
+    }
+   }
+  },
+  {
+   "id": "mole",
+   "text": "a mole digs tunnels under a carrot farm while dodging a hungry badger",
+   "quick": "9e863ad5a3158ad2301bd40b9fa07660",
+   "quickGenre": "quest",
+   "aiVersion": "3381a1d78702970de8d427f4bd7762de",
+   "readyMs": 92766,
+   "endKind": null,
+   "madeBy": "Made by gpt-6-astra in 92.9 s · fresh · revised 2 times",
+   "madeByNote": "read by a second pass (--about): the first pass looked for the About button outside the pause card",
+   "steps": [
+    {
+     "text": "Reading your idea…",
+     "ms": 3369
+    },
+    {
+     "text": "Building the world…",
+     "ms": 4765
+    },
+    {
+     "text": "Hero: mole",
+     "ms": 45126
+    },
+    {
+     "text": "Rival: hungry badger",
+     "ms": 46596
+    },
+    {
+     "text": "Place: Underground beneath a carrot…",
+     "ms": 48158
+    },
+    {
+     "text": "Controls: Drag or arrows to move, hold Use…",
+     "ms": 49546
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 51131
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 52679
+    }
+   ],
+   "shots": {
+    "hero": {
+     "file": "mole-hero.png",
+     "ms": 45351
+    },
+    "checking": {
+     "file": "mole-checking.png",
+     "ms": 51361
+    },
+    "ready": {
+     "file": "mole-ready.png",
+     "ms": 92991
+    },
+    "ai": {
+     "file": "mole-ai.png",
+     "ms": 97936
     }
    }
   }
