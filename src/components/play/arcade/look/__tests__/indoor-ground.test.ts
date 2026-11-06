@@ -21,7 +21,7 @@ import { draftGameSpecWithMeta } from '@/play/draft/draft';
 import { RunnerValley } from '../../runner/RunnerWorld';
 import { WorldBackdrop } from '../../WorldBackdrop';
 import { FieldGround } from '../FieldGround';
-import { buildFieldGround } from '../ground';
+import { buildFieldGround, INTERIOR_TONE, WALL_AO } from '../ground';
 import { buildValley } from '../rig/terrain/valley';
 
 import { isPurple } from '../../../../../../scripts/assets/cc0/palette.mjs';
@@ -121,9 +121,14 @@ function expectIndoorFloor(name: string, look: Look, ground: { geometry: BufferG
   }
   expect(map.repeat.x, `${name}: period`).toBeGreaterThan(0);
   const color = ground.geometry.getAttribute('color');
+  // P73D T3: vrcholy jen šedí (odstín a AO u stěn), barvu dlažby nese textura – žádný nádech.
   let lowest = 1;
-  for (let i = 0; i < color.count; i += 1) lowest = Math.min(lowest, color.getX(i), color.getY(i), color.getZ(i));
-  expect(lowest, `${name}: white vertices`).toBeGreaterThan(0.999);
+  for (let i = 0; i < color.count; i += 1) {
+    lowest = Math.min(lowest, color.getX(i), color.getY(i), color.getZ(i));
+    expect(color.getY(i), `${name}: neutral vertex`).toBeCloseTo(color.getX(i), 5);
+    expect(color.getZ(i), `${name}: neutral vertex`).toBeCloseTo(color.getX(i), 5);
+  }
+  expect(lowest, `${name}: light vertices`).toBeGreaterThanOrEqual(INTERIOR_TONE * (1 - WALL_AO) - 1e-6);
 }
 
 describe('P62 T6: interiér má podlahu i mimo arénu', () => {
