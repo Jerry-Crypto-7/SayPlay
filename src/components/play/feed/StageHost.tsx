@@ -15,6 +15,7 @@ import { type Camera, type Object3D, type PerspectiveCamera, type Scene, type We
 
 import { loadsPending, loadsSettled } from '../arcade/look/pending-loads';
 import { useXrHost } from '../xr/xr-context';
+import { CLIP_DELAY_MS, type ClipJob, clipsAllowed, frameMeter, markClipsSlow, recordClip } from './clip-recorder';
 import { captureFrame } from './snapshot-cache';
 import { createStageTunnel, type Frameloop, type StageTunnel } from './stage-tunnel';
 
@@ -235,27 +236,96 @@ export function StagePortal({ host, ...props }: HostCanvasProps) {
   return host.element === null ? null : createPortal(<HostCanvas host={host} {...props} />, host.element);
 }
 
+/** Klip hry, jejíž náhled plátno právě ukazuje (P71B T2). */
+export interface ClipRequest {
+  readonly versionId: string;
+  /** Náhled robota na kartě opravdu běží – zkouší se při začátku nahrávání. */
+  previewing(): boolean;
+  /** Hotový klip (`clip-recorder.ts`). */
+  done(versionId: string, clip: Blob): void;
+}
+
+/** Jak často se před nahráváním ptá, jestli už náhled běží (detail, modely a dopočet trvají po přechodu různě dlouho). */
+const CLIP_POLL_MS = 250;
+
+/**
+ * Klip z plátna hostitele (P71B T2): když náhled na kartě běží plynule (`frameMeter`) aspoň `CLIP_DELAY_MS`, nahraje `CLIP_MS`. Žádost pro
+ * jinou hru, odchod plátna, první vstup hráče (převzal hru) nebo stránka na pozadí nahrávání zruší a klip zahodí.
+ */
+function useClip(element: HTMLElement | null, clip: ClipRequest | null) {
+  const latest = useRef(clip);
+  useEffect(() => {
+    latest.current = clip;
+  });
+  const versionId = clip?.versionId ?? null;
+  useEffect(() => {
+    if (versionId === null || element === null || !clipsAllowed()) return;
+    let touched = false;
+    const touch = () => {
+      touched = true;
+    };
+    window.addEventListener('pointerdown', touch, true);
+    window.addEventListener('keydown', touch, true);
+    const keepGoing = () => !touched && latest.current?.versionId === versionId && clipsAllowed();
+    const meter = frameMeter();
+    // Nahrávání, které shodí plynulost náhledu, se zahodí a zařízení už nenahrává.
+    const stillSmooth = () => {
+      if (meter.smooth()) return true;
+      markClipsSlow();
+      return false;
+    };
+    let job: ClipJob | null = null;
+    let since: number | null = null;
+    const poll = window.setInterval(() => {
+      const canvas = element.querySelector('canvas');
+      if (canvas === null || !keepGoing() || latest.current?.previewing() !== true || !meter.smooth()) {
+        since = null;
+        return;
+      }
+      since ??= performance.now();
+      if (performance.now() - since < CLIP_DELAY_MS) return;
+      window.clearInterval(poll);
+      job = recordClip(canvas, () => keepGoing() && stillSmooth());
+      void job.done.then((blob) => {
+        meter.stop();
+        if (blob !== null) latest.current?.done(versionId, blob);
+      });
+    }, CLIP_POLL_MS);
+    return () => {
+      window.clearInterval(poll);
+      meter.stop();
+      job?.cancel();
+      window.removeEventListener('pointerdown', touch, true);
+      window.removeEventListener('keydown', touch, true);
+    };
+  }, [element, versionId]);
+}
+
 /**
  * Drží jedno plátno, dokud je feed na stránce; `children` dostanou hostitele pro `ArcadeStage`.
  * `onLeave` dostane snímek scény, která z plátna odchází (T8). `keepPrograms` drží programy shaderů přes výměny scén
- * (řetěz mikroher, `KeepPrograms`); `deferScenes` staví změněnou scénu odloženě (`DeferredScene`).
- * Ve VR (P65 T1) vlastní plátno nevznikne: hostitelem je trvalé plátno XR relace z layoutu (`XrGate`).
+ * (řetěz mikroher, `KeepPrograms`); `deferScenes` staví změněnou scénu odloženě (`DeferredScene`). `clip` nahraje
+ * krátký klip náhledu aktivní karty (P71B T2).
+ * Ve VR (P65 T1) vlastní plátno nevznikne: hostitelem je trvalé plátno XR relace z layoutu (`XrGate`) a klip se nenahrává.
  */
 export function StageHost({
   children,
   onLeave,
   keepPrograms = false,
   deferScenes = false,
+  clip = null,
 }: {
   readonly children: (host: StageTunnel) => ReactNode;
   readonly onLeave?: (frame: Promise<Blob | null>) => void;
   readonly keepPrograms?: boolean;
   readonly deferScenes?: boolean;
+  readonly clip?: ClipRequest | null;
 }) {
   const shared = useXrHost();
   const [own] = useState(createHostTunnel);
   const host = shared ?? own;
   useEffect(() => (onLeave === undefined ? undefined : host.onLeave(onLeave)), [host, onLeave]);
+  useClip(shared === null ? own.element : null, clip);
   return (
     <>
       {shared === null && <StagePortal host={own} keepPrograms={keepPrograms} deferScenes={deferScenes} />}

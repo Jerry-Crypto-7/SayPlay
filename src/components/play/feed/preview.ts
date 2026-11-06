@@ -4,8 +4,9 @@
  * Hra publikovaná od P54A nese `preview` v detailu; starší ho dostane z
  * `bot-worker.ts` – `runBot` stojí na hlavním vlákně 21–685 ms a telefon by
  * při přechodu zamrzl. Výsledek workeru se drží v paměti stránky, takže se
- * každá hra počítá nejvýš jednou. Selhání workeru = `null`: karta pak hraje
- * bez náhledu (hra čeká na první dotek).
+ * každá hra počítá nejvýš jednou. Selhání workeru = `null` a `console.warn`:
+ * karta pak hraje bez náhledu (hra čeká na první dotek). Selhání se nekešuje –
+ * další návštěva karty zkusí worker znovu (P71B T1).
  */
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
@@ -23,11 +24,15 @@ function botWorker(): Worker {
   const created = new Worker(new URL('./bot-worker.ts', import.meta.url), { type: 'module' });
   created.onmessage = (event: MessageEvent<BotWorkerResponse>) => {
     const answer = event.data;
+    if ('error' in answer) console.warn(`feed preview: the bot worker failed for ${answer.versionId}: ${answer.error}`);
     waiting.get(answer.versionId)?.('preview' in answer ? answer.preview : null);
     waiting.delete(answer.versionId);
   };
   created.onerror = () => {
-    for (const resolve of waiting.values()) resolve(null);
+    for (const [versionId, resolve] of waiting) {
+      console.warn(`feed preview: the bot worker crashed while computing ${versionId}`);
+      resolve(null);
+    }
     waiting.clear();
     worker = null;
   };
@@ -35,18 +40,18 @@ function botWorker(): Worker {
   return created;
 }
 
-/** Náhled hry: uložený z publikace, jinak spočtený ve workeru. */
+/** Náhled hry: uložený z publikace, jinak spočtený ve workeru. `null` (selhání) se nepamatuje. */
 export function previewFor(versionId: string, stored: FeedPreview | undefined, world: ArcadeWorld): Promise<FeedPreview | null> {
   if (stored !== undefined) return Promise.resolve(stored);
   const known = computed.get(versionId);
   if (known !== undefined) return known;
+  if (typeof Worker === 'undefined') return Promise.resolve(null);
   const job = new Promise<FeedPreview | null>((resolve) => {
-    if (typeof Worker === 'undefined') {
-      resolve(null);
-      return;
-    }
     waiting.set(versionId, resolve);
     botWorker().postMessage({ versionId, world } satisfies BotWorkerRequest);
+  }).then((preview) => {
+    if (preview === null) computed.delete(versionId);
+    return preview;
   });
   computed.set(versionId, job);
   return job;

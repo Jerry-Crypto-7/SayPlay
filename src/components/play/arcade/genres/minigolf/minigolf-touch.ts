@@ -4,8 +4,8 @@
  *
  * - **Prst** táhne od míčku dozadu: úhel tahu proti směru, kterým kamera kouká, dá osu míření (rána jde **proti**
  *   tahu – tah dolů = rána vpřed), délka tahu za mrtvou zónou dá nabití 1–60 (`pullBack`). Puštění pod mrtvou zónou
- *   ránu zruší. Tah se měří vůči ose míření ze stavu v okamžiku stisku (`base`): kamera se během tahu otáčí za
- *   mířením, prst ale drží rámec, ve kterém začal.
+ *   ránu zruší. Tah se měří vůči ose kamery v okamžiku stisku (`base`, `minigolfCameraAxis` – z míčku na cíl
+ *   trasy, míření ji nehýbe), takže tah dolů po obrazovce pošle ránu na cíl.
  * - **Klávesnice**: šipky otáčejí osu (`turnAxis`), mezerník držený nabíjí, puštěný odpálí (`keyPutt`).
  * - **Tik** (`puttInput`): dokud nabití ve stavu nedosáhne délky tahu, jde `HOLD` s osou; pak osa bez tlačítek,
  *   po puštění `TAP` s osou. Puštění dřív, než nabití tah dožene, ránu jen odloží (nejvýš o 60 tiků) – síla je délka

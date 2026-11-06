@@ -1,5 +1,6 @@
 import type { GenreSpec } from '../genre/contract';
 import { GENRE_ACTIONS, GENRE_MOVES, type Intent } from '../intent/contract';
+import { FIND_ONE } from '../genre/classify';
 import { heroClass } from '../genre/roles';
 import { PRESETS, type RecipeAssembly } from './presets';
 import type { Recipe } from './recipe';
@@ -17,9 +18,19 @@ export interface AssemblySource {
  * Movement the sentence itself decides, before any reading: the said one, a machine as the hero, or (P65 T6b) a race
  * with shooting and nobody named – „a racing game with guns“ drives and shoots, it does not run.
  */
+/**
+ * P71D T2: let, který domýšlí jen jméno letadla („a spaceship shoots asteroids“), nepřebije střelbu na věc věty –
+ * hraje střílečka. Kroužky s „Drag… to swim“ střelbu schovaly (QA 5. 11.). Pohyb řečený slovesem platí dál.
+ * Hláška `draft/unsupported.ts` takový let nepřizná (T6): hra ho nehraje záměrně, ne proto, že by chyběl.
+ */
+export function impliedFlight(intent: Intent, item: Intent['items'][number]): boolean {
+  if (item.verb !== 'glide' || intent.hero === null || item.actor !== intent.hero || heroClass(intent.hero) !== 'aircraft' || !item.said.toLowerCase().startsWith(intent.hero)) return false;
+  return !intent.negated.includes('shoot') && intent.items.some(other => other.essential && other.axis === 'action' && other.verb === 'shoot' && other.object !== null && (other.actor === intent.hero || other.actor === 'hero'));
+}
+
 export function saidMove(intent: Intent): Recipe['move'] | undefined {
   const items = intent.items.filter(item => item.essential);
-  const explicit = items.find(item => item.axis === 'move')?.verb as Recipe['move'] | undefined;
+  const explicit = items.find(item => item.axis === 'move' && !impliedFlight(intent, item))?.verb as Recipe['move'] | undefined;
   if (explicit !== undefined) return explicit;
   if (intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '')) return 'drive';
   const shoots = items.some(item => item.verb === 'shoot') && !intent.negated.includes('shoot');
@@ -51,7 +62,10 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   // a catch is a whole game, so the read genre's own action (collecting) was never asked for.
   const unsaid = objective === 'defeat' && move === 'roam' ? ['fight' as const] : move === base.move && objective !== 'catch' ? base.actions : [];
   const asked = action.length ? action : unsaid;
-  const plays = (recipe: Recipe) => asked.every(verb => recipe.actions.includes(verb));
+  // P71D T4: a quest for one found thing ("find the lost crown") plays the collect its "find" reads as.
+  // Only one singular thing is a quest target ("looking for lost carrots" stays the arena), as in the classifier.
+  const finds = selected.genre === 'quest' && selected.mode === 'spatial' && FIND_ONE.test(intent.sentence.toLowerCase().replace(/\s+/g, ' ').trim());
+  const plays = (recipe: Recipe) => asked.every(verb => recipe.actions.includes(verb) || verb === 'collect' && finds);
   const threats = items.filter(item => item.axis === 'threat').map(item => item.verb) as Recipe['threats'];
   const defaults: Partial<Record<Recipe['move'], Pick<GenreSpec, 'genre' | 'mode'>>> = {
     run: { genre: 'runner', mode: 'default' }, jump: { genre: 'platformer', mode: 'default' },

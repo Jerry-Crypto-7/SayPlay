@@ -33,7 +33,7 @@ import type { Box } from '../look/ground';
 import { Landmark } from '../look/Landmark';
 import type { Volume } from '../look/landmark-places';
 import { Scenery } from '../look/Scenery';
-import { fitTall, usePlayRectRef } from '../portrait-frame';
+import { type PlayRect, fitTall, usePlayRectRef } from '../portrait-frame';
 import type { ArcadeSession } from '../session';
 import { type BodyModel, beatPoseOf, initialBody } from '../timing/TimingScene';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
@@ -63,6 +63,30 @@ const HERO_Z_M = 0.6;
  * 0,136 plochy).
  */
 const TALL = { side: 0.2, ahead: 8, pitch: (24 * Math.PI) / 180, look: 7 } as const;
+/** Na výšku (P71C T4) vyplní lišta šířku a hrdina vedle ní by byl uříznutý: stojí dál podél pruhů, kde se zúží. */
+const HERO_TALL_Z_M = 5.5;
+
+/** Hrdina vedle lišty (kreslí se zrcadlově jako noty): na šířku u lišty, na výšku dál podél pruhů. */
+export function rhythmHeroAt(aspect: number, barW: number): readonly [number, number, number] {
+  return [-(barW / 2 + HERO_GAP_M), 0, aspect < 1 ? HERO_TALL_Z_M : HERO_Z_M];
+}
+
+/** Krabice hrdiny ve scéně (m) – pro test záběru. */
+export function rhythmHeroBox(aspect: number, barW: number): Box3 {
+  const [x, , z] = rhythmHeroAt(aspect, barW);
+  return new Box3(new Vector3(x - HERO_M.w / 2, 0, z - HERO_M.d / 2), new Vector3(x + HERO_M.w / 2, HERO_M.h, z + HERO_M.d / 2));
+}
+
+/** Kamera na výšku (P64 T4): strmý pohled, lišta se všemi pruhy přes šířku, pruhy před ní nahoru po obrazovce. */
+export function rhythmTallCamera(camera: PerspectiveCamera, rect: PlayRect, bar: { readonly w: number; readonly h: number; readonly d: number }): void {
+  // Výchozí vzdálenost je jedno – `fitTall` kameru posune po ose pohledu, kam má být.
+  camera.position.set(0, 10 * Math.sin(TALL.pitch), TALL.look - 10 * Math.cos(TALL.pitch));
+  camera.lookAt(0, 0, TALL.look);
+  const half = bar.w / 2 + TALL.side;
+  const lanes = new Box3(new Vector3(-half, 0, -bar.d / 2 - TALL.side), new Vector3(half, bar.h, TALL.ahead));
+  const atBar = new Box3(new Vector3(-half, 0, -bar.d / 2), new Vector3(half, bar.h, bar.d / 2));
+  camera.position.copy(fitTall(camera, lanes, rect, { keep: atBar }).position);
+}
 
 /** Hranice mezi pruhy (0|1, 1|2, 2|3) v `x` noty, jednotky jádra; kreslí se zrcadlově (`-x`). */
 const LANE_EDGES = Array.from({ length: RHYTHM.lanes - 1 }, (_, i) => (i + 1 - RHYTHM.lanes / 2) * RHYTHM.laneW);
@@ -103,8 +127,9 @@ export function RhythmScene({
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
   const edge = useMemo(() => new Vector3(), []);
-  const lanes = useMemo(() => new Box3(), []);
-  const atBar = useMemo(() => new Box3(), []);
+  // Poměr stran kamery: R3F ho po změně velikosti plátna přepíše dřív, než se ptá selektorů scén.
+  const aspect = useThree((three) => (three.camera as PerspectiveCamera).aspect);
+  const heroAt = rhythmHeroAt(aspect, bar.w);
   const playArea = usePlayRectRef();
   // Okno čte základní ovládání: nad průběhem (P45C T14) je ovládání světa `pacing_control`.
   const hitWindow = (baseControlOf(world.control).params as { window?: number }).window ?? RHYTHM.window;
@@ -152,16 +177,7 @@ export function RhythmScene({
     }
     const rect = playArea.current;
     if (camera.aspect < 1 && rect !== null) {
-      // Na výšku (P64 T4): strmější pohled, lišta se všemi pruhy přes šířku plátna, pruhy před ní nahoru po obrazovce.
-      // Výchozí vzdálenost je jedno – `fitTall` kameru posune po ose pohledu, kam má být.
-      camera.position.set(0, 10 * Math.sin(TALL.pitch), TALL.look - 10 * Math.cos(TALL.pitch));
-      camera.lookAt(0, 0, TALL.look);
-      const half = bar.w / 2 + TALL.side;
-      lanes.min.set(-half, 0, -bar.d / 2 - TALL.side);
-      lanes.max.set(half, bar.h, TALL.ahead);
-      atBar.min.set(-half, 0, -bar.d / 2);
-      atBar.max.set(half, bar.h, bar.d / 2);
-      camera.position.copy(fitTall(camera, lanes, rect, { keep: atBar }).position);
+      rhythmTallCamera(camera, rect, bar);
     } else {
       // Bez změřeného `playRect` (a na mobilu dřív) kamera na výšku ustoupí a zvedne se, ať jsou vidět všechny čtyři pruhy u lišty.
       const tan = Math.tan((camera.fov * Math.PI) / 360);
@@ -204,7 +220,7 @@ export function RhythmScene({
         <meshStandardMaterial ref={barMaterial} color="#e2e8f0" />
       </mesh>
       {heroModel !== undefined && (
-        <group position={[-(bar.w / 2 + HERO_GAP_M), 0, HERO_Z_M]} rotation={[0, Math.PI, 0]}>
+        <group position={heroAt} rotation={[0, Math.PI, 0]}>
           {/* Hrdinou sondy je lišta; hračkovou pózu postavy čte `heroToy` sondy (P45D T14). */}
           <group ref={heroPose} userData={{ toyHero: true }}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
         </group>

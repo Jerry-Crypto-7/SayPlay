@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "8d74e91efd9db0e3ebdd29b6b6dd72e2756286e1d56df3afebe33fd3d351102a",
+ "catalogHash": "abacc8f12e4bd268cd76c8bf2796a0c661157145e3f71e70e37a0e7dbb93b98a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -94,7 +94,7 @@
   "cc0-dragon": {"class":"flyer","regions":{"midX":0,"wingX":1.315,"legY":0.385}},
   "cc0-flashlight": {"class":"prop"},
   "cc0-knife": {"class":"biped","regions":{"legY":0.288}},
-  "cc0-shark": {"class":"swimmer","regions":{"tailZ":-1.318}},
+  "cc0-shark": {"class":"swimmer","regions":{"tailZ":-1.408}},
   "cc0-water": {"class":"biped","regions":{"legY":2.345}},
   "cc0-alien": {"class":"biped","regions":{"legY":0.211}},
   "cc0-asteroid": {"class":"prop"},
@@ -298,6 +298,7 @@
   "cc0-mushnub": {"class":"biped","regions":{"legY":0.824}},
   "cc0-mushnub-evolved": {"class":"biped","regions":{"legY":1.103}},
   "cc0-ship-ghost": {"class":"vehicle"},
+  "cc0-ship-large": {"class":"vehicle"},
   "cc0-skeleton": {"class":"biped","regions":{"legY":0.175}},
   "cc0-spiky-blob": {"class":"biped","regions":{"legY":1.036}},
   "cc0-tree-blob": {"class":"biped","regions":{"legY":1.469}},
@@ -1216,7 +1217,7 @@
   "gen3d-sentry-gun": {"class":"prop"},
   "gen3d-kaiju": {"class":"prop"},
   "gen3d-pterodactyl": {"class":"prop"},
-  "gen3d-wyvern": {"class":"prop"},
+  "gen3d-wyvern": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-trebuchet": {"class":"prop"},
   "gen3d-flying-carpet": {"class":"prop"},
   "gen3d-gargoyle": {"class":"prop"},

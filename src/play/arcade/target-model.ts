@@ -8,6 +8,5 @@ export function targetModelOf(spec: GameSpecV1, role = spec.roles.find(role => r
   const generator = spec.controlParams?.generator;
   if (generator !== 'quest_spatial' && generator !== 'quest_station') return undefined;
   if (role?.id !== 'target' || role.kind !== 'target') return undefined;
-  const model = sceneModelOf(role.label, false);
-  return model === 'bird' ? undefined : model;
+  return sceneModelOf(role.label, false);
 }

@@ -516,3 +516,83 @@ test.describe('/play – bot preview in the feed', () => {
     });
   });
 });
+
+test.describe('/play – every card moves with a clip (P71B T4)', () => {
+  test('desktop: reel neighbours and Up next play their clips, the active card plays live', async ({ page, request }) => {
+    test.setTimeout(90_000);
+    // Hry s offline klipem (`feed-clips.json`) v pořadí feedu; publikované hry jiných testů klip nemají.
+    const offline = new Set(JSON.parse(readFileSync(join(process.cwd(), 'src/components/play/feed/feed-clips.json'), 'utf8')) as string[]);
+    const listed = (await (await request.get('/api/play/games?recent=40')).json()) as { games: { versionId: string }[] };
+    const rows = listed.games.filter((game) => offline.has(game.versionId)).slice(0, 6);
+    expect(rows.length).toBe(6);
+    await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows, next: null }) }));
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+
+    // Klipy v obraze se střídají (P71B T5: dvě naráz viditelná hrající videa srazí živou kartu na 30 FPS),
+    // soused v reelu mimo obraz hraje dokola.
+    const sample = () =>
+      page.$$eval('[data-testid="card-clip"]', (videos) => {
+        const reel = document.querySelector('[data-testid="feed-reel"]')?.getBoundingClientRect();
+        const window_ = { top: 0, left: 0, bottom: innerHeight, right: innerWidth };
+        const meets = (rect: DOMRect, box: { top: number; left: number; bottom: number; right: number }) =>
+          rect.bottom > box.top && rect.top < box.bottom && rect.right > box.left && rect.left < box.right;
+        return videos.map((element) => {
+          const video = element as HTMLVideoElement;
+          const rect = video.getBoundingClientRect();
+          const inReel = video.closest('[data-testid="feed-reel"]') !== null;
+          return { time: video.currentTime, playing: !video.paused && !video.ended, inView: meets(rect, window_) && (!inReel || reel === undefined || meets(rect, reel)) };
+        });
+      });
+    await expect.poll(async () => (await sample()).some((clip) => clip.playing && clip.time > 0), { timeout: 30_000 }).toBe(true);
+    const played = new Map<number, number>();
+    let last = await sample();
+    let visiblePlaying = 0;
+    for (let tick = 0; tick < 48; tick += 1) {
+      await page.waitForTimeout(250);
+      const now = await sample();
+      now.forEach((clip, at) => {
+        const before = last[at]?.time ?? clip.time;
+        // Dohraný klip začne znovu od nuly.
+        played.set(at, (played.get(at) ?? 0) + (clip.time >= before ? clip.time - before : clip.time));
+      });
+      visiblePlaying = Math.max(visiblePlaying, now.filter((clip) => clip.playing && clip.inView).length);
+      last = now;
+    }
+    expect([...played.values()].filter((seconds) => seconds >= 0.5).length).toBeGreaterThanOrEqual(3);
+    expect(visiblePlaying).toBeLessThanOrEqual(1);
+    await expect(page.locator('[data-testid="feed-current"] [data-testid="card-clip"]')).toHaveCount(0);
+  });
+
+  test('a preview window that ends in a win stays a preview: the reel never locks (R1, minigolf)', async ({ page }) => {
+    test.setTimeout(90_000);
+    // Vestavěná hra „Mini Golf Pirate Ship“: robot v okně náhledu míček potopí, pak 600 ms pauza a znovu.
+    await page.goto('/play?g=269115f5704c4d98185c34e16fda6298');
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => window.__playFeed?.().mode === 'preview', undefined, { timeout: 60_000 });
+    const seen = await page.evaluate(
+      () =>
+        new Promise<{ modes: string[]; locked: number; pullTouch: string[] }>((resolve) => {
+          const modes = new Set<string>();
+          const pullTouch = new Set<string>();
+          let locked = 0;
+          const started = performance.now();
+          const tick = () => {
+            modes.add(window.__playFeed!().mode);
+            const reel = document.querySelector('[data-testid="feed-reel"]');
+            if (reel !== null && getComputedStyle(reel).overflowY === 'hidden') locked += 1;
+            const pull = document.querySelector('[data-testid="feed-current"] [data-testid="minigolf-pull"]');
+            if (pull !== null) pullTouch.add(getComputedStyle(pull).touchAction);
+            if (performance.now() - started < 6000) setTimeout(tick, 50);
+            else resolve({ modes: [...modes], locked, pullTouch: [...pullTouch] });
+          };
+          tick();
+        }),
+    );
+    expect(seen.modes, 'feed mode over two preview windows').toEqual(['preview']);
+    expect(seen.locked, 'samples with the reel locked (overflow hidden)').toBe(0);
+    // Vrstva natažení minigolfu má `touch-action: none`; v náhledu musí svislý tah projít feedu.
+    expect(seen.pullTouch).toEqual(['pan-y']);
+  });
+});

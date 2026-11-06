@@ -6,6 +6,7 @@ import { type APIRequestContext, type CDPSession, expect, type Page, test, type 
 import { P68V_HUD_LABELS } from '../evals/play/p68/vozidla-sport/hud-labels-request';
 import { pullFor } from '../src/components/play/arcade/genres/minigolf/minigolf-touch';
 import { BUTTON } from '../src/play/arcade/contract';
+import { minigolfAim } from '../src/play/arcade/pieces/minigolf-roll';
 import { HUD_COUNTER_LABELS } from './hud-labels';
 
 /**
@@ -13,7 +14,7 @@ import { HUD_COUNTER_LABELS } from './hud-labels';
  * ve strašidelném domě, tři dýně jako odrazníky, pohyblivá rakev; seed v JSON) přes `POST /api/play/games` –
  * publikační brána s robotem projde. Pak:
  * - telefon (`pixel7-touch`, `iphone-touch`): celou jamku dohraje prst – stisk v herní ploše pod horním pásem HUD,
- *   natažení zpět o `pullFor(míření při stisku, osa, nabití)` (roste tik po tiku, dokud robot ověřovače drží `HOLD`),
+ *   natažení zpět o `pullFor(osa kamery při stisku, osa, nabití)` (roste tik po tiku, dokud robot ověřovače drží `HOLD`),
  *   puštění = rána, když robot chce `TAP`; vede ho `botWants` sondy `__playShell`; počítadlo `Strokes` v DOM vyroste
  *   aspoň na 1, konec kartou výhry; míček i jamka jsou v záběru na výšku;
  * - desktop (`chromium`): šipky otočí míření a držený mezerník nabije a pustí ránu (vstup v záznamu, `Strokes` = 1),
@@ -43,7 +44,7 @@ const AIM_SHOT_CHARGE = 24;
 const ROLL_SHOT_DELAY = 12;
 /** Kontrola „míček i jamka v záběru“ u poslední rány při tomto nabití (osa už míří na jamku). */
 const HOLE_SHOT_CHARGE = 30;
-/** Kamera tlumí otočení za mířením (5/s): tolik ms snímků bez tiku, než se usadí. */
+/** Přechod kamery (`MINIGOLF_CAMERA.settle`, 0,8 s): tolik ms snímků bez tiku, než se usadí. */
 const CAMERA_SETTLE_MS = 1200;
 
 interface Wants {
@@ -232,7 +233,7 @@ const strokesShown = (page: Page) => page.evaluate(() => Number(document.querySe
 
 /**
  * Snímky v chvílích běhu robota: míření první rány, valení, poslední rána nabitá a zamířená na jamku (kamera se
- * otočí za mířením, `CAMERA_SETTLE_MS`). Na šířku se jamka v záběru jen zapíše – brána je na výšku (`fitTall`).
+ * dojede přechod, `CAMERA_SETTLE_MS`). Na šířku se jamka v záběru jen zapíše – brána je na výšku (`fitTall`).
  */
 async function botShots(page: Page, shot: (name: string) => Promise<void>, prefix: string): Promise<void> {
   const strokes = pinned().strokes;
@@ -246,6 +247,156 @@ async function botShots(page: Page, shot: (name: string) => Promise<void>, prefi
   test.info().annotations.push({ type: `${prefix}-hole-in-view`, description: JSON.stringify(await inView(page)) });
   await shot(`${prefix}-hole`);
   await restart(page);
+}
+
+/** Prahy kamery P71C T1/T2 (m, °): míření, první snímky po puštění, klid po zastavení. */
+const CAMERA_GATE = { aimFrame: 0.05, aimTotal: 0.3, releaseFrame: 0.1, releaseDeg: 1, releaseFrames: 3, swing: 0.02, settled: 0.005, restAfterMs: 1500 } as const;
+const CAMERA_OUT = process.env.P71_GOLF_OUT ?? join(process.cwd(), 'evals/play/p71/golf');
+
+interface CameraFrame {
+  readonly t: number;
+  readonly p: readonly [number, number, number];
+  readonly q: readonly [number, number, number, number];
+  readonly rolling: boolean;
+  readonly strokes: number;
+  readonly axis: number;
+}
+
+/** Směr pohledu z kvaternionu kamery (−z kamery ve světě). */
+function forwardOf([x, y, z, w]: CameraFrame['q']): [number, number, number] {
+  // −z otočené kvaternionem: (−2(xz + wy), −2(yz − wx), −(1 − 2(x² + y²)))
+  return [-2 * (x * z + w * y), -2 * (y * z - w * x), -(1 - 2 * (x * x + y * y))];
+}
+const gap = (a: CameraFrame['p'], b: CameraFrame['p']): number => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const degBetween = (a: CameraFrame['q'], b: CameraFrame['q']): number => {
+  const [u, v] = [forwardOf(a), forwardOf(b)];
+  const dot = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (Math.hypot(...u) * Math.hypot(...v));
+  return (Math.acos(Math.min(1, Math.max(-1, dot))) * 180) / Math.PI;
+};
+
+/**
+ * Kamera po snímcích (P71C T2) skutečnou rukou v reálném čase: na startu karta nekryje míček ani jamku; pak míření
+ * (prst krouží, nebo šipky), natažení a rána; záznam `__playFrame().camera` v každém `requestAnimationFrame` až do
+ * klidu po zastavení. Prahy `CAMERA_GATE`; záznam a snímky před / během / po do `CAMERA_OUT`.
+ */
+async function cameraCheck(page: Page, info: TestInfo, cdp: CDPSession | null, name: string): Promise<{ readonly failures: string[]; readonly summary: object }> {
+  const touch = info.project.name !== 'chromium';
+  const prefix = `${name}-${info.project.name}`;
+  mkdirSync(CAMERA_OUT, { recursive: true });
+  const snap = async (moment: string) => {
+    await page.screenshot({ path: join(CAMERA_OUT, `${prefix}-${moment}.png`) });
+  };
+  const failures: string[] = [];
+  const covered = await page.evaluate(() => {
+    const card = document.querySelector('[data-testid="play-first-prompt"]')?.getBoundingClientRect() ?? null;
+    const stage = document.querySelector('[data-testid="arcade-stage"]')!.getBoundingClientRect();
+    const frame = window.__playFrame!();
+    const px = (box: { minX: number; maxX: number; minY: number; maxY: number } | null) =>
+      box === null ? null : { left: stage.left + ((box.minX + 1) / 2) * stage.width, right: stage.left + ((box.maxX + 1) / 2) * stage.width, top: stage.top + ((1 - box.maxY) / 2) * stage.height, bottom: stage.top + ((1 - box.minY) / 2) * stage.height };
+    const over = (box: ReturnType<typeof px>) => card !== null && box !== null && box.left < card.right && card.left < box.right && box.top < card.bottom && card.top < box.bottom;
+    return { card: card !== null, ball: over(px(frame.hero)), hole: over(px(frame.target)), holeSeen: frame.target !== null };
+  });
+  await snap('start');
+  if (covered.ball || covered.hole) failures.push(`start card covers ${covered.ball ? 'the ball' : ''}${covered.hole ? ' the hole' : ''}`);
+
+  await page.evaluate(() => {
+    const own = window as unknown as { __cam?: CameraFrame[]; __camOn?: boolean };
+    own.__cam = [];
+    own.__camOn = true;
+    const layer = () => document.querySelector<HTMLElement>('[data-testid="minigolf-pull"]');
+    const loop = (t: number) => {
+      if (own.__camOn !== true) return;
+      const camera = window.__playFrame!().camera;
+      const strokes = Number(document.querySelector('[data-testid="hud-counter-strokes"]')?.getAttribute('data-count') ?? 0);
+      own.__cam!.push({ t, p: camera.position as CameraFrame['p'], q: camera.quaternion as CameraFrame['q'], rolling: layer()?.dataset.rolling === 'true', strokes, axis: Number(layer()?.dataset.axis ?? 0) });
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+    (window.__playShell as unknown as ArcadeProbe).start();
+  });
+
+  if (touch) {
+    const stage = (await page.getByTestId('arcade-stage').boundingBox())!;
+    const x0 = Math.round(stage.x + stage.width / 2);
+    // Štítek ducha „Best run“ dotyk chytá (viz výš): první bod na vrstvě natažení.
+    const y0 = await page.evaluate(
+      ({ x, ys }) => ys.find((y) => document.elementFromPoint(x, y)?.closest('[data-testid="minigolf-pull"]') != null) ?? ys[0]!,
+      { x: x0, ys: [0.55, 0.65, 0.45, 0.7].map((share) => Math.round(stage.y + stage.height * share)) },
+    );
+    const fingers = new Fingers(cdp, page);
+    await fingers.press(FINGER, x0, y0);
+    // Míření: prst krouží za míčkem (osa se v stavu mění), pak natažení rovně dolů na ránu k cíli.
+    for (let k = 0; k < 40; k += 1) {
+      await fingers.move(FINGER, x0 + Math.round(90 * Math.sin(k / 4)), y0 + 90);
+      await frames(page);
+    }
+    await snap('aim');
+    await fingers.move(FINGER, x0, y0 + 150);
+    await expect.poll(() => page.getByTestId('minigolf-power').getAttribute('aria-valuenow').then(Number), { timeout: 5_000 }).toBeGreaterThanOrEqual(40);
+    await fingers.lift(FINGER);
+  } else {
+    await page.keyboard.down('ArrowLeft');
+    await page.waitForTimeout(400);
+    await page.keyboard.up('ArrowLeft');
+    await page.keyboard.down('ArrowRight');
+    await page.waitForTimeout(400);
+    await page.keyboard.up('ArrowRight');
+    await snap('aim');
+    await page.keyboard.down(' ');
+    await page.waitForTimeout(700);
+    await page.keyboard.up(' ');
+  }
+  await expect.poll(() => strokesShown(page), { timeout: 5_000 }).toBeGreaterThanOrEqual(1);
+  await page.waitForTimeout(150);
+  await snap('during');
+  await page.waitForFunction(() => document.querySelector<HTMLElement>('[data-testid="minigolf-pull"]')?.dataset.rolling === 'false', undefined, { timeout: 30_000 });
+  await page.waitForTimeout(CAMERA_GATE.restAfterMs);
+  const reel = await page.evaluate(() => {
+    const own = window as unknown as { __cam?: CameraFrame[]; __camOn?: boolean };
+    own.__camOn = false;
+    return own.__cam!;
+  });
+  await snap('after');
+
+  const release = reel.findIndex((frame) => frame.rolling);
+  const stop = reel.findIndex((frame, k) => k > release && !frame.rolling);
+  const aim = reel.slice(0, release < 0 ? reel.length : release);
+  const aimMoves = aim.slice(1).map((frame, k) => gap(frame.p, aim[k]!.p));
+  const aimTotal = Math.max(0, ...aim.map((frame) => gap(frame.p, aim[0]!.p)));
+  const releaseMoves = release <= 0 ? [] : reel.slice(release, release + CAMERA_GATE.releaseFrames).map((frame, k) => ({ m: gap(frame.p, reel[release + k - 1]!.p), deg: degBetween(frame.q, reel[release + k - 1]!.q) }));
+  const final = reel.at(-1)!;
+  const back = stop < 0 ? [] : reel.slice(stop).map((frame) => gap(frame.p, final.p));
+  const swing = Math.max(0, ...back.slice(1).map((value, k) => value - back[k]!));
+  const settledMove = gap(final.p, reel.at(-2)!.p);
+  const look = forwardOf(final.q);
+  const [ax, az] = minigolfAim(final.axis);
+  const heading = (-ax * look[0] + az * look[2]) / (Math.hypot(ax, az) * Math.hypot(look[0], look[2]));
+  const summary = {
+    frames: reel.length,
+    release,
+    stop,
+    aimFrameMax: Math.max(0, ...aimMoves),
+    aimTotal,
+    releaseMoves,
+    swing,
+    settledMove,
+    heading,
+    card: covered,
+    rollMs: stop < 0 || release < 0 ? null : reel[stop]!.t - reel[release]!.t,
+  };
+  if (release <= 0) failures.push('no release frame in the reel');
+  if (stop < 0) failures.push('the ball never stopped in the reel');
+  if (summary.aimFrameMax > CAMERA_GATE.aimFrame) failures.push(`aim: ${summary.aimFrameMax.toFixed(3)} m in one frame`);
+  if (aimTotal > CAMERA_GATE.aimTotal) failures.push(`aim: ${aimTotal.toFixed(3)} m in total`);
+  for (const [k, move] of releaseMoves.entries()) {
+    if (move.m > CAMERA_GATE.releaseFrame || move.deg > CAMERA_GATE.releaseDeg) failures.push(`release frame ${String(k)}: ${move.m.toFixed(3)} m, ${move.deg.toFixed(2)}°`);
+  }
+  if (swing > CAMERA_GATE.swing) failures.push(`return to rest swings back by ${swing.toFixed(3)} m`);
+  if (settledMove > CAMERA_GATE.settled) failures.push(`camera still moving at rest: ${settledMove.toFixed(4)} m per frame`);
+  if (!(heading > 0.995)) failures.push(`rest heading off the ball → target axis: ${heading.toFixed(4)}`);
+  writeFileSync(join(CAMERA_OUT, `camera-${prefix}.json`), `${JSON.stringify({ summary, failures, gate: CAMERA_GATE, reel }, null, 1)}\n`);
+  test.info().annotations.push({ type: `camera-${name}`, description: JSON.stringify({ ...summary, failures }) });
+  return { failures, summary };
 }
 
 /** Rány v záznamu sondy (`TAP`). */
@@ -307,7 +458,7 @@ test.describe('minigolf (P68V T9)', () => {
         return shell.botWants();
       });
       let last: Now = { runState: 'running', tick: 0, score: 0 };
-      /** Míření ve stavu při stisku: 0 na tiku 0, pak osa poslední rány (pin v `minigolf-replay.test.ts`). */
+      /** Osa kamery při stisku (`data-axis` vrstvy, `minigolfCameraAxis`): z míčku na cíl trasy, míření ji nehýbe. */
       let base = 0;
       let axis = 0;
       let charge = 0;
@@ -323,7 +474,6 @@ test.describe('minigolf (P68V T9)', () => {
         if (tap && fingers.has(FINGER)) {
           // Robot pouští: prst se zvedne, rána letí s nabitím, které tah držel.
           await fingers.lift(FINGER);
-          base = axis;
           putts += 1;
           if (rollShotAt < 0) rollShotAt = last.tick + 1 + ROLL_SHOT_DELAY;
           await frames(page);
@@ -333,6 +483,7 @@ test.describe('minigolf (P68V T9)', () => {
             const at = await startAt();
             if (at.blockedBy !== null) blocked.push({ putt: putts + 1, by: at.blockedBy });
             [cx, cy] = [at.x, at.y];
+            base = Number(await page.getByTestId('minigolf-pull').getAttribute('data-axis'));
             await fingers.press(FINGER, cx, cy);
             charge = 0;
           }
@@ -420,6 +571,19 @@ test.describe('minigolf (P68V T9)', () => {
     await expect(page.getByTestId('play-postrun')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('play-postrun')).toContainText('You did it!');
     await shot(touch ? 'portrait-result' : 'landscape-result');
+    expect(errors, errors.join('\n')).toEqual([]);
+  });
+
+  test('minigolf camera: still while aiming, no jump at release, back to rest with no swing, card off the course (P71C T2)', async ({ page, context, browserName }, info) => {
+    test.setTimeout(240_000);
+    const errors = watchErrors(page);
+    const games = [{ name: 'fixture', url }, ...(process.env.P71_GOLF_URLS ?? '').split(',').filter((pair) => pair.includes('=')).map((pair) => ({ name: pair.slice(0, pair.indexOf('=')), url: pair.slice(pair.indexOf('=') + 1) }))];
+    for (const game of games) {
+      await openGame(page, game.url);
+      await settled(page);
+      const verdict = await cameraCheck(page, info, browserName === 'chromium' ? await context.newCDPSession(page) : null, game.name);
+      expect(verdict.failures, `${game.name}: ${JSON.stringify(verdict)}`).toEqual([]);
+    }
     expect(errors, errors.join('\n')).toEqual([]);
   });
 

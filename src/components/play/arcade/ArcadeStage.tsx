@@ -1213,6 +1213,9 @@ const StageCanvas = memo(function StageCanvas({
   const { note, block } = cast.props;
   const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback={look.tint[0]} />;
   const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback={look.tint[0]} fill />;
+  // P71C T3: komu načasování věc dopraví („feed the monster“) – stojí za cílem lišty.
+  const goal = cast.props.finish;
+  const goalModel: BodyModel | undefined = goal === undefined ? undefined : (w, h, d) => <FittedModel id={goal} w={w} h={h} d={d} fallback={brand['tomato-deep']} character rim />;
   const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
@@ -1238,7 +1241,7 @@ const StageCanvas = memo(function StageCanvas({
         <>
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
           {stage.scene === 'timing' ? (
-            <TimingScene session={session} look={look} blockModel={blockModel} heroModel={castHero} heroAction={heroAction} ghost={ghost} />
+            <TimingScene session={session} look={look} blockModel={blockModel} goalModel={goalModel} heroModel={castHero} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'rhythm' ? (
             <RhythmScene session={session} look={look} heroModel={castHero} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'arena' ? (

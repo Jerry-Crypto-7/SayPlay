@@ -5,7 +5,7 @@
  * slitý 5, takže řada domů podél trati nestojí stovky kreslicích volání navíc.
  */
 
-import type { AnimationClip, Bone, KeyframeTrack, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray, WebGLProgramParametersWithUniforms } from 'three';
+import type { AnimationClip, Bone, KeyframeTrack, Material, Mesh, MeshBasicMaterial, Object3D, Side, SkinnedMesh, Texture, TypedArray, WebGLProgramParametersWithUniforms } from 'three';
 import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshDepthMaterial, MeshStandardMaterial, PropertyBinding, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -41,13 +41,91 @@ export function singlePass(model: Object3D): Object3D {
   return model;
 }
 
+/**
+ * Oboustranná síť z generátoru (P71E T2): pirátská loď má 21 % trojúhelníků s normálou vrcholů
+ * proti pořadí vrcholů (plachetnice 32 %). Three oboustrannou plochu stíní podle pořadí
+ * (`normal *= faceDirection`), takže přivrácený líc takového trojúhelníku dostane normálu do
+ * modelu a je černý. Pořadí se otočí podle normál. Jednostranný materiál se nechá – tam pořadí
+ * rozhoduje, která strana se vůbec kreslí. Sdílená geometrie se otáčí jednou.
+ */
+export function windAlongNormals(model: Object3D): Object3D {
+  const done = new Set<BufferGeometry>();
+  const a = new Vector3();
+  const b = new Vector3();
+  const c = new Vector3();
+  const along = new Vector3();
+  const sum = new Vector3();
+  const corner = new Vector3();
+  model.traverse((node) => {
+    const mesh = node as Mesh;
+    if (!mesh.isMesh || done.has(mesh.geometry)) return;
+    if (!(Array.isArray(mesh.material) ? mesh.material : [mesh.material]).every((material) => material.side === DoubleSide)) return;
+    const { geometry } = mesh;
+    done.add(geometry);
+    const position = geometry.getAttribute('position');
+    const normal = geometry.getAttribute('normal');
+    if (normal === undefined) return;
+    const index = geometry.index;
+    const vertex = (k: number): number => (index === null ? k : index.getX(k));
+    const attributes = [...Object.values(geometry.attributes), ...Object.values(geometry.morphAttributes).flat()];
+    const triangles = Math.floor((index === null ? position.count : index.count) / 3);
+    for (let t = 0; t < triangles; t += 1) {
+      const [i, j, k] = [vertex(3 * t), vertex(3 * t + 1), vertex(3 * t + 2)];
+      a.fromBufferAttribute(position, i);
+      b.fromBufferAttribute(position, j).sub(a);
+      c.fromBufferAttribute(position, k).sub(a);
+      along.crossVectors(b, c);
+      sum.fromBufferAttribute(normal, i).add(corner.fromBufferAttribute(normal, j)).add(corner.fromBufferAttribute(normal, k));
+      if (along.dot(sum) >= 0) continue;
+      if (index !== null) {
+        index.setX(3 * t + 1, k);
+        index.setX(3 * t + 2, j);
+        continue;
+      }
+      for (const attribute of attributes) {
+        for (let n = 0; n < attribute.itemSize; n += 1) {
+          const kept = attribute.getComponent(j, n);
+          attribute.setComponent(j, n, attribute.getComponent(k, n));
+          attribute.setComponent(k, n, kept);
+        }
+      }
+    }
+  });
+  return model;
+}
+
+/**
+ * Postava s `KHR_materials_unlit` (P71E T2, 22 riggovaných): GLTFLoader jí dá `MeshBasicMaterial`
+ * bez světla, toonu i svitu (`rimMaterial` ho přeskočí, nemá `emissive`) – kuře v defense byla
+ * plochá olivová skvrna. Dostane standardní materiál se stejnou texturou a barvou; sítě, které
+ * sdílely jeden materiál, sdílí i nový (`mergeRig` slévá po materiálech).
+ */
+export function litUnlit(root: Object3D): Object3D {
+  const lit = new Map<Material, Material>();
+  const swap = (material: Material): Material => {
+    if (material.type !== 'MeshBasicMaterial') return material;
+    let made = lit.get(material);
+    if (made === undefined) {
+      const { name, map, color, side, transparent, opacity, alphaTest, vertexColors } = material as MeshBasicMaterial;
+      made = new MeshStandardMaterial({ name, map, color, side, transparent, opacity, alphaTest, vertexColors, roughness: 0.9, metalness: 0 });
+      lit.set(material, made);
+    }
+    return made;
+  };
+  root.traverse((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh) mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
+  });
+  return root;
+}
+
 export function loadModel(id: string): Promise<Object3D | null> {
   let pending = modelCache.get(id);
   if (pending === undefined) {
     pending = trackLoad(
       new GLTFLoader()
         .loadAsync(modelPath(id))
-        .then((gltf) => singlePass(gltf.scene as Object3D))
+        .then((gltf) => singlePass(windAlongNormals(gltf.scene as Object3D)))
         .catch(() => null),
     );
     void pending.then((model) => modelReady.set(id, model));

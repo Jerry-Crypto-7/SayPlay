@@ -1,13 +1,13 @@
 {
  "total": 200,
  "before": {
-  "piece": 81,
-  "none": 119
+  "piece": 82,
+  "none": 118
  },
  "after": {
-  "piece": 81,
+  "piece": 82,
   "template": 38,
-  "none": 81
+  "none": 80
  },
  "byTemplate": {
   "collect_unlock": 1,
@@ -58,11 +58,11 @@
    "count": 3
   },
   {
-   "verb": "shoot",
+   "verb": "sneak",
    "count": 3
   },
   {
-   "verb": "sneak",
+   "verb": "tap",
    "count": 3
   }
  ],
@@ -475,8 +475,8 @@
   {
    "id": "s043",
    "verbClass": "aim_shoot",
-   "drafted": "glide",
-   "cover": "none",
+   "drafted": "shooter",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "shoot"

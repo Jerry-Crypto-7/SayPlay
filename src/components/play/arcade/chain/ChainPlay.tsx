@@ -20,6 +20,7 @@ import type { ChainWorld } from '@/play/chain/contract';
 import { roundClock } from '@/play/chain/run';
 import { type Par, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
+import type { FeedPreview } from '@/play/version/version';
 
 import type { Dare } from '../../best';
 import { StageHost } from '../../feed/StageHost';
@@ -109,7 +110,10 @@ function ChainRun({
   bestDare,
   upgrade = null,
   sentence = null,
+  preview,
 }: {
+  /** Náhled robota kola 1 z publikace (P71B T1): ve feedu hraje, dokud se hráč nedotkne. */
+  readonly preview?: FeedPreview;
   /** Adresa `GET …/upgrade` řetězu z věty (P58E T3): přechod na hru ze čtení, AI verzi řetěz nemá. */
   readonly upgrade?: string | null;
   readonly sentence?: string | null;
@@ -149,6 +153,14 @@ function ChainRun({
     if (!active) return;
     chain.rounds.forEach(({ spec: next }, index) => prebuildRunnerTerrain(session.worlds[index]!, sceneLook(next.theme)));
   }, [active, chain, session]);
+
+  // Náhled robota kola 1 ve feedu (P71B T1): běží, dokud kolo čeká na první dotek; ten kolo vrátí na tik 0 (`begin`).
+  useEffect(() => {
+    if (!active || preview === undefined || attempt > 0) return;
+    const first = session.current();
+    if (session.round() === 0 && session.waiting() && first.demo() === null) first.startPreview(preview);
+  }, [active, preview, attempt, session]);
+  const previewing = round.demo()?.preview === true;
 
   // Karta mezi koly: hodiny karty jdou snímky prohlížeče, kolo pak pohání jeho scéna.
   const carding = card > 0;
@@ -355,6 +367,12 @@ function ChainRun({
         bottom={vrOffered && <EnterVrButton />}
       >
         {!inFeed && <UpgradeBanner request={upgrade} sentence={sentence} versionId={versionId} committed={committed} chain />}
+        {/* Značka náhledu jako u `ArcadePlay`: feed podle ní nechá tah po scéně listovat a ťuk hru převezme; v kartě skrytá. */}
+        {previewing && (
+          <aside className="sp-toast play-demo-note" role="status">
+            <span data-testid="play-demo">Demo: the verified run of round 1. Your score is not counted.</span>
+          </aside>
+        )}
       </GameHud>
       {carding && !over && <ChainCard card={chain.rounds[session.round()]!.card} twist={chain.rounds[session.round()]!.twist} round={session.round() + 1} rounds={rounds} />}
       {over && settled && (

@@ -104,17 +104,11 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     expect(drafted.spec.control).toBe('railfps');
   });
 
+  // P71D T2: vesmírná loď, která střílí asteroidy, hraje střílečku – dřív kroužky s „to swim“ (QA 5. 11.).
   it.each(SHOOT)('"%s" → shooter', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence, 1);
-    if (sentence.startsWith('a spaceship ')) {
-      expect(drafted.composition?.recipe.move).toBe('glide');
-      expect(drafted.composition?.recipe.actions).toContain('shoot');
-      expect(drafted.spec.control).toBe('glide');
-      expect(drafted.spec.addons).toContain('shoot');
-    } else {
-      expect(drafted.genre?.genre).toBe('shooter');
-      expect(drafted.spec.control).toBe('shooter');
-    }
+    expect(drafted.genre?.genre).toBe('shooter');
+    expect(drafted.spec.control).toBe('shooter');
   });
 
   // P68 T9: „mini golf …“ hraje minigolf (`vozidla-sport/integration.md`), jakmile ho brána pustí; za ní míč do jamky.

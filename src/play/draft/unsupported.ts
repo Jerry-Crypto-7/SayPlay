@@ -20,7 +20,8 @@ import { loadRapier } from '../arcade/physics/world';
 import { witnessRuns } from '../arcade/verify';
 import { bindRoles, matchesWitness, namesActor, type RoleBinding } from '../arcade/witness';
 import type { ArcadeWorld } from '../arcade/contract';
-import { SIGN_CELLS, classifyGenre } from '../genre/classify';
+import { FIND_ONE, SIGN_CELLS, classifyGenre } from '../genre/classify';
+import { impliedFlight } from '../compose/assemble';
 import { essentialTriples, type IntentTriple } from '../intent/contract';
 import { extractIntent } from '../intent/extract';
 import { vocabVerb, vocabVersion } from '../vocab';
@@ -211,7 +212,9 @@ const honesties = new Map<string, Honesty | null>();
  * („ball“, „score“ ze slova golf, „hit the ball“) jsou ta hra sama – svědka v jamce nemají a hláška by si vymýšlela
  * („Balling isn't here yet – here's a mini golf game“, audit 4. 11.).
  */
-const OWN_GAME_GENRES: ReadonlySet<string> = new Set(['minigolf']);
+// P71D T6: obchod („run a pizza shop and serve 12 customers“) – „run“ je tu provozovat a „serve“ je ta hra sama,
+// pruh hlásil „Running and delivery aren't here yet – here's a shop building game.“
+const OWN_GAME_GENRES: ReadonlySet<string> = new Set(['minigolf', 'buildshift']);
 
 function playsOwnGenre(sentence: string, spec: GameSpecV1): boolean {
   if (spec.genre === undefined) return false;
@@ -219,7 +222,7 @@ function playsOwnGenre(sentence: string, spec: GameSpecV1): boolean {
   const heard = classified.ranked[0];
   if (heard === undefined || heard.score <= 0 || heard.genre !== spec.genre.id || heard.mode !== spec.genre.mode) return false;
   // Jen žánr celé hry (má znak): útěk v Aréně ze slova „dodges“ (`verb-mapping`) své hrozby dál přiznává.
-  // simplified: jen minigolf (případ auditu) – railfps „a truck races and fires“ střelbu svědkem `shoot` nedokládá
+  // simplified: jen minigolf a obchod (případy auditů) – railfps „a truck races and fires“ střelbu svědkem `shoot` nedokládá
   // a přiznat ji musí (`p42-admissions`); rozšířit, až jiný žánr celé hry ukáže falešný pruh.
   return OWN_GAME_GENRES.has(heard.genre) && SIGN_CELLS.has(`${heard.genre}.${heard.mode}`) && (classified.verb === null || classified.pick?.genre === heard.genre);
 }
@@ -238,7 +241,9 @@ const gerund = (lemma: string) => (/[^e]e$/.test(lemma) ? `${lemma.slice(0, -1)}
 async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
   // Hra je žánr věty: pruh se neukáže (zůstává jen třída, kterou neumíme vůbec – otevřený svět, idle …).
   if (playsOwnGenre(sentence, spec)) return unsupportedGame(sentence, spec);
-  const intent = extractIntent(sentence);
+  const read = extractIntent(sentence);
+  // Let domyšlený jen ze jména lodi, kterou věta nechá střílet, skladatel nehraje (`impliedFlight`) – hláška ho nepřizná.
+  const intent = { ...read, items: read.items.filter(item => !impliedFlight(read, item)) };
   const triples = essentialTriples(intent);
   await preloadPhysics(spec, loadRapier);
   const made = publishedWorld === undefined ? arcadeWorldOf(spec, seed) : { ok: true as const, world: publishedWorld, roleBindings: bindRoles(spec, publishedWorld) };
@@ -247,7 +252,11 @@ async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, 
   // Přiznání čte jen svědky (sondy a vítězný běh); přehrání a nečinný hráč z `verifyArcade` by jen stály čas odpovědi.
   const runs = made.ok ? witnessRuns(made.world, undefined, made.roleBindings, { pacingProbe }) : null;
   const witnesses = runs === null ? [] : [...runs.bot.witnesses, ...runs.probes];
-  const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
+  // P71D T6: „find the lost crown“ čte záměr jako sběr; úkol tu jednu věc najde použitím (`interact` na ten předmět).
+  const findsOne = spec.genre?.id === 'quest' && FIND_ONE.test(sentence.toLowerCase());
+  const met = (triple: IntentTriple, witness: (typeof witnesses)[number]) =>
+    matchesWitness(triple, witness) || (findsOne && triple.verb === 'collect' && matchesWitness({ ...triple, verb: 'interact' }, witness));
+  const unmet = triples.filter(triple => !witnesses.some(witness => met(triple, witness)));
   // P44C: sloveso přiblížené tabulkou se jmenuje slovem z věty, ne kanonickým kusem.
   const mapped = intent.items.filter(item => item.mapped === true && item.essential);
   const lemmaOf = (item: { readonly said: string }) => vocabVerb(item.said)?.lemma ?? item.said;

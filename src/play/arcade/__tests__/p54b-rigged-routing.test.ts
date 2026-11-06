@@ -57,6 +57,13 @@ describe('rigged characters for heroes and enemies (P54B T4)', () => {
     expect(heroChoice('scientist', undefined, 'runner').model).toBe('gen3d-lab-scientist');
     expect(heroChoice('nurse', undefined, 'runner').model).toBe('gen3d-nurse');
     expect(heroChoice('llama', undefined, 'runner').model).toBe('cc0-llama');
+    // P71E T2: drak je wyverna, ne létající drak s netopýří hlavou; malý drak Quaternius má svůj tag.
+    expect(heroChoice('dragon', undefined, 'runner').model).toBe('gen3d-wyvern');
+    expect(heroChoice('a dragon', undefined, 'shooter', 'enemy').model).toBe('gen3d-wyvern');
+    expect(sceneModelOf('dragon', true)).toBe('gen3d-wyvern');
+    // Kuře je bílé kuře Quaternius, ne olivová riggovaná koule.
+    expect(heroChoice('a chicken', undefined, 'hop').model).toBe('cc0-chicken');
+    expect(heroChoice('hen', undefined, 'runner').model).toBe('cc0-chicken');
   });
 
   it('every kin and alias target is a character with clips', () => {

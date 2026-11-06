@@ -1268,7 +1268,8 @@ function draftGenre(
   // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
   const aimed = verb === 'hit' || verb === 'shoot' || verb === 'throw' || ranking.verb === null ? thing(roles.target) : null;
   // Skákačka: cíl úrovně a jeho sloveso vyčte `draftFill` modulu („to find its battery“, P35 T3).
-  const filledTarget = choice.genre === 'platformer' ? (fillGoal ?? null) : null;
+  // Načasování (P71C T3): koho lano krmí („feed the monster“) – bez něj by lišta příšeru zahodila.
+  const filledTarget = choice.genre === 'platformer' || choice.genre === 'timing' ? (fillGoal ?? null) : null;
   // Hod (P36A T10): terč je to, na co se hází („at kids“, „into a hoop“, převlek „angry birds but with cats and cardboard boxes“);
   // předmět slovesa je, co se hází, jen když nestojí za předložkou („throwing at a spinning log“) – „knife throwing“ hází nůž.
   // Bez terče z věty rozhodne druh cíle modulu.

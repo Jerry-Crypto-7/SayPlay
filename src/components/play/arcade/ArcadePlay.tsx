@@ -1033,8 +1033,9 @@ function ArcadePlayGame({
           )
         }
       >
-        {/* Ukázka robota (P27D T3) řekne, že neběží hra hráče, a vrátí ho do ní. */}
-        {running && demo !== null && !demo.ended && (
+        {/* Ukázka robota (P27D T3) řekne, že neběží hra hráče, a vrátí ho do ní. Náhled ve feedu i v pauze
+            na konci okna, které skončilo výhrou (minigolf, P71B R1) – jinak feed na 600 ms čte „hraje hráč“ a reel zamkne. */}
+        {(running || demo?.preview === true) && demo !== null && !demo.ended && (
           <aside className="sp-toast play-demo-note" role="status">
             <span data-testid="play-demo">Demo: the verified run of this version. Your score is not counted.</span>
             <Button variant="secondary" size="s" data-testid="play-demo-stop" onClick={() => session.restart()}>

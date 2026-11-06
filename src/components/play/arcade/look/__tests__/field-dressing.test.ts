@@ -37,6 +37,7 @@ import { FIELD_LEAST, FIELD_MOST, FIELD_TALLEST_M, type FieldPiece, START_CLEAR_
 import { fieldPiecesNow, fieldPiecesOf, prefetchFieldDressing } from '../field-dressing-client';
 import { type FieldWorkerRequest, type FieldWorkerResponse, fieldJob, handleFieldJob } from '../field-dressing-worker';
 import { landmarkPicks } from '../landmark-places';
+import { DECOR_TALLEST } from '../rig/terrain/arenaDecor';
 import { FieldDressing } from '../Scenery';
 
 // První montáž `FieldDressing` bez Reactu (vzor `shoot-throw.test.tsx`): stav z líné inicializace, efekty nic.
@@ -80,7 +81,7 @@ interface Game {
 
 const games = new Map<string, Game>();
 
-function gameOf(row: Row, seed: number): Game {
+function gameOf(row: Pick<Row, 'genre' | 'mode' | 'sentence'>, seed: number): Game {
   const key = `${row.sentence}#${String(seed)}`;
   const known = games.get(key);
   if (known !== undefined) return known;
@@ -168,10 +169,12 @@ describe('P62 T4: the play area itself is dressed', () => {
     expect(genre).toMatchObject({ genre: row.genre, mode: row.mode });
   });
 
-  it.each(ROWS.map((row) => [`${row.genre}/${row.mode}`, row] as const))('%s: 4–10 kit pieces inside the field, placed by the seed', (_, row) => {
+  it.each(ROWS.map((row) => [`${row.genre}/${row.mode}`, row] as const))('%s: kit pieces inside the field (4–10 on the range), placed by the seed', (_, row) => {
+    // P71E T3: kde hrdina chodí volně, smí jen kusy pod koleno – dnes žádný, 4–10 jich má jen střelnice.
+    const least = shooter(gameOf(row, 1).world) ? FIELD_LEAST : 0;
     for (const seed of SEEDS) {
       const { world, look, pieces } = gameOf(row, seed);
-      expect(pieces.length, `seed ${String(seed)}`).toBeGreaterThanOrEqual(FIELD_LEAST);
+      expect(pieces.length, `seed ${String(seed)}`).toBeGreaterThanOrEqual(least);
       expect(pieces.length, `seed ${String(seed)}`).toBeLessThanOrEqual(FIELD_MOST);
       const pool = new Set(fieldPool(look, world.seed).map((pooled) => pooled.kind));
       const hero = bodyBase(world.initial[HEADER.player] as number);
@@ -187,7 +190,8 @@ describe('P62 T4: the play area itself is dressed', () => {
       const again = fieldJob(world)!;
       expect(fieldDressing({ look, seed: world.seed, ...again })).toEqual(pieces);
     }
-    // Jiné semínko = jiné rozmístění (i úkol u pultu, jehož svět semínko nemění).
+    // Jiné semínko = jiné rozmístění (i úkol u pultu, jehož svět semínko nemění); volná aréna od P71E T3 kusy nemá.
+    if (least === 0) return;
     const places = SEEDS.map((seed) => JSON.stringify(gameOf(row, seed).pieces.map((piece) => [piece.kind, piece.x.toFixed(2), piece.z.toFixed(2)])));
     expect(new Set(places).size).toBe(SEEDS.length);
   });
@@ -236,6 +240,19 @@ describe('P62 T4: the play area itself is dressed', () => {
 
   it('only arenas and the shooting range get a field', () => {
     expect(fieldJob(runnerWorld())).toBeNull();
+  });
+});
+
+/** Věta z QA 5. 11. (P71E T3): sběr v aréně ve sklepení; semínko 71505 je snímek modelů P71E. */
+const DUNGEON_QUEST = 'a wizard explores a dungeon to find the lost crown';
+
+describe('P71E T3: no tall props where the hero roams free', () => {
+  // Kus nemá tělo a hráč dojde po celé ploše: 1,5m kamennou zdí 5 m před startem čaroděj prošel (start volný byl už předtím).
+  it.each([71505, 1])('the dungeon quest, seed %i: nothing on the floor above the hero’s knee', (seed) => {
+    const { world, pieces } = gameOf({ genre: 'arena', mode: 'collect', sentence: DUNGEON_QUEST }, seed);
+    expect(baseControlOf(world.control).id).toBe('move_free');
+    const tall = pieces.filter((piece) => inField(world, piece) && piece.height > DECOR_TALLEST);
+    expect(tall.map((piece) => `${piece.kind} ${piece.height.toFixed(2)} m at ${piece.x.toFixed(1)}, ${piece.z.toFixed(1)}`)).toEqual([]);
   });
 });
 
