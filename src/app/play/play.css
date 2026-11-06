@@ -1838,6 +1838,29 @@ button.play-version-switch__item:not(:disabled) {
   margin-top: var(--sp-space-2);
 }
 
+/* „How I read it“ (P73B T2): co hra z věty vzala, nad cílem a menší než on; náhrada přeškrtnutá. */
+.play-start-read {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-1);
+  max-width: 36ch;
+  padding-bottom: var(--sp-space-2);
+  border-bottom: var(--sp-border-base) solid var(--sp-outline);
+  font-size: var(--sp-text-label-size);
+  line-height: 1.3;
+  color: var(--sp-text-secondary);
+}
+
+.play-start-read-title {
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.play-start-read-swap s {
+  text-decoration-thickness: 2px;
+}
+
 /* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
 @media (max-width: 480px) {
   .play-first-prompt {

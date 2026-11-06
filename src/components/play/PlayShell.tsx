@@ -47,6 +47,8 @@ export interface PlayShellProps {
   readonly readingVersion?: boolean;
   readonly lab: LabFacts;
   readonly read: ReadFacts;
+  /** Náhrada z věty (P25E): proužek nad hrou kreslí `PlayShell`, karta startu ji řekne pod čtením (P73B T2). */
+  readonly honesty?: Honesty | null;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
   readonly upgrade: string | null;
   /** Vítězný běh robota arkádové hry (`report.par`, P36B T1) – měřítko hvězd; mřížka ho nečte. */
@@ -68,13 +70,13 @@ export function PlayShell({
   chain,
   honesty = null,
   ...rest
-}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly chain?: ChainWorld; readonly honesty?: Honesty | null }) {
+}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly chain?: ChainWorld }) {
   if (blueprint === null && arcade === undefined && chain === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
   // Řetěz mikroher (P56C T11) nemá `arcade`; hraje ho `ChainPlay`.
   const game =
     chain !== undefined ? <ChainPlay versionId={rest.versionId} spec={rest.spec} chain={chain} par={rest.par ?? null} challenge={rest.challenge ?? null} bestDare={rest.bestDare} upgrade={rest.upgrade} sentence={rest.read?.sentence ?? null} />
-    : arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} />
-    : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+    : arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} honesty={honesty} />
+    : blueprint !== null && <GridShell {...rest} blueprint={blueprint} honesty={honesty} />;
   // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.
   const shell = (
     <WithPlayEnv theme={rest.spec.theme} versionId={rest.versionId}>

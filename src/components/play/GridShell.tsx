@@ -42,6 +42,7 @@ import { Hud, TICKS_PER_SECOND, gridFacts, objectiveCounter } from './Hud';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
 import { AboutButton, SentenceRead } from './SentenceRead';
+import { StartRead } from './StartRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import type { PlayShellProps } from './PlayShell';
@@ -117,7 +118,7 @@ function witnessOps(witness: unknown): readonly { readonly tick: number; readonl
     .sort((a, b) => a.tick - b.tick);
 }
 
-export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, readingVersion = false, lab, read, upgrade }: PlayShellProps) {
+export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, readingVersion = false, lab, read, honesty = null, upgrade }: PlayShellProps) {
   // Restart z HUD (P34 T5) je nová relace runtime: `observeAt(0)` by přehrál hráčův záznam, ne začal znovu.
   const [controller, setController] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
@@ -509,7 +510,13 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
         {running && <RemixReadyChip job={remix} />}
       </Hud>
       {running && waiting && !paused && !aboutOpen && (
-        <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" goal={spec.tutorial.goalLine} lose={loseLineOf(spec, null)} />
+        <FirstPrompt
+          read={<StartRead read={read} honesty={honesty} />}
+          controlsHint={spec.tutorial.controlsHint}
+          keys="or press the number on a card"
+          goal={spec.tutorial.goalLine}
+          lose={loseLineOf(spec, null)}
+        />
       )}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />

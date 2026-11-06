@@ -19,7 +19,7 @@ const DEMO_SPEC = (() => {
   return read.value;
 })();
 
-const READ: ReadFacts = { authorship: 'ai', readBy: 'keywords', sentence: 'A fox steals eggs', game: 'Arena', world: 'farm · sunny', you: 'fox', against: ['dog'] };
+const READ: ReadFacts = { authorship: 'ai', readBy: 'keywords', sentence: 'A fox steals eggs', game: 'Arena', world: 'farm · sunny', place: 'farm', you: 'fox', against: ['dog'] };
 
 describe('AI provenance on the game info', () => {
   it('says model, seconds and fresh or cached', () => {

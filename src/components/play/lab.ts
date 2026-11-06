@@ -36,6 +36,8 @@ export interface ReadFacts {
   readonly sentence: string | null;
   readonly game: string;
   readonly world: string;
+  /** Jen místo z `world`, bez nálady – řádek „How I read it“ na startu (P73B T2). */
+  readonly place: string;
   readonly you: string | null;
   readonly against: readonly string[];
   /** Původ AI verze (P73B T1) – jen když ho verze nese (`PublishedGame.provenance`). */
@@ -74,6 +76,7 @@ export function readFacts(
     sentence,
     game: game.charAt(0).toUpperCase() + game.slice(1),
     world: `${spec.theme.setting} · ${spec.theme.mood}`,
+    place: spec.theme.setting,
     you: spec.roles.find((role) => role.kind === 'player')?.label ?? null,
     against: [...new Set(spec.roles.filter((role) => OPPONENT_KINDS.has(role.kind)).map((role) => role.label))],
     ...(ai === undefined ? {} : { ai }),

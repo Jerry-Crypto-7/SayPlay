@@ -29,6 +29,7 @@ import { musicFor, narrationUrl, tenseMusicFor } from '@/play/audio/library';
 import { createTension } from '@/play/audio/tension';
 import { CHAIN_RUNTIME_VERSION } from '@/play/chain/contract';
 import type { GameVersion } from '@/play/contracts';
+import type { Honesty } from '@/play/draft/unsupported';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 import type { FeedPreview } from '@/play/version/version';
@@ -43,6 +44,7 @@ import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, type Hu
 import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { AboutButton, SentenceRead } from '../SentenceRead';
+import { StartRead } from '../StartRead';
 import { type DarePublish, type LivePublish, publishDare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
@@ -315,6 +317,8 @@ export interface ArcadePlayProps {
   /** Feed (P27B T4) je nemá – počítají se na serveru z registru – a hraje bez nich. */
   readonly lab?: LabFacts;
   readonly read?: ReadFacts;
+  /** Náhrada z věty (proužek `HonestyStrip`); karta startu ji řekne pod čtením (P73B T2). */
+  readonly honesty?: Honesty | null;
   readonly upgrade: string | null;
   /** Hra na obrazovce feedu; `false` ji pozastaví (P27B T3). */
   readonly active?: boolean;
@@ -439,6 +443,7 @@ function ArcadePlayGame({
   readingVersion = false,
   lab,
   read,
+  honesty = null,
   upgrade,
   active = true,
   offline = false,
@@ -986,6 +991,7 @@ function ArcadePlayGame({
             {/* Za pauzy a otevřeného listu karta ustoupí (P70C): jinak prosvítá přes „About this game“. */}
             {running && active && demo === null && snapshot.tick === 0 && !holdsPause && !aboutOpen && (
               <FirstPrompt
+                read={read === undefined ? undefined : <StartRead read={read} honesty={honesty} />}
                 controlsHint={spec.tutorial.controlsHint}
                 touch={zoneHint}
                 goal={spec.tutorial.goalLine}

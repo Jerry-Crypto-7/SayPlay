@@ -3,7 +3,7 @@
  * `timer.ts` (P28E-R2): HUD mřížky táhne runtime a arkáda ho nepotřebuje.
  */
 
-import { useSyncExternalStore } from 'react';
+import { type ReactNode, useSyncExternalStore } from 'react';
 
 /** Klávesy, které nápověda nabízí vedle dotyku („Tap or Space …“). */
 const KEY_WORD = 'space|arrows|wasd|a\\/d|w\\/s|down|up|enter|keys';
@@ -164,7 +164,10 @@ export function FirstPrompt({
   goal,
   lose = null,
   dare = null,
+  read,
 }: {
+  /** Jak hra větu přečetla (`StartRead`, P73B T2) – nahoře na kartě. */
+  readonly read?: ReactNode;
   readonly controlsHint: string;
   readonly touch?: string;
   readonly keys?: string;
@@ -180,6 +183,7 @@ export function FirstPrompt({
   const more = coarse ? controlLines(touchControls(controlsHint, touch), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
   return (
     <div className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
+      {read}
       {dare !== null && (
         <p className="play-first-prompt-dare" data-testid="play-dare-goal">
           {dare.goal}
