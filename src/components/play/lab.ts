@@ -12,7 +12,7 @@ import { GENRES, type GenreId } from '@/play/genre/contract';
 import { loseLineOf } from '@/play/lose-line';
 import { MECHANICS, type MechanicId } from '@/play/registry';
 import type { GameSpecV1 } from '@/play/spec';
-import type { PublishedGame } from '@/play/version';
+import type { AiProvenance, PublishedGame } from '@/play/version';
 
 /**
  * Kdo hru navrhl. `draft` = okamžitý návrh ze slov (bez modelu), `ai` = model
@@ -38,6 +38,8 @@ export interface ReadFacts {
   readonly world: string;
   readonly you: string | null;
   readonly against: readonly string[];
+  /** Původ AI verze (P73B T1) – jen když ho verze nese (`PublishedGame.provenance`). */
+  readonly ai?: AiProvenance;
 }
 
 const CONTROL_NAME: Readonly<Record<string, string>> = {
@@ -57,7 +59,13 @@ const OPPONENT_KINDS: ReadonlySet<string> = new Set(['hazard', 'chaser', 'patrol
 
 const words = (id: string): string => id.replaceAll('_', ' ');
 
-export function readFacts(spec: GameSpecV1, authorship: Authorship, sentence: string | null, readBy: ReadFacts['readBy'] = 'keywords'): ReadFacts {
+export function readFacts(
+  spec: GameSpecV1,
+  authorship: Authorship,
+  sentence: string | null,
+  readBy: ReadFacts['readBy'] = 'keywords',
+  ai?: AiProvenance,
+): ReadFacts {
   const control = spec.control === undefined || spec.control === 'tap_go' ? null : spec.control;
   const game = control === null ? words(spec.archetype) : (CONTROL_NAME[control] ?? words(control));
   return {
@@ -68,6 +76,7 @@ export function readFacts(spec: GameSpecV1, authorship: Authorship, sentence: st
     world: `${spec.theme.setting} · ${spec.theme.mood}`,
     you: spec.roles.find((role) => role.kind === 'player')?.label ?? null,
     against: [...new Set(spec.roles.filter((role) => OPPONENT_KINDS.has(role.kind)).map((role) => role.label))],
+    ...(ai === undefined ? {} : { ai }),
   };
 }
 

@@ -2777,6 +2777,12 @@ a.play-button {
   color: var(--sp-text-secondary);
 }
 
+.play-read-ai {
+  margin: var(--sp-space-1) 0 0;
+  font-size: var(--sp-text-label-size);
+  color: var(--sp-text-secondary);
+}
+
 .play-read-rows {
   margin: var(--sp-space-2) 0 0;
   display: grid;
