@@ -42,9 +42,10 @@ import { FirstPrompt } from '../FirstPrompt';
 import { MoreGames } from '../MoreGames';
 import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, type HudGoal, Icon, PauseCard, objectiveShown, useHudKeys } from '../ui';
 import { timerLeft } from '../timer';
-import type { LabFacts, ReadFacts } from '../lab';
+import { FairSheet } from '../FairSheet';
+import type { CheckFacts, LabFacts, ReadFacts } from '../lab';
 import { AboutButton, SentenceRead } from '../SentenceRead';
-import { StartRead } from '../StartRead';
+import { CheckedLine, StartRead } from '../StartRead';
 import { type DarePublish, type LivePublish, publishDare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
@@ -70,7 +71,7 @@ import { LaneEventBanner, laneEventViewOf } from './LaneEventBanner';
 import { PacingBanner } from './PacingBanner';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { prefetchFieldDressing } from './look/field-dressing-client';
-import { holdUntilTouch, wakesGame } from './ready-gate';
+import { holdUntilTouch, keepsWaiting, wakesGame } from './ready-gate';
 import { ZONE_HINTS } from './touch-zones';
 import { Weather } from './Weather';
 import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot } from './session';
@@ -319,6 +320,8 @@ export interface ArcadePlayProps {
   readonly read?: ReadFacts;
   /** Náhrada z věty (proužek `HonestyStrip`); karta startu ji řekne pod čtením (P73B T2). */
   readonly honesty?: Honesty | null;
+  /** Co ověřila publikační brána (`checkFacts`, P73B T3); `null` = řádek „Checked“ ani list „Why this game is fair“ nejsou. */
+  readonly checks?: CheckFacts | null;
   readonly upgrade: string | null;
   /** Hra na obrazovce feedu; `false` ji pozastaví (P27B T3). */
   readonly active?: boolean;
@@ -444,6 +447,7 @@ function ArcadePlayGame({
   lab,
   read,
   honesty = null,
+  checks = null,
   upgrade,
   active = true,
   offline = false,
@@ -570,6 +574,8 @@ function ArcadePlayGame({
   // (nebo list „About“ nad ní) visí, hru pustí jen karta: Resume, Space, Esc, klepnutí mimo;
   // jinak by ji pustil každý stisk (`focus.ts`), i Tab, kterým hráč po kartě chodí.
   const [aboutOpen, setAboutOpen] = useState(false);
+  // „Why this game is fair“ (P73B T3/T4) z řádku „Checked“ na kartě startu nebo z karty výsledku.
+  const [fairOpen, setFairOpen] = useState(false);
   const [asked, setAsked] = useState(false);
   useEffect(() => {
     if (!paused) setAsked(false);
@@ -647,7 +653,7 @@ function ArcadePlayGame({
       loopTouch(versionId);
     };
     const onPointer = (event: PointerEvent) => {
-      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) start();
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null && !keepsWaiting(event.target)) start();
     };
     const onKey = (event: KeyboardEvent) => {
       if (wakesGame(event)) start();
@@ -870,7 +876,7 @@ function ArcadePlayGame({
     [offline, session, versionId],
   );
   const again = useCallback(() => replay('button'), [replay]);
-  useHudKeys(menu && !aboutOpen, session.paused, (action) => {
+  useHudKeys(menu && !aboutOpen && !fairOpen, session.paused, (action) => {
     if (action === 'restart') restart();
     else if (action === 'pause') pauseGame();
     else session.resume();
@@ -989,9 +995,15 @@ function ArcadePlayGame({
             <Weather session={session} theme={spec.theme} />
             {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
             {/* Za pauzy a otevřeného listu karta ustoupí (P70C): jinak prosvítá přes „About this game“. */}
-            {running && active && demo === null && snapshot.tick === 0 && !holdsPause && !aboutOpen && (
+            {running && active && demo === null && snapshot.tick === 0 && !holdsPause && !aboutOpen && !fairOpen && (
               <FirstPrompt
-                read={read === undefined ? undefined : <StartRead read={read} honesty={honesty} />}
+                read={
+                  read === undefined ? undefined : (
+                    <StartRead read={read} honesty={honesty}>
+                      {checks !== null && <CheckedLine checks={checks} lose={loseLine} onOpen={() => setFairOpen(true)} />}
+                    </StartRead>
+                  )
+                }
                 controlsHint={spec.tutorial.controlsHint}
                 touch={zoneHint}
                 goal={spec.tutorial.goalLine}
@@ -1066,6 +1078,22 @@ function ArcadePlayGame({
       </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       {read !== undefined && <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />}
+      {checks !== null && (
+        <FairSheet
+          open={fairOpen}
+          onClose={() => setFairOpen(false)}
+          checks={checks}
+          lose={loseLine}
+          onWatch={
+            physicsReady
+              ? () => {
+                  setFairOpen(false);
+                  session.startDemo();
+                }
+              : undefined
+          }
+        />
+      )}
       {lab !== undefined && <HowItWorks facts={lab} touch={zoneHint} />}
       {cardShown && (
         <PauseCard

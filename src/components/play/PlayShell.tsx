@@ -29,7 +29,7 @@ import { WithPlayEnv } from './arcade/look/play-env';
 import { DareStrip } from './DareStrip';
 import { HonestyStrip } from './HonestyStrip';
 import { BoardInfoPart } from './Leaderboard';
-import type { LabFacts, ReadFacts } from './lab';
+import type { CheckFacts, LabFacts, ReadFacts } from './lab';
 import { InfoSheetProvider } from './ui/InfoContext';
 
 const GridShell = dynamic(() => import('./GridShell'));
@@ -49,6 +49,8 @@ export interface PlayShellProps {
   readonly read: ReadFacts;
   /** Náhrada z věty (P25E): proužek nad hrou kreslí `PlayShell`, karta startu ji řekne pod čtením (P73B T2). */
   readonly honesty?: Honesty | null;
+  /** Co ověřila publikační brána (`checkFacts`, P73B T3); `null` = bez řádku „Checked“. */
+  readonly checks?: CheckFacts | null;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
   readonly upgrade: string | null;
   /** Vítězný běh robota arkádové hry (`report.par`, P36B T1) – měřítko hvězd; mřížka ho nečte. */

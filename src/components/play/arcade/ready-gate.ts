@@ -56,7 +56,15 @@ export function holdUntilTouch(session: ArcadeSession): ArcadeSession & ReadyGat
 /** Klávesy, které patří stránce: fokus, zavření listu a samotné modifikátory. */
 const PAGE_KEYS = new Set(['Tab', 'Escape', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock']);
 
+/**
+ * Prvek, na kterém dotek ani klávesa hru nepustí (P73B T3): řádek „Checked“ na kartě startu a list
+ * „Why this game is fair“, který otevře – hráč si čte, hodiny stojí dál.
+ */
+const KEEPS_WAITING = '[data-keeps-waiting], .play-fair-sheet';
+
+export const keepsWaiting = (target: EventTarget | null): boolean => target instanceof HTMLElement && target.closest(KEEPS_WAITING) !== null;
+
 /** Klávesa, která hru pustí: ne v poli formuláře, ne zkratka prohlížeče, ne opakování. */
 export function wakesGame(event: Pick<KeyboardEvent, 'key' | 'repeat' | 'altKey' | 'ctrlKey' | 'metaKey' | 'target'>): boolean {
-  return !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey && !PAGE_KEYS.has(event.key) && !isTyping(event.target);
+  return !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey && !PAGE_KEYS.has(event.key) && !isTyping(event.target) && !keepsWaiting(event.target);
 }

@@ -41,8 +41,9 @@ import { ShareButton } from './ShareButton';
 import { Hud, TICKS_PER_SECOND, gridFacts, objectiveCounter } from './Hud';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
+import { FairSheet } from './FairSheet';
 import { AboutButton, SentenceRead } from './SentenceRead';
-import { StartRead } from './StartRead';
+import { CheckedLine, StartRead } from './StartRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import type { PlayShellProps } from './PlayShell';
@@ -118,13 +119,15 @@ function witnessOps(witness: unknown): readonly { readonly tick: number; readonl
     .sort((a, b) => a.tick - b.tick);
 }
 
-export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, readingVersion = false, lab, read, honesty = null, upgrade }: PlayShellProps) {
+export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, readingVersion = false, lab, read, honesty = null, checks = null, upgrade }: PlayShellProps) {
   // Restart z HUD (P34 T5) je nová relace runtime: `observeAt(0)` by přehrál hráčův záznam, ne začal znovu.
   const [controller, setController] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   // Pauza (P34 T5): karta pauzy, list „About“ nad ní, nebo list „Change one thing“ – hodiny i vstupy stojí.
   const [paused, setPaused] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  // „Why this game is fair“ (P73B T3) z řádku „Checked“ na kartě startu.
+  const [fairOpen, setFairOpen] = useState(false);
   const [changing, setChanging] = useState<'play' | 'pause' | null>(null);
   const frozen = paused || changing !== null;
   useEffect(() => {
@@ -401,7 +404,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     [versionId, blueprint],
   );
   const restart = useCallback(() => startOver(true), [startOver]);
-  useHudKeys(running && built && changing === null && !aboutOpen, () => paused, (action) => {
+  useHudKeys(running && built && changing === null && !aboutOpen && !fairOpen, () => paused, (action) => {
     if (action === 'restart') restart();
     else setPaused(action === 'pause');
   });
@@ -509,9 +512,13 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
         />
         {running && <RemixReadyChip job={remix} />}
       </Hud>
-      {running && waiting && !paused && !aboutOpen && (
+      {running && waiting && !paused && !aboutOpen && !fairOpen && (
         <FirstPrompt
-          read={<StartRead read={read} honesty={honesty} />}
+          read={
+            <StartRead read={read} honesty={honesty}>
+              {checks !== null && <CheckedLine checks={checks} lose={loseLineOf(spec, null)} onOpen={() => setFairOpen(true)} />}
+            </StartRead>
+          }
           controlsHint={spec.tutorial.controlsHint}
           keys="or press the number on a card"
           goal={spec.tutorial.goalLine}
@@ -520,6 +527,8 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
       )}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} reading={readingVersion} />
       <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      {/* Mřížka ukázku robota nemá – list bez „Watch the robot win“. */}
+      {checks !== null && <FairSheet open={fairOpen} onClose={() => setFairOpen(false)} checks={checks} lose={loseLineOf(spec, null)} />}
       <HowItWorks facts={lab} />
       {!built && fault === null && (
         <div className="play-building" data-testid="play-building">

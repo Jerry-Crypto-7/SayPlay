@@ -1,15 +1,19 @@
+'use client';
+
 /**
  * „How I read it“ na kartě startu (P73B T2): co hra z věty vzala – kdo jsi, proti komu, kde a jako
  * jaká hra se to hraje – a když hra něco nahradila, hned pod tím co (přeškrtnuté) a čím. Dřív to bylo
  * vidět jen v listu „About this game“ za pauzou. Fakta skládá server (`readFacts`), náhradu
- * `draft/unsupported.ts` (proužek `HonestyStrip`); tady se jen ukazují.
+ * `draft/unsupported.ts` (proužek `HonestyStrip`); tady se jen ukazují. Pod tím řádek „Checked“ (T3).
  */
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 
 import type { Honesty } from '@/play/draft/unsupported';
 
-import type { ReadFacts } from './lab';
+import { checkedLineOf } from './FairSheet';
+import type { CheckFacts, ReadFacts } from './lab';
+import { Icon } from './ui';
 
 /** „You: cat · Against: seagulls · Place: city · Played as: chase“; bez hráče nebo soupeřů ta část chybí. */
 export function readLineOf(read: Pick<ReadFacts, 'you' | 'against' | 'place' | 'game'>): string {
@@ -35,6 +39,32 @@ const PLAYED_AS = /^(\S+) plays as ([^,]+?)\.$/;
 export function swapOf(reason: string): { readonly said: string; readonly instead: string } | null {
   const match = MISSING.exec(reason) ?? PLAYED_AS.exec(reason);
   return match === null ? null : { said: match[1]!, instead: match[2]! };
+}
+
+/**
+ * Řádek „Checked“ (P73B T3): co brána ověřila; klepnutí otevře „Why this game is fair“. Karta startu dotek
+ * propouští na scénu, tenhle řádek ne: `data-keeps-waiting` drží hodiny (`keepsWaiting`) a zastavené bublání
+ * nepustí ťuk do gest scény – jinak by se zapsal jako první skok.
+ */
+export function CheckedLine({ checks, lose, onOpen }: { readonly checks: CheckFacts; readonly lose: string | null; readonly onOpen: () => void }) {
+  const button = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const element = button.current;
+    if (element === null) return;
+    const stop = (event: Event) => event.stopPropagation();
+    element.addEventListener('pointerdown', stop);
+    element.addEventListener('keydown', stop);
+    return () => {
+      element.removeEventListener('pointerdown', stop);
+      element.removeEventListener('keydown', stop);
+    };
+  }, []);
+  return (
+    <button ref={button} type="button" className="play-start-checked" data-testid="play-start-checked" data-keeps-waiting="" aria-haspopup="dialog" onClick={onOpen}>
+      <Icon name="check" />
+      {checkedLineOf(checks, lose)}
+    </button>
+  );
 }
 
 export function StartRead({ read, honesty = null, children }: { readonly read: ReadFacts; readonly honesty?: Honesty | null; readonly children?: ReactNode }) {
