@@ -1,0 +1,22 @@
+{
+  "a": "http://127.0.0.1:3205",
+  "b": "http://127.0.0.1:3204",
+  "labelA": "main 3a0cfb75 (před P73D)",
+  "labelB": "P73D T8b (mantinely jednou, protisvětlo jen při startu na high)",
+  "sentences": [
+    "A cat delivering pizzas across rooftops while avoiding seagulls",
+    "Find the lost crown in an old castle",
+    "An underwater race between a turtle and a shark",
+    "Balance a tower of pancakes on a windy day",
+    "Play mini golf in a candy land",
+    "A farmer catches falling apples in the orchard",
+    "Escape a volcano before the lava reaches you",
+    "A knight jumps across floating islands to rescue a dragon egg"
+  ],
+  "profiles": ["pixel7-cpu4"],
+  "runs": 3,
+  "pauseMs": 5000,
+  "timeoutMs": 120000,
+  "rawDir": "D:/tmp/p73d-fp-raw-t8b",
+  "out": "evals/play/p73/sceny/perf-first-playable-t8b.json"
+}

@@ -1,0 +1,82 @@
+{
+ "seed": 7309,
+ "judgedAt": "2026-11-06T19:32:12.750Z",
+ "ids": [
+  "s1",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "s7",
+  "s8",
+  "s9",
+  "s10",
+  "s11",
+  "s12"
+ ],
+ "key": {
+  "s1": "right",
+  "s2": "right",
+  "s3": "left",
+  "s4": "left",
+  "s5": "right",
+  "s6": "right",
+  "s7": "left",
+  "s8": "left",
+  "s9": "left",
+  "s10": "left",
+  "s11": "right",
+  "s12": "right"
+ },
+ "answers": {
+  "s1": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, stronger separation between the runner, winding path, and volcanic peaks, and bright lava channels that make the escape premise immediately readable. Its more defined terrain and lighting give it a more polished, modern game appearance."
+  },
+  "s2": {
+   "winner": "right",
+   "reason": "The right scene has clearer depth, stronger lighting, and a more finished racecourse with striped barriers and directional markers. Its underwater rocks, coral, and distant ruins give the race a more coherent setting."
+  },
+  "s3": {
+   "winner": "left",
+   "reason": "The lower camera angle, visible skyline, and layered distant buildings give LEFT stronger depth and a more convincing rooftop setting. RIGHT’s steep downward view makes the scene read more like a paved courtyard."
+  },
+  "s4": {
+   "winner": "right",
+   "reason": "The right has clearer depth, with stronger foreground-to-background separation, a more visible sky, and a coherent courtyard setting. Its lighting and atmospheric layers make the windy outdoor scene feel more polished, though neither version makes the blocks look like pancakes."
+  },
+  "s5": {
+   "winner": "right",
+   "reason": "The right version has slightly clearer platform edges and stronger separation between the knight, nearby islands, and distant palms. That depth makes the floating-island route and egg feel more grounded and readable."
+  },
+  "s6": {
+   "winner": "right",
+   "reason": "The versions look virtually identical, so this is a marginal choice: both have clear perspective and cast shadows. Neither convincingly depicts deep space—the rocky orange terrain reads as a planetary surface."
+  },
+  "s7": {
+   "winner": "left",
+   "reason": "The left scene has richer layered scenery, stronger depth cues, and colorful candy-like plants that better establish a candy-land setting. The right scene feels sparse and generic, with mostly empty grass and fences."
+  },
+  "s8": {
+   "winner": "left",
+   "reason": "The left shows a more coherent castle courtyard, with a visible skyline, trees, walls, and layered scenery that establish depth and place. The right’s steep downward view makes repetitive paving dominate, weakening the castle setting."
+  },
+  "s9": {
+   "winner": "left",
+   "reason": "The left scene has stronger depth from its layered skyline, larger foreground structures, and clearer street perspective. The city feels more present around the bird, while the right version leaves more empty stormy sky, especially on the phone."
+  },
+  "s10": {
+   "winner": "left",
+   "reason": "The left scene has a convincing orchard, with rows of apple trees, layered distance, and grounded shadows creating clear depth around the farmer. The right scene looks mostly empty, with a floating strip of foliage that makes the setting less coherent."
+  },
+  "s11": {
+   "winner": "right",
+   "reason": "The right scene has stronger depth from raised, segmented track edges, richer ground detail, and more convincing shadows. Its road feels integrated into the surrounding landscape, though neither version clearly conveys candy land or a cat rival."
+  },
+  "s12": {
+   "winner": "right",
+   "reason": "The right version has stronger depth from its more pronounced downhill perspective, larger foreground penguin, and clearer shadows. The icy track feels more naturally embedded in a steep mountain landscape, giving the scene a more polished, modern game look."
+  }
+ }
+}

@@ -172,6 +172,8 @@ export interface AroundOptions {
    */
   readonly layers: Readonly<Record<Side, readonly Layer[]>>;
   readonly profile: VegetationProfile;
+  /** Zem pod vegetací (podstavec `FieldGround`, P73D): půdorys za její hranou se nepostaví – visel by nad prázdnem. */
+  readonly land?: Box;
 }
 
 /** Plocha, na kterou kamera kouká šikmo shora z −z (aréna): na její straně jen nízké drobnosti, které hrdinu u hrany nezakryjí. */
@@ -191,7 +193,7 @@ const ENDS_SALT = 0x51ed27;
  * osami. Půdorys žádné rostliny nesahá do plochy rozšířené o `clear`; strana
  * kamery dostane jen to, co jí `layers` dovolí (nízké drobnosti, nebo nic).
  */
-export function placeAround({ flora, seed, box, clear, layers, profile }: AroundOptions): Plant[] {
+export function placeAround({ flora, seed, box, clear, layers, profile, land }: AroundOptions): Plant[] {
   const [cx, cz] = [(box.x0 + box.x1) / 2, (box.z0 + box.z1) / 2];
   const [hx, hz] = [(box.x1 - box.x0) / 2, (box.z1 - box.z0) / 2];
   const sides = placeVegetation({ flora, seed, from: box.z0 - clear - AROUND_M, to: box.z1 + clear + AROUND_M, road: () => ({ center: cx, half: hx }), clear, profile });
@@ -204,7 +206,61 @@ export function placeAround({ flora, seed, box, clear, layers, profile }: Around
     ...(plant.z < box.z0 - clear ? (['-z'] as const) : []),
     ...(plant.z > box.z1 + clear ? (['+z'] as const) : []),
   ];
-  return [...sides, ...ends].filter((plant) => beyond(plant).every((side) => layers[side].includes(plant.layer)));
+  const onLand = (plant: Plant): boolean =>
+    land === undefined || (plant.x - plant.reach >= land.x0 && plant.x + plant.reach <= land.x1 && plant.z - plant.reach >= land.z0 && plant.z + plant.reach <= land.z1);
+  return [...sides, ...ends].filter((plant) => onLand(plant) && beyond(plant).every((side) => layers[side].includes(plant.layer)));
+}
+
+export interface OrchardOptions {
+  readonly flora: Flora;
+  /** Semínko hry (`ArcadeWorld.seed`). */
+  readonly seed: number;
+  /** Kam řady sadu sahají (m); stromy stojí v mřížce od rohu `x0`, `z0`. */
+  readonly area: Box;
+  /** Obdélník bez stromů (m): hrací plocha s uličkou za ní; žádný půdorys do něj nesahá. */
+  readonly keep: Box;
+  /** Nejvyšší strom (m): vyšší druh se zmenší, ať koruna zůstane pod obzorem kamery. */
+  readonly top: number;
+}
+
+/** Sůl sadu: jiný proud než vegetace podél cesty a kolem plochy. */
+const ORCHARD_SALT = 0x5ad0ba;
+/** Sad: rozestup stromů v řadě (x) a řad (z) v m, výkyv místa (m) a velikost 0,9–1,1 – sázené řady, ne divoký les. */
+const ORCHARD = { step: 4.2, row: 4.5, jitter: 0.3, size: 0.9, spread: 0.2 } as const;
+/** Ovocné druhy středu vegetace: má-li je sada (jabloň louky), sad je jen z nich. */
+const FRUIT = /apple|fruit|orchard/;
+
+/**
+ * Sad (P73D, chytání): stromy středu vegetace v pravidelných řadách na zemi po stranách a za hrací plochou –
+ * místo řady korun, která visela nad pruhy přes horní hranu obrazu. Čistá funkce semínka jako `placeVegetation`;
+ * stromů jsou desítky, telefon je nese všechny. Kreslí `Orchard` (`Vegetation.tsx`).
+ */
+export function placeOrchard({ flora, seed, area, keep, top }: OrchardOptions): Plant[] {
+  const fruit = flora.mid.filter(({ id }) => FRUIT.test(id));
+  const species = fruit.length > 0 ? fruit : flora.mid;
+  if (species.length === 0) return [];
+  const rng = xoroshiro128plus((seed ^ ORCHARD_SALT) | 0);
+  const next = (): number => uniformFloat64(rng);
+  const plants: Plant[] = [];
+  // Po indexu, ne přičítáním: součet desetinných kroků by krajní řadu tiše minul.
+  for (let r = 0; r <= (area.z1 - area.z0) / ORCHARD.row + 1e-9; r += 1) {
+    const row = area.z0 + r * ORCHARD.row;
+    for (let c = 0; c <= (area.x1 - area.x0) / ORCHARD.step + 1e-9; c += 1) {
+      const column = area.x0 + c * ORCHARD.step;
+      // Hodnoty se táhnou vždy, ať vynechaný strom proud neposune.
+      const { id, height: base } = species[Math.floor(next() * species.length)]!;
+      const height = Math.min(top, base * (ORCHARD.size + ORCHARD.spread * next()));
+      const turn = 2 * Math.PI * next();
+      const light = 0.92 + 0.16 * next();
+      const hue = (next() - 0.5) * 0.04;
+      const x = column + (next() - 0.5) * 2 * ORCHARD.jitter;
+      const z = row + (next() - 0.5) * 2 * ORCHARD.jitter;
+      const reach = reachOf(id) * height;
+      if (x + reach > keep.x0 && x - reach < keep.x1 && z + reach > keep.z0 && z - reach < keep.z1) continue;
+      plants.push({ id, layer: 'mid', x, z, size: height / base, height, turn, shade: [tint(light + hue), light, tint(light - hue)], reach });
+    }
+  }
+  return plants;
 }
 
 /** Šedá z palety katalogu (`scripts/assets/cc0/normalize.mjs --style`), kterou mají listí, mech a kaktusy modelů Quaternius. */

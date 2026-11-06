@@ -44,6 +44,7 @@ import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadBodyModel, loadedBody, rimLit, toonLit, toyPartsOf } from './look/load';
+import { boostPadGeometry } from './look/road-strip';
 import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
@@ -317,10 +318,7 @@ function useFallbackProbe(id: string, missing: boolean): void {
  */
 function Primitive({ id, w, h, d, block, water }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block']; readonly water?: string }) {
   if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
-  if (id === 'turbo') return <mesh position={[0, h / 2, 0]}>
-    <boxGeometry args={[w, h, d]} />
-    <meshStandardMaterial color={TURBO_COLOR} emissive={TURBO_COLOR} emissiveIntensity={0.35} roughness={0.4} />
-  </mesh>;
+  if (id === 'turbo') return <BoostPad w={w} h={h} d={d} />;
   if (id === 'platform' || id === 'platform-moving') {
     const top = Math.min(0.25, h / 3);
     const [side, surface] = id === 'platform' ? (block ?? ['#92400e', '#16a34a']) : ['#475569', '#f59e0b'];
@@ -379,6 +377,17 @@ function Primitive({ id, w, h, d, block, water }: { readonly id: string; readonl
     <mesh position={[0, h / 2, 0]}>
       <boxGeometry args={[w, h, d]} />
       <meshStandardMaterial color={id === 'pipe' ? '#16a34a' : '#334155'} roughness={0.6} />
+    </mesh>
+  );
+}
+
+/** Turbo (P73D T6): dvě svítící šipky po trati, ne azurová krychle – ta se četla jako překážka. */
+function BoostPad({ w, h, d }: { readonly w: number; readonly h: number; readonly d: number }) {
+  const geometry = useMemo(() => boostPadGeometry(w, h, d), [w, h, d]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return (
+    <mesh geometry={geometry}>
+      <meshStandardMaterial color={TURBO_COLOR} emissive={TURBO_COLOR} emissiveIntensity={0.6} roughness={0.4} />
     </mesh>
   );
 }

@@ -67,9 +67,16 @@ export const DECOR_TALLEST = 0.45;
 
 /** Sůl semínka – stream výzdoby je jiný než každý stream jádra. */
 const SALT = 0x6dec0a7e;
-/** Kusů na m² hrací plochy (ve skvrnách hustěji) a horní mez. */
-const DENSITY = 0.3;
-const MOST = 480;
+/**
+ * Kusů na m² hrací plochy (ve skvrnách hustěji) a horní mez. P73D T3: 30 % hustoty P36C (0,3)
+ * a jen u hrany nebo u věcí (`NEAR_EDGE_M`, `NEAR_THING_M`) – střed plochy zůstane čistý, posyp
+ * přes celou dlažbu četl na 3/4 pohledu jako smetí.
+ */
+export const DENSITY = 0.09;
+const MOST = 144;
+/** Pás u hrany arény a odstup od kraje místa věci (m), kam smí výzdoba. */
+export const NEAR_EDGE_M = 3;
+export const NEAR_THING_M = 1.5;
 /** Odstup kusu od hrany arény (m). */
 const EDGE = 0.4;
 /** Poloměr kusu při velikosti 1 (m) – s ním se hlídá hrana a místa věcí. */
@@ -99,7 +106,8 @@ export function arenaDecorPlaces({ look, half, seed, keep }: ArenaDecorOptions):
   const wanted = Math.min(MOST, Math.round((2 * half) ** 2 * DENSITY));
   const patch = next() * 100;
   const pieces: DecorPiece[] = [];
-  for (let tries = 0; pieces.length < wanted && tries < wanted * 8; tries += 1) {
+  // Pokusů víc než dřív: střed plochy (asi 70 %) pokus zahodí.
+  for (let tries = 0; pieces.length < wanted && tries < wanted * 24; tries += 1) {
     const x = (next() * 2 - 1) * (half - EDGE);
     const z = (next() * 2 - 1) * (half - EDGE);
     // Ve skvrnách: kde šum vyšel vysoko, hustě, jinde řídce – rovnoměrný posyp vypadá jako vzorník.
@@ -109,8 +117,10 @@ export function arenaDecorPlaces({ look, half, seed, keep }: ArenaDecorOptions):
     const size = 0.75 + next() * 0.5;
     const turn = next() * Math.PI * 2;
     const r = REACH[kind] * size;
-    if (Math.max(Math.abs(x), Math.abs(z)) + r > half - EDGE) continue;
+    const out = Math.max(Math.abs(x), Math.abs(z));
+    if (out + r > half - EDGE) continue;
     if (keep.some((spot) => Math.hypot(x - spot.x, z - spot.z) < spot.r + r)) continue;
+    if (out < half - NEAR_EDGE_M && !keep.some((spot) => Math.hypot(x - spot.x, z - spot.z) < spot.r + r + NEAR_THING_M)) continue;
     pieces.push({ kind, x, z, size, turn });
   }
   return pieces;

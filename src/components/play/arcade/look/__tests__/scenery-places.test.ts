@@ -50,4 +50,14 @@ describe('sceneryPlaces keeps every piece outside inner', () => {
       expect(place.x).toBeCloseTo(side * (inner + ((index * 37 + side * 11) % 5) * 1.3));
     });
   });
+
+  it('clear leaves the row empty around z = 0 and keeps every other piece where it was (stacking, P73D)', () => {
+    for (const id of LOOK_IDS) {
+      const all = sceneryPlaces(LOOKS[id].props, 'behind', 10, -26, 26);
+      const cleared = sceneryPlaces(LOOKS[id].props, 'behind', 10, -26, 26, undefined, false, 9);
+      expect(cleared, id).toEqual(all.filter((place) => Math.abs(place.z) >= 9));
+      if (all.length === 0) continue;
+      expect(cleared.some((place) => place.z < 0) && cleared.some((place) => place.z > 0), id).toBe(true);
+    }
+  });
 });

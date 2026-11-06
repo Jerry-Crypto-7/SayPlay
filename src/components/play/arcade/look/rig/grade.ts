@@ -61,12 +61,13 @@ export const LOOK_FAMILY: Readonly<Record<LookId, GradeFamily>> = {
 };
 
 export const GRADES: Readonly<Record<GradeFamily, Grade>> = {
-  green: { lift: [0, 0.01, 0.02], gain: [1.03, 1.01, 0.97], gamma: 1.04, saturation: 1.14, contrast: 1.06, vignette: 0.22 },
-  warm: { lift: [0.02, 0.01, 0], gain: [1.04, 1, 0.93], gamma: 1.04, saturation: 1.1, contrast: 1.08, vignette: 0.22 },
+  // Zlatá hodina diorama (P73D T4): denní rodiny teplejší zisk a měkčí sytost – hračka, ne neon.
+  green: { lift: [0.01, 0.01, 0.015], gain: [1.05, 1.01, 0.94], gamma: 1.04, saturation: 1.06, contrast: 1.06, vignette: 0.22 },
+  warm: { lift: [0.02, 0.01, 0], gain: [1.05, 1, 0.92], gamma: 1.04, saturation: 1.04, contrast: 1.08, vignette: 0.22 },
   // Mlha arény sníh vybělí: gama vrátí střední tóny, bílá zůstane bílou.
   cold: { lift: [0, 0.01, 0.03], gain: [0.99, 1, 1.01], gamma: 1.22, saturation: 1.2, contrast: 1.1, vignette: 0.2 },
   water: { lift: [0, 0.02, 0.03], gain: [0.98, 1.02, 1.03], gamma: 1.04, saturation: 1.12, contrast: 1.06, vignette: 0.26 },
-  indoor: { lift: [0.01, 0.01, 0], gain: [1.03, 1, 0.96], gamma: 1.03, saturation: 1.08, contrast: 1.06, vignette: 0.2 },
+  indoor: { lift: [0.01, 0.01, 0], gain: [1.04, 1, 0.95], gamma: 1.03, saturation: 1.04, contrast: 1.06, vignette: 0.2 },
   // Noc: černá se zvedne do modré, střední tóny se rozjasní – hrdina nezapadne.
   dark: { lift: [0.03, 0.045, 0.07], gain: [1, 1.02, 1.04], gamma: 0.8, saturation: 1.1, contrast: 1, vignette: 0.3 },
 };

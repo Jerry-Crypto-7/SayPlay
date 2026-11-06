@@ -69,7 +69,7 @@ import { applyToy, toyIdleOf, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { type Cast, FittedModel, toyTargetOf } from '../World';
 import { FIT_MARGIN_PX, usePlayRectRef } from '../portrait-frame';
-import { ARENA_FRAMING, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Size, arenaDistance, arenaGoal, bandLift, shownBox } from './arena-camera';
+import { ARENA_FRAMING, type ArenaView, FIGHT_TILT, FOLLOW, LEAD_S, STYLED_TILT, type Size, arenaDistance, arenaGoal, bandLift, raiseArena, shownBox } from './arena-camera';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
 import { useThreatEdge } from './ThreatEdge';
@@ -107,8 +107,11 @@ const AGAR_LAND_M = 50;
 /** Agar nemá výzdobu podlahy, takže ani místa, kam nesmí (stálý seznam: podlaha a stěna se nepočítají znovu každý snímek). */
 const NO_KEEP: readonly DecorKeep[] = [];
 
-/** Sklon kamery nad vodorovnou (rad): 48° – hrdina pořád zřetelně shora, horní třetina obrazu už za hranou arény (58° ukázalo kulisy jen v rozích). */
-const PITCH = (48 * Math.PI) / 180;
+/** Sklon pohledu na hrdinu (rad): dřív 48°, od P73D T2 jako stylová aréna (`STYLED_TILT`) a osa pohledu pak zvednutá k obzoru (`raiseArena`). */
+const PITCH = Math.asin(STYLED_TILT.sin);
+/** Střed těla hrdiny a hrozby pro zdvih kamery (`raiseArena`). */
+const heroMid = new Vector3();
+const threatMid = new Vector3();
 
 interface ArenaWorldProps {
   readonly session: ArcadeSession;
@@ -214,6 +217,7 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
       look.set(me.position.x, 0, me.position.z);
       camera.lookAt(look);
       applyIntro(camera, look, introLeft(introClock()));
+      raiseArena(camera, false);
       camera.updateMatrixWorld();
       if (surface.current !== null) surface.current.dataset.playerX = projected.copy(me.position).project(camera).x.toFixed(3);
     }
@@ -740,6 +744,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
       }
     }
     applyIntro(camera, sight, introLeft(introClock()));
+    raiseArena(camera, fight, heroMid.copy(me.position).setY(me.position.y + drawn[player]!.h / 2), threatAt === null ? null : threatMid.set(threatAt.x, threatAt.y + threatSize!.h / 2, threatAt.z));
     // Otřes po zásahu souboje; zásah hráče ve hře člověka třese sběrnice efektů sama.
     if (watch !== null) shakeCamera(camera.position, watch.shake(now, session.humanRun()), now);
     camera.updateMatrixWorld();

@@ -93,7 +93,7 @@ export function WorldBackdrop({ control, length, look, seed }: { readonly contro
   if (control === 'shooter' || control === 'throw') {
     return (
       <>
-        <FieldGround look={look} area={RANGE_LAND} y={-0.01} under />
+        <FieldGround look={look} area={RANGE_LAND} y={-0.01} under podium={false} />
         {control === 'shooter' ? (
           <>
             {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-2} to={RANGE_LAND.z1} road={rangeAt} clear={1.5} />}

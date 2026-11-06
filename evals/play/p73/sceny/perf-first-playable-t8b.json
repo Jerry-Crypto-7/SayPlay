@@ -1,0 +1,1270 @@
+{
+  "about": "Interleaved A/B time to first playable on /play: the same sentences and shared games on two servers, runs paired back to back. Method: evals/play/first-playable/README.md.",
+  "measuredAt": "2026-11-06T18:58:35.403Z",
+  "a": {
+    "url": "http://127.0.0.1:3205",
+    "label": "main 3a0cfb75 (před P73D)"
+  },
+  "b": {
+    "url": "http://127.0.0.1:3204",
+    "label": "P73D T8b (mantinely jednou, protisvětlo jen při startu na high)"
+  },
+  "probe": "scripts/measure/time-to-playable.mjs via scripts/measure/first-playable-ab.mjs",
+  "profiles": {
+    "pixel7-cpu4": {
+      "device": "Pixel 7",
+      "cpuThrottle": 4
+    }
+  },
+  "runs": 3,
+  "pauseMs": 5000,
+  "sentences": [
+    "A cat delivering pizzas across rooftops while avoiding seagulls",
+    "Find the lost crown in an old castle",
+    "An underwater race between a turtle and a shark",
+    "Balance a tower of pancakes on a windy day",
+    "Play mini golf in a candy land",
+    "A farmer catches falling apples in the orchard",
+    "Escape a volcano before the lava reaches you",
+    "A knight jumps across floating islands to rescue a dragon egg"
+  ],
+  "sharedSentences": [],
+  "summary": {
+    "byTarget": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 6929,
+          "min": 6857,
+          "max": 7223
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 7383,
+          "min": 6968,
+          "max": 8182
+        },
+        "diffMedian": 454,
+        "pairedDiffMedian": 454
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s2-find-the-lost-crown-in-an-old-castle",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 7919,
+          "min": 7802,
+          "max": 8319
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 7927,
+          "min": 7888,
+          "max": 8009
+        },
+        "diffMedian": 8,
+        "pairedDiffMedian": -31
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s3-an-underwater-race-between-a-turtle-and-",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 7858,
+          "min": 7601,
+          "max": 10786
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 7695,
+          "min": 7637,
+          "max": 8777
+        },
+        "diffMedian": -163,
+        "pairedDiffMedian": -221
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5788,
+          "min": 5663,
+          "max": 6479
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5764,
+          "min": 5619,
+          "max": 6777
+        },
+        "diffMedian": -24,
+        "pairedDiffMedian": 101
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s5-play-mini-golf-in-a-candy-land",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5052,
+          "min": 4971,
+          "max": 5508
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5858,
+          "min": 5480,
+          "max": 6303
+        },
+        "diffMedian": 806,
+        "pairedDiffMedian": 795
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5324,
+          "min": 5306,
+          "max": 5927
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5656,
+          "min": 5465,
+          "max": 5974
+        },
+        "diffMedian": 332,
+        "pairedDiffMedian": 159
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s7-escape-a-volcano-before-the-lava-reaches",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8912,
+          "min": 7742,
+          "max": 8949
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 8363,
+          "min": 7762,
+          "max": 8728
+        },
+        "diffMedian": -549,
+        "pairedDiffMedian": -221
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s8-a-knight-jumps-across-floating-islands-t",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 8016,
+          "min": 7535,
+          "max": 8228
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 7662,
+          "min": 7544,
+          "max": 9973
+        },
+        "diffMedian": -354,
+        "pairedDiffMedian": 9
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 24,
+          "median": 7379,
+          "min": 4971,
+          "max": 10786
+        },
+        "B": {
+          "failed": 0,
+          "n": 24,
+          "median": 7590.5,
+          "min": 5465,
+          "max": 9973
+        },
+        "diffMedian": 211.5,
+        "pairedDiffMedian": 106
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 24,
+          "median": 7379,
+          "min": 4971,
+          "max": 10786
+        },
+        "B": {
+          "failed": 0,
+          "n": 24,
+          "median": 7590.5,
+          "min": 5465,
+          "max": 9973
+        },
+        "diffMedian": 211.5,
+        "pairedDiffMedian": 106
+      }
+    ],
+    "gate": {
+      "failedTotal": 0,
+      "failed": {
+        "A": 0,
+        "B": 0
+      },
+      "checks": [
+        {
+          "name": "failedTotal",
+          "profile": null,
+          "value": 0,
+          "limit": 0,
+          "pass": true
+        },
+        {
+          "name": "medianB",
+          "profile": "desktop",
+          "value": null,
+          "limit": 3000,
+          "pass": false
+        },
+        {
+          "name": "pairedDiffMedian",
+          "profile": "desktop",
+          "value": null,
+          "limit": 200,
+          "pass": false
+        },
+        {
+          "name": "pairedDiffMedian",
+          "profile": "pixel7-cpu4",
+          "value": 106,
+          "limit": 200,
+          "pass": true
+        }
+      ],
+      "pass": false
+    }
+  },
+  "summaryFirstFrame": {
+    "byTarget": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 4196,
+          "min": 4172,
+          "max": 4319
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 4513,
+          "min": 4248,
+          "max": 4998
+        },
+        "diffMedian": 317,
+        "pairedDiffMedian": 317
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s2-find-the-lost-crown-in-an-old-castle",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5021,
+          "min": 4995,
+          "max": 5089
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5163,
+          "min": 5020,
+          "max": 5223
+        },
+        "diffMedian": 142,
+        "pairedDiffMedian": 142
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s3-an-underwater-race-between-a-turtle-and-",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 4785,
+          "min": 4528,
+          "max": 5357
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 4579,
+          "min": 4556,
+          "max": 5071
+        },
+        "diffMedian": -206,
+        "pairedDiffMedian": -206
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 4109,
+          "min": 3997,
+          "max": 4422
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 4195,
+          "min": 4093,
+          "max": 4539
+        },
+        "diffMedian": 86,
+        "pairedDiffMedian": 117
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s5-play-mini-golf-in-a-candy-land",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 3697,
+          "min": 3637,
+          "max": 3809
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 3904,
+          "min": 3585,
+          "max": 3911
+        },
+        "diffMedian": 207,
+        "pairedDiffMedian": 102
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 3955,
+          "min": 3929,
+          "max": 4342
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 4090,
+          "min": 3904,
+          "max": 4341
+        },
+        "diffMedian": 135,
+        "pairedDiffMedian": -1
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s7-escape-a-volcano-before-the-lava-reaches",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5397,
+          "min": 4922,
+          "max": 6020
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5431,
+          "min": 4962,
+          "max": 5433
+        },
+        "diffMedian": 34,
+        "pairedDiffMedian": 34
+      },
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "target": "s8-a-knight-jumps-across-floating-islands-t",
+        "A": {
+          "failed": 0,
+          "n": 3,
+          "median": 5401,
+          "min": 4991,
+          "max": 5458
+        },
+        "B": {
+          "failed": 0,
+          "n": 3,
+          "median": 5158,
+          "min": 5015,
+          "max": 6189
+        },
+        "diffMedian": -243,
+        "pairedDiffMedian": 24
+      }
+    ],
+    "byKind": [
+      {
+        "profile": "pixel7-cpu4",
+        "kind": "sentence",
+        "A": {
+          "failed": 0,
+          "n": 24,
+          "median": 4475,
+          "min": 3637,
+          "max": 6020
+        },
+        "B": {
+          "failed": 0,
+          "n": 24,
+          "median": 4567.5,
+          "min": 3585,
+          "max": 6189
+        },
+        "diffMedian": 92.5,
+        "pairedDiffMedian": 55
+      }
+    ],
+    "byProfile": [
+      {
+        "profile": "pixel7-cpu4",
+        "A": {
+          "failed": 0,
+          "n": 24,
+          "median": 4475,
+          "min": 3637,
+          "max": 6020
+        },
+        "B": {
+          "failed": 0,
+          "n": 24,
+          "median": 4567.5,
+          "min": 3585,
+          "max": 6189
+        },
+        "diffMedian": 92.5,
+        "pairedDiffMedian": 55
+      }
+    ]
+  },
+  "results": [
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "A",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 6929,
+      "firstFrameMs": 4196,
+      "note": "surface also changes without input (43.72 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990631640,
+      "tPlayable": 1793990638569,
+      "url": "http://127.0.0.1:3205/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "B",
+      "run": 1,
+      "pair": 0,
+      "playable": true,
+      "ms": 7383,
+      "firstFrameMs": 4513,
+      "note": "surface also changes without input (38.83 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990649716,
+      "tPlayable": 1793990657099,
+      "url": "http://127.0.0.1:3204/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "B",
+      "run": 1,
+      "pair": 1,
+      "playable": true,
+      "ms": 7888,
+      "firstFrameMs": 5020,
+      "note": "surface also changes without input (49.47 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990668408,
+      "tPlayable": 1793990676296,
+      "url": "http://127.0.0.1:3204/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "A",
+      "run": 1,
+      "pair": 1,
+      "playable": true,
+      "ms": 7919,
+      "firstFrameMs": 5089,
+      "note": "surface also changes without input (51.28 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990687380,
+      "tPlayable": 1793990695299,
+      "url": "http://127.0.0.1:3205/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 1,
+      "pair": 2,
+      "playable": true,
+      "ms": 7601,
+      "firstFrameMs": 4528,
+      "note": "surface also changes without input (99.71 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990706300,
+      "tPlayable": 1793990713901,
+      "url": "http://127.0.0.1:3205/play/d37964cc052b6d7650b2ac9657951cc2"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 1,
+      "pair": 2,
+      "playable": true,
+      "ms": 7695,
+      "firstFrameMs": 4556,
+      "note": "surface also changes without input (99.96 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990725511,
+      "tPlayable": 1793990733206,
+      "url": "http://127.0.0.1:3204/play/d37964cc052b6d7650b2ac9657951cc2"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "B",
+      "run": 1,
+      "pair": 3,
+      "playable": true,
+      "ms": 5619,
+      "firstFrameMs": 4093,
+      "note": "surface also changes without input (11.56 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990744620,
+      "tPlayable": 1793990750239,
+      "url": "http://127.0.0.1:3204/play/bd5b2165e44b4031ee8de392904cebf0"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "A",
+      "run": 1,
+      "pair": 3,
+      "playable": true,
+      "ms": 5788,
+      "firstFrameMs": 4109,
+      "note": "surface also changes without input (4.83 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990761150,
+      "tPlayable": 1793990766938,
+      "url": "http://127.0.0.1:3205/play/bd5b2165e44b4031ee8de392904cebf0"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "A",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 5052,
+      "firstFrameMs": 3697,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793990777806,
+      "tPlayable": 1793990782858,
+      "url": "http://127.0.0.1:3205/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "B",
+      "run": 1,
+      "pair": 4,
+      "playable": true,
+      "ms": 5858,
+      "firstFrameMs": 3904,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793990793199,
+      "tPlayable": 1793990799057,
+      "url": "http://127.0.0.1:3204/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "B",
+      "run": 1,
+      "pair": 5,
+      "playable": true,
+      "ms": 5465,
+      "firstFrameMs": 3904,
+      "note": "surface also changes without input (14.11 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990809479,
+      "tPlayable": 1793990814944,
+      "url": "http://127.0.0.1:3204/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "A",
+      "run": 1,
+      "pair": 5,
+      "playable": true,
+      "ms": 5306,
+      "firstFrameMs": 3955,
+      "note": "surface also changes without input (8.66 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990825199,
+      "tPlayable": 1793990830505,
+      "url": "http://127.0.0.1:3205/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "A",
+      "run": 1,
+      "pair": 6,
+      "playable": true,
+      "ms": 8912,
+      "firstFrameMs": 6020,
+      "note": "surface also changes without input (43.06 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990842315,
+      "tPlayable": 1793990851227,
+      "url": "http://127.0.0.1:3205/play/71772dc88e33f0b4639ccc181c520037"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "B",
+      "run": 1,
+      "pair": 6,
+      "playable": true,
+      "ms": 7762,
+      "firstFrameMs": 4962,
+      "note": "surface also changes without input (45.29 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990862698,
+      "tPlayable": 1793990870460,
+      "url": "http://127.0.0.1:3204/play/71772dc88e33f0b4639ccc181c520037"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "B",
+      "run": 1,
+      "pair": 7,
+      "playable": true,
+      "ms": 7544,
+      "firstFrameMs": 5015,
+      "note": "surface also changes without input (29.59 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990881834,
+      "tPlayable": 1793990889378,
+      "url": "http://127.0.0.1:3204/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "A",
+      "run": 1,
+      "pair": 7,
+      "playable": true,
+      "ms": 7535,
+      "firstFrameMs": 4991,
+      "note": "surface also changes without input (23.2 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990900841,
+      "tPlayable": 1793990908376,
+      "url": "http://127.0.0.1:3205/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "A",
+      "run": 2,
+      "pair": 8,
+      "playable": true,
+      "ms": 6857,
+      "firstFrameMs": 4172,
+      "note": "surface also changes without input (42.61 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990919819,
+      "tPlayable": 1793990926676,
+      "url": "http://127.0.0.1:3205/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "B",
+      "run": 2,
+      "pair": 8,
+      "playable": true,
+      "ms": 6968,
+      "firstFrameMs": 4248,
+      "note": "surface also changes without input (39.39 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990937677,
+      "tPlayable": 1793990944645,
+      "url": "http://127.0.0.1:3204/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "B",
+      "run": 2,
+      "pair": 9,
+      "playable": true,
+      "ms": 7927,
+      "firstFrameMs": 5163,
+      "note": "surface also changes without input (50.84 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990955674,
+      "tPlayable": 1793990963601,
+      "url": "http://127.0.0.1:3204/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "A",
+      "run": 2,
+      "pair": 9,
+      "playable": true,
+      "ms": 7802,
+      "firstFrameMs": 5021,
+      "note": "surface also changes without input (54.89 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990974587,
+      "tPlayable": 1793990982389,
+      "url": "http://127.0.0.1:3205/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 2,
+      "pair": 10,
+      "playable": true,
+      "ms": 7858,
+      "firstFrameMs": 4785,
+      "note": "surface also changes without input (99.98 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793990993378,
+      "tPlayable": 1793991001236,
+      "url": "http://127.0.0.1:3205/play/d37964cc052b6d7650b2ac9657951cc2"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 2,
+      "pair": 10,
+      "playable": true,
+      "ms": 7637,
+      "firstFrameMs": 4579,
+      "note": "surface also changes without input (99.94 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991012818,
+      "tPlayable": 1793991020455,
+      "url": "http://127.0.0.1:3204/play/d37964cc052b6d7650b2ac9657951cc2"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "B",
+      "run": 2,
+      "pair": 11,
+      "playable": true,
+      "ms": 5764,
+      "firstFrameMs": 4195,
+      "note": "surface also changes without input (10.77 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991032103,
+      "tPlayable": 1793991037867,
+      "url": "http://127.0.0.1:3204/play/bd5b2165e44b4031ee8de392904cebf0"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "A",
+      "run": 2,
+      "pair": 11,
+      "playable": true,
+      "ms": 5663,
+      "firstFrameMs": 3997,
+      "note": "surface also changes without input (4.92 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991048738,
+      "tPlayable": 1793991054401,
+      "url": "http://127.0.0.1:3205/play/bd5b2165e44b4031ee8de392904cebf0"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "A",
+      "run": 2,
+      "pair": 12,
+      "playable": true,
+      "ms": 4971,
+      "firstFrameMs": 3637,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793991065068,
+      "tPlayable": 1793991070039,
+      "url": "http://127.0.0.1:3205/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "B",
+      "run": 2,
+      "pair": 12,
+      "playable": true,
+      "ms": 5480,
+      "firstFrameMs": 3585,
+      "note": null,
+      "attempts": 2,
+      "t0": 1793991080469,
+      "tPlayable": 1793991085949,
+      "url": "http://127.0.0.1:3204/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "B",
+      "run": 2,
+      "pair": 13,
+      "playable": true,
+      "ms": 5656,
+      "firstFrameMs": 4090,
+      "note": "surface also changes without input (14 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991096371,
+      "tPlayable": 1793991102027,
+      "url": "http://127.0.0.1:3204/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "A",
+      "run": 2,
+      "pair": 13,
+      "playable": true,
+      "ms": 5324,
+      "firstFrameMs": 3929,
+      "note": "surface also changes without input (8.64 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991112455,
+      "tPlayable": 1793991117779,
+      "url": "http://127.0.0.1:3205/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "A",
+      "run": 2,
+      "pair": 14,
+      "playable": true,
+      "ms": 7742,
+      "firstFrameMs": 4922,
+      "note": "surface also changes without input (44.27 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991128142,
+      "tPlayable": 1793991135884,
+      "url": "http://127.0.0.1:3205/play/71772dc88e33f0b4639ccc181c520037"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "B",
+      "run": 2,
+      "pair": 14,
+      "playable": true,
+      "ms": 8363,
+      "firstFrameMs": 5433,
+      "note": "surface also changes without input (46.82 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991147364,
+      "tPlayable": 1793991155727,
+      "url": "http://127.0.0.1:3204/play/71772dc88e33f0b4639ccc181c520037"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "B",
+      "run": 2,
+      "pair": 15,
+      "playable": true,
+      "ms": 7662,
+      "firstFrameMs": 5158,
+      "note": "surface also changes without input (29.25 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991167312,
+      "tPlayable": 1793991174974,
+      "url": "http://127.0.0.1:3204/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "A",
+      "run": 2,
+      "pair": 15,
+      "playable": true,
+      "ms": 8016,
+      "firstFrameMs": 5401,
+      "note": "surface also changes without input (26.57 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991186530,
+      "tPlayable": 1793991194546,
+      "url": "http://127.0.0.1:3205/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "A",
+      "run": 3,
+      "pair": 16,
+      "playable": true,
+      "ms": 7223,
+      "firstFrameMs": 4319,
+      "note": "surface also changes without input (43.47 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991206454,
+      "tPlayable": 1793991213677,
+      "url": "http://127.0.0.1:3205/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s1-a-cat-delivering-pizzas-across-rooftops-",
+      "side": "B",
+      "run": 3,
+      "pair": 16,
+      "playable": true,
+      "ms": 8182,
+      "firstFrameMs": 4998,
+      "note": "surface also changes without input (39.9 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991226147,
+      "tPlayable": 1793991234329,
+      "url": "http://127.0.0.1:3204/play/fa0522e3f8746f662f559c38149a89b4"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "B",
+      "run": 3,
+      "pair": 17,
+      "playable": true,
+      "ms": 8009,
+      "firstFrameMs": 5223,
+      "note": "surface also changes without input (50.36 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991245849,
+      "tPlayable": 1793991253858,
+      "url": "http://127.0.0.1:3204/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s2-find-the-lost-crown-in-an-old-castle",
+      "side": "A",
+      "run": 3,
+      "pair": 17,
+      "playable": true,
+      "ms": 8319,
+      "firstFrameMs": 4995,
+      "note": "surface also changes without input (54.97 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991264739,
+      "tPlayable": 1793991273058,
+      "url": "http://127.0.0.1:3205/play/495ace4d1b956581f84d7cc2df9d1af7"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "A",
+      "run": 3,
+      "pair": 18,
+      "playable": true,
+      "ms": 10786,
+      "firstFrameMs": 5357,
+      "note": "surface also changes without input (1.47 % in 300 ms) – check the screenshot",
+      "attempts": 3,
+      "t0": 1793991286024,
+      "tPlayable": 1793991296810,
+      "url": "http://127.0.0.1:3205/play/d37964cc052b6d7650b2ac9657951cc2"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s3-an-underwater-race-between-a-turtle-and-",
+      "side": "B",
+      "run": 3,
+      "pair": 18,
+      "playable": true,
+      "ms": 8777,
+      "firstFrameMs": 5071,
+      "note": "surface also changes without input (54.76 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991309256,
+      "tPlayable": 1793991318033,
+      "url": "http://127.0.0.1:3204/play/d37964cc052b6d7650b2ac9657951cc2"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "B",
+      "run": 3,
+      "pair": 19,
+      "playable": true,
+      "ms": 6777,
+      "firstFrameMs": 4539,
+      "note": "surface also changes without input (6.34 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991331497,
+      "tPlayable": 1793991338274,
+      "url": "http://127.0.0.1:3204/play/bd5b2165e44b4031ee8de392904cebf0"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s4-balance-a-tower-of-pancakes-on-a-windy-d",
+      "side": "A",
+      "run": 3,
+      "pair": 19,
+      "playable": true,
+      "ms": 6479,
+      "firstFrameMs": 4422,
+      "note": "surface also changes without input (60.34 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991350258,
+      "tPlayable": 1793991356737,
+      "url": "http://127.0.0.1:3205/play/bd5b2165e44b4031ee8de392904cebf0"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "A",
+      "run": 3,
+      "pair": 20,
+      "playable": true,
+      "ms": 5508,
+      "firstFrameMs": 3809,
+      "note": "surface also changes without input (4.61 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991368801,
+      "tPlayable": 1793991374309,
+      "url": "http://127.0.0.1:3205/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s5-play-mini-golf-in-a-candy-land",
+      "side": "B",
+      "run": 3,
+      "pair": 20,
+      "playable": true,
+      "ms": 6303,
+      "firstFrameMs": 3911,
+      "note": "surface also changes without input (14.75 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991385723,
+      "tPlayable": 1793991392026,
+      "url": "http://127.0.0.1:3204/play/79a57026dafa152897e9e59c8b283b41"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "B",
+      "run": 3,
+      "pair": 21,
+      "playable": true,
+      "ms": 5974,
+      "firstFrameMs": 4341,
+      "note": "surface also changes without input (13.78 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991403240,
+      "tPlayable": 1793991409214,
+      "url": "http://127.0.0.1:3204/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s6-a-farmer-catches-falling-apples-in-the-o",
+      "side": "A",
+      "run": 3,
+      "pair": 21,
+      "playable": true,
+      "ms": 5927,
+      "firstFrameMs": 4342,
+      "note": "surface also changes without input (14.45 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991420692,
+      "tPlayable": 1793991426619,
+      "url": "http://127.0.0.1:3205/play/04747f10d5403ccec6c1d2a643ef01dd"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "A",
+      "run": 3,
+      "pair": 22,
+      "playable": true,
+      "ms": 8949,
+      "firstFrameMs": 5397,
+      "note": "surface also changes without input (39.63 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991438035,
+      "tPlayable": 1793991446984,
+      "url": "http://127.0.0.1:3205/play/71772dc88e33f0b4639ccc181c520037"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s7-escape-a-volcano-before-the-lava-reaches",
+      "side": "B",
+      "run": 3,
+      "pair": 22,
+      "playable": true,
+      "ms": 8728,
+      "firstFrameMs": 5431,
+      "note": "surface also changes without input (44.66 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991459853,
+      "tPlayable": 1793991468581,
+      "url": "http://127.0.0.1:3204/play/71772dc88e33f0b4639ccc181c520037"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "B",
+      "run": 3,
+      "pair": 23,
+      "playable": true,
+      "ms": 9973,
+      "firstFrameMs": 6189,
+      "note": "surface also changes without input (15.04 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991481104,
+      "tPlayable": 1793991491077,
+      "url": "http://127.0.0.1:3204/play/8386dd7d1dc084fc3b138201870050ae"
+    },
+    {
+      "profile": "pixel7-cpu4",
+      "kind": "sentence",
+      "target": "s8-a-knight-jumps-across-floating-islands-t",
+      "side": "A",
+      "run": 3,
+      "pair": 23,
+      "playable": true,
+      "ms": 8228,
+      "firstFrameMs": 5458,
+      "note": "surface also changes without input (25.49 % in 300 ms) – check the screenshot",
+      "attempts": 2,
+      "t0": 1793991503353,
+      "tPlayable": 1793991511581,
+      "url": "http://127.0.0.1:3205/play/8386dd7d1dc084fc3b138201870050ae"
+    }
+  ]
+}

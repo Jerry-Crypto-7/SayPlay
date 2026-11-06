@@ -11,7 +11,7 @@
  * stejnou geometrii.
  */
 
-import { BufferAttribute, BufferGeometry, Float32BufferAttribute } from 'three';
+import { BufferAttribute, BufferGeometry, ExtrudeGeometry, Float32BufferAttribute, Shape, Vector2 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import type { Surface } from '@/play/arcade/look';
@@ -201,8 +201,10 @@ export interface RoadGeometry {
   readonly edges: BufferGeometry;
   /** Středová čára nebo spáry prken; `null` = povrch bez značení. */
   readonly marks: BufferGeometry | null;
-  /** Mantinely po obou okrajích; `null` = bez nich. */
+  /** Mantinely po obou okrajích, kusy v barvě podkladu (`Surface.wall[0]`); `null` = bez nich. */
   readonly walls: BufferGeometry | null;
+  /** Kusy mantinelů v barvě pruhu (`Surface.wall[1]`), střídají se s `walls` po `WALL_BAND.on` m. */
+  readonly bands: BufferGeometry | null;
 }
 
 /**
@@ -242,25 +244,147 @@ export function roadGeometry(segments: readonly StripSegment[], surface: Surface
     marks = pieces.length === 0 ? null : mergeGeometries(pieces);
   }
   let wallGeometry: BufferGeometry | null = null;
+  let bands: BufferGeometry | null = null;
   if (walls !== null) {
     const { height: h, thickness: t } = walls;
     // Každý mantinel: vnitřní stěna k cestě, vršek a vnější stěna, každá plocha zvlášť (ostré hrany).
-    const faces = [-1, 1].flatMap((sign) => {
+    const faces = (part: readonly StripSample[]): BufferGeometry[] => [-1, 1].flatMap((sign) => {
       const inner = (s: StripSample): number => side(s, sign);
       const outer = (s: StripSample): number => side(s, sign) + sign * t;
       return sign < 0
         ? [
-            ribbon(samples, (s) => [[inner(s), h], [inner(s), 0]]),
-            ribbon(samples, (s) => [[outer(s), h], [inner(s), h]]),
-            ribbon(samples, (s) => [[outer(s), 0], [outer(s), h]]),
+            ribbon(part, (s) => [[inner(s), h], [inner(s), 0]]),
+            ribbon(part, (s) => [[outer(s), h], [inner(s), h]]),
+            ribbon(part, (s) => [[outer(s), 0], [outer(s), h]]),
           ]
         : [
-            ribbon(samples, (s) => [[inner(s), 0], [inner(s), h]]),
-            ribbon(samples, (s) => [[inner(s), h], [outer(s), h]]),
-            ribbon(samples, (s) => [[outer(s), h], [outer(s), 0]]),
+            ribbon(part, (s) => [[inner(s), 0], [inner(s), h]]),
+            ribbon(part, (s) => [[inner(s), h], [outer(s), h]]),
+            ribbon(part, (s) => [[outer(s), h], [outer(s), 0]]),
           ];
     });
-    wallGeometry = mergeGeometries(faces);
+    // Kusy po `WALL_BAND.on` m střídavě do podkladu a pruhu (P73D T6): obrubník, plot, pískovec s korály.
+    // Šest pásů přes celou trať s hranicemi kusů mezi vzorky, pak čtyřúhelníky do dvou sítí (T8b): stavba
+    // po kusech dělala šest geometrií a výpočet normál na každých 1,5 m (~100 ms prvního snímku telefonu).
+    const parts = cutAt(samples, from, to, WALL_BAND.on, at);
+    const parity = parts.slice(1).map((next, i) => Math.floor(((parts[i]!.z + next.z) / 2 - from) / WALL_BAND.on) % 2);
+    const [base, band] = splitQuads(faces(parts), parity);
+    wallGeometry = base;
+    bands = band;
   }
-  return { surface: road, edges, marks, walls: wallGeometry };
+  return { surface: road, edges, marks, walls: wallGeometry, bands };
+}
+
+/** Vzorky doplněné o body po `step` m od `from` (z křivky), ať každý čtyřúhelník leží celý v jednom kusu. */
+function cutAt(samples: readonly StripSample[], from: number, to: number, step: number, at: (z: number) => { readonly center: number; readonly width: number }): StripSample[] {
+  const out: StripSample[] = [];
+  let next = from + step;
+  for (const sample of samples) {
+    for (; next < to && next <= sample.z; next += step) if (Math.abs(next - sample.z) > 1e-6) out.push({ z: next, ...at(next) });
+    out.push(sample);
+  }
+  return out;
+}
+
+/**
+ * Čtyřúhelníky pásů z `ribbon` (stejné vzorky) do dvou sítí podle `parity[i]` čtyřúhelníku i; vrcholy se sdílí
+ * jen uvnitř kusu, normály zůstávají z celého pásu. `null` = síť bez jediného čtyřúhelníku.
+ */
+function splitQuads(ribbons: readonly BufferGeometry[], parity: readonly number[]): [BufferGeometry | null, BufferGeometry | null] {
+  const out = [0, 1].map(() => ({ position: [] as number[], normal: [] as number[], index: [] as number[] }));
+  for (const strip of ribbons) {
+    const position = strip.getAttribute('position').array;
+    const normal = strip.getAttribute('normal').array;
+    const push = (part: (typeof out)[number], sample: number): void => {
+      for (let j = sample * 6; j < sample * 6 + 6; j += 1) {
+        part.position.push(position[j]!);
+        part.normal.push(normal[j]!);
+      }
+    };
+    parity.forEach((p, i) => {
+      const part = out[p]!;
+      if (i === 0 || parity[i - 1] !== p) push(part, i);
+      push(part, i + 1);
+      const k = part.position.length / 3 - 4;
+      part.index.push(k, k + 2, k + 1, k + 1, k + 2, k + 3);
+    });
+    strip.dispose();
+  }
+  return out.map(({ position, normal, index }) => {
+    if (index.length === 0) return null;
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new Float32BufferAttribute(position, 3));
+    geometry.setAttribute('normal', new Float32BufferAttribute(normal, 3));
+    geometry.setIndex(index);
+    return geometry;
+  }) as [BufferGeometry | null, BufferGeometry | null];
+}
+
+/** Kus mantinelu jedné barvy (m): obrubník asfaltu a sloupky plotu na pohled z jízdy. */
+export const WALL_BAND = { on: 1.5 } as const;
+
+/** Drobky na pásu (m): rozteč po trati, odstup od okraje, délka a šířka od–do; každý třetí vzorek vynechá. */
+const FLECK = { every: 0.9, margin: 0.6, length: [0.25, 0.6], width: [0.15, 0.4] } as const;
+
+/** Celé číslo → 32 bitů rozházených (lowbias32): rozmístění drobků je funkce pořadí, ne náhody. */
+function mix32(n: number): number {
+  let x = n >>> 0;
+  x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
+  x = Math.imul(x ^ (x >>> 15), 0x846ca68b);
+  return (x ^ (x >>> 16)) >>> 0;
+}
+
+/**
+ * Drobky povrchu (P73D T6): mušle a korály v písku, hroudy v hlíně – ploché čtyřúhelníky nad pásem
+ * mimo jeho lem, jedna síť přes celou trať. `null` = povrch bez drobků.
+ */
+export function fleckGeometry(segments: readonly StripSegment[], surface: Surface): BufferGeometry | null {
+  if (surface.flecks === undefined || segments.length === 0) return null;
+  const at = stripCurve(segments);
+  const from = Math.min(...segments.map((segment) => segment.near));
+  const to = Math.max(...segments.map((segment) => segment.far));
+  const positions: number[] = [];
+  const index: number[] = [];
+  const lerp = ([a, b]: readonly [number, number], u: number): number => a + (b - a) * u;
+  for (let i = 0, z = from + FLECK.every / 2; z < to - FLECK.every; i += 1, z += FLECK.every) {
+    const h = mix32(i);
+    if (h % 3 === 0) continue;
+    const [u1, u2, u3] = [(h >>> 2) & 1023, (h >>> 12) & 1023, (h >>> 22) & 1023].map((bits) => bits / 1023) as [number, number, number];
+    const { center, width } = at(z);
+    const reach = width / 2 - FLECK.margin;
+    if (reach <= 0) continue;
+    const x = center + (u1 * 2 - 1) * reach;
+    const [hw, hl] = [lerp(FLECK.width, u2) / 2, lerp(FLECK.length, u3) / 2];
+    const k = positions.length / 3;
+    positions.push(x - hw, LIFT.mark, z - hl, x + hw, LIFT.mark, z - hl, x - hw, LIFT.mark, z + hl, x + hw, LIFT.mark, z + hl);
+    index.push(k, k + 2, k + 1, k + 1, k + 2, k + 3);
+  }
+  if (index.length === 0) return null;
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geometry.setIndex(index);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
+ * Turbo na pásu (P73D T6): dvě šipky po trati (+z) místo azurové krychle – sbírá se, ne objíždí.
+ * Vejde se do půdorysu těla `w × d`, výška nejvýš 0,12 m; srážka těla se nemění.
+ */
+export function boostPadGeometry(w: number, h: number, d: number): BufferGeometry {
+  const height = Math.min(h, 0.12);
+  const [point, thick] = [d * 0.27, d * 0.2];
+  const chevrons = [-d / 2, 0].map((y0) => {
+    const shape = new Shape([
+      new Vector2(-w / 2, y0),
+      new Vector2(0, y0 + point),
+      new Vector2(w / 2, y0),
+      new Vector2(w / 2, y0 + thick),
+      new Vector2(0, y0 + point + thick),
+      new Vector2(-w / 2, y0 + thick),
+    ]);
+    // Tvar leží v rovině xy a vytlačí se po z; otočení o +90° kolem x z něj udělá šipku na zemi mířící po +z.
+    return new ExtrudeGeometry(shape, { depth: height, bevelEnabled: false }).rotateX(Math.PI / 2).translate(0, height, 0);
+  });
+  return mergeGeometries(chevrons);
 }

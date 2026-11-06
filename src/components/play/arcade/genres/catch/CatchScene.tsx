@@ -1,11 +1,11 @@
 'use client';
 
 /**
- * Scéna chytání (P54C T5): pět pruhů zepředu, věci padají z koruny nad nimi a hrdina je
- * chytá košem. Kamera kouká po +z, takže x jádra se zrcadlí jako u pruhů (`LaneScene`) –
- * pruh 0 leží vlevo. Na výšku se do obrazu vejde celá šíře pruhů, na šířku celá výška pádu.
+ * Scéna chytání (P54C T5): pět pruhů zepředu, věci padají shora a hrdina je chytá košem;
+ * kolem a za pruhy stojí sad (P73D). Kamera kouká po +z, takže x jádra se zrcadlí jako u pruhů
+ * (`LaneScene`) – pruh 0 leží vlevo. Na výšku se do obrazu vejde celá šíře pruhů, na šířku celá výška pádu.
  *
- * Co jádro nevidí (koruna, koš, póza hrdiny, kamera), je jen obraz: stav ani hash nemění.
+ * Co jádro nevidí (sad, koš, póza hrdiny, kamera), je jen obraz: stav ani hash nemění.
  * Plocha dostane `data-lane-edges` (hranice pruhů u koše, zleva doprava), podle kterých
  * prst trefí pruh (`lanes-input.ts`), a `data-player-x` pro vyskakující body.
  * Modely jsou z knihovny podle popisku (`cast.props.coin` ovoce, `cast.props.hazard` bomba);
@@ -13,9 +13,8 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Box3, type Group, IcosahedronGeometry, type PerspectiveCamera, Vector3 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { useCallback, useMemo, useRef } from 'react';
+import { Box3, type Group, MathUtils, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
@@ -30,7 +29,9 @@ import { type PlayRect, fitTall, usePlayRectRef } from '../../portrait-frame';
 import { type GhostPose, GhostSlot } from '../../GhostSlot';
 import { HorizonBackdrop } from '../../look/Backdrop';
 import { FieldGround } from '../../look/FieldGround';
-import { hash } from '../../look/ground';
+import { DIORAMA_FRAMING } from '../../look/framing';
+import type { Box } from '../../look/ground';
+import { Orchard } from '../../look/Vegetation';
 import { RiggedModel } from '../../RiggedModel';
 import { FittedModel, type WorldProps } from '../../World';
 import { LaneStrips } from '../lanes/LaneStrips';
@@ -41,10 +42,23 @@ const FIELD_HALF = (LANES.count * LANE_M) / 2;
 const HERO = { w: m(CATCH.hero.w), h: m(CATCH.hero.h), d: m(CATCH.hero.d) };
 const THING = m(CATCH.thing.w);
 const CATCH_M = m(CATCH.catchY);
-/** Koruna, ze které věci padají: spodní hrana nad nejvyšším místem, kde je věc vidět. */
+/**
+ * Horní kraj pádu: nad nejvyšším místem, kde je věc vidět. Do P73D tu nad pruhy visela koruna (řada chomáčů přes
+ * horní hranu obrazu, bez kmenů); kamera s jejím místem počítá dál – nad pádem zůstane obloha s obzorem.
+ */
 const CANOPY = { bottom: m(CATCH.viewTop) + THING, h: 1.2 };
 const VIEW = { bottom: -0.4, top: CANOPY.bottom + CANOPY.h + 0.4 };
-const LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const;
+export const CATCH_LAND = { x0: -30, x1: 30, z0: -30, z1: 40 } as const satisfies Box;
+/**
+ * Sad místo koruny (P73D): stromy na zemi po stranách pruhů a v řadách za nimi. Před kamerou a za deskou zůstane
+ * ulička trávy (`keep`), ať věci padají v dolní půli proti zemi; strom nejvýš `top` m (koruna pod výškou kamery
+ * `placeCatchWide`, ~9 m, tedy pod obzorem a nikdy u horní hrany).
+ */
+export const CATCH_ORCHARD = {
+  area: { x0: -21, x1: 21, z0: -1, z1: 22 },
+  keep: { x0: -FIELD_HALF - 0.3, x1: FIELD_HALF + 0.3, z0: CATCH_LAND.z0, z1: 9 },
+  top: 6,
+} as const satisfies { readonly area: Box; readonly keep: Box; readonly top: number };
 /** Kolik volné výšky (na výšku telefonu) jde nad korunu místo pod zem. */
 const SKY_SHARE = 0.25;
 /**
@@ -88,6 +102,29 @@ function tallBoxes(stretch: number): { readonly box: Box3; readonly keep: Box3 }
   };
 }
 
+/** Sklon kamery chytání (P73D T2): dřív kolmo zepředu (0°) a obzor v mlze, teď 3/4 shora s obzorem nad korunami. */
+export const CATCH_PITCH = MathUtils.degToRad(DIORAMA_FRAMING.lanes.pitch);
+
+/** Kamera `distance` m od bodu (0, `y`, 0) ve sklonu `CATCH_PITCH`, kouká na něj. */
+export function tiltCatch(camera: PerspectiveCamera, y: number, distance: number): void {
+  camera.position.set(0, y + distance * Math.sin(CATCH_PITCH), -distance * Math.cos(CATCH_PITCH));
+  camera.lookAt(0, y, 0);
+}
+
+/** Kamera chytání na šířku: rozhoduje šíře pruhů nebo výška pádu; volná výška jde z větší části pod zem (pole před hrdinou). */
+export function placeCatchWide(camera: PerspectiveCamera): void {
+  const tan = Math.tan((camera.fov * Math.PI) / 360);
+  const needed = (VIEW.top - VIEW.bottom) / 2;
+  const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
+  const spare = distance * tan - needed;
+  tiltCatch(camera, (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE, distance);
+}
+
+/** Bod pohledu kamery chytání posunuté fitem: táž orientace, kterou postavil `tiltCatch`. */
+function catchLook(position: Vector3, out: Vector3): Vector3 {
+  return out.set(position.x, position.y - Math.sin(CATCH_PITCH), position.z + Math.cos(CATCH_PITCH));
+}
+
 /**
  * Kamera chytání na výšku: zepředu jako na šířku a přes `fitTall` do `playRect`, pád natažený tak, aby ho svisle
  * nevázalo nic víc než šíře pruhů. Největší natažení hledá půlením: dokud se pád vejde kamerou, kterou drží
@@ -98,8 +135,7 @@ function placeTall(camera: PerspectiveCamera, rect: PlayRect): { readonly positi
   const fit = (stretch: number) => {
     const { box, keep } = tallBoxes(stretch);
     const y = (box.min.y + box.max.y) / 2;
-    camera.position.set(0, y, -10);
-    camera.lookAt(0, y, 0);
+    tiltCatch(camera, y, 10);
     return fitTall(camera, box, rect, { keep });
   };
   const lanes = fit(1);
@@ -124,34 +160,6 @@ type CatchSceneProps = Omit<WorldProps, 'control' | 'backdrop'>;
  */
 const BOARD: readonly [string, string] = [color.paper, color['cream-deep']];
 const BOARD_LIGHT = 0.3;
-
-/**
- * Koruna, ze které věci padají (P56B T11): dvě řady kulatých chomáčů listí s ploškami místo zeleného
- * kvádru, velikost a výška z hashe pořadí (stejná hra, stejná koruna). Spodek chomáčů drží `CANOPY.bottom`
- * až na pár centimetrů – pod ním je věc vidět. Jedna síť, jedno volání jako kvádr.
- */
-function Canopy({ tint }: { readonly tint: string }) {
-  const geometry = useMemo(() => {
-    const width = FIELD_HALF * 2 + 1;
-    const radius = CANOPY.h * 0.55;
-    const puffs = [0, 1].flatMap((row) => {
-      const count = Math.round(width / (radius * 1.5)) - row;
-      return Array.from({ length: count }, (_, k) => {
-        const size = radius * (0.85 + 0.3 * hash(k, row + 3));
-        return new IcosahedronGeometry(size, 1).translate(-width / 2 + (width * (k + 0.5)) / count, CANOPY.bottom + size * 0.9 + 0.12 * hash(k, row + 9), row);
-      });
-    });
-    const merged = mergeGeometries(puffs);
-    for (const puff of puffs) puff.dispose();
-    return merged;
-  }, []);
-  useEffect(() => () => geometry.dispose(), [geometry]);
-  return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial color={tint} roughness={0.9} flatShading />
-    </mesh>
-  );
-}
 
 function Fruit() {
   return (
@@ -222,7 +230,6 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
   const probe = useMemo(() => new Vector3(), []);
   const playRect = usePlayRectRef();
   const tallFrame = useRef<{ readonly rect: PlayRect; readonly aspect: number; readonly position: Vector3; readonly stretch: number } | null>(null);
-  const canopy = useRef<Group | null>(null);
   const heroRig = riggedCharacter(cast.player);
   // Duch dřívějšího běhu jezdí po pruzích svého běhu kousek za rovinou hrdiny (dál od kamery), čelem ke kameře.
   const ghostSpot = useCallback((pose: GhostPose): GhostPlacement => [-pose.x / UNIT, 0, HERO.d, Math.PI], []);
@@ -253,20 +260,10 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
       group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && catchInView(state, thing.index);
       if (group.visible) group.position.set(-at(thing.index, BODY.x), lifted(at(thing.index, BODY.y), stretch), 0);
     }
-    canopy.current?.position.set(0, lifted(CANOPY.bottom, stretch) - CANOPY.bottom, 0);
     if (tall !== null) {
       camera.position.copy(tall.position);
-      camera.lookAt(look3.set(tall.position.x, tall.position.y, 0));
-    } else {
-      // Na výšku rozhoduje šíře pruhů, na šířku výška pádu; volná výška jde z větší části pod zem (pole před hrdinou).
-      const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const needed = (VIEW.top - VIEW.bottom) / 2;
-      const distance = Math.max((FIELD_HALF + 0.5) / (tan * camera.aspect), needed / tan);
-      const spare = distance * tan - needed;
-      const y = (VIEW.top + VIEW.bottom) / 2 + spare * SKY_SHARE;
-      camera.position.set(0, y, -distance);
-      camera.lookAt(look3.set(0, y, 0));
-    }
+      camera.lookAt(catchLook(tall.position, look3));
+    } else placeCatchWide(camera);
     const host = surface.current;
     if (host === null) return;
     camera.updateMatrixWorld();
@@ -278,13 +275,11 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
 
   return (
     <>
-      <FieldGround look={look} area={LAND} y={-0.03} />
+      <FieldGround look={look} area={CATCH_LAND} y={-0.03} />
       <HorizonBackdrop look={look} seed={world.seed} clear={0} beyond={24} />
       {/* Světlá deska (P55 T5) s lemem a spárami povrchu sady (P56B T11): ovoce, bomby i bonusy na ní čtou dál než na zelené. */}
       <LaneStrips look={look} z0={-1.5} z1={1.5} light={BOARD_LIGHT} fill={BOARD} />
-      <group ref={canopy}>
-        <Canopy tint={look.flora?.leaf ?? look.tint[0]} />
-      </group>
+      {look.flora !== undefined && <Orchard flora={look.flora} seed={world.seed} {...CATCH_ORCHARD} />}
       <group ref={hero} userData={{ frame: 'hero' }}>
         {/* Kamera kouká po +z: hrdina se otočí čelem k ní. */}
         <group rotation={[0, Math.PI, 0]}>

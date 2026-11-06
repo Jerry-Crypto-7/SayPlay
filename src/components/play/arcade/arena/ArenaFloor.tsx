@@ -72,6 +72,7 @@ export function ArenaFloor({ look, half, seed, keep, hero, decor: decorated = tr
     () => () => {
       arena.floor.dispose();
       arena.walls.dispose();
+      arena.podium.dispose();
     },
     [arena],
   );
@@ -87,6 +88,8 @@ export function ArenaFloor({ look, half, seed, keep, hero, decor: decorated = tr
       {/* Výzdoba stín nevrhá: stínový průchod by stál další volání za kamínky, které nikdo nehledá. */}
       {decor !== null && <mesh geometry={decor} material={walls} receiveShadow userData={{ rigShadow: 'receive', terrain: 'arena-decor' }} />}
       {!interior && <mesh geometry={arena.walls} material={walls} userData={{ terrain: 'arena-walls' }} />}
+      {/* Kraj světa (P73D T3): zaoblená hrana a boční řez za zemí za hranou. */}
+      <mesh geometry={arena.podium} material={walls} receiveShadow userData={{ terrain: 'podium' }} />
       {kitWalls.map(([id, pieces]) => <InteriorWall key={id} id={id} pieces={pieces} />)}
       {flora !== undefined && ring.map(([id, pieces]) => <RingKind key={id} id={id} flora={flora} pieces={pieces} />)}
       {flora !== undefined && <VegetationAround flora={flora} seed={seed} box={box} clear={VEGETATION_CLEAR} layers={LOW_TOWARD_CAMERA} />}

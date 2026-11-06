@@ -21,7 +21,7 @@ import { draftGameSpecWithMeta } from '@/play/draft/draft';
 import { RunnerValley } from '../../runner/RunnerWorld';
 import { WorldBackdrop } from '../../WorldBackdrop';
 import { FieldGround } from '../FieldGround';
-import { buildFieldGround } from '../ground';
+import { buildFieldGround, INTERIOR_TONE, WALL_AO } from '../ground';
 import { buildValley } from '../rig/terrain/valley';
 
 import { isPurple } from '../../../../../../scripts/assets/cc0/palette.mjs';
@@ -121,9 +121,14 @@ function expectIndoorFloor(name: string, look: Look, ground: { geometry: BufferG
   }
   expect(map.repeat.x, `${name}: period`).toBeGreaterThan(0);
   const color = ground.geometry.getAttribute('color');
+  // P73D T3: vrcholy jen šedí (odstín a AO u stěn), barvu dlažby nese textura – žádný nádech.
   let lowest = 1;
-  for (let i = 0; i < color.count; i += 1) lowest = Math.min(lowest, color.getX(i), color.getY(i), color.getZ(i));
-  expect(lowest, `${name}: white vertices`).toBeGreaterThan(0.999);
+  for (let i = 0; i < color.count; i += 1) {
+    lowest = Math.min(lowest, color.getX(i), color.getY(i), color.getZ(i));
+    expect(color.getY(i), `${name}: neutral vertex`).toBeCloseTo(color.getX(i), 5);
+    expect(color.getZ(i), `${name}: neutral vertex`).toBeCloseTo(color.getX(i), 5);
+  }
+  expect(lowest, `${name}: light vertices`).toBeGreaterThanOrEqual(INTERIOR_TONE * (1 - WALL_AO) - 1e-6);
 }
 
 describe('P62 T6: interiér má podlahu i mimo arénu', () => {
@@ -181,7 +186,7 @@ function hashGeometry(geometry: BufferGeometry): string {
   return h.toString(16);
 }
 
-/** Otisky z 6beb49d3 (týž kód testu nad nezměněnou větví). */
+/** Otisky z 6beb49d3 (týž kód testu nad nezměněnou větví). Údolí sopky přepsané v P73D T5: nižší, teplý kaňon s lávou. */
 const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips: string; readonly field: string }>> = {
   meadow: { valley: '3a6c1d8f', strips: '#94754f:af763ea5,#75593b:94024b41', field: 'b17bb52a' },
   city: { valley: '6af5cfe4', strips: '#5a5f66:de4aeb64,#e8e6df:1d32ad60', field: 'aba9fd28' },
@@ -192,7 +197,7 @@ const BEFORE: Readonly<Record<string, { readonly valley: string; readonly strips
   ocean: { valley: '1d2c8879', strips: '#a07a4e:6bc0ae61,#6e5034:9dc66635,#6e5034:56433411', field: 'ca3f2ca0' },
   underwater: { valley: 'f1e4a4a', strips: '#dcc193:c524109c,#c3a476:c0a737f3', field: '8574187b' },
   snow: { valley: 'e89b21fb', strips: '#e6edf4:de4aeb64,#bccbd9:d62e4120', field: '9d5077f9' },
-  volcano: { valley: '23937d54', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '8937d048' },
+  volcano: { valley: '39a798a8', strips: '#94754f:672a97ac,#75593b:d61ff000', field: '8937d048' },
   space: { valley: '8f7d383a', strips: '#94754f:dd0ac91,#75593b:9a853b2a', field: '5a198448' },
   graveyard: { valley: '8f99e8cc', strips: '#94754f:ca2725f8,#75593b:5dda668f', field: '4b9642d9' },
 };

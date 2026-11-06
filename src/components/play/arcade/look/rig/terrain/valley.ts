@@ -40,26 +40,32 @@ export interface ValleyPalette {
   readonly surface: string;
   readonly shade: string;
   readonly rock: string;
+  readonly lava?: string;
 }
 
 /** Barvy údolí: povrch je země sady, stín a skála z `look.terrain`, jinak odvozené. Dráhu kreslí pás cesty (P46G T2). */
 export function valleyPalette(look: Look): ValleyPalette {
   const surface = look.ground;
+  const canyon = look.canyon;
   return {
     surface,
-    shade: look.terrain?.shade ?? mix(surface, look.light[1], 0.35),
-    rock: look.terrain?.rock ?? mix(surface, '#57534e', 0.6),
+    shade: look.terrain?.shade ?? (canyon === undefined ? mix(surface, look.light[1], 0.35) : mix(canyon.rock, surface, 0.4)),
+    rock: look.terrain?.rock ?? canyon?.rock ?? mix(surface, '#57534e', 0.6),
+    ...(canyon?.lava === undefined ? {} : { lava: canyon.lava }),
   };
 }
 
-/** Výška vrcholu mimo hrací plochu: násep, svah do hor a hrbolatost, která s odstupem roste. */
-function reliefAt(x: number, z: number): number {
+/** Proud lávy vedle cesty (P73D T5): pás za krajem hrací plochy, uvnitř řady kulis (`inner` = +1,5 m). */
+export const LAVA_BAND = [0.2, 1.4] as const;
+
+/** Výška vrcholu mimo hrací plochu: násep, svah do hor a hrbolatost, která s odstupem roste; `wall` násobí svah. */
+function reliefAt(x: number, z: number, wall: number): number {
   const d = Math.abs(x) - PLAYABLE_HALF;
   const side = x < 0 ? 37 : 0;
   const bank = 1.1 * smooth(d / 6);
   const slope = 26 * Math.pow(Math.max(0, d - 5) / 30, 1.5);
   const rough = (0.65 * noise(x * 0.11 + side, z * 0.09) + 0.35 * noise(x * 0.27 + side, z * 0.23) - 0.5) * (0.3 + d * 0.16);
-  return Math.max(0.04 * d, bank + slope + rough);
+  return Math.max(0.04 * d, bank + wall * (slope + rough));
 }
 
 /** Posun řad sloupce podél trati (m) – mřížka tak nepůsobí jako mřížka. Hrací plocha ho nemá. */
@@ -90,13 +96,13 @@ const zOf = (from: number, column: number, row: number): number => from + row * 
  * `hall` (P61 T7, sada se stropem `Look.ceiling`): rovná podlaha až ke stěnám kulisy – svahy pod stropem
  * soudce četl jako zasněžený kopec venku.
  */
-export function valleyHeights(from: number, to: number, hall = false): Float32Array {
+export function valleyHeights(from: number, to: number, hall = false, wall = 1): Float32Array {
   const rows = rowsOf(from, to);
   const heights = new Float32Array((rows + 1) * XS.length);
   for (let row = 0; row <= rows; row += 1) {
     for (let column = 0; column < XS.length; column += 1) {
       const x = XS[column]!;
-      heights[row * XS.length + column] = hall || Math.abs(x) <= PLAYABLE_HALF ? 0 : reliefAt(x, zOf(from, column, row));
+      heights[row * XS.length + column] = hall || Math.abs(x) <= PLAYABLE_HALF ? 0 : reliefAt(x, zOf(from, column, row), wall);
     }
   }
   return heights;
@@ -134,11 +140,12 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley & { reado
   const rows = rowsOf(from, to);
   const zAt = (column: number, row: number): number => zOf(from, column, row);
   const indoor = look.interior !== undefined;
-  const heights = valleyHeights(from, to, indoor || look.ceiling !== undefined);
+  const heights = valleyHeights(from, to, indoor || look.ceiling !== undefined, look.canyon?.wall);
   const h = (column: number, row: number): number => heights[row * XS.length + column]!;
 
   const palette = valleyPalette(look);
   const colors = { shade: new Color(palette.shade), rock: new Color(palette.rock) };
+  const lava = palette.lava === undefined ? null : new Color(palette.lava);
   const ground = groundPainter(groundPalette(look, palette.surface));
   const cells = rows * (XS.length - 1);
   const positions = new Float32Array(cells * 18);
@@ -168,8 +175,11 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley & { reado
     const mz = (az + bz + cz) / 3;
     // Dráhu kreslí hladký pás nad údolím (P46G T2): zubatý kraj po trojúhelnících tu nechával schody.
     // Krajnice se měří od kraje toho pásu, do strany zem tmavne (P46G T3).
+    const edge = Math.abs(mx) - PLAYABLE_HALF;
     if (up < 0.5) face.copy(colors.rock);
     else if (up < 0.78) face.copy(colors.shade);
+    // Láva: žhavý proud se ztuhlou krustou podle šumu (P73D T5), jinak by sopka byla jen tmavá zem.
+    else if (lava !== null && edge > LAVA_BAND[0] && edge < LAVA_BAND[1]) face.copy(noise(mx * 0.7, mz * 0.35) > 0.62 ? colors.rock : lava);
     else ground(mx, mz, Math.abs(mx) - PATH_HALF, face);
     face.multiplyScalar(0.96 + 0.06 * hash(index, 17));
     for (let k = o; k < at; k += 3) {

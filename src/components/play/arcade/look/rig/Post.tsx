@@ -10,12 +10,13 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer, N8AO, SMAA, ToneMapping } from '@react-three/postprocessing';
+import { Bloom, EffectComposer, N8AO, SMAA, TiltShift2, ToneMapping } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Look } from '@/play/arcade/look';
 
+import { tiltFocus } from '../framing';
 import { GradeEffect, type GradeFamily, gradeFor } from './grade';
 import { GAP_MS, type QualityState, type QualityTier, TIER_SETTINGS, bloomThreshold, sampleQuality, startQuality } from './quality';
 
@@ -110,6 +111,11 @@ export function Grading({ family, tier }: { readonly family: GradeFamily; readon
   return <primitive object={effect} dispose={null} />;
 }
 
+/** Tilt-shift: síla rozostření, šíře ostrého pásu (0–1, víc = širší) a vzorky – jemně, hračka, ne rozmazaný obraz. */
+const TILT_BLUR = 0.12;
+const TILT_TAPER = 0.7;
+const TILT_SAMPLES = 8;
+
 /** Vzorky MSAA cíle skládače na úrovni bez SMAA. */
 const MSAA_SAMPLES = 4;
 
@@ -132,15 +138,18 @@ export function opaqueAo(pass: { autoDetectTransparency: boolean; configuration:
  * cíle bez tónování a změna úrovně nepřekládá shadery materiálů. SMAA jde první –
  * čte vstup průchodu, efekty před ním by zahodil.
  */
-export function Post({ look, family, tier }: { readonly look: Look; readonly family: GradeFamily; readonly tier: QualityTier }) {
-  const { bloom, ao, aa } = TIER_SETTINGS[tier];
+export function Post({ look, family, tier, control }: { readonly look: Look; readonly family: GradeFamily; readonly tier: QualityTier; readonly control: string }) {
+  const { bloom, ao, aa, tilt } = TIER_SETTINGS[tier];
+  // Tilt-shift diorama (P73D T4) jen na `high` a jen u ovládání s rámováním diorama: ostrý pás přes hrdinu.
+  const focus = tilt ? tiltFocus(control) : null;
   return (
     <>
-      <PostProbe effects={[ao === false ? '' : 'ao', aa === 'smaa' ? 'smaa' : '', bloom ? 'bloom' : '', 'aces'].filter(Boolean).join(' ')} />
+      <PostProbe effects={[ao === false ? '' : 'ao', aa === 'smaa' ? 'smaa' : '', bloom ? 'bloom' : '', focus === null ? '' : 'tilt', 'aces'].filter(Boolean).join(' ')} />
       <EffectComposer multisampling={aa === 'msaa' ? MSAA_SAMPLES : 0} renderPriority={COMPOSER_PRIORITY}>
         {ao === false ? <></> : <N8AO ref={opaqueAo} aoRadius={1.2} distanceFalloff={1} intensity={2} halfRes={ao === 'half'} quality={ao === 'half' ? 'performance' : 'medium'} />}
         {aa === 'smaa' ? <SMAA /> : <></>}
         {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={0.8} /> : <></>}
+        {focus === null ? <></> : <TiltShift2 blur={TILT_BLUR} taper={TILT_TAPER} start={[0, focus]} end={[1, focus]} samples={TILT_SAMPLES} />}
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         <Grading family={family} tier={tier} />
       </EffectComposer>
