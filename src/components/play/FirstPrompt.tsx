@@ -3,7 +3,7 @@
  * `timer.ts` (P28E-R2): HUD mřížky táhne runtime a arkáda ho nepotřebuje.
  */
 
-import { useSyncExternalStore } from 'react';
+import { type ReactNode, useSyncExternalStore } from 'react';
 
 /** Klávesy, které nápověda nabízí vedle dotyku („Tap or Space …“). */
 const KEY_WORD = 'space|arrows|wasd|a\\/d|w\\/s|down|up|enter|keys';
@@ -164,7 +164,10 @@ export function FirstPrompt({
   goal,
   lose = null,
   dare = null,
+  read,
 }: {
+  /** Jak hra větu přečetla (`StartRead`, P73B T2) – nahoře na kartě. */
+  readonly read?: ReactNode;
   readonly controlsHint: string;
   readonly touch?: string;
   readonly keys?: string;
@@ -179,33 +182,37 @@ export function FirstPrompt({
   const keyLine = coarse ? null : (keys ?? desktopKeys(controlsHint));
   const more = coarse ? controlLines(touchControls(controlsHint, touch), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
   return (
-    <div className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
-      {dare !== null && (
-        <p className="play-first-prompt-dare" data-testid="play-dare-goal">
-          {dare.goal}
-          {dare.changed && <span className="play-first-prompt-note">Your friend changed the game while playing.</span>}
+    // Čtečka dostane jen čtení věty a tlačítko „Checked“ (P73B T3); zbytek karty opakuje HUD, proto `aria-hidden` (`display: contents`).
+    <div className="play-first-prompt" data-testid="play-first-prompt">
+      {read}
+      <div className="play-first-prompt-body" aria-hidden="true">
+        {dare !== null && (
+          <p className="play-first-prompt-dare" data-testid="play-dare-goal">
+            {dare.goal}
+            {dare.changed && <span className="play-first-prompt-note">Your friend changed the game while playing.</span>}
+          </p>
+        )}
+        {goal !== undefined && goal !== '' && (
+          <p className="play-first-prompt-goal" data-testid="play-first-prompt-goal">
+            {goal}
+          </p>
+        )}
+        {lose !== null && (
+          <p className="play-first-prompt-lose" data-testid="play-first-prompt-lose">
+            {lose}
+          </p>
+        )}
+        {action !== '' && <p className="play-first-prompt-action" data-testid="play-first-prompt-action">{action}</p>}
+        {keyLine !== null && keyLine !== SPACE_KEY && <p className="play-first-prompt-keys">{keyLine}</p>}
+        {more.map((line) => (
+          <p key={line} className="play-first-prompt-more" data-testid="play-first-prompt-more">
+            {line}
+          </p>
+        ))}
+        <p className="play-first-prompt-start" data-testid="play-first-prompt-start">
+          {startLine(coarse, keyLine)}
         </p>
-      )}
-      {goal !== undefined && goal !== '' && (
-        <p className="play-first-prompt-goal" data-testid="play-first-prompt-goal">
-          {goal}
-        </p>
-      )}
-      {lose !== null && (
-        <p className="play-first-prompt-lose" data-testid="play-first-prompt-lose">
-          {lose}
-        </p>
-      )}
-      {action !== '' && <p className="play-first-prompt-action" data-testid="play-first-prompt-action">{action}</p>}
-      {keyLine !== null && keyLine !== SPACE_KEY && <p className="play-first-prompt-keys">{keyLine}</p>}
-      {more.map((line) => (
-        <p key={line} className="play-first-prompt-more" data-testid="play-first-prompt-more">
-          {line}
-        </p>
-      ))}
-      <p className="play-first-prompt-start" data-testid="play-first-prompt-start">
-        {startLine(coarse, keyLine)}
-      </p>
+      </div>
     </div>
   );
 }

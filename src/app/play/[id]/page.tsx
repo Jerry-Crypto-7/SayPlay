@@ -8,7 +8,7 @@ import { admit } from '@/app/api/play/_publish';
 import { PrefetchPhysics } from '@/components/play/arcade/ArcadePlay';
 import type { Dare } from '@/components/play/best';
 import { FpsProbe } from '@/components/play/FpsProbe';
-import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
+import { authorshipOf, checkFacts, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
@@ -155,6 +155,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
         lab={labFacts(game.spec, game.arcade ?? null)}
         read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords', game.provenance)}
         honesty={honesty}
+        checks={checkFacts(game.report, game.arcade !== undefined || game.chain !== undefined)}
         upgrade={upgradeUrlOf(game)}
         par={game.report.par ?? null}
         challenge={challenge}

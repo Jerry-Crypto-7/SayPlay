@@ -289,7 +289,13 @@ export function PostRun({
   record = null,
   controlsHint,
   onReplay,
+  onFair,
 }: {
+  /**
+   * Otevře „Why this game is fair“ (P73B T4); chybí = odkaz není – verze bez brány nebo běh se živou změnou,
+   * kterou brána celou neověřila.
+   */
+  readonly onFair?: () => void;
   /** Nápověda ovládání hry – po rychlé prohře ji karta zopakuje (`quickLossTip`). */
   readonly controlsHint?: string;
   /** Řetěz mikroher (P56C T12) remix nemá – server ho odmítne (422), tlačítko by vedlo do chyby. */
@@ -512,6 +518,11 @@ export function PostRun({
               <div className="play-result-links">
                 <ShareButton versionId={versionId} variant="link" size="s" copy label={COPY_LINK} live={live} />
                 {clip !== null && <SaveVideo clip={clip} />}
+                {onFair !== undefined && (
+                  <Button variant="link" size="s" data-testid="play-fair" aria-haspopup="dialog" onClick={onFair}>
+                    Why this game is fair
+                  </Button>
+                )}
               </div>
             </>
           )}
