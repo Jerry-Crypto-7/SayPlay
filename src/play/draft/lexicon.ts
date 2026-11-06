@@ -319,6 +319,8 @@ export function nounPhrase(text: string, max = 3): string | null {
   for (const raw of rest.split(/\s+/)) {
     const word = raw.replace(/[^a-z-]/g, '');
     const punctuated = /[.,;:!?]$/.test(raw);
+    // „the hidden treasure“ (P71D T4): před jménem je „hidden“ přívlastek, ne konec fráze jako v „coins hidden in the grass“.
+    if (word === 'hidden' && words.length === 0 && !punctuated) continue;
     if (word === '' || PHRASE_STOP.has(word) || NUMBER_WORDS[word] !== undefined || (words.length > 0 && (isVerbIng(word) || /ly$/.test(word) && !/^(?:butterfly|firefly|dragonfly|lily|family)$/.test(word)))) break;
     words.push(word);
     if (punctuated || words.length === max) break;

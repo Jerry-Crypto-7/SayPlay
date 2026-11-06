@@ -123,6 +123,13 @@ interface Verb {
 const OBJECT = String.raw`(?:the|a|an|all|every|each|some|\d+|two|three|four|five|six|seven|eight|nine|ten|twelve)\b`;
 const PRONOUN = String.raw`(?:it|you|me|him|her|them|us|the player)\b`;
 
+/**
+ * Hledání jedné věci (P71D T4): „find the lost crown“, „search for the king's crown“, „looks for the lost sword in the
+ * castle“. Shoda je jen sloveso; za ním člen, nejvýš dvě slova a jméno v jednotném čísle, pak konec nebo předložka.
+ * „find 5 keys“, „looking for lost carrots“ a cesta ven („find the exit“) sem nepatří. Čte ji i `compose/assemble.ts`.
+ */
+export const FIND_ONE = /\b(?:find(?:s|ing)?|search(?:es|ing)? for|look(?:s|ing)? for)(?= (?:the|a|an|his|her|their|its|your|my|our)\s(?:[a-z']+ ){0,2}?(?!(?:exit|door|portal|path|way)\b)[a-z']*[a-z](?<![^s]s)(?= (?:in|at|on|under|inside|behind|near|before|from|of|across|through|within|somewhere)\b|\s*(?:[,.;!?]|$)))/;
+
 // P54C T13: znaky žánrů pruhů. Vzor slovesa shodí jen sloveso a znak čte pohledem dopředu – `after` tak začíná
 // za slovesem jako u ostatních řádků („catches|falling honey jars“), návrh z něj čte předmět.
 /** Co se chytá: padá, prší, nebo míří do nádoby. */
@@ -543,6 +550,10 @@ const VERBS: readonly Verb[] = [
   v('drive', 'move', RACE, /\bdriv(?:e|es|ing)\b|\bsteer(?:s|ing)?\b|\brac(?:e|es|ing|er)\b|\bzoom(?:s|ing)?\b(?! (?:meetings?|calls?)\b)/),
   v('ride', 'move', RACE, /\brid(?:e|es|ing)\b|\bgallop(?:s|ing)?\b|\btrot(?:s|ting)?\b/),
   v('walk', 'move', RACE, /\bwalk(?:s|ing)?\b|\bstroll(?:s|ing)?\b|\bwander(?:s|ing)?\b|\btravel(?:s|ling|ing)?\b|\bswim(?:s|ming)?\b/),
+  // P71D T4: hledání jedné věci („find the lost crown“, „search for the king's crown“) je úkol s jedním předmětem, ne
+  // sběr ve vlnách. Jen jednotné číslo za členem, za ním konec nebo předložka; „find 5 keys“, „find the coins“ a cesta ven
+  // („find the exit“) zůstávají řádkům níž.
+  v('find', 'goal', SPATIAL, FIND_ONE),
   // Sběr – žánr dostane podle zbytku věty.
   v('collect', 'pickup', null, new RegExp(String.raw`\bcollect(?:s|ing)?\b|\bgather(?:s|ing)?\b|\bfind(?:s|ing)?\b|\bpick(?:s|ing)? up\b|\bgrab(?:s|bing)?\b|\beat(?:s|ing)?\b|\bsteal(?:s|ing)?\b|\bcatch(?:es|ing)? (?!${PRONOUN})|\bhoard(?:s|ing)?\b|\bpick(?:s|ing)? (?:[a-z]+ ){0,2}(?:herbs?|flowers?|berries|apples?|fruits?|mushrooms?|cherries|grapes)\b|\bdrag(?:s|ging|ged)\b|\bdrag (?:the|a|an|his|her|their|it|them)\b`)),
   v('search', 'pickup', null, /\bsearch(?:es|ing)?\b|\bexplor(?:e|es|ing)\b|\blook(?:s|ing)? for\b/),
@@ -693,8 +704,10 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
   // nosič skoku nepustí.
   const shot = heard.some((entry) => entry.verb === 'shoot') && !heard.some((entry) => entry.verb === 'railshoot');
   const carrier = shot ? heard.find((entry) => entry.kind === 'move' && (entry.pick === PLATFORMER || entry.pick === RUNNER)) : undefined;
-  const main = carrier ?? [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
   const firstMove = heard.filter((entry) => entry.kind === 'move').sort((a, b) => a.at - b.at)[0];
+  const ordered = [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
+  // Hledání s pohybem („a robot jumps to find its battery“, golden P41) hraje pohyb, jako dřív sběr s pohybem.
+  const main = carrier ?? (ordered?.verb === 'find' && firstMove !== undefined ? firstMove : ordered);
   // T5b: i to, čemu se hráč vyhýbá („while dodging ghosts“, hrozba ze čtení) – skutečný sběr v Aréně nepřítele nemá, útěk ano.
   const chaser = heard.some((entry) => entry.kind === 'chase') || reading?.roles.some((role) => role.kind === 'chaser' || role.kind === 'threat') === true || AVOID.test(text);
   // Sběr s pohybem vpřed patří pohybu, s pronásledovatelem útěku, jinak sběru v Aréně.

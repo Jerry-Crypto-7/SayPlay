@@ -5,12 +5,12 @@
     "fidelity": 30
   },
   "mentions": {
-    "mentions": 160,
+    "mentions": 161,
     "before": 110,
     "now": 143
   },
   "nouns": {
-    "distinct": 114,
+    "distinct": 115,
     "before": 75,
     "now": 102
   },
@@ -26,7 +26,7 @@
       "now": 15
     },
     "collectible": {
-      "mentions": 17,
+      "mentions": 18,
       "before": 12,
       "now": 13
     },
@@ -48,9 +48,9 @@
   },
   "bySet": {
     "demand": {
-      "mentions": 92,
+      "mentions": 93,
       "now": 82,
-      "nouns": 80,
+      "nouns": 81,
       "nounsNow": 72
     },
     "fidelity": {
@@ -270,18 +270,18 @@
     "now": {
       "models": 1786,
       "nouns": {
-        "distinct": 114,
+        "distinct": 115,
         "now": 102
       },
       "mentions": {
-        "mentions": 160,
+        "mentions": 161,
         "now": 143
       },
       "bySet": {
         "demand": {
-          "mentions": 92,
+          "mentions": 93,
           "now": 82,
-          "nouns": 80,
+          "nouns": 81,
           "nounsNow": 72
         },
         "fidelity": {
