@@ -103,6 +103,26 @@ describe('a sentence keeps the roles it names (P73A)', () => {
   }, 120_000);
 });
 
+describe('a stacked thing changes the look, never the game (P73A T3)', () => {
+  it.each(CASES.filter((test) => test.piece !== undefined).map((test) => test.sentence))('%s plays exactly like the block tower', (sentence) => {
+    const { spec } = draftGameSpecWithMeta(sentence, 1);
+    const blocks = { ...spec, roles: spec.roles.map((role) => (role.id === 'block' ? { ...role, label: 'block' } : role)) };
+    const named = arcadeWorldOf(spec, 1);
+    const plain = arcadeWorldOf(blocks, 1);
+    if (!named.ok || !plain.ok) throw new Error('timing world did not compile');
+    const bot = runBot(named.world);
+    expect(bot.outcome).toBe('won');
+    expect(replay(named.world, bot.inputs, ARCADE_LIBRARY).hash).toBe(replay(plain.world, bot.inputs, ARCADE_LIBRARY).hash);
+    expect(replay(named.world, [], ARCADE_LIBRARY).hash).toBe(replay(plain.world, [], ARCADE_LIBRARY).hash);
+  }, 120_000);
+
+  it('a sentence that names no piece still stacks blocks', () => {
+    const { spec } = draftGameSpecWithMeta('stack the tower as high as you can', 1);
+    expect(spec.roles.find((role) => role.id === 'block')?.label).toBe('block');
+    expect(spec.tutorial.goalLine).toMatch(/^Stack \d+ blocks\./);
+  }, 120_000);
+});
+
 describe('a race of named creatures stays a race (P73A T2)', () => {
   it.each(CASES.filter((test) => test.rival !== undefined).map((test) => test.sentence))('%s: the bot wins, an idle player does not', (sentence) => {
     const made = arcadeWorldOf(draftGameSpecWithMeta(sentence, 1).spec, 1);

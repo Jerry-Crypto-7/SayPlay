@@ -45,9 +45,14 @@ const TEXT: Readonly<Record<TimingMode, { readonly title: string; readonly piece
   },
 };
 
-/** Co se staví do věže: „stack burgers“, „stack animals on top of each other“, „pancake tower“. */
+/**
+ * Co se staví do věže: „stack burgers“, „stack animals on top of each other“, „pancake tower“; P73A T3 i „a tower of
+ * pancakes“ – ta stavěla kvádry, protože „a tower“ vzal člen za předmět. Fráze s „of“ má přednost.
+ */
+const STACKED_OF = /\b(?:tower|stack|pile|heap) of (?:the |some |\d+ )?([a-z]+)\b/;
 const STACKED = /\bstack(?:s|ing)? (?:the |a |an |some |\d+ )?([a-z]+)\b|\b([a-z]+) (?:tower|stack)\b/;
-const NOT_A_PIECE = /^(?:as|up|on|them|it|high|tallest|highest|helix|the|a|an)$/;
+/** Ani věž sama („stack the tower as high as you can“) dílem věže není. */
+const NOT_A_PIECE = /^(?:as|up|on|them|it|high|tallest|highest|helix|the|a|an|towers?|stacks?|piles?|heaps?)$/;
 
 /**
  * „cut the rope … feed the monster“ (P71C T3): věc visí na laně nad tím, koho krmí, a ťuk lano přestřihne.
@@ -108,7 +113,7 @@ export const timingGenre: GenreModule<'timing'> = {
       };
     }
     const match = STACKED.exec(text);
-    const stacked = match === null ? undefined : (match[1] ?? match[2]);
+    const stacked = STACKED_OF.exec(text)?.[1] ?? (match === null ? undefined : (match[1] ?? match[2]));
     const piece = stacked === undefined || NOT_A_PIECE.test(stacked) ? undefined : singular(stacked);
     return {
       genre: 'timing',
