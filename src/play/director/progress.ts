@@ -55,8 +55,11 @@ function fit(text: string): string {
   return `${(space > 8 ? cut.slice(0, space) : plain.slice(0, STEP_VALUE_MAX)).replace(/[,;:.]$/, '')}…`;
 }
 
-/** Soupeř: kdo hráče honí, pak na co míří nebo čemu uhýbá; hra bez nich soupeře nemá. */
-const RIVAL_KINDS: readonly (readonly string[])[] = [['chaser', 'patrol'], ['target', 'hazard']];
+/**
+ * Soupeř: kdo hráče honí, pak čemu uhýbá; hra bez nich soupeře nemá. Na co hráč míří (`target`), soupeř není –
+ * oracle T5 ukázal „Rival: goal“ u hry, kde se střílí do branek a uhýbá šiškám.
+ */
+const RIVAL_KINDS: readonly (readonly string[])[] = [['chaser', 'patrol'], ['hazard']];
 
 /** Volby režiséra v hotové hře: hrdina, soupeř, místo a první věta nápovědy ovládání. Co hra nemá, chybí. */
 export function picksOf(spec: GameSpecV1): DirectorStep[] {

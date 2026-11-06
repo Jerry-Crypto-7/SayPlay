@@ -7,7 +7,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { liveCells } from '../../compose/allowed';
 import { answered, failed, fakeBranch } from '../__fixtures__/branch';
 import { direct } from '../index';
-import { type DirectorStep, MAX_STEPS, __resetSteps, recordStep, stepText, stepsOf } from '../progress';
+import { type DirectorStep, MAX_STEPS, __resetSteps, picksOf, recordStep, stepText, stepsOf } from '../progress';
+import type { GameSpecV1 } from '../../spec';
 
 const runner = (hero: string, setting: string) => ({ plan: 'Run.', spec: { recipe: liveCells().find((cell) => cell.id === 'runner.default')!.recipe, hero, setting, unmet: [] } });
 
@@ -41,6 +42,21 @@ describe('direct() – kroky režie', () => {
     const fixing = steps.indexOf('Fixing one thing…');
     expect(fixing).toBeGreaterThan(steps.indexOf('Checking it can be won…'));
     expect(steps.lastIndexOf('Checking it can be won…')).toBeGreaterThan(fixing);
+  });
+});
+
+describe('picksOf – soupeř', () => {
+  const spec = (...roles: [string, string][]) =>
+    ({ roles: roles.map(([kind, label]) => ({ kind, label })), theme: { setting: 'mossy hill' }, tutorial: { controlsHint: 'Drag to aim.' } }) as unknown as GameSpecV1;
+  const rival = (value: GameSpecV1) => picksOf(value).find((step) => step.kind === 'rival');
+
+  it('branka, do které se míří, soupeř není; šiška, které se uhýbá, ano (oracle T5: „Rival: goal“)', () => {
+    expect(rival(spec(['player', 'hedgehog'], ['target', 'goal'], ['hazard', 'pinecone']))).toEqual({ kind: 'rival', value: 'pinecone' });
+    expect(rival(spec(['player', 'keeper'], ['target', 'jellyfish']))).toBeUndefined();
+  });
+
+  it('kdo honí, má přednost před tím, čemu se uhýbá', () => {
+    expect(rival(spec(['player', 'fox'], ['hazard', 'log'], ['chaser', 'bear']))).toEqual({ kind: 'rival', value: 'bear' });
   });
 });
 
