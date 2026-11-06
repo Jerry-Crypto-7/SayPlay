@@ -1,0 +1,264 @@
+{
+ "base": "http://127.0.0.1:3203",
+ "measuredAt": "2026-11-06T16:03:06.545Z",
+ "rows": [
+  {
+   "id": "hedgehog",
+   "text": "a hedgehog rolls down a mossy hill dodging falling pinecones",
+   "quick": "60754e60254618c38b19bc56cd5cd304",
+   "quickGenre": null,
+   "aiVersion": "ecdfa8b79119ab2d465e1d408220fbb1",
+   "readyMs": 70352,
+   "endKind": null,
+   "steps": [
+    {
+     "text": "Reading your idea…",
+     "ms": 4272
+    },
+    {
+     "text": "Building the world…",
+     "ms": 5732
+    },
+    {
+     "text": "Hero: hedgehog",
+     "ms": 36864
+    },
+    {
+     "text": "Rival: goal",
+     "ms": 38249
+    },
+    {
+     "text": "Place: mossy hill",
+     "ms": 39867
+    },
+    {
+     "text": "Controls: Drag to aim",
+     "ms": 41334
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 42772
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 44293
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 53694
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 55182
+    }
+   ],
+   "shots": {
+    "hero": {
+     "file": "hedgehog-hero.png",
+     "ms": 37130
+    },
+    "checking": {
+     "file": "hedgehog-checking.png",
+     "ms": 43041
+    },
+    "ready": {
+     "file": "hedgehog-ready.png",
+     "ms": 70546
+    },
+    "ai": {
+     "file": "hedgehog-ai.png",
+     "ms": 75343
+    }
+   }
+  },
+  {
+   "id": "otter",
+   "text": "an otter paddles a leaf boat along a rainy canal and avoids grumpy frogs",
+   "quick": "e5e50b7ad2a35d7ea138b788643989b1",
+   "quickGenre": null,
+   "aiVersion": "2cb05c91eba317f2a88671448ecc213f",
+   "readyMs": 67659,
+   "endKind": null,
+   "steps": [
+    {
+     "text": "Reading your idea…",
+     "ms": 2637
+    },
+    {
+     "text": "Building the world…",
+     "ms": 4242
+    },
+    {
+     "text": "Hero: otter",
+     "ms": 36345
+    },
+    {
+     "text": "Rival: grumpy frog",
+     "ms": 37873
+    },
+    {
+     "text": "Place: A rainy canal; the otter rides a…",
+     "ms": 39451
+    },
+    {
+     "text": "Controls: Drag/arrows steer",
+     "ms": 40886
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 42430
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 43926
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 52540
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 54068
+    }
+   ],
+   "shots": {
+    "hero": {
+     "file": "otter-hero.png",
+     "ms": 36588
+    },
+    "checking": {
+     "file": "otter-checking.png",
+     "ms": 42674
+    },
+    "ready": {
+     "file": "otter-ready.png",
+     "ms": 67970
+    },
+    "ai": {
+     "file": "otter-ai.png",
+     "ms": 73234
+    }
+   }
+  },
+  {
+   "id": "keeper",
+   "text": "a lighthouse keeper catches glowing jellyfish from a stormy pier",
+   "quick": "7d1effe565645cac7bff760bdbcabeed",
+   "quickGenre": null,
+   "aiVersion": "642ec490e2a27ffd811fac26b830a5e3",
+   "readyMs": 77489,
+   "endKind": null,
+   "steps": [
+    {
+     "text": "Reading your idea…",
+     "ms": 2934
+    },
+    {
+     "text": "Building the world…",
+     "ms": 4419
+    },
+    {
+     "text": "Hero: lighthouse keeper",
+     "ms": 28580
+    },
+    {
+     "text": "Place: A stormy pier beside a…",
+     "ms": 30089
+    },
+    {
+     "text": "Controls: Drag or arrows to move",
+     "ms": 31678
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 33137
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 34632
+    }
+   ],
+   "shots": {
+    "hero": {
+     "file": "keeper-hero.png",
+     "ms": 28790
+    },
+    "checking": {
+     "file": "keeper-checking.png",
+     "ms": 33321
+    },
+    "ready": {
+     "file": "keeper-ready.png",
+     "ms": 77652
+    },
+    "ai": {
+     "file": "keeper-ai.png",
+     "ms": 82303
+    }
+   }
+  },
+  {
+   "id": "mole",
+   "text": "a mole digs tunnels under a carrot farm while dodging a hungry badger",
+   "quick": "9e863ad5a3158ad2301bd40b9fa07660",
+   "quickGenre": "quest",
+   "aiVersion": "3381a1d78702970de8d427f4bd7762de",
+   "readyMs": 92766,
+   "endKind": null,
+   "madeBy": "Made by gpt-6-astra in 92.9 s · fresh · revised 2 times",
+   "madeByNote": "read by a second pass (--about): the first pass looked for the About button outside the pause card",
+   "steps": [
+    {
+     "text": "Reading your idea…",
+     "ms": 3369
+    },
+    {
+     "text": "Building the world…",
+     "ms": 4765
+    },
+    {
+     "text": "Hero: mole",
+     "ms": 45126
+    },
+    {
+     "text": "Rival: hungry badger",
+     "ms": 46596
+    },
+    {
+     "text": "Place: Underground beneath a carrot…",
+     "ms": 48158
+    },
+    {
+     "text": "Controls: Drag or arrows to move, hold Use…",
+     "ms": 49546
+    },
+    {
+     "text": "Checking it can be won…",
+     "ms": 51131
+    },
+    {
+     "text": "Fixing one thing…",
+     "ms": 52679
+    }
+   ],
+   "shots": {
+    "hero": {
+     "file": "mole-hero.png",
+     "ms": 45351
+    },
+    "checking": {
+     "file": "mole-checking.png",
+     "ms": 51361
+    },
+    "ready": {
+     "file": "mole-ready.png",
+     "ms": 92991
+    },
+    "ai": {
+     "file": "mole-ai.png",
+     "ms": 97936
+    }
+   }
+  }
+ ]
+}

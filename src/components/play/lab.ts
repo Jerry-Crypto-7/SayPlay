@@ -7,7 +7,9 @@
  * body) hráč nevidí – jsou v `GET /api/play/games/:id` a nástrojích `/play/lab`.
  */
 
-import type { ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeWorld } from '@/play/arcade/contract';
+import { TICKS_PER_SECOND } from '@/play/compile/adapters/timer';
+import type { QualityReport } from '@/play/contracts';
 import { GENRES, type GenreId } from '@/play/genre/contract';
 import { loseLineOf } from '@/play/lose-line';
 import { MECHANICS, type MechanicId } from '@/play/registry';
@@ -36,6 +38,8 @@ export interface ReadFacts {
   readonly sentence: string | null;
   readonly game: string;
   readonly world: string;
+  /** Jen místo z `world`, bez nálady – řádek „How I read it“ na startu (P73B T2). */
+  readonly place: string;
   readonly you: string | null;
   readonly against: readonly string[];
   /** Původ AI verze (P73B T1) – jen když ho verze nese (`PublishedGame.provenance`). */
@@ -74,9 +78,36 @@ export function readFacts(
     sentence,
     game: game.charAt(0).toUpperCase() + game.slice(1),
     world: `${spec.theme.setting} · ${spec.theme.mood}`,
+    place: spec.theme.setting,
     you: spec.roles.find((role) => role.kind === 'player')?.label ?? null,
     against: [...new Set(spec.roles.filter((role) => OPPONENT_KINDS.has(role.kind)).map((role) => role.label))],
     ...(ai === undefined ? {} : { ai }),
+  };
+}
+
+/**
+ * Co o hře opravdu ověřila publikační brána (P73B T3) – řádek „Checked“ na startu a list „Why this game is fair“.
+ * Jen to, co zpráva brány nese: arkáda (`arcadeReport`) kontroluje robota, nečinného hráče a přehrání; mřížka
+ * (`verifyGame`) robota a přehrání, nečinného hráče ne.
+ */
+export interface CheckFacts {
+  /** Za kolik sekund robot ověřovače hru vyhrál (tik výhry / tiky za sekundu runtimu). */
+  readonly botSeconds: number;
+  /** Hráč, který nic nedělá, nevyhraje (`idle_loses`); `false` = brána to nekontrolovala. */
+  readonly idleNeverWins: boolean;
+  /** Dvě přehrání záznamu robota skončila ve stejném stavu jako jeho běh. */
+  readonly replayEqual: boolean;
+}
+
+/** `null` = verze bránou neprošla nebo robot nevyhrál – řádek „Checked“ pak nemá co říct. */
+export function checkFacts(report: QualityReport, arcade: boolean): CheckFacts | null {
+  const passed = (check: string): boolean => report.keypoints.some((keypoint) => keypoint.assertionId === check && keypoint.passed);
+  if (!report.publishEligible || !report.witness.certified || report.witness.winsAtTick === null) return null;
+  if (arcade && !passed('bot_wins')) return null;
+  return {
+    botSeconds: report.witness.winsAtTick / (arcade ? ARCADE_HZ : TICKS_PER_SECOND),
+    idleNeverWins: arcade && passed('idle_loses'),
+    replayEqual: report.replayEqual && (!arcade || passed('replay_equal')),
   };
 }
 

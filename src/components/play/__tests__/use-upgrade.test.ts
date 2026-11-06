@@ -75,6 +75,20 @@ describe('followUpgrade', () => {
     run.stop();
   });
 
+  // P73C T2: kroky režie přibývají; odpověď bez nich (jiná instance) známé nezapomene, nečitelné vypadnou.
+  it('pending s kroky režie → kroky jen přibývají', async () => {
+    const steps = ['Reading your idea…', 'Hero: turtle'];
+    serve((elapsed) => (elapsed < 3_000 ? { ...pending, steps: [steps[0], 42, 'x'.repeat(200)] } : elapsed < 5_000 ? { ...pending, steps } : pending));
+    const run = follow();
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(run.last()).toEqual({ kind: 'working', since: T0, deadlineAt: DEADLINE, steps: [steps[0]] });
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(run.last()).toEqual({ kind: 'working', since: T0, deadlineAt: DEADLINE, steps });
+    await vi.advanceTimersByTimeAsync(POLL_MS * 3);
+    expect(run.last()).toEqual({ kind: 'working', since: T0, deadlineAt: DEADLINE, steps });
+    run.stop();
+  });
+
   it('nečitelné čtení se nepočítá', async () => {
     serve(() => ({ ...pending, reading: { versionId: '../evil' } }));
     const run = follow();
