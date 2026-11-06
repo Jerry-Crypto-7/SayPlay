@@ -556,6 +556,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
           remix={remix}
           facts={gridFacts(spec, snapshot)}
           onReplay={() => startOver(false)}
+          onFair={checks === null ? undefined : () => setFairOpen(true)}
         />
       )}
     </main>

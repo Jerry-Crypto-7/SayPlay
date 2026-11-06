@@ -1148,6 +1148,8 @@ function ArcadePlayGame({
           record={record}
           controlsHint={spec.tutorial.controlsHint}
           onReplay={replay}
+          // Běh se živou změnou (`live`) hrál svět, který brána celý neověřila (`acceptLive` jen robota) – bez odkazu.
+          onFair={checks !== null && live === undefined ? () => setFairOpen(true) : undefined}
         />
       )}
       {/* VR (P65 T5): DOM v relaci vidět není, HUD a výsledek kreslí 3D panely (`xr/XrHud.tsx`) z týchž dat. */}
