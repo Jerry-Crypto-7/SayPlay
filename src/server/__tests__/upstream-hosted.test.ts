@@ -233,6 +233,15 @@ describe('openai: generate', () => {
     expect(outcome.ok && outcome.provenance).toMatchObject({ source: 'hosted-http', synthetic: false, model: 'openai/gpt-oss-20b' });
   });
 
+  it('credits the model name the provider returned, the configured one only when it returned none (P73C T4)', async () => {
+    const named = await stub((_req, _body, res) => res.end(JSON.stringify({ ...JSON.parse(chat('{"plan":"run"}')), model: 'openai/gpt-oss-20b-2508' })));
+    const outcome = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${named}` })).generate(CALL);
+    expect(outcome.ok && outcome.provenance.model).toBe('openai/gpt-oss-20b-2508');
+    const blank = await stub((_req, _body, res) => res.end(JSON.stringify({ ...JSON.parse(chat('{"plan":"run"}')), model: '  ' })));
+    const fallback = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${blank}` })).generate(CALL);
+    expect(fallback.ok && fallback.provenance.model).toBe('openai/gpt-oss-20b');
+  });
+
   it('is MALFORMED_RESPONSE when only the reasoning came back', async () => {
     const root = await stub((_req, _body, res) => res.end(chat(null, {}, 'length')));
     const outcome = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${root}` })).generate(CALL);

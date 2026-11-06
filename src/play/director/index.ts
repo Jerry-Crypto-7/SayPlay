@@ -44,12 +44,14 @@ import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled, readerForAiVersion } from '../read/client';
 import { type GameSpecV1, readGameSpec } from '../spec';
+import type { AiProvenance } from '../version';
 import { vocabVersion } from '../vocab';
 
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
 import { COMPACT_PROMPT_VERSION, buildCompactRequest } from './compact';
 import { type CriticIssue, blockingIssues, critique, fidelity, actionIssues, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
+import { type DirectorStep, picksOf } from './progress';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { answerRules, readGenreAnswer, readRecipeAnswer, readRecipeContent, readLegacyRecipeContent, readModelSpec, withoutAnswerRules } from './read';
 import { EXAMPLES_VERSION } from './retrieval';
@@ -87,6 +89,15 @@ export type DirectedGame = DirectorResult & {
    */
   readonly rulesFrom?: 'draft' | 'none';
 };
+
+/**
+ * Původ AI verze pro řádek „Made by …“ (P73C T4, pole z P73B T1): model, jak ho vrátil poskytovatel (`authoredBy`,
+ * přežije cache), čas režie, cache a opravná kola kritika. Bez známého modelu nic – řádek by jinak tvrdil autora, kterého neznáme.
+ */
+export function aiProvenance(game: DirectedGame, ms: number): AiProvenance | null {
+  if (game.authoredBy === undefined) return null;
+  return { model: game.authoredBy, ms: Math.round(ms), cached: game.source === 'cached', revised: game.repairRounds };
+}
 
 export interface DirectorDeps {
   readonly branch: GenerationBranch;
@@ -126,6 +137,8 @@ export interface DirectorDeps {
    * režisér model zavolal, a vezme slot dveří `play` dřív, než se čtení zaplatí. Chybí = smí.
    */
   readonly mayPayRead?: () => Promise<boolean>;
+  /** Skutečné fáze režie a volby z odpovědi modelu, jak přicházejí (P73C T2, `progress.ts`); hráč je vidí při čekání. */
+  readonly onStep?: (step: DirectorStep) => void;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -245,6 +258,13 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 
 async function directSpec(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
   const started = deps.now();
+  const step = (next: DirectorStep): void => deps.onStep?.(next);
+  /** Volby hry, pak kontrola robotem – obojí hned před `verifyDirectorSpec` nad novým specem. */
+  const checking = (spec: GameSpecV1): void => {
+    for (const pick of picksOf(spec)) step(pick);
+    step({ kind: 'checking' });
+  };
+  step({ kind: 'reading' });
   const intent = extractIntent(sentence);
   if (intent.items.some(item => item.essential && item.axis === 'move' && item.verb === 'ball')) await loadRapier();
   const compact = deps.compact === true;
@@ -322,6 +342,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
   };
 
   calls += 1;
+  step({ kind: 'directing' });
   const outcome = await deps.branch.generate({ prompt: sentence, request });
   if (outcome.ok) credit(outcome.provenance);
   if (!outcome.ok)
@@ -344,6 +365,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
     if (deterministic !== null) nativeSpec = deterministic.spec;
     let declared = selected.declared;
     let rounds = 0;
+    checking(nativeSpec);
     let verified = await verifyDirectorSpec(nativeSpec, intent, deps.seed ?? 1);
     const issuesOf = (): RepairIssue[] => [
       ...blockingIssues(critique(nativeSpec)),
@@ -355,6 +377,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
     let issues = issuesOf();
     while (issues.length > 0 && rounds < (deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS)) {
       rounds++; calls++;
+      step({ kind: 'fixing' });
       const repaired = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(nativeSpec, issues, intent) });
       if (!repaired.ok) {
         if (blockingIssues(critique(nativeSpec)).some(issue => issue.code !== 'RULE_INVALID')) return { ...fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: repaired.reason, detail: `repair round ${rounds}: ${repaired.detail}`, raw: repaired.raw ?? null }), repairRounds: rounds };
@@ -370,6 +393,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
         nativeSpec = patched.spec; ruleBlocks = [];
       }
       credit(repaired.provenance);
+      checking(nativeSpec);
       verified = await verifyDirectorSpec(nativeSpec, intent, deps.seed ?? 1);
       issues = issuesOf();
     }
@@ -486,12 +510,14 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
 
   // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil; neprokázané sloveso jmenuje kritik (T8).
   const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate));
+  checking(spec);
   let checked = blocks.length === 0 ? checkOf(spec) : [];
   const maxRounds = deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS;
   let repairRounds = 0;
   while ((blocks.length > 0 || checked.length > 0) && repairRounds < maxRounds) {
     repairRounds += 1;
     calls += 1;
+    step({ kind: 'fixing' });
     const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks.length > 0 ? blocks : checked) });
     if (!answer.ok) {
       // Spec, který kritik pustil, jde dál a odmítne ho až publikace (NOT_PLAYABLE) –
@@ -505,6 +531,7 @@ async function directSpec(sentence: string, deps: DirectorDeps): Promise<Directe
     credit(answer.provenance);
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
+    checking(spec);
     checked = blocks.length === 0 ? checkOf(spec) : [];
   }
 

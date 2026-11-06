@@ -794,6 +794,15 @@ function readableUsage(usage: Usage | null, text: string, maxOutputTokens: numbe
 }
 
 /**
+ * Jméno modelu, jak ho vrátil poskytovatel (P73C T4: řádek „Made by …“ u AI verze); bez něj to z nastavení.
+ * Hodnota jde hráči na obrazovku, proto jen neprázdný text a nejvýš 80 znaků.
+ */
+function returnedModel(payload: unknown, configured: string): string {
+  const model = (payload as { model?: unknown } | null)?.model;
+  return typeof model === 'string' && model.trim() !== '' ? model.trim().slice(0, 80) : configured;
+}
+
+/**
  * Co spustit. Na Windows se `codex.cmd` z Node bez shellu nespustí, takže se
  * volá přímo skript npm instalace přes tenhle `node`; jinde stačí `codex`
  * z PATH. `WORLDSMITH_CODEX_JS` to přebije pro stroj s jinou instalací.
@@ -1223,7 +1232,7 @@ async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fet
   } catch (thrown) {
     return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the ${name} text is not JSON${truncated ? ' (cut at max_tokens)' : ''}: ${(thrown as Error).message}`, usage, raw: text };
   }
-  return { ok: true, body: answer, usage, provenance: { branch: UPSTREAM_BRANCH_ID, source: hosted ? 'hosted-http' : 'llamacpp-http', synthetic: false, model: config.model } };
+  return { ok: true, body: answer, usage, provenance: { branch: UPSTREAM_BRANCH_ID, source: hosted ? 'hosted-http' : 'llamacpp-http', synthetic: false, model: returnedModel(payload, config.model) } };
 }
 
 async function generate(
@@ -1347,7 +1356,7 @@ async function generate(
       branch: UPSTREAM_BRANCH_ID,
       source: 'upstream-http',
       synthetic: false,
-      model: config.model,
+      model: returnedModel(payload, config.model),
     },
   };
 }

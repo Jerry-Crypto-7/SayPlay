@@ -25,7 +25,7 @@ import { verifyChain } from '@/play/chain/verify';
 import type { Honesty } from '@/play/draft/unsupported';
 import { ROUTE_PENDING } from '@/play/genre/classify';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealChainVersion, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
+import { type AiProvenance, type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealChainVersion, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
 import { BUILTIN_IDS } from '@/play/version/builtin';
 import { previewOf } from '@/play/version/preview';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
@@ -225,6 +225,8 @@ export interface PublishExtras {
   readonly sentence?: string;
   readonly relation?: PublishedGame['relation'];
   readonly timings?: Omit<PlayTimings, 'compileMs' | 'verifyMs'>;
+  /** Původ AI verze (P73C T4); `ms` je čas režie, tahle cesta k němu přičte kompilaci a kontrolu – do zveřejnění. */
+  readonly provenance?: AiProvenance;
 }
 
 function compileOnSeeds(spec: GameSpecV1, seeds: readonly number[]): CompileGameResult {
@@ -325,6 +327,7 @@ export async function publishReadSpec(
     ...(extras.sentence === undefined ? {} : { sentence: extras.sentence }),
     ...(relation === undefined ? {} : { relation }),
     ...(extras.timings === undefined ? {} : { timings: { ...extras.timings, compileMs, verifyMs } }),
+    ...(extras.provenance === undefined ? {} : { provenance: { ...extras.provenance, ms: Math.round(extras.provenance.ms + compileMs + verifyMs) } }),
   };
   return storePublished(versions, game);
 }
